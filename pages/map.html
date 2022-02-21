@@ -1,0 +1,185 @@
+<div id='map'>
+
+        <!--Primera pantalla-->
+        <div class="offcanvas offcanvas-bottom" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
+                id="offcanvasBottom" aria-labelledby="offcanvasBottomLabel">
+                <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="offcanvas-1-title"></h5>
+
+                        <div class="d-grid gap-2">
+                                <button id="agregar-campo-siguiente-btn" type="button" class="btn btn-success"
+                                        data-bs-toggle="offcanvas" data-bs-target="#offcanvasCampoForm"
+                                        aria-controls="offcanvasCampoForm" disabled>Siguiente</button>
+                        </div>
+                        <button type="button" id="map-edit-btn" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                                aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body small">
+                        <div class="d-grid gap-2">
+                                <button class="btn btn-primary" id='salir-edicion-btn' type="button">Salir del Modo de
+                                        Edición</button>
+                        </div>
+
+
+                </div>
+        </div>
+
+        <!--Campo Form-->
+        <div class="offcanvas offcanvas-bottom h-50" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
+                id="offcanvasCampoForm" aria-labelledby="offcanvasBottomLabel">
+                <div class="offcanvas-header">
+                        <h5 class="offcanvas-title">1 campo seleccionado</h5>
+
+                        <button type="button" id="map-edit-btn" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                                aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+
+                        <form>
+                                <div class="row mb-1">
+                                        <label for="inputNombreCampo" class="col-4 col-form-label">Nombre del
+                                                campo</label>
+                                        <div class="col-8">
+                                                <input type="text" class="form-control" id="inputNombreCampo">
+                                        </div>
+                                </div>
+                                <div class="row mb-1">
+                                        <label for="inputCultivo" class="col-4 col-form-label">Cultivo</label>
+                                        <div class="col-8">
+                                                <button type="button" id="cultivo-btn" class="btn btn-link"
+                                                        data-bs-toggle="offcanvas"
+                                                        data-bs-target="#offcanvas-cultivo">Especificar<i
+                                                                class="bi bi-chevron-right"></i></button>
+                                                <input type="text" class="form-control d-none" id="input-cultivo">
+                                        </div>
+                                </div>
+                                <div class="row mb-1">
+                                        <label for="inputVariedad" class="col-4 col-form-label">Variedad</label>
+                                        <div class="col-8">
+                                                <input type="text" class="form-control" id="variedad-input">
+                                        </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                        <button class="btn btn-primary btn-success" id='guardar-campo-btn'
+                                                type="button">Guardar</button>
+                                </div>
+                        </form>
+
+
+
+                </div>
+        </div>
+
+        <!--Seleccion de cultivo-->
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-cultivo" aria-labelledby="offcanvasRightLabel">
+                <div class="offcanvas-header">
+                        <h5 id="offcanvasRightLabel">Seleccionar cultivo</h5>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                                aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                        <input class="form-control my-2" id="buscar-cultivo-input" type="text" placeholder="Buscar..">
+                        <div class="list-group" id="lista-cultivos">
+                        </div>
+                </div>
+        </div>
+
+
+        <!--Toast Guia-->
+        <div class="position-fixed top-0 start-50 translate-middle p-3 guia-toast" style="z-index: 11">
+                <div id="liveToast" class="toast align-items-center text-white bg-success" role="alert"
+                        aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+                        <div class="d-flex">
+                                <div class="toast-body" id='toast-body'>
+                                        Seleccione el primer punto
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                                        data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                </div>
+        </div>
+
+
+        <!--Add Nota Form-->
+        <div class="offcanvas offcanvas-bottom h-50" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
+                id="offcanvas-nueva-nota" aria-labelledby="offcanvasBottomLabel">
+                <div class="offcanvas-header">
+                        <button type="button" id="cerrar-nueva-nota-btn" class="btn-close text-reset"
+                                data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        <h6 class="offcanvas-title">Nueva Nota</h6>
+
+                        <button type="button" id="guardar-nueva-nota-btn" class="btn btn-success"
+                                aria-label="">Guardar</button>
+
+                </div>
+                <hr>
+                <div class="offcanvas-body">
+                        <div class="col">
+                                <textarea class="form-control" id="nota-comentario-input"
+                                        placeholder="Tus comentarios..." rows="3"></textarea>
+                                <hr>
+
+                                <div class="row mb-2" id='img-preview'>
+                                </div>
+
+                                <input id="foto-upload-input" class="d-none" type="file" accept="image/*">
+                                <button type="button" id="anadir-foto-btn" class="btn btn-success">Añadir
+                                        Foto</button>
+
+                                <hr>
+
+                                <div class="row">
+                                        <button type="button" id="anadir-audio-btn" class="btn btn-success">Grabar
+                                                un Audio</button>
+                                </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row justify-content-start">
+                                <div class="col-12">
+                                        <button type="button" id="anadir-foto-btn" class="btn btn-success">Añadir un
+                                                problema</button>
+                                </div>
+                        </div>
+
+                        <hr>
+
+                        <div>
+                                <div class="row">
+                                        <label for="fecha-btn" class="form-label col-8">Fecha</label>
+                                        <button type="button" id="fecha-btn"
+                                                class="btn btn-secondary col-4">Hoy</button>
+                                </div>
+                                <div class="row">
+                                        <label for="hora-btn" class="form-label col-8">Hora</label>
+                                        <button type="button" id="hora-btn"
+                                                class="btn btn-secondary col-4">11:22</button>
+                                </div>
+                        </div>
+
+
+                </div>
+        </div>
+
+
+
+        <div data-ui-load="@lib/components/menu_overlay" data-ui-context="menu-overlay" class="boton-overlay"
+                data-o-button-color="blue">
+                <div data-ui-field="items">
+                        <!-- menu items list -->
+                        <button class="btn btn-primary mo-item" id='agregar-campos-btn' type="button"
+                                data-bs-toggle="offcanvas" data-bs-target="#offcanvasBottom"
+                                aria-controls="offcanvasBottom">Agregar un Campo</button>
+                        <button class="btn btn-primary mo-item" id='nueva-nota-btn' type="button"
+                                data-bs-toggle="offcanvas" data-bs-target="#offcanvasBottom"
+                                aria-controls="offcanvasBottom">Agregar una Nota</button>
+                </div>
+
+
+
+        </div>
+
+
+</div>

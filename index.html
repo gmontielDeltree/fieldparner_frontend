@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Agrotools FieldPartner</title>
+  <meta name="description" content="HTML Progressive Web App made with zUIx.js">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Disable tap highlight on IE -->
+  <meta name="msapplication-tap-highlight" content="no">
+
+  <!-- Progressive Web App -->
+  <meta name="theme-color" content="#f5f8fa">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Add to homescreen for Chrome on Android -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="icon" sizes="192x192" href="images/icons/desktop/android-chrome-192x192.png">
+  <link rel="icon" sizes="512x512" href="images/icons/desktop/android-chrome-512x512.png">
+
+  <!-- Add to homescreen for Safari on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="A zUIx website">
+  <link rel="apple-touch-icon-precomposed" href="images/icons/desktop/apple-touch-icon.png">
+  <link rel="mask-icon" href="images/icons/desktop/safari-pinned-tab.svg" color="#5bbad5">
+
+  <!-- Tile color for Windows -->
+  <meta name="msapplication-TileImage" content="images/icons/desktop/mstile-150x150.png">
+  <meta name="msapplication-TileColor" content="#ffc40d">
+
+  <!-- Place favicon.ico in the root directory -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/icons/desktop/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/icons/desktop/favicon-16x16.png">
+
+  <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
+  <!--
+  <link rel="canonical" href="http://www.example.com/">
+  -->
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="assets/reroot/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+  <link href="assets/reroot/Montserrat.css" rel="stylesheet" />
+
+
+  <link rel="stylesheet" href="assets/reroot/font-awesome.min.css" />
+
+  <link rel="stylesheet" href="assets/css/charts.css" />
+  <link rel="stylesheet" href="assets/reroot/bootstrap-icons.css" />
+  <script src="assets/reroot/moment.min.js"></script>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="assets/reroot/bootstrap.bundle.min.js"
+    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+    crossorigin="anonymous"></script>
+
+  <!--Datepicker-->
+  <link rel="stylesheet" href="assets/reroot/datepicker.min.css" />
+  <script src="assets/reroot/datepicker-full.min.js"
+    crossorigin="anonymous"></script>
+
+
+  <script src="assets/reroot/jquery.slim.min.js"></script>
+  <script src="assets/js/apexcharts/dist/apexcharts.min.js"></script>
+
+  <!-- Material Design Icons -->
+  <link rel="stylesheet" href="assets/reroot/MaterialIcons.css">
+
+  <!-- import zUIx library (v 0.4.9-54) -->
+  <script src="js/zuix.min.js" integrity="sha384-dardOt1ETViq+ymQxY27Vl2URv6/9Jqt27SoscfQ4aefxTsydbUkAqJTi+2+Pr8K" crossorigin="anonymous"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/zuix"></script> -->
+  <script src="js/zuix-bundler.min.js"></script>
+  <!-- <script src="js/app.bundle.js"></script> -->
+  
+  <!--MAPA-->
+  <script src='assets/reroot/mapbox-gl.js'></script>
+  <link href='assets/reroot/mapbox-gl.css' rel='stylesheet' />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/0.0.124/turf.min.js" integrity="sha512-jpnZ8xGKbS7L9S6d5fk/zDVgF6OoVKLMoEliLxf24BRX+orWhxqJuUcoM+vGmOaozS9dD9ABjQZKAgjjcwTndA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- <script src="assets/reroot/turf.min.js"></script> -->
+
+  <script src="assets/reroot/mapbox-gl-draw.js"></script>
+  <link rel="stylesheet" href="assets/reroot/mapbox-gl-draw.css" type="text/css">
+
+  <!--Axios-->
+  <script src="assets/reroot/axios.min.js"></script>
+
+  <!-- main app script -->
+  <script src="index.js" defer></script>
+
+
+  <style>
+    /*mapbox gl css custom settings*/
+    #map {
+        position: absolute;
+        top: 40px;
+        bottom: 0;
+        width: 100%;
+        height: calc(100vh - 100px) !important;
+    }
+
+    .mapboxgl-ctrl-group button+button {
+        border-top: none
+    }
+  </style>
+
+
+</head>
+<!-- load the 'header_auto_hide' on the body -->
+
+<body>
+
+  <!-- The header with profile icon button for opening the drawer layout (side menu panel) -->
+  <header data-ui-include="layout/header" data-ui-options="options.headerBar" data-ui-field="header-bar"></header>
+
+  <main data-ui-field="pages">
+
+    <!-- HOME -->
+    <!-- <section data-ui-include="pages/home"></section> -->
+    
+    
+    <section data-ui-load="pages/map"></section>
+
+    <!-- SEARCH -->
+    <section data-ui-load="pages/search"></section>
+
+
+    <!-- NOTIFICATIONS -->
+    <section data-ui-include="pages/notifications"></section>
+
+    <!-- ABOUT -->
+    <section data-ui-include="pages/about" layout="column top-center"></section>
+
+  </main>
+
+  <!-- The footer with toolbar buttons -->
+  <footer data-ui-include="layout/footer" data-ui-options="options.footerBar" data-ui-field="footer-bar"></footer>
+
+  <!-- The DrawerLayout for side menu panel -->
+  <div data-ui-load="@lib/controllers/drawer_layout" data-ui-options="options.drawerLayout" class="drawer"
+    draggable="false">
+    <!-- Add Navigation Drawer content -->
+    <div data-ui-include="shared/main_menu"></div>
+  </div>
+
+  <noscript>
+    Turn on JavaScript to access this site content.
+  </noscript>
+
+</body>
+
+</html>

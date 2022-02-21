@@ -1,0 +1,28 @@
+
+      
+        /*mapbox gl css custom settings
+	https://stackoverflow.com/questions/57166761/mapbox-gl-height-100
+	*/
+    
+	    #map {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 100%;
+		height: calc(100vh - 56px) !important;
+		}
+	 
+		.menu-button {
+		  margin-bottom: 56px;
+	 	}
+		 .guia-toast {
+	           margin-top: 100px;
+		 }
+
+		 .menu-item:last-child{
+			 margin-bottom: 50px;
+		 }
+
+	    .mapboxgl-ctrl-group button+button {
+		border-top: none
+	    }

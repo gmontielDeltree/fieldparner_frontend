@@ -1,0 +1,75 @@
+<div class="container d-flex flex-column dashboard" >
+	<div class="row mt-1"> <!--Title Card Row-->
+		<div class="d-flex">
+			<!-- Image -->
+			<img src="https://static.wixstatic.com/media/f92860_b7259c215ce14711ad3c1ed3896c885f~mv2.jpg/v1/crop/x_0,y_107,w_732,h_541/fill/w_306,h_226,al_c,q_80,usm_0.66_1.00_0.01/Frontal%20LMM04T.webp"
+				alt="John Doe" class="me-3 rounded-circle" style="width: 60px; height: 60px;" />
+			<!-- Body -->
+			<div>
+				<h5 data-ui-field="nombre" class="fw-bold">
+					Central Gallardo
+					<small class="text-muted">Hace 15 segundos</small>
+				</h5>
+				<p data-ui-field="tipo">
+					Central HM-05
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<div class="row"> <!--Control Row-->
+
+
+		<div class="input-group input-group-sm mb-4">
+			<i class="bi bi-calendar-date input-group-text"></i>
+			<button class="btn btn-primary" id="one-day" type="button">1d</button>
+			<button class="btn btn-primary" id="one-week" type="button">7d</button>
+			<button class="btn btn-primary" id="one-month" type="button">30d</button>
+			<button class="btn btn-primary" id="one-year" type="button">365d</button>
+			<input type="text" class="datepicker_input form-control" placeholder="Desde" required
+				aria-label="Desde">
+			<input type="text" class="datepicker_input form-control" placeholder="Hasta" required
+				aria-label="Hasta">
+			<button class="btn btn-primary bi bi-arrow-clockwise" type="button"></button>
+		</div>
+
+
+
+	</div>
+
+	<div class="row"> <!--Chart row-->
+		<div id="wrapper">
+			<div class="content-area">
+				<div class="container-fluid">
+					<div class="text-right mt-3 mb-3 d-fixed">
+						<a href="#" target="_blank" class="btn btn-outline-primary mr-2">
+							<span class="btn-text">Descargar Datos</span>
+						</a>
+					</div>
+					<div class="main">
+						<div class="row mt-4">
+							<div class="col-md-4">
+								<div class="box shadow">
+									<div id="chart-temperatura"></div>
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div class="box shadow">
+									<div id="chart-humedad"></div>
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div class="box shadow">
+									<div id="chart-presion"></div>
+								</div>
+							</div>
+						</div>
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
