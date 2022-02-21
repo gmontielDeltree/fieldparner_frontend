@@ -6,7 +6,7 @@ zuix.controller(function (cp) {
 	let itemsList;
 	let map;
 
-	var yourJWTToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ1NDY0MzIyLCJleHAiOjE2NDgwNTYzMjJ9.nfnxfm6cPXTmn41UxD8APIOQNfNs6LFYbnhS-uR4v5o"
+	var yourJWTToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ1NDczMjgzLCJleHAiOjE2NDgwNjUyODN9.zTdkovErL8Qo8LLDlKRcZ4kK1T53L2c3VpT6_Jq8qTE"
 	yourConfig = {
 		headers: {
 			Authorization: "Bearer " + yourJWTToken
