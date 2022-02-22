@@ -74,7 +74,7 @@ zuix.controller(function (cp) {
 		lotes_source = map.getSource('lotes');
 		lotes_collection = emptyGJ
 
-		axios.get(api_root + "/api/campos", yourConfig).then(
+		axios.get(api_root + "/api/campos").then(
 			function (response) {
 				console.log("API CAMPOS", response.data.data)
 				lotes_collection.features = response.data.data.map((campo) => {
@@ -194,7 +194,7 @@ zuix.controller(function (cp) {
 					geojson: geojson,
 					cultivo: id_cultivo
 				}
-			}, yourConfig)
+			})
 				.then(function (response) {
 					console.log("POST /api/campos response", response);
 				})
@@ -354,7 +354,7 @@ zuix.controller(function (cp) {
 		}
 
 
-		axios.get(api_root + '/api/cultivos', yourConfig)
+		axios.get(api_root + '/api/cultivos')
 			.then(function (response) {
 				// handle success
 				cultivos = response.data.data
