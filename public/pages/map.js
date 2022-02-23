@@ -430,14 +430,35 @@ zuix.controller(function (cp) {
 		img_input.addEventListener('change', function () {
 			const file = this.files[0];
 			if (file.type.startsWith('image/')) {
+
 				const img = document.createElement('img');
 				const watermarkPreview = document.getElementById("img-preview");
 
-				img.classList.add("img-fluid");
+				//img.classList.add("img-fluid");
 				img.classList.add("col-4");
+				img.classList.add("col-md-2");
+				img.classList.add("mx-1");
 				img.classList.add("img-thumbnail")
+				img.setAttribute("style", "height:100px; object-fit: cover;")
 				img.file = file;
+
 				watermarkPreview.appendChild(img);
+
+				img.addEventListener('click', (e) => {
+					// Show Modal
+					var exampleModal = document.getElementById('detalle-imagen-modal')
+					//console.log(e.target.src);
+					const index_of_this_el = Array.prototype.indexOf.call(watermarkPreview.children, e.target);
+					document.getElementById('borrar-img-btn').setAttribute("data-bs-index",index_of_this_el)
+
+					modal_body = document.getElementById('imagen-modal-preview')
+					modal_body.setAttribute('src', e.target.src)
+
+					var modal_el = document.getElementById('detalle-imagen-modal')
+					const myModal = new bootstrap.Modal(modal_el)
+					myModal.show()
+				})
+
 
 				const reader = new FileReader();
 				reader.onload = (function (aImg) { return function (e) { aImg.src = e.target.result; } })(img);
@@ -445,6 +466,19 @@ zuix.controller(function (cp) {
 			}
 
 		});
+
+		/* Modal Detalles */
+		/* Boton Borrar IMG */
+		document.getElementById("borrar-img-btn").addEventListener("click",(e)=>{
+			const index = e.target.getAttribute("data-bs-index")
+			console.log("Borrar index",index)
+			const children = document.getElementById("img-preview").children
+			children[index].remove()
+			var myModal = bootstrap.Modal.getInstance(document.getElementById('detalle-imagen-modal')) 
+			myModal.hide()
+		})
+
+
 
 
 

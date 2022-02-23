@@ -116,6 +116,13 @@
                 <hr>
                 <div class="offcanvas-body">
                         <div class="col">
+                                <div class="row">
+                                        <label for="nota-color-input" class="col-4">Color</label>
+                                        <input type="color" class="form-control form-control-color col-4" id="nota-color-input" value="#563d7c" title="Choose your color">
+                                </div>
+                                
+                                <hr>
+                                
                                 <textarea class="form-control" id="nota-comentario-input"
                                         placeholder="Tus comentarios..." rows="3"></textarea>
                                 <hr>
@@ -182,4 +189,20 @@
         </div>
 
 
+        <div class="modal fade" id="detalle-imagen-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel"></h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <img id="imagen-modal-preview" class="img-fluid" src="">
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" id="borrar-img-btn" data-bs-index="0" >Eliminar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 </div>
