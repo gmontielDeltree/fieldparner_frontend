@@ -51,9 +51,7 @@ window.customElements.define('audio-recorder',
     // Evento Start
     start(){
       let startStopButton = this.shadowRoot.querySelector('#start-stop');
-      startStopButton.innerHTML = 'Detener Grabación';
-      startStopButton.classList.remove('btn-success');
-      startStopButton.classList.add('btn-danger');
+
 
       let audioChunks = [];
 
@@ -82,8 +80,12 @@ window.customElements.define('audio-recorder',
             this.saveRecording(new Blob(audioChunks, options));
           });
           this.mediaRecorder.start();
+          startStopButton.innerHTML = 'Detener Grabación';
+          startStopButton.classList.remove('btn-success');
+          startStopButton.classList.add('btn-danger');
         })
         .catch( (error) => {
+          alert("No se tienen permisos para grabar")
           console.error(`navigator.getUserMedia error: ${error}`);
         });
     }
