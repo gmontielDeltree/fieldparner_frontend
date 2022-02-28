@@ -62,8 +62,7 @@
 
   <!--Datepicker-->
   <link rel="stylesheet" href="assets/reroot/datepicker.min.css" />
-  <script src="assets/reroot/datepicker-full.min.js"
-    crossorigin="anonymous"></script>
+  <script src="assets/reroot/datepicker-full.min.js" crossorigin="anonymous"></script>
 
 
   <script src="assets/reroot/jquery.slim.min.js"></script>
@@ -73,11 +72,11 @@
   <link rel="stylesheet" href="assets/reroot/MaterialIcons.css">
 
   <!-- import zUIx library (v 0.4.9-54) -->
-  <script src="js/zuix.min.js" ></script>
+  <script src="js/zuix.min.js"></script>
   <!-- <script src="https://cdn.jsdelivr.net/npm/zuix"></script> -->
   <script src="js/zuix-bundler.min.js"></script>
   <!-- <script src="js/app.bundle.js"></script> -->
-  
+
   <!--MAPA-->
   <script src='assets/reroot/mapbox-gl.js'></script>
   <link href='assets/reroot/mapbox-gl.css' rel='stylesheet' />
@@ -90,30 +89,32 @@
 
   <!--Axios-->
   <script src="assets/reroot/axios.min.js"></script>
-
+  <!-- UUID -->
+  <script src="https://unpkg.com/uuid@latest/dist/umd/uuidv4.min.js"></script>
   <!-- main app script -->
   <script src="index.js" defer></script>
 
 
   <script text="javascript">
     var api_root = "https://fieldpartner-api-v0.herokuapp.com"
+    //var api_root = "http://localhost:1337";
   </script>
 
   <!--Audio Recorder-->
   <script src="assets/components/audiorecorder/index.js"></script>
-  
+
   <style>
     /*mapbox gl css custom settings*/
     #map {
-        position: absolute;
-        top: 40px;
-        bottom: 0;
-        width: 100%;
-        height: calc(100vh - 100px) !important;
+      position: absolute;
+      top: 40px;
+      bottom: 0;
+      width: 100%;
+      height: calc(100vh - 100px) !important;
     }
 
     .mapboxgl-ctrl-group button+button {
-        border-top: none
+      border-top: none
     }
   </style>
 
@@ -130,8 +131,8 @@
 
     <!-- HOME -->
     <!-- <section data-ui-include="pages/home"></section> -->
-    
-    
+
+
     <section data-ui-load="pages/map"></section>
 
     <!-- SEARCH -->

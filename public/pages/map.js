@@ -299,6 +299,9 @@ zuix.controller(function (cp) {
 				// Clean title
 				$('#offcanvas-1-title').text("")
 			})
+
+			// Rellenar Campo #
+
 		}
 
 		/* Guardar ----------------------------------------*/
@@ -414,6 +417,21 @@ zuix.controller(function (cp) {
 			marker.setLngLat(map.getCenter())
 		})
 
+		async function getImage(imageUrl, imageName) {
+			const response = await axios.get(imageUrl, { responseType: 'blob' });
+			const mimeType = response.headers['content-type'];
+			const imageFile = new File([response.data], imageName, { type: mimeType });
+			return imageFile;
+		}
+
+		//return a promise that resolves with a File instance
+		function urltoFile(url, filename, mimeType) {
+			return (fetch(url)
+				.then(function (res) { return res.arrayBuffer(); })
+				.then(function (buf) { return new File([buf], filename, { type: mimeType }); })
+			);
+		}
+
 		var offcanvas_nueva_nota_el = document.getElementById("offcanvas-nueva-nota")
 		const offcanvas_nueva_nota = new bootstrap.Offcanvas(offcanvas_nueva_nota_el)
 
@@ -438,6 +456,7 @@ zuix.controller(function (cp) {
 				img.classList.add("col-4");
 				img.classList.add("col-md-2");
 				img.classList.add("mx-1");
+				img.classList.add("nota-img");
 				img.classList.add("img-thumbnail")
 				img.setAttribute("style", "height:100px; object-fit: cover;")
 				img.file = file;
@@ -449,7 +468,7 @@ zuix.controller(function (cp) {
 					var exampleModal = document.getElementById('detalle-imagen-modal')
 					//console.log(e.target.src);
 					const index_of_this_el = Array.prototype.indexOf.call(watermarkPreview.children, e.target);
-					document.getElementById('borrar-img-btn').setAttribute("data-bs-index",index_of_this_el)
+					document.getElementById('borrar-img-btn').setAttribute("data-bs-index", index_of_this_el)
 
 					modal_body = document.getElementById('imagen-modal-preview')
 					modal_body.setAttribute('src', e.target.src)
@@ -469,17 +488,72 @@ zuix.controller(function (cp) {
 
 		/* Modal Detalles */
 		/* Boton Borrar IMG */
-		document.getElementById("borrar-img-btn").addEventListener("click",(e)=>{
+		document.getElementById("borrar-img-btn").addEventListener("click", (e) => {
 			const index = e.target.getAttribute("data-bs-index")
-			console.log("Borrar index",index)
+			console.log("Borrar index", index)
 			const children = document.getElementById("img-preview").children
 			children[index].remove()
-			var myModal = bootstrap.Modal.getInstance(document.getElementById('detalle-imagen-modal')) 
+			var myModal = bootstrap.Modal.getInstance(document.getElementById('detalle-imagen-modal'))
 			myModal.hide()
 		})
 
 
+		document.getElementById("guardar-nueva-nota-btn").addEventListener("click", () => {
+			// POST
+			const request = new XMLHttpRequest();
 
+			const formData = new FormData();
+
+			//const formElements = formElement.elements;
+
+			const data = { color: "red", texto: "test note", fecha: "2000-10-31T01:30:00.000-05:00" };
+
+
+			img_el = document.getElementsByClassName('nota-img');
+			audios_el = document.querySelector("audio-recorder").shadowRoot.querySelectorAll(".nota-audio")
+			console.log("AudioEL",audios_el)
+			img_sources = Array.from(img_el).map((imagen) => {
+				return imagen.getAttribute("src");
+			})
+
+			audio_promise = Array.from(audios_el).map((audio) => {
+				return urltoFile(audio.getAttribute("src"), uuidv4(), "audio/*")
+			})
+
+			console.log("AP",audio_promise)
+
+			promises = img_sources.map((img_src) => {
+				return urltoFile(img_src, uuidv4(), "image/*")
+			})
+
+			console.log(promises)
+
+			Promise.all(promises).then((files) => {
+				// Fotos OK
+				files.map(file => { formData.append(`files.fotos`, file, file.name) })
+
+				Promise.all(audio_promise).then((audio_files) => {
+					// Audio OK
+					audio_files.map(file => { formData.append(`files.audio`, file, file.name) })
+					
+					console.log(audio_files)
+					formData.append('data', JSON.stringify(data));
+
+					console.log("FORM DATA", formData)
+					request.open('POST', api_root + `/api/notas`);
+
+					request.send(formData);
+				})
+
+			})
+
+
+			//formData.append(`files.audio`, file, file.name);
+
+
+
+
+		})
 
 
 	}
