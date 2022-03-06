@@ -104,21 +104,31 @@
         <!--Add Nota Form-->
         <div class="offcanvas offcanvas-bottom h-50" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
                 id="offcanvas-nueva-nota" aria-labelledby="offcanvasBottomLabel">
-                <div class="offcanvas-header">
+                <div class="offcanvas-header py-1">
                         <button type="button" id="cerrar-nueva-nota-btn" class="btn-close text-reset"
                                 data-bs-dismiss="offcanvas" aria-label="Close"></button>
                         <h6 class="offcanvas-title">Nueva Nota</h6>
 
                         <button type="button" id="guardar-nueva-nota-btn" class="btn btn-success"
                                 aria-label="">Guardar</button>
-
+                        
                 </div>
-                <hr>
+                <hr class='my-0'>
                 <div class="offcanvas-body">
                         <div class="col">
                                 <div class="row">
-                                        <label for="nota-color-input" class="col-4">Color</label>
-                                        <input type="color" class="form-control form-control-color col-4" id="nota-color-input" value="#563d7c" title="Choose your color">
+                                        <label for="nota-color-input" class="col-2">Color</label>
+                                        <div class="btn-group col-10" role="group" id='nota-color-input' aria-label="Basic mixed styles example">
+                                                <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                                                <label class="btn btn-outline-danger btn-danger" for="btnradio1"></label>
+                                              
+                                                <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                                                <label class="btn btn-outline-warning btn-warning" for="btnradio2"></label>
+                                              
+                                                <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                                                <label class="btn btn-outline-success btn-success" for="btnradio3"></label>
+                                              </div>
+                                        <!-- <input type="color" class="form-control form-control-color col-4" id="nota-color-input" value="#563d7c" title="Choose your color"> -->
                                 </div>
                                 
                                 <hr>
@@ -145,7 +155,7 @@
 
                         <div class="row justify-content-start">
                                 <div class="col-12">
-                                        <button type="button" id="anadir-foto-btn" class="btn btn-success">Añadir un
+                                        <button type="button" id="anadir-problema-btn" class="btn btn-success">Añadir un
                                                 problema</button>
                                 </div>
                         </div>
@@ -170,6 +180,16 @@
         </div>
 
 
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-problemas" aria-labelledby="offcanvasRightLabel">
+                <div class="offcanvas-header">
+                  <h5>Problemas</h5>
+                  <button id='cerrar-problemas-btn' type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                  <button id='seleccionar-problemas-btn' type="button" class="btn" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                  ...
+                </div>
+              </div>
 
         <div data-ui-load="@lib/components/menu_overlay" data-ui-context="menu-overlay" class="boton-overlay"
                 data-o-button-color="blue">
@@ -179,8 +199,8 @@
                                 data-bs-toggle="offcanvas" data-bs-target="#offcanvasBottom"
                                 aria-controls="offcanvasBottom">Agregar un Campo</button>
                         <button class="btn btn-primary mo-item" id='nueva-nota-btn' type="button"
-                                data-bs-toggle="offcanvas" data-bs-target="#offcanvasBottom"
-                                aria-controls="offcanvasBottom">Agregar una Nota</button>
+                                data-bs-toggle="offcanvas" data-bs-target="#offcanvas-nueva-nota"
+                                aria-controls="#offcanvas-nueva-nota">Agregar una Nota</button>
                 </div>
 
 
