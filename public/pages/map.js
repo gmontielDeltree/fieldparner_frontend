@@ -540,10 +540,11 @@ zuix.controller(function (cp) {
 					formData.append('data', JSON.stringify(data));
 
 					console.log("FORM DATA", formData)
-					request.open('POST', api_root + `/api/notas`);
 
+					request.open('POST', api_root + `/api/notas`);
 					request.send(formData);
 				})
+				
 
 			})
 
@@ -558,5 +559,41 @@ zuix.controller(function (cp) {
 
 	}
 
-	const notas_layer = () => { }
+	const notas_layer = () => {
+
+
+
+		const marcador_from_nota = (nota) => {
+
+			const el = document.createElement('div');
+  			el.className = 'marker';
+			el.setAttribute("data-id", nota.id)
+
+
+			const posicion = nota.attributes.posicion
+			const color = nota.attributes.color
+			const color_2_style = {"red":"marker-red",
+									"green":"marker-green",
+									"yellow":"marker-yellow"
+								}
+			
+			el.classList.add(color_2_style[color])
+			
+			const marker = new mapboxgl.Marker(el)
+			.setLngLat([posicion.lng, posicion.lat])
+			.addTo(map);
+
+			el.addEventListener('click',(e)=>{console.log("Click en Nota", nota)})
+			
+		}
+
+		axios.get(api_root + '/api/notas').then( (response) => {
+			notas = response.data.data
+			notas.map(marcador_from_nota)
+
+		})
+		.catch((e)=>{
+			console.log("ERROR al get Notas", e)
+		})
+	 }
 })

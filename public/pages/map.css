@@ -52,3 +52,22 @@
 	    .img-wrap:hover .img-close {
 		opacity: 1;
 	    }
+		.marker {
+			background-image: url('assets/images/icons/nota-red.png');
+			background-size: cover;
+			width: 24px;
+			height: 24px;
+			cursor: pointer;
+		  }
+		
+		 .marker-red {
+			background-image: url('assets/images/icons/nota-red.png');
+		  }
+		  
+		  .marker-green {
+			background-image: url('assets/images/icons/nota-green.png');
+		  }
+		  .marker-yellow {
+			background-image: url('assets/images/icons/nota-yellow.png');
+		  }
+		  
