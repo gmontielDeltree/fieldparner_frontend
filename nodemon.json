@@ -1,4 +1,4 @@
 {
-    "watch": [".", "public/"],
+    "watch": [".", "./public/","./public/pages"],
     "ext": "js,html"
 }

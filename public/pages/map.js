@@ -94,9 +94,9 @@ zuix.controller(function (cp) {
 				})
 
 				lotes_source.setData(lotes_collection)
-				console.log("Redraw Campos",result)
+				console.log("Redraw Campos", result)
 			})
-			.catch(err => { console.log(err)})
+				.catch(err => { console.log(err) })
 		}
 
 		/* Redraw on Changes callback */
@@ -107,7 +107,7 @@ zuix.controller(function (cp) {
 
 		// First Draw
 		redraw_map();
-		
+
 
 		// axios.get(api_root + "/api/campos").then(
 		// 	function (response) {
@@ -448,14 +448,9 @@ zuix.controller(function (cp) {
 	}
 
 	const notas_agregar_ctrl = () => {
-		// Marker
-		const nota_marker = new mapboxgl.Marker()
-			.setLngLat(map.getCenter())
-			.addTo(map);
 
-		map.on("move", () => {
-			nota_marker.setLngLat(map.getCenter())
-		})
+
+		var nota_marker;
 
 		async function getImage(imageUrl, imageName) {
 			const response = await axios.get(imageUrl, { responseType: 'blob' });
@@ -476,6 +471,23 @@ zuix.controller(function (cp) {
 		const offcanvas_nueva_nota = new bootstrap.Offcanvas(offcanvas_nueva_nota_el)
 
 		$('#nueva-nota-btn').click(() => {
+			// Marker
+			nota_marker = new mapboxgl.Marker()
+				.setLngLat(map.getCenter())
+				.addTo(map);
+
+			map.on("move", () => {
+				nota_marker.setLngLat(map.getCenter())
+			})
+
+			// Reset/Clean controls
+			document.getElementById("img-preview").textContent = ''
+			document.getElementById('nota-comentario-input').value = ''
+			document.getElementById('audio-div').textContent = ''
+			new_audio = document.createElement('audio-recorder');
+			document.getElementById('audio-div').append(new_audio)
+
+
 			offcanvas_nueva_nota.show()
 		})
 
@@ -546,12 +558,14 @@ zuix.controller(function (cp) {
 
 			//const formElements = formElement.elements;
 
-			const nota = { _id:"nota" + uuidv4(), 
-						color: "red", 
-						texto: "test note", 
-						fecha: "2000-10-31T01:30:00.000-05:00", 
-						posicion: nota_marker.getLngLat(),
-						_attachments: {} };
+			const nota = {
+				_id: "nota" + uuidv4(),
+				color: "red",
+				texto: "test note",
+				fecha: "2000-10-31T01:30:00.000-05:00",
+				posicion: nota_marker.getLngLat(),
+				_attachments: {}
+			};
 
 
 			img_el = document.getElementsByClassName('nota-img');
@@ -577,23 +591,23 @@ zuix.controller(function (cp) {
 			Promise.all(promises).then((files) => {
 				// Fotos OK
 				//files.map(file => { formData.append(`files.fotos`, file, file.name) })
-				files.map(file => { nota._attachments["foto_" + uuidv4()] = {content_type:"image/*", data:file}})
-				
+				files.map(file => { nota._attachments["foto_" + uuidv4()] = { content_type: "image/*", data: file } })
+
 				Promise.all(audio_promise).then((audio_files) => {
-					audio_files.map(file => { nota._attachments["audio_" + uuidv4()] = {content_type:"audio/*", data:file}})
-					notas_db.put(nota).then().catch(err=>console.log(err))
+					audio_files.map(file => { nota._attachments["audio_" + uuidv4()] = { content_type: "audio/*", data: file } })
+					notas_db.put(nota).then().catch(err => console.log(err))
 
 					// 	// Audio OK
-				// 	audio_files.map(file => { formData.append(`files.audio`, file, file.name) })
+					// 	audio_files.map(file => { formData.append(`files.audio`, file, file.name) })
 
-				// 	console.log(audio_files)
-				// 	formData.append('data', JSON.stringify(nota));
+					// 	console.log(audio_files)
+					// 	formData.append('data', JSON.stringify(nota));
 
-				// 	console.log("FORM DATA", formData)
+					// 	console.log("FORM DATA", formData)
 
-				// 	request.open('POST', api_root + `/api/notas`);
-				// 	request.send(formData);
-			  })
+					// 	request.open('POST', api_root + `/api/notas`);
+					// 	request.send(formData);
+				})
 
 
 			})
@@ -613,6 +627,7 @@ zuix.controller(function (cp) {
 
 		const offcanvas_nota = new bootstrap.Offcanvas(document.getElementById('offcanvas-nota'))
 
+
 		// axios.get(api_root + '/api/notas').then((response) => {
 		// 	notas = response.data.data
 		// 	notas.map(marcador_from_nota)
@@ -621,22 +636,39 @@ zuix.controller(function (cp) {
 		// 	.catch((e) => {
 		// 		console.log("ERROR al get Notas", e)
 		// 	})
+		const redraw_notas = () => {
+			// Remove markers 
+			const markers_nota = document.querySelectorAll('.marker-nota');
 
-		notas_db.allDocs({
-			include_docs: true,
-			attachments: true
-		}).then((results)=>{
-			console.log("Notas", results)
-			results.rows.map(marcador_from_nota)
-		}).catch((err)=>{console.log(err)})
+			markers_nota.forEach(marker => {
+				marker.remove();
+			});
+
+			//Releer
+
+			notas_db.allDocs({
+				include_docs: true,
+				attachments: true,
+				binary: true
+			}).then((results) => {
+				console.log("Notas", results)
+				results.rows.map(marcador_from_nota)
+			}).catch((err) => { console.log(err) })
+		}
+
+		redraw_notas();
+
+		notas_db.changes({
+			since: 'now',
+			live: true
+		}).on('change', redraw_notas);
+
 
 		const marcador_from_nota = (nota) => {
 
 			const el = document.createElement('div');
-			el.className = 'marker';
+			el.className = 'marker marker-nota';
 			el.setAttribute("data-id", nota._id)
-
-			
 
 			const posicion = nota.doc.posicion
 			const color = nota.doc.color
@@ -664,19 +696,35 @@ zuix.controller(function (cp) {
 			const texto = document.getElementById('nota-texto')
 			const imagenes = document.getElementById('nota-img-preview')
 			const problemas = document.getElementById('nota-problemas')
+			const audios = document.getElementById('nota-audio-players')
 
+			imagenes.textContent = ''
+			audios.textContent = ''
+
+			/* Poblar Imagenes */
 			console.log(nota)
 			for (const [key, att] of Object.entries(nota.doc._attachments)) {
 				console.log(`${key}: ${att}`);
-				if(key.includes("foto")){
+				if (key.includes("foto")) {
 					console.log(att.data)
 					const img = document.createElement('img')
-					img.setAttribute("src", att.data)
+					img.classList.add("col-4");
+					img.classList.add("col-md-2");
+					img.classList.add("mx-1");
+					img.classList.add("img-thumbnail")
+					img.setAttribute("style", "height:100px; object-fit: cover;")
+					//img.file = att.data;
+					img.setAttribute("src", URL.createObjectURL(att.data))
 					imagenes.append(img)
-				}else if(key.includes("audio")){
-
+				} else if (key.includes("audio")) {
+					const audio = document.createElement('audio')
+					audio.setAttribute('controls','')
+					const source = document.createElement('source')
+					source.src = URL.createObjectURL(att.data)
+					audio.append(source)
+					audios.append(audio)
 				}
-			  }
+			}
 			offcanvas_nota.show()
 		}
 
