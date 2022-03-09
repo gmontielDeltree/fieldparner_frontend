@@ -5,6 +5,7 @@ zuix.controller(function (cp) {
 	const zx = zuix; // shorthand
 	let itemsList;
 	let map;
+	let cantidad_de_campos;
 
 	var yourJWTToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ1NDczMjgzLCJleHAiOjE2NDgwNjUyODN9.zTdkovErL8Qo8LLDlKRcZ4kK1T53L2c3VpT6_Jq8qTE"
 	yourConfig = {
@@ -74,29 +75,63 @@ zuix.controller(function (cp) {
 		lotes_source = map.getSource('lotes');
 		lotes_collection = emptyGJ
 
-		axios.get(api_root + "/api/campos").then(
-			function (response) {
-				console.log("API CAMPOS", response.data.data)
-				lotes_collection.features = response.data.data.map((campo) => {
-					campo_geojson = campo.attributes.geojson
+		const redraw_map = () => {
+			campos_db.allDocs({
+				include_docs: true,
+				attachments: true
+			}).then((result) => {
+				cantidad_de_campos = result.total_rows
+				lotes_collection.features = result.rows.map((campo) => {
+					campo_geojson = campo.doc.campo_geojson
 					campo_geojson.properties = {
-						id: campo.id,
-						nombre: campo.attributes.nombre,
-						cultivo: campo.attributes.cultivo
+						id: campo.doc._id,
+						rev: campo.doc._rev,
+						nombre: campo.doc.nombre,
+						//cultivo: campo.attributes.cultivo
+						//doc : campo.doc
 					}
 					return campo_geojson;
 				})
 
 				lotes_source.setData(lotes_collection)
-			}
-		)
-			.catch(function (error) {
-				// handle error
-				console.log(error);
+				console.log("Redraw Campos",result)
 			})
-			.then(function () {
-				// always executed
-			});
+			.catch(err => { console.log(err)})
+		}
+
+		/* Redraw on Changes callback */
+		campos_db.changes({
+			since: 'now',
+			live: true
+		}).on('change', redraw_map);
+
+		// First Draw
+		redraw_map();
+		
+
+		// axios.get(api_root + "/api/campos").then(
+		// 	function (response) {
+		// 		console.log("API CAMPOS", response.data.data)
+		// 		lotes_collection.features = response.data.data.map((campo) => {
+		// 			campo_geojson = campo.attributes.geojson
+		// 			campo_geojson.properties = {
+		// 				id: campo.id,
+		// 				nombre: campo.attributes.nombre,
+		// 				cultivo: campo.attributes.cultivo
+		// 			}
+		// 			return campo_geojson;
+		// 		})
+
+		// 		lotes_source.setData(lotes_collection)
+		// 	}
+		// )
+		// 	.catch(function (error) {
+		// 		// handle error
+		// 		console.log(error);
+		// 	})
+		// 	.then(function () {
+		// 		// always executed
+		// 	});
 
 
 		map.addLayer({
@@ -310,7 +345,6 @@ zuix.controller(function (cp) {
 			var offcanvas = document.getElementById('offcanvasCampoForm')
 			offcanvas.classList.remove('show')
 
-
 			nombre = $("#inputNombreCampo").val()
 			variedad = $("#variedad-input").val()
 			cultivo = $("#cultivo-btn").text()
@@ -321,9 +355,15 @@ zuix.controller(function (cp) {
 			console.log("GeoJSON", campo_geojson)
 			console.log("Guardar Campo '", nombre, "' con", cultivo, "variedad", variedad)
 
-			api_post_campo(nombre, campo_geojson, id, variedad)
+			//api_post_campo(nombre, campo_geojson, id, variedad)
 
-
+			campos_db.put({ _id: "campos_" + (nombre), nombre: nombre, campo_geojson: campo_geojson }, (err, result) => {
+				if (!err) {
+					console.log('Successfully posted a Campo!');
+				} else {
+					console.log(err)
+				}
+			})
 			salir_edit_mode()
 		})
 
@@ -409,12 +449,12 @@ zuix.controller(function (cp) {
 
 	const notas_agregar_ctrl = () => {
 		// Marker
-		const marker = new mapboxgl.Marker()
+		const nota_marker = new mapboxgl.Marker()
 			.setLngLat(map.getCenter())
 			.addTo(map);
 
 		map.on("move", () => {
-			marker.setLngLat(map.getCenter())
+			nota_marker.setLngLat(map.getCenter())
 		})
 
 		async function getImage(imageUrl, imageName) {
@@ -506,12 +546,17 @@ zuix.controller(function (cp) {
 
 			//const formElements = formElement.elements;
 
-			const data = { color: "red", texto: "test note", fecha: "2000-10-31T01:30:00.000-05:00" };
+			const nota = { _id:"nota" + uuidv4(), 
+						color: "red", 
+						texto: "test note", 
+						fecha: "2000-10-31T01:30:00.000-05:00", 
+						posicion: nota_marker.getLngLat(),
+						_attachments: {} };
 
 
 			img_el = document.getElementsByClassName('nota-img');
 			audios_el = document.querySelector("audio-recorder").shadowRoot.querySelectorAll(".nota-audio")
-			console.log("AudioEL",audios_el)
+			console.log("AudioEL", audios_el)
 			img_sources = Array.from(img_el).map((imagen) => {
 				return imagen.getAttribute("src");
 			})
@@ -520,7 +565,7 @@ zuix.controller(function (cp) {
 				return urltoFile(audio.getAttribute("src"), uuidv4(), "audio/*")
 			})
 
-			console.log("AP",audio_promise)
+			console.log("AP", audio_promise)
 
 			promises = img_sources.map((img_src) => {
 				return urltoFile(img_src, uuidv4(), "image/*")
@@ -528,23 +573,28 @@ zuix.controller(function (cp) {
 
 			console.log(promises)
 
+
 			Promise.all(promises).then((files) => {
 				// Fotos OK
-				files.map(file => { formData.append(`files.fotos`, file, file.name) })
-
-				Promise.all(audio_promise).then((audio_files) => {
-					// Audio OK
-					audio_files.map(file => { formData.append(`files.audio`, file, file.name) })
-					
-					console.log(audio_files)
-					formData.append('data', JSON.stringify(data));
-
-					console.log("FORM DATA", formData)
-
-					request.open('POST', api_root + `/api/notas`);
-					request.send(formData);
-				})
+				//files.map(file => { formData.append(`files.fotos`, file, file.name) })
+				files.map(file => { nota._attachments["foto_" + uuidv4()] = {content_type:"image/*", data:file}})
 				
+				Promise.all(audio_promise).then((audio_files) => {
+					audio_files.map(file => { nota._attachments["audio_" + uuidv4()] = {content_type:"audio/*", data:file}})
+					notas_db.put(nota).then().catch(err=>console.log(err))
+
+					// 	// Audio OK
+				// 	audio_files.map(file => { formData.append(`files.audio`, file, file.name) })
+
+				// 	console.log(audio_files)
+				// 	formData.append('data', JSON.stringify(nota));
+
+				// 	console.log("FORM DATA", formData)
+
+				// 	request.open('POST', api_root + `/api/notas`);
+				// 	request.send(formData);
+			  })
+
 
 			})
 
@@ -561,39 +611,76 @@ zuix.controller(function (cp) {
 
 	const notas_layer = () => {
 
+		const offcanvas_nota = new bootstrap.Offcanvas(document.getElementById('offcanvas-nota'))
 
+		// axios.get(api_root + '/api/notas').then((response) => {
+		// 	notas = response.data.data
+		// 	notas.map(marcador_from_nota)
+
+		// })
+		// 	.catch((e) => {
+		// 		console.log("ERROR al get Notas", e)
+		// 	})
+
+		notas_db.allDocs({
+			include_docs: true,
+			attachments: true
+		}).then((results)=>{
+			console.log("Notas", results)
+			results.rows.map(marcador_from_nota)
+		}).catch((err)=>{console.log(err)})
 
 		const marcador_from_nota = (nota) => {
 
 			const el = document.createElement('div');
-  			el.className = 'marker';
-			el.setAttribute("data-id", nota.id)
+			el.className = 'marker';
+			el.setAttribute("data-id", nota._id)
 
-
-			const posicion = nota.attributes.posicion
-			const color = nota.attributes.color
-			const color_2_style = {"red":"marker-red",
-									"green":"marker-green",
-									"yellow":"marker-yellow"
-								}
 			
+
+			const posicion = nota.doc.posicion
+			const color = nota.doc.color
+			const color_2_style = {
+				"red": "marker-red",
+				"green": "marker-green",
+				"yellow": "marker-yellow"
+			}
+
 			el.classList.add(color_2_style[color])
-			
-			const marker = new mapboxgl.Marker(el)
-			.setLngLat([posicion.lng, posicion.lat])
-			.addTo(map);
 
-			el.addEventListener('click',(e)=>{console.log("Click en Nota", nota)})
-			
+			const marker = new mapboxgl.Marker(el)
+				.setLngLat([posicion.lng, posicion.lat])
+				.addTo(map);
+
+			el.addEventListener('click', (e) => {
+				console.log("Click en Nota", nota)
+				nota_mostrar(nota)
+			})
+
 		}
 
-		axios.get(api_root + '/api/notas').then( (response) => {
-			notas = response.data.data
-			notas.map(marcador_from_nota)
+		const nota_mostrar = (nota) => {
+			const header = document.getElementById('offcanvas-nota-header');
+			const texto = document.getElementById('nota-texto')
+			const imagenes = document.getElementById('nota-img-preview')
+			const problemas = document.getElementById('nota-problemas')
 
-		})
-		.catch((e)=>{
-			console.log("ERROR al get Notas", e)
-		})
-	 }
+			console.log(nota)
+			for (const [key, att] of Object.entries(nota.doc._attachments)) {
+				console.log(`${key}: ${att}`);
+				if(key.includes("foto")){
+					console.log(att.data)
+					const img = document.createElement('img')
+					img.setAttribute("src", att.data)
+					imagenes.append(img)
+				}else if(key.includes("audio")){
+
+				}
+			  }
+			offcanvas_nota.show()
+		}
+
+
+
+	}
 })

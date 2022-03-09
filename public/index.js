@@ -5,6 +5,8 @@ let viewPager;
 let topicIndicator;
 let topicButtons;
 let viewPagerSensores;
+var campos_db;
+var notas_db;
 
 zuix.using('script', './service-worker.js');
 zuix.using('style', '//zuixjs.github.io/zkit/css/flex-layout-attribute.min.css');
@@ -122,3 +124,6 @@ function showPage(i) {
 
 // Turn off debug output
 window.zuixNoConsoleOutput = true;
+
+campos_db = new PouchDB('campos');
+notas_db = new PouchDB('notas');
