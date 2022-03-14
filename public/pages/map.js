@@ -650,7 +650,7 @@ zuix.controller(function (cp) {
 		})
 
 
-		$('#nota-fecha-btn').pickadate()
+		
 	}
 
 	const notas_layer = () => {
