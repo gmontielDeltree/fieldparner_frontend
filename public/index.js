@@ -127,3 +127,19 @@ window.zuixNoConsoleOutput = true;
 
 campos_db = new PouchDB('campos');
 notas_db = new PouchDB('notas');
+
+var remote_campos_db = new PouchDB('https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_db')
+
+campos_db.sync(remote_campos_db, {
+    live: true,
+    retry: true
+  }).on('change', function (change) {
+    // yo, something changed!
+  }).on('paused', function (info) {
+    // replication was paused, usually because of a lost connection
+  }).on('active', function (info) {
+    // replication was resumed
+  }).on('error', function (err) {
+    // totally unhandled error (shouldn't happen)
+  });
+  

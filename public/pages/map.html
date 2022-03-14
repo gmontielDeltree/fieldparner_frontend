@@ -172,12 +172,12 @@
                         <div>
                                 <div class="row">
                                         <label for="fecha-btn" class="form-label col-8">Fecha</label>
-                                        <button type="button" id="fecha-btn"
+                                        <button type="button" id="nota-fecha-btn"
                                                 class="btn btn-secondary col-4">Hoy</button>
                                 </div>
                                 <div class="row">
                                         <label for="hora-btn" class="form-label col-8">Hora</label>
-                                        <button type="button" id="hora-btn"
+                                        <button type="button" id="nota-hora-btn"
                                                 class="btn btn-secondary col-4">11:22</button>
                                 </div>
                         </div>
@@ -254,6 +254,23 @@
                         <div class="row" id='nota-audio-players'></div>
                         <div class="row" id='nota-problemas'></div>
                         <div class="row" id='nota-campo'></div>
+                </div>
+        </div>
+        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvas-campo-detalle"
+                aria-labelledby="offcanvas-campo-header">
+                <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="offcanvas-campo-header">Campo</h5>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                                aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body small col">
+                        <div class="row" id='campo-cultivo'></div>
+                        <div class="row mb-2" id='campo-img-preview'>
+                        </div>
+                        <div class="row" id='campo-audio-players'></div>
+                        <div class="row" id='campo-problemas'></div>
+                        <div class="row" id='campo-campo'></div>
+                        <button class="btn btn-danger" id="eliminar-campo-btn">Eliminar Campo</button>
                 </div>
         </div>
 </div>

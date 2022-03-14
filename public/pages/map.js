@@ -84,8 +84,8 @@ zuix.controller(function (cp) {
 				lotes_collection.features = result.rows.map((campo) => {
 					campo_geojson = campo.doc.campo_geojson
 					campo_geojson.properties = {
-						id: campo.doc._id,
-						rev: campo.doc._rev,
+						id: campo.doc['_id'],
+						rev: campo.doc['_rev'],
 						nombre: campo.doc.nombre,
 						//cultivo: campo.attributes.cultivo
 						//doc : campo.doc
@@ -148,13 +148,38 @@ zuix.controller(function (cp) {
 			}
 		});
 
+		const offcanvas_campo_detalle_el = document.getElementById('offcanvas-campo-detalle')
+		
+		/** Campo Detalle JS */
+		const offcanvas_campo_detalle = new bootstrap.Offcanvas(offcanvas_campo_detalle_el) /* Campo Detalle JS */
 
+		/** Muestra El offcanvas con los detalles del campo */
+		const showCampoOffcanvas = (id,rev)=>{
+			campos_db.get(id).then((result)=>{
+				document.getElementById('eliminar-campo-btn').setAttribute("data-id",id)
+				document.getElementById('eliminar-campo-btn').setAttribute("data-rev",rev)
+				offcanvas_campo_detalle.show()
+			})
+		}
+
+		document.getElementById('eliminar-campo-btn').addEventListener('click',(e)=>{
+			campo_id = e.target.getAttribute('data-id')
+			campo_rev = e.target.getAttribute('data-rev')
+			console.log("Borrar Campo _id", campo_id, 'rev', campo_rev)
+			campos_db.remove(campo_id, campo_rev)
+			offcanvas_campo_detalle.hide()
+		})
+
+		/** Mapbox handler para mostrar el offcanvas de detalles */
 		map.on('click', 'lotes', (e) => {
-			new mapboxgl.Popup()
-				.setLngLat(e.lngLat)
-				.setHTML(e.features[0].properties.nombre)
-				.addTo(map);
+			console.log("Click en Campo", e.features[0])
+			showCampoOffcanvas(e.features[0].properties.id, e.features[0].properties.rev)
+			// new mapboxgl.Popup()
+			// 	.setLngLat(e.lngLat)
+			// 	.setHTML(e.features[0].properties.nombre)
+			// 	.addTo(map);
 		});
+
 
 
 
@@ -470,6 +495,8 @@ zuix.controller(function (cp) {
 		var offcanvas_nueva_nota_el = document.getElementById("offcanvas-nueva-nota")
 		const offcanvas_nueva_nota = new bootstrap.Offcanvas(offcanvas_nueva_nota_el)
 
+		offcanvas_nueva_nota_el.addEventListener('hide.bs.offcanvas',()=>{nota_marker.remove()})
+
 		$('#nueva-nota-btn').click(() => {
 			// Marker
 			nota_marker = new mapboxgl.Marker()
@@ -597,6 +624,8 @@ zuix.controller(function (cp) {
 					audio_files.map(file => { nota._attachments["audio_" + uuidv4()] = { content_type: "audio/*", data: file } })
 					notas_db.put(nota).then().catch(err => console.log(err))
 
+					offcanvas_nueva_nota.hide()
+
 					// 	// Audio OK
 					// 	audio_files.map(file => { formData.append(`files.audio`, file, file.name) })
 
@@ -621,6 +650,7 @@ zuix.controller(function (cp) {
 		})
 
 
+		$('#nota-fecha-btn').pickadate()
 	}
 
 	const notas_layer = () => {
