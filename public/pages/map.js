@@ -4,7 +4,7 @@ zuix.controller(function (cp) {
 
 	const zx = zuix; // shorthand
 	let itemsList;
-	let map;
+	// let map;
 	let cantidad_de_campos;
 
 	var yourJWTToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ1NDczMjgzLCJleHAiOjE2NDgwNjUyODN9.zTdkovErL8Qo8LLDlKRcZ4kK1T53L2c3VpT6_Jq8qTE"

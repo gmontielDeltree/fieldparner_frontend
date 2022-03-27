@@ -7,6 +7,7 @@ let topicButtons;
 let viewPagerSensores;
 var campos_db;
 var notas_db;
+var map;
 
 zuix.using('script', './service-worker.js');
 zuix.using('style', '//zuixjs.github.io/zkit/css/flex-layout-attribute.min.css');
