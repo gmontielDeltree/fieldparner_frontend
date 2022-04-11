@@ -31,6 +31,14 @@ zuix.controller(function (cp) {
 
 	let touchEvent = 'ontouchstart' in window ? 'touchstart' : 'click';
 
+	async function hashMessage(message) {
+		const msgUint8 = new TextEncoder().encode(message);                           // encode as (utf-8) Uint8Array
+		const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
+		const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
+		const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
+		return hashHex;
+	}
+
 	cp.create = function () {
 		mapboxgl.accessToken = 'pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw';
 
@@ -58,20 +66,20 @@ zuix.controller(function (cp) {
 			console.log("map tiler!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			map.addSource('miraster', {
 				"type": "raster",
-				"url":'https://api.maptiler.com/tiles/52111742-eec3-4342-9a30-e0eb810ce8aa/tiles.json?key=Lluzf6cp5LGOrVxCWNqc',
+				"url": 'https://api.maptiler.com/tiles/52111742-eec3-4342-9a30-e0eb810ce8aa/tiles.json?key=Lluzf6cp5LGOrVxCWNqc',
 				//"tiles": ["https://api.maptiler.com/tiles/52111742-eec3-4342-9a30-e0eb810ce8aa/{z}/{x}/{y}.png?key=Lluzf6cp5LGOrVxCWNqc"],
-				}
-			 )
-			
-			 map.addLayer({
+			}
+			)
+
+			map.addLayer({
 				"id": "mirender",
-				"type":'raster',
-				"source" : 'miraster',
+				"type": 'raster',
+				"source": 'miraster',
 				'minzoom': 0,
 				'maxzoom': 24,
 				'layout': {
 					'visibility': 'visible'
-				  },
+				},
 			});
 
 			campos_layer()
@@ -167,28 +175,33 @@ zuix.controller(function (cp) {
 		});
 
 		const offcanvas_campo_detalle_el = document.getElementById('offcanvas-campo-detalle')
-		
+
 		/** Campo Detalle JS */
 		const offcanvas_campo_detalle = new bootstrap.Offcanvas(offcanvas_campo_detalle_el) /* Campo Detalle JS */
 
 		/** Muestra El offcanvas con los detalles del campo */
-		const showCampoOffcanvas = (id,rev)=>{
-			campos_db.get(id).then((result)=>{
-				console.log("Campo desde DB: ",result)
+		const showCampoOffcanvas = (id, rev) => {
+			campos_db.get(id).then(async (result) => {
+				console.log("Campo desde DB: ", result)
 				// hashear result.campo_geojson.geometry
-				/*
-				 	ndvi_db.get(hash).then((result)=>{
-						// Populate
-						// ndvi_gallery(result) 
-						console.log(result)
-        			})*/
-				document.getElementById('eliminar-campo-btn').setAttribute("data-id",id)
-				document.getElementById('eliminar-campo-btn').setAttribute("data-rev",rev)
+				hash_name = await hashMessage(JSON.stringify(result.campo_geojson.geometry))
+				console.log("HashName", hash_name)
+				ndvi_db.get(hash_name).then((result) => {
+					// Populate
+					// ndvi_gallery(result)
+					console.log("El campo tiene una entrada en NDVI")
+					console.log(result)
+					ndvi_gallery(result)
+
+				}).catch((e) => console.log("El campo no tiene entrada en NDVI o hubo un error", e))
+
+				document.getElementById('eliminar-campo-btn').setAttribute("data-id", id)
+				document.getElementById('eliminar-campo-btn').setAttribute("data-rev", rev)
 				offcanvas_campo_detalle.show()
 			})
 		}
 
-		document.getElementById('eliminar-campo-btn').addEventListener('click',(e)=>{
+		document.getElementById('eliminar-campo-btn').addEventListener('click', (e) => {
 			campo_id = e.target.getAttribute('data-id')
 			campo_rev = e.target.getAttribute('data-rev')
 			console.log("Borrar Campo _id", campo_id, 'rev', campo_rev)
@@ -196,8 +209,11 @@ zuix.controller(function (cp) {
 			offcanvas_campo_detalle.hide()
 		})
 
-		/** Mapbox handler para mostrar el offcanvas de detalles */
+		/** Mapbox handler para mostrar el offcanvas de detalles  'lotes', */
 		map.on('click', 'lotes', (e) => {
+
+
+			// NDVI not visible
 			console.log("Click en Campo", e.features[0])
 			showCampoOffcanvas(e.features[0].properties.id, e.features[0].properties.rev)
 			// new mapboxgl.Popup()
@@ -207,7 +223,182 @@ zuix.controller(function (cp) {
 		});
 
 
+		offcanvas_campo_detalle_el.addEventListener('hide.bs.offcanvas', function () {
+			// do something...
+			if (map.getLayer('ndvi-layer')) {
+				map.setLayoutProperty(
+					'ndvi-layer',
+					'visibility',
+					'none'
+				)
+				map.moveLayer('lotes')
+			}
 
+			const overlay = document.getElementById('map-overlay');
+			overlay.style.display = 'none';
+		})
+
+		/**
+		 * Renderiza la galleria de NDVI en los detalles del campo
+		 * @param {} result 
+		 */
+		const ndvi_gallery = async (result) => {
+
+			/**
+			 * NDVI Layer Visible
+			 */
+			if (map.getLayer('ndvi-layer')) {
+				map.setLayoutProperty(
+					'ndvi-layer',
+					'visibility',
+					'visible'
+				)
+
+				map.moveLayer('ndvi-layer')
+			}
+
+
+
+			const create_update_ndvi_source = (img_src, bbox) => {
+				// If e
+				if (map.getSource('ndvi')) {
+					// EXISTE la source -> Update
+					const mySource = map.getSource('ndvi');
+					mySource.updateImage({
+						url: img_src,
+						coordinates: bbox
+					});
+				} else {
+					// No existe la source crear
+					map.addSource('ndvi', {
+						'type': 'image',
+						'url': img_src,
+						'coordinates': bbox
+					});
+
+					map.addLayer({
+						id: 'ndvi-layer',
+						'type': 'raster',
+						'source': 'ndvi',
+						'paint': {
+							'raster-fade-duration': 0
+						}
+					});
+
+					map.moveLayer('ndvi-layer')
+
+
+				}
+			}
+
+			const update_overlay_info = (info) => {
+				const overlay = document.getElementById('map-overlay');
+
+				const title_div = document.createElement('div')
+
+				const title = document.createElement('strong');
+				title.textContent = "Estadisticas "
+				title_div.appendChild(title)
+
+				if(info.std < 0.1 && info.media < 0.1){
+					const condicion = document.createElement('span');
+					condicion.textContent = "Nubosidad Severa"
+					condicion.classList.add("badge")
+					condicion.classList.add("bg-danger")
+					// condicion.classList.add("text-dark")
+					title_div.appendChild(condicion)
+				}else if(info.min < 0){
+					const condicion = document.createElement('span');
+					condicion.textContent = "Nubosidad"
+					condicion.classList.add("badge")
+					condicion.classList.add("bg-warning")
+					condicion.classList.add("text-dark")
+					title_div.appendChild(condicion)
+				}
+				
+				const media = document.createElement('div');
+				media.textContent =	'Promedio: ' + info.media.toFixed(2);
+				const std = document.createElement('div');
+				std.textContent = 'Desviación Estándar: ' + info.std.toFixed(2);
+				
+				const max = document.createElement('div');
+				max.textContent = 'Máximo: ' + info.max.toFixed(2);
+
+				const min = document.createElement('div');
+				min.textContent = 'Mínimo: ' + info.min.toFixed(2);
+				
+				overlay.innerHTML = '';
+				overlay.style.display = 'block';
+
+				overlay.appendChild(title_div);
+				
+				
+
+				overlay.appendChild(media);
+				overlay.appendChild(std);
+				overlay.appendChild(max);
+				overlay.appendChild(min);
+			}
+
+			/**
+			 * Dibuja la miniatura del NDVI
+			 * @param {ob} observacion
+			 */
+			const renderNdviThumb = (ob) => {
+
+				//bbox, fecha, png_url
+				const ndvi_div = document.getElementById('campo-ndvi')
+				const fecha = ob.fecha
+				const img_src = "images/ndvi/" + ob.png_url
+
+
+
+
+				const year = +fecha.substring(0, 4);
+				const month = +fecha.substring(4, 6);
+				const day = +fecha.substring(6, 8);
+
+				const obs_date = new Date(year, month - 1, day);
+				const dias_diff = Math.floor(((new Date()).getTime() - obs_date.getTime()) / (1000 * 3600 * 24))
+
+				bbox = [[ob.bbox.left, ob.bbox.top],
+				[ob.bbox.right, ob.bbox.top],
+				[ob.bbox.right, ob.bbox.bottom],
+				[ob.bbox.left, ob.bbox.bottom]]
+
+				/**
+				  * Dibuja el render sobre el mapa
+				  */
+
+				const ndvi_on_click = (e) => {
+					create_update_ndvi_source(img_src, bbox)
+					update_overlay_info(ob.estadisticas)
+				}
+
+				card_html = `<div class="card bg-dark text-white">
+							<img src="${img_src}" class="card-img" alt="...">
+							<div class="card-img-overlay">
+								<h5 class="card-title">${fecha}</h5>
+								<p class="card-text">Hace ${dias_diff} dias</p>
+							</div>
+							</div>`
+				card_element = document.createElement('div')
+				card_element.classList.add('col-2')
+				card_element.innerHTML = card_html
+				card_element.addEventListener('click', (e) => ndvi_on_click(e))
+				ndvi_div.appendChild(card_element)
+
+
+			}
+
+			// Borro Lo anterior
+			ndvi_div = document.getElementById('campo-ndvi')
+			ndvi_div.textContent = ''
+
+			/** Aplico para cada observacion */
+			obs = result.obs
+			obs.forEach(ob => renderNdviThumb(ob))
+		}
 
 	}
 
@@ -521,7 +712,7 @@ zuix.controller(function (cp) {
 		var offcanvas_nueva_nota_el = document.getElementById("offcanvas-nueva-nota")
 		const offcanvas_nueva_nota = new bootstrap.Offcanvas(offcanvas_nueva_nota_el)
 
-		offcanvas_nueva_nota_el.addEventListener('hide.bs.offcanvas',()=>{nota_marker.remove()})
+		offcanvas_nueva_nota_el.addEventListener('hide.bs.offcanvas', () => { nota_marker.remove() })
 
 		$('#nueva-nota-btn').click(() => {
 			// Marker
@@ -676,7 +867,7 @@ zuix.controller(function (cp) {
 		})
 
 
-		
+
 	}
 
 	const notas_layer = () => {
@@ -774,7 +965,7 @@ zuix.controller(function (cp) {
 					imagenes.append(img)
 				} else if (key.includes("audio")) {
 					const audio = document.createElement('audio')
-					audio.setAttribute('controls','')
+					audio.setAttribute('controls', '')
 					const source = document.createElement('source')
 					source.src = URL.createObjectURL(att.data)
 					audio.append(source)

@@ -258,14 +258,15 @@
                         <div class="row" id='nota-campo'></div>
                 </div>
         </div>
-        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvas-campo-detalle"
-                aria-labelledby="offcanvas-campo-header">
+        <div class="offcanvas offcanvas-bottom h-50" tabindex="-1" id="offcanvas-campo-detalle"
+                aria-labelledby="offcanvas-campo-header" data-bs-backdrop="false">
                 <div class="offcanvas-header">
                         <h5 class="offcanvas-title" id="offcanvas-campo-header">Campo</h5>
                         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
                                 aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body small col">
+                        <div class="row no-wrap" id='campo-ndvi'></div>
                         <div class="row" id='campo-cultivo'></div>
                         <div class="row mb-2" id='campo-img-preview'>
                         </div>
@@ -283,4 +284,5 @@
         </div>
 
 </div>
-</div>
+
+<div id="map-overlay" class="map-overlay"></div>
