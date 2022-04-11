@@ -2,6 +2,12 @@
 'use strict';
 zuix.controller(function (cp) {
     cp.create = function () {
+
+
+        ndvi_db.get("04c295073296abe67dbd9f1d96e825e938defab1a1db65536ad438169474cc9c").then((result)=>{
+            // Populate 
+            console.log(result)
+        })
         // TODO: handle input
 
         var myOffcanvas = document.getElementById('catalogo-imgs')

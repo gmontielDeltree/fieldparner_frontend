@@ -55,13 +55,31 @@ zuix.controller(function (cp) {
 
 		map.on('load', function () {
 
+			console.log("map tiler!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			map.addSource('miraster', {
+				"type": "raster",
+				"url":'https://api.maptiler.com/tiles/52111742-eec3-4342-9a30-e0eb810ce8aa/tiles.json?key=Lluzf6cp5LGOrVxCWNqc',
+				//"tiles": ["https://api.maptiler.com/tiles/52111742-eec3-4342-9a30-e0eb810ce8aa/{z}/{x}/{y}.png?key=Lluzf6cp5LGOrVxCWNqc"],
+				}
+			 )
+			
+			 map.addLayer({
+				"id": "mirender",
+				"type":'raster',
+				"source" : 'miraster',
+				'minzoom': 0,
+				'maxzoom': 24,
+				'layout': {
+					'visibility': 'visible'
+				  },
+			});
+
 			campos_layer()
 			sensores_layer()
 			campos_agregar_ctrl()
 
 			notas_layer()
 			notas_agregar_ctrl()
-
 
 
 		});
@@ -156,6 +174,14 @@ zuix.controller(function (cp) {
 		/** Muestra El offcanvas con los detalles del campo */
 		const showCampoOffcanvas = (id,rev)=>{
 			campos_db.get(id).then((result)=>{
+				console.log("Campo desde DB: ",result)
+				// hashear result.campo_geojson.geometry
+				/*
+				 	ndvi_db.get(hash).then((result)=>{
+						// Populate
+						// ndvi_gallery(result) 
+						console.log(result)
+        			})*/
 				document.getElementById('eliminar-campo-btn').setAttribute("data-id",id)
 				document.getElementById('eliminar-campo-btn').setAttribute("data-rev",rev)
 				offcanvas_campo_detalle.show()
