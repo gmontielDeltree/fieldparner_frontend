@@ -7,6 +7,8 @@ zuix.controller(function (cp) {
 	// let map;
 	let cantidad_de_campos;
 
+	var img_bucket_url = "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/"
+
 	var yourJWTToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ1NDczMjgzLCJleHAiOjE2NDgwNjUyODN9.zTdkovErL8Qo8LLDlKRcZ4kK1T53L2c3VpT6_Jq8qTE"
 	yourConfig = {
 		headers: {
@@ -238,12 +240,19 @@ zuix.controller(function (cp) {
 			overlay.style.display = 'none';
 		})
 
+
+		ndvi_db.changes({
+			since: 'now',
+			live: true
+		}).on('change', ()=>{console.log("Cambios en NDVI")});
+
 		/**
 		 * Renderiza la galleria de NDVI en los detalles del campo
 		 * @param {} result 
 		 */
 		const ndvi_gallery = async (result) => {
 
+	
 			/**
 			 * NDVI Layer Visible
 			 */
@@ -349,7 +358,7 @@ zuix.controller(function (cp) {
 				//bbox, fecha, png_url
 				const ndvi_div = document.getElementById('campo-ndvi')
 				const fecha = ob.fecha
-				const img_src = "images/ndvi/" + ob.png_url
+				const img_src = img_bucket_url + ob.png_url
 
 
 
@@ -360,6 +369,8 @@ zuix.controller(function (cp) {
 
 				const obs_date = new Date(year, month - 1, day);
 				const dias_diff = Math.floor(((new Date()).getTime() - obs_date.getTime()) / (1000 * 3600 * 24))
+
+				//const fechastr = obs_date.toString()
 
 				bbox = [[ob.bbox.left, ob.bbox.top],
 				[ob.bbox.right, ob.bbox.top],
@@ -606,6 +617,18 @@ zuix.controller(function (cp) {
 					console.log(err)
 				}
 			})
+
+			axios.post('https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/ndviz', {
+				geojson: campo_geojson,
+				lastName: 'Flintstone'
+			  })
+			  .then(function (response) {
+				console.log(response);
+			  })
+			  .catch(function (error) {
+				console.log(error);
+			  });
+
 			salir_edit_mode()
 		})
 
