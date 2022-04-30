@@ -65,25 +65,6 @@ zuix.controller(function (cp) {
 
 		map.on('load', function () {
 
-			console.log("map tiler!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-			map.addSource('miraster', {
-				"type": "raster",
-				"url": 'https://api.maptiler.com/tiles/52111742-eec3-4342-9a30-e0eb810ce8aa/tiles.json?key=Lluzf6cp5LGOrVxCWNqc',
-				//"tiles": ["https://api.maptiler.com/tiles/52111742-eec3-4342-9a30-e0eb810ce8aa/{z}/{x}/{y}.png?key=Lluzf6cp5LGOrVxCWNqc"],
-			}
-			)
-
-			map.addLayer({
-				"id": "mirender",
-				"type": 'raster',
-				"source": 'miraster',
-				'minzoom': 0,
-				'maxzoom': 24,
-				'layout': {
-					'visibility': 'visible'
-				},
-			});
-
 			campos_layer()
 			sensores_layer()
 			campos_agregar_ctrl()
@@ -419,19 +400,19 @@ zuix.controller(function (cp) {
 			(error, image) => {
 				if (error) throw error;
 				map.addImage('custom-marker', image);
-				map.addSource('sensores', { type: 'geojson', data: '/phpiot20/apiv0/posiciones_devices.php' });
-				map.addLayer({
-					"id": "sensores",
-					"type": "symbol",
-					"source": "sensores",
-					"layout": {
-						'icon-image': 'custom-marker',
-						'text-field': ['get', 'deveui'],
-						'text-offset': [0, 1.25],
-						'text-anchor': 'top'
-						//"visibility": 'none'
-					}
-				});
+				// map.addSource('sensores', { type: 'geojson', data: '/phpiot20/apiv0/posiciones_devices.php' });
+				// map.addLayer({
+				// 	"id": "sensores",
+				// 	"type": "symbol",
+				// 	"source": "sensores",
+				// 	"layout": {
+				// 		'icon-image': 'custom-marker',
+				// 		'text-field': ['get', 'deveui'],
+				// 		'text-offset': [0, 1.25],
+				// 		'text-anchor': 'top'
+				// 		//"visibility": 'none'
+				// 	}
+				// });
 			});
 
 		// Sensores PopUp
@@ -613,6 +594,14 @@ zuix.controller(function (cp) {
 			campos_db.put({ _id: "campos_" + (nombre), nombre: nombre, campo_geojson: campo_geojson }, (err, result) => {
 				if (!err) {
 					console.log('Successfully posted a Campo!');
+					local_campos_changes.put({_id: uuidv4(), campo_id: "campos_" + (nombre), db: "campos_"  + couch_username}, (err, result) => {
+						if(!err){
+							console.log('LocalChanges Successfully posted!');
+						}else{
+							console.log(err);
+						}
+					})
+					
 				} else {
 					console.log(err)
 				}

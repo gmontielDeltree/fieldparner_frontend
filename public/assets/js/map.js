@@ -301,20 +301,20 @@ map.on('load', function () {
         (error, image) => {
         if (error) throw error;
         map.addImage('custom-marker', image);
-        map.addSource('sensores', { type: 'geojson', data: '/phpiot20/apiv0/posiciones_devices.php' });
-            map.addLayer({
-                    "id": "sensores",
-                    "type": "symbol",
-                    "source": "sensores",
-                    "layout": {
-                        'icon-image': 'custom-marker',
-                        'text-field': ['get', 'deveui'],
-                        'text-offset': [0, 1.25],
-                        'text-anchor': 'top'
-                        //"visibility": 'none'
-                    }
-                });
-        });
+        // map.addSource('sensores', { type: 'geojson', data: '/phpiot20/apiv0/posiciones_devices.php' });
+        //     map.addLayer({
+        //             "id": "sensores",
+        //             "type": "symbol",
+        //             "source": "sensores",
+        //             "layout": {
+        //                 'icon-image': 'custom-marker',
+        //                 'text-field': ['get', 'deveui'],
+        //                 'text-offset': [0, 1.25],
+        //                 'text-anchor': 'top'
+        //                 //"visibility": 'none'
+        //             }
+        //         });
+        // });
 
     map.addSource('lotes', { type: 'geojson', data: '/phpiot20/lotes_by_campo_geojson.php?campoid=20' });
 

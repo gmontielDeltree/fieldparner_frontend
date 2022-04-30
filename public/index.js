@@ -9,9 +9,13 @@ var campos_db;
 var notas_db;
 var map;
 var ndvi_db;
+var camposchanges_db;
+var local_campos_changes;
+var couch_username;
+var darkdb;
 
 zuix.using('script', './service-worker.js');
-zuix.using('style', '//zuixjs.github.io/zkit/css/flex-layout-attribute.min.css');
+//zuix.using('style', '//zuixjs.github.io/zkit/css/flex-layout-attribute.min.css');
 zuix.using('style', './index.css');
 
 zuix.$.find('.profile').on('click', function () {
@@ -144,64 +148,46 @@ const configureClient = async () => {
 
 
 window.onload = async () => {
-    console.log("ONLOAD")
-    await configureClient();
-    console.log("PO CL")
-    document.getElementById('login-btn').addEventListener('click', login);
-    // If unable to parse the history hash, default to the root URL
-    // if (!showContentFromUrl(window.location.pathname)) {
-    //   showContentFromUrl("/");
-    //   window.history.replaceState({ url: "/" }, {}, "/");
+    check_logged_user();
+    // console.log("ONLOAD")
+    // await configureClient();
+    // console.log("PO CL")
+    // document.getElementById('login-btn').addEventListener('click', login);
+
+    // const isAuthenticated = await auth0.isAuthenticated();
+
+    // if (isAuthenticated) {
+    //     console.log("> User is authenticated");
+    //     window.history.replaceState({}, document.title, window.location.pathname);
+    //     get_dbs();
+    //     updateUI();
+    //     return;
     // }
 
-    // const bodyElement = document.getElementsByTagName("body")[0];
+    // console.log("> User not authenticated");
 
-    // // Listen out for clicks on any hyperlink that navigates to a #/ URL
-    // bodyElement.addEventListener("click", (e) => {
-    //   if (isRouteLink(e.target)) {
-    //     const url = e.target.getAttribute("href");
+    // const query = window.location.search;
+    // const shouldParseResult = query.includes("code=") && query.includes("state=");
 
-    //     if (showContentFromUrl(url)) {
-    //       e.preventDefault();
-    //       window.history.pushState({ url }, {}, url);
+    // if (shouldParseResult) {
+    //     console.log("> Parsing redirect");
+    //     try {
+    //         const result = await auth0.handleRedirectCallback();
+
+    //         if (result.appState && result.appState.targetUrl) {
+    //             //showContentFromUrl(result.appState.targetUrl);
+    //         }
+
+    //         get_dbs();
+    //         console.log("Logged in!");
+    //     } catch (err) {
+    //         console.log("Error parsing redirect:", err);
     //     }
-    //   }
-    // });
 
-    const isAuthenticated = await auth0.isAuthenticated();
+    //     window.history.replaceState({}, document.title, "/");
+    // }
 
-    if (isAuthenticated) {
-        console.log("> User is authenticated");
-        window.history.replaceState({}, document.title, window.location.pathname);
-        get_dbs();
-        updateUI();
-        return;
-    }
-
-    console.log("> User not authenticated");
-
-    const query = window.location.search;
-    const shouldParseResult = query.includes("code=") && query.includes("state=");
-
-    if (shouldParseResult) {
-        console.log("> Parsing redirect");
-        try {
-            const result = await auth0.handleRedirectCallback();
-
-            if (result.appState && result.appState.targetUrl) {
-                //showContentFromUrl(result.appState.targetUrl);
-            }
-
-            get_dbs();
-            console.log("Logged in!");
-        } catch (err) {
-            console.log("Error parsing redirect:", err);
-        }
-
-        window.history.replaceState({}, document.title, "/");
-    }
-
-    updateUI();
+    // updateUI();
 }
 
 // NEW
@@ -222,8 +208,27 @@ const login = async () => {
     });
 };
 
+const check_logged_user = async () => {
+    darkdb = new PouchDB('dark')
+    darkdb.get('cross').then((doc) => {
+        un = doc.un
+        base_url = "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/"
+        get_dbs(base_url, un)
+        console.log("Username:", un)
 
-const get_dbs = async () => {
+    }).catch((e) => {
+        // No existe / Offline /
+        // No Logged In
+        no_logged_screen()
+    })
+}
+
+const no_logged_screen = () => {
+    console.log("User Not Logged In")
+    // Redirect
+}
+
+const get_dbs_auth0 = async () => {
 
     user = await auth0.getUser();
     couchdb_config = user['http://mynamespace/couchdb'].couchDB;
@@ -236,7 +241,7 @@ const get_dbs = async () => {
     campos_db = new PouchDB('campos_' + couch_username);
     notas_db = new PouchDB('notas_' + couch_username);
 
-    var remote_campos_db = new PouchDB(campos_db_uri)
+    var remote_campos_db = new PouchDB(campos_db_uri);
 
     campos_db.sync(remote_campos_db, {
         live: true,
@@ -253,8 +258,74 @@ const get_dbs = async () => {
 
 
     ndvi_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi")
+
+
+    remote_campos_changes = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
+    local_campos_changes = new PouchDB("campos_changes")
+
+    console.log("Changes Sync Set");
+    local_campos_changes.replicate.to(remote_campos_changes, {
+        live: true
+    }).on('complete', function () {
+        // yay, we're done!
+        console.log("Changes Uploaded")
+    }).on('error', function (err) {
+        // boo, something went wrong!
+        console.log("Error Changes")
+    });
+
+
 }
 
 
 
+const get_dbs = async (base_url, username) => {
 
+    couch_username = username
+
+    // Local DBs
+    campos_db = new PouchDB('campos_' + username);
+    notas_db = new PouchDB('notas_' + username);
+
+    // Remote URIs and Remote Dbs
+    campos_db_uri = base_url + 'campos_' + username
+    notas_db_uri = base_url + 'notas_' + username
+
+    var remote_campos_db = new PouchDB(campos_db_uri);
+
+    campos_db.sync(remote_campos_db, {
+        live: true,
+        retry: true
+    }).on('change', function (change) {
+        // yo, something changed!
+    }).on('paused', function (info) {
+        // replication was paused, usually because of a lost connection
+    }).on('active', function (info) {
+        // replication was resumed
+    }).on('error', function (err) {
+        // totally unhandled error (shouldn't happen)
+    });
+
+
+    ndvi_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi")
+
+
+    // Cambios DBs
+    remote_campos_changes = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
+    local_campos_changes = new PouchDB("campos_changes")
+
+    console.log("Changes Sync Set");
+    local_campos_changes.replicate.to(remote_campos_changes, {
+        live: true
+    }).on('complete', function () {
+        // yay, we're done!
+        console.log("Changes Uploaded")
+    }).on('error', function (err) {
+        // boo, something went wrong!
+        console.log("Error Changes")
+    });
+
+    console.log("DBs set ok")
+
+
+}
