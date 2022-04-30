@@ -329,3 +329,19 @@ const get_dbs = async (base_url, username) => {
 
 
 }
+
+
+var wentOffline, wentOnline;
+ function handleConnectionChange(event){
+    if(event.type == "offline"){
+        console.log("You lost connection.");
+        wentOffline = new Date(event.timeStamp);
+    }
+    if(event.type == "online"){
+        console.log("You are now back online.");
+        wentOnline = new Date(event.timeStamp);
+        console.log("You were offline for " + (wentOnline - wentOffline) / 1000 + "seconds.");
+    }
+}
+window.addEventListener('online', handleConnectionChange);
+window.addEventListener('offline', handleConnectionChange);
