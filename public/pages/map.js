@@ -607,16 +607,16 @@ zuix.controller(function (cp) {
 				}
 			})
 
-			axios.post('https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/ndviz', {
-				geojson: campo_geojson,
-				lastName: 'Flintstone'
-			  })
-			  .then(function (response) {
-				console.log(response);
-			  })
-			  .catch(function (error) {
-				console.log(error);
-			  });
+			// axios.post('https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/ndviz', {
+			// 	geojson: campo_geojson,
+			// 	lastName: 'Flintstone'
+			//   })
+			//   .then(function (response) {
+			// 	console.log(response);
+			//   })
+			//   .catch(function (error) {
+			// 	console.log(error);
+			//   });
 
 			salir_edit_mode()
 		})
@@ -651,53 +651,53 @@ zuix.controller(function (cp) {
 		}
 
 
-		axios.get(api_root + '/api/cultivos')
-			.then(function (response) {
-				// handle success
-				cultivos = response.data.data
-				console.log("Cultivo", cultivos)
-				lista_cultivos = document.getElementById("lista-cultivos")
-				cultivos.map((cultivo) => {
-					var el = document.createElement("a")
-					el.setAttribute("href", "#")
-					el.classList.add("list-group-item")
-					el.classList.add("list-group-item-action")
-					el.classList.add("el-cultivo")
+		// axios.get(api_root + '/api/cultivos')
+		// 	.then(function (response) {
+		// 		// handle success
+		// 		cultivos = response.data.data
+		// 		console.log("Cultivo", cultivos)
+		// 		lista_cultivos = document.getElementById("lista-cultivos")
+		// 		cultivos.map((cultivo) => {
+		// 			var el = document.createElement("a")
+		// 			el.setAttribute("href", "#")
+		// 			el.classList.add("list-group-item")
+		// 			el.classList.add("list-group-item-action")
+		// 			el.classList.add("el-cultivo")
 
-					el.setAttribute("data-nombre", cultivo.attributes.nombre)
-					el.setAttribute("data-id", cultivo.id)
-					el.innerText = cultivo.attributes.nombre
-					lista_cultivos.appendChild(el)
+		// 			el.setAttribute("data-nombre", cultivo.attributes.nombre)
+		// 			el.setAttribute("data-id", cultivo.id)
+		// 			el.innerText = cultivo.attributes.nombre
+		// 			lista_cultivos.appendChild(el)
 
-				})
+		// 		})
 
-				$(".el-cultivo").click((e) => {
-					//nombre = b.data()
-					nombre = $(e.currentTarget).data('nombre')
-					id_cultivo = $(e.currentTarget).data('id')
-					console.log("Click en ", nombre)
-					$("#cultivo-btn").text(nombre)
-					$("#input-cultivo").val(id_cultivo)
-					//Cerrar el offcanvas cultivos
-					bs_offcanvas_cultivo.hide()
-				})
+		// 		$(".el-cultivo").click((e) => {
+		// 			//nombre = b.data()
+		// 			nombre = $(e.currentTarget).data('nombre')
+		// 			id_cultivo = $(e.currentTarget).data('id')
+		// 			console.log("Click en ", nombre)
+		// 			$("#cultivo-btn").text(nombre)
+		// 			$("#input-cultivo").val(id_cultivo)
+		// 			//Cerrar el offcanvas cultivos
+		// 			bs_offcanvas_cultivo.hide()
+		// 		})
 
-				$("#buscar-cultivo-input").on("keyup", function () {
-					var value = $(this).val().toLowerCase();
-					$("#lista-cultivos a").filter(function () {
-						$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-					});
-				});
+		// 		$("#buscar-cultivo-input").on("keyup", function () {
+		// 			var value = $(this).val().toLowerCase();
+		// 			$("#lista-cultivos a").filter(function () {
+		// 				$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+		// 			});
+		// 		});
 
-				console.log(response.data.data);
-			})
-			.catch(function (error) {
-				// handle error
-				console.log(error);
-			})
-			.then(function () {
-				// always executed
-			});
+		// 		console.log(response.data.data);
+		// 	})
+		// 	.catch(function (error) {
+		// 		// handle error
+		// 		console.log(error);
+		// 	})
+		// 	.then(function () {
+		// 		// always executed
+		// 	});
 
 	}
 

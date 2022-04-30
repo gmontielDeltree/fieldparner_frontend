@@ -1,116 +1,141 @@
-// TODO: increase `version` number to force cache update when publishing a new release
-const version = 'v1';
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.2.0/workbox-sw.js', 'https://cdn.jsdelivr.net/npm/idb@7/build/umd.js');
 
-const config = {
-    cacheRemote: true,
-    version: version+'::',
-    preCachingItems: [
-        'app.bundle.js',
-        'index.html',
-        'index.js',
-        'offline.html',
-        '404.html',
-        'sw.js'
-    ],
-    blacklistCacheItems: [
-        'index.html',
-        'service-worker.js'
-    ],
-    offlineImage: '<svg role="img" aria-labelledby="offline-title"' + ' viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">' + '<title id="offline-title">Offline</title>' + '<g fill="none" fill-rule="evenodd"><path fill="#aaa" d="M0 0h400v300H0z"/>' + '<text fill="#222" font-family="monospace" font-size="32" font-weight="bold">' + '<tspan x="136" y="156">offline</tspan></text></g></svg>',
-    offlinePage: 'offline.html',
-    notFoundPage: '404.html'
-};
 
-function cacheName(key, opts) {
-    return `${opts.version}${key}`;
-}
+// This will trigger the importScripts() for workbox.strategies and its dependencies:
+const {strategies, routing, backgroundSync} = workbox;
 
-function addToCache(cacheKey, request, response) {
-    if (response.ok) {
-        const copy = response.clone();
-        caches.open(cacheKey).then(cache => {
-            cache.put(request, copy);
-        });
+
+
+
+
+if (workbox) {
+  console.log(`Yay! Workbox is loaded 🎉`);
+  workbox.precaching.precacheAndRoute([]);
+
+  const showNotification = () => {
+    self.registration.showNotification('Background sync success!', {
+      body: '🎉`🎉`🎉`'
+    });
+  };
+
+  const bgSyncPlugin = new backgroundSync.BackgroundSyncPlugin('myQueueName', {
+  maxRetentionTime: 24 * 60, // Retry for max of 24 Hours (specified in minutes)
+  callbacks: {
+      queueDidReplay: showNotification
+      // other types of callbacks could go here
     }
-    return response;
+  });
+
+  const bgSyncAudioPlugin = new backgroundSync.BackgroundSyncPlugin('audioQueue', {
+  maxRetentionTime: 24 * 60, // Retry for max of 24 Hours (specified in minutes)
+  callbacks: {
+      queueDidReplay: showNotification
+      // other types of callbacks could go here
+    }
+  });
+
+
+  const networkWithBackgroundSync =  routing.registerRoute(
+                                        /\/phpiot20\/apiv0\/observaciones\.php/,
+                                        new strategies.NetworkOnly({
+                                          plugins: [bgSyncPlugin],
+                                        }),
+
+                                        'POST'
+                                      );
+
+
+  const networkAudioWithBackgroundSync = routing.registerRoute(
+    /\/phpiot20\/apiv0\/upload_audio\.php/,
+    new strategies.NetworkOnly({
+      plugins: [bgSyncAudioPlugin],
+    }),
+
+    'POST'
+  );
+
+} else {
+  console.log(`Boo! Workbox didn't load 😬`);
 }
 
-function fetchFromCache(event) {
-    return caches.match(event.request).then(response => {
-        if (!response) {
-            throw Error(`${event.request.url} not found in cache`);
-        } else if (response.status === 404) {
-            return caches.match(config.notFoundPage);
-        }
-        return response;
+
+
+
+routing.registerRoute(/.*(?<!events\.)(?:mapbox)\.com\/(?!map\-sessions).*$/, new strategies.CacheFirst());
+
+
+routing.registerRoute(
+  ({request}) => request.destination === 'image',
+  new strategies.CacheFirst({
+    cacheName: 'image-cache',
+  })
+);
+
+routing.registerRoute(
+  ({request}) => request.destination === 'audio',
+  new strategies.CacheFirst({
+    cacheName: 'audio-cache',
+  })
+);
+
+routing.registerRoute(
+  ({url}) => url.pathname.includes('/posiciones_devices.php'),
+  new strategies.NetworkFirst()
+);
+
+
+self.addEventListener('fetch', (event) => {
+
+
+  if (event.request.url.endsWith('.json')) {
+    // Using the previously-initialized strategies will work as expected.
+    const cacheFirst = new strategies.CacheFirst();
+    event.respondWith(cacheFirst.handle({request: event.request, event}));
+  }
+
+  if (event.request.url.endsWith('.html')) {
+    // Using the previously-initialized strategies will work as expected.
+    const cacheFirst = new strategies.CacheFirst();
+    event.respondWith(cacheFirst.handle({request: event.request, event}));
+  }
+
+  if (event.request.url.endsWith('.js') || event.request.url.endsWith('.css')) {
+    // Using the previously-initialized strategies will work as expected.
+    const cacheFirst = new strategies.CacheFirst();
+    event.respondWith(cacheFirst.handle({request: event.request, event}));
+  }
+
+  if (event.request.url.endsWith('.svg') || event.request.url.endsWith('.png')) {
+    // Using the previously-initialized strategies will work as expected.
+    const cacheFirst = new strategies.CacheFirst();
+    event.respondWith(cacheFirst.handle({request: event.request, event}));
+  }
+
+  if (event.request.url.includes("https://events.mapbox.com/")) {
+    event.respondWith(new Response('<h1>Service Unavailable</h1>', {status: 200,statusText: 'Fake Unavailable', headers: new Headers({'Content-Type': 'text/html'})}));
+  }
+
+   if (event.request.url.includes("https://api.mapbox.com/map-sessions/v1")) {
+    event.respondWith(new Response('<h1>Service Unavailable</h1>', {status: 200,statusText: 'Fake Unavailable', headers: new Headers({'Content-Type': 'text/html'})}));
+  }
+
+});
+
+
+
+function openAudioDB() {
+    return idb.openDB('audios', 1, {
+          upgrade(db) {
+          
+        },
     });
 }
 
-function offlineResponse(resourceType, opts) {
-    if (resourceType === 'content') {
-        return caches.match(opts.offlinePage);
-    }
-    if (resourceType === 'image') {
-        return new Response(opts.offlineImage, {
-            headers: { 'Content-Type': 'image/svg+xml' }
-        });
-    }
-    return undefined;
-}
 
-self.addEventListener('install', event => {
-    event.waitUntil(caches.open(
-        cacheName('static', config)
-        )
-            .then(cache => cache.addAll(config.preCachingItems))
-            .then(() => self.skipWaiting())
-    );
-});
-self.addEventListener('activate', event => {
-    function clearCacheIfDifferent(event, opts) {
-        return caches.keys().then(cacheKeys => {
-            const oldCacheKeys = cacheKeys.filter(key => key.indexOf(opts.version) !== 0);
-            const deletePromises = oldCacheKeys.map(oldKey => caches.delete(oldKey));
-            return Promise.all(deletePromises);
-        });
-    }
-    event.waitUntil(
-        clearCacheIfDifferent(event, config)
-            .then(() => self.clients.claim())
-    );
-});
-self.addEventListener('fetch', event => {
-    const request = event.request;
-    const url = new URL(request.url);
-    if (request.method !== 'GET'
-        || (config.cacheRemote !== true && url.origin !== self.location.origin)
-        || (config.blacklistCacheItems.length > 0 && config.blacklistCacheItems.indexOf(url.pathname) !== -1)) {
-        // default browser behavior
-        return;
-    }
-    let cacheKey;
-    let resourceType = 'content';
-    if (/(.jpg|.jpeg|.webp|.png|.svg|.gif)$/.test(url.pathname)) {
-        resourceType = 'image';
-    } else if (/.\/fonts.(?:googleapis|gstatic).com/.test(url.origin)) {
-        resourceType = 'font';
-    }
-    cacheKey = cacheName(resourceType, config);
-    if (resourceType === 'content') {
-        // Network First Strategy
-        event.respondWith(
-            fetch(request)
-                .then(response => addToCache(cacheKey, request, response))
-                .catch(() => fetchFromCache(event))
-                .catch(() => offlineResponse(resourceType, config))
-        );
-    } else {
-        // Cache First Strategy
-        event.respondWith(
-            fetchFromCache(event)
-                .catch(() => fetch(request))
-                .then(response => addToCache(cacheKey, request, response))
-                .catch(() => offlineResponse(resourceType, config))
-        );
-    }
-});
+function getAudioData(database, key) {
+  return database.then(db => {
+    const tx = db.transaction('audios', 'readonly');
+    const store = tx.objectStore('audios');
+    return store.get(key);
+  });
+}
