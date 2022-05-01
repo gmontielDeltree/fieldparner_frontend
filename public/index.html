@@ -90,7 +90,7 @@
   <!--Axios-->
   <script src="assets/reroot/axios.min.js"></script>
   <!-- UUID -->
-  <script src="https://unpkg.com/uuid@latest/dist/umd/uuidv4.min.js"></script>
+  <script src="assets/uuidv4.min.js"></script>
   <!-- main app script -->
   <script src="index.js" defer></script>
 
@@ -104,11 +104,17 @@
   <script src="assets/components/audiorecorder/index.js"></script>
 
   <!--Pouch DB-->
-  <script src="//cdn.jsdelivr.net/npm/pouchdb@7.2.1/dist/pouchdb.min.js"></script>
+  <script src="assets/pouchdb.min.js"></script>
   
 
   <!--AUTH0-->
    <!-- <script src="https://cdn.auth0.com/js/auth0-spa-js/1.13/auth0-spa-js.production.js"></script> -->
+  
+  <!-- lit -->
+  <script type="module" src="assets/lit-all.min.js"> </script>
+
+  
+
   <style>
     /*mapbox gl css custom settings*/
     #map {
@@ -132,6 +138,8 @@
 <!-- load the 'header_auto_hide' on the body -->
 
 <body>
+  
+  <script type="module" src="owncomponents/campo-offcanvas/campo-offcanvas.js"></script>
 
   <!-- The header with profile icon button for opening the drawer layout (side menu panel) -->
   <header data-ui-include="layout/header" data-ui-options="options.headerBar" data-ui-field="header-bar"></header>

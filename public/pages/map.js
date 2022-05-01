@@ -157,40 +157,40 @@ zuix.controller(function (cp) {
 			}
 		});
 
-		const offcanvas_campo_detalle_el = document.getElementById('offcanvas-campo-detalle')
+		//const offcanvas_campo_detalle_el = document.getElementById('offcanvas-campo-detalle')
 
 		/** Campo Detalle JS */
-		const offcanvas_campo_detalle = new bootstrap.Offcanvas(offcanvas_campo_detalle_el) /* Campo Detalle JS */
+		// const offcanvas_campo_detalle = new bootstrap.Offcanvas(offcanvas_campo_detalle_el) /* Campo Detalle JS */
 
 		/** Muestra El offcanvas con los detalles del campo */
-		const showCampoOffcanvas = (id, rev) => {
-			campos_db.get(id).then(async (result) => {
-				console.log("Campo desde DB: ", result)
-				// hashear result.campo_geojson.geometry
-				hash_name = await hashMessage(JSON.stringify(result.campo_geojson.geometry))
-				console.log("HashName", hash_name)
-				ndvi_db.get(hash_name).then((result) => {
-					// Populate
-					// ndvi_gallery(result)
-					console.log("El campo tiene una entrada en NDVI")
-					console.log(result)
-					ndvi_gallery(result)
+		// const showCampoOffcanvas = (id, rev) => {
+		// 	campos_db.get(id).then(async (result) => {
+		// 		console.log("Campo desde DB: ", result)
+		// 		// hashear result.campo_geojson.geometry
+		// 		hash_name = await hashMessage(JSON.stringify(result.campo_geojson.geometry))
+		// 		console.log("HashName", hash_name)
+		// 		ndvi_db.get(hash_name).then((result) => {
+		// 			// Populate
+		// 			// ndvi_gallery(result)
+		// 			console.log("El campo tiene una entrada en NDVI")
+		// 			console.log(result)
+		// 			ndvi_gallery(result)
 
-				}).catch((e) => console.log("El campo no tiene entrada en NDVI o hubo un error", e))
+		// 		}).catch((e) => console.log("El campo no tiene entrada en NDVI o hubo un error", e))
 
-				document.getElementById('eliminar-campo-btn').setAttribute("data-id", id)
-				document.getElementById('eliminar-campo-btn').setAttribute("data-rev", rev)
-				offcanvas_campo_detalle.show()
-			})
-		}
+		// 		document.getElementById('eliminar-campo-btn').setAttribute("data-id", id)
+		// 		document.getElementById('eliminar-campo-btn').setAttribute("data-rev", rev)
+		// 		offcanvas_campo_detalle.show()
+		// 	})
+		// }
 
-		document.getElementById('eliminar-campo-btn').addEventListener('click', (e) => {
-			campo_id = e.target.getAttribute('data-id')
-			campo_rev = e.target.getAttribute('data-rev')
-			console.log("Borrar Campo _id", campo_id, 'rev', campo_rev)
-			campos_db.remove(campo_id, campo_rev)
-			offcanvas_campo_detalle.hide()
-		})
+		// document.getElementById('eliminar-campo-btn').addEventListener('click', (e) => {
+		// 	campo_id = e.target.getAttribute('data-id')
+		// 	campo_rev = e.target.getAttribute('data-rev')
+		// 	console.log("Borrar Campo _id", campo_id, 'rev', campo_rev)
+		// 	campos_db.remove(campo_id, campo_rev)
+		// 	offcanvas_campo_detalle.hide()
+		// })
 
 		/** Mapbox handler para mostrar el offcanvas de detalles  'lotes', */
 		map.on('click', 'lotes', (e) => {
@@ -198,7 +198,11 @@ zuix.controller(function (cp) {
 
 			// NDVI not visible
 			console.log("Click en Campo", e.features[0])
-			showCampoOffcanvas(e.features[0].properties.id, e.features[0].properties.rev)
+			campo_doc = e.features[0].properties;
+			document.getElementById('campo-oc').nuevo_lote_callback = ()=>{console.log("dfsdfs")};
+			document.getElementById('campo-oc').borrar_lote_callback = ()=>{campos_db.remove(campo_doc.id, campo_doc.rev)};
+			document.getElementById('campo-oc').show();
+			// showCampoOffcanvas(e.features[0].properties.id, e.features[0].properties.rev)
 			// new mapboxgl.Popup()
 			// 	.setLngLat(e.lngLat)
 			// 	.setHTML(e.features[0].properties.nombre)
@@ -206,20 +210,20 @@ zuix.controller(function (cp) {
 		});
 
 
-		offcanvas_campo_detalle_el.addEventListener('hide.bs.offcanvas', function () {
-			// do something...
-			if (map.getLayer('ndvi-layer')) {
-				map.setLayoutProperty(
-					'ndvi-layer',
-					'visibility',
-					'none'
-				)
-				map.moveLayer('lotes')
-			}
+		// offcanvas_campo_detalle_el.addEventListener('hide.bs.offcanvas', function () {
+		// 	// do something...
+		// 	if (map.getLayer('ndvi-layer')) {
+		// 		map.setLayoutProperty(
+		// 			'ndvi-layer',
+		// 			'visibility',
+		// 			'none'
+		// 		)
+		// 		map.moveLayer('lotes')
+		// 	}
 
-			const overlay = document.getElementById('map-overlay');
-			overlay.style.display = 'none';
-		})
+		// 	const overlay = document.getElementById('map-overlay');
+		// 	overlay.style.display = 'none';
+		// })
 
 
 		ndvi_db.changes({
@@ -456,21 +460,6 @@ zuix.controller(function (cp) {
 
 		var toast_step = 0;
 
-		const api_post_campo = (nombre, geojson, id_cultivo, variedad) => {
-			axios.post(api_root + '/api/campos', {
-				data: {
-					nombre: nombre,
-					geojson: geojson,
-					cultivo: id_cultivo
-				}
-			})
-				.then(function (response) {
-					console.log("POST /api/campos response", response);
-				})
-				.catch(function (error) {
-					console.log(error);
-				});
-		}
 
 		function renderCB(args) {
 			if (toast_step < 3 && (draw.getMode() === 'draw_polygon')) {
@@ -573,7 +562,7 @@ zuix.controller(function (cp) {
 
 		}
 
-		/* Guardar ----------------------------------------*/
+		/* Guardar Campo ----------------------------------------*/
 		var guardar_btn = document.getElementById('guardar-campo-btn')
 		guardar_btn.addEventListener('click', () => {
 			var offcanvas = document.getElementById('offcanvasCampoForm')
@@ -594,7 +583,8 @@ zuix.controller(function (cp) {
 			campos_db.put({ _id: "campos_" + (nombre), nombre: nombre, campo_geojson: campo_geojson }, (err, result) => {
 				if (!err) {
 					console.log('Successfully posted a Campo!');
-					local_campos_changes.put({_id: uuidv4(), campo_id: "campos_" + (nombre), db: "campos_"  + couch_username}, (err, result) => {
+					
+					local_campos_changes.put({_id: uuidv4(), tipo: "add-campo", username: couch_username, details: { campo_id: "campos_" + (nombre), db: "campos_"  + couch_username, campo_geojson: campo_geojson, username: couch_username} }, (err, result) => {
 						if(!err){
 							console.log('LocalChanges Successfully posted!');
 						}else{
