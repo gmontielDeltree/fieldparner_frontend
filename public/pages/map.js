@@ -7,6 +7,10 @@ zuix.controller(function (cp) {
 	// let map;
 	let cantidad_de_campos;
 
+	var modo_edicion = 'campo'; // o 'lote'
+
+
+
 	var img_bucket_url = "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/"
 
 	var yourJWTToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ1NDczMjgzLCJleHAiOjE2NDgwNjUyODN9.zTdkovErL8Qo8LLDlKRcZ4kK1T53L2c3VpT6_Jq8qTE"
@@ -199,8 +203,9 @@ zuix.controller(function (cp) {
 			// NDVI not visible
 			console.log("Click en Campo", e.features[0])
 			campo_doc = e.features[0].properties;
-			document.getElementById('campo-oc').nuevo_lote_callback = ()=>{console.log("dfsdfs")};
-			document.getElementById('campo-oc').borrar_lote_callback = ()=>{campos_db.remove(campo_doc.id, campo_doc.rev)};
+			document.getElementById('campo-oc').campo_doc = campo_doc;
+			document.getElementById('campo-oc').nuevo_lote_callback = () => { lotes_edit_sm(0) };
+			document.getElementById('campo-oc').borrar_lote_callback = () => { campos_db.remove(campo_doc.id, campo_doc.rev) };
 			document.getElementById('campo-oc').show();
 			// showCampoOffcanvas(e.features[0].properties.id, e.features[0].properties.rev)
 			// new mapboxgl.Popup()
@@ -229,7 +234,7 @@ zuix.controller(function (cp) {
 		ndvi_db.changes({
 			since: 'now',
 			live: true
-		}).on('change', ()=>{console.log("Cambios en NDVI")});
+		}).on('change', () => { console.log("Cambios en NDVI") });
 
 		/**
 		 * Renderiza la galleria de NDVI en los detalles del campo
@@ -237,7 +242,7 @@ zuix.controller(function (cp) {
 		 */
 		const ndvi_gallery = async (result) => {
 
-	
+
 			/**
 			 * NDVI Layer Visible
 			 */
@@ -294,14 +299,14 @@ zuix.controller(function (cp) {
 				title.textContent = "Estadisticas "
 				title_div.appendChild(title)
 
-				if(info.std < 0.1 && info.media < 0.1){
+				if (info.std < 0.1 && info.media < 0.1) {
 					const condicion = document.createElement('span');
 					condicion.textContent = "Nubosidad Severa"
 					condicion.classList.add("badge")
 					condicion.classList.add("bg-danger")
 					// condicion.classList.add("text-dark")
 					title_div.appendChild(condicion)
-				}else if(info.min < 0){
+				} else if (info.min < 0) {
 					const condicion = document.createElement('span');
 					condicion.textContent = "Nubosidad"
 					condicion.classList.add("badge")
@@ -309,24 +314,24 @@ zuix.controller(function (cp) {
 					condicion.classList.add("text-dark")
 					title_div.appendChild(condicion)
 				}
-				
+
 				const media = document.createElement('div');
-				media.textContent =	'Promedio: ' + info.media.toFixed(2);
+				media.textContent = 'Promedio: ' + info.media.toFixed(2);
 				const std = document.createElement('div');
 				std.textContent = 'Desviación Estándar: ' + info.std.toFixed(2);
-				
+
 				const max = document.createElement('div');
 				max.textContent = 'Máximo: ' + info.max.toFixed(2);
 
 				const min = document.createElement('div');
 				min.textContent = 'Mínimo: ' + info.min.toFixed(2);
-				
+
 				overlay.innerHTML = '';
 				overlay.style.display = 'block';
 
 				overlay.appendChild(title_div);
-				
-				
+
+
 
 				overlay.appendChild(media);
 				overlay.appendChild(std);
@@ -462,61 +467,82 @@ zuix.controller(function (cp) {
 
 
 		function renderCB(args) {
-			if (toast_step < 3 && (draw.getMode() === 'draw_polygon')) {
 
-				const current_feature_coll = draw.getAll()
-				const features = current_feature_coll.features
-				const geometry_coor = features[features.length - 1].geometry.coordinates[0]
-				if (toast_step === 0 && (geometry_coor.length === 3)) {
-					// Primer punto añadido
-					console.log("Un punto añadido")
-					//toast_updated_flag = true
-					toast_step = 1;
-					const toast_body = document.getElementById('toast-body');
-					toast_body.innerHTML = "Indica el siguiente punto"
+			if (modo_edicion === 'campo') {
 
+				if (toast_step < 3 && (draw.getMode() === 'draw_polygon')) {
+
+					const current_feature_coll = draw.getAll()
+					const features = current_feature_coll.features
+					const geometry_coor = features[features.length - 1].geometry.coordinates[0]
+					if (toast_step === 0 && (geometry_coor.length === 3)) {
+						// Primer punto añadido
+						console.log("Un punto añadido")
+						//toast_updated_flag = true
+						toast_step = 1;
+						const toast_body = document.getElementById('toast-body');
+						toast_body.innerHTML = "Indica el siguiente punto"
+
+					}
+					if ((toast_step === 1) && (geometry_coor.length === 4)) {
+						// Primer punto añadido
+						console.log("Un punto añadido")
+						//toast_updated_flag = true
+						toast_step = 2
+						const toast_body = document.getElementById('toast-body');
+						toast_body.innerHTML = "Indica el siguiente punto"
+
+					}
+
+					if ((toast_step === 2) && (geometry_coor.length === 5)) {
+						// Primer punto añadido
+						console.log("Un punto añadido")
+						//toast_updated_flag = true
+						toast_step = 3
+						const toast_body = document.getElementById('toast-body');
+						toast_body.innerHTML = "Toca el primer punto para completar el campo"
+
+					}
 				}
-				if ((toast_step === 1) && (geometry_coor.length === 4)) {
-					// Primer punto añadido
-					console.log("Un punto añadido")
-					//toast_updated_flag = true
-					toast_step = 2
-					const toast_body = document.getElementById('toast-body');
-					toast_body.innerHTML = "Indica el siguiente punto"
-
-				}
-
-				if ((toast_step === 2) && (geometry_coor.length === 5)) {
-					// Primer punto añadido
-					console.log("Un punto añadido")
-					//toast_updated_flag = true
-					toast_step = 3
-					const toast_body = document.getElementById('toast-body');
-					toast_body.innerHTML = "Toca el primer punto para completar el campo"
-
-				}
+			} else if (modo_edicion === 'lote') {
 
 			}
+
+
 		}
 
 		function updateArea(e) {
-			const data = draw.getAll();
-			const answer = document.getElementById('toast-body');
-			const next_btn = document.getElementById('agregar-campo-siguiente-btn')
+			if (modo_edicion === 'campo') {
+				const data = draw.getAll();
+				const answer = document.getElementById('toast-body');
+				const next_btn = document.getElementById('agregar-campo-siguiente-btn')
 
-			console.log(data.features);
-			if (data.features.length > 0) {
-				// Canpo fue agragado
-				const area = turf.area(data);
-				// Restrict the area to 2 decimal points.
-				const rounded_area = Math.round(area / 10000 * 100) / 100;
-				answer.innerHTML = `El campo seleccionado tiene ${rounded_area} has`;
-				next_btn.removeAttribute('disabled');
-				$('#offcanvas-1-title').text("1 campo seleccionado")
-			} else {
-				answer.innerHTML = '';
-				if (e.type !== 'draw.delete')
-					alert('Click the map to draw a polygon.');
+				console.log(data.features);
+				if (data.features.length > 0) {
+					// Canpo fue agragado
+					const area = turf.area(data);
+					// Restrict the area to 2 decimal points.
+					const rounded_area = Math.round(area / 10000 * 100) / 100;
+					answer.innerHTML = `El campo seleccionado tiene ${rounded_area} has`;
+					next_btn.removeAttribute('disabled');
+					$('#offcanvas-1-title').text("1 campo seleccionado")
+				} else {
+					answer.innerHTML = '';
+					if (e.type !== 'draw.delete')
+						alert('Click the map to draw a polygon.');
+				}
+			} else if (modo_edicion === 'lote') {
+				const data = draw.getAll();
+
+				if (data.features.length > 0) {
+					// Canpo fue agragado
+					const area = turf.area(data);
+					// Restrict the area to 2 decimal points.
+					const rounded_area = Math.round(area / 10000 * 100) / 100;
+					console.log('Poligono Completado')
+				} else {
+					
+				}
 			}
 		}
 
@@ -583,15 +609,15 @@ zuix.controller(function (cp) {
 			campos_db.put({ _id: "campos_" + (nombre), nombre: nombre, campo_geojson: campo_geojson }, (err, result) => {
 				if (!err) {
 					console.log('Successfully posted a Campo!');
-					
-					local_campos_changes.put({_id: uuidv4(), tipo: "add-campo", username: couch_username, details: { campo_id: "campos_" + (nombre), db: "campos_"  + couch_username, campo_geojson: campo_geojson, username: couch_username} }, (err, result) => {
-						if(!err){
+
+					local_campos_changes.put({ _id: uuidv4(), tipo: "add-campo", username: couch_username, details: { campo_id: "campos_" + (nombre), db: "campos_" + couch_username, campo_geojson: campo_geojson, username: couch_username } }, (err, result) => {
+						if (!err) {
 							console.log('LocalChanges Successfully posted!');
-						}else{
+						} else {
 							console.log(err);
 						}
 					})
-					
+
 				} else {
 					console.log(err)
 				}
@@ -978,6 +1004,28 @@ zuix.controller(function (cp) {
 		}
 
 
+
+	}
+
+	var campo_limites_json;
+	var edit_state = 0;
+	const lotes_edit_sm = (state) => {
+		if (state === 0) {
+			draw.changeMode('draw_polygon');
+			modo_edicion = 'lote'
+			console.log("Dibuje el Poligono")
+		} else if (state === 1) {
+
+		} else if (state === 2) {
+
+		} else if (state === 3) {
+
+		} else if (state === 4) {
+			draw.changeMode('simple_select');
+			modo_edicion = 'campo'
+			// Guardar Lote
+
+		}
 
 	}
 })

@@ -7,6 +7,7 @@ export class MyElement extends LitElement {
         map:{},
         db:{},
         _id:"",
+        campo_doc:{},
         nuevo_lote_callback: {},
         borrar_lote_callback: {},
     };
@@ -55,7 +56,7 @@ export class MyElement extends LitElement {
             aria-labelledby="offcanvas-campo-header" data-bs-backdrop="false">
             <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="offcanvas-campo-header">Campo</h5>
-                    <button type="button" class="btn btn-success text-reset" @click=${this.nuevo_lote_callback}>+Lote</button>
+                    <button type="button" class="btn btn-success" @click=${this.nuevo_lote_callback}>+Lote</button>
                     <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
                             aria-label="Close"></button>
             </div>
