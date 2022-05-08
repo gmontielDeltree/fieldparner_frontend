@@ -178,6 +178,22 @@ zuix.controller(function (cp) {
 			}
 		});
 
+		map.addSource('ndvi', {
+			'type': 'image',
+			'url': 'favicon.png',
+			'coordinates': [[-80.425, 46.437], [-71.516, 46.437], [-71.516, 37.936], [-80.425, 37.936]]
+		});
+
+		map.addLayer({
+			id: 'ndvi-layer',
+			'type': 'raster',
+			'source': 'ndvi',
+			'paint': {
+				'raster-fade-duration': 0
+			},
+			"layout": { "visibility": 'none' }
+		});
+
 		redraw_map();
 
 		/** Mapbox handler para mostrar el offcanvas de detalles  'lotes', */
@@ -195,6 +211,8 @@ zuix.controller(function (cp) {
 			map.fitBounds(turf.bbox(e.features[0]))
 			const campo_doc = e.features[0].properties;
 			document.getElementById('campo-oc').campo_doc = campo_doc;
+			document.getElementById('campo-oc').map = map;
+			document.getElementById('campo-oc').draw = draw;
 			document.getElementById('campo-oc').nuevo_lote_callback = () => { lotes_edit_sm(0) };
 			document.getElementById('campo-oc').guardar_lote_callback = () => { guardar_lote(campo_doc) };
 			document.getElementById('campo-oc').borrar_lote_callback = () => { campos_db.remove(campo_doc.id, campo_doc.rev) };
@@ -206,7 +224,23 @@ zuix.controller(function (cp) {
 			// 	.addTo(map);
 		});
 
+		// NDVI Offcanvas Object
 		const ndvi_oc = new bootstrap.Offcanvas(document.getElementById('offcanvas-lote-ndvi'))
+
+		// Mostrar layers al cerrar el offcanvas de NDVI
+		document.getElementById('offcanvas-lote-ndvi').addEventListener('hide.bs.offcanvas',()=>{
+			// Show Campos
+			map.setLayoutProperty('lotes', 'visibility', 'visible')
+			// Hide Lotes
+			map.setLayoutProperty('lotes_internos', 'visibility', 'none')
+			// Hide NDVI
+			map.setLayoutProperty('ndvi-layer', 'visibility', 'none')
+			// Bordes
+			map.setLayoutProperty('lotes_border', 'visibility', 'none')
+			// 
+			document.getElementById('map-overlay').style.display = 'none';
+
+		})
 
 		map.on('click', 'lotes_internos', (e) => {
 			console.log("Click en lotes Internos", e.features[0])
@@ -221,9 +255,12 @@ zuix.controller(function (cp) {
 					let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
 					hashMessage(clean_json).then((lote_hash) => {
 						console.log("Lote Hash", lote_hash)
-						ndvi_db.get(lote_hash).then(ndvi_gallery)
+						ndvi_db.get(lote_hash).then(ndvi_gallery).catch(()=>{
+							console.log("Error NDVI: Aun no existe ningun registro");
+						})
 					})
-					ndvi_oc.show()
+					// ndvi_oc.show()
+					document.getElementById('campo-oc').hide()
 				}
 			)
 
@@ -378,7 +415,7 @@ zuix.controller(function (cp) {
 				  */
 
 				const ndvi_on_click = (e) => {
-					layer_visibility('lotes_internos',false)
+					layer_visibility('lotes_internos', false)
 					create_update_ndvi_source(img_src, bbox)
 					update_overlay_info(ob.estadisticas)
 				}
@@ -406,6 +443,7 @@ zuix.controller(function (cp) {
 			/** Aplico para cada observacion */
 			obs = result.obs
 			obs.forEach(ob => renderNdviThumb(ob))
+			ndvi_oc.show()
 		}
 
 	}
@@ -676,7 +714,6 @@ zuix.controller(function (cp) {
 
 	const notas_agregar_ctrl = () => {
 
-
 		var nota_marker;
 
 		async function getImage(imageUrl, imageName) {
@@ -855,6 +892,7 @@ zuix.controller(function (cp) {
 
 	}
 
+	// Notas 
 	const notas_layer = () => {
 
 		const offcanvas_nota = new bootstrap.Offcanvas(document.getElementById('offcanvas-nota'))
@@ -975,7 +1013,7 @@ zuix.controller(function (cp) {
 		lote_geojson.properties.nombre = nombre_lote
 		lote_geojson.properties.campo_parent_id = db_doc._id
 		lote_geojson.properties.hectareas = Math.round(turf.area(lote_geojson) / 10000 * 100) / 100;
-		 
+
 		console.log("Lote GeoJSON", lote_geojson)
 
 		document.getElementById('campo-oc').show()
