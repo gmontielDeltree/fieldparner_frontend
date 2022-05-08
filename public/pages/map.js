@@ -1,15 +1,16 @@
 
 'use strict';
+
+import { map } from "../assets/lit-all.min";
+
 zuix.controller(function (cp) {
 
 	const zx = zuix; // shorthand
 	let itemsList;
 	// let map;
 	let cantidad_de_campos;
-
+	let redraw_count = 0;
 	var modo_edicion = 'campo'; // o 'lote'
-
-
 
 	var img_bucket_url = "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/"
 
@@ -45,6 +46,9 @@ zuix.controller(function (cp) {
 		return hashHex;
 	}
 
+	const layer_visibility = (layer_id, status) => {
+		map.setLayoutProperty(layer_id, 'visibility', status ? 'visible' : 'none');
+	}
 	cp.create = function () {
 		mapboxgl.accessToken = 'pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw';
 
@@ -58,7 +62,6 @@ zuix.controller(function (cp) {
 		});
 
 
-
 		map.addControl(draw);// Sin controles
 
 		map.on('render', function () {
@@ -67,28 +70,34 @@ zuix.controller(function (cp) {
 
 		map.resize();
 
-		map.on('load', function () {
 
+
+		map.on('load', function () {
 			campos_layer()
 			sensores_layer()
 			campos_agregar_ctrl()
 
 			notas_layer()
 			notas_agregar_ctrl()
-
-
 		});
 	}
-
 
 
 	const campos_layer = () => {
 		//map.addSource('lotes', { type: 'geojson', data: '/phpiot20/lotes_by_campo_geojson.php?campoid=20' });
 		map.addSource('lotes', { type: 'geojson', data: emptyGJ });
-		lotes_source = map.getSource('lotes');
-		lotes_collection = emptyGJ
+		map.addSource('lotes_internos', { type: 'geojson', data: emptyGJ });
+
+		let lotes_source = map.getSource('lotes');
+		let lotes_collection = emptyGJ
+
+		let lotes_internos_source = map.getSource('lotes_internos');
+		let lotes_internos_collection = emptyGJ
 
 		const redraw_map = () => {
+			redraw_count += 1;
+			console.log("redraw_count", redraw_count)
+
 			campos_db.allDocs({
 				include_docs: true,
 				attachments: true
@@ -101,15 +110,26 @@ zuix.controller(function (cp) {
 						rev: campo.doc['_rev'],
 						nombre: campo.doc.nombre,
 						//cultivo: campo.attributes.cultivo
-						//doc : campo.doc
+						db_doc: JSON.stringify(campo.doc)
 					}
 					return campo_geojson;
 				})
 
+				console.log("Set lotes DS", lotes_collection.features)
 				lotes_source.setData(lotes_collection)
+
+				lotes_internos_collection.features = result.rows.map((campo) => {
+					// campo.doc.lotes
+					return campo.doc.lotes;
+				})
+
+				lotes_internos_collection.features = lotes_internos_collection.features.flat()
+
+				console.log("Set lotes internos DS", lotes_internos_collection.features)
+				lotes_internos_source.setData(lotes_internos_collection)
+
 				console.log("Redraw Campos", result)
-			})
-				.catch(err => { console.log(err) })
+			}).catch(err => { console.log(err) })
 		}
 
 		/* Redraw on Changes callback */
@@ -119,33 +139,7 @@ zuix.controller(function (cp) {
 		}).on('change', redraw_map);
 
 		// First Draw
-		redraw_map();
-
-
-		// axios.get(api_root + "/api/campos").then(
-		// 	function (response) {
-		// 		console.log("API CAMPOS", response.data.data)
-		// 		lotes_collection.features = response.data.data.map((campo) => {
-		// 			campo_geojson = campo.attributes.geojson
-		// 			campo_geojson.properties = {
-		// 				id: campo.id,
-		// 				nombre: campo.attributes.nombre,
-		// 				cultivo: campo.attributes.cultivo
-		// 			}
-		// 			return campo_geojson;
-		// 		})
-
-		// 		lotes_source.setData(lotes_collection)
-		// 	}
-		// )
-		// 	.catch(function (error) {
-		// 		// handle error
-		// 		console.log(error);
-		// 	})
-		// 	.then(function () {
-		// 		// always executed
-		// 	});
-
+		//redraw_map();
 
 		map.addLayer({
 			"id": "lotes",
@@ -161,50 +155,48 @@ zuix.controller(function (cp) {
 			}
 		});
 
-		//const offcanvas_campo_detalle_el = document.getElementById('offcanvas-campo-detalle')
+		map.addLayer({
+			"id": "lotes_internos",
+			"type": "fill",
+			"source": "lotes_internos",
+			"layout": {
+				"visibility": 'none'
+			},
+			'paint': {
+				'fill-color': 'green',
+				'fill-opacity': 0.9,
+				'fill-outline-color': 'green',
+			}
+		});
 
-		/** Campo Detalle JS */
-		// const offcanvas_campo_detalle = new bootstrap.Offcanvas(offcanvas_campo_detalle_el) /* Campo Detalle JS */
+		map.addLayer({
+			"id": "lotes_border",
+			"type": "line",
+			"source": "lotes",
+			"layout": {
+				"visibility": 'none'
+			}
+		});
 
-		/** Muestra El offcanvas con los detalles del campo */
-		// const showCampoOffcanvas = (id, rev) => {
-		// 	campos_db.get(id).then(async (result) => {
-		// 		console.log("Campo desde DB: ", result)
-		// 		// hashear result.campo_geojson.geometry
-		// 		hash_name = await hashMessage(JSON.stringify(result.campo_geojson.geometry))
-		// 		console.log("HashName", hash_name)
-		// 		ndvi_db.get(hash_name).then((result) => {
-		// 			// Populate
-		// 			// ndvi_gallery(result)
-		// 			console.log("El campo tiene una entrada en NDVI")
-		// 			console.log(result)
-		// 			ndvi_gallery(result)
-
-		// 		}).catch((e) => console.log("El campo no tiene entrada en NDVI o hubo un error", e))
-
-		// 		document.getElementById('eliminar-campo-btn').setAttribute("data-id", id)
-		// 		document.getElementById('eliminar-campo-btn').setAttribute("data-rev", rev)
-		// 		offcanvas_campo_detalle.show()
-		// 	})
-		// }
-
-		// document.getElementById('eliminar-campo-btn').addEventListener('click', (e) => {
-		// 	campo_id = e.target.getAttribute('data-id')
-		// 	campo_rev = e.target.getAttribute('data-rev')
-		// 	console.log("Borrar Campo _id", campo_id, 'rev', campo_rev)
-		// 	campos_db.remove(campo_id, campo_rev)
-		// 	offcanvas_campo_detalle.hide()
-		// })
+		redraw_map();
 
 		/** Mapbox handler para mostrar el offcanvas de detalles  'lotes', */
 		map.on('click', 'lotes', (e) => {
 
-
 			// NDVI not visible
 			console.log("Click en Campo", e.features[0])
-			campo_doc = e.features[0].properties;
+
+
+			layer_visibility('lotes', false);
+			layer_visibility('lotes_internos', true);
+			layer_visibility('lotes_border', true);
+
+			// Fly to 
+			map.fitBounds(turf.bbox(e.features[0]))
+			const campo_doc = e.features[0].properties;
 			document.getElementById('campo-oc').campo_doc = campo_doc;
 			document.getElementById('campo-oc').nuevo_lote_callback = () => { lotes_edit_sm(0) };
+			document.getElementById('campo-oc').guardar_lote_callback = () => { guardar_lote(campo_doc) };
 			document.getElementById('campo-oc').borrar_lote_callback = () => { campos_db.remove(campo_doc.id, campo_doc.rev) };
 			document.getElementById('campo-oc').show();
 			// showCampoOffcanvas(e.features[0].properties.id, e.features[0].properties.rev)
@@ -214,6 +206,28 @@ zuix.controller(function (cp) {
 			// 	.addTo(map);
 		});
 
+		const ndvi_oc = new bootstrap.Offcanvas(document.getElementById('offcanvas-lote-ndvi'))
+
+		map.on('click', 'lotes_internos', (e) => {
+			console.log("Click en lotes Internos", e.features[0])
+			let { nombre, campo_parent_id } = e.features[0].properties
+			// Busco el lote en la db para evitar la distorsion de mapbox geometry
+			campos_db.get(campo_parent_id).then(
+				(campo_doc) => {
+					let lotes = campo_doc.lotes
+					let lote_clickeado_lista = lotes.filter((lote) => lote.properties.nombre === nombre)
+					let lote_clickeado = lote_clickeado_lista[0]
+					let geometry = lote_clickeado.geometry
+					let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
+					hashMessage(clean_json).then((lote_hash) => {
+						console.log("Lote Hash", lote_hash)
+						ndvi_db.get(lote_hash).then(ndvi_gallery)
+					})
+					ndvi_oc.show()
+				}
+			)
+
+		})
 
 		// offcanvas_campo_detalle_el.addEventListener('hide.bs.offcanvas', function () {
 		// 	// do something...
@@ -242,7 +256,6 @@ zuix.controller(function (cp) {
 		 */
 		const ndvi_gallery = async (result) => {
 
-
 			/**
 			 * NDVI Layer Visible
 			 */
@@ -255,7 +268,6 @@ zuix.controller(function (cp) {
 
 				map.moveLayer('ndvi-layer')
 			}
-
 
 
 			const create_update_ndvi_source = (img_src, bbox) => {
@@ -285,7 +297,6 @@ zuix.controller(function (cp) {
 					});
 
 					map.moveLayer('ndvi-layer')
-
 
 				}
 			}
@@ -331,8 +342,6 @@ zuix.controller(function (cp) {
 
 				overlay.appendChild(title_div);
 
-
-
 				overlay.appendChild(media);
 				overlay.appendChild(std);
 				overlay.appendChild(max);
@@ -346,12 +355,9 @@ zuix.controller(function (cp) {
 			const renderNdviThumb = (ob) => {
 
 				//bbox, fecha, png_url
-				const ndvi_div = document.getElementById('campo-ndvi')
+				const ndvi_div = document.getElementById('lote-ndvi')
 				const fecha = ob.fecha
 				const img_src = img_bucket_url + ob.png_url
-
-
-
 
 				const year = +fecha.substring(0, 4);
 				const month = +fecha.substring(4, 6);
@@ -372,6 +378,7 @@ zuix.controller(function (cp) {
 				  */
 
 				const ndvi_on_click = (e) => {
+					layer_visibility('lotes_internos',false)
 					create_update_ndvi_source(img_src, bbox)
 					update_overlay_info(ob.estadisticas)
 				}
@@ -393,7 +400,7 @@ zuix.controller(function (cp) {
 			}
 
 			// Borro Lo anterior
-			ndvi_div = document.getElementById('campo-ndvi')
+			ndvi_div = document.getElementById('lote-ndvi')
 			ndvi_div.textContent = ''
 
 			/** Aplico para cada observacion */
@@ -540,8 +547,9 @@ zuix.controller(function (cp) {
 					// Restrict the area to 2 decimal points.
 					const rounded_area = Math.round(area / 10000 * 100) / 100;
 					console.log('Poligono Completado')
+					document.getElementById('campo-oc').enable_siguiente()
 				} else {
-					
+
 				}
 			}
 		}
@@ -602,11 +610,12 @@ zuix.controller(function (cp) {
 			campo_geojson = draw.getAll().features[0]
 
 			console.log("GeoJSON", campo_geojson)
-			console.log("Guardar Campo '", nombre, "' con", cultivo, "variedad", variedad)
+			console.log("Guardar Campo '", nombre); //, "' con", cultivo, "variedad", variedad)
 
 			//api_post_campo(nombre, campo_geojson, id, variedad)
+			campo_geojson.properties.hectareas = Math.round(turf.area(campo_geojson) / 10000 * 100) / 100;
 
-			campos_db.put({ _id: "campos_" + (nombre), nombre: nombre, campo_geojson: campo_geojson }, (err, result) => {
+			campos_db.put({ _id: "campos_" + (nombre), nombre: nombre, campo_geojson: campo_geojson, lotes: [] }, (err, result) => {
 				if (!err) {
 					console.log('Successfully posted a Campo!');
 
@@ -641,10 +650,7 @@ zuix.controller(function (cp) {
 		var offcanvas_paso_1_cerrar = document.getElementById('map-edit-btn')
 		offcanvas_paso_1_cerrar.addEventListener('click', function () {
 			/* Guardar */
-
 			salir_edit_mode()
-
-
 		})
 
 		var offcanvas_cultivo = document.getElementById("offcanvas-cultivo")
@@ -665,55 +671,6 @@ zuix.controller(function (cp) {
 			next_btn.setAttribute('disabled', "")
 
 		}
-
-
-		// axios.get(api_root + '/api/cultivos')
-		// 	.then(function (response) {
-		// 		// handle success
-		// 		cultivos = response.data.data
-		// 		console.log("Cultivo", cultivos)
-		// 		lista_cultivos = document.getElementById("lista-cultivos")
-		// 		cultivos.map((cultivo) => {
-		// 			var el = document.createElement("a")
-		// 			el.setAttribute("href", "#")
-		// 			el.classList.add("list-group-item")
-		// 			el.classList.add("list-group-item-action")
-		// 			el.classList.add("el-cultivo")
-
-		// 			el.setAttribute("data-nombre", cultivo.attributes.nombre)
-		// 			el.setAttribute("data-id", cultivo.id)
-		// 			el.innerText = cultivo.attributes.nombre
-		// 			lista_cultivos.appendChild(el)
-
-		// 		})
-
-		// 		$(".el-cultivo").click((e) => {
-		// 			//nombre = b.data()
-		// 			nombre = $(e.currentTarget).data('nombre')
-		// 			id_cultivo = $(e.currentTarget).data('id')
-		// 			console.log("Click en ", nombre)
-		// 			$("#cultivo-btn").text(nombre)
-		// 			$("#input-cultivo").val(id_cultivo)
-		// 			//Cerrar el offcanvas cultivos
-		// 			bs_offcanvas_cultivo.hide()
-		// 		})
-
-		// 		$("#buscar-cultivo-input").on("keyup", function () {
-		// 			var value = $(this).val().toLowerCase();
-		// 			$("#lista-cultivos a").filter(function () {
-		// 				$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-		// 			});
-		// 		});
-
-		// 		console.log(response.data.data);
-		// 	})
-		// 	.catch(function (error) {
-		// 		// handle error
-		// 		console.log(error);
-		// 	})
-		// 	.then(function () {
-		// 		// always executed
-		// 	});
 
 	}
 
@@ -1007,6 +964,41 @@ zuix.controller(function (cp) {
 
 	}
 
+	const guardar_lote = (doc) => {
+		lotes_edit_sm(4);
+		db_doc = JSON.parse(doc.db_doc)
+
+		nombre_lote = document.getElementById('campo-oc').nombre_lote
+		console.log("Guardar Lote", nombre_lote)
+
+		lote_geojson = draw.getAll().features[0]
+		lote_geojson.properties.nombre = nombre_lote
+		lote_geojson.properties.campo_parent_id = db_doc._id
+		lote_geojson.properties.hectareas = Math.round(turf.area(lote_geojson) / 10000 * 100) / 100;
+		 
+		console.log("Lote GeoJSON", lote_geojson)
+
+		document.getElementById('campo-oc').show()
+
+
+
+
+		db_doc.lotes.push(lote_geojson)
+		// Save Lote en campo doc
+		campos_db.put(db_doc)
+
+		// Notificar Cambio para sincronizar
+		local_campos_changes.put({ _id: uuidv4(), tipo: "add-lote", username: couch_username, details: { campo_id: db_doc._id, db: "campos_" + couch_username, lote_geojson: lote_geojson, username: couch_username } }, (err, result) => {
+			if (!err) {
+				console.log('LocalChanges Successfully posted!');
+			} else {
+				console.log(err);
+			}
+		})
+
+		draw.deleteAll()
+	}
+
 	var campo_limites_json;
 	var edit_state = 0;
 	const lotes_edit_sm = (state) => {
@@ -1014,6 +1006,10 @@ zuix.controller(function (cp) {
 			draw.changeMode('draw_polygon');
 			modo_edicion = 'lote'
 			console.log("Dibuje el Poligono")
+
+			map.setLayoutProperty('lotes', 'visibility', 'none');
+			map.setLayoutProperty('lotes_border', 'visibility', 'visible');
+
 		} else if (state === 1) {
 
 		} else if (state === 2) {
@@ -1024,6 +1020,8 @@ zuix.controller(function (cp) {
 			draw.changeMode('simple_select');
 			modo_edicion = 'campo'
 			// Guardar Lote
+			map.setLayoutProperty('lotes', 'visibility', 'visible');
+			map.setLayoutProperty('lotes_border', 'visibility', 'none');
 
 		}
 

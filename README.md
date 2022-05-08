@@ -15,3 +15,4 @@ darkdb.get('cross').then(function(doc) {
 	darkdb.put({_id:'cross', un: 'demo'})  
     console.log(err);
 });
+
