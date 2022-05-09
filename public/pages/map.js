@@ -228,7 +228,7 @@ zuix.controller(function (cp) {
 		const ndvi_oc = new bootstrap.Offcanvas(document.getElementById('offcanvas-lote-ndvi'))
 
 		// Mostrar layers al cerrar el offcanvas de NDVI
-		document.getElementById('offcanvas-lote-ndvi').addEventListener('hide.bs.offcanvas',()=>{
+		document.getElementById('offcanvas-lote-ndvi').addEventListener('hide.bs.offcanvas', () => {
 			// Show Campos
 			map.setLayoutProperty('lotes', 'visibility', 'visible')
 			// Hide Lotes
@@ -255,7 +255,7 @@ zuix.controller(function (cp) {
 					let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
 					hashMessage(clean_json).then((lote_hash) => {
 						console.log("Lote Hash", lote_hash)
-						ndvi_db.get(lote_hash).then(ndvi_gallery).catch(()=>{
+						ndvi_db.get(lote_hash).then(ndvi_gallery).catch(() => {
 							console.log("Error NDVI: Aun no existe ningun registro");
 						})
 					})
@@ -823,47 +823,47 @@ zuix.controller(function (cp) {
 			myModal.hide()
 		})
 
-		function pointInPolygon(pnt, geometry){
-			return turf.booleanPointInPolygon( [pnt.lng, pnt.lat],geometry)
+		function pointInPolygon(pnt, geometry) {
+			return turf.booleanPointInPolygon([pnt.lng, pnt.lat], geometry)
 		}
-		
-		function getCampoFromPoint(pnt){
-			let c = map.querySourceFeatures('lotes').filter((campo)=>{
-				return pointInPolygon(map.getCenter(), campo.geometry) 
-			 })
-			
+
+		function getCampoFromPoint(pnt) {
+			let c = map.querySourceFeatures('lotes').filter((campo) => {
+				return pointInPolygon(map.getCenter(), campo.geometry)
+			})
+
 			return c.length ? c[0].properties.nombre : "No Especificado";
 		}
 
-		function getLoteFromPoint(pnt){
-			let c = map.querySourceFeatures('lotes_internos').filter((campo)=>{
-				return pointInPolygon(map.getCenter(), campo.geometry) 
-			 })
-			
+		function getLoteFromPoint(pnt) {
+			let c = map.querySourceFeatures('lotes_internos').filter((campo) => {
+				return pointInPolygon(map.getCenter(), campo.geometry)
+			})
+
 			return c.length ? c[0].properties.nombre : "No Especificado";
 		}
-	
-		function getSelectedColor(){
-			if(document.getElementById('btnradio-danger').checked){
+
+		function getSelectedColor() {
+			if (document.getElementById('btnradio-danger').checked) {
 				return "red"
-			}else if(document.getElementById('btnradio-warning').checked){
+			} else if (document.getElementById('btnradio-warning').checked) {
 				return "yellow"
-			}else {
+			} else {
 				return "green"
 			}
 		}
 
 		document.getElementById("guardar-nueva-nota-btn").addEventListener("click", () => {
-			
+
 			const nota = {
 				_id: "nota_" + uuidv4(),
-				username : couch_username,
+				username: couch_username,
 				campo_id: getCampoFromPoint(nota_marker.getLngLat()),
 				lote_id: getLoteFromPoint(nota_marker.getLngLat()),
 
 				color: getSelectedColor(),
 				texto: document.getElementById('nota-comentario-input').value,
-				fecha: "2000-10-31T01:30:00.000-05:00",
+				fecha: "2022-05-09T01:30:00.000-05:00",
 				posicion: nota_marker.getLngLat(),
 				_attachments: {}
 			};
@@ -896,11 +896,21 @@ zuix.controller(function (cp) {
 
 				Promise.all(audio_promise).then((audio_files) => {
 					audio_files.map(file => { nota._attachments["audio_" + uuidv4()] = { content_type: "audio/*", data: file } })
-					
-					// Guardar Nota 
-					notas_db.put(nota).then().catch(err => console.log(err))
 
+					// Add uuid y Guardar Nota
+					nota.uuid = uuidv4(); 
+					notas_db.put(nota).then().catch(err => console.log(err))
 					offcanvas_nueva_nota.hide()
+
+					// Agregar la nota a los cambios
+					// Notificar Cambio para sincronizar. Agregar attachments para poder acceder desde php
+					local_campos_changes.put({ _id: uuidv4(), tipo: "add-nota", username: couch_username, details: nota, _attachments: nota._attachments }, (err, result) => {
+						if (!err) {
+							console.log('LocalChanges Successfully posted!');
+						} else {
+							console.log(err);
+						}
+					})
 
 					// 	// Audio OK
 					// 	audio_files.map(file => { formData.append(`files.audio`, file, file.name) })
