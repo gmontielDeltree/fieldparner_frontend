@@ -753,6 +753,14 @@ zuix.controller(function (cp) {
 			new_audio = document.createElement('audio-recorder');
 			document.getElementById('audio-div').append(new_audio)
 
+			// Show Campos
+			map.setLayoutProperty('lotes', 'visibility', 'visible')
+			// Hide Lotes
+			map.setLayoutProperty('lotes_internos', 'visibility', 'visible')
+			// Hide NDVI
+			map.setLayoutProperty('ndvi-layer', 'visibility', 'none')
+			// Bordes
+			map.setLayoutProperty('lotes_border', 'visibility', 'none')
 
 			offcanvas_nueva_nota.show()
 		})
@@ -815,19 +823,46 @@ zuix.controller(function (cp) {
 			myModal.hide()
 		})
 
+		function pointInPolygon(pnt, geometry){
+			return turf.booleanPointInPolygon( [pnt.lng, pnt.lat],geometry)
+		}
+		
+		function getCampoFromPoint(pnt){
+			let c = map.querySourceFeatures('lotes').filter((campo)=>{
+				return pointInPolygon(map.getCenter(), campo.geometry) 
+			 })
+			
+			return c.length ? c[0].properties.nombre : "No Especificado";
+		}
+
+		function getLoteFromPoint(pnt){
+			let c = map.querySourceFeatures('lotes_internos').filter((campo)=>{
+				return pointInPolygon(map.getCenter(), campo.geometry) 
+			 })
+			
+			return c.length ? c[0].properties.nombre : "No Especificado";
+		}
+	
+		function getSelectedColor(){
+			if(document.getElementById('btnradio-danger').checked){
+				return "red"
+			}else if(document.getElementById('btnradio-warning').checked){
+				return "yellow"
+			}else {
+				return "green"
+			}
+		}
 
 		document.getElementById("guardar-nueva-nota-btn").addEventListener("click", () => {
-			// POST
-			const request = new XMLHttpRequest();
-
-			const formData = new FormData();
-
-			//const formElements = formElement.elements;
-
+			
 			const nota = {
-				_id: "nota" + uuidv4(),
-				color: "red",
-				texto: "test note",
+				_id: "nota_" + uuidv4(),
+				username : couch_username,
+				campo_id: getCampoFromPoint(nota_marker.getLngLat()),
+				lote_id: getLoteFromPoint(nota_marker.getLngLat()),
+
+				color: getSelectedColor(),
+				texto: document.getElementById('nota-comentario-input').value,
 				fecha: "2000-10-31T01:30:00.000-05:00",
 				posicion: nota_marker.getLngLat(),
 				_attachments: {}
@@ -861,6 +896,8 @@ zuix.controller(function (cp) {
 
 				Promise.all(audio_promise).then((audio_files) => {
 					audio_files.map(file => { nota._attachments["audio_" + uuidv4()] = { content_type: "audio/*", data: file } })
+					
+					// Guardar Nota 
 					notas_db.put(nota).then().catch(err => console.log(err))
 
 					offcanvas_nueva_nota.hide()
@@ -955,6 +992,7 @@ zuix.controller(function (cp) {
 				.addTo(map);
 
 			el.addEventListener('click', (e) => {
+				e.stopPropagation()
 				console.log("Click en Nota", nota)
 				nota_mostrar(nota)
 			})
