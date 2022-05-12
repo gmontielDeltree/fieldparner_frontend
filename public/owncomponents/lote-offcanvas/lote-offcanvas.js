@@ -1,5 +1,6 @@
 import { LitElement, html, css, map } from '../../assets/lit-all.min.js';
-
+import { aplicacionMachine } from './lote-machine.js';
+import {interpret} from '../../assets/xstate.js';
 
 export class LoteOffcanvas extends LitElement {
     static properties = {
@@ -7,7 +8,8 @@ export class LoteOffcanvas extends LitElement {
         lote_id: {},
         campo_id: {},
         lote_nombre: {},
-        _lotesOffcanvas: {}
+        _lotesOffcanvas: {},
+        machine: {state: true} 
     }
 
     static styles = css`
@@ -23,6 +25,9 @@ export class LoteOffcanvas extends LitElement {
 
     constructor() {
         super();
+        this.machine = interpret(aplicacionMachine).onTransition((state) => {
+            console.log(state.value);
+          }).start()
     }
 
     createRenderRoot() {
@@ -56,7 +61,7 @@ export class LoteOffcanvas extends LitElement {
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body small">
-                <button @click=${this.siembra}>+ Siembra</button>
+                <button @click=${this.siembra}>${this.machine.context.fecha}</button>
                 <button @click=${this.actividad}>+ Actividad</button>
                 <button @click=${this.cosecha}>+ Cosecha</button>
             </div>
