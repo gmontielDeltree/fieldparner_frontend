@@ -245,24 +245,32 @@ zuix.controller(function (cp) {
 		map.on('click', 'lotes_internos', (e) => {
 			console.log("Click en lotes Internos", e.features[0])
 			let { nombre, campo_parent_id } = e.features[0].properties
+
+			document.getElementById('lote-oc').db = campos_db;
+			document.getElementById('lote-oc').lote_nombre = nombre;
+			document.getElementById('lote-oc').campo_id = campo_parent_id;
+			document.getElementById('lote-oc').show();
+			
+			
+
 			// Busco el lote en la db para evitar la distorsion de mapbox geometry
-			campos_db.get(campo_parent_id).then(
-				(campo_doc) => {
-					let lotes = campo_doc.lotes
-					let lote_clickeado_lista = lotes.filter((lote) => lote.properties.nombre === nombre)
-					let lote_clickeado = lote_clickeado_lista[0]
-					let geometry = lote_clickeado.geometry
-					let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
-					hashMessage(clean_json).then((lote_hash) => {
-						console.log("Lote Hash", lote_hash)
-						ndvi_db.get(lote_hash).then(ndvi_gallery).catch(() => {
-							console.log("Error NDVI: Aun no existe ningun registro");
-						})
-					})
-					// ndvi_oc.show()
-					document.getElementById('campo-oc').hide()
-				}
-			)
+			// campos_db.get(campo_parent_id).then(
+			// 	(campo_doc) => {
+			// 		let lotes = campo_doc.lotes
+			// 		let lote_clickeado_lista = lotes.filter((lote) => lote.properties.nombre === nombre)
+			// 		let lote_clickeado = lote_clickeado_lista[0]
+			// 		let geometry = lote_clickeado.geometry
+			// 		let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
+			// 		hashMessage(clean_json).then((lote_hash) => {
+			// 			console.log("Lote Hash", lote_hash)
+			// 			ndvi_db.get(lote_hash).then(ndvi_gallery).catch(() => {
+			// 				console.log("Error NDVI: Aun no existe ningun registro");
+			// 			})
+			// 		})
+			// 		// ndvi_oc.show()
+			// 		document.getElementById('campo-oc').hide()
+			// 	}
+			// )
 
 		})
 
@@ -657,13 +665,13 @@ zuix.controller(function (cp) {
 				if (!err) {
 					console.log('Successfully posted a Campo!');
 
-					local_campos_changes.put({ _id: uuidv4(), tipo: "add-campo", username: couch_username, details: { campo_id: "campos_" + (nombre), db: "campos_" + couch_username, campo_geojson: campo_geojson, username: couch_username } }, (err, result) => {
-						if (!err) {
-							console.log('LocalChanges Successfully posted!');
-						} else {
-							console.log(err);
-						}
-					})
+					// local_campos_changes.put({ _id: uuidv4(), tipo: "add-campo", username: couch_username, details: { campo_id: "campos_" + (nombre), db: "campos_" + couch_username, campo_geojson: campo_geojson, username: couch_username } }, (err, result) => {
+					// 	if (!err) {
+					// 		console.log('LocalChanges Successfully posted!');
+					// 	} else {
+					// 		console.log(err);
+					// 	}
+					// })
 
 				} else {
 					console.log(err)
@@ -901,42 +909,9 @@ zuix.controller(function (cp) {
 					nota.uuid = uuidv4(); 
 					notas_db.put(nota).then().catch(err => console.log(err))
 					offcanvas_nueva_nota.hide()
-
-					// Agregar la nota a los cambios
-					// Notificar Cambio para sincronizar. Agregar attachments para poder acceder desde php
-					local_campos_changes.put({ _id: uuidv4(), tipo: "add-nota", username: couch_username, details: nota, _attachments: nota._attachments }, (err, result) => {
-						if (!err) {
-							console.log('LocalChanges Successfully posted!');
-						} else {
-							console.log(err);
-						}
-					})
-
-					// 	// Audio OK
-					// 	audio_files.map(file => { formData.append(`files.audio`, file, file.name) })
-
-					// 	console.log(audio_files)
-					// 	formData.append('data', JSON.stringify(nota));
-
-					// 	console.log("FORM DATA", formData)
-
-					// 	request.open('POST', api_root + `/api/notas`);
-					// 	request.send(formData);
 				})
-
-
 			})
-
-
-			//formData.append(`files.audio`, file, file.name);
-
-
-
-
 		})
-
-
-
 	}
 
 	// Notas 
@@ -944,15 +919,6 @@ zuix.controller(function (cp) {
 
 		const offcanvas_nota = new bootstrap.Offcanvas(document.getElementById('offcanvas-nota'))
 
-
-		// axios.get(api_root + '/api/notas').then((response) => {
-		// 	notas = response.data.data
-		// 	notas.map(marcador_from_nota)
-
-		// })
-		// 	.catch((e) => {
-		// 		console.log("ERROR al get Notas", e)
-		// 	})
 		const redraw_notas = () => {
 			// Remove markers 
 			const markers_nota = document.querySelectorAll('.marker-nota');
@@ -962,7 +928,6 @@ zuix.controller(function (cp) {
 			});
 
 			//Releer
-
 			notas_db.allDocs({
 				include_docs: true,
 				attachments: true,
@@ -1074,13 +1039,13 @@ zuix.controller(function (cp) {
 		campos_db.put(db_doc)
 
 		// Notificar Cambio para sincronizar
-		local_campos_changes.put({ _id: uuidv4(), tipo: "add-lote", username: couch_username, details: { campo_id: db_doc._id, db: "campos_" + couch_username, lote_geojson: lote_geojson, username: couch_username } }, (err, result) => {
-			if (!err) {
-				console.log('LocalChanges Successfully posted!');
-			} else {
-				console.log(err);
-			}
-		})
+		// local_campos_changes.put({ _id: uuidv4(), tipo: "add-lote", username: couch_username, details: { campo_id: db_doc._id, db: "campos_" + couch_username, lote_geojson: lote_geojson, username: couch_username } }, (err, result) => {
+		// 	if (!err) {
+		// 		console.log('LocalChanges Successfully posted!');
+		// 	} else {
+		// 		console.log(err);
+		// 	}
+		// })
 
 		draw.deleteAll()
 	}
