@@ -48,17 +48,17 @@ export class LoteOffcanvas extends LitElement {
                 this.show_step(2)
             } else if (state.matches('editing.dosis')) {
                 this.show_step(3)
-            }else if (state.matches('editing.motivo')) {
+            } else if (state.matches('editing.motivo')) {
                 this.show_step(4)
             }
 
             else if (state.matches('editing.masinsumos')) {
                 this.show_step(5)
-            }else if (state.matches('editing.comentario')) {
+            } else if (state.matches('editing.comentario')) {
                 this.show_step(6)
-            }else if (state.matches('editing.resumiendo')) {
+            } else if (state.matches('editing.resumiendo')) {
                 this.show_step(7)
-            }else if (state.matches('editing.share')) {
+            } else if (state.matches('editing.share')) {
                 this.show_step(8)
             }
         }).start()
@@ -92,7 +92,18 @@ export class LoteOffcanvas extends LitElement {
         return this.fsm.machine.context
     }
 
+
     render() {
+
+        const insumo_el = (item) => html`<a href="#" class="list-group-item list-group-item-action" aria-current="true">
+        <div class="d-flex w-100 justify-content-between" @click=${(e)=>this.fsm.send({'type':'SELECTED', value:item })}>
+          <h5 class="mb-1">${item.name}</h5>
+          <small>Herbicida</small>
+        </div>
+        <p class="mb-1">Some placeholder content in a paragraph.</p>
+        <small>And some small print.</small>
+      </a>`
+
         return html`
 
         <div class="offcanvas offcanvas-bottom" tabindex="-1" id="lote-offcanvas" aria-labelledby="offcanvasBottomLabel">
@@ -106,7 +117,6 @@ export class LoteOffcanvas extends LitElement {
                 <button @click=${this.cosecha}>+ Cosecha</button>
             </div>
         </div>
-        
         
         <!-- Modal Visible en fecha state -->
         <div class="modal fade aplicacion step" data-bs-backdrop="static" data-bs-keyboard="false"
@@ -124,9 +134,9 @@ export class LoteOffcanvas extends LitElement {
         
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${()=>
-                            this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("NEXT")}>Siguiente</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
+                this.fsm.send("CANCEL")}>Cancelar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")}>Siguiente</button>
                     </div>
                 </div>
             </div>
@@ -143,15 +153,13 @@ export class LoteOffcanvas extends LitElement {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <h5></h5>
-                        <input type="number" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}>
-        
+                        <input type="number" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${()=>
-                            this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("NEXT")} >Siguiente</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
+                this.fsm.send("CANCEL")}>Cancelar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")}>Atras</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")}>Siguiente</button>
                     </div>
                 </div>
             </div>
@@ -167,17 +175,19 @@ export class LoteOffcanvas extends LitElement {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <h5></h5>
-                        <!-- Seleccion insumo -->
-        
-                        <input type="number" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}>
-        
+
+                        <input type="text" @keyup=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
+                        <div class='list-group'>
+
+                            ${map(this._ctx.filtrado, insumo_el)}
+
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${()=>
-                            this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("NEXT")} >Siguiente</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
+                this.fsm.send("CANCEL")}>Cancelar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
                     </div>
                 </div>
             </div>
@@ -193,17 +203,15 @@ export class LoteOffcanvas extends LitElement {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <h5></h5>
-                        <!-- Seleccion insumo -->
         
-                        <input type="number" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}>
+                        <input type="number" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
         
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${()=>
-                            this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("NEXT")} >Siguiente</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
+                this.fsm.send("CANCEL")}>Cancelar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
                     </div>
                 </div>
             </div>
@@ -221,14 +229,14 @@ export class LoteOffcanvas extends LitElement {
                     </div>
                     <div class="modal-body">
                         
-                        <input type="number" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}>
+                        <input type="number" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
         
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${()=>
-                            this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("NEXT")} >Siguiente</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
+                this.fsm.send("CANCEL")}>Cancelar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
                     </div>
                 </div>
             </div>
@@ -245,17 +253,17 @@ export class LoteOffcanvas extends LitElement {
                     </div>
                     <div class="modal-body">
         
-                        <input type="number" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}>
+                        <input type="number" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
         
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("SI")} >SI</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("NO")} >NO</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("SI")} >SI</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NO")} >NO</button>
 
 
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${()=>
-                            this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("BACK")} >Atras</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
+                this.fsm.send("CANCEL")}>Cancelar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
 
                     </div>
                 </div>
@@ -274,16 +282,16 @@ export class LoteOffcanvas extends LitElement {
                     <div class="modal-body">
                         <h5></h5>
         
-                        <textarea id="story" name="story" rows="5" cols="33" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}>
+                        <textarea id="story" name="story" rows="5" cols="33" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
                         It was a dark and stormy night...
                         </textarea>
 
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${()=>
-                            this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("NEXT")} >Siguiente</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
+                this.fsm.send("CANCEL")}>Cancelar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
                     </div>
                 </div>
             </div>
@@ -299,17 +307,13 @@ export class LoteOffcanvas extends LitElement {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <h5></h5>
-                        <!-- Seleccion insumo -->
-        
-                        <input type="number" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}>
-        
+                        <input type="number" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${()=>
-                            this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("GUARDAR")}>Guardar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
+                this.fsm.send("CANCEL")}>Cancelar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("GUARDAR")}>Guardar</button>
                     </div>
                 </div>
             </div>
@@ -329,14 +333,14 @@ export class LoteOffcanvas extends LitElement {
                         <h5></h5>
                         <!-- Seleccion insumo -->
         
-                        <input type="number" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}>
+                        <input type="number" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
         
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${()=>
-                            this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("NEXT")} >Siguiente</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
+                this.fsm.send("CANCEL")}>Cancelar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
                     </div>
                 </div>
             </div>
