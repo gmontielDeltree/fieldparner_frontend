@@ -197,7 +197,7 @@ zuix.controller(function (cp) {
 		redraw_map();
 
 		/** Mapbox handler para mostrar el offcanvas de detalles  'lotes', */
-		map.on('click', 'lotes', (e) => {
+		map.on(touchEvent, 'lotes', (e) => {
 
 			// NDVI not visible
 			console.log("Click en Campo", e.features[0])
@@ -242,7 +242,7 @@ zuix.controller(function (cp) {
 
 		})
 
-		map.on('click', 'lotes_internos', (e) => {
+		map.on(touchEvent, 'lotes_internos', (e) => {
 			console.log("Click en lotes Internos", e.features[0])
 			let { nombre, campo_parent_id } = e.features[0].properties
 
