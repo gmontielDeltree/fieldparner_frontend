@@ -2,8 +2,9 @@ import { LitElement, html, css } from 'lit';
 import { map } from 'lit/directives/map.js';
 import { aplicacionMachine } from './lote-machine.js';
 import { createMachine, interpret, send } from 'xstate';
+import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
+//import pdfFonts from "pdfmake/build/vfs_fonts";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 //import "../../assets/pdfmake.min.js";
@@ -11,7 +12,6 @@ pdfMake.vfs = pdfFonts.pdfMake.vfs;
 import orden_definition from './orden_definition.js';
 import './timeline/timeline.js';
 import { Modal, Offcanvas } from 'bootstrap'
-
 //pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 //const { interpret, send } = XState;
@@ -143,8 +143,7 @@ export class LoteOffcanvas extends LitElement {
                 <div class="container">
                     <div class='row'>
                     <div class='col shadow mx-2 p-3 max-vh-25'>
-                        <lit-timeline></lit-timeline>
-                                                    
+                        <lit-timeline></lit-timeline>                 
                     </div>
                     </div>
                    
