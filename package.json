@@ -16,6 +16,7 @@
     "lit": "^2.2.3",
     "mapbox-gl": "^2.8.2",
     "material-icons": "^1.10.11",
+    "pdfmake": "^0.2.5",
     "xstate": "^4.32.1"
   }
 }
