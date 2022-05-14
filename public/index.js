@@ -220,6 +220,9 @@ const check_logged_user = async () => {
         // No existe / Offline /
         // No Logged In
         no_logged_screen()
+        base_url = "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/"
+        console.log('Using Randy');
+        get_dbs(base_url, 'randy')
     })
 }
 
