@@ -1,0 +1,84 @@
+
+      
+        /*mapbox gl css custom settings
+	https://stackoverflow.com/questions/57166761/mapbox-gl-height-100
+	*/
+    
+	    #map {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 100%;
+		height: calc(100vh - 56px) !important;
+		}
+	 
+		.menu-button {
+		  margin-bottom: 56px;
+	 	}
+		 .guia-toast {
+	           margin-top: 100px;
+		 }
+
+		 .menu-item:last-child{
+			 margin-bottom: 50px;
+		 }
+
+	    .mapboxgl-ctrl-group button+button {
+		border-top: none
+	    }
+
+	    .img-wrap {
+		position: relative;
+		/*display: inline-block;*/
+		border: 1px red solid;
+		font-size: 0;
+	    }
+	    .img-wrap .img-close {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		z-index: 100;
+		background-color: #FFF;
+		padding: 5px 2px 2px;
+		color: #000;
+		font-weight: bold;
+		cursor: pointer;
+		opacity: .2;
+		text-align: center;
+		font-size: 22px;
+		line-height: 10px;
+		border-radius: 50%;
+	    }
+	    .img-wrap:hover .img-close {
+		opacity: 1;
+	    }
+		.marker {
+			background-image: url('assets/images/icons/nota-red.png');
+			background-size: cover;
+			width: 24px;
+			height: 24px;
+			cursor: pointer;
+		  }
+		
+		 .marker-red {
+			background-image: url('assets/images/icons/nota-red.png');
+		  }
+		  
+		  .marker-green {
+			background-image: url('assets/images/icons/nota-green.png');
+		  }
+		  .marker-yellow {
+			background-image: url('assets/images/icons/nota-yellow.png');
+		  }
+		  .map-overlay {
+			font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+			background-color: #fff;
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+			border-radius: 3px;
+			position: absolute;
+			width: 25%;
+			top: 80px;
+			left: 10px;
+			padding: 10px;
+			display: none;
+			} 
