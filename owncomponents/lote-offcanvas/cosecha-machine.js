@@ -5,9 +5,9 @@ import { createMachine, assign, actions, interpret } from 'xstate';
 export const cosechaMachine =
   createMachine(
     {
-      id: "Aplicacion",
+      id: "Cosecha",
       initial: "idle",
-      context: { fecha: "102", hectareas: 0, lista_insumos: [{ name: '2,4d' }, { name: 'glifosarto' }, { name: 'peros' }], current_insumo: "", filtrado: [], dosis: 0, insumos:[], comentarios:"",  },
+      context: { fecha: "31/12/2021", hectareas: 0, rinde: 0, humedad: 50, comentario:"", adjuntos:[]  },
       states: {
         idle: {
           on: {
@@ -43,101 +43,64 @@ export const cosechaMachine =
                   target: "fecha",
                 },
                 NEXT: {
-                  target: "insumo",
+                  target: "rinde",
                 },
               },
             },
-            insumo: {
+            rinde: {
               on: {
                 BACK: {
                   target: "hectareas",
                 },
                 NEXT: {
-                  target: "dosis",
+                  target: "humedad",
                 },
                 CHANGE: {
                   actions: assign({
-                    filtrado: (ctx, e) => ctx.lista_insumos.filter((i)=>{return (i.name.toUpperCase().indexOf(e.value.toUpperCase()) > -1)} ).slice(0,20)
-                  }),
-                },
-                SELECTED:{
-                  actions: assign({
-                    current_insumo: (ctx,e) => e.value
+                    rinde: (ctx, e) => e.value
                   })
                 }
-
               },
             },
-            dosis: {
+            humedad: {
               on: {
-                BACK: { target: "insumo" },
-                NEXT: { target: 'motivo' },
+                BACK: { target: "rinde" },
+                NEXT: { target: 'adjuntos' },
                 CHANGE: {
                   actions: assign({
-                    dosis : (ctx, e) => e.value
+                    humedad : (ctx, e) => e.value
                   })
                 },
               },
             },
-            motivo: {
+            adjuntos: {
               on: {
-                BACK: { target: "dosis" },
-                NEXT: { target: 'masinsumos' },
-                CHANGE: {
+                BACK: { target: "humedad" },
+                NEXT: { target: 'comentario' },
+                ADJUNTAR: {
                   action: assign({
-                    motivo : (ctx, e) => e.value
+                    adjuntos : (ctx, e) => {
+                      ctx.adjuntos.push(e.value)
+                      return ctx.adjuntos
+                    }
                   })
                 },
               },
-            },
-            masinsumos: {
-              on: {
-                BACK: { target: "motivo" },
-                SI: { target: "insumo" },
-                NO: { target: 'comentario' }
-              }
             },
             comentario: {
               on: {
-                BACK: { target: 'masinsumos' },
+                BACK: { target: 'adjuntos' },
                 NEXT: { target: 'resumiendo' },
               }
             },
             resumiendo: {
               on: {
                 BACK: { target: 'comentario' },
-                GUARDAR: { target: 'share' }
+                GUARDAR: { target: 'fin' }
               }
-            },
-            costos: {
-              on: {
-                BACK: {
-                  target: "insumo",
-                },
-                NEXT: {
-                  target: "comentarios",
-                },
-              },
-            },
-            comentarios: {
-              on: {
-                BACK: {
-                  target: "costos",
-                },
-                NEXT: {
-                  target: "share",
-                },
-              },
             },
             fin: {
               type: "final",
-            },
-            share: {
-              on: {
-                NEXT: {
-                  target: "fin",
-                },
-              },
             },
           },
         }

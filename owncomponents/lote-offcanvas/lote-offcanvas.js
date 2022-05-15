@@ -12,6 +12,10 @@ import orden_definition from './orden_definition.js';
 import './timeline/timeline.js';
 import { Modal, Offcanvas } from 'bootstrap'
 import PouchDB from 'pouchdb';
+import uuid4 from 'uuid4';
+
+import './cosecha-add-ui.js'
+import './siembra-add-ui.js'
 
 const capitalize = (mySentence) => {
     if(mySentence === null || mySentence === undefined){
@@ -34,6 +38,13 @@ const principio_activo = (item) => {
     }else{
         return r
     }
+}
+
+const motivos_2_str = motivos => {
+    let motivos_array = Object.keys(motivos)
+    let solo_verdaderos = motivos_array.filter(m => motivos[m])
+
+    return solo_verdaderos.join(", ") 
 }
 
 export class LoteOffcanvas extends LitElement {
@@ -68,6 +79,7 @@ export class LoteOffcanvas extends LitElement {
          * Sensible default para el contexto
          */
         this._ctx =  aplicacionMachine.initialState.context;
+        this.addEventListener('guardar-cosecha', (e) => console.log(e.detail, e.target.localName));
     }
 
     createRenderRoot() {
@@ -85,23 +97,65 @@ export class LoteOffcanvas extends LitElement {
     }
 
     siembra() {
-        console.log(this.fsm)
+        document.getElementById('siembra-add-el').start()
     }
 
     actividad() {
         this.fsm.send({ type: "NEXT" })
     }
 
-    cosecha() { }
-
-    ctx(key) {
-        return this.fsm.machine.context
+    cosecha() { 
+        document.getElementById('cosecha-add-el').start()
     }
 
     abrir_pdf(params) {
         pdfMake.createPdf(orden_definition).open();
     }
 
+    tiene_cultivo_este_lote(){
+        /**
+         * Es un array que contiene todas las actividades historicas en el lote
+         */
+        let actividades = this._lote_doc?.actividades || []
+        // Ordenar por fechas
+
+        // Filtrar Cosechas
+
+        // Filtrar Siembras
+
+        // Que fue lo mas proximo?
+        // Si Cosecha es lo ultimo -> "Barbecho"
+
+        // Si siembra el lo ultimo -> Nombre del Cultivo
+        return "Barbecho"
+    }
+
+    guardar_aplicacion(){
+        this.fsm.send("GUARDAR");
+        // Save to lote properties
+        let ts_ahora = new Date().toISOString()
+        let detalles = {fecha:this._ctx.fecha,
+                        hectareas:this._ctx.hectareas,
+                        insumos:this._ctx.insumos,
+                        comentarios:this._ctx.comentarios
+                        }
+        let aplicacion = { uuid: uuid4(), tipo: "aplicacion", ts_generacion : ts_ahora, detalles: detalles};
+        
+        // Condiciones ambientales?
+
+        // Re-Get Lotes y update
+        this._db.get(this.campo_id).then((doc)=>{
+            let lote_index = doc.lotes.findIndex((lote)=>lote.properties.nombre===this.lote_nombre);
+            if(lote_index > -1){
+                // Cool - Existe
+                let current_aplicaciones = doc.lotes[lote_index].properties.actividades || [];
+                current_aplicaciones.push(aplicacion)
+                doc.lotes[lote_index].properties.actividades = current_aplicaciones;
+                this._db.put(doc).then((r)=>console.log("Actividad Agregada"))
+            }
+            
+        })
+    }
     /**
      * Actualiza los documentos si las propiedades han cambiando.
      * @param {*} changedProperties 
@@ -151,7 +205,19 @@ export class LoteOffcanvas extends LitElement {
 
     render() {
 
-
+        const resumen_item_el = (item) => html`<a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h5 class="mb-1">${capitalize(item.name)}</h5>
+                                                <small class="text-muted">${capitalize(item.type)}</small>
+                                            </div>
+                                            <p class="mb-1">${item.dosis} ${item.unidad} - ${item.hectareas} ha. - ${item.total.toFixed(2)} ${item.unidad === 'lt/ha'?'litros':'kgs'} totales</p>
+                                            <div class='d-flex w-100 justify-content-between'>
+                                                <small class="text-muted">${motivos_2_str(item.motivos)}</small>
+                                                <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                                                    <!-- <button type="button" class="btn btn-danger">Eliminar</button> -->
+                                                </div>
+                                            </div>
+                                        </a>`
 
                 const insumo_el = (item) => html`<a href="#" class="list-group-item list-group-item-action ${this._ctx.current_insumo.name === item.name? 'active':''}" @click=${(e)=> this.fsm.send({
                                                     'type': 'SELECTED', value: item
@@ -201,7 +267,8 @@ export class LoteOffcanvas extends LitElement {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Cuando se realizará la aplicación?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
+                            this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
         
@@ -226,7 +293,8 @@ export class LoteOffcanvas extends LitElement {
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Sobre cuantas hectáreas se realizará la aplicación?
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
+                            this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
                         <input type="number" value=${this._ctx.hectareas} @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
@@ -244,13 +312,14 @@ export class LoteOffcanvas extends LitElement {
         <!-- Modal Visible en Insumo state -->
         <div class="modal fade aplicacion step" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
             aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-md-down">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">Seleccione un insumo</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
+                            this.fsm.send("CANCEL")}></button>
                     </div>
-                    <div class="modal-body mx-auto container">
+                    <div class="modal-body mx-auto container-fluid">
                         <div class='row'>
                             <input class="form-control" type="text" placeholder="Escriba el nombre del insumo para filtrar" @keyup=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
                         </div>
@@ -277,7 +346,8 @@ export class LoteOffcanvas extends LitElement {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Cual es la Dosis?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
+                            this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
                         <h4>${capitalize(this._ctx.current_insumo.name)}</h4>
@@ -309,7 +379,8 @@ export class LoteOffcanvas extends LitElement {
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Cual es el motivo de la aplicación?</h5>
         
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
+                            this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
                         <div class="form-check">
@@ -354,7 +425,8 @@ export class LoteOffcanvas extends LitElement {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Deseas agregar otro insumo?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
+                            this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
 
@@ -378,12 +450,13 @@ export class LoteOffcanvas extends LitElement {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Tienes algún comentario adicional?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
+                            this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
                         <h5></h5>
         
-                        <textarea id="story" placeholder="Ingresa alguna nota aquí" name="story" rows="5" cols="33" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
+                        <textarea id="story" placeholder="Ingresa alguna nota aquí" name="story" rows="5" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
         
                     </div>
                     <div class="modal-footer">
@@ -399,54 +472,34 @@ export class LoteOffcanvas extends LitElement {
         <!-- Modal Visible en Resumen state -->
         <div class="modal fade aplicacion step" id="lote-hectareas-editor" data-bs-backdrop="static" data-bs-keyboard="false"
             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-fullscreen-md-down">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">Resumen</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
+                            this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body">
-                        <div class="container shadow min-vh-100 py-2">
+                        <div class="container-fluid shadow min-vh-100 py-2">
                             <div class="row">
                                 <div class="col">
-                                    <h3>Aplicación en lote "Gulito" - "El Garompo"</h3>
-                                    <div class="container">
+                                    <h3>Aplicación en lote ${this.lote_nombre} - ${this._campo_doc?.nombre}</h3>
+                                    <div>
                                         <div class="row">
                                             <div class="col">
-                                                <h6>Fecha de aplicación: 30/12/2222</h6>
+                                                <h6>Fecha de aplicación: ${this._ctx.fecha}</h6>
                                             </div>
                                             <button class='col col-2'> Edit </button>
                                         </div>
                                         <div class='row'>
-                                            <h5>Barbecho</h5>
+                                            <h5>${this.tiene_cultivo_este_lote()}</h5>
                                         </div>
                                         <div class="row list-group">
-                                            <a href="#" class="list-group-item list-group-item-action">
-                                                <div class="d-flex w-100 justify-content-between">
-                                                    <h5 class="mb-1">2,4D</h5>
-                                                    <small class="text-muted">Herbicida</small>
-                                                </div>
-                                                <p class="mb-1">10 lt/ha - 23 ha - 50 litros totales</p>
-                                                <small class="text-muted"></small>
-                                            </a>
-                                            <a href="#" class="list-group-item list-group-item-action">
-                                                <div class="d-flex w-100 justify-content-between">
-                                                    <h5 class="mb-1">Glifochota</h5>
-                                                    <small class="text-muted">Pesticida</small>
-                                                </div>
-                                                <p class="mb-1">10 lt/ha - 23 ha - 50 litros totales</p>
-                                                <div class='d-flex w-100 justify-content-between'>
-                                                    <small class="text-muted">Plaga - Orugas</small>
-                                                    <div class="btn-group" role="group" aria-label="Basic mixed styles example">
-                                                        <button type="button" class="btn btn-danger">Eliminar</button>
-                                                        <button type="button" class="btn btn-warning">Editar</button>
-                                                    </div>
-                                                </div>
-                                            </a>
+                                            ${map(this._ctx.insumos, resumen_item_el)}
                                         </div>
                                         <div class='row mt-2'>
                                             <h6>Comentarios</h6>
-                                            <textarea class="form-control" aria-label="With textarea"></textarea>
+                                            <textarea class="form-control" aria-label="With textarea">${this._ctx.comentarios}</textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -457,7 +510,7 @@ export class LoteOffcanvas extends LitElement {
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
                 this.fsm.send("CANCEL")}>Cancelar</button>
                         <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("GUARDAR")}>Guardar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.guardar_aplicacion()}>Guardar</button>
                     </div>
                 </div>
             </div>
@@ -471,7 +524,8 @@ export class LoteOffcanvas extends LitElement {
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Quieres compartir la Orden de Trabajo para esta
                             aplicación?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
+                            this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="container modal-body">
         
@@ -494,6 +548,9 @@ export class LoteOffcanvas extends LitElement {
             </div>
         </div>
 
+        <cosecha-add-ui id='cosecha-add-el' lote_id=${this.lote_id}></cosecha-add-ui>
+
+        <siembra-add-ui id='siembra-add-el'></siembra-add-ui>
         `
     }
 

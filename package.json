@@ -20,6 +20,7 @@
     "material-icons": "^1.10.11",
     "pdfmake": "^0.2.5",
     "pouchdb": "^7.3.0",
+    "uuid4": "^2.0.2",
     "xstate": "^4.32.1"
   }
 }
