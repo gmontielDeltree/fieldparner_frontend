@@ -8,7 +8,7 @@ export const aplicacionMachine =
     {
       id: "Aplicacion",
       initial: "idle",
-      context: { fecha: "102", hectareas: 0, lista_insumos: [{ name: '2,4d' }, { name: 'glifosarto' }, { name: 'peros' }], current_insumo: "", filtrado: [], dosis: 0, insumos:[], comentarios:"",  },
+      context: { fecha: "102", hectareas: 0, current_insumo: "", filtrado: [], dosis: 0, insumos:[], unidad: 'lt/ha',comentarios:"", motivos:{},  },
       states: {
         idle: {
           on: {
@@ -89,9 +89,10 @@ export const aplicacionMachine =
               on: {
                 BACK: { target: "dosis" },
                 NEXT: { target: 'masinsumos' },
-                CHANGE: {
-                  action: assign({
-                    motivo : (ctx, e) => e.value
+                TICK:{
+                  actions: assign({
+                    motivos: (ctx,e) => {ctx.motivos[e.name] = e.value
+                                          return ctx.motivos}
                   })
                 },
               },

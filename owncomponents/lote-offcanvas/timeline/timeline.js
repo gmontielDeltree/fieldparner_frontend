@@ -13,10 +13,8 @@ const timeline = html`<div class="container">
                     <time class="cbp_tmtime" datetime="2017-11-04T03:45"><span>03:45 AM</span> <span>Today</span></time>
                     <div class="cbp_tmicon bg-info"><i class="zmdi zmdi-label"></i></div>
                     <div class="cbp_tmlabel">
-                        <h2><a href="javascript:void(0);">Art Ramadani</a> <span>posted a status update</span></h2>
-                        <p>Tolerably earnestly middleton extremely distrusts she boy now not. Add and offered prepare
-                            how cordial two promise. Greatly who affixed suppose but enquire compact prepare all put.
-                            Added forth chief trees but rooms think may.</p>
+                        <h2><a href="javascript:void(0);">Aplicación</a> <span></span></h2>
+                        <p>2,4d - Glifosato</p>
                     </div>
                 </li>
                 <li>

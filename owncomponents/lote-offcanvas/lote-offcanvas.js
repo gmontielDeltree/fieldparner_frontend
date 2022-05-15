@@ -2,7 +2,7 @@ import { LitElement, html, css} from 'lit';
 import { map } from 'lit/directives/map.js';
 import { aplicacionMachine } from './lote-machine.js';
 import { createMachine, interpret, send } from 'xstate';
-
+import 'bootstrap'
 // Importante el orden de la importacion para que no arroje error
 import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 import pdfMake from "pdfmake/build/pdfmake";
@@ -279,10 +279,17 @@ export class LoteOffcanvas extends LitElement {
                         <h5 class="modal-title" id="staticBackdropLabel">¿Cual es la Dosis?</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        <h5>${this._ctx.current_insumo.name}</h5>
-                        <input type="number" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
-        
+                    <div class="modal-body mx-auto">
+                        <h4>${capitalize(this._ctx.current_insumo.name)}</h4>
+                        <div class="input-group mb-3">
+                            
+                            <input type="number" class="form-control" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })} aria-label="Text input with dropdown button">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">${this._ctx.unidad}</button>
+                            <ul class="dropdown-menu"> 
+                                <li><a class="dropdown-item" href="#">kg/ha</a></li>
+                                <li><a class="dropdown-item" href="#">lt/ha</a></li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
@@ -304,10 +311,31 @@ export class LoteOffcanvas extends LitElement {
         
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-        
-                        <input type="number" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
-        
+                    <div class="modal-body mx-auto">
+                        <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" @change=${(e)=>{this.fsm.send({"type":"TICK",value:e.target.checked, name:e.target.name })}} name="Enfermedad">
+                            <label class="form-check-label" for="flexCheckDefault">
+                                Enfermedad
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" name="Plaga" @change=${(e)=>{this.fsm.send({"type":"TICK",value:e.target.checked, name:e.target.name })}}>
+                            <label class="form-check-label" for="flexCheckDefault">
+                                Plaga
+                            </label>
+                        </div> 
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" name='Malezas' @change=${(e)=>{this.fsm.send({"type":"TICK",value:e.target.checked, name:e.target.name })}}>
+                            <label class="form-check-label" for="flexCheckDefault">
+                                Malezas
+                            </label>
+                        </div> 
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" name="Otro" @change=${(e)=>{this.fsm.send({"type":"TICK",value:e.target.checked, name:e.target.name })}}>
+                            <label class="form-check-label" for="flexCheckDefault">
+                                Otro
+                            </label>
+                        </div>     
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
@@ -325,17 +353,13 @@ export class LoteOffcanvas extends LitElement {
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Deseas agregar otro un insumo?</h5>
+                        <h5 class="modal-title" id="staticBackdropLabel">¿Deseas agregar otro insumo?</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-        
-                        <input type="number" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
-        
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("SI")} >SI</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NO")} >NO</button>
-        
-        
+                    <div class="modal-body mx-auto">
+
+                        <button type="button" class="btn btn-success btn-lg" @click=${() => this.fsm.send("SI")} >SI</button>
+                        <button type="button" class="btn btn-danger btn-lg" @click=${() => this.fsm.send("NO")} >NO</button>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
@@ -356,12 +380,10 @@ export class LoteOffcanvas extends LitElement {
                         <h5 class="modal-title" id="staticBackdropLabel">¿Tienes algún comentario adicional?</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body mx-auto">
                         <h5></h5>
         
-                        <textarea id="story" name="story" rows="5" cols="33" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
-                                                        It was a dark and stormy night...
-                                                        </textarea>
+                        <textarea id="story" placeholder="Ingresa alguna nota aquí" name="story" rows="5" cols="33" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
         
                     </div>
                     <div class="modal-footer">
