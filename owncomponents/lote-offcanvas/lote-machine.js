@@ -1,5 +1,5 @@
 import { createMachine, assign, actions, interpret } from 'xstate';
-
+import insumos from './insumos.json'
 // const { createMachine, assign, actions, interpret } = XState;
 
 export const aplicacionMachine =
@@ -13,7 +13,10 @@ export const aplicacionMachine =
         idle: {
           on: {
             NEXT: {
-              target: 'editing'
+              target: 'editing',
+              actions: assign({
+                filtrado: (ctx, e) => insumos.filter((i)=>{return (i.name.toUpperCase().indexOf('') > -1)} ).slice(0,7)
+              }),
             }
           }
         },
@@ -58,13 +61,15 @@ export const aplicacionMachine =
                 },
                 CHANGE: {
                   actions: assign({
-                    filtrado: (ctx, e) => ctx.lista_insumos.filter((i)=>{return (i.name.toUpperCase().indexOf(e.value.toUpperCase()) > -1)} ).slice(0,20)
+                    filtrado: (ctx, e) => insumos.filter((i)=>{return (i.name.toUpperCase().indexOf(e.value.toUpperCase()) > -1)} ).slice(0,7)
                   }),
                 },
                 SELECTED:{
-                  actions: assign({
-                    current_insumo: (ctx,e) => e.value
-                  })
+                  actions: [assign({
+                    current_insumo: (ctx,e) => e.value,
+                  }),
+                  () => console.log("3dsd")
+                ]
                 }
 
               },

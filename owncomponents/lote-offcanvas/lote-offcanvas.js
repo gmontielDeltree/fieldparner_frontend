@@ -1,48 +1,59 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css} from 'lit';
 import { map } from 'lit/directives/map.js';
 import { aplicacionMachine } from './lote-machine.js';
 import { createMachine, interpret, send } from 'xstate';
+
+// Importante el orden de la importacion para que no arroje error
 import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 import pdfMake from "pdfmake/build/pdfmake";
-//import pdfFonts from "pdfmake/build/vfs_fonts";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
-//import "../../assets/pdfmake.min.js";
-//import "../../assets/vfs_fonts.min.js";
 import orden_definition from './orden_definition.js';
 import './timeline/timeline.js';
 import { Modal, Offcanvas } from 'bootstrap'
-//pdfMake.vfs = pdfFonts.pdfMake.vfs;
+import PouchDB from 'pouchdb';
 
-//const { interpret, send } = XState;
+const capitalize = (mySentence) => {
+    if(mySentence === null || mySentence === undefined){
+        return ""
+    }else{
+        return mySentence.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+    }
+}
+
+const principio_activo = (item) => {
+    let components = item.components
+    if(components.length === 0){
+        return "Principio Activo Desconocido"
+    }
+    let principio_activos = components.filter((c)=>c.active_principle).map((c)=>c.name)
+    let enmayusculas = principio_activos.map((e) => e.toUpperCase()).slice(0,3)
+    let r = enmayusculas.join()
+    if(principio_activos.length > 4){
+        return r + "..."
+    }else{
+        return r
+    }
+}
 
 export class LoteOffcanvas extends LitElement {
     static properties = {
         db: {},
         lote_id: {},
         campo_id: {},
+        username: {},
         lote_nombre: {},
         _lotesOffcanvas: {},
         _fecha_editor: {},
         _steps_elements: {},
         _ctx: {},
+        _campo_doc: {},
+        _lote_doc:{},
+        _db: {state: true},
         fsm: { state: true }
     }
 
-    static styles = [css`
-    :host {
-      display: inline-block;
-      padding: 10px;
-      background: lightgray;
-    }
-    .planet {
-      color: var(--planet-color, blue);
-    }
-    .bg-green {
-        background-color: #50d38a !important;
-        color: #fff;
-    }
-    `];
+    static styles = null;
 
     show_step = (n) => {
         if (!this._steps_elements[n]._isShown) {
@@ -53,31 +64,10 @@ export class LoteOffcanvas extends LitElement {
 
     constructor() {
         super();
-        this.fsm = interpret(aplicacionMachine).onTransition((state) => {
-            this._ctx = state.context;
-            console.log(state.value);
-            if (state.matches('editing.fecha')) {
-                this.show_step(0)
-            } else if (state.matches('editing.hectareas')) {
-                this.show_step(1)
-            } else if (state.matches('editing.insumo')) {
-                this.show_step(2)
-            } else if (state.matches('editing.dosis')) {
-                this.show_step(3)
-            } else if (state.matches('editing.motivo')) {
-                this.show_step(4)
-            }
-
-            else if (state.matches('editing.masinsumos')) {
-                this.show_step(5)
-            } else if (state.matches('editing.comentario')) {
-                this.show_step(6)
-            } else if (state.matches('editing.resumiendo')) {
-                this.show_step(7)
-            } else if (state.matches('editing.share')) {
-                this.show_step(8)
-            }
-        }).start()
+        /**
+         * Sensible default para el contexto
+         */
+        this._ctx =  aplicacionMachine.initialState.context;
     }
 
     createRenderRoot() {
@@ -87,6 +77,7 @@ export class LoteOffcanvas extends LitElement {
     firstUpdated() {
         this._lotesOffcanvas = new Offcanvas(document.getElementById('lote-offcanvas'))
         this._steps_elements = [...document.querySelectorAll('.aplicacion.step')].map((el) => new Modal(el))
+
     }
 
     show() {
@@ -111,21 +102,69 @@ export class LoteOffcanvas extends LitElement {
         pdfMake.createPdf(orden_definition).open();
     }
 
+    /**
+     * Actualiza los documentos si las propiedades han cambiando.
+     * @param {*} changedProperties 
+     */
+    willUpdate(changedProperties){
+          // only need to check changed properties for an expensive computation.
+            if (changedProperties.has('campo_id') || changedProperties.has('username')) {
+                if(!this._db){
+                    // Pouch - get el campo_doc
+                    this._db = new PouchDB('campos_' + this.username);
+                }
+                this._db.get(this.campo_id).then((doc)=>{
+                    this._campo_doc = doc;
+                    this._lote_doc = doc.lotes.filter((lote)=>lote.properties.nombre===this.lote_nombre)[0] || {};
+
+                    const someContext =  aplicacionMachine.initialState.context;
+                    someContext.hectareas = this._lote_doc.properties.hectareas
+                    this.fsm = interpret(aplicacionMachine.withContext(someContext)).onTransition((state) => {
+                        this._ctx = state.context;
+                        console.log(state.value);
+                        if (state.matches('editing.fecha')) {
+                            this.show_step(0)
+                        } else if (state.matches('editing.hectareas')) {
+                            this.show_step(1)
+                        } else if (state.matches('editing.insumo')) {
+                            this.show_step(2)
+                        } else if (state.matches('editing.dosis')) {
+                            this.show_step(3)
+                        } else if (state.matches('editing.motivo')) {
+                            this.show_step(4)
+                        }
+            
+                        else if (state.matches('editing.masinsumos')) {
+                            this.show_step(5)
+                        } else if (state.matches('editing.comentario')) {
+                            this.show_step(6)
+                        } else if (state.matches('editing.resumiendo')) {
+                            this.show_step(7)
+                        } else if (state.matches('editing.share')) {
+                            this.show_step(8)
+                        }
+                    }).start()
+                });
+
+            }
+    }
 
     render() {
 
 
 
-                const insumo_el = (item) => html`<a href="#" class="list-group-item list-group-item-action" aria-current="true">
-                                                <div class="d-flex w-100 justify-content-between" @click=${(e)=> this.fsm.send({
+                const insumo_el = (item) => html`<a href="#" class="list-group-item list-group-item-action ${this._ctx.current_insumo.name === item.name? 'active':''}" @click=${(e)=> this.fsm.send({
                                                     'type': 'SELECTED', value: item
-                                                    })}>
-                                                    <h5 class="mb-1">${item.name}</h5>
-                                                    <small>Herbicida</small>
+                                                    })} aria-current="true">
+                                                <div class="d-flex w-100 justify-content-between">
+
+                                                    <h5 class="mb-1 mx-1">${capitalize(item.name)}</h5>
+                                                    <small>${capitalize(item.type)}</small>
+
                                                 </div>
-                                                <p class="mb-1">Some placeholder content in a paragraph.</p>
-                                                <small>And some small print.</small>
-                                            </a>`
+                                                <p class="mb-1">${capitalize(item.company)}</p>
+                                                <small>${principio_activo(item)}</small>
+                                            </a>`;
 
         
         // Render propiamente dicho
@@ -133,13 +172,14 @@ export class LoteOffcanvas extends LitElement {
 
         <div class="offcanvas offcanvas-bottom h-75" tabindex="-1" id="lote-offcanvas" aria-labelledby="offcanvasBottomLabel">
             <div class="offcanvas-header">
-                <h5 class="offcanvas-title">Lote ${this.lote_nombre}</h5>
+                <h5 class="offcanvas-title fw-bold">Lote "${this.lote_nombre}"</h5>
                 <div class="row"><button class='btn btn-primary' @click=${this.siembra}>+ Siembra</button></div>
                         <div class="row"><button class='btn btn-primary' @click=${this.actividad}>+ Actividad</button></div>
                         <div class="row"><button class='btn btn-primary' @click=${this.cosecha}>+ Cosecha</button></div>
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body small ">
+            
                 <div class="container">
                     <div class='row'>
                     <div class='col shadow mx-2 p-3 max-vh-25'>
@@ -163,10 +203,10 @@ export class LoteOffcanvas extends LitElement {
                         <h5 class="modal-title" id="staticBackdropLabel">¿Cuando se realizará la aplicación?</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body mx-auto">
         
                         <input type="date" id="start" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}
-                        value="2018-07-22" min="2018-01-01" max="2018-12-31">
+                        value="2022-01-01" min="2018-01-01" max="2030-12-31">
         
                     </div>
                     <div class="modal-footer">
@@ -188,8 +228,8 @@ export class LoteOffcanvas extends LitElement {
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        <input type="number" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
+                    <div class="modal-body mx-auto">
+                        <input type="number" value=${this._ctx.hectareas} @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
@@ -210,10 +250,11 @@ export class LoteOffcanvas extends LitElement {
                         <h5 class="modal-title" id="staticBackdropLabel">Seleccione un insumo</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-        
-                        <input type="text" @keyup=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
-                        <div class='list-group'>
+                    <div class="modal-body mx-auto container">
+                        <div class='row'>
+                            <input class="form-control" type="text" placeholder="Escriba el nombre del insumo para filtrar" @keyup=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
+                        </div>
+                        <div class='list-group mx-auto mt-1 row'>
         
                             ${map(this._ctx.filtrado, insumo_el)}
         
