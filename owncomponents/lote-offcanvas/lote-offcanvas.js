@@ -113,10 +113,20 @@ export class LoteOffcanvas extends LitElement {
         // Importante el orden de la importacion para que no arroje error
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake";
-    const pdfMake = await import("pdfmake/build/pdfmake.min");
-    const pdfFonts = await import("pdfmake/build/vfs_fonts");
-    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+    // import('pdfmake/build/pdfmake.min').then((pdfMake) => {
+    //     import('pdfmake/build/vfs_fonts.js').then((pdfFonts)=>{
+    //         console.log(pdfFonts)
+    //         pdfMake.vfs = pdfFonts.pdfMake.vfs;
+    //         pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
+    //     })
+    // })
+    // const pdfFonts = await import("pdfmake/build/vfs_fonts");
+    // const pdfMake = await import("pdfmake/build/pdfmake.min");
+    // pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
+        const pdfMake = (await import(/* webpackChunkName: "pdfMake" */ 'pdfmake/build/pdfmake.min')).default
+        const pdfFonts = (await import(/* webpackChunkName: "pdfFonts" */ 'pdfmake/build/vfs_fonts')).default
+        pdfMake.vfs = pdfFonts.pdfMake.vfs
         pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
     }
 
