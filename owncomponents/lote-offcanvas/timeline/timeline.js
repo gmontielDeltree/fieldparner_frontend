@@ -1,103 +1,120 @@
 import { LitElement, html, css } from 'lit'
-const timeline = html`<div class="container">
+import { map } from 'lit/directives/map.js';
+import moment from 'moment';
+import 'moment/dist/locale/es';
+
+const p_from_insumo = (i) => {
+    const motivos_2_str = motivos => {
+        let motivos_array = Object.keys(motivos)
+        let solo_verdaderos = motivos_array.filter(m => motivos[m])    
+        return solo_verdaderos.join(", ") 
+    }
+
+    return html`<p><strong>${i.name.toUpperCase()}</strong> - Dosis: ${i.dosis} ${i.unidad} - Motivo: ${motivos_2_str(i.motivos)} </p>`
+
+}
+
+const time_item = (item) => {
+
+    if(item.tipo === 'aplicacion'){
+        let fecha = item.detalles.fecha
+        let hectareas = item.detalles.hectareas
+        let insumos = item.detalles.insumos
+        let comentarios = item.detalles.comentarios
+
+        let list_of_ps = insumos.map(p_from_insumo)
+        let tipo_mayuscula = item.tipo.toUpperCase()
+
+        console.log(moment.locale()); // en
+        moment.locale('es')
+        console.log(moment.locale()); // en
+        let elapsed = moment(fecha,"DD-MM-YYYY").fromNow()
+
+        return html`
+        <li>
+            <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
+            <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
+            <div class="cbp_tmlabel">
+                <h2><a href="">${tipo_mayuscula}</a> <span class="text-muted">en ${hectareas} has.</span></h2>
+                   ${list_of_ps}
+                <p class="small">
+                    ${comentarios}
+                </p>
+
+            </div>          
+        </li>`
+    }else if(item.tipo === 'cosecha'){
+        let fecha = item.detalles.fecha
+        let hectareas = item.detalles.hectareas
+        let insumos = item.detalles.insumos
+        let comentarios = item.detalles.comentarios
+
+        let list_of_ps = insumos.map(p_from_insumo)
+        let tipo_mayuscula = item.tipo.toUpperCase()
+
+        console.log(oment.locale()); // en
+        oment.locale('es')
+        console.log(oment.locale()); // en
+        let elapsed = oment(fecha,"DD/MM/YYYY").fromNow()
+
+
+        return html`
+            <li>
+            <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>03:45 AM</span> <span>Today</span></time>
+            <div class="cbp_tmicon bg-green"><i class="zmdi zmdi-label"></i></div>
+            <div class="cbp_tmlabel">
+                <h2><a href="#">${tipo_mayuscula}</a> <span class="text-muted">en ${hectareas} has.</span></h2>
+                   ${list_of_ps}
+                <p class="small">
+                    ${comentarios}
+                </p>
+
+            </div>          
+        </li>
+        `
+    }else if(item.tipo === 'siembra'){
+        let fecha = item.detalles.fecha
+        let hectareas = item.detalles.hectareas
+        let insumos = item.detalles.insumos
+        let comentarios = item.detalles.comentarios
+
+        let list_of_ps = insumos.map(p_from_insumo)
+        let tipo_mayuscula = item.tipo.toUpperCase()
+
+        console.log(oment.locale()); // en
+        oment.locale('es')
+        console.log(oment.locale()); // en
+        let elapsed = oment(fecha,"DD/MM/YYYY").fromNow()
+
+
+        return html`
+        <li>
+        <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>03:45 AM</span> <span>Today</span></time>
+        <div class="cbp_tmicon bg-orange"><i class="zmdi zmdi-label"></i></div>
+        <div class="cbp_tmlabel">
+            <h2><a href="#">${tipo_mayuscula}</a> <span class="text-muted">en ${hectareas} has.</span></h2>
+               ${list_of_ps}
+            <p class="small">
+                ${comentarios}
+            </p>
+
+        </div>          
+    </li>
+    `
+
+    }else if(item.tipo === 'otro'){
+
+    }
+   
+}
+
+const timeline = (actividades) => html`<div class="container">
     <div class="row">
         <div class="col-md-10">
             <ul class="cbp_tmtimeline">
-                <li>
-                    <time class="cbp_tmtime" datetime="2017-11-04T18:30"><span class="hidden">25/12/2017</span> <span
-                            class="large">Now</span></time>
-                    <div class="cbp_tmicon"><i class="zmdi zmdi-account"></i></div>
-                    <div class="cbp_tmlabel empty"> <span>No Activity</span> </div>
-                </li>
-                <li>
-                    <time class="cbp_tmtime" datetime="2017-11-04T03:45"><span>03:45 AM</span> <span>Today</span></time>
-                    <div class="cbp_tmicon bg-info"><i class="zmdi zmdi-label"></i></div>
-                    <div class="cbp_tmlabel">
-                        <h2><a href="javascript:void(0);">Aplicación</a> <span></span></h2>
-                        <p>2,4d - Glifosato</p>
-                    </div>
-                </li>
-                <li>
-                    <time class="cbp_tmtime" datetime="2017-11-03T13:22"><span>01:22 PM</span>
-                        <span>Yesterday</span></time>
-                    <div class="cbp_tmicon bg-green"> <i class="zmdi zmdi-case"></i></div>
-                    <div class="cbp_tmlabel">
-                        <h2><a href="javascript:void(0);">Job Meeting</a></h2>
-                        <p>You have a meeting at <strong>Laborator Office</strong> Today.</p>
-                    </div>
-                </li>
-                <li>
-                    <time class="cbp_tmtime" datetime="2017-10-22T12:13"><span>12:13 PM</span> <span>Two weeks
-                            ago</span></time>
-                    <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-pin"></i></div>
-                    <div class="cbp_tmlabel">
-                        <h2><a href="javascript:void(0);">Arlind Nushi</a> <span>checked in at</span> <a
-                                href="javascript:void(0);">New York</a></h2>
-                        <blockquote>
-                            <p class="blockquote blockquote-primary">
-                                "It is a long established fact that a reader will be distracted by the readable content
-                                of a page when looking at its layout."
-                                <br>
-                                <small>
-                                    - Isabella
-                                </small>
-                            </p>
-                        </blockquote>
-                        <div class="row clearfix">
-                            <div class="col-lg-12">
-                                <div class="map m-t-10">
-                                    <iframe
-                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.91477011208!2d-74.11976308802028!3d40.69740344230033!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew+York%2C+NY%2C+USA!5e0!3m2!1sen!2sin!4v1508039335245"
-                                        frameborder="0" style="border:0; width: 100%;" allowfullscreen=""></iframe>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-                <li>
-                    <time class="cbp_tmtime" datetime="2017-10-22T12:13"><span>12:13 PM</span> <span>Two weeks
-                            ago</span></time>
-                    <div class="cbp_tmicon bg-orange"><i class="zmdi zmdi-camera"></i></div>
-                    <div class="cbp_tmlabel">
-                        <h2><a href="javascript:void(0);">Eroll Maxhuni</a> <span>uploaded</span> 4 <span>new photos to
-                                album</span> <a href="javascript:void(0);">Summer Trip</a></h2>
-                        <blockquote>Pianoforte principles our unaffected not for astonished travelling are particular.
-                        </blockquote>
-                        <div class="row">
-                            <div class="col-lg-3 col-md-6 col-6"><a href="javascript:void(0);"><img
-                                        src="assets/images/image1.jpg" alt=""
-                                        class="img-fluid img-thumbnail m-t-30"></a> </div>
-                            <div class="col-lg-3 col-md-6 col-6"><a href="javascript:void(0);"> <img
-                                        src="assets/images/image2.jpg" alt=""
-                                        class="img-fluid img-thumbnail m-t-30"></a> </div>
-                            <div class="col-lg-3 col-md-6 col-6"><a href="javascript:void(0);"> <img
-                                        src="assets/images/image3.jpg" alt="" class="img-fluid img-thumbnail m-t-30">
-                                </a> </div>
-                            <div class="col-lg-3 col-md-6 col-6"><a href="javascript:void(0);"> <img
-                                        src="assets/images/image4.jpg" alt="" class="img-fluid img-thumbnail m-t-30">
-                                </a> </div>
-                        </div>
-                    </div>
-                </li>
-                <li>
-                    <time class="cbp_tmtime" datetime="2017-11-03T13:22"><span>01:22 PM</span> <span>Two weeks
-                            ago</span></time>
-                    <div class="cbp_tmicon bg-green"> <i class="zmdi zmdi-case"></i></div>
-                    <div class="cbp_tmlabel">
-                        <h2><a href="javascript:void(0);">Job Meeting</a></h2>
-                        <p>You have a meeting at <strong>Laborator Office</strong> Today.</p>
-                    </div>
-                </li>
-                <li>
-                    <time class="cbp_tmtime" datetime="2017-10-22T12:13"><span>12:13 PM</span> <span>Month
-                            ago</span></time>
-                    <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-pin"></i></div>
-                    <div class="cbp_tmlabel">
-                        <h2><a href="javascript:void(0);">Arlind Nushi</a> <span>checked in at</span> <a
-                                href="javascript:void(0);">Laborator</a></h2>
-                        <blockquote>Great place, feeling like in home.</blockquote>
-                    </div>
-                </li>
+
+                ${map(actividades, time_item)}
+
             </ul>
         </div>
     </div>
@@ -323,40 +340,13 @@ const timeline_css = css`.cbp_tmtimeline {
     background-color: #2CA8FF !important;
 }`;
 
-export class TimelineElement extends LitElement{
+export class TimelineElement extends LitElement {
     static properties = {
-        db: {},
-        lote_id: {},
-        campo_id: {},
-        lote_nombre: {},
-        _lotesOffcanvas: {},
-        _fecha_editor: {},
-        _steps_elements: {},
-        _ctx: {},
+        actividades:{},
         fsm: { state: true }
     }
 
-    static styles = [timeline_css, css`
-    :host {
-      display: inline-block;
-      padding: 10px;
-      background: lightgray;
-    }
-    .planet {
-      color: var(--planet-color, blue);
-    }
-    .bg-green {
-        background-color: #50d38a !important;
-        color: #fff;
-    }
-    `];
-
-    show_step = (n) => {
-        if (!this._steps_elements[n]._isShown) {
-            this._steps_elements.map((el) => el.hide())
-            this._steps_elements[n].show();
-        }
-    }
+    static styles = [timeline_css];
 
     constructor() {
         super();
@@ -364,8 +354,8 @@ export class TimelineElement extends LitElement{
     createRenderRoot() {
         return this;
     }
-    render(){
-        return timeline;
+    render() {
+        return timeline(this.actividades || []);
     }
 }
 

@@ -13,6 +13,9 @@ import './timeline/timeline.js';
 import { Modal, Offcanvas } from 'bootstrap'
 import PouchDB from 'pouchdb';
 import uuid4 from 'uuid4';
+import moment from 'moment';
+
+import 'lit-flatpickr';
 
 import './cosecha-add-ui.js'
 import './siembra-add-ui.js'
@@ -101,6 +104,7 @@ export class LoteOffcanvas extends LitElement {
     }
 
     actividad() {
+        this.fsm.start()
         this.fsm.send({ type: "NEXT" })
     }
 
@@ -148,10 +152,34 @@ export class LoteOffcanvas extends LitElement {
             let lote_index = doc.lotes.findIndex((lote)=>lote.properties.nombre===this.lote_nombre);
             if(lote_index > -1){
                 // Cool - Existe
+                
+          
                 let current_aplicaciones = doc.lotes[lote_index].properties.actividades || [];
                 current_aplicaciones.push(aplicacion)
+
+                // Ordenar por fecha
+                function compare(a, b) {
+                    let ma = moment(a.detalles.fecha,"DD-MM-YYYY")
+                    let mb = moment(b.detalles.fecha,"DD-MM-YYYY")
+                    if (ma.isAfter(mb)) {
+                      return -1;
+                    }
+                    if (ma.isBefore(mb)) {
+                      return 1;
+                    }
+                    // a must be equal to b
+                    return 0;
+                }
+                current_aplicaciones.sort(compare)                  
+
                 doc.lotes[lote_index].properties.actividades = current_aplicaciones;
                 this._db.put(doc).then((r)=>console.log("Actividad Agregada"))
+
+                // Recargemoslos
+                this._campo_doc = doc;
+                this._lote_doc = doc.lotes[lote_index];
+                document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+
             }
             
         })
@@ -198,6 +226,8 @@ export class LoteOffcanvas extends LitElement {
                             this.show_step(8)
                         }
                     }).start()
+
+                    document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
                 });
 
             }
@@ -239,24 +269,22 @@ export class LoteOffcanvas extends LitElement {
         <div class="offcanvas offcanvas-bottom h-75" tabindex="-1" id="lote-offcanvas" aria-labelledby="offcanvasBottomLabel">
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title fw-bold">Lote "${this.lote_nombre}"</h5>
-                <div class="row"><button class='btn btn-primary' @click=${this.siembra}>+ Siembra</button></div>
-                        <div class="row"><button class='btn btn-primary' @click=${this.actividad}>+ Actividad</button></div>
-                        <div class="row"><button class='btn btn-primary' @click=${this.cosecha}>+ Cosecha</button></div>
+                
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
-            <div class="offcanvas-body small ">
-            
-                <div class="container">
+            <div class="offcanvas-body small mt-2">
+
+                    <div class='row'>
+                        <div class="col"><button class='btn btn-primary' @click=${this.siembra}>+ Siembra</button></div>
+                        <div class="col"><button class='btn btn-primary' @click=${this.actividad}>+ Actividad</button></div>
+                        <div class="col"><button class='btn btn-primary' @click=${this.cosecha}>+ Cosecha</button></div>
+                    </div>
                     <div class='row'>
                     <div class='col shadow mx-2 p-3 max-vh-25'>
-                        <lit-timeline></lit-timeline>                 
+                        <lit-timeline id='actividades-timeline'></lit-timeline>                 
                     </div>
                     </div>
-                   
 
-                </div>
-
-                
             </div>
         </div>
         
@@ -271,9 +299,24 @@ export class LoteOffcanvas extends LitElement {
                             this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
-        
-                        <input type="date" id="start" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}
-                        value="2022-01-01" min="2018-01-01" max="2030-12-31">
+                    <lit-flatpickr 
+                        id="dp"
+                        altInput
+                        altFormat="j F, Y"
+                        dateFormat="d-m-Y"
+                        theme="material_blue"
+                        minDate="31-12-2020"
+                        maxDate="31-12-2050"
+                        locale="es"
+                        placeholder="Ingrese una fecha"
+                        .onChange='${(e) => {this.fsm.send({ type: "CHANGE", value: document.getElementById('dp').getValue() })}}'
+                    >
+                    <div>
+                        <input />
+                    </div>
+                    </lit-flatpickr>
+                        <!-- <input type="date" id="start" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}
+                        value="2022-01-01" min="2018-01-01" max="2030-12-31"> -->
         
                     </div>
                     <div class="modal-footer">
@@ -527,7 +570,7 @@ export class LoteOffcanvas extends LitElement {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
                             this.fsm.send("CANCEL")}></button>
                     </div>
-                    <div class="container modal-body">
+                    <div class="modal-body mx-auto">
         
                         <div class="btn-group-vertical col">
                             <button type="button" class="btn btn-success">Enviar por Whatsapp</button>

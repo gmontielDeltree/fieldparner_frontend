@@ -94,9 +94,22 @@ export class CosechaAddUI extends LitElement {
                             this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
-        
-                        <input type="date" id="start" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}
-                        value="2022-01-01" min="2018-01-01" max="2030-12-31">
+                    <lit-flatpickr 
+                        id="dp_c"
+                        altInput
+                        altFormat="j F, Y"
+                        dateFormat="Y-m-d"
+                        theme="material_blue"
+                        minDate="2020-01-01"
+                        maxDate="2030-12-31"
+                        locale="es"
+                        .onChange='${(e) => {this.fsm.send({ type: "CHANGE", value: document.getElementById('dp_c').getValue() })}}'
+                    >
+                    <div>
+                        <input />
+                    </div> 
+<!--                         <input type="date" id="start" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}
+                        value="2022-01-01" min="2018-01-01" max="2030-12-31"> -->
         
                     </div>
                     <div class="modal-footer">
