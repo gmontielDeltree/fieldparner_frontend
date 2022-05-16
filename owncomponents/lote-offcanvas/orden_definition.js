@@ -1,4 +1,4 @@
-import agrotools_logo_b64 from './agrotools_logo_b64.js'
+// import agrotools_logo_b64 from './agrotools_logo_b64.js'
 
 const pdf_line = (insumo) => {
   return [
@@ -48,8 +48,11 @@ const orden_definition =(aplicacion, nombre_campo, nombre_lote, cultivo) => {
     {
       columns: [
         {
-          image : agrotools_logo_b64,
-          width: 150,
+          text : 'AGROTOOLS',
+          width: 200,
+          color: '#16a825',
+          bold: true,
+          fontSize: 28
         },
         [
           {
@@ -66,7 +69,7 @@ const orden_definition =(aplicacion, nombre_campo, nombre_lote, cultivo) => {
               {
                 columns: [
                   {
-                    text: 'Fecha',
+                    text: 'Fecha de Aplicacion',
                     color: '#aaaaab',
                     bold: true,
                     width: '*',

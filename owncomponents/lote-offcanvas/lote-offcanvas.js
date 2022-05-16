@@ -1,12 +1,21 @@
 import { LitElement, html, css} from 'lit';
 import { map } from 'lit/directives/map.js';
 import { aplicacionMachine } from './lote-machine.js';
-import { createMachine, interpret, send } from 'xstate';
-import 'bootstrap'
+import { interpret } from 'xstate';
 
-import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
-import pdfMake from "pdfmake/build/pdfmake";
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+// import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
+// import pdfMake from "pdfmake/build/pdfmake.min.js";
+
+const pdf_fonts = {
+     // download default Roboto font from cdnjs.com
+    Roboto: {
+      normal: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
+      bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
+      italics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
+      bolditalics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
+    }
+ }
+ 
 
 import orden_definition from './orden_definition.js';
 import './timeline/timeline.js';
@@ -116,13 +125,19 @@ export class LoteOffcanvas extends LitElement {
     }
 
     abrir_pdf(params) {
+        import("pdfmake/build/pdfmake.min.js").then(({pdfMake})=>{
+            pdfMake.fonts = pdf_fonts
             pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
+        })          
    }
 
    download_pdf(uuid){
      let indice = this._lote_doc.properties.actividades.findIndex((a) => a.uuid === uuid)
-     console.log("UUDI", uuid);
-     pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[indice],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
+     import("pdfmake/build/pdfmake.min.js").then(({default: pdfMake})=>{
+        pdfMake.fonts = pdf_fonts
+        console.log(pdfMake)
+        pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[indice],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
+     })     
    }
 
    eliminar_actividad(uuid){
