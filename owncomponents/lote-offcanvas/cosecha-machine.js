@@ -7,7 +7,7 @@ export const cosechaMachine =
     {
       id: "Cosecha",
       initial: "idle",
-      context: { fecha: "31/12/2021", hectareas: 0, rinde: 0, humedad: 50, comentario:"", adjuntos:[]  },
+      context: { fecha: "31/12/2021", hectareas: 0, rinde: 0, humedad: 0, comentario:"", adjuntos:[]  },
       states: {
         idle: {
           on: {
@@ -21,7 +21,8 @@ export const cosechaMachine =
           on: {
             CANCEL: {
               target: 'idle',
-            }
+            },
+            GUARDAR: { target: 'idle' }
           },
           states: {
             fecha: {
@@ -91,12 +92,16 @@ export const cosechaMachine =
               on: {
                 BACK: { target: 'adjuntos' },
                 NEXT: { target: 'resumiendo' },
+                CHANGE: {
+                  actions: assign({
+                    comentario : (ctx, e) => e.value
+                  })
+                },
               }
             },
             resumiendo: {
               on: {
                 BACK: { target: 'comentario' },
-                GUARDAR: { target: 'fin' }
               }
             },
             fin: {

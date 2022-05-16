@@ -32,6 +32,9 @@ export class CosechaAddUI extends LitElement {
         this.fsm = interpret(cosechaMachine.withContext(someContext)).onTransition((state) => {
             this._ctx = state.context;
             console.log(state.value);
+            if(state.matches('idle')){
+                this.hideAll()
+            }
             if (state.matches('editing.fecha')) {
                 this.show_step(0)
             } else if (state.matches('editing.hectareas')) {
@@ -57,6 +60,11 @@ export class CosechaAddUI extends LitElement {
         }
     }
     
+    hideAll = () => {
+            this._steps_elements?.map((el) => el.hide())
+    }
+    
+
     firstUpdated() {
         this._steps_elements = [...document.querySelectorAll('.cosecha.step')].map((el) => new Modal(el))
     }
@@ -76,9 +84,10 @@ export class CosechaAddUI extends LitElement {
 
     guardar(){
         // Enviar Evento
-        let cosecha = {}
+        let cosecha = this._ctx
         const event = new CustomEvent('guardar-cosecha', {detail:cosecha, bubbles: true, composed: true});
         this.dispatchEvent(event);
+        this.fsm.send({type:'GUARDAR'})
     }
 
     render() {
@@ -263,17 +272,22 @@ export class CosechaAddUI extends LitElement {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
                             this.fsm.send("CANCEL")}></button>
                     </div>
-                    <div class="modal-body mx-auto">
-                        <h5></h5>
-        
-                        <textarea id="story" placeholder="Ingresa alguna nota aquí" name="story" rows="5" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
+                    <div class="modal-body w-100 mx-auto">
+                        <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Cosecha en Lote</h5>
+                        <small>${this._ctx.fecha}</small>
+                        </div>
+                        <p class="mb-1">Rinde de ${this._ctx.rinde} tn. en ${this._ctx.hectareas} ha. - Total ${(this._ctx.rinde * this._ctx.hectareas).toFixed(2)} tn.</p>
+                        <p class="mb-1">Humedad ${this._ctx.humedad}</p>
+                        <small>${this._ctx.comentario}</small>
+
         
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
                 this.fsm.send("CANCEL")}>Cancelar</button>
                         <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
+                        <button type="button" class="btn btn-primary" @click=${this.guardar} >Guardar</button>
                     </div>
                 </div>
             </div>

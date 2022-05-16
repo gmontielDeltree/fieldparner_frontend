@@ -7,7 +7,7 @@ export const siembraMachine =
     {
       id: "Siembra",
       initial: "idle",
-      context: { fecha: "31/12/2021", cultivo: "", variedad: "", peso_1000: 0, densidad_objetivo:0, semillas_totales:0, distancia:0, superficie_real:0, hectareas: 0, rinde: 0, comentario:"", adjuntos:[]  },
+      context: { fecha: "31/12/2021", cultivo: "", variedad: "", peso_1000: 0, densidad_objetivo:0, semillas_totales:0, distancia:0, superficie_real:0, hectareas: 0, comentario:"", adjuntos:[]  },
       states: {
         idle: {
           on: {
@@ -21,6 +21,9 @@ export const siembraMachine =
           on: {
             CANCEL: {
               target: 'idle',
+            },
+            GUARDAR:{
+              target: 'idle'
             }
           },
           states: {
@@ -43,60 +46,98 @@ export const siembraMachine =
                   target: "fecha",
                 },
                 NEXT: {
-                  target: "rinde",
+                  target: "cultivo",
                 },
               },
             },
-            rinde: {
+            cultivo: {
               on: {
                 BACK: {
                   target: "hectareas",
                 },
                 NEXT: {
-                  target: "humedad",
+                  target: "variedad",
                 },
                 CHANGE: {
                   actions: assign({
-                    rinde: (ctx, e) => e.value
+                    variedad: (ctx, e) => e.value
                   })
                 }
               },
             },
-            humedad: {
+            variedad: {
               on: {
-                BACK: { target: "rinde" },
+                BACK: { target: "cultivo" },
+                NEXT: { target:'peso_1000' },
+                CHANGE: {
+                  actions: assign({
+                    variedad : (ctx, e) => e.value
+                  })
+                },
+              },
+            },
+            peso_1000: {
+              on: {
+                BACK: { target: "variedad" },
+                NEXT: { target: 'densidad' },
+                CHANGE: {
+                  actions: assign({
+                    peso_1000 : (ctx, e) => e.value
+                  })
+                },
+                
+              },
+            },
+            densidad: {
+              on: {
+                BACK: { target: 'peso_1000' },
+                NEXT: { target: 'distancia' },
+                CHANGE: {
+                  actions: assign({
+                    densidad : (ctx, e) => e.value
+                  })
+                },
+              }
+            },
+            distancia: {
+              on: {
+                BACK: { target: 'densidad' },
                 NEXT: { target: 'adjuntos' },
                 CHANGE: {
                   actions: assign({
-                    humedad : (ctx, e) => e.value
+                    distancia : (ctx, e) => e.value
                   })
                 },
-              },
-            },
-            adjuntos: {
-              on: {
-                BACK: { target: "humedad" },
-                NEXT: { target: 'comentario' },
-                ADJUNTAR: {
-                  action: assign({
-                    adjuntos : (ctx, e) => {
-                      ctx.adjuntos.push(e.value)
-                      return ctx.adjuntos
-                    }
-                  })
-                },
-              },
-            },
-            comentario: {
-              on: {
-                BACK: { target: 'adjuntos' },
-                NEXT: { target: 'resumiendo' },
               }
             },
-            resumiendo: {
-              on: {
+            adjuntos:{
+              on:{
+                BACK: { target: 'distancia' },
+                NEXT: { target: 'comentario' },
+                  ADJUNTAR: {
+                    actions: assign({
+                      adjuntos : (ctx, e) => {
+                        ctx.adjuntos.push(e.value)
+                        return ctx.adjuntos
+                      }
+                    })
+                 },
+              }
+            },
+            comentario:{
+              on:{
+                BACK: { target: 'adjuntos' },
+                NEXT: { target: 'resumiendo' },
+                CHANGE: {
+                  actions: assign({
+                    comentario : (ctx, e) => e.value
+                  })
+                },
+              }
+            },
+            resumiendo:{
+              on:{
                 BACK: { target: 'comentario' },
-                GUARDAR: { target: 'fin' }
               }
             },
             fin: {

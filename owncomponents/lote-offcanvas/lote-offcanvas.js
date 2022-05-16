@@ -275,9 +275,9 @@ export class LoteOffcanvas extends LitElement {
             <div class="offcanvas-body small mt-2">
 
                     <div class='row'>
-                        <div class="col"><button class='btn btn-primary' @click=${this.siembra}>+ Siembra</button></div>
-                        <div class="col"><button class='btn btn-primary' @click=${this.actividad}>+ Actividad</button></div>
-                        <div class="col"><button class='btn btn-primary' @click=${this.cosecha}>+ Cosecha</button></div>
+                        <div class="col"><button class='btn btn-primary btn-sm' @click=${this.siembra}>+ Siembra</button></div>
+                        <div class="col"><button class='btn btn-primary btn-sm' @click=${this.actividad}>+ Actividad</button></div>
+                        <div class="col"><button class='btn btn-primary btn-sm' @click=${this.cosecha}>+ Cosecha</button></div>
                     </div>
                     <div class='row'>
                     <div class='col shadow mx-2 p-3 max-vh-25'>
