@@ -3,10 +3,7 @@ import { map } from 'lit/directives/map.js';
 import { aplicacionMachine } from './lote-machine.js';
 import { createMachine, interpret, send } from 'xstate';
 import 'bootstrap'
-// Importante el orden de la importacion para que no arroje error
-import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
-import pdfMake from "pdfmake/build/pdfmake";
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
 
 import orden_definition from './orden_definition.js';
 import './timeline/timeline.js';
@@ -112,7 +109,14 @@ export class LoteOffcanvas extends LitElement {
         document.getElementById('cosecha-add-el').start()
     }
 
-    abrir_pdf(params) {
+    async abrir_pdf(params) {
+        // Importante el orden de la importacion para que no arroje error
+// import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
+// import pdfMake from "pdfmake/build/pdfmake";
+    const pdfMake = await import("pdfmake/build/pdfmake.min");
+    const pdfFonts = await import("pdfmake/build/vfs_fonts");
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
         pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
     }
 
