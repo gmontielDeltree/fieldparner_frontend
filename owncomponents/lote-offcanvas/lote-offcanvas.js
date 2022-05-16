@@ -113,7 +113,7 @@ export class LoteOffcanvas extends LitElement {
     }
 
     abrir_pdf(params) {
-        pdfMake.createPdf(orden_definition).open();
+        pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
     }
 
     tiene_cultivo_este_lote(){
