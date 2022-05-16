@@ -60,7 +60,7 @@ export const siembraMachine =
                 },
                 CHANGE: {
                   actions: assign({
-                    variedad: (ctx, e) => e.value
+                    cultivo: (ctx, e) => e.value
                   })
                 }
               },
@@ -94,7 +94,7 @@ export const siembraMachine =
                 NEXT: { target: 'distancia' },
                 CHANGE: {
                   actions: assign({
-                    densidad : (ctx, e) => e.value
+                    densidad_objetivo : (ctx, e) => e.value
                   })
                 },
               }
@@ -102,7 +102,7 @@ export const siembraMachine =
             distancia: {
               on: {
                 BACK: { target: 'densidad' },
-                NEXT: { target: 'adjuntos' },
+                NEXT: { target: 'comentario' },
                 CHANGE: {
                   actions: assign({
                     distancia : (ctx, e) => e.value
@@ -126,7 +126,7 @@ export const siembraMachine =
             },
             comentario:{
               on:{
-                BACK: { target: 'adjuntos' },
+                BACK: { target: 'distancia' },
                 NEXT: { target: 'resumiendo' },
                 CHANGE: {
                   actions: assign({

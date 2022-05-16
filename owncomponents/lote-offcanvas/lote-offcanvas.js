@@ -187,7 +187,7 @@ export class LoteOffcanvas extends LitElement {
         // Save to lote properties
         let ts_ahora = new Date().toISOString()
         
-        if (tipo === 'apicacion') {
+        if (tipo === 'aplicacion') {
             this.fsm.send("GUARDAR");
             detalles = {
                 fecha: this._ctx.fecha,
@@ -556,10 +556,10 @@ export class LoteOffcanvas extends LitElement {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
                             this.fsm.send("CANCEL")}></button>
                     </div>
-                    <div class="modal-body mx-auto">
+                    <div class="modal-body mx-auto w-100">
                         <h5></h5>
         
-                        <textarea id="story" placeholder="Ingresa alguna nota aquí" name="story" rows="5" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
+                        <textarea class='w-100' id="story" placeholder="Ingresa alguna nota aquí" name="story" rows="5" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
         
                     </div>
                     <div class="modal-footer">
@@ -592,7 +592,7 @@ export class LoteOffcanvas extends LitElement {
                                             <div class="col">
                                                 <h6>Fecha de aplicación: ${this._ctx.fecha}</h6>
                                             </div>
-                                            <button class='col col-2'> Edit </button>
+                                            <!-- <button class='col col-2'> Edit </button> -->
                                         </div>
                                         <div class='row'>
                                             <h5>${this.tiene_cultivo_este_lote()}</h5>

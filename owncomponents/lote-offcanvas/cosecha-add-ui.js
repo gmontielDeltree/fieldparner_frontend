@@ -104,28 +104,27 @@ export class CosechaAddUI extends LitElement {
                     </div>
                     <div class="modal-body mx-auto">
                     <lit-flatpickr 
-                        id="dp_c"
+                        id="dpc"
                         altInput
                         altFormat="j F, Y"
-                        dateFormat="Y-m-d"
+                        dateFormat="d-m-Y"
                         theme="material_blue"
-                        minDate="2020-01-01"
-                        maxDate="2030-12-31"
+                        minDate="31-12-2020"
+                        maxDate="31-12-2050"
                         locale="es"
-                        .onChange='${(e) => {this.fsm.send({ type: "CHANGE", value: document.getElementById('dp_c').getValue() })}}'
+                        placeholder="Ingrese una fecha"
+                        .onChange='${(e) => {this.fsm.send({ type: "CHANGE", value: document.getElementById('dpc').getValue() })}}'
                     >
                     <div>
                         <input />
-                    </div> 
-<!--                         <input type="date" id="start" @change=${(e)=> this.fsm.send({ type: "CHANGE", value: e.target.value })}
-                        value="2022-01-01" min="2018-01-01" max="2030-12-31"> -->
-        
+                    </div>
+                    </lit-flatpickr>
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${()=>
                             this.fsm.send("CANCEL")}>Cancelar</button>
                         <button type="button" class="btn btn-primary" @click=${()=> this.fsm.send("NEXT")}>Siguiente</button>
-                        <button type="button" class="btn btn-primary" @click=${()=> this.guardar()}>TEST</button>
                     </div>
                 </div>
             </div>
@@ -169,7 +168,7 @@ export class CosechaAddUI extends LitElement {
                         <div class="input-group mb-3">
                             
                             <input type="number" class="form-control" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })} aria-label="Text input with dropdown button">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">${this._ctx.unidad}</button>
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">tn/ha</button>
                             <ul class="dropdown-menu"> 
                                 <li><a class="dropdown-item" href="#">tn/ha</a></li>
                                 <li><a class="dropdown-item" href="#">qq/ha</a></li>
@@ -192,7 +191,7 @@ export class CosechaAddUI extends LitElement {
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Cual fue la humedad promedio?</h5>
+                        <h5 class="modal-title" id="staticBackdropLabel">¿Cual fue la humedad promedio de la cosecha?</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
                             this.fsm.send("CANCEL")}></button>
                     </div>
@@ -246,10 +245,9 @@ export class CosechaAddUI extends LitElement {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
                             this.fsm.send("CANCEL")}></button>
                     </div>
-                    <div class="modal-body mx-auto">
-                        <h5></h5>
-        
-                        <textarea id="story" placeholder="Ingresa alguna nota aquí" name="story" rows="5" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
+                    <div class="modal-body mx-auto w-100">
+
+                        <textarea class="w-100" placeholder="Ingresa alguna nota aquí" name="story" rows="5" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
         
                     </div>
                     <div class="modal-footer">
@@ -277,8 +275,8 @@ export class CosechaAddUI extends LitElement {
                         <h5 class="mb-1">Cosecha en Lote</h5>
                         <small>${this._ctx.fecha}</small>
                         </div>
-                        <p class="mb-1">Rinde de ${this._ctx.rinde} tn. en ${this._ctx.hectareas} ha. - Total ${(this._ctx.rinde * this._ctx.hectareas).toFixed(2)} tn.</p>
-                        <p class="mb-1">Humedad ${this._ctx.humedad}</p>
+                        <p class="mb-1">Rinde de ${this._ctx.rinde} tn/ha en ${this._ctx.hectareas} ha. - Total ${(this._ctx.rinde * this._ctx.hectareas).toFixed(2)} tn.</p>
+                        <p class="mb-1">Humedad ${this._ctx.humedad} %</p>
                         <small>${this._ctx.comentario}</small>
 
         

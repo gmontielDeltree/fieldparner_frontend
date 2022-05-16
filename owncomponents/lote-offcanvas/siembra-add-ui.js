@@ -104,34 +104,32 @@ export class SiembraAddUI extends LitElement {
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Cual es la fecha de la cosecha?</h5>
+                        <h5 class="modal-title" id="staticBackdropLabel">¿Cual es la fecha de la siembra?</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
                 this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
                     <lit-flatpickr 
-                        id="dp_s"
+                        id="dps"
                         altInput
                         altFormat="j F, Y"
-                        dateFormat="Y-m-d"
+                        dateFormat="d-m-Y"
                         theme="material_blue"
-                        minDate="2020-01-01"
-                        maxDate="2030-12-31"
+                        minDate="31-12-2020"
+                        maxDate="31-12-2050"
                         locale="es"
-                        .onChange='${(e) => { this.fsm.send({ type: "CHANGE", value: document.getElementById('dp_s').getValue() }) }}'
+                        placeholder="Ingrese una fecha"
+                        .onChange='${(e) => {this.fsm.send({ type: "CHANGE", value: document.getElementById('dps').getValue() })}}'
                     >
                     <div>
                         <input />
-                    </div>         
-                        <!-- <input type="date" id="start" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}
-                        value="2022-01-01" min="2018-01-01" max="2030-12-31"> -->
-        
+                    </div>
+                    </lit-flatpickr>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
                 this.fsm.send("CANCEL")}>Cancelar</button>
                         <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")}>Siguiente</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.guardar()}>TEST</button>
                     </div>
                 </div>
             </div>
@@ -177,16 +175,10 @@ export class SiembraAddUI extends LitElement {
                     <div class="modal-body mx-auto">
                         <div class="input-group mb-3">
         
-                            <input type="number" class="form-control" @change=${(e) => this.fsm.send({
+                            <input type="text" class="form-control" @change=${(e) => this.fsm.send({
                     type: "CHANGE", value:
                         e.target.value
-                })} aria-label="Text input with dropdown button">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">${this._ctx.unidad}</button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">tn/ha</a></li>
-                                <li><a class="dropdown-item" href="#">qq/ha</a></li>
-                            </ul>
+                })}>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -211,11 +203,10 @@ export class SiembraAddUI extends LitElement {
                     </div>
                     <div class="modal-body mx-auto">
                         <div class="input-group mb-3">
-                            <input type="number" class="form-control" @change=${(e) => this.fsm.send({
+                            <input type="text" class="form-control" @change=${(e) => this.fsm.send({
                     type: "CHANGE", value:
                         e.target.value
                 })} aria-label="Text input with dropdown button">
-                            <button class="btn btn-outline-secondary" type="button" aria-expanded="false">%</button>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -244,7 +235,7 @@ export class SiembraAddUI extends LitElement {
                     type: "CHANGE", value:
                         e.target.value
                 })} aria-label="Text input with dropdown button">
-                            <button class="btn btn-outline-secondary" type="button" aria-expanded="false">%</button>
+                            <button class="btn btn-outline-secondary" type="button" aria-expanded="false">grs</button>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -273,7 +264,7 @@ export class SiembraAddUI extends LitElement {
                     type: "CHANGE", value:
                         e.target.value
                 })} aria-label="Text input with dropdown button">
-                            <button class="btn btn-outline-secondary" type="button" aria-expanded="false">%</button>
+                            <button class="btn btn-outline-secondary" type="button" aria-expanded="false">plantas/ha</button>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -302,7 +293,7 @@ export class SiembraAddUI extends LitElement {
                     type: "CHANGE", value:
                         e.target.value
                 })} aria-label="Text input with dropdown button">
-                            <button class="btn btn-outline-secondary" type="button" aria-expanded="false">%</button>
+                            <button class="btn btn-outline-secondary" type="button" aria-expanded="false">cm</button>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -350,10 +341,10 @@ export class SiembraAddUI extends LitElement {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
                 this.fsm.send("CANCEL")}></button>
                     </div>
-                    <div class="modal-body mx-auto">
+                    <div class="modal-body mx-auto w-100">
                         <h5></h5>
         
-                        <textarea id="story" placeholder="Ingresa alguna nota aquí" name="story" rows="5" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
+                        <textarea class='w-100' id="story" placeholder="Ingresa alguna nota aquí" name="story" rows="5" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
         
                     </div>
                     <div class="modal-footer">
@@ -378,11 +369,11 @@ export class SiembraAddUI extends LitElement {
                     </div>
                     <div class="modal-body w-100 mx-auto">
                         <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">Cosecha en Lote</h5>
+                        <h5 class="mb-1">Siembra de ${this._ctx.cultivo} - ${this._ctx.variedad}</h5>
                         <small>${this._ctx.fecha}</small>
                         </div>
-                        <p class="mb-1">Rinde de ${this._ctx.rinde} tn. en ${this._ctx.hectareas} ha. - Total ${(this._ctx.rinde * this._ctx.hectareas).toFixed(2)} tn.</p>
-                        <p class="mb-1">Humedad ${this._ctx.humedad}</p>
+                        <p class="mb-1">Surco: ${this._ctx.distancia} cm. - Densidad Objetivo: ${this._ctx.densidad_objetivo} plantas/ha.</p>
+                        <p class="mb-1">Peso 1000 semillas: ${this._ctx.peso_1000} grs.</p>
                         <small>${this._ctx.comentario}</small>
 
         

@@ -66,7 +66,7 @@ export const cosechaMachine =
             humedad: {
               on: {
                 BACK: { target: "rinde" },
-                NEXT: { target: 'adjuntos' },
+                NEXT: { target: 'comentario' },
                 CHANGE: {
                   actions: assign({
                     humedad : (ctx, e) => e.value
@@ -90,7 +90,7 @@ export const cosechaMachine =
             },
             comentario: {
               on: {
-                BACK: { target: 'adjuntos' },
+                BACK: { target: 'humedad' },
                 NEXT: { target: 'resumiendo' },
                 CHANGE: {
                   actions: assign({
