@@ -4,6 +4,9 @@ import { aplicacionMachine } from './lote-machine.js';
 import { createMachine, interpret, send } from 'xstate';
 import 'bootstrap'
 
+import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
+import pdfMake from "pdfmake/build/pdfmake";
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 import orden_definition from './orden_definition.js';
 import './timeline/timeline.js';
@@ -79,7 +82,10 @@ export class LoteOffcanvas extends LitElement {
          * Sensible default para el contexto
          */
         this._ctx =  aplicacionMachine.initialState.context;
-        this.addEventListener('guardar-cosecha', (e) => console.log(e.detail, e.target.localName));
+        this.addEventListener('guardar-cosecha', (e) => this.guardar_aplicacion("cosecha",e.detail));
+        this.addEventListener('guardar-siembra', (e) => this.guardar_aplicacion("siembra", e.detail));
+        this.addEventListener('generar-ot', (e) => this.download_pdf(e.detail.uuid));
+        this.addEventListener('eliminar-actividad', (e) => this.eliminar_actividad(e.detail.uuid));
     }
 
     createRenderRoot() {
@@ -109,26 +115,52 @@ export class LoteOffcanvas extends LitElement {
         document.getElementById('cosecha-add-el').start()
     }
 
-    async abrir_pdf(params) {
-        // Importante el orden de la importacion para que no arroje error
-// import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
-// import pdfMake from "pdfmake/build/pdfmake";
-    // import('pdfmake/build/pdfmake.min').then((pdfMake) => {
-    //     import('pdfmake/build/vfs_fonts.js').then((pdfFonts)=>{
-    //         console.log(pdfFonts)
-    //         pdfMake.vfs = pdfFonts.pdfMake.vfs;
-    //         pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
-    //     })
-    // })
-    // const pdfFonts = await import("pdfmake/build/vfs_fonts");
-    // const pdfMake = await import("pdfmake/build/pdfmake.min");
-    // pdfMake.vfs = pdfFonts.pdfMake.vfs;
+    abrir_pdf(params) {
+            pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
+   }
 
-        const pdfMake = (await import(/* webpackChunkName: "pdfMake" */ 'pdfmake/build/pdfmake.min')).default
-        const pdfFonts = (await import(/* webpackChunkName: "pdfFonts" */ 'pdfmake/build/vfs_fonts')).default
-        pdfMake.vfs = pdfFonts.pdfMake.vfs
-        pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
-    }
+   download_pdf(uuid){
+     let indice = this._lote_doc.properties.actividades.findIndex((a) => a.uuid === uuid)
+     console.log("UUDI", uuid);
+     pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[indice],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
+   }
+
+   eliminar_actividad(uuid){
+    let restantes = this._lote_doc.properties.actividades.filter((a) => a.uuid !== uuid)
+     // Re-Get Lotes y update
+     this._db.get(this.campo_id).then((doc)=>{
+        let lote_index = doc.lotes.findIndex((lote)=>lote.properties.nombre===this.lote_nombre);
+        if(lote_index > -1){
+            // Cool - Existe
+          let current_aplicaciones = restantes;
+
+            // Ordenar por fecha
+            function compare(a, b) {
+                let ma = moment(a.detalles.fecha,"DD-MM-YYYY")
+                let mb = moment(b.detalles.fecha,"DD-MM-YYYY")
+                if (ma.isAfter(mb)) {
+                  return -1;
+                }
+                if (ma.isBefore(mb)) {
+                  return 1;
+                }
+                // a must be equal to b
+                return 0;
+            }
+            current_aplicaciones.sort(compare)                  
+
+            doc.lotes[lote_index].properties.actividades = current_aplicaciones;
+            this._db.put(doc).then((r)=>console.log("Actividad Eliminada"))
+
+            // Recargemoslos
+            this._campo_doc = doc;
+            this._lote_doc = doc.lotes[lote_index];
+            document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+
+        }
+        
+    })
+   }
 
     tiene_cultivo_este_lote(){
         /**
@@ -148,16 +180,30 @@ export class LoteOffcanvas extends LitElement {
         return "Barbecho"
     }
 
-    guardar_aplicacion(){
-        this.fsm.send("GUARDAR");
+    guardar_aplicacion(tipo, detalles_de_actividad){
+
+        let detalles = {}
+        let aplicacion = {}
         // Save to lote properties
         let ts_ahora = new Date().toISOString()
-        let detalles = {fecha:this._ctx.fecha,
-                        hectareas:this._ctx.hectareas,
-                        insumos:this._ctx.insumos,
-                        comentarios:this._ctx.comentarios
-                        }
-        let aplicacion = { uuid: uuid4(), tipo: "aplicacion", ts_generacion : ts_ahora, detalles: detalles};
+        
+        if (tipo === 'apicacion') {
+            this.fsm.send("GUARDAR");
+            detalles = {
+                fecha: this._ctx.fecha,
+                hectareas: this._ctx.hectareas,
+                insumos: this._ctx.insumos,
+                comentarios: this._ctx.comentarios
+            }
+            aplicacion = { uuid: uuid4(), tipo: "aplicacion", ts_generacion: ts_ahora, detalles: detalles };
+        }else if(tipo === 'siembra') {
+            detalles = detalles_de_actividad
+            aplicacion = { uuid: uuid4(), tipo: "siembra", ts_generacion: ts_ahora, detalles: detalles };
+        }else if(tipo === 'cosecha'){
+            detalles = detalles_de_actividad
+            aplicacion = { uuid: uuid4(), tipo: "cosecha", ts_generacion: ts_ahora, detalles: detalles };
+        }
+
         
         // Condiciones ambientales?
 
@@ -567,7 +613,7 @@ export class LoteOffcanvas extends LitElement {
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
                 this.fsm.send("CANCEL")}>Cancelar</button>
                         <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.guardar_aplicacion()}>Guardar</button>
+                        <button type="button" class="btn btn-primary" @click=${() => this.guardar_aplicacion('aplicacion')}>Guardar</button>
                     </div>
                 </div>
             </div>
@@ -587,8 +633,8 @@ export class LoteOffcanvas extends LitElement {
                     <div class="modal-body mx-auto">
         
                         <div class="btn-group-vertical col">
-                            <button type="button" class="btn btn-success">Enviar por Whatsapp</button>
-                            <button type="button" class="btn btn-info">Compartir por Email</button>
+                            <!-- <button type="button" class="btn btn-success">Enviar por Whatsapp</button>
+                            <button type="button" class="btn btn-info">Compartir por Email</button> -->
                             <button type="button" class="btn btn-dark" @click=${()=> this.abrir_pdf()}>Solo Descargar un
                                 PDF</button>
                         </div>
@@ -598,7 +644,7 @@ export class LoteOffcanvas extends LitElement {
                         <!--  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
                         this.fsm.send("CANCEL")}>Cancelar</button> -->
                         <!-- <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button> -->
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >No Generar Nada por
+                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("CANCEL")} >No Generar Nada por
                             Ahora</button>
                     </div>
                 </div>

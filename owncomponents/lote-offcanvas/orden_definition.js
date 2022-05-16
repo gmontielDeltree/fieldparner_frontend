@@ -127,13 +127,13 @@ const orden_definition =(aplicacion, nombre_campo, nombre_lote, cultivo) => {
     {
       columns: [
         {
-          text: nombre_campo,
+          text: "",
           color: '#aaaaab',
           bold: true,
           margin: [0, 7, 0, 3],
         },
         {
-          text: nombre_lote,
+          text: "",
           color: '#aaaaab',
           bold: true,
           margin: [0, 7, 0, 3],
@@ -143,11 +143,11 @@ const orden_definition =(aplicacion, nombre_campo, nombre_lote, cultivo) => {
     {
       columns: [
         {
-          text: '9999 Street name 1A \n New-York City NY 00000 \n   USA',
+          text: '',
           style: 'invoiceBillingAddress',
         },
         {
-          text: '1111 Other street 25 \n New-York City NY 00000 \n   USA',
+          text: '',
           style: 'invoiceBillingAddress',
         },
       ],

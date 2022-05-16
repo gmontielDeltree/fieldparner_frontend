@@ -3,6 +3,8 @@ import { map } from 'lit/directives/map.js';
 import moment from 'moment';
 import 'moment/dist/locale/es';
 
+
+
 const p_from_insumo = (i) => {
     const motivos_2_str = motivos => {
         let motivos_array = Object.keys(motivos)
@@ -13,112 +15,6 @@ const p_from_insumo = (i) => {
     return html`<p><strong>${i.name.toUpperCase()}</strong> - Dosis: ${i.dosis} ${i.unidad} - Motivo: ${motivos_2_str(i.motivos)} </p>`
 
 }
-
-const time_item = (item) => {
-
-    if(item.tipo === 'aplicacion'){
-        let fecha = item.detalles.fecha
-        let hectareas = item.detalles.hectareas
-        let insumos = item.detalles.insumos
-        let comentarios = item.detalles.comentarios
-
-        let list_of_ps = insumos.map(p_from_insumo)
-        let tipo_mayuscula = item.tipo.toUpperCase()
-
-        console.log(moment.locale()); // en
-        moment.locale('es')
-        console.log(moment.locale()); // en
-        let elapsed = moment(fecha,"DD-MM-YYYY").fromNow()
-
-        return html`
-        <li>
-            <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
-            <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
-            <div class="cbp_tmlabel">
-                <h2><a href="">${tipo_mayuscula}</a> <span class="text-muted">en ${hectareas} has.</span></h2>
-                   ${list_of_ps}
-                <p class="small">
-                    ${comentarios}
-                </p>
-
-            </div>          
-        </li>`
-    }else if(item.tipo === 'cosecha'){
-        let fecha = item.detalles.fecha
-        let hectareas = item.detalles.hectareas
-        let insumos = item.detalles.insumos
-        let comentarios = item.detalles.comentarios
-
-        let list_of_ps = insumos.map(p_from_insumo)
-        let tipo_mayuscula = item.tipo.toUpperCase()
-
-        console.log(oment.locale()); // en
-        oment.locale('es')
-        console.log(oment.locale()); // en
-        let elapsed = oment(fecha,"DD/MM/YYYY").fromNow()
-
-
-        return html`
-            <li>
-            <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>03:45 AM</span> <span>Today</span></time>
-            <div class="cbp_tmicon bg-green"><i class="zmdi zmdi-label"></i></div>
-            <div class="cbp_tmlabel">
-                <h2><a href="#">${tipo_mayuscula}</a> <span class="text-muted">en ${hectareas} has.</span></h2>
-                   ${list_of_ps}
-                <p class="small">
-                    ${comentarios}
-                </p>
-
-            </div>          
-        </li>
-        `
-    }else if(item.tipo === 'siembra'){
-        let fecha = item.detalles.fecha
-        let hectareas = item.detalles.hectareas
-        let insumos = item.detalles.insumos
-        let comentarios = item.detalles.comentarios
-
-        let list_of_ps = insumos.map(p_from_insumo)
-        let tipo_mayuscula = item.tipo.toUpperCase()
-
-        console.log(oment.locale()); // en
-        oment.locale('es')
-        console.log(oment.locale()); // en
-        let elapsed = oment(fecha,"DD/MM/YYYY").fromNow()
-
-
-        return html`
-        <li>
-        <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>03:45 AM</span> <span>Today</span></time>
-        <div class="cbp_tmicon bg-orange"><i class="zmdi zmdi-label"></i></div>
-        <div class="cbp_tmlabel">
-            <h2><a href="#">${tipo_mayuscula}</a> <span class="text-muted">en ${hectareas} has.</span></h2>
-               ${list_of_ps}
-            <p class="small">
-                ${comentarios}
-            </p>
-
-        </div>          
-    </li>
-    `
-
-    }else if(item.tipo === 'otro'){
-
-    }
-   
-}
-
-const timeline = (actividades) => html`<div class="container">
-    <div class="row">
-        <div class="col-md-10">
-            <ul class="cbp_tmtimeline">
-
-                ${map(actividades, time_item)}
-
-            </ul>
-        </div>
-    </div>
-</div>`
 
 const timeline_css = css`.cbp_tmtimeline {
     margin: 0;
@@ -348,6 +244,17 @@ export class TimelineElement extends LitElement {
 
     static styles = [timeline_css];
 
+
+    evento_pdf(uuid){
+        const event = new CustomEvent('generar-ot', {detail:{uuid:uuid}, bubbles: true, composed: true});
+        this.dispatchEvent(event);
+    }
+
+    evento_eliminar(uuid){
+        const event = new CustomEvent('eliminar-actividad', {detail:{uuid:uuid}, bubbles: true, composed: true});
+        this.dispatchEvent(event);
+    }
+
     constructor() {
         super();
     }
@@ -355,7 +262,119 @@ export class TimelineElement extends LitElement {
         return this;
     }
     render() {
-        return timeline(this.actividades || []);
+
+        const time_item = (item) => {
+
+            if(item.tipo === 'aplicacion'){
+                let fecha = item.detalles.fecha
+                let hectareas = item.detalles.hectareas
+                let insumos = item.detalles.insumos
+                let comentarios = item.detalles.comentarios
+        
+                let list_of_ps = insumos.map(p_from_insumo)
+                let tipo_mayuscula = item.tipo.toUpperCase()
+        
+                console.log(moment.locale()); // en
+                moment.locale('es')
+                console.log(moment.locale()); // en
+                let elapsed = moment(fecha,"DD-MM-YYYY").fromNow()
+        
+                return html`
+                <li>
+                    <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
+                    <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
+                    <div class="cbp_tmlabel">
+                        <h2><a href="">${tipo_mayuscula}</a> <span class="text-muted">en ${hectareas} has.</span></h2>
+                           ${list_of_ps}
+                        <p class="small">
+                            ${comentarios}
+                        </p>
+                        <button class='btn btn-secondary' @click=${()=>{console.log(item.uuid); this.evento_pdf(item.uuid)}}>Orden de Trabajo</button>
+                        <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
+
+                    </div>          
+                </li>`
+            }else if(item.tipo === 'cosecha'){
+                let fecha = item.detalles.fecha
+                let hectareas = item.detalles.hectareas
+                let rinde = item.detalles.rinde
+                let comentarios = item.detalles.comentarios
+                let humedad = item.detalles.humedad
+        
+                console.log(moment.locale()); // en
+                moment.locale('es')
+                console.log(moment.locale()); // en
+                let elapsed = moment(fecha,"DD/MM/YYYY").fromNow()
+        
+        
+                return html`
+                    <li>
+                    <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
+                    <div class="cbp_tmicon bg-green"><i class="zmdi zmdi-label"></i></div>
+                    <div class="cbp_tmlabel">
+                        <h2><a href="#">COSECHA</a> <span class="text-muted">de ${hectareas} has.</span></h2>
+                        <p>Rinde: ${rinde} tn/ha - Humedad: ${humedad} %</p>
+                        <p class="small">
+                            ${comentarios}
+                        </p>
+        
+                        <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
+                    </div>          
+                </li>
+                `
+            }else if(item.tipo === 'siembra'){
+                let fecha = item.detalles.fecha
+                let hectareas = item.detalles.hectareas
+                let comentarios = item.detalles.comentarios
+                let cultivo = item.detalles.cultivo
+                let varidad = item.detalles.variedad
+                let peso_1000 = item.detalles.peso_1000
+                let densidad_objetivo = item.detalles.densidad_objetivo
+                let distancia = item.detalles.distancia
+
+        
+                console.log(moment.locale()); // en
+                moment.locale('es')
+                console.log(moment.locale()); // en
+                let elapsed = moment(fecha,"DD/MM/YYYY").fromNow()
+        
+        
+                return html`
+                <li>
+                <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
+                <div class="cbp_tmicon bg-orange"><i class="zmdi zmdi-label"></i></div>
+                <div class="cbp_tmlabel">
+                    <h2><a href="#">SIEMBRA</a> <span class="text-muted">en ${hectareas} has.</span></h2>
+                    <p><strong>${cultivo} - ${varidad}</strong></p>
+                    <p>${densidad_objetivo} pl/ha - ${distancia} cm entre surcos</p>
+                    <p class="small">
+                        ${comentarios}
+                    </p>
+        
+                    <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
+                </div>          
+            </li>
+            `
+        
+            }else if(item.tipo === 'otro'){
+        
+            }
+           
+        }
+
+        return html`<div class="container">
+                <div class="row">
+                    <div class="col-md-10">
+                        <ul class="cbp_tmtimeline">
+
+                            ${map(this.actividades, time_item)}
+
+                        </ul>
+                    </div>
+                </div>
+            </div>`
+
+       // return timeline(this.actividades || [], this.evento_pdf);
     }
 }
 
