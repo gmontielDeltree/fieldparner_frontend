@@ -189,7 +189,7 @@ export class LoteOffcanvas extends LitElement {
         /**
          * Es un array que contiene todas las actividades historicas en el lote
          */
-        let actividades = this._lote_doc?.actividades || []
+        let actividades = this._lote_doc?.properties.actividades || []
 
         // Filtrar Cosechas
         let cosechas = actividades.findIndex((a)=>a.tipo === 'cosechas')
@@ -223,6 +223,16 @@ export class LoteOffcanvas extends LitElement {
             this._campo_doc = doc;
             this.hide()
         })
+    }
+
+    ultima_siembra(){
+        let actividades = this._lote_doc?.properties.actividades || [];
+        let ultima_siembra = actividades.filter((a) => a.tipo === 'siembra')
+        if(ultima_siembra.length){
+            return ultima_siembra[0].detalles.cultivo + " - " + ultima_siembra[0].detalles.variedad 
+        }else{
+            return "Cultivo Desconocido"
+        }
     }
 
     guardar_aplicacion(tipo, detalles_de_actividad){
@@ -309,6 +319,9 @@ export class LoteOffcanvas extends LitElement {
                     this.fsm = interpret(aplicacionMachine.withContext(someContext)).onTransition((state) => {
                         this._ctx = state.context;
                         console.log(state.value);
+                        if (state.matches('idle')){
+                            this._steps_elements.map((el) => el.hide())
+                        }
                         if (state.matches('editing.fecha')) {
                             this.show_step(0)
                         } else if (state.matches('editing.hectareas')) {
@@ -374,7 +387,7 @@ export class LoteOffcanvas extends LitElement {
 
         <div class="offcanvas offcanvas-bottom h-75" tabindex="-1" id="lote-offcanvas" aria-labelledby="offcanvasBottomLabel">
             <div class="offcanvas-header">
-                <h5 class="offcanvas-title fw-bold">Lote "${this.lote_nombre}"</h5>
+                   <h6 class="offcanvas-title fw-bold">Lote "${this.lote_nombre}" <small class='text-muted'>${this.ultima_siembra().toUpperCase()}</small> </h6>
                 
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>

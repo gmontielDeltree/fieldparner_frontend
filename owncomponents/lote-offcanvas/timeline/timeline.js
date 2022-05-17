@@ -362,7 +362,7 @@ export class TimelineElement extends LitElement {
            
         }
 
-        return html`<div class="container">
+        return html`<div class="container-fluid">
                 <div class="row">
                     <div class="col-md-10">
                         <ul class="cbp_tmtimeline">
