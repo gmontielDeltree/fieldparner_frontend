@@ -9,8 +9,8 @@ var campos_db;
 var notas_db;
 var map;
 var ndvi_db;
-//var camposchanges_db;
-//var local_campos_changes;
+var camposchanges_db;
+var local_campos_changes;
 var couch_username;
 var darkdb;
 
@@ -327,20 +327,20 @@ const get_dbs = async (base_url, username) => {
     ndvi_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi")
 
 
-    // // Cambios DBs
-    // remote_campos_changes = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
-    // local_campos_changes = new PouchDB("campos_changes")
+    // Cambios DBs
+    remote_campos_changes = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
+    local_campos_changes = new PouchDB("campos_changes")
 
-    // console.log("Changes Sync Set");
-    // local_campos_changes.replicate.to(remote_campos_changes, {
-    //     live: true
-    // }).on('complete', function () {
-    //     // yay, we're done!
-    //     console.log("Changes Uploaded")
-    // }).on('error', function (err) {
-    //     // boo, something went wrong!
-    //     console.log("Error Changes")
-    // });
+    console.log("Cambios Sync Set");
+    local_campos_changes.replicate.to(remote_campos_changes, {
+        live: true
+    }).on('complete', function () {
+        // yay, we're done!
+        console.log("Cambios Uploaded")
+    }).on('error', function (err) {
+        // boo, something went wrong!
+        console.log("Error Cambios")
+    });
 
     console.log("DBs set ok")
 

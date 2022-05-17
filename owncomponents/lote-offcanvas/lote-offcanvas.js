@@ -110,6 +110,9 @@ export class LoteOffcanvas extends LitElement {
     show() {
         this._lotesOffcanvas.show();
     }
+    hide() {
+        this._lotesOffcanvas.hide();
+    }
 
     siembra() {
         document.getElementById('siembra-add-el').start()
@@ -129,6 +132,11 @@ export class LoteOffcanvas extends LitElement {
             pdfMake.fonts = pdf_fonts
             pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
         })          
+   }
+
+   evento_show_ndvi(e){
+        const event = new CustomEvent('show-ndvi', {detail:{lote:this._lote_doc}, bubbles: true, composed: true});
+        this.dispatchEvent(event);
    }
 
    download_pdf(uuid){
@@ -182,17 +190,39 @@ export class LoteOffcanvas extends LitElement {
          * Es un array que contiene todas las actividades historicas en el lote
          */
         let actividades = this._lote_doc?.actividades || []
-        // Ordenar por fechas
 
         // Filtrar Cosechas
+        let cosechas = actividades.findIndex((a)=>a.tipo === 'cosechas')
 
         // Filtrar Siembras
+        let siembras = actividades.findIndex((a)=>a.tipo === 'siembra')
 
-        // Que fue lo mas proximo?
-        // Si Cosecha es lo ultimo -> "Barbecho"
+        if(siembras > -1){
+            if(cosechas > -1){
+                if(siembras < cosechas){
+                    // Ultima evento es siembra
+                    return  actividades[siembras].detalles.cultivo
+                }else{
+                    return "Barbecho"
+                }
+            }else{
+                // No hay cosechas
+                return actividades[siembras].detalles.cultivo
+            }
+        }else{
+            return "Cultivo Desconocido"
+        }
+    }
 
-        // Si siembra el lo ultimo -> Nombre del Cultivo
-        return "Barbecho"
+    eliminar_lote(){
+        let restantes = this._campo_doc.lotes.filter((lote)=> lote.id !== this._lote_doc.id)
+        this._db.get(this.campo_id).then((doc)=>{
+            let restantes = this._campo_doc.lotes.filter((lote)=> lote.id !== this._lote_doc.id)
+            doc.lotes = restantes
+            this._db.put(doc).then((r)=>console.log("Lote Eliminado"))
+            this._campo_doc = doc;
+            this.hide()
+        })
     }
 
     guardar_aplicacion(tipo, detalles_de_actividad){
@@ -265,7 +295,7 @@ export class LoteOffcanvas extends LitElement {
      */
     willUpdate(changedProperties){
           // only need to check changed properties for an expensive computation.
-            if (changedProperties.has('campo_id') || changedProperties.has('username')) {
+            if (changedProperties.has('campo_id') || changedProperties.has('lote_nombre')) {
                 if(!this._db){
                     // Pouch - get el campo_doc
                     this._db = new PouchDB('campos_' + this.username);
@@ -310,19 +340,20 @@ export class LoteOffcanvas extends LitElement {
 
     render() {
 
-        const resumen_item_el = (item) => html`<a href="#" class="list-group-item list-group-item-action">
-                                            <div class="d-flex w-100 justify-content-between">
-                                                <h5 class="mb-1">${capitalize(item.name)}</h5>
-                                                <small class="text-muted">${capitalize(item.type)}</small>
-                                            </div>
-                                            <p class="mb-1">${item.dosis} ${item.unidad} - ${item.hectareas} ha. - ${item.total.toFixed(2)} ${item.unidad === 'lt/ha'?'litros':'kgs'} totales</p>
-                                            <div class='d-flex w-100 justify-content-between'>
-                                                <small class="text-muted">${motivos_2_str(item.motivos)}</small>
-                                                <div class="btn-group" role="group" aria-label="Basic mixed styles example">
-                                                    <!-- <button type="button" class="btn btn-danger">Eliminar</button> -->
-                                                </div>
-                                            </div>
-                                        </a>`
+                const resumen_item_el = (item) => html`<a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">${capitalize(item.name)}</h5>
+                        <small class="text-muted">${capitalize(item.type)}</small>
+                    </div>
+                    <p class="mb-1">${item.dosis} ${item.unidad} - ${item.hectareas} ha. - ${item.total.toFixed(2)} ${item.unidad ===
+                        'lt/ha' ? 'litros' : 'kgs'} totales</p>
+                    <div class='d-flex w-100 justify-content-between'>
+                        <small class="text-muted">${motivos_2_str(item.motivos)}</small>
+                        <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                            <!-- <button type="button" class="btn btn-danger">Eliminar</button> -->
+                        </div>
+                    </div>
+                </a>`
 
                 const insumo_el = (item) => html`<a href="#" class="list-group-item list-group-item-action ${this._ctx.current_insumo.name === item.name? 'active':''}" @click=${(e)=> this.fsm.send({
                                                     'type': 'SELECTED', value: item
@@ -349,10 +380,18 @@ export class LoteOffcanvas extends LitElement {
             </div>
             <div class="offcanvas-body small mt-2">
 
-                    <div class='row'>
-                        <div class="col"><button class='btn btn-primary btn-sm' @click=${this.siembra}>+ Siembra</button></div>
-                        <div class="col"><button class='btn btn-primary btn-sm' @click=${this.actividad}>+ Actividad</button></div>
-                        <div class="col"><button class='btn btn-primary btn-sm' @click=${this.cosecha}>+ Cosecha</button></div>
+                    <div class='btn-toolbar shadow' role='toolbar'>
+                        <div class="btn-group me-2" role="group" aria-label="Zero group">
+                            <button class='btn btn-danger btn-sm' @click=${this.eliminar_lote}>Eliminar</button>
+                        </div>
+                        <div class="btn-group me-2 mx-auto" role="group" aria-label="First group">
+                            <button class='btn btn-primary btn-sm' @click=${this.siembra}>+ Siembra</button>
+                            <button class='btn btn-primary btn-sm' @click=${this.actividad}>+ Aplicación</button>
+                            <button class='btn btn-primary btn-sm' @click=${this.cosecha}>+ Cosecha</button>
+                        </div>
+                        <div class="btn-group me-2" role="group" aria-label="Second group">
+                            <button class='btn btn-primary btn-sm' @click=${this.evento_show_ndvi}>NDVI</button>
+                        </div>
                     </div>
                     <div class='row'>
                     <div class='col shadow mx-2 p-3 max-vh-25'>

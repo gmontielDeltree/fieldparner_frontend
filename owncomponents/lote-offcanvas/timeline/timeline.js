@@ -12,7 +12,7 @@ const p_from_insumo = (i) => {
         return solo_verdaderos.join(", ") 
     }
 
-    return html`<p><strong>${i.name.toUpperCase()}</strong> - Dosis: ${i.dosis} ${i.unidad} - Motivo: ${motivos_2_str(i.motivos)} </p>`
+    return html`<p class="small"><strong>${i.name.toUpperCase()}</strong> - Dosis: ${i.dosis} ${i.unidad} - Motivo: ${motivos_2_str(i.motivos)} </p>`
 
 }
 
@@ -284,7 +284,7 @@ export class TimelineElement extends LitElement {
                     <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
                     <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
                     <div class="cbp_tmlabel">
-                        <h2><a href="">${tipo_mayuscula}</a> <span class="text-muted">en ${hectareas} has.</span></h2>
+                        <h2><a>APLICACIÓN</a> <span class="text-muted">en ${hectareas} has.</span></h2>
                            ${list_of_ps}
                         <p class="small">
                             ${comentarios}

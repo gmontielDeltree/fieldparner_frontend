@@ -41,7 +41,7 @@ export class MyElement extends LitElement {
                 // the component to update.
                 this.greeting = 'Hello';
                 this.planet = 'World';
-                console.log("EJECUTANDO COMPONENTE")
+                // console.log("EJECUTANDO COMPONENTE")
         }
 
         firstUpdated() {
@@ -54,6 +54,10 @@ export class MyElement extends LitElement {
 
         createRenderRoot() {
                 return this;
+        }
+
+        hide() {
+                this._detallesOffcanvas.hide()
         }
 
         show() {

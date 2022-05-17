@@ -2,6 +2,7 @@
 //'use strict';
 
 import { Modal, Offcanvas, Toast, bootstrap } from 'bootstrap.esm.min.js'
+import { map } from 'lit/directives/map';
 
 zuix.controller(function (cp) {
 
@@ -242,6 +243,7 @@ zuix.controller(function (cp) {
 
 		})
 
+		
 		map.on(touchEvent, 'lotes_internos', (e) => {
 			console.log("Click en lotes Internos", e.features[0])
 			let { nombre, campo_parent_id } = e.features[0].properties
@@ -290,6 +292,19 @@ zuix.controller(function (cp) {
 		// 	overlay.style.display = 'none';
 		// })
 
+		document.getElementById('map').addEventListener('show-ndvi', (e) => {
+			console.log("NDVI")
+			let geometry = e.detail.lote.geometry
+			let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
+			hashMessage(clean_json).then((lote_hash) => {
+				console.log("Lote Hash", lote_hash)
+				// Build y  Mostrat la Galeria
+				ndvi_db.get(lote_hash).then(ndvi_gallery).catch(() => {
+					console.log("Error NDVI: Aun no existe ningun registro");
+					alert("Error NDVI: Aun no existe ningun registro")
+				})
+			})
+		})
 
 		ndvi_db.changes({
 			since: 'now',
@@ -297,7 +312,7 @@ zuix.controller(function (cp) {
 		}).on('change', () => { console.log("Cambios en NDVI") });
 
 		/**
-		 * Renderiza la galleria de NDVI en los detalles del campo
+		 * Renderiza la galeria de NDVI en los detalles del campo
 		 * @param {} result 
 		 */
 		const ndvi_gallery = async (result) => {
@@ -429,7 +444,7 @@ zuix.controller(function (cp) {
 					update_overlay_info(ob.estadisticas)
 				}
 
-				card_html = `<div class="card bg-dark text-white">
+				card_html = `<div class="card bg-dark text-white my-1">
 							<img src="${img_src}" class="card-img" alt="...">
 							<div class="card-img-overlay">
 								<h5 class="card-title">${fecha}</h5>
@@ -453,6 +468,8 @@ zuix.controller(function (cp) {
 			obs = result.obs
 			obs.forEach(ob => renderNdviThumb(ob))
 			ndvi_oc.show()
+			document.getElementById('campo-oc').hide()
+			document.getElementById('lote-oc').hide()
 		}
 
 	}
@@ -1026,7 +1043,10 @@ zuix.controller(function (cp) {
 		lote_geojson = draw.getAll().features[0]
 		lote_geojson.properties.nombre = nombre_lote
 		lote_geojson.properties.campo_parent_id = db_doc._id
+		let this_lote_id = uuidv4()
+		lote_geojson.properties.uuid = this_lote_id
 		lote_geojson.properties.hectareas = Math.round(turf.area(lote_geojson) / 10000 * 100) / 100;
+		lote_geojson.id = this_lote_id
 
 		console.log("Lote GeoJSON", lote_geojson)
 
@@ -1040,13 +1060,13 @@ zuix.controller(function (cp) {
 		campos_db.put(db_doc)
 
 		// Notificar Cambio para sincronizar
-		// local_campos_changes.put({ _id: uuidv4(), tipo: "add-lote", username: couch_username, details: { campo_id: db_doc._id, db: "campos_" + couch_username, lote_geojson: lote_geojson, username: couch_username } }, (err, result) => {
-		// 	if (!err) {
-		// 		console.log('LocalChanges Successfully posted!');
-		// 	} else {
-		// 		console.log(err);
-		// 	}
-		// })
+		local_campos_changes.put({ _id: this_lote_id, tipo: "add-lote", username: couch_username, details: { campo_id: db_doc._id, db: "campos_" + couch_username, lote_geojson: lote_geojson, username: couch_username } }, (err, result) => {
+			if (!err) {
+				console.log('LocalChanges Successfully posted!');
+			} else {
+				console.log(err);
+			}
+		})
 
 		draw.deleteAll()
 	}
