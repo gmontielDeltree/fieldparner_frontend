@@ -289,7 +289,8 @@ export class TimelineElement extends LitElement {
                         <p class="small">
                             ${comentarios}
                         </p>
-                        <button class='btn btn-secondary' @click=${()=>{console.log(item.uuid); this.evento_pdf(item.uuid)}}>Orden de Trabajo</button>
+                        ${navigator.share ? html`<button type="button" class="btn btn-success" @click=${()=>this.evento_pdf(item.uuid)}>Compartir Orden</button>` : html`<button class='btn btn-secondary' @click=${()=>{console.log(item.uuid); this.evento_pdf(item.uuid)}}>Orden de Trabajo</button>`}
+                        
                         <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
 
                     </div>          
@@ -319,9 +320,6 @@ export class TimelineElement extends LitElement {
                         </p>
         
                         <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
-                        ${navigator.share ? html`<button type="button" class="btn btn-success" @click=${null}>Compartir</button>` : null}
-                        
-
                     </div>          
                 </li>
                 `

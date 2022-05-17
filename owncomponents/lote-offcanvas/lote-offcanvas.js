@@ -141,10 +141,27 @@ export class LoteOffcanvas extends LitElement {
 
     download_pdf(uuid) {
         let indice = this._lote_doc.properties.actividades.findIndex((a) => a.uuid === uuid)
+        // docDefinition
+        let dd = orden_definition(this._lote_doc.properties.actividades[indice], this._campo_doc.nombre, this._lote_doc.properties.nombre)
+
         import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
             pdfMake.fonts = pdf_fonts
-            console.log(pdfMake)
-            pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[indice], this._campo_doc.nombre, this._lote_doc.properties.nombre)).open();
+
+            if(navigator.share){
+                console.log("Compartiendo PDF")
+                const pdfDocGenerator = pdfMake.createPdf(dd);
+                pdfDocGenerator.getBlob((blob) => {
+                    const files = [new File([blob], 'orden_de_trabajo.pdf', { type: blob.type })]
+                    navigator.share({
+                        files: files,
+                        title: 'Orden de Trabajo',
+                        text: 'Lote ' + this._lote_doc.nombre,
+                      })
+                });
+            }else{
+                console.log("Generando PDF")
+                pdfMake.createPdf(dd).open();
+            }
         })
     }
 
@@ -186,22 +203,21 @@ export class LoteOffcanvas extends LitElement {
     }
 
     share_aplicacion() {
-        import("pdfmake/build/pdfmake.min.js").then(({ pdfMake }) => {
-            pdfMake.fonts = pdf_fonts
+        // import("pdfmake/build/pdfmake.min.js").then(({ pdfMake }) => {
+        //     pdfMake.fonts = pdf_fonts
 
-            const pdfDocGenerator = pdfMake.createPdf(docDefinition);
-            pdfDocGenerator.getBlob((blob) => {
-                const files = [new File([blob], 'orden_de_trabajo.pdf', { type: blob.type })]
-                navigator.share({
-                    files: files,
-                    title: 'Orden de Trabajo',
-                    text: 'Lote ' + this._lote_doc.nombre,
-                  })
-            });
+        //     const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+        //     pdfDocGenerator.getBlob((blob) => {
+        //         const files = [new File([blob], 'orden_de_trabajo.pdf', { type: blob.type })]
+        //         navigator.share({
+        //             files: files,
+        //             title: 'Orden de Trabajo',
+        //             text: 'Lote ' + this._lote_doc.nombre,
+        //           })
+        //     });
 
-
-           // pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0], this._campo_doc.nombre, this._lote_doc.properties.nombre)).open();
-        })
+        //    // pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0], this._campo_doc.nombre, this._lote_doc.properties.nombre)).open();
+        // })
 
 
     }
@@ -721,7 +737,6 @@ export class LoteOffcanvas extends LitElement {
                     <div class="modal-body mx-auto">
         
                         <div class="btn-group-vertical col">
-                            ${navigator.share ? html`<button type="button" class="btn btn-success" @click=${this.share_aplicacion}>Enviar por Whatsapp</button>` : null}
 
                             <button type="button" class="btn btn-dark" @click=${() => this.abrir_pdf()}>Solo Descargar un
                                 PDF</button>
