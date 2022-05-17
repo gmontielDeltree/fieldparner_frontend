@@ -136,7 +136,7 @@ export class CosechaAddUI extends LitElement {
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Sobre cuantas hectáreas se realizará la aplicación?
+                        <h5 class="modal-title" id="staticBackdropLabel">¿Sobre cuantas hectáreas se realizó la cosecha?
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
                             this.fsm.send("CANCEL")}></button>

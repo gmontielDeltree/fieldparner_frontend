@@ -128,10 +128,12 @@ export class LoteOffcanvas extends LitElement {
     }
 
     abrir_pdf(params) {
-        import("pdfmake/build/pdfmake.min.js").then(({ pdfMake }) => {
+        import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
             pdfMake.fonts = pdf_fonts
             pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0], this._campo_doc.nombre, this._lote_doc.properties.nombre)).open();
         })
+
+        this.fsm.send("CANCEL");
     }
 
     evento_show_ndvi(e) {
@@ -424,17 +426,19 @@ export class LoteOffcanvas extends LitElement {
 
         <div class="offcanvas offcanvas-bottom h-75" tabindex="-1" id="lote-offcanvas" aria-labelledby="offcanvasBottomLabel">
             <div class="offcanvas-header">
+                <button class='btn btn-danger btn-sm d-block d-md-none material-icons md-18' @click=${this.eliminar_lote}>delete_forever</button>
                    <h6 class="offcanvas-title fw-bold">Lote "${this.lote_nombre}" <small class='text-muted'>${this.ultima_siembra().toUpperCase()}</small> </h6>
                 
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body small mt-2">
 
-                    <div class='btn-toolbar shadow' role='toolbar'>
+                    <div class='btn-toolbar shadow px-0' role='toolbar'>
                         <div class="btn-group me-2" role="group" aria-label="Zero group">
-                            <button class='btn btn-danger btn-sm' @click=${this.eliminar_lote}>Eliminar</button>
+                        
+                        <button class='btn btn-danger btn-sm d-none d-md-block' @click=${this.eliminar_lote}>Eliminar Lote</button>
                         </div>
-                        <div class="btn-group me-2 mx-auto" role="group" aria-label="First group">
+                        <div class="btn-group" role="group" aria-label="First group">
                             <button class='btn btn-primary btn-sm' @click=${this.siembra}>+ Siembra</button>
                             <button class='btn btn-primary btn-sm' @click=${this.actividad}>+ Aplicación</button>
                             <button class='btn btn-primary btn-sm' @click=${this.cosecha}>+ Cosecha</button>
@@ -687,10 +691,10 @@ export class LoteOffcanvas extends LitElement {
                 this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body">
-                        <div class="container-fluid shadow min-vh-100 py-2">
+                        <div class="container-fluid shadow py-2">
                             <div class="row">
                                 <div class="col">
-                                    <h3>Aplicación en lote ${this.lote_nombre} - ${this._campo_doc?.nombre}</h3>
+                                    <h5>Aplicación en "${this.lote_nombre}" - "${this._campo_doc?.nombre}"</h5>
                                     <div>
                                         <div class="row">
                                             <div class="col">

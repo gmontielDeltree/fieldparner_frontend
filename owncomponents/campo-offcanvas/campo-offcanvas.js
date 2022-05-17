@@ -139,18 +139,20 @@ export class MyElement extends LitElement {
             aria-labelledby="offcanvas-campo-header" data-bs-backdrop="false">
             <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="offcanvas-campo-header">Campo</h5>
-                    <button type="button" class="btn btn-success" @click=${this.nuevo_lote_click}>+Lote</button>
+                    
                     <button type="button" @click=${this.cerrar_modo} class="btn-close text-reset" data-bs-dismiss="offcanvas"
                             aria-label="Close"></button>
             </div>
-            <div class="offcanvas-body small col">
-                    <div class="row no-wrap" id='campo-ndvi'></div>
+            <div class="offcanvas-body small col pt-0">
+<!--                     <div class="row no-wrap" id='campo-ndvi'></div>
                     <div class="row" id='campo-cultivo'></div>
                     <div class="row mb-2" id='campo-img-preview'>
                     </div>
                     <div class="row" id='campo-audio-players'></div>
                     <div class="row" id='campo-problemas'></div>
-                    <div class="row" id='campo-campo'></div>
+                    <div class="row" id='campo-campo'></div> -->
+                    <p>Toque en un lote del mapa para ver detalles</p>
+                    <button type="button" class="btn btn-success" @click=${this.nuevo_lote_click}>+Lote</button>
                     <button class="btn btn-danger" id="eliminar-campo-btn" @click=${this.borrar_lote_callback}>Eliminar Campo</button>
             </div>
 
