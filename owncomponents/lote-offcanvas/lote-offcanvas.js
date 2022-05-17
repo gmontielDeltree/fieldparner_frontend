@@ -1,4 +1,4 @@
-import { LitElement, html, css} from 'lit';
+import { LitElement, html, css } from 'lit';
 import { map } from 'lit/directives/map.js';
 import { aplicacionMachine } from './lote-machine.js';
 import { interpret } from 'xstate';
@@ -7,15 +7,15 @@ import { interpret } from 'xstate';
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
 
 const pdf_fonts = {
-     // download default Roboto font from cdnjs.com
+    // download default Roboto font from cdnjs.com
     Roboto: {
-      normal: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
-      bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
-      italics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
-      bolditalics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
+        normal: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
+        bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
+        italics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
+        bolditalics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
     }
- }
- 
+}
+
 
 import orden_definition from './orden_definition.js';
 import './timeline/timeline.js';
@@ -30,24 +30,24 @@ import './cosecha-add-ui.js'
 import './siembra-add-ui.js'
 
 const capitalize = (mySentence) => {
-    if(mySentence === null || mySentence === undefined){
+    if (mySentence === null || mySentence === undefined) {
         return ""
-    }else{
+    } else {
         return mySentence.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
     }
 }
 
 const principio_activo = (item) => {
     let components = item.components
-    if(components.length === 0){
+    if (components.length === 0) {
         return "Principio Activo Desconocido"
     }
-    let principio_activos = components.filter((c)=>c.active_principle).map((c)=>c.name)
-    let enmayusculas = principio_activos.map((e) => e.toUpperCase()).slice(0,3)
+    let principio_activos = components.filter((c) => c.active_principle).map((c) => c.name)
+    let enmayusculas = principio_activos.map((e) => e.toUpperCase()).slice(0, 3)
     let r = enmayusculas.join()
-    if(principio_activos.length > 4){
+    if (principio_activos.length > 4) {
         return r + "..."
-    }else{
+    } else {
         return r
     }
 }
@@ -56,7 +56,7 @@ const motivos_2_str = motivos => {
     let motivos_array = Object.keys(motivos)
     let solo_verdaderos = motivos_array.filter(m => motivos[m])
 
-    return solo_verdaderos.join(", ") 
+    return solo_verdaderos.join(", ")
 }
 
 export class LoteOffcanvas extends LitElement {
@@ -71,8 +71,8 @@ export class LoteOffcanvas extends LitElement {
         _steps_elements: {},
         _ctx: {},
         _campo_doc: {},
-        _lote_doc:{},
-        _db: {state: true},
+        _lote_doc: {},
+        _db: { state: true },
         fsm: { state: true }
     }
 
@@ -90,8 +90,8 @@ export class LoteOffcanvas extends LitElement {
         /**
          * Sensible default para el contexto
          */
-        this._ctx =  aplicacionMachine.initialState.context;
-        this.addEventListener('guardar-cosecha', (e) => this.guardar_aplicacion("cosecha",e.detail));
+        this._ctx = aplicacionMachine.initialState.context;
+        this.addEventListener('guardar-cosecha', (e) => this.guardar_aplicacion("cosecha", e.detail));
         this.addEventListener('guardar-siembra', (e) => this.guardar_aplicacion("siembra", e.detail));
         this.addEventListener('generar-ot', (e) => this.download_pdf(e.detail.uuid));
         this.addEventListener('eliminar-actividad', (e) => this.eliminar_actividad(e.detail.uuid));
@@ -123,125 +123,146 @@ export class LoteOffcanvas extends LitElement {
         this.fsm.send({ type: "NEXT" })
     }
 
-    cosecha() { 
+    cosecha() {
         document.getElementById('cosecha-add-el').start()
     }
 
     abrir_pdf(params) {
-        import("pdfmake/build/pdfmake.min.js").then(({pdfMake})=>{
+        import("pdfmake/build/pdfmake.min.js").then(({ pdfMake }) => {
             pdfMake.fonts = pdf_fonts
-            pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
-        })          
-   }
+            pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0], this._campo_doc.nombre, this._lote_doc.properties.nombre)).open();
+        })
+    }
 
-   evento_show_ndvi(e){
-        const event = new CustomEvent('show-ndvi', {detail:{lote:this._lote_doc}, bubbles: true, composed: true});
+    evento_show_ndvi(e) {
+        const event = new CustomEvent('show-ndvi', { detail: { lote: this._lote_doc }, bubbles: true, composed: true });
         this.dispatchEvent(event);
-   }
+    }
 
-   download_pdf(uuid){
-     let indice = this._lote_doc.properties.actividades.findIndex((a) => a.uuid === uuid)
-     import("pdfmake/build/pdfmake.min.js").then(({default: pdfMake})=>{
-        pdfMake.fonts = pdf_fonts
-        console.log(pdfMake)
-        pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[indice],this._campo_doc.nombre,this._lote_doc.properties.nombre)).open();
-     })     
-   }
+    download_pdf(uuid) {
+        let indice = this._lote_doc.properties.actividades.findIndex((a) => a.uuid === uuid)
+        import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
+            pdfMake.fonts = pdf_fonts
+            console.log(pdfMake)
+            pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[indice], this._campo_doc.nombre, this._lote_doc.properties.nombre)).open();
+        })
+    }
 
-   eliminar_actividad(uuid){
-    let restantes = this._lote_doc.properties.actividades.filter((a) => a.uuid !== uuid)
-     // Re-Get Lotes y update
-     this._db.get(this.campo_id).then((doc)=>{
-        let lote_index = doc.lotes.findIndex((lote)=>lote.properties.nombre===this.lote_nombre);
-        if(lote_index > -1){
-            // Cool - Existe
-          let current_aplicaciones = restantes;
+    eliminar_actividad(uuid) {
+        let restantes = this._lote_doc.properties.actividades.filter((a) => a.uuid !== uuid)
+        // Re-Get Lotes y update
+        this._db.get(this.campo_id).then((doc) => {
+            let lote_index = doc.lotes.findIndex((lote) => lote.properties.nombre === this.lote_nombre);
+            if (lote_index > -1) {
+                // Cool - Existe
+                let current_aplicaciones = restantes;
 
-            // Ordenar por fecha
-            function compare(a, b) {
-                let ma = moment(a.detalles.fecha,"DD-MM-YYYY")
-                let mb = moment(b.detalles.fecha,"DD-MM-YYYY")
-                if (ma.isAfter(mb)) {
-                  return -1;
+                // Ordenar por fecha
+                function compare(a, b) {
+                    let ma = moment(a.detalles.fecha, "DD-MM-YYYY")
+                    let mb = moment(b.detalles.fecha, "DD-MM-YYYY")
+                    if (ma.isAfter(mb)) {
+                        return -1;
+                    }
+                    if (ma.isBefore(mb)) {
+                        return 1;
+                    }
+                    // a must be equal to b
+                    return 0;
                 }
-                if (ma.isBefore(mb)) {
-                  return 1;
-                }
-                // a must be equal to b
-                return 0;
+                current_aplicaciones.sort(compare)
+
+                doc.lotes[lote_index].properties.actividades = current_aplicaciones;
+                this._db.put(doc).then((r) => console.log("Actividad Eliminada"))
+
+                // Recargemoslos
+                this._campo_doc = doc;
+                this._lote_doc = doc.lotes[lote_index];
+                document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+
             }
-            current_aplicaciones.sort(compare)                  
 
-            doc.lotes[lote_index].properties.actividades = current_aplicaciones;
-            this._db.put(doc).then((r)=>console.log("Actividad Eliminada"))
+        })
+    }
 
-            // Recargemoslos
-            this._campo_doc = doc;
-            this._lote_doc = doc.lotes[lote_index];
-            document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+    share_aplicacion() {
+        import("pdfmake/build/pdfmake.min.js").then(({ pdfMake }) => {
+            pdfMake.fonts = pdf_fonts
 
-        }
-        
-    })
-   }
+            const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+            pdfDocGenerator.getBlob((blob) => {
+                const files = [new File([blob], 'orden_de_trabajo.pdf', { type: blob.type })]
+                navigator.share({
+                    files: files,
+                    title: 'Orden de Trabajo',
+                    text: 'Lote ' + this._lote_doc.nombre,
+                  })
+            });
 
-    tiene_cultivo_este_lote(){
+
+           // pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0], this._campo_doc.nombre, this._lote_doc.properties.nombre)).open();
+        })
+
+
+    }
+
+    tiene_cultivo_este_lote() {
         /**
          * Es un array que contiene todas las actividades historicas en el lote
          */
         let actividades = this._lote_doc?.properties.actividades || []
 
         // Filtrar Cosechas
-        let cosechas = actividades.findIndex((a)=>a.tipo === 'cosechas')
+        let cosechas = actividades.findIndex((a) => a.tipo === 'cosechas')
 
         // Filtrar Siembras
-        let siembras = actividades.findIndex((a)=>a.tipo === 'siembra')
+        let siembras = actividades.findIndex((a) => a.tipo === 'siembra')
 
-        if(siembras > -1){
-            if(cosechas > -1){
-                if(siembras < cosechas){
+        if (siembras > -1) {
+            if (cosechas > -1) {
+                if (siembras < cosechas) {
                     // Ultima evento es siembra
-                    return  actividades[siembras].detalles.cultivo
-                }else{
+                    return actividades[siembras].detalles.cultivo
+                } else {
                     return "Barbecho"
                 }
-            }else{
+            } else {
                 // No hay cosechas
                 return actividades[siembras].detalles.cultivo
             }
-        }else{
+        } else {
             return "Cultivo Desconocido"
         }
     }
 
-    eliminar_lote(){
-        let restantes = this._campo_doc.lotes.filter((lote)=> lote.id !== this._lote_doc.id)
-        this._db.get(this.campo_id).then((doc)=>{
-            let restantes = this._campo_doc.lotes.filter((lote)=> lote.id !== this._lote_doc.id)
+    eliminar_lote() {
+        let restantes = this._campo_doc.lotes.filter((lote) => lote.id !== this._lote_doc.id)
+        this._db.get(this.campo_id).then((doc) => {
+            let restantes = this._campo_doc.lotes.filter((lote) => lote.id !== this._lote_doc.id)
             doc.lotes = restantes
-            this._db.put(doc).then((r)=>console.log("Lote Eliminado"))
+            this._db.put(doc).then((r) => console.log("Lote Eliminado"))
             this._campo_doc = doc;
             this.hide()
         })
     }
 
-    ultima_siembra(){
+    ultima_siembra() {
         let actividades = this._lote_doc?.properties.actividades || [];
         let ultima_siembra = actividades.filter((a) => a.tipo === 'siembra')
-        if(ultima_siembra.length){
-            return ultima_siembra[0].detalles.cultivo + " - " + ultima_siembra[0].detalles.variedad 
-        }else{
+        if (ultima_siembra.length) {
+            return ultima_siembra[0].detalles.cultivo + " - " + ultima_siembra[0].detalles.variedad
+        } else {
             return "Cultivo Desconocido"
         }
     }
 
-    guardar_aplicacion(tipo, detalles_de_actividad){
+    guardar_aplicacion(tipo, detalles_de_actividad) {
 
         let detalles = {}
         let aplicacion = {}
         // Save to lote properties
         let ts_ahora = new Date().toISOString()
-        
+
         if (tipo === 'aplicacion') {
             this.fsm.send("GUARDAR");
             detalles = {
@@ -251,44 +272,44 @@ export class LoteOffcanvas extends LitElement {
                 comentarios: this._ctx.comentarios
             }
             aplicacion = { uuid: uuid4(), tipo: "aplicacion", ts_generacion: ts_ahora, detalles: detalles };
-        }else if(tipo === 'siembra') {
+        } else if (tipo === 'siembra') {
             detalles = detalles_de_actividad
             aplicacion = { uuid: uuid4(), tipo: "siembra", ts_generacion: ts_ahora, detalles: detalles };
-        }else if(tipo === 'cosecha'){
+        } else if (tipo === 'cosecha') {
             detalles = detalles_de_actividad
             aplicacion = { uuid: uuid4(), tipo: "cosecha", ts_generacion: ts_ahora, detalles: detalles };
         }
 
-        
+
         // Condiciones ambientales?
 
         // Re-Get Lotes y update
-        this._db.get(this.campo_id).then((doc)=>{
-            let lote_index = doc.lotes.findIndex((lote)=>lote.properties.nombre===this.lote_nombre);
-            if(lote_index > -1){
+        this._db.get(this.campo_id).then((doc) => {
+            let lote_index = doc.lotes.findIndex((lote) => lote.properties.nombre === this.lote_nombre);
+            if (lote_index > -1) {
                 // Cool - Existe
-                
-          
+
+
                 let current_aplicaciones = doc.lotes[lote_index].properties.actividades || [];
                 current_aplicaciones.push(aplicacion)
 
                 // Ordenar por fecha
                 function compare(a, b) {
-                    let ma = moment(a.detalles.fecha,"DD-MM-YYYY")
-                    let mb = moment(b.detalles.fecha,"DD-MM-YYYY")
+                    let ma = moment(a.detalles.fecha, "DD-MM-YYYY")
+                    let mb = moment(b.detalles.fecha, "DD-MM-YYYY")
                     if (ma.isAfter(mb)) {
-                      return -1;
+                        return -1;
                     }
                     if (ma.isBefore(mb)) {
-                      return 1;
+                        return 1;
                     }
                     // a must be equal to b
                     return 0;
                 }
-                current_aplicaciones.sort(compare)                  
+                current_aplicaciones.sort(compare)
 
                 doc.lotes[lote_index].properties.actividades = current_aplicaciones;
-                this._db.put(doc).then((r)=>console.log("Actividad Agregada"))
+                this._db.put(doc).then((r) => console.log("Actividad Agregada"))
 
                 // Recargemoslos
                 this._campo_doc = doc;
@@ -296,70 +317,70 @@ export class LoteOffcanvas extends LitElement {
                 document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
 
             }
-            
+
         })
     }
     /**
      * Actualiza los documentos si las propiedades han cambiando.
      * @param {*} changedProperties 
      */
-    willUpdate(changedProperties){
-          // only need to check changed properties for an expensive computation.
-            if (changedProperties.has('campo_id') || changedProperties.has('lote_nombre')) {
-                if(!this._db){
-                    // Pouch - get el campo_doc
-                    this._db = new PouchDB('campos_' + this.username);
-                }
-                this._db.get(this.campo_id).then((doc)=>{
-                    this._campo_doc = doc;
-                    this._lote_doc = doc.lotes.filter((lote)=>lote.properties.nombre===this.lote_nombre)[0] || {};
-
-                    const someContext =  aplicacionMachine.initialState.context;
-                    someContext.hectareas = this._lote_doc.properties.hectareas
-                    this.fsm = interpret(aplicacionMachine.withContext(someContext)).onTransition((state) => {
-                        this._ctx = state.context;
-                        console.log(state.value);
-                        if (state.matches('idle')){
-                            this._steps_elements.map((el) => el.hide())
-                        }
-                        if (state.matches('editing.fecha')) {
-                            this.show_step(0)
-                        } else if (state.matches('editing.hectareas')) {
-                            this.show_step(1)
-                        } else if (state.matches('editing.insumo')) {
-                            this.show_step(2)
-                        } else if (state.matches('editing.dosis')) {
-                            this.show_step(3)
-                        } else if (state.matches('editing.motivo')) {
-                            this.show_step(4)
-                        }
-            
-                        else if (state.matches('editing.masinsumos')) {
-                            this.show_step(5)
-                        } else if (state.matches('editing.comentario')) {
-                            this.show_step(6)
-                        } else if (state.matches('editing.resumiendo')) {
-                            this.show_step(7)
-                        } else if (state.matches('editing.share')) {
-                            this.show_step(8)
-                        }
-                    }).start()
-
-                    document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
-                });
-
+    willUpdate(changedProperties) {
+        // only need to check changed properties for an expensive computation.
+        if (changedProperties.has('campo_id') || changedProperties.has('lote_nombre')) {
+            if (!this._db) {
+                // Pouch - get el campo_doc
+                this._db = new PouchDB('campos_' + this.username);
             }
+            this._db.get(this.campo_id).then((doc) => {
+                this._campo_doc = doc;
+                this._lote_doc = doc.lotes.filter((lote) => lote.properties.nombre === this.lote_nombre)[0] || {};
+
+                const someContext = aplicacionMachine.initialState.context;
+                someContext.hectareas = this._lote_doc.properties.hectareas
+                this.fsm = interpret(aplicacionMachine.withContext(someContext)).onTransition((state) => {
+                    this._ctx = state.context;
+                    console.log(state.value);
+                    if (state.matches('idle')) {
+                        this._steps_elements.map((el) => el.hide())
+                    }
+                    if (state.matches('editing.fecha')) {
+                        this.show_step(0)
+                    } else if (state.matches('editing.hectareas')) {
+                        this.show_step(1)
+                    } else if (state.matches('editing.insumo')) {
+                        this.show_step(2)
+                    } else if (state.matches('editing.dosis')) {
+                        this.show_step(3)
+                    } else if (state.matches('editing.motivo')) {
+                        this.show_step(4)
+                    }
+
+                    else if (state.matches('editing.masinsumos')) {
+                        this.show_step(5)
+                    } else if (state.matches('editing.comentario')) {
+                        this.show_step(6)
+                    } else if (state.matches('editing.resumiendo')) {
+                        this.show_step(7)
+                    } else if (state.matches('editing.share')) {
+                        this.show_step(8)
+                    }
+                }).start()
+
+                document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+            });
+
+        }
     }
 
     render() {
 
-                const resumen_item_el = (item) => html`<a href="#" class="list-group-item list-group-item-action">
+        const resumen_item_el = (item) => html`<a href="#" class="list-group-item list-group-item-action">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">${capitalize(item.name)}</h5>
                         <small class="text-muted">${capitalize(item.type)}</small>
                     </div>
                     <p class="mb-1">${item.dosis} ${item.unidad} - ${item.hectareas} ha. - ${item.total.toFixed(2)} ${item.unidad ===
-                        'lt/ha' ? 'litros' : 'kgs'} totales</p>
+                'lt/ha' ? 'litros' : 'kgs'} totales</p>
                     <div class='d-flex w-100 justify-content-between'>
                         <small class="text-muted">${motivos_2_str(item.motivos)}</small>
                         <div class="btn-group" role="group" aria-label="Basic mixed styles example">
@@ -368,9 +389,9 @@ export class LoteOffcanvas extends LitElement {
                     </div>
                 </a>`
 
-                const insumo_el = (item) => html`<a href="#" class="list-group-item list-group-item-action ${this._ctx.current_insumo.name === item.name? 'active':''}" @click=${(e)=> this.fsm.send({
-                                                    'type': 'SELECTED', value: item
-                                                    })} aria-current="true">
+        const insumo_el = (item) => html`<a href="#" class="list-group-item list-group-item-action ${this._ctx.current_insumo.name === item.name ? 'active' : ''}" @click=${(e) => this.fsm.send({
+            'type': 'SELECTED', value: item
+        })} aria-current="true">
                                                 <div class="d-flex w-100 justify-content-between">
 
                                                     <h5 class="mb-1 mx-1">${capitalize(item.name)}</h5>
@@ -381,7 +402,7 @@ export class LoteOffcanvas extends LitElement {
                                                 <small>${principio_activo(item)}</small>
                                             </a>`;
 
-        
+
         // Render propiamente dicho
         return html`
 
@@ -422,8 +443,8 @@ export class LoteOffcanvas extends LitElement {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Cuando se realizará la aplicación?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
-                            this.fsm.send("CANCEL")}></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
+                this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
                     <lit-flatpickr 
@@ -436,7 +457,7 @@ export class LoteOffcanvas extends LitElement {
                         maxDate="31-12-2050"
                         locale="es"
                         placeholder="Ingrese una fecha"
-                        .onChange='${(e) => {this.fsm.send({ type: "CHANGE", value: document.getElementById('dp').getValue() })}}'
+                        .onChange='${(e) => { this.fsm.send({ type: "CHANGE", value: document.getElementById('dp').getValue() }) }}'
                     >
                     <div>
                         <input />
@@ -463,8 +484,8 @@ export class LoteOffcanvas extends LitElement {
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Sobre cuantas hectáreas se realizará la aplicación?
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
-                            this.fsm.send("CANCEL")}></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
+                this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
                         <input type="number" value=${this._ctx.hectareas} @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}>
@@ -486,8 +507,8 @@ export class LoteOffcanvas extends LitElement {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">Seleccione un insumo</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
-                            this.fsm.send("CANCEL")}></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
+                this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto container-fluid">
                         <div class='row'>
@@ -516,8 +537,8 @@ export class LoteOffcanvas extends LitElement {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Cual es la Dosis?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
-                            this.fsm.send("CANCEL")}></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
+                this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
                         <h4>${capitalize(this._ctx.current_insumo.name)}</h4>
@@ -549,30 +570,30 @@ export class LoteOffcanvas extends LitElement {
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Cual es el motivo de la aplicación?</h5>
         
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
-                            this.fsm.send("CANCEL")}></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
+                this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
                         <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" @change=${(e)=>{this.fsm.send({"type":"TICK",value:e.target.checked, name:e.target.name })}} name="Enfermedad">
+                        <input class="form-check-input" type="checkbox" value="" @change=${(e) => { this.fsm.send({ "type": "TICK", value: e.target.checked, name: e.target.name }) }} name="Enfermedad">
                             <label class="form-check-label" for="flexCheckDefault">
                                 Enfermedad
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" name="Plaga" @change=${(e)=>{this.fsm.send({"type":"TICK",value:e.target.checked, name:e.target.name })}}>
+                            <input class="form-check-input" type="checkbox" value="" name="Plaga" @change=${(e) => { this.fsm.send({ "type": "TICK", value: e.target.checked, name: e.target.name }) }}>
                             <label class="form-check-label" for="flexCheckDefault">
                                 Plaga
                             </label>
                         </div> 
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" name='Malezas' @change=${(e)=>{this.fsm.send({"type":"TICK",value:e.target.checked, name:e.target.name })}}>
+                            <input class="form-check-input" type="checkbox" value="" name='Malezas' @change=${(e) => { this.fsm.send({ "type": "TICK", value: e.target.checked, name: e.target.name }) }}>
                             <label class="form-check-label" for="flexCheckDefault">
                                 Malezas
                             </label>
                         </div> 
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" name="Otro" @change=${(e)=>{this.fsm.send({"type":"TICK",value:e.target.checked, name:e.target.name })}}>
+                            <input class="form-check-input" type="checkbox" value="" name="Otro" @change=${(e) => { this.fsm.send({ "type": "TICK", value: e.target.checked, name: e.target.name }) }}>
                             <label class="form-check-label" for="flexCheckDefault">
                                 Otro
                             </label>
@@ -595,8 +616,8 @@ export class LoteOffcanvas extends LitElement {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Deseas agregar otro insumo?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
-                            this.fsm.send("CANCEL")}></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
+                this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
 
@@ -620,8 +641,8 @@ export class LoteOffcanvas extends LitElement {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Tienes algún comentario adicional?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
-                            this.fsm.send("CANCEL")}></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
+                this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto w-100">
                         <h5></h5>
@@ -646,8 +667,8 @@ export class LoteOffcanvas extends LitElement {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">Resumen</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
-                            this.fsm.send("CANCEL")}></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
+                this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body">
                         <div class="container-fluid shadow min-vh-100 py-2">
@@ -694,23 +715,21 @@ export class LoteOffcanvas extends LitElement {
                     <div class="modal-header">
                         <h5 class="modal-title" id="staticBackdropLabel">¿Quieres compartir la Orden de Trabajo para esta
                             aplicación?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${()=>
-                            this.fsm.send("CANCEL")}></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
+                this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
         
                         <div class="btn-group-vertical col">
-                            <!-- <button type="button" class="btn btn-success">Enviar por Whatsapp</button>
-                            <button type="button" class="btn btn-info">Compartir por Email</button> -->
-                            <button type="button" class="btn btn-dark" @click=${()=> this.abrir_pdf()}>Solo Descargar un
+                            ${navigator.share ? html`<button type="button" class="btn btn-success" @click=${this.share_aplicacion}>Enviar por Whatsapp</button>` : null}
+
+                            <button type="button" class="btn btn-dark" @click=${() => this.abrir_pdf()}>Solo Descargar un
                                 PDF</button>
                         </div>
         
                     </div>
                     <div class="modal-footer">
-                        <!--  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                        this.fsm.send("CANCEL")}>Cancelar</button> -->
-                        <!-- <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button> -->
+                        
                         <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("CANCEL")} >No Generar Nada por
                             Ahora</button>
                     </div>

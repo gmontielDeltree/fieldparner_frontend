@@ -319,6 +319,9 @@ export class TimelineElement extends LitElement {
                         </p>
         
                         <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
+                        ${navigator.share ? html`<button type="button" class="btn btn-success" @click=${null}>Compartir</button>` : null}
+                        
+
                     </div>          
                 </li>
                 `
