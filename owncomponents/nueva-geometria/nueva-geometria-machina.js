@@ -58,6 +58,8 @@ export const nuevaGeometriaMachine = createMachine({
               on: {
                 NEXT: { target: "#nombre" },
                 CHANGE: { target: "abierto", cond: es_abierto },
+                DELETED: {target: 'abierto'},
+                UPDATED: {target: 'cerrado'}
               },
             },
           },

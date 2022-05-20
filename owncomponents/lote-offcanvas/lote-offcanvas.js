@@ -104,7 +104,6 @@ export class LoteOffcanvas extends LitElement {
     firstUpdated() {
         this._lotesOffcanvas = new Offcanvas(document.getElementById('lote-offcanvas'))
         this._steps_elements = [...document.querySelectorAll('.aplicacion.step')].map((el) => new Modal(el))
-
     }
 
     show() {
@@ -306,8 +305,6 @@ export class LoteOffcanvas extends LitElement {
             let lote_index = doc.lotes.findIndex((lote) => lote.properties.nombre === this.lote_nombre);
             if (lote_index > -1) {
                 // Cool - Existe
-
-
                 let current_aplicaciones = doc.lotes[lote_index].properties.actividades || [];
                 current_aplicaciones.push(aplicacion)
 
@@ -759,7 +756,7 @@ export class LoteOffcanvas extends LitElement {
         <cosecha-add-ui id='cosecha-add-el' lote_id=${this.lote_id}></cosecha-add-ui>
 
         <siembra-add-ui id='siembra-add-el'></siembra-add-ui>
-        <nueva-geometria-ui id='nueva-geometria-el'></nueva-geometria-ui>
+        <!-- <nueva-geometria-ui id='nueva-geometria-el'></nueva-geometria-ui> -->
         `
     }
 

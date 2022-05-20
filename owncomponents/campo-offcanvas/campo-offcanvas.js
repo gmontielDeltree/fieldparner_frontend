@@ -181,7 +181,7 @@ export class CampoOffcanvas extends LitElement {
           </button>
         </div>
       </div>
-      <!--Primera paso --Add Lote -->
+      <!-- Primera paso --Add Lote -->
       <div
         class="offcanvas offcanvas-bottom"
         data-bs-scroll="true"
@@ -281,7 +281,7 @@ export class CampoOffcanvas extends LitElement {
         </div>
       </div>
 
-      <nueva-geometria-ui id="nuevo-lote-ui" tipo="lote"></nueva-geometria-ui>
+      ${this.map ? html`<nueva-geometria-ui id="nuevo-lote-ui" tipo="lote" .mapa=${this.map}></nueva-geometria-ui>` : null}
     `;
   }
 
