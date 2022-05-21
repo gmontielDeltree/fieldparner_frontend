@@ -170,7 +170,7 @@ export class CampoOffcanvas extends LitElement {
             class="btn btn-success"
             @click=${this.nuevo_lote_click}
           >
-            +Lote
+            Añadir Lote
           </button>
           <button
             class="btn btn-danger"
