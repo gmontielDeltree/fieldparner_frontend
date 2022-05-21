@@ -118,6 +118,7 @@ zuix.controller(function (cp) {
         })
         .then((result) => {
           cantidad_de_campos = result.total_rows;
+          
           lotes_collection.features = result.rows.map((campo) => {
             campo_geojson = campo.doc.campo_geojson;
             campo_geojson.properties = {
@@ -237,7 +238,11 @@ zuix.controller(function (cp) {
       // Fly to
       map.fitBounds(turf.bbox(e.features[0]));
       const campo_doc = e.features[0].properties;
+      let campo_geojson = JSON.parse(campo_doc.db_doc).campo_geojson
+      
       document.getElementById("campo-oc").campo_doc = campo_doc;
+      document.getElementById("campo-oc").campo_geojson = campo_geojson;
+      
       document.getElementById("campo-oc").map = map;
       document.getElementById("campo-oc").draw = draw;
       document.getElementById("campo-oc").nuevo_lote_callback = () => {

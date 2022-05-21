@@ -3,17 +3,17 @@ import { Offcanvas } from "bootstrap";
 
 export class CampoOffcanvas extends LitElement {
   static properties = {
-    greeting: {},
-    planet: {},
     map: {},
     draw: {},
     db: {},
-    _id: "",
+    _id: {},
     campo_doc: {},
+    campo_geojson: {},
     nuevo_lote_callback: {},
     borrar_lote_callback: {},
     guardar_lote_callback: {},
-    nombre_lote: "Lote " + makeid(5),
+    show_main: {},
+    nombre_lote: {},
   };
   // Styles are scoped to this element: they won't conflict with styles
   // on the main page or in other components. Styling API can be exposed
@@ -35,11 +35,8 @@ export class CampoOffcanvas extends LitElement {
 
   constructor() {
     super();
-    // Define reactive properties--updating a reactive property causes
-    // the component to update.
-    this.greeting = "Hello";
-    this.planet = "World";
     // console.log("EJECUTANDO COMPONENTE")
+    this.show_main = false;
   }
 
   firstUpdated() {
@@ -65,9 +62,8 @@ export class CampoOffcanvas extends LitElement {
   show() {
     this._step1.hide();
     this._step2.hide();
-    document.getElementById("offcanvas-campo-header").textContent =
-      'Campo "' + this.campo_doc.nombre + '"';
     this._detallesOffcanvas.show();
+    this.show_main = true
   }
 
   lote_paso_1() {
@@ -139,14 +135,14 @@ export class CampoOffcanvas extends LitElement {
   render() {
     return html`
       <div
-        class="offcanvas offcanvas-bottom h-25"
+        class="offcanvas offcanvas-bottom h-25 ${this.show_main ? "show" : ""}"
         tabindex="-1"
         id="offcanvas-campo-detalle"
         aria-labelledby="offcanvas-campo-header"
         data-bs-backdrop="false"
       >
         <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="offcanvas-campo-header">Campo</h5>
+          <h5 class="offcanvas-title" id="offcanvas-campo-header">Campo ${this.campo_doc?.nombre}</h5>
 
           <button
             type="button"
@@ -181,6 +177,7 @@ export class CampoOffcanvas extends LitElement {
           </button>
         </div>
       </div>
+      
       <!-- Primera paso --Add Lote -->
       <div
         class="offcanvas offcanvas-bottom"
@@ -281,15 +278,10 @@ export class CampoOffcanvas extends LitElement {
         </div>
       </div>
 
-      ${this.map ? html`<nueva-geometria-ui id="nuevo-lote-ui" tipo="lote" .mapa=${this.map}></nueva-geometria-ui>` : null}
+      ${this.map ? html`<nueva-geometria-ui id="nuevo-lote-ui" .tipo="lote" .mapa=${this.map} .campo_feature=${this.campo_geojson}></nueva-geometria-ui>` : null}
     `;
   }
 
-  // Event handlers can update the state of @properties on the element
-  // instance, causing it to re-render
-  togglePlanet() {
-    this.planet = this.planet === "World" ? "Mars" : "World";
-  }
 }
 
 function makeid(length) {

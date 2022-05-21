@@ -4,12 +4,15 @@ import { Modal } from "bootstrap";
 import { interpret } from "xstate";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import { Offcanvas } from "bootstrap";
 
 export class NuevaGeometria extends LitElement {
   static properties = {
-    campo: {},
+    campo_feature: {},
     show: {},
     mapa: {},
+    tipo: {},
+    _offcanvas: {},
     _draw: {},
     _ctx: {},
     _fsm: {},
@@ -21,18 +24,7 @@ export class NuevaGeometria extends LitElement {
     super();
     this.show = false;
     this._modal_elements = {};
-    this._init_fsm();
-
-    this.addEventListener("poligono-creado", () => {
-      console.log("Evento Recibido");
-    });
-
-    window.eventBus.on("poligono-creado", () => {
-      console.log("Evento Recibido `my-event`");
-      this._fsm.send("NUEVO_PUNTO");
-    });
-
-    window.eventBus.on("nuevo-punto", () => {});
+    // this._init_fsm();
 
     this._draw = new MapboxDraw({
       displayControlsDefault: false,
@@ -54,6 +46,7 @@ export class NuevaGeometria extends LitElement {
 
   _init_fsm() {
     const someContext = nuevaGeometriaMachine.initialState.context;
+    someContext.campo_feature = this.campo_feature;
     // Mods al ctx inicial
     this._fsm = interpret(nuevaGeometriaMachine.withContext(someContext))
       .onTransition((state) => {
@@ -77,6 +70,10 @@ export class NuevaGeometria extends LitElement {
       if (this._draw.getMode() !== "draw_polygon") {
         this._draw.changeMode("draw_polygon");
       }
+    }
+
+    if (state_value === "editing.dibujando.abierto") {
+      this._offcanvas.show();
     }
 
     console.log("ST Show", state_value);
@@ -105,11 +102,19 @@ export class NuevaGeometria extends LitElement {
     );
 
     this._modal_elements = result_object;
+
+    this._offcanvas = new Offcanvas(
+      document.getElementById("offcanvas-editing-dibujando")
+    );
   }
 
   willUpdate(changedProperties) {
     if (changedProperties.has("show") && this.show) {
       this._fsm.send("START");
+    }
+
+    if (changedProperties.has("campo_feature")) {
+      this._init_fsm();
     }
 
     if (changedProperties.has("mapa")) {
@@ -130,15 +135,17 @@ export class NuevaGeometria extends LitElement {
       });
 
       this.mapa.on("draw.create", (e) => {
-        console.log("CREATE");
+        console.log("CERRO");
         /* Guardar la feature */
         this._feature_id = e.features[0].id;
-        this._fsm.send("NEXT");
+        let feature = e.features[0];
+        this._fsm.send({ type: "CERRO", feature });
       });
 
       this.mapa.on("draw.update", (args) => {
-        console.log(args);
-        this._fsm.send("UPDATED");
+        let feature = args.features[0];
+        console.log("UPDATE", args);
+        this._fsm.send({ type: "UPDATE_POLIGONO", feature: feature });
       });
       //this.mapa.on("draw.render", this.render_callback);
     }
@@ -150,19 +157,12 @@ export class NuevaGeometria extends LitElement {
 
   dibujar() {
     this._fsm.send("DIBUJAR");
-
-    // let event = new CustomEvent("DIBUJAR", {
-    //   detail: {},
-    //   bubbles: true,
-    //   compose: true,
-    // });
-    // this.dispatchEvent(event);
-    // this.draw.changeMode('draw_polygon')
   }
 
   cerrar() {
     this._fsm.send("CANCEL");
   }
+
   render() {
     return html`
       <div class="modal add-geometry step" id="editing.pregunta" tabindex="-1">
@@ -205,6 +205,49 @@ export class NuevaGeometria extends LitElement {
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div
+        class="offcanvas offcanvas-bottom"
+        data-bs-scroll="true"
+        data-bs-backdrop="false"
+        tabindex="-1"
+        id="offcanvas-editing-dibujando"
+      >
+        <div class="offcanvas-header py-1">
+          <h5 class="offcanvas-title mx-auto">Nuevo ${this.tipo}</h5>
+
+          <button
+            type="button"
+            class="btn-close text-reset"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="offcanvas-body pt-1">
+          <form>
+            <div class="row mb-1">
+              <label for="inputNombreLote" class="col-4 col-form-label"
+                >Nombre</label
+              >
+              <div class="col-8">
+                <input type="text" class="form-control" />
+              </div>
+            </div>
+
+            ${(this._ctx.guardar_enable) ? (
+              html` <div class="d-grid gap-2">
+                <button class="btn btn-primary btn-success" type="button">
+                  Guardar
+                </button>
+              </div>`
+            ) : html `
+              <div class="alert alert-danger" role="alert">
+                Todos los puntos del lote deben estar dentro del campo!
+              </div>
+            `}
+          </form>
         </div>
       </div>
     `;
