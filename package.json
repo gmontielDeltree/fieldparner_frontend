@@ -26,6 +26,7 @@
     "moment": "^2.29.3",
     "pdfmake": "^0.2.5",
     "pouchdb": "^7.3.0",
+    "shepherd.js": "^9.1.0",
     "uuid4": "^2.0.2",
     "xstate": "^4.32.1"
   }

@@ -49,6 +49,8 @@ export class CampoOffcanvas extends LitElement {
     this._step2 = new Offcanvas(
       document.getElementById("offcanvas-lote-paso-2")
     );
+
+    
   }
 
   createRenderRoot() {
@@ -64,6 +66,15 @@ export class CampoOffcanvas extends LitElement {
     this._step2.hide();
     this._detallesOffcanvas.show();
     this.show_main = true
+    //tour.start()
+    introJs().setOptions({
+      steps: [{
+        intro: "Bienvenido Bipedo!!!"
+      }, {
+        element: document.querySelector('.btn-anadir-lote'),
+        intro: "Presiona para agregar un nuevo lote"
+      }]
+    }).start();
   }
 
   lote_paso_1() {
@@ -134,6 +145,7 @@ export class CampoOffcanvas extends LitElement {
   // and child nodes/text.
   render() {
     return html`
+    
       <div
         class="offcanvas offcanvas-bottom h-25 ${this.show_main ? "show" : ""}"
         tabindex="-1"
@@ -163,7 +175,7 @@ export class CampoOffcanvas extends LitElement {
           <p>Toque en un lote del mapa para ver detalles</p>
           <button
             type="button"
-            class="btn btn-success"
+            class="btn btn-success btn-anadir-lote"
             @click=${this.nuevo_lote_click}
           >
             Añadir Lote
