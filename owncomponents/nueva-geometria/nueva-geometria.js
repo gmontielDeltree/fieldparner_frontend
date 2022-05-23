@@ -6,6 +6,7 @@ import { Offcanvas, Modal } from "bootstrap";
 import centroid from "@turf/centroid";
 import { kml } from "@tmcw/togeojson";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import * as JSZip from "jszip";
 
 export class NuevaGeometria extends LitElement {
   static properties = {
@@ -94,8 +95,8 @@ export class NuevaGeometria extends LitElement {
   _init_fsm() {
     const someContext = nuevaGeometriaMachine.initialState.context;
     someContext.campo_feature = this.campo_feature;
-    someContext.es_lote = (this.tipo === 'lote') ? true : false;
-    someContext.guardar_enable = (this.tipo === 'lote') ? false : true;
+    someContext.es_lote = this.tipo === "lote" ? true : false;
+    someContext.guardar_enable = this.tipo === "lote" ? false : true;
     // Mods al ctx inicial
     this._fsm = interpret(nuevaGeometriaMachine.withContext(someContext))
       .onTransition((state) => {
@@ -109,7 +110,12 @@ export class NuevaGeometria extends LitElement {
   _init_map() {
     // Set eventos cuando se carga el mapa
     console.log("Changed Props", this.mapa);
-    this.mapa.addControl(this._draw, "top-left");
+
+    try {
+      this.mapa.addControl(this._draw, "top-left");
+    } catch {
+      console.log("add draw fallo");
+    }
 
     this.mapa.on("draw.selectionchange", (e) => {
       /* Si la seleccion cambia a algo distinto del featureId
@@ -188,26 +194,99 @@ export class NuevaGeometria extends LitElement {
 
   cerrar() {
     // Cerrar el modo de dibujo
-    this._draw.changeMode('simple_select')
-    this._draw.deleteAll()
-    // Ocultar el offcanvas    
-    this._offcanvas.hide()
+    this._draw.changeMode("simple_select");
+    this._draw.deleteAll();
+    // Ocultar el offcanvas
+    this._offcanvas.hide();
     // Enviar evento
     this._fsm.send("CANCEL");
     //event cerrar
-    let event = new CustomEvent('cerrargeometria',{detail:{}, bubbles: true, composed: true})
+    let event = new CustomEvent("cerrargeometria", {
+      detail: {},
+      bubbles: true,
+      composed: true,
+    });
     this.dispatchEvent(event);
 
-    this.show=false;
+    this.show = false;
   }
 
   open_kml() {
     this.shadowRoot.getElementById("kml_file_input").click();
   }
 
+  open_kmz() {
+    this.shadowRoot.getElementById("kmz_file_input").click();
+  }
+
   guardar() {
-    console.log("GUARDAR_CLICK")
-    this._draw.deleteAll()
+    console.log("GUARDAR_CLICK");
+    this._draw.changeMode("simple_select");
+    this._draw.deleteAll();
+    this._offcanvas.hide();
+
+    let event = new CustomEvent("guardargeometria", {
+      detail: { feature: this._ctx.feature, nombre: this._ctx.nombre },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+
+    this._fsm.send("CANCEL");
+  }
+
+  kmz_input_changed() {
+    var file = this.shadowRoot.getElementById("kmz_file_input").files[0];
+    let getDom = (xml) => new DOMParser().parseFromString(xml, "text/xml");
+    let getExtension = (fileName) => fileName.split(".").pop();
+    let kmlDom = null;
+    if (file) {
+      JSZip.loadAsync(file) // 1) read the Blob
+        .then( (zip) => {
+            zip.forEach((relPath, file) => {
+              // 2) print entries
+              console.log("zip", file);
+              if (getExtension(relPath) === "kml" && kmlDom === null) {
+                kmlDom = file.async("string").then((d) => {
+                  let feature_collection = kml(getDom(d));
+                  console.log("KMZ", feature_collection);
+                  if (feature_collection.features.length === 0) {
+                    // No hay niguna feature
+                    alert("El archivo no tiene ninguna caracteristica")
+                  }
+                  if (feature_collection.features.length > 1) {
+                    // Hay mas de un poligono
+                    alert("El archivo tiene mas de un poligono")
+                  }
+                  if (
+                    feature_collection.features[0].geometry.type !== "Polygon"
+                  ) {
+                    // La geometria no es un poligono
+                  }
+
+                  // feature es el GeoJson
+                  let feature = feature_collection.features[0];
+                  // Todo Bien
+
+                  // Add to Draw
+                  this._draw.add(feature);
+                  // Evento para FSM
+                  this._fsm.send({ type: "SUBIDO", feature: feature });
+
+                  // Move map to new feature
+                  this.mapa.flyTo({
+                    center: centroid(feature).geometry.coordinates,
+                    zoom: 10,
+                  });
+                });
+              }
+            });
+          },
+          function (e) {
+            console.log("ERROR al LEER KMZ");
+          }
+        );
+    }
   }
 
   kml_input_changed() {
@@ -328,13 +407,7 @@ export class NuevaGeometria extends LitElement {
             <div class="modal-body">
               <p>Modal body text goes here.</p>
               <button @click="${this.open_kml}">KML</button>
-              <button
-                @click=${() => {
-                  this._fsm.send("SUBIR");
-                }}
-              >
-                Subir Archivo
-              </button>
+              <button @click="${this.open_kmz}">KMZ</button>
             </div>
             <div class="modal-footer">
               <button
@@ -361,6 +434,13 @@ export class NuevaGeometria extends LitElement {
         accept="application/vnd.google-earth.kml+xml"
       />
 
+      <input
+        type="file"
+        id="kmz_file_input"
+        @change=${this.kmz_input_changed}
+        accept="application/vnd.google-earth.kmz"
+      />
+
       <div
         class="offcanvas offcanvas-bottom h-25"
         id="offcanvas-editing-dibujando"
@@ -382,7 +462,8 @@ export class NuevaGeometria extends LitElement {
           <form>
             <div class="row mb-1">
               <label for="inputNombreLote" class="col-4 col-form-label"
-                >Nombre</label>
+                >Nombre</label
+              >
               <div class="col-8">
                 <input
                   type="text"
@@ -396,7 +477,11 @@ export class NuevaGeometria extends LitElement {
 
             ${this._ctx.guardar_enable
               ? html` <div class="d-grid gap-2">
-                  <button @click=${this.guardar} class="btn btn-primary btn-success" type="button">
+                  <button
+                    @click=${this.guardar}
+                    class="btn btn-primary btn-success"
+                    type="button"
+                  >
                     Guardar
                   </button>
                 </div>`
