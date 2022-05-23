@@ -14,47 +14,25 @@ export class CampoOffcanvas extends LitElement {
     guardar_lote_callback: {},
     show_main: {},
     nombre_lote: {},
+    _detallesOffcanvas: {},
   };
-  // Styles are scoped to this element: they won't conflict with styles
-  // on the main page or in other components. Styling API can be exposed
-  // via CSS custom properties.
-  static styles = css`
-    :host {
-      display: inline-block;
-      padding: 10px;
-      background: lightgray;
-    }
-    .planet {
-      color: var(--planet-color, blue);
-    }
-  `;
-
-  _detallesOffcanvas = {};
-  _step1 = {};
-  _step2 = {};
 
   constructor() {
     super();
     // console.log("EJECUTANDO COMPONENTE")
     this.show_main = false;
+    this.modo = "lote";
+  }
+  
+  createRenderRoot() {
+    return this;
   }
 
   firstUpdated() {
+    // Build Offcanvas
     this._detallesOffcanvas = new Offcanvas(
       document.getElementById("offcanvas-campo-detalle")
     );
-    this._step1 = new Offcanvas(
-      document.getElementById("offcanvas-lote-paso-1")
-    );
-    this._step2 = new Offcanvas(
-      document.getElementById("offcanvas-lote-paso-2")
-    );
-
-    
-  }
-
-  createRenderRoot() {
-    return this;
   }
 
   hide() {
@@ -62,41 +40,21 @@ export class CampoOffcanvas extends LitElement {
   }
 
   show() {
-    this._step1.hide();
-    this._step2.hide();
     this._detallesOffcanvas.show();
-    this.show_main = true
     //tour.start()
-    introJs().setOptions({
-      steps: [{
-        intro: "Bienvenido Bipedo!!!"
-      }, {
-        element: document.querySelector('.btn-anadir-lote'),
-        intro: "Presiona para agregar un nuevo lote"
-      }]
-    }).start();
-  }
-
-  lote_paso_1() {
-    // Hide Campo Detalle
-
-    // Hide Step2
-    this._step2.hide();
-
-    // Show Step1
-    this._step1.show();
-
-    this._detallesOffcanvas.hide();
-  }
-
-  lote_paso_2() {
-    // Hide Campo Detalle
-    this._detallesOffcanvas.toggle();
-    // Show Step2
-    this._step2.show();
-
-    // hide Step1
-    this._step1.hide();
+    introJs()
+      .setOptions({
+        steps: [
+          {
+            intro: "Bienvenido Bipedo!!!",
+          },
+          {
+            element: document.querySelector(".btn-anadir-lote"),
+            intro: "Presiona para agregar un nuevo lote",
+          },
+        ],
+      })
+      .start();
   }
 
   enable_siguiente() {
@@ -106,23 +64,13 @@ export class CampoOffcanvas extends LitElement {
   }
 
   nuevo_lote_click() {
-    //(this.nuevo_lote_callback)()
-    document.getElementById("nuevo-lote-ui").campo = "";
+    // Mostrar Nueva Geometria - Lote
     document.getElementById("nuevo-lote-ui").show = true;
-    //this.lote_paso_1();
-  }
-
-  guardar_lote_click() {
-    this.guardar_lote_callback();
+    this.hide()
   }
 
   cerrar_modo() {
     console.log("Cerrar Modo Campo");
-    if (this.draw.getMode() === "draw_polygon") {
-      this.draw.changeMode("simple_select");
-    }
-    this.draw.deleteAll();
-
     // Show Campos
     this.map.setLayoutProperty("lotes", "visibility", "visible");
     // Hide Lotes
@@ -134,27 +82,22 @@ export class CampoOffcanvas extends LitElement {
   }
 
   hide() {
-    this._step1.hide();
-    this._step2.hide();
     this._detallesOffcanvas.hide();
   }
-  // The render() method is called any time reactive properties change.
-  // Return HTML in a string template literal tagged with the `html`
-  // tag function to describe the component's internal DOM.
-  // Expressions can set attribute values, property values, event handlers,
-  // and child nodes/text.
+
   render() {
     return html`
-    
       <div
-        class="offcanvas offcanvas-bottom h-25 ${this.show_main ? "show" : ""}"
+        class="offcanvas offcanvas-bottom h-25"
         tabindex="-1"
         id="offcanvas-campo-detalle"
         aria-labelledby="offcanvas-campo-header"
         data-bs-backdrop="false"
       >
         <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="offcanvas-campo-header">Campo ${this.campo_doc?.nombre}</h5>
+          <h5 class="offcanvas-title" id="offcanvas-campo-header">
+            Campo ${this.campo_doc?.nombre}
+          </h5>
 
           <button
             type="button"
@@ -165,13 +108,6 @@ export class CampoOffcanvas extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body small col pt-0">
-          <!--                     <div class="row no-wrap" id='campo-ndvi'></div>
-                    <div class="row" id='campo-cultivo'></div>
-                    <div class="row mb-2" id='campo-img-preview'>
-                    </div>
-                    <div class="row" id='campo-audio-players'></div>
-                    <div class="row" id='campo-problemas'></div>
-                    <div class="row" id='campo-campo'></div> -->
           <p>Toque en un lote del mapa para ver detalles</p>
           <button
             type="button"
@@ -189,111 +125,17 @@ export class CampoOffcanvas extends LitElement {
           </button>
         </div>
       </div>
-      
-      <!-- Primera paso --Add Lote -->
-      <div
-        class="offcanvas offcanvas-bottom"
-        data-bs-scroll="true"
-        data-bs-backdrop="false"
-        tabindex="-1"
-        id="offcanvas-lote-paso-1"
-        aria-labelledby="offcanvasBottomLabel"
-      >
-        <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="offcanvas-1-title"></h5>
 
-          <div class="d-grid gap-2">
-            <button
-              id="agregar-lote-siguiente-btn"
-              type="button"
-              class="btn btn-success"
-              data-bs-toggle="offcanvas"
-              data-bs-target="#offcanvas-lote-paso-2"
-              aria-controls="offcanvasCampoForm"
-              disabled
-            >
-              Siguiente
-            </button>
-          </div>
-          <button
-            type="button"
-            id="map-edit-btn"
-            class="btn-close text-reset"
-            data-bs-dismiss="offcanvas"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="offcanvas-body small">
-          <div class="d-grid gap-2">
-            <button
-              class="btn btn-primary"
-              @click=${this.cerrar_modo}
-              id="salir-edicion-btn"
-              data-bs-dismiss="offcanvas"
-              type="button"
-            >
-              Salir del Modo de Edición
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!--Campo Form-->
-      <div
-        class="offcanvas offcanvas-bottom h-50"
-        data-bs-scroll="true"
-        data-bs-backdrop="false"
-        tabindex="-1"
-        id="offcanvas-lote-paso-2"
-        aria-labelledby="offcanvasBottomLabel"
-      >
-        <div class="offcanvas-header">
-          <h5 class="offcanvas-title">Nuevo Lote</h5>
-
-          <button
-            type="button"
-            id="map-edit-btn"
-            @click=${this.cerrar_modo}
-            class="btn-close text-reset"
-            data-bs-dismiss="offcanvas"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="offcanvas-body">
-          <form>
-            <div class="row mb-1">
-              <label for="inputNombreLote" class="col-4 col-form-label"
-                >Nombre del Lote</label
-              >
-              <div class="col-8">
-                <input
-                  type="text"
-                  @change=${(e) => (this.nombre_lote = e.target.value)}
-                  value="${this.nombre_lote}"
-                  class="form-control"
-                  id="inputNombreLote"
-                />
-              </div>
-            </div>
-
-            <div class="d-grid gap-2">
-              <button
-                class="btn btn-primary btn-success"
-                id="guardar-lote-btn"
-                @click=${this.guardar_lote_click}
-                type="button"
-              >
-                Guardar
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      ${this.map ? html`<nueva-geometria-ui id="nuevo-lote-ui" .tipo="lote" .mapa=${this.map} .campo_feature=${this.campo_geojson}></nueva-geometria-ui>` : null}
+      ${this.map
+        ? html`<nueva-geometria-ui
+            id='nuevo-lote-ui'
+            .tipo='lote'
+            .mapa=${this.map} 
+            .campo_feature=${this.campo_geojson}
+          ></nueva-geometria-ui>`
+        : null}
     `;
   }
-
 }
 
 function makeid(length) {

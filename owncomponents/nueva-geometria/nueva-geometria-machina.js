@@ -14,6 +14,7 @@ const initial_ctx = {
   campo_feature: {},
   feature: null,
   guardar_enable: false,
+  nombre: "",
 };
 
 const es_dentro_del_campo = (ctx, e) => {
@@ -29,7 +30,9 @@ const es_fuera_del_campo = (ctx, e) => {
   return !booleanContains(ctx.campo_feature, ctx.feature);
 };
 
-export const nuevaGeometriaMachine = createMachine(
+const read_kml = (ctx, e) => {};
+
+const nuevaGeometriaMachine = createMachine(
   {
     id: "nueva-geometria-machine",
     initial: "idle",
@@ -79,6 +82,9 @@ export const nuevaGeometriaMachine = createMachine(
                   UPDATE_POLIGONO: {
                     actions: assign({ feature: (_, e) => e.feature }),
                   },
+                  CHANGE: {
+                    actions: assign({ nombre: (_, e) => e.value }),
+                  },
                 },
               },
               cerrado_dentro: {
@@ -91,6 +97,9 @@ export const nuevaGeometriaMachine = createMachine(
                   UPDATE_POLIGONO: {
                     actions: assign({ feature: (_, e) => e.feature }),
                   },
+                  CHANGE: {
+                    actions: assign({ nombre: (_, e) => e.value }),
+                  },
                   GUARDAR: { target: "#idle" },
                 },
               },
@@ -98,7 +107,18 @@ export const nuevaGeometriaMachine = createMachine(
           },
           subir_archivo: {
             on: {
-              SUBIDO: "nombre",
+              KML: {
+                actions: assign({ feature: read_kml }),
+              },
+              SUBIDO: {
+                target: "nombre",
+                actions: [
+                  assign({
+                    feature: (_, e) => e.feature,
+                    nombre: (_, e) => e.feature.properties.name || "",
+                  }),
+                ],
+              },
               ERROR: "error",
             },
           },
@@ -108,7 +128,9 @@ export const nuevaGeometriaMachine = createMachine(
           nombre: {
             id: "nombre",
             on: {
-              CHANGE: assign((ctx, e) => e.value),
+              CHANGE: {
+                actions: assign({ nombre: (_, e) => e.value }),
+              },
               GUARDAR: "#idle",
             },
           },
@@ -123,3 +145,5 @@ export const nuevaGeometriaMachine = createMachine(
     },
   }
 );
+
+export {nuevaGeometriaMachine, initial_ctx};

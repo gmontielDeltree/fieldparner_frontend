@@ -671,22 +671,29 @@ zuix.controller(function (cp) {
 
     /* Boton Agregar Campos */
     var agregar_campos_btn = document.getElementById("agregar-campos-btn");
+    //document.getElementById("nuevo-campo-oc").map = map;
     var toastLiveExample = document.getElementById("liveToast");
     var toast;
     if (agregar_campos_btn) {
       agregar_campos_btn.addEventListener("click", function () {
-        // Toast
-        // Clean the toast
-        toast_step = 0;
-        $("#toast-body").text("Indica el primer punto");
-        toast = new bootstrap.Toast(toastLiveExample);
-        toast.show();
-        // Draw polygon
-        draw.changeMode("draw_polygon");
-        //Disable Siguiente btn
-        next_btn.setAttribute("disabled", "");
-        // Clean title
-        $("#offcanvas-1-title").text("");
+        
+        
+
+        // Nueva Geometria Campo
+        document.getElementById('nuevo-campo-oc').show = true;
+
+        // // Toast
+        // // Clean the toast
+        // toast_step = 0;
+        // $("#toast-body").text("Indica el primer punto");
+        // toast = new bootstrap.Toast(toastLiveExample);
+        // toast.show();
+        // // Draw polygon
+        // draw.changeMode("draw_polygon");
+        // //Disable Siguiente btn
+        // next_btn.setAttribute("disabled", "");
+        // // Clean title
+        // $("#offcanvas-1-title").text("");
       });
 
       // Rellenar Campo #
@@ -708,7 +715,6 @@ zuix.controller(function (cp) {
       console.log("GeoJSON", campo_geojson);
       console.log("Guardar Campo '", nombre); //, "' con", cultivo, "variedad", variedad)
 
-      //api_post_campo(nombre, campo_geojson, id, variedad)
       campo_geojson.properties.hectareas =
         Math.round((turf.area(campo_geojson) / 10000) * 100) / 100;
 
@@ -722,30 +728,11 @@ zuix.controller(function (cp) {
         (err, result) => {
           if (!err) {
             console.log("Successfully posted a Campo!");
-
-            // local_campos_changes.put({ _id: uuidv4(), tipo: "add-campo", username: couch_username, details: { campo_id: "campos_" + (nombre), db: "campos_" + couch_username, campo_geojson: campo_geojson, username: couch_username } }, (err, result) => {
-            // 	if (!err) {
-            // 		console.log('LocalChanges Successfully posted!');
-            // 	} else {
-            // 		console.log(err);
-            // 	}
-            // })
           } else {
             console.log(err);
           }
         }
       );
-
-      // axios.post('https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/ndviz', {
-      // 	geojson: campo_geojson,
-      // 	lastName: 'Flintstone'
-      //   })
-      //   .then(function (response) {
-      // 	console.log(response);
-      //   })
-      //   .catch(function (error) {
-      // 	console.log(error);
-      //   });
 
       salir_edit_mode();
     });

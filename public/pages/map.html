@@ -1,49 +1,77 @@
-<div id='map'>
+<div id="map">
+  <!--Primera pantalla-->
+  <div
+    class="offcanvas offcanvas-bottom"
+    data-bs-scroll="true"
+    data-bs-backdrop="false"
+    tabindex="-1"
+    id="offcanvasBottom"
+    aria-labelledby="offcanvasBottomLabel"
+  >
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvas-1-title"></h5>
 
-        <!--Primera pantalla-->
-        <div class="offcanvas offcanvas-bottom" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
-                id="offcanvasBottom" aria-labelledby="offcanvasBottomLabel">
-                <div class="offcanvas-header">
-                        <h5 class="offcanvas-title" id="offcanvas-1-title"></h5>
+      <div class="d-grid gap-2">
+        <button
+          id="agregar-campo-siguiente-btn"
+          type="button"
+          class="btn btn-success"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#offcanvasCampoForm"
+          aria-controls="offcanvasCampoForm"
+          disabled
+        >
+          Siguiente
+        </button>
+      </div>
+      <button
+        type="button"
+        id="map-edit-btn"
+        class="btn-close text-reset"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="offcanvas-body small">
+      <div class="d-grid gap-2">
+        <button class="btn btn-primary" id="salir-edicion-btn" type="button">
+          Salir del Modo de Edición
+        </button>
+      </div>
+    </div>
+  </div>
 
-                        <div class="d-grid gap-2">
-                                <button id="agregar-campo-siguiente-btn" type="button" class="btn btn-success"
-                                        data-bs-toggle="offcanvas" data-bs-target="#offcanvasCampoForm"
-                                        aria-controls="offcanvasCampoForm" disabled>Siguiente</button>
-                        </div>
-                        <button type="button" id="map-edit-btn" class="btn-close text-reset" data-bs-dismiss="offcanvas"
-                                aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body small">
-                        <div class="d-grid gap-2">
-                                <button class="btn btn-primary" id='salir-edicion-btn' type="button">Salir del Modo de
-                                        Edición</button>
-                        </div>
+  <!--Campo Form-->
+  <div
+    class="offcanvas offcanvas-bottom h-50"
+    data-bs-scroll="true"
+    data-bs-backdrop="false"
+    tabindex="-1"
+    id="offcanvasCampoForm"
+    aria-labelledby="offcanvasBottomLabel"
+  >
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">1 campo seleccionado</h5>
 
-
-                </div>
+      <button
+        type="button"
+        id="map-edit-btn"
+        class="btn-close text-reset"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="offcanvas-body">
+      <form>
+        <div class="row mb-1">
+          <label for="inputNombreCampo" class="col-4 col-form-label"
+            >Nombre del campo</label
+          >
+          <div class="col-8">
+            <input type="text" class="form-control" id="inputNombreCampo" />
+          </div>
         </div>
-
-        <!--Campo Form-->
-        <div class="offcanvas offcanvas-bottom h-50" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
-                id="offcanvasCampoForm" aria-labelledby="offcanvasBottomLabel">
-                <div class="offcanvas-header">
-                        <h5 class="offcanvas-title">1 campo seleccionado</h5>
-
-                        <button type="button" id="map-edit-btn" class="btn-close text-reset" data-bs-dismiss="offcanvas"
-                                aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-
-                        <form>
-                                <div class="row mb-1">
-                                        <label for="inputNombreCampo" class="col-4 col-form-label">Nombre del
-                                                campo</label>
-                                        <div class="col-8">
-                                                <input type="text" class="form-control" id="inputNombreCampo">
-                                        </div>
-                                </div>
-                                <!-- <div class="row mb-1">
+        <!-- <div class="row mb-1">
                                         <label for="inputCultivo" class="col-4 col-form-label">Cultivo</label>
                                         <div class="col-8">
                                                 <button type="button" id="cultivo-btn" class="btn btn-link"
@@ -60,106 +88,184 @@
                                         </div>
                                 </div> -->
 
-                                <div class="d-grid gap-2">
-                                        <button class="btn btn-primary btn-success" id='guardar-campo-btn'
-                                                type="button">Guardar</button>
-                                </div>
-                        </form>
+        <div class="d-grid gap-2">
+          <button
+            class="btn btn-primary btn-success"
+            id="guardar-campo-btn"
+            type="button"
+          >
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
+  <!--Seleccion de cultivo-->
+  <div
+    class="offcanvas offcanvas-end"
+    tabindex="-1"
+    id="offcanvas-cultivo"
+    aria-labelledby="offcanvasRightLabel"
+  >
+    <div class="offcanvas-header">
+      <h5 id="offcanvasRightLabel">Seleccionar cultivo</h5>
+      <button
+        type="button"
+        class="btn-close text-reset"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="offcanvas-body">
+      <input
+        class="form-control my-2"
+        id="buscar-cultivo-input"
+        type="text"
+        placeholder="Buscar.."
+      />
+      <div class="list-group" id="lista-cultivos"></div>
+    </div>
+  </div>
 
+  <!--Toast Guia-->
+  <div
+    class="position-fixed top-0 start-50 translate-middle p-3 guia-toast"
+    style="z-index: 11"
+  >
+    <div
+      id="liveToast"
+      class="toast align-items-center text-white bg-success"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+      data-bs-autohide="false"
+    >
+      <div class="d-flex">
+        <div class="toast-body" id="toast-body">Seleccione el primer punto</div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  </div>
 
-                </div>
+  <!--Add Nota Form-->
+  <div
+    class="offcanvas offcanvas-bottom h-50"
+    data-bs-scroll="true"
+    data-bs-backdrop="false"
+    tabindex="-1"
+    id="offcanvas-nueva-nota"
+    aria-labelledby="offcanvasBottomLabel"
+  >
+    <div class="offcanvas-header py-1">
+      <button
+        type="button"
+        id="cerrar-nueva-nota-btn"
+        class="btn-close text-reset"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+      <h6 class="offcanvas-title">Nueva Nota</h6>
+
+      <button
+        type="button"
+        id="guardar-nueva-nota-btn"
+        class="btn btn-success"
+        aria-label=""
+      >
+        Guardar
+      </button>
+    </div>
+    <hr class="my-0" />
+    <div class="offcanvas-body">
+      <div class="col">
+        <div class="row">
+          <label for="nota-color-input" class="col-2">Color</label>
+          <div
+            class="btn-group col-10"
+            role="group"
+            id="nota-color-input"
+            aria-label="Basic mixed styles example"
+          >
+            <input
+              type="radio"
+              class="btn-check nota-status"
+              name="btnradio"
+              id="btnradio-danger"
+              autocomplete="off"
+              checked
+            />
+            <label
+              class="btn btn-outline-danger btn-danger"
+              for="btnradio-danger"
+              >Urgente</label
+            >
+
+            <input
+              type="radio"
+              class="btn-check nota-status"
+              name="btnradio"
+              id="btnradio-warning"
+              autocomplete="off"
+            />
+            <label
+              class="btn btn-outline-warning btn-warning"
+              for="btnradio-warning"
+              >Atención</label
+            >
+
+            <input
+              type="radio"
+              class="btn-check nota-status"
+              name="btnradio"
+              id="btnradio-success"
+              autocomplete="off"
+            />
+            <label
+              class="btn btn-outline-success btn-success"
+              for="btnradio-success"
+              >Todo Bien</label
+            >
+          </div>
+          <!-- <input type="color" class="form-control form-control-color col-4" id="nota-color-input" value="#563d7c" title="Choose your color"> -->
         </div>
 
-        <!--Seleccion de cultivo-->
-        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-cultivo" aria-labelledby="offcanvasRightLabel">
-                <div class="offcanvas-header">
-                        <h5 id="offcanvasRightLabel">Seleccionar cultivo</h5>
-                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
-                                aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                        <input class="form-control my-2" id="buscar-cultivo-input" type="text" placeholder="Buscar..">
-                        <div class="list-group" id="lista-cultivos">
-                        </div>
-                </div>
+        <hr />
+
+        <textarea
+          class="form-control"
+          id="nota-comentario-input"
+          placeholder="Tus comentarios..."
+          rows="3"
+        ></textarea>
+        <hr />
+
+        <div class="row mb-2" id="img-preview"></div>
+
+        <input
+          id="foto-upload-input"
+          class="d-none"
+          type="file"
+          accept="image/*"
+        />
+        <button type="button" id="anadir-foto-btn" class="btn btn-success">
+          Añadir Foto
+        </button>
+
+        <hr />
+
+        <div class="row" id="audio-div">
+          <audio-recorder></audio-recorder>
         </div>
+      </div>
 
-
-        <!--Toast Guia-->
-        <div class="position-fixed top-0 start-50 translate-middle p-3 guia-toast" style="z-index: 11">
-                <div id="liveToast" class="toast align-items-center text-white bg-success" role="alert"
-                        aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
-                        <div class="d-flex">
-                                <div class="toast-body" id='toast-body'>
-                                        Seleccione el primer punto
-                                </div>
-                                <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                                        data-bs-dismiss="toast" aria-label="Close"></button>
-                        </div>
-                </div>
-        </div>
-
-
-        <!--Add Nota Form-->
-        <div class="offcanvas offcanvas-bottom h-50" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
-                id="offcanvas-nueva-nota" aria-labelledby="offcanvasBottomLabel">
-                <div class="offcanvas-header py-1">
-                        <button type="button" id="cerrar-nueva-nota-btn" class="btn-close text-reset"
-                                data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                        <h6 class="offcanvas-title">Nueva Nota</h6>
-
-                        <button type="button" id="guardar-nueva-nota-btn" class="btn btn-success"
-                                aria-label="">Guardar</button>
-
-                </div>
-                <hr class='my-0'>
-                <div class="offcanvas-body">
-                        <div class="col">
-                                <div class="row">
-                                        <label for="nota-color-input" class="col-2">Color</label>
-                                        <div class="btn-group col-10" role="group" id='nota-color-input'
-                                                aria-label="Basic mixed styles example">
-                                                <input type="radio" class="btn-check nota-status" name="btnradio" id="btnradio-danger"
-                                                        autocomplete="off" checked>
-                                                <label class="btn btn-outline-danger btn-danger"
-                                                        for="btnradio-danger">Urgente</label>
-
-                                                <input type="radio" class="btn-check nota-status" name="btnradio" id="btnradio-warning"
-                                                        autocomplete="off">
-                                                <label class="btn btn-outline-warning btn-warning"
-                                                        for="btnradio-warning">Atención</label>
-
-                                                <input type="radio" class="btn-check nota-status" name="btnradio" id="btnradio-success"
-                                                        autocomplete="off">
-                                                <label class="btn btn-outline-success btn-success"
-                                                        for="btnradio-success">Todo Bien</label>
-                                        </div>
-                                        <!-- <input type="color" class="form-control form-control-color col-4" id="nota-color-input" value="#563d7c" title="Choose your color"> -->
-                                </div>
-
-                                <hr>
-
-                                <textarea class="form-control" id="nota-comentario-input"
-                                        placeholder="Tus comentarios..." rows="3"></textarea>
-                                <hr>
-
-                                <div class="row mb-2" id='img-preview'>
-                                </div>
-
-                                <input id="foto-upload-input" class="d-none" type="file" accept="image/*">
-                                 <button type="button" id="anadir-foto-btn" class="btn btn-success">Añadir
-                                        Foto</button>
-
-                                <hr>
-
-                                <div class="row" id='audio-div'>
-                                        <audio-recorder></audio-recorder>
-                                </div>
-                        </div>
-
-                        <hr>
-<!-- 
+      <hr />
+      <!-- 
                         <div class="row justify-content-start">
                                 <div class="col-12">
                                         <button type="button" id="anadir-problema-btn" class="btn btn-success">Añadir un
@@ -169,96 +275,146 @@
 
                         <hr> -->
 
-                        <div>
-                                <div class="row">
-                                        <label for="fecha-btn" class="form-label col-8">Fecha</label>
-                                        <button type="button" id="nota-fecha-btn"
-                                                class="btn btn-secondary col-4">Hoy</button>
-                                </div>
-                                <div class="row">
-                                        <label for="hora-btn" class="form-label col-8">Hora</label>
-                                        <button type="button" id="nota-hora-btn"
-                                                class="btn btn-secondary col-4">11:22</button>
-                                </div>
-                        </div>
-
-
-                </div>
+      <div>
+        <div class="row">
+          <label for="fecha-btn" class="form-label col-8">Fecha</label>
+          <button
+            type="button"
+            id="nota-fecha-btn"
+            class="btn btn-secondary col-4"
+          >
+            Hoy
+          </button>
         </div>
-
-
-        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-problemas"
-                aria-labelledby="offcanvasRightLabel">
-                <div class="offcanvas-header">
-                        <h5>Problemas</h5>
-                        <button id='cerrar-problemas-btn' type="button" class="btn-close text-reset"
-                                data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                        <button id='seleccionar-problemas-btn' type="button" class="btn" data-bs-dismiss="offcanvas"
-                                aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                        ...
-                </div>
+        <div class="row">
+          <label for="hora-btn" class="form-label col-8">Hora</label>
+          <button
+            type="button"
+            id="nota-hora-btn"
+            class="btn btn-secondary col-4"
+          >
+            11:22
+          </button>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <div data-ui-load="@lib/components/menu_overlay" data-ui-context="menu-overlay" class="boton-overlay"
-                data-o-button-color="blue">
-                <div data-ui-field="items">
-                        <!-- menu items list -->
-                        <button class="btn btn-primary mo-item" id='agregar-campos-btn' type="button"
-                                data-bs-toggle="offcanvas" data-bs-target="#offcanvasBottom"
-                                aria-controls="offcanvasBottom">Agregar un Campo</button>
-                        <button class="btn btn-primary mo-item" id='nueva-nota-btn' type="button"
-                                data-bs-toggle="offcanvas" data-bs-target="#offcanvas-nueva-nota"
-                                aria-controls="#offcanvas-nueva-nota">Agregar una Nota</button>
-<!--                         <button class="btn btn-primary mo-item" id='abrir-catalogo' type="button"
+  <div
+    class="offcanvas offcanvas-end"
+    tabindex="-1"
+    id="offcanvas-problemas"
+    aria-labelledby="offcanvasRightLabel"
+  >
+    <div class="offcanvas-header">
+      <h5>Problemas</h5>
+      <button
+        id="cerrar-problemas-btn"
+        type="button"
+        class="btn-close text-reset"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+      <button
+        id="seleccionar-problemas-btn"
+        type="button"
+        class="btn"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="offcanvas-body">...</div>
+  </div>
+
+  <div
+    data-ui-load="@lib/components/menu_overlay"
+    data-ui-context="menu-overlay"
+    class="boton-overlay"
+    data-o-button-color="blue"
+  >
+    <div data-ui-field="items">
+      <!-- menu items list -->
+      <button
+        class="btn btn-primary mo-item"
+        id="agregar-campos-btn"
+        type="button"
+      >
+        Agregar un Campo
+      </button>
+      <button
+        class="btn btn-primary mo-item"
+        id="nueva-nota-btn"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvas-nueva-nota"
+        aria-controls="#offcanvas-nueva-nota"
+      >
+        Agregar una Nota
+      </button>
+      <!--                         <button class="btn btn-primary mo-item" id='abrir-catalogo' type="button"
                                 >Catálogo Recursos</button> -->
-                </div>
+    </div>
+  </div>
 
-
-
+  <div
+    class="modal fade"
+    id="detalle-imagen-modal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel"></h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
-
-
-        <div class="modal fade" id="detalle-imagen-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                        <div class="modal-content">
-                                <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel"></h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                        <img id="imagen-modal-preview" class="img-fluid" src="">
-                                </div>
-                                <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" id="borrar-img-btn"
-                                                data-bs-index="0">Eliminar</button>
-                                </div>
-                        </div>
-                </div>
+        <div class="modal-body">
+          <img id="imagen-modal-preview" class="img-fluid" src="" />
         </div>
-
-
-
-        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvas-nota"
-                aria-labelledby="offcanvas-nota-header">
-                <div class="offcanvas-header">
-                        <h5 class="offcanvas-title" id="offcanvas-nota-header">Nota</h5>
-                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
-                                aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body small col">
-                        <div class="row" id='nota-texto'></div>
-                        <div class="row mb-2" id='nota-img-preview'>
-                        </div>
-                        <div class="row" id='nota-audio-players'></div>
-                        <div class="row" id='nota-problemas'></div>
-                        <div class="row" id='nota-campo'></div>
-                </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            id="borrar-img-btn"
+            data-bs-index="0"
+          >
+            Eliminar
+          </button>
         </div>
-   <!--      <div class="offcanvas offcanvas-bottom h-50" tabindex="-1" id="offcanvas-campo-detalle"
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="offcanvas offcanvas-bottom"
+    tabindex="-1"
+    id="offcanvas-nota"
+    aria-labelledby="offcanvas-nota-header"
+  >
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvas-nota-header">Nota</h5>
+      <button
+        type="button"
+        class="btn-close text-reset"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="offcanvas-body small col">
+      <div class="row" id="nota-texto"></div>
+      <div class="row mb-2" id="nota-img-preview"></div>
+      <div class="row" id="nota-audio-players"></div>
+      <div class="row" id="nota-problemas"></div>
+      <div class="row" id="nota-campo"></div>
+    </div>
+  </div>
+  <!--      <div class="offcanvas offcanvas-bottom h-50" tabindex="-1" id="offcanvas-campo-detalle"
                 aria-labelledby="offcanvas-campo-header" data-bs-backdrop="false">
                 <div class="offcanvas-header">
                         <h5 class="offcanvas-title" id="offcanvas-campo-header">Campo</h5>
@@ -276,25 +432,34 @@
                         <button class="btn btn-danger" id="eliminar-campo-btn">Eliminar Campo</button>
                 </div>
         </div> -->
-     <div class="offcanvas offcanvas-bottom h-50" tabindex="-1" id="offcanvas-lote-ndvi"
-                aria-labelledby="offcanvas-campo-header" data-bs-backdrop="false">
-                <div class="offcanvas-header">
-                        <h5 class="offcanvas-title">NDVI</h5>
-                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
-                                aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body small col">
-                        <div class="row no-wrap" id='lote-ndvi'></div>
-                </div>
-        </div>
-<!--        <div data-ui-load="./../owncomponents/catalogo_imgs">-->
+  <div
+    class="offcanvas offcanvas-bottom h-50"
+    tabindex="-1"
+    id="offcanvas-lote-ndvi"
+    aria-labelledby="offcanvas-campo-header"
+    data-bs-backdrop="false"
+  >
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">NDVI</h5>
+      <button
+        type="button"
+        class="btn-close text-reset"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="offcanvas-body small col">
+      <div class="row no-wrap" id="lote-ndvi"></div>
+    </div>
+  </div>
+  <!--        <div data-ui-load="./../owncomponents/catalogo_imgs">-->
 
-        
-        <!-- </div> data-ui-options="options.drawerLayout" class="drawer"
+  <!-- </div> data-ui-options="options.drawerLayout" class="drawer"
                 draggable="false">
         </div>-->
-        <campo-offcanvas id="campo-oc"></campo-offcanvas>
-        <lote-offcanvas id="lote-oc"></lote-offcanvas>
+  <campo-offcanvas id="campo-oc"></campo-offcanvas>
+  <lote-offcanvas id="lote-oc"></lote-offcanvas>
+  <!-- <nuevo-campo id="nuevo-campo-oc"></nuevo-campo> -->
 </div>
 
 <div id="map-overlay" class="map-overlay"></div>

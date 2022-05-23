@@ -148,7 +148,17 @@ const configureClient = async () => {
 
 
 window.onload = async () => {
-    check_logged_user();
+
+    // Donde Estoy
+    let sitio = window.location.hostname
+    if(sitio === 'agrotools.netlify.app'){
+        // 'Production'
+        check_logged_user();
+    }else{
+        // Development
+        check_logged_user();
+    }
+   
     // console.log("ONLOAD")
     // await configureClient();
     // console.log("PO CL")

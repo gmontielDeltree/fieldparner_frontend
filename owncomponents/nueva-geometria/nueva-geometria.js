@@ -1,10 +1,11 @@
-import { LitElement, html } from "lit";
-import { nuevaGeometriaMachine } from "./nueva-geometria-machina";
-import { Modal } from "bootstrap";
+import { LitElement, html,unsafeCSS } from "lit";
+import { nuevaGeometriaMachine, initial_ctx } from "./nueva-geometria-machina";
 import { interpret } from "xstate";
-import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import { Offcanvas } from "bootstrap";
+import { Offcanvas, Modal } from "bootstrap";
+import centroid from "@turf/centroid";
+import { kml } from "@tmcw/togeojson";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 
 export class NuevaGeometria extends LitElement {
   static properties = {
@@ -18,13 +19,18 @@ export class NuevaGeometria extends LitElement {
     _fsm: {},
     _feature_id: {},
     _modal_elements: {},
+    _bs_inicializado: {},
   };
+
+  static styles = unsafeCSS(bootstrap); 
 
   constructor() {
     super();
     this.show = false;
     this._modal_elements = {};
-    // this._init_fsm();
+    this._feature_id = "";
+    this._bs_inicializado = false;
+    this._ctx = initial_ctx;
 
     this._draw = new MapboxDraw({
       displayControlsDefault: false,
@@ -35,13 +41,54 @@ export class NuevaGeometria extends LitElement {
       },
     });
     console.log("Construction", this.mapa);
-
-    this._feature_id = "00";
-    // this.map.addControl(this._draw, 'top-left');
   }
 
-  createRenderRoot() {
-    return this;
+  // createRenderRoot() {
+  //   return this;
+  // }
+
+  firstUpdated() {
+    this._bs_inicializar();
+  }
+
+  willUpdate(changedProperties) {
+    if (!this._bs_inicializado) {
+      return;
+    }
+
+    if (changedProperties.has("show") && this.show) {
+      this._init_fsm();
+      this._fsm.send("START");
+      console.log("START", this._modal_elements);
+    }
+
+    if (changedProperties.has("campo_feature")) {
+      console.log("START CF", this._modal_elements);
+      this._init_fsm();
+    }
+
+    if (changedProperties.has("mapa")) {
+    }
+  }
+
+  _bs_inicializar() {
+    // _modal_elements es un objeto de objetos. Las claves son los id/states. { 'pregunta': Modal(), }
+    let result_object = {};
+    let lista_mapeo = [
+      ...document.querySelectorAll(".add-geometry.step"),
+    ].map(
+      (el) => (result_object[el.id] = new Modal(el)) // ej {'pregunta': Modal()}
+    );
+
+    this._modal_elements = result_object;
+    console.log("nueva-geometria", "firstUpdated", this._modal_elements);
+
+    // this._offcanvas = new Offcanvas(
+    //   this.shadowRoot.getElementById("offcanvas-editing-dibujando")
+    // );
+
+    this._init_map()
+    this._bs_inicializado = true;
   }
 
   _init_fsm() {
@@ -57,12 +104,46 @@ export class NuevaGeometria extends LitElement {
       .start();
   }
 
+  _init_map() {
+    // Set eventos cuando se carga el mapa
+    console.log("Changed Props", this.mapa);
+    this.mapa.addControl(this._draw, "top-left");
+
+    this.mapa.on("draw.selectionchange", (e) => {
+      /* Si la seleccion cambia a algo distinto del featureId
+          que ya genere, volver a seleccionar lo mismo para prevenir
+          que pueda seguir dibujando */
+      console.log("SELECTIONCHANGE", e);
+      if (e.features[0]?.id !== this._feature_id) {
+        console.log("RESELECTING");
+        this._draw.changeMode("simple_select", {
+          featureIds: [this._feature_id],
+        });
+      }
+    });
+
+    this.mapa.on("draw.create", (e) => {
+      console.log("CERRO");
+      /* Guardar la feature */
+      this._feature_id = e.features[0].id;
+      let feature = e.features[0];
+      this._fsm.send({ type: "CERRO", feature });
+    });
+
+    this.mapa.on("draw.update", (args) => {
+      let feature = args.features[0];
+      console.log("UPDATE", args);
+      this._fsm.send({ type: "UPDATE_POLIGONO", feature: feature });
+    });
+  }
+
   show_step = (state_strings) => {
     this.hide_all_steps();
-    console.log(this.draw);
     let state_value = state_strings.slice(-1)[0];
+
+    console.log("show_step", state_value, this._modal_elements);
     if (state_value === "idle") {
-      this.show = false;
+      //this.show = false;
       return;
     }
 
@@ -73,16 +154,21 @@ export class NuevaGeometria extends LitElement {
     }
 
     if (state_value === "editing.dibujando.abierto") {
-      this._offcanvas.show();
+      //this._offcanvas.show();
     }
 
-    console.log("ST Show", state_value);
+    if (state_value === "editing.nombre") {
+      //this._offcanvas.show();
+    }
+
     if (!(state_value in this._modal_elements)) {
+      console.log("Estado no tiene modal");
       return;
     }
 
     if (!this._modal_elements[state_value]?._isShown || false) {
       if (this.show) {
+        console.log("SHOW");
         this._modal_elements[state_value].show();
       }
     }
@@ -94,67 +180,6 @@ export class NuevaGeometria extends LitElement {
     );
   }
 
-  firstUpdated() {
-    // _modal_elements es un objeto de objetos. Las claves son los id/states. { 'pregunta': Modal(), }
-    let result_object = {};
-    let lista_mapeo = [...document.querySelectorAll(".add-geometry.step")].map(
-      (el) => (result_object[el.id] = new Modal(el)) // ej {'pregunta': Modal()}
-    );
-
-    this._modal_elements = result_object;
-
-    this._offcanvas = new Offcanvas(
-      document.getElementById("offcanvas-editing-dibujando")
-    );
-  }
-
-  willUpdate(changedProperties) {
-    if (changedProperties.has("show") && this.show) {
-      this._fsm.send("START");
-    }
-
-    if (changedProperties.has("campo_feature")) {
-      this._init_fsm();
-    }
-
-    if (changedProperties.has("mapa")) {
-      console.log("Changed Props", this.mapa);
-      this.mapa.addControl(this._draw, "top-left");
-
-      this.mapa.on("draw.selectionchange", (e) => {
-        /* Si la seleccion cambia a algo distinto del featureId
-         que ya genere, volver a seleccionar lo mismo para prevenir
-          que pueda seguir dibujando */
-        console.log("SELECTIONCHANGE", e);
-        if (e.features[0]?.id !== this._feature_id) {
-          console.log("RESELECTING");
-          this._draw.changeMode("simple_select", {
-            featureIds: [this._feature_id],
-          });
-        }
-      });
-
-      this.mapa.on("draw.create", (e) => {
-        console.log("CERRO");
-        /* Guardar la feature */
-        this._feature_id = e.features[0].id;
-        let feature = e.features[0];
-        this._fsm.send({ type: "CERRO", feature });
-      });
-
-      this.mapa.on("draw.update", (args) => {
-        let feature = args.features[0];
-        console.log("UPDATE", args);
-        this._fsm.send({ type: "UPDATE_POLIGONO", feature: feature });
-      });
-      //this.mapa.on("draw.render", this.render_callback);
-    }
-  }
-
-  render_callback(args) {
-    //console.log("Render, Callback", args);
-  }
-
   dibujar() {
     this._fsm.send("DIBUJAR");
   }
@@ -163,8 +188,60 @@ export class NuevaGeometria extends LitElement {
     this._fsm.send("CANCEL");
   }
 
+  open_kml() {
+    this.shadowroot.getElementById("kml_file_input").click();
+  }
+
+  kml_input_changed() {
+    var file = this.shadowroot.getElementById("kml_file_input").files[0];
+    if (file) {
+      var reader = new FileReader();
+      reader.readAsText(file, "UTF-8");
+      reader.onload = (evt) => {
+        let xml = evt.target.result;
+        console.log(evt.target.result);
+        // Convertir a geojson
+        console.log("gEOJSON");
+        let feature_collection = kml(
+          new DOMParser().parseFromString(xml, "text/xml")
+        );
+        if (feature_collection.features.length === 0) {
+          // No hay niguna feature
+        }
+        if (feature_collection.features.length > 1) {
+          // Hay mas de un poligono
+        }
+        if (feature_collection.features[0].geometry.type !== "Polygon") {
+          // La geometria no es un poligono
+        }
+
+        // feature es el GeoJson
+        let feature = feature_collection.features[0];
+        // Todo Bien
+
+        // Add to Draw
+        this._draw.add(feature);
+        // Evento para FSM
+        this._fsm.send({ type: "SUBIDO", feature: feature });
+
+        // Move map to new feature
+        this.mapa.flyTo({
+          center: centroid(feature).geometry.coordinates,
+          zoom: 10,
+        });
+      };
+
+      reader.onerror = function (evt) {
+        console.log("error reading file");
+        this._fsm.send({ type: "ERROR", msg: "Error al leer el Archivo" });
+      };
+    }
+  }
+
   render() {
     return html`
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
       <div class="modal add-geometry step" id="editing.pregunta" tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
@@ -209,44 +286,100 @@ export class NuevaGeometria extends LitElement {
       </div>
 
       <div
-        class="offcanvas offcanvas-bottom"
-        data-bs-scroll="true"
-        data-bs-backdrop="false"
+        class="modal add-geometry step"
+        id="editing.subir_archivo"
         tabindex="-1"
-        id="offcanvas-editing-dibujando"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Selecciona el tipo de archivo</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${this.cerrar}
+              ></button>
+            </div>
+            <div class="modal-body">
+              <p>Modal body text goes here.</p>
+              <button @click="${this.open_kml}">KML</button>
+              <button
+                @click=${() => {
+                  this._fsm.send("SUBIR");
+                }}
+              >
+                Subir Archivo
+              </button>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${this.cerrar}
+              >
+                Close
+              </button>
+              <button type="button" class="btn btn-primary">
+                Save changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <input
+        type="file"
+        id="kml_file_input"
+        name="avatar"
+        @change=${this.kml_input_changed}
+        accept="application/vnd.google-earth.kml+xml"
+      />
+
+      
+      <div
+        class="fixed-bottom h-50 bg-warning ${this._fsm?.state.matches('editing.nombre') ? "": "d-none"}"
+        tabindex="-1"
       >
         <div class="offcanvas-header py-1">
-          <h5 class="offcanvas-title mx-auto">Nuevo ${this.tipo}</h5>
+          <h5 class="mx-auto">Nuevo ${this.tipo}</h5>
 
           <button
             type="button"
             class="btn-close text-reset"
-            data-bs-dismiss="offcanvas"
             aria-label="Close"
           ></button>
         </div>
-        <div class="offcanvas-body pt-1">
+        <div class="pt-1">
           <form>
             <div class="row mb-1">
               <label for="inputNombreLote" class="col-4 col-form-label"
                 >Nombre</label
               >
               <div class="col-8">
-                <input type="text" class="form-control" />
+                <input
+                  type="text"
+                  value=${this._ctx.nombre}
+                  @change=${(e) =>
+                    this._fsm.send({ type: "CHANGE", value: e.target.value })}
+                  class="form-control"
+                />
               </div>
             </div>
 
-            ${(this._ctx.guardar_enable) ? (
-              html` <div class="d-grid gap-2">
-                <button class="btn btn-primary btn-success" type="button">
-                  Guardar
-                </button>
-              </div>`
-            ) : html `
-              <div class="alert alert-danger" role="alert">
-                Todos los puntos del lote deben estar dentro del campo!
-              </div>
-            `}
+            ${this._ctx.guardar_enable
+              ? html` <div class="d-grid gap-2">
+                  <button class="btn btn-primary btn-success" type="button">
+                    Guardar
+                  </button>
+                </div>`
+              : html`
+                  <div class="alert alert-danger" role="alert">
+                    Todos los puntos del lote deben estar dentro del campo!
+                  </div>
+                `}
           </form>
         </div>
       </div>
