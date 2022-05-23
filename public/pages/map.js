@@ -671,7 +671,8 @@ zuix.controller(function (cp) {
 
     /* Boton Agregar Campos */
     var agregar_campos_btn = document.getElementById("agregar-campos-btn");
-    //document.getElementById("nuevo-campo-oc").map = map;
+    
+    document.getElementById("nuevo-campo-oc").map = map;
     var toastLiveExample = document.getElementById("liveToast");
     var toast;
     if (agregar_campos_btn) {

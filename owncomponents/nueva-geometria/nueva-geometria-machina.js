@@ -18,6 +18,9 @@ const initial_ctx = {
 };
 
 const es_dentro_del_campo = (ctx, e) => {
+  if(!ctx.es_lote){
+    return true;
+  }
   console.log("EVAL", ctx, e);
 
   let feature = ctx.feature;
@@ -26,6 +29,9 @@ const es_dentro_del_campo = (ctx, e) => {
 };
 
 const es_fuera_del_campo = (ctx, e) => {
+  if(!ctx.es_lote){
+    return false;
+  }
   console.log("ES FUERA", ctx);
   return !booleanContains(ctx.campo_feature, ctx.feature);
 };
@@ -116,6 +122,7 @@ const nuevaGeometriaMachine = createMachine(
                   assign({
                     feature: (_, e) => e.feature,
                     nombre: (_, e) => e.feature.properties.name || "",
+                    guardar_enable: (ctx) => (ctx.es_lote === false) ? true : ctx.guardar_enable,
                   }),
                 ],
               },

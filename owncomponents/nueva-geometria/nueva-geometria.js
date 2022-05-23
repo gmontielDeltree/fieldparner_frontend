@@ -94,6 +94,8 @@ export class NuevaGeometria extends LitElement {
   _init_fsm() {
     const someContext = nuevaGeometriaMachine.initialState.context;
     someContext.campo_feature = this.campo_feature;
+    someContext.es_lote = (this.tipo === 'lote') ? true : false;
+    someContext.guardar_enable = (this.tipo === 'lote') ? false : true;
     // Mods al ctx inicial
     this._fsm = interpret(nuevaGeometriaMachine.withContext(someContext))
       .onTransition((state) => {

@@ -10,6 +10,10 @@ export class NuevoCampo extends LitElement{
     constructor(){
         super()
         this.show = false
+        this.addEventListener('cerrargeometria', (e) => {
+            console.log("cerrar_nueva_geometria")
+            this.show = false;
+        })
     }
 
     render(){
