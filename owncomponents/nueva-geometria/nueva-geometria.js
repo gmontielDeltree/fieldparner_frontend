@@ -253,15 +253,20 @@ export class NuevaGeometria extends LitElement {
                   if (feature_collection.features.length === 0) {
                     // No hay niguna feature
                     alert("El archivo no tiene ninguna caracteristica")
+                    return;
                   }
                   if (feature_collection.features.length > 1) {
                     // Hay mas de un poligono
-                    alert("El archivo tiene mas de un poligono")
+                    alert("El archivo tiene mas de un polígono.\nPor el momento solo estan soportados los archivos que contienen un solo polígono." )
+                    return;
+
                   }
                   if (
                     feature_collection.features[0].geometry.type !== "Polygon"
                   ) {
-                    // La geometria no es un poligono
+                    // La geometria no es un poligon
+                    alert("La geometria no es un poligono")
+                    return
                   }
 
                   // feature es el GeoJson
@@ -349,7 +354,7 @@ export class NuevaGeometria extends LitElement {
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">
-                Dibuja el lote en tu mapa para continuar
+                ¿Como quieres agregar la nueva geometria?
               </h5>
               <button
                 type="button"
@@ -360,9 +365,9 @@ export class NuevaGeometria extends LitElement {
               ></button>
             </div>
             <div class="modal-body">
-              <p>Modal body text goes here.</p>
-              <button @click="${this.dibujar}">Dibujar</button>
-              <button
+
+              <button class='btn btn-primary' @click="${this.dibujar}">Dibujar</button>
+              <button class='btn btn-primary'
                 @click=${() => {
                   this._fsm.send("SUBIR");
                 }}
@@ -377,10 +382,7 @@ export class NuevaGeometria extends LitElement {
                 data-bs-dismiss="modal"
                 @click=${this.cerrar}
               >
-                Close
-              </button>
-              <button type="button" class="btn btn-primary">
-                Save changes
+                Cerrar
               </button>
             </div>
           </div>
@@ -405,9 +407,8 @@ export class NuevaGeometria extends LitElement {
               ></button>
             </div>
             <div class="modal-body">
-              <p>Modal body text goes here.</p>
-              <button @click="${this.open_kml}">KML</button>
-              <button @click="${this.open_kmz}">KMZ</button>
+              <button class='btn btn-primary' @click="${this.open_kml}">KML</button>
+              <button class='btn btn-primary' @click="${this.open_kmz}">KMZ</button>
             </div>
             <div class="modal-footer">
               <button
@@ -418,9 +419,7 @@ export class NuevaGeometria extends LitElement {
               >
                 Close
               </button>
-              <button type="button" class="btn btn-primary">
-                Save changes
-              </button>
+
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { Modal, Offcanvas, Toast, bootstrap } from "bootstrap.esm.min.js";
 import { map } from "lit/directives/map";
+import Tour from "shepherd.js/src/types/tour";
 
 zuix.controller(function (cp) {
   const zx = zuix; // shorthand
@@ -93,6 +94,8 @@ zuix.controller(function (cp) {
 
       notas_layer();
       notas_agregar_ctrl();
+
+      tour();
     });
   };
 
@@ -1161,4 +1164,25 @@ zuix.controller(function (cp) {
       map.setLayoutProperty("lotes_border", "visibility", "none");
     }
   };
+
+  const tour = ()=>{
+    introJs()
+    .setOptions({
+      "dontShowAgain": true,
+      nextLabel : "Siguiente",
+      doneLabel: "Fin",
+      prevLabel: "Anterior",
+      disableInteraction: false,
+      steps: [
+        {
+          intro: "Bienvenido a Agrotools!!!",
+        },
+        {
+          intro: "Presiona en el boton '+' para agregar tu primer campo",
+        },
+      ],
+    })
+    .start();
+  }
+
 });

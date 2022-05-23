@@ -50,9 +50,14 @@ export class CampoOffcanvas extends LitElement {
     //tour.start()
     introJs()
       .setOptions({
+        "dontShowAgain": true,
+        nextLabel : "Siguiente",
+        doneLabel: "Fin",
+        prevLabel: "Anterior",
+        disableInteraction: false,
         steps: [
           {
-            intro: "Bienvenido Bipedo!!!",
+            intro: "Has seleccionado un campo",
           },
           {
             element: document.querySelector(".btn-anadir-lote"),
