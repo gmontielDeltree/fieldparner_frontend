@@ -42,6 +42,7 @@ export class NuevaGeometria extends LitElement {
       },
     });
     console.log("Construction", this.mapa);
+    this._init_fsm()
   }
 
   // createRenderRoot() {
@@ -111,11 +112,11 @@ export class NuevaGeometria extends LitElement {
     // Set eventos cuando se carga el mapa
     console.log("Changed Props", this.mapa);
 
-    try {
-      this.mapa.addControl(this._draw, "top-left");
-    } catch {
-      console.log("add draw fallo");
-    }
+    // try {
+    //   this.mapa.addControl(this._draw, "top-left");
+    // } catch {
+    //   console.log("add draw fallo");
+    // }
 
     this.mapa.on("draw.selectionchange", (e) => {
       /* Si la seleccion cambia a algo distinto del featureId
@@ -364,7 +365,7 @@ export class NuevaGeometria extends LitElement {
                 @click=${this.cerrar}
               ></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body mx-auto">
 
               <button class='btn btn-primary' @click="${this.dibujar}">Dibujar</button>
               <button class='btn btn-primary'
@@ -406,7 +407,7 @@ export class NuevaGeometria extends LitElement {
                 @click=${this.cerrar}
               ></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body mx-auto">
               <button class='btn btn-primary' @click="${this.open_kml}">KML</button>
               <button class='btn btn-primary' @click="${this.open_kmz}">KMZ</button>
             </div>

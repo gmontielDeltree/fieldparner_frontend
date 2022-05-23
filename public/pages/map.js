@@ -66,7 +66,7 @@ zuix.controller(function (cp) {
       preserveDrawingBuffer: false,
     });
 
-    // map.addControl(draw); // Sin controles
+    map.addControl(draw); // Sin controles
 
     // Add geolocate control to the map.
     map.addControl(
@@ -676,6 +676,7 @@ zuix.controller(function (cp) {
     var agregar_campos_btn = document.getElementById("agregar-campos-btn");
     
     document.getElementById("nuevo-campo-oc").map = map;
+    document.getElementById("nuevo-campo-oc").draw = draw;
     var toastLiveExample = document.getElementById("liveToast");
     var toast;
     if (agregar_campos_btn) {

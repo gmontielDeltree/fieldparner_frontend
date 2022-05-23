@@ -1,5 +1,7 @@
 import { LitElement, html, css } from "lit";
 import { Offcanvas } from "bootstrap";
+import area from '@turf/area'
+import uuid4 from "uuid4";
 
 export class CampoOffcanvas extends LitElement {
   static properties = {
@@ -39,6 +41,34 @@ export class CampoOffcanvas extends LitElement {
       console.log("cerrar_nueva_geometria")
       this._detallesOffcanvas.show()
     })
+
+    this.addEventListener("guardargeometria", (e) => {
+      console.log("guardar_nueva_geometria", e.detail.feature);
+      this.show = false;
+      this._detallesOffcanvas.show()
+
+      let lote_geojson = e.detail.feature
+      let nombre = e.detail.nombre
+      let thisCampoId = this.campo_doc.id
+
+      // Props adicionales del lote
+      lote_geojson.properties.nombre = nombre
+      lote_geojson.properties.campo_parent_id = thisCampoId;
+      let this_lote_id = uuid4();
+      lote_geojson.properties.uuid = this_lote_id;
+      lote_geojson.properties.hectareas =
+        Math.round((area(lote_geojson) / 10000) * 100) / 100;
+      lote_geojson.id = this_lote_id;
+      
+
+      campos_db.get(thisCampoId).then((doc) => {
+        console.log("Lote GeoJSON", lote_geojson);
+        doc.lotes.push(lote_geojson);
+        // Save Lote en campo doc
+        campos_db.put(doc).then(()=>console.log("Lote Grabado"));
+      })
+    })
+
   }
 
   hide() {
@@ -61,7 +91,7 @@ export class CampoOffcanvas extends LitElement {
           },
           {
             element: document.querySelector(".btn-anadir-lote"),
-            intro: "Presiona para agregar un nuevo lote",
+            intro: "Presiona aqui si quieres agregar un nuevo lote",
           },
         ],
       })
@@ -141,7 +171,8 @@ export class CampoOffcanvas extends LitElement {
         ? html`<nueva-geometria-ui
             id='nuevo-lote-ui'
             .tipo='lote'
-            .mapa=${this.map} 
+            .mapa=${this.map}
+            ._draw=${this.draw} 
             .campo_feature=${this.campo_geojson}
           ></nueva-geometria-ui>`
         : null}

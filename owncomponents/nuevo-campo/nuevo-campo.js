@@ -3,6 +3,7 @@ import area from '@turf/area'
 export class NuevoCampo extends LitElement {
   static properties = {
     map: {},
+    draw: {},
     show: {},
   };
 
@@ -47,6 +48,7 @@ export class NuevoCampo extends LitElement {
           id="nuevo-campo-ui"
           .tipo="campo"
           .mapa=${this.map}
+          ._draw=${this.draw}
           .show=${this.show}
         ></nueva-geometria-ui>`
       : null;

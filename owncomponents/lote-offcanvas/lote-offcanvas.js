@@ -108,6 +108,24 @@ export class LoteOffcanvas extends LitElement {
 
     show() {
         this._lotesOffcanvas.show();
+        introJs()
+        .setOptions({
+          "dontShowAgain": true,
+          nextLabel : "Siguiente",
+          doneLabel: "Fin",
+          prevLabel: "Anterior",
+          disableInteraction: false,
+          steps: [
+            {
+              intro: "Es esta persiana podras ver y editar la historia de tu lote",
+            },
+            {
+              element: document.querySelector(".btn-actividad"),
+              intro: "Utiliza estos botones para agregar nuevos registros",
+            },
+          ],
+        })
+        .start();
     }
     hide() {
         this._lotesOffcanvas.hide();
@@ -436,9 +454,9 @@ export class LoteOffcanvas extends LitElement {
                         <button class='btn btn-danger btn-sm d-none d-md-block' @click=${this.eliminar_lote}>Eliminar Lote</button>
                         </div>
                         <div class="btn-group" role="group" aria-label="First group">
-                            <button class='btn btn-primary btn-sm' @click=${this.siembra}>+ Siembra</button>
-                            <button class='btn btn-primary btn-sm' @click=${this.actividad}>+ Aplicación</button>
-                            <button class='btn btn-primary btn-sm' @click=${this.cosecha}>+ Cosecha</button>
+                            <button class='btn btn-primary btn-sm btn-actividad' @click=${this.siembra}>+ Siembra</button>
+                            <button class='btn btn-primary btn-sm btn-actividad' @click=${this.actividad}>+ Aplicación</button>
+                            <button class='btn btn-primary btn-sm btn-actividad' @click=${this.cosecha}>+ Cosecha</button>
                         </div>
                         <div class="btn-group me-2" role="group" aria-label="Second group">
                             <button class='btn btn-primary btn-sm' @click=${this.evento_show_ndvi}>NDVI</button>
