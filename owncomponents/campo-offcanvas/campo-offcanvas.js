@@ -22,6 +22,7 @@ export class CampoOffcanvas extends LitElement {
     // console.log("EJECUTANDO COMPONENTE")
     this.show_main = false;
     this.modo = "lote";
+
   }
   
   createRenderRoot() {
@@ -33,6 +34,11 @@ export class CampoOffcanvas extends LitElement {
     this._detallesOffcanvas = new Offcanvas(
       document.getElementById("offcanvas-campo-detalle")
     );
+
+    this.addEventListener('cerrargeometria', (e) => {
+      console.log("cerrar_nueva_geometria")
+      this._detallesOffcanvas.show()
+    })
   }
 
   hide() {

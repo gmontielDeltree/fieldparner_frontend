@@ -1,4 +1,4 @@
-import { LitElement, html,unsafeCSS } from "lit";
+import { LitElement, html, unsafeCSS } from "lit";
 import { nuevaGeometriaMachine, initial_ctx } from "./nueva-geometria-machina";
 import { interpret } from "xstate";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -22,7 +22,7 @@ export class NuevaGeometria extends LitElement {
     _bs_inicializado: {},
   };
 
-  static styles = unsafeCSS(bootstrap); 
+  static styles = unsafeCSS(bootstrap);
 
   constructor() {
     super();
@@ -75,7 +75,7 @@ export class NuevaGeometria extends LitElement {
     // _modal_elements es un objeto de objetos. Las claves son los id/states. { 'pregunta': Modal(), }
     let result_object = {};
     let lista_mapeo = [
-      ...document.querySelectorAll(".add-geometry.step"),
+      ...this.shadowRoot.querySelectorAll(".add-geometry.step"),
     ].map(
       (el) => (result_object[el.id] = new Modal(el)) // ej {'pregunta': Modal()}
     );
@@ -83,11 +83,11 @@ export class NuevaGeometria extends LitElement {
     this._modal_elements = result_object;
     console.log("nueva-geometria", "firstUpdated", this._modal_elements);
 
-    // this._offcanvas = new Offcanvas(
-    //   this.shadowRoot.getElementById("offcanvas-editing-dibujando")
-    // );
+    this._offcanvas = new Offcanvas(
+      this.shadowRoot.getElementById("offcanvas-editing-dibujando")
+    );
 
-    this._init_map()
+    this._init_map();
     this._bs_inicializado = true;
   }
 
@@ -154,11 +154,11 @@ export class NuevaGeometria extends LitElement {
     }
 
     if (state_value === "editing.dibujando.abierto") {
-      //this._offcanvas.show();
+      this._offcanvas.show();
     }
 
     if (state_value === "editing.nombre") {
-      //this._offcanvas.show();
+      this._offcanvas.show();
     }
 
     if (!(state_value in this._modal_elements)) {
@@ -185,15 +185,31 @@ export class NuevaGeometria extends LitElement {
   }
 
   cerrar() {
+    // Cerrar el modo de dibujo
+    this._draw.changeMode('simple_select')
+    this._draw.deleteAll()
+    // Ocultar el offcanvas    
+    this._offcanvas.hide()
+    // Enviar evento
     this._fsm.send("CANCEL");
+    //event cerrar
+    let event = new CustomEvent('cerrargeometria',{detail:{}, bubbles: true, composed: true})
+    this.dispatchEvent(event);
+
+    this.show=false;
   }
 
   open_kml() {
-    this.shadowroot.getElementById("kml_file_input").click();
+    this.shadowRoot.getElementById("kml_file_input").click();
+  }
+
+  guardar() {
+    console.log("GUARDAR_CLICK")
+    this._draw.deleteAll()
   }
 
   kml_input_changed() {
-    var file = this.shadowroot.getElementById("kml_file_input").files[0];
+    var file = this.shadowRoot.getElementById("kml_file_input").files[0];
     if (file) {
       var reader = new FileReader();
       reader.readAsText(file, "UTF-8");
@@ -240,7 +256,12 @@ export class NuevaGeometria extends LitElement {
 
   render() {
     return html`
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+      <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+        crossorigin="anonymous"
+      />
 
       <div class="modal add-geometry step" id="editing.pregunta" tabindex="-1">
         <div class="modal-dialog">
@@ -338,26 +359,28 @@ export class NuevaGeometria extends LitElement {
         accept="application/vnd.google-earth.kml+xml"
       />
 
-      
       <div
-        class="fixed-bottom h-50 bg-warning ${this._fsm?.state.matches('editing.nombre') ? "": "d-none"}"
+        class="offcanvas offcanvas-bottom h-25"
+        id="offcanvas-editing-dibujando"
         tabindex="-1"
+        data-bs-backdrop="false"
       >
         <div class="offcanvas-header py-1">
-          <h5 class="mx-auto">Nuevo ${this.tipo}</h5>
+          <h5 class="offcanvas-title mx-auto">Nuevo ${this.tipo}</h5>
 
           <button
             type="button"
             class="btn-close text-reset"
+            @click=${this.cerrar}
+            data-bs-dismiss="offcanvas"
             aria-label="Close"
           ></button>
         </div>
-        <div class="pt-1">
+        <div class="offcanvas-body pt-1">
           <form>
             <div class="row mb-1">
               <label for="inputNombreLote" class="col-4 col-form-label"
-                >Nombre</label
-              >
+                >Nombre</label>
               <div class="col-8">
                 <input
                   type="text"
@@ -371,7 +394,7 @@ export class NuevaGeometria extends LitElement {
 
             ${this._ctx.guardar_enable
               ? html` <div class="d-grid gap-2">
-                  <button class="btn btn-primary btn-success" type="button">
+                  <button @click=${this.guardar} class="btn btn-primary btn-success" type="button">
                     Guardar
                   </button>
                 </div>`
@@ -386,5 +409,5 @@ export class NuevaGeometria extends LitElement {
     `;
   }
 }
-
+// class="fixed-bottom h-50 bg-warning ${this._fsm?.state.matches('editing.nombre') ? "": "d-none"}"
 customElements.define("nueva-geometria-ui", NuevaGeometria);
