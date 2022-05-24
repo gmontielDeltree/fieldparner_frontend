@@ -11,13 +11,13 @@
 }
 
 .header {
-  height: 46px;
-  max-height: 46px;
+  height: 36px;
+  max-height: 36px;
 }
 
 .title {
   position: absolute;
-  top: 12px;
+  top: 10px;
   left: 80px;
   font-size: 110%;
 }
