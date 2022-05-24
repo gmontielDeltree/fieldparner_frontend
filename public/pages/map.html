@@ -1,133 +1,4 @@
 <div id="map">
-  <!--Primera pantalla-->
-  <div
-    class="offcanvas offcanvas-bottom"
-    data-bs-scroll="true"
-    data-bs-backdrop="false"
-    tabindex="-1"
-    id="offcanvasBottom"
-    aria-labelledby="offcanvasBottomLabel"
-  >
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title" id="offcanvas-1-title"></h5>
-
-      <div class="d-grid gap-2">
-        <button
-          id="agregar-campo-siguiente-btn"
-          type="button"
-          class="btn btn-success"
-          data-bs-toggle="offcanvas"
-          data-bs-target="#offcanvasCampoForm"
-          aria-controls="offcanvasCampoForm"
-          disabled
-        >
-          Siguiente
-        </button>
-      </div>
-      <button
-        type="button"
-        id="map-edit-btn"
-        class="btn-close text-reset"
-        data-bs-dismiss="offcanvas"
-        aria-label="Close"
-      ></button>
-    </div>
-    <div class="offcanvas-body small">
-      <div class="d-grid gap-2">
-        <button class="btn btn-primary" id="salir-edicion-btn" type="button">
-          Salir del Modo de Edición
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!--Campo Form-->
-  <div
-    class="offcanvas offcanvas-bottom h-50"
-    data-bs-scroll="true"
-    data-bs-backdrop="false"
-    tabindex="-1"
-    id="offcanvasCampoForm"
-    aria-labelledby="offcanvasBottomLabel"
-  >
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">1 campo seleccionado</h5>
-
-      <button
-        type="button"
-        id="map-edit-btn"
-        class="btn-close text-reset"
-        data-bs-dismiss="offcanvas"
-        aria-label="Close"
-      ></button>
-    </div>
-    <div class="offcanvas-body">
-      <form>
-        <div class="row mb-1">
-          <label for="inputNombreCampo" class="col-4 col-form-label"
-            >Nombre del campo</label
-          >
-          <div class="col-8">
-            <input type="text" class="form-control" id="inputNombreCampo" />
-          </div>
-        </div>
-        <!-- <div class="row mb-1">
-                                        <label for="inputCultivo" class="col-4 col-form-label">Cultivo</label>
-                                        <div class="col-8">
-                                                <button type="button" id="cultivo-btn" class="btn btn-link"
-                                                        data-bs-toggle="offcanvas"
-                                                        data-bs-target="#offcanvas-cultivo">Especificar<i
-                                                                class="bi bi-chevron-right"></i></button>
-                                                <input type="text" class="form-control d-none" id="input-cultivo">
-                                        </div>
-                                </div>
-                                <div class="row mb-1">
-                                        <label for="inputVariedad" class="col-4 col-form-label">Variedad</label>
-                                        <div class="col-8">
-                                                <input type="text" class="form-control" id="variedad-input">
-                                        </div>
-                                </div> -->
-
-        <div class="d-grid gap-2">
-          <button
-            class="btn btn-primary btn-success"
-            id="guardar-campo-btn"
-            type="button"
-          >
-            Guardar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!--Seleccion de cultivo-->
-  <div
-    class="offcanvas offcanvas-end"
-    tabindex="-1"
-    id="offcanvas-cultivo"
-    aria-labelledby="offcanvasRightLabel"
-  >
-    <div class="offcanvas-header">
-      <h5 id="offcanvasRightLabel">Seleccionar cultivo</h5>
-      <button
-        type="button"
-        class="btn-close text-reset"
-        data-bs-dismiss="offcanvas"
-        aria-label="Close"
-      ></button>
-    </div>
-    <div class="offcanvas-body">
-      <input
-        class="form-control my-2"
-        id="buscar-cultivo-input"
-        type="text"
-        placeholder="Buscar.."
-      />
-      <div class="list-group" id="lista-cultivos"></div>
-    </div>
-  </div>
-
   <!--Toast Guia-->
   <div
     class="position-fixed top-0 start-50 translate-middle p-3 guia-toast"
@@ -352,8 +223,6 @@
       >
         Agregar una Nota
       </button>
-      <!--                         <button class="btn btn-primary mo-item" id='abrir-catalogo' type="button"
-                                >Catálogo Recursos</button> -->
     </div>
   </div>
 
@@ -415,24 +284,7 @@
       <div class="row" id="nota-campo"></div>
     </div>
   </div>
-  <!--      <div class="offcanvas offcanvas-bottom h-50" tabindex="-1" id="offcanvas-campo-detalle"
-                aria-labelledby="offcanvas-campo-header" data-bs-backdrop="false">
-                <div class="offcanvas-header">
-                        <h5 class="offcanvas-title" id="offcanvas-campo-header">Campo</h5>
-                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
-                                aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body small col">
-                        <div class="row no-wrap" id='campo-ndvi'></div>
-                        <div class="row" id='campo-cultivo'></div>
-                        <div class="row mb-2" id='campo-img-preview'>
-                        </div>
-                        <div class="row" id='campo-audio-players'></div>
-                        <div class="row" id='campo-problemas'></div>
-                        <div class="row" id='campo-campo'></div>
-                        <button class="btn btn-danger" id="eliminar-campo-btn">Eliminar Campo</button>
-                </div>
-        </div> -->
+
   <div
     class="offcanvas offcanvas-bottom h-50"
     tabindex="-1"
@@ -455,12 +307,12 @@
   </div>
   <!--        <div data-ui-load="./../owncomponents/catalogo_imgs">-->
 
-<lote-offcanvas id="lote-oc"></lote-offcanvas>
+  <lote-offcanvas id="lote-oc"></lote-offcanvas>
   <!-- </div> data-ui-options="options.drawerLayout" class="drawer"
                 draggable="false">
         </div>-->
 </div>
-  
+
 <campo-offcanvas id="campo-oc"></campo-offcanvas>
 <nuevo-campo id="nuevo-campo-oc"></nuevo-campo>
 <div id="map-overlay" class="map-overlay"></div>

@@ -59,7 +59,7 @@ zuix.controller(function (cp) {
 
     map = new mapboxgl.Map({
       container: "map",
-      style: "mapbox://styles/mapbox/satellite-v9",
+      style: "mapbox://styles/mapbox/satellite-streets-v11",
       center: [-59.2965, -35.1923],
       zoom: 12,
       attributionControl: true,
@@ -201,10 +201,14 @@ zuix.controller(function (cp) {
       id: "lotes_border",
       type: "line",
       source: "lotes",
-      layout: {
-        visibility: "none",
-      },
-    });
+      // layout: {
+      //   visibility: "none",
+      // },
+      paint: {
+        'line-color': 'rgba(255, 0, 0, 1)',
+        'line-width': 4
+      }
+    }, "lotes");
 
     map.addSource("ndvi", {
       type: "image",
@@ -296,40 +300,7 @@ zuix.controller(function (cp) {
       document.getElementById("lote-oc").campo_id = campo_parent_id;
       document.getElementById("lote-oc").show();
 
-      // Busco el lote en la db para evitar la distorsion de mapbox geometry
-      // campos_db.get(campo_parent_id).then(
-      // 	(campo_doc) => {
-      // 		let lotes = campo_doc.lotes
-      // 		let lote_clickeado_lista = lotes.filter((lote) => lote.properties.nombre === nombre)
-      // 		let lote_clickeado = lote_clickeado_lista[0]
-      // 		let geometry = lote_clickeado.geometry
-      // 		let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
-      // 		hashMessage(clean_json).then((lote_hash) => {
-      // 			console.log("Lote Hash", lote_hash)
-      // 			ndvi_db.get(lote_hash).then(ndvi_gallery).catch(() => {
-      // 				console.log("Error NDVI: Aun no existe ningun registro");
-      // 			})
-      // 		})
-      // 		// ndvi_oc.show()
-      // 		document.getElementById('campo-oc').hide()
-      // 	}
-      // )
     });
-
-    // offcanvas_campo_detalle_el.addEventListener('hide.bs.offcanvas', function () {
-    // 	// do something...
-    // 	if (map.getLayer('ndvi-layer')) {
-    // 		map.setLayoutProperty(
-    // 			'ndvi-layer',
-    // 			'visibility',
-    // 			'none'
-    // 		)
-    // 		map.moveLayer('lotes')
-    // 	}
-
-    // 	const overlay = document.getElementById('map-overlay');
-    // 	overlay.style.display = 'none';
-    // })
 
     /**
      * Evento Mostrar NDVI
@@ -681,26 +652,9 @@ zuix.controller(function (cp) {
     var toast;
     if (agregar_campos_btn) {
       agregar_campos_btn.addEventListener("click", function () {
-        
-        
-
         // Nueva Geometria Campo
         document.getElementById('nuevo-campo-oc').show = true;
-
-        // // Toast
-        // // Clean the toast
-        // toast_step = 0;
-        // $("#toast-body").text("Indica el primer punto");
-        // toast = new bootstrap.Toast(toastLiveExample);
-        // toast.show();
-        // // Draw polygon
-        // draw.changeMode("draw_polygon");
-        // //Disable Siguiente btn
-        // next_btn.setAttribute("disabled", "");
-        // // Clean title
-        // $("#offcanvas-1-title").text("");
       });
-
       // Rellenar Campo #
     }
 
