@@ -630,26 +630,25 @@ zuix.controller(function (cp) {
       }
     }
 
-    const salir_btn = document.getElementById("salir-edicion-btn");
-    const next_btn = document.getElementById("agregar-campo-siguiente-btn");
+    // const salir_btn = document.getElementById("salir-edicion-btn");
+    // const next_btn = document.getElementById("agregar-campo-siguiente-btn");
 
-    salir_btn.addEventListener("click", () => {
-      salir_edit_mode();
-      var offcanvas = document.getElementById("offcanvasBottom");
-      offcanvas.classList.remove("show");
-    });
+    // salir_btn.addEventListener("click", () => {
+    //   salir_edit_mode();
+    //   var offcanvas = document.getElementById("offcanvasBottom");
+    //   offcanvas.classList.remove("show");
+    // });
 
-    next_btn.addEventListener("click", () => {
-      draw.changeMode("simple_select");
-    });
+    // next_btn.addEventListener("click", () => {
+    //   draw.changeMode("simple_select");
+    // });
+
+    var toast;
 
     /* Boton Agregar Campos */
     var agregar_campos_btn = document.getElementById("agregar-campos-btn");
-    
     document.getElementById("nuevo-campo-oc").map = map;
     document.getElementById("nuevo-campo-oc").draw = draw;
-    var toastLiveExample = document.getElementById("liveToast");
-    var toast;
     if (agregar_campos_btn) {
       agregar_campos_btn.addEventListener("click", function () {
         // Nueva Geometria Campo
@@ -658,60 +657,60 @@ zuix.controller(function (cp) {
       // Rellenar Campo #
     }
 
-    /* Guardar Campo ----------------------------------------*/
-    var guardar_btn = document.getElementById("guardar-campo-btn");
-    guardar_btn.addEventListener("click", () => {
-      var offcanvas = document.getElementById("offcanvasCampoForm");
-      offcanvas.classList.remove("show");
+    // /* Guardar Campo ----------------------------------------*/
+    // var guardar_btn = document.getElementById("guardar-campo-btn");
+    // guardar_btn.addEventListener("click", () => {
+    //   var offcanvas = document.getElementById("offcanvasCampoForm");
+    //   offcanvas.classList.remove("show");
 
-      nombre = $("#inputNombreCampo").val();
-      variedad = $("#variedad-input").val();
-      cultivo = $("#cultivo-btn").text();
-      id = $("#input-cultivo").val();
+    //   nombre = $("#inputNombreCampo").val();
+    //   variedad = $("#variedad-input").val();
+    //   cultivo = $("#cultivo-btn").text();
+    //   id = $("#input-cultivo").val();
 
-      campo_geojson = draw.getAll().features[0];
+    //   campo_geojson = draw.getAll().features[0];
 
-      console.log("GeoJSON", campo_geojson);
-      console.log("Guardar Campo '", nombre); //, "' con", cultivo, "variedad", variedad)
+    //   console.log("GeoJSON", campo_geojson);
+    //   console.log("Guardar Campo '", nombre); //, "' con", cultivo, "variedad", variedad)
 
-      campo_geojson.properties.hectareas =
-        Math.round((turf.area(campo_geojson) / 10000) * 100) / 100;
+    //   campo_geojson.properties.hectareas =
+    //     Math.round((turf.area(campo_geojson) / 10000) * 100) / 100;
 
-      campos_db.put(
-        {
-          _id: "campos_" + nombre,
-          nombre: nombre,
-          campo_geojson: campo_geojson,
-          lotes: [],
-        },
-        (err, result) => {
-          if (!err) {
-            console.log("Successfully posted a Campo!");
-          } else {
-            console.log(err);
-          }
-        }
-      );
+    //   campos_db.put(
+    //     {
+    //       _id: "campos_" + nombre,
+    //       nombre: nombre,
+    //       campo_geojson: campo_geojson,
+    //       lotes: [],
+    //     },
+    //     (err, result) => {
+    //       if (!err) {
+    //         console.log("Successfully posted a Campo!");
+    //       } else {
+    //         console.log(err);
+    //       }
+    //     }
+    //   );
 
-      salir_edit_mode();
-    });
+    //   salir_edit_mode();
+    // });
 
     /* Cerrar btn */
-    var offcanvas_paso_1_cerrar = document.getElementById("map-edit-btn");
-    offcanvas_paso_1_cerrar.addEventListener("click", function () {
-      /* Guardar */
-      salir_edit_mode();
-    });
+    // var offcanvas_paso_1_cerrar = document.getElementById("map-edit-btn");
+    // offcanvas_paso_1_cerrar.addEventListener("click", function () {
+    //   /* Guardar */
+    //   salir_edit_mode();
+    // });
 
-    var offcanvas_cultivo = document.getElementById("offcanvas-cultivo");
-    var bs_offcanvas_cultivo = new bootstrap.Offcanvas(offcanvas_cultivo);
+    // var offcanvas_cultivo = document.getElementById("offcanvas-cultivo");
+    // var bs_offcanvas_cultivo = new bootstrap.Offcanvas(offcanvas_cultivo);
 
-    offcanvas_cultivo.addEventListener("hide.bs.offcanvas", () => {
-      var offcanvas = document.getElementById("offcanvasCampoForm");
-      //offcanvas.setAttribute("show","")
-      var bsOffcanvas = new bootstrap.Offcanvas(offcanvas);
-      bsOffcanvas.show();
-    });
+    // offcanvas_cultivo.addEventListener("hide.bs.offcanvas", () => {
+    //   var offcanvas = document.getElementById("offcanvasCampoForm");
+    //   //offcanvas.setAttribute("show","")
+    //   var bsOffcanvas = new bootstrap.Offcanvas(offcanvas);
+    //   bsOffcanvas.show();
+    // });
 
     const salir_edit_mode = () => {
       // hide toast
