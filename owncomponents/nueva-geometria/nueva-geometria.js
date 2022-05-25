@@ -427,6 +427,7 @@ export class NuevaGeometria extends LitElement {
       </div>
 
       <input
+       class="d-none"
         type="file"
         id="kml_file_input"
         name="avatar"
@@ -435,6 +436,7 @@ export class NuevaGeometria extends LitElement {
       />
 
       <input
+       class="d-none"
         type="file"
         id="kmz_file_input"
         @change=${this.kmz_input_changed}
