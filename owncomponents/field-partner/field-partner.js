@@ -1,8 +1,9 @@
 import { LitElement, html } from "lit-element";
 
-export class OfflineTag extends LitElement{
+export class FieldPartner extends LitElement{
 	static properties = {
-	
+		map:{},
+		draw:{},
 	}
 
 	constructor(){
@@ -12,8 +13,11 @@ export class OfflineTag extends LitElement{
 	render(){
 		return html
 		`
+			<slot>
+
+			</slot>
 		`
 	}
 }
 
-customElements.define('offline-tag', OfflineTag);
+customElements.define('field-partner', FieldPartner);

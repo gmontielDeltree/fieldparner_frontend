@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit-element";
 
-export class OfflineTag extends LitElement{
+export class NotasOffcanvas extends LitElement{
 	static properties = {
 	
 	}
@@ -16,4 +16,4 @@ export class OfflineTag extends LitElement{
 	}
 }
 
-customElements.define('offline-tag', OfflineTag);
+customElements.define('notas-oc', NotasOffcanvas);

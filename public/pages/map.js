@@ -1,9 +1,5 @@
 //'use strict';
 
-import { Modal, Offcanvas, Toast, bootstrap } from "bootstrap.esm.min.js";
-import { map } from "lit/directives/map";
-import Tour from "shepherd.js/src/types/tour";
-
 zuix.controller(function (cp) {
   const zx = zuix; // shorthand
   let itemsList;
