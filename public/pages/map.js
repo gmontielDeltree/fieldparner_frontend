@@ -2,22 +2,12 @@
 
 zuix.controller(function (cp) {
   const zx = zuix; // shorthand
-  let itemsList;
-  // let map;
-  let cantidad_de_campos;
   let redraw_count = 0;
   var modo_edicion = "campo"; // o 'lote'
 
   var img_bucket_url =
     "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
-  var yourJWTToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ1NDczMjgzLCJleHAiOjE2NDgwNjUyODN9.zTdkovErL8Qo8LLDlKRcZ4kK1T53L2c3VpT6_Jq8qTE";
-  yourConfig = {
-    headers: {
-      Authorization: "Bearer " + yourJWTToken,
-    },
-  };
 
   var emptyGJ = {
     type: "FeatureCollection",

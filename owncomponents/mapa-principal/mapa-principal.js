@@ -1,14 +1,196 @@
 import { LitElement, html } from "lit-element";
+import { emptyGJ , touchEvent, layer_visibility} from "../helpers";
+import mapboxgl from "mapbox-gl";
+
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 export class MapaPrincipal extends LitElement {
-  static properties = {};
+  static properties = {
+    map: {},
+    draw: {},
+    campos: {}, //es el allDocs desde campos
+  };
 
   constructor() {
     super();
+    mapboxgl.accessToken =
+      "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
+  }
+
+  createRenderRoot() {
+    return this;
+  }
+
+  firstUpdated() {
+    this.map = new mapboxgl.Map({
+      container: "map",
+      style: "mapbox://styles/mapbox/satellite-streets-v11",
+      center: [-59.2965, -35.1923],
+      zoom: 12,
+      attributionControl: true,
+      preserveDrawingBuffer: false,
+    });
+
+    this.draw = new MapboxDraw({
+      displayControlsDefault: false,
+      // Select which mapbox-gl-draw control buttons to add to the map.
+      controls: {
+        polygon: false,
+        trash: false,
+      },
+      //defaultMode: 'draw_polygon'
+    });
+
+    //     this.map.on("render", () => {
+    //       this.map.resize();
+    //     });
+
+    //this.map.resize();
+
+    this.map.on("load", () => {
+      this.map.addControl(this.draw); // Sin controles
+      //tour();
+      this.map.addSource("campos", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      });
+      this.map.addSource("lotes", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      });
+
+      this.map.addLayer({
+        id: "campos",
+        type: "fill",
+        source: "campos",
+        layout: {
+          //"visibility": 'none'
+        },
+        paint: {
+          "fill-color": "red",
+          "fill-opacity": 0.4,
+          "fill-outline-color": "red",
+        },
+      });
+
+      this.map.addLayer(
+        {
+          id: "lotes",
+          type: "fill",
+          source: "lotes",
+          layout: {
+            visibility: "none",
+          },
+          paint: {
+            "fill-color": "green",
+            "fill-opacity": 0.9,
+            "fill-outline-color": "green",
+          },
+        },
+        "campos"
+      );
+
+      this.map.addLayer(
+        {
+          id: "campos_border",
+          type: "line",
+          source: "campos",
+          paint: {
+            "line-color": "rgba(255, 0, 0, 1)",
+            "line-width": 4,
+          },
+        },
+        "campos"
+      );
+
+      this.sendEvent("map-loaded", {map:this.map, draw:this.draw})
+      this._redraw_map();
+    });
+
+   
+
+    /** Mapbox handler para mostrar el offcanvas de detalles  'lotes', */
+    this.map.on(touchEvent, "campos", (e) => {
+      // NDVI not visible
+      console.log("Click en Campo", e.features[0]);
+
+      layer_visibility(this.map, "campos", false);
+      layer_visibility(this.map, "lotes", true);
+      layer_visibility(this.map, "campos_border", true);
+
+      // Fly to
+      this.map.fitBounds(turf.bbox(e.features[0]));
+      const campo_doc = e.features[0].properties;
+
+      // Event payload: campo_doc
+      this.sendEvent('ver-campo-detalles', { campo_id: campo_doc.id });
+
+    });
+  }
+
+  sendEvent = (name,details) => {
+    let event = new CustomEvent(name, {
+      detail: details,
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+
+  _redraw_map = () => {
+    let campos_source = this.map.getSource("campos");
+    console.log("CS", campos_source);
+    let campos_collection = {
+      type: "FeatureCollection",
+      features: [],
+    };
+    let lotes_source = this.map.getSource("lotes");
+    let lotes_collection = {
+      type: "FeatureCollection",
+      features: [],
+    };
+
+    campos_collection.features = this.campos.rows.map((campo) => {
+      let campo_geojson = campo.doc.campo_geojson;
+      campo_geojson.properties = {
+        id: campo.doc["_id"],
+        rev: campo.doc["_rev"],
+        nombre: campo.doc.nombre,
+        db_doc: JSON.stringify(campo.doc),
+      };
+      return campo_geojson;
+    });
+
+    // Puede set undefined si la base se carga antes que lo
+    // que renderiza por primera vez
+    console.log("Campos", campos_collection);
+    campos_source?.setData(campos_collection);
+
+    // Lotes
+    lotes_collection.features = this.campos.rows.map((campo) => {
+      // campo.doc.lotes
+      return campo.doc.lotes;
+    });
+    lotes_collection.features = lotes_collection.features.flat();
+    console.log("Set lotes internos DS", lotes_collection.features);
+    lotes_source?.setData(lotes_collection);
+    console.log("Redraw Campos", this.campos);
+  };
+
+  willUpdate(props) {
+    if (props.has("campos")) {
+      this._redraw_map();
+    }
   }
 
   render() {
-    return html``;
+    return html` <div id="map"></div> `;
   }
 }
 

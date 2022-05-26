@@ -7,15 +7,9 @@ export class CampoOffcanvas extends LitElement {
   static properties = {
     map: {},
     draw: {},
-    db: {},
-    _id: {},
+    campos_db: {},
     campo_doc: {},
-    campo_geojson: {},
-    nuevo_lote_callback: {},
-    borrar_lote_callback: {},
-    guardar_lote_callback: {},
     show_main: {},
-    nombre_lote: {},
     _detallesOffcanvas: {},
   };
 
@@ -49,7 +43,9 @@ export class CampoOffcanvas extends LitElement {
 
       let lote_geojson = e.detail.feature
       let nombre = e.detail.nombre
-      let thisCampoId = this.campo_doc.id
+      let thisCampoId = this.campo_doc["_id"]
+
+      console.log("THISSSSS",this.campo_doc)
 
       // Props adicionales del lote
       lote_geojson.properties.nombre = nombre
@@ -61,11 +57,11 @@ export class CampoOffcanvas extends LitElement {
       lote_geojson.id = this_lote_id;
       
 
-      campos_db.get(thisCampoId).then((doc) => {
+      this.campos_db.get(thisCampoId).then((doc) => {
         console.log("Lote GeoJSON", lote_geojson);
         doc.lotes.push(lote_geojson);
         // Save Lote en campo doc
-        campos_db.put(doc).then(()=>console.log("Lote Grabado"));
+        this.campos_db.put(doc).then(()=>console.log("Lote Grabado"));
       })
     })
 
@@ -173,7 +169,7 @@ export class CampoOffcanvas extends LitElement {
             .tipo='lote'
             .mapa=${this.map}
             ._draw=${this.draw} 
-            .campo_feature=${this.campo_geojson}
+.campo_feature=${this.campo_doc?.campo_geojson}
           ></nueva-geometria-ui>`
         : null}
     `;
