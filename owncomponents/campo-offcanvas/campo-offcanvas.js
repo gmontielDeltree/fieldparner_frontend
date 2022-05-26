@@ -169,7 +169,7 @@ export class CampoOffcanvas extends LitElement {
             .tipo='lote'
             .mapa=${this.map}
             ._draw=${this.draw} 
-.campo_feature=${this.campo_doc?.campo_geojson}
+            .campo_feature=${this.campo_doc?.campo_geojson}
           ></nueva-geometria-ui>`
         : null}
     `;

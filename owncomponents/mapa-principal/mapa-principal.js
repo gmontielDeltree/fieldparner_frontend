@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit-element";
-import { emptyGJ , touchEvent, layer_visibility} from "../helpers";
+import { emptyGJ, touchEvent, layer_visibility } from "../helpers";
 import mapboxgl from "mapbox-gl";
 
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -109,11 +109,9 @@ export class MapaPrincipal extends LitElement {
         "campos"
       );
 
-      this.sendEvent("map-loaded", {map:this.map, draw:this.draw})
+      this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
       this._redraw_map();
     });
-
-   
 
     /** Mapbox handler para mostrar el offcanvas de detalles  'lotes', */
     this.map.on(touchEvent, "campos", (e) => {
@@ -129,25 +127,24 @@ export class MapaPrincipal extends LitElement {
       const campo_doc = e.features[0].properties;
 
       // Event payload: campo_doc
-      this.sendEvent('ver-campo-detalles', { campo_id: campo_doc.id });
-
+      this.sendEvent("ver-campo-detalles", { campo_id: campo_doc.id });
     });
 
     this.map.on(touchEvent, "lotes", (e) => {
       console.log("Click en lotes Internos", e.features[0]);
       let { nombre, campo_parent_id } = e.features[0].properties;
-      this.sendEvent('ver-lote-detalles',{nombre:nombre,campo_parent_id})
+      this.sendEvent("ver-lote-detalles", { nombre: nombre, campo_parent_id });
     });
   }
 
-  sendEvent = (name,details) => {
+  sendEvent = (name, details) => {
     let event = new CustomEvent(name, {
       detail: details,
       bubbles: true,
       composed: true,
     });
     this.dispatchEvent(event);
-  }
+  };
 
   _redraw_map = () => {
     let campos_source = this.map.getSource("campos");
@@ -196,7 +193,37 @@ export class MapaPrincipal extends LitElement {
   }
 
   render() {
-    return html` <div id="map"></div> `;
+    return html`
+      <div id="map">
+        <div
+          data-ui-load="@lib/components/menu_overlay"
+          data-ui-context="menu-overlay"
+          class="boton-overlay"
+          id="elmas"
+          data-o-button-color="blue"
+        >
+          <div data-ui-field="items">
+            <!-- menu items list -->
+            <button
+              class="btn btn-primary mo-item"
+              id="agregar-campos-btn"
+              type="button"
+              @click=${()=>{this.sendEvent('nuevo-campo-click'), null}}
+            >
+              Agregar un Campo
+            </button>
+            <button
+              class="btn btn-primary mo-item"
+              id="nueva-nota-btn"
+              type="button"
+              @click=${()=>{this.sendEvent('nueva-nota-click'), null}}
+            >
+              Agregar una Nota
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
   }
 }
 

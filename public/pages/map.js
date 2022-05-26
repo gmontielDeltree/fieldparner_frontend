@@ -280,7 +280,6 @@ zuix.controller(function (cp) {
       console.log("Click en lotes Internos", e.features[0]);
       let { nombre, campo_parent_id } = e.features[0].properties;
 
-      document.getElementById("lote-oc").db = campos_db;
       document.getElementById("lote-oc").username = couch_username;
       document.getElementById("lote-oc").lote_nombre = nombre;
       document.getElementById("lote-oc").campo_id = campo_parent_id;

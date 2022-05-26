@@ -5,6 +5,7 @@ export class NuevoCampo extends LitElement {
     map: {},
     draw: {},
     show: {},
+    campos_db:{}
   };
 
   constructor() {
@@ -24,7 +25,7 @@ export class NuevoCampo extends LitElement {
       campo_geojson.properties.hectareas =
         Math.round((area(campo_geojson) / 10000) * 100) / 100;
 
-      campos_db.put(
+      this.campos_db.put(
         {
           _id: "campos_" + nombre,
           nombre: nombre,

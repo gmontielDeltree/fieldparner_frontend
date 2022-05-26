@@ -47,17 +47,22 @@ export class FieldPartner extends LitElement {
       });
     });
 
-    this.addEventListener('ver-lote-detalles',(e)=>{
-	document.getElementById('lote-oc').lote_nombre = e.detail.nombre;
-	document.getElementById('lote-oc').campo_id = e.detail.campo_parent_id;
-	document.getElementById('lote-oc').show()
+    this.addEventListener("ver-lote-detalles", (e) => {
+      document.getElementById("lote-oc").lote_nombre = e.detail.nombre;
+      document.getElementById("lote-oc").campo_id = e.detail.campo_parent_id;
+      document.getElementById("lote-oc").show();
     });
+
+    this.addEventListener("nuevo-campo-click", (e) => {
+      document.getElementById("nuevo-campo-oc").show = true;
+    });
+
+    this.addEventListener("nueva-nota-click", (e) => {});
 
     this.addEventListener("map-loaded", (e) => {
       this.map = e.detail.map;
       this.draw = e.detail.draw;
     });
-
 
     /* Redraw on Changes callback */
     this.campos_db
@@ -66,9 +71,9 @@ export class FieldPartner extends LitElement {
         live: true,
       })
       .on("change", () => {
-	this.campos_db
-	.allDocs({ include_docs: true })
-	.then((result) => (this.campos = result));
+        this.campos_db
+          .allDocs({ include_docs: true })
+          .then((result) => (this.campos = result));
       });
   }
 
@@ -93,8 +98,13 @@ export class FieldPartner extends LitElement {
         .campos_db=${this.campos_db}
       ></campo-offcanvas>
 
-      <lote-offcanvas id='lote-oc' ._db=${this.campos_db}></lote-offcanvas>
-      <slot></slot>
+      <lote-offcanvas id="lote-oc" ._db=${this.campos_db}></lote-offcanvas>
+      <nuevo-campo
+        id="nuevo-campo-oc"
+        .map=${this.map}
+        .draw=${this.draw}
+        .campos_db=${this.campos_db}
+      ></nuevo-campo>
     `;
   }
 }
