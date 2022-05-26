@@ -64,6 +64,9 @@ export class FieldPartner extends LitElement {
       this.draw = e.detail.draw;
     });
 
+    this.addEventListener("ver-lista-campos",(e)=>{
+      document.getElementById('lista-de-campos').show()
+    })
     /* Redraw on Changes callback */
     this.campos_db
       .changes({
@@ -105,6 +108,8 @@ export class FieldPartner extends LitElement {
         .draw=${this.draw}
         .campos_db=${this.campos_db}
       ></nuevo-campo>
+
+      <lista-de-campos id='lista-de-campos' .campos=${this.campos}></lista-de-campos>
     `;
   }
 }
