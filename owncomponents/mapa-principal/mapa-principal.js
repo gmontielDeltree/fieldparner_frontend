@@ -132,6 +132,12 @@ export class MapaPrincipal extends LitElement {
       this.sendEvent('ver-campo-detalles', { campo_id: campo_doc.id });
 
     });
+
+    this.map.on(touchEvent, "lotes", (e) => {
+      console.log("Click en lotes Internos", e.features[0]);
+      let { nombre, campo_parent_id } = e.features[0].properties;
+      this.sendEvent('ver-lote-detalles',{nombre:nombre,campo_parent_id})
+    });
   }
 
   sendEvent = (name,details) => {

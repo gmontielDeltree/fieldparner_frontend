@@ -47,10 +47,17 @@ export class FieldPartner extends LitElement {
       });
     });
 
+    this.addEventListener('ver-lote-detalles',(e)=>{
+	document.getElementById('lote-oc').lote_nombre = e.detail.nombre;
+	document.getElementById('lote-oc').campo_id = e.detail.campo_parent_id;
+	document.getElementById('lote-oc').show()
+    });
+
     this.addEventListener("map-loaded", (e) => {
       this.map = e.detail.map;
       this.draw = e.detail.draw;
     });
+
 
     /* Redraw on Changes callback */
     this.campos_db
@@ -85,6 +92,8 @@ export class FieldPartner extends LitElement {
         .draw=${this.draw}
         .campos_db=${this.campos_db}
       ></campo-offcanvas>
+
+      <lote-offcanvas id='lote-oc' ._db=${this.campos_db}></lote-offcanvas>
       <slot></slot>
     `;
   }

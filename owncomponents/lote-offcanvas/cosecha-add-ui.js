@@ -5,7 +5,6 @@ import { Modal, Offcanvas } from 'bootstrap'
 
 export class CosechaAddUI extends LitElement {
     static properties = {
-        lote_id: {},
         campo_id: {},
         lote_nombre: {},
         _steps_elements: {},

@@ -109,13 +109,13 @@ export class CampoOffcanvas extends LitElement {
   cerrar_modo() {
     console.log("Cerrar Modo Campo");
     // Show Campos
-    this.map.setLayoutProperty("lotes", "visibility", "visible");
+    this.map.setLayoutProperty("campos", "visibility", "visible");
     // Hide Lotes
-    this.map.setLayoutProperty("lotes_internos", "visibility", "none");
+    this.map.setLayoutProperty("lotes", "visibility", "none");
     // Hide NDVI
     this.map.setLayoutProperty("ndvi-layer", "visibility", "none");
     // Bordes
-    this.map.setLayoutProperty("lotes_border", "visibility", "none");
+    this.map.setLayoutProperty("campos_border", "visibility", "visible");
   }
 
   hide() {

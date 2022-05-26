@@ -61,8 +61,6 @@ const motivos_2_str = motivos => {
 
 export class LoteOffcanvas extends LitElement {
     static properties = {
-        db: {},
-        lote_id: {},
         campo_id: {},
         username: {},
         lote_nombre: {},
@@ -771,7 +769,7 @@ export class LoteOffcanvas extends LitElement {
             </div>
         </div>
 
-        <cosecha-add-ui id='cosecha-add-el' lote_id=${this.lote_id}></cosecha-add-ui>
+        <cosecha-add-ui id='cosecha-add-el' ></cosecha-add-ui>
 
         <siembra-add-ui id='siembra-add-el'></siembra-add-ui>
         <!-- <nueva-geometria-ui id='nueva-geometria-el'></nueva-geometria-ui> -->
