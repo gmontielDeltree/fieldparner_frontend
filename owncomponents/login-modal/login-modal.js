@@ -1,6 +1,5 @@
 import { LitElement, html } from "lit-element";
 import { Modal } from "bootstrap";
-import createAuth0Client from '@auth0/auth0-spa-js';
 import './auth0-login-button.js'
 
 export class LoginModal extends LitElement {

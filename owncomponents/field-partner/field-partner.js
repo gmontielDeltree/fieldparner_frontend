@@ -14,6 +14,7 @@ export class FieldPartner extends LitElement {
     user: {},
     auth0Client: {},
     logged_in: {},
+    loading: {}
   };
 
   constructor() {
@@ -23,6 +24,7 @@ export class FieldPartner extends LitElement {
     this.logged_in = false;
     this.user = {}
     this.user.name = "demo";
+    this.loading = true;
    
 
     this.crear_dbs(this.user)
@@ -59,6 +61,9 @@ export class FieldPartner extends LitElement {
     });
 
     // Login
+    this.addEventListener("login-click", () => {
+      this.loginet();
+    });
   }
 
   createRenderRoot() {
@@ -66,17 +71,6 @@ export class FieldPartner extends LitElement {
   }
 
   async firstUpdated() {
-    await this.buildAuth0Client();
-    await this.handleRedirectCallback();
-
-    this.campos_db
-      .allDocs({ include_docs: true })
-      .then((result) => (this.campos = result));
-
-    this.addEventListener("login-click", () => {
-      this.loginet();
-    });
-
     let sitio = window.location.hostname;
 
     if (sitio === "agrotools.netlify.app") {
@@ -84,8 +78,16 @@ export class FieldPartner extends LitElement {
     } else {
       // Development - Especial flow
       // Logged in
+      
       // Default Databases
     }
+
+    await this.buildAuth0Client();
+    await this.handleRedirectCallback();
+    // Campos 
+    this.campos_db
+      .allDocs({ include_docs: true })
+      .then((result) => (this.campos = result));
   }
 
   /* AUTH0 Stuff */
@@ -96,7 +98,7 @@ export class FieldPartner extends LitElement {
     });
   }
 
-  /** En esta funcion occurre la authenticacion y creacion de DBs */
+  /** En esta funcion ocurre la authenticacion y creacion de DBs */
   async handleRedirectCallback() {
     const isAuthenticated = await this.auth0Client.isAuthenticated();
 
@@ -138,7 +140,9 @@ export class FieldPartner extends LitElement {
 
   /* Bases de Datos */
   crear_dbs(user) {
-    let username = user.name.replaceAll(' ', '_');
+    let username = user.name.replaceAll(' ', '_').toLowerCase();
+
+    // Nombres validos solo en minusculas
     this.campos_db = new PouchDB("campos_" + username);
     let campos_db_uri = base_url + "campos_" + username;
     console.log('campos_db_uri', campos_db_uri)

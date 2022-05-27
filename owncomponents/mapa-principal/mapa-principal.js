@@ -159,7 +159,7 @@ export class MapaPrincipal extends LitElement {
       features: [],
     };
 
-    campos_collection.features = this.campos.rows.map(({doc}) => {
+    campos_collection.features = this.campos?.rows.map(({doc}) => {
       let campo_geojson = {...doc.campo_geojson}
       campo_geojson.properties = {
         id: doc["_id"],
@@ -168,7 +168,7 @@ export class MapaPrincipal extends LitElement {
         db_doc: "JSON.stringify(doc)",
       };
       return campo_geojson;
-    });
+    }) || [];
 
     // Puede set undefined si la base se carga antes que lo
     // que renderiza por primera vez
@@ -176,10 +176,10 @@ export class MapaPrincipal extends LitElement {
     campos_source?.setData(campos_collection);
 
     // Lotes
-    lotes_collection.features = this.campos.rows.map((campo) => {
+    lotes_collection.features = this.campos?.rows.map((campo) => {
       // campo.doc.lotes
       return campo.doc.lotes;
-    });
+    }) || [];
     lotes_collection.features = lotes_collection.features.flat();
     console.log("Set lotes internos DS", lotes_collection.features);
     lotes_source?.setData(lotes_collection);
