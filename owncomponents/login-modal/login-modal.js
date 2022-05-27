@@ -10,21 +10,9 @@ export class LoginModal extends LitElement {
     authenticated:{},
     username:{}
   };
+
   constructor() {
     super();
-
-    this.addEventListener('auth0-cliet-build', async (e)=>{
-        let c = e.detail.auth0Client
-        console.log("AUTH0 Client", e.detail.auth0Client)
-        let isauth = await c.isAuthenticated();
-        console.log("isa",isauth)
-        if(isauth){
-            let u = await c.getUser()
-            this.username = u.name
-            console.log("El usuario esta auth:",this.username)
-        }
-
-    })
   }
 
   //createRenderRoot() {
@@ -48,6 +36,15 @@ export class LoginModal extends LitElement {
       }
     }
   }
+
+sendEvent = (name,details) => {
+  let event = new CustomEvent(name, {
+    detail: details,
+    bubbles: true,
+    composed: true,
+  });
+  this.dispatchEvent(event);
+}
 
   render() {
     return html`
@@ -74,8 +71,7 @@ export class LoginModal extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-              
-                <auth0-login domain='dev-xa9-5ghc.us.auth0.com' clientid='gQx1JtypOHAcCgGBr0ukd3YDQM5k8FtW'></auth0-login>
+             <button @click=${()=>this.sendEvent('login-click',null)} > Sign In </button> 
             </div>
             <div class="modal-footer"></div>
           </div>
