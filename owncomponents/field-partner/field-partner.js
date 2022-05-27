@@ -26,7 +26,6 @@ export class FieldPartner extends LitElement {
     this.user.name = "demo";
     this.loading = true;
    
-
     this.crear_dbs(this.user)
 
     /* Clicks en varios botones */
@@ -106,11 +105,13 @@ export class FieldPartner extends LitElement {
 
     if (isAuthenticated) {
       /* Cargar el ususario y las bases apropiadas*/
+      console.log("User is Authenticated")
       this.user = await this.auth0Client.getUser();
       this.crear_dbs(this.user)
     }
 
     if (!isAuthenticated) {
+      console.log("User is NOT Authenticated")
       const query = window.location.search;
       if (query.includes("code=") && query.includes("state=")) {
         await this.auth0Client.handleRedirectCallback();
