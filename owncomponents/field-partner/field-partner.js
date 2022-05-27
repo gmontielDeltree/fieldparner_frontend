@@ -10,10 +10,12 @@ export class FieldPartner extends LitElement {
     campos_db: {},
     remote_campos_db: {},
     username: {},
+    login: {},
   };
 
   constructor() {
     super();
+    this.login = false;
     this.username = "demo";
     this.campos_db = new PouchDB("campos_" + this.username);
     let campos_db_uri = base_url + "campos_" + this.username;
@@ -64,9 +66,9 @@ export class FieldPartner extends LitElement {
       this.draw = e.detail.draw;
     });
 
-    this.addEventListener("ver-lista-campos",(e)=>{
-      document.getElementById('lista-de-campos').show()
-    })
+    this.addEventListener("ver-lista-campos", (e) => {
+      document.getElementById("lista-de-campos").show();
+    });
     /* Redraw on Changes callback */
     this.campos_db
       .changes({
@@ -88,6 +90,14 @@ export class FieldPartner extends LitElement {
     this.campos_db
       .allDocs({ include_docs: true })
       .then((result) => (this.campos = result));
+
+    let sitio = window.location.hostname;
+
+    if (sitio === "agrotools.netlify.app") {
+      // 'Production'
+    } else {
+      // Development
+    }
   }
 
   render() {
@@ -109,7 +119,12 @@ export class FieldPartner extends LitElement {
         .campos_db=${this.campos_db}
       ></nuevo-campo>
 
-      <lista-de-campos id='lista-de-campos' .campos=${this.campos}></lista-de-campos>
+      <lista-de-campos
+        id="lista-de-campos"
+        .map=${this.map}
+        .campos=${this.campos}
+      ></lista-de-campos>
+      <login-modal id="login-modal" .show=${!this.login}></login-modal>
     `;
   }
 }

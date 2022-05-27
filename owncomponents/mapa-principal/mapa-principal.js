@@ -159,13 +159,13 @@ export class MapaPrincipal extends LitElement {
       features: [],
     };
 
-    campos_collection.features = this.campos.rows.map((campo) => {
-      let campo_geojson = campo.doc.campo_geojson;
+    campos_collection.features = this.campos.rows.map(({doc}) => {
+      let campo_geojson = {...doc.campo_geojson}
       campo_geojson.properties = {
-        id: campo.doc["_id"],
-        rev: campo.doc["_rev"],
-        nombre: campo.doc.nombre,
-        db_doc: JSON.stringify(campo.doc),
+        id: doc["_id"],
+        rev: doc["_rev"],
+        nombre: doc.nombre,
+        db_doc: "JSON.stringify(doc)",
       };
       return campo_geojson;
     });

@@ -1,29 +1,33 @@
 import { LitElement, html } from "lit";
-import area from '@turf/area'
+import area from "@turf/area";
 export class NuevoCampo extends LitElement {
   static properties = {
     map: {},
     draw: {},
     show: {},
-    campos_db:{}
+    campos_db: {},
   };
 
   constructor() {
     super();
     this.show = false;
+    
     this.addEventListener("cerrargeometria", (e) => {
       console.log("cerrar_nueva_geometria");
       this.show = false;
     });
+
     this.addEventListener("guardargeometria", (e) => {
       console.log("guardar_nueva_geometria", e.detail.feature);
       this.show = false;
 
-      let campo_geojson = e.detail.feature
-      let nombre = e.detail.nombre
+      let campo_geojson = e.detail.feature;
+      let nombre = e.detail.nombre;
 
       campo_geojson.properties.hectareas =
         Math.round((area(campo_geojson) / 10000) * 100) / 100;
+
+      console.log("TIENE HAS", campo_geojson);
 
       this.campos_db.put(
         {
