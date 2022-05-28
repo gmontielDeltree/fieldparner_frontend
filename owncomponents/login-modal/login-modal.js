@@ -1,3 +1,7 @@
+/**Es importante tener en cuenta las animaciones cuando se muestran / ocultan
+ * rapidamente los modales, puesto que no se ejecuta el ocultamiento si aun no termina
+ * el "show"
+ */
 import { LitElement, html } from "lit-element";
 import { Modal } from "bootstrap";
 
