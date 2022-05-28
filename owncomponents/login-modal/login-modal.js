@@ -31,11 +31,11 @@ export class LoginModal extends LitElement {
   willUpdate(props) {
     
     if (props.has("show")) {
-      console.log("WU",this.show)
+      console.log("WU",this.show,this._modal)
       if (this.show) {
         this._modal?.show(); //La primera vez _modal no esta definido
       } else {
-        this._modal?.hide();
+        this._modal.hide();
       }
     }
   }
