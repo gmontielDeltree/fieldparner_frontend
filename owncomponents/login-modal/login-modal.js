@@ -52,7 +52,7 @@ sendEvent = (name,details) => {
   render() {
     return html`
       <div
-        class="modal fade"
+        class="modal"
         id="login-modal"
         data-bs-backdrop="static"
         data-bs-keyboard="false"
