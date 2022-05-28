@@ -16,17 +16,17 @@ export class LoadingModal extends LitElement {
   //}
 
   firstUpdated() {
-    console.log("FU", this.show);
     this._modal = new Modal(this.shadowRoot.getElementById("loading-modal"));
     if (this.show) {
       this._modal.show();
+    }else{
+      this._modal.hide();
     }
   }
 
   /** willUpdate pasa antes que firstUpdatED */
   willUpdate(props) {
     if (props.has("show")) {
-      console.log("WU", this.show);
       if (this.show) {
         this._modal?.show(); //La primera vez _modal no esta definido
       } else {

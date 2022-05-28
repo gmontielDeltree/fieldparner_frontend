@@ -1,6 +1,5 @@
 import { LitElement, html } from "lit-element";
 import { Modal } from "bootstrap";
-import './auth0-login-button.js'
 
 export class LoginModal extends LitElement {
   static properties = {
@@ -23,6 +22,8 @@ export class LoginModal extends LitElement {
     this._modal = new Modal(this.shadowRoot.getElementById("login-modal"));
     if(this.show){
       this._modal.show()
+    }else{
+      this._modal.hide()
     }
   }
 
