@@ -3,6 +3,7 @@ import PouchDb from "pouchdb";
 import { base_url } from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
 import { TouchPitchHandler } from "mapbox-gl";
+import "../loading-modal/loading-modal.js"
 
 export class FieldPartner extends LitElement {
   static properties = {
@@ -14,7 +15,7 @@ export class FieldPartner extends LitElement {
     user: {},
     auth0Client: {},
     logged_in: {},
-    loading: {}
+    loading: {},
   };
 
   constructor() {
@@ -22,11 +23,11 @@ export class FieldPartner extends LitElement {
 
     /* Sensible Defaults */
     this.logged_in = false;
-    this.user = {}
+    this.user = {};
     this.user.name = "demo";
     this.loading = true;
-   
-    this.crear_dbs(this.user)
+
+    this.crear_dbs(this.user);
 
     /* Clicks en varios botones */
     this.addEventListener("ver-campo-detalles", (e) => {
@@ -52,6 +53,8 @@ export class FieldPartner extends LitElement {
     this.addEventListener("map-loaded", (e) => {
       this.map = e.detail.map;
       this.draw = e.detail.draw;
+      // Cuando se carga el mapa considero que terminó la carga
+      this.loading = false;
     });
 
     /* Click en ver lista de campos */
@@ -74,19 +77,26 @@ export class FieldPartner extends LitElement {
 
     if (sitio === "agrotools.netlify.app") {
       // 'Production' - Normal flow
+      console.log("Normal Flow - AUTH Flow")
+      await this.buildAuth0Client();
+      await this.handleRedirectCallback();
+      // Campos
+      this.campos_db
+        .allDocs({ include_docs: true })
+        .then((result) => (this.campos = result));
     } else {
       // Development - Especial flow
+      console.log("Especial Development Flow - Demo User")
       // Logged in
-      
+      this.logged_in = true;
       // Default Databases
+      // Campos
+      this.campos_db
+        .allDocs({ include_docs: true })
+        .then((result) => (this.campos = result));
     }
 
-    await this.buildAuth0Client();
-    await this.handleRedirectCallback();
-    // Campos 
-    this.campos_db
-      .allDocs({ include_docs: true })
-      .then((result) => (this.campos = result));
+    console.log("FU ENDDE")
   }
 
   /* AUTH0 Stuff */
@@ -105,13 +115,13 @@ export class FieldPartner extends LitElement {
 
     if (isAuthenticated) {
       /* Cargar el ususario y las bases apropiadas*/
-      console.log("User is Authenticated")
+      console.log("User is Authenticated");
       this.user = await this.auth0Client.getUser();
-      this.crear_dbs(this.user)
+      this.crear_dbs(this.user);
     }
 
     if (!isAuthenticated) {
-      console.log("User is NOT Authenticated")
+      console.log("User is NOT Authenticated");
       const query = window.location.search;
       if (query.includes("code=") && query.includes("state=")) {
         await this.auth0Client.handleRedirectCallback();
@@ -141,12 +151,12 @@ export class FieldPartner extends LitElement {
 
   /* Bases de Datos */
   crear_dbs(user) {
-    let username = user.name.replaceAll(' ', '_').toLowerCase();
+    let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Nombres validos solo en minusculas
     this.campos_db = new PouchDB("campos_" + username);
     let campos_db_uri = base_url + "campos_" + username;
-    console.log('campos_db_uri', campos_db_uri)
+    console.log("campos_db_uri", campos_db_uri);
     this.remote_campos_db = new PouchDB(campos_db_uri);
 
     this.campos_db
@@ -207,6 +217,7 @@ export class FieldPartner extends LitElement {
         .campos=${this.campos}
       ></lista-de-campos>
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
+      <loading-modal .show=${this.loading}></loading-modal>
     `;
   }
 }

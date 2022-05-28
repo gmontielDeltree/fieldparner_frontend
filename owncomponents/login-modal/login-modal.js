@@ -19,17 +19,20 @@ export class LoginModal extends LitElement {
   //}
 
   firstUpdated() {
+    console.log("FU", this.show)
     this._modal = new Modal(this.shadowRoot.getElementById("login-modal"));
-    this._modal.show();
-    this.show = true
-    console.log("MODAL DOE");
-   
+    if(this.show){
+      this._modal.show()
+    }
   }
 
+  /** willUpdate pasa antes que firstUpdatED */
   willUpdate(props) {
+    
     if (props.has("show")) {
+      console.log("WU",this.show)
       if (this.show) {
-        this._modal?.show();
+        this._modal?.show(); //La primera vez _modal no esta definido
       } else {
         this._modal?.hide();
       }
@@ -48,7 +51,7 @@ sendEvent = (name,details) => {
   render() {
     return html`
       <div
-        class="modal fade show"
+        class="modal fade"
         id="login-modal"
         data-bs-backdrop="static"
         data-bs-keyboard="false"
