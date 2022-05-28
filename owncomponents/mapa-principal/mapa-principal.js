@@ -1,8 +1,78 @@
 import { LitElement, html } from "lit-element";
 import { emptyGJ, touchEvent, layer_visibility } from "../helpers";
 import mapboxgl from "mapbox-gl";
+import cultivos from './cultivos.json'
 
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
+
+/** Modifica 'features' agregado color y cultivo a las 'properties'
+ *  basado en las actividades
+ */
+const colorear_lotes = (features) => {
+  // features[].properties.actividades
+  // Para cada lote
+  features.map(({properties}) => {
+    if('actividades' in properties){
+      let cultivo = tiene_cultivo_este_lote(properties.actividades)
+      let color = cultivo_to_color(cultivo)
+      properties.cultivo = cultivo
+      properties.color = color
+    }else{
+      properties.cultivo = "Cultivo Desconocido"
+      properties.color = "grey"
+    }
+  })
+
+}
+
+const cultivo_to_color = (cultivo) => {
+  if(cultivo === 'Barbecho'){
+    return 'grey';
+  }else if(cultivo === "Cultivo Desconocido"){
+    return 'green';
+  }
+
+  for (const cultivo_map in cultivos) {
+    if (Object.hasOwnProperty.call(cultivos, cultivo_map)) {
+      const element = cultivos[cultivo_map];
+      if(element.nombre === cultivo){
+         return element.color
+      }
+    }
+  }
+
+  // Custom Colors
+
+  return 'blue'
+}
+
+const tiene_cultivo_este_lote = (actividades) => {
+  /**
+   * Es un array que contiene todas las actividades historicas en el lote
+   */
+
+  // Filtrar Cosechas
+  let cosechas = actividades.findIndex((a) => a.tipo === 'cosechas')
+
+  // Filtrar Siembras
+  let siembras = actividades.findIndex((a) => a.tipo === 'siembra')
+
+  if (siembras > -1) {
+      if (cosechas > -1) {
+          if (siembras < cosechas) {
+              // Ultima evento es siembra
+              return actividades[siembras].detalles.cultivo
+          } else {
+              return "Barbecho"
+          }
+      } else {
+          // No hay cosechas
+          return actividades[siembras].detalles.cultivo
+      }
+  } else {
+      return "Cultivo Desconocido"
+  }
+}
 
 export class MapaPrincipal extends LitElement {
   static properties = {
@@ -88,9 +158,9 @@ export class MapaPrincipal extends LitElement {
             visibility: "none",
           },
           paint: {
-            "fill-color": "green",
+            "fill-color": ['get', 'color'],
             "fill-opacity": 0.9,
-            "fill-outline-color": "green",
+            "fill-outline-color": ['get', 'color'],
           },
         },
         "campos"
@@ -181,6 +251,9 @@ export class MapaPrincipal extends LitElement {
       return campo.doc.lotes;
     }) || [];
     lotes_collection.features = lotes_collection.features.flat();
+
+    colorear_lotes(lotes_collection.features)
+
     console.log("Set lotes internos DS", lotes_collection.features);
     lotes_source?.setData(lotes_collection);
     console.log("Redraw Campos", this.campos);
