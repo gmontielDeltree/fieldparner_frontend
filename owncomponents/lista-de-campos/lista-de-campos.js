@@ -37,6 +37,7 @@ export class ListaDeCampos extends LitElement {
       center: centroid(feature).geometry.coordinates,
       zoom: 10,
     })
+    this._detallesOffcanvas.hide()
   }
 
   render() {
