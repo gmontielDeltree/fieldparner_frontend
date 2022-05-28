@@ -35,7 +35,7 @@ export class LoginModal extends LitElement {
       if (this.show) {
         this._modal?.show(); //La primera vez _modal no esta definido
       } else {
-        this._modal.hide();
+        this._modal?.hide();
       }
     }
   }
@@ -66,15 +66,9 @@ sendEvent = (name,details) => {
               <h5 class="modal-title" id="staticBackdropLabel">
                 Agrotools SignIn
               </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
             </div>
             <div class="modal-body mx-auto">
-             <button @click=${()=>this.sendEvent('login-click',null)} > Sign In </button> 
+             <button class="btn btn-success" @click=${()=>this.sendEvent('login-click',null)} > Sign In </button> 
             </div>
             <div class="modal-footer"></div>
           </div>
