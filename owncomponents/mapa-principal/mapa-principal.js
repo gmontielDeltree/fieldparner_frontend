@@ -1,20 +1,19 @@
 import { LitElement, html } from "lit-element";
 import { emptyGJ, touchEvent, layer_visibility } from "../helpers";
 import mapboxgl from "mapbox-gl";
-import cultivos from './cultivos.json'
 
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 /** Modifica 'features' agregado color y cultivo a las 'properties'
  *  basado en las actividades
  */
-const colorear_lotes = (features) => {
+const colorear_lotes = (features, cultivos) => {
   // features[].properties.actividades
   // Para cada lote
   features.map(({properties}) => {
     if('actividades' in properties){
       let cultivo = tiene_cultivo_este_lote(properties.actividades)
-      let color = cultivo_to_color(cultivo)
+      let color = cultivo_to_color(cultivo, cultivos)
       properties.cultivo = cultivo
       properties.color = color
     }else{
@@ -25,7 +24,7 @@ const colorear_lotes = (features) => {
 
 }
 
-const cultivo_to_color = (cultivo) => {
+const cultivo_to_color = (cultivo, cultivos) => {
   if(cultivo === 'Barbecho'){
     return 'grey';
   }else if(cultivo === "Cultivo Desconocido"){
@@ -48,7 +47,7 @@ const cultivo_to_color = (cultivo) => {
 
 const tiene_cultivo_este_lote = (actividades) => {
   /**
-   * Es un array que contiene todas las actividades historicas en el lote
+   * Es un array (Ordenado) que contiene todas las actividades historicas en el lote
    */
 
   // Filtrar Cosechas
@@ -79,6 +78,7 @@ export class MapaPrincipal extends LitElement {
     map: {},
     draw: {},
     campos: {}, //es el allDocs desde campos
+    settings: {},
   };
 
   constructor() {
@@ -252,7 +252,7 @@ export class MapaPrincipal extends LitElement {
     }) || [];
     lotes_collection.features = lotes_collection.features.flat();
 
-    colorear_lotes(lotes_collection.features)
+    colorear_lotes(lotes_collection.features, this.settings?.user_cultivos)
 
     console.log("Set lotes internos DS", lotes_collection.features);
     lotes_source?.setData(lotes_collection);

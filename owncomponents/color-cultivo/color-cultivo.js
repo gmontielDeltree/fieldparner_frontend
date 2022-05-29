@@ -1,12 +1,11 @@
-import { LitElement, html , unsafeCSS} from "lit-element";
+import { LitElement, html, unsafeCSS } from "lit-element";
 import { Offcanvas } from "bootstrap";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 
 export class ColorCultivo extends LitElement {
   static properties = {
-      _detallesOffcanvas:{},
-      cultivos:{},
-      show:{}
+    _detallesOffcanvas: {},
+    cultivos: {},
   };
   constructor() {
     super();
@@ -18,11 +17,12 @@ export class ColorCultivo extends LitElement {
   //}
 
   firstUpdated() {
-    this._detallesOffcanvas = new Offcanvas(this.shadowRoot.getElementById('colores-settings-oc'))
-
+    this._detallesOffcanvas = new Offcanvas(
+      this.shadowRoot.getElementById("colores-settings-oc")
+    );
   }
 
-  willUpdate(props){
+  willUpdate(props) {
     //   if(props.has('show')){
     //     if(this.show){
     //         this._detallesOffcanvas?.show()
@@ -32,24 +32,37 @@ export class ColorCultivo extends LitElement {
     //   }
   }
 
-  show(){
-    this._detallesOffcanvas?.show()
+  show() {
+    this._detallesOffcanvas?.show();
   }
 
+  update_color_settings(color,key){
+    this.cultivos[key].color = color
+    this.sendEvent('save-settings',null)
+    
+  }
+
+  sendEvent = (name, details) => {
+    let event = new CustomEvent(name, {
+      detail: details,
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  };
+
   render() {
-    const item = (name,color) => {
+    const item = (name, color, key) => {
       return html`<a
         href="#"
-        class="list-group-item list-group-item-action bg-primary text-light"
+        class="list-group-item list-group-item-action bg-light row"
         aria-current="true"
       >
-        <div class="d-flex w-100 justify-content-between">
-          <h5 class="mb-1">${name}</h5>
-          <small class="small">${color}</small>
-        </div>
-        <p class="mb-1"></p>
-        <small></small>
-      </a>`;
+     <div class='row'>
+          <label for="exampleColorInput" class="form-label col-10 col-form-label">${name}</label>
+          <input type="color" class="form-control form-control-color col-2" @change=${(e)=>this.update_color_settings(e.target.value,key)} id="exampleColorInput" value=${color} title="Choose your color">
+     </div>
+               </a>`;
     };
 
     let offcanvas_html = html`<div
@@ -59,7 +72,7 @@ export class ColorCultivo extends LitElement {
       aria-labelledby="offcanvasLabel"
     >
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasLabel">Color Cultivo</h5>
+        <h5 class="offcanvas-title" id="offcanvasLabel">Color de Cultivos</h5>
         <button
           type="button"
           @click=${() => {
@@ -72,12 +85,11 @@ export class ColorCultivo extends LitElement {
       </div>
       <div class="offcanvas-body">
         <div class="list-group">
-          ${this.cultivos?.map((cultivo) =>
-            item(
-              cultivo.nombre,
-              cultivo.color,
-            )
-          )}
+          ${this.cultivos
+            ? Object.entries(this.cultivos).map(([key, cultivo]) =>
+                item(cultivo.nombre, cultivo.color, key)
+              )
+            : null}
         </div>
       </div>
     </div>`;

@@ -3,8 +3,10 @@ import PouchDb from "pouchdb";
 import { base_url } from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
 import { TouchPitchHandler } from "mapbox-gl";
-import "../loading-modal/loading-modal.js"
-import "../color-cultivo/color-cultivo.js"
+import "../loading-modal/loading-modal.js";
+import "../color-cultivo/color-cultivo.js";
+import cultivos_default from "./cultivos.json";
+import uuid4 from "uuid4";
 
 export class FieldPartner extends LitElement {
   static properties = {
@@ -17,6 +19,7 @@ export class FieldPartner extends LitElement {
     auth0Client: {},
     logged_in: {},
     loading: {},
+    settings: {},
   };
 
   constructor() {
@@ -62,12 +65,16 @@ export class FieldPartner extends LitElement {
     this.addEventListener("ver-lista-campos", (e) => {
       document.getElementById("lista-de-campos").show();
     });
-    
+
     /* Click en ver lista de campos */
     this.addEventListener("ver-colores-cultivos", (e) => {
-      console.log("SHOWWWWW")
+      console.log("SHOWWWWW");
       document.getElementById("colores-cultivos").show();
     });
+
+    this.addEventListener('save-settings',(e)=>{
+      this.campos_db.put(this.settings)
+    })
 
     // Login
     this.addEventListener("login-click", () => {
@@ -84,26 +91,22 @@ export class FieldPartner extends LitElement {
 
     if (sitio === "agrotools.netlify.app") {
       // 'Production' - Normal flow
-      console.log("Normal Flow - AUTH Flow")
+      console.log("Normal Flow - AUTH Flow");
       await this.buildAuth0Client();
       await this.handleRedirectCallback();
       // Campos
-      this.campos_db
-        .allDocs({ include_docs: true })
-        .then((result) => (this.campos = result));
+      this.load_campos_y_settings()
     } else {
       // Development - Especial flow
-      console.log("Especial Development Flow - Demo User")
+      console.log("Especial Development Flow - Demo User");
       // Logged in
       this.logged_in = true;
       // Default Databases
       // Campos
-      this.campos_db
-        .allDocs({ include_docs: true })
-        .then((result) => (this.campos = result));
+      this.load_campos_y_settings()
     }
 
-    console.log("FU ENDDE")
+    console.log("FU ENDDE");
   }
 
   /* AUTH0 Stuff */
@@ -156,7 +159,7 @@ export class FieldPartner extends LitElement {
   }
   /**** FIN AUTH0 Stuff */
 
-  /* Bases de Datos */
+  // #region Bases de Datos
   crear_dbs(user) {
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
@@ -184,6 +187,21 @@ export class FieldPartner extends LitElement {
         // totally unhandled error (shouldn't happen)
       });
 
+    /** Init Settings */
+    this.campos_db
+      .get("settings")
+      .then((doc) => {
+        console.info("Settings Loaded", doc);
+        this.settings = doc;
+      })
+      .catch((e) => {
+        console.log("Settings error", e);
+        if (e.reason === "missing") {
+          console.log("No existe 'Settings'");
+          this.init_settings();
+        }
+      });
+
     /* Redraw on cambios en campos_db */
     this.campos_db
       .changes({
@@ -191,17 +209,45 @@ export class FieldPartner extends LitElement {
         live: true,
       })
       .on("change", () => {
-        this.campos_db
-          .allDocs({ include_docs: true })
-          .then((result) => (this.campos = result));
+        this.load_campos_y_settings();
       });
   }
 
+  /** Crea el objeto settings y lo graba en la db */
+  init_settings() {
+    let settings_doc = {
+      _id: "settings",
+      tipo: "settings",
+      uuid: uuid4(),
+      user_cultivos: {},
+    };
+
+    settings_doc.user_cultivos = cultivos_default;
+
+    this.campos_db.put(settings_doc);
+    console.log("Settings Grabadas");
+    this.settings = settings_doc;
+  }
+
+  load_campos_y_settings() {
+    this.campos_db
+      .allDocs({
+        include_docs: true,
+        startkey: "campos_",
+        endkey: "campos_\ufff0",
+      })
+      .then((result) => (this.campos = result));
+
+    this.campos_db.get("settings").then((settings_doc) => {
+      this.settings = settings_doc;
+    });
+  }
   /**** FIN Bases de Datos */
+  // #endregion
 
   render() {
     return html`
-      <mapa-principal .campos=${this.campos}></mapa-principal>
+      <mapa-principal .campos=${this.campos} .settings=${this.settings}></mapa-principal>
       <navbar-element></navbar-element>
       <campo-offcanvas
         id="campo-oc"
@@ -224,9 +270,7 @@ export class FieldPartner extends LitElement {
         .campos=${this.campos}
       ></lista-de-campos>
 
-      <color-cultivo
-        id="colores-cultivos"
-      ></color-cultivo>
+      <color-cultivo id="colores-cultivos" .cultivos=${this.settings?.user_cultivos}></color-cultivo>
 
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>
