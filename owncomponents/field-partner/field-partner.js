@@ -4,6 +4,7 @@ import { base_url } from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
 import { TouchPitchHandler } from "mapbox-gl";
 import "../loading-modal/loading-modal.js"
+import "../color-cultivo/color-cultivo.js"
 
 export class FieldPartner extends LitElement {
   static properties = {
@@ -60,6 +61,12 @@ export class FieldPartner extends LitElement {
     /* Click en ver lista de campos */
     this.addEventListener("ver-lista-campos", (e) => {
       document.getElementById("lista-de-campos").show();
+    });
+    
+    /* Click en ver lista de campos */
+    this.addEventListener("ver-colores-cultivos", (e) => {
+      console.log("SHOWWWWW")
+      document.getElementById("colores-cultivos").show();
     });
 
     // Login
@@ -216,6 +223,11 @@ export class FieldPartner extends LitElement {
         .map=${this.map}
         .campos=${this.campos}
       ></lista-de-campos>
+
+      <color-cultivo
+        id="colores-cultivos"
+      ></color-cultivo>
+
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>
     `;
