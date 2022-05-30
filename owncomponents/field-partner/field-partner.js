@@ -143,9 +143,19 @@ export class FieldPartner extends LitElement {
       console.log("User is NOT Authenticated");
       const query = window.location.search;
       if (query.includes("code=") && query.includes("state=")) {
+        // Aca entro si es un redirect desde Auth0
         await this.auth0Client.handleRedirectCallback();
+        // Checkeo de nuevo
         let isAuthenticated = await this.auth0Client.isAuthenticated();
         this.logged_in = isAuthenticated;
+
+        if (isAuthenticated) {
+          /* Cargar el ususario y las bases apropiadas*/
+          console.log("User is NOW Authenticated");
+          this.user = await this.auth0Client.getUser();
+          this.crear_dbs(this.user);
+        }
+
         window.history.replaceState({}, document.title, "/");
       }
     }
