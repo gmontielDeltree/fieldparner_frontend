@@ -1,10 +1,31 @@
-import { LitElement, html } from "lit-element";
+import { Offcanvas } from "bootstrap";
+import { LitElement, html, unsafeCSS } from "lit-element";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 
 export class NotasOffcanvas extends LitElement {
-  static properties = {};
+  static properties = {
+    map: {},
+    nueva_nota_offcanvas: {},
+    ver_nota_offcanvas: {}
+  };
+
+  static styles = unsafeCSS(bootstrap);
 
   constructor() {
     super();
+  }
+
+  firstUpdated(){
+    this.nueva_nota_offcanvas = new Offcanvas(this.shadowRoot.getElementById('offcanvas-nueva-nota'));
+    this.ver_nota_offcanvas = new Offcanvas(this.shadowRoot.getElementById('offcanvas-nota'));
+  }
+
+  nueva_nota(){
+    this.nueva_nota_offcanvas.show()
+  }
+
+  ver_nota(){
+    this.ver_nota_offcanvas.show()
   }
 
   render() {
@@ -208,6 +229,7 @@ export class NotasOffcanvas extends LitElement {
         </div>
       </div>
 
+       <!-- Nota Presentacion -->
       <div
         class="offcanvas offcanvas-bottom"
         tabindex="-1"

@@ -6,6 +6,8 @@ import { TouchPitchHandler } from "mapbox-gl";
 import "../loading-modal/loading-modal.js";
 import "../color-cultivo/color-cultivo.js";
 import cultivos_default from "./cultivos.json";
+import "../notas-offcanvas/notas-offcanvas.js"
+
 import uuid4 from "uuid4";
 
 export class FieldPartner extends LitElement {
@@ -51,7 +53,9 @@ export class FieldPartner extends LitElement {
       document.getElementById("nuevo-campo-oc").show = true;
     });
 
-    this.addEventListener("nueva-nota-click", (e) => {});
+    this.addEventListener("nueva-nota-click", (e) => {
+      document.getElementById('notas-oc').nueva_nota()
+    });
 
     /* Izar map y draw a este componente para que los otros puedan usarlo */
     this.addEventListener("map-loaded", (e) => {
@@ -95,8 +99,9 @@ export class FieldPartner extends LitElement {
 
     if (sitio === "agrotools.netlify.app") {
       // 'Production' - Normal flow
-      console.log("Normal Flow - AUTH Flow");
+      
       await this.buildAuth0Client();
+      console.log("Normal Flow - AUTH Flow");
       await this.handleRedirectCallback();
       // Campos
       this.load_campos_y_settings()
@@ -123,7 +128,7 @@ export class FieldPartner extends LitElement {
 
   /** En esta funcion ocurre la authenticacion y creacion de DBs */
   async handleRedirectCallback() {
-    const isAuthenticated = await this.auth0Client.isAuthenticated();
+    let isAuthenticated = await this.auth0Client.isAuthenticated();
 
     this.logged_in = isAuthenticated;
 
@@ -139,6 +144,8 @@ export class FieldPartner extends LitElement {
       const query = window.location.search;
       if (query.includes("code=") && query.includes("state=")) {
         await this.auth0Client.handleRedirectCallback();
+        let isAuthenticated = await this.auth0Client.isAuthenticated();
+        this.logged_in = isAuthenticated;
         window.history.replaceState({}, document.title, "/");
       }
     }
@@ -276,6 +283,7 @@ export class FieldPartner extends LitElement {
 
       <color-cultivo id="colores-cultivos" .cultivos=${this.settings?.user_cultivos}></color-cultivo>
 
+      <notas-oc id='notas-oc' ></notas-oc>
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>
     `;
