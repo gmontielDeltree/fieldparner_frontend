@@ -260,7 +260,7 @@ export class FieldPartner extends LitElement {
         .campos_db=${this.campos_db}
       ></campo-offcanvas>
 
-      <lote-offcanvas id="lote-oc" ._db=${this.campos_db}></lote-offcanvas>
+      <lote-offcanvas id="lote-oc" ._db=${this.campos_db} .settings=${this.settings}></lote-offcanvas>
       <nuevo-campo
         id="nuevo-campo-oc"
         .map=${this.map}

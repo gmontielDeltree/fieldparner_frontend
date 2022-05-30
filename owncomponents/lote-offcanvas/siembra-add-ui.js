@@ -1,404 +1,822 @@
 import { LitElement, html } from "lit";
-import { interpret } from 'xstate';
+import { interpret } from "xstate";
 import { siembraMachine } from "./siembra-machine";
-import { Modal, Offcanvas } from 'bootstrap'
+import { Modal, Offcanvas } from "bootstrap";
 
 export class SiembraAddUI extends LitElement {
-    static properties = {
-        lote_id: {},
-        campo_id: {},
-        lote_nombre: {},
-        _steps_elements: {},
-        _ctx: {},
-        _campo_doc: {},
-        _lote_doc: {},
-        fsm: { state: true }
-    }
+  static properties = {
+    lote_id: {},
+    campo_id: {},
+    lote_nombre: {},
+    _steps_elements: {},
+    _ctx: {},
+    _campo_doc: {},
+    _lote_doc: {},
+    settings: {},
+    cultivo_input:{},
+    cultivos_filtrados:{},
+    fsm: { state: true },
+  };
 
-    static styles = null;
+  static styles = null;
 
-    createRenderRoot() {
-        return this;
-    }
+  createRenderRoot() {
+    return this;
+  }
 
-    constructor() {
-        super();
-        /**
-         * Sensible default para el contexto
-         */
-        
-        this._ctx = siembraMachine.initialState.context;
-    }
-
-    show_step = (n) => {
-        if (!this._steps_elements[n]._isShown) {
-            this._steps_elements.map((el) => el.hide())
-            this._steps_elements[n].show();
-        }
-    }
-
-    firstUpdated() {
-        this._steps_elements = [...document.querySelectorAll('.siembra.step')].map((el) => new Modal(el))
-    }
-
-    hideAll = () => {
-        this._steps_elements?.map((el) => el.hide())
-    }
-
+  constructor() {
+    super();
     /**
-     * Actualiza los documentos si las propiedades han cambiando.
-     * @param {*} changedProperties 
+     * Sensible default para el contexto
      */
-    willUpdate(changedProperties) {
-        if(changedProperties.has('_lote_doc')){
-            this.init_fsm()
+
+    this._ctx = siembraMachine.initialState.context;
+    this.cultivos_filtrados = {}
+    this.init_fsm()
+  }
+
+  show_step = (n) => {
+    if (!this._steps_elements[n]._isShown) {
+      this._steps_elements.map((el) => el.hide());
+      this._steps_elements[n].show();
+    }
+  };
+
+  firstUpdated() {
+    this._steps_elements = [...document.querySelectorAll(".siembra.step")].map(
+      (el) => new Modal(el)
+    );
+  }
+
+  hideAll = () => {
+    this._steps_elements?.map((el) => el.hide());
+  };
+
+  /**
+   * Actualiza los documentos si las propiedades han cambiando.
+   * @param {*} changedProperties
+   */
+  willUpdate(changedProperties) {
+    if (changedProperties.has("_lote_doc")) {
+      this.init_fsm();
+    }
+    if(changedProperties.has("settings")){
+        this.cultivos_filtrados = this.settings.user_cultivos
+    }
+  }
+
+  start() {
+    this.fsm.start();
+    this.fsm.send({ type: "NEXT" });
+  }
+
+  init_fsm() {
+    this._ctx = siembraMachine.initialState.context;
+    const someContext = siembraMachine.initialState.context;
+    someContext.hectareas = this._lote_doc?.properties.hectareas || 0;
+
+    this.fsm = interpret(siembraMachine.withContext(someContext))
+      .onTransition((state) => {
+        this._ctx = state.context;
+        console.log(state.value);
+        if (state.matches("idle")) {
+          this.hideAll();
         }
-    }
+        if (state.matches("editing.fecha")) {
+          this.show_step(0);
+        } else if (state.matches("editing.hectareas")) {
+          this.show_step(1);
+        } else if (state.matches("editing.cultivo")) {
+          this.show_step(2);
+        } else if (state.matches("editing.variedad")) {
+          this.show_step(3);
+        } else if (state.matches("editing.peso_1000")) {
+          this.show_step(4);
+        } else if (state.matches("editing.densidad")) {
+          this.show_step(5);
+        } else if (state.matches("editing.distancia")) {
+          this.show_step(6);
+        } else if (state.matches("editing.adjuntos")) {
+          this.show_step(7);
+        } else if (state.matches("editing.comentario")) {
+          this.show_step(8);
+        } else if (state.matches("editing.resumiendo")) {
+          this.show_step(9);
+        }
+      })
+      .start();
+  }
 
-    start() {
-        this.fsm.start()
-        this.fsm.send({ type: 'NEXT' })
-    }
+  guardar() {
+    // Enviar Evento
+    let siembra = this._ctx;
+    const event = new CustomEvent("guardar-siembra", {
+      detail: siembra,
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+    this.fsm.send({ type: "GUARDAR" });
+  }
 
-    init_fsm(){
 
-        this._ctx = siembraMachine.initialState.context;
-        const someContext = siembraMachine.initialState.context;
-        someContext.hectareas = this._lote_doc.properties.hectareas;
+   click_cultivo(nombre){
+    this.fsm.send({
+        type: "CHANGE",
+        value: nombre,
+      })
+    this.cultivo_input = nombre
+    document.getElementById('cultivo-input').value = this.cultivo_input
+   }
+  
 
-        this.fsm = interpret(siembraMachine.withContext(someContext)).onTransition((state) => {
-            this._ctx = state.context;
-            console.log(state.value);
-            if (state.matches('idle')) {
-                this.hideAll()
-            }
-            if (state.matches('editing.fecha')) {
-                this.show_step(0)
-            } else if (state.matches('editing.hectareas')) {
-                this.show_step(1)
-            } else if (state.matches('editing.cultivo')) {
-                this.show_step(2)
-            } else if (state.matches('editing.variedad')) {
-                this.show_step(3)
-            } else if (state.matches('editing.peso_1000')) {
-                this.show_step(4)
-            } else if (state.matches('editing.densidad')) {
-                this.show_step(5)
-            } else if (state.matches('editing.distancia')) {
-                this.show_step(6)
-            } else if (state.matches('editing.adjuntos')) {
-                this.show_step(7)
-            } else if (state.matches('editing.comentario')) {
-                this.show_step(8)
-            } else if (state.matches('editing.resumiendo')) {
-                this.show_step(9)
-            }
+  cultivo_input_change(e){
+    this.cultivo_input = e.target.value
+    this.fsm.send({
+        type: "CHANGE",
+        value: e.target.value,
+      })
+    
+    let cultivo_uc = this.cultivo_input.toUpperCase()
+    const filtro = ([key,cultivo]) => { return (cultivo.nombre.toUpperCase().indexOf(cultivo_uc) > -1) }
+  
+    let array_filtrado = Object.entries(this.settings.user_cultivos).filter(filtro)
 
-        }).start()
-    }
+    this.cultivos_filtrados = {}
+    array_filtrado.map(([key,cul])=>{this.cultivos_filtrados[key] = cul})
 
-    guardar() {
-        // Enviar Evento
-        let siembra = this._ctx
-        const event = new CustomEvent('guardar-siembra', { detail: siembra, bubbles: true, composed: true });
-        this.dispatchEvent(event);
-        this.fsm.send({type:'GUARDAR'})
-    }
+  }
 
-    render() {
-        return html`
-        <!-- Modal Visible en fecha state -->
-        <div class="modal fade siembra step" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Cual es la fecha de la siembra?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
-                this.fsm.send("CANCEL")}></button>
-                    </div>
-                    <div class="modal-body mx-auto">
-                    <lit-flatpickr 
-                        id="dps"
-                        altInput
-                        altFormat="j F, Y"
-                        dateFormat="d-m-Y"
-                        theme="material_blue"
-                        minDate="31-12-2020"
-                        maxDate="31-12-2050"
-                        locale="es"
-                        placeholder="Ingrese una fecha"
-                        .onChange='${(e) => {this.fsm.send({ type: "CHANGE", value: document.getElementById('dps').getValue() })}}'
-                    >
-                    <div>
-                        <input />
-                    </div>
-                    </lit-flatpickr>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")}>Siguiente</button>
-                    </div>
-                </div>
+  render() {
+    return html`
+      <!-- Modal Visible en fecha state -->
+      <div
+        class="modal fade siembra step"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">
+                ¿Cual es la fecha de la siembra?
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => this.fsm.send("CANCEL")}
+              ></button>
             </div>
-        </div>
-        
-        <!-- Modal Visible en hectareas state -->
-        <div class="modal fade siembra step" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Sobre cuantas hectáreas se realizará la siembra?
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
-                this.fsm.send("CANCEL")}></button>
-                    </div>
-                    <div class="modal-body mx-auto">
-                        <input type="number" value=${this._ctx.hectareas} @change=${(e) => this.fsm.send({
-                    type: "CHANGE", value:
-                        e.target.value
-                })}>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")}>Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")}>Siguiente</button>
-                    </div>
+            <div class="modal-body mx-auto">
+              <lit-flatpickr
+                id="dps"
+                altInput
+                altFormat="j F, Y"
+                dateFormat="d-m-Y"
+                theme="material_blue"
+                minDate="31-12-2020"
+                maxDate="31-12-2050"
+                locale="es"
+                placeholder="Ingrese una fecha"
+                .onChange="${(e) => {
+                  this.fsm.send({
+                    type: "CHANGE",
+                    value: document.getElementById("dps").getValue(),
+                  });
+                }}"
+              >
+                <div>
+                  <input />
                 </div>
+              </lit-flatpickr>
             </div>
-        </div>
-        
-        <!-- Modal Visible en Cultivo state -->
-        <div class="modal fade siembra step" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Cual es el cultivo?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
-                this.fsm.send("CANCEL")}></button>
-                    </div>
-                    <div class="modal-body mx-auto">
-                        <div class="input-group mb-3">
-        
-                            <input type="text" class="form-control" @change=${(e) => this.fsm.send({
-                    type: "CHANGE", value:
-                        e.target.value
-                })}>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
-                    </div>
-                </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${() => this.fsm.send("CANCEL")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("NEXT")}
+              >
+                Siguiente
+              </button>
             </div>
+          </div>
         </div>
-        
-        <!-- Modal Visible en Variedad state -->
-        <div class="modal fade siembra step" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Cual es la variedad?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
-                this.fsm.send("CANCEL")}></button>
-                    </div>
-                    <div class="modal-body mx-auto">
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" @change=${(e) => this.fsm.send({
-                    type: "CHANGE", value:
-                        e.target.value
-                })} aria-label="Text input with dropdown button">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Modal Visible en Peso 1000 state -->
-        <div class="modal fade siembra step" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Cual es el peso de las 1000 semillas?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
-                this.fsm.send("CANCEL")}></button>
-                    </div>
-                    <div class="modal-body mx-auto">
-                        <div class="input-group mb-3">
-                            <input type="number" class="form-control" @change=${(e) => this.fsm.send({
-                    type: "CHANGE", value:
-                        e.target.value
-                })} aria-label="Text input with dropdown button">
-                            <button class="btn btn-outline-secondary" type="button" aria-expanded="false">grs</button>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Modal Visible en Densidad state -->
-        <div class="modal fade siembra step" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Cual es la Densidad Objetivo?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
-                this.fsm.send("CANCEL")}></button>
-                    </div>
-                    <div class="modal-body mx-auto">
-                    <div class="input-group mb-3">
-                            <input type="number" class="form-control" @change=${(e) => this.fsm.send({
-                    type: "CHANGE", value:
-                        e.target.value
-                })} aria-label="Text input with dropdown button">
-                            <button class="btn btn-outline-secondary" type="button" aria-expanded="false">plantas/ha</button>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Modal Visible en Distancia state -->
-        <div class="modal fade siembra step" id="lote-hectareas-editor" data-bs-backdrop="static" data-bs-keyboard="false"
-            tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Cual es la distancia entre surcos?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
-                this.fsm.send("CANCEL")}></button>
-                    </div>
-                    <div class="modal-body mx-auto">
-                    <div class="input-group mb-3">
-                            <input type="number" class="form-control" @change=${(e) => this.fsm.send({
-                    type: "CHANGE", value:
-                        e.target.value
-                })} aria-label="Text input with dropdown button">
-                            <button class="btn btn-outline-secondary" type="button" aria-expanded="false">cm</button>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
 
-
-        <div class="modal fade siembra step" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Quieres adjuntar algún archivo?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
-                this.fsm.send("CANCEL")}></button>
-                    </div>
-                    <div class="modal-body mx-auto">
-                        <div class="input-group mb-3">
-
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
-                    </div>
-                </div>
+      <!-- Modal Visible en hectareas state -->
+      <div
+        class="modal fade siembra step"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">
+                ¿Sobre cuantas hectáreas se realizará la siembra?
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => this.fsm.send("CANCEL")}
+              ></button>
             </div>
-        </div>
-
-                <!-- Modal Visible en Comentarios state -->
-                <div class="modal fade siembra step" data-bs-backdrop="static" data-bs-keyboard="false"
-            tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Tienes algún comentario adicional?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
-                this.fsm.send("CANCEL")}></button>
-                    </div>
-                    <div class="modal-body mx-auto w-100">
-                        <h5></h5>
-        
-                        <textarea class='w-100' id="story" placeholder="Ingresa alguna nota aquí" name="story" rows="5" @change=${(e) => this.fsm.send({ type: "CHANGE", value: e.target.value })}></textarea>
-        
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("NEXT")} >Siguiente</button>
-                    </div>
-                </div>
+            <div class="modal-body mx-auto">
+              <input
+                type="number"
+                value=${this._ctx.hectareas}
+                @change=${(e) =>
+                  this.fsm.send({
+                    type: "CHANGE",
+                    value: e.target.value,
+                  })}
+              />
             </div>
-        </div>
-
-                <!-- Modal Visible en Resumiendo state -->
-                <div class="modal fade siembra step" data-bs-backdrop="static" data-bs-keyboard="false"
-            tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">Resumen</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
-                this.fsm.send("CANCEL")}></button>
-                    </div>
-                    <div class="modal-body w-100 mx-auto">
-                        <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">Siembra de ${this._ctx.cultivo} - ${this._ctx.variedad}</h5>
-                        <small>${this._ctx.fecha}</small>
-                        </div>
-                        <p class="mb-1">Surco: ${this._ctx.distancia} cm. - Densidad Objetivo: ${this._ctx.densidad_objetivo} plantas/ha.</p>
-                        <p class="mb-1">Peso 1000 semillas: ${this._ctx.peso_1000} grs.</p>
-                        <small>${this._ctx.comentario}</small>
-
-        
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${() =>
-                this.fsm.send("CANCEL")}>Cancelar</button>
-                        <button type="button" class="btn btn-primary" @click=${() => this.fsm.send("BACK")} >Atras</button>
-                        <button type="button" class="btn btn-primary" @click=${this.guardar} >Guardar</button>
-                    </div>
-                </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${() => this.fsm.send("CANCEL")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("BACK")}
+              >
+                Atras
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("NEXT")}
+              >
+                Siguiente
+              </button>
             </div>
+          </div>
         </div>
+      </div>
 
-        `
-    }
+      <!-- Modal Visible en Cultivo state -->
+      <div
+        class="modal fade siembra step"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">
+                ¿Cual es el cultivo?
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => this.fsm.send("CANCEL")}
+              ></button>
+            </div>
+            <div class="modal-body mx-auto">
+              <input
+                type="text"
+                class="form-control"
+                id='cultivo-input'
+                placeholder="Ingrese las primeras letras del cultivo"
+                @input=${this.cultivo_input_change }
+              />
+              <div class="list-group" style="max-height:300px;overflow-y:auto; -webkit-overflow-scrolling: touch;">
+                ${this.settings
+                  ? Object.entries(this.cultivos_filtrados).map(
+                      ([key, cultivo]) => {
+                        return html` <a
+                          href="#"
+                          @click=${(e) => this.click_cultivo(cultivo.nombre)}
+                          class="list-group-item list-group-item-action"
+                          >${cultivo.nombre}</a
+                        >`;
+                      }
+                    )
+                  : null}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${() => this.fsm.send("CANCEL")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("BACK")}
+              >
+                Atras
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("NEXT")}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Visible en Variedad state -->
+      <div
+        class="modal fade siembra step"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">
+                ¿Cual es la variedad?
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => this.fsm.send("CANCEL")}
+              ></button>
+            </div>
+            <div class="modal-body mx-auto">
+              <div class="input-group mb-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  @change=${(e) =>
+                    this.fsm.send({
+                      type: "CHANGE",
+                      value: e.target.value,
+                    })}
+                  aria-label="Text input with dropdown button"
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${() => this.fsm.send("CANCEL")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("BACK")}
+              >
+                Atras
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("NEXT")}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Visible en Peso 1000 state -->
+      <div
+        class="modal fade siembra step"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">
+                ¿Cual es el peso de las 1000 semillas?
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => this.fsm.send("CANCEL")}
+              ></button>
+            </div>
+            <div class="modal-body mx-auto">
+              <div class="input-group mb-3">
+                <input
+                  type="number"
+                  class="form-control"
+                  @change=${(e) =>
+                    this.fsm.send({
+                      type: "CHANGE",
+                      value: e.target.value,
+                    })}
+                  aria-label="Text input with dropdown button"
+                />
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  aria-expanded="false"
+                >
+                  grs
+                </button>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${() => this.fsm.send("CANCEL")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("BACK")}
+              >
+                Atras
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("NEXT")}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Visible en Densidad state -->
+      <div
+        class="modal fade siembra step"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">
+                ¿Cual es la Densidad Objetivo?
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => this.fsm.send("CANCEL")}
+              ></button>
+            </div>
+            <div class="modal-body mx-auto">
+              <div class="input-group mb-3">
+                <input
+                  type="number"
+                  class="form-control"
+                  @change=${(e) =>
+                    this.fsm.send({
+                      type: "CHANGE",
+                      value: e.target.value,
+                    })}
+                  aria-label="Text input with dropdown button"
+                />
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  aria-expanded="false"
+                >
+                  plantas/ha
+                </button>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${() => this.fsm.send("CANCEL")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("BACK")}
+              >
+                Atras
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("NEXT")}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Visible en Distancia state -->
+      <div
+        class="modal fade siembra step"
+        id="lote-hectareas-editor"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">
+                ¿Cual es la distancia entre surcos?
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => this.fsm.send("CANCEL")}
+              ></button>
+            </div>
+            <div class="modal-body mx-auto">
+              <div class="input-group mb-3">
+                <input
+                  type="number"
+                  class="form-control"
+                  @change=${(e) =>
+                    this.fsm.send({
+                      type: "CHANGE",
+                      value: e.target.value,
+                    })}
+                  aria-label="Text input with dropdown button"
+                />
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  aria-expanded="false"
+                >
+                  cm
+                </button>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${() => this.fsm.send("CANCEL")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("BACK")}
+              >
+                Atras
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("NEXT")}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="modal fade siembra step"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">
+                ¿Quieres adjuntar algún archivo?
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => this.fsm.send("CANCEL")}
+              ></button>
+            </div>
+            <div class="modal-body mx-auto">
+              <div class="input-group mb-3"></div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${() => this.fsm.send("CANCEL")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("BACK")}
+              >
+                Atras
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("NEXT")}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Visible en Comentarios state -->
+      <div
+        class="modal fade siembra step"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">
+                ¿Tienes algún comentario adicional?
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => this.fsm.send("CANCEL")}
+              ></button>
+            </div>
+            <div class="modal-body mx-auto w-100">
+              <h5></h5>
+
+              <textarea
+                class="w-100"
+                id="story"
+                placeholder="Ingresa alguna nota aquí"
+                name="story"
+                rows="5"
+                @change=${(e) =>
+                  this.fsm.send({ type: "CHANGE", value: e.target.value })}
+              ></textarea>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${() => this.fsm.send("CANCEL")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("BACK")}
+              >
+                Atras
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("NEXT")}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Visible en Resumiendo state -->
+      <div
+        class="modal fade siembra step"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">Resumen</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => this.fsm.send("CANCEL")}
+              ></button>
+            </div>
+            <div class="modal-body w-100 mx-auto">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">
+                  Siembra de ${this._ctx.cultivo} - ${this._ctx.variedad}
+                </h5>
+                <small>${this._ctx.fecha}</small>
+              </div>
+              <p class="mb-1">
+                Surco: ${this._ctx.distancia} cm. - Densidad Objetivo:
+                ${this._ctx.densidad_objetivo} plantas/ha.
+              </p>
+              <p class="mb-1">
+                Peso 1000 semillas: ${this._ctx.peso_1000} grs.
+              </p>
+              <small>${this._ctx.comentario}</small>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${() => this.fsm.send("CANCEL")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => this.fsm.send("BACK")}
+              >
+                Atras
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${this.guardar}
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 }
 
-customElements.define('siembra-add-ui', SiembraAddUI);
+customElements.define("siembra-add-ui", SiembraAddUI);
