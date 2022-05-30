@@ -38,7 +38,7 @@ const pdf_line = (insumo) => {
 }
 
 
-const orden_definition =(aplicacion, nombre_campo, nombre_lote, cultivo) => { 
+const orden_definition =(aplicacion, nombre_campo, nombre_lote, campos_url) => { 
   
   let insumos = aplicacion.detalles.insumos
   let insumos_tabla = insumos.map(pdf_line)
@@ -109,6 +109,9 @@ const orden_definition =(aplicacion, nombre_campo, nombre_lote, cultivo) => {
           alignment: 'left',
           margin: [0, 20, 0, 5],
         },
+        {
+          image: 'camposImg'
+        }
       ],
     },
     {
@@ -275,6 +278,9 @@ const orden_definition =(aplicacion, nombre_campo, nombre_lote, cultivo) => {
     columnGap: 20,
     //font: 'Quicksand',
   },
+  images:{
+    camposImg: campos_url
+  }
 }
 };
   

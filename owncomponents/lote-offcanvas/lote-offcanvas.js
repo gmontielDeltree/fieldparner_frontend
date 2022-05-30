@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { map } from 'lit/directives/map.js';
 import { aplicacionMachine } from './lote-machine.js';
 import { interpret } from 'xstate';
+import { mapbox_static_img } from './mapbox_static_image.js';
 
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
@@ -157,10 +158,13 @@ export class LoteOffcanvas extends LitElement {
     }
 
     download_pdf(uuid) {
+
+        let campos_url = mapbox_static_img(this._campo_doc, this._lote_doc);
+
         let indice = this._lote_doc.properties.actividades.findIndex((a) => a.uuid === uuid)
         // docDefinition
-        let dd = orden_definition(this._lote_doc.properties.actividades[indice], this._campo_doc.nombre, this._lote_doc.properties.nombre)
-
+        let dd = orden_definition(this._lote_doc.properties.actividades[indice], this._campo_doc.nombre, this._lote_doc.properties.nombre, campos_url)
+        console.log("DD", JSON.stringify(dd))
         import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
             pdfMake.fonts = pdf_fonts
 
