@@ -74,10 +74,10 @@ export class NavbarElement extends LitElement {
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <li><a class="dropdown-item" @click=${()=>{this.sendEvent('ver-colores-cultivos')}} href="#">Color Cultivos</a></li>
-                <li><a class="dropdown-item" href="#">Another action</a></li>
+                <!-- <li><a class="dropdown-item" href="#">Another action</a></li> -->
                 <li><hr class="dropdown-divider" /></li>
                 <li>
-                  <a class="dropdown-item" href="#">Something else here</a>
+                  <a class="dropdown-item"  @click=${()=>{this.sendEvent('logout-click')}} href="#">Sign Out</a>
                 </li>
               </ul>
             </div>

@@ -26,8 +26,45 @@ export class SiembraAddUI extends LitElement {
         /**
          * Sensible default para el contexto
          */
+        
+        this._ctx = siembraMachine.initialState.context;
+    }
+
+    show_step = (n) => {
+        if (!this._steps_elements[n]._isShown) {
+            this._steps_elements.map((el) => el.hide())
+            this._steps_elements[n].show();
+        }
+    }
+
+    firstUpdated() {
+        this._steps_elements = [...document.querySelectorAll('.siembra.step')].map((el) => new Modal(el))
+    }
+
+    hideAll = () => {
+        this._steps_elements?.map((el) => el.hide())
+    }
+
+    /**
+     * Actualiza los documentos si las propiedades han cambiando.
+     * @param {*} changedProperties 
+     */
+    willUpdate(changedProperties) {
+        if(changedProperties.has('_lote_doc')){
+            this.init_fsm()
+        }
+    }
+
+    start() {
+        this.fsm.start()
+        this.fsm.send({ type: 'NEXT' })
+    }
+
+    init_fsm(){
+
         this._ctx = siembraMachine.initialState.context;
         const someContext = siembraMachine.initialState.context;
+        someContext.hectareas = this._lote_doc.properties.hectareas;
 
         this.fsm = interpret(siembraMachine.withContext(someContext)).onTransition((state) => {
             this._ctx = state.context;
@@ -58,34 +95,6 @@ export class SiembraAddUI extends LitElement {
             }
 
         }).start()
-    }
-
-    show_step = (n) => {
-        if (!this._steps_elements[n]._isShown) {
-            this._steps_elements.map((el) => el.hide())
-            this._steps_elements[n].show();
-        }
-    }
-
-    firstUpdated() {
-        this._steps_elements = [...document.querySelectorAll('.siembra.step')].map((el) => new Modal(el))
-    }
-
-    hideAll = () => {
-        this._steps_elements?.map((el) => el.hide())
-    }
-
-    /**
-     * Actualiza los documentos si las propiedades han cambiando.
-     * @param {*} changedProperties 
-     */
-    willUpdate(changedProperties) {
-
-    }
-
-    start() {
-        this.fsm.start()
-        this.fsm.send({ type: 'NEXT' })
     }
 
     guardar() {
@@ -141,7 +150,7 @@ export class SiembraAddUI extends LitElement {
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">¿Sobre cuantas hectáreas se realizará la aplicación?
+                        <h5 class="modal-title" id="staticBackdropLabel">¿Sobre cuantas hectáreas se realizará la siembra?
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click=${() =>
                 this.fsm.send("CANCEL")}></button>

@@ -80,6 +80,10 @@ export class FieldPartner extends LitElement {
     this.addEventListener("login-click", () => {
       this.loginet();
     });
+    
+    this.addEventListener("logout-click", () => {
+      this.logout();
+    });
   }
 
   createRenderRoot() {
