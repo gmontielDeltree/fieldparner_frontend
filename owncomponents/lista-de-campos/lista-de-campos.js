@@ -24,7 +24,6 @@ export class ListaDeCampos extends LitElement {
     this._detallesOffcanvas = new Offcanvas(
       this.shadowRoot.getElementById("lista-de-campos-oc")
     );
-    console.log("LDC OC", this._detallesOffcanvas);
   }
 
   show() {

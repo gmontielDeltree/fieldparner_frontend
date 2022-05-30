@@ -154,7 +154,7 @@ export class LoteOffcanvas extends LitElement {
     }
 
     evento_show_ndvi(e) {
-        const event = new CustomEvent('show-ndvi', { detail: { lote: this._lote_doc }, bubbles: true, composed: true });
+        const event = new CustomEvent('ver-ndvi-click', { detail: { lote: this._lote_doc }, bubbles: true, composed: true });
         this.dispatchEvent(event);
     }
 

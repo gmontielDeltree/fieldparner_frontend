@@ -7,6 +7,7 @@ import "../loading-modal/loading-modal.js";
 import "../color-cultivo/color-cultivo.js";
 import cultivos_default from "./cultivos.json";
 import "../notas-offcanvas/notas-offcanvas.js"
+import "../ndvi-offcanvas/ndvi-offcanvas.js"
 
 import uuid4 from "uuid4";
 
@@ -57,6 +58,12 @@ export class FieldPartner extends LitElement {
       document.getElementById('notas-oc').nueva_nota()
     });
 
+    this.addEventListener("ver-ndvi-click", (e) => {
+      document.getElementById('ndvi-oc').lote_doc = e.detail.lote
+      document.getElementById('ndvi-oc').show()
+    });
+
+
     /* Izar map y draw a este componente para que los otros puedan usarlo */
     this.addEventListener("map-loaded", (e) => {
       this.map = e.detail.map;
@@ -72,7 +79,6 @@ export class FieldPartner extends LitElement {
 
     /* Click en ver lista de campos */
     this.addEventListener("ver-colores-cultivos", (e) => {
-      console.log("SHOWWWWW");
       document.getElementById("colores-cultivos").show();
     });
 
@@ -292,7 +298,7 @@ export class FieldPartner extends LitElement {
       ></lista-de-campos>
 
       <color-cultivo id="colores-cultivos" .cultivos=${this.settings?.user_cultivos}></color-cultivo>
-
+      <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
       <notas-oc id='notas-oc' ></notas-oc>
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>
