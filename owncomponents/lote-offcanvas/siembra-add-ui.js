@@ -13,8 +13,9 @@ export class SiembraAddUI extends LitElement {
     _campo_doc: {},
     _lote_doc: {},
     settings: {},
-    cultivo_input:{},
-    cultivos_filtrados:{},
+    cultivo_input: {},
+    es_nuevo_cultivo: {},
+    cultivos_filtrados: {},
     fsm: { state: true },
   };
 
@@ -31,8 +32,9 @@ export class SiembraAddUI extends LitElement {
      */
 
     this._ctx = siembraMachine.initialState.context;
-    this.cultivos_filtrados = {}
-    this.init_fsm()
+    this.cultivos_filtrados = {};
+    this.init_fsm();
+    this.es_nuevo_cultivo = false;
   }
 
   show_step = (n) => {
@@ -60,20 +62,23 @@ export class SiembraAddUI extends LitElement {
     if (changedProperties.has("_lote_doc")) {
       this.init_fsm();
     }
-    if(changedProperties.has("settings")){
-        this.cultivos_filtrados = this.settings.user_cultivos
+    if (changedProperties.has("settings")) {
+      this.cultivos_filtrados = this.settings.user_cultivos;
     }
   }
 
   start() {
+    this.fsm.stop();
+    this.init_fsm();
     this.fsm.start();
     this.fsm.send({ type: "NEXT" });
   }
 
   init_fsm() {
-    this._ctx = siembraMachine.initialState.context;
-    const someContext = siembraMachine.initialState.context;
+    const someContext = { ...siembraMachine.initialState.context };
     someContext.hectareas = this._lote_doc?.properties.hectareas || 0;
+    console.log("Hectareas ", someContext.hectareas);
+    this._ctx = someContext;
 
     this.fsm = interpret(siembraMachine.withContext(someContext))
       .onTransition((state) => {
@@ -119,35 +124,72 @@ export class SiembraAddUI extends LitElement {
     this.fsm.send({ type: "GUARDAR" });
   }
 
-
-   click_cultivo(nombre){
+  click_cultivo(nombre) {
     this.fsm.send({
-        type: "CHANGE",
-        value: nombre,
-      })
-    this.cultivo_input = nombre
-    document.getElementById('cultivo-input').value = this.cultivo_input
-   }
-  
+      type: "CHANGE",
+      value: nombre,
+    });
+    this.cultivo_input = nombre;
+    document.getElementById("cultivo-input").value = this.cultivo_input;
+  }
 
-  cultivo_input_change(e){
-    this.cultivo_input = e.target.value
+  cultivo_input_change(e) {
+    this.cultivo_input = e.target.value;
     this.fsm.send({
-        type: "CHANGE",
-        value: e.target.value,
-      })
-    
-    let cultivo_uc = this.cultivo_input.toUpperCase()
-    const filtro = ([key,cultivo]) => { return (cultivo.nombre.toUpperCase().indexOf(cultivo_uc) > -1) }
-  
-    let array_filtrado = Object.entries(this.settings.user_cultivos).filter(filtro)
+      type: "CHANGE",
+      value: e.target.value,
+    });
 
-    this.cultivos_filtrados = {}
-    array_filtrado.map(([key,cul])=>{this.cultivos_filtrados[key] = cul})
+    let cultivo_uc = this.cultivo_input.toUpperCase();
+    const filtro = ([key, cultivo]) => {
+      return cultivo.nombre.toUpperCase().indexOf(cultivo_uc) > -1;
+    };
 
+    let array_filtrado = Object.entries(this.settings.user_cultivos).filter(
+      filtro
+    );
+
+    this.cultivos_filtrados = {};
+    array_filtrado.map(([key, cul]) => {
+      this.cultivos_filtrados[key] = cul;
+    });
+
+    let existe = Object.entries(this.settings.user_cultivos).findIndex(
+      ([k, c]) => c.nombre.toUpperCase() === cultivo_uc
+    );
+    if (existe === -1) {
+      // No existe
+      this.es_nuevo_cultivo = true;
+    } else {
+      this.es_nuevo_cultivo = false;
+    }
   }
 
   render() {
+    console.log("RenderS");
+    let cancel_back_next = () => html` <button
+        type="button"
+        class="btn btn-secondary"
+        data-bs-dismiss="modal"
+        @click=${() => this.fsm.send("CANCEL")}
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        @click=${() => this.fsm.send("BACK")}
+      >
+        Atras
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        @click=${() => this.fsm.send("NEXT")}
+      >
+        Siguiente
+      </button>`;
+
     return html`
       <!-- Modal Visible en fecha state -->
       <div
@@ -240,40 +282,28 @@ export class SiembraAddUI extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-              <input
-                type="number"
-                value=${this._ctx.hectareas}
-                @change=${(e) =>
-                  this.fsm.send({
-                    type: "CHANGE",
-                    value: e.target.value,
-                  })}
-              />
+              <div class="input-group mb-3">
+                <input
+                  type="number"
+                  class='form-control'
+                  .value=${this._ctx.hectareas}
+                  @change=${(e) =>
+                    this.fsm.send({
+                      type: "CHANGE",
+                      value: e.target.value,
+                    })}
+                />
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  aria-expanded="false"
+                >
+                  has.
+                </button>
+              </div>
             </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
+
+            <div class="modal-footer">${cancel_back_next()}</div>
           </div>
         </div>
       </div>
@@ -302,14 +332,22 @@ export class SiembraAddUI extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-              <input
-                type="text"
-                class="form-control"
-                id='cultivo-input'
-                placeholder="Ingrese las primeras letras del cultivo"
-                @input=${this.cultivo_input_change }
-              />
-              <div class="list-group" style="max-height:300px;overflow-y:auto; -webkit-overflow-scrolling: touch;">
+              <div class="input-group mb-3">
+                <input
+                  type="text"
+                  class="form-control w-50"
+                  id="cultivo-input"
+                  .value=${this._ctx.cultivo}
+                  placeholder="Ingrese las primeras letras del cultivo"
+                  @input=${this.cultivo_input_change}
+                >
+                ${this.es_nuevo_cultivo
+                  ? html`<span class="badge rounded-pill text-bg-success">Success</span>` : null}
+              </div>
+              <div
+                class="list-group"
+                style="max-height:300px;overflow-y:auto; -webkit-overflow-scrolling: touch;"
+              >
                 ${this.settings
                   ? Object.entries(this.cultivos_filtrados).map(
                       ([key, cultivo]) => {
@@ -324,30 +362,7 @@ export class SiembraAddUI extends LitElement {
                   : null}
               </div>
             </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
+            <div class="modal-footer">${cancel_back_next()}</div>
           </div>
         </div>
       </div>
@@ -389,30 +404,7 @@ export class SiembraAddUI extends LitElement {
                 />
               </div>
             </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
+            <div class="modal-footer">${cancel_back_next()}</div>
           </div>
         </div>
       </div>
@@ -461,30 +453,7 @@ export class SiembraAddUI extends LitElement {
                 </button>
               </div>
             </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
+            <div class="modal-footer">${cancel_back_next()}</div>
           </div>
         </div>
       </div>
@@ -533,30 +502,7 @@ export class SiembraAddUI extends LitElement {
                 </button>
               </div>
             </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
+            <div class="modal-footer">${cancel_back_next()}</div>
           </div>
         </div>
       </div>
@@ -606,30 +552,7 @@ export class SiembraAddUI extends LitElement {
                 </button>
               </div>
             </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
+            <div class="modal-footer">${cancel_back_next()}</div>
           </div>
         </div>
       </div>
@@ -659,30 +582,7 @@ export class SiembraAddUI extends LitElement {
             <div class="modal-body mx-auto">
               <div class="input-group mb-3"></div>
             </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
+            <div class="modal-footer">${cancel_back_next()}</div>
           </div>
         </div>
       </div>
@@ -723,30 +623,7 @@ export class SiembraAddUI extends LitElement {
                   this.fsm.send({ type: "CHANGE", value: e.target.value })}
               ></textarea>
             </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
+            <div class="modal-footer">${cancel_back_next()}</div>
           </div>
         </div>
       </div>
