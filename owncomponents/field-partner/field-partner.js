@@ -8,6 +8,7 @@ import "../color-cultivo/color-cultivo.js";
 import cultivos_default from "./cultivos.json";
 import "../notas-offcanvas/notas-offcanvas.js"
 import "../ndvi-offcanvas/ndvi-offcanvas.js"
+import "../variedades-loader/variedades-loader.js"
 
 import uuid4 from "uuid4";
 
@@ -302,6 +303,7 @@ export class FieldPartner extends LitElement {
       <notas-oc id='notas-oc' ></notas-oc>
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>
+      <variedades-loader></variedades-loader>
     `;
   }
 }

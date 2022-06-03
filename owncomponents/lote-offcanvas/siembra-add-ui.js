@@ -2,6 +2,7 @@ import { LitElement, html } from "lit";
 import { interpret } from "xstate";
 import { siembraMachine } from "./siembra-machine";
 import { Modal, Offcanvas } from "bootstrap";
+import "../lista-searchable/lista-searchable.js";
 
 export class SiembraAddUI extends LitElement {
   static properties = {
@@ -124,49 +125,9 @@ export class SiembraAddUI extends LitElement {
     this.fsm.send({ type: "GUARDAR" });
   }
 
-  click_cultivo(nombre) {
-    this.fsm.send({
-      type: "CHANGE",
-      value: nombre,
-    });
-    this.cultivo_input = nombre;
-    document.getElementById("cultivo-input").value = this.cultivo_input;
-  }
-
-  cultivo_input_change(e) {
-    this.cultivo_input = e.target.value;
-    this.fsm.send({
-      type: "CHANGE",
-      value: e.target.value,
-    });
-
-    let cultivo_uc = this.cultivo_input.toUpperCase();
-    const filtro = ([key, cultivo]) => {
-      return cultivo.nombre.toUpperCase().indexOf(cultivo_uc) > -1;
-    };
-
-    let array_filtrado = Object.entries(this.settings.user_cultivos).filter(
-      filtro
-    );
-
-    this.cultivos_filtrados = {};
-    array_filtrado.map(([key, cul]) => {
-      this.cultivos_filtrados[key] = cul;
-    });
-
-    let existe = Object.entries(this.settings.user_cultivos).findIndex(
-      ([k, c]) => c.nombre.toUpperCase() === cultivo_uc
-    );
-    if (existe === -1) {
-      // No existe
-      this.es_nuevo_cultivo = true;
-    } else {
-      this.es_nuevo_cultivo = false;
-    }
-  }
 
   render() {
-    console.log("RenderS");
+ 
     let cancel_back_next = () => html` <button
         type="button"
         class="btn btn-secondary"
@@ -285,7 +246,7 @@ export class SiembraAddUI extends LitElement {
               <div class="input-group mb-3">
                 <input
                   type="number"
-                  class='form-control'
+                  class="form-control"
                   .value=${this._ctx.hectareas}
                   @change=${(e) =>
                     this.fsm.send({
@@ -331,37 +292,13 @@ export class SiembraAddUI extends LitElement {
                 @click=${() => this.fsm.send("CANCEL")}
               ></button>
             </div>
-            <div class="modal-body mx-auto">
-              <div class="input-group mb-3">
-                <input
-                  type="text"
-                  class="form-control w-50"
-                  id="cultivo-input"
-                  .value=${this._ctx.cultivo}
-                  placeholder="Ingrese las primeras letras del cultivo"
-                  @input=${this.cultivo_input_change}
-                >
-                ${this.es_nuevo_cultivo
-                  ? html`<span class="badge rounded-pill text-bg-success">Success</span>` : null}
-              </div>
-              <div
-                class="list-group"
-                style="max-height:300px;overflow-y:auto; -webkit-overflow-scrolling: touch;"
-              >
-                ${this.settings
-                  ? Object.entries(this.cultivos_filtrados).map(
-                      ([key, cultivo]) => {
-                        return html` <a
-                          href="#"
-                          @click=${(e) => this.click_cultivo(cultivo.nombre)}
-                          class="list-group-item list-group-item-action"
-                          >${cultivo.nombre}</a
-                        >`;
-                      }
-                    )
-                  : null}
-              </div>
-            </div>
+            <div class="container-fluid modal-body mx-auto"></div>
+            <lista-searchable
+              .lista=${this.settings?.user_cultivos}
+              .principal_key=${"nombre"}
+              @input=${(e)=>{this.fsm.send({type:"CHANGE",value:e.target.value})}}
+            >
+            </lista-searchable>
             <div class="modal-footer">${cancel_back_next()}</div>
           </div>
         </div>
