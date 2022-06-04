@@ -29,6 +29,9 @@ export class ListaSearchable extends LitElement {
     let value = this.value.toUpperCase();
 
     const filtro = ([key, item]) => {
+      if(typeof item[this.principal_key] !== 'string'){
+        item[this.principal_key] = "" + item[this.principal_key]
+      }
       return item[this.principal_key].toUpperCase().indexOf(value) > -1;
     };
 
@@ -55,6 +58,8 @@ export class ListaSearchable extends LitElement {
   click_item(item) {
     this.value = item[this.principal_key];
     this.es_nuevo = false;
+    let event = new CustomEvent("input", { detail: this.value });
+    this.dispatchEvent(event);
   }
 
   render() {
@@ -74,7 +79,7 @@ export class ListaSearchable extends LitElement {
           class="form-control"
           id="cultivo-input"
           .value=${this.value}
-          placeholder="Ingrese las primeras letras del cultivo"
+          placeholder="Ingrese letras para buscar"
           @input=${this.input_change}
         />
         ${this.es_nuevo

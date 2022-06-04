@@ -3,6 +3,8 @@ import { interpret } from "xstate";
 import { siembraMachine } from "./siembra-machine";
 import { Modal, Offcanvas } from "bootstrap";
 import "../lista-searchable/lista-searchable.js";
+import PouchDb from 'pouchdb'
+import { base_url } from "../helpers";
 
 export class SiembraAddUI extends LitElement {
   static properties = {
@@ -18,6 +20,9 @@ export class SiembraAddUI extends LitElement {
     es_nuevo_cultivo: {},
     cultivos_filtrados: {},
     fsm: { state: true },
+    _variedades_db_local: {},
+    _variedades_db_remote: {},
+    _filtered_variedades_docs: {}
   };
 
   static styles = null;
@@ -36,6 +41,7 @@ export class SiembraAddUI extends LitElement {
     this.cultivos_filtrados = {};
     this.init_fsm();
     this.es_nuevo_cultivo = false;
+
   }
 
   show_step = (n) => {
@@ -65,6 +71,10 @@ export class SiembraAddUI extends LitElement {
     }
     if (changedProperties.has("settings")) {
       this.cultivos_filtrados = this.settings.user_cultivos;
+
+      this._variedades_db_remote = new PouchDB(base_url + 'variedades');
+      this._variedades_db_local = new PouchDb('variedades')
+      PouchDb.replicate(this._variedades_db_remote, this._variedades_db_local, {retry:true, live:true})
     }
   }
 
@@ -122,12 +132,34 @@ export class SiembraAddUI extends LitElement {
       composed: true,
     });
     this.dispatchEvent(event);
+
     this.fsm.send({ type: "GUARDAR" });
+
+    // Si hay cultivos nuevos y/o varidades enviar otro evento
+    // para que la aplicacion to accion apropiada
   }
 
+  cultivo_input_changed(e){
+                console.log("IN OPUT EVENT",e)
+                this.fsm.send({ type: "CHANGE", value: e.target.value });
+                if(!e.target.es_nuevo){
+                    let cultivo = e.target.value
+                    console.log("Cultivo", cultivo)
+
+                    // LA DB NO TIENE ACENTO y esta en Mayus
+                    this._variedades_db_local.allDocs({
+                      include_docs: true,
+                      startkey: cultivo.toUpperCase(),
+                      endkey: cultivo.toUpperCase() + "\ufff0",
+                    }).then((variedades_docs) => {
+                      this._filtered_variedades_docs = variedades_docs.rows.map((d) => d.doc)
+                      console.log("Filtered Variedades", variedades_docs)
+                    })
+
+                }
+  }
 
   render() {
- 
     let cancel_back_next = () => html` <button
         type="button"
         class="btn btn-secondary"
@@ -294,9 +326,10 @@ export class SiembraAddUI extends LitElement {
             </div>
             <div class="container-fluid modal-body mx-auto"></div>
             <lista-searchable
-              .lista=${this.settings?.user_cultivos}
+             id='cultivo-input'  
+            .lista=${this.settings?.user_cultivos}
               .principal_key=${"nombre"}
-              @input=${(e)=>{this.fsm.send({type:"CHANGE",value:e.target.value})}}
+              @input=${this.cultivo_input_changed}
             >
             </lista-searchable>
             <div class="modal-footer">${cancel_back_next()}</div>
@@ -327,19 +360,17 @@ export class SiembraAddUI extends LitElement {
                 @click=${() => this.fsm.send("CANCEL")}
               ></button>
             </div>
-            <div class="modal-body mx-auto">
-              <div class="input-group mb-3">
-                <input
-                  type="text"
-                  class="form-control"
-                  @change=${(e) =>
-                    this.fsm.send({
-                      type: "CHANGE",
-                      value: e.target.value,
-                    })}
-                  aria-label="Text input with dropdown button"
-                />
-              </div>
+            <div class="container-fluid  modal-body mx-auto">
+              <p class='row mx-2'>${this._filtered_variedades_docs?.length || 0} variedades de ${this._ctx.cultivo.toUpperCase()}</p>
+                <lista-searchable
+                  id='variedad-input' 
+                  .lista=${this._filtered_variedades_docs}
+                  .principal_key=${"cultivar"}
+                  @input=${(e) => {
+                    this.fsm.send({ type: "CHANGE", value: e.target.value });
+                  }}
+                ></lista-searchable>
+              
             </div>
             <div class="modal-footer">${cancel_back_next()}</div>
           </div>
