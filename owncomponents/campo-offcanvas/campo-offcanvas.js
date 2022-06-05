@@ -118,6 +118,10 @@ export class CampoOffcanvas extends LitElement {
     this.map.setLayoutProperty("campos_border", "visibility", "visible");
   }
 
+  share_campo(){
+    
+  }
+
   hide() {
     this._detallesOffcanvas.hide();
   }
@@ -153,6 +157,15 @@ export class CampoOffcanvas extends LitElement {
           >
             Añadir Lote
           </button>
+
+          <button
+            type="button"
+            class="btn btn-warning"
+            @click=${this.share_campo}
+          >
+            Compartir Campo
+          </button>
+
           <button
             class="btn btn-danger"
             id="eliminar-campo-btn"
