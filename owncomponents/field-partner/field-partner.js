@@ -95,6 +95,11 @@ export class FieldPartner extends LitElement {
     this.addEventListener("logout-click", () => {
       this.logout();
     });
+
+    // Share Campo
+    this.addEventListener("share-campo", (e)=>{
+      console.log("sahre camo",e)
+    })
   }
 
   createRenderRoot() {
@@ -239,6 +244,8 @@ export class FieldPartner extends LitElement {
       .on("change", () => {
         this.load_campos_y_settings();
       });
+
+    
   }
 
   /** Crea el objeto settings y lo graba en la db */

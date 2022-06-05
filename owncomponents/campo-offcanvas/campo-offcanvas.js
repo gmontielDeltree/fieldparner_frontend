@@ -2,6 +2,7 @@ import { LitElement, html, css } from "lit";
 import { Offcanvas } from "bootstrap";
 import area from '@turf/area'
 import uuid4 from "uuid4";
+import "../share-modal/share-modal.js"
 
 export class CampoOffcanvas extends LitElement {
   static properties = {
@@ -119,7 +120,7 @@ export class CampoOffcanvas extends LitElement {
   }
 
   share_campo(){
-    
+    document.getElementById('share-modal').start()
   }
 
   hide() {
@@ -176,6 +177,7 @@ export class CampoOffcanvas extends LitElement {
         </div>
       </div>
 
+      <share-modal id='share-modal' .campo_doc=${this.campo_doc}></share-modal>
       ${this.map
         ? html`<nueva-geometria-ui
             id='nuevo-lote-ui'
