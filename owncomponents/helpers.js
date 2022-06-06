@@ -34,4 +34,9 @@ const sendEvent = (name,details) => {
   this.dispatchEvent(event);
 }
 
-export { emptyGJ, base_url, touchEvent, sendEvent, layer_visibility, hashMessage };
+const normalizar_username = (un) => {
+  let minusculas = un.replaceAll(" ", "_").toLowerCase()
+  return minusculas;
+}
+
+export { emptyGJ, base_url, touchEvent, sendEvent, layer_visibility, hashMessage, normalizar_username };

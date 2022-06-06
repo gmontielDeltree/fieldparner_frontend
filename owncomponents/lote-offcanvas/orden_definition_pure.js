@@ -139,8 +139,8 @@ var dd={
                "style":"invoiceBillingAddress"
             },
             {
-               "text":"",
-               "style":"invoiceBillingAddress"
+               "text":"Ver Localización en Google Maps",
+               link:"https://google.com",
             }
          ]
       },

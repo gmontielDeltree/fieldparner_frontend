@@ -1,23 +1,24 @@
 import { createMachine, assign, actions, interpret } from "xstate";
 
 // const { createMachine, assign, actions, interpret } = XState;
+const initial_context = {
+  fecha: "31/12/2021",
+  cultivo: "",
+  variedad: "",
+  peso_1000: 0,
+  densidad_objetivo: 0,
+  semillas_totales: 0,
+  distancia: 0,
+  superficie_real: 0,
+  hectareas: 0,
+  comentario: "",
+  adjuntos: [],
+};
 
 export const siembraMachine = createMachine({
   id: "Siembra",
   initial: "idle",
-  context: {
-    fecha: "31/12/2021",
-    cultivo: "",
-    variedad: "",
-    peso_1000: 0,
-    densidad_objetivo: 0,
-    semillas_totales: 0,
-    distancia: 0,
-    superficie_real: 0,
-    hectareas: 0,
-    comentario: "",
-    adjuntos: [],
-  },
+  context: initial_context,
   states: {
     idle: {
       on: {

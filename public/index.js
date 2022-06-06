@@ -133,31 +133,31 @@ window.zuixNoConsoleOutput = true;
 
 var auth0 = null;
 
-const fetchAuthConfig = () => fetch("/auth_config.json");
-const configureClient = async () => {
-    const response = await fetchAuthConfig();
-    const config = await response.json();
+// const fetchAuthConfig = () => fetch("/auth_config.json");
+// const configureClient = async () => {
+//     const response = await fetchAuthConfig();
+//     const config = await response.json();
 
-    console.log("Creando UTH=0")
-    auth0 = await createAuth0Client({
-        domain: config.domain,
-        client_id: config.clientId,
-        cacheLocation: 'localstorage'
-    });
-};
+//     console.log("Creando UTH=0")
+//     auth0 = await createAuth0Client({
+//         domain: config.domain,
+//         client_id: config.clientId,
+//         cacheLocation: 'localstorage'
+//     });
+// };
 
 
-window.onload = async () => {
+// window.onload = async () => {
 
     // Donde Estoy
-    let sitio = window.location.hostname
-    if(sitio === 'agrotools.netlify.app'){
-        // 'Production'
-        check_logged_user();
-    }else{
-        // Development
-        check_logged_user();
-    }
+    // let sitio = window.location.hostname
+    // if(sitio === 'agrotools.netlify.app'){
+    //     // 'Production'
+    //     check_logged_user();
+    // }else{
+    //     // Development
+    //     check_logged_user();
+    // }
    
     // console.log("ONLOAD")
     // await configureClient();
@@ -198,164 +198,164 @@ window.onload = async () => {
     // }
 
     // updateUI();
-}
+// }
 
 // NEW
-const updateUI = async () => {
-    const isAuthenticated = await auth0.isAuthenticated();
+// const updateUI = async () => {
+//     const isAuthenticated = await auth0.isAuthenticated();
 
-    //document.getElementById("logout-btn").disabled = !isAuthenticated;
-    //document.getElementById("login-btn").disabled = isAuthenticated;
+//     //document.getElementById("logout-btn").disabled = !isAuthenticated;
+//     //document.getElementById("login-btn").disabled = isAuthenticated;
 
-    //if(!isAuthenticated){
-    //   login();
-    // }
-};
+//     //if(!isAuthenticated){
+//     //   login();
+//     // }
+// };
 
-const login = async () => {
-    await auth0.loginWithRedirect({
-        redirect_uri: window.location.origin + '/index.html'
-    });
-};
+// const login = async () => {
+//     await auth0.loginWithRedirect({
+//         redirect_uri: window.location.origin + '/index.html'
+//     });
+// };
 
-const check_logged_user = async () => {
-    darkdb = new PouchDB('dark')
-    darkdb.get('cross').then((doc) => {
-        un = doc.un
-        base_url = "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/"
-        get_dbs(base_url, un)
-        console.log("Username:", un)
+// const check_logged_user = async () => {
+//     darkdb = new PouchDB('dark')
+//     darkdb.get('cross').then((doc) => {
+//         un = doc.un
+//         base_url = "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/"
+//         get_dbs(base_url, un)
+//         console.log("Username:", un)
 
-    }).catch((e) => {
-        // No existe / Offline /
-        // No Logged In
-        no_logged_screen()
-        base_url = "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/"
-        console.log('Using Randy');
-        get_dbs(base_url, 'randy')
-    })
-}
+//     }).catch((e) => {
+//         // No existe / Offline /
+//         // No Logged In
+//         no_logged_screen()
+//         base_url = "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/"
+//         console.log('Using Randy');
+//         get_dbs(base_url, 'randy')
+//     })
+// }
 
-const no_logged_screen = () => {
-    console.log("User Not Logged In")
-    // Redirect
-}
+// const no_logged_screen = () => {
+//     console.log("User Not Logged In")
+//     // Redirect
+// }
 
-const get_dbs_auth0 = async () => {
+// const get_dbs_auth0 = async () => {
 
-    user = await auth0.getUser();
-    couchdb_config = user['http://mynamespace/couchdb'].couchDB;
+//     user = await auth0.getUser();
+//     couchdb_config = user['http://mynamespace/couchdb'].couchDB;
 
-    campos_db_uri = couchdb_config.campos
-    notas_db_uri = couchdb_config.notas
+//     campos_db_uri = couchdb_config.campos
+//     notas_db_uri = couchdb_config.notas
 
-    couch_username = couchdb_config.username
+//     couch_username = couchdb_config.username
 
-    campos_db = new PouchDB('campos_' + couch_username);
-    notas_db = new PouchDB('notas_' + couch_username);
+//     campos_db = new PouchDB('campos_' + couch_username);
+//     notas_db = new PouchDB('notas_' + couch_username);
 
-    var remote_campos_db = new PouchDB(campos_db_uri);
+//     var remote_campos_db = new PouchDB(campos_db_uri);
 
-    campos_db.sync(remote_campos_db, {
-        live: true,
-        retry: true
-    }).on('change', function (change) {
-        // yo, something changed!
-    }).on('paused', function (info) {
-        // replication was paused, usually because of a lost connection
-    }).on('active', function (info) {
-        // replication was resumed
-    }).on('error', function (err) {
-        // totally unhandled error (shouldn't happen)
-    });
-
-
-    ndvi_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi")
+//     campos_db.sync(remote_campos_db, {
+//         live: true,
+//         retry: true
+//     }).on('change', function (change) {
+//         // yo, something changed!
+//     }).on('paused', function (info) {
+//         // replication was paused, usually because of a lost connection
+//     }).on('active', function (info) {
+//         // replication was resumed
+//     }).on('error', function (err) {
+//         // totally unhandled error (shouldn't happen)
+//     });
 
 
-    remote_campos_changes = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
-    local_campos_changes = new PouchDB("campos_changes")
-
-    console.log("Changes Sync Set");
-    local_campos_changes.replicate.to(remote_campos_changes, {
-        live: true
-    }).on('complete', function () {
-        // yay, we're done!
-        console.log("Changes Uploaded")
-    }).on('error', function (err) {
-        // boo, something went wrong!
-        console.log("Error Changes")
-    });
+//     ndvi_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi")
 
 
-}
+//     remote_campos_changes = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
+//     local_campos_changes = new PouchDB("campos_changes")
+
+//     console.log("Changes Sync Set");
+//     local_campos_changes.replicate.to(remote_campos_changes, {
+//         live: true
+//     }).on('complete', function () {
+//         // yay, we're done!
+//         console.log("Changes Uploaded")
+//     }).on('error', function (err) {
+//         // boo, something went wrong!
+//         console.log("Error Changes")
+//     });
+
+
+// }
 
 
 
-const get_dbs = async (base_url, username) => {
+// const get_dbs = async (base_url, username) => {
 
-    couch_username = username
+//     couch_username = username
 
-    // Local DBs
-    campos_db = new PouchDB('campos_' + username);
-    notas_db = new PouchDB('notas_' + username);
+//     // Local DBs
+//     campos_db = new PouchDB('campos_' + username);
+//     notas_db = new PouchDB('notas_' + username);
 
-    // Remote URIs and Remote Dbs
-    campos_db_uri = base_url + 'campos_' + username
-    notas_db_uri = base_url + 'notas_' + username
+//     // Remote URIs and Remote Dbs
+//     campos_db_uri = base_url + 'campos_' + username
+//     notas_db_uri = base_url + 'notas_' + username
 
-    var remote_campos_db = new PouchDB(campos_db_uri);
+//     var remote_campos_db = new PouchDB(campos_db_uri);
 
-    campos_db.sync(remote_campos_db, {
-        live: true,
-        retry: true
-    }).on('change', function (change) {
-        // yo, something changed!
-    }).on('paused', function (info) {
-        // replication was paused, usually because of a lost connection
-    }).on('active', function (info) {
-        // replication was resumed
-    }).on('error', function (err) {
-        // totally unhandled error (shouldn't happen)
-    });
+//     campos_db.sync(remote_campos_db, {
+//         live: true,
+//         retry: true
+//     }).on('change', function (change) {
+//         // yo, something changed!
+//     }).on('paused', function (info) {
+//         // replication was paused, usually because of a lost connection
+//     }).on('active', function (info) {
+//         // replication was resumed
+//     }).on('error', function (err) {
+//         // totally unhandled error (shouldn't happen)
+//     });
 
-    var remote_notas_db = new PouchDB(notas_db_uri);
-    notas_db.sync(remote_notas_db, {
-        live: true,
-        retry: true
-    }).on('change', function (change) {
-        console.log("Syncing Notas");
-        // yo, something changed!
-    }).on('paused', function (info) {
-        // replication was paused, usually because of a lost connection
-    }).on('active', function (info) {
-        // replication was resumed
-    }).on('error', function (err) {
-        // totally unhandled error (shouldn't happen)
-    });
+//     var remote_notas_db = new PouchDB(notas_db_uri);
+//     notas_db.sync(remote_notas_db, {
+//         live: true,
+//         retry: true
+//     }).on('change', function (change) {
+//         console.log("Syncing Notas");
+//         // yo, something changed!
+//     }).on('paused', function (info) {
+//         // replication was paused, usually because of a lost connection
+//     }).on('active', function (info) {
+//         // replication was resumed
+//     }).on('error', function (err) {
+//         // totally unhandled error (shouldn't happen)
+//     });
 
-    ndvi_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi")
-
-
-    // Cambios DBs
-    remote_campos_changes = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
-    local_campos_changes = new PouchDB("campos_changes")
-
-    console.log("Cambios Sync Set");
-    local_campos_changes.replicate.to(remote_campos_changes, {
-        live: true
-    }).on('complete', function () {
-        // yay, we're done!
-        console.log("Cambios Uploaded")
-    }).on('error', function (err) {
-        // boo, something went wrong!
-        console.log("Error Cambios")
-    });
-
-    console.log("DBs set ok")
+//     ndvi_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi")
 
 
-}
+//     // Cambios DBs
+//     remote_campos_changes = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
+//     local_campos_changes = new PouchDB("campos_changes")
+
+//     console.log("Cambios Sync Set");
+//     local_campos_changes.replicate.to(remote_campos_changes, {
+//         live: true
+//     }).on('complete', function () {
+//         // yay, we're done!
+//         console.log("Cambios Uploaded")
+//     }).on('error', function (err) {
+//         // boo, something went wrong!
+//         console.log("Error Cambios")
+//     });
+
+//     console.log("DBs set ok")
+
+
+// }
 
 
 var wentOffline, wentOnline;

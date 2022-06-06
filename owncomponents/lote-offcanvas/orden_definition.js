@@ -40,7 +40,8 @@ const orden_definition = (
   aplicacion,
   nombre_campo,
   nombre_lote,
-  campos_url
+  campos_url,
+  google_map_link
 ) => {
   let insumos = aplicacion.detalles.insumos;
   let insumos_tabla = insumos.map(pdf_line);
@@ -157,8 +158,8 @@ const orden_definition = (
             style: "invoiceBillingAddress",
           },
           {
-            text: "",
-            style: "invoiceBillingAddress",
+            "text":"Ver Localización en Google Maps",
+            link: google_map_link,
           },
         ],
       },
