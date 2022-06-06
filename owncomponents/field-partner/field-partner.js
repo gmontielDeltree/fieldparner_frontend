@@ -6,9 +6,9 @@ import { TouchPitchHandler } from "mapbox-gl";
 import "../loading-modal/loading-modal.js";
 import "../color-cultivo/color-cultivo.js";
 import cultivos_default from "./cultivos.json";
-import "../notas-offcanvas/notas-offcanvas.js"
-import "../ndvi-offcanvas/ndvi-offcanvas.js"
-import "../variedades-loader/variedades-loader.js"
+import "../notas-offcanvas/notas-offcanvas.js";
+import "../ndvi-offcanvas/ndvi-offcanvas.js";
+import "../variedades-loader/variedades-loader.js";
 
 import uuid4 from "uuid4";
 
@@ -18,7 +18,7 @@ export class FieldPartner extends LitElement {
     draw: {},
     campos: {},
     campos_db: {},
-    shared_db_remote:{},
+    shared_db_remote: {},
     remote_campos_db: {},
     user: {},
     auth0Client: {},
@@ -35,8 +35,6 @@ export class FieldPartner extends LitElement {
     this.user = {};
     this.user.name = "demo";
     this.loading = true;
-
-    this.crear_dbs(this.user);
 
     /* Clicks en varios botones */
     this.addEventListener("ver-campo-detalles", (e) => {
@@ -57,14 +55,13 @@ export class FieldPartner extends LitElement {
     });
 
     this.addEventListener("nueva-nota-click", (e) => {
-      document.getElementById('notas-oc').nueva_nota()
+      document.getElementById("notas-oc").nueva_nota();
     });
 
     this.addEventListener("ver-ndvi-click", (e) => {
-      document.getElementById('ndvi-oc').lote_doc = e.detail.lote
-      document.getElementById('ndvi-oc').show()
+      document.getElementById("ndvi-oc").lote_doc = e.detail.lote;
+      document.getElementById("ndvi-oc").show();
     });
-
 
     /* Izar map y draw a este componente para que los otros puedan usarlo */
     this.addEventListener("map-loaded", (e) => {
@@ -84,30 +81,52 @@ export class FieldPartner extends LitElement {
       document.getElementById("colores-cultivos").show();
     });
 
-    this.addEventListener('save-settings',(e)=>{
-      this.campos_db.put(this.settings)
-    })
+    this.addEventListener("save-settings", (e) => {
+      this.campos_db.put(this.settings);
+    });
 
     // Login
     this.addEventListener("login-click", () => {
       this.loginet();
     });
-    
+
     this.addEventListener("logout-click", () => {
       this.logout();
     });
 
-    // Share Campo
-    this.addEventListener("share-campo", (e)=>{
-      console.log("sahre camo",e.detail)
-      let nuevo_shared_campo = {...e.detail.campo_doc}
-      nuevo_shared_campo.shared = true
-      nuevo_shared_campo.share_with = e.detail.share_with
-      nuevo_shared_campo.owner = this.user
-
-      this.campos_db.put(nuevo_shared_campo)
-
+    // Borrar un Campo
+    this.addEventListener("borrar-campo", (e) => {
+      this.campos_db.remove(e.detail.campo_doc).then(()=>{
+        alert("Campo borrado");
+        this.load_campos_y_settings();
+      }
+      )
+      
     })
+
+    // Share Campo
+    this.addEventListener("share-campo", (e) => {
+      console.log("sahre camo", e.detail);
+
+      let nuevo_shared_campo = { ...e.detail.campo_doc };
+      nuevo_shared_campo.shared = true;
+      nuevo_shared_campo.share_with = [...e.detail.share_with];
+      // Me agrego a mi mismo para compartir
+      nuevo_shared_campo.share_with.push(this.user.name.toLowerCase())
+      // 
+      nuevo_shared_campo.owner = this.user;
+      // Lo grabo en campos_db
+      this.campos_db.put(nuevo_shared_campo);
+      // Lo upserto en shared_db
+      this.shared_db_remote.get(nuevo_shared_campo._id).then(old_doc => {
+        nuevo_shared_campo._rev = old_doc._rev
+        this.shared_db_remote.put(nuevo_shared_campo)
+      }).catch((e)=>{
+        if(e.reason === 'missing'){
+          this.shared_db_remote.put(nuevo_shared_campo)
+        }
+      });
+    });
   }
 
   createRenderRoot() {
@@ -119,28 +138,30 @@ export class FieldPartner extends LitElement {
 
     if (sitio === "agrotools.netlify.app") {
       // 'Production' - Normal flow
-      
+
       await this.buildAuth0Client();
       console.log("Normal Flow - AUTH Flow");
       await this.handleRedirectCallback();
       // Campos
-      this.load_campos_y_settings()
-    } else if(sitio === 'dev--agrotools.netlify.app') {
+      this.load_campos_y_settings();
+    } else if (sitio === "dev--agrotools.netlify.app") {
       // Development - Especial flow
       console.log("Especial Development Flow - Demo User");
       // Logged in
       this.logged_in = true;
       // Default Databases
+      this.crear_dbs(this.user);
       // Campos
-      this.load_campos_y_settings()
-    } else{
+      this.load_campos_y_settings();
+    } else {
       console.log("Especial Development Flow - Randy User");
       // Logged in
       this.logged_in = true;
-      this.user.name = 'randy'
+      this.user.name = "randy";
       // Default Databases
+      this.crear_dbs(this.user);
       // Campos
-      this.load_campos_y_settings()
+      this.load_campos_y_settings();
     }
 
     console.log("FU ENDDE");
@@ -261,32 +282,38 @@ export class FieldPartner extends LitElement {
         this.load_campos_y_settings();
       });
 
-      this.shared_db_remote = new PouchDb(base_url + "shared_campos")
-      this.campos_db.sync(this.shared_db_remote, {
+    /** Replicacion hacia arriba cuando se comparte un campo */
+    this.shared_db_remote = new PouchDb(base_url + "shared_campos");
+    // this.campos_db
+    //   .replicate.to(this.shared_db_remote, {
+    //     live: true,
+    //     retry: true,
+    //     filter: "share/by_sharing_status",
+    //   })
+      // .on("change", function (result) {
+      //   if (change.deleted) {
+      //     // remove
+      //   } else {
+      //     // upsert
+      //   }
+      // });
+
+    /** Replicacion bi */
+    this.campos_db
+      .sync(this.shared_db_remote, {
         live: true,
         retry: true,
-        filter: 'share/by_sharing_status',
-       // query_params: { "agent": agent }
-      }).on('change', function(result) {
-        if (change.deleted){
-          // remove
-        } else {
-          // upsert
-        }
-      });
-    
-      this.campos_db.sync(this.shared_db_remote, {
-        live: true,
-        retry: true,
-        filter: 'share/by_share_with_list',
-        query_params: { "my_self": this.user.name }
-      }).on('change', function(result) {
-        if (change.deleted){
-          // remove
-        } else {
-          // upsert
-        }
-      });
+        filter: "share/by_share_with_list",
+        query_params: { my_self: this.user.name },
+      })
+      // .on("change", function (result) {
+      //   if (change.deleted) {
+      //     // remove
+      //   } else {
+      //     // upsert
+      //     console.log("Alguien me compartio un Campo");
+      //   }
+      // });
   }
 
   /** Crea el objeto settings y lo graba en la db */
@@ -305,6 +332,9 @@ export class FieldPartner extends LitElement {
     this.settings = settings_doc;
   }
 
+  /** Recarga los campos y settings.
+   * Fuerza un redibujado de los cambios
+   */
   load_campos_y_settings() {
     this.campos_db
       .allDocs({
@@ -323,7 +353,10 @@ export class FieldPartner extends LitElement {
 
   render() {
     return html`
-      <mapa-principal .campos=${this.campos} .settings=${this.settings}></mapa-principal>
+      <mapa-principal
+        .campos=${this.campos}
+        .settings=${this.settings}
+      ></mapa-principal>
       <navbar-element></navbar-element>
       <campo-offcanvas
         id="campo-oc"
@@ -332,7 +365,11 @@ export class FieldPartner extends LitElement {
         .campos_db=${this.campos_db}
       ></campo-offcanvas>
 
-      <lote-offcanvas id="lote-oc" ._db=${this.campos_db} .settings=${this.settings}></lote-offcanvas>
+      <lote-offcanvas
+        id="lote-oc"
+        ._db=${this.campos_db}
+        .settings=${this.settings}
+      ></lote-offcanvas>
       <nuevo-campo
         id="nuevo-campo-oc"
         .map=${this.map}
@@ -346,9 +383,12 @@ export class FieldPartner extends LitElement {
         .campos=${this.campos}
       ></lista-de-campos>
 
-      <color-cultivo id="colores-cultivos" .cultivos=${this.settings?.user_cultivos}></color-cultivo>
+      <color-cultivo
+        id="colores-cultivos"
+        .cultivos=${this.settings?.user_cultivos}
+      ></color-cultivo>
       <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
-      <notas-oc id='notas-oc' ></notas-oc>
+      <notas-oc id="notas-oc"></notas-oc>
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>
       <variedades-loader></variedades-loader>

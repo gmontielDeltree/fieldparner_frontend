@@ -126,7 +126,11 @@ export class CampoOffcanvas extends LitElement {
   hide() {
     this._detallesOffcanvas.hide();
   }
-
+  
+  borrar_campo(){
+    let event = new CustomEvent("borrar-campo", {detail: {campo_doc:this.campo_doc},bubbles:true, composed:true})
+    this.dispatchEvent(event);
+  }
   render() {
     return html`
       <div
@@ -170,7 +174,7 @@ export class CampoOffcanvas extends LitElement {
           <button
             class="btn btn-danger"
             id="eliminar-campo-btn"
-            @click=${this.borrar_lote_callback}
+            @click=${this.borrar_campo}
           >
             Eliminar Campo
           </button>
