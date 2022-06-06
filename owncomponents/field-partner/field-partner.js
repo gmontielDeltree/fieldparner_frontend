@@ -117,19 +117,20 @@ export class FieldPartner extends LitElement {
       nuevo_shared_campo.owner = this.user;
       // Lo grabo en campos_db
       this.campos_db.put(nuevo_shared_campo);
+
       // Lo upserto en shared_db
-      this.shared_db_remote.get(nuevo_shared_campo._id).then(old_doc => {
-        nuevo_shared_campo._rev = old_doc._rev
-        this.shared_db_remote.put(nuevo_shared_campo)
-      }).catch((e)=>{
-        if(e.reason === 'missing'){
-          // debe tener _rev si es nuevo
-          delete nuevo_shared_campo._rev
-          this.shared_db_remote.put(nuevo_shared_campo).catch((e)=>{
-          console.log("Error al crear nuevo shared_campo",e)
-           })
-        }
-      });
+      // this.shared_db_remote.get(nuevo_shared_campo._id).then(old_doc => {
+      //   nuevo_shared_campo._rev = old_doc._rev
+      //   this.shared_db_remote.put(nuevo_shared_campo)
+      // }).catch((e)=>{
+      //   if(e.reason === 'missing'){
+      //     // debe tener _rev si es nuevo
+      //     //delete nuevo_shared_campo._rev
+      //     //this.shared_db_remote.put(nuevo_shared_campo).catch((e)=>{
+      //     //console.log("Error al crear nuevo shared_campo",e)
+      //     // })
+      //   }
+      // });
     });
   }
 
@@ -288,12 +289,12 @@ export class FieldPartner extends LitElement {
 
     /** Replicacion hacia arriba cuando se comparte un campo */
     this.shared_db_remote = new PouchDb(base_url + "shared_campos");
-    // this.campos_db
-    //   .replicate.to(this.shared_db_remote, {
-    //     live: true,
-    //     retry: true,
-    //     filter: "share/by_sharing_status",
-    //   })
+    this.campos_db
+      .replicate.to(this.shared_db_remote, {
+        live: true,
+        retry: true,
+        filter: "share/by_sharing_status",
+      })
       // .on("change", function (result) {
       //   if (change.deleted) {
       //     // remove
@@ -310,14 +311,14 @@ export class FieldPartner extends LitElement {
         filter: "share/by_share_with_list",
         query_params: { my_self: this.user.name },
       })
-      // .on("change", function (result) {
-      //   if (change.deleted) {
-      //     // remove
-      //   } else {
-      //     // upsert
-      //     console.log("Alguien me compartio un Campo");
-      //   }
-      // });
+      .on("change", function (result) {
+        if (change.deleted) {
+          // remove
+        } else {
+          // upsert
+          console.log("Alguien me compartio un Campo");
+        }
+      });
   }
 
   /** Crea el objeto settings y lo graba en la db */
