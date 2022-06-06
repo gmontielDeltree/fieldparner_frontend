@@ -12,6 +12,22 @@ export class VariedadesLoader extends LitElement{
 		super();
 	}
 
+	designDocsShared(){
+		let dd = {
+			"_id": "_design/share",
+			"filters": {
+			  "by_sharing_status": function(doc, req) {
+			    return doc._id === '_design/share' || doc.shared === true;
+			  }.toString(),
+			  "by_share_with_list": function(doc, req) {
+			    return doc._id === '_design/share' || doc.share_with.has(req.query.my_self) === true;
+			  }.toString()
+			}
+		      }
+		let shared_db = new PouchDB(base_url + 'shared_campos')
+		shared_db.put(dd)
+
+	}
 	load(){
 		const doc = (v) =>  {
 			let especie = v['Especie']?.replaceAll(' ', '_') || "No definido"

@@ -18,6 +18,7 @@ export class FieldPartner extends LitElement {
     draw: {},
     campos: {},
     campos_db: {},
+    shared_db_remote:{},
     remote_campos_db: {},
     user: {},
     auth0Client: {},
@@ -98,7 +99,14 @@ export class FieldPartner extends LitElement {
 
     // Share Campo
     this.addEventListener("share-campo", (e)=>{
-      console.log("sahre camo",e)
+      console.log("sahre camo",e.detail)
+      let nuevo_shared_campo = {...e.detail.campo_doc}
+      nuevo_shared_campo.shared = true
+      nuevo_shared_campo.share_with = e.detail.share_with
+      nuevo_shared_campo.owner = this.user
+
+      this.campos_db.put(nuevo_shared_campo)
+
     })
   }
 
@@ -117,11 +125,19 @@ export class FieldPartner extends LitElement {
       await this.handleRedirectCallback();
       // Campos
       this.load_campos_y_settings()
-    } else {
+    } else if(sitio === 'dev--agrotools.netlify.app') {
       // Development - Especial flow
       console.log("Especial Development Flow - Demo User");
       // Logged in
       this.logged_in = true;
+      // Default Databases
+      // Campos
+      this.load_campos_y_settings()
+    } else{
+      console.log("Especial Development Flow - Randy User");
+      // Logged in
+      this.logged_in = true;
+      this.user.name = 'randy'
       // Default Databases
       // Campos
       this.load_campos_y_settings()
@@ -245,7 +261,32 @@ export class FieldPartner extends LitElement {
         this.load_campos_y_settings();
       });
 
+      this.shared_db_remote = new PouchDb(base_url + "shared_campos")
+      this.campos_db.sync(this.shared_db_remote, {
+        live: true,
+        retry: true,
+        filter: 'share/by_sharing_status',
+       // query_params: { "agent": agent }
+      }).on('change', function(result) {
+        if (change.deleted){
+          // remove
+        } else {
+          // upsert
+        }
+      });
     
+      this.campos_db.sync(this.shared_db_remote, {
+        live: true,
+        retry: true,
+        filter: 'share/by_share_with_list',
+        query_params: { "my_self": this.user.name }
+      }).on('change', function(result) {
+        if (change.deleted){
+          // remove
+        } else {
+          // upsert
+        }
+      });
   }
 
   /** Crea el objeto settings y lo graba en la db */
