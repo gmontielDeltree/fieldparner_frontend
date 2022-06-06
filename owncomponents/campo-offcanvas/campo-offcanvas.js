@@ -3,6 +3,7 @@ import { Offcanvas } from "bootstrap";
 import area from '@turf/area'
 import uuid4 from "uuid4";
 import "../share-modal/share-modal.js"
+import { normalizar_username } from "../helpers.js";
 
 export class CampoOffcanvas extends LitElement {
   static properties = {
@@ -10,6 +11,7 @@ export class CampoOffcanvas extends LitElement {
     draw: {},
     campos_db: {},
     campo_doc: {},
+    user:{},
     show_main: {},
     _detallesOffcanvas: {},
   };
@@ -63,6 +65,31 @@ export class CampoOffcanvas extends LitElement {
         doc.lotes.push(lote_geojson);
         // Save Lote en campo doc
         this.campos_db.put(doc).then(()=>console.log("Lote Grabado"));
+
+
+      // Changes para NDVI
+      let couch_username = normalizar_username(this.user.name)
+      this.local_campos_changes.put(
+      {
+        _id: this_lote_id,
+        tipo: "add-lote",
+        username: couch_username,
+        details: {
+          campo_id: thisCampoId,
+          db: "campos_" + couch_username,
+          lote_geojson: lote_geojson,
+          username: couch_username,
+        },
+      },
+        (err, result) => {
+          if (!err) {
+            console.log("LocalChanges Successfully posted!");
+          } else {
+            console.log(err);
+          }
+        }
+      );
+
       })
     })
 
@@ -154,7 +181,11 @@ export class CampoOffcanvas extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body small col pt-0">
+          ${
+             this.campo_doc?.shared ? html`<p>Compartido por <span class="badge bg-success">${this.campo_doc.owner.name.toUpperCase()}</span> </p>` : null
+          }
           <p>Toque en un lote del mapa para ver detalles</p>
+
           <button
             type="button"
             class="btn btn-success btn-anadir-lote"
