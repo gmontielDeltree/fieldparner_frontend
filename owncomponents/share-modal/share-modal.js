@@ -1,6 +1,7 @@
 import { LitElement, html, unsafeCSS } from "lit-element";
 import { Modal } from "bootstrap";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import { normalizar_username } from "../helpers";
 
 export class ShareModal extends LitElement {
   static properties = {
@@ -38,6 +39,14 @@ export class ShareModal extends LitElement {
     });
 
     this.dispatchEvent(event);
+    this.modal.hide()
+    
+  }
+
+  agregar_click(e){
+    let hack = [...this.share_list]
+    hack.push(normalizar_username(this.input_value))
+    this.share_list = hack
   }
 
   render() {
@@ -81,7 +90,7 @@ export class ShareModal extends LitElement {
               <button
                 class="btn btn-outline-secondary"
                 type="button"
-                @click=${(e) => this.share_list.push(this.input_value)}
+                @click=${this.agregar_click}
                 id="button-addon2"
               >
                 Agregar

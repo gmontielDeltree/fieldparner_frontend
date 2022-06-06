@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit-element";
 import PouchDb from "pouchdb";
-import { base_url } from "../helpers";
+import { base_url, normalizar_username } from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
 import { TouchPitchHandler } from "mapbox-gl";
 import "../loading-modal/loading-modal.js";
@@ -106,17 +106,18 @@ export class FieldPartner extends LitElement {
 
     // Share Campo
     this.addEventListener("share-campo", (e) => {
-      console.log("sahre camo", e.detail);
+      console.log("share campo", e.detail);
 
       let nuevo_shared_campo = { ...e.detail.campo_doc };
       nuevo_shared_campo.shared = true;
       nuevo_shared_campo.share_with = [...e.detail.share_with];
       // Me agrego a mi mismo para compartir
-      nuevo_shared_campo.share_with.push(this.user.name.toLowerCase())
+
+      nuevo_shared_campo.share_with.push(normalizar_username(this.user.name))
       // 
       nuevo_shared_campo.owner = this.user;
       // Lo grabo en campos_db
-      this.campos_db.put(nuevo_shared_campo);
+      this.campos_db.put(nuevo_shared_campo).then(()=>alert("Campo compartido"));
 
       // Lo upserto en shared_db
       // this.shared_db_remote.get(nuevo_shared_campo._id).then(old_doc => {
@@ -309,7 +310,7 @@ export class FieldPartner extends LitElement {
         live: true,
         retry: true,
         filter: "share/by_share_with_list",
-        query_params: { my_self: this.user.name },
+        query_params: { my_self: normalizar_username(this.user.name) },
       })
       .on("change", function (result) {
         if (change.deleted) {
