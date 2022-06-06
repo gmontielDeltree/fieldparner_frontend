@@ -123,7 +123,11 @@ export class FieldPartner extends LitElement {
         this.shared_db_remote.put(nuevo_shared_campo)
       }).catch((e)=>{
         if(e.reason === 'missing'){
-          this.shared_db_remote.put(nuevo_shared_campo)
+          // debe tener _rev si es nuevo
+          delete nuevo_shared_campo._rev
+          this.shared_db_remote.put(nuevo_shared_campo).catch((e)=>{
+          console.log("Error al crear nuevo shared_campo",e)
+           })
         }
       });
     });
