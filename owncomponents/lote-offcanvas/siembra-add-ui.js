@@ -5,6 +5,7 @@ import { Modal, Offcanvas } from "bootstrap";
 import "../lista-searchable/lista-searchable.js";
 import PouchDb from 'pouchdb'
 import { base_url } from "../helpers";
+import uuid4 from "uuid4";
 
 export class SiembraAddUI extends LitElement {
   static properties = {
@@ -136,7 +137,26 @@ export class SiembraAddUI extends LitElement {
     this.fsm.send({ type: "GUARDAR" });
 
     // Si hay cultivos nuevos y/o varidades enviar otro evento
-    // para que la aplicacion to accion apropiada
+    // para que la aplicacion tome accion apropiada
+
+    let es_nuevo_cultivo = document.getElementById('cultivo-input').es_nuevo
+    let es_nueva_variedad = document.getElementById('variedad-input').es_nuevo
+
+    if(es_nuevo_cultivo){
+     // Evento para que se actualicen las settings en FP
+    }
+
+    if(es_nueva_variedad){
+      // Grabo la variedad aca
+      console.log("es Nueva Variedad")
+      let id = this._ctx.cultivo.toUpperCase() + ":" + this._ctx.variedad.toUpperCase()
+      let nv = {}
+      nv._id = id
+      nv.especie = this._ctx.cultivo.toUpperCase()
+      nv.cultivar = this._ctx.variedad.toUpperCase()
+      nv.uuid = uuid4()
+      this._variedades_db_local.put(nv)
+    }
   }
 
   cultivo_input_changed(e){
