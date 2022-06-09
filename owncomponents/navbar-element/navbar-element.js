@@ -59,7 +59,18 @@ export class NavbarElement extends LitElement {
               @click=${() => {
                 this.sendEvent("ver-lista-campos", null);
               }}
-            >Ver Campos</button>
+            >
+              Ver Campos
+            </button>
+
+            <button
+              class="btn btn-outline-success"
+              @click=${() => {
+                this.sendEvent("ver-depositos-click", null);
+              }}
+            >
+              Ver Depositos
+            </button>
 
             <div class="nav-item dropdown">
               <a
@@ -73,11 +84,27 @@ export class NavbarElement extends LitElement {
                 Opciones
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" @click=${()=>{this.sendEvent('ver-colores-cultivos')}} href="#">Color Cultivos</a></li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    @click=${() => {
+                      this.sendEvent("ver-colores-cultivos");
+                    }}
+                    href="#"
+                    >Color Cultivos</a
+                  >
+                </li>
                 <!-- <li><a class="dropdown-item" href="#">Another action</a></li> -->
                 <li><hr class="dropdown-divider" /></li>
                 <li>
-                  <a class="dropdown-item"  @click=${()=>{this.sendEvent('logout-click')}} href="#">Sign Out</a>
+                  <a
+                    class="dropdown-item"
+                    @click=${() => {
+                      this.sendEvent("logout-click");
+                    }}
+                    href="#"
+                    >Sign Out</a
+                  >
                 </li>
               </ul>
             </div>

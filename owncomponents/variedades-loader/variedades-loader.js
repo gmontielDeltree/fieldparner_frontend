@@ -63,4 +63,4 @@ export class VariedadesLoader extends LitElement {
   }
 }
 
-customElements.define("variedades-loader", VariedadesLoader);
+customElements.define("db-loader", VariedadesLoader);
