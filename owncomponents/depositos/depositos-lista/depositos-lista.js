@@ -1,6 +1,7 @@
 import { Modal, Offcanvas } from "bootstrap";
 import { LitElement, html, unsafeCSS } from "lit-element";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import { normalizar_username } from "../../helpers";
 
 export class DepositosLista extends LitElement {
   static properties = {
@@ -18,7 +19,12 @@ export class DepositosLista extends LitElement {
     super();
   }
 
-  willUpdate(props) {}
+  willUpdate(props) {
+    if(props.has('db')){
+
+
+    }
+  }
 
   firstUpdated() {
     this.offcanvas_lista = new Offcanvas(
@@ -45,6 +51,7 @@ export class DepositosLista extends LitElement {
   ver_depo(d){
     this.offcanvas_lista.hide()
     this.deposito = d
+    this.get_depo_stock(d.nombre)
     this.deposito_modal.show()
 
   }
@@ -60,6 +67,36 @@ export class DepositosLista extends LitElement {
 
   nueva_entrada(d){
     
+  }
+
+  get_depo_stock(d){
+    
+    this.db.allDocs({
+      include_docs:true,
+      startkey: "entrada:" + normalizar_username(d),
+      endkey: "entrada:" + normalizar_username(d) + "\ufff0",}).then((e)=>{
+        console.log("ALL DOCS", normalizar_username(d), e)
+        let lineas_de_stock = {}
+        let entradas = e.rows
+        entradas.map(({doc}) => { 
+          let insumos = doc.insumos
+          console.log("INSUMOS", insumos)
+          Object.entries(insumos).map(([k,insumo_item])=>{
+            console.log('item', insumo_item)
+            let cantidad = insumo_item.cantidad
+            let current_cantidad = lineas_de_stock[k]?.cantidad || 0;
+            let updated_cantidad = current_cantidad + cantidad
+            if(k in lineas_de_stock){
+
+            }else{
+              lineas_de_stock[k] = {}
+            }
+            lineas_de_stock[k].cantidad = updated_cantidad
+            lineas_de_stock[k].insumo = insumo_item.insumo
+          })
+        })
+        console.log("Stocks", lineas_de_stock)
+    })
   }
 
   show() {

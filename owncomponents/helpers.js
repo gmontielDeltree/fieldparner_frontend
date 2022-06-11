@@ -39,4 +39,6 @@ const normalizar_username = (un) => {
   return minusculas;
 }
 
+
+
 export { emptyGJ, base_url, touchEvent, sendEvent, layer_visibility, hashMessage, normalizar_username };

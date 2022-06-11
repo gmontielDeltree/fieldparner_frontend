@@ -1,8 +1,10 @@
-import { LitElement, html } from "lit-element";
+import { LitElement, html,css } from "lit-element";
 import { emptyGJ, touchEvent, layer_visibility } from "../helpers";
 import mapboxgl from "mapbox-gl";
 
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
 /** Modifica 'features' agregado color y cultivo a las 'properties'
  *  basado en las actividades
@@ -118,6 +120,12 @@ export class MapaPrincipal extends LitElement {
     //this.map.resize();
 
     this.map.on("load", () => {
+      const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        mapboxgl: mapboxgl
+      });
+
+      this.map.addControl(geocoder)
       this.map.addControl(this.draw); // Sin controles
       //tour();
       this.map.addSource("campos", {
