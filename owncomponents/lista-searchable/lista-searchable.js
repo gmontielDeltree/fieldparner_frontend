@@ -7,7 +7,7 @@ export class ListaSearchable extends LitElement {
     value: {},
     lista: {},
     lista_filtrada: {},
-    item_el: {},
+    //item_el: {},
     principal_key: {},
   };
 

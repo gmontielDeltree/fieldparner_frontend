@@ -10,7 +10,7 @@ import "../notas-offcanvas/notas-offcanvas.js";
 import "../ndvi-offcanvas/ndvi-offcanvas.js";
 import "../variedades-loader/variedades-loader.js";
 import "../depositos/deposito-upsert/deposito-upsert.js"
-import "../depositos/depositos-lista/depositos-lista.js"
+import "../depositos/depositos-lista/depositos-lista.ts"
 import uuid4 from "uuid4";
 
 export class FieldPartner extends LitElement {
@@ -428,11 +428,14 @@ export class FieldPartner extends LitElement {
       ></color-cultivo>
       <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
       <notas-oc id="notas-oc"></notas-oc>
-      <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
-      <loading-modal .show=${this.loading}></loading-modal>
       <deposito-upsert id='deposito-upsert' .db=${this.campos_db}></deposito-upsert>
       <depositos-lista id='depositos-lista' .db=${this.campos_db}></depositos-lista>
       <db-loader></db-loader>
+      
+
+
+      <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
+      <loading-modal .show=${this.loading}></loading-modal>
     `;
   }
 }
