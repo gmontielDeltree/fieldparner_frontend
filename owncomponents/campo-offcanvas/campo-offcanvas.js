@@ -181,9 +181,9 @@ export class CampoOffcanvas extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body small col pt-0">
-          ${
+          <!-- ${
              this.campo_doc?.shared ? html`<p>Compartido por <span class="badge bg-success">${this.campo_doc.owner.name.toUpperCase()}</span> </p>` : null
-          }
+          } -->
           <p>Toque en un lote del mapa para ver detalles</p>
 
           <button
@@ -194,13 +194,13 @@ export class CampoOffcanvas extends LitElement {
             Añadir Lote
           </button>
 
-          <button
+          <!-- <button
             type="button"
             class="btn btn-warning"
             @click=${this.share_campo}
           >
             Compartir Campo
-          </button>
+          </button> -->
 
           <button
             class="btn btn-danger"

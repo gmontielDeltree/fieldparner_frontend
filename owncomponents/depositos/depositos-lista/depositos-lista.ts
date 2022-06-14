@@ -5,6 +5,7 @@ import { normalizar_username } from "../../helpers";
 import '../../lista-searchable/lista-searchable.js';
 import {property} from 'lit/decorators.js'
 import * as PouchDB from 'pouchdb';
+import { lineas_stock } from "../../helpers/stock";
 
 export class DepositosLista extends LitElement {
   // static override properties = {
@@ -101,24 +102,9 @@ export class DepositosLista extends LitElement {
       })
       .then((e) => {
         console.log("ALL DOCS", normalizar_username(d), e);
-        let lineas_de_stock = {};
-        let entradas = e.rows;
-        entradas.map(({ doc }) => {
-          let insumos = doc.insumos;
-          Object.entries(insumos).map(([k, insumo_item]) => {
-            console.log("item", insumo_item);
-            let cantidad = insumo_item.cantidad;
-            let current_cantidad = lineas_de_stock[k]?.cantidad || 0;
-            let updated_cantidad = current_cantidad + cantidad;
-            if (!(k in lineas_de_stock)) {
-              lineas_de_stock[k] = {};
-            }
-            lineas_de_stock[k].cantidad = updated_cantidad;
-            lineas_de_stock[k].insumo = insumo_item.insumo;
-          });
-        });
+        
+        this.lineas_de_stock = lineas_stock(e);
 
-        this.lineas_de_stock = lineas_de_stock;
         console.log("Stocks", this.lineas_de_stock);
       });
   }
