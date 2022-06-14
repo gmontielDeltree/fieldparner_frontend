@@ -221,6 +221,7 @@ export class LoteOffcanvas extends LitElement {
                 this._campo_doc = doc;
                 this._lote_doc = doc.lotes[lote_index];
                 document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+                document.getElementById('actividades-timeline').db = this._db;
 
             }
 

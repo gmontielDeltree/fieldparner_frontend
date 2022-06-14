@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit'
 import { map } from 'lit/directives/map.js';
 import moment from 'moment';
 import 'moment/dist/locale/es';
-
+import {stock_suficiente} from '../../helpers/stock.ts'
 
 
 const p_from_insumo = (i) => {
@@ -239,7 +239,9 @@ const timeline_css = css`.cbp_tmtimeline {
 export class TimelineElement extends LitElement {
     static properties = {
         actividades:{},
-        fsm: { state: true }
+        db: {},
+        fsm: { state: true },
+        stock_tag_table:{}
     }
 
     static styles = [timeline_css];
@@ -257,13 +259,43 @@ export class TimelineElement extends LitElement {
 
     constructor() {
         super();
+        this.stock_tag_table = {}
     }
+
+    willUpdate(props){
+        if(props.has("db")){
+             // Calcular tags
+             console.log("CALC STOKS")
+             this.actividades.map((act) => {
+             console.log("CALC STOKS I")
+                 stock_suficiente(this.db, act).then((status)=>{this.stock_tag_table[act.uuid] = status})
+             })
+        }
+
+        if(props.has('actividades') && this.db){
+            // Calcular tags
+            console.log("CALC STOKS")
+            this.actividades.map((act) => {
+            console.log("CALC STOKS I")
+                stock_suficiente(this.db, act).then((status)=>{this.stock_tag_table[act.uuid] = status})
+            })
+        }
+    }
+
     createRenderRoot() {
         return this;
     }
+
     render() {
 
+        let stock_tag = (stock_suficiente) => html`
+            <p class="small">
+            ${stock_suficiente}
+        </p>`
+
         const time_item = (item) => {
+
+            let stock_suficiente_tag = this.stock_tag_table[item.uuid];
 
             if(item.tipo === 'aplicacion'){
                 let fecha = item.detalles.fecha
@@ -289,6 +321,8 @@ export class TimelineElement extends LitElement {
                         <p class="small">
                             ${comentarios}
                         </p>
+                        ${stock_tag(stock_suficiente_tag)}
+
                         ${navigator.share ? html`<button type="button" class="btn btn-success" @click=${()=>this.evento_pdf(item.uuid)}>Compartir Orden</button>` : html`<button class='btn btn-secondary' @click=${()=>{console.log(item.uuid); this.evento_pdf(item.uuid)}}>Orden de Trabajo</button>`}
                         
                         <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
