@@ -2,11 +2,11 @@ import { Modal, Offcanvas } from "bootstrap";
 import { LitElement, html, unsafeCSS } from "lit-element";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import { normalizar_username } from "../../helpers";
-import '../../lista-searchable/lista-searchable.js';
-import {property} from 'lit/decorators.js'
-import * as PouchDB from 'pouchdb';
+import "../../lista-searchable/lista-searchable.js";
+import { property } from "lit/decorators.js";
+import * as PouchDB from "pouchdb";
 import { lineas_stock } from "../../helpers/stock";
-
+import { uuid4 } from "uuid4";
 export class DepositosLista extends LitElement {
   // static override properties = {
   //   offcanvas_lista: {},
@@ -28,16 +28,28 @@ export class DepositosLista extends LitElement {
   deposito;
 
   @property()
-  lineas_de_stock 
+  lineas_de_stock;
 
   @property()
   depositos;
 
   @property()
-  db: PouchDB
+  db: PouchDB;
+
+  @property()
+  lineas_de_entradas: Array<any> = [];
+
+  @property()
+  linea_entrada = {
+    insumo: { nombre: "", unidad: "un", uuid: "" },
+    cantidad: 0,
+  };
 
   @property()
   nueva_entrada_modal: Modal;
+
+  @property()
+  entradas: any = [];
 
   static override styles = unsafeCSS(bootstrap);
 
@@ -45,7 +57,6 @@ export class DepositosLista extends LitElement {
     super();
   }
 
-  
   override willUpdate(props) {
     if (props.has("db")) {
     }
@@ -58,7 +69,9 @@ export class DepositosLista extends LitElement {
     this.deposito_modal = new Modal(
       this.shadowRoot.getElementById("deposito-modal")
     );
-    this.nueva_entrada_modal = new Modal(this.shadowRoot.getElementById('nueva-entrada-modal'))
+    this.nueva_entrada_modal = new Modal(
+      this.shadowRoot.getElementById("nueva-entrada-modal")
+    );
   }
 
   get_depos() {
@@ -90,7 +103,12 @@ export class DepositosLista extends LitElement {
   }
 
   nueva_entrada(d) {
-    this.nueva_entrada_modal.show()
+    this.linea_entrada = {
+      insumo: { nombre: "", unidad: "un", uuid: "" },
+      cantidad: 0,
+    };
+    this.lineas_de_entradas = [];
+    this.nueva_entrada_modal.show();
   }
 
   get_depo_stock(d) {
@@ -102,7 +120,7 @@ export class DepositosLista extends LitElement {
       })
       .then((e) => {
         console.log("ALL DOCS", normalizar_username(d), e);
-        
+        this.entradas = e.rows;
         this.lineas_de_stock = lineas_stock(e);
 
         console.log("Stocks", this.lineas_de_stock);
@@ -119,44 +137,156 @@ export class DepositosLista extends LitElement {
     this.deposito_modal.hide();
   }
 
-  guardar_nueva_entrada(){
-     
+  guardar_nueva_entrada() {
+    let doc = { ts: 0 };
+    doc.ts = Math.floor(Date.now() / 1000);
+    doc.deposito = this.deposito._id;
+    doc._id =
+      "entrada:" + normalizar_username(this.deposito.nombre) + ":" + uuid4();
+    doc.uuid = uuid4();
+    doc.tipo = "entrada";
+
+    let insumos_keyhash = {};
+    this.lineas_de_entradas.map((e) => {
+      insumos_keyhash[e.insumo.uuid] = e;
+    });
+    doc.insumos = insumos_keyhash;
+
+    this.db.put(doc).then(() => {
+      console.log("DOC Entrada Grabado", doc);
+    });
+
+    this.get_depo_stock(this.deposito.nombre);
+    this.nueva_entrada_modal.hide();
+  }
+
+  input_changed(e) {
+    let no = { ...this.linea_entrada };
+    no[e.target.name] = e.target.value;
+    this.linea_entrada = no;
   }
 
   render() {
-
     let nueva_entrada_modal = html`
       <!-- Modal -->
-      <div class="modal fade" id="nueva-entrada-modal" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
+      <div
+        class="modal fade"
+        id="nueva-entrada-modal"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="modelTitleId"
+        aria-hidden="true"
+      >
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Nueva Entrada</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
             </div>
             <div class="modal-body">
               <div class="mb-3">
                 <label for="nombre-input" class="form-label">Nombre</label>
-                <input type="text" class="form-control" name="nombre-input" id="nombre-input" aria-describedby="" placeholder="">
-                <small  class="form-text text-muted"></small>
+                <input
+                  type="text"
+                  class="form-control"
+                  .value=${this.linea_entrada.insumo.nombre}
+                  @input=${(e): void => {
+                    this.linea_entrada.insumo.nombre = e.target.value;
+                  }}
+                  name="nombre"
+                  id="nombre-input"
+                  aria-describedby=""
+                  placeholder=""
+                />
+                <small class="form-text text-muted"></small>
               </div>
 
               <div class="mb-3">
                 <label for="cantidad-input" class="form-label">Cantidad</label>
-                <input type="text" class="form-control" name="cantidad-input" id="cantidad-input" aria-describedby="" placeholder="">
+                <input
+                  type="text"
+                  class="form-control"
+                  .value=${this.linea_entrada.cantidad}
+                  @input=${(e): void => {
+                    this.linea_entrada.cantidad = Number(e.target.value);
+                  }}
+                  name="cantidad"
+                  id="cantidad-input"
+                  aria-describedby=""
+                  placeholder=""
+                />
                 <small id="" class="form-text text-muted"></small>
               </div>
 
+              <div class="mb-3">
+                <label for="unidad-input" class="form-label">Unidad</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  .value=${this.linea_entrada.insumo.unidad}
+                  @input=${(e): void => {
+                    this.linea_entrada.insumo.unidad = e.target.value;
+                  }}
+                  name="unidad"
+                  id="unidad-input"
+                  aria-describedby="helpId"
+                  placeholder=""
+                />
+                <small id="helpId" class="form-text text-muted"></small>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() => {
+                  this.linea_entrada.insumo.uuid =
+                    this.linea_entrada.insumo.nombre; // Temporal
+                  this.lineas_de_entradas.push(this.linea_entrada);
+                  this.linea_entrada = {
+                    insumo: { nombre: "", unidad: "un", uuid: "" },
+                    cantidad: 0,
+                  };
+                }}
+              >
+                Agregar
+              </button>
+
+              <div class="list-group">
+                ${this.lineas_de_entradas.map((e) => {
+                  return html`<a
+                    href="#"
+                    class="list-group-item list-group-item-action"
+                  >
+                    ${e.insumo.nombre}
+                  </a>`;
+                })}
+              </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" @click=${this.guardar_nueva_entrada}>Save</button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${this.guardar_nueva_entrada}
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>
       </div>
-      
-    `
+    `;
     return html`
       <div
         class="offcanvas offcanvas-start"
@@ -190,7 +320,6 @@ export class DepositosLista extends LitElement {
                 >
               `;
             })}
-
             ${this.depositos?.length === 0 ? "No existe ningún deposito" : null}
           </div>
         </div>
@@ -300,7 +429,21 @@ export class DepositosLista extends LitElement {
                   aria-labelledby="profile-tab"
                   tabindex="0"
                 >
-                  ..s.
+                  <div class="list-group mt-1">
+                    ${this.entradas.map(({ doc }) => {
+                      return html` <a
+                        href="#"
+                        class="list-group-item list-group-item-action flex-column align-items-start"
+                      >
+                        <div class="d-flex w-100 justify-content-between">
+                          <h5 class="mb-1">${doc.ts}</h5>
+                          <strong></strong>
+                        </div>
+                        <p class="mb-1"></p>
+                        <small></small>
+                      </a>`;
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
