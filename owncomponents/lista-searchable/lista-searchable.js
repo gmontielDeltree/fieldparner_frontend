@@ -6,6 +6,7 @@ export class ListaSearchable extends LitElement {
     es_nuevo: {},
     value: {},
     lista: {},
+    selected: {},
     lista_filtrada: {},
     //item_el: {},
     principal_key: {},
@@ -58,6 +59,7 @@ export class ListaSearchable extends LitElement {
   click_item(item) {
     this.value = item[this.principal_key];
     this.es_nuevo = false;
+    this.selected = item;
     let event = new CustomEvent("input", { detail: this.value });
     this.dispatchEvent(event);
   }

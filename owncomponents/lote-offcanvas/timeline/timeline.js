@@ -263,22 +263,20 @@ export class TimelineElement extends LitElement {
     }
 
     willUpdate(props){
-        if(props.has("db")){
-             // Calcular tags
-             console.log("CALC STOKS")
-             this.actividades.map((act) => {
-             console.log("CALC STOKS I")
-                 stock_suficiente(this.db, act).then((status)=>{this.stock_tag_table[act.uuid] = status})
-             })
-        }
+    
 
-        if(props.has('actividades') && this.db){
+        if(props.has('actividades')  && this.db){
             // Calcular tags
-            console.log("CALC STOKS")
+            let nt = {}
             this.actividades.map((act) => {
-            console.log("CALC STOKS I")
-                stock_suficiente(this.db, act).then((status)=>{this.stock_tag_table[act.uuid] = status})
+                console.log("CALC STOKS I")
+                stock_suficiente(this.db, act).then((status)=>{
+                    nt[act.uuid]= status
+                    this.stock_tag_table = {...nt}
+                })
             })
+
+            console.log("StockTagTable", this.stock_tag_table)
         }
     }
 
@@ -290,13 +288,11 @@ export class TimelineElement extends LitElement {
 
         let stock_tag = (stock_suficiente) => html`
             <p class="small">
-            ${stock_suficiente}
+            ${stock_suficiente ? html` <span class="badge bg-success">Stock Suficiente</span>` : html` <span class="badge bg-danger">Stock Insuficiente</span>`}
         </p>`
 
         const time_item = (item) => {
-
-            let stock_suficiente_tag = this.stock_tag_table[item.uuid];
-
+            console.log("ITEM STT", this.stock_tag_table[item.uuid], item, item.uuid )
             if(item.tipo === 'aplicacion'){
                 let fecha = item.detalles.fecha
                 let hectareas = item.detalles.hectareas
@@ -321,7 +317,7 @@ export class TimelineElement extends LitElement {
                         <p class="small">
                             ${comentarios}
                         </p>
-                        ${stock_tag(stock_suficiente_tag)}
+                        ${stock_tag(this.stock_tag_table[item.uuid])}
 
                         ${navigator.share ? html`<button type="button" class="btn btn-success" @click=${()=>this.evento_pdf(item.uuid)}>Compartir Orden</button>` : html`<button class='btn btn-secondary' @click=${()=>{console.log(item.uuid); this.evento_pdf(item.uuid)}}>Orden de Trabajo</button>`}
                         

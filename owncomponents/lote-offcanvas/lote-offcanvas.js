@@ -220,8 +220,8 @@ export class LoteOffcanvas extends LitElement {
                 // Recargemoslos
                 this._campo_doc = doc;
                 this._lote_doc = doc.lotes[lote_index];
+                
                 document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
-                document.getElementById('actividades-timeline').db = this._db;
 
             }
 
@@ -471,7 +471,7 @@ export class LoteOffcanvas extends LitElement {
                     </div>
                     <div class='row'>
                     <div class='col shadow mx-2 p-3 max-vh-25'>
-                        <lit-timeline id='actividades-timeline'></lit-timeline>                 
+                        <lit-timeline .db=${this._db} id='actividades-timeline'></lit-timeline>                 
                     </div>
                     </div>
 

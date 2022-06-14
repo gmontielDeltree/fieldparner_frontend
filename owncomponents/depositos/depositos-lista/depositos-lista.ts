@@ -7,6 +7,8 @@ import { property } from "lit/decorators.js";
 import * as PouchDB from "pouchdb";
 import { lineas_stock } from "../../helpers/stock";
 import { uuid4 } from "uuid4";
+import "../../lista-searchable/lista-searchable.js";
+
 export class DepositosLista extends LitElement {
   // static override properties = {
   //   offcanvas_lista: {},
@@ -51,6 +53,9 @@ export class DepositosLista extends LitElement {
   @property()
   entradas: any = [];
 
+  @property()
+  insumos_lista = {};
+
   static override styles = unsafeCSS(bootstrap);
 
   constructor() {
@@ -72,6 +77,14 @@ export class DepositosLista extends LitElement {
     this.nueva_entrada_modal = new Modal(
       this.shadowRoot.getElementById("nueva-entrada-modal")
     );
+
+
+    // fetch("insumos.json")
+    //   .then((x) => x.json())
+    //   .then((insumos) => {
+    //       insumos.map((i) => this.insumos_lista[i.uuid] = i)
+    //     }
+    //   )
   }
 
   get_depos() {
@@ -166,6 +179,22 @@ export class DepositosLista extends LitElement {
     this.linea_entrada = no;
   }
 
+  buscar_insumos(params, callback) {
+    //this.shadowRoot.getElementById('nombre-auto').loading = true;
+
+    // const filtro = (valor) => {
+    //   return item[this.principal_key].toUpperCase().indexOf(value) > -1;
+    // };
+
+  //  let array_filtrado = Object.entries(this.lista).filter(filtro);
+
+    fetch("insumos.json")
+      .then((x) => x.json())
+      .then((insumos) => insumos.filter((x) => x.name.toUpperCase().indexOf(params.query) > -1))
+      .then(callback);
+    //.then(() => this.shadowRoot.getElementById('nombre-auto').loading = false);
+  }
+
   render() {
     let nueva_entrada_modal = html`
       <!-- Modal -->
@@ -192,17 +221,24 @@ export class DepositosLista extends LitElement {
               <div class="mb-3">
                 <label for="nombre-input" class="form-label">Nombre</label>
                 <input
-                  type="text"
-                  class="form-control"
-                  .value=${this.linea_entrada.insumo.nombre}
-                  @input=${(e): void => {
-                    this.linea_entrada.insumo.nombre = e.target.value;
-                  }}
-                  name="nombre"
-                  id="nombre-input"
-                  aria-describedby=""
-                  placeholder=""
-                />
+                    type="text"
+                    class="form-control"
+                    .value=${this.linea_entrada.insumo.nombre}
+                    @input=${(e): void => {
+                      this.linea_entrada.insumo.nombre = e.target.value;
+                    }}
+                    name="nombre"
+                    id="nombre-input"
+                    aria-describedby=""
+                    placeholder=""
+                  />
+<!--                 <pfe-autocomplete
+                  id="nombre-auto"
+                  .autocompleteRequest=${this.buscar_insumos}
+                >
+                
+                </pfe-autocomplete> -->
+
                 <small class="form-text text-muted"></small>
               </div>
 
@@ -413,8 +449,8 @@ export class DepositosLista extends LitElement {
                                   <h5 class="mb-1">${item.insumo.nombre}</h5>
                                   <strong>${item.cantidad}</strong>
                                 </div>
-                                <p class="mb-1">Paragraph</p>
-                                <small>paragraph footer</small>
+                                <p class="mb-1">Detalles Insumo</p>
+                                <small>Empresa</small>
                               </a>
                             `;
                           }
