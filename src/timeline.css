@@ -11,7 +11,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: #eee;
+    background: #00b303;
     left: 20%;
     margin-left: -6px
 }
@@ -216,4 +216,16 @@
 
 .bg-info {
     background-color: #2CA8FF !important;
+}
+
+.bg-siembra {
+    background-color: #dffb59 !important;
+}
+
+.bg-aplicacion {
+    background-color: #c1a6db !important;
+}
+
+.bg-cosecha {
+    background-color: #8ad973 !important;
 }

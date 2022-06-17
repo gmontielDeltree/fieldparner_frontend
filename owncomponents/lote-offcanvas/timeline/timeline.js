@@ -29,7 +29,7 @@ const timeline_css = css`.cbp_tmtimeline {
     top: 0;
     bottom: 0;
     width: 3px;
-    background: #eee;
+    background: #00b303;
     left: 20%;
     margin-left: -6px
 }
@@ -311,7 +311,7 @@ export class TimelineElement extends LitElement {
                 <li>
                     <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
                     <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
-                    <div class="cbp_tmlabel">
+                    <div class="cbp_tmlabel bg-aplicacion">
                         <h2><a>APLICACIÓN</a> <span class="text-muted">en ${hectareas} has.</span></h2>
                            ${list_of_ps}
                         <p class="small">
@@ -342,7 +342,7 @@ export class TimelineElement extends LitElement {
                     <li>
                     <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
                     <div class="cbp_tmicon bg-green"><i class="zmdi zmdi-label"></i></div>
-                    <div class="cbp_tmlabel">
+                    <div class="cbp_tmlabel bg-cosecha">
                         <h2><a href="#">COSECHA</a> <span class="text-muted">de ${hectareas} has.</span></h2>
                         <p>Rinde: ${rinde} tn/ha - Humedad: ${humedad} %</p>
                         <p class="small">
@@ -374,7 +374,7 @@ export class TimelineElement extends LitElement {
                 <li>
                 <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
                 <div class="cbp_tmicon bg-orange"><i class="zmdi zmdi-label"></i></div>
-                <div class="cbp_tmlabel">
+                <div class="cbp_tmlabel bg-siembra">
                     <h2><a href="#">SIEMBRA</a> <span class="text-muted">en ${hectareas} has.</span></h2>
                     <p><strong>${cultivo} - ${varidad}</strong></p>
                     <p>${densidad_objetivo} pl/ha - ${distancia} cm entre surcos</p>
@@ -387,6 +387,8 @@ export class TimelineElement extends LitElement {
             </li>
             `
         
+            }else if(item.tipo === 'nota'){
+                
             }else if(item.tipo === 'otro'){
         
             }
