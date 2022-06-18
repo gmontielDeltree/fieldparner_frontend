@@ -24,6 +24,7 @@ import { Modal, Offcanvas } from 'bootstrap'
 import PouchDB from 'pouchdb';
 import uuid4 from 'uuid4';
 import moment from 'moment';
+import "../notas-offcanvas/notas-offcanvas.js";
 
 import 'lit-flatpickr';
 
@@ -139,6 +140,11 @@ export class LoteOffcanvas extends LitElement {
     actividad() {
         this.fsm.start()
         this.fsm.send({ type: "NEXT" })
+    }
+
+    notas() {
+        this._lotesOffcanvas.hide()
+        document.getElementById('notas-oc').nueva_nota()
     }
 
     cosecha() {
@@ -464,6 +470,7 @@ export class LoteOffcanvas extends LitElement {
                             <button class='btn btn-primary btn-sm btn-actividad' @click=${this.siembra}>+ Siembra</button>
                             <button class='btn btn-primary btn-sm btn-actividad' @click=${this.actividad}>+ Aplicación</button>
                             <button class='btn btn-primary btn-sm btn-actividad' @click=${this.cosecha}>+ Cosecha</button>
+                            <button class='btn btn-primary btn-sm btn-actividad' @click=${this.notas}>+ Notas</button>
                         </div>
                         <div class="btn-group me-2" role="group" aria-label="Second group">
                             <button class='btn btn-primary btn-sm' @click=${this.evento_show_ndvi}>NDVI</button>
@@ -781,6 +788,7 @@ export class LoteOffcanvas extends LitElement {
         <cosecha-add-ui id='cosecha-add-el' ></cosecha-add-ui>
 
         <siembra-add-ui id='siembra-add-el' ._lote_doc=${this._lote_doc} .settings=${this.settings}></siembra-add-ui>
+        <notas-oc id="notas-oc"></notas-oc>
         <!-- <nueva-geometria-ui id='nueva-geometria-el'></nueva-geometria-ui> -->
         `
     }

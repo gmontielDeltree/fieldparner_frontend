@@ -108,6 +108,7 @@ window.customElements.define('audio-recorder',
 
       
       let audio = document.createElement('audio');
+      audio.blob = audioBlob
       audio.setAttribute('src', blobUrl);
       audio.setAttribute('controls', '');
       audio.classList.add('my-2');
