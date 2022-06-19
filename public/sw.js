@@ -1,5 +1,6 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.2.0/workbox-sw.js', 'https://cdn.jsdelivr.net/npm/idb@7/build/umd.js');
 
+const version = "0001"
 
 // This will trigger the importScripts() for workbox.strategies and its dependencies:
 const {strategies, routing, backgroundSync} = workbox;
