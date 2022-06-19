@@ -5,6 +5,7 @@ import "@vaadin/date-picker";
 import "@vaadin/radio-group";
 import "@vaadin/combo-box";
 import {uuid4} from 'uuid4'
+import mapboxgl from "mapbox-gl";
 
 export class NotasOffcanvas extends LitElement {
   static properties = {
@@ -20,7 +21,9 @@ export class NotasOffcanvas extends LitElement {
     fecha:{},
     texto:{},
     color:{},
-    audios:{}
+    audios:{},
+    nota_marker:{},
+    modo_geolocalizacion: {}
   };
 
   static styles = unsafeCSS(bootstrap);
@@ -31,6 +34,7 @@ export class NotasOffcanvas extends LitElement {
     this.texto = "";
     this.fecha = "";
     this.color = 'red';
+    this.modo_geolocalizacion = 'dispositivo';
   }
 
   firstUpdated() {
@@ -50,8 +54,13 @@ export class NotasOffcanvas extends LitElement {
 
   nueva_nota() {
     this.nueva_nota_offcanvas.show();
+    this.nota_marker = new mapboxgl.Marker().setLngLat(this.map.getCenter()).addTo(this.map);
     this.handler_id = navigator.geolocation.watchPosition(
-      (pos) => this.posicion = pos,
+      (pos) => {
+        this.posicion = pos;
+        this.nota_marker.setLngLat([pos.coords.longitude,pos.coords.latitude]);
+        this.map.flyTo({center:[pos.coords.longitude,pos.coords.latitude],padding:{'bottom':200}, zoom: 15})
+      },
       this.posicion_error,
       { enableHighAccuracy: true }
     );
@@ -71,6 +80,41 @@ export class NotasOffcanvas extends LitElement {
     if (file.type.startsWith("image/")) {
       this.imagenes.push(file);
       this.imagenes = [...this.imagenes];
+    }
+  }
+
+  mover_marcador = (e) =>{
+    this.nota_marker.setLngLat(e.lngLat);
+  }
+
+  cambio_geo_modo(e){
+    this.modo_geolocalizacion = e.target.value
+    console.log("Cambio Radio",e, this.modo_geolocalizacion)
+    
+  
+
+    if(this.modo_geolocalizacion === 'dispositivo'){
+      
+      //       map.on("move", () => {
+      //         nota_marker.setLngLat(map.getCenter());
+      //       });
+
+      this.map.off("click", this.mover_marcador)
+      this.handler_id = navigator.geolocation.watchPosition(
+        (pos) => {
+          this.posicion = pos;
+          this.nota_marker.setLngLat([pos.coords.longitude,pos.coords.latitude]);
+          this.map.flyTo({center:[pos.coords.longitude,pos.coords.latitude],padding:{'bottom':200}, zoom: 15})
+        },
+        this.posicion_error,
+        { enableHighAccuracy: true }
+      );
+      
+    }else if(this.modo_geolocalizacion === 'mapa'){
+      
+      this.map.on("click", this.mover_marcador)
+      navigator.geolocation.clearWatch(this.handler_id);
+
     }
   }
 
@@ -119,59 +163,6 @@ export class NotasOffcanvas extends LitElement {
       console.log("Error al grabar Nota", e)
     })
 
-    // Imagenes es un [Files]
-
-    // Cada Audio tiene una propiedad .blob
-
-    //         img_el = document.getElementsByClassName("nota-img");
-    //         audios_el = document
-    //           .querySelector("audio-recorder")
-    //           .shadowRoot.querySelectorAll(".nota-audio");
-    //         console.log("AudioEL", audios_el);
-    //         img_sources = Array.from(img_el).map((imagen) => {
-    //           return imagen.getAttribute("src");
-    //         });
-
-    //         audio_promise = Array.from(audios_el).map((audio) => {
-    //           return urltoFile(audio.getAttribute("src"), uuidv4(), "audio/*");
-    //         });
-
-    //         console.log("AP", audio_promise);
-
-    //         promises = img_sources.map((img_src) => {
-    //           return urltoFile(img_src, uuidv4(), "image/*");
-    //         });
-
-    //         console.log(promises);
-
-    //         Promise.all(promises).then((files) => {
-    //           // Fotos OK
-    //           //files.map(file => { formData.append(`files.fotos`, file, file.name) })
-    //           files.map((file) => {
-    //             nota._attachments["foto_" + uuidv4()] = {
-    //               content_type: "image/*",
-    //               data: file,
-    //             };
-    //           });
-
-    //           Promise.all(audio_promise).then((audio_files) => {
-    //             audio_files.map((file) => {
-    //               nota._attachments["audio_" + uuidv4()] = {
-    //                 content_type: "audio/*",
-    //                 data: file,
-    //               };
-    //             });
-
-    //             // Add uuid y Guardar Nota
-    //             nota.uuid = uuidv4();
-    //             notas_db
-    //               .put(nota)
-    //               .then()
-    //               .catch((err) => console.log(err));
-    //             offcanvas_nueva_nota.hide();
-    //           });
-    //         });
-    //       });
   }
 
   render() {
@@ -242,13 +233,17 @@ export class NotasOffcanvas extends LitElement {
             <div class="col col-6">
               <vaadin-radio-group label="Geolocalizar Usando">
                 <vaadin-radio-button
-                  value="economy"
+                  value="dispositivo"
                   label="Dispositivo"
+                  name="dispositivo"
                   checked
+                  @change=${this.cambio_geo_modo}
                 ></vaadin-radio-button>
                 <vaadin-radio-button
-                  value="business"
+                  value="mapa"
                   label="Mapa"
+                  name="mapa"
+                  @change=${this.cambio_geo_modo}
                 ></vaadin-radio-button>
               </vaadin-radio-group>
             </div>

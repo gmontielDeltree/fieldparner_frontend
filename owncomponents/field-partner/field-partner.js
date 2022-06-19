@@ -406,6 +406,7 @@ export class FieldPartner extends LitElement {
 
       <lote-offcanvas
         id="lote-oc"
+        .map=${this.map}
         ._db=${this.campos_db}
         .settings=${this.settings}
       ></lote-offcanvas>
@@ -427,7 +428,6 @@ export class FieldPartner extends LitElement {
         .cultivos=${this.settings?.user_cultivos}
       ></color-cultivo>
       <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
-      <notas-oc id="notas-oc"></notas-oc>
       <deposito-upsert id='deposito-upsert' .db=${this.campos_db}></deposito-upsert>
       <depositos-lista id='depositos-lista' .db=${this.campos_db}></depositos-lista>
       <db-loader></db-loader>

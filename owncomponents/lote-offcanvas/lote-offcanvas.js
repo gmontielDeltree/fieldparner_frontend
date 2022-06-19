@@ -67,6 +67,7 @@ export class LoteOffcanvas extends LitElement {
         campo_id: {},
         username: {},
         lote_nombre: {},
+        map:{},
         _lotesOffcanvas: {},
         _fecha_editor: {},
         _steps_elements: {},
@@ -788,7 +789,7 @@ export class LoteOffcanvas extends LitElement {
         <cosecha-add-ui id='cosecha-add-el' ></cosecha-add-ui>
 
         <siembra-add-ui id='siembra-add-el' ._lote_doc=${this._lote_doc} .settings=${this.settings}></siembra-add-ui>
-        <notas-oc id="notas-oc" .db=${this._db} .lote_doc=${this._lote_doc}></notas-oc>
+        <notas-oc id="notas-oc" .map=${this.map} .db=${this._db} .lote_doc=${this._lote_doc}></notas-oc>
         <!-- <nueva-geometria-ui id='nueva-geometria-el'></nueva-geometria-ui> -->
         `
     }

@@ -101,7 +101,7 @@ self.addEventListener('fetch', (event) => {
 
   if (event.request.url.endsWith('.js') || event.request.url.endsWith('.css')) {
     // Using the previously-initialized strategies will work as expected.
-    const cacheFirst = new strategies.CacheFirst();
+    const cacheFirst = new strategies.StaleWhileRevalidate();
     event.respondWith(cacheFirst.handle({request: event.request, event}));
   }
 
