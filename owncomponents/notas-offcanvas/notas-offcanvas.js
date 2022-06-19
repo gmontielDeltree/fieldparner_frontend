@@ -4,10 +4,14 @@ import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import "@vaadin/date-picker";
 import "@vaadin/radio-group";
 import "@vaadin/combo-box";
+import {uuid4} from 'uuid4'
 
 export class NotasOffcanvas extends LitElement {
   static properties = {
     map: {},
+    db: {},
+    lote_doc:{},
+    /* Internos */
     nueva_nota_offcanvas: {},
     imagenes: {},
     ver_nota_offcanvas: {},
@@ -25,21 +29,20 @@ export class NotasOffcanvas extends LitElement {
     super();
     this.imagenes = [];
     this.texto = "";
-    this.fecha = ""
+    this.fecha = "";
+    this.color = 'red';
   }
 
   firstUpdated() {
     this.nueva_nota_offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-nueva-nota")
     );
-
-    this.handler_id = navigator.geolocation.watchPosition(
-      (pos) => this.posicion = pos,
-      this.posicion_error,
-      { enableHighAccuracy: true }
-    );
   }
 
+  hide(){
+    this.nueva_nota_offcanvas.hide()
+    navigator.geolocation.clearWatch(this.handler_id);
+  }
 
   posicion_error(err) {
     console.warn(`ERROR(${err.code}): ${err.message}`);
@@ -47,6 +50,11 @@ export class NotasOffcanvas extends LitElement {
 
   nueva_nota() {
     this.nueva_nota_offcanvas.show();
+    this.handler_id = navigator.geolocation.watchPosition(
+      (pos) => this.posicion = pos,
+      this.posicion_error,
+      { enableHighAccuracy: true }
+    );
   }
 
   ver_nota() {
@@ -76,18 +84,40 @@ export class NotasOffcanvas extends LitElement {
           return new File([buf], filename, { type: mimeType });
         });
     }
-    const nota = {
-      _id: "nota_" + uuidv4(),
-      username: couch_username,
-      campo_id: getCampoFromPoint(nota_marker.getLngLat()),
-      lote_id: getLoteFromPoint(nota_marker.getLngLat()),
 
-      color: getSelectedColor(),
-      texto: document.getElementById("nota-comentario-input").value,
-      fecha: "2022-05-09T01:30:00.000-05:00",
-      posicion: nota_marker.getLngLat(),
+    let lote_id = this.lote_doc.properties.uuid;
+    const nota = {
+      _id: "actividad:nota:" + lote_id + ":" + uuid4(),
+      ts: new Date().toISOString(),
+      lote_id: this.lote_doc.id,
+
+      color: this.color,
+      texto: this.texto,
+      fecha: this.fecha,
+
+      posicion: [this.posicion.coords.longitude, this.posicion.coords.latitude],
       _attachments: {},
     };
+
+    // Imagenes
+    this.imagenes.map((i)=>{
+      nota._attachments["foto_" + uuid4()] = {
+        data: i,
+        type: i.type
+      }
+    })
+
+    // Audio
+    nota._attachments['audio_' + uuid4()] = {
+      data: this.shadowRoot.getElementById('audio-recorder').blob,
+      type: this.shadowRoot.getElementById('audio-recorder').blob.type
+    }
+
+    db.put(nota).then(()=>{
+      console.log("Nota grabada OK")
+    }).catch((e)=>{
+      console.log("Error al grabar Nota", e)
+    })
 
     // Imagenes es un [Files]
 
@@ -181,6 +211,7 @@ export class NotasOffcanvas extends LitElement {
             class="btn-close text-reset"
             data-bs-dismiss="offcanvas"
             aria-label="Close"
+            @click=${this.hide}
           ></button>
           <h6 class="offcanvas-title">Nueva Nota</h6>
 
@@ -306,7 +337,7 @@ export class NotasOffcanvas extends LitElement {
           <hr />
 
           <div class="row" id="audio-div">
-            <audio-recorder></audio-recorder>
+            <audio-recorder id='audio-recorder'></audio-recorder>
           </div>
 
           <hr />

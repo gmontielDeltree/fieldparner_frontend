@@ -4,6 +4,8 @@ window.customElements.define('audio-recorder',
       super();
     }
 
+    blob;
+
     connectedCallback(){
       const shadowRoot = this.attachShadow({mode: 'open'});
 
@@ -50,8 +52,11 @@ window.customElements.define('audio-recorder',
 
     // Evento Start
     start(){
-      let startStopButton = this.shadowRoot.querySelector('#start-stop');
 
+      this.shadowRoot.getElementById('audio-div-wrapper')?.remove()
+
+      let startStopButton = this.shadowRoot.querySelector('#start-stop');
+      
 
       let audioChunks = [];
 
@@ -103,10 +108,12 @@ window.customElements.define('audio-recorder',
       let blobUrl = URL.createObjectURL(audioBlob);
       
       let div = document.createElement("div");
+      div.setAttribute('id', 'audio-div-wrapper') 
 
       div.classList.add("row")
 
-      
+      this.blob = audioBlob
+
       let audio = document.createElement('audio');
       audio.blob = audioBlob
       audio.setAttribute('src', blobUrl);
