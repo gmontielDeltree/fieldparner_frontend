@@ -6,6 +6,7 @@ import "@vaadin/radio-group";
 import "@vaadin/combo-box";
 import {uuid4} from 'uuid4'
 import mapboxgl from "mapbox-gl";
+import {format,parse} from 'date-fns'
 
 export class NotasOffcanvas extends LitElement {
   static properties = {
@@ -32,7 +33,7 @@ export class NotasOffcanvas extends LitElement {
     super();
     this.imagenes = [];
     this.texto = "";
-    this.fecha = "";
+    this.fecha = (new Date().toISOString()).split('T')[0];
     this.color = 'red';
     this.modo_geolocalizacion = 'dispositivo';
   }
@@ -41,6 +42,29 @@ export class NotasOffcanvas extends LitElement {
     this.nueva_nota_offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-nueva-nota")
     );
+
+
+    /* Format date */
+    const formatDateIso8601 = (dateParts) => {
+      const { year, month, day } = dateParts;
+      const date = new Date(year, month, day);
+  
+      return format(date, 'yyyy-MM-dd');
+    };
+  
+    const parseDateIso8601 = (inputValue) => {
+      const date = parse(inputValue, 'yyyy-MM-dd', new Date());
+  
+      return { year: date.getFullYear(), month: date.getMonth(), day: date.getDate() };
+    };
+  
+    if (this.shadowRoot.getElementById('nota-date-picker')) {
+      this.shadowRoot.getElementById('nota-date-picker').i18n = {
+        ...this.shadowRoot.getElementById('nota-date-picker').i18n,
+        formatDate: formatDateIso8601,
+        parseDate: parseDateIso8601,
+      };
+    }
   }
 
   hide(){
@@ -222,8 +246,10 @@ export class NotasOffcanvas extends LitElement {
           <div class="row">
             <div class="col col-sm-12 col-md-6">
               <vaadin-date-picker
+               id='nota-date-picker'
                 label="Fecha"
                 value="2022-12-03"
+                placeholder="YYYY-MM-DD"
                 .value=${this.fecha}
                 clear-button-visible
                 @change=${(e)=>this.fecha = e.target.value}
