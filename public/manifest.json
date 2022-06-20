@@ -1,7 +1,7 @@
 {
-  "name": "Agrotools FieldPartner",
-  "short_name": "FieldPartner",
-  "description": "A",
+  "name": "AgrotoolsFieldPartner",
+  "short_name": "Agrotools",
+  "description": "Agrotools",
   "theme_color": "#f5f8fa",
   "background_color": "white",
   "display": "standalone",

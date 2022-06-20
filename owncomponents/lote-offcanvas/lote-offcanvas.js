@@ -68,6 +68,7 @@ export class LoteOffcanvas extends LitElement {
         username: {},
         lote_nombre: {},
         map:{},
+        _actividades:{},
         _lotesOffcanvas: {},
         _fecha_editor: {},
         _steps_elements: {},
@@ -129,6 +130,7 @@ export class LoteOffcanvas extends LitElement {
           ],
         })
         .start();
+
     }
     hide() {
         this._lotesOffcanvas.hide();
@@ -228,7 +230,8 @@ export class LoteOffcanvas extends LitElement {
                 this._campo_doc = doc;
                 this._lote_doc = doc.lotes[lote_index];
                 
-                document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+                
+                //document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
 
             }
 
@@ -361,7 +364,7 @@ export class LoteOffcanvas extends LitElement {
                 // Recargemoslos
                 this._campo_doc = doc;
                 this._lote_doc = doc.lotes[lote_index];
-                document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+                // document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
 
             }
 
@@ -413,7 +416,18 @@ export class LoteOffcanvas extends LitElement {
                     }
                 }).start()
 
-                document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+
+                this._db.allDocs({
+                    include_docs: true,
+                    startkey: "actividad:nota:" + this._lote_doc.id,
+                    endkey: "actividad:nota:" + this._lote_doc.id + "\ufff0",
+                }).then((result) => {
+                    let rrows = result.rows
+                    console.log("Actividad",rrows)
+                    this._actividades = rrows;
+                })
+
+                // document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
             });
 
         }
@@ -479,7 +493,7 @@ export class LoteOffcanvas extends LitElement {
                     </div>
                     <div class='row'>
                     <div class='col shadow mx-2 p-3 max-vh-25'>
-                        <lit-timeline .db=${this._db} id='actividades-timeline'></lit-timeline>                 
+                        <lit-timeline .db=${this._db} .actividades_docs=${this._actividades} .actividades=${this._lote_doc?.properties.actividades} id='actividades-timeline'></lit-timeline>                 
                     </div>
                     </div>
 

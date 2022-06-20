@@ -203,7 +203,7 @@ export class NotasOffcanvas extends LitElement {
       _id: "actividad:nota:" + lote_id + ":" + uuid4(),
       ts: new Date().toISOString(),
       lote_id: this.lote_doc.id,
-
+      tipo: "nota",
       color: this.color,
       texto: this.texto,
       fecha: this.fecha,

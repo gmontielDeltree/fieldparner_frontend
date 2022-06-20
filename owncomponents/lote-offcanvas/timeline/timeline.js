@@ -292,6 +292,37 @@ export class TimelineElement extends LitElement {
         </p>`
 
         const time_item = (item) => {
+
+            if('doc' in item){
+                // Es un documento
+                console.log("OOOOOOOOOOO NOTA")
+                if(item.doc.tipo === 'nota'){
+
+                    let fecha = item.doc.fecha
+                    moment.locale('es')
+                    let elapsed = moment(fecha,"YYYY-MM-DD").fromNow()
+
+
+                    return html`
+                    <li>
+                        <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
+                        <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
+                        <div class="cbp_tmlabel bg-aplicacion">
+                            <h2><a>NOTA</a> <span class="text-muted"></span></h2>
+                            
+                            <p class="small">
+                                ${item.doc.texto}
+                            </p>
+                           
+
+                        
+                            <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
+
+                        </div>          
+                    </li>`
+                }
+            }
+
             console.log("ITEM STT", this.stock_tag_table[item.uuid], item, item.uuid )
             if(item.tipo === 'aplicacion'){
                 let fecha = item.detalles.fecha
@@ -401,6 +432,8 @@ export class TimelineElement extends LitElement {
                         <ul class="cbp_tmtimeline">
 
                             ${map(this.actividades, time_item)}
+
+                            ${map(this.actividades_docs, time_item)}
 
                         </ul>
                     </div>
