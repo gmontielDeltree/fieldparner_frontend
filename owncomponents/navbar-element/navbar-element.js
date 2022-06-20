@@ -64,7 +64,7 @@ export class NavbarElement extends LitElement {
             </button>
 
             <button
-              class="btn btn-outline-success"
+              class="btn btn-outline-success mx-1"
               @click=${() => {
                 this.sendEvent("ver-depositos-click", null);
               }}
@@ -94,6 +94,17 @@ export class NavbarElement extends LitElement {
                     >Color Cultivos</a
                   >
                 </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    @click=${() => {
+                      location.reload()
+                    }}
+                    href="#"
+                    >Recargar</a
+                  >
+                </li>
+
                 <!-- <li><a class="dropdown-item" href="#">Another action</a></li> -->
                 <li><hr class="dropdown-divider" /></li>
                 <li>

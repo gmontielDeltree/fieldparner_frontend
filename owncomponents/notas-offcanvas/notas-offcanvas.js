@@ -4,27 +4,27 @@ import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import "@vaadin/date-picker";
 import "@vaadin/radio-group";
 import "@vaadin/combo-box";
-import {uuid4} from 'uuid4'
+import { uuid4 } from "uuid4";
 import mapboxgl from "mapbox-gl";
-import {format,parse} from 'date-fns'
+import { format, parse } from "date-fns";
 
 export class NotasOffcanvas extends LitElement {
   static properties = {
     map: {},
     db: {},
-    lote_doc:{},
+    lote_doc: {},
     /* Internos */
     nueva_nota_offcanvas: {},
     imagenes: {},
     ver_nota_offcanvas: {},
     handler_id: {},
     posicion: {},
-    fecha:{},
-    texto:{},
-    color:{},
-    audios:{},
-    nota_marker:{},
-    modo_geolocalizacion: {}
+    fecha: {},
+    texto: {},
+    color: {},
+    audios: {},
+    nota_marker: {},
+    modo_geolocalizacion: {},
   };
 
   static styles = unsafeCSS(bootstrap);
@@ -33,9 +33,9 @@ export class NotasOffcanvas extends LitElement {
     super();
     this.imagenes = [];
     this.texto = "";
-    this.fecha = (new Date().toISOString()).split('T')[0];
-    this.color = 'red';
-    this.modo_geolocalizacion = 'dispositivo';
+    this.fecha = new Date().toISOString().split("T")[0];
+    this.color = "red";
+    this.modo_geolocalizacion = "dispositivo";
   }
 
   firstUpdated() {
@@ -43,32 +43,35 @@ export class NotasOffcanvas extends LitElement {
       this.shadowRoot.getElementById("offcanvas-nueva-nota")
     );
 
-
     /* Format date */
     const formatDateIso8601 = (dateParts) => {
       const { year, month, day } = dateParts;
       const date = new Date(year, month, day);
-  
-      return format(date, 'yyyy-MM-dd');
+
+      return format(date, "yyyy-MM-dd");
     };
-  
+
     const parseDateIso8601 = (inputValue) => {
-      const date = parse(inputValue, 'yyyy-MM-dd', new Date());
-  
-      return { year: date.getFullYear(), month: date.getMonth(), day: date.getDate() };
+      const date = parse(inputValue, "yyyy-MM-dd", new Date());
+
+      return {
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        day: date.getDate(),
+      };
     };
-  
-    if (this.shadowRoot.getElementById('nota-date-picker')) {
-      this.shadowRoot.getElementById('nota-date-picker').i18n = {
-        ...this.shadowRoot.getElementById('nota-date-picker').i18n,
+
+    if (this.shadowRoot.getElementById("nota-date-picker")) {
+      this.shadowRoot.getElementById("nota-date-picker").i18n = {
+        ...this.shadowRoot.getElementById("nota-date-picker").i18n,
         formatDate: formatDateIso8601,
         parseDate: parseDateIso8601,
       };
     }
   }
 
-  hide(){
-    this.nueva_nota_offcanvas.hide()
+  hide() {
+    this.nueva_nota_offcanvas.hide();
     //navigator.geolocation.clearWatch(this.handler_id);
     this.inicializar_componente();
   }
@@ -79,12 +82,18 @@ export class NotasOffcanvas extends LitElement {
 
   nueva_nota() {
     this.nueva_nota_offcanvas.show();
-    this.nota_marker = new mapboxgl.Marker().setLngLat(this.map.getCenter()).addTo(this.map);
+    this.nota_marker = new mapboxgl.Marker()
+      .setLngLat(this.map.getCenter())
+      .addTo(this.map);
     this.handler_id = navigator.geolocation.watchPosition(
       (pos) => {
         this.posicion = pos;
-        this.nota_marker.setLngLat([pos.coords.longitude,pos.coords.latitude]);
-        this.map.flyTo({center:[pos.coords.longitude,pos.coords.latitude],padding:{'bottom':200}, zoom: 15})
+        this.nota_marker.setLngLat([pos.coords.longitude, pos.coords.latitude]);
+        this.map.flyTo({
+          center: [pos.coords.longitude, pos.coords.latitude],
+          padding: { bottom: 200 },
+          zoom: 15,
+        });
       },
       this.posicion_error,
       { enableHighAccuracy: true }
@@ -108,71 +117,74 @@ export class NotasOffcanvas extends LitElement {
     }
   }
 
-  mover_marcador = (e) =>{
+  mover_marcador = (e) => {
     this.nota_marker.setLngLat(e.lngLat);
-    this.posicion = {coords:{longitude: e.lngLat.lng, latitude: e.lngLat.lat}}
-  }
+    this.posicion = {
+      coords: { longitude: e.lngLat.lng, latitude: e.lngLat.lat },
+    };
+  };
 
-  cambio_geo_modo(e){
-    this.modo_geolocalizacion = e.target.value
-    console.log("Cambio Radio",e, this.modo_geolocalizacion)
-    
-  
+  cambio_geo_modo(e) {
+    this.modo_geolocalizacion = e.target.value;
+    console.log("Cambio Radio", e, this.modo_geolocalizacion);
 
-    if(this.modo_geolocalizacion === 'dispositivo'){
-      
+    if (this.modo_geolocalizacion === "dispositivo") {
       //       map.on("move", () => {
       //         nota_marker.setLngLat(map.getCenter());
       //       });
 
-      this.map.off("click", this.mover_marcador)
+      this.map.off("click", this.mover_marcador);
       this.handler_id = navigator.geolocation.watchPosition(
         (pos) => {
           this.posicion = pos;
-          this.nota_marker.setLngLat([pos.coords.longitude,pos.coords.latitude]);
-          this.map.flyTo({center:[pos.coords.longitude,pos.coords.latitude],padding:{'bottom':200}, zoom: 15})
+          this.nota_marker.setLngLat([
+            pos.coords.longitude,
+            pos.coords.latitude,
+          ]);
+          this.map.flyTo({
+            center: [pos.coords.longitude, pos.coords.latitude],
+            padding: { bottom: 200 },
+            zoom: 15,
+          });
         },
         this.posicion_error,
         { enableHighAccuracy: true }
       );
-      
-    }else if(this.modo_geolocalizacion === 'mapa'){
-      
-      this.map.on("click", this.mover_marcador)
+    } else if (this.modo_geolocalizacion === "mapa") {
+      this.map.on("click", this.mover_marcador);
       navigator.geolocation.clearWatch(this.handler_id);
-
     }
   }
 
-  color_change(e){
-    this.color = e.target.value
+  color_change(e) {
+    this.color = e.target.value;
   }
 
-  inicializar_componente(){
-    this.nueva_nota_offcanvas.hide()
-    this.imagenes = []
-    this.color = 'red'
-    this.texto = ""
-    this.fecha = (new Date().toISOString()).split('T')[0];
+  inicializar_componente() {
+    this.nueva_nota_offcanvas.hide();
+    this.imagenes = [];
+    this.color = "red";
+    this.texto = "";
+    this.fecha = new Date().toISOString().split("T")[0];
 
-    if(this.modo_geolocalizacion === 'dispositivo'){
+    if (this.modo_geolocalizacion === "dispositivo") {
       // Remover el handler de refresco de posicion
-      navigator.geolocation.clearWatch(this.handler_id)
-    }else{
+      navigator.geolocation.clearWatch(this.handler_id);
+    } else {
       // Remover el callback de hacer click
-      this.map.off("click", this.mover_marcador)
+      this.map.off("click", this.mover_marcador);
     }
 
-    this.nota_marker.remove()
+    this.nota_marker.remove();
 
-    this.modo_geolocalizacion = 'dispositivo'
-    this.shadowRoot.getElementById('dispositivo').checked = true
+    this.modo_geolocalizacion = "dispositivo";
+    this.shadowRoot.getElementById("dispositivo").checked = true;
 
     // Color por defecto
-    this.shadowRoot.getElementById('btnradio-red').checked = true
+    this.shadowRoot.getElementById("btnradio-red").checked = true;
 
     // Audio
-    this.shadowRoot.getElementById('audio-recorder').borrar()
+    this.shadowRoot.getElementById("audio-recorder").borrar();
   }
 
   guardar_nota_click() {
@@ -201,30 +213,31 @@ export class NotasOffcanvas extends LitElement {
     };
 
     // Imagenes
-    this.imagenes.map((i)=>{
+    this.imagenes.map((i) => {
       nota._attachments["foto_" + uuid4()] = {
         data: i,
-        type: i.type
-      }
-    })
+        type: i.type,
+      };
+    });
 
     // Audio
-    if(this.shadowRoot.getElementById('audio-recorder').blob){
-      nota._attachments['audio_' + uuid4()] = {
-        data: this.shadowRoot.getElementById('audio-recorder').blob,
-        type: this.shadowRoot.getElementById('audio-recorder').blob.type
-      }
+    if (this.shadowRoot.getElementById("audio-recorder").blob) {
+      nota._attachments["audio_" + uuid4()] = {
+        data: this.shadowRoot.getElementById("audio-recorder").blob,
+        type: this.shadowRoot.getElementById("audio-recorder").blob.type,
+      };
     }
 
-
-    this.db.put(nota).then(()=>{
-      console.log("Nota grabada OK")
-      this.inicializar_componente()
-    }).catch((e)=>{
-      console.log("Error al grabar Nota", e)
-      alert("Error al grabar Nota")
-    })
-
+    this.db
+      .put(nota)
+      .then(() => {
+        console.log("Nota grabada OK");
+        this.inicializar_componente();
+      })
+      .catch((e) => {
+        console.log("Error al grabar Nota", e);
+        alert("Error al grabar Nota");
+      });
   }
 
   render() {
@@ -280,17 +293,16 @@ export class NotasOffcanvas extends LitElement {
         </div>
         <hr class="my-0" />
         <div class="container-fluid offcanvas-body">
-
           <div class="row">
             <div class="col col-sm-12 col-md-6">
               <vaadin-date-picker
-               id='nota-date-picker'
+                id="nota-date-picker"
                 label="Fecha"
                 value="2022-12-03"
                 placeholder="YYYY-MM-DD"
                 .value=${this.fecha}
                 clear-button-visible
-                @change=${(e)=>this.fecha = e.target.value}
+                @change=${(e) => (this.fecha = e.target.value)}
               ></vaadin-date-picker>
             </div>
 
@@ -311,7 +323,6 @@ export class NotasOffcanvas extends LitElement {
                 ></vaadin-radio-button>
               </vaadin-radio-group>
             </div>
-
           </div>
 
           <div class="row">
@@ -373,7 +384,7 @@ export class NotasOffcanvas extends LitElement {
             placeholder="Tus comentarios..."
             rows="3"
             .value=${this.texto}
-            @input=${(e)=>this.texto = e.target.value}
+            @input=${(e) => (this.texto = e.target.value)}
           ></textarea>
 
           <hr />
@@ -402,7 +413,7 @@ export class NotasOffcanvas extends LitElement {
           <hr />
 
           <div class="row" id="audio-div">
-            <audio-recorder id='audio-recorder'></audio-recorder>
+            <audio-recorder id="audio-recorder"></audio-recorder>
           </div>
 
           <hr />
