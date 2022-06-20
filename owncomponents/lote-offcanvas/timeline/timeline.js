@@ -239,6 +239,7 @@ const timeline_css = css`.cbp_tmtimeline {
 export class TimelineElement extends LitElement {
     static properties = {
         actividades:{},
+        actividades_docs:{},
         db: {},
         fsm: { state: true },
         stock_tag_table:{}
@@ -255,6 +256,10 @@ export class TimelineElement extends LitElement {
     evento_eliminar(uuid){
         const event = new CustomEvent('eliminar-actividad', {detail:{uuid:uuid}, bubbles: true, composed: true});
         this.dispatchEvent(event);
+    }
+
+    nota_eliminar(uuid){
+
     }
 
     constructor() {
@@ -295,28 +300,68 @@ export class TimelineElement extends LitElement {
 
             if('doc' in item){
                 // Es un documento
-                console.log("OOOOOOOOOOO NOTA")
+                console.log("OOOOOOOOOOO NOTA", item)
                 if(item.doc.tipo === 'nota'){
 
                     let fecha = item.doc.fecha
                     moment.locale('es')
                     let elapsed = moment(fecha,"YYYY-MM-DD").fromNow()
 
+                    let imagenes = []
+                    let audio = []
+
+                    if('_attachments' in item.doc){
+                        
+                        Object.entries(item.doc._attachments).map(([key,item])=>{
+                        
+                            if(key.indexOf("foto")>-1){
+                                imagenes.push(item)
+                            }
+                        })
+    
+                        Object.entries(item.doc._attachments).map(([key,item])=>{
+                            if(key.indexOf("audio")>-1){
+                                audio.push(item)
+                            }
+                        })
+    
+                        console.log("IMG", imagenes, "Audio", audio)
+                    }
+
+                 
+                    let color;
+                    if(item.doc.color === 'red'){
+                       color = html`<span class="badge bg-danger float-end" >Urgente</span>`
+                    }else if(item.doc.color === 'yellow'){
+                        color = html`<span class="badge bg-warning float-end">Atención</span>`
+                    }else if(item.doc.color === 'green'){
+                        color = html`<span class="badge bg-success float-end">Todo Bien</span>`
+                    }
 
                     return html`
                     <li>
                         <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
                         <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
-                        <div class="cbp_tmlabel bg-aplicacion">
-                            <h2><a>NOTA</a> <span class="text-muted"></span></h2>
+                        <div class="cbp_tmlabel bg-nota">
+                            <h2><a class='strong'>NOTA</a> ${color}</h2>
                             
+                            ${item.doc.texto}
+
                             <p class="small">
-                                ${item.doc.texto}
+                                
                             </p>
                            
+                        <div class="row mx-1">
+                            ${imagenes.map((img) => {
+                                    return html `<img src=${URL.createObjectURL(img.data)} class="img-thumbnail col col-4 col-sm-3" alt="...">`
+                            })}
+                        </div>
 
-                        
-                            <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
+                            <div class="row my-1">
+                                ${audio.length > 0 ? html`<audio controls><source .src=${URL.createObjectURL(audio[0].data)}></source></audio>` : null}
+                            </div>
+
+                            <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.nota_eliminar(item.uuid)}}>Eliminar</button>
 
                         </div>          
                     </li>`

@@ -233,6 +233,10 @@ export class NotasOffcanvas extends LitElement {
       .then(() => {
         console.log("Nota grabada OK");
         this.inicializar_componente();
+
+        let event = new CustomEvent("nueva-nota",{bubbles:true, composed:true})
+        this.dispatchEvent(event)
+        
       })
       .catch((e) => {
         console.log("Error al grabar Nota", e);

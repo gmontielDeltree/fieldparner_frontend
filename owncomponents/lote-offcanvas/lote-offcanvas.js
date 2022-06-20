@@ -99,6 +99,8 @@ export class LoteOffcanvas extends LitElement {
         this.addEventListener('guardar-siembra', (e) => this.guardar_aplicacion("siembra", e.detail));
         this.addEventListener('generar-ot', (e) => this.download_pdf(e.detail.uuid));
         this.addEventListener('eliminar-actividad', (e) => this.eliminar_actividad(e.detail.uuid));
+        this.addEventListener('nueva-nota', (e) =>  this.reload_actividades() )
+        //this._actividades = []
     }
 
     createRenderRoot() {
@@ -416,21 +418,27 @@ export class LoteOffcanvas extends LitElement {
                     }
                 }).start()
 
-
-                this._db.allDocs({
-                    include_docs: true,
-                    startkey: "actividad:nota:" + this._lote_doc.id,
-                    endkey: "actividad:nota:" + this._lote_doc.id + "\ufff0",
-                }).then((result) => {
-                    let rrows = result.rows
-                    console.log("Actividad",rrows)
-                    this._actividades = rrows;
-                })
+                this.reload_actividades()
+                
 
                 // document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
             });
 
         }
+    }
+
+    reload_actividades(){
+        this._db.allDocs({
+            include_docs: true,
+            attachments: true,
+            binary:true,
+            startkey: "actividad:nota:" + this._lote_doc.id,
+            endkey: "actividad:nota:" + this._lote_doc.id + "\ufff0",
+        }).then((result) => {
+            let rrows = result.rows
+            console.log("Actividad con Attachments",rrows)
+            this._actividades = [...rrows];
+        })
     }
 
     render() {

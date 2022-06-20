@@ -223,7 +223,11 @@
 }
 
 .bg-aplicacion {
-    background-color: #c1a6db !important;
+    background-color: #df7030 !important;
+}
+
+.bg-nota {
+    background-color: #b2b1c1 !important;
 }
 
 .bg-cosecha {
