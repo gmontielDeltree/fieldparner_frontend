@@ -69,7 +69,8 @@ export class NotasOffcanvas extends LitElement {
 
   hide(){
     this.nueva_nota_offcanvas.hide()
-    navigator.geolocation.clearWatch(this.handler_id);
+    //navigator.geolocation.clearWatch(this.handler_id);
+    this.inicializar_componente();
   }
 
   posicion_error(err) {
@@ -109,6 +110,7 @@ export class NotasOffcanvas extends LitElement {
 
   mover_marcador = (e) =>{
     this.nota_marker.setLngLat(e.lngLat);
+    this.posicion = {coords:{longitude: e.lngLat.lng, latitude: e.lngLat.lat}}
   }
 
   cambio_geo_modo(e){
@@ -140,6 +142,37 @@ export class NotasOffcanvas extends LitElement {
       navigator.geolocation.clearWatch(this.handler_id);
 
     }
+  }
+
+  color_change(e){
+    this.color = e.target.value
+  }
+
+  inicializar_componente(){
+    this.nueva_nota_offcanvas.hide()
+    this.imagenes = []
+    this.color = 'red'
+    this.texto = ""
+    this.fecha = (new Date().toISOString()).split('T')[0];
+
+    if(this.modo_geolocalizacion === 'dispositivo'){
+      // Remover el handler de refresco de posicion
+      navigator.geolocation.clearWatch(this.handler_id)
+    }else{
+      // Remover el callback de hacer click
+      this.map.off("click", this.mover_marcador)
+    }
+
+    this.nota_marker.remove()
+
+    this.modo_geolocalizacion = 'dispositivo'
+    this.shadowRoot.getElementById('dispositivo').checked = true
+
+    // Color por defecto
+    this.shadowRoot.getElementById('btnradio-red').checked = true
+
+    // Audio
+    this.shadowRoot.getElementById('audio-recorder').borrar()
   }
 
   guardar_nota_click() {
@@ -176,15 +209,20 @@ export class NotasOffcanvas extends LitElement {
     })
 
     // Audio
-    nota._attachments['audio_' + uuid4()] = {
-      data: this.shadowRoot.getElementById('audio-recorder').blob,
-      type: this.shadowRoot.getElementById('audio-recorder').blob.type
+    if(this.shadowRoot.getElementById('audio-recorder').blob){
+      nota._attachments['audio_' + uuid4()] = {
+        data: this.shadowRoot.getElementById('audio-recorder').blob,
+        type: this.shadowRoot.getElementById('audio-recorder').blob.type
+      }
     }
 
-    db.put(nota).then(()=>{
+
+    this.db.put(nota).then(()=>{
       console.log("Nota grabada OK")
+      this.inicializar_componente()
     }).catch((e)=>{
       console.log("Error al grabar Nota", e)
+      alert("Error al grabar Nota")
     })
 
   }
@@ -261,7 +299,7 @@ export class NotasOffcanvas extends LitElement {
                 <vaadin-radio-button
                   value="dispositivo"
                   label="Dispositivo"
-                  name="dispositivo"
+                  id="dispositivo"
                   checked
                   @change=${this.cambio_geo_modo}
                 ></vaadin-radio-button>
@@ -288,9 +326,11 @@ export class NotasOffcanvas extends LitElement {
                 type="radio"
                 class="btn-check nota-status"
                 name="btnradio"
-                id="btnradio-danger"
+                value="red"
+                id="btnradio-red"
                 autocomplete="off"
                 checked
+                @change=${this.color_change}
               />
               <label class="btn btn-outline-danger" for="btnradio-danger"
                 >Urgente</label
@@ -300,8 +340,10 @@ export class NotasOffcanvas extends LitElement {
                 type="radio"
                 class="btn-check nota-status"
                 name="btnradio"
+                value="yellow"
                 id="btnradio-warning"
                 autocomplete="off"
+                @change=${this.color_change}
               />
               <label class="btn btn-outline-warning" for="btnradio-warning"
                 >Atención</label
@@ -311,8 +353,10 @@ export class NotasOffcanvas extends LitElement {
                 type="radio"
                 class="btn-check nota-status"
                 name="btnradio"
+                value="green"
                 id="btnradio-success"
                 autocomplete="off"
+                @change=${this.color_change}
               />
               <label class="btn btn-outline-success" for="btnradio-success"
                 >Todo Bien</label

@@ -50,6 +50,11 @@ window.customElements.define('audio-recorder',
       return content;
     }
 
+    borrar(){
+      this.shadowRoot.getElementById('audio-div-wrapper')?.remove()
+      this.blob = undefined
+    }
+
     // Evento Start
     start(){
 
