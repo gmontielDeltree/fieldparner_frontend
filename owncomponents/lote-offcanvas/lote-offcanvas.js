@@ -117,6 +117,9 @@ export class LoteOffcanvas extends LitElement {
       this.reload_actividades();
       this._lotesOffcanvas.show();
     });
+    this.addEventListener('localizar-nota',(e) => {
+        
+    })
     //this._actividades = []
   }
 
@@ -558,12 +561,13 @@ export class LoteOffcanvas extends LitElement {
     // Render propiamente dicho
     return html`
       <div
-        class="offcanvas offcanvas-bottom h-75"
+        class="offcanvas offcanvas-bottom h-50"
         tabindex="-1"
         id="lote-offcanvas"
         aria-labelledby="offcanvasBottomLabel"
+        data-bs-scroll="true" data-bs-backdrop="false"
       >
-        <div class="offcanvas-header">
+        <div class="offcanvas-header py-2">
           <button
             class="btn btn-danger btn-sm d-block d-md-none material-icons md-18"
             @click=${this.eliminar_lote}
@@ -584,7 +588,7 @@ export class LoteOffcanvas extends LitElement {
             aria-label="Close"
           ></button>
         </div>
-        <div class="offcanvas-body small mt-2">
+        <div class="offcanvas-body small pt-1">
           <div class="btn-toolbar shadow px-0" role="toolbar">
             <div class="btn-group me-2" role="group" aria-label="Zero group">
               <button

@@ -262,6 +262,11 @@ export class TimelineElement extends LitElement {
 
     }
 
+    localizar(item){
+        const event = new CustomEvent('localizar-nota', {detail:{item:item}, bubbles: true, composed: true});
+        this.dispatchEvent(event);
+    }
+
     constructor() {
         super();
         this.stock_tag_table = {}
@@ -274,14 +279,14 @@ export class TimelineElement extends LitElement {
             // Calcular tags
             let nt = {}
             this.actividades.map((act) => {
-                console.log("CALC STOKS I")
+                //console.log("CALC STOKS I")
                 stock_suficiente(this.db, act).then((status)=>{
                     nt[act.uuid]= status
                     this.stock_tag_table = {...nt}
                 })
             })
 
-            console.log("StockTagTable", this.stock_tag_table)
+            //console.log("StockTagTable", this.stock_tag_table)
         }
     }
 
@@ -300,7 +305,7 @@ export class TimelineElement extends LitElement {
 
             if('doc' in item){
                 // Es un documento
-                console.log("OOOOOOOOOOO NOTA", item)
+                //console.log("OOOOOOOOOOO NOTA", item)
                 if(item.doc.tipo === 'nota'){
 
                     let fecha = item.doc.fecha
@@ -325,7 +330,7 @@ export class TimelineElement extends LitElement {
                             }
                         })
     
-                        console.log("IMG", imagenes, "Audio", audio)
+                        //console.log("IMG", imagenes, "Audio", audio)
                     }
 
                  
@@ -335,7 +340,7 @@ export class TimelineElement extends LitElement {
                     }else if(item.doc.color === 'yellow'){
                         color = html`<span class="badge bg-warning float-end">Atención</span>`
                     }else if(item.doc.color === 'green'){
-                        color = html`<span class="badge bg-success float-end">Todo Bien</span>`
+                        color = html`<span class="badge bg-success float-end" >Todo Bien</span>`
                     }
 
                     return html`
@@ -362,13 +367,14 @@ export class TimelineElement extends LitElement {
                             </div>
 
                             <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.nota_eliminar(item.uuid)}}>Eliminar</button>
+                            <button class='btn btn-danger' @click=${()=>{this.localizar(item.doc)}}>Eliminar</button>
 
                         </div>          
                     </li>`
                 }
             }
 
-            console.log("ITEM STT", this.stock_tag_table[item.uuid], item, item.uuid )
+            //console.log("ITEM STT", this.stock_tag_table[item.uuid], item, item.uuid )
             if(item.tipo === 'aplicacion'){
                 let fecha = item.detalles.fecha
                 let hectareas = item.detalles.hectareas
@@ -378,9 +384,9 @@ export class TimelineElement extends LitElement {
                 let list_of_ps = insumos.map(p_from_insumo)
                 let tipo_mayuscula = item.tipo.toUpperCase()
         
-                console.log(moment.locale()); // en
+                //console.log(moment.locale()); // en
                 moment.locale('es')
-                console.log(moment.locale()); // en
+                //console.log(moment.locale()); // en
                 let elapsed = moment(fecha,"DD-MM-YYYY").fromNow()
         
                 return html`
@@ -408,9 +414,9 @@ export class TimelineElement extends LitElement {
                 let comentarios = item.detalles.comentarios
                 let humedad = item.detalles.humedad
         
-                console.log(moment.locale()); // en
+                //console.log(moment.locale()); // en
                 moment.locale('es')
-                console.log(moment.locale()); // en
+                //console.log(moment.locale()); // en
                 let elapsed = moment(fecha,"DD/MM/YYYY").fromNow()
         
         
@@ -440,9 +446,9 @@ export class TimelineElement extends LitElement {
                 let distancia = item.detalles.distancia
 
         
-                console.log(moment.locale()); // en
+                //console.log(moment.locale()); // en
                 moment.locale('es')
-                console.log(moment.locale()); // en
+                //console.log(moment.locale()); // en
                 let elapsed = moment(fecha,"DD/MM/YYYY").fromNow()
         
         

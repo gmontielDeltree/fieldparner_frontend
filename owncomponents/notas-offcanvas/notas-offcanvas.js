@@ -82,9 +82,11 @@ export class NotasOffcanvas extends LitElement {
 
   nueva_nota() {
     this.nueva_nota_offcanvas.show();
+
     this.nota_marker = new mapboxgl.Marker()
       .setLngLat(this.map.getCenter())
       .addTo(this.map);
+
     this.handler_id = navigator.geolocation.watchPosition(
       (pos) => {
         this.posicion = pos;
@@ -98,6 +100,7 @@ export class NotasOffcanvas extends LitElement {
       this.posicion_error,
       { enableHighAccuracy: true }
     );
+    
   }
 
   ver_nota() {

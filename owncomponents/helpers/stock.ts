@@ -52,7 +52,7 @@ const verificar_existencia = (lineas_de_stock, actividad) => {
 
 const descontar_consumo = (lineas_de_stock, actividad) => {
   // Por ahora solo aplicaciones
-  console.log("Descontar Consumo", lineas_de_stock, actividad)
+  // console.log("Descontar Consumo", lineas_de_stock, actividad)
   if(actividad.tipo === 'aplicacion'){
     let insumos = actividad.detalles.insumos
     insumos.map((insumo)=>{
@@ -87,7 +87,7 @@ const calcular_stock_actual = async (db) => {
 }
 
 const iterar_campos_lotes_actividades = async (db, lineas_de_stock, actividad) => {
-  console.log("Lineas STOCK",lineas_de_stock)
+  //console.log("Lineas STOCK",lineas_de_stock)
   return db
   .allDocs({
     include_docs: true,
@@ -131,16 +131,16 @@ const stock_suficiente = async (db, actividad) => {
     return Promise.resolve(true)
   }
   let lineas_de_stock = await calcular_stock_actual(db)
-  console.log("STOCK ACTUAL", await lineas_de_stock)
+  //console.log("STOCK ACTUAL", await lineas_de_stock)
 
   // Descontar del stock las actividades con fecha anterior e igual a la actual
   let lineas_de_stock_desc = await iterar_campos_lotes_actividades(db, await lineas_de_stock, actividad)
 
-  console.log("STOCK DeSCONTADO", await lineas_de_stock)
+  //console.log("STOCK DeSCONTADO", await lineas_de_stock)
   // Verificar si el stock remanente es suficiente
   return verificar_existencia(await lineas_de_stock, actividad)
   }else{
-    console.log("DB UNDEF")
+    //console.log("DB UNDEF")
     return Promise.resolve(true)
   }
 
