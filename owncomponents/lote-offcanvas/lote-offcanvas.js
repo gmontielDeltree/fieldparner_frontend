@@ -3,6 +3,7 @@ import { map } from "lit/directives/map.js";
 import { aplicacionMachine } from "./lote-machine.js";
 import { interpret } from "xstate";
 import { mapbox_static_img } from "./mapbox_static_image.js";
+import mapboxgl from "mapbox-gl";
 
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
@@ -82,6 +83,7 @@ export class LoteOffcanvas extends LitElement {
     _campo_doc: {},
     _lote_doc: {},
     settings: {},
+    _nota_marker:{},
     _db: { state: true },
     fsm: { state: true },
   };
@@ -118,7 +120,25 @@ export class LoteOffcanvas extends LitElement {
       this._lotesOffcanvas.show();
     });
     this.addEventListener('localizar-nota',(e) => {
-        
+        let posicion = e.detail.item.posicion
+        let texto = e.detail.item.texto
+        let color = e.detail.item.color
+        console.log("loacalizar nota",e)
+        if(this._nota_marker !== undefined){
+            this._nota_marker.remove()
+        }
+        this._nota_marker = new mapboxgl.Marker({
+            color: color,
+            })
+        .setPopup(new mapboxgl.Popup().setHTML(`<h4>${texto}</h4>`))
+        .setLngLat(posicion)
+        .addTo(this.map); 
+
+        this.map.flyTo({
+            center: posicion,
+            padding: { bottom: 200 },
+            zoom: 15,
+          })
     })
     //this._actividades = []
   }
@@ -1218,9 +1238,8 @@ export class LoteOffcanvas extends LitElement {
                         <textarea
                           class="form-control"
                           aria-label="With textarea"
-                        >
-${this._ctx.comentarios}</textarea
-                        >
+                          .value=${this._ctx.comentarios}
+                        ></textarea>
                       </div>
                     </div>
                   </div>

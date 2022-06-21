@@ -141,7 +141,7 @@ export class CampoOffcanvas extends LitElement {
     // Hide Lotes
     this.map.setLayoutProperty("lotes", "visibility", "none");
     // Hide NDVI
-    this.map.setLayoutProperty("ndvi-layer", "visibility", "none");
+    // this.map.setLayoutProperty("ndvi-layer", "visibility", "none");
     // Bordes
     this.map.setLayoutProperty("campos_border", "visibility", "visible");
   }

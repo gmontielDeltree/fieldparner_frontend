@@ -160,6 +160,7 @@ export class NotasOffcanvas extends LitElement {
   }
 
   color_change(e) {
+    console.log("Color Change",e)
     this.color = e.target.value;
   }
 
@@ -387,7 +388,6 @@ export class NotasOffcanvas extends LitElement {
 
           <textarea
             class="form-control"
-            id="nota-comentario-input"
             placeholder="Tus comentarios..."
             rows="3"
             .value=${this.texto}

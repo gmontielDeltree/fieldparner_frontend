@@ -367,7 +367,7 @@ export class TimelineElement extends LitElement {
                             </div>
 
                             <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.nota_eliminar(item.uuid)}}>Eliminar</button>
-                            <button class='btn btn-danger' @click=${()=>{this.localizar(item.doc)}}>Eliminar</button>
+                            <button class='btn btn-danger' @click=${()=>{this.localizar(item.doc)}}>Localizar</button>
 
                         </div>          
                     </li>`
