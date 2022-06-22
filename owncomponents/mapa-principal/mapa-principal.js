@@ -276,7 +276,10 @@ export class MapaPrincipal extends LitElement {
   render() {
     return html`
       <div id="map">
-        <div
+       
+      </div>
+
+      <div
           data-ui-load="@lib/components/menu_overlay"
           data-ui-context="menu-overlay"
           class="boton-overlay"
@@ -311,7 +314,6 @@ export class MapaPrincipal extends LitElement {
             </button>
           </div>
         </div>
-      </div>
     `;
   }
 }

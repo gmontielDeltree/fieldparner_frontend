@@ -83,7 +83,7 @@ export class LoteOffcanvas extends LitElement {
     _campo_doc: {},
     _lote_doc: {},
     settings: {},
-    _nota_marker:{},
+    _nota_marker: {},
     _db: { state: true },
     fsm: { state: true },
   };
@@ -115,31 +115,39 @@ export class LoteOffcanvas extends LitElement {
     this.addEventListener("eliminar-actividad", (e) =>
       this.eliminar_actividad(e.detail.uuid)
     );
+
+    this.addEventListener("eliminar-nota",(e)=>{
+      let nota_doc = e.detail.nota_doc
+      this._db.remove(nota_doc).
+
+    });
+
     this.addEventListener("nueva-nota", (e) => {
       this.reload_actividades();
       this._lotesOffcanvas.show();
     });
-    this.addEventListener('localizar-nota',(e) => {
-        let posicion = e.detail.item.posicion
-        let texto = e.detail.item.texto
-        let color = e.detail.item.color
-        console.log("loacalizar nota",e)
-        if(this._nota_marker !== undefined){
-            this._nota_marker.remove()
-        }
-        this._nota_marker = new mapboxgl.Marker({
-            color: color,
-            })
+    
+    this.addEventListener("localizar-nota", (e) => {
+      let posicion = e.detail.item.posicion;
+      let texto = e.detail.item.texto;
+      let color = e.detail.item.color;
+      console.log("loacalizar nota", e);
+      if (this._nota_marker !== undefined) {
+        this._nota_marker.remove();
+      }
+      this._nota_marker = new mapboxgl.Marker({
+        color: color,
+      })
         .setPopup(new mapboxgl.Popup().setHTML(`<h4>${texto}</h4>`))
         .setLngLat(posicion)
-        .addTo(this.map); 
+        .addTo(this.map);
 
-        this.map.flyTo({
-            center: posicion,
-            padding: { bottom: 200 },
-            zoom: 15,
-          })
-    })
+      this.map.flyTo({
+        center: posicion,
+        padding: { bottom: 200 },
+        zoom: 15,
+      });
+    });
     //this._actividades = []
   }
 
@@ -178,8 +186,11 @@ export class LoteOffcanvas extends LitElement {
       })
       .start();
   }
+  
   hide() {
     this._lotesOffcanvas.hide();
+    let event = new CustomEvent("lote-detalles-hide",{bubbles:true, composed:true})
+    this.dispatchEvent(event)
   }
 
   siembra() {
@@ -532,6 +543,8 @@ export class LoteOffcanvas extends LitElement {
   }
 
   render() {
+    console.log("RENDER LOTE OFFCANVAS");
+
     const resumen_item_el = (item) => html`<a
       href="#"
       class="list-group-item list-group-item-action"
@@ -585,7 +598,8 @@ export class LoteOffcanvas extends LitElement {
         tabindex="-1"
         id="lote-offcanvas"
         aria-labelledby="offcanvasBottomLabel"
-        data-bs-scroll="true" data-bs-backdrop="false"
+        data-bs-scroll="true"
+        data-bs-backdrop="false"
       >
         <div class="offcanvas-header py-2">
           <button
@@ -606,6 +620,7 @@ export class LoteOffcanvas extends LitElement {
             class="btn-close text-reset"
             data-bs-dismiss="offcanvas"
             aria-label="Close"
+            @click=${this.hide}
           ></button>
         </div>
         <div class="offcanvas-body small pt-1">

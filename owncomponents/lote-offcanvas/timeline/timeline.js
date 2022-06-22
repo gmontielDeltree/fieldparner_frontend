@@ -258,8 +258,9 @@ export class TimelineElement extends LitElement {
         this.dispatchEvent(event);
     }
 
-    nota_eliminar(uuid){
-
+    nota_eliminar(nota_doc){
+        let event = new CustomEvent("eliminar-nota",{detail:{nota_doc:nota_doc},bubbles:true, composed:true})
+        this.dispatchEvent(event)
     }
 
     localizar(item){
@@ -314,6 +315,7 @@ export class TimelineElement extends LitElement {
 
                     let imagenes = []
                     let audio = []
+                    let nota_id = item.doc._id
 
                     if('_attachments' in item.doc){
                         
@@ -366,7 +368,7 @@ export class TimelineElement extends LitElement {
                                 ${audio.length > 0 ? html`<audio controls><source .src=${URL.createObjectURL(audio[0].data)}></source></audio>` : null}
                             </div>
 
-                            <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.nota_eliminar(item.uuid)}}>Eliminar</button>
+                            <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.nota_eliminar(item.doc)}}>Eliminar</button>
                             <button class='btn btn-danger' @click=${()=>{this.localizar(item.doc)}}>Localizar</button>
 
                         </div>          

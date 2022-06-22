@@ -7,6 +7,7 @@ import "@vaadin/combo-box";
 import { uuid4 } from "uuid4";
 import mapboxgl from "mapbox-gl";
 import { format, parse } from "date-fns";
+import '@vaadin/text-area';
 
 export class NotasOffcanvas extends LitElement {
   static properties = {
@@ -32,7 +33,7 @@ export class NotasOffcanvas extends LitElement {
   constructor() {
     super();
     this.imagenes = [];
-    this.texto = "";
+    this.texto = "sssss";
     this.fecha = new Date().toISOString().split("T")[0];
     this.color = "red";
     this.modo_geolocalizacion = "dispositivo";
@@ -72,8 +73,10 @@ export class NotasOffcanvas extends LitElement {
 
   hide() {
     this.nueva_nota_offcanvas.hide();
-    //navigator.geolocation.clearWatch(this.handler_id);
+    
     this.inicializar_componente();
+    let event = new CustomEvent("nueva-nota",{bubbles:true, composed:true})
+    this.dispatchEvent(event)
   }
 
   posicion_error(err) {
@@ -81,8 +84,8 @@ export class NotasOffcanvas extends LitElement {
   }
 
   nueva_nota() {
+    this.inicializar_componente();
     this.nueva_nota_offcanvas.show();
-
     this.nota_marker = new mapboxgl.Marker()
       .setLngLat(this.map.getCenter())
       .addTo(this.map);
@@ -132,9 +135,6 @@ export class NotasOffcanvas extends LitElement {
     console.log("Cambio Radio", e, this.modo_geolocalizacion);
 
     if (this.modo_geolocalizacion === "dispositivo") {
-      //       map.on("move", () => {
-      //         nota_marker.setLngLat(map.getCenter());
-      //       });
 
       this.map.off("click", this.mover_marcador);
       this.handler_id = navigator.geolocation.watchPosition(
@@ -165,7 +165,7 @@ export class NotasOffcanvas extends LitElement {
   }
 
   inicializar_componente() {
-    this.nueva_nota_offcanvas.hide();
+    //this.nueva_nota_offcanvas.hide();
     this.imagenes = [];
     this.color = "red";
     this.texto = "";
@@ -179,7 +179,8 @@ export class NotasOffcanvas extends LitElement {
       this.map.off("click", this.mover_marcador);
     }
 
-    this.nota_marker.remove();
+    
+    this.nota_marker?.remove();
 
     this.modo_geolocalizacion = "dispositivo";
     this.shadowRoot.getElementById("dispositivo").checked = true;
@@ -238,6 +239,7 @@ export class NotasOffcanvas extends LitElement {
         console.log("Nota grabada OK");
         this.inicializar_componente();
 
+        this.nueva_nota_offcanvas.hide()
         let event = new CustomEvent("nueva-nota",{bubbles:true, composed:true})
         this.dispatchEvent(event)
         
@@ -268,6 +270,7 @@ export class NotasOffcanvas extends LitElement {
       `;
     };
 
+    console.log("RENDER NOTA")
     return html`
       <!--Add Nota Form-->
       <div
@@ -298,6 +301,7 @@ export class NotasOffcanvas extends LitElement {
           >
             Guardar
           </button>
+
         </div>
         <hr class="my-0" />
         <div class="container-fluid offcanvas-body">
@@ -341,7 +345,8 @@ export class NotasOffcanvas extends LitElement {
               id="nota-color-input"
               aria-label="Basic mixed styles example"
             >
-              <input
+
+            <input
                 type="radio"
                 class="btn-check nota-status"
                 name="btnradio"
@@ -351,7 +356,7 @@ export class NotasOffcanvas extends LitElement {
                 checked
                 @change=${this.color_change}
               />
-              <label class="btn btn-outline-danger" for="btnradio-danger"
+              <label class="btn btn-outline-danger" for="btnradio-red"
                 >Urgente</label
               >
 
@@ -386,13 +391,10 @@ export class NotasOffcanvas extends LitElement {
 
           <hr />
 
-          <textarea
-            class="form-control"
-            placeholder="Tus comentarios..."
-            rows="3"
-            .value=${this.texto}
-            @input=${(e) => (this.texto = e.target.value)}
-          ></textarea>
+          <textarea class="form-control" placeholder="Tus comentarios..." .value=${this.texto} @input=${(e) => (this.texto = e.target.value)} rows="3"></textarea>
+
+          <!--.value=${this.texto} 
+             -->
 
           <hr />
 

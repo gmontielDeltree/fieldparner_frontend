@@ -48,6 +48,7 @@ export class FieldPartner extends LitElement {
     });
 
     this.addEventListener("ver-lote-detalles", (e) => {
+      document.getElementById("campo-oc").hide();
       document.getElementById("lote-oc").lote_nombre = e.detail.nombre;
       document.getElementById("lote-oc").campo_id = e.detail.campo_parent_id;
       document.getElementById("lote-oc").show();
@@ -55,10 +56,6 @@ export class FieldPartner extends LitElement {
 
     this.addEventListener("nuevo-campo-click", (e) => {
       document.getElementById("nuevo-campo-oc").show = true;
-    });
-
-    this.addEventListener("nueva-nota-click", (e) => {
-      document.getElementById("notas-oc").nueva_nota();
     });
 
     this.addEventListener("ver-ndvi-click", (e) => {
@@ -144,6 +141,12 @@ export class FieldPartner extends LitElement {
       //   }
       // });
     });
+
+    this.addEventListener("lote-detalles-hide", (e)=>{
+      console.log("HIDE LOTE DETALLES");
+      document.getElementById("campo-oc").show();
+    })
+
   }
 
   createRenderRoot() {
