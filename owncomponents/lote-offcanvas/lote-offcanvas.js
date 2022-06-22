@@ -118,7 +118,8 @@ export class LoteOffcanvas extends LitElement {
 
     this.addEventListener("eliminar-nota",(e)=>{
       let nota_doc = e.detail.nota_doc
-      this._db.remove(nota_doc).
+      this._db.remove(nota_doc)
+      this.reload_actividades()
 
     });
 
