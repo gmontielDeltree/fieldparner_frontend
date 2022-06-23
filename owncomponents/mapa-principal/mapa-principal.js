@@ -5,7 +5,7 @@ import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
-
+import bbox from '@turf/bbox'
 /** Modifica 'features' agregado color y cultivo a las 'properties'
  *  basado en las actividades
  */
@@ -201,7 +201,7 @@ export class MapaPrincipal extends LitElement {
       layer_visibility(this.map, "campos_border", true);
 
       // Fly to
-      this.map.fitBounds(turf.bbox(e.features[0]));
+      this.map.fitBounds(bbox(e.features[0]));
       const campo_doc = e.features[0].properties;
 
       // Event payload: campo_doc

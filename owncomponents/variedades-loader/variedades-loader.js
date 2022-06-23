@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit-element";
 import PouchDB from "pouchdb";
-import variedades from "./variedades.json";
+// import variedades from "./variedades.json";
 import { base_url } from "../helpers.js";
 
 export class VariedadesLoader extends LitElement {
