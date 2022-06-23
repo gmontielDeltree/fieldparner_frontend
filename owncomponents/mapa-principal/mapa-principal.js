@@ -275,9 +275,7 @@ export class MapaPrincipal extends LitElement {
 
   render() {
     return html`
-      <div id="map">
-       
-      </div>
+      <div id="map"></div>
 
       <div
           data-ui-load="@lib/components/menu_overlay"
