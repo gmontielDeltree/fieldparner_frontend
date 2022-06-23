@@ -3,7 +3,7 @@ import { map } from "lit/directives/map.js";
 import moment from "moment";
 import "moment/dist/locale/es";
 import { stock_suficiente } from "../../helpers/stock.ts";
-import { parse, compareDesc } from "date-fns";
+import { parse, compareDesc, format } from "date-fns";
 
 const p_from_insumo = (i) => {
   const motivos_2_str = (motivos) => {
@@ -385,6 +385,8 @@ export class TimelineElement extends LitElement {
           let audio = [];
           let nota_id = item.doc._id;
 
+          let fecha_string = format(extraer_fecha(item), "dd-MM-yyyy"); 
+
           if ("_attachments" in item.doc) {
             Object.entries(item.doc._attachments).map(([key, item]) => {
               if (key.indexOf("foto") > -1) {
@@ -418,7 +420,7 @@ export class TimelineElement extends LitElement {
 
           return html` <li>
             <time class="cbp_tmtime" datetime="2032-11-04T03:45"
-              ><span>${fecha}</span> <span>${elapsed}</span></time
+              ><span>${fecha_string}</span> <span>${elapsed}</span></time
             >
             <div class="cbp_tmicon bg-blush">
               <i class="zmdi zmdi-label"></i>
