@@ -8,6 +8,7 @@ import { uuid4 } from "uuid4";
 import mapboxgl from "mapbox-gl";
 import { format, parse } from "date-fns";
 import '@vaadin/text-area';
+import { touchEvent } from "../helpers";
 
 export class NotasOffcanvas extends LitElement {
   static properties = {
@@ -136,7 +137,7 @@ export class NotasOffcanvas extends LitElement {
 
     if (this.modo_geolocalizacion === "dispositivo") {
 
-      this.map.off("click", this.mover_marcador);
+      this.map.off(touchEvent, this.mover_marcador);
       this.handler_id = navigator.geolocation.watchPosition(
         (pos) => {
           this.posicion = pos;
@@ -154,7 +155,7 @@ export class NotasOffcanvas extends LitElement {
         { enableHighAccuracy: true }
       );
     } else if (this.modo_geolocalizacion === "mapa") {
-      this.map.on("click", this.mover_marcador);
+      this.map.on(touchEvent, this.mover_marcador);
       navigator.geolocation.clearWatch(this.handler_id);
     }
   }
@@ -176,7 +177,7 @@ export class NotasOffcanvas extends LitElement {
       navigator.geolocation.clearWatch(this.handler_id);
     } else {
       // Remover el callback de hacer click
-      this.map.off("click", this.mover_marcador);
+      this.map.off(touchEvent, this.mover_marcador);
     }
 
     
