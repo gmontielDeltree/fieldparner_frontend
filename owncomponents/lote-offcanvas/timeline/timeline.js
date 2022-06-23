@@ -1,103 +1,106 @@
-import { LitElement, html, css } from 'lit'
-import { map } from 'lit/directives/map.js';
-import moment from 'moment';
-import 'moment/dist/locale/es';
-import {stock_suficiente} from '../../helpers/stock.ts'
-
+import { LitElement, html, css } from "lit";
+import { map } from "lit/directives/map.js";
+import moment from "moment";
+import "moment/dist/locale/es";
+import { stock_suficiente } from "../../helpers/stock.ts";
+import { parse, compareDesc } from "date-fns";
 
 const p_from_insumo = (i) => {
-    const motivos_2_str = motivos => {
-        let motivos_array = Object.keys(motivos)
-        let solo_verdaderos = motivos_array.filter(m => motivos[m])    
-        return solo_verdaderos.join(", ") 
-    }
+  const motivos_2_str = (motivos) => {
+    let motivos_array = Object.keys(motivos);
+    let solo_verdaderos = motivos_array.filter((m) => motivos[m]);
+    return solo_verdaderos.join(", ");
+  };
 
-    return html`<p class="small"><strong>${i.name.toUpperCase()}</strong> - Dosis: ${i.dosis} ${i.unidad} - Motivo: ${motivos_2_str(i.motivos)} </p>`
+  return html`<p class="small">
+    <strong>${i.name.toUpperCase()}</strong> - Dosis: ${i.dosis} ${i.unidad} -
+    Motivo: ${motivos_2_str(i.motivos)}
+  </p>`;
+};
 
-}
-
-const timeline_css = css`.cbp_tmtimeline {
+const timeline_css = css`
+  .cbp_tmtimeline {
     margin: 0;
     padding: 0;
     list-style: none;
-    position: relative
-}
+    position: relative;
+  }
 
-.cbp_tmtimeline:before {
-    content: '';
+  .cbp_tmtimeline:before {
+    content: "";
     position: absolute;
     top: 0;
     bottom: 0;
     width: 3px;
     background: #00b303;
     left: 20%;
-    margin-left: -6px
-}
+    margin-left: -6px;
+  }
 
-.cbp_tmtimeline>li {
-    position: relative
-}
+  .cbp_tmtimeline > li {
+    position: relative;
+  }
 
-.cbp_tmtimeline>li:first-child .cbp_tmtime span.large {
+  .cbp_tmtimeline > li:first-child .cbp_tmtime span.large {
     color: #444;
     font-size: 17px !important;
-    font-weight: 700
-}
+    font-weight: 700;
+  }
 
-.cbp_tmtimeline>li:first-child .cbp_tmicon {
+  .cbp_tmtimeline > li:first-child .cbp_tmicon {
     background: #fff;
-    color: #666
-}
+    color: #666;
+  }
 
-.cbp_tmtimeline>li:nth-child(odd) .cbp_tmtime span:last-child {
+  .cbp_tmtimeline > li:nth-child(odd) .cbp_tmtime span:last-child {
     color: #444;
-    font-size: 13px
-}
+    font-size: 13px;
+  }
 
-.cbp_tmtimeline>li:nth-child(odd) .cbp_tmlabel {
-    background: #f0f1f3
-}
+  .cbp_tmtimeline > li:nth-child(odd) .cbp_tmlabel {
+    background: #f0f1f3;
+  }
 
-.cbp_tmtimeline>li:nth-child(odd) .cbp_tmlabel:after {
-    border-right-color: #f0f1f3
-}
+  .cbp_tmtimeline > li:nth-child(odd) .cbp_tmlabel:after {
+    border-right-color: #f0f1f3;
+  }
 
-.cbp_tmtimeline>li .empty span {
-    color: #777
-}
+  .cbp_tmtimeline > li .empty span {
+    color: #777;
+  }
 
-.cbp_tmtimeline>li .cbp_tmtime {
+  .cbp_tmtimeline > li .cbp_tmtime {
     display: block;
     width: 23%;
     padding-right: 70px;
-    position: absolute
-}
+    position: absolute;
+  }
 
-.cbp_tmtimeline>li .cbp_tmtime span {
+  .cbp_tmtimeline > li .cbp_tmtime span {
     display: block;
-    text-align: right
-}
+    text-align: right;
+  }
 
-.cbp_tmtimeline>li .cbp_tmtime span:first-child {
+  .cbp_tmtimeline > li .cbp_tmtime span:first-child {
     font-size: 15px;
     color: #3d4c5a;
-    font-weight: 700
-}
+    font-weight: 700;
+  }
 
-.cbp_tmtimeline>li .cbp_tmtime span:last-child {
+  .cbp_tmtimeline > li .cbp_tmtime span:last-child {
     font-size: 14px;
-    color: #444
-}
+    color: #444;
+  }
 
-.cbp_tmtimeline>li .cbp_tmlabel {
+  .cbp_tmtimeline > li .cbp_tmlabel {
     margin: 0 0 15px 25%;
     background: #f0f1f3;
     padding: 1.2em;
     position: relative;
-    border-radius: 5px
-}
+    border-radius: 5px;
+  }
 
-.cbp_tmtimeline>li .cbp_tmlabel:after {
+  .cbp_tmtimeline > li .cbp_tmlabel:after {
     right: 100%;
     border: solid transparent;
     content: " ";
@@ -107,46 +110,46 @@ const timeline_css = css`.cbp_tmtimeline {
     pointer-events: none;
     border-right-color: #f0f1f3;
     border-width: 10px;
-    top: 10px
-}
+    top: 10px;
+  }
 
-.cbp_tmtimeline>li .cbp_tmlabel blockquote {
-    font-size: 16px
-}
+  .cbp_tmtimeline > li .cbp_tmlabel blockquote {
+    font-size: 16px;
+  }
 
-.cbp_tmtimeline>li .cbp_tmlabel .map-checkin {
+  .cbp_tmtimeline > li .cbp_tmlabel .map-checkin {
     border: 5px solid rgba(235, 235, 235, 0.2);
     -moz-box-shadow: 0px 0px 0px 1px #ebebeb;
     -webkit-box-shadow: 0px 0px 0px 1px #ebebeb;
     box-shadow: 0px 0px 0px 1px #ebebeb;
-    background: #fff !important
-}
+    background: #fff !important;
+  }
 
-.cbp_tmtimeline>li .cbp_tmlabel h2 {
+  .cbp_tmtimeline > li .cbp_tmlabel h2 {
     margin: 0px;
     padding: 0 0 10px 0;
     line-height: 26px;
     font-size: 16px;
-    font-weight: normal
-}
+    font-weight: normal;
+  }
 
-.cbp_tmtimeline>li .cbp_tmlabel h2 a {
-    font-size: 15px
-}
+  .cbp_tmtimeline > li .cbp_tmlabel h2 a {
+    font-size: 15px;
+  }
 
-.cbp_tmtimeline>li .cbp_tmlabel h2 a:hover {
-    text-decoration: none
-}
+  .cbp_tmtimeline > li .cbp_tmlabel h2 a:hover {
+    text-decoration: none;
+  }
 
-.cbp_tmtimeline>li .cbp_tmlabel h2 span {
-    font-size: 15px
-}
+  .cbp_tmtimeline > li .cbp_tmlabel h2 span {
+    font-size: 15px;
+  }
 
-.cbp_tmtimeline>li .cbp_tmlabel p {
-    color: #444
-}
+  .cbp_tmtimeline > li .cbp_tmlabel p {
+    color: #444;
+  }
 
-.cbp_tmtimeline>li .cbp_tmicon {
+  .cbp_tmtimeline > li .cbp_tmicon {
     width: 40px;
     height: 40px;
     speak: none;
@@ -165,338 +168,469 @@ const timeline_css = css`.cbp_tmtimeline {
     text-align: center;
     left: 20%;
     top: 0;
-    margin: 0 0 0 -25px
-}
+    margin: 0 0 0 -25px;
+  }
 
-@media screen and (max-width: 992px) and (min-width: 768px) {
-    .cbp_tmtimeline>li .cbp_tmtime {
-        padding-right: 60px
+  @media screen and (max-width: 992px) and (min-width: 768px) {
+    .cbp_tmtimeline > li .cbp_tmtime {
+      padding-right: 60px;
     }
-}
+  }
 
-@media screen and (max-width: 65.375em) {
-    .cbp_tmtimeline>li .cbp_tmtime span:last-child {
-        font-size: 12px
+  @media screen and (max-width: 65.375em) {
+    .cbp_tmtimeline > li .cbp_tmtime span:last-child {
+      font-size: 12px;
     }
-}
+  }
 
-@media screen and (max-width: 47.2em) {
+  @media screen and (max-width: 47.2em) {
     .cbp_tmtimeline:before {
-        display: none
+      display: none;
     }
-    .cbp_tmtimeline>li .cbp_tmtime {
-        width: 100%;
-        position: relative;
-        padding: 0 0 20px 0
+    .cbp_tmtimeline > li .cbp_tmtime {
+      width: 100%;
+      position: relative;
+      padding: 0 0 20px 0;
     }
-    .cbp_tmtimeline>li .cbp_tmtime span {
-        text-align: left
+    .cbp_tmtimeline > li .cbp_tmtime span {
+      text-align: left;
     }
-    .cbp_tmtimeline>li .cbp_tmlabel {
-        margin: 0 0 30px 0;
-        padding: 1em;
-        font-weight: 400;
-        font-size: 95%
+    .cbp_tmtimeline > li .cbp_tmlabel {
+      margin: 0 0 30px 0;
+      padding: 1em;
+      font-weight: 400;
+      font-size: 95%;
     }
-    .cbp_tmtimeline>li .cbp_tmlabel:after {
-        right: auto;
-        left: 20px;
-        border-right-color: transparent;
-        border-bottom-color: #f5f5f6;
-        top: -20px
+    .cbp_tmtimeline > li .cbp_tmlabel:after {
+      right: auto;
+      left: 20px;
+      border-right-color: transparent;
+      border-bottom-color: #f5f5f6;
+      top: -20px;
     }
-    .cbp_tmtimeline>li .cbp_tmicon {
-        position: relative;
-        float: right;
-        left: auto;
-        margin: -64px 5px 0 0px
+    .cbp_tmtimeline > li .cbp_tmicon {
+      position: relative;
+      float: right;
+      left: auto;
+      margin: -64px 5px 0 0px;
     }
-    .cbp_tmtimeline>li:nth-child(odd) .cbp_tmlabel:after {
-        border-right-color: transparent;
-        border-bottom-color: #f5f5f6
+    .cbp_tmtimeline > li:nth-child(odd) .cbp_tmlabel:after {
+      border-right-color: transparent;
+      border-bottom-color: #f5f5f6;
     }
-}
+  }
 
-.bg-green {
+  .bg-green {
     background-color: #50d38a !important;
     color: #fff;
-}
+  }
 
-.bg-blush {
+  .bg-blush {
     background-color: #ff758e !important;
     color: #fff;
-}
+  }
 
-.bg-orange {
+  .bg-orange {
     background-color: #ffc323 !important;
     color: #fff;
-}
+  }
 
-.bg-info {
-    background-color: #2CA8FF !important;
-}`;
+  .bg-info {
+    background-color: #2ca8ff !important;
+  }
+`;
+
+
+const extraer_fecha = (actividad) => {
+    let fecha_objeto;
+    // Extraer fecha de b
+    if ("doc" in actividad) {
+      // Nota
+      fecha_objeto = parse(actividad.doc.fecha, "yyyy-MM-dd", new Date());
+    } else {
+      // Aplicacion antigua
+      fecha_objeto = parse(actividad.detalles.fecha, "dd-MM-yyyy", new Date());
+    }
+    return fecha_objeto;
+  }
 
 export class TimelineElement extends LitElement {
-    static properties = {
-        actividades:{},
-        actividades_docs:{},
-        db: {},
-        fsm: { state: true },
-        stock_tag_table:{}
+  static properties = {
+    actividades: {},
+    actividades_docs: {},
+    db: {},
+    fsm: { state: true },
+    stock_tag_table: {},
+  };
+
+  static styles = [timeline_css];
+
+  evento_pdf(uuid) {
+    const event = new CustomEvent("generar-ot", {
+      detail: { uuid: uuid },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+
+  evento_eliminar(uuid) {
+    const event = new CustomEvent("eliminar-actividad", {
+      detail: { uuid: uuid },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+
+  nota_eliminar(nota_doc) {
+    let event = new CustomEvent("eliminar-nota", {
+      detail: { nota_doc: nota_doc },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+
+  localizar(item) {
+    const event = new CustomEvent("localizar-nota", {
+      detail: { item: item },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+
+  constructor() {
+    super();
+    this.stock_tag_table = {};
+  }
+
+  willUpdate(props) {
+    if (props.has("actividades") && this.db) {
+      // Calcular tags
+      let nt = {};
+      this.actividades.map((act) => {
+        //console.log("CALC STOKS I")
+        stock_suficiente(this.db, act).then((status) => {
+          nt[act.uuid] = status;
+          this.stock_tag_table = { ...nt };
+        });
+      });
+
+      //console.log("StockTagTable", this.stock_tag_table)
     }
+  }
 
-    static styles = [timeline_css];
+  createRenderRoot() {
+    return this;
+  }
 
 
-    evento_pdf(uuid){
-        const event = new CustomEvent('generar-ot', {detail:{uuid:uuid}, bubbles: true, composed: true});
-        this.dispatchEvent(event);
+
+  comparar_fechas(a, b) {
+    let fecha_a = extraer_fecha(a);
+    let fecha_b = extraer_fecha(b);
+
+    let result = compareDesc(fecha_a, fecha_b);
+    if (result === 0) {
+      // Si alguno es nota poner la nota primero
+      if (a?.doc.tipo === "nota") {
+        result = 1;
+      } else if (b?.doc.tipo === "nota") {
+        result = -1;
+      }
     }
+    // if (a es menor que b según criterio de ordenamiento) {
+    //   return -1;
+    // }
 
-    evento_eliminar(uuid){
-        const event = new CustomEvent('eliminar-actividad', {detail:{uuid:uuid}, bubbles: true, composed: true});
-        this.dispatchEvent(event);
+    // if (a es mayor que b según criterio de ordenamiento) {
+    //   return 1;
+    // }
+
+    // a debe ser igual b
+    return result;
+  }
+
+  ordenar_actividades(act, notas) {
+    if (act === undefined) {
+      act = [];
     }
-
-    nota_eliminar(nota_doc){
-        let event = new CustomEvent("eliminar-nota",{detail:{nota_doc:nota_doc},bubbles:true, composed:true})
-        this.dispatchEvent(event)
+    if (notas === undefined) {
+      notas = [];
     }
+    console.log("ORDENADOR", act, notas);
+    let todos = act.concat(notas);
+    return todos.sort(this.comparar_fechas);
+  }
 
-    localizar(item){
-        const event = new CustomEvent('localizar-nota', {detail:{item:item}, bubbles: true, composed: true});
-        this.dispatchEvent(event);
-    }
+  render() {
+    let stock_tag = (stock_suficiente) => html` <p class="small">
+      ${stock_suficiente
+        ? html` <span class="badge bg-success">Stock Suficiente</span>`
+        : html` <span class="badge bg-danger">Stock Insuficiente</span>`}
+    </p>`;
 
-    constructor() {
-        super();
-        this.stock_tag_table = {}
-    }
+    const time_item = (item) => {
+      if ("doc" in item) {
+        // Es un documento
+        //console.log("OOOOOOOOOOO NOTA", item)
+        if (item.doc.tipo === "nota") {
+          let fecha = item.doc.fecha;
+          moment.locale("es");
+          let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
 
-    willUpdate(props){
-    
+          let imagenes = [];
+          let audio = [];
+          let nota_id = item.doc._id;
 
-        if(props.has('actividades')  && this.db){
-            // Calcular tags
-            let nt = {}
-            this.actividades.map((act) => {
-                //console.log("CALC STOKS I")
-                stock_suficiente(this.db, act).then((status)=>{
-                    nt[act.uuid]= status
-                    this.stock_tag_table = {...nt}
-                })
-            })
+          if ("_attachments" in item.doc) {
+            Object.entries(item.doc._attachments).map(([key, item]) => {
+              if (key.indexOf("foto") > -1) {
+                imagenes.push(item);
+              }
+            });
 
-            //console.log("StockTagTable", this.stock_tag_table)
+            Object.entries(item.doc._attachments).map(([key, item]) => {
+              if (key.indexOf("audio") > -1) {
+                audio.push(item);
+              }
+            });
+
+            //console.log("IMG", imagenes, "Audio", audio)
+          }
+
+          let color;
+          if (item.doc.color === "red") {
+            color = html`<span class="badge bg-danger float-end"
+              >Urgente</span
+            >`;
+          } else if (item.doc.color === "yellow") {
+            color = html`<span class="badge bg-warning float-end"
+              >Atención</span
+            >`;
+          } else if (item.doc.color === "green") {
+            color = html`<span class="badge bg-success float-end"
+              >Todo Bien</span
+            >`;
+          }
+
+          return html` <li>
+            <time class="cbp_tmtime" datetime="2032-11-04T03:45"
+              ><span>${fecha}</span> <span>${elapsed}</span></time
+            >
+            <div class="cbp_tmicon bg-blush">
+              <i class="zmdi zmdi-label"></i>
+            </div>
+            <div class="cbp_tmlabel bg-nota">
+              <h2><a class="strong">NOTA</a> ${color}</h2>
+
+              ${item.doc.texto}
+
+              <p class="small"></p>
+
+              <div class="row mx-1">
+                ${imagenes.map((img) => {
+                  return html`<img
+                    src=${URL.createObjectURL(img.data)}
+                    class="img-thumbnail col col-4 col-sm-3"
+                    alt="..."
+                  />`;
+                })}
+              </div>
+
+              <div class="row my-1">
+                ${audio.length > 0
+                  ? html`<audio controls><source .src=${URL.createObjectURL(
+                      audio[0].data
+                    )}></source></audio>`
+                  : null}
+              </div>
+
+              <button
+                class="btn btn-danger"
+                @click=${() => {
+                  console.log(item.uuid);
+                  this.nota_eliminar(item.doc);
+                }}
+              >
+                Eliminar
+              </button>
+              <button
+                class="btn btn-danger"
+                @click=${() => {
+                  this.localizar(item.doc);
+                }}
+              >
+                Localizar
+              </button>
+            </div>
+          </li>`;
         }
-    }
+      }
 
-    createRenderRoot() {
-        return this;
-    }
+      //console.log("ITEM STT", this.stock_tag_table[item.uuid], item, item.uuid )
+      if (item.tipo === "aplicacion") {
+        let fecha = item.detalles.fecha;
+        let hectareas = item.detalles.hectareas;
+        let insumos = item.detalles.insumos;
+        let comentarios = item.detalles.comentarios;
 
-    render() {
+        let list_of_ps = insumos.map(p_from_insumo);
+        let tipo_mayuscula = item.tipo.toUpperCase();
 
-        let stock_tag = (stock_suficiente) => html`
-            <p class="small">
-            ${stock_suficiente ? html` <span class="badge bg-success">Stock Suficiente</span>` : html` <span class="badge bg-danger">Stock Insuficiente</span>`}
-        </p>`
+        //console.log(moment.locale()); // en
+        moment.locale("es");
+        //console.log(moment.locale()); // en
+        let elapsed = moment(fecha, "DD-MM-YYYY").fromNow();
 
-        const time_item = (item) => {
+        return html` <li>
+          <time class="cbp_tmtime" datetime="2032-11-04T03:45"
+            ><span>${fecha}</span> <span>${elapsed}</span></time
+          >
+          <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
+          <div class="cbp_tmlabel bg-aplicacion">
+            <h2>
+              <a>APLICACIÓN</a>
+              <span class="text-muted">en ${hectareas} has.</span>
+            </h2>
+            ${list_of_ps}
+            <p class="small">${comentarios}</p>
+            ${stock_tag(this.stock_tag_table[item.uuid])}
+            ${navigator.share
+              ? html`<button
+                  type="button"
+                  class="btn btn-success"
+                  @click=${() => this.evento_pdf(item.uuid)}
+                >
+                  Compartir Orden
+                </button>`
+              : html`<button
+                  class="btn btn-secondary"
+                  @click=${() => {
+                    console.log(item.uuid);
+                    this.evento_pdf(item.uuid);
+                  }}
+                >
+                  Orden de Trabajo
+                </button>`}
 
-            if('doc' in item){
-                // Es un documento
-                //console.log("OOOOOOOOOOO NOTA", item)
-                if(item.doc.tipo === 'nota'){
+            <button
+              class="btn btn-danger"
+              @click=${() => {
+                console.log(item.uuid);
+                this.evento_eliminar(item.uuid);
+              }}
+            >
+              Eliminar
+            </button>
+          </div>
+        </li>`;
+      } else if (item.tipo === "cosecha") {
+        let fecha = item.detalles.fecha;
+        let hectareas = item.detalles.hectareas;
+        let rinde = item.detalles.rinde;
+        let comentarios = item.detalles.comentarios;
+        let humedad = item.detalles.humedad;
 
-                    let fecha = item.doc.fecha
-                    moment.locale('es')
-                    let elapsed = moment(fecha,"YYYY-MM-DD").fromNow()
+        //console.log(moment.locale()); // en
+        moment.locale("es");
+        //console.log(moment.locale()); // en
+        let elapsed = moment(fecha, "DD/MM/YYYY").fromNow();
 
-                    let imagenes = []
-                    let audio = []
-                    let nota_id = item.doc._id
+        return html`
+          <li>
+            <time class="cbp_tmtime" datetime="2032-11-04T03:45"
+              ><span>${fecha}</span> <span>${elapsed}</span></time
+            >
+            <div class="cbp_tmicon bg-green">
+              <i class="zmdi zmdi-label"></i>
+            </div>
+            <div class="cbp_tmlabel bg-cosecha">
+              <h2>
+                <a href="#">COSECHA</a>
+                <span class="text-muted">de ${hectareas} has.</span>
+              </h2>
+              <p>Rinde: ${rinde} tn/ha - Humedad: ${humedad} %</p>
+              <p class="small">${comentarios}</p>
 
-                    if('_attachments' in item.doc){
-                        
-                        Object.entries(item.doc._attachments).map(([key,item])=>{
-                        
-                            if(key.indexOf("foto")>-1){
-                                imagenes.push(item)
-                            }
-                        })
-    
-                        Object.entries(item.doc._attachments).map(([key,item])=>{
-                            if(key.indexOf("audio")>-1){
-                                audio.push(item)
-                            }
-                        })
-    
-                        //console.log("IMG", imagenes, "Audio", audio)
-                    }
+              <button
+                class="btn btn-danger"
+                @click=${() => {
+                  console.log(item.uuid);
+                  this.evento_eliminar(item.uuid);
+                }}
+              >
+                Eliminar
+              </button>
+            </div>
+          </li>
+        `;
+      } else if (item.tipo === "siembra") {
+        let fecha = item.detalles.fecha;
+        let hectareas = item.detalles.hectareas;
+        let comentarios = item.detalles.comentarios;
+        let cultivo = item.detalles.cultivo;
+        let varidad = item.detalles.variedad;
+        let peso_1000 = item.detalles.peso_1000;
+        let densidad_objetivo = item.detalles.densidad_objetivo;
+        let distancia = item.detalles.distancia;
 
-                 
-                    let color;
-                    if(item.doc.color === 'red'){
-                       color = html`<span class="badge bg-danger float-end" >Urgente</span>`
-                    }else if(item.doc.color === 'yellow'){
-                        color = html`<span class="badge bg-warning float-end">Atención</span>`
-                    }else if(item.doc.color === 'green'){
-                        color = html`<span class="badge bg-success float-end" >Todo Bien</span>`
-                    }
+        //console.log(moment.locale()); // en
+        moment.locale("es");
+        //console.log(moment.locale()); // en
+        let elapsed = moment(fecha, "DD/MM/YYYY").fromNow();
 
-                    return html`
-                    <li>
-                        <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
-                        <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
-                        <div class="cbp_tmlabel bg-nota">
-                            <h2><a class='strong'>NOTA</a> ${color}</h2>
-                            
-                            ${item.doc.texto}
+        return html`
+          <li>
+            <time class="cbp_tmtime" datetime="2032-11-04T03:45"
+              ><span>${fecha}</span> <span>${elapsed}</span></time
+            >
+            <div class="cbp_tmicon bg-orange">
+              <i class="zmdi zmdi-label"></i>
+            </div>
+            <div class="cbp_tmlabel bg-siembra">
+              <h2>
+                <a href="#">SIEMBRA</a>
+                <span class="text-muted">en ${hectareas} has.</span>
+              </h2>
+              <p><strong>${cultivo} - ${varidad}</strong></p>
+              <p>${densidad_objetivo} pl/ha - ${distancia} cm entre surcos</p>
+              <p class="small">${comentarios}</p>
 
-                            <p class="small">
-                                
-                            </p>
-                           
-                        <div class="row mx-1">
-                            ${imagenes.map((img) => {
-                                    return html `<img src=${URL.createObjectURL(img.data)} class="img-thumbnail col col-4 col-sm-3" alt="...">`
-                            })}
-                        </div>
+              <button
+                class="btn btn-danger"
+                @click=${() => {
+                  console.log(item.uuid);
+                  this.evento_eliminar(item.uuid);
+                }}
+              >
+                Eliminar
+              </button>
+            </div>
+          </li>
+        `;
+      } else if (item.tipo === "nota") {
+      } else if (item.tipo === "otro") {
+      }
+    };
 
-                            <div class="row my-1">
-                                ${audio.length > 0 ? html`<audio controls><source .src=${URL.createObjectURL(audio[0].data)}></source></audio>` : null}
-                            </div>
+    return html`<div class="container-fluid">
+      <div class="row">
+        <div class="col-md-10">
+          <ul class="cbp_tmtimeline">
+            ${map(
+              this.ordenar_actividades(this.actividades, this.actividades_docs),
+              time_item
+            )}
+          </ul>
+        </div>
+      </div>
+    </div>`;
 
-                            <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.nota_eliminar(item.doc)}}>Eliminar</button>
-                            <button class='btn btn-danger' @click=${()=>{this.localizar(item.doc)}}>Localizar</button>
-
-                        </div>          
-                    </li>`
-                }
-            }
-
-            //console.log("ITEM STT", this.stock_tag_table[item.uuid], item, item.uuid )
-            if(item.tipo === 'aplicacion'){
-                let fecha = item.detalles.fecha
-                let hectareas = item.detalles.hectareas
-                let insumos = item.detalles.insumos
-                let comentarios = item.detalles.comentarios
-        
-                let list_of_ps = insumos.map(p_from_insumo)
-                let tipo_mayuscula = item.tipo.toUpperCase()
-        
-                //console.log(moment.locale()); // en
-                moment.locale('es')
-                //console.log(moment.locale()); // en
-                let elapsed = moment(fecha,"DD-MM-YYYY").fromNow()
-        
-                return html`
-                <li>
-                    <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
-                    <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
-                    <div class="cbp_tmlabel bg-aplicacion">
-                        <h2><a>APLICACIÓN</a> <span class="text-muted">en ${hectareas} has.</span></h2>
-                           ${list_of_ps}
-                        <p class="small">
-                            ${comentarios}
-                        </p>
-                        ${stock_tag(this.stock_tag_table[item.uuid])}
-
-                        ${navigator.share ? html`<button type="button" class="btn btn-success" @click=${()=>this.evento_pdf(item.uuid)}>Compartir Orden</button>` : html`<button class='btn btn-secondary' @click=${()=>{console.log(item.uuid); this.evento_pdf(item.uuid)}}>Orden de Trabajo</button>`}
-                        
-                        <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
-
-                    </div>          
-                </li>`
-            }else if(item.tipo === 'cosecha'){
-                let fecha = item.detalles.fecha
-                let hectareas = item.detalles.hectareas
-                let rinde = item.detalles.rinde
-                let comentarios = item.detalles.comentarios
-                let humedad = item.detalles.humedad
-        
-                //console.log(moment.locale()); // en
-                moment.locale('es')
-                //console.log(moment.locale()); // en
-                let elapsed = moment(fecha,"DD/MM/YYYY").fromNow()
-        
-        
-                return html`
-                    <li>
-                    <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
-                    <div class="cbp_tmicon bg-green"><i class="zmdi zmdi-label"></i></div>
-                    <div class="cbp_tmlabel bg-cosecha">
-                        <h2><a href="#">COSECHA</a> <span class="text-muted">de ${hectareas} has.</span></h2>
-                        <p>Rinde: ${rinde} tn/ha - Humedad: ${humedad} %</p>
-                        <p class="small">
-                            ${comentarios}
-                        </p>
-        
-                        <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
-                    </div>          
-                </li>
-                `
-            }else if(item.tipo === 'siembra'){
-                let fecha = item.detalles.fecha
-                let hectareas = item.detalles.hectareas
-                let comentarios = item.detalles.comentarios
-                let cultivo = item.detalles.cultivo
-                let varidad = item.detalles.variedad
-                let peso_1000 = item.detalles.peso_1000
-                let densidad_objetivo = item.detalles.densidad_objetivo
-                let distancia = item.detalles.distancia
-
-        
-                //console.log(moment.locale()); // en
-                moment.locale('es')
-                //console.log(moment.locale()); // en
-                let elapsed = moment(fecha,"DD/MM/YYYY").fromNow()
-        
-        
-                return html`
-                <li>
-                <time class="cbp_tmtime" datetime="2032-11-04T03:45"><span>${fecha}</span> <span>${elapsed}</span></time>
-                <div class="cbp_tmicon bg-orange"><i class="zmdi zmdi-label"></i></div>
-                <div class="cbp_tmlabel bg-siembra">
-                    <h2><a href="#">SIEMBRA</a> <span class="text-muted">en ${hectareas} has.</span></h2>
-                    <p><strong>${cultivo} - ${varidad}</strong></p>
-                    <p>${densidad_objetivo} pl/ha - ${distancia} cm entre surcos</p>
-                    <p class="small">
-                        ${comentarios}
-                    </p>
-        
-                    <button class='btn btn-danger' @click=${()=>{console.log(item.uuid); this.evento_eliminar(item.uuid)}}>Eliminar</button>
-                </div>          
-            </li>
-            `
-        
-            }else if(item.tipo === 'nota'){
-                
-            }else if(item.tipo === 'otro'){
-        
-            }
-           
-        }
-
-        return html`<div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-10">
-                        <ul class="cbp_tmtimeline">
-
-                            ${map(this.actividades, time_item)}
-
-                            ${map(this.actividades_docs, time_item)}
-
-                        </ul>
-                    </div>
-                </div>
-            </div>`
-
-       // return timeline(this.actividades || [], this.evento_pdf);
-    }
+    // return timeline(this.actividades || [], this.evento_pdf);
+  }
 }
 
-
-
-customElements.define('lit-timeline', TimelineElement);
+customElements.define("lit-timeline", TimelineElement);
