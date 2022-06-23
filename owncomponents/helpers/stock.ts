@@ -27,7 +27,7 @@ const lineas_stock = (result_from_pouch)=>{
 }
 
 const verificar_existencia = (lineas_de_stock, actividad) => {
-  console.log("VERI EXIS", lineas_de_stock, actividad)
+  //console.log("VERI EXIS", lineas_de_stock, actividad)
   let insumos = actividad.detalles.insumos
 
   let faltantes = insumos.filter((insumo) => {

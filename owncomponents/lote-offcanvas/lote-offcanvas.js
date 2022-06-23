@@ -24,7 +24,7 @@ const pdf_fonts = {
 import orden_definition from "./orden_definition.js";
 import "./timeline/timeline.js";
 import { Modal, Offcanvas } from "bootstrap";
-import PouchDB from "pouchdb";
+//import PouchDB from "pouchdb";
 import uuid4 from "uuid4";
 import moment from "moment";
 import "../notas-offcanvas/notas-offcanvas.js";
@@ -132,7 +132,7 @@ export class LoteOffcanvas extends LitElement {
       let posicion = e.detail.item.posicion;
       let texto = e.detail.item.texto;
       let color = e.detail.item.color;
-      console.log("loacalizar nota", e);
+      //console.log("loacalizar nota", e);
       if (this._nota_marker !== undefined) {
         this._nota_marker.remove();
       }
@@ -254,12 +254,12 @@ export class LoteOffcanvas extends LitElement {
       campos_url,
       google_map_link
     );
-    console.log("DD", JSON.stringify(dd));
+    //console.log("DD", JSON.stringify(dd));
     import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
       pdfMake.fonts = pdf_fonts;
 
       if (navigator.share) {
-        console.log("Compartiendo PDF");
+        //console.log("Compartiendo PDF");
         const pdfDocGenerator = pdfMake.createPdf(dd);
         pdfDocGenerator.getBlob((blob) => {
           const files = [
@@ -272,7 +272,7 @@ export class LoteOffcanvas extends LitElement {
           });
         });
       } else {
-        console.log("Generando PDF");
+        //console.log("Generando PDF");
         pdfMake.createPdf(dd).open();
       }
     });
@@ -480,7 +480,7 @@ export class LoteOffcanvas extends LitElement {
     ) {
       if (!this._db) {
         // Pouch - get el campo_doc
-        this._db = new PouchDB("campos_" + this.username);
+        // this._db = new PouchDB("campos_" + this.username);
       }
       this._db.get(this.campo_id).then((doc) => {
         this._campo_doc = doc;
@@ -494,7 +494,7 @@ export class LoteOffcanvas extends LitElement {
         this.fsm = interpret(aplicacionMachine.withContext(someContext))
           .onTransition((state) => {
             this._ctx = state.context;
-            console.log(state.value);
+            //console.log(state.value);
             if (state.matches("idle")) {
               this._steps_elements.map((el) => el.hide());
             }
@@ -538,13 +538,13 @@ export class LoteOffcanvas extends LitElement {
       })
       .then((result) => {
         let rrows = result.rows;
-        console.log("Actividad con Attachments", rrows);
+        //console.log("Actividad con Attachments", rrows);
         this._actividades = [...rrows];
       });
   }
 
   render() {
-    console.log("RENDER LOTE OFFCANVAS");
+    //console.log("RENDER LOTE OFFCANVAS");
 
     const resumen_item_el = (item) => html`<a
       href="#"

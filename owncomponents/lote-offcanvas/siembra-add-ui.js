@@ -3,7 +3,7 @@ import { interpret } from "xstate";
 import { siembraMachine } from "./siembra-machine";
 import { Modal, Offcanvas } from "bootstrap";
 import "../lista-searchable/lista-searchable.js";
-import PouchDb from 'pouchdb'
+import PouchDB from 'pouchdb'
 import { base_url } from "../helpers";
 import uuid4 from "uuid4";
 
@@ -74,8 +74,8 @@ export class SiembraAddUI extends LitElement {
       this.cultivos_filtrados = this.settings.user_cultivos;
 
       this._variedades_db_remote = new PouchDB(base_url + 'variedades');
-      this._variedades_db_local = new PouchDb('variedades')
-      PouchDb.replicate(this._variedades_db_remote, this._variedades_db_local, {retry:true, live:true})
+      this._variedades_db_local = new PouchDB('variedades')
+      //PouchDB.replicate(this._variedades_db_remote, this._variedades_db_local, {retry:true, live:true})
     }
   }
 

@@ -1,6 +1,6 @@
 import { LitElement, html, unsafeCSS } from "lit-element";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
-import PouchDb from "pouchdb";
+import PouchDB from "pouchdb";
 import { hashMessage, layer_visibility } from "../helpers";
 import {Offcanvas} from "bootstrap"
 

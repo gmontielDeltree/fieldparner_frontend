@@ -360,7 +360,7 @@ export class TimelineElement extends LitElement {
     if (notas === undefined) {
       notas = [];
     }
-    console.log("ORDENADOR", act, notas);
+    //console.log("ORDENADOR", act, notas);
     let todos = act.concat(notas);
     return todos.sort(this.comparar_fechas);
   }

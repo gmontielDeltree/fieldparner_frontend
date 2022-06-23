@@ -271,7 +271,6 @@ export class NotasOffcanvas extends LitElement {
       `;
     };
 
-    console.log("RENDER NOTA")
     return html`
       <!--Add Nota Form-->
       <div

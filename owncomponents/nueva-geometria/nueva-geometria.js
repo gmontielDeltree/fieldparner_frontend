@@ -41,7 +41,7 @@ export class NuevaGeometria extends LitElement {
         trash: false,
       },
     });
-    console.log("Construction", this.mapa);
+    // console.log("Construction", this.mapa);
     this._init_fsm()
   }
 
@@ -61,11 +61,11 @@ export class NuevaGeometria extends LitElement {
     if (changedProperties.has("show") && this.show) {
       this._init_fsm();
       this._fsm.send("START");
-      console.log("START", this._modal_elements);
+      //console.log("START", this._modal_elements);
     }
 
     if (changedProperties.has("campo_feature")) {
-      console.log("START CF", this._modal_elements);
+      //console.log("START CF", this._modal_elements);
       this._init_fsm();
     }
 
@@ -83,7 +83,7 @@ export class NuevaGeometria extends LitElement {
     );
 
     this._modal_elements = result_object;
-    console.log("nueva-geometria", "firstUpdated", this._modal_elements);
+    //console.log("nueva-geometria", "firstUpdated", this._modal_elements);
 
     this._offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-editing-dibujando")
@@ -102,7 +102,7 @@ export class NuevaGeometria extends LitElement {
     this._fsm = interpret(nuevaGeometriaMachine.withContext(someContext))
       .onTransition((state) => {
         this._ctx = state.context;
-        console.log(state.toStrings());
+        //console.log(state.toStrings());
         this.show_step(state.toStrings());
       })
       .start();
@@ -110,7 +110,7 @@ export class NuevaGeometria extends LitElement {
 
   _init_map() {
     // Set eventos cuando se carga el mapa
-    console.log("Changed Props", this.mapa);
+    //console.log("Changed Props", this.mapa);
 
     // try {
     //   this.mapa.addControl(this._draw, "top-left");
@@ -122,9 +122,9 @@ export class NuevaGeometria extends LitElement {
       /* Si la seleccion cambia a algo distinto del featureId
           que ya genere, volver a seleccionar lo mismo para prevenir
           que pueda seguir dibujando */
-      console.log("SELECTIONCHANGE", e);
+      //console.log("SELECTIONCHANGE", e);
       if (e.features[0]?.id !== this._feature_id) {
-        console.log("RESELECTING");
+        //console.log("RESELECTING");
         this._draw.changeMode("simple_select", {
           featureIds: [this._feature_id],
         });
@@ -132,7 +132,7 @@ export class NuevaGeometria extends LitElement {
     });
 
     this.mapa.on("draw.create", (e) => {
-      console.log("CERRO");
+      //console.log("CERRO");
       /* Guardar la feature */
       this._feature_id = e.features[0].id;
       let feature = e.features[0];
@@ -141,7 +141,7 @@ export class NuevaGeometria extends LitElement {
 
     this.mapa.on("draw.update", (args) => {
       let feature = args.features[0];
-      console.log("UPDATE", args);
+      //console.log("UPDATE", args);
       this._fsm.send({ type: "UPDATE_POLIGONO", feature: feature });
     });
   }
@@ -150,7 +150,7 @@ export class NuevaGeometria extends LitElement {
     this.hide_all_steps();
     let state_value = state_strings.slice(-1)[0];
 
-    console.log("show_step", state_value, this._modal_elements);
+    //console.log("show_step", state_value, this._modal_elements);
     if (state_value === "idle") {
       //this.show = false;
       return;
@@ -171,13 +171,13 @@ export class NuevaGeometria extends LitElement {
     }
 
     if (!(state_value in this._modal_elements)) {
-      console.log("Estado no tiene modal");
+      //console.log("Estado no tiene modal");
       return;
     }
 
     if (!this._modal_elements[state_value]?._isShown || false) {
       if (this.show) {
-        console.log("SHOW");
+        //console.log("SHOW");
         this._modal_elements[state_value].show();
       }
     }
@@ -221,7 +221,7 @@ export class NuevaGeometria extends LitElement {
   }
 
   guardar() {
-    console.log("GUARDAR_CLICK");
+    //console.log("GUARDAR_CLICK");
     this._draw.changeMode("simple_select");
     this._draw.deleteAll();
     this._offcanvas.hide();
@@ -246,11 +246,11 @@ export class NuevaGeometria extends LitElement {
         .then( (zip) => {
             zip.forEach((relPath, file) => {
               // 2) print entries
-              console.log("zip", file);
+              //console.log("zip", file);
               if (getExtension(relPath) === "kml" && kmlDom === null) {
                 kmlDom = file.async("string").then((d) => {
                   let feature_collection = kml(getDom(d));
-                  console.log("KMZ", feature_collection);
+                  //console.log("KMZ", feature_collection);
                   if (feature_collection.features.length === 0) {
                     // No hay niguna feature
                     alert("El archivo no tiene ninguna caracteristica")
@@ -289,7 +289,7 @@ export class NuevaGeometria extends LitElement {
             });
           },
           function (e) {
-            console.log("ERROR al LEER KMZ");
+            //console.log("ERROR al LEER KMZ");
           }
         );
     }
@@ -302,9 +302,9 @@ export class NuevaGeometria extends LitElement {
       reader.readAsText(file, "UTF-8");
       reader.onload = (evt) => {
         let xml = evt.target.result;
-        console.log(evt.target.result);
+        //console.log(evt.target.result);
         // Convertir a geojson
-        console.log("gEOJSON");
+        //console.log("gEOJSON");
         let feature_collection = kml(
           new DOMParser().parseFromString(xml, "text/xml")
         );
@@ -335,7 +335,7 @@ export class NuevaGeometria extends LitElement {
       };
 
       reader.onerror = function (evt) {
-        console.log("error reading file");
+        //console.log("error reading file");
         this._fsm.send({ type: "ERROR", msg: "Error al leer el Archivo" });
       };
     }

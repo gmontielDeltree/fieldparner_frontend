@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit-element";
-import PouchDb from "pouchdb";
+import PouchDB from "pouchdb";
 import { base_url, normalizar_username } from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
 import { TouchPitchHandler } from "mapbox-gl";
@@ -9,8 +9,8 @@ import cultivos_default from "./cultivos.json";
 import "../notas-offcanvas/notas-offcanvas.js";
 import "../ndvi-offcanvas/ndvi-offcanvas.js";
 import "../variedades-loader/variedades-loader.js";
-import "../depositos/deposito-upsert/deposito-upsert.js"
-import "../depositos/depositos-lista/depositos-lista.ts"
+import "../depositos/deposito-upsert/deposito-upsert.js";
+import "../depositos/depositos-lista/depositos-lista.ts";
 import uuid4 from "uuid4";
 
 export class FieldPartner extends LitElement {
@@ -22,7 +22,7 @@ export class FieldPartner extends LitElement {
     shared_db_remote: {},
     remote_campos_db: {},
     changes_db: {},
-    remote_changes_db:{},
+    remote_changes_db: {},
     user: {},
     auth0Client: {},
     logged_in: {},
@@ -63,9 +63,9 @@ export class FieldPartner extends LitElement {
       document.getElementById("ndvi-oc").show();
     });
 
-    this.addEventListener('nuevo-deposito-click', ()=>{
-      document.getElementById('deposito-upsert').show()
-    })
+    this.addEventListener("nuevo-deposito-click", () => {
+      document.getElementById("deposito-upsert").show();
+    });
 
     /* Izar map y draw a este componente para que los otros puedan usarlo */
     this.addEventListener("map-loaded", (e) => {
@@ -104,13 +104,11 @@ export class FieldPartner extends LitElement {
 
     // Borrar un Campo
     this.addEventListener("borrar-campo", (e) => {
-      this.campos_db.remove(e.detail.campo_doc).then(()=>{
+      this.campos_db.remove(e.detail.campo_doc).then(() => {
         alert("Campo borrado");
         this.load_campos_y_settings();
-      }
-      )
-      
-    })
+      });
+    });
 
     // Share Campo
     this.addEventListener("share-campo", (e) => {
@@ -121,11 +119,13 @@ export class FieldPartner extends LitElement {
       nuevo_shared_campo.share_with = [...e.detail.share_with];
       // Me agrego a mi mismo para compartir
 
-      nuevo_shared_campo.share_with.push(normalizar_username(this.user.name))
-      // 
+      nuevo_shared_campo.share_with.push(normalizar_username(this.user.name));
+      //
       nuevo_shared_campo.owner = this.user;
       // Lo grabo en campos_db
-      this.campos_db.put(nuevo_shared_campo).then(()=>alert("Campo compartido"));
+      this.campos_db
+        .put(nuevo_shared_campo)
+        .then(() => alert("Campo compartido"));
 
       // Lo upserto en shared_db
       // this.shared_db_remote.get(nuevo_shared_campo._id).then(old_doc => {
@@ -142,11 +142,10 @@ export class FieldPartner extends LitElement {
       // });
     });
 
-    this.addEventListener("lote-detalles-hide", (e)=>{
+    this.addEventListener("lote-detalles-hide", (e) => {
       console.log("HIDE LOTE DETALLES");
       document.getElementById("campo-oc").show();
-    })
-
+    });
   }
 
   createRenderRoot() {
@@ -256,26 +255,26 @@ export class FieldPartner extends LitElement {
     // Nombres validos solo en minusculas
     this.campos_db = new PouchDB("campos_" + username);
     let campos_db_uri = base_url + "campos_" + username;
-    console.log("campos_db_uri", campos_db_uri);
+    console.log("CrearDBS - campos_db_uri", campos_db_uri);
     this.remote_campos_db = new PouchDB(campos_db_uri);
 
-    this.campos_db
-      .sync(this.remote_campos_db, {
-        live: true,
-        retry: true,
-      })
-      .on("change", function (change) {
-        // yo, something changed!
-      })
-      .on("paused", function (info) {
-        // replication was paused, usually because of a lost connection
-      })
-      .on("active", function (info) {
-        // replication was resumed
-      })
-      .on("error", function (err) {
-        // totally unhandled error (shouldn't happen)
-      });
+    // this.campos_db
+    //   .sync(this.remote_campos_db, {
+    //     live: true,
+    //     retry: true,
+    //   })
+    //   .on("change", function (change) {
+    //     // yo, something changed!
+    //   })
+    //   .on("paused", function (info) {
+    //     // replication was paused, usually because of a lost connection
+    //   })
+    //   .on("active", function (info) {
+    //     // replication was resumed
+    //   })
+    //   .on("error", function (err) {
+    //     // totally unhandled error (shouldn't happen)
+    //   });
 
     /** Init Settings */
     this.campos_db
@@ -310,13 +309,13 @@ export class FieldPartner extends LitElement {
     //     retry: true,
     //     filter: "share/by_sharing_status",
     //   })
-      // .on("change", function (result) {
-      //   if (change.deleted) {
-      //     // remove
-      //   } else {
-      //     // upsert
-      //   }
-      // });
+    // .on("change", function (result) {
+    //   if (change.deleted) {
+    //     // remove
+    //   } else {
+    //     // upsert
+    //   }
+    // });
 
     /** Replicacion bi */
     // this.campos_db
@@ -335,8 +334,6 @@ export class FieldPartner extends LitElement {
     //     }
     //   });
 
-
-
     // Changes Lotes para generar NDVI
     // this.remote_changes_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
     // this.changes_db = new PouchDB("campos_changes")
@@ -351,7 +348,6 @@ export class FieldPartner extends LitElement {
     //     // boo, something went wrong!
     //     console.log("Error Changes")
     // });
-
   }
 
   /** Crea el objeto settings y lo graba en la db */
@@ -374,6 +370,17 @@ export class FieldPartner extends LitElement {
    * Fuerza un redibujado de los cambios
    */
   load_campos_y_settings() {
+    
+    this.campos_db
+      .compact()
+      .then(function (result) {
+        // handle result
+        console.log("Compactacion Local DB Completada");
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+
     this.campos_db
       .allDocs({
         include_docs: true,
@@ -431,11 +438,15 @@ export class FieldPartner extends LitElement {
         .cultivos=${this.settings?.user_cultivos}
       ></color-cultivo>
       <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
-      <deposito-upsert id='deposito-upsert' .db=${this.campos_db}></deposito-upsert>
-      <depositos-lista id='depositos-lista' .db=${this.campos_db}></depositos-lista>
+      <deposito-upsert
+        id="deposito-upsert"
+        .db=${this.campos_db}
+      ></deposito-upsert>
+      <depositos-lista
+        id="depositos-lista"
+        .db=${this.campos_db}
+      ></depositos-lista>
       <db-loader></db-loader>
-      
-
 
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>
