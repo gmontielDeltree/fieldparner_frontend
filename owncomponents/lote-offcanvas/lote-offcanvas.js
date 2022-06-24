@@ -4,6 +4,7 @@ import { aplicacionMachine } from "./lote-machine.js";
 import { interpret } from "xstate";
 import { mapbox_static_img } from "./mapbox_static_image.js";
 import mapboxgl from "mapbox-gl";
+import "../date-picker/date-picker.ts"
 
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
@@ -28,9 +29,6 @@ import { Modal, Offcanvas } from "bootstrap";
 import uuid4 from "uuid4";
 import moment from "moment";
 import "../notas-offcanvas/notas-offcanvas.js";
-
-import "lit-flatpickr";
-
 import "./cosecha-add-ui.js";
 import "./siembra-add-ui.js";
 import { google_maps_link_go_to } from "./google_maps.js";
@@ -720,30 +718,12 @@ export class LoteOffcanvas extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-              <lit-flatpickr
-                id="dp"
-                altInput
-                altFormat="j F, Y"
-                dateFormat="d-m-Y"
-                theme="material_blue"
-                minDate="31-12-2020"
-                maxDate="31-12-2050"
-                locale="es"
-                placeholder="Ingrese una fecha"
-                .onChange="${(e) => {
+             <date-picker @change=${(e) => {
                   this.fsm.send({
                     type: "CHANGE",
-                    value: document.getElementById("dp").getValue(),
+                    value: e.target.fecha,
                   });
-                }}"
-              >
-                <div>
-                  <input />
-                </div>
-              </lit-flatpickr>
-              <!-- <input type="date" id="start" @change=${(e) =>
-                this.fsm.send({ type: "CHANGE", value: e.target.value })}
-                        value="2022-01-01" min="2018-01-01" max="2030-12-31"> -->
+                }}></date-picker> 
             </div>
             <div class="modal-footer">
               <button

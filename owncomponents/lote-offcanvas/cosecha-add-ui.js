@@ -2,6 +2,7 @@ import { LitElement, html } from "lit";
 import { interpret } from 'xstate';
 import { cosechaMachine } from "./cosecha-machine";
 import { Modal, Offcanvas } from 'bootstrap'
+import "../date-picker/date-picker.ts"
 
 export class CosechaAddUI extends LitElement {
     static properties = {
@@ -102,22 +103,12 @@ export class CosechaAddUI extends LitElement {
                             this.fsm.send("CANCEL")}></button>
                     </div>
                     <div class="modal-body mx-auto">
-                    <lit-flatpickr 
-                        id="dpc"
-                        altInput
-                        altFormat="j F, Y"
-                        dateFormat="d-m-Y"
-                        theme="material_blue"
-                        minDate="31-12-2020"
-                        maxDate="31-12-2050"
-                        locale="es"
-                        placeholder="Ingrese una fecha"
-                        .onChange='${(e) => {this.fsm.send({ type: "CHANGE", value: document.getElementById('dpc').getValue() })}}'
-                    >
-                    <div>
-                        <input />
-                    </div>
-                    </lit-flatpickr>
+                    <date-picker @change=${(e) => {
+                  this.fsm.send({
+                    type: "CHANGE",
+                    value: e.target.fecha,
+                  });
+                }}></date-picker> 
 
                     </div>
                     <div class="modal-footer">
