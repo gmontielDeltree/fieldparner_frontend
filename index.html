@@ -176,6 +176,10 @@
     <script>
       window.process = window.process || {};
       window.global = window;
+      // https://github.com/pouchdb/pouchdb/issues/8051#issuecomment-686332652
+      window.process = {
+      browser: true,
+    }
     </script>
   </head>
   <!-- load the 'header_auto_hide' on the body -->

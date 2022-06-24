@@ -258,6 +258,33 @@ export class FieldPartner extends LitElement {
     console.log("CrearDBS - campos_db_uri", campos_db_uri);
     this.remote_campos_db = new PouchDB(campos_db_uri);
 
+    // https://pouchdb.com/api.html#sync
+    // do one way, one-off sync from the server until completion
+    var opts = { live: true, retry: true };
+    
+    this.campos_db.replicate
+      .from(this.remote_campos_db)
+      .on("complete", (info) => {
+        console.log("Replication Completed");
+        // then two-way, continuous, retriable sync
+        this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
+          console.error("SyncError", e);
+        });
+
+        // /* Redraw on cambios en campos_db */
+        this.campos_db
+          .changes({
+            since: "now",
+            live: true,
+          })
+          .on("change", () => {
+            this.load_campos_y_settings();
+          });
+      })
+      .on("error", (e) => {
+        console.error(e);
+      });
+
     // this.campos_db
     //   .sync(this.remote_campos_db, {
     //     live: true,
@@ -277,29 +304,19 @@ export class FieldPartner extends LitElement {
     //   });
 
     /** Init Settings */
-    this.campos_db
-      .get("settings")
-      .then((doc) => {
-        console.info("Settings Loaded", doc);
-        this.settings = doc;
-      })
-      .catch((e) => {
-        console.log("Settings error", e);
-        if (e.reason === "missing") {
-          console.log("No existe 'Settings'");
-          this.init_settings();
-        }
-      });
-
-    /* Redraw on cambios en campos_db */
-    this.campos_db
-      .changes({
-        since: "now",
-        live: true,
-      })
-      .on("change", () => {
-        this.load_campos_y_settings();
-      });
+    // this.campos_db
+    //   .get("settings")
+    //   .then((doc) => {
+    //     console.info("Settings Loaded", doc);
+    //     this.settings = doc;
+    //   })
+    //   .catch((e) => {
+    //     console.log("Settings error", e);
+    //     if (e.reason === "missing") {
+    //       console.log("No existe 'Settings'");
+    //       this.init_settings();
+    //     }
+    //   });
 
     /** Replicacion hacia arriba cuando se comparte un campo */
     // this.shared_db_remote = new PouchDb(base_url + "shared_campos");
@@ -370,7 +387,6 @@ export class FieldPartner extends LitElement {
    * Fuerza un redibujado de los cambios
    */
   load_campos_y_settings() {
-    
     this.campos_db
       .compact()
       .then(function (result) {
