@@ -500,6 +500,17 @@ export class TimelineElement extends LitElement {
             ${list_of_ps}
             <p class="small">${comentarios}</p>
             ${stock_tag(this.stock_tag_table[item.uuid])}
+            
+            <button
+                  class="btn btn-secondary"
+                  @click=${() => {
+                    console.log(item.uuid);
+                    this.evento_pdf(item.uuid);
+                  }}
+                >
+                  Orden de Trabajo
+                </button>
+
             ${navigator.share
               ? html`<button
                   type="button"
@@ -508,15 +519,9 @@ export class TimelineElement extends LitElement {
                 >
                   Compartir Orden
                 </button>`
-              : html`<button
-                  class="btn btn-secondary"
-                  @click=${() => {
-                    console.log(item.uuid);
-                    this.evento_pdf(item.uuid);
-                  }}
-                >
-                  Orden de Trabajo
-                </button>`}
+              : null}
+              
+
 
             <button
               class="btn btn-danger"
