@@ -1,5 +1,5 @@
 import { Offcanvas } from "bootstrap";
-import { LitElement, html, unsafeCSS, css } from "lit-element";
+import { LitElement, html, unsafeCSS, css } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import "@vaadin/date-picker";
 import "@vaadin/radio-group";

@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS } from "lit-element";
+import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import PouchDB from "pouchdb";
 import { hashMessage, layer_visibility } from "../helpers";

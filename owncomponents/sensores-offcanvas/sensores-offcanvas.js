@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit-element";
+import { LitElement, html } from "lit";
 
 export class SensoresClass extends LitElement {
   static properties = {

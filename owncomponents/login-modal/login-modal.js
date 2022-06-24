@@ -2,7 +2,7 @@
  * rapidamente los modales, puesto que no se ejecuta el ocultamiento si aun no termina
  * el "show"
  */
-import { LitElement, html } from "lit-element";
+import { LitElement, html } from "lit";
 import { Modal } from "bootstrap";
 
 export class LoginModal extends LitElement {

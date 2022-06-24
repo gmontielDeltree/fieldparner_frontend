@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit-element";
+import { LitElement, html } from "lit";
 
 export class CarouselImagenes extends LitElement {
   static properties = {

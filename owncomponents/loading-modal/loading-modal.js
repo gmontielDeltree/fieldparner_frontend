@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit-element";
+import { LitElement, html } from "lit";
 import { Modal } from "bootstrap";
 
 export class LoadingModal extends LitElement {

@@ -1,5 +1,5 @@
 import { Modal, Offcanvas } from "bootstrap";
-import { LitElement, html, unsafeCSS } from "lit-element";
+import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import { normalizar_username } from "../../helpers";
 import "../../lista-searchable/lista-searchable.js";

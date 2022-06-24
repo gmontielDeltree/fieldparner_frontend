@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit-element";
+import { LitElement, html } from "lit";
 import PouchDB from "pouchdb";
 // import variedades from "./variedades.json";
 import { base_url } from "../helpers.js";

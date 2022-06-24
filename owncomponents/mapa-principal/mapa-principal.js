@@ -1,4 +1,4 @@
-import { LitElement, html,css } from "lit-element";
+import { LitElement, html,css } from "lit";
 import { emptyGJ, touchEvent, layer_visibility } from "../helpers";
 import mapboxgl from "mapbox-gl";
 

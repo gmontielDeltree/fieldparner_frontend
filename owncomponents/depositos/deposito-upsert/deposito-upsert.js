@@ -1,5 +1,5 @@
 import { Modal } from "bootstrap";
-import { LitElement, html, unsafeCSS } from "lit-element";
+import { LitElement, html, unsafeCSS } from "lit";
 import uuid4 from 'uuid4'
 import {normalizar_username} from "../../helpers.js"
 
