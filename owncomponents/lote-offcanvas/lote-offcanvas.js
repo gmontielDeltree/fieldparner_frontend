@@ -187,6 +187,8 @@ export class LoteOffcanvas extends LitElement {
         ],
       })
       .start();
+
+      this.localizar_lote()
   }
   
   hide() {
