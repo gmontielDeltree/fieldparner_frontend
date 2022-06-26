@@ -1,5 +1,8 @@
 [
-	{"labor":"Siembra"},
-	{"labor":"Cosecha"}
+	{"labor":"Siembra",
+	  "uuid":1
+	},
+	{"labor":"Cosecha",
+	"uuid":3}
 
 ]

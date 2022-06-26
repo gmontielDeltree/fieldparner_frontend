@@ -85,6 +85,7 @@ export class LoteOffcanvas extends LitElement {
     _nota_marker: {},
     _db: { state: true },
     fsm: { state: true },
+    _loading_pdf: {state: true}
   };
 
   static styles = null;
@@ -259,6 +260,9 @@ export class LoteOffcanvas extends LitElement {
       google_map_link
     );
     //console.log("DD", JSON.stringify(dd));
+    // Loading 
+      this._loading_pdf = true;
+
     import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
       pdfMake.fonts = pdf_fonts;
 
@@ -274,10 +278,12 @@ export class LoteOffcanvas extends LitElement {
             title: "Orden de Trabajo",
             text: "Lote " + this._lote_doc.nombre,
           });
+          this._loading_pdf = false;
         });
       } else {
         //console.log("Generando PDF");
         pdfMake.createPdf(dd).open();
+        this._loading_pdf = false;
       }
     });
   }
