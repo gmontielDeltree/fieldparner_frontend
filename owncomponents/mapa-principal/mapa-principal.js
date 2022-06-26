@@ -187,6 +187,7 @@ export class MapaPrincipal extends LitElement {
         "campos"
       );
 
+      console.info("Mapa Cargado")
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
       this._redraw_map();
     });
@@ -294,14 +295,7 @@ export class MapaPrincipal extends LitElement {
             >
               Agregar un Campo
             </button>
-            <!-- <button
-              class="btn btn-primary mo-item"
-              id="nueva-nota-btn"
-              type="button"
-              @click=${()=>{this.sendEvent('nueva-nota-click'), null}}
-            >
-              Agregar una Nota
-            </button> -->
+            
              <button
               class="btn btn-primary mo-item"
               id="nueva-nota-btn"

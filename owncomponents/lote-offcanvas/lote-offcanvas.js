@@ -479,10 +479,6 @@ export class LoteOffcanvas extends LitElement {
       changedProperties.has("campo_id") ||
       changedProperties.has("lote_nombre")
     ) {
-      if (!this._db) {
-        // Pouch - get el campo_doc
-        // this._db = new PouchDB("campos_" + this.username);
-      }
       this._db.get(this.campo_id).then((doc) => {
         this._campo_doc = doc;
         this._lote_doc =
