@@ -9,6 +9,7 @@ export class LoadingModal extends LitElement {
 
   constructor() {
     super();
+    this.show = true;
   }
 
   //createRenderRoot() {
@@ -19,7 +20,7 @@ export class LoadingModal extends LitElement {
     this._modal = new Modal(this.shadowRoot.getElementById("loading-modal"));
     if (this.show) {
       this._modal.show();
-    }else{
+    } else {
       this._modal.hide();
     }
   }
@@ -57,13 +58,26 @@ export class LoadingModal extends LitElement {
       >
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
-            <div class="modal-body mx-auto p-0">
-              <img
-                src="assets/images/cosechadora_bg.jpg"
-                
-                alt="..."
-                style='min-height: 100%; min-width:100%; background-size:cover;'
-              />
+            <div class="modal-body mx-auto w-100 p-0">
+              <div>
+                <div
+                  class="spinner-border text-danger"
+                  style="
+                        position: fixed;
+                        top: 10%;
+                        left: 10%;
+                    "
+                  role="status"
+                >
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+
+                <img
+                  src="assets/images/cosechadora_bg.jpg"
+                  alt="..."
+                  style="height: 100%; width:100%; object-fit:cover;"
+                />
+              </div>
             </div>
           </div>
         </div>
