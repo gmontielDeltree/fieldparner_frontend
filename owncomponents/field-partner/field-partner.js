@@ -10,7 +10,7 @@ import "../ndvi-offcanvas/ndvi-offcanvas.js";
 import "../variedades-loader/variedades-loader.js";
 import "../depositos/deposito-upsert/deposito-upsert.js";
 import "../depositos/depositos-lista/depositos-lista.ts";
-import "../contratistas/contratista-crud.ts"
+import "../contratistas/contratista-crud.ts";
 
 import uuid4 from "uuid4";
 
@@ -102,7 +102,7 @@ export class FieldPartner extends LitElement {
     this.addEventListener("logout-click", () => {
       this.logout();
     });
-    
+
     this.addEventListener("nuevo-contratista-click", () => {
       document.getElementById("contratista-crud").show();
     });
@@ -266,11 +266,14 @@ export class FieldPartner extends LitElement {
     // https://pouchdb.com/api.html#sync
     // do one way, one-off sync from the server until completion
     var opts = { live: true, retry: true };
-    
+
     this.campos_db.replicate
       .from(this.remote_campos_db)
       .on("complete", (info) => {
         console.log("Replication Completed");
+
+        this.load_campos_y_settings();
+        
         // then two-way, continuous, retriable sync
         this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
           console.error("SyncError", e);
@@ -394,25 +397,27 @@ export class FieldPartner extends LitElement {
   load_campos_y_settings() {
     this.campos_db
       .compact()
-      .then(function (result) {
+      .then( (result) => {
         // handle result
         console.log("Compactacion Local DB Completada");
+
+        // Get Campos
+        this.campos_db
+          .allDocs({
+            include_docs: true,
+            startkey: "campos_",
+            endkey: "campos_\ufff0",
+          })
+          .then((result) => (this.campos = result));
+
+        // Get Settings
+        this.campos_db.get("settings").then((settings_doc) => {
+          this.settings = settings_doc;
+        }).catch((e)=>console.error("Load Settings",e));
       })
       .catch(function (err) {
         console.log(err);
       });
-
-    this.campos_db
-      .allDocs({
-        include_docs: true,
-        startkey: "campos_",
-        endkey: "campos_\ufff0",
-      })
-      .then((result) => (this.campos = result));
-
-    this.campos_db.get("settings").then((settings_doc) => {
-      this.settings = settings_doc;
-    });
   }
   /**** FIN Bases de Datos */
   // #endregion
@@ -454,7 +459,7 @@ export class FieldPartner extends LitElement {
         .campos=${this.campos}
       ></lista-de-campos>
 
-      <contratista-crud id='contratista-crud'></contratista-crud>
+      <contratista-crud id="contratista-crud"></contratista-crud>
       <color-cultivo
         id="colores-cultivos"
         .cultivos=${this.settings?.user_cultivos}
