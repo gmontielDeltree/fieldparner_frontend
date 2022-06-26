@@ -309,6 +309,14 @@ export class MapaPrincipal extends LitElement {
               @click=${()=>{this.sendEvent('nuevo-deposito-click'), null}}
             >
               Agregar un Deposito
+            </button> 
+                        <button
+              class="btn btn-primary mo-item"
+              id="nueva-nota-btn"
+              type="button"
+              @click=${()=>{this.sendEvent('nuevo-contratista-click'), null}}
+            >
+              Agregar Contratista
             </button>
           </div>
         </div>

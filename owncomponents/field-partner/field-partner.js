@@ -2,7 +2,6 @@ import { LitElement, html } from "lit";
 import PouchDB from "pouchdb";
 import { base_url, normalizar_username } from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
-import { TouchPitchHandler } from "mapbox-gl";
 import "../loading-modal/loading-modal.js";
 import "../color-cultivo/color-cultivo.js";
 import cultivos_default from "./cultivos.json";
@@ -11,6 +10,8 @@ import "../ndvi-offcanvas/ndvi-offcanvas.js";
 import "../variedades-loader/variedades-loader.js";
 import "../depositos/deposito-upsert/deposito-upsert.js";
 import "../depositos/depositos-lista/depositos-lista.ts";
+import "../contratistas/contratista-crud.ts"
+
 import uuid4 from "uuid4";
 
 export class FieldPartner extends LitElement {
@@ -100,6 +101,10 @@ export class FieldPartner extends LitElement {
 
     this.addEventListener("logout-click", () => {
       this.logout();
+    });
+    
+    this.addEventListener("nuevo-contratista-click", () => {
+      document.getElementById("contratista-crud").show();
     });
 
     // Borrar un Campo
@@ -449,6 +454,7 @@ export class FieldPartner extends LitElement {
         .campos=${this.campos}
       ></lista-de-campos>
 
+      <contratista-crud id='contratista-crud'></contratista-crud>
       <color-cultivo
         id="colores-cultivos"
         .cultivos=${this.settings?.user_cultivos}
