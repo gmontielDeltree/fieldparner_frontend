@@ -165,6 +165,9 @@ export class LoteOffcanvas extends LitElement {
   }
 
   show() {
+    // Reload _lote_doc
+    this.reload_lote_doc_y_localizar()
+
     this._lotesOffcanvas.show();
     introJs()
       .setOptions({
@@ -186,7 +189,7 @@ export class LoteOffcanvas extends LitElement {
       })
       .start();
 
-      this.localizar_lote()
+      
   }
   
   hide() {
@@ -524,6 +527,18 @@ export class LoteOffcanvas extends LitElement {
     }
   }
 
+  reload_lote_doc_y_localizar(){
+    this._db.get(this.campo_id).then((doc) => {
+      this._campo_doc = doc;
+      this._lote_doc =
+        doc.lotes.filter(
+          (lote) => lote.properties.nombre === this.lote_nombre
+        )[0] || {};
+
+        this.localizar_lote()
+    })
+  }
+
   reload_actividades() {
     this._db
       .allDocs({
@@ -541,6 +556,7 @@ export class LoteOffcanvas extends LitElement {
   }
 
   localizar_lote(){
+    console.log("LOCALIZAR",this._lote_doc)
     this.map.fitBounds(bbox(this._lote_doc),{padding: {top:50, bottom:window.innerHeight/2}})
   }
 
