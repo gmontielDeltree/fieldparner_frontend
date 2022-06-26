@@ -48,7 +48,7 @@ export class LoadingModal extends LitElement {
   render() {
     return html`
       <div
-        class="modal fade"
+        class="modal"
         id="loading-modal"
         data-bs-backdrop="static"
         data-bs-keyboard="false"
