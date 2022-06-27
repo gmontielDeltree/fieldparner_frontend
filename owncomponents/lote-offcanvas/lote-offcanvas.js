@@ -4,8 +4,9 @@ import { aplicacionMachine } from "./lote-machine.js";
 import { interpret } from "xstate";
 import { mapbox_static_img } from "./mapbox_static_image.js";
 import mapboxgl from "mapbox-gl";
-import "../date-picker/date-picker.ts"
+import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
+import "@polymer/paper-spinner/paper-spinner.js";
 
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
@@ -84,10 +85,10 @@ export class LoteOffcanvas extends LitElement {
     _lote_doc: {},
     settings: {},
     _nota_marker: {},
-    db: { },
+    db: {},
     fsm: { state: true },
-    _loading_pdf: {state: true},
-    _contratistas: {state:true},
+    _loading_pdf: { state: true },
+    _contratistas: { state: true },
   };
 
   static styles = null;
@@ -114,25 +115,22 @@ export class LoteOffcanvas extends LitElement {
     this.addEventListener("generar-ot", (e) =>
       this.download_pdf(e.detail.uuid)
     );
-    this.addEventListener("share-ot", (e) =>
-    this.share_pdf(e.detail.uuid)
-    );
+    this.addEventListener("share-ot", (e) => this.share_pdf(e.detail.uuid));
     this.addEventListener("eliminar-actividad", (e) =>
       this.eliminar_actividad(e.detail.uuid)
     );
 
-    this.addEventListener("eliminar-nota",(e)=>{
-      let nota_doc = e.detail.nota_doc
-      this.db.remove(nota_doc)
-      this.reload_actividades()
-
+    this.addEventListener("eliminar-nota", (e) => {
+      let nota_doc = e.detail.nota_doc;
+      this.db.remove(nota_doc);
+      this.reload_actividades();
     });
 
     this.addEventListener("nueva-nota", (e) => {
       this.reload_actividades();
       this._lotesOffcanvas.show();
     });
-    
+
     this.addEventListener("localizar-nota", (e) => {
       let posicion = e.detail.item.posicion;
       let texto = e.detail.item.texto;
@@ -172,7 +170,7 @@ export class LoteOffcanvas extends LitElement {
 
   show() {
     // Reload _lote_doc
-    this.reload_lote_doc_y_localizar()
+    this.reload_lote_doc_y_localizar();
 
     this._lotesOffcanvas.show();
     introJs()
@@ -194,14 +192,15 @@ export class LoteOffcanvas extends LitElement {
         ],
       })
       .start();
-
-      
   }
-  
+
   hide() {
     this._lotesOffcanvas.hide();
-    let event = new CustomEvent("lote-detalles-hide",{bubbles:true, composed:true})
-    this.dispatchEvent(event)
+    let event = new CustomEvent("lote-detalles-hide", {
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
   }
 
   siembra() {
@@ -265,8 +264,8 @@ export class LoteOffcanvas extends LitElement {
       google_map_link
     );
     //console.log("DD", JSON.stringify(dd));
-    // Loading 
-      this._loading_pdf = true;
+    // Loading
+    this._loading_pdf = true;
 
     import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
       pdfMake.fonts = pdf_fonts;
@@ -286,6 +285,8 @@ export class LoteOffcanvas extends LitElement {
           this._loading_pdf = false;
         });
       }
+    }).catch(()=>{
+      this._loading_pdf = false;
     });
   }
 
@@ -306,15 +307,17 @@ export class LoteOffcanvas extends LitElement {
       google_map_link
     );
     //console.log("DD", JSON.stringify(dd));
-    // Loading 
-      this._loading_pdf = true;
+    // Loading
+    this._loading_pdf = true;
 
     import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
       pdfMake.fonts = pdf_fonts;
-        //console.log("Generando PDF");
-        pdfMake.createPdf(dd).open();
-        this._loading_pdf = false;
-    });
+      //console.log("Generando PDF");
+      pdfMake.createPdf(dd).open();
+      this._loading_pdf = false;
+    }).catch(()=>{
+      this._loading_pdf = false;
+    });;
   }
 
   eliminar_actividad(uuid) {
@@ -355,22 +358,6 @@ export class LoteOffcanvas extends LitElement {
         //document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
       }
     });
-  }
-
-  share_aplicacion() {
-    // import("pdfmake/build/pdfmake.min.js").then(({ pdfMake }) => {
-    //     pdfMake.fonts = pdf_fonts
-    //     const pdfDocGenerator = pdfMake.createPdf(docDefinition);
-    //     pdfDocGenerator.getBlob((blob) => {
-    //         const files = [new File([blob], 'orden_de_trabajo.pdf', { type: blob.type })]
-    //         navigator.share({
-    //             files: files,
-    //             title: 'Orden de Trabajo',
-    //             text: 'Lote ' + this._lote_doc.nombre,
-    //           })
-    //     });
-    //    // pdfMake.createPdf(orden_definition(this._lote_doc.properties.actividades[0], this._campo_doc.nombre, this._lote_doc.properties.nombre)).open();
-    // })
   }
 
   tiene_cultivo_este_lote() {
@@ -563,7 +550,7 @@ export class LoteOffcanvas extends LitElement {
     }
   }
 
-  reload_lote_doc_y_localizar(){
+  reload_lote_doc_y_localizar() {
     this.db.get(this.campo_id).then((doc) => {
       this._campo_doc = doc;
       this._lote_doc =
@@ -571,13 +558,13 @@ export class LoteOffcanvas extends LitElement {
           (lote) => lote.properties.nombre === this.lote_nombre
         )[0] || {};
 
-        this.localizar_lote()
-    })
+      this.localizar_lote();
+    });
 
-    this.db.get("contratistas").then((result)=>{
-      console.log("Contratistas", result)
+    this.db.get("contratistas").then((result) => {
+      console.log("Contratistas", result);
       this._contratistas = result;
-    })
+    });
   }
 
   reload_actividades() {
@@ -596,9 +583,11 @@ export class LoteOffcanvas extends LitElement {
       });
   }
 
-  localizar_lote(){
-    console.log("LOCALIZAR",this._lote_doc)
-    this.map.fitBounds(bbox(this._lote_doc),{padding: {top:50, bottom:window.innerHeight/2}})
+  localizar_lote() {
+    console.log("LOCALIZAR", this._lote_doc);
+    this.map.fitBounds(bbox(this._lote_doc), {
+      padding: { top: 50, bottom: window.innerHeight / 2 },
+    });
   }
 
   render() {
@@ -661,12 +650,28 @@ export class LoteOffcanvas extends LitElement {
         data-bs-backdrop="false"
       >
         <div class="offcanvas-header py-2">
-          <button type="button" class="btn btn-primary btn-sm" @click=${this.localizar_lote}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
-  <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
-  <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-</svg> <span class='d-none d-md-inline'>Localizar</span>
-</button>
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            @click=${this.localizar_lote}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-geo-alt"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"
+              />
+              <path
+                d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"
+              />
+            </svg>
+            <span class="d-none d-md-inline">Localizar</span>
+          </button>
 
           <button
             class="btn btn-danger btn-sm d-block d-md-none material-icons md-18"
@@ -735,6 +740,15 @@ export class LoteOffcanvas extends LitElement {
             </div>
           </div>
           <div class="row">
+
+            ${this._loading_pdf
+              ? html` <div class='d-flex justify-content-center align-items-center' style="width: 100%;height: 100%;position: absolute;background:#fffc;z-index: 9;">
+
+                  <paper-spinner active></paper-spinner>
+                  <span>Preparando PDF</span>
+                </div>`
+              : null}
+
             <div class="col shadow mx-2 p-3 max-vh-25">
               <lit-timeline
                 .db=${this.db}
@@ -771,12 +785,14 @@ export class LoteOffcanvas extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-             <date-picker @change=${(e) => {
+              <date-picker
+                @change=${(e) => {
                   this.fsm.send({
                     type: "CHANGE",
                     value: e.target.fecha,
                   });
-                }}></date-picker> 
+                }}
+              ></date-picker>
 
               <vaadin-combo-box
                 allow-custom-value
@@ -786,16 +802,17 @@ export class LoteOffcanvas extends LitElement {
                 label="Contratista"
                 item-label-path="nombre"
                 item-value-path="uuid"
-                .items="${this._contratistas ? Object.values(this._contratistas?.contratistas) : []}"
+                .items="${this._contratistas
+                  ? Object.values(this._contratistas?.contratistas)
+                  : []}"
                 @selected-item-changed=${(e) => {
-                  console.log("e",e)
+                  console.log("e", e);
                   this.fsm.send({
                     type: "ASSIGN_CONTRATISTA",
                     value: e.detail.value,
                   });
                 }}
               ></vaadin-combo-box>
-
             </div>
             <div class="modal-footer">
               <button
@@ -1404,7 +1421,8 @@ export class LoteOffcanvas extends LitElement {
         </div>
       </div>
 
-      <cosecha-add-ui id="cosecha-add-el"
+      <cosecha-add-ui
+        id="cosecha-add-el"
         .contratistas=${this._contratistas}
       ></cosecha-add-ui>
 
