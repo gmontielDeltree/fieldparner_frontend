@@ -472,8 +472,8 @@ export class LoteOffcanvas extends LitElement {
 
         // Ordenar por fecha
         function compare(a, b) {
-          let ma = moment(a.detalles.fecha, "DD-MM-YYYY");
-          let mb = moment(b.detalles.fecha, "DD-MM-YYYY");
+          let ma = moment(a.detalles.fecha, "YYYY-MM-DD");
+          let mb = moment(b.detalles.fecha, "YYYY-MM-DD");
           if (ma.isAfter(mb)) {
             return -1;
           }

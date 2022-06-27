@@ -248,7 +248,7 @@ const extraer_fecha = (actividad) => {
     fecha_objeto = parse(actividad.doc.fecha, "yyyy-MM-dd", new Date());
   } else {
     // Aplicacion antigua
-    fecha_objeto = parse(actividad.detalles.fecha, "dd-MM-yyyy", new Date());
+    fecha_objeto = parse(actividad.detalles.fecha, "yyyy-MM-dd", new Date());
   }
   return fecha_objeto;
 };
@@ -340,9 +340,9 @@ export class TimelineElement extends LitElement {
     let result = compareDesc(fecha_a, fecha_b);
     if (result === 0) {
       // Si alguno es nota poner la nota primero
-      if (a?.doc.tipo === "nota") {
+      if (a?.doc?.tipo === "nota") {
         result = 1;
-      } else if (b?.doc.tipo === "nota") {
+      } else if (b?.doc?.tipo === "nota") {
         result = -1;
       }
     }
@@ -490,7 +490,7 @@ export class TimelineElement extends LitElement {
         //console.log(moment.locale()); // en
         moment.locale("es");
         //console.log(moment.locale()); // en
-        let elapsed = moment(fecha, "DD-MM-YYYY").fromNow();
+        let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
 
         return html` <li>
           <time class="cbp_tmtime" datetime="2032-11-04T03:45"
@@ -547,7 +547,7 @@ export class TimelineElement extends LitElement {
         //console.log(moment.locale()); // en
         moment.locale("es");
         //console.log(moment.locale()); // en
-        let elapsed = moment(fecha, "DD/MM/YYYY").fromNow();
+        let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
 
         return html`
           <li>
@@ -609,7 +609,7 @@ export class TimelineElement extends LitElement {
         //console.log(moment.locale()); // en
         moment.locale("es");
         //console.log(moment.locale()); // en
-        let elapsed = moment(fecha, "DD/MM/YYYY").fromNow();
+        let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
 
         return html`
           <li>
