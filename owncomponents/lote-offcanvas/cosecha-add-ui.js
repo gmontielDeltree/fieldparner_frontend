@@ -3,11 +3,13 @@ import { interpret } from 'xstate';
 import { cosechaMachine } from "./cosecha-machine";
 import { Modal, Offcanvas } from 'bootstrap'
 import "../date-picker/date-picker.ts"
+import "@vaadin/combo-box";
 
 export class CosechaAddUI extends LitElement {
     static properties = {
         campo_id: {},
         lote_nombre: {},
+        contratistas: {},
         _steps_elements: {},
         _ctx: {},
         _campo_doc: {},
@@ -109,6 +111,24 @@ export class CosechaAddUI extends LitElement {
                     value: e.target.fecha,
                   });
                 }}></date-picker> 
+
+            <vaadin-combo-box
+                allow-custom-value
+                @custom-value-set="${() => {
+                  console.log("Nuevo Value");
+                }}"
+                label="Contratista"
+                item-label-path="nombre"
+                item-value-path="uuid"
+                .items="${this.contratistas ? Object.values(this.contratistas?.contratistas) : []}"
+                @selected-item-changed=${(e) => {
+                  console.log("e",e)
+                  this.fsm.send({
+                    type: "ASSIGN_CONTRATISTA",
+                    value: e.detail.value,
+                  });
+                }}
+              ></vaadin-combo-box>
 
                     </div>
                     <div class="modal-footer">

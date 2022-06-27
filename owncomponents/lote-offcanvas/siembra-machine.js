@@ -13,6 +13,7 @@ const initial_context = {
   hectareas: 0,
   comentario: "",
   adjuntos: [],
+  contratista:{},
 };
 
 export const siembraMachine = createMachine({
@@ -48,6 +49,11 @@ export const siembraMachine = createMachine({
                 fecha: (context, event) => (context.fecha = event.value),
               }),
             },
+            ASSIGN_CONTRATISTA:{
+              actions: assign({
+                contratista: (ctx, e) => ctx.contratista = e.value,
+              })
+            }
           },
         },
         hectareas: {

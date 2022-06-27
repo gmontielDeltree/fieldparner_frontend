@@ -20,7 +20,7 @@ const clear_linea = (ctx) => {
   return ctx
 }
 
-const init_ctx = { fecha: "17-05-2021", hectareas: 0, current_insumo: "", filtrado: [], dosis: 0, insumos: [], unidad: 'lt/ha', comentarios: "", motivos: {}, lista_insumos:[]};
+const init_ctx = { fecha: "17-05-2021", hectareas: 0, current_insumo: "", filtrado: [], dosis: 0, insumos: [], unidad: 'lt/ha', comentarios: "", motivos: {}, lista_insumos:[], contratista:{}};
 
 const reset_ctx = (ctx) => {return init_ctx}
 
@@ -69,7 +69,12 @@ export const aplicacionMachine =
                 },
                 CHANGE: {
                   actions: assign({ fecha: (context, event) => context.fecha = event.value })
-                }
+                },
+                ASSIGN_CONTRATISTA:{
+                  actions: assign({
+                    contratista: (ctx, e) => ctx.contratista = e.value,
+                  })
+                },
               },
             },
             hectareas: {

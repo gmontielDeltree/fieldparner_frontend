@@ -3,16 +3,18 @@ import { interpret } from "xstate";
 import { siembraMachine } from "./siembra-machine";
 import { Modal, Offcanvas } from "bootstrap";
 import "../lista-searchable/lista-searchable.js";
-import PouchDB from 'pouchdb'
+import PouchDB from "pouchdb";
 import { base_url } from "../helpers";
 import uuid4 from "uuid4";
-import "../date-picker/date-picker.ts"
+import "../date-picker/date-picker.ts";
+import "@vaadin/combo-box";
 
 export class SiembraAddUI extends LitElement {
   static properties = {
     lote_id: {},
     campo_id: {},
     lote_nombre: {},
+    contratistas: {},
     _steps_elements: {},
     _ctx: {},
     _campo_doc: {},
@@ -24,7 +26,7 @@ export class SiembraAddUI extends LitElement {
     fsm: { state: true },
     _variedades_db_local: {},
     _variedades_db_remote: {},
-    _filtered_variedades_docs: {}
+    _filtered_variedades_docs: {},
   };
 
   static styles = null;
@@ -43,7 +45,6 @@ export class SiembraAddUI extends LitElement {
     this.cultivos_filtrados = {};
     this.init_fsm();
     this.es_nuevo_cultivo = false;
-
   }
 
   show_step = (n) => {
@@ -74,8 +75,8 @@ export class SiembraAddUI extends LitElement {
     if (changedProperties.has("settings")) {
       this.cultivos_filtrados = this.settings.user_cultivos;
 
-      this._variedades_db_remote = new PouchDB(base_url + 'variedades');
-      this._variedades_db_local = new PouchDB('variedades')
+      this._variedades_db_remote = new PouchDB(base_url + "variedades");
+      this._variedades_db_local = new PouchDB("variedades");
       //PouchDB.replicate(this._variedades_db_remote, this._variedades_db_local, {retry:true, live:true})
     }
   }
@@ -140,44 +141,50 @@ export class SiembraAddUI extends LitElement {
     // Si hay cultivos nuevos y/o varidades enviar otro evento
     // para que la aplicacion tome accion apropiada
 
-    let es_nuevo_cultivo = document.getElementById('cultivo-input').es_nuevo
-    let es_nueva_variedad = document.getElementById('variedad-input').es_nuevo
+    let es_nuevo_cultivo = document.getElementById("cultivo-input").es_nuevo;
+    let es_nueva_variedad = document.getElementById("variedad-input").es_nuevo;
 
-    if(es_nuevo_cultivo){
-     // Evento para que se actualicen las settings en FP
+    if (es_nuevo_cultivo) {
+      // Evento para que se actualicen las settings en FP
     }
 
-    if(es_nueva_variedad){
+    if (es_nueva_variedad) {
       // Grabo la variedad aca
-      console.log("es Nueva Variedad")
-      let id = this._ctx.cultivo.toUpperCase() + ":" + this._ctx.variedad.toUpperCase()
-      let nv = {}
-      nv._id = id
-      nv.especie = this._ctx.cultivo.toUpperCase()
-      nv.cultivar = this._ctx.variedad.toUpperCase()
-      nv.uuid = uuid4()
-      this._variedades_db_local.put(nv)
+      console.log("es Nueva Variedad");
+      let id =
+        this._ctx.cultivo.toUpperCase() +
+        ":" +
+        this._ctx.variedad.toUpperCase();
+      let nv = {};
+      nv._id = id;
+      nv.especie = this._ctx.cultivo.toUpperCase();
+      nv.cultivar = this._ctx.variedad.toUpperCase();
+      nv.uuid = uuid4();
+      this._variedades_db_local.put(nv);
     }
   }
 
-  cultivo_input_changed(e){
-                console.log("IN OPUT EVENT",e)
-                this.fsm.send({ type: "CHANGE", value: e.target.value });
-                if(!e.target.es_nuevo){
-                    let cultivo = e.target.value
-                    console.log("Cultivo", cultivo)
+  cultivo_input_changed(e) {
+    console.log("IN OPUT EVENT", e);
+    this.fsm.send({ type: "CHANGE", value: e.target.value });
+    if (!e.target.es_nuevo) {
+      let cultivo = e.target.value;
+      console.log("Cultivo", cultivo);
 
-                    // LA DB NO TIENE ACENTO y esta en Mayus
-                    this._variedades_db_local.allDocs({
-                      include_docs: true,
-                      startkey: cultivo.toUpperCase(),
-                      endkey: cultivo.toUpperCase() + "\ufff0",
-                    }).then((variedades_docs) => {
-                      this._filtered_variedades_docs = variedades_docs.rows.map((d) => d.doc)
-                      console.log("Filtered Variedades", variedades_docs)
-                    })
-
-                }
+      // LA DB NO TIENE ACENTO y esta en Mayus
+      this._variedades_db_local
+        .allDocs({
+          include_docs: true,
+          startkey: cultivo.toUpperCase(),
+          endkey: cultivo.toUpperCase() + "\ufff0",
+        })
+        .then((variedades_docs) => {
+          this._filtered_variedades_docs = variedades_docs.rows.map(
+            (d) => d.doc
+          );
+          console.log("Filtered Variedades", variedades_docs);
+        });
+    }
   }
 
   render() {
@@ -218,7 +225,7 @@ export class SiembraAddUI extends LitElement {
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="staticBackdropLabel">
-                ¿Cual es la fecha de la siembra?
+                ¿Cual es la fecha y quien realizará la siembra?
               </h5>
               <button
                 type="button"
@@ -229,13 +236,35 @@ export class SiembraAddUI extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-            <date-picker @change=${(e) => {
+              <date-picker
+                @change=${(e) => {
                   this.fsm.send({
                     type: "CHANGE",
                     value: e.target.fecha,
                   });
-                }}></date-picker> 
+                }}
+              ></date-picker>
+
+              <vaadin-combo-box
+                allow-custom-value
+                @custom-value-set="${() => {
+                  console.log("Nuevo Value");
+                }}"
+                label="Contratista"
+                item-label-path="nombre"
+                item-value-path="uuid"
+                .items="${this.contratistas ? Object.values(this.contratistas?.contratistas) : []}"
+                @selected-item-changed=${(e) => {
+                  console.log("e",e)
+                  this.fsm.send({
+                    type: "ASSIGN_CONTRATISTA",
+                    value: e.detail.value,
+                  });
+                }}
+              ></vaadin-combo-box>
+              
             </div>
+
             <div class="modal-footer">
               <button
                 type="button"
@@ -332,8 +361,8 @@ export class SiembraAddUI extends LitElement {
             </div>
             <div class="container-fluid modal-body mx-auto"></div>
             <lista-searchable
-             id='cultivo-input'  
-            .lista=${this.settings?.user_cultivos}
+              id="cultivo-input"
+              .lista=${this.settings?.user_cultivos}
               .principal_key=${"nombre"}
               @input=${this.cultivo_input_changed}
             >
@@ -367,16 +396,18 @@ export class SiembraAddUI extends LitElement {
               ></button>
             </div>
             <div class="container-fluid  modal-body mx-auto">
-              <p class='row mx-2'>${this._filtered_variedades_docs?.length || 0} variedades de ${this._ctx.cultivo.toUpperCase()}</p>
-                <lista-searchable
-                  id='variedad-input' 
-                  .lista=${this._filtered_variedades_docs}
-                  .principal_key=${"cultivar"}
-                  @input=${(e) => {
-                    this.fsm.send({ type: "CHANGE", value: e.target.value });
-                  }}
-                ></lista-searchable>
-              
+              <p class="row mx-2">
+                ${this._filtered_variedades_docs?.length || 0} variedades de
+                ${this._ctx.cultivo.toUpperCase()}
+              </p>
+              <lista-searchable
+                id="variedad-input"
+                .lista=${this._filtered_variedades_docs}
+                .principal_key=${"cultivar"}
+                @input=${(e) => {
+                  this.fsm.send({ type: "CHANGE", value: e.target.value });
+                }}
+              ></lista-searchable>
             </div>
             <div class="modal-footer">${cancel_back_next()}</div>
           </div>

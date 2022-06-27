@@ -7,7 +7,7 @@ export const cosechaMachine =
     {
       id: "Cosecha",
       initial: "idle",
-      context: { fecha: "31/12/2021", hectareas: 0, rinde: 0, humedad: 0, comentario:"", adjuntos:[]  },
+      context: { fecha: "31/12/2021", hectareas: 0, rinde: 0, humedad: 0, comentario:"", adjuntos:[], contratista:{}  },
       states: {
         idle: {
           on: {
@@ -32,7 +32,12 @@ export const cosechaMachine =
                 },
                 CHANGE: {
                   actions: assign({ fecha: (context, event) => context.fecha = event.value })
-                }
+                },
+                ASSIGN_CONTRATISTA:{
+                  actions: assign({
+                    contratista: (ctx, e) => ctx.contratista = e.value,
+                  })
+                },
               },
             },
             hectareas: {

@@ -563,6 +563,16 @@ export class TimelineElement extends LitElement {
               <p class="small">${comentarios}</p>
 
               <button
+                  class="btn btn-secondary"
+                  @click=${() => {
+                    console.log(item.uuid);
+                    this.evento_pdf(item.uuid);
+                  }}
+                >
+                  Orden de Trabajo
+                </button>
+                
+              <button
                 class="btn btn-danger"
                 @click=${() => {
                   console.log(item.uuid);
@@ -583,6 +593,7 @@ export class TimelineElement extends LitElement {
         let peso_1000 = item.detalles.peso_1000;
         let densidad_objetivo = item.detalles.densidad_objetivo;
         let distancia = item.detalles.distancia;
+        let contratista = item.detalles.contratista;
 
         //console.log(moment.locale()); // en
         moment.locale("es");
@@ -605,6 +616,16 @@ export class TimelineElement extends LitElement {
               <p><strong>${cultivo} - ${varidad}</strong></p>
               <p>${densidad_objetivo} pl/ha - ${distancia} cm entre surcos</p>
               <p class="small">${comentarios}</p>
+
+              <button
+                  class="btn btn-secondary"
+                  @click=${() => {
+                    console.log(item.uuid);
+                    this.evento_pdf(item.uuid);
+                  }}
+                >
+                  Orden de Trabajo
+                </button>
 
               <button
                 class="btn btn-danger"

@@ -1,7 +1,7 @@
 {
-	"compilerOptions": {
+  "compilerOptions": {
     "experimentalDecorators": true,
-	  "allowSyntheticDefaultImports": true,
-	  "resolveJsonModule":true
-	}
-      }
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
+  }
+}

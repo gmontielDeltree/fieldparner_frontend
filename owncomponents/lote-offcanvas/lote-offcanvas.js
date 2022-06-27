@@ -5,6 +5,7 @@ import { interpret } from "xstate";
 import { mapbox_static_img } from "./mapbox_static_image.js";
 import mapboxgl from "mapbox-gl";
 import "../date-picker/date-picker.ts"
+import "@vaadin/combo-box";
 
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
@@ -83,9 +84,10 @@ export class LoteOffcanvas extends LitElement {
     _lote_doc: {},
     settings: {},
     _nota_marker: {},
-    _db: { state: true },
+    db: { },
     fsm: { state: true },
-    _loading_pdf: {state: true}
+    _loading_pdf: {state: true},
+    _contratistas: {state:true},
   };
 
   static styles = null;
@@ -118,7 +120,7 @@ export class LoteOffcanvas extends LitElement {
 
     this.addEventListener("eliminar-nota",(e)=>{
       let nota_doc = e.detail.nota_doc
-      this._db.remove(nota_doc)
+      this.db.remove(nota_doc)
       this.reload_actividades()
 
     });
@@ -293,7 +295,7 @@ export class LoteOffcanvas extends LitElement {
       (a) => a.uuid !== uuid
     );
     // Re-Get Lotes y update
-    this._db.get(this.campo_id).then((doc) => {
+    this.db.get(this.campo_id).then((doc) => {
       let lote_index = doc.lotes.findIndex(
         (lote) => lote.properties.nombre === this.lote_nombre
       );
@@ -317,7 +319,7 @@ export class LoteOffcanvas extends LitElement {
         current_aplicaciones.sort(compare);
 
         doc.lotes[lote_index].properties.actividades = current_aplicaciones;
-        this._db.put(doc).then((r) => console.log("Actividad Eliminada"));
+        this.db.put(doc).then((r) => console.log("Actividad Eliminada"));
 
         // Recargemoslos
         this._campo_doc = doc;
@@ -377,12 +379,12 @@ export class LoteOffcanvas extends LitElement {
     let restantes = this._campo_doc.lotes.filter(
       (lote) => lote.id !== this._lote_doc.id
     );
-    this._db.get(this.campo_id).then((doc) => {
+    this.db.get(this.campo_id).then((doc) => {
       let restantes = this._campo_doc.lotes.filter(
         (lote) => lote.id !== this._lote_doc.id
       );
       doc.lotes = restantes;
-      this._db.put(doc).then((r) => console.log("Lote Eliminado"));
+      this.db.put(doc).then((r) => console.log("Lote Eliminado"));
       this._campo_doc = doc;
       this.hide();
     });
@@ -415,6 +417,7 @@ export class LoteOffcanvas extends LitElement {
         hectareas: this._ctx.hectareas,
         insumos: this._ctx.insumos,
         comentarios: this._ctx.comentarios,
+        contratista: this._ctx.contratista,
       };
       aplicacion = {
         uuid: uuid4(),
@@ -443,7 +446,7 @@ export class LoteOffcanvas extends LitElement {
     // Condiciones ambientales?
 
     // Re-Get Lotes y update
-    this._db.get(this.campo_id).then((doc) => {
+    this.db.get(this.campo_id).then((doc) => {
       let lote_index = doc.lotes.findIndex(
         (lote) => lote.properties.nombre === this.lote_nombre
       );
@@ -469,7 +472,7 @@ export class LoteOffcanvas extends LitElement {
         current_aplicaciones.sort(compare);
 
         doc.lotes[lote_index].properties.actividades = current_aplicaciones;
-        this._db.put(doc).then((r) => console.log("Actividad Agregada"));
+        this.db.put(doc).then((r) => console.log("Actividad Agregada"));
 
         // Recargemoslos
         this._campo_doc = doc;
@@ -488,7 +491,7 @@ export class LoteOffcanvas extends LitElement {
       changedProperties.has("campo_id") ||
       changedProperties.has("lote_nombre")
     ) {
-      this._db.get(this.campo_id).then((doc) => {
+      this.db.get(this.campo_id).then((doc) => {
         this._campo_doc = doc;
         this._lote_doc =
           doc.lotes.filter(
@@ -534,7 +537,7 @@ export class LoteOffcanvas extends LitElement {
   }
 
   reload_lote_doc_y_localizar(){
-    this._db.get(this.campo_id).then((doc) => {
+    this.db.get(this.campo_id).then((doc) => {
       this._campo_doc = doc;
       this._lote_doc =
         doc.lotes.filter(
@@ -543,10 +546,15 @@ export class LoteOffcanvas extends LitElement {
 
         this.localizar_lote()
     })
+
+    this.db.get("contratistas").then((result)=>{
+      console.log("Contratistas", result)
+      this._contratistas = result;
+    })
   }
 
   reload_actividades() {
-    this._db
+    this.db
       .allDocs({
         include_docs: true,
         attachments: true,
@@ -702,7 +710,7 @@ export class LoteOffcanvas extends LitElement {
           <div class="row">
             <div class="col shadow mx-2 p-3 max-vh-25">
               <lit-timeline
-                .db=${this._db}
+                .db=${this.db}
                 .actividades_docs=${this._actividades}
                 .actividades=${this._lote_doc?.properties.actividades}
                 id="actividades-timeline"
@@ -742,6 +750,25 @@ export class LoteOffcanvas extends LitElement {
                     value: e.target.fecha,
                   });
                 }}></date-picker> 
+
+              <vaadin-combo-box
+                allow-custom-value
+                @custom-value-set="${() => {
+                  console.log("Nuevo Value");
+                }}"
+                label="Contratista"
+                item-label-path="nombre"
+                item-value-path="uuid"
+                .items="${this._contratistas ? Object.values(this._contratistas?.contratistas) : []}"
+                @selected-item-changed=${(e) => {
+                  console.log("e",e)
+                  this.fsm.send({
+                    type: "ASSIGN_CONTRATISTA",
+                    value: e.detail.value,
+                  });
+                }}
+              ></vaadin-combo-box>
+
             </div>
             <div class="modal-footer">
               <button
@@ -1350,17 +1377,20 @@ export class LoteOffcanvas extends LitElement {
         </div>
       </div>
 
-      <cosecha-add-ui id="cosecha-add-el"></cosecha-add-ui>
+      <cosecha-add-ui id="cosecha-add-el"
+        .contratistas=${this._contratistas}
+      ></cosecha-add-ui>
 
       <siembra-add-ui
         id="siembra-add-el"
+        .contratistas=${this._contratistas}
         ._lote_doc=${this._lote_doc}
         .settings=${this.settings}
       ></siembra-add-ui>
       <notas-oc
         id="notas-oc"
         .map=${this.map}
-        .db=${this._db}
+        .db=${this.db}
         .lote_doc=${this._lote_doc}
       ></notas-oc>
       <!-- <nueva-geometria-ui id='nueva-geometria-el'></nueva-geometria-ui> -->

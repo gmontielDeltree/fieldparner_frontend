@@ -104,7 +104,7 @@ export class FieldPartner extends LitElement {
     });
 
     this.addEventListener("nuevo-contratista-click", () => {
-      document.getElementById("contratista-crud").show();
+      document.getElementById("contratista-crud").nuevo();
     });
 
     // Borrar un Campo
@@ -443,7 +443,7 @@ export class FieldPartner extends LitElement {
       <lote-offcanvas
         id="lote-oc"
         .map=${this.map}
-        ._db=${this.campos_db}
+        .db=${this.campos_db}
         .settings=${this.settings}
       ></lote-offcanvas>
       <nuevo-campo
@@ -459,7 +459,8 @@ export class FieldPartner extends LitElement {
         .campos=${this.campos}
       ></lista-de-campos>
 
-      <contratista-crud id="contratista-crud"></contratista-crud>
+      <contratista-crud id="contratista-crud" .db=${this.campos_db}></contratista-crud>
+
       <color-cultivo
         id="colores-cultivos"
         .cultivos=${this.settings?.user_cultivos}
