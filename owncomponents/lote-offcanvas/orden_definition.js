@@ -164,7 +164,7 @@ const orden_definition = (
                "alignment":"left"
             },{
                "text":"Tel: " + aplicacion.detalles.contratista.datos_generales.telefono,
-               "bold":true,
+               "fontSize":10,
                "color":"#333333",
                "alignment":"left"
             },

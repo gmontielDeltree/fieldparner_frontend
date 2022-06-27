@@ -695,6 +695,12 @@ export class LoteOffcanvas extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body small pt-1">
+        ${this._loading_pdf
+              ? html` <div class='d-flex justify-content-center align-items-center' style="width: 100%;height: 100%;position: absolute;background:#fffc;z-index: 9;">
+                  <paper-spinner active></paper-spinner>
+                  <span>Preparando PDF</span>
+                </div>`
+              : null}
           <div class="btn-toolbar shadow px-0" role="toolbar">
             <div class="btn-group me-2" role="group" aria-label="Zero group">
               <button
@@ -741,13 +747,7 @@ export class LoteOffcanvas extends LitElement {
           </div>
           <div class="row">
 
-            ${this._loading_pdf
-              ? html` <div class='d-flex justify-content-center align-items-center' style="width: 100%;height: 100%;position: absolute;background:#fffc;z-index: 9;">
 
-                  <paper-spinner active></paper-spinner>
-                  <span>Preparando PDF</span>
-                </div>`
-              : null}
 
             <div class="col shadow mx-2 p-3 max-vh-25">
               <lit-timeline
