@@ -240,19 +240,18 @@ const timeline_css = css`
   }
 `;
 
-
 const extraer_fecha = (actividad) => {
-    let fecha_objeto;
-    // Extraer fecha de b
-    if ("doc" in actividad) {
-      // Nota
-      fecha_objeto = parse(actividad.doc.fecha, "yyyy-MM-dd", new Date());
-    } else {
-      // Aplicacion antigua
-      fecha_objeto = parse(actividad.detalles.fecha, "dd-MM-yyyy", new Date());
-    }
-    return fecha_objeto;
+  let fecha_objeto;
+  // Extraer fecha de b
+  if ("doc" in actividad) {
+    // Nota
+    fecha_objeto = parse(actividad.doc.fecha, "yyyy-MM-dd", new Date());
+  } else {
+    // Aplicacion antigua
+    fecha_objeto = parse(actividad.detalles.fecha, "dd-MM-yyyy", new Date());
   }
+  return fecha_objeto;
+};
 
 export class TimelineElement extends LitElement {
   static properties = {
@@ -273,7 +272,7 @@ export class TimelineElement extends LitElement {
     });
     this.dispatchEvent(event);
   }
-  
+
   evento_share_pdf(uuid) {
     const event = new CustomEvent("share-ot", {
       detail: { uuid: uuid },
@@ -334,8 +333,6 @@ export class TimelineElement extends LitElement {
     return this;
   }
 
-
-
   comparar_fechas(a, b) {
     let fecha_a = extraer_fecha(a);
     let fecha_b = extraer_fecha(b);
@@ -393,7 +390,7 @@ export class TimelineElement extends LitElement {
           let audio = [];
           let nota_id = item.doc._id;
 
-          let fecha_string = format(extraer_fecha(item), "dd-MM-yyyy"); 
+          let fecha_string = format(extraer_fecha(item), "dd-MM-yyyy");
 
           if ("_attachments" in item.doc) {
             Object.entries(item.doc._attachments).map(([key, item]) => {
@@ -508,16 +505,16 @@ export class TimelineElement extends LitElement {
             ${list_of_ps}
             <p class="small">${comentarios}</p>
             ${stock_tag(this.stock_tag_table[item.uuid])}
-            
+
             <button
-                  class="btn btn-secondary"
-                  @click=${() => {
-                    console.log(item.uuid);
-                    this.evento_download_pdf(item.uuid);
-                  }}
-                >
-                  Orden de Trabajo
-                </button>
+              class="btn btn-secondary"
+              @click=${() => {
+                console.log(item.uuid);
+                this.evento_download_pdf(item.uuid);
+              }}
+            >
+              Orden de Trabajo
+            </button>
 
             ${navigator.share
               ? html`<button
@@ -528,8 +525,6 @@ export class TimelineElement extends LitElement {
                   Compartir Orden
                 </button>`
               : null}
-              
-
 
             <button
               class="btn btn-danger"
@@ -571,15 +566,23 @@ export class TimelineElement extends LitElement {
               <p class="small">${comentarios}</p>
 
               <button
-                  class="btn btn-secondary"
-                  @click=${() => {
-                    console.log(item.uuid);
-                    this.evento_download_pdf(item.uuid);
-                  }}
-                >
-                  Orden de Trabajo
-                </button>
-                
+                class="btn btn-secondary"
+                @click=${() => {
+                  console.log(item.uuid);
+                  this.evento_download_pdf(item.uuid);
+                }}
+              >
+                Orden de Trabajo
+              </button>
+              ${navigator.share
+                ? html`<button
+                    type="button"
+                    class="btn btn-success"
+                    @click=${() => this.evento_share_pdf(item.uuid)}
+                  >
+                    Compartir Orden
+                  </button>`
+                : null}
               <button
                 class="btn btn-danger"
                 @click=${() => {
@@ -626,15 +629,23 @@ export class TimelineElement extends LitElement {
               <p class="small">${comentarios}</p>
 
               <button
-                  class="btn btn-secondary"
-                  @click=${() => {
-                    console.log(item.uuid);
-                    this.evento_download_pdf(item.uuid);
-                  }}
-                >
-                  Orden de Trabajo
-                </button>
-
+                class="btn btn-secondary"
+                @click=${() => {
+                  console.log(item.uuid);
+                  this.evento_download_pdf(item.uuid);
+                }}
+              >
+                Orden de Trabajo
+              </button>
+              ${navigator.share
+                ? html`<button
+                    type="button"
+                    class="btn btn-success"
+                    @click=${() => this.evento_share_pdf(item.uuid)}
+                  >
+                    Compartir Orden
+                  </button>`
+                : null}
               <button
                 class="btn btn-danger"
                 @click=${() => {
