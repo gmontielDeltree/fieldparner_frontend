@@ -173,7 +173,7 @@ export const aplicacionMachine =
             resumiendo: {
               on: {
                 BACK: { target: 'comentario' },
-                GUARDAR: { target: 'share' }
+                GUARDAR: { target: 'fin' }
               }
             },
             fin: {

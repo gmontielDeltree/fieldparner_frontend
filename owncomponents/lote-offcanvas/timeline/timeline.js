@@ -265,7 +265,7 @@ export class TimelineElement extends LitElement {
 
   static styles = [timeline_css];
 
-  evento_pdf(uuid) {
+  evento_download_pdf(uuid) {
     const event = new CustomEvent("generar-ot", {
       detail: { uuid: uuid },
       bubbles: true,
@@ -273,7 +273,15 @@ export class TimelineElement extends LitElement {
     });
     this.dispatchEvent(event);
   }
-
+  
+  evento_share_pdf(uuid) {
+    const event = new CustomEvent("share-ot", {
+      detail: { uuid: uuid },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
   evento_eliminar(uuid) {
     const event = new CustomEvent("eliminar-actividad", {
       detail: { uuid: uuid },
@@ -505,7 +513,7 @@ export class TimelineElement extends LitElement {
                   class="btn btn-secondary"
                   @click=${() => {
                     console.log(item.uuid);
-                    this.evento_pdf(item.uuid);
+                    this.evento_download_pdf(item.uuid);
                   }}
                 >
                   Orden de Trabajo
@@ -515,7 +523,7 @@ export class TimelineElement extends LitElement {
               ? html`<button
                   type="button"
                   class="btn btn-success"
-                  @click=${() => this.evento_pdf(item.uuid)}
+                  @click=${() => this.evento_share_pdf(item.uuid)}
                 >
                   Compartir Orden
                 </button>`
@@ -566,7 +574,7 @@ export class TimelineElement extends LitElement {
                   class="btn btn-secondary"
                   @click=${() => {
                     console.log(item.uuid);
-                    this.evento_pdf(item.uuid);
+                    this.evento_download_pdf(item.uuid);
                   }}
                 >
                   Orden de Trabajo
@@ -621,7 +629,7 @@ export class TimelineElement extends LitElement {
                   class="btn btn-secondary"
                   @click=${() => {
                     console.log(item.uuid);
-                    this.evento_pdf(item.uuid);
+                    this.evento_download_pdf(item.uuid);
                   }}
                 >
                   Orden de Trabajo

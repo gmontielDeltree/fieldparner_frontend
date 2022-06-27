@@ -14,7 +14,7 @@ var dd={
                   "text":"Orden de Trabajo",
                   "color":"#333333",
                   "width":"*",
-                  "fontSize":28,
+                  "fontSize":20,
                   "bold":true,
                   "alignment":"right",
                   "margin":[
@@ -24,6 +24,31 @@ var dd={
                      15
                   ]
                },
+                {
+                  "stack":[
+                     {
+                        "columns":[
+                           {
+                              "text":"Orden N°",
+                              "color":"#aaaaab",
+                              "bold":true,
+                              "width":"*",
+                              "fontSize":12,
+                              "alignment":"right"
+                           },
+                           {
+                              "text":"000120",
+                              "bold":true,
+                              "color":"#333333",
+                              "fontSize":12,
+                              "alignment":"right",
+                              "width":100
+                           }
+                        ]
+                     }
+                  ]
+               }
+               ,
                {
                   "stack":[
                      {
@@ -72,9 +97,39 @@ var dd={
                "color":"#333333",
                "alignment":"left"
             },
+            {
+               "text":"Aplicador",
+               "color":"#aaaaab",
+               "bold":true,
+               "fontSize":12,
+               "alignment":"left",
+               "margin":[
+                  0,
+                  20,
+                  0,
+                  5
+               ]
+            },
+            {
+               "text":"El Caballo SRL",
+               "bold":true,
+               "color":"#333333",
+               "alignment":"left"
+            },{
+               "text":"20-1231323-1",
+               "bold":true,
+               "color":"#333333",
+               "alignment":"left"
+            },{
+               "text":"Tel: 121-456",
+               "bold":true,
+               "color":"#333333",
+               "alignment":"left"
+            },
+            
             ],
             [{
-               "text":"Lote",
+               "text":"Lotej",
                "color":"#aaaaab",
                "bold":true,
                "fontSize":14,
@@ -87,7 +142,7 @@ var dd={
                ]
             },
             {
-               "text":"Gujb",
+               "text":"Guklkjb",
                "bold":true,
                "color":"#333333",
                "alignment":"left"

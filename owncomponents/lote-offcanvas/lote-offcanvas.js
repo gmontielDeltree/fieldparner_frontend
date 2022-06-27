@@ -114,6 +114,9 @@ export class LoteOffcanvas extends LitElement {
     this.addEventListener("generar-ot", (e) =>
       this.download_pdf(e.detail.uuid)
     );
+    this.addEventListener("share-ot", (e) =>
+    this.share_pdf(e.detail.uuid)
+    );
     this.addEventListener("eliminar-actividad", (e) =>
       this.eliminar_actividad(e.detail.uuid)
     );
@@ -245,7 +248,7 @@ export class LoteOffcanvas extends LitElement {
     this.dispatchEvent(event);
   }
 
-  download_pdf(uuid) {
+  share_pdf(uuid) {
     let campos_url = mapbox_static_img(this._campo_doc, this._lote_doc);
 
     let google_map_link = google_maps_link_go_to(this._lote_doc);
@@ -282,11 +285,35 @@ export class LoteOffcanvas extends LitElement {
           });
           this._loading_pdf = false;
         });
-      } else {
+      }
+    });
+  }
+
+  download_pdf(uuid) {
+    let campos_url = mapbox_static_img(this._campo_doc, this._lote_doc);
+
+    let google_map_link = google_maps_link_go_to(this._lote_doc);
+
+    let indice = this._lote_doc.properties.actividades.findIndex(
+      (a) => a.uuid === uuid
+    );
+    // docDefinition
+    let dd = orden_definition(
+      this._lote_doc.properties.actividades[indice],
+      this._campo_doc.nombre,
+      this._lote_doc.properties.nombre,
+      campos_url,
+      google_map_link
+    );
+    //console.log("DD", JSON.stringify(dd));
+    // Loading 
+      this._loading_pdf = true;
+
+    import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
+      pdfMake.fonts = pdf_fonts;
         //console.log("Generando PDF");
         pdfMake.createPdf(dd).open();
         this._loading_pdf = false;
-      }
     });
   }
 

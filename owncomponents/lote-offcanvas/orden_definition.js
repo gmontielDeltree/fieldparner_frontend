@@ -45,6 +45,10 @@ const orden_definition = (
 ) => {
   let insumos = aplicacion.detalles.insumos;
   let insumos_tabla = insumos.map(pdf_line);
+  let tipo = aplicacion.tipo;
+  let titulos = {"aplicacion": "Orden de Trabajo", "siembra":"Orden de Siembra", "cosecha":"Orden de Cosecha"}
+
+  let titulo = titulos[tipo];
 
   return {
     content: [
@@ -59,14 +63,38 @@ const orden_definition = (
           },
           [
             {
-              text: "Orden de Trabajo",
+              text: titulo,
               color: "#333333",
               width: "*",
-              fontSize: 28,
+              fontSize: 20,
               bold: true,
               alignment: "right",
               margin: [0, 0, 0, 15],
             },
+            {
+              "stack":[
+                 {
+                    "columns":[
+                       {
+                          "text":"Orden N°",
+                          "color":"#aaaaab",
+                          "bold":true,
+                          "width":"*",
+                          "fontSize":12,
+                          "alignment":"right"
+                       },
+                       {
+                          "text":"000120",
+                          "bold":true,
+                          "color":"#333333",
+                          "fontSize":12,
+                          "alignment":"right",
+                          "width":100
+                       }
+                    ]
+                 }
+              ]
+           },
             {
               stack: [
                 {
@@ -111,6 +139,36 @@ const orden_definition = (
               color: "#333333",
               alignment: "left",
             },
+            {
+               "text":"Aplicador",
+               "color":"#aaaaab",
+               "bold":true,
+               "fontSize":12,
+               "alignment":"left",
+               "margin":[
+                  0,
+                  20,
+                  0,
+                  5
+               ]
+            },
+            {
+               "text":aplicacion.detalles.contratista.nombre,
+               "bold":true,
+               "color":"#333333",
+               "alignment":"left"
+            },{
+               "text":aplicacion.detalles.contratista.cuit,
+               "bold":true,
+               "color":"#333333",
+               "alignment":"left"
+            },{
+               "text":"Tel: " + aplicacion.detalles.contratista.datos_generales.telefono,
+               "bold":true,
+               "color":"#333333",
+               "alignment":"left"
+            },
+
           ],
           [
             {

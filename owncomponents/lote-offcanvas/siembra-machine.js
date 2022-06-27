@@ -2,7 +2,7 @@ import { createMachine, assign, actions, interpret } from "xstate";
 
 // const { createMachine, assign, actions, interpret } = XState;
 const initial_context = {
-  fecha: "31/12/2021",
+  fecha: "",
   cultivo: "",
   variedad: "",
   peso_1000: 0,
@@ -14,6 +14,7 @@ const initial_context = {
   comentario: "",
   adjuntos: [],
   contratista:{},
+  insumos:[],
 };
 
 export const siembraMachine = createMachine({
