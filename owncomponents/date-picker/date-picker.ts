@@ -5,11 +5,8 @@ import { format, parse } from "date-fns";
 import "@vaadin/date-picker";
 
 export class DatePicker extends LitElement {
-  static properties = {};
-
   @property()
-  fecha : string = ""
- 
+  fecha: string = "";
 
   firstUpdated() {
     /* Format date */
@@ -30,10 +27,14 @@ export class DatePicker extends LitElement {
       };
     };
 
-    console.log("i18n",this.shadowRoot.getElementById("nota-date-picker").i18n)
+    console.log(
+      "i18n",
+      this.shadowRoot.getElementById("nota-date-picker").i18n
+    );
 
-    this.shadowRoot.getElementById("nota-date-picker").i18n.monthNames[5] = "Junio"
-    
+    this.shadowRoot.getElementById("nota-date-picker").i18n.monthNames[5] =
+      "Junio";
+
     if (this.shadowRoot.getElementById("nota-date-picker")) {
       this.shadowRoot.getElementById("nota-date-picker").i18n = {
         ...this.shadowRoot.getElementById("nota-date-picker").i18n,
@@ -43,11 +44,16 @@ export class DatePicker extends LitElement {
     }
   }
 
-  change(e:any){
-	this.fecha = e.target.value
-	let event = new CustomEvent("change",{detail:e, bubbles:true, composed:true})
-	this.dispatchEvent(event)
+  change(e: any) {
+    this.fecha = e.target.value;
+    let event = new CustomEvent("change", {
+      detail: e,
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
   }
+
   render() {
     return html`<vaadin-date-picker
       id="nota-date-picker"

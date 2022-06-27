@@ -1,13 +1,14 @@
 import { createMachine, assign, actions, interpret } from 'xstate';
 
 // const { createMachine, assign, actions, interpret } = XState;
+const init_ctx = { fecha: "2022-06-22", hectareas: 0, rinde: 0, humedad: 0, comentario:"", adjuntos:[], contratista:{}  };
 
 export const cosechaMachine =
   createMachine(
     {
       id: "Cosecha",
       initial: "idle",
-      context: { fecha: "31/12/2021", hectareas: 0, rinde: 0, humedad: 0, comentario:"", adjuntos:[], contratista:{}  },
+      context: { fecha: "", hectareas: 0, rinde: 0, humedad: 0, comentario:"", adjuntos:[], contratista:{}  },
       states: {
         idle: {
           on: {
