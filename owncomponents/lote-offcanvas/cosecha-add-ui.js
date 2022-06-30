@@ -4,6 +4,7 @@ import { cosechaMachine } from "./cosecha-machine";
 import { Modal, Offcanvas } from "bootstrap";
 import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
+import { format } from 'date-fns'
 
 export class CosechaAddUI extends LitElement {
   static properties = {
@@ -25,36 +26,45 @@ export class CosechaAddUI extends LitElement {
 
   constructor() {
     super();
-    /**
+    this.init_fsm();
+  }
+
+  init_fsm(){
+
+     /**
      * Sensible default para el contexto
      */
-    this._ctx = cosechaMachine.initialState.context;
-    const someContext = cosechaMachine.initialState.context;
+        const someContext = cosechaMachine.initialState.context;
+        someContext.fecha = format(new Date(), "yyyy-MM-dd")
+        someContext.hectareas = this._lote_doc?.properties.hectareas || 0;
+        
+        this._ctx = someContext;
+        
+        this.fsm = interpret(cosechaMachine.withContext(someContext))
+           .onTransition((state) => {
+             this._ctx = state.context;
+             console.log(state.value);
+             if (state.matches("idle")) {
+               this.hideAll();
+             }
+             if (state.matches("editing.fecha")) {
+               this.show_step(0);
+             } else if (state.matches("editing.hectareas")) {
+               this.show_step(1);
+             } else if (state.matches("editing.rinde")) {
+               this.show_step(2);
+             } else if (state.matches("editing.humedad")) {
+               this.show_step(3);
+             } else if (state.matches("editing.adjuntos")) {
+               this.show_step(4);
+             } else if (state.matches("editing.comentario")) {
+               this.show_step(5);
+             } else if (state.matches("editing.resumiendo")) {
+               this.show_step(6);
+             }
+           })
+           .start();
 
-    this.fsm = interpret(cosechaMachine.withContext(someContext))
-      .onTransition((state) => {
-        this._ctx = state.context;
-        console.log(state.value);
-        if (state.matches("idle")) {
-          this.hideAll();
-        }
-        if (state.matches("editing.fecha")) {
-          this.show_step(0);
-        } else if (state.matches("editing.hectareas")) {
-          this.show_step(1);
-        } else if (state.matches("editing.rinde")) {
-          this.show_step(2);
-        } else if (state.matches("editing.humedad")) {
-          this.show_step(3);
-        } else if (state.matches("editing.adjuntos")) {
-          this.show_step(4);
-        } else if (state.matches("editing.comentario")) {
-          this.show_step(5);
-        } else if (state.matches("editing.resumiendo")) {
-          this.show_step(6);
-        }
-      })
-      .start();
   }
 
   show_step = (n) => {
@@ -81,8 +91,14 @@ export class CosechaAddUI extends LitElement {
   willUpdate(changedProperties) {}
 
   start() {
+
+    document.getElementById('contratista-cosecha-combo').clear()
+    this.init_fsm();
+
     this.fsm.start();
     this.fsm.send({ type: "NEXT" });
+
+    
   }
 
   guardar() {
@@ -124,17 +140,18 @@ export class CosechaAddUI extends LitElement {
             </div>
             <div class="modal-body mx-auto">
               <date-picker
+                .fecha=${this._ctx.fecha}
                 @change=${(e) => {
                   this.fsm.send({
                     type: "CHANGE",
                     value: e.target.fecha,
                   });
                 }}
-                fecha=${this._ctx.fecha}
               ></date-picker>
 
               <vaadin-combo-box
                 allow-custom-value
+                id='contratista-cosecha-combo'
                 @custom-value-set="${() => {
                   console.log("Nuevo Value");
                 }}"
@@ -201,7 +218,7 @@ export class CosechaAddUI extends LitElement {
             <div class="modal-body mx-auto">
               <input
                 type="number"
-                value=${this._ctx.hectareas}
+                .value=${this._ctx.hectareas}
                 @change=${(e) =>
                   this.fsm.send({ type: "CHANGE", value: e.target.value })}
               />
@@ -262,6 +279,7 @@ export class CosechaAddUI extends LitElement {
                 <input
                   type="number"
                   class="form-control"
+                  .value=${this._ctx.rinde}
                   @change=${(e) =>
                     this.fsm.send({ type: "CHANGE", value: e.target.value })}
                   aria-label="Text input with dropdown button"
@@ -336,6 +354,7 @@ export class CosechaAddUI extends LitElement {
                 <input
                   type="number"
                   class="form-control"
+                  .value=${this._ctx.humedad}
                   @change=${(e) =>
                     this.fsm.send({ type: "CHANGE", value: e.target.value })}
                   aria-label="Text input with dropdown button"
@@ -458,6 +477,7 @@ export class CosechaAddUI extends LitElement {
               <textarea
                 class="w-100"
                 placeholder="Ingresa alguna nota aquí"
+                .value=${this._ctx.comentario}
                 name="story"
                 rows="5"
                 @change=${(e) =>

@@ -8,6 +8,8 @@ import { base_url } from "../helpers";
 import uuid4 from "uuid4";
 import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
+import { format } from 'date-fns'
+
 
 export class SiembraAddUI extends LitElement {
   static properties = {
@@ -82,6 +84,10 @@ export class SiembraAddUI extends LitElement {
   }
 
   start() {
+    /* Some UI cleaning */
+    document.getElementById('contratista-combo').clear()
+
+
     this.fsm.stop();
     this.init_fsm();
     this.fsm.start();
@@ -92,6 +98,7 @@ export class SiembraAddUI extends LitElement {
     const someContext = { ...siembraMachine.initialState.context };
     someContext.hectareas = this._lote_doc?.properties.hectareas || 0;
     console.log("Hectareas ", someContext.hectareas);
+    someContext.fecha = format(new Date(), "yyyy-MM-dd")
     this._ctx = someContext;
 
     this.fsm = interpret(siembraMachine.withContext(someContext))
@@ -237,6 +244,8 @@ export class SiembraAddUI extends LitElement {
             </div>
             <div class="modal-body mx-auto">
               <date-picker
+                id='siembra-fecha'
+                .fecha=${this._ctx.fecha}
                 @change=${(e) => {
                   this.fsm.send({
                     type: "CHANGE",
@@ -246,6 +255,7 @@ export class SiembraAddUI extends LitElement {
               ></date-picker>
 
               <vaadin-combo-box
+                id='contratista-combo'
                 allow-custom-value
                 @custom-value-set="${() => {
                   console.log("Nuevo Value");
@@ -442,6 +452,7 @@ export class SiembraAddUI extends LitElement {
                 <input
                   type="number"
                   class="form-control"
+                  .value=${this._ctx.peso_1000}
                   @change=${(e) =>
                     this.fsm.send({
                       type: "CHANGE",
@@ -491,6 +502,7 @@ export class SiembraAddUI extends LitElement {
                 <input
                   type="number"
                   class="form-control"
+                  .value=${this._ctx.densidad_objetivo}
                   @change=${(e) =>
                     this.fsm.send({
                       type: "CHANGE",
@@ -541,6 +553,7 @@ export class SiembraAddUI extends LitElement {
                 <input
                   type="number"
                   class="form-control"
+                  .value=${this._ctx.distancia}
                   @change=${(e) =>
                     this.fsm.send({
                       type: "CHANGE",
@@ -624,6 +637,7 @@ export class SiembraAddUI extends LitElement {
                 placeholder="Ingresa alguna nota aquí"
                 name="story"
                 rows="5"
+                .value=${this._ctx.comentario}
                 @change=${(e) =>
                   this.fsm.send({ type: "CHANGE", value: e.target.value })}
               ></textarea>

@@ -1257,6 +1257,7 @@ export class LoteOffcanvas extends LitElement {
                 placeholder="Ingresa alguna nota aquí"
                 name="story"
                 rows="5"
+                .value=${this._ctx.comentarios}
                 @change=${(e) =>
                   this.fsm.send({ type: "CHANGE", value: e.target.value })}
               ></textarea>
@@ -1424,6 +1425,8 @@ export class LoteOffcanvas extends LitElement {
       <cosecha-add-ui
         id="cosecha-add-el"
         .contratistas=${this._contratistas}
+        ._lote_doc=${this._lote_doc}
+        .settings=${this.settings}
       ></cosecha-add-ui>
 
       <siembra-add-ui
@@ -1432,6 +1435,7 @@ export class LoteOffcanvas extends LitElement {
         ._lote_doc=${this._lote_doc}
         .settings=${this.settings}
       ></siembra-add-ui>
+
       <notas-oc
         id="notas-oc"
         .map=${this.map}
