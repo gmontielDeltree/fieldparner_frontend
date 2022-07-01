@@ -24,7 +24,7 @@ const empty_contratista: Contratista = {
   nombre: "",
   cuit: "",
   datos_generales: { email: "", direccion: "", telefono: "" },
-};
+} ;
 
 export class ContratistaCrud extends LitElement {
   @property()
@@ -61,7 +61,9 @@ export class ContratistaCrud extends LitElement {
   }
 
   nuevo() {
-    this.contratista = empty_contratista;
+    this.contratista = {...empty_contratista};
+    this.contratista.datos_generales = {...empty_contratista.datos_generales}
+    
     this._editing = false;
     this._modal.show();
   }
@@ -69,7 +71,7 @@ export class ContratistaCrud extends LitElement {
 
   edit(c : Contratista){
     this._editing = true;
-    this.contratista = c; 
+    this.contratista = {...c}; 
     this._modal.show()
   }
 
