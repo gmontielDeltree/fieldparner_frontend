@@ -11,6 +11,7 @@ import "../variedades-loader/variedades-loader.js";
 import "../depositos/deposito-upsert/deposito-upsert.js";
 import "../depositos/depositos-lista/depositos-lista.ts";
 import "../contratistas/contratista-crud.ts";
+import "../contratistas/contratistas-lista.ts";
 
 import uuid4 from "uuid4";
 
@@ -85,7 +86,13 @@ export class FieldPartner extends LitElement {
     this.addEventListener("ver-depositos-click", (e) => {
       document.getElementById("depositos-lista").show();
     });
-    /* Click en ver lista de campos */
+    
+    /* Click en ver lista de depositios */
+    this.addEventListener("ver-contratistas-click", (e) => {
+      document.getElementById("contratistas-lista").show();
+    })
+    
+      /* Click en ver lista de campos */
     this.addEventListener("ver-colores-cultivos", (e) => {
       document.getElementById("colores-cultivos").show();
     });
@@ -460,7 +467,7 @@ export class FieldPartner extends LitElement {
       ></lista-de-campos>
 
       <contratista-crud id="contratista-crud" .db=${this.campos_db}></contratista-crud>
-
+      <contratistas-lista id="contratistas-lista" .db=${this.campos_db}></contratistas-lista>
       <color-cultivo
         id="colores-cultivos"
         .cultivos=${this.settings?.user_cultivos}

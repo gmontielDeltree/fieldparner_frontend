@@ -13,19 +13,10 @@ import { Modal } from "bootstrap";
 import lista_de_labores from "./labores.json";
 import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
+import {Labor, Contratista} from './contratista-types'
+import { isThisSecond } from "date-fns";
 
-interface Labor {
-  labor: string;
-  uuid: number;
-}
 
-interface Contratista {
-  labores: Labor[];
-  nombre: string;
-  uuid: string;
-  cuit: string;
-  datos_generales: { email: string; direccion: string; telefono: string };
-}
 
 const empty_contratista: Contratista = {
   labores: [],
@@ -71,7 +62,15 @@ export class ContratistaCrud extends LitElement {
 
   nuevo() {
     this.contratista = empty_contratista;
+    this._editing = false;
     this._modal.show();
+  }
+
+
+  edit(c : Contratista){
+    this._editing = true;
+    this.contratista = c; 
+    this._modal.show()
   }
 
   /**
@@ -154,7 +153,8 @@ export class ContratistaCrud extends LitElement {
         });
     } else {
       // Editando
-      this.db.get("contratistas").then((result: any) => {
+      console.log("EDITANDO db",this.db)
+      this.db.get("contratistas").then((result : any) => {
         result.contratistas[this.contratista.uuid] = this.contratista;
         this.db
           .put(result)
@@ -348,3 +348,9 @@ export class ContratistaCrud extends LitElement {
 }
 
 customElements.define("contratista-crud", ContratistaCrud);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "contratista-crud": ContratistaCrud;
+  }
+}

@@ -71,6 +71,15 @@ export class NavbarElement extends LitElement {
             >
               Ver Depositos
             </button>
+            
+            <button
+              class="btn btn-outline-success mx-1"
+              @click=${() => {
+                this.sendEvent("ver-contratistas-click", null);
+              }}
+            >
+              Ver Contratistas
+            </button>
 
             <div class="nav-item dropdown">
               <a
