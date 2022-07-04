@@ -101,6 +101,38 @@ export class CosechaAddUI extends LitElement {
     
   }
 
+
+  solo_contratistas_cosecha(){
+
+    /**
+     * 
+     * @param {array} labores 
+     * @param {*} nombre_labor 
+     * @returns true - nombre_labor existe en el array de labores
+     */
+    const tiene_labor = (labores, nombre_labor) =>{
+      let a = labores?.filter((labor) => labor.labor === nombre_labor)
+      if(a?.length > 0){
+        return true;
+      }
+      return false;
+    }
+
+    let filtered_contratistas = []
+
+    //console.log("FILTRADO", this.contratistas)
+    Object.values(this.contratistas.contratistas).map((value) => {
+      //console.log("COntra", value)
+      if(tiene_labor(value.labores,"Cosecha")){
+        filtered_contratistas.push(value);
+      }
+    })
+
+    //console.log(filtered_contratistas)
+    return filtered_contratistas;
+
+  }
+
   guardar() {
     // Enviar Evento
     let cosecha = this._ctx;
@@ -160,7 +192,7 @@ export class CosechaAddUI extends LitElement {
                 item-value-path="uuid"
                 
                 .items="${this.contratistas
-                  ? Object.values(this.contratistas?.contratistas)
+                  ? this.solo_contratistas_cosecha()
                   : []}"
                 @selected-item-changed=${(e) => {
                   console.log("e", e);

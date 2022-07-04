@@ -9,6 +9,7 @@ import uuid4 from "uuid4";
 import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
 import { format } from 'date-fns'
+import { filter } from "jszip";
 
 
 export class SiembraAddUI extends LitElement {
@@ -171,6 +172,37 @@ export class SiembraAddUI extends LitElement {
     }
   }
 
+  solo_contratistas_siembra(){
+
+    /**
+     * 
+     * @param {array} labores 
+     * @param {*} nombre_labor 
+     * @returns true - nombre_labor existe en el array de labores
+     */
+    const tiene_labor = (labores, nombre_labor) =>{
+      let a = labores?.filter((labor) => labor.labor === nombre_labor)
+      if(a?.length > 0){
+        return true;
+      }
+      return false;
+    }
+
+    let filtered_contratistas = []
+
+    //console.log("FILTRADO", this.contratistas)
+    Object.values(this.contratistas.contratistas).map((value) => {
+      //console.log("COntra", value)
+      if(tiene_labor(value.labores,"Siembra")){
+        filtered_contratistas.push(value);
+      }
+    })
+
+    //console.log(filtered_contratistas)
+    return filtered_contratistas;
+
+  }
+
   cultivo_input_changed(e) {
     console.log("IN OPUT EVENT", e);
     this.fsm.send({ type: "CHANGE", value: e.target.value });
@@ -263,7 +295,7 @@ export class SiembraAddUI extends LitElement {
                 label="Contratista"
                 item-label-path="nombre"
                 item-value-path="uuid"
-                .items="${this.contratistas ? Object.values(this.contratistas?.contratistas) : []}"
+                .items="${this.contratistas ? this.solo_contratistas_siembra() : []}"
                 @selected-item-changed=${(e) => {
                   console.log("e",e)
                   this.fsm.send({

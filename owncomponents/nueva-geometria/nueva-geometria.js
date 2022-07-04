@@ -7,6 +7,7 @@ import centroid from "@turf/centroid";
 import { kml } from "@tmcw/togeojson";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import * as JSZip from "jszip";
+import '@vaadin/text-field'
 
 export class NuevaGeometria extends LitElement {
   static properties = {
@@ -15,12 +16,15 @@ export class NuevaGeometria extends LitElement {
     mapa: {},
     tipo: {},
     _offcanvas: {},
+    _modal_multiple:{},
+    _nombre_multiple:{},
     _draw: {},
     _ctx: {},
     _fsm: {},
     _feature_id: {},
     _modal_elements: {},
     _bs_inicializado: {},
+    _multiplesfeatures:{},
   };
 
   static styles = unsafeCSS(bootstrap);
@@ -42,7 +46,7 @@ export class NuevaGeometria extends LitElement {
       },
     });
     // console.log("Construction", this.mapa);
-    this._init_fsm()
+    this._init_fsm();
   }
 
   // createRenderRoot() {
@@ -51,6 +55,7 @@ export class NuevaGeometria extends LitElement {
 
   firstUpdated() {
     this._bs_inicializar();
+    this._modal_multiple = new Modal(this.shadowRoot.getElementById('modal-multiple'))
   }
 
   willUpdate(changedProperties) {
@@ -170,6 +175,11 @@ export class NuevaGeometria extends LitElement {
       this._offcanvas.show();
     }
 
+
+    if(state_value === 'editing.modal_multiple'){
+      this._modal_multiple.show()
+    }
+
     if (!(state_value in this._modal_elements)) {
       //console.log("Estado no tiene modal");
       return;
@@ -181,6 +191,8 @@ export class NuevaGeometria extends LitElement {
         this._modal_elements[state_value].show();
       }
     }
+
+
   };
 
   hide_all_steps() {
@@ -236,6 +248,22 @@ export class NuevaGeometria extends LitElement {
     this._fsm.send("CANCEL");
   }
 
+  guardar_geometrias_multiples() {
+    console.log("GUARDAR_MULTIPLES_CLICK");
+    this._draw.changeMode("simple_select");
+    this._draw.deleteAll();
+    this._offcanvas.hide();
+
+    let event = new CustomEvent("guardargeometriasmultiples", {
+      detail: { features: this._multiplesfeatures, nombre:this._nombre_multiple },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+
+    this._fsm.send("CANCEL");
+  }
+
   kmz_input_changed() {
     var file = this.shadowRoot.getElementById("kmz_file_input").files[0];
     let getDom = (xml) => new DOMParser().parseFromString(xml, "text/xml");
@@ -243,7 +271,8 @@ export class NuevaGeometria extends LitElement {
     let kmlDom = null;
     if (file) {
       JSZip.loadAsync(file) // 1) read the Blob
-        .then( (zip) => {
+        .then(
+          (zip) => {
             zip.forEach((relPath, file) => {
               // 2) print entries
               //console.log("zip", file);
@@ -253,21 +282,38 @@ export class NuevaGeometria extends LitElement {
                   //console.log("KMZ", feature_collection);
                   if (feature_collection.features.length === 0) {
                     // No hay niguna feature
-                    alert("El archivo no tiene ninguna caracteristica")
+                    alert("El archivo no tiene ninguna caracteristica");
                     return;
                   }
                   if (feature_collection.features.length > 1) {
+                    
                     // Hay mas de un poligono
-                    alert("El archivo tiene mas de un polígono.\nPor el momento solo estan soportados los archivos que contienen un solo polígono." )
-                    return;
+                    // alert(
+                    //   "El archivo tiene mas de un polígono.\nPor el momento solo estan soportados los archivos que contienen un solo polígono."
+                    // );
 
+                    this._multiplesfeatures = feature_collection
+
+                    // Enviar señal
+                    // Add to Draw
+                    this._draw.add(feature_collection);
+                    // Evento para FSM
+                    this._fsm.send({ type: "SUBIDO_MULTIPLE" });
+
+                    // Move map to new feature
+                    this.mapa.flyTo({
+                      center: centroid(feature_collection.features[0]).geometry.coordinates,
+                      zoom: 10,
+                    });
+
+                    return;
                   }
                   if (
                     feature_collection.features[0].geometry.type !== "Polygon"
                   ) {
                     // La geometria no es un poligon
-                    alert("La geometria no es un poligono")
-                    return
+                    alert("La geometria no es un poligono");
+                    return;
                   }
 
                   // feature es el GeoJson
@@ -289,7 +335,7 @@ export class NuevaGeometria extends LitElement {
             });
           },
           function (e) {
-            //console.log("ERROR al LEER KMZ");
+            console.log("ERROR al LEER KMZ");
           }
         );
     }
@@ -366,9 +412,11 @@ export class NuevaGeometria extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-
-              <button class='btn btn-primary' @click="${this.dibujar}">Dibujar</button>
-              <button class='btn btn-primary'
+              <button class="btn btn-primary" @click="${this.dibujar}">
+                Dibujar
+              </button>
+              <button
+                class="btn btn-primary"
                 @click=${() => {
                   this._fsm.send("SUBIR");
                 }}
@@ -408,8 +456,12 @@ export class NuevaGeometria extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-              <button class='btn btn-primary' @click="${this.open_kml}">KML</button>
-              <button class='btn btn-primary' @click="${this.open_kmz}">KMZ</button>
+              <button class="btn btn-primary" @click="${this.open_kml}">
+                KML
+              </button>
+              <button class="btn btn-primary" @click="${this.open_kmz}">
+                KMZ
+              </button>
             </div>
             <div class="modal-footer">
               <button
@@ -420,14 +472,13 @@ export class NuevaGeometria extends LitElement {
               >
                 Close
               </button>
-
             </div>
           </div>
         </div>
       </div>
 
       <input
-       class="d-none"
+        class="d-none"
         type="file"
         id="kml_file_input"
         name="avatar"
@@ -436,7 +487,7 @@ export class NuevaGeometria extends LitElement {
       />
 
       <input
-       class="d-none"
+        class="d-none"
         type="file"
         id="kmz_file_input"
         @change=${this.kmz_input_changed}
@@ -495,6 +546,29 @@ export class NuevaGeometria extends LitElement {
           </form>
         </div>
       </div>
+
+
+      <!-- Modal -->
+      <div class="modal fade" id="modal-multiple" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Multiples Geometrias</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body mx-auto">
+              Existen multiples geometrias en el archivo. Se agregaran como lotes de un campo.
+              <vaadin-text-field label="Nombre" helper-text='Ingrese el nombre del campo' .value=${this._nombre_multiple} @input=${(e)=>this._nombre_multiple = e.target.value} clear-button-visible>
+              </vaadin-text-field>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${this.cerrar}>Cerrar</button>
+              <button type="button" class="btn btn-primary" @click=${this.guardar_geometrias_multiples}>Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
     `;
   }
 }
