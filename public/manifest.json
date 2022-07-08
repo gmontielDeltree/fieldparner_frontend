@@ -7,6 +7,15 @@
   "display": "standalone",
   "scope": "./",
   "start_url": "index.html",
+  "share_target": {
+    "action": "/index.html",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
   "icons": [
     {
       "src": "images/icons/icon-72x72.png",

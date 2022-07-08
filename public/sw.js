@@ -1,6 +1,6 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.2.0/workbox-sw.js');
 
-const version = "0003"
+const version = "0004"
 
 // This will trigger the importScripts() for workbox.strategies and its dependencies:
 const {strategies, routing, backgroundSync} = workbox;
@@ -52,6 +52,8 @@ if (workbox) {
   console.log(`Boo! Workbox didn't load 😬`);
 }
 
+
+routing.registerRoute(/.*\.cloudantnosqldb\.appdomain\.cloud.*\/processed_device_telemetry/, new strategies.NetworkFirst());
 
 routing.registerRoute(/.*(?<!events\.)(?:mapbox)\.com\/(?!map\-sessions).*$/, new strategies.CacheFirst());
 

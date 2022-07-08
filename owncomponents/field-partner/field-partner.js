@@ -12,6 +12,7 @@ import "../depositos/deposito-upsert/deposito-upsert.js";
 import "../depositos/depositos-lista/depositos-lista.ts";
 import "../contratistas/contratista-crud.ts";
 import "../contratistas/contratistas-lista.ts";
+import "../sensores/sensores-offcanvas.ts";
 
 import uuid4 from "uuid4";
 
@@ -41,6 +42,14 @@ export class FieldPartner extends LitElement {
     this.user.name = "demo";
     this.loading = true;
 
+    window.addEventListener('DOMContentLoaded', () => {
+      const parsedUrl = new URL(window.location);
+      // searchParams.get() will properly handle decoding the values.
+      console.log('Title shared: ' + parsedUrl.searchParams.get('title'));
+      console.log('Text shared: ' + parsedUrl.searchParams.get('text'));
+      console.log('URL shared: ' + parsedUrl.searchParams.get('url'));
+    });
+    
     /* Clicks en varios botones */
     this.addEventListener("ver-campo-detalles", (e) => {
       this.campos_db.get(e.detail.campo_id).then((campo_doc) => {
@@ -473,6 +482,9 @@ export class FieldPartner extends LitElement {
         .cultivos=${this.settings?.user_cultivos}
       ></color-cultivo>
       <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
+
+      <sensores-oc .map=${this.map}></sensores-oc>
+
       <deposito-upsert
         id="deposito-upsert"
         .db=${this.campos_db}
