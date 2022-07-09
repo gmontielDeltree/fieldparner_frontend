@@ -64,17 +64,30 @@
 
     <script src="index.js" defer></script>
 
-    <link rel="preload" href="https://unpkg.com/intro.js/minified/introjs.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css"></noscript>
+    <link
+      rel="preload"
+      href="https://unpkg.com/intro.js/minified/introjs.min.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://unpkg.com/intro.js/minified/introjs.min.css"
+    /></noscript>
 
     <!-- <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css"
     /> -->
 
-    <link rel="preload" href="./src/timeline.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="./src/timeline.css"></noscript>
-
+    <link
+      rel="preload"
+      href="./src/timeline.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript><link rel="stylesheet" href="./src/timeline.css" /></noscript>
 
     <style>
       /*mapbox gl css custom settings*/
@@ -120,16 +133,27 @@
       href="assets/images/cosechadora_bg.jpg"
       type="image/jpg"
     />
+
+    <script>
+      // Register Service Worker
+      if ("serviceWorker" in navigator) {
+        const p = navigator.serviceWorker
+          .register("./sw.js")
+          .then((reg) => console.log("PWA service-worker ready.", reg))
+          .catch((err) => console.error("Could not load service-worker.", err));
+      }
+      const version = "0002";
+    </script>
+    
   </head>
   <!-- load the 'header_auto_hide' on the body -->
 
   <body>
-
     <script
-    type="module"
-    src="./owncomponents/field-partner/field-partner.js"
-     ></script>
- 
+      type="module"
+      src="./owncomponents/field-partner/field-partner.js"
+    ></script>
+
     <!--Main App Element-->
     <field-partner>
       <div id="tour"></div>
@@ -146,12 +170,14 @@
       </div>
     </field-partner>
 
-        <!--Audio Recorder-->
-        <script src="assets/components/audiorecorder/index.js" async></script>
+    <!--Audio Recorder-->
+    <script src="assets/components/audiorecorder/index.js" async></script>
 
-        <script src="https://unpkg.com/intro.js/minified/intro.min.js" async></script>
+    <script
+      src="https://unpkg.com/intro.js/minified/intro.min.js"
+      async
+    ></script>
 
-        
     <noscript> Turn on JavaScript to access this site content. </noscript>
   </body>
 </html>
