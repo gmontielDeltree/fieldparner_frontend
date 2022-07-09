@@ -5,4 +5,4 @@ if ('serviceWorker' in navigator) {
         .catch(err => console.error('Could not load service-worker.', err));
 }
 
-const version = "0001"
+const version = "0002"

@@ -1,10 +1,9 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.2.0/workbox-sw.js');
 
-const version = "0004"
+const version = "0005"
 
 // This will trigger the importScripts() for workbox.strategies and its dependencies:
 const {strategies, routing, backgroundSync} = workbox;
-
 
 if (workbox) {
   
@@ -18,35 +17,6 @@ if (workbox) {
     });
   };
 
-
-
-  // const bgSyncAudioPlugin = new backgroundSync.BackgroundSyncPlugin('audioQueue', {
-  // maxRetentionTime: 24 * 60, // Retry for max of 24 Hours (specified in minutes)
-  // callbacks: {
-  //     queueDidReplay: showNotification
-  //     // other types of callbacks could go here
-  //   }
-  // });
-
-
-  // const networkWithBackgroundSync =  routing.registerRoute(
-  //                                       /\/phpiot20\/apiv0\/observaciones\.php/,
-  //                                       new strategies.NetworkOnly({
-  //                                         plugins: [bgSyncPlugin],
-  //                                       }),
-
-  //                                       'POST'
-  //                                     );
-
-
-  // const networkAudioWithBackgroundSync = routing.registerRoute(
-  //   /\/phpiot20\/apiv0\/upload_audio\.php/,
-  //   new strategies.NetworkOnly({
-  //     plugins: [bgSyncAudioPlugin],
-  //   }),
-
-  //   'POST'
-  // );
 
 } else {
   console.log(`Boo! Workbox didn't load 😬`);
@@ -71,12 +41,6 @@ routing.registerRoute(
     cacheName: 'audio-cache',
   })
 );
-
-// routing.registerRoute(
-//   ({url}) => url.pathname.includes('/posiciones_devices.php'),
-//   new strategies.NetworkFirst()
-// );
-
 
 self.addEventListener('fetch', (event) => {
 
