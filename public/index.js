@@ -14,7 +14,7 @@ var local_campos_changes;
 var couch_username;
 var darkdb;
 
-zuix.using('script', './service-worker.js');
+//zuix.using('script', './service-worker.js');
 //zuix.using('style', '//zuixjs.github.io/zkit/css/flex-layout-attribute.min.css');
 zuix.using('style', './index.css');
 

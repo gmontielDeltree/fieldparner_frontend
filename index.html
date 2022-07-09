@@ -38,7 +38,6 @@
       href="images/icons/desktop/apple-touch-icon.png"
     />
 
-
     <!-- Place favicon.ico in the root directory -->
     <link
       rel="icon"
@@ -55,32 +54,27 @@
 
     <script type="module" src="/main.js"></script>
 
-    <script src="assets/reroot/jquery.slim.min.js"></script>
+    <!-- <script src="assets/reroot/jquery.slim.min.js"></script> -->
     <!-- import zUIx library (v 0.4.9-54) -->
     <script src="zuix/zuix.min.js"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/zuix"></script> -->
-    <script src="zuix/zuix-bundler.min.js"></script>
+    <!-- Habilitarlo cuando estemos listos para bundlear -->
+    <!-- <script src="zuix/zuix-bundler.min.js"></script> -->
     <!--<script src="zuix/app.bundle.js"></script>-->
-
 
     <script src="index.js" defer></script>
 
+    <link rel="preload" href="https://unpkg.com/intro.js/minified/introjs.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css"></noscript>
 
-    <!--Audio Recorder-->
-    <script src="assets/components/audiorecorder/index.js"></script>
-
-
-    <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/intro.js/minified/introjs.min.css"
-    />
-
-       <link
+    <!-- <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css"
-    />
-    <link rel="stylesheet" href="./src/timeline.css" />
+    /> -->
+
+    <link rel="preload" href="./src/timeline.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="./src/timeline.css"></noscript>
+
 
     <style>
       /*mapbox gl css custom settings*/
@@ -96,16 +90,16 @@
         border-top: none;
       }
 
-      .mapboxgl-ctrl-top-right{
+      .mapboxgl-ctrl-top-right {
         z-index: 0 !important;
       }
 
-      vaadin-date-picker-overlay{
-        z-index:9999
+      vaadin-date-picker-overlay {
+        z-index: 9999;
       }
-    
-      vaadin-combo-box-overlay{
-        z-index:9999
+
+      vaadin-combo-box-overlay {
+        z-index: 9999;
       }
     </style>
 
@@ -116,53 +110,28 @@
       window.global = window;
       // https://github.com/pouchdb/pouchdb/issues/8051#issuecomment-686332652
       window.process = {
-      browser: true,
-    }
+        browser: true,
+      };
     </script>
+
+    <link
+      rel="preload"
+      as="image"
+      href="assets/images/cosechadora_bg.jpg"
+      type="image/jpg"
+    />
   </head>
   <!-- load the 'header_auto_hide' on the body -->
 
   <body>
-    <script
-      type="module"
-      src="./owncomponents/campo-offcanvas/campo-offcanvas.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/lote-offcanvas/lote-offcanvas.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/nueva-geometria/nueva-geometria.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/nuevo-campo/nuevo-campo.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/lista-de-campos/lista-de-campos.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/field-partner/field-partner.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/navbar-element/navbar-element.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/mapa-principal/mapa-principal.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/login-modal/login-modal.js"
-    ></script>
 
+    <script
+    type="module"
+    src="./owncomponents/field-partner/field-partner.js"
+     ></script>
+ 
     <!--Main App Element-->
     <field-partner>
-      <!-- <section data-ui-load="pages/map"></section> -->
       <div id="tour"></div>
 
       <!-- The DrawerLayout for side menu panel -->
@@ -172,13 +141,17 @@
         class="drawer"
         draggable="false"
       >
-      
-      <!-- Add Navigation Drawer content -->
-      <div data-ui-load="shared/main_menu"></div>
+        <!-- Add Navigation Drawer content -->
+        <div data-ui-load="shared/main_menu"></div>
       </div>
-      
     </field-partner>
 
+        <!--Audio Recorder-->
+        <script src="assets/components/audiorecorder/index.js" async></script>
+
+        <script src="https://unpkg.com/intro.js/minified/intro.min.js" async></script>
+
+        
     <noscript> Turn on JavaScript to access this site content. </noscript>
   </body>
 </html>

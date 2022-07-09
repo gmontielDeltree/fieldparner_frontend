@@ -96,7 +96,7 @@ export class MapaPrincipal extends LitElement {
   firstUpdated() {
     this.map = new mapboxgl.Map({
       container: "map",
-      style: "mapbox://styles/mapbox/satellite-streets-v11",
+      style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
       center: [-59.2965, -35.1923],
       zoom: 12,
       attributionControl: true,
