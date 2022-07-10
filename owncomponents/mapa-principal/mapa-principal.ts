@@ -340,7 +340,7 @@ export class MapaPrincipal extends LitElement {
       <sp-theme scale="medium" color="light">
         <!-- End content requiring theme application. -->
         <sp-action-menu size="m" class="add-button">
-          <span slot="label" class='label' >Agregar</span>
+          <span slot="label" style='color:white;' >Agregar</span>
           <sp-menu-item
             @click=${() => {
               this.sendEvent("nuevo-campo-click"), null;

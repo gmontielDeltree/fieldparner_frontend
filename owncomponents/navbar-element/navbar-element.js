@@ -1,6 +1,7 @@
 import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
-
+import 'bootstrap/js/dist/collapse'
+import 'bootstrap/js/dist/dropdown'
 export class NavbarElement extends LitElement {
   static properties = {};
 
