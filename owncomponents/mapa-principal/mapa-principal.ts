@@ -167,6 +167,7 @@ export class MapaPrincipal extends LitElement {
         polygon: false,
         trash: false,
       },
+      touchBuffer: 50
       //defaultMode: 'draw_polygon'
     });
 

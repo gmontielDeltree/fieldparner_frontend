@@ -53,6 +53,7 @@ export class NuevaGeometria extends LitElement {
         polygon: false,
         trash: false,
       },
+      touchBuffer:50,
     });
     // console.log("Construction", this.mapa);
     this._init_fsm();
