@@ -18,6 +18,7 @@ import "../contratistas/contratista-crud";
 import "@vaadin/icons";
 import { Map, Marker } from "mapbox-gl";
 import { Devices, extract_tele } from "./sensores";
+import {touchEvent} from '../helpers.js'
 
 export class SensoresClass extends LitElement {
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
@@ -60,7 +61,7 @@ export class SensoresClass extends LitElement {
           .addTo(this.map);
 
         /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
-        marker.getElement().addEventListener("click", () => {
+        marker.getElement().addEventListener(touchEvent, () => {
           this._selected_device = telemetria;
           this.show()
         });
