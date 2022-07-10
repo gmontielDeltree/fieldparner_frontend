@@ -1,14 +1,15 @@
-import { Offcanvas } from "bootstrap";
-import { LitElement, html, unsafeCSS, css } from "lit";
+import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import "@vaadin/date-picker";
 import "@vaadin/radio-group";
 import "@vaadin/combo-box";
 import { uuid4 } from "uuid4";
-import mapboxgl from "mapbox-gl";
+import {Marker} from "mapbox-gl";
 import { format, parse } from "date-fns";
 import '@vaadin/text-area';
 import { touchEvent } from "../helpers";
+
+import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 
 export class NotasOffcanvas extends LitElement {
   static properties = {
@@ -16,9 +17,13 @@ export class NotasOffcanvas extends LitElement {
     db: {},
     lote_doc: {},
     /* Internos */
-    nueva_nota_offcanvas: {},
+    nueva_nota_offcanvas: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
     imagenes: {},
-    ver_nota_offcanvas: {},
+    ver_nota_offcanvas: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
     handler_id: {},
     posicion: {},
     fecha: {},
@@ -87,7 +92,7 @@ export class NotasOffcanvas extends LitElement {
   nueva_nota() {
     this.inicializar_componente();
     this.nueva_nota_offcanvas.show();
-    this.nota_marker = new mapboxgl.Marker()
+    this.nota_marker = new Marker()
       .setLngLat(this.map.getCenter())
       .addTo(this.map);
 

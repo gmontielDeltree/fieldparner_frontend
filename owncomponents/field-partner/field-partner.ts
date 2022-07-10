@@ -1,9 +1,10 @@
 import { LitElement, html } from "lit";
+import { property } from "lit/decorators.js";
 import PouchDB from "pouchdb";
 import { base_url, normalizar_username } from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
 import "../loading-modal/loading-modal.js";
-import "../color-cultivo/color-cultivo.js";
+import "../color-cultivo/color-cultivo";
 import cultivos_default from "./cultivos.json";
 import "../notas-offcanvas/notas-offcanvas.js";
 import "../ndvi-offcanvas/ndvi-offcanvas.js";
@@ -20,26 +21,45 @@ import "../nuevo-campo/nuevo-campo.js"
 import "../lista-de-campos/lista-de-campos.js"
 import "../navbar-element/navbar-element.js"
 import "../mapa-principal/mapa-principal.js"
-import "../login-modal/login-modal.js"
+import "../login-modal/login-modal.ts"
+import { Map } from "mapbox-gl";
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 import uuid4 from "uuid4";
 
 export class FieldPartner extends LitElement {
-  static properties = {
-    map: {},
-    draw: {},
-    campos: {},
-    campos_db: {},
-    shared_db_remote: {},
-    remote_campos_db: {},
-    changes_db: {},
-    remote_changes_db: {},
-    user: {},
-    auth0Client: {},
-    logged_in: {},
-    loading: {},
-    settings: {},
-  };
+ @property()
+ map : Map 
+
+ @property()
+ draw: MapboxDraw
+
+ @property()
+ campos: any
+
+ @property()
+ campos_db: PouchDB.Database;
+
+ @property()
+ shared_db_remote: PouchDB.Database;
+ @property()
+ remote_campos_db: PouchDB.Database;
+ @property()
+ changes_db: PouchDB.Database;
+ @property()
+ remote_changes_db: PouchDB.Database;
+ @property()
+ user: any;
+
+ @property()
+ auth0Client: any
+ @property()
+ logged_in: boolean
+ @property()
+ loading: boolean
+ @property()
+ settings: any
+
 
   constructor() {
     super();
@@ -59,7 +79,7 @@ export class FieldPartner extends LitElement {
     });
     
     /* Clicks en varios botones */
-    this.addEventListener("ver-campo-detalles", (e) => {
+    this.addEventListener("ver-campo-detalles", (e : any) => {
       this.campos_db.get(e.detail.campo_id).then((campo_doc) => {
         document.getElementById("campo-oc").campo_doc = campo_doc;
         document.getElementById("campo-oc").show();
@@ -140,7 +160,7 @@ export class FieldPartner extends LitElement {
     });
 
     // Share Campo
-    this.addEventListener("share-campo", (e) => {
+    this.addEventListener("share-campo", (e : any) => {
       console.log("share campo", e.detail);
 
       let nuevo_shared_campo = { ...e.detail.campo_doc };
@@ -175,13 +195,15 @@ export class FieldPartner extends LitElement {
       console.log("HIDE LOTE DETALLES");
       document.getElementById("campo-oc").show();
     });
+
+    this.init_the_whole_thing()
   }
 
   createRenderRoot() {
     return this;
   }
 
-  async firstUpdated() {
+  async init_the_whole_thing() {
     let sitio = window.location.hostname;
 
     if (sitio === "agrotools.netlify.app") {
@@ -463,6 +485,7 @@ export class FieldPartner extends LitElement {
         .local_campos_changes=${this.changes_db}
         .user=${this.user}
       ></campo-offcanvas>
+  
 
       <lote-offcanvas
         id="lote-oc"
@@ -470,6 +493,7 @@ export class FieldPartner extends LitElement {
         .db=${this.campos_db}
         .settings=${this.settings}
       ></lote-offcanvas>
+  
       <nuevo-campo
         id="nuevo-campo-oc"
         .map=${this.map}
@@ -483,6 +507,7 @@ export class FieldPartner extends LitElement {
         .campos=${this.campos}
       ></lista-de-campos>
 
+      
       <contratista-crud id="contratista-crud" .db=${this.campos_db}></contratista-crud>
       <contratistas-lista id="contratistas-lista" .db=${this.campos_db}></contratistas-lista>
       <color-cultivo
@@ -501,7 +526,7 @@ export class FieldPartner extends LitElement {
         id="depositos-lista"
         .db=${this.campos_db}
       ></depositos-lista>
-      <db-loader></db-loader>
+      <db-loader></db-loader> 
 
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>

@@ -1,17 +1,20 @@
 import { LitElement, html } from "lit";
 import { interpret } from "xstate";
 import { cosechaMachine } from "./cosecha-machine";
-import { Modal, Offcanvas } from "bootstrap";
 import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
 import { format } from 'date-fns'
+import Modal from "bootstrap/js/dist/modal.js";
 
 export class CosechaAddUI extends LitElement {
   static properties = {
     campo_id: {},
     lote_nombre: {},
     contratistas: {},
-    _steps_elements: {},
+    _steps_elements: {
+      hasChanged(newVal, oldVal) {
+        return false;
+      }},
     _ctx: {},
     _campo_doc: {},
     _lote_doc: {},

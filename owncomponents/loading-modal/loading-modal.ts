@@ -1,11 +1,17 @@
 import { LitElement, html } from "lit";
-import { Modal } from "bootstrap";
+import { property, state } from "lit/decorators.js";
+import Modal from "bootstrap/js/dist/modal";
 
 export class LoadingModal extends LitElement {
-  static properties = {
-    _modal: {},
-    show: {},
-  };
+  @state({
+    hasChanged(newVal: Modal, oldVal: Modal) {
+      return false;
+    },
+  })
+  _modal: Modal;
+
+  @property()
+  show: boolean;
 
   constructor() {
     super();
@@ -16,7 +22,7 @@ export class LoadingModal extends LitElement {
   //  return this;
   //}
 
-  firstUpdated() {
+  override firstUpdated() {
     this._modal = new Modal(this.shadowRoot.getElementById("loading-modal"));
     if (this.show) {
       this._modal.show();

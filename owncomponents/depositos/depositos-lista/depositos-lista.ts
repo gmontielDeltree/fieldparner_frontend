@@ -1,10 +1,11 @@
-import { Modal, Offcanvas } from "bootstrap";
+import Offcanvas from "bootstrap/js/dist/offcanvas";
+import Modal from "bootstrap/js/dist/modal";
 import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import { normalizar_username } from "../../helpers";
 import "../../lista-searchable/lista-searchable.js";
 import { property } from "lit/decorators.js";
-import * as PouchDB from "pouchdb";
+import PouchDB from "pouchdb";
 import { lineas_stock } from "../../helpers/stock";
 import { uuid4 } from "uuid4";
 import "../../lista-searchable/lista-searchable.js";
@@ -20,10 +21,18 @@ export class DepositosLista extends LitElement {
   //   nueva_entrada_modal:{},
   // };
 
-  @property()
+  @property({
+    hasChanged(newVal: Offcanvas, oldVal: Offcanvas) {
+      return false;
+    },
+  })
   offcanvas_lista: Offcanvas;
 
-  @property()
+  @property({
+    hasChanged(newVal: Modal, oldVal: Modal) {
+      return false;
+    },
+  })
   deposito_modal: Modal;
 
   @property()
@@ -36,7 +45,7 @@ export class DepositosLista extends LitElement {
   depositos;
 
   @property()
-  db: PouchDB;
+  db: PouchDB.Database;
 
   @property()
   lineas_de_entradas: Array<any> = [];
@@ -47,7 +56,11 @@ export class DepositosLista extends LitElement {
     cantidad: 0,
   };
 
-  @property()
+  @property({
+    hasChanged(newVal: Modal, oldVal: Modal) {
+      return false;
+    },
+  })
   nueva_entrada_modal: Modal;
 
   @property()

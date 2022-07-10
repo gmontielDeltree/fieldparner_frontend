@@ -1,11 +1,13 @@
 import { LitElement, html, unsafeCSS } from "lit";
-import { Modal } from "bootstrap";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import { normalizar_username } from "../helpers";
+import Modal from "bootstrap/js/dist/modal.js";
 
 export class ShareModal extends LitElement {
   static properties = {
-    modal: {},
+    modal: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
     share_list: {},
     owner: {},
     campo_doc: {},

@@ -2,12 +2,13 @@ import { LitElement, html, unsafeCSS } from "lit";
 import { nuevaGeometriaMachine, initial_ctx } from "./nueva-geometria-machina";
 import { interpret } from "xstate";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import { Offcanvas, Modal } from "bootstrap";
 import centroid from "@turf/centroid";
 import { kml } from "@tmcw/togeojson";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import * as JSZip from "jszip";
 import '@vaadin/text-field'
+import Modal from "bootstrap/js/dist/modal.js";
+import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 
 export class NuevaGeometria extends LitElement {
   static properties = {
@@ -15,15 +16,23 @@ export class NuevaGeometria extends LitElement {
     show: {},
     mapa: {},
     tipo: {},
-    _offcanvas: {},
-    _modal_multiple:{},
+    _offcanvas: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
+    _modal_multiple:{hasChanged(newVal, oldVal) {
+      return false;
+    }},
     _nombre_multiple:{},
     _draw: {},
     _ctx: {},
     _fsm: {},
     _feature_id: {},
-    _modal_elements: {},
-    _bs_inicializado: {},
+    _modal_elements: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
+    _bs_inicializado: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
     _multiplesfeatures:{},
   };
 

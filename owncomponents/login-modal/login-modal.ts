@@ -3,23 +3,28 @@
  * el "show"
  */
 import { LitElement, html } from "lit";
-import { Modal } from "bootstrap";
+import { property, state } from "lit/decorators.js";
+import Modal from "bootstrap/js/dist/modal";
 
 export class LoginModal extends LitElement {
-  static properties = {
-    _modal: {},
-    show: {},
-    authenticated:{},
-    username:{}
-  };
+  
+  @state({
+    hasChanged(newVal: Modal, oldVal: Modal) {
+      return false;
+    }
+  })
+   _modal: Modal
+  
+  @property() 
+  show: boolean
+  
+  @property()
+  authenticated: any
+  
+  @property()
+  username: string
+  
 
-  constructor() {
-    super();
-  }
-
-  //createRenderRoot() {
-  //  return this;
-  //}
 
   firstUpdated() {
     console.log("FU", this.show)

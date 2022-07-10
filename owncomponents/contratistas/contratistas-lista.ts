@@ -10,7 +10,7 @@ import "@vaadin/vertical-layout";
 import "@vaadin/custom-field";
 import "@vaadin/grid";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
-import { Modal } from "bootstrap";
+import Modal from "bootstrap/js/dist/modal";
 import lista_de_labores from "./labores.json";
 import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
@@ -25,7 +25,11 @@ export class ContratistasLista extends LitElement {
   @state()
   _contratistas: Contratista []
 
-  @state()
+  @state({
+    hasChanged(newVal: Modal, oldVal: Modal) {
+      return false;
+    },
+  })
   _modal: Modal;
 
   @property()

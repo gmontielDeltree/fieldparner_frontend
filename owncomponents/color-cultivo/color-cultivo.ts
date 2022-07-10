@@ -1,20 +1,24 @@
 import { LitElement, html, unsafeCSS } from "lit";
-import { Offcanvas } from "bootstrap";
+import { property, state } from "lit/decorators.js";
+import Offcanvas from "bootstrap/js/dist/offcanvas";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 
 export class ColorCultivo extends LitElement {
-  static properties = {
-    _detallesOffcanvas: {},
-    cultivos: {},
-  };
+  @state({
+    hasChanged(newVal: Offcanvas, oldVal: Offcanvas) {
+      return false;
+    },
+  })
+  _detallesOffcanvas: Offcanvas
+
+  @property()
+  cultivos: any
+  
   constructor() {
     super();
   }
-  static styles = unsafeCSS(bootstrap);
 
-  //createRenderRoot() {
-  //  return this;
-  //}
+  static styles = unsafeCSS(bootstrap);
 
   firstUpdated() {
     this._detallesOffcanvas = new Offcanvas(

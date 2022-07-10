@@ -56,7 +56,7 @@
 
     <!-- <script src="assets/reroot/jquery.slim.min.js"></script> -->
     <!-- import zUIx library (v 0.4.9-54) -->
-    <script src="zuix/zuix.min.js"></script>
+    <!-- <script src="zuix/zuix.min.js"></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/zuix"></script> -->
     <!-- Habilitarlo cuando estemos listos para bundlear -->
     <!-- <script src="zuix/zuix-bundler.min.js"></script> -->
@@ -149,25 +149,21 @@
   <!-- load the 'header_auto_hide' on the body -->
 
   <body>
-    <script
-      type="module"
-      src="./owncomponents/field-partner/field-partner.js"
-    ></script>
 
     <!--Main App Element-->
     <field-partner>
       <div id="tour"></div>
 
       <!-- The DrawerLayout for side menu panel -->
-      <div
+      <!-- <div
         data-ui-load="@lib/controllers/drawer_layout"
         data-ui-options="options.drawerLayout"
         class="drawer"
         draggable="false"
-      >
+      > -->
         <!-- Add Navigation Drawer content -->
-        <div data-ui-load="shared/main_menu"></div>
-      </div>
+        <!-- <div data-ui-load="shared/main_menu"></div>
+      </div> -->
     </field-partner>
 
     <!--Audio Recorder-->

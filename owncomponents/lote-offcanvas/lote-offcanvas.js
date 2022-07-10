@@ -1,12 +1,12 @@
-import { LitElement, html, css } from "lit";
+import { LitElement, html } from "lit";
 import { map } from "lit/directives/map.js";
 import { aplicacionMachine } from "./lote-machine.js";
 import { interpret } from "xstate";
 import { mapbox_static_img } from "./mapbox_static_image.js";
-import mapboxgl from "mapbox-gl";
 import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
 import "@polymer/paper-spinner/paper-spinner.js";
+import {Marker, Popup} from 'mapbox-gl'
 
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
@@ -26,7 +26,8 @@ const pdf_fonts = {
 
 import orden_definition from "./orden_definition.js";
 import "./timeline/timeline.js";
-import { Modal, Offcanvas } from "bootstrap";
+import Modal from "bootstrap/js/dist/modal.js";
+import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 //import PouchDB from "pouchdb";
 import uuid4 from "uuid4";
 import moment from "moment";
@@ -77,9 +78,14 @@ export class LoteOffcanvas extends LitElement {
     lote_nombre: {},
     map: {},
     _actividades: {},
-    _lotesOffcanvas: {},
+    _lotesOffcanvas: {
+      hasChanged(newVal, oldVal) {
+        return false;
+      }},
     _fecha_editor: {},
-    _steps_elements: {},
+    _steps_elements: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
     _ctx: {},
     _campo_doc: {},
     _lote_doc: {},
@@ -139,10 +145,10 @@ export class LoteOffcanvas extends LitElement {
       if (this._nota_marker !== undefined) {
         this._nota_marker.remove();
       }
-      this._nota_marker = new mapboxgl.Marker({
+      this._nota_marker = new Marker({
         color: color,
       })
-        .setPopup(new mapboxgl.Popup().setHTML(`<h4>${texto}</h4>`))
+        .setPopup(new Popup().setHTML(`<h4>${texto}</h4>`))
         .setLngLat(posicion)
         .addTo(this.map);
 

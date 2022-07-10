@@ -1,51 +1,60 @@
-import { LitElement, html,css } from "lit";
-import { emptyGJ, touchEvent, layer_visibility } from "../helpers";
+import { LitElement, html, unsafeCSS, css } from "lit";
+import { touchEvent, layer_visibility } from "../helpers";
+import { Map } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
 
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
-import bbox from '@turf/bbox'
+import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
+import bbox from "@turf/bbox";
+import { property } from "lit/decorators.js";
+import mapbox_geocoder_style from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
+import mapbox_style from "mapbox-gl/dist/mapbox-gl.css";
+import mapbox_draw_style from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+import "@spectrum-web-components/action-menu/sp-action-menu.js";
+import "@spectrum-web-components/menu/sp-menu-item.js";
+
+import "@spectrum-web-components/theme/sp-theme";
+import "@spectrum-web-components/theme/src/themes";
+
 /** Modifica 'features' agregado color y cultivo a las 'properties'
  *  basado en las actividades
  */
 const colorear_lotes = (features, cultivos) => {
   // features[].properties.actividades
   // Para cada lote
-  features.map(({properties}) => {
-    if('actividades' in properties){
-      let cultivo = tiene_cultivo_este_lote(properties.actividades)
-      let color = cultivo_to_color(cultivo, cultivos)
-      properties.cultivo = cultivo
-      properties.color = color
-    }else{
-      properties.cultivo = "Cultivo Desconocido"
-      properties.color = "grey"
+  features.map(({ properties }) => {
+    if ("actividades" in properties) {
+      let cultivo = tiene_cultivo_este_lote(properties.actividades);
+      let color = cultivo_to_color(cultivo, cultivos);
+      properties.cultivo = cultivo;
+      properties.color = color;
+    } else {
+      properties.cultivo = "Cultivo Desconocido";
+      properties.color = "grey";
     }
-  })
-
-}
+  });
+};
 
 const cultivo_to_color = (cultivo, cultivos) => {
-  if(cultivo === 'Barbecho'){
-    return 'grey';
-  }else if(cultivo === "Cultivo Desconocido"){
-    return 'green';
+  if (cultivo === "Barbecho") {
+    return "grey";
+  } else if (cultivo === "Cultivo Desconocido") {
+    return "green";
   }
 
   for (const cultivo_map in cultivos) {
     if (Object.hasOwnProperty.call(cultivos, cultivo_map)) {
       const element = cultivos[cultivo_map];
-      if(element.nombre === cultivo){
-         return element.color
+      if (element.nombre === cultivo) {
+        return element.color;
       }
     }
   }
 
   // Custom Colors
 
-  return 'blue'
-}
+  return "blue";
+};
 
 const tiene_cultivo_este_lote = (actividades) => {
   /**
@@ -53,35 +62,83 @@ const tiene_cultivo_este_lote = (actividades) => {
    */
 
   // Filtrar Cosechas
-  let cosechas = actividades.findIndex((a) => a.tipo === 'cosechas')
+  let cosechas = actividades.findIndex((a) => a.tipo === "cosechas");
 
   // Filtrar Siembras
-  let siembras = actividades.findIndex((a) => a.tipo === 'siembra')
+  let siembras = actividades.findIndex((a) => a.tipo === "siembra");
 
   if (siembras > -1) {
-      if (cosechas > -1) {
-          if (siembras < cosechas) {
-              // Ultima evento es siembra
-              return actividades[siembras].detalles.cultivo
-          } else {
-              return "Barbecho"
-          }
+    if (cosechas > -1) {
+      if (siembras < cosechas) {
+        // Ultima evento es siembra
+        return actividades[siembras].detalles.cultivo;
       } else {
-          // No hay cosechas
-          return actividades[siembras].detalles.cultivo
+        return "Barbecho";
       }
+    } else {
+      // No hay cosechas
+      return actividades[siembras].detalles.cultivo;
+    }
   } else {
-      return "Cultivo Desconocido"
+    return "Cultivo Desconocido";
   }
-}
+};
 
 export class MapaPrincipal extends LitElement {
-  static properties = {
-    map: {},
-    draw: {},
-    campos: {}, //es el allDocs desde campos
-    settings: {},
-  };
+  @property({
+    hasChanged(newVal: Map, oldVal: Map) {
+      return false;
+    },
+  })
+  map: Map;
+
+  @property({
+    hasChanged(newVal: MapboxDraw, oldVal: MapboxDraw) {
+      return false;
+    },
+  })
+  draw: MapboxDraw;
+
+  @property()
+  campos: any; //es el allDocs desde campos
+
+  @property()
+  settings: any;
+
+  static override styles = [
+    unsafeCSS(mapbox_geocoder_style),
+    unsafeCSS(mapbox_draw_style),
+    unsafeCSS(mapbox_style),
+    css`
+      .add-button {
+        position: absolute;
+        bottom: 70px;
+        right: 20px;
+        background-color: blue;
+      }
+
+      .add-button label {
+        color: white;
+      }
+    `,
+    css`
+      #map {
+        position: absolute;
+        top: 56px;
+        bottom: 0;
+        width: 100%;
+        height: calc(100vh - 100px) !important;
+      }
+
+      .mapboxgl-ctrl-group button + button {
+        border-top: none;
+      }
+
+      .mapboxgl-ctrl-top-right {
+        z-index: 0 !important;
+      }
+    `,
+  ];
 
   constructor() {
     super();
@@ -89,13 +146,13 @@ export class MapaPrincipal extends LitElement {
       "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
   }
 
-  createRenderRoot() {
-    return this;
-  }
+  // createRenderRoot() {
+  //   return this;
+  // }
 
   firstUpdated() {
-    this.map = new mapboxgl.Map({
-      container: "map",
+    this.map = new Map({
+      container: this.shadowRoot.getElementById("map"),
       style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
       center: [-59.2965, -35.1923],
       zoom: 12,
@@ -122,10 +179,10 @@ export class MapaPrincipal extends LitElement {
     this.map.on("load", () => {
       const geocoder = new MapboxGeocoder({
         accessToken: mapboxgl.accessToken,
-        mapboxgl: mapboxgl
+        mapboxgl: mapboxgl,
       });
 
-      this.map.addControl(geocoder)
+      this.map.addControl(geocoder);
       this.map.addControl(this.draw); // Sin controles
       //tour();
       this.map.addSource("campos", {
@@ -166,9 +223,9 @@ export class MapaPrincipal extends LitElement {
             visibility: "none",
           },
           paint: {
-            "fill-color": ['get', 'color'],
+            "fill-color": ["get", "color"],
             "fill-opacity": 0.9,
-            "fill-outline-color": ['get', 'color'],
+            "fill-outline-color": ["get", "color"],
           },
         },
         "campos"
@@ -187,7 +244,7 @@ export class MapaPrincipal extends LitElement {
         "campos"
       );
 
-      console.info("Mapa Cargado")
+      console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
       this._redraw_map();
     });
@@ -238,16 +295,17 @@ export class MapaPrincipal extends LitElement {
       features: [],
     };
 
-    campos_collection.features = this.campos?.rows.map(({doc}) => {
-      let campo_geojson = {...doc.campo_geojson}
-      campo_geojson.properties = {
-        id: doc["_id"],
-        rev: doc["_rev"],
-        nombre: doc.nombre,
-        db_doc: "JSON.stringify(doc)",
-      };
-      return campo_geojson;
-    }) || [];
+    campos_collection.features =
+      this.campos?.rows.map(({ doc }) => {
+        let campo_geojson = { ...doc.campo_geojson };
+        campo_geojson.properties = {
+          id: doc["_id"],
+          rev: doc["_rev"],
+          nombre: doc.nombre,
+          db_doc: "JSON.stringify(doc)",
+        };
+        return campo_geojson;
+      }) || [];
 
     // Puede set undefined si la base se carga antes que lo
     // que renderiza por primera vez
@@ -255,13 +313,14 @@ export class MapaPrincipal extends LitElement {
     campos_source?.setData(campos_collection);
 
     // Lotes
-    lotes_collection.features = this.campos?.rows.map((campo) => {
-      // campo.doc.lotes
-      return campo.doc.lotes;
-    }) || [];
+    lotes_collection.features =
+      this.campos?.rows.map((campo) => {
+        // campo.doc.lotes
+        return campo.doc.lotes;
+      }) || [];
     lotes_collection.features = lotes_collection.features.flat();
 
-    colorear_lotes(lotes_collection.features, this.settings?.user_cultivos)
+    colorear_lotes(lotes_collection.features, this.settings?.user_cultivos);
 
     console.log("Set lotes internos DS", lotes_collection.features);
     lotes_source?.setData(lotes_collection);
@@ -278,42 +337,33 @@ export class MapaPrincipal extends LitElement {
     return html`
       <div id="map"></div>
 
-      <div
-          data-ui-load="@lib/components/menu_overlay"
-          data-ui-context="menu-overlay"
-          class="boton-overlay"
-          id="elmas"
-          data-o-button-color="blue"
-        >
-          <div data-ui-field="items">
-            <!-- menu items list -->
-            <button
-              class="btn btn-primary mo-item"
-              id="agregar-campos-btn"
-              type="button"
-              @click=${()=>{this.sendEvent('nuevo-campo-click'), null}}
-            >
-              Agregar un Campo
-            </button>
-            
-             <button
-              class="btn btn-primary mo-item"
-              id="nueva-nota-btn"
-              type="button"
-              @click=${()=>{this.sendEvent('nuevo-deposito-click'), null}}
-            >
-              Agregar un Deposito
-            </button> 
-                        <button
-              class="btn btn-primary mo-item"
-              id="nueva-nota-btn"
-              type="button"
-              @click=${()=>{this.sendEvent('nuevo-contratista-click'), null}}
-            >
-              Agregar Contratista
-            </button>
-          </div>
-        </div>
+      <sp-theme scale="medium" color="light">
+        <!-- End content requiring theme application. -->
+        <sp-action-menu size="m" class="add-button">
+          <span slot="label" class='label' >Agregar</span>
+          <sp-menu-item
+            @click=${() => {
+              this.sendEvent("nuevo-campo-click"), null;
+            }}
+          >
+            Agregar un Campo
+          </sp-menu-item>
+          <sp-menu-item
+            @click=${() => {
+              this.sendEvent("nuevo-contratista-click"), null;
+            }}
+          >
+            Agregar un Contratista
+          </sp-menu-item>
+          <sp-menu-item
+            @click=${() => {
+              this.sendEvent("nuevo-deposito-click"), null;
+            }}
+          >
+            Agregar un Deposito
+          </sp-menu-item>
+        </sp-action-menu>
+      </sp-theme>
     `;
   }
 }

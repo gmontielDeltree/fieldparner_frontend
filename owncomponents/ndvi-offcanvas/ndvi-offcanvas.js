@@ -2,13 +2,18 @@ import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import PouchDB from "pouchdb";
 import { hashMessage, layer_visibility } from "../helpers";
-import {Offcanvas} from "bootstrap"
+import Offcanvas from "bootstrap/js/dist/offcanvas"
 
 const img_bucket_url = "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/"
 
 export class NdviOffcanvas extends LitElement {
+
   static properties = {
-    offcanvas:{},
+    offcanvas:{
+      hasChanged(newVal, oldVal) {
+        return false;
+      },
+    },
     map:{},
     ndvi_db: {},
     lote_doc: {}
@@ -20,6 +25,7 @@ export class NdviOffcanvas extends LitElement {
   }
 
   static styles = unsafeCSS(bootstrap);
+
   firstUpdated(){
     this.offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-lote-ndvi")

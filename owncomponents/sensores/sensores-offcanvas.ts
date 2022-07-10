@@ -10,13 +10,12 @@ import "@vaadin/vertical-layout";
 import "@vaadin/custom-field";
 import "@vaadin/grid";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
-import { Offcanvas } from "bootstrap";
+import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
 import { GridItemModel } from "@vaadin/grid";
 import "../contratistas/contratista-crud";
 import "@vaadin/icons";
-import "mapbox-gl";
 import { Map, Marker } from "mapbox-gl";
 import { Devices, extract_tele } from "./sensores";
 
@@ -26,7 +25,11 @@ export class SensoresClass extends LitElement {
   @property()
   map: Map;
 
-  @state()
+  @state({
+    hasChanged(newVal: Offcanvas, oldVal: Offcanvas) {
+      return false;
+    },
+  })
   _offcanvas: Offcanvas;
 
   @state()

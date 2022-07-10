@@ -1,7 +1,6 @@
 import { LitElement, html } from "lit";
 import { interpret } from "xstate";
 import { siembraMachine } from "./siembra-machine";
-import { Modal, Offcanvas } from "bootstrap";
 import "../lista-searchable/lista-searchable.js";
 import PouchDB from "pouchdb";
 import { base_url } from "../helpers";
@@ -10,6 +9,7 @@ import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
 import { format } from 'date-fns'
 import { filter } from "jszip";
+import Modal from "bootstrap/js/dist/modal.js";
 
 
 export class SiembraAddUI extends LitElement {
@@ -18,7 +18,10 @@ export class SiembraAddUI extends LitElement {
     campo_id: {},
     lote_nombre: {},
     contratistas: {},
-    _steps_elements: {},
+    _steps_elements: {
+      hasChanged(newVal, oldVal) {
+        return false;
+      }},
     _ctx: {},
     _campo_doc: {},
     _lote_doc: {},

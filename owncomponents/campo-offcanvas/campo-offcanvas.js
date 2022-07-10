@@ -1,10 +1,10 @@
 import { LitElement, html, css } from "lit";
-import { Offcanvas } from "bootstrap";
 import area from "@turf/area";
 import uuid4 from "uuid4";
 import "../share-modal/share-modal.js";
 import { normalizar_username } from "../helpers.js";
 import bbox from "@turf/bbox";
+import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 
 export class CampoOffcanvas extends LitElement {
   static properties = {
@@ -14,7 +14,9 @@ export class CampoOffcanvas extends LitElement {
     campo_doc: {},
     user: {},
     show_main: {},
-    _detallesOffcanvas: {},
+    _detallesOffcanvas: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
   };
 
   constructor() {
