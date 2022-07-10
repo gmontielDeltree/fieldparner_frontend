@@ -475,7 +475,7 @@ export class FieldPartner extends LitElement {
         .settings=${this.settings}
       ></mapa-principal>
 
-      <navbar-element></navbar-element>
+      <navbar-element .map=${this.map}></navbar-element>
 
       <campo-offcanvas
         id="campo-oc"

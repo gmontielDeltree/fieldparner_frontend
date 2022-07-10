@@ -178,12 +178,12 @@ export class MapaPrincipal extends LitElement {
     //this.map.resize();
 
     this.map.on("load", () => {
-      const geocoder = new MapboxGeocoder({
-        accessToken: mapboxgl.accessToken,
-        mapboxgl: mapboxgl,
-      });
+      // const geocoder = new MapboxGeocoder({
+      //   accessToken: mapboxgl.accessToken,
+      //   mapboxgl: mapboxgl,
+      // });
 
-      this.map.addControl(geocoder);
+      // this.map.addControl(geocoder);
       this.map.addControl(this.draw); // Sin controles
       //tour();
       this.map.addSource("campos", {
