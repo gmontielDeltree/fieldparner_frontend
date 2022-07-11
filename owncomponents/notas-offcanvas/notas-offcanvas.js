@@ -200,7 +200,12 @@ export class NotasOffcanvas extends LitElement {
     this.shadowRoot.getElementById("btnradio-red").checked = true;
 
     // Audio
-    this.shadowRoot.getElementById("audio-recorder").borrar();
+    if(this.audio){
+
+    }else{
+      this.shadowRoot.getElementById("audio-recorder").borrar();
+    }
+   
   }
 
   guardar_nota_click() {
