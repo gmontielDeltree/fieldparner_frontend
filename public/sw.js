@@ -47,7 +47,7 @@ self.addEventListener('fetch', (event) => {
 
   if (event.request.method !== 'POST') return;
   // Es POST
-  if (event.request.url.searchParams.has('shared-audio') === false) return;
+  if (event.request.url.includes('shared-audio') === false) return;
   // Es shared-audio
 
   /* This is to fix the issue Jake found */
