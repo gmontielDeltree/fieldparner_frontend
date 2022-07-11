@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS, render, CSSResultGroup } from "lit";
+import { LitElement, html, unsafeCSS, render, CSSResultGroup, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
 import "@vaadin/form-layout";
 import "@vaadin/email-field";
@@ -39,6 +39,8 @@ export class NotaShareTarget extends LitElement {
 
   @state()
   _shared_audio_blob: any
+  @state()
+  _map_not_loaded : boolean = false;
 
 //   static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
 
@@ -85,10 +87,22 @@ export class NotaShareTarget extends LitElement {
   }
 
   showSelectionLayer() {
-    layer_visibility(this.map, "campos", false);
-    layer_visibility(this.map, "lotes", false);
-    layer_visibility(this.map, "campos_border", false);
-    layer_visibility(this.map, "lotes_border", true);
+      if(this.map){
+        layer_visibility(this.map, "campos", false);
+        layer_visibility(this.map, "lotes", false);
+        layer_visibility(this.map, "campos_border", false);
+        layer_visibility(this.map, "lotes_border", true);
+        this._map_not_loaded = false;
+      }else{
+        this._map_not_loaded = true;  
+      }
+
+  }
+
+  protected willUpdate(_changedProperties: PropertyValueMap<any> | globalThis.Map<PropertyKey, unknown>): void {
+      if(_changedProperties.has('map') && this._map_not_loaded){
+        this.showSelectionLayer()
+      }
   }
 
   hideSelectionLayer() {
