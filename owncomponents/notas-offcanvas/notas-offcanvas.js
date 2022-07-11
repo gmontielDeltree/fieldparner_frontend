@@ -426,9 +426,12 @@ export class NotasOffcanvas extends LitElement {
 
           <hr />
 
-          <div class="row" id="audio-div">
+
+
+
+          ${this.audios ? html`` : html`<div class="row" id="audio-div">
             <audio-recorder id="audio-recorder"></audio-recorder>
-          </div>
+          </div>`}
 
           <hr />
         </div>

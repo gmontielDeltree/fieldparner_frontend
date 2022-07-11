@@ -1,6 +1,6 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.2.0/workbox-sw.js');
 
-const version = "0005"
+const version = "0006"
 
 // This will trigger the importScripts() for workbox.strategies and its dependencies:
 const {strategies, routing, backgroundSync} = workbox;
@@ -41,6 +41,28 @@ routing.registerRoute(
     cacheName: 'audio-cache',
   })
 );
+
+
+self.addEventListener('fetch', (event) => {
+
+  if (event.request.method !== 'POST') return;
+  // Es POST
+  if (event.request.url.searchParams.has('shared-audio') === false) return;
+  // Es shared-audio
+
+  /* This is to fix the issue Jake found */
+  event.respondWith(Response.redirect('/index.html'));
+  
+  event.waitUntil(async function () {
+    const data = await event.request.formData();
+    const client = await self.clients.get(event.resultingClientId || event.clientId);
+    // Get the data from the named element 'file'
+    const file = data.get('file');
+
+    console.log('file', file);
+    client.postMessage({ file, action: 'load-audio' });
+  }());
+});
 
 self.addEventListener('fetch', (event) => {
 

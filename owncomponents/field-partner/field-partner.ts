@@ -70,6 +70,15 @@ export class FieldPartner extends LitElement {
     this.user.name = "demo";
     this.loading = true;
 
+    /* Share audio handler */
+    navigator.serviceWorker.onmessage = (event) => {
+      console.log(event);
+      let imageBlob = event.data.file;
+      // Update the UI with the data that has been shared to it.
+      // imageShare.src = URL.createObjectURL(imageBlob);
+      alert("AUDIO RECIBIDO");
+    };
+
     window.addEventListener('DOMContentLoaded', () => {
       const parsedUrl = new URL(window.location);
       // searchParams.get() will properly handle decoding the values.
