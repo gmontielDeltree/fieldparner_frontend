@@ -244,6 +244,22 @@ export class MapaPrincipal extends LitElement {
         },
         "campos"
       );
+      
+      this.map.addLayer(
+        {
+          id: "lotes_border",
+          type: "fill",
+          source: "lotes",
+          layout: {
+            visibility: "none",
+          },
+          paint: {
+            "fill-color": "rgba(255, 127, 0, 1)",
+            "fill-opacity": 0.4,
+            "fill-outline-color": "red",
+          },
+        }
+      ); 
 
       console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
@@ -271,6 +287,12 @@ export class MapaPrincipal extends LitElement {
       console.log("Click en lotes Internos", e.features[0]);
       let { nombre, campo_parent_id } = e.features[0].properties;
       this.sendEvent("ver-lote-detalles", { nombre: nombre, campo_parent_id });
+    });
+
+    this.map.on(touchEvent, "lotes_border", (e) => {
+      console.log("Click en lotes selector", e.features[0]);
+      let { nombre, campo_parent_id } = e.features[0].properties;
+      this.sendEvent("lote-seleccionado", { nombre: nombre, campo_parent_id });
     });
   }
 

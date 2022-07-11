@@ -16,6 +16,7 @@ export class NotasOffcanvas extends LitElement {
     map: {},
     db: {},
     lote_doc: {},
+    mostrar:{type:Boolean},
     /* Internos */
     nueva_nota_offcanvas: {hasChanged(newVal, oldVal) {
       return false;
@@ -29,7 +30,7 @@ export class NotasOffcanvas extends LitElement {
     fecha: {},
     texto: {},
     color: {},
-    audios: {},
+    audio: {},
     nota_marker: {},
     modo_geolocalizacion: {},
   };
@@ -74,6 +75,10 @@ export class NotasOffcanvas extends LitElement {
         formatDate: formatDateIso8601,
         parseDate: parseDateIso8601,
       };
+    }
+
+    if(this.mostrar){
+      this.nueva_nota()
     }
   }
 
@@ -232,12 +237,21 @@ export class NotasOffcanvas extends LitElement {
     });
 
     // Audio
-    if (this.shadowRoot.getElementById("audio-recorder").blob) {
+    if(this.audio){
+      // Fruto de compartido
       nota._attachments["audio_" + uuid4()] = {
-        data: this.shadowRoot.getElementById("audio-recorder").blob,
-        type: this.shadowRoot.getElementById("audio-recorder").blob.type,
+        data: this.audio, // Es un blob
+        type: this.audio.type,
       };
+    }else{
+      if (this.shadowRoot.getElementById("audio-recorder").blob) {
+        nota._attachments["audio_" + uuid4()] = {
+          data: this.shadowRoot.getElementById("audio-recorder").blob,
+          type: this.shadowRoot.getElementById("audio-recorder").blob.type,
+        };
+      }
     }
+
 
     this.db
       .put(nota)
@@ -429,7 +443,9 @@ export class NotasOffcanvas extends LitElement {
 
 
 
-          ${this.audios ? html`` : html`<div class="row" id="audio-div">
+          ${this.audio ? html`<audio controls><source .src=${URL.createObjectURL(
+                      this.audio
+                    )}></source></audio>` : html`<div class="row" id="audio-div">
             <audio-recorder id="audio-recorder"></audio-recorder>
           </div>`}
 

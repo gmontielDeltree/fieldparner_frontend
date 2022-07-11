@@ -22,6 +22,8 @@ import "../lista-de-campos/lista-de-campos.js"
 import "../navbar-element/navbar-element.js"
 import "../mapa-principal/mapa-principal.js"
 import "../login-modal/login-modal.ts"
+import "../notas-offcanvas/nota-target.ts"
+
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
@@ -70,14 +72,7 @@ export class FieldPartner extends LitElement {
     this.user.name = "demo";
     this.loading = true;
 
-    /* Share audio handler */
-    navigator.serviceWorker.onmessage = (event) => {
-      console.log(event);
-      let imageBlob = event.data.file;
-      // Update the UI with the data that has been shared to it.
-      // imageShare.src = URL.createObjectURL(imageBlob);
-      alert("AUDIO RECIBIDO");
-    };
+
 
     window.addEventListener('DOMContentLoaded', () => {
       const parsedUrl = new URL(window.location);
@@ -113,6 +108,10 @@ export class FieldPartner extends LitElement {
 
     this.addEventListener("nuevo-deposito-click", () => {
       document.getElementById("deposito-upsert").show();
+    });
+
+    this.addEventListener("lote-seleccionado", (e) => {
+      document.getElementById('nota-share-target').seleccion(e.detail)
     });
 
     /* Izar map y draw a este componente para que los otros puedan usarlo */
@@ -526,6 +525,8 @@ export class FieldPartner extends LitElement {
       <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
 
       <sensores-oc .map=${this.map}></sensores-oc>
+
+      <nota-share-target id='nota-share-target' .map=${this.map} .db=${this.campos_db}></nota-share-target>
 
       <deposito-upsert
         id="deposito-upsert"
