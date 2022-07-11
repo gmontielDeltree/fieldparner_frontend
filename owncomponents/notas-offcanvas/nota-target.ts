@@ -52,7 +52,7 @@ export class NotaShareTarget extends LitElement {
       // imageShare.src = URL.createObjectURL(imageBlob);
       this._shared_audio_blob = event.data.file;
       this.test_trigger()
-      alert("AUDIO RECIBIDO");
+      //alert("AUDIO RECIBIDO");
     };
 
     this.addEventListener('nueva-nota-finalizada', ()=>{
