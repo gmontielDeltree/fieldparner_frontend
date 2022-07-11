@@ -88,6 +88,10 @@ export class NotasOffcanvas extends LitElement {
     this.inicializar_componente();
     let event = new CustomEvent("nueva-nota",{bubbles:true, composed:true})
     this.dispatchEvent(event)
+
+
+    let event_fin = new CustomEvent("nueva-nota-finalizada",{bubbles:true, composed:true})
+    this.dispatchEvent(event_fin)
   }
 
   posicion_error(err) {
@@ -280,7 +284,10 @@ export class NotasOffcanvas extends LitElement {
       let url = URL.createObjectURL(file);
       return html`
         <div>
-          <button type="button" class="close" aria-label="Close">
+          <button type="button" class="close" aria-label="Close" @click=${()=>{
+                let event_fin = new CustomEvent("nueva-nota-finalizada",{bubbles:true, composed:true})
+                this.dispatchEvent(event_fin)
+          }}>
             <span aria-hidden="true">&times;</span>
           </button>
           <img
