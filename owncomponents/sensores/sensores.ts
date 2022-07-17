@@ -1,3 +1,4 @@
+import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
 import { base_url } from "../helpers.js";
 
@@ -68,6 +69,15 @@ class Devices {
 	return docs ; 
       };
 
+  async get_details(device_id :string){
+    try{
+      let doc_detalles = await this.db.get(device_id + ":detalles")
+      return doc_detalles;
+    }catch (e){
+      console.error("Error get_details",e)
+    }
+
+  }
 }
 
 export { Devices, extract_tele };
