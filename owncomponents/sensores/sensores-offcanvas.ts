@@ -35,10 +35,10 @@ export class SensoresClass extends LitElement {
   _offcanvas: Offcanvas;
 
   @state()
-  _selected_device: {};
+  _selected_device: any = {};
 
   @state()
-  _selected_details: {};
+  _selected_details: any = {};
 
   @state()
   _devices: Devices = new Devices();
@@ -53,13 +53,13 @@ export class SensoresClass extends LitElement {
     if (props.has("map")) {
       // Obtener telemtria y agregar al mapa
       let devices_last_telemetry = await this._devices.devices_publicos_get();
-      console.log("LAST TELEMETRY", devices_last_telemetry);
+      //console.log("LAST TELEMETRY", devices_last_telemetry);
 
       devices_last_telemetry.map((telemetria) => {
         let latitud = extract_tele("latitud", telemetria).value;
         let longitud = extract_tele("longitud", telemetria).value;
 
-        console.info("LATLON", latitud, longitud);
+        //console.info("LATLON", latitud, longitud);
         const marker = new Marker()
           .setLngLat([longitud, latitud])
           .addTo(this.map);
@@ -74,13 +74,19 @@ export class SensoresClass extends LitElement {
   }
 
   async show() {
-    let daily_telemetry = await this._devices.devices_publicos_daily_get(
-      "20220703"
-    );
-    console.log("DAYLY TELE", daily_telemetry);
+    console.log("Selected Device LAST Telemetry", this._selected_device);
 
-    this._selected_details = await this._devices.get_details(this._selected_device.device_id)
-    
+    // Obtener la telemetria de todos los devices publicos
+    let daily_telemetry = await this._devices.devices_publicos_daily_get(
+      "20220702"
+    );
+    console.log("DAiLY TELE", daily_telemetry);
+
+    this._selected_details = await this._devices.get_details(
+      this._selected_device.device_id
+    );
+
+    console.log("Selected Device DETAILS", this._selected_details);
     this._offcanvas.show();
   }
 
@@ -114,17 +120,16 @@ export class SensoresClass extends LitElement {
             aria-label="Close"
             @click=${() => this._offcanvas.hide()}
           ></button>
-
         </div>
         <div class="offcanvas-body">
-          
-        <!--Device Detalles-->
-        <div>
-            ${this._selected_device ? this._selected_device.device_id : null}
-        </div>
-        
+          <!--Device Detalles-->
+          <div>
+            ID: ${this._selected_device ? this._selected_device.device_id : null}
 
-        <!-- Temperatura -->
+            Ultimo reporte hace 
+          </div>
+
+          <!-- Temperatura -->
           ${devices_modelos[this._selected_device?.tipo]?.sensores.includes(
             "temperatura"
           )
@@ -155,11 +160,11 @@ export class SensoresClass extends LitElement {
                     </div>
                   </div>
                 </div>
-                 `
+              `
             : null}
-            <!--/temperatura-->
+          <!--/temperatura-->
 
-                    <!-- Humedad -->
+          <!-- Humedad -->
           ${devices_modelos[this._selected_device?.tipo]?.sensores.includes(
             "humedad"
           )
@@ -168,9 +173,7 @@ export class SensoresClass extends LitElement {
                   <div class="row">
                     <h5>
                       Humedad
-                      <span class="fw-bolder"
-                        >${this.valor("humedad")} %</span
-                      >
+                      <span class="fw-bolder">${this.valor("humedad")} %</span>
                     </h5>
                   </div>
                   <div class="row">
@@ -190,11 +193,11 @@ export class SensoresClass extends LitElement {
                     </div>
                   </div>
                 </div>
-                 `
+              `
             : null}
-            <!--/humedad-->
+          <!--/humedad-->
 
-            <!-- Presion -->
+          <!-- Presion -->
           ${devices_modelos[this._selected_device?.tipo]?.sensores.includes(
             "presion"
           )
@@ -225,10 +228,44 @@ export class SensoresClass extends LitElement {
                     </div>
                   </div>
                 </div>
-                 `
+              `
             : null}
-            <!--/presion-->
+          <!--/presion-->
 
+          <!-- Viento -->
+          ${devices_modelos[this._selected_device?.tipo]?.sensores.includes(
+            "viento"
+          )
+            ? html`
+                <div class="container-fluid border-primary border-top p-1">
+                  <div class="row">
+                    <h5>
+                      Viento
+                      <span class="fw-bolder"
+                        >${this.valor("velocidad")} km/h</span
+                      >
+                    </h5>
+                  </div>
+                  <div class="row">
+                    <div class="col-4 text-success">
+                      <div class="fw-strong">0 km/h</div>
+                      <div class="fw-light">Min</div>
+                    </div>
+
+                    <div class="col-4 text-warning">
+                      <div class="fw-strong">6 km/h dirección SE</div>
+                      <div class="fw-light">Promedio</div>
+                    </div>
+
+                    <div class="col-4 text-danger">
+                      <div class="fw-strong">16 km/h dirección SE</div>
+                      <div class="fw-light">Max</div>
+                    </div>
+                  </div>
+                </div>
+              `
+            : null}
+          <!--/viento-->
 
         </div>
       </div>
