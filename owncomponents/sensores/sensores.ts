@@ -6,7 +6,7 @@ import { base_url } from "../helpers.js";
 const extract_tele = (key, tele) => {
   let f = tele.data.filter((punto) => {
      //console.log('PUNTO', punto, key)
-    return punto.sensor_id === key;
+    return punto['mag'] === key;
   });
 
   //console.log("F", f)
@@ -35,7 +35,7 @@ class Devices {
 
     // Construir la keys para last telemetry
     let keys = this._devices_names.map((device_name) => {
-      return device_name + ":last";
+      return device_name + ":daily:20220722";
     });
 
     let r = await this.db.allDocs({ keys: keys, include_docs: true });

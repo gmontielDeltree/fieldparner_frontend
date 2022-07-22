@@ -20,6 +20,7 @@ import { Map, Marker } from "mapbox-gl";
 import { Devices, extract_tele } from "./sensores";
 import { touchEvent } from "../helpers.js";
 import devices_modelos from "./devices_modelos.ts";
+import { format, formatDistance, formatRelative, subDays } from 'date-fns'
 
 export class SensoresClass extends LitElement {
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
@@ -35,7 +36,7 @@ export class SensoresClass extends LitElement {
   _offcanvas: Offcanvas;
 
   @state()
-  _selected_device: any = {};
+  _selected_device: any = undefined;
 
   @state()
   _selected_details: any = {};
@@ -78,7 +79,7 @@ export class SensoresClass extends LitElement {
 
     // Obtener la telemetria de todos los devices publicos
     let daily_telemetry = await this._devices.devices_publicos_daily_get(
-      "20220702"
+      "20220722"
     );
     console.log("DAiLY TELE", daily_telemetry);
 
@@ -110,7 +111,7 @@ export class SensoresClass extends LitElement {
             ${this._selected_device ? this._selected_details.nombre : null}
           </h5>
           <h6 class="offcanvas-title" id="offcanvasLabel">
-            ${this._selected_device ? this._selected_device.tipo : null}
+            ${this._selected_device ? this._selected_details.tipo : null}
           </h6>
 
           <button
@@ -125,12 +126,12 @@ export class SensoresClass extends LitElement {
           <!--Device Detalles-->
           <div>
             ID: ${this._selected_device ? this._selected_device.device_id : null}
-
-            Ultimo reporte hace 
+            <br> 
+            Ultimo reporte hace ${this._selected_device ? formatDistance(new Date(this._selected_device.ts_last * 1000), new Date(), { addSuffix: true })  : null}
           </div>
 
           <!-- Temperatura -->
-          ${devices_modelos[this._selected_device?.tipo]?.sensores.includes(
+          ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
             "temperatura"
           )
             ? html`
@@ -145,17 +146,17 @@ export class SensoresClass extends LitElement {
                   </div>
                   <div class="row">
                     <div class="col-4 text-success">
-                      <div class="fw-strong">10 ºC</div>
+                      <div class="fw-strong">${this.valor("temperatura_min")} ºC</div>
                       <div class="fw-light">Min</div>
                     </div>
 
                     <div class="col-4 text-warning">
-                      <div class="fw-strong">14 ºC</div>
+                      <div class="fw-strong">${this.valor("temperatura_mean")} ºC</div>
                       <div class="fw-light">Promedio</div>
                     </div>
 
                     <div class="col-4 text-danger">
-                      <div class="fw-strong">18 ºC</div>
+                      <div class="fw-strong">${this.valor("temperatura_max")} ºC</div>
                       <div class="fw-light">Max</div>
                     </div>
                   </div>
@@ -165,7 +166,7 @@ export class SensoresClass extends LitElement {
           <!--/temperatura-->
 
           <!-- Humedad -->
-          ${devices_modelos[this._selected_device?.tipo]?.sensores.includes(
+          ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
             "humedad"
           )
             ? html`
@@ -178,17 +179,17 @@ export class SensoresClass extends LitElement {
                   </div>
                   <div class="row">
                     <div class="col-4 text-success">
-                      <div class="fw-strong">10 %</div>
+                      <div class="fw-strong">${this.valor("humedad_min")} %</div>
                       <div class="fw-light">Min</div>
                     </div>
 
                     <div class="col-4 text-warning">
-                      <div class="fw-strong">14 %</div>
+                      <div class="fw-strong">${this.valor("humedad_mean")} %</div>
                       <div class="fw-light">Promedio</div>
                     </div>
 
                     <div class="col-4 text-danger">
-                      <div class="fw-strong">18 %</div>
+                      <div class="fw-strong">${this.valor("humedad_max")} %</div>
                       <div class="fw-light">Max</div>
                     </div>
                   </div>
@@ -198,7 +199,7 @@ export class SensoresClass extends LitElement {
           <!--/humedad-->
 
           <!-- Presion -->
-          ${devices_modelos[this._selected_device?.tipo]?.sensores.includes(
+          ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
             "presion"
           )
             ? html`
@@ -213,17 +214,17 @@ export class SensoresClass extends LitElement {
                   </div>
                   <div class="row">
                     <div class="col-4 text-success">
-                      <div class="fw-strong">10 hPa</div>
+                      <div class="fw-strong">${this.valor("presion_min")} hPa</div>
                       <div class="fw-light">Min</div>
                     </div>
 
                     <div class="col-4 text-warning">
-                      <div class="fw-strong">14 hPa</div>
+                      <div class="fw-strong">${this.valor("presion_mean")} hPa</div>
                       <div class="fw-light">Promedio</div>
                     </div>
 
                     <div class="col-4 text-danger">
-                      <div class="fw-strong">18 hPa</div>
+                      <div class="fw-strong">${this.valor("presion_max")} hPa</div>
                       <div class="fw-light">Max</div>
                     </div>
                   </div>
@@ -233,7 +234,7 @@ export class SensoresClass extends LitElement {
           <!--/presion-->
 
           <!-- Viento -->
-          ${devices_modelos[this._selected_device?.tipo]?.sensores.includes(
+          ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
             "viento"
           )
             ? html`
