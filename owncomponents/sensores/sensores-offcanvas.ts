@@ -21,6 +21,7 @@ import { Devices, extract_tele } from "./sensores";
 import { touchEvent } from "../helpers.js";
 import devices_modelos from "./devices_modelos.ts";
 import { format, formatDistance, formatRelative, subDays } from 'date-fns'
+import format from 'date-fns/format'
 
 export class SensoresClass extends LitElement {
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
@@ -78,8 +79,12 @@ export class SensoresClass extends LitElement {
     console.log("Selected Device LAST Telemetry", this._selected_device);
 
     // Obtener la telemetria de todos los devices publicos
+    let hoy = format(
+      new Date(),
+      'yyyyMMdd'
+          )
     let daily_telemetry = await this._devices.devices_publicos_daily_get(
-      "20220722"
+      hoy
     );
     console.log("DAiLY TELE", daily_telemetry);
 

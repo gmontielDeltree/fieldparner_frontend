@@ -1,6 +1,7 @@
 import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
 import { base_url } from "../helpers.js";
+import format from 'date-fns/format'
 
 /** Helper para extraer la telemetria */
 const extract_tele = (key, tele) => {
@@ -33,9 +34,13 @@ class Devices {
 
     this._devices_names = public_devices;
 
+   let hoy = format(
+    new Date(),
+    'yyyyMMdd'
+        )
     // Construir la keys para last telemetry
     let keys = this._devices_names.map((device_name) => {
-      return device_name + ":daily:20220722";
+      return device_name + ":daily:" + hoy;
     });
 
     let r = await this.db.allDocs({ keys: keys, include_docs: true });
