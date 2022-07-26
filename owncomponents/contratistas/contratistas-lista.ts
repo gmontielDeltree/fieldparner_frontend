@@ -19,6 +19,8 @@ import { ContratistaCrud } from "./contratista-crud";
 import { GridItemModel } from "@vaadin/grid";
 import '../contratistas/contratista-crud'
 import '@vaadin/icons';
+import '@vaadin/upload';
+import '@vaadin/dialog';
 
 export class ContratistasLista extends LitElement {
 
@@ -114,6 +116,12 @@ export class ContratistasLista extends LitElement {
     );
   };
 
+  importar(){
+
+  }
+
+  
+
   render() {
     return html`<div
       class="modal fade"
@@ -126,6 +134,7 @@ export class ContratistasLista extends LitElement {
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Contratistas</h5>
+            <vaadin-button theme="primary small" @click=${this.importar}></vaadin-button>
             <button
               type="button"
               class="btn-close"

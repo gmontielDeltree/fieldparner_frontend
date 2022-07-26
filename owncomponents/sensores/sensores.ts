@@ -1,13 +1,13 @@
 import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
 import { base_url } from "../helpers.js";
-import format from 'date-fns/format'
+import format from "date-fns/format";
 
 /** Helper para extraer la telemetria */
 const extract_tele = (key, tele) => {
   let f = tele.data.filter((punto) => {
-     //console.log('PUNTO', punto, key)
-    return punto['mag'] === key;
+    //console.log('PUNTO', punto, key)
+    return punto["mag"] === key;
   });
 
   //console.log("F", f)
@@ -20,7 +20,7 @@ class Devices {
   private _devices_names: string[] = [];
 
   _devices_last_telemetry: any[] = [];
-  
+
   devices_init = () => {
     this.db
       .get("lista_public_devices:unico")
@@ -34,10 +34,7 @@ class Devices {
 
     this._devices_names = public_devices;
 
-   let hoy = format(
-    new Date(),
-    'yyyyMMdd'
-        )
+    let hoy = format(new Date(), "yyyyMMdd");
     // Construir la keys para last telemetry
     let keys = this._devices_names.map((device_name) => {
       return device_name + ":daily:" + hoy;
@@ -54,34 +51,32 @@ class Devices {
   };
 
   devices_publicos_daily_get = async (dia) => {
+    let dia_str = dia;
+    let { public_devices } = await this.db.get("lista_public_devices:unico");
 
-	let dia_str = dia
-	let { public_devices } = await this.db.get("lista_public_devices:unico");
-    
-	this._devices_names = public_devices;
-    
-	// Construir la keys para last telemetry
-	let keys = this._devices_names.map((device_name) => {
-	  return device_name + ":daily:" + dia_str;
-	});
-    
-	let r = await this.db.allDocs({ keys: keys, include_docs: true });
-    
-	let docs = r?.rows.map((r) => r.doc) || [];
-    
-	console.log("PUBLIC DEVICES DAILY", docs);
-    
-	return docs ; 
-      };
+    this._devices_names = public_devices;
 
-  async get_details(device_id :string){
-    try{
-      let doc_detalles = await this.db.get(device_id + ":detalles")
+    // Construir la keys para last telemetry
+    let keys = this._devices_names.map((device_name) => {
+      return device_name + ":daily:" + dia_str;
+    });
+
+    let r = await this.db.allDocs({ keys: keys, include_docs: true });
+
+    let docs = r?.rows.map((r) => r.doc) || [];
+
+    console.log("PUBLIC DEVICES DAILY", docs);
+
+    return docs;
+  };
+
+  async get_details(device_id: string) {
+    try {
+      let doc_detalles = await this.db.get(device_id + ":detalles");
       return doc_detalles;
-    }catch (e){
-      console.error("Error get_details",e)
+    } catch (e) {
+      console.error("Error get_details", e);
     }
-
   }
 }
 
