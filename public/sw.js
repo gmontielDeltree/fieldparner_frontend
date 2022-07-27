@@ -42,6 +42,11 @@ routing.registerRoute(
   })
 );
 
+// https://stackoverflow.com/questions/68772017/serviceworker-not-intercepting-calls-immediately-after-installation
+// https://developer.mozilla.org/en-US/docs/Web/API/Clients/claim
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim());
+});
 
 /* Upload Excel handler */
 self.addEventListener('fetch', (event) => {
