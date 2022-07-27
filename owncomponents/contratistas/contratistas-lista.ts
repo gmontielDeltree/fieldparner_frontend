@@ -171,7 +171,7 @@ export class ContratistasLista extends LitElement {
      * @returns 
      */
     const up_to_contratista = (up) => {
-      let contratista : Contratista = empty_contratista 
+      let contratista : Contratista = {...empty_contratista}
       
       contratista.nombre = up.Nombre || ""
       contratista.cuit = up.CUIT || ""
@@ -223,9 +223,14 @@ export class ContratistasLista extends LitElement {
     }
 
 
+
+    console.log("CONT uc", this._uploaded_contratistas)
     let todos_los_contratistas = this._uploaded_contratistas.map(up_to_contratista)
+
+    console.log("CONT sin uuid", todos_los_contratistas, this._uploaded_contratistas)
     let todos_los_contratistas_con_uuid : (Contratista & {uuid:string}) [] = todos_los_contratistas.map((c : Contratista) => {
-      c.uuid = uuid4()
+      let nuevo_uuid = uuid4()
+      c.uuid = nuevo_uuid
       return c;
     })
     
