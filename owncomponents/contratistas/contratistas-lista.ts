@@ -58,6 +58,7 @@ export class ContratistasLista extends LitElement {
 
     this._excel_file_input = this.shadowRoot.getElementById('upload-drop-enabled') as Upload
 
+    /**Recepcion del mensaje enviado por el sw al recibir el POST del archivo */
     navigator.serviceWorker.addEventListener("message", async (event) => {
       if (event.data.action !== "load-excel") {
         return;
@@ -209,6 +210,7 @@ export class ContratistasLista extends LitElement {
           contratista.labores.push({labor: labor_buscada.toLowerCase, uuid:uuid4()}) 
         }
       }
+
       if(up.Labores_4){
         let labor_buscada = up.Labores_4;
         let labor_encontrada = lista_de_labores.find((x) => x.labor.toLowerCase() === labor_buscada.toLowerCase())
@@ -246,7 +248,8 @@ export class ContratistasLista extends LitElement {
             .put(result)
             .then(() => {
               console.log("Contratistas Doc Updated");
-              this._modal.hide();
+              this._modal_excel.hide();
+              this.show()
             })
             .catch((e) => console.error("Error al update Contratistas", e));
         })
@@ -265,7 +268,8 @@ export class ContratistasLista extends LitElement {
             .put(con_doc)
             .then(() => {
               console.log("Contratistas Doc Creado");
-              this._modal.hide();
+              this._modal_excel.hide();
+              this.show()
             })
             .catch((e) => console.error("Error al crear Contratistas", e));
         });
@@ -363,7 +367,7 @@ export class ContratistasLista extends LitElement {
 
               ${
                 this._uploaded_contratistas ? html`<h4>Preview</h4>
-                <vaadin-grid .items="${this._uploaded_contratistas}">
+                <vaadin-grid .items="${this._uploaded_contratistas}" theme="compact" style="height: 200px;">
                 <vaadin-grid-column path="Nombre" header="Nombre"></vaadin-grid-column>
                 <vaadin-grid-column path="CUIT" header="CUIT"></vaadin-grid-column>
                 <vaadin-grid-column path="Labores" header="E-Mail"></vaadin-grid-column>
