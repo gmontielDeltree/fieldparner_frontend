@@ -1,14 +1,22 @@
 interface Labor {
-	labor: string;
-	uuid: number;
-      }
-      
-      interface Contratista {
-	labores: Labor[];
-	nombre: string;
-	uuid: string;
-	cuit: string;
-	datos_generales: { email: string; direccion: string; telefono: string };
-      }
+  labor: string;
+  uuid: string;
+}
 
-export {Labor, Contratista}
+interface Contratista {
+  labores: Labor[];
+  nombre: string;
+  uuid: string;
+  cuit: string;
+  datos_generales: { email: string; direccion: string; telefono: string };
+}
+
+const empty_contratista: Contratista = {
+	labores: [],
+	uuid: "",
+	nombre: "",
+	cuit: "",
+	datos_generales: { email: "", direccion: "", telefono: "" },
+  } ;
+
+export { Labor, Contratista, empty_contratista };

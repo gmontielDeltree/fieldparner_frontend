@@ -48,7 +48,7 @@ self.addEventListener('fetch', (event) => {
 
   if (event.request.method !== 'POST') return;
   // Es POST
-  if (event.request.url.includes('excel_contratistas') === false) return;
+  if (event.request.url.includes('excel-contratistas-upload') === false) return;
   // Es shared-audio
 
   /* This is to fix the issue Jake found */
@@ -63,8 +63,8 @@ self.addEventListener('fetch', (event) => {
     // Get the data from the named element 'file'
     const file = data.get('file');
 
-    console.log('file', file);
-    client.postMessage({ file, action: 'load-audio' });
+    console.log('Excel file', file);
+    client.postMessage({ file, action: 'load-excel' });
   }());
 });
 
@@ -85,7 +85,7 @@ self.addEventListener('fetch', (event) => {
     // Get the data from the named element 'file'
     const file = data.get('file');
 
-    console.log('file', file);
+    console.log('Audio file', file);
     client.postMessage({ file, action: 'load-audio' });
   }());
 });

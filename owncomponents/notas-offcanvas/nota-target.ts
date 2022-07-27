@@ -48,7 +48,12 @@ export class NotaShareTarget extends LitElement {
     super();
     /* Share audio handler */
     navigator.serviceWorker.onmessage = (event) => {
-      console.log(event);
+      
+      if(event.data.action !== 'load-audio'){
+        return
+      }
+
+      console.log("OnMessage", event);
       let imageBlob = event.data.file;
       // Update the UI with the data that has been shared to it.
       // imageShare.src = URL.createObjectURL(imageBlob);
