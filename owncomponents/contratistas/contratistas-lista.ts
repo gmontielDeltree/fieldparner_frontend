@@ -21,7 +21,7 @@ import "../contratistas/contratista-crud";
 import "@vaadin/icons";
 import "@vaadin/upload";
 import "@vaadin/dialog";
-import { read, WorkBook, utils } from "xlsx";
+import { read, writeFile, utils } from "xlsx";
 import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
 import '@vaadin/menu-bar';
@@ -178,6 +178,7 @@ export class ContratistasLista extends LitElement {
       
       contratista.nombre = up.Nombre || ""
       contratista.cuit = up.CUIT || ""
+      contratista.datos_generales = {...empty_contratista.datos_generales}
       contratista.datos_generales.email = up.Email || ""
       contratista.datos_generales.telefono = up["Teléfono"] || ""
       contratista.datos_generales.direccion = up['Dirección'] || ""
@@ -228,17 +229,17 @@ export class ContratistasLista extends LitElement {
 
 
 
-    console.log("CONT uc", this._uploaded_contratistas)
+    //console.log("CONT uc", this._uploaded_contratistas)
     let todos_los_contratistas = this._uploaded_contratistas.map(up_to_contratista)
 
-    console.log("CONT sin uuid", todos_los_contratistas, this._uploaded_contratistas)
+    //console.log("CONT sin uuid", todos_los_contratistas, this._uploaded_contratistas)
     let todos_los_contratistas_con_uuid : (Contratista & {uuid:string}) [] = todos_los_contratistas.map((c : Contratista) => {
       let nuevo_uuid = uuid4()
       c.uuid = nuevo_uuid
       return c;
     })
     
-    console.log("CONT", todos_los_contratistas_con_uuid)
+    //console.log("CONT", todos_los_contratistas_con_uuid)
     this.db
         .get("contratistas")
         .then((result: any) => {
@@ -278,12 +279,35 @@ export class ContratistasLista extends LitElement {
   }
 
   menu_click({detail}){
-    console.log("CLICK,", detail)
+    //console.log("CLICK,", detail)
     let valor = detail.value.value
     if(valor === 'importar_excel' ){
       this.importar()
     }else if(valor === 'exportar_excel'){
+      const contratista_a_row = (c : Contratista) => {
+        let row = {
+          "Nombre":c.nombre,
+          "CUIT":c.cuit,
+          "Dirección":c.datos_generales.direccion,
+          "Teléfono":c.datos_generales.telefono,
+          "Email":c.datos_generales.email,
+          "Labores_1":c.labores[0]?.labor || "",
+          "Labores_2":c.labores[1]?.labor || "",
+          "Labores_3":c.labores[2]?.labor || "",
+          "Labores_4":c.labores[3]?.labor || "",
+        }
+        return row;
+      }
 
+
+      let data = this._contratistas.map(contratista_a_row)
+
+      
+      const worksheet = utils.json_to_sheet(data);
+      const workbook = utils.book_new();
+      utils.book_append_sheet(workbook, worksheet, "Contratistas");
+      writeFile(workbook, "Contratistas.xlsx");
+      console.log(this._contratistas)
     }
   }
 
