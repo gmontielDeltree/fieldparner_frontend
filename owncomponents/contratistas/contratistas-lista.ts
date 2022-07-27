@@ -161,6 +161,7 @@ export class ContratistasLista extends LitElement {
 
   importar() {
     this._uploaded_contratistas = undefined;
+    this._modal.hide();
     this._modal_excel.show();
     this._excel_file_input.files = []
   }
@@ -276,76 +277,29 @@ export class ContratistasLista extends LitElement {
         });
   }
 
+  menu_click({detail}){
+    console.log("CLICK,", detail)
+    let valor = detail.value.value
+    if(valor === 'importar_excel' ){
+      this.importar()
+    }else if(valor === 'exportar_excel'){
+
+    }
+  }
+
   render() {
-    return html`<div
-        class="modal fade"
-        id="modal"
-        tabindex="-1"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog modal-fullscreen">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel">Contratistas</h5>
-              <vaadin-button theme="primary small" @click=${this.importar}
-                >Importar Excel</vaadin-button
-              >
-
-              <vaadin-menu-bar
-                theme="small"
-                .items="${[{ text: 'Small', children: [{ text: 'Item' }] }]}"
-              ></vaadin-menu-bar>
-
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <vaadin-grid .items=${this._contratistas} all-rows-visible>
-                <vaadin-grid-column
-                  header="Nombre"
-                  path="nombre"
-                  auto-width
-                ></vaadin-grid-column>
-                <vaadin-grid-column
-                  header="CUIT"
-                  path="cuit"
-                ></vaadin-grid-column>
-                <vaadin-grid-column
-                  header="Labores"
-                  .renderer=${this.laboresRenderer}
-                ></vaadin-grid-column>
-                <vaadin-grid-column
-                  header="Acción"
-                  .renderer=${this.statusRenderer}
-                ></vaadin-grid-column>
-              </vaadin-grid>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal -->
+    return html`
+    
+    
+      <!-- Modal Importar-->
       <div
         class="modal fade backdrop"
         id="modal-importar-excel"
+        data-bs-backdrop="static" data-bs-keyboard="false"
         tabindex="-1"
         role="dialog"
       >
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Importar desde Excel</h5>
@@ -399,6 +353,66 @@ export class ContratistasLista extends LitElement {
           </div>
         </div>
       </div>
+
+    
+    
+    
+    
+    <div
+        class="modal fade"
+        id="modal"
+        tabindex="-1"
+        aria-labelledby="exampleModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-fullscreen">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Contratistas</h5>
+
+              <vaadin-menu-bar
+                theme="small"
+                .items="${[{ text: 'Importar/Exportar', children: [{ text: 'Importar Excel',value : "importar_excel" }, { text: 'Exportar Excel', value: 'exportar_excel' }] }]}"
+                @item-selected=${this.menu_click}
+                class='ms-1'
+              ></vaadin-menu-bar>
+
+            </div>
+            <div class="modal-body">
+              <vaadin-grid .items=${this._contratistas} all-rows-visible>
+                <vaadin-grid-column
+                  header="Nombre"
+                  path="nombre"
+                  auto-width
+                ></vaadin-grid-column>
+                <vaadin-grid-column
+                  header="CUIT"
+                  path="cuit"
+                ></vaadin-grid-column>
+                <vaadin-grid-column
+                  header="Labores"
+                  .renderer=${this.laboresRenderer}
+                ></vaadin-grid-column>
+                <vaadin-grid-column
+                  header="Acción"
+                  .renderer=${this.statusRenderer}
+                ></vaadin-grid-column>
+              </vaadin-grid>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    
 
       <contratista-crud
         id="contratista-crud"
