@@ -24,6 +24,7 @@ import "@vaadin/dialog";
 import { read, WorkBook, utils } from "xlsx";
 import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
+import '@vaadin/menu-bar';
 
 export class ContratistasLista extends LitElement {
   @state()
@@ -290,6 +291,12 @@ export class ContratistasLista extends LitElement {
               <vaadin-button theme="primary small" @click=${this.importar}
                 >Importar Excel</vaadin-button
               >
+
+              <vaadin-menu-bar
+                theme="small"
+                .items="${[{ text: 'Small', children: [{ text: 'Item' }] }]}"
+              ></vaadin-menu-bar>
+
               <button
                 type="button"
                 class="btn-close"

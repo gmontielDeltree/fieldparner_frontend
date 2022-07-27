@@ -12,23 +12,23 @@
       error: {
         tooManyFiles: 'Liian monta tiedostoa.',
         fileIsTooBig: 'Tiedosto on liian suuri.',
-        incorrectFileType: 'Väärä tiedostomuoto.',
+        incorrectFileType: 'Archivo Incorrecto',
       },
       uploading: {
         status: {
-          connecting: 'Yhdistetään...',
-          stalled: 'Pysäytetty',
-          processing: 'Käsitellään tiedostoa...',
-          held: 'Jonossa',
+          connecting: 'Conectando',
+          stalled: 'Detenido',
+          processing: 'Procesando',
+          held: 'Esperando',
         },
         remainingTime: {
-          prefix: 'aikaa jäljellä: ',
-          unknown: 'jäljellä olevaa aikaa ei saatavilla',
+          prefix: 'Tiempo estimado: ',
+          unknown: 'Tiempo estimado desconocido',
         },
         error: {
-          serverUnavailable: 'Palvelin ei vastaa',
-          unexpectedServerError: 'Palvelinvirhe',
-          forbidden: 'Kielletty',
+          serverUnavailable: 'Service Worker no disponible',
+          unexpectedServerError: 'Error Inesperado',
+          forbidden: 'Prohibido',
         },
       },
       units: {
