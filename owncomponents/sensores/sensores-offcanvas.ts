@@ -24,15 +24,7 @@ import { format, formatDistance, formatRelative, subDays } from 'date-fns'
 import format from 'date-fns/format'
 
 export class SensoresClass extends LitElement {
-  static override styles: CSSResultGroup = [unsafeCSS(bootstrap),css`
-  .marker {
-    background-image: url('central_marker.png');
-    background-size: cover;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    cursor: pointer;
-  }`];
+  static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
 
   @property()
   map: Map;
@@ -72,8 +64,14 @@ export class SensoresClass extends LitElement {
         const el = document.createElement('div');
         el.className = 'marker';
       
+        el.style.backgroundImage = `url('central_marker_rojo.svg')`;
+        el.style.width = `70px`;
+        el.style.height = `70px`;
+        el.style.backgroundSize = '100%';
+        el.style.cursor = 'pointer';
+
         //console.info("LATLON", latitud, longitud);
-        const marker = new Marker()
+        const marker = new Marker({anchor: 'bottom', element:el})
           .setLngLat([longitud, latitud])
           .addTo(this.map);
 
