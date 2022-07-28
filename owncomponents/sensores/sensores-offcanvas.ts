@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS, render, CSSResultGroup } from "lit";
+import { LitElement, html, unsafeCSS, render, CSSResultGroup, css } from "lit";
 import { property, state } from "lit/decorators.js";
 import "@vaadin/form-layout";
 import "@vaadin/email-field";
@@ -24,7 +24,15 @@ import { format, formatDistance, formatRelative, subDays } from 'date-fns'
 import format from 'date-fns/format'
 
 export class SensoresClass extends LitElement {
-  static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
+  static override styles: CSSResultGroup = [unsafeCSS(bootstrap),css`
+  .marker {
+    background-image: url('central_marker.png');
+    background-size: cover;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+  }`];
 
   @property()
   map: Map;
@@ -61,6 +69,9 @@ export class SensoresClass extends LitElement {
         let latitud = extract_tele("latitud", telemetria).value;
         let longitud = extract_tele("longitud", telemetria).value;
 
+        const el = document.createElement('div');
+        el.className = 'marker';
+      
         //console.info("LATLON", latitud, longitud);
         const marker = new Marker()
           .setLngLat([longitud, latitud])
