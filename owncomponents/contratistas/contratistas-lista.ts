@@ -323,7 +323,7 @@ export class ContratistasLista extends LitElement {
         tabindex="-1"
         role="dialog"
       >
-        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Importar desde Excel</h5>
@@ -355,7 +355,7 @@ export class ContratistasLista extends LitElement {
                 <vaadin-grid .items="${this._uploaded_contratistas}" theme="compact" style="height: 200px;">
                 <vaadin-grid-column path="Nombre" header="Nombre"></vaadin-grid-column>
                 <vaadin-grid-column path="CUIT" header="CUIT"></vaadin-grid-column>
-                <vaadin-grid-column path="Labores" header="E-Mail"></vaadin-grid-column>
+                <vaadin-grid-column path="Email" header="E-Mail"></vaadin-grid-column>
               </vaadin-grid>`:null
               }
               
@@ -363,7 +363,9 @@ export class ContratistasLista extends LitElement {
             </div>
             <div class="modal-footer">
        
-            <a class="btn btn-primary" href="excel_template.xlsx" download="agrotools_contratistas_template.xlsx">Descargar Ejemplo/Template</a>
+            <a class="btn btn-primary d-block d-md-none" href="excel_template.xlsx" download="agrotools_contratistas_template.xlsx">Ejemplo/Template</a>
+
+            <a class="btn btn-primary d-none d-md-block" href="excel_template.xlsx" download="agrotools_contratistas_template.xlsx">Descargar Ejemplo/Template</a>
           
             <button
                 type="button"
