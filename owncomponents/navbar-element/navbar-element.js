@@ -80,7 +80,7 @@ export class NavbarElement extends LitElement {
                     this.sendEvent("ver-lista-campos", null);
                   }}
                 >
-                  Ver Campos
+                  Campos
                 </button>
               </li>
               <li>
@@ -91,7 +91,7 @@ export class NavbarElement extends LitElement {
                     this.sendEvent("ver-depositos-click", null);
                   }}
                 >
-                  Ver Depositos
+                  Depositos
                 </button>
               </li>
               <li>
@@ -102,7 +102,18 @@ export class NavbarElement extends LitElement {
                     this.sendEvent("ver-contratistas-click", null);
                   }}
                 >
-                  Ver Contratistas
+                  Contratistas
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  class="btn btn-outline-success btn-sm mx-1"
+                  @click=${() => {
+                    this.sendEvent("ver-insumos-click", null);
+                  }}
+                >
+                  Insumos 
                 </button>
               </li>
               <li>

@@ -15,14 +15,15 @@ import "../contratistas/contratista-crud.ts";
 import "../contratistas/contratistas-lista.ts";
 import "../sensores/sensores-offcanvas.ts";
 import "../campo-offcanvas/campo-offcanvas.js";
-import "../lote-offcanvas/lote-offcanvas.js"
-import "../nueva-geometria/nueva-geometria.js"
-import "../nuevo-campo/nuevo-campo.js"
-import "../lista-de-campos/lista-de-campos.js"
-import "../navbar-element/navbar-element.js"
-import "../mapa-principal/mapa-principal.js"
-import "../login-modal/login-modal.ts"
-import "../notas-offcanvas/nota-target.ts"
+import "../lote-offcanvas/lote-offcanvas.js";
+import "../nueva-geometria/nueva-geometria.js";
+import "../nuevo-campo/nuevo-campo.js";
+import "../lista-de-campos/lista-de-campos.js";
+import "../navbar-element/navbar-element.js";
+import "../mapa-principal/mapa-principal.js";
+import "../login-modal/login-modal.ts";
+import "../notas-offcanvas/nota-target.ts";
+import "../insumos/insumos-lista.ts";
 
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -30,38 +31,37 @@ import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import uuid4 from "uuid4";
 
 export class FieldPartner extends LitElement {
- @property()
- map : Map 
+  @property()
+  map: Map;
 
- @property()
- draw: MapboxDraw
+  @property()
+  draw: MapboxDraw;
 
- @property()
- campos: any
+  @property()
+  campos: any;
 
- @property()
- campos_db: PouchDB.Database;
+  @property()
+  campos_db: PouchDB.Database;
 
- @property()
- shared_db_remote: PouchDB.Database;
- @property()
- remote_campos_db: PouchDB.Database;
- @property()
- changes_db: PouchDB.Database;
- @property()
- remote_changes_db: PouchDB.Database;
- @property()
- user: any;
+  @property()
+  shared_db_remote: PouchDB.Database;
+  @property()
+  remote_campos_db: PouchDB.Database;
+  @property()
+  changes_db: PouchDB.Database;
+  @property()
+  remote_changes_db: PouchDB.Database;
+  @property()
+  user: any;
 
- @property()
- auth0Client: any
- @property()
- logged_in: boolean
- @property()
- loading: boolean
- @property()
- settings: any
-
+  @property()
+  auth0Client: any;
+  @property()
+  logged_in: boolean;
+  @property()
+  loading: boolean;
+  @property()
+  settings: any;
 
   constructor() {
     super();
@@ -72,18 +72,16 @@ export class FieldPartner extends LitElement {
     this.user.name = "demo";
     this.loading = true;
 
-
-
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener("DOMContentLoaded", () => {
       const parsedUrl = new URL(window.location);
       // searchParams.get() will properly handle decoding the values.
-      console.log('Title shared: ' + parsedUrl.searchParams.get('title'));
-      console.log('Text shared: ' + parsedUrl.searchParams.get('text'));
-      console.log('URL shared: ' + parsedUrl.searchParams.get('url'));
+      console.log("Title shared: " + parsedUrl.searchParams.get("title"));
+      console.log("Text shared: " + parsedUrl.searchParams.get("text"));
+      console.log("URL shared: " + parsedUrl.searchParams.get("url"));
     });
-    
+
     /* Clicks en varios botones */
-    this.addEventListener("ver-campo-detalles", (e : any) => {
+    this.addEventListener("ver-campo-detalles", (e: any) => {
       this.campos_db.get(e.detail.campo_id).then((campo_doc) => {
         document.getElementById("campo-oc").campo_doc = campo_doc;
         document.getElementById("campo-oc").show();
@@ -111,7 +109,7 @@ export class FieldPartner extends LitElement {
     });
 
     this.addEventListener("lote-seleccionado", (e) => {
-      document.getElementById('nota-share-target').seleccion(e.detail)
+      document.getElementById("nota-share-target").seleccion(e.detail);
     });
 
     /* Izar map y draw a este componente para que los otros puedan usarlo */
@@ -131,13 +129,18 @@ export class FieldPartner extends LitElement {
     this.addEventListener("ver-depositos-click", (e) => {
       document.getElementById("depositos-lista").show();
     });
-    
-    /* Click en ver lista de depositios */
+
+    /* Click en ver lista de contratistas */
     this.addEventListener("ver-contratistas-click", (e) => {
       document.getElementById("contratistas-lista").show();
-    })
-    
-      /* Click en ver lista de campos */
+    });
+
+    /* Click en ver lista de insumos */
+    this.addEventListener("ver-insumos-click", (e) => {
+      document.getElementById("insumos-lista").show();
+    });
+
+    /* Click en ver lista de campos */
     this.addEventListener("ver-colores-cultivos", (e) => {
       document.getElementById("colores-cultivos").show();
     });
@@ -168,7 +171,7 @@ export class FieldPartner extends LitElement {
     });
 
     // Share Campo
-    this.addEventListener("share-campo", (e : any) => {
+    this.addEventListener("share-campo", (e: any) => {
       console.log("share campo", e.detail);
 
       let nuevo_shared_campo = { ...e.detail.campo_doc };
@@ -204,7 +207,7 @@ export class FieldPartner extends LitElement {
       document.getElementById("campo-oc").show();
     });
 
-    this.init_the_whole_thing()
+    this.init_the_whole_thing();
   }
 
   createRenderRoot() {
@@ -327,7 +330,7 @@ export class FieldPartner extends LitElement {
         console.log("Replication Completed");
 
         this.load_campos_y_settings();
-        
+
         // then two-way, continuous, retriable sync
         this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
           console.error("SyncError", e);
@@ -451,7 +454,7 @@ export class FieldPartner extends LitElement {
   load_campos_y_settings() {
     this.campos_db
       .compact()
-      .then( (result) => {
+      .then((result) => {
         // handle result
         console.log("Compactacion Local DB Completada");
 
@@ -465,9 +468,12 @@ export class FieldPartner extends LitElement {
           .then((result) => (this.campos = result));
 
         // Get Settings
-        this.campos_db.get("settings").then((settings_doc) => {
-          this.settings = settings_doc;
-        }).catch((e)=>console.error("Load Settings",e));
+        this.campos_db
+          .get("settings")
+          .then((settings_doc) => {
+            this.settings = settings_doc;
+          })
+          .catch((e) => console.error("Load Settings", e));
       })
       .catch(function (err) {
         console.log(err);
@@ -493,7 +499,6 @@ export class FieldPartner extends LitElement {
         .local_campos_changes=${this.changes_db}
         .user=${this.user}
       ></campo-offcanvas>
-  
 
       <lote-offcanvas
         id="lote-oc"
@@ -501,7 +506,7 @@ export class FieldPartner extends LitElement {
         .db=${this.campos_db}
         .settings=${this.settings}
       ></lote-offcanvas>
-  
+
       <nuevo-campo
         id="nuevo-campo-oc"
         .map=${this.map}
@@ -515,9 +520,14 @@ export class FieldPartner extends LitElement {
         .campos=${this.campos}
       ></lista-de-campos>
 
-      
-      <contratista-crud id="contratista-crud" .db=${this.campos_db}></contratista-crud>
-      <contratistas-lista id="contratistas-lista" .db=${this.campos_db}></contratistas-lista>
+      <contratista-crud
+        id="contratista-crud"
+        .db=${this.campos_db}
+      ></contratista-crud>
+      <contratistas-lista
+        id="contratistas-lista"
+        .db=${this.campos_db}
+      ></contratistas-lista>
       <color-cultivo
         id="colores-cultivos"
         .cultivos=${this.settings?.user_cultivos}
@@ -526,7 +536,13 @@ export class FieldPartner extends LitElement {
 
       <sensores-oc .map=${this.map}></sensores-oc>
 
-      <nota-share-target id='nota-share-target' .map=${this.map} .db=${this.campos_db}></nota-share-target>
+      <nota-share-target
+        id="nota-share-target"
+        .map=${this.map}
+        .db=${this.campos_db}
+      ></nota-share-target>
+
+      <insumos-lista id="insumos-lista" .db=${this.campos_db}></insumos-lista>
 
       <deposito-upsert
         id="deposito-upsert"
@@ -536,7 +552,7 @@ export class FieldPartner extends LitElement {
         id="depositos-lista"
         .db=${this.campos_db}
       ></depositos-lista>
-      <db-loader></db-loader> 
+      <db-loader></db-loader>
 
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>
