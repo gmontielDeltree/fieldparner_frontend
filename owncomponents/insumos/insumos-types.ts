@@ -18,6 +18,7 @@ interface Insumo {
   tipo: string;
   subtipo: string;
   unidad: string;
+  precio: number;
   se_aplica_a: CultivoAplicacion[];
   
 }
@@ -32,11 +33,27 @@ const get_empty_insumo = () => {
     tipo: "",
     subtipo: "",
     unidad: "",
+    precio: 0.0,
     se_aplica_a: []
     } ;
 
-  return empty_insumo;
+  return {...empty_insumo};
 }
 
+const get_empty_cultivo = ()=>{
+  let uuid = uuid4()
 
-export { Insumo, get_empty_insumo };
+  const empty_cultivo : CultivoAplicacion = {
+    cultivo : "",
+    uuid : uuid,
+    estadio_desde : "",
+    estadio_hasta : "",
+    dosis_max : 0,
+    dosis_min : 0,
+    dosis_sugerida: 0,
+  }
+
+  return {...empty_cultivo};
+}
+
+export { Insumo, CultivoAplicacion, get_empty_insumo, get_empty_cultivo };

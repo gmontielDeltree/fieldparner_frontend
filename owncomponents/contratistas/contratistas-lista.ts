@@ -91,7 +91,7 @@ export class ContratistasLista extends LitElement {
 
   edit_contratista(c: Contratista) {
     this._modal.hide();
-    this.shadowRoot.getElementById("contratista-crud").edit(c);
+    ((this.shadowRoot.getElementById("contratista-crud")) as ContratistaCrud).edit(c);
   }
 
   borrar_contratista(c: Contratista) {
