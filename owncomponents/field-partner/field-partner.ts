@@ -30,6 +30,24 @@ import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 import uuid4 from "uuid4";
 
+
+const inicializar_insumos = async (db : PouchDB.Database) => {
+
+  try{
+    let settings = await db.get('settings');
+
+    if(!(settings?.insumos_inicializado)){
+      let data = await fetch("/insumos.json").then((response) => response.json())
+      let products = data.products
+  
+    }
+  
+  }catch(e){
+
+  }
+ 
+}
+
 export class FieldPartner extends LitElement {
   @property()
   map: Map;
@@ -149,6 +167,11 @@ export class FieldPartner extends LitElement {
       this.campos_db.put(this.settings);
     });
 
+    this.addEventListener("logged-in",() => {
+        console.log("Logged hoy")
+        inicializar_insumos(this.campos_db);
+    })
+
     // Login
     this.addEventListener("login-click", () => {
       this.loginet();
@@ -230,6 +253,7 @@ export class FieldPartner extends LitElement {
       console.log("Especial Development Flow - Demo User");
       // Logged in
       this.logged_in = true;
+      this.dispatchEvent(new CustomEvent('logged-in'));
       // Default Databases
       this.crear_dbs(this.user);
       // Campos
@@ -238,6 +262,7 @@ export class FieldPartner extends LitElement {
       console.log("Especial Development Flow - Randy User");
       // Logged in
       this.logged_in = true;
+      this.dispatchEvent(new CustomEvent('logged-in'));
       this.user.name = "randy";
       // Default Databases
       this.crear_dbs(this.user);
@@ -283,6 +308,7 @@ export class FieldPartner extends LitElement {
           /* Cargar el ususario y las bases apropiadas*/
           console.log("User is NOW Authenticated");
           this.user = await this.auth0Client.getUser();
+          this.dispatchEvent(new CustomEvent('logged-in'));
           this.crear_dbs(this.user);
         }
 
