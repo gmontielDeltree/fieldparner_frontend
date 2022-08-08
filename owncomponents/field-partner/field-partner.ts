@@ -29,24 +29,7 @@ import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 import uuid4 from "uuid4";
-
-
-const inicializar_insumos = async (db : PouchDB.Database) => {
-
-  try{
-    let settings = await db.get('settings');
-
-    if(!(settings?.insumos_inicializado)){
-      let data = await fetch("/insumos.json").then((response) => response.json())
-      let products = data.products
-  
-    }
-  
-  }catch(e){
-
-  }
- 
-}
+import { get_empty_insumo, Insumo } from "../insumos/insumos-types";
 
 export class FieldPartner extends LitElement {
   @property()
@@ -167,11 +150,6 @@ export class FieldPartner extends LitElement {
       this.campos_db.put(this.settings);
     });
 
-    this.addEventListener("logged-in",() => {
-        console.log("Logged hoy")
-        inicializar_insumos(this.campos_db);
-    })
-
     // Login
     this.addEventListener("login-click", () => {
       this.loginet();
@@ -237,6 +215,43 @@ export class FieldPartner extends LitElement {
     return this;
   }
 
+  delete_insumos = async () => {};
+
+  inicializar_insumos = async () => {
+    try {
+      let settings = await this.campos_db.get("settings");
+
+      if (!settings.insumos_inicializados) {
+        console.log("No hay insumos...Fetching");
+        let data = await fetch("/products.json").then((response) =>
+          response.json()
+        );
+        let products = data.products;
+        let insumos = products.map((p: any) => {
+          let i: Insumo = get_empty_insumo();
+          i.marca_comercial = p.commercial_brand;
+          i.principio_activo = p.supply?.active_substance || "";
+          i.tipo = p.type?.name || "";
+          i.subtipo = p.subtype?.name || "";
+          i.unidad = p.unit.name || "";
+          return i;
+        });
+
+        // this.campos_db.bulkDocs(insumos).then((d)=>{
+        //   settings.insumos_inicializados=true;
+        //   this.campos_db.put(settings)
+        //   this.settings = settings;
+        // });
+
+        console.log("INCUSMOS", insumos);
+      }else{
+        console.log("Los Insumos ya fueron Inicializados")
+      }
+    } catch (e) {
+      console.error("No settings", e);
+    }
+  };
+
   async init_the_whole_thing() {
     let sitio = window.location.hostname;
 
@@ -253,7 +268,6 @@ export class FieldPartner extends LitElement {
       console.log("Especial Development Flow - Demo User");
       // Logged in
       this.logged_in = true;
-      this.dispatchEvent(new CustomEvent('logged-in'));
       // Default Databases
       this.crear_dbs(this.user);
       // Campos
@@ -262,7 +276,6 @@ export class FieldPartner extends LitElement {
       console.log("Especial Development Flow - Randy User");
       // Logged in
       this.logged_in = true;
-      this.dispatchEvent(new CustomEvent('logged-in'));
       this.user.name = "randy";
       // Default Databases
       this.crear_dbs(this.user);
@@ -308,7 +321,6 @@ export class FieldPartner extends LitElement {
           /* Cargar el ususario y las bases apropiadas*/
           console.log("User is NOW Authenticated");
           this.user = await this.auth0Client.getUser();
-          this.dispatchEvent(new CustomEvent('logged-in'));
           this.crear_dbs(this.user);
         }
 
@@ -355,7 +367,7 @@ export class FieldPartner extends LitElement {
       .on("complete", (info) => {
         console.log("Replication Completed");
 
-        this.load_campos_y_settings();
+        //this.load_campos_y_settings();
 
         // then two-way, continuous, retriable sync
         this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
@@ -459,19 +471,52 @@ export class FieldPartner extends LitElement {
   }
 
   /** Crea el objeto settings y lo graba en la db */
-  init_settings() {
+  async init_settings() {
     let settings_doc = {
       _id: "settings",
       tipo: "settings",
       uuid: uuid4(),
+      insumos_inicializados: false,
       user_cultivos: {},
     };
 
     settings_doc.user_cultivos = cultivos_default;
 
-    this.campos_db.put(settings_doc);
-    console.log("Settings Grabadas");
-    this.settings = settings_doc;
+    try {
+        console.log("No hay insumos...Fetching");
+        let data = await fetch("/products.json").then((response) =>
+          response.json()
+        );
+        let products = data.products;
+
+        let insumos = products.map((p: any) => {
+          let i: Insumo = get_empty_insumo();
+          i.marca_comercial = p.commercial_brand;
+          i.principio_activo = p.supply?.active_substance || "";
+          i.tipo = p.type?.name || "";
+          i.subtipo = p.subtype?.name || "";
+          i.unidad = p.unit.name || "";
+          return i;
+        });
+
+        console.log("BulkDocs Insumos")
+        this.campos_db.bulkDocs(insumos).then((d)=>{
+          settings_doc.insumos_inicializados=true;
+          this.campos_db.put(settings_doc)
+          this.settings = settings_doc;
+        });
+
+        console.log("INCUSMOS", insumos);
+      
+    } catch (e) {
+      console.error("Error Fetch Insumos", e);
+      // Grabo de todas maneras el resto de settings
+      this.campos_db.put(settings_doc);
+      console.log("Settings Grabadas");
+      this.settings = settings_doc;
+    }
+
+ 
   }
 
   /** Recarga los campos y settings.
@@ -498,8 +543,14 @@ export class FieldPartner extends LitElement {
           .get("settings")
           .then((settings_doc) => {
             this.settings = settings_doc;
+            this.inicializar_insumos();
           })
-          .catch((e) => console.error("Load Settings", e));
+          .catch((e) => {
+            if (e?.reason === "missing") {
+              this.init_settings();
+            }
+            console.error("Load Settings", e);
+          });
       })
       .catch(function (err) {
         console.log(err);
