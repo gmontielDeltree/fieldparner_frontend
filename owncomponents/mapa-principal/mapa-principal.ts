@@ -124,10 +124,10 @@ export class MapaPrincipal extends LitElement {
     css`
       #map {
         position: absolute;
-        top: 56px;
+        top: 46px;
         bottom: 0;
         width: 100%;
-        height: calc(100vh - 100px) !important;
+        height: calc(100vh - 46px) !important;
       }
 
       .mapboxgl-ctrl-group button + button {
