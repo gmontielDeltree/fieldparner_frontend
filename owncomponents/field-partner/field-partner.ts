@@ -650,6 +650,7 @@ export class FieldPartner extends LitElement {
       <deposito-upsert
         id="deposito-upsert"
         .db=${this.campos_db}
+        .draw=${this.draw}
       ></deposito-upsert>
       <depositos-lista
         id="depositos-lista"

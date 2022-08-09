@@ -3,10 +3,16 @@ import { LitElement, html, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import uuid4 from "uuid4";
 import { normalizar_username } from "../../helpers.js";
+import { Deposito, get_empty_deposito } from "../depositos-types.js";
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import { isThisQuarter } from "date-fns";
 
 export class DepositoUpsert extends LitElement {
   @property()
   user: any;
+  @property()
+  draw: MapboxDraw;
+
   @property({
     hasChanged(newVal: Modal, oldVal: Modal) {
       return false;
@@ -16,12 +22,8 @@ export class DepositoUpsert extends LitElement {
   @property()
   db: any;
   @property()
-  deposito: any;
+  deposito: Deposito = get_empty_deposito();
 
-  constructor() {
-    super();
-    this.deposito = {};
-  }
 
   firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("deposito-modal"));
@@ -37,7 +39,6 @@ export class DepositoUpsert extends LitElement {
 
   guardar() {
     this.deposito._id = "deposito:" + normalizar_username(this.deposito.nombre);
-    this.deposito.uuid = uuid4();
     this.db.put(this.deposito);
   }
 
@@ -73,6 +74,7 @@ export class DepositoUpsert extends LitElement {
                 <input
                   type="text"
                   class="form-control"
+                  .value=${this.deposito.nombre}
                   @input=${this.input_change}
                   name="input-nombre"
                   id="input-nombre"
@@ -83,6 +85,8 @@ export class DepositoUpsert extends LitElement {
                   >El nombre con el que vas a reconocer al deposito en
                   Agrotools</small
                 >
+                
+               
               </div>
             </div>
             <div class="modal-footer">

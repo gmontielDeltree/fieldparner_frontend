@@ -26,6 +26,14 @@ import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
 import '@vaadin/menu-bar';
 
+import { ModuleManager } from 'igniteui-webcomponents-core';
+import { IgcDataGridModule } from 'igniteui-webcomponents-grids';
+import { IgcDataGridComponent } from 'igniteui-webcomponents-grids';
+
+ModuleManager.register(
+    IgcDataGridModule
+);
+
 export class InsumosLista extends LitElement {
   @state()
   _insumos: Insumo[];
@@ -96,7 +104,7 @@ export class InsumosLista extends LitElement {
   }
 
   load_data(){
-    this.db.allDocs({startkey:"insumo:", endkey:"insumo:\ufff0", include_docs:true, limit:100 }).then((e: any) => {
+    this.db.allDocs({startkey:"insumo:", endkey:"insumo:\ufff0", include_docs:true, limit:500 }).then((e: any) => {
       //this._insumos = Object.values(e.);
       console.log("Insumos DOC", e);
       this._insumos = e.rows.map((r) => r.doc)
@@ -411,7 +419,7 @@ export class InsumosLista extends LitElement {
 
               <vaadin-menu-bar
                 theme="small"
-                .items="${[{ text: 'Más Acciones', children: [{ text: 'Nuevo',value : "nuevo" }, { text: 'Importar Excel',value : "importar_excel" }, { text: 'Exportar Excel', value: 'exportar_excel' }] }]}"
+                .items="${[{ text: 'Más Acciones', children: [{ text: 'Nuevo',value : "nuevo" }, { text: 'Exportar Excel', value: 'exportar_excel' }] }]}"
                 @item-selected=${this.menu_click}
                 class='ms-1'
               ></vaadin-menu-bar>
