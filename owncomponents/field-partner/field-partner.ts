@@ -243,9 +243,9 @@ export class FieldPartner extends LitElement {
         //   this.settings = settings;
         // });
 
-        console.log("INCUSMOS", insumos);
-      }else{
-        console.log("Los Insumos ya fueron Inicializados")
+        console.log("INSUMOS", insumos);
+      } else {
+        console.log("Los Insumos ya fueron Inicializados");
       }
     } catch (e) {
       console.error("No settings", e);
@@ -353,7 +353,7 @@ export class FieldPartner extends LitElement {
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Nombres validos solo en minusculas
-    this.campos_db = new PouchDB("campos_" + username);
+    this.campos_db = new PouchDB("campos_" + username + "v1");
     let campos_db_uri = base_url + "campos_" + username;
     console.log("CrearDBS - campos_db_uri", campos_db_uri);
     this.remote_campos_db = new PouchDB(campos_db_uri);
@@ -482,32 +482,37 @@ export class FieldPartner extends LitElement {
 
     settings_doc.user_cultivos = cultivos_default;
 
+
     try {
-        console.log("No hay insumos...Fetching");
-        let data = await fetch("/products.json").then((response) =>
-          response.json()
-        );
-        let products = data.products;
+      console.log("No hay insumos...Fetching");
+      let data = await fetch("/products.json").then((response) =>
+        response.json()
+      );
+      let products = data.products;
 
-        let insumos = products.map((p: any) => {
-          let i: Insumo = get_empty_insumo();
-          i.marca_comercial = p.commercial_brand;
-          i.principio_activo = p.supply?.active_substance || "";
-          i.tipo = p.type?.name || "";
-          i.subtipo = p.subtype?.name || "";
-          i.unidad = p.unit.name || "";
-          return i;
-        });
+      let insumos = products.map((p: any) => {
+        let i: Insumo = get_empty_insumo();
+        i.marca_comercial = p.commercial_brand;
+        i.principio_activo = p.supply?.active_substance || "";
+        i.tipo = p.type?.name || "";
+        i.subtipo = p.subtype?.name || "";
+        i.unidad = p.unit.name || "";
+        return i;
+      });
 
-        console.log("BulkDocs Insumos")
-        this.campos_db.bulkDocs(insumos).then((d)=>{
-          settings_doc.insumos_inicializados=true;
-          this.campos_db.put(settings_doc)
-          this.settings = settings_doc;
-        });
+      console.log("BulkDocs Insumos");
+      this.campos_db.bulkDocs(insumos).then((d) => {
+        settings_doc.insumos_inicializados = true;
+        this.campos_db.put(settings_doc);
+        this.settings = settings_doc;
+      });
 
-        console.log("INCUSMOS", insumos);
-      
+
+      // Creando Contratista
+      let contratista_doc = {_id:"contratistas", contratistas:{}};
+      this.campos_db.put(contratista_doc);
+
+      console.log("INSUMOS", insumos);
     } catch (e) {
       console.error("Error Fetch Insumos", e);
       // Grabo de todas maneras el resto de settings
@@ -515,46 +520,67 @@ export class FieldPartner extends LitElement {
       console.log("Settings Grabadas");
       this.settings = settings_doc;
     }
-
- 
   }
 
   /** Recarga los campos y settings.
    * Fuerza un redibujado de los cambios
    */
   load_campos_y_settings() {
+    // Get Campos
     this.campos_db
-      .compact()
-      .then((result) => {
-        // handle result
-        console.log("Compactacion Local DB Completada");
-
-        // Get Campos
-        this.campos_db
-          .allDocs({
-            include_docs: true,
-            startkey: "campos_",
-            endkey: "campos_\ufff0",
-          })
-          .then((result) => (this.campos = result));
-
-        // Get Settings
-        this.campos_db
-          .get("settings")
-          .then((settings_doc) => {
-            this.settings = settings_doc;
-            this.inicializar_insumos();
-          })
-          .catch((e) => {
-            if (e?.reason === "missing") {
-              this.init_settings();
-            }
-            console.error("Load Settings", e);
-          });
+      .allDocs({
+        include_docs: true,
+        startkey: "campos_",
+        endkey: "campos_\ufff0",
       })
-      .catch(function (err) {
-        console.log(err);
+      .then((result) => (this.campos = result));
+
+    // Get Settings
+    this.campos_db
+      .get("settings")
+      .then((settings_doc) => {
+        this.settings = settings_doc;
+        this.inicializar_insumos();
+      })
+      .catch((e) => {
+        if (e?.reason === "missing") {
+          this.init_settings();
+        }
+        console.error("Load Settings", e);
       });
+
+    // this.campos_db
+    //   .compact()
+    //   .then((result) => {
+    //     // handle result
+    //     console.log("Compactacion Local DB Completada");
+
+    //     // Get Campos
+    //     this.campos_db
+    //       .allDocs({
+    //         include_docs: true,
+    //         startkey: "campos_",
+    //         endkey: "campos_\ufff0",
+    //       })
+    //       .then((result) => (this.campos = result));
+
+    //     // Get Settings
+    //     this.campos_db
+    //       .get("settings")
+    //       .then((settings_doc) => {
+    //         this.settings = settings_doc;
+    //         this.inicializar_insumos();
+    //       })
+    //       .catch((e) => {
+    //         if (e?.reason === "missing") {
+    //           this.init_settings();
+    //         }
+    //         console.error("Load Settings", e);
+    //       });
+    //   })
+    //   .catch(function (err) {
+    //     console.log(err);
+    //   });
   }
   /**** FIN Bases de Datos */
   // #endregion
