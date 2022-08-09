@@ -79,7 +79,7 @@ export class InsumosLista extends LitElement {
   }
 
   load_data(){
-    this.db.allDocs({startkey:"insumo:", endkey:"insumo:\ufff0", include_docs:true }).then((e: any) => {
+    this.db.allDocs({startkey:"insumo:", endkey:"insumo:\ufff0", include_docs:true, limit:100 }).then((e: any) => {
       //this._insumos = Object.values(e.);
       console.log("Insumos DOC", e);
       this._insumos = e.rows.map((r) => r.doc)
