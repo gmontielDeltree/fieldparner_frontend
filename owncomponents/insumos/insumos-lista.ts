@@ -40,7 +40,11 @@ export class InsumosLista extends LitElement {
   @property()
   db: PouchDB.Database;
 
-  @state()
+  @state({
+    hasChanged(newVal: Modal, oldVal: Modal) {
+      return false;
+    },
+  })
   _modal_excel: Modal;
 
   @state()
@@ -76,6 +80,19 @@ export class InsumosLista extends LitElement {
         console.log(rowObject);
       });
     });
+
+
+    // Eventos
+    this.addEventListener("edicion_insumo_guardado",(e)=>{
+      this._modal.show()
+      console.log("EVREC")
+    })
+
+    this.addEventListener("edicion_insumo_cerrado",(e)=>{
+      this._modal.show()
+      console.log("EVREC")
+    })
+
   }
 
   load_data(){

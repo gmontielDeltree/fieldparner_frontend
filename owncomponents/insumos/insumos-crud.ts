@@ -98,8 +98,14 @@ export class InsumoCrud extends LitElement {
 
   private guardar_insumo = () => {
     console.log("Guardar Insumo", this.insumo);
-    this.db.put(this.insumo).then(()=>{
+    this.db.put(this.insumo).then(() => {
       console.log("insumo guardado")
+      if(this._editing){
+        this.dispatchEvent(new CustomEvent("edicion_insumo_guardado",{bubbles:true,composed:true}));
+        this._modal.hide()
+      }
+    }).catch((e)=>{
+      alert("hubo un problema a guardar el insumo")
     })
   };
 
@@ -344,6 +350,13 @@ export class InsumoCrud extends LitElement {
                 type="button"
                 class="btn btn-secondary"
                 data-bs-dismiss="modal"
+                @click=${
+                       ()=>{ if(this._editing){
+                          this.dispatchEvent(new CustomEvent("edicion_insumo_cerrado",{bubbles:true,composed:true}));
+                          this._modal.hide()
+                        }
+                      }
+                }
               >
                 Cerrar
               </button>
