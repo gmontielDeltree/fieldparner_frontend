@@ -442,9 +442,9 @@ export class DepositosLista extends LitElement {
               <div class="tab-content" id="myTabContent">
                 <div
                   class="tab-pane fade show active"
-                  id="home-tab-pane"
+                  id="stocks-tab-pane"
                   role="tabpanel"
-                  aria-labelledby="home-tab"
+                  aria-labelledby="stocks-tab"
                   tabindex="0"
                 >
                   <div class="list-group mt-1">
@@ -473,9 +473,9 @@ export class DepositosLista extends LitElement {
                 </div>
                 <div
                   class="tab-pane fade"
-                  id="profile-tab-pane"
+                  id="entradas-tab-pane"
                   role="tabpanel"
-                  aria-labelledby="profile-tab"
+                  aria-labelledby="entradas-tab"
                   tabindex="0"
                 >
                   <div class="list-group mt-1">

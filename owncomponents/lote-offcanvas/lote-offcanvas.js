@@ -1437,6 +1437,7 @@ export class LoteOffcanvas extends LitElement {
 
       <siembra-add-ui
         id="siembra-add-el"
+        .db=${this.db}
         .contratistas=${this._contratistas}
         ._lote_doc=${this._lote_doc}
         .settings=${this.settings}

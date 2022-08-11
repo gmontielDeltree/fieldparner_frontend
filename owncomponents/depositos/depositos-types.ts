@@ -94,6 +94,7 @@ interface Actividad {
   tipo: string;
   contratista: Contratista;
   comentarios: string;
+  adjuntos: string[];
   detalles: DetallesSiembra | DetallesCosecha | DetallesAplicacion;
 }
 
@@ -140,6 +141,7 @@ export {
   Deposito,
   Entrada,
   TablaStockLinea,
+  Actividad,
   get_empty_deposito,
   get_empty_entrada,
 };

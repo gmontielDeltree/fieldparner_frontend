@@ -1,20 +1,29 @@
 import { createMachine, assign, actions, interpret } from "xstate";
+import { Actividad } from "../depositos/depositos-types";
+import {empty_contratista} from "../contratistas/contratista-types";
+import { get_empty_insumo } from "../insumos/insumos-types";
+
 
 // const { createMachine, assign, actions, interpret } = XState;
-const initial_context = {
-  fecha: "",
-  cultivo: "",
-  variedad: "",
-  peso_1000: 0,
-  densidad_objetivo: 0,
-  semillas_totales: 0,
-  distancia: 0,
-  superficie_real: 0,
-  hectareas: 0,
-  comentario: "",
+const initial_context : Actividad = {
+  _id: "",
+  uuid: "",
+  ts_generacion: 0,
+  tipo:"siembra",
+  detalles:{
+    fecha:0,
+    variedad: "",
+    peso_1000: 0,
+    densidad_objetivo: 0,
+    semillas_totales: 0,
+    distancia: 0,
+    superficie_real: 0,
+    hectareas: 0,
+    insumos:get_empty_insumo(),
+  },
+  comentarios: "",
   adjuntos: [],
-  contratista:{},
-  insumos:[],
+  contratista:{...empty_contratista},
 };
 
 export const siembraMachine = createMachine({
@@ -47,7 +56,8 @@ export const siembraMachine = createMachine({
             },
             CHANGE: {
               actions: assign({
-                fecha: (context, event) => (context.fecha = event.value),
+                detalles: (ctx, event) => {ctx.detalles.fecha = event.value;
+                                            return ctx.detalles},
               }),
             },
             ASSIGN_CONTRATISTA:{
@@ -61,7 +71,8 @@ export const siembraMachine = createMachine({
           on: {
             CHANGE: {
               actions: assign({
-                hectareas: (ctx, e) => (ctx.hectareas = e.value),
+                detalles: (ctx, e) => {ctx.detalles.hectareas = e.value;
+                  return ctx.detalles},
               }),
             },
             BACK: {
@@ -78,11 +89,11 @@ export const siembraMachine = createMachine({
               target: "hectareas",
             },
             NEXT: {
-              target: "variedad",
+              target: "peso_1000",
             },
-            CHANGE: {
+            SELECTED: {
               actions: assign({
-                cultivo: (ctx, e) => e.value,
+                detalles: (ctx, e) => {ctx.detalles.insumos = e.value},
               }),
             },
           },
@@ -100,11 +111,11 @@ export const siembraMachine = createMachine({
         },
         peso_1000: {
           on: {
-            BACK: { target: "variedad" },
+            BACK: { target: "cultivo" },
             NEXT: { target: "densidad" },
             CHANGE: {
               actions: assign({
-                peso_1000: (ctx, e) => e.value,
+                detalles: (ctx, e) => {ctx.detalles.peso_1000 = e.value},
               }),
             },
           },
@@ -115,7 +126,7 @@ export const siembraMachine = createMachine({
             NEXT: { target: "distancia" },
             CHANGE: {
               actions: assign({
-                densidad_objetivo: (ctx, e) => e.value,
+                detalles: (ctx, e) => {ctx.detalles.densidad = e.value},
               }),
             },
           },
@@ -126,7 +137,7 @@ export const siembraMachine = createMachine({
             NEXT: { target: "comentario" },
             CHANGE: {
               actions: assign({
-                distancia: (ctx, e) => e.value,
+                detalles: (ctx, e) => {ctx.detalle.distancia = e.value},
               }),
             },
           },
