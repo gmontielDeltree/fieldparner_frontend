@@ -26,13 +26,13 @@ import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
 import '@vaadin/menu-bar';
 
-import { ModuleManager } from 'igniteui-webcomponents-core';
-import { IgcDataGridModule } from 'igniteui-webcomponents-grids';
-import { IgcDataGridComponent } from 'igniteui-webcomponents-grids';
+// import { ModuleManager } from 'igniteui-webcomponents-core';
+// import { IgcDataGridModule } from 'igniteui-webcomponents-grids';
+// import { IgcDataGridComponent } from 'igniteui-webcomponents-grids';
 
-ModuleManager.register(
-    IgcDataGridModule
-);
+// ModuleManager.register(
+//     IgcDataGridModule
+// );
 
 export class InsumosLista extends LitElement {
   @state()

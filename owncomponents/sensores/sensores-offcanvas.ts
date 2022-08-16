@@ -58,28 +58,34 @@ export class SensoresClass extends LitElement {
       //console.log("LAST TELEMETRY", devices_last_telemetry);
 
       devices_last_telemetry.map((telemetria) => {
-        let latitud = extract_tele("latitud", telemetria).value;
-        let longitud = extract_tele("longitud", telemetria).value;
-
-        const el = document.createElement('div');
-        el.className = 'marker';
-      
-        el.style.backgroundImage = `url('central_marker_rojo.svg')`;
-        el.style.width = `70px`;
-        el.style.height = `70px`;
-        el.style.backgroundSize = '100%';
-        el.style.cursor = 'pointer';
-
-        //console.info("LATLON", latitud, longitud);
-        const marker = new Marker({anchor: 'bottom', element:el})
-          .setLngLat([longitud, latitud])
-          .addTo(this.map);
-
-        /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
-        marker.getElement().addEventListener(touchEvent, () => {
-          this._selected_device = telemetria;
-          this.show();
-        });
+        try{
+          let latitud = extract_tele("latitud", telemetria).value;
+          let longitud = extract_tele("longitud", telemetria).value;
+  
+          const el = document.createElement('div');
+          el.className = 'marker';
+        
+          el.style.backgroundImage = `url('centralmeteorologica.png')`;
+          el.style.backgroundSize = 'cover';
+          el.style.width = `90px`;
+          el.style.height = `70px`;
+          //el.style.backgroundSize = '100%';
+          el.style.cursor = 'pointer';
+  
+          //console.info("LATLON", latitud, longitud);
+          const marker = new Marker({anchor: 'bottom', element:el})
+            .setLngLat([longitud, latitud])
+            .addTo(this.map);
+  
+          /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
+          marker.getElement().addEventListener(touchEvent, () => {
+            this._selected_device = telemetria;
+            this.show();
+          });
+        }catch{
+          console.info("Error Al hacer el marcador de dispositivo")
+        }
+        
       });
     }
   }
