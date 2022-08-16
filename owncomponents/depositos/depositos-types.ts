@@ -95,6 +95,7 @@ interface Actividad {
   contratista: Contratista;
   comentarios: string;
   adjuntos: string[];
+  estado: string;
   detalles: DetallesSiembra | DetallesCosecha | DetallesAplicacion;
 }
 
