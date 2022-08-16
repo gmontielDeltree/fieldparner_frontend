@@ -10,18 +10,18 @@ const initial_context : Actividad = {
   uuid: "",
   ts_generacion: 0,
   tipo:"siembra",
+  estado:"",
+  lote_uuid:"",
   detalles:{
-    fecha:0,
-    variedad: "",
+    fecha_ejecucion_tentativa:"",
     peso_1000: 0,
     densidad_objetivo: 0,
     semillas_totales: 0,
     distancia: 0,
-    superficie_real: 0,
     hectareas: 0,
-    insumos:get_empty_insumo(),
+    insumo:get_empty_insumo(),
   },
-  comentarios: "",
+  comentario: "",
   adjuntos: [],
   contratista:{...empty_contratista},
 };
@@ -56,7 +56,7 @@ export const siembraMachine = createMachine({
             },
             CHANGE: {
               actions: assign({
-                detalles: (ctx, event) => {ctx.detalles.fecha = event.value;
+                detalles: (ctx, event) => {ctx.detalles.fecha_ejecucion_tentativa = event.value;
                                             return ctx.detalles},
               }),
             },
@@ -93,7 +93,8 @@ export const siembraMachine = createMachine({
             },
             SELECTED: {
               actions: assign({
-                detalles: (ctx, e) => {ctx.detalles.insumos = e.value},
+                detalles: (ctx : Actividad, e) => {ctx.detalles.insumo = e.value; 
+                  return ctx.detalles;},
               }),
             },
           },
@@ -115,7 +116,9 @@ export const siembraMachine = createMachine({
             NEXT: { target: "densidad" },
             CHANGE: {
               actions: assign({
-                detalles: (ctx, e) => {ctx.detalles.peso_1000 = e.value},
+                detalles: (ctx, e) => {ctx.detalles.peso_1000 = e.value;
+                  return ctx.detalles;
+                },
               }),
             },
           },
@@ -126,7 +129,10 @@ export const siembraMachine = createMachine({
             NEXT: { target: "distancia" },
             CHANGE: {
               actions: assign({
-                detalles: (ctx, e) => {ctx.detalles.densidad = e.value},
+                detalles: (ctx, e) => {
+                  ctx.detalles.densidad = e.value;
+                  return ctx.detalles;
+                },
               }),
             },
           },
@@ -137,7 +143,9 @@ export const siembraMachine = createMachine({
             NEXT: { target: "comentario" },
             CHANGE: {
               actions: assign({
-                detalles: (ctx, e) => {ctx.detalle.distancia = e.value},
+                detalles: (ctx, e) => {ctx.detalles.distancia = e.value;
+                  return ctx.detalles;
+                },
               }),
             },
           },

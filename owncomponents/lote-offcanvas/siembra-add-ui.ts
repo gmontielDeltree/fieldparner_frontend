@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit";
-import { interpret } from "xstate";
+import { interpret, StateMachine } from "xstate";
 import { siembraMachine } from "./siembra-machine";
 import "../lista-searchable/lista-searchable.js";
 import PouchDB from "pouchdb";
@@ -7,35 +7,57 @@ import { base_url } from "../helpers";
 import uuid4 from "uuid4";
 import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
-import { format } from 'date-fns'
+import { format } from "date-fns";
 import { filter } from "jszip";
 import Modal from "bootstrap/js/dist/modal.js";
-
+import { Actividad, DetallesSiembra } from "../depositos/depositos-types";
+import { property, state } from "lit/decorators.js";
+import { ComboBox } from "@vaadin/combo-box";
+import parseISO from "date-fns/parseISO";
 
 export class SiembraAddUI extends LitElement {
-  static properties = {
-    db:{},
-    lote_id: {},
-    campo_id: {},
-    lote_nombre: {},
-    contratistas: {},
-    _steps_elements: {
-      hasChanged(newVal, oldVal) {
-        return false;
-      }},
-    _ctx: {},
-    _campo_doc: {},
-    _lote_doc: {},
-    settings: {},
-    cultivo_input: {},
-    es_nuevo_cultivo: {},
-    cultivos_filtrados: {},
-    fsm: { state: true },
-    _insumos: {},
-    _variedades_db_local: {},
-    _variedades_db_remote: {},
-    _filtered_variedades_docs: {},
-  };
+  @property()
+  db: PouchDB.Database;
+
+  @property()
+  lote_id: any;
+
+  @property()
+  campo_id: any;
+
+  @property()
+  lote_nombre: any;
+
+  @property()
+  contratistas: any;
+
+  @property()
+  settings: any;
+
+  @state({
+    hasChanged(newVal, oldVal) {
+      return false;
+    },
+  })
+  _steps_elements: Modal[];
+
+  @state()
+  _ctx: Actividad = siembraMachine.initialState.context;
+
+  @state()
+  _campo_doc: any;
+
+  @state()
+  _lote_doc: any;
+
+  @state()
+  _fsm: any;
+
+  @state()
+  _insumos: any;
+
+  @state()
+  _editando: boolean;
 
   static styles = null;
 
@@ -43,14 +65,19 @@ export class SiembraAddUI extends LitElement {
     return this;
   }
 
-  load_data(){
-    this.db.allDocs({startkey:"insumo:", endkey:"insumo:\ufff0", include_docs:true})
-    .then((e) => {
-      //this._insumos = Object.values(e.);
-      console.log("Insumos DOC", e);
-      this._insumos = e.rows.map((r) => r.doc)
-    })
-    .catch((e) => {});
+  load_data() {
+    this.db
+      .allDocs({
+        startkey: "insumo:",
+        endkey: "insumo:\ufff0",
+        include_docs: true,
+      })
+      .then((e) => {
+        //this._insumos = Object.values(e.);
+        console.log("Insumos DOC", e);
+        this._insumos = e.rows.map((r) => r.doc);
+      })
+      .catch((e) => {});
   }
 
   constructor() {
@@ -59,11 +86,9 @@ export class SiembraAddUI extends LitElement {
      * Sensible default para el contexto
      */
 
-    this._ctx = siembraMachine.initialState.context;
-    this.cultivos_filtrados = {};
+    // this.cultivos_filtrados = {};
     this.init_fsm();
-    this.es_nuevo_cultivo = false;
-    
+    // this.es_nuevo_cultivo = false;
   }
 
   show_step = (n) => {
@@ -92,37 +117,42 @@ export class SiembraAddUI extends LitElement {
       this.init_fsm();
     }
     if (changedProperties.has("settings")) {
-      this.cultivos_filtrados = this.settings.user_cultivos;
-
-      this._variedades_db_remote = new PouchDB(base_url + "variedades");
-      this._variedades_db_local = new PouchDB("variedades");
+      // this.cultivos_filtrados = this.settings.user_cultivos;
+      //this._variedades_db_remote = new PouchDB(base_url + "variedades");
+      //this._variedades_db_local = new PouchDB("variedades");
       //PouchDB.replicate(this._variedades_db_remote, this._variedades_db_local, {retry:true, live:true})
     }
-    
-    if(changedProperties.has("db")){
-      this.load_data()
+
+    if (changedProperties.has("db")) {
+      this.load_data();
     }
   }
 
   start() {
     /* Some UI cleaning */
-    document.getElementById('contratista-combo').clear()
+    (document.getElementById("contratista-combo") as ComboBox).clear();
 
-
-    this.fsm.stop();
+    this._fsm.stop();
     this.init_fsm();
-    this.fsm.start();
-    this.fsm.send({ type: "NEXT" });
+    this._fsm.start();
+    this._fsm.send({ type: "NEXT" });
+    this._editando = false;
   }
 
   init_fsm() {
-    const someContext = { ...siembraMachine.initialState.context };
+    const someContext: Actividad = { ...siembraMachine.initialState.context };
     someContext.detalles.hectareas = this._lote_doc?.properties.hectareas || 0;
     console.log("Hectareas ", someContext.detalles.hectareas);
-    someContext.detalles.fecha = format(new Date(), "yyyy-MM-dd")
+    someContext.detalles.fecha_ejecucion_tentativa = format(
+      new Date(),
+      "yyyy-MM-dd"
+    );
     this._ctx = someContext;
+    this.init_fsm_with_ctx(this._ctx);
+  }
 
-    this.fsm = interpret(siembraMachine.withContext(someContext))
+  init_fsm_with_ctx(ctx) {
+    this._fsm = interpret(siembraMachine.withContext(ctx))
       .onTransition((state) => {
         this._ctx = state.context;
         console.log(state.value);
@@ -154,118 +184,161 @@ export class SiembraAddUI extends LitElement {
       .start();
   }
 
+  editar(act: Actividad) {
+    this._ctx = act;
+    this._fsm.stop();
+    this.init_fsm_with_ctx(this._ctx);
+    this._fsm.start();
+    this._fsm.send({ type: "NEXT" });
+
+    // Algunos controles necesita inicializacion
+    this._editando = true;
+  }
+
   guardar() {
     // Enviar Evento
-    let siembra = this._ctx;
-    const event = new CustomEvent("guardar-siembra", {
-      detail: siembra,
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+    let siembra: Actividad = this._ctx as Actividad;
 
-    this.fsm.send({ type: "GUARDAR" });
+    let old_id;
+    if(this._editando){
+      old_id = siembra._id;
+    }
+
+    // Nuevo
+    let uuid = uuid4();
+    siembra.lote_uuid = this._lote_doc.properties.uuid;
+
+    let fecha = format(
+      parseISO(siembra.detalles.fecha_ejecucion_tentativa),
+      "yyyyMMdd"
+    );
+
+    siembra._id = "actividad:" + fecha + ":" + uuid;
+    siembra.uuid = uuid;
+
+    if(this._editando){
+      const event = new CustomEvent("guardar-edicion", {
+        detail: {old_id: old_id, actividad: siembra},
+        bubbles: true,
+        composed: true,
+      });
+  
+      this.dispatchEvent(event);
+    }else{
+      const event = new CustomEvent("guardar-siembra", {
+        detail: siembra,
+        bubbles: true,
+        composed: true,
+      });
+  
+      this.dispatchEvent(event);
+    }
+
+
+
+    
+
+    this._fsm.send({ type: "GUARDAR" });
 
     // Si hay cultivos nuevos y/o varidades enviar otro evento
     // para que la aplicacion tome accion apropiada
 
-    let es_nuevo_cultivo = document.getElementById("cultivo-input").es_nuevo;
-    let es_nueva_variedad = document.getElementById("variedad-input").es_nuevo;
+    //let es_nuevo_cultivo = document.getElementById("cultivo-input").es_nuevo;
+    //let es_nueva_variedad = document.getElementById("variedad-input").es_nuevo;
 
-    if (es_nuevo_cultivo) {
-      // Evento para que se actualicen las settings en FP
-    }
+    // if (es_nuevo_cultivo) {
+    //   // Evento para que se actualicen las settings en FP
+    // }
 
-    if (es_nueva_variedad) {
-      // Grabo la variedad aca
-      console.log("es Nueva Variedad");
-      let id =
-        this._ctx.cultivo.toUpperCase() +
-        ":" +
-        this._ctx.variedad.toUpperCase();
-      let nv = {};
-      nv._id = id;
-      nv.especie = this._ctx.cultivo.toUpperCase();
-      nv.cultivar = this._ctx.variedad.toUpperCase();
-      nv.uuid = uuid4();
-      this._variedades_db_local.put(nv);
-    }
+    // if (es_nueva_variedad) {
+    //   // Grabo la variedad aca
+    //   console.log("es Nueva Variedad");
+    //   let id =
+    //     this._ctx.cultivo.toUpperCase() +
+    //     ":" +
+    //     this._ctx.variedad.toUpperCase();
+    //   let nv = {};
+    //   nv._id = id;
+    //   nv.especie = this._ctx.cultivo.toUpperCase();
+    //   nv.cultivar = this._ctx.variedad.toUpperCase();
+    //   nv.uuid = uuid4();
+    //   this._variedades_db_local.put(nv);
+    // }
   }
 
-  solo_contratistas_siembra(){
-
+  solo_contratistas_siembra() {
     /**
-     * 
-     * @param {array} labores 
-     * @param {*} nombre_labor 
+     *
+     * @param {array} labores
+     * @param {*} nombre_labor
      * @returns true - nombre_labor existe en el array de labores
      */
-    const tiene_labor = (labores, nombre_labor) =>{
-      let a = labores?.filter((labor) => labor.labor === nombre_labor)
-      if(a?.length > 0){
+    const tiene_labor = (labores, nombre_labor) => {
+      let a = labores?.filter((labor) => labor.labor === nombre_labor);
+      if (a?.length > 0) {
         return true;
       }
       return false;
-    }
+    };
 
-    let filtered_contratistas = []
+    let filtered_contratistas = [];
 
-    //console.log("FILTRADO", this.contratistas)
+    console.log("FILTRADO", this.contratistas);
     Object.values(this.contratistas.contratistas).map((value) => {
       //console.log("COntra", value)
-      if(tiene_labor(value.labores,"Siembra")){
+      if (tiene_labor(value.labores, "Siembra")) {
         filtered_contratistas.push(value);
       }
-    })
+    });
 
     //console.log(filtered_contratistas)
     return filtered_contratistas;
-
   }
 
   cultivo_input_changed(e) {
-    console.log("IN OPUT EVENT", e);
-    this.fsm.send({ type: "CHANGE", value: e.target.value });
-    if (!e.target.es_nuevo) {
-      let cultivo = e.target.value;
-      console.log("Cultivo", cultivo);
-
-      // LA DB NO TIENE ACENTO y esta en Mayus
-      this._variedades_db_local
-        .allDocs({
-          include_docs: true,
-          startkey: cultivo.toUpperCase(),
-          endkey: cultivo.toUpperCase() + "\ufff0",
-        })
-        .then((variedades_docs) => {
-          this._filtered_variedades_docs = variedades_docs.rows.map(
-            (d) => d.doc
-          );
-          console.log("Filtered Variedades", variedades_docs);
-        });
-    }
+    // console.log("IN OPUT EVENT", e);
+    // this._fsm.send({ type: "CHANGE", value: e.target.value });
+    // if (!e.target.es_nuevo) {
+    //   let cultivo = e.target.value;
+    //   console.log("Cultivo", cultivo);
+    //   // LA DB NO TIENE ACENTO y esta en Mayus
+    //   this._variedades_db_local
+    //     .allDocs({
+    //       include_docs: true,
+    //       startkey: cultivo.toUpperCase(),
+    //       endkey: cultivo.toUpperCase() + "\ufff0",
+    //     })
+    //     .then((variedades_docs) => {
+    //       this._filtered_variedades_docs = variedades_docs.rows.map(
+    //         (d) => d.doc
+    //       );
+    //       console.log("Filtered Variedades", variedades_docs);
+    //     });
+    // }
   }
 
   render() {
+    let detalles = this._ctx.detalles as DetallesSiembra;
+
     let cancel_back_next = () => html` <button
         type="button"
         class="btn btn-secondary"
         data-bs-dismiss="modal"
-        @click=${() => this.fsm.send("CANCEL")}
+        @click=${() => this._fsm.send("CANCEL")}
       >
         Cancelar
       </button>
       <button
         type="button"
         class="btn btn-primary"
-        @click=${() => this.fsm.send("BACK")}
+        @click=${() => this._fsm.send("BACK")}
       >
         Atras
       </button>
       <button
         type="button"
         class="btn btn-primary"
-        @click=${() => this.fsm.send("NEXT")}
+        @click=${() => this._fsm.send("NEXT")}
       >
         Siguiente
       </button>`;
@@ -291,15 +364,15 @@ export class SiembraAddUI extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               ></button>
             </div>
             <div class="modal-body mx-auto">
               <date-picker
-                id='siembra-fecha'
-                .fecha=${this._ctx.detalles.fecha}
+                id="siembra-fecha"
+                .fecha=${detalles.fecha_ejecucion_tentativa}
                 @change=${(e) => {
-                  this.fsm.send({
+                  this._fsm.send({
                     type: "CHANGE",
                     value: e.target.fecha,
                   });
@@ -307,7 +380,7 @@ export class SiembraAddUI extends LitElement {
               ></date-picker>
 
               <vaadin-combo-box
-                id='contratista-combo'
+                id="contratista-combo"
                 allow-custom-value
                 @custom-value-set="${() => {
                   console.log("Nuevo Value");
@@ -315,16 +388,18 @@ export class SiembraAddUI extends LitElement {
                 label="Contratista"
                 item-label-path="nombre"
                 item-value-path="uuid"
-                .items="${this.contratistas ? this.solo_contratistas_siembra() : []}"
+                .selectedItem=${this._ctx.contratista}
+                .items="${this.contratistas
+                  ? this.solo_contratistas_siembra()
+                  : []}"
                 @selected-item-changed=${(e) => {
-                  console.log("e",e)
-                  this.fsm.send({
+                  console.log("e", e);
+                  this._fsm.send({
                     type: "ASSIGN_CONTRATISTA",
                     value: e.detail.value,
                   });
                 }}
               ></vaadin-combo-box>
-              
             </div>
 
             <div class="modal-footer">
@@ -332,14 +407,14 @@ export class SiembraAddUI extends LitElement {
                 type="button"
                 class="btn btn-secondary"
                 data-bs-dismiss="modal"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 class="btn btn-primary"
-                @click=${() => this.fsm.send("NEXT")}
+                @click=${() => this._fsm.send("NEXT")}
               >
                 Siguiente
               </button>
@@ -368,7 +443,7 @@ export class SiembraAddUI extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               ></button>
             </div>
             <div class="modal-body mx-auto">
@@ -376,9 +451,9 @@ export class SiembraAddUI extends LitElement {
                 <input
                   type="number"
                   class="form-control"
-                  .value=${this._ctx.detalles.hectareas}
+                  .value=${detalles.hectareas}
                   @change=${(e) =>
-                    this.fsm.send({
+                    this._fsm.send({
                       type: "CHANGE",
                       value: +e.target.value,
                     })}
@@ -418,29 +493,30 @@ export class SiembraAddUI extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               ></button>
             </div>
             <div class="container-fluid modal-body mx-auto"></div>
 
             <vaadin-combo-box
-                id='marca-comercial-combo'
-                allow-custom-value
-                @custom-value-set="${() => {
-                  console.log("Nuevo Value");
-                }}"
-                label="Insumo"
-                item-label-path="marca_comercial"
-                item-value-path="uuid"
-                .items="${this._insumos ? this._insumos : []}"
-                @selected-item-changed=${(e) => {
-                  console.log("e",e)
-                  this.fsm.send({
-                    type: "SELECTED",
-                    value: e.detail.value,
-                  });
-                }}
-              ></vaadin-combo-box>
+              id="marca-comercial-combo"
+              allow-custom-value
+              @custom-value-set="${() => {
+                console.log("Nuevo Value");
+              }}"
+              label="Insumo"
+              item-label-path="marca_comercial"
+              item-value-path="uuid"
+              .selectedItem=${detalles.insumo}
+              .items="${this._insumos ? this._insumos : []}"
+              @selected-item-changed=${(e) => {
+                console.log("e", e);
+                this._fsm.send({
+                  type: "SELECTED",
+                  value: e.detail.value,
+                });
+              }}
+            ></vaadin-combo-box>
 
             <div class="modal-footer">${cancel_back_next()}</div>
           </div>
@@ -467,12 +543,11 @@ export class SiembraAddUI extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               ></button>
             </div>
             <div class="container-fluid  modal-body mx-auto">
-              <p class="row mx-2">
-              </p>
+              <p class="row mx-2"></p>
             </div>
             <div class="modal-footer">${cancel_back_next()}</div>
           </div>
@@ -499,7 +574,7 @@ export class SiembraAddUI extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               ></button>
             </div>
             <div class="modal-body mx-auto">
@@ -507,9 +582,9 @@ export class SiembraAddUI extends LitElement {
                 <input
                   type="number"
                   class="form-control"
-                  .value=${this._ctx.detalles.peso_1000}
+                  .value=${detalles.peso_1000}
                   @change=${(e) =>
-                    this.fsm.send({
+                    this._fsm.send({
                       type: "CHANGE",
                       value: e.target.value,
                     })}
@@ -549,7 +624,7 @@ export class SiembraAddUI extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               ></button>
             </div>
             <div class="modal-body mx-auto">
@@ -557,9 +632,9 @@ export class SiembraAddUI extends LitElement {
                 <input
                   type="number"
                   class="form-control"
-                  .value=${this._ctx.detalles.densidad_objetivo}
+                  .value=${detalles.densidad_objetivo}
                   @change=${(e) =>
-                    this.fsm.send({
+                    this._fsm.send({
                       type: "CHANGE",
                       value: e.target.value,
                     })}
@@ -600,7 +675,7 @@ export class SiembraAddUI extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               ></button>
             </div>
             <div class="modal-body mx-auto">
@@ -608,9 +683,9 @@ export class SiembraAddUI extends LitElement {
                 <input
                   type="number"
                   class="form-control"
-                  .value=${this._ctx.distancia}
+                  .value=${detalles.distancia}
                   @change=${(e) =>
-                    this.fsm.send({
+                    this._fsm.send({
                       type: "CHANGE",
                       value: e.target.value,
                     })}
@@ -649,7 +724,7 @@ export class SiembraAddUI extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               ></button>
             </div>
             <div class="modal-body mx-auto">
@@ -680,7 +755,7 @@ export class SiembraAddUI extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               ></button>
             </div>
             <div class="modal-body mx-auto w-100">
@@ -692,9 +767,9 @@ export class SiembraAddUI extends LitElement {
                 placeholder="Ingresa alguna nota aquí"
                 name="story"
                 rows="5"
-                .value=${this._ctx.detalles.comentario}
+                .value=${this._ctx.comentario}
                 @change=${(e) =>
-                  this.fsm.send({ type: "CHANGE", value: e.target.value })}
+                  this._fsm.send({ type: "CHANGE", value: e.target.value })}
               ></textarea>
             </div>
             <div class="modal-footer">${cancel_back_next()}</div>
@@ -720,23 +795,21 @@ export class SiembraAddUI extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               ></button>
             </div>
             <div class="modal-body w-100 mx-auto">
               <div class="d-flex w-100 justify-content-between">
                 <h5 class="mb-1">
-                  Siembra de ${this._ctx.detalles.insumos.marca_comercial} - ${this._ctx.detalles.variedad}
+                  Siembra de ${detalles.insumo.marca_comercial} -
                 </h5>
-                <small>${this._ctx.detalles.fecha}</small>
+                <small>${detalles.fecha_ejecucion_tentativa}</small>
               </div>
               <p class="mb-1">
-                Surco: ${this._ctx.detalles.distancia} cm. - Densidad Objetivo:
-                ${this._ctx.detalles.densidad_objetivo} plantas/ha.
+                Surco: ${detalles.distancia} cm. - Densidad Objetivo:
+                ${detalles.densidad_objetivo} plantas/ha.
               </p>
-              <p class="mb-1">
-                Peso 1000 semillas: ${this._ctx.detalles.peso_1000} grs.
-              </p>
+              <p class="mb-1">Peso 1000 semillas: ${detalles.peso_1000} grs.</p>
               <small>${this._ctx.comentario}</small>
             </div>
             <div class="modal-footer">
@@ -744,14 +817,14 @@ export class SiembraAddUI extends LitElement {
                 type="button"
                 class="btn btn-secondary"
                 data-bs-dismiss="modal"
-                @click=${() => this.fsm.send("CANCEL")}
+                @click=${() => this._fsm.send("CANCEL")}
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 class="btn btn-primary"
-                @click=${() => this.fsm.send("BACK")}
+                @click=${() => this._fsm.send("BACK")}
               >
                 Atras
               </button>

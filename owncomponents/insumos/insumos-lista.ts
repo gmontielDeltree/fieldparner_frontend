@@ -58,7 +58,11 @@ export class InsumosLista extends LitElement {
   @state()
   _uploaded_contratistas : any; 
 
-  @state()
+  @state({
+    hasChanged(newVal: Upload, oldVal: Upload) {
+      return false;
+    },
+  })
   _excel_file_input : Upload;
 
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];

@@ -4,6 +4,8 @@ import moment from "moment";
 import "moment/dist/locale/es";
 import { stock_suficiente } from "../../helpers/stock.ts";
 import { parse, compareDesc, format } from "date-fns";
+import { property, state } from "lit/decorators.js";
+import { Actividad, DetallesSiembra } from "../../depositos/depositos-types";
 
 const p_from_insumo = (i) => {
   const motivos_2_str = (motivos) => {
@@ -254,13 +256,17 @@ const extraer_fecha = (actividad) => {
 };
 
 export class TimelineElement extends LitElement {
-  static properties = {
-    actividades: {},
-    actividades_docs: {},
-    db: {},
-    fsm: { state: true },
-    stock_tag_table: {},
-  };
+  @property()
+  a: Actividad[];
+
+  //static: properties = {
+  //actividades: {},
+  //actividades_docs: {},
+  //a: {},
+  //db: {},
+  //fsm: { state: true },
+  //stock_tag_table: {},
+  //};
 
   static styles = [timeline_css];
 
@@ -289,6 +295,15 @@ export class TimelineElement extends LitElement {
     });
     this.dispatchEvent(event);
   }
+  
+  evento_editar(act_doc : Actividad) {
+    const event = new CustomEvent("editar-actividad", {
+      detail: { act_doc: act_doc },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
 
   nota_eliminar(nota_doc) {
     let event = new CustomEvent("eliminar-nota", {
@@ -310,22 +325,22 @@ export class TimelineElement extends LitElement {
 
   constructor() {
     super();
-    this.stock_tag_table = {};
+    // this.stock_tag_table = {};
   }
 
   willUpdate(props) {
     if (props.has("actividades") && this.db) {
       // Calcular tags
       let nt = {};
-      this.actividades.map((act) => {
-        //console.log("CALC STOKS I")
-        stock_suficiente(this.db, act).then((status) => {
-          nt[act.uuid] = status;
-          this.stock_tag_table = { ...nt };
-        });
-      });
+      // this.actividades.map((act) => {
+      //   //console.log("CALC STOKS I")
+      //   stock_suficiente(this.db, act).then((status) => {
+      //     nt[act.uuid] = status;
+      //     this.stock_tag_table = { ...nt };
+      //   });
+      // });
 
-      //console.log("StockTagTable", this.stock_tag_table)
+      // //console.log("StockTagTable", this.stock_tag_table)
     }
   }
 
@@ -377,7 +392,7 @@ export class TimelineElement extends LitElement {
         : html` <span class="badge bg-danger">Stock Insuficiente</span>`}
     </p>`;
 
-    const time_item = (item) => {
+    const time_item = (item : Actividad) => {
       if ("doc" in item) {
         // Es un documento
         //console.log("OOOOOOOOOOO NOTA", item)
@@ -479,64 +494,58 @@ export class TimelineElement extends LitElement {
 
       //console.log("ITEM STT", this.stock_tag_table[item.uuid], item, item.uuid )
       if (item.tipo === "aplicacion") {
-        let fecha = item.detalles.fecha;
-        let hectareas = item.detalles.hectareas;
-        let insumos = item.detalles.insumos;
-        let comentarios = item.detalles.comentarios;
-
-        let list_of_ps = insumos.map(p_from_insumo);
-        let tipo_mayuscula = item.tipo.toUpperCase();
-
-        //console.log(moment.locale()); // en
-        moment.locale("es");
-        //console.log(moment.locale()); // en
-        let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
-
-        return html` <li>
-          <time class="cbp_tmtime" datetime="2032-11-04T03:45"
-            ><span>${fecha}</span> <span>${elapsed}</span></time
-          >
-          <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
-          <div class="cbp_tmlabel bg-aplicacion">
-            <h2>
-              <a>APLICACIÓN</a>
-              <span class="text-muted">en ${hectareas} has.</span>
-            </h2>
-            ${list_of_ps}
-            <p class="small">${comentarios}</p>
-            ${stock_tag(this.stock_tag_table[item.uuid])}
-
-            <button
-              class="btn btn-secondary"
-              @click=${() => {
-                console.log(item.uuid);
-                this.evento_download_pdf(item.uuid);
-              }}
-            >
-              Orden de Trabajo
-            </button>
-
-            ${navigator.share
-              ? html`<button
-                  type="button"
-                  class="btn btn-success"
-                  @click=${() => this.evento_share_pdf(item.uuid)}
-                >
-                  Compartir Orden
-                </button>`
-              : null}
-
-            <button
-              class="btn btn-danger"
-              @click=${() => {
-                console.log(item.uuid);
-                this.evento_eliminar(item.uuid);
-              }}
-            >
-              Eliminar
-            </button>
-          </div>
-        </li>`;
+        // let fecha = item.detalles.fecha;
+        // let hectareas = item.detalles.hectareas;
+        // let insumos = item.detalles.insumos;
+        // let comentarios = item.detalles.comentarios;
+        // let list_of_ps = insumos.map(p_from_insumo);
+        // let tipo_mayuscula = item.tipo.toUpperCase();
+        // //console.log(moment.locale()); // en
+        // moment.locale("es");
+        // //console.log(moment.locale()); // en
+        // let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
+        // return html` <li>
+        //   <time class="cbp_tmtime" datetime="2032-11-04T03:45"
+        //     ><span>${fecha}</span> <span>${elapsed}</span></time
+        //   >
+        //   <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
+        //   <div class="cbp_tmlabel bg-aplicacion">
+        //     <h2>
+        //       <a>APLICACIÓN</a>
+        //       <span class="text-muted">en ${hectareas} has.</span>
+        //     </h2>
+        //     ${list_of_ps}
+        //     <p class="small">${comentarios}</p>
+        //     ${stock_tag(this.stock_tag_table[item.uuid])}
+        //     <button
+        //       class="btn btn-secondary"
+        //       @click=${() => {
+        //         console.log(item.uuid);
+        //         this.evento_download_pdf(item.uuid);
+        //       }}
+        //     >
+        //       Orden de Trabajo
+        //     </button>
+        //     ${navigator.share
+        //       ? html`<button
+        //           type="button"
+        //           class="btn btn-success"
+        //           @click=${() => this.evento_share_pdf(item.uuid)}
+        //         >
+        //           Compartir Orden
+        //         </button>`
+        //       : null}
+        //     <button
+        //       class="btn btn-danger"
+        //       @click=${() => {
+        //         console.log(item.uuid);
+        //         this.evento_eliminar(item.uuid);
+        //       }}
+        //     >
+        //       Eliminar
+        //     </button>
+        //   </div>
+        // </li>`;
       } else if (item.tipo === "cosecha") {
         let fecha = item.detalles.fecha;
         let hectareas = item.detalles.hectareas;
@@ -596,15 +605,16 @@ export class TimelineElement extends LitElement {
           </li>
         `;
       } else if (item.tipo === "siembra") {
-        let fecha = item.detalles.fecha;
-        let hectareas = item.detalles.hectareas;
-        let comentarios = item.detalles.comentarios;
-        let cultivo = item.detalles.cultivo;
-        let varidad = item.detalles.variedad;
-        let peso_1000 = item.detalles.peso_1000;
-        let densidad_objetivo = item.detalles.densidad_objetivo;
-        let distancia = item.detalles.distancia;
-        let contratista = item.detalles.contratista;
+        let detalles : DetallesSiembra = item.detalles as DetallesSiembra;
+        let fecha = item.detalles.fecha_ejecucion_tentativa;
+        let hectareas = detalles.hectareas;
+        let comentarios = item.comentario;
+        let cultivo = detalles.insumo.marca_comercial;
+        //let varidad = item.detalles.variedad;
+        let peso_1000 = detalles.peso_1000;
+        let densidad_objetivo = detalles.densidad_objetivo;
+        let distancia = detalles.distancia;
+        let contratista = item.contratista;
 
         //console.log(moment.locale()); // en
         moment.locale("es");
@@ -624,9 +634,19 @@ export class TimelineElement extends LitElement {
                 <a href="#">SIEMBRA</a>
                 <span class="text-muted">en ${hectareas} has.</span>
               </h2>
-              <p><strong>${cultivo} - ${varidad}</strong></p>
+              <p><strong>${cultivo}</strong></p>
               <p>${densidad_objetivo} pl/ha - ${distancia} cm entre surcos</p>
               <p class="small">${comentarios}</p>
+
+              <button
+                class="btn btn-primary"
+                @click=${() => {
+                  console.log(item.uuid);
+                  this.evento_editar(item);
+                }}
+              >
+                Editar
+              </button>
 
               <button
                 class="btn btn-secondary"
@@ -655,6 +675,8 @@ export class TimelineElement extends LitElement {
               >
                 Eliminar
               </button>
+
+
             </div>
           </li>
         `;
@@ -667,16 +689,17 @@ export class TimelineElement extends LitElement {
       <div class="row">
         <div class="col-md-10">
           <ul class="cbp_tmtimeline">
-            ${map(
-              this.ordenar_actividades(this.actividades, this.actividades_docs),
-              time_item
-            )}
+            ${this.a?.map(time_item) || null}
           </ul>
         </div>
       </div>
     </div>`;
 
     // return timeline(this.actividades || [], this.evento_pdf);
+    //${map(
+    //   this.ordenar_actividades(this.actividades, this.actividades_docs),
+    //   time_item
+    // )}
   }
 }
 

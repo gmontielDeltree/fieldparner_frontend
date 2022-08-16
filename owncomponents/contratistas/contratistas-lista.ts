@@ -40,13 +40,21 @@ export class ContratistasLista extends LitElement {
   @property()
   db: PouchDB.Database;
 
-  @state()
+  @state({
+    hasChanged(newVal: Modal, oldVal: Modal) {
+      return false;
+    },
+  })
   _modal_excel: Modal;
 
   @state()
   _uploaded_contratistas : any; 
 
-  @state()
+  @state({
+    hasChanged(newVal: Upload, oldVal: Upload) {
+      return false;
+    },
+  })
   _excel_file_input : Upload;
 
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
