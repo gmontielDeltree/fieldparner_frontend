@@ -25,7 +25,7 @@ const pdf_fonts = {
   },
 };
 
-import orden_definition from "./orden_definition.js";
+import orden_definition from "./orden_definition.ts";
 import "./timeline/timeline.ts";
 import Modal from "bootstrap/js/dist/modal.js";
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
@@ -127,7 +127,7 @@ export class LoteOffcanvas extends LitElement {
     );
 
     this.addEventListener("generar-ot", (e) =>
-      this.download_pdf(e.detail.uuid)
+      this.download_pdf(e.detail) // Item
     );
     this.addEventListener("share-ot", (e) => this.share_pdf(e.detail.uuid));
 
@@ -326,17 +326,17 @@ export class LoteOffcanvas extends LitElement {
       });
   }
 
-  download_pdf(uuid) {
+  download_pdf(item) {
     let campos_url = mapbox_static_img(this._campo_doc, this._lote_doc);
 
     let google_map_link = google_maps_link_go_to(this._lote_doc);
 
-    let indice = this._lote_doc.properties.actividades.findIndex(
-      (a) => a.uuid === uuid
-    );
+    // let indice = this._lote_doc.properties.actividades.findIndex(
+    //   (a) => a.uuid === uuid
+    // );
     // docDefinition
     let dd = orden_definition(
-      this._lote_doc.properties.actividades[indice],
+      item,
       this._campo_doc.nombre,
       this._lote_doc.properties.nombre,
       campos_url,

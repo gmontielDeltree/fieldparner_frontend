@@ -327,9 +327,9 @@ export class TimelineElement extends LitElement {
 
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap), timeline_css];
 
-  evento_download_pdf(uuid) {
+  evento_download_pdf(item) {
     const event = new CustomEvent("generar-ot", {
-      detail: { uuid: uuid },
+      detail: item,
       bubbles: true,
       composed: true,
     });
@@ -733,7 +733,7 @@ export class TimelineElement extends LitElement {
                 class="btn btn-secondary"
                 @click=${() => {
                   console.log(item.uuid);
-                  this.evento_download_pdf(item.uuid);
+                  this.evento_download_pdf(item);
                 }}
               >
                 Orden de Trabajo
@@ -742,7 +742,7 @@ export class TimelineElement extends LitElement {
                 ? html`<button
                     type="button"
                     class="btn btn-success"
-                    @click=${() => this.evento_share_pdf(item.uuid)}
+                    @click=${() => this.evento_share_pdf(item)}
                   >
                     Compartir Orden
                   </button>`

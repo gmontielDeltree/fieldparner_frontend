@@ -1,9 +1,12 @@
 // import agrotools_logo_b64 from './agrotools_logo_b64.js'
 
-const pdf_line = (insumo) => {
+import { Actividad } from "../depositos/depositos-types";
+import { Insumo } from "../insumos/insumos-types";
+
+const pdf_line = (insumo : Insumo) => {
   return [
     {
-      text: insumo.name.toUpperCase(),
+      text: insumo.marca_comercial.toUpperCase(),
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
       alignment: "left",
@@ -37,13 +40,16 @@ const pdf_line = (insumo) => {
 };
 
 const orden_definition = (
-  aplicacion,
+  aplicacion : Actividad,
   nombre_campo,
   nombre_lote,
   campos_url,
   google_map_link
 ) => {
-  let insumos = aplicacion.detalles.insumos;
+
+  
+  let insumos = aplicacion.detalles.insumos || [];
+  
   let insumos_tabla = insumos.map(pdf_line);
   let tipo = aplicacion.tipo;
   let titulos = {"aplicacion": "Orden de Trabajo", "siembra":"Orden de Siembra", "cosecha":"Orden de Cosecha"}
@@ -108,7 +114,7 @@ const orden_definition = (
                       alignment: "right",
                     },
                     {
-                      text: aplicacion.detalles.fecha,
+                      text: aplicacion.detalles.fecha_ejecucion_tentativa,
                       bold: true,
                       color: "#333333",
                       fontSize: 12,
@@ -153,17 +159,17 @@ const orden_definition = (
                ]
             },
             {
-               "text":aplicacion.detalles.contratista.nombre,
+               "text":aplicacion.contratista.nombre,
                "bold":true,
                "color":"#333333",
                "alignment":"left"
             },{
-               "text":aplicacion.detalles.contratista.cuit,
+               "text":aplicacion.contratista.cuit,
                "bold":true,
                "color":"#333333",
                "alignment":"left"
             },{
-               "text":"Tel: " + aplicacion.detalles.contratista.datos_generales.telefono,
+               "text":"Tel: " + aplicacion.contratista.datos_generales.telefono,
                "fontSize":10,
                "color":"#333333",
                "alignment":"left"
@@ -323,7 +329,7 @@ const orden_definition = (
         style: "notesTitle",
       },
       {
-        text: aplicacion.detalles.comentarios,
+        text: aplicacion.comentario,
         style: "notesText",
       },
     ],
