@@ -8,6 +8,7 @@ import "@vaadin/combo-box";
 import "@polymer/paper-spinner/paper-spinner.js";
 import { Marker, Popup } from "mapbox-gl";
 
+import '@vaadin/menu-bar';
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
 
@@ -774,6 +775,13 @@ export class LoteOffcanvas extends LitElement {
               </div>`
             : null}
           <div class="btn-toolbar shadow px-0" role="toolbar">
+          <vaadin-menu-bar
+                theme="small"
+                .items="${[{ text: 'Más Acciones', children: [{ text: 'Nuevo',value : "nuevo" }, { text: 'Importar Excel', value: 'importar_excel' }, { text: 'Exportar Excel', value: 'exportar_excel' }] }]}"
+                @item-selected=${this.menu_click}
+                class='ms-1'
+              ></vaadin-menu-bar>
+
             <div class="btn-group me-2" role="group" aria-label="Zero group">
               <button
                 class="btn btn-danger btn-sm d-none d-md-block"
