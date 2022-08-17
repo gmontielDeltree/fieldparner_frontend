@@ -73,6 +73,31 @@ self.addEventListener('fetch', (event) => {
   }());
 });
 
+/* Upload Excel handler */
+self.addEventListener('fetch', (event) => {
+
+  if (event.request.method !== 'POST') return;
+  // Es POST
+  if (event.request.url.includes('excel-insumos-upload') === false) return;
+  // Es shared-audio
+
+  /* This is to fix the issue Jake found */
+  //event.respondWith(Response.redirect('/index.html'));
+  event.respondWith(new Response('<p>This is a response that comes from your service worker!</p>', {
+    headers: { 'Content-Type': 'text/html' }
+  }))
+
+  event.waitUntil(async function () {
+    const data = await event.request.formData();
+    const client = await self.clients.get(event.resultingClientId || event.clientId);
+    // Get the data from the named element 'file'
+    const file = data.get('file');
+
+    console.log('Excel file', file);
+    client.postMessage({ file, action: 'load-excel-insumos' });
+  }());
+});
+
 /* Share Audio handler */
 self.addEventListener('fetch', (event) => {
 

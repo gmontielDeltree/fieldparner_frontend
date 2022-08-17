@@ -298,6 +298,18 @@ export class InsumoCrud extends LitElement {
                   error-message="Por favor, ingrese una dirección valida"
                   clear-button-visible
                 ></vaadin-text-field>
+                <vaadin-text-field
+                  label="Precio"
+                  name="precio"
+                  .value=${this.insumo.precio}
+                  @change=${(e: any) => {
+                    //this.insumo.datos_generales.email = e.target.value;
+                    this.insumo = { ...this.insumo, precio: e.target.value };
+                  }}
+                  error-message="Por favor, ingrese una dirección valida"
+                  clear-button-visible
+                ></vaadin-text-field>
+
               </vaadin-form-layout>
 
               <!-- Grid detalles cultivos de insumo -->

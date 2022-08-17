@@ -56,7 +56,7 @@ export class InsumosLista extends LitElement {
   _modal_excel: Modal;
 
   @state()
-  _uploaded_contratistas : any; 
+  _uploaded_insumos : any; 
 
   @state({
     hasChanged(newVal: Upload, oldVal: Upload) {
@@ -88,7 +88,7 @@ export class InsumosLista extends LitElement {
       console.log(workbook);
       workbook.SheetNames.forEach((sheet) => {
         let rowObject = utils.sheet_to_json(workbook.Sheets[sheet]);
-        this._uploaded_contratistas = rowObject
+        this._uploaded_insumos = rowObject
         console.log(rowObject);
       });
     });
@@ -185,7 +185,7 @@ export class InsumosLista extends LitElement {
   };
 
   importar() {
-    this._uploaded_contratistas = undefined;
+    this._uploaded_insumos = undefined;
     this._modal.hide();
     this._modal_excel.show();
     this._excel_file_input.files = []
@@ -198,109 +198,35 @@ export class InsumosLista extends LitElement {
      * @param up 
      * @returns 
      */
-    // const up_to_contratista = (up) => {
-    //   let contratista : Contratista = {...empty_contratista}
+   const up_to_contratista = (up) => {
+      let insumo : Insumo = {...get_empty_insumo()}
       
-    //   contratista.nombre = up.Nombre || ""
-    //   contratista.cuit = up.CUIT || ""
-    //   contratista.datos_generales = {...empty_contratista.datos_generales}
-    //   contratista.datos_generales.email = up.Email || ""
-    //   contratista.datos_generales.telefono = up["Teléfono"] || ""
-    //   contratista.datos_generales.direccion = up['Dirección'] || ""
-    //   contratista.labores = []
-      
-    //   if(up.Labores_1){
-    //     let labor_buscada = up.Labores_1;
-    //     let labor_encontrada = lista_de_labores.find((x) => x.labor.toLowerCase() === labor_buscada.toLowerCase())
-    //     if(labor_encontrada){
-    //       contratista.labores.push(labor_encontrada)
-    //     }else{
-    //       contratista.labores.push({labor: labor_buscada.toLowerCase, uuid:uuid4()}) 
-    //     }
-    //   }
+      insumo.marca_comercial = up.marca_comercial || ""
+      insumo.principio_activo = up.principio_activo || ""
+      insumo.tipo = up.tipo || ""
+      insumo.subtipo = up.subtipo || ""
+      insumo.unidad = up.unidad || ""
+      insumo.precio= up.precio || ""
 
-    //   if(up.Labores_2){
-    //     let labor_buscada = up.Labores_2;
-    //     let labor_encontrada = lista_de_labores.find((x) => x.labor.toLowerCase() === labor_buscada.toLowerCase())
-    //     if(labor_encontrada){
-    //       contratista.labores.push(labor_encontrada)
-    //     }else{
-    //       contratista.labores.push({labor: labor_buscada.toLowerCase, uuid:uuid4()}) 
-    //     }
-    //   }
-
-    //   if(up.Labores_3){
-    //     let labor_buscada = up.Labores_3;
-    //     let labor_encontrada = lista_de_labores.find((x) => x.labor.toLowerCase() === labor_buscada.toLowerCase())
-    //     if(labor_encontrada){
-    //       contratista.labores.push(labor_encontrada)
-    //     }else{
-    //       contratista.labores.push({labor: labor_buscada.toLowerCase, uuid:uuid4()}) 
-    //     }
-    //   }
-
-    //   if(up.Labores_4){
-    //     let labor_buscada = up.Labores_4;
-    //     let labor_encontrada = lista_de_labores.find((x) => x.labor.toLowerCase() === labor_buscada.toLowerCase())
-    //     if(labor_encontrada){
-    //       contratista.labores.push(labor_encontrada)
-    //     }else{
-    //       contratista.labores.push({labor: labor_buscada.toLowerCase, uuid:uuid4()}) 
-    //     }
-    //   }
-
-    //   return contratista
-    // }
+      return insumo
+    }
 
 
 
-    // //console.log("CONT uc", this._uploaded_contratistas)
-    // let todos_los_contratistas = this._uploaded_contratistas.map(up_to_contratista)
+    // //console.log("CONT uc", this._uploaded_insumos)
+   let todos_los_insumos = this._uploaded_insumos.map(up_to_contratista)
 
-    // //console.log("CONT sin uuid", todos_los_contratistas, this._uploaded_contratistas)
-    // let todos_los_contratistas_con_uuid : (Contratista & {uuid:string}) [] = todos_los_contratistas.map((c : Contratista) => {
-    //   let nuevo_uuid = uuid4()
-    //   c.uuid = nuevo_uuid
-    //   return c;
-    // })
+    // //console.log("CONT sin uuid", todos_los_contratistas, this._uploaded_insumos)
+   // let todos_los_insumos_con_uuid : (Insumo) [] = todos_los_insumos.map((c : Insumo) => {
+      //let nuevo_uuid = uuid4()
+     // c.uuid = nuevo_uuid
+     // return c;
+   // })
     
-    // //console.log("CONT", todos_los_contratistas_con_uuid)
-    // this.db
-    //     .get("contratistas")
-    //     .then((result: any) => {
-    //       todos_los_contratistas_con_uuid.map((c) => {
-    //         result.contratistas[c.uuid] = c
-    //         return c;
-    //       })
-    //       this.db
-    //         .put(result)
-    //         .then(() => {
-    //           console.log("Contratistas Doc Updated");
-    //           this._modal_excel.hide();
-    //           this.show()
-    //         })
-    //         .catch((e) => console.error("Error al update Contratistas", e));
-    //     })
-    //     .catch(() => {
-    //       // El doc no existe. Lo creo.
-    //       let lista_contratistas = {};
-    //       todos_los_contratistas_con_uuid.map((c) => {
-    //         lista_contratistas[c.uuid] = c
-    //         return c;
-    //       })
-    //       let con_doc = {
-    //         _id: "contratistas",
-    //         contratistas: lista_contratistas,
-    //       };
-    //       this.db
-    //         .put(con_doc)
-    //         .then(() => {
-    //           console.log("Contratistas Doc Creado");
-    //           this._modal_excel.hide();
-    //           this.show()
-    //         })
-    //         .catch((e) => console.error("Error al crear Contratistas", e));
-    //     });
+
+   console.log("TOLOIS",todos_los_insumos);
+    this.db.bulkDocs(todos_los_insumos)
+
   }
 
   menu_click({detail}){
@@ -316,6 +242,7 @@ export class InsumosLista extends LitElement {
           "tipo":c.tipo,
           "subtipo":c.subtipo,
           "unidad":c.unidad,
+          "precio":c.precio
         }
         return row;
       }
@@ -367,20 +294,19 @@ export class InsumosLista extends LitElement {
                 .nodrop="${false}"
                 accept=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xlsx,.ods,.csv
                 max-files="1"
-                target="/excel-contratistas-upload"
+                target="/excel-insumos-upload"
                 .i18n=${i18n_upload}
                 @files-changed=${(e) => {if(e.target.files.length === 0){
-                  this._uploaded_contratistas = undefined
+                  this._uploaded_insumos = undefined
                 }}}
               ></vaadin-upload>
 
 
               ${
-                this._uploaded_contratistas ? html`<h4>Preview</h4>
-                <vaadin-grid .items="${this._uploaded_contratistas}" theme="compact" style="height: 200px;">
-                <vaadin-grid-column path="Nombre" header="Nombre"></vaadin-grid-column>
-                <vaadin-grid-column path="CUIT" header="CUIT"></vaadin-grid-column>
-                <vaadin-grid-column path="Email" header="E-Mail"></vaadin-grid-column>
+                this._uploaded_insumos ? html`<h4>Preview</h4>
+                <vaadin-grid .items="${this._uploaded_insumos}" theme="compact" style="height: 200px;">
+                <vaadin-grid-column path="marca_comercial" header="Nombre"></vaadin-grid-column>
+                <vaadin-grid-column path="principio_activo" header="P.Activo"></vaadin-grid-column>
               </vaadin-grid>`:null
               }
               
@@ -388,9 +314,9 @@ export class InsumosLista extends LitElement {
             </div>
             <div class="modal-footer">
        
-            <a class="btn btn-primary d-block d-md-none" href="excel_template.xlsx" download="agrotools_contratistas_template.xlsx">Ejemplo/Template</a>
+            <a class="btn btn-primary d-block d-md-none" href="insumos_template.xlsx" download="agrotools_insumos_template.xlsx">Ejemplo/Template</a>
 
-            <a class="btn btn-primary d-none d-md-block" href="excel_template.xlsx" download="agrotools_contratistas_template.xlsx">Descargar Ejemplo/Template</a>
+            <a class="btn btn-primary d-none d-md-block" href="insumos_template.xlsx" download="agrotools_insumos_template.xlsx">Descargar Ejemplo/Template</a>
           
             <button
                 type="button"
@@ -423,7 +349,7 @@ export class InsumosLista extends LitElement {
 
               <vaadin-menu-bar
                 theme="small"
-                .items="${[{ text: 'Más Acciones', children: [{ text: 'Nuevo',value : "nuevo" }, { text: 'Exportar Excel', value: 'exportar_excel' }] }]}"
+                .items="${[{ text: 'Más Acciones', children: [{ text: 'Nuevo',value : "nuevo" }, { text: 'Importar Excel', value: 'importar_excel' }, { text: 'Exportar Excel', value: 'exportar_excel' }] }]}"
                 @item-selected=${this.menu_click}
                 class='ms-1'
               ></vaadin-menu-bar>
@@ -455,11 +381,16 @@ export class InsumosLista extends LitElement {
                 <vaadin-grid-column
                   header="Se aplica a"
                   .renderer=${this.seAplicaARenderer}
+                ></vaadin-grid-column>                
+                <vaadin-grid-column
+                  header="Precio"
+                  path="precio"
                 ></vaadin-grid-column>
                 <vaadin-grid-column
                   header="Acción"
                   .renderer=${this.actionsRenderer}
                 ></vaadin-grid-column>
+
               </vaadin-grid>
             </div>
             <div class="modal-footer">
