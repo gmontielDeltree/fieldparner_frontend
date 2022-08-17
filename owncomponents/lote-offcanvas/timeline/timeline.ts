@@ -1,4 +1,4 @@
-import { LitElement, html, css } from "lit";
+import { LitElement, html, css, unsafeCSS, CSSResultGroup } from "lit";
 import { map } from "lit/directives/map.js";
 import moment from "moment";
 import "moment/dist/locale/es";
@@ -6,6 +6,7 @@ import { stock_suficiente } from "../../helpers/stock.ts";
 import { parse, compareDesc, format } from "date-fns";
 import { property, state } from "lit/decorators.js";
 import { Actividad, DetallesSiembra } from "../../depositos/depositos-types";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 
 const p_from_insumo = (i) => {
   const motivos_2_str = (motivos) => {
@@ -240,6 +241,13 @@ const timeline_css = css`
   .bg-info {
     background-color: #2ca8ff !important;
   }
+
+  .icono-siembra {
+    background-image: url('centralmeteorologica.png');
+    background-size: cover;
+    background-position: center;
+  }
+
 `;
 
 const extraer_fecha = (actividad) => {
@@ -268,7 +276,9 @@ export class TimelineElement extends LitElement {
   //stock_tag_table: {},
   //};
 
-  static styles = [timeline_css];
+  //static styles = [timeline_css];
+
+  static override styles: CSSResultGroup = [unsafeCSS(bootstrap), timeline_css];
 
   evento_download_pdf(uuid) {
     const event = new CustomEvent("generar-ot", {
@@ -344,9 +354,9 @@ export class TimelineElement extends LitElement {
     }
   }
 
-  createRenderRoot() {
-    return this;
-  }
+  // createRenderRoot() {
+  //   return this;
+  // }
 
   comparar_fechas(a, b) {
     let fecha_a = extraer_fecha(a);
@@ -626,7 +636,7 @@ export class TimelineElement extends LitElement {
             <time class="cbp_tmtime" datetime="2032-11-04T03:45"
               ><span>${fecha}</span> <span>${elapsed}</span></time
             >
-            <div class="cbp_tmicon bg-orange">
+            <div class="icono-siembra cbp_tmicon bg-orange">
               <i class="zmdi zmdi-label"></i>
             </div>
             <div class="cbp_tmlabel bg-siembra">
