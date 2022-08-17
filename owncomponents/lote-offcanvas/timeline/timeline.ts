@@ -698,6 +698,8 @@ export class TimelineElement extends LitElement {
                 .items="${estados}"
                 @selected-item-changed=${(e) => {
                   console.log("Evento Cambiar estado", e, item);
+                  let event = new CustomEvent("cambio-estado", {detail:{e:e,item:item},bubbles:true,composed:true});
+                  this.dispatchEvent(event);
                 }}
                 value=${estado}
               ></vaadin-combo-box>

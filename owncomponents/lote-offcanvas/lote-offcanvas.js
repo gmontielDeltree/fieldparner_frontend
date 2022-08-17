@@ -8,7 +8,7 @@ import "@vaadin/combo-box";
 import "@polymer/paper-spinner/paper-spinner.js";
 import { Marker, Popup } from "mapbox-gl";
 
-import '@vaadin/menu-bar';
+import "@vaadin/menu-bar";
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
 
@@ -140,15 +140,14 @@ export class LoteOffcanvas extends LitElement {
     );
 
     this.addEventListener("guardar-edicion", async (e) => {
-
       let old_id = e.detail.old_id;
       let new_doc = e.detail.actividad;
       delete new_doc._rev;
 
       this.eliminar_actividad(old_id);
 
-      this.guardar_aplicacion("siembra",new_doc);
-  });
+      this.guardar_aplicacion("siembra", new_doc);
+    });
 
     this.addEventListener("eliminar-nota", (e) => {
       let nota_doc = e.detail.nota_doc;
@@ -355,14 +354,14 @@ export class LoteOffcanvas extends LitElement {
   }
 
   eliminar_actividad(actividad_id) {
-
-    this.db.get(actividad_id).then((doc) => {
-      return this.db.remove(doc);
-    }).then(()=>{
-      this.reload_actividades();
-    });
-    
-
+    this.db
+      .get(actividad_id)
+      .then((doc) => {
+        return this.db.remove(doc);
+      })
+      .then(() => {
+        this.reload_actividades();
+      });
 
     // let restantes = this._lote_doc.properties.actividades.filter(
     //   (a) => a.uuid !== uuid
@@ -405,7 +404,7 @@ export class LoteOffcanvas extends LitElement {
 
   editar_actividad(actividad) {
     if ((actividad.tipo = "siembra")) {
-      console.log("EDITAR",actividad);
+      console.log("EDITAR", actividad);
       document.getElementById("siembra-add-el").editar(actividad);
     }
   }
@@ -648,7 +647,7 @@ export class LoteOffcanvas extends LitElement {
         let s = acts.filter(
           ({ lote_uuid }) => lote_uuid === this._lote_doc.properties.uuid
         );
-        
+
         this._actividades_docs = s.reverse();
       });
   }
@@ -660,6 +659,22 @@ export class LoteOffcanvas extends LitElement {
     });
   }
 
+  menu_click({ detail }) {
+    let valor = detail.value.value;
+    if (valor === "siembra") {
+      this.siembra();
+    } else if (valor === "cosecha") {
+      this.cosecha();
+    } else if (valor === "aplicacion") {
+      this.actividad();
+    } else if (valor === "eliminar") {
+      this.eliminar_lote();
+    } else if (valor === "ndvi") {
+      this.evento_show_ndvi();
+    } else if (valor === "notas") {
+      this.notas();
+    }
+  }
   render() {
     //console.log("RENDER LOTE OFFCANVAS");
 
@@ -743,12 +758,7 @@ export class LoteOffcanvas extends LitElement {
             <span class="d-none d-md-inline">Localizar</span>
           </button>
 
-          <button
-            class="btn btn-danger btn-sm d-block d-md-none material-icons md-18"
-            @click=${this.eliminar_lote}
-          >
-            delete_forever
-          </button>
+     
           <h6 class="offcanvas-title fw-bold">
             Lote "${this.lote_nombre}"
             <small class="text-muted"
@@ -775,12 +785,25 @@ export class LoteOffcanvas extends LitElement {
               </div>`
             : null}
           <div class="btn-toolbar shadow px-0" role="toolbar">
-          <vaadin-menu-bar
-                theme="small"
-                .items="${[{ text: 'Más Acciones', children: [{ text: 'Nuevo',value : "nuevo" }, { text: 'Importar Excel', value: 'importar_excel' }, { text: 'Exportar Excel', value: 'exportar_excel' }] }]}"
-                @item-selected=${this.menu_click}
-                class='ms-1'
-              ></vaadin-menu-bar>
+            <vaadin-menu-bar
+              theme="small"
+              class="d-block d-md-none"
+              .items="${[
+                {
+                  text: "Más Acciones",
+                  children: [
+                    { text: "Notas", value: "notas" },
+                    { text: "Siembra", value: "siembra" },
+                    { text: "Aplicación", value: "aplicacion" },
+                    { text: "Cosecha", value: "cosecha" },
+                    { text: "NDVI", value: "ndvi" },
+                    { text: "Eliminar", value: "eliminar" },
+                  ],
+                },
+              ]}"
+              @item-selected=${this.menu_click}
+              class="ms-1"
+            ></vaadin-menu-bar>
 
             <div class="btn-group me-2" role="group" aria-label="Zero group">
               <button
@@ -790,7 +813,7 @@ export class LoteOffcanvas extends LitElement {
                 Eliminar Lote
               </button>
             </div>
-            <div class="btn-group" role="group" aria-label="First group">
+            <div class="btn-group d-none d-md-block" role="group" aria-label="First group">
               <button
                 class="btn btn-primary btn-sm btn-actividad"
                 @click=${this.siembra}
@@ -816,7 +839,7 @@ export class LoteOffcanvas extends LitElement {
                 + Notas
               </button>
             </div>
-            <div class="btn-group me-2" role="group" aria-label="Second group">
+            <div class="btn-group me-2 d-none d-md-block" role="group" aria-label="Second group">
               <button
                 class="btn btn-primary btn-sm"
                 @click=${this.evento_show_ndvi}
