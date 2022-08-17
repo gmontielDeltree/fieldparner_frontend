@@ -17,8 +17,20 @@ const estados = [
   value: 'pendiente'
 },
 {
+  nombre : "Orden Entregada",
+  value: 'orden_entregada'
+},
+{
   nombre : "Realizada",
   value: 'realizada'
+},
+{
+  nombre : "Pagada",
+  value: 'pagada'
+},
+{
+  nombre : "Cancelada",
+  value: 'cancelada'
 }
 ]
 
