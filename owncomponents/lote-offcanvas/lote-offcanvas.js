@@ -132,7 +132,7 @@ export class LoteOffcanvas extends LitElement {
     this.addEventListener("share-ot", (e) => this.share_pdf(e.detail.uuid));
 
     this.addEventListener("eliminar-actividad", (e) =>
-      this.eliminar_actividad(e.detail._id)
+      this.eliminar_actividad(e.detail)
     );
 
     this.addEventListener("editar-actividad", (e) =>
@@ -159,6 +159,11 @@ export class LoteOffcanvas extends LitElement {
       this.reload_actividades();
       this._lotesOffcanvas.show();
     });
+
+    this.addEventListener("cambio-estado", (e) => {
+      this.db.put(e.detail.item)
+      this.reload_actividades();
+    })
 
     this.addEventListener("localizar-nota", (e) => {
       let posicion = e.detail.item.posicion;
@@ -353,9 +358,9 @@ export class LoteOffcanvas extends LitElement {
       });
   }
 
-  eliminar_actividad(actividad_id) {
+  eliminar_actividad(item) {
     this.db
-      .get(actividad_id)
+      .get(item._id)
       .then((doc) => {
         return this.db.remove(doc);
       })
@@ -612,6 +617,7 @@ export class LoteOffcanvas extends LitElement {
         )[0] || {};
 
       this.localizar_lote();
+      this.reload_actividades();
     });
 
     this.db.get("contratistas").then((result) => {

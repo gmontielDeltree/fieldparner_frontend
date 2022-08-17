@@ -344,9 +344,10 @@ export class TimelineElement extends LitElement {
     });
     this.dispatchEvent(event);
   }
-  evento_eliminar(uuid) {
+
+  evento_eliminar(item) {
     const event = new CustomEvent("eliminar-actividad", {
-      detail: { uuid: uuid },
+      detail: item,
       bubbles: true,
       composed: true,
     });
@@ -709,7 +710,9 @@ export class TimelineElement extends LitElement {
 
                 .items="${estados}"
                 @selected-item-changed=${(e) => {
+                  item.estado = e.detail.value.value
                   console.log("Evento Cambiar estado", e, item);
+
                   let event = new CustomEvent("cambio-estado", {detail:{e:e,item:item},bubbles:true,composed:true});
                   this.dispatchEvent(event);
                 }}
@@ -748,7 +751,7 @@ export class TimelineElement extends LitElement {
                 class="btn btn-danger"
                 @click=${() => {
                   console.log(item.uuid);
-                  this.evento_eliminar(item.uuid);
+                  this.evento_eliminar(item);
                 }}
               >
                 Eliminar
