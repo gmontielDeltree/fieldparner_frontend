@@ -3,10 +3,30 @@ import { map } from "lit/directives/map.js";
 import moment from "moment";
 import "moment/dist/locale/es";
 import { stock_suficiente } from "../../helpers/stock.ts";
-import { parse, compareDesc, format } from "date-fns";
+import { parse, compareDesc, format, parseISO } from "date-fns";
 import { property, state } from "lit/decorators.js";
 import { Actividad, DetallesSiembra } from "../../depositos/depositos-types";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import isFuture from 'date-fns/isFuture'
+
+import "@vaadin/combo-box";
+
+const estados = [
+  {
+  nombre : "Pendiente",
+  value: 'pendiente'
+},
+{
+  nombre : "Realizada",
+  value: 'realizada'
+}
+]
+
+const estados_ = [
+
+'pendiente'
+,'realizada'
+]
 
 const p_from_insumo = (i) => {
   const motivos_2_str = (motivos) => {
@@ -243,9 +263,24 @@ const timeline_css = css`
   }
 
   .icono-siembra {
-    background-image: url('centralmeteorologica.png');
-    background-size: cover;
-    background-position: center;
+    background-image: url('sembradora_act.png') !important;
+    background-color: #ffc323 !important;
+    background-size: cover !important;
+    background-position: center !important;
+  }
+
+  .icono-cosecha {
+    background-image: url('cosechadora_act.png') !important;
+    background-color: #ffc323 !important;
+    background-size: cover !important;
+    background-position: center !important;
+  }
+
+  .icono-aplicacion {
+    background-image: url('pulverizadora_act.png') !important;
+    background-color: #ffc323 !important;
+    background-size: cover !important;
+    background-position: center !important;
   }
 
 `;
@@ -631,6 +666,10 @@ export class TimelineElement extends LitElement {
         //console.log(moment.locale()); // en
         let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
 
+        let estado = item.estado;
+
+        let is_planificada = isFuture(parseISO(fecha));
+
         return html`
           <li>
             <time class="cbp_tmtime" datetime="2032-11-04T03:45"
@@ -643,10 +682,25 @@ export class TimelineElement extends LitElement {
               <h2>
                 <a href="#">SIEMBRA</a>
                 <span class="text-muted">en ${hectareas} has.</span>
+                ${is_planificada ? html`<span class="badge bg-success rounded-pill float-end">Planificada</span>`:null}
               </h2>
+              
               <p><strong>${cultivo}</strong></p>
               <p>${densidad_objetivo} pl/ha - ${distancia} cm entre surcos</p>
               <p class="small">${comentarios}</p>
+
+              <vaadin-combo-box
+                class='d-flex'
+                label="Estado"
+                item-value-path="value"
+                item-label-path="nombre"
+
+                .items="${estados}"
+                @selected-item-changed=${(e) => {
+                  console.log("Evento Cambiar estado", e, item);
+                }}
+                value=${estado}
+              ></vaadin-combo-box>
 
               <button
                 class="btn btn-primary"

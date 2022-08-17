@@ -10,7 +10,7 @@ const initial_context : Actividad = {
   uuid: "",
   ts_generacion: 0,
   tipo:"siembra",
-  estado:"",
+  estado:"pendiente",
   lote_uuid:"",
   detalles:{
     fecha_ejecucion_tentativa:"",

@@ -638,6 +638,7 @@ export class LoteOffcanvas extends LitElement {
     this.db
       .allDocs({
         include_docs: true,
+        //descending:true,
         startkey: "actividad:",
         endkey: "actividad:\ufff0",
       })
@@ -646,7 +647,8 @@ export class LoteOffcanvas extends LitElement {
         let s = acts.filter(
           ({ lote_uuid }) => lote_uuid === this._lote_doc.properties.uuid
         );
-        this._actividades_docs = s;
+        
+        this._actividades_docs = s.reverse();
       });
   }
 
