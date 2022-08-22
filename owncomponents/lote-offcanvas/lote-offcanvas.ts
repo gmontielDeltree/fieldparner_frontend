@@ -45,6 +45,7 @@ import {
   DetallesAplicacion,
   LineaDosis,
 } from "../depositos/depositos-types";
+import { init } from "xstate/lib/actionTypes";
 
 const capitalize = (mySentence) => {
   if (mySentence === null || mySentence === undefined) {
@@ -173,10 +174,10 @@ export class LoteOffcanvas extends LitElement {
     );
 
     this.addEventListener("generar-ot", (e: CustomEvent) =>
-      this.download_pdf(e.detail.uuid)
+      this.download_pdf(e.detail)
     );
     this.addEventListener("share-ot", (e: CustomEvent) =>
-      this.share_pdf(e.detail.uuid)
+      this.share_pdf(e.detail)
     );
 
     this.addEventListener("eliminar-actividad", (e: CustomEvent) =>
@@ -316,20 +317,20 @@ export class LoteOffcanvas extends LitElement {
   }
 
   abrir_pdf(params) {
-    import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
-      pdfMake.fonts = pdf_fonts;
-      pdfMake
-        .createPdf(
-          orden_definition(
-            this._lote_doc.properties.actividades[0],
-            this._campo_doc.nombre,
-            this._lote_doc.properties.nombre
-          )
-        )
-        .open();
-    });
+    // import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
+    //   pdfMake.fonts = pdf_fonts;
+    //   pdfMake
+    //     .createPdf(
+    //       orden_definition(
+    //         this._lote_doc.properties.actividades[0],
+    //         this._campo_doc.nombre,
+    //         this._lote_doc.properties.nombre
+    //       )
+    //     )
+    //     .open();
+    // });
 
-    this.fsm.send("CANCEL");
+    // this.fsm.send("CANCEL");
   }
 
   evento_show_ndvi(e) {
@@ -386,17 +387,18 @@ export class LoteOffcanvas extends LitElement {
       });
   }
 
-  download_pdf(uuid) {
+  download_pdf(actividad : Actividad) {
     let campos_url = mapbox_static_img(this._campo_doc, this._lote_doc);
 
     let google_map_link = google_maps_link_go_to(this._lote_doc);
 
-    let indice = this._lote_doc.properties.actividades.findIndex(
-      (a) => a.uuid === uuid
-    );
+    // let indice = this._lote_doc.properties.actividades.findIndex(
+    //  (a) => a.uuid === uuid
+    /// );
     // docDefinition
+    console.log("GENERANDO PDF", actividad)
     let dd = orden_definition(
-      this._lote_doc.properties.actividades[indice],
+      actividad,
       this._campo_doc.nombre,
       this._lote_doc.properties.nombre,
       campos_url,
@@ -468,10 +470,18 @@ export class LoteOffcanvas extends LitElement {
   }
 
   editar_actividad(actividad) {
-    if ((actividad.tipo = "siembra")) {
+    if ((actividad.tipo === "siembra")) {
       console.log("EDITAR", actividad);
       document.getElementById("siembra-add-el").editar(actividad);
     }
+
+    if ((actividad.tipo === "aplicacion")) {
+      console.log("EDITAR", actividad);
+      this.init_fsm(actividad)
+      this.actividad()
+      //document.getElementById("siembra-add-el").editar(actividad);
+    }
+    
   }
 
   tiene_cultivo_este_lote() {
@@ -611,6 +621,39 @@ export class LoteOffcanvas extends LitElement {
       }
     });
   }
+
+
+  init_fsm(act : Actividad){
+    this.fsm = interpret(aplicacionMachine.withContext(act))
+    .onTransition((state) => {
+      this._ctx = state.context as Actividad;
+      //console.log(state.value);
+      if (state.matches("idle")) {
+        this._steps_elements.map((el) => el.hide());
+      }
+      if (state.matches("editing.fecha")) {
+        this.show_step(0);
+      } else if (state.matches("editing.hectareas")) {
+        this.show_step(1);
+      } else if (state.matches("editing.insumo")) {
+        this.show_step(2);
+      } else if (state.matches("editing.dosis")) {
+        this.show_step(3);
+      } else if (state.matches("editing.motivo")) {
+        this.show_step(4);
+      } else if (state.matches("editing.masinsumos")) {
+        this.show_step(5);
+      } else if (state.matches("editing.comentario")) {
+        this.show_step(6);
+      } else if (state.matches("editing.resumiendo")) {
+        this.show_step(7);
+      } else if (state.matches("editing.share")) {
+        this.show_step(8);
+      }
+    })
+    .start();
+  }
+
   /**
    * Actualiza los documentos si las propiedades han cambiando.
    * @param {*} changedProperties
@@ -629,7 +672,7 @@ export class LoteOffcanvas extends LitElement {
           )[0] || {};
 
         const someContext = aplicacionMachine.initialState.context;
-        someContext.hectareas = this._lote_doc.properties.hectareas;
+        someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
         this.fsm = interpret(aplicacionMachine.withContext(someContext))
           .onTransition((state) => {
             this._ctx = state.context as Actividad;

@@ -5,51 +5,52 @@ import "moment/dist/locale/es";
 import { stock_suficiente } from "../../helpers/stock.ts";
 import { parse, compareDesc, format, parseISO } from "date-fns";
 import { property, state } from "lit/decorators.js";
-import { Actividad, DetallesSiembra } from "../../depositos/depositos-types";
+import {
+  Actividad,
+  DetallesAplicacion,
+  DetallesSiembra,
+  LineaDosis,
+} from "../../depositos/depositos-types";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
-import isFuture from 'date-fns/isFuture'
+import isFuture from "date-fns/isFuture";
 
 import "@vaadin/combo-box";
 
 const estados = [
   {
-  nombre : "Pendiente",
-  value: 'pendiente'
-},
-{
-  nombre : "Orden Entregada",
-  value: 'orden_entregada'
-},
-{
-  nombre : "Realizada",
-  value: 'realizada'
-},
-{
-  nombre : "Pagada",
-  value: 'pagada'
-},
-{
-  nombre : "Cancelada",
-  value: 'cancelada'
-}
-]
+    nombre: "Pendiente",
+    value: "pendiente",
+  },
+  {
+    nombre: "Orden Entregada",
+    value: "orden_entregada",
+  },
+  {
+    nombre: "Realizada",
+    value: "realizada",
+  },
+  {
+    nombre: "Pagada",
+    value: "pagada",
+  },
+  {
+    nombre: "Cancelada",
+    value: "cancelada",
+  },
+];
 
-const estados_ = [
+const estados_ = ["pendiente", "realizada"];
 
-'pendiente'
-,'realizada'
-]
-
-const p_from_insumo = (i) => {
-  const motivos_2_str = (motivos) => {
+const p_from_insumo = (i: LineaDosis) => {
+  const motivos_2_str = (motivos: string[]) => {
     let motivos_array = Object.keys(motivos);
     let solo_verdaderos = motivos_array.filter((m) => motivos[m]);
     return solo_verdaderos.join(", ");
   };
 
   return html`<p class="small">
-    <strong>${i.name.toUpperCase()}</strong> - Dosis: ${i.dosis} ${i.unidad} -
-    Motivo: ${motivos_2_str(i.motivos)}
+    <strong>${i.insumo.marca_comercial.toUpperCase()}</strong> - Dosis:
+    ${i.dosis} ${i.insumo.unidad} - Motivo: ${motivos_2_str(i.motivos)}
   </p>`;
 };
 
@@ -275,26 +276,25 @@ const timeline_css = css`
   }
 
   .icono-siembra {
-    background-image: url('sembradora_act.png') !important;
+    background-image: url("sembradora_act.png") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;
   }
 
   .icono-cosecha {
-    background-image: url('cosechadora_act.png') !important;
+    background-image: url("cosechadora_act.png") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;
   }
 
   .icono-aplicacion {
-    background-image: url('pulverizadora_act.png') !important;
+    background-image: url("pulverizadora_act.png") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;
   }
-
 `;
 
 const extraer_fecha = (actividad) => {
@@ -353,8 +353,8 @@ export class TimelineElement extends LitElement {
     });
     this.dispatchEvent(event);
   }
-  
-  evento_editar(act_doc : Actividad) {
+
+  evento_editar(act_doc: Actividad) {
     const event = new CustomEvent("editar-actividad", {
       detail: { act_doc: act_doc },
       bubbles: true,
@@ -450,7 +450,74 @@ export class TimelineElement extends LitElement {
         : html` <span class="badge bg-danger">Stock Insuficiente</span>`}
     </p>`;
 
-    const time_item = (item : Actividad) => {
+    const barra_botones = (item: Actividad, estado) => html`
+      <div>
+        <vaadin-combo-box
+          class="d-flex"
+          label="Estado"
+          item-value-path="value"
+          item-label-path="nombre"
+          .items="${estados}"
+          @selected-item-changed=${(e) => {
+            try {
+              item.estado = e.detail.value.value;
+              console.log("Evento Cambiar estado", e, item);
+
+              let event = new CustomEvent("cambio-estado", {
+                detail: { e: e, item: item },
+                bubbles: true,
+                composed: true,
+              });
+              this.dispatchEvent(event);
+            } catch (e){
+              console.log("EEROR EEEE",e);
+            }
+          }
+          }
+          value=${estado}
+        ></vaadin-combo-box>
+
+        <button
+          class="btn btn-primary"
+          @click=${() => {
+            console.log(item.uuid);
+            this.evento_editar(item);
+          }}
+        >
+          Editar
+        </button>
+
+        <button
+          class="btn btn-secondary"
+          @click=${() => {
+            console.log(item.uuid);
+            this.evento_download_pdf(item);
+          }}
+        >
+          Orden de Trabajo
+        </button>
+        ${navigator.share
+          ? html`<button
+              type="button"
+              class="btn btn-success"
+              @click=${() => this.evento_share_pdf(item)}
+            >
+              Compartir Orden
+            </button>`
+          : null}
+        <button
+          class="btn btn-danger"
+          @click=${() => {
+            console.log(item.uuid);
+            this.evento_eliminar(item);
+          }}
+        >
+          Eliminar
+        </button>
+      </div>
+    `;
+
+    const time_item = (item: Actividad) => {
       if ("doc" in item) {
         // Es un documento
         //console.log("OOOOOOOOOOO NOTA", item)
@@ -552,58 +619,47 @@ export class TimelineElement extends LitElement {
 
       //console.log("ITEM STT", this.stock_tag_table[item.uuid], item, item.uuid )
       if (item.tipo === "aplicacion") {
-        // let fecha = item.detalles.fecha;
-        // let hectareas = item.detalles.hectareas;
-        // let insumos = item.detalles.insumos;
-        // let comentarios = item.detalles.comentarios;
-        // let list_of_ps = insumos.map(p_from_insumo);
+        let d = item.detalles as DetallesAplicacion;
+        let fecha = d.fecha_ejecucion_tentativa;
+        let hectareas = d.hectareas;
+        let insumos = d.dosis;
+        let comentarios = item.comentario;
+        let list_of_ps = insumos.map(p_from_insumo);
         // let tipo_mayuscula = item.tipo.toUpperCase();
         // //console.log(moment.locale()); // en
         // moment.locale("es");
         // //console.log(moment.locale()); // en
         // let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
-        // return html` <li>
-        //   <time class="cbp_tmtime" datetime="2032-11-04T03:45"
-        //     ><span>${fecha}</span> <span>${elapsed}</span></time
-        //   >
-        //   <div class="cbp_tmicon bg-blush"><i class="zmdi zmdi-label"></i></div>
-        //   <div class="cbp_tmlabel bg-aplicacion">
-        //     <h2>
-        //       <a>APLICACIÓN</a>
-        //       <span class="text-muted">en ${hectareas} has.</span>
-        //     </h2>
-        //     ${list_of_ps}
-        //     <p class="small">${comentarios}</p>
-        //     ${stock_tag(this.stock_tag_table[item.uuid])}
-        //     <button
-        //       class="btn btn-secondary"
-        //       @click=${() => {
-        //         console.log(item.uuid);
-        //         this.evento_download_pdf(item.uuid);
-        //       }}
-        //     >
-        //       Orden de Trabajo
-        //     </button>
-        //     ${navigator.share
-        //       ? html`<button
-        //           type="button"
-        //           class="btn btn-success"
-        //           @click=${() => this.evento_share_pdf(item.uuid)}
-        //         >
-        //           Compartir Orden
-        //         </button>`
-        //       : null}
-        //     <button
-        //       class="btn btn-danger"
-        //       @click=${() => {
-        //         console.log(item.uuid);
-        //         this.evento_eliminar(item.uuid);
-        //       }}
-        //     >
-        //       Eliminar
-        //     </button>
-        //   </div>
-        // </li>`;
+
+        moment.locale("es");
+        let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
+        let estado = item.estado;
+        let is_planificada = isFuture(parseISO(fecha));
+
+        return html` <li>
+          <time class="cbp_tmtime" datetime="2032-11-04T03:45"
+            ><span>${fecha}</span> <span>${elapsed}</span></time
+          >
+          <div class="icono-aplicacion cbp_tmicon bg-blush">
+            <i class="zmdi zmdi-label"></i>
+          </div>
+          <div class="cbp_tmlabel bg-aplicacion">
+            <h2>
+              <a>APLICACIÓN</a>
+              <span class="text-muted">en ${hectareas} has.</span>
+              ${is_planificada
+                ? html`<span class="badge bg-success rounded-pill float-end"
+                    >Planificada</span
+                  >`
+                : null}
+            </h2>
+
+            ${list_of_ps}
+
+            <p class="small">${comentarios}</p>
+            ${barra_botones(item, estado)}
+          </div>
+        </li>`;
       } else if (item.tipo === "cosecha") {
         let fecha = item.detalles.fecha;
         let hectareas = item.detalles.hectareas;
@@ -663,7 +719,7 @@ export class TimelineElement extends LitElement {
           </li>
         `;
       } else if (item.tipo === "siembra") {
-        let detalles : DetallesSiembra = item.detalles as DetallesSiembra;
+        let detalles: DetallesSiembra = item.detalles as DetallesSiembra;
         let fecha = item.detalles.fecha_ejecucion_tentativa;
         let hectareas = detalles.hectareas;
         let comentarios = item.comentario;
@@ -693,71 +749,19 @@ export class TimelineElement extends LitElement {
             </div>
             <div class="cbp_tmlabel bg-siembra">
               <h2>
-                <a href="#">SIEMBRA</a>
+                <a>SIEMBRA</a>
                 <span class="text-muted">en ${hectareas} has.</span>
-                ${is_planificada ? html`<span class="badge bg-success rounded-pill float-end">Planificada</span>`:null}
+                ${is_planificada
+                  ? html`<span class="badge bg-success rounded-pill float-end"
+                      >Planificada</span
+                    >`
+                  : null}
               </h2>
-              
+
               <p><strong>${cultivo}</strong></p>
               <p>${densidad_objetivo} pl/ha - ${distancia} cm entre surcos</p>
               <p class="small">${comentarios}</p>
-
-              <vaadin-combo-box
-                class='d-flex'
-                label="Estado"
-                item-value-path="value"
-                item-label-path="nombre"
-
-                .items="${estados}"
-                @selected-item-changed=${(e) => {
-                  item.estado = e.detail.value.value
-                  console.log("Evento Cambiar estado", e, item);
-
-                  let event = new CustomEvent("cambio-estado", {detail:{e:e,item:item},bubbles:true,composed:true});
-                  this.dispatchEvent(event);
-                }}
-                value=${estado}
-              ></vaadin-combo-box>
-
-              <button
-                class="btn btn-primary"
-                @click=${() => {
-                  console.log(item.uuid);
-                  this.evento_editar(item);
-                }}
-              >
-                Editar
-              </button>
-
-              <button
-                class="btn btn-secondary"
-                @click=${() => {
-                  console.log(item.uuid);
-                  this.evento_download_pdf(item);
-                }}
-              >
-                Orden de Trabajo
-              </button>
-              ${navigator.share
-                ? html`<button
-                    type="button"
-                    class="btn btn-success"
-                    @click=${() => this.evento_share_pdf(item)}
-                  >
-                    Compartir Orden
-                  </button>`
-                : null}
-              <button
-                class="btn btn-danger"
-                @click=${() => {
-                  console.log(item.uuid);
-                  this.evento_eliminar(item);
-                }}
-              >
-                Eliminar
-              </button>
-
-
+              ${barra_botones(item, estado)}
             </div>
           </li>
         `;

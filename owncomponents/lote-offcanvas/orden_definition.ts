@@ -1,37 +1,37 @@
 // import agrotools_logo_b64 from './agrotools_logo_b64.js'
 
-import { Actividad } from "../depositos/depositos-types";
+import { Actividad, DetallesAplicacion, LineaDosis } from "../depositos/depositos-types";
 import { Insumo } from "../insumos/insumos-types";
 
-const pdf_line = (insumo : Insumo) => {
+const pdf_line = (linea : LineaDosis, hectareas) => {
   return [
     {
-      text: insumo.marca_comercial.toUpperCase(),
+      text: linea.insumo.marca_comercial.toUpperCase(),
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
       alignment: "left",
     },
     {
-      text: insumo.dosis,
+      text: linea.dosis,
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
       alignment: "left",
     },
     {
-      text: insumo.unidad,
+      text: linea.insumo.unidad,
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
       alignment: "left",
     },
     {
-      text: insumo.hectareas,
+      text: hectareas,
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
       alignment: "left",
     },
     {
       border: [false, false, false, true],
-      text: insumo.total.toFixed(2),
+      text: linea.total.toFixed(2),
       fillColor: "#f5f5f5",
       alignment: "right",
       margin: [0, 5, 0, 5],
@@ -47,14 +47,22 @@ const orden_definition = (
   google_map_link
 ) => {
 
-  
-  let insumos = aplicacion.detalles.insumos || [];
-  
-  let insumos_tabla = insumos.map(pdf_line);
-  let tipo = aplicacion.tipo;
   let titulos = {"aplicacion": "Orden de Trabajo", "siembra":"Orden de Siembra", "cosecha":"Orden de Cosecha"}
+  let tipo = aplicacion.tipo;
 
   let titulo = titulos[tipo];
+  let hectareas = aplicacion.detalles.hectareas;
+
+  let insumos;
+  let insumos_tabla;
+  if(tipo === 'aplicacion'){
+    insumos = (aplicacion.detalles as DetallesAplicacion).dosis || [];
+    insumos_tabla = insumos.map((e)=>pdf_line(e,hectareas));
+  }
+  
+
+
+
 
   return {
     content: [
