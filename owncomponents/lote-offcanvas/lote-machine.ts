@@ -73,7 +73,7 @@ export const aplicacionMachine =
                 CHANGE: {
                   actions: assign({ detalles: (ctx : Actividad, event) => {
                     ctx.detalles.fecha_ejecucion_tentativa = event.value;
-                    return ctx;
+                    return ctx.detalles;
                   } })
                 },
                 ASSIGN_CONTRATISTA:{
@@ -86,7 +86,10 @@ export const aplicacionMachine =
             hectareas: {
               on: {
                 CHANGE: {
-                  actions: assign({ hectareas: (ctx, e) => ctx.hectareas = e.value })
+                  actions: assign({ detalles: (ctx, e) => {
+                    ctx.detalles.hectareas = e.value;
+                    return ctx.detalles;
+                  }})
                 },
                 BACK: {
                   target: "fecha",
@@ -102,12 +105,15 @@ export const aplicacionMachine =
                   target: "hectareas",
                 },
                 NEXT: {
+                  target: "comentario",
+                },
+                DOSIS: {
                   target: "dosis",
                 },
                 CHANGE: {
-                  actions: assign({
-                    filtrado: (ctx, e) => ctx.lista_insumos.filter((i) => { return (i.name.toUpperCase().indexOf(e.value.toUpperCase()) > -1) }).slice(0, 7)
-                  }),
+                  // actions: assign({
+                  //   filtrado: (ctx, e) => ctx.lista_insumos.filter((i) => { return (i.name.toUpperCase().indexOf(e.value.toUpperCase()) > -1) }).slice(0, 7)
+                  // }),
                 },
                 SELECTED: {
                   actions: [assign({
@@ -122,12 +128,12 @@ export const aplicacionMachine =
             dosis: {
               on: {
                 BACK: { target: "insumo" },
-                NEXT: { target: 'motivo' },
-                CHANGE: {
-                  actions: assign({
-                    dosis: (ctx, e) => e.value
-                  })
-                },
+                NEXT: { target: 'insumo' },
+                // CHANGE: {
+                //   actions: assign({
+                //     detalles: (ctx, e) => e.value
+                //   })
+                // },
               },
             },
             motivo: {
@@ -135,12 +141,12 @@ export const aplicacionMachine =
                 BACK: { target: "dosis" },
                 NEXT: { target: 'masinsumos' },
                 TICK: {
-                  actions: assign({
-                    motivos: (ctx, e) => {
-                      ctx.motivos[e.name] = e.value
-                      return ctx.motivos
-                    }
-                  })
+                  // actions: assign({
+                  //   motivos: (ctx, e) => {
+                  //     ctx.motivos[e.name] = e.value
+                  //     return ctx.motivos
+                  //   }
+                  // })
                 },
               },
             },
@@ -150,7 +156,9 @@ export const aplicacionMachine =
                 SI: {
                   target: "insumo",
                   actions:[assign({
-                    insumos: push_insumo
+                    detalles: (ctx,e) => {
+                      ctx.detalles.insumos.push(e.value);
+                    }
                   }),
                   clear_linea
                 ]
@@ -158,8 +166,10 @@ export const aplicacionMachine =
                 NO: {
                   target: 'comentario',
                   actions: [assign({
-                        insumos: push_insumo
-                      }),
+                    detalles: (ctx,e) => {
+                      ctx.detalles.insumos.push(e.value);
+                    }
+                  }),
                   clear_linea  
                   ]
                 }
@@ -169,10 +179,10 @@ export const aplicacionMachine =
               on: {
                 CHANGE:{
                   actions: assign({
-                    comentarios: (ctx, e) => e.value
+                    comentario: (ctx, e) => e.value
                   })
                 },
-                BACK: { target: 'masinsumos' },
+                BACK: { target: 'insumo' },
                 NEXT: { target: 'resumiendo' },
               }
             },

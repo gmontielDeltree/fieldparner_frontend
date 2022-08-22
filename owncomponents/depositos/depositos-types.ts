@@ -68,10 +68,12 @@ const get_empty_entrada = () => {
   return { ...empty_entrada };
 };
 
+type LineaDosis =  { uuid:string, insumo: Insumo; motivos:string[], dosis: number; total: number }
+
 type DetallesAplicacion = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
-  dosis: { insumo: Insumo; dosis: number; total: number }[];
+  dosis: LineaDosis[];
 };
 
 type DetallesCosecha = {
@@ -107,9 +109,9 @@ interface Actividad {
 const get_empty_aplicacion = () => {
   const a: Actividad = {
     _id: "",
-    uuid: "",
+    uuid: uuid4(),
     ts_generacion: 0,
-    tipo: "",
+    tipo: "aplicacion",
     lote_uuid: "",
     contratista: { ...empty_contratista },
     comentario: "",
@@ -118,6 +120,7 @@ const get_empty_aplicacion = () => {
     detalles: {
       fecha_ejecucion_tentativa: "",
       hectareas: 0,
+      motivos:"",
       dosis: [],
     } as DetallesAplicacion,
   };
@@ -173,4 +176,6 @@ export {
   get_empty_entrada,
   get_empty_aplicacion,
   DetallesSiembra,
+  DetallesAplicacion,
+  LineaDosis
 };

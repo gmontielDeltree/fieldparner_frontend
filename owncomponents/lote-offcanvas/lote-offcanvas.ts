@@ -1,13 +1,15 @@
 import { LitElement, html } from "lit";
 import { map } from "lit/directives/map.js";
-import { aplicacionMachine } from "./lote-machine.js";
+import { aplicacionMachine } from "./lote-machine.ts";
 import { interpret } from "xstate";
 import { mapbox_static_img } from "./mapbox_static_image.js";
 import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
 import "@polymer/paper-spinner/paper-spinner.js";
-import { Marker, Popup } from "mapbox-gl";
-
+import mapboxgl, { Marker, Popup } from "mapbox-gl";
+import { property, state } from "lit/decorators.js";
+import { format } from "date-fns";
+import parseISO from "date-fns/parseISO";
 import "@vaadin/menu-bar";
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
@@ -37,6 +39,12 @@ import "./cosecha-add-ui.js";
 import "./siembra-add-ui.ts";
 import { google_maps_link_go_to } from "./google_maps.js";
 import bbox from "@turf/bbox";
+import { Insumo } from "../insumos/insumos-types";
+import {
+  Actividad,
+  DetallesAplicacion,
+  LineaDosis,
+} from "../depositos/depositos-types";
 
 const capitalize = (mySentence) => {
   if (mySentence === null || mySentence === undefined) {
@@ -73,34 +81,72 @@ const motivos_2_str = (motivos) => {
 };
 
 export class LoteOffcanvas extends LitElement {
-  static properties = {
-    campo_id: {},
-    username: {},
-    lote_nombre: {},
-    map: {},
-    _actividades: {},
-    _actividades_docs: {},
-    _lotesOffcanvas: {
-      hasChanged(newVal, oldVal) {
-        return false;
-      },
+  @property()
+  db: PouchDB.Database;
+
+  @property()
+  map: mapboxgl.Map;
+
+  @state()
+  _insumos: Insumo[];
+
+  @state()
+  _ctx: Actividad;
+
+  @state({
+    hasChanged(newVal, oldVal) {
+      return false;
     },
-    _fecha_editor: {},
-    _steps_elements: {
-      hasChanged(newVal, oldVal) {
-        return false;
-      },
+  })
+  _steps_elements: Modal[];
+
+  @state()
+  _loading_pdf: boolean;
+
+  @state()
+  _contratistas: any;
+
+  @property()
+  campo_id: string = "";
+
+  @property()
+  username: string = "";
+
+  @property()
+  lote_nombre: string = "";
+
+  @property()
+  settings: any;
+
+  @state()
+  _actividades: any;
+
+  @state()
+  _actividades_docs: any;
+
+  @state({
+    hasChanged(newVal, oldVal) {
+      return false;
     },
-    _ctx: {},
-    _campo_doc: {},
-    _lote_doc: {},
-    settings: {},
-    _nota_marker: {},
-    db: {},
-    fsm: { state: true },
-    _loading_pdf: { state: true },
-    _contratistas: { state: true },
-  };
+  })
+  _lotesOffcanvas: Offcanvas;
+
+  // _fecha_editor: {},
+
+  @state()
+  _campo_doc: any;
+
+  @state()
+  _lote_doc: any;
+
+  @state()
+  _nota_marker: any;
+
+  @state()
+  fsm: any;
+
+  @state()
+  _current_dosis: LineaDosis;
 
   static styles = null;
 
@@ -118,28 +164,30 @@ export class LoteOffcanvas extends LitElement {
      */
     this._ctx = aplicacionMachine.initialState.context;
 
-    this.addEventListener("guardar-cosecha", (e) =>
+    this.addEventListener("guardar-cosecha", (e: CustomEvent) =>
       this.guardar_aplicacion("cosecha", e.detail)
     );
 
-    this.addEventListener("guardar-siembra", (e) =>
+    this.addEventListener("guardar-siembra", (e: CustomEvent) =>
       this.guardar_aplicacion("siembra", e.detail)
     );
 
-    this.addEventListener("generar-ot", (e) =>
+    this.addEventListener("generar-ot", (e: CustomEvent) =>
       this.download_pdf(e.detail.uuid)
     );
-    this.addEventListener("share-ot", (e) => this.share_pdf(e.detail.uuid));
+    this.addEventListener("share-ot", (e: CustomEvent) =>
+      this.share_pdf(e.detail.uuid)
+    );
 
-    this.addEventListener("eliminar-actividad", (e) =>
+    this.addEventListener("eliminar-actividad", (e: CustomEvent) =>
       this.eliminar_actividad(e.detail._id)
     );
 
-    this.addEventListener("editar-actividad", (e) =>
+    this.addEventListener("editar-actividad", (e: CustomEvent) =>
       this.editar_actividad(e.detail.act_doc)
     );
 
-    this.addEventListener("guardar-edicion", async (e) => {
+    this.addEventListener("guardar-edicion", async (e: CustomEvent) => {
       let old_id = e.detail.old_id;
       let new_doc = e.detail.actividad;
       delete new_doc._rev;
@@ -149,18 +197,18 @@ export class LoteOffcanvas extends LitElement {
       this.guardar_aplicacion("siembra", new_doc);
     });
 
-    this.addEventListener("eliminar-nota", (e) => {
+    this.addEventListener("eliminar-nota", (e: CustomEvent) => {
       let nota_doc = e.detail.nota_doc;
       this.db.remove(nota_doc);
       this.reload_actividades();
     });
 
-    this.addEventListener("nueva-nota", (e) => {
+    this.addEventListener("nueva-nota", (e: CustomEvent) => {
       this.reload_actividades();
       this._lotesOffcanvas.show();
     });
 
-    this.addEventListener("localizar-nota", (e) => {
+    this.addEventListener("localizar-nota", (e: CustomEvent) => {
       let posicion = e.detail.item.posicion;
       let texto = e.detail.item.texto;
       let color = e.detail.item.color;
@@ -188,6 +236,21 @@ export class LoteOffcanvas extends LitElement {
     return this;
   }
 
+  load_insumos() {
+    this.db
+      .allDocs({
+        startkey: "insumo:",
+        endkey: "insumo:\ufff0",
+        include_docs: true,
+      })
+      .then((e) => {
+        //this._insumos = Object.values(e.);
+        console.log("Insumos DOC", e);
+        this._insumos = e.rows.map((r) => r.doc);
+      })
+      .catch((e) => {});
+  }
+
   firstUpdated() {
     this._lotesOffcanvas = new Offcanvas(
       document.getElementById("lote-offcanvas")
@@ -195,6 +258,8 @@ export class LoteOffcanvas extends LitElement {
     this._steps_elements = [
       ...document.querySelectorAll(".aplicacion.step"),
     ].map((el) => new Modal(el));
+
+    this.load_insumos();
   }
 
   show() {
@@ -467,7 +532,7 @@ export class LoteOffcanvas extends LitElement {
     }
   }
 
-  guardar_aplicacion(tipo, detalles_de_actividad) {
+  guardar_aplicacion(tipo, actividad_doc) {
     let detalles = {};
     let aplicacion = {};
     // Save to lote properties
@@ -475,21 +540,19 @@ export class LoteOffcanvas extends LitElement {
 
     if (tipo === "aplicacion") {
       this.fsm.send("GUARDAR");
-      detalles = {
-        fecha: this._ctx.fecha,
-        hectareas: this._ctx.hectareas,
-        insumos: this._ctx.insumos,
-        comentarios: this._ctx.comentarios,
-        contratista: this._ctx.contratista,
-      };
-      aplicacion = {
-        uuid: uuid4(),
-        tipo: "aplicacion",
-        ts_generacion: ts_ahora,
-        detalles: detalles,
-      };
+      // aplicacion = {
+      //   uuid: uuid4(),
+      //   tipo: "siembra",
+      //   ts_generacion: ts_ahora,
+      //   detalles: detalles,
+      // };
+      console.log("Guardando Aplicacion", actividad_doc);
+      this.db.put(actividad_doc);
+      this.reload_actividades();
+      return;
+      console.warn("GUARDAR APLICACION IMPLEMENT ME");
+      return;
     } else if (tipo === "siembra") {
-      detalles = detalles_de_actividad;
       // aplicacion = {
       //   uuid: uuid4(),
       //   tipo: "siembra",
@@ -497,11 +560,11 @@ export class LoteOffcanvas extends LitElement {
       //   detalles: detalles,
       // };
 
-      this.db.put(detalles);
+      this.db.put(actividad_doc);
       this.reload_actividades();
       return;
     } else if (tipo === "cosecha") {
-      detalles = detalles_de_actividad;
+      detalles = actividad_doc;
       aplicacion = {
         uuid: uuid4(),
         tipo: "cosecha",
@@ -569,7 +632,7 @@ export class LoteOffcanvas extends LitElement {
         someContext.hectareas = this._lote_doc.properties.hectareas;
         this.fsm = interpret(aplicacionMachine.withContext(someContext))
           .onTransition((state) => {
-            this._ctx = state.context;
+            this._ctx = state.context as Actividad;
             //console.log(state.value);
             if (state.matches("idle")) {
               this._steps_elements.map((el) => el.hide());
@@ -678,19 +741,17 @@ export class LoteOffcanvas extends LitElement {
   render() {
     //console.log("RENDER LOTE OFFCANVAS");
 
-    const resumen_item_el = (item) => html`<a
+    let detalles = this._ctx.detalles as DetallesAplicacion;
+
+    const resumen_item_el = (item: LineaDosis) => html`<a
       href="#"
       class="list-group-item list-group-item-action"
     >
       <div class="d-flex w-100 justify-content-between">
-        <h5 class="mb-1">${capitalize(item.name)}</h5>
-        <small class="text-muted">${capitalize(item.type)}</small>
+        <h5 class="mb-1">${capitalize(item.insumo.marca_comercial)}</h5>
+        <small class="text-muted">${capitalize(item.insumo.tipo)}</small>
       </div>
-      <p class="mb-1">
-        ${item.dosis} ${item.unidad} - ${item.hectareas} ha. -
-        ${item.total.toFixed(2)} ${item.unidad === "lt/ha" ? "litros" : "kgs"}
-        totales
-      </p>
+      <p class="mb-1">${item.dosis} ${item.insumo.unidad} - totales</p>
       <div class="d-flex w-100 justify-content-between">
         <small class="text-muted">${motivos_2_str(item.motivos)}</small>
         <div
@@ -703,26 +764,26 @@ export class LoteOffcanvas extends LitElement {
       </div>
     </a>`;
 
-    const insumo_el = (item) => html`<a
-      href="#"
-      class="list-group-item list-group-item-action ${this._ctx.current_insumo
-        .name === item.name
-        ? "active"
-        : ""}"
-      @click=${(e) =>
-        this.fsm.send({
-          type: "SELECTED",
-          value: item,
-        })}
-      aria-current="true"
-    >
-      <div class="d-flex w-100 justify-content-between">
-        <h5 class="mb-1 mx-1">${capitalize(item.name)}</h5>
-        <small>${capitalize(item.type)}</small>
-      </div>
-      <p class="mb-1">${capitalize(item.company)}</p>
-      <small>${principio_activo(item)}</small>
-    </a>`;
+    // const insumo_el = (item) => html`<a
+    //   href="#"
+    //   class="list-group-item list-group-item-action ${this._ctx.current_insumo
+    //     .name === item.name
+    //     ? "active"
+    //     : ""}"
+    //   @click=${(e) =>
+    //     this.fsm.send({
+    //       type: "SELECTED",
+    //       value: item,
+    //     })}
+    //   aria-current="true"
+    // >
+    //   <div class="d-flex w-100 justify-content-between">
+    //     <h5 class="mb-1 mx-1">${capitalize(item.name)}</h5>
+    //     <small>${capitalize(item.type)}</small>
+    //   </div>
+    //   <p class="mb-1">${capitalize(item.company)}</p>
+    //   <small>${principio_activo(item)}</small>
+    // </a>`;
 
     // Render propiamente dicho
     return html`
@@ -758,7 +819,6 @@ export class LoteOffcanvas extends LitElement {
             <span class="d-none d-md-inline">Localizar</span>
           </button>
 
-     
           <h6 class="offcanvas-title fw-bold">
             Lote "${this.lote_nombre}"
             <small class="text-muted"
@@ -813,7 +873,11 @@ export class LoteOffcanvas extends LitElement {
                 Eliminar Lote
               </button>
             </div>
-            <div class="btn-group d-none d-md-block" role="group" aria-label="First group">
+            <div
+              class="btn-group d-none d-md-block"
+              role="group"
+              aria-label="First group"
+            >
               <button
                 class="btn btn-primary btn-sm btn-actividad"
                 @click=${this.siembra}
@@ -839,7 +903,11 @@ export class LoteOffcanvas extends LitElement {
                 + Notas
               </button>
             </div>
-            <div class="btn-group me-2 d-none d-md-block" role="group" aria-label="Second group">
+            <div
+              class="btn-group me-2 d-none d-md-block"
+              role="group"
+              aria-label="Second group"
+            >
               <button
                 class="btn btn-primary btn-sm"
                 @click=${this.evento_show_ndvi}
@@ -962,7 +1030,7 @@ export class LoteOffcanvas extends LitElement {
             <div class="modal-body mx-auto">
               <input
                 type="number"
-                value=${this._ctx.hectareas}
+                value=${this._ctx.detalles.hectareas}
                 @change=${(e) =>
                   this.fsm.send({ type: "CHANGE", value: e.target.value })}
               />
@@ -1022,16 +1090,43 @@ export class LoteOffcanvas extends LitElement {
             </div>
             <div class="modal-body mx-auto container-fluid">
               <div class="row">
-                <input
-                  class="form-control"
-                  type="text"
-                  placeholder="Escriba el nombre del insumo para filtrar"
-                  @keyup=${(e) =>
-                    this.fsm.send({ type: "CHANGE", value: e.target.value })}
-                />
+                <vaadin-combo-box
+                  class="mx-auto"
+                  id="marca-comercial-combo"
+                  allow-custom-value
+                  @custom-value-set="${() => {
+                    console.log("Nuevo Value");
+                  }}"
+                  label="Insumo"
+                  item-label-path="marca_comercial"
+                  item-value-path="uuid"
+                  .items="${this._insumos ? this._insumos : []}"
+                  @selected-item-changed=${(e) => {
+                    console.log("e", e);
+                    this._current_dosis = {
+                      uuid: uuid4(),
+                      insumo: e.detail.value,
+                      dosis: 0,
+                      motivos: [],
+                      total: 0,
+                    };
+                  }}
+                ></vaadin-combo-box>
+
+                <a
+                  class="btn btn-primary btn-sm "
+                  href="#"
+                  role="button"
+                  @click=${() => {
+                    this.fsm.send("DOSIS");
+                  }}
+                  >Agregar Dosis</a
+                >
               </div>
-              <div class="list-group mx-auto mt-1 row">
-                ${map(this._ctx.filtrado, insumo_el)}
+              <!--Row 1-->
+
+              <div class="row list-group">
+                ${map(detalles.dosis, resumen_item_el)}
               </div>
             </div>
             <div class="modal-footer">
@@ -1086,27 +1181,85 @@ export class LoteOffcanvas extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-              <h4>${capitalize(this._ctx.current_insumo.name)}</h4>
+              <h4>
+                ${capitalize(this._current_dosis?.insumo.marca_comercial || "")}
+              </h4>
               <div class="input-group mb-3">
                 <input
                   type="number"
                   class="form-control"
-                  @change=${(e) =>
-                    this.fsm.send({ type: "CHANGE", value: e.target.value })}
+                  @change=${
+                    (e) => (this._current_dosis.dosis = Number(e.target.value))
+                    //this.fsm.send({ type: "CHANGE", value: e.target.value })
+                  }
                   aria-label="Text input with dropdown button"
                 />
                 <button
-                  class="btn btn-outline-secondary dropdown-toggle"
+                  class="btn btn-outline-secondary"
                   type="button"
-                  data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  ${this._ctx.unidad}
+                  ${this._current_dosis?.insumo.unidad}
                 </button>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">kg/ha</a></li>
-                  <li><a class="dropdown-item" href="#">lt/ha</a></li>
-                </ul>
+              </div>
+
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value=""
+                  @change=${(e) => {
+                    if (e.target.checked) {
+                      this._current_dosis.motivos.push(e.target.name);
+                    }
+                  }}
+                  name="Enfermedad"
+                />
+                <label class="form-check-label" for="flexCheckDefault">
+                  Enfermedad
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value=""
+                  name="Plaga"
+                  @change=${(e) => {}}
+                />
+                <label class="form-check-label" for="flexCheckDefault">
+                  Plaga
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value=""
+                  name="Malezas"
+                  @change=${(e) => {}}
+                />
+                <label class="form-check-label" for="flexCheckDefault">
+                  Malezas
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value=""
+                  name="Otro"
+                  @change=${(e) => {
+                    this.fsm.send({
+                      type: "TICK",
+                      value: e.target.checked,
+                      name: e.target.name,
+                    });
+                  }}
+                />
+                <label class="form-check-label" for="flexCheckDefault">
+                  Otro
+                </label>
               </div>
             </div>
             <div class="modal-footer">
@@ -1128,7 +1281,13 @@ export class LoteOffcanvas extends LitElement {
               <button
                 type="button"
                 class="btn btn-primary"
-                @click=${() => this.fsm.send("NEXT")}
+                @click=${() => {
+                  this.fsm.send("NEXT");
+                  let t = [...this._ctx.detalles.dosis];
+                  t.push({ ...this._current_dosis });
+                  this._current_dosis = undefined;
+                  this._ctx.detalles.dosis = t;
+                }}
               >
                 Siguiente
               </button>
@@ -1358,7 +1517,7 @@ export class LoteOffcanvas extends LitElement {
                 placeholder="Ingresa alguna nota aquí"
                 name="story"
                 rows="5"
-                .value=${this._ctx.comentarios}
+                .value=${this._ctx.comentario}
                 @change=${(e) =>
                   this.fsm.send({ type: "CHANGE", value: e.target.value })}
               ></textarea>
@@ -1424,22 +1583,26 @@ export class LoteOffcanvas extends LitElement {
                     <div>
                       <div class="row">
                         <div class="col">
-                          <h6>Fecha de aplicación: ${this._ctx.fecha}</h6>
+                          <h6>
+                            Fecha de aplicación:
+                            ${this._ctx.detalles.fecha_ejecucion_tentativa}
+                          </h6>
                         </div>
                         <!-- <button class='col col-2'> Edit </button> -->
                       </div>
                       <div class="row">
+                        +
                         <h5>${this.tiene_cultivo_este_lote()}</h5>
                       </div>
                       <div class="row list-group">
-                        ${map(this._ctx.insumos, resumen_item_el)}
+                        ${map(detalles.dosis, resumen_item_el)}
                       </div>
                       <div class="row mt-2">
                         <h6>Comentarios</h6>
                         <textarea
                           class="form-control"
                           aria-label="With textarea"
-                          .value=${this._ctx.comentarios}
+                          .value=${this._ctx.comentario}
                         ></textarea>
                       </div>
                     </div>
@@ -1466,7 +1629,18 @@ export class LoteOffcanvas extends LitElement {
               <button
                 type="button"
                 class="btn btn-primary"
-                @click=${() => this.guardar_aplicacion("aplicacion")}
+                @click=${() => {
+                  let uuid = this._ctx.uuid;
+                  if (this._ctx._id === "") {
+                    let fecha = format(
+                      parseISO(this._ctx.detalles.fecha_ejecucion_tentativa),
+                      "yyyyMMdd"
+                    );
+                    this._ctx._id = "actividad:" + fecha + ":" + uuid;
+                    this._ctx.lote_uuid = this._lote_doc.properties.uuid;
+                  }
+                  this.guardar_aplicacion("aplicacion", this._ctx);
+                }}
               >
                 Guardar
               </button>

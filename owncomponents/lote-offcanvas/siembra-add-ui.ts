@@ -844,3 +844,9 @@ export class SiembraAddUI extends LitElement {
 }
 
 customElements.define("siembra-add-ui", SiembraAddUI);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "siembra-add-ui": SiembraAddUI;
+  }
+}
