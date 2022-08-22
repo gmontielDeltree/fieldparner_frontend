@@ -73,7 +73,18 @@ export class NavbarElement extends LitElement {
           <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
               <li>
-                <button
+
+
+                <div
+                  style="cursor: pointer;background-image: url('iconodecampo2D.jpg');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  @click=${() => {
+                    this.sendEvent("ver-lista-campos", null);
+                  }}
+                ></div>
+
+ 
+
+                <!-- <button
                   type="button"
                   class="btn btn-outline-success btn-sm mx-1"
                   @click=${() => {
@@ -81,10 +92,17 @@ export class NavbarElement extends LitElement {
                   }}
                 >
                   Campos
-                </button>
+                </button> -->
               </li>
               <li>
-                <button
+
+              <div
+                  style="cursor: pointer;background-image: url('deposito.jpg');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  @click=${() => {
+                    this.sendEvent("ver-depositos-click", null);
+                  }}
+                ></div>
+                <!-- <button
                   type="button"
                   class="btn btn-outline-success btn-sm mx-1"
                   @click=${() => {
@@ -92,7 +110,7 @@ export class NavbarElement extends LitElement {
                   }}
                 >
                   Depositos
-                </button>
+                </button> -->
               </li>
               <li>
                 <button
@@ -113,7 +131,7 @@ export class NavbarElement extends LitElement {
                     this.sendEvent("ver-insumos-click", null);
                   }}
                 >
-                  Insumos 
+                  Insumos
                 </button>
               </li>
               <li>
