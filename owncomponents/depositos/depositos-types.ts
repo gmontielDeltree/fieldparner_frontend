@@ -1,6 +1,9 @@
 import { PartType } from "lit-html/directive";
 import uuid4 from "uuid4";
-import { Contratista } from "../contratistas/contratista-types";
+import {
+  Contratista,
+  empty_contratista,
+} from "../contratistas/contratista-types";
 import { Insumo } from "../insumos/insumos-types";
 
 interface IHash<T> {
@@ -65,16 +68,16 @@ const get_empty_entrada = () => {
   return { ...empty_entrada };
 };
 
-type DetallesAplicacion =  {
+type DetallesAplicacion = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
   dosis: { insumo: Insumo; dosis: number; total: number }[];
-}
+};
 
 type DetallesCosecha = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
-}
+};
 
 type DetallesSiembra = {
   fecha_ejecucion_tentativa: string;
@@ -86,7 +89,7 @@ type DetallesSiembra = {
   hectareas: number;
   comentario: string;
   adjuntos: any;
-}
+};
 
 interface Actividad {
   _id: string;
@@ -100,6 +103,27 @@ interface Actividad {
   estado: string;
   detalles: DetallesSiembra | DetallesCosecha | DetallesAplicacion;
 }
+
+const get_empty_aplicacion = () => {
+  const a: Actividad = {
+    _id: "",
+    uuid: "",
+    ts_generacion: 0,
+    tipo: "",
+    lote_uuid: "",
+    contratista: { ...empty_contratista },
+    comentario: "",
+    adjuntos: [],
+    estado: "pendiente",
+    detalles: {
+      fecha_ejecucion_tentativa: "",
+      hectareas: 0,
+      dosis: [],
+    } as DetallesAplicacion,
+  };
+
+  return {...a}
+};
 
 const sumar_entradas = (entradas: Entrada[]) => {
   let tabla: IHash<TablaStockLinea>;
@@ -147,5 +171,6 @@ export {
   Actividad,
   get_empty_deposito,
   get_empty_entrada,
+  get_empty_aplicacion,
   DetallesSiembra,
 };

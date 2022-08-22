@@ -1,5 +1,6 @@
 import { createMachine, assign, actions, interpret } from 'xstate';
 import uuid4 from "uuid4";
+import { Actividad, get_empty_aplicacion } from '../depositos/depositos-types';
 // const { createMachine, assign, actions, interpret } = XState;
 function invokeFetchInsumos(context) {
   return fetch('insumos.json')
@@ -22,6 +23,8 @@ const clear_linea = (ctx) => {
 
 const init_ctx = { fecha: "", hectareas: 0, current_insumo: "", filtrado: [], dosis: 0, insumos: [], unidad: 'lt/ha', comentarios: "", motivos: {}, lista_insumos:[], contratista:{}};
 
+const initial_ctx : Actividad = {...get_empty_aplicacion()}
+
 const reset_ctx = (ctx) => {return init_ctx}
 
 export const aplicacionMachine =
@@ -30,24 +33,24 @@ export const aplicacionMachine =
     {
       id: "Aplicacion",
       initial: "idle",
-      context: init_ctx,
+      context: initial_ctx,
       states: {
         idle: {
-          invoke:{
-            id: 'fetch-insumos',
-            src: invokeFetchInsumos,
-            onDone: {
-              actions: assign({
-                lista_insumos: (context, event) => event.data
-              })
-            },
-          },
+          // invoke:{
+          //   id: 'fetch-insumos',
+          //   src: invokeFetchInsumos,
+          //   onDone: {
+          //     actions: assign({
+          //       lista_insumos: (context, event) => event.data
+          //     })
+          //   },
+          // },
           on: {
             NEXT: {
               target: 'editing',
-              actions: assign({
-                filtrado: (ctx, e) => ctx.lista_insumos.filter((i) => { return (i.name.toUpperCase().indexOf('') > -1) }).slice(0, 7)
-              }),
+              // actions: assign({
+              //   filtrado: (ctx, e) => ctx.lista_insumos.filter((i) => { return (i.name.toUpperCase().indexOf('') > -1) }).slice(0, 7)
+              // }),
             }
           }
         },
@@ -56,9 +59,9 @@ export const aplicacionMachine =
           on: {
             CANCEL: {
               target: 'idle',
-              actions: assign({
-                insumos : (ctx) => []
-              })
+              // actions: assign({
+              //   insumos : (ctx) => []
+              // })
             }
           },
           states: {
@@ -68,7 +71,10 @@ export const aplicacionMachine =
                   target: "hectareas",
                 },
                 CHANGE: {
-                  actions: assign({ fecha: (context, event) => context.fecha = event.value })
+                  actions: assign({ detalles: (ctx : Actividad, event) => {
+                    ctx.detalles.fecha_ejecucion_tentativa = event.value;
+                    return ctx;
+                  } })
                 },
                 ASSIGN_CONTRATISTA:{
                   actions: assign({
