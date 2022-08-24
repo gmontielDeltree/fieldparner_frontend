@@ -22,15 +22,24 @@ import { touchEvent } from "../helpers.js";
 import devices_modelos from "./devices_modelos.ts";
 import { format, formatDistance, formatRelative, subDays } from "date-fns";
 import format from "date-fns/format";
+import ApexCharts from 'apexcharts'
+import apex_css from "apexcharts/dist/apexcharts.css"
 
 export class SensoresClass extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
+    unsafeCSS(apex_css),
     css`
       .humedad-body {
         background-image: url("sensor-humedad/suelo.png");
         background-position-y: -60px;
       }
+
+      .offcanvas-humedad-body {
+        background-image: url('sensor-humedad/blur_bg.png');
+        background-position-y: -60px;
+      }
+
       .profundidad {
         left: 10px;
         background-color: whitesmoke;
@@ -87,6 +96,15 @@ export class SensoresClass extends LitElement {
       .segundo-sensor {
         top: 500px;
       }
+
+      .chart-1 {
+        height:200px;
+      }
+
+      .spacer {
+        height: 110px;
+      }
+      
     `,
   ];
 
@@ -183,6 +201,157 @@ export class SensoresClass extends LitElement {
   }
 
 
+  simulated_historical_data(s){
+    let tes = [11, 32, 45, 32, 34, 52, 41];
+    let haches = [31, 40, 28, 51, 42, 109, 100];
+    if(s===1){
+      tes = tes.map(t => Math.round(t / 4 ));
+    }else if(s===2){
+      tes = tes.map(t => Math.round( t / 4 - 2.4));
+    }
+
+    if(s===1){
+      haches = haches.map(t =>  Math.round(t / (80-31) + 10));
+    }else if(s===2){
+      haches = haches.map(t =>  Math.round(t / (80-31) + 10) - 9);
+    }
+
+    let dates= ["2022-08-24T00:00:00.000Z", "2022-08-24T01:30:00.000Z", "2022-08-24T02:30:00.000Z", "2022-08-24T03:30:00.000Z", "2022-08-24T04:30:00.000Z", "2022-08-24T05:30:00.000Z", "2022-08-24T06:30:00.000Z"]
+    return {temperatura : [...tes], humedad: [...haches], ts:[...dates]}
+  }
+
+
+  async renderChart() {
+    await this.updateComplete;
+
+    var base_options = {
+      series: [{
+      name: 'Humedad',
+      data: [31, 40, 28, 51, 42, 109, 100]
+    }, {
+      name: 'Temperatura',
+      data: [11, 32, 45, 32, 34, 52, 41]
+    }],
+      chart: {
+      height: 350,
+      type: 'area'
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: 'smooth'
+    },
+    xaxis: {
+      type: 'datetime',
+      categories: ["2022-08-24T00:00:00.000Z", "2022-08-24T01:30:00.000Z", "2022-08-24T02:30:00.000Z", "2022-08-24T03:30:00.000Z", "2022-08-24T04:30:00.000Z", "2022-08-24T05:30:00.000Z", "2022-08-24T06:30:00.000Z"]
+    },
+    yaxis: [
+      {
+        axisTicks: {
+          show: true,
+        },
+        axisBorder: {
+          show: true,
+          color: '#008FFB'
+        },
+        labels: {
+          style: {
+            colors: '#008FFB',
+          }
+        },
+        title: {
+          text: "Humedad",
+          style: {
+            color: '#008FFB',
+          }
+        },
+        tooltip: {
+          enabled: true
+        }
+      },
+      {
+        seriesName: 'Temperatura',
+        opposite: true,
+        axisTicks: {
+          show: true,
+        },
+        axisBorder: {
+          show: true,
+          color: '#00E396'
+        },
+        labels: {
+          style: {
+            colors: '#00E396',
+          }
+        },
+        title: {
+          text: "Temperatura",
+          style: {
+            color: '#00E396',
+          }
+        },
+      }
+    ],
+
+    tooltip: {
+      x: {
+        format: 'dd/MM/yy HH:mm'
+      },
+    },
+    };
+
+    var options = {...base_options,
+      chart: {
+        type: 'area',
+        height: '200px',
+        foreColor: '#ffffff'
+        //background: '#fff'
+      },
+      title: {
+        text: "Sensor 1",
+        align: 'left',
+        margin: 10,
+        offsetX: 0,
+        offsetY: 0,
+        floating: false,
+        style: {
+          fontSize:  '14px',
+          fontWeight:  'bold',
+          fontFamily:  undefined,
+          color:  '#ffffff'
+        },
+    }
+    }
+
+
+
+    let sim1 = this.simulated_historical_data(1)
+    options.series[0].data = [...sim1.humedad];
+    // options.xaxis.categories = sim.ts;
+   options.series[1].data = [...sim1.temperatura];
+
+    var chart_1 = new ApexCharts(this.shadowRoot.getElementById("chart-1"), options);
+    
+    let op2 = {...options};
+
+    op2.title.text = "Sensor 2";
+
+    let sim2 = this.simulated_historical_data(2)
+    op2.series = [{
+      name: 'Humedad',
+      data: sim2.humedad
+    }, {
+      name: 'Temperatura',
+      data: sim2.temperatura
+    }]
+    // options.xaxis.categories = sim.ts;
+    //options.series[1].data = [...sim1.temperatura];
+    var chart_2 = new ApexCharts(this.shadowRoot.getElementById("chart-2"), op2);
+
+    chart_1.render();
+    chart_2.render();
+  }
 
   sensor_renderer(sensor_data,detalles,pos) {
 
@@ -477,6 +646,7 @@ export class SensoresClass extends LitElement {
                 type="button"
                 @click=${() => {
                   this._offcanvas_humedad.show();
+                  this.renderChart();
                 }}
                 class="btn btn-primary"
               >
@@ -488,6 +658,7 @@ export class SensoresClass extends LitElement {
 
       <div
         class="offcanvas offcanvas-start"
+        style="width: 100%;"
         tabindex="-1"
         id="offcanvas-humedad"
         aria-labelledby="offcanvasLabel"
@@ -508,9 +679,19 @@ export class SensoresClass extends LitElement {
             @click=${() => this._offcanvas_humedad.hide()}
           ></button>
         </div>
-        <div class="offcanvas-body p-1 humedad-body">
+        <div class="offcanvas-body p-0 container-fluid row offcanvas-humedad-body">
+          <div class="col col-4 p-1 humedad-body">
           ${this.sensor_renderer({},{},1)}
           ${this.sensor_renderer({},{},2)}
+          </div>
+
+
+          <div class="container-fluid col col-8">
+            <h3></h3>
+          <div class="spacer" spacer></div>
+            <div class='chart-1' id='chart-1'></div>
+            <div class='chart-2' id='chart-2'></div>
+          </div>
         </div>
       </div>
     `;
