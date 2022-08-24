@@ -7,6 +7,9 @@ const devices_modelos : any = {
     "LMM-03S" : {
         sensores : ["temperatura", "humedad", "presion"],
     },
+    "hhs-05S" : {
+        sensores : ["humedad_suelo"]
+    }
 }
 
 export default devices_modelos;
