@@ -113,7 +113,13 @@ export class NavbarElement extends LitElement {
                 </button> -->
               </li>
               <li>
-                <button
+              <div
+                  style="cursor: pointer;background-image: url('iconocontratista.jpg');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  @click=${() => {
+                    this.sendEvent("ver-contratistas-click", null);
+                  }}
+                ></div>
+                <!-- <button
                   type="button"
                   class="btn btn-outline-success btn-sm mx-1"
                   @click=${() => {
@@ -121,10 +127,16 @@ export class NavbarElement extends LitElement {
                   }}
                 >
                   Contratistas
-                </button>
+                </button> -->
               </li>
               <li>
-                <button
+              <div
+                  style="cursor: pointer;background-image: url('icono de insumos.jpg');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  @click=${() => {
+                    this.sendEvent("ver-insumos-click", null);
+                  }}
+                ></div>
+                <!-- <button
                   type="button"
                   class="btn btn-outline-success btn-sm mx-1"
                   @click=${() => {
@@ -132,7 +144,7 @@ export class NavbarElement extends LitElement {
                   }}
                 >
                   Insumos
-                </button>
+                </button> -->
               </li>
               <li>
                 <div class="nav-item dropdown">
