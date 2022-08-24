@@ -184,13 +184,24 @@ export class SensoresClass extends LitElement {
 
 
 
-  sensor_renderer(sensor_data,pos) {
+  sensor_renderer(sensor_data,detalles,pos) {
+
+    // Si no es sensor de humedad suelo no renderiza nada
+    if(!devices_modelos[this._selected_details?.tipo]?.sensores.includes(
+      "humedad_suelo"
+    )){
+      return null;
+    }
+
+
     let c = ""
     if(pos === 1){
       c = "sensor-1 mx-0 p-0 container-fluid row"
       }else if(pos===2){
         c ="sensor-2 mx-0 p-0 container-fluid row"
     }
+
+
     return html`
           <div class=${c}>
             <div class="col col-4 my-auto" profundidad>
@@ -207,6 +218,7 @@ export class SensoresClass extends LitElement {
                   class="form-control"
                   id="basic-url"
                   aria-describedby="basic-addon3"
+                  .value=${this._selected_details?.detalles_instalacion?.['profundidad_' + pos]}
                 />
                 <span class="input-group-text">cm.</span>
               </div>
@@ -229,6 +241,7 @@ export class SensoresClass extends LitElement {
                     id="basic-url"
                     aria-describedby="basic-addon3"
                     disabled
+                    .value=${this.valor('suelo_humedad_' + pos)}
                   />
                   <span class="input-group-text">%Vol</span>
                 </div>
@@ -249,6 +262,7 @@ export class SensoresClass extends LitElement {
                     id="basic-url"
                     aria-describedby="basic-addon3"
                     disabled
+                    .value=${this.valor('suelo_temperatura_' + pos)}
                   />
                   <span class="input-group-text">°C</span>
                 </div>
@@ -495,8 +509,8 @@ export class SensoresClass extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body p-1 humedad-body">
-          ${this.sensor_renderer({},1)}
-          ${this.sensor_renderer({},2)}
+          ${this.sensor_renderer({},{},1)}
+          ${this.sensor_renderer({},{},2)}
         </div>
       </div>
     `;
