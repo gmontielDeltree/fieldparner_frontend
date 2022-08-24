@@ -211,9 +211,9 @@ export class SensoresClass extends LitElement {
     }
 
     if(s===1){
-      haches = haches.map(t =>  Math.round(t / (80-31) + 10));
+      haches = haches.map(t =>  Math.round(t / (5) + 10));
     }else if(s===2){
-      haches = haches.map(t =>  Math.round(t / (80-31) + 10) - 9);
+      haches = haches.map(t =>  Math.round(t / (5) + 10) - 9);
     }
 
     let dates= ["2022-08-24T00:00:00.000Z", "2022-08-24T01:30:00.000Z", "2022-08-24T02:30:00.000Z", "2022-08-24T03:30:00.000Z", "2022-08-24T04:30:00.000Z", "2022-08-24T05:30:00.000Z", "2022-08-24T06:30:00.000Z"]
