@@ -642,16 +642,16 @@ export class SensoresClass extends LitElement {
           ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
             "humedad_suelo"
           )
-            ? html`<button
+            ? html`<div class='mx-auto'><button
                 type="button"
                 @click=${() => {
                   this._offcanvas_humedad.show();
                   this.renderChart();
                 }}
-                class="btn btn-primary"
+                class="btn btn-primary mx-auto"
               >
                 Ver Sensores de Suelo
-              </button> `
+              </button></div> `
             : null}
         </div>
       </div>
