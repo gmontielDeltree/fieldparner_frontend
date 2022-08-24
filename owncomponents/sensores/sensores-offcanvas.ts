@@ -29,9 +29,63 @@ export class SensoresClass extends LitElement {
     css`
       .humedad-body {
         background-image: url("sensor-humedad/suelo.png");
+        background-position-y: -60px;
       }
+      .profundidad {
+        left: 10px;
+        background-color: whitesmoke;
+        width: 80px;
+      }
+      .profundidad-1 {
+        top: 300px;
+      }
+      .profundidad-2 {
+        top: 500px;
+      }
+
+      .humedad {
+        left: 310px;
+        background-color: whitesmoke;
+        width: 80px;
+      }
+      .humedad-1 {
+        top: 300px;
+      }
+      .humedad-2 {
+        top: 500px;
+      }
+
+      .temperatura {
+        left: 310px;
+        background-color: whitesmoke;
+        width: 80px;
+      }
+      .temperatura-1 {
+        top: 400px;
+      }
+      .temperatura-2 {
+        top: 600px;
+      }
+
       .sensor-imagen {
         background-image: url("sensor-humedad/sensor-humedad-suelo.png");
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+
+      .sensor-1 {
+        position: relative;
+        top: 150px;
+      }
+
+      .sensor-2 {
+        position: relative;
+        top: 180px;
+      }
+
+      .segundo-sensor {
+        top: 500px;
       }
     `,
   ];
@@ -128,6 +182,82 @@ export class SensoresClass extends LitElement {
       : "N/A";
   }
 
+
+
+  sensor_renderer(sensor_data,pos) {
+    let c = ""
+    if(pos === 1){
+      c = "sensor-1 mx-0 p-0 container-fluid row"
+      }else if(pos===2){
+        c ="sensor-2 mx-0 p-0 container-fluid row"
+    }
+    return html`
+          <div class=${c}>
+            <div class="col col-4 my-auto" profundidad>
+              <label
+                for="exampleInputEmail1"
+                style="color: #00ff29;"
+                class="form-label fw-bold"
+                >Profundidad</label
+              >
+
+              <div class="input-group mb-3">
+                <input
+                  type="number"
+                  class="form-control"
+                  id="basic-url"
+                  aria-describedby="basic-addon3"
+                />
+                <span class="input-group-text">cm.</span>
+              </div>
+            </div>
+
+            <div class="col col-4 sensor-imagen"></div>
+            <div class="col col-4">
+              <div class="row my-auto" humedad>
+                <label
+                  for="exampleInputEmail1"
+                  style="color: #00ff29;"
+                  class="form-label fw-bold"
+                  >Humedad Volumétrica</label
+                >
+
+                <div class="input-group mb-3">
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="basic-url"
+                    aria-describedby="basic-addon3"
+                    disabled
+                  />
+                  <span class="input-group-text">%Vol</span>
+                </div>
+              </div>
+
+              <div class="row my-auto" temperatura>
+                <label
+                  for="exampleInputEmail1"
+                  style="color: #00ff29;"
+                  class="form-label fw-bold"
+                  >Temperatura</label
+                >
+
+                <div class="input-group mb-3">
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="basic-url"
+                    aria-describedby="basic-addon3"
+                    disabled
+                  />
+                  <span class="input-group-text">°C</span>
+                </div>
+              </div>
+            </div>
+          </div>
+    `
+
+  }
   render() {
     // Hay algo seleccionado
     return html`
@@ -338,8 +468,7 @@ export class SensoresClass extends LitElement {
               >
                 Ver Sensores de Suelo
               </button> `
-            : null
-          }
+            : null}
         </div>
       </div>
 
@@ -365,9 +494,9 @@ export class SensoresClass extends LitElement {
             @click=${() => this._offcanvas_humedad.hide()}
           ></button>
         </div>
-        <div class="offcanvas-body">
-          <div class="humedad-body"></div>
-          <div class="sensor-imagen"></div>
+        <div class="offcanvas-body p-1 humedad-body">
+          ${this.sensor_renderer({},1)}
+          ${this.sensor_renderer({},2)}
         </div>
       </div>
     `;
