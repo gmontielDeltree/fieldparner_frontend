@@ -142,7 +142,7 @@ export class SiembraAddUI extends LitElement {
   init_fsm() {
     const someContext: Actividad = { ...siembraMachine.initialState.context };
     someContext.detalles.hectareas = this._lote_doc?.properties.hectareas || 0;
-    console.log("Hectareas ", someContext.detalles.hectareas);
+    //console.log("Hectareas ", someContext.detalles.hectareas);
     someContext.detalles.fecha_ejecucion_tentativa = format(
       new Date(),
       "yyyy-MM-dd"
@@ -155,7 +155,7 @@ export class SiembraAddUI extends LitElement {
     this._fsm = interpret(siembraMachine.withContext(ctx))
       .onTransition((state) => {
         this._ctx = state.context;
-        console.log(state.value);
+        //console.log(state.value);
         if (state.matches("idle")) {
           this.hideAll();
         }
@@ -283,7 +283,7 @@ export class SiembraAddUI extends LitElement {
 
     let filtered_contratistas = [];
 
-    console.log("FILTRADO", this.contratistas);
+    // console.log("FILTRADO", this.contratistas);
     Object.values(this.contratistas.contratistas).map((value) => {
       //console.log("COntra", value)
       if (tiene_labor(value.labores, "Siembra")) {
@@ -393,7 +393,7 @@ export class SiembraAddUI extends LitElement {
                   ? this.solo_contratistas_siembra()
                   : []}"
                 @selected-item-changed=${(e) => {
-                  console.log("e", e);
+                  // console.log("e", e);
                   this._fsm.send({
                     type: "ASSIGN_CONTRATISTA",
                     value: e.detail.value,
@@ -510,7 +510,7 @@ export class SiembraAddUI extends LitElement {
               .selectedItem=${detalles.insumo}
               .items="${this._insumos ? this._insumos : []}"
               @selected-item-changed=${(e) => {
-                console.log("e", e);
+                // console.log("e", e);
                 this._fsm.send({
                   type: "SELECTED",
                   value: e.detail.value,

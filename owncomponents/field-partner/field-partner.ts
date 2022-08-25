@@ -283,7 +283,7 @@ export class FieldPartner extends LitElement {
       this.load_campos_y_settings();
     }
 
-    console.log("FU ENDDE");
+    console.log("Init the whole thing");
   }
 
   /* AUTH0 Stuff */
@@ -353,7 +353,7 @@ export class FieldPartner extends LitElement {
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Nombres validos solo en minusculas
-    this.campos_db = new PouchDB("campos_" + username + "v1");
+    this.campos_db = new PouchDB("campos_" + username + "v2");
     let campos_db_uri = base_url + "campos_" + username;
     console.log("CrearDBS - campos_db_uri", campos_db_uri);
     this.remote_campos_db = new PouchDB(campos_db_uri);
@@ -361,6 +361,8 @@ export class FieldPartner extends LitElement {
     // https://pouchdb.com/api.html#sync
     // do one way, one-off sync from the server until completion
     var opts = { live: true, retry: true };
+
+    this.load_campos_y_settings(); // Carga para acelerar y no esperar
 
     this.campos_db.replicate
       .from(this.remote_campos_db)
@@ -472,6 +474,7 @@ export class FieldPartner extends LitElement {
 
   /** Crea el objeto settings y lo graba en la db */
   async init_settings() {
+
     let settings_doc = {
       _id: "settings",
       tipo: "settings",
@@ -481,7 +484,6 @@ export class FieldPartner extends LitElement {
     };
 
     settings_doc.user_cultivos = cultivos_default;
-
 
     try {
       console.log("No hay insumos...Fetching");
@@ -506,7 +508,6 @@ export class FieldPartner extends LitElement {
         this.campos_db.put(settings_doc);
         this.settings = settings_doc;
       });
-
 
       // Creando Contratista
       let contratista_doc = {_id:"contratistas", contratistas:{}};
@@ -540,7 +541,8 @@ export class FieldPartner extends LitElement {
       .get("settings")
       .then((settings_doc) => {
         this.settings = settings_doc;
-        this.inicializar_insumos();
+        // agregar insump solo si existe settings 
+        // this.inicializar_insumos();
       })
       .catch((e) => {
         if (e?.reason === "missing") {

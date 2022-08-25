@@ -27,10 +27,10 @@ export class DatePicker extends LitElement {
       };
     };
 
-    console.log(
-      "i18n",
-      this.shadowRoot.getElementById("nota-date-picker").i18n
-    );
+    // console.log(
+    //   "i18n",
+    //   this.shadowRoot.getElementById("nota-date-picker").i18n
+    // );
 
     this.shadowRoot.getElementById("nota-date-picker").i18n.monthNames[5] =
       "Junio";

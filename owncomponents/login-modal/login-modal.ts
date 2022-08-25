@@ -27,7 +27,7 @@ export class LoginModal extends LitElement {
 
 
   firstUpdated() {
-    console.log("FU", this.show)
+    // console.log("FU", this.show)
     this._modal = new Modal(this.shadowRoot.getElementById("login-modal"));
     if(this.show){
       this._modal.show()
@@ -40,7 +40,7 @@ export class LoginModal extends LitElement {
   willUpdate(props) {
     
     if (props.has("show")) {
-      console.log("WU",this.show,this._modal)
+      // console.log("WU",this.show,this._modal)
       if (this.show) {
         this._modal?.show(); //La primera vez _modal no esta definido
       } else {

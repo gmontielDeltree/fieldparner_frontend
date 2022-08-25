@@ -262,7 +262,7 @@ export class MapaPrincipal extends LitElement {
         }
       ); 
 
-      console.info("Mapa Cargado");
+      // console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
       this._redraw_map();
     });
@@ -270,7 +270,7 @@ export class MapaPrincipal extends LitElement {
     /** Mapbox handler para mostrar el offcanvas de detalles  'lotes', */
     this.map.on(touchEvent, "campos", (e) => {
       // NDVI not visible
-      console.log("Click en Campo", e.features[0]);
+      // console.log("Click en Campo", e.features[0]);
 
       layer_visibility(this.map, "campos", false);
       layer_visibility(this.map, "lotes", true);
@@ -285,13 +285,13 @@ export class MapaPrincipal extends LitElement {
     });
 
     this.map.on(touchEvent, "lotes", (e) => {
-      console.log("Click en lotes Internos", e.features[0]);
+      // console.log("Click en lotes Internos", e.features[0]);
       let { nombre, campo_parent_id } = e.features[0].properties;
       this.sendEvent("ver-lote-detalles", { nombre: nombre, campo_parent_id });
     });
 
     this.map.on(touchEvent, "lotes_border", (e) => {
-      console.log("Click en lotes selector", e.features[0]);
+      // console.log("Click en lotes selector", e.features[0]);
       let { nombre, campo_parent_id } = e.features[0].properties;
       this.sendEvent("lote-seleccionado", { nombre: nombre, campo_parent_id });
     });
@@ -308,7 +308,7 @@ export class MapaPrincipal extends LitElement {
 
   _redraw_map = () => {
     let campos_source = this.map.getSource("campos");
-    console.log("CS", campos_source);
+    // console.log("CS", campos_source);
     let campos_collection = {
       type: "FeatureCollection",
       features: [],
@@ -333,7 +333,7 @@ export class MapaPrincipal extends LitElement {
 
     // Puede set undefined si la base se carga antes que lo
     // que renderiza por primera vez
-    console.log("Campos", campos_collection);
+    // console.log("Campos", campos_collection);
     campos_source?.setData(campos_collection);
 
     // Lotes
@@ -346,9 +346,9 @@ export class MapaPrincipal extends LitElement {
 
     colorear_lotes(lotes_collection.features, this.settings?.user_cultivos);
 
-    console.log("Set lotes internos DS", lotes_collection.features);
+    // console.log("Set lotes internos DS", lotes_collection.features);
     lotes_source?.setData(lotes_collection);
-    console.log("Redraw Campos", this.campos);
+    // console.log("Redraw Campos", this.campos);
   };
 
   willUpdate(props) {

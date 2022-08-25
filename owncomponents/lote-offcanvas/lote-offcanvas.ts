@@ -664,6 +664,11 @@ export class LoteOffcanvas extends LitElement {
       changedProperties.has("campo_id") ||
       changedProperties.has("lote_nombre")
     ) {
+      
+      if(this.campo_id === ""){
+        return;
+      }
+
       this.db.get(this.campo_id).then((doc) => {
         this._campo_doc = doc;
         this._lote_doc =

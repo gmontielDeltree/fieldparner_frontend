@@ -46,7 +46,7 @@ export class CosechaAddUI extends LitElement {
         this.fsm = interpret(cosechaMachine.withContext(someContext))
            .onTransition((state) => {
              this._ctx = state.context;
-             console.log(state.value);
+             // console.log(state.value);
              if (state.matches("idle")) {
                this.hideAll();
              }

@@ -127,7 +127,11 @@ export class SensoresClass extends LitElement {
   @state()
   _devices: Devices = new Devices();
 
-  @state()
+  @state({
+    hasChanged(newVal: Offcanvas, oldVal: Offcanvas) {
+      return false;
+    },
+  })
   _offcanvas_humedad: Offcanvas;
 
   override async firstUpdated() {
@@ -325,11 +329,13 @@ export class SensoresClass extends LitElement {
     }
 
 
+    let nt = await this._devices.get_raw_data_for_charts()
+    console.log(nt)
 
     let sim1 = this.simulated_historical_data(1)
-    options.series[0].data = [...sim1.humedad];
-    // options.xaxis.categories = sim.ts;
-   options.series[1].data = [...sim1.temperatura];
+    options.series[0].data = [...sim1.humedad,...nt.h1];
+     options.xaxis.categories = [...sim1.ts,...nt.ts];
+   options.series[1].data = [...sim1.temperatura,...nt.t1];
 
     var chart_1 = new ApexCharts(this.shadowRoot.getElementById("chart-1"), options);
     
@@ -340,10 +346,10 @@ export class SensoresClass extends LitElement {
     let sim2 = this.simulated_historical_data(2)
     op2.series = [{
       name: 'Humedad',
-      data: sim2.humedad
+      data: [...sim2.humedad,...nt.h2]
     }, {
       name: 'Temperatura',
-      data: sim2.temperatura
+      data: [...sim2.temperatura,...nt.t2]
     }]
     // options.xaxis.categories = sim.ts;
     //options.series[1].data = [...sim1.temperatura];
@@ -351,6 +357,8 @@ export class SensoresClass extends LitElement {
 
     chart_1.render();
     chart_2.render();
+    
+    
   }
 
   sensor_renderer(sensor_data,detalles,pos) {

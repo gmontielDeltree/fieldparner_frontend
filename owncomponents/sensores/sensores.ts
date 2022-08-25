@@ -14,8 +14,15 @@ const extract_tele = (key, tele) => {
   return f[0];
 };
 
+function unixToDate(date){
+	var time 	= new Date(date * 1000);
+	return time.toISOString();
+}
+
 class Devices {
   db = new PouchDB(base_url + "processed_device_telemetry");
+  db_raw = new PouchDB(base_url + "telemetry_raw");
+
 
   private _devices_names: string[] = [];
 
@@ -69,6 +76,42 @@ class Devices {
 
     return docs;
   };
+
+
+  async get_raw_data_for_charts(){
+    let docs = await this.db_raw.allDocs({
+      include_docs: true,
+      startkey: "cd45c56e6a66b825:",
+      endkey: "cd45c56e6a66b825:\ufff0",
+    })
+
+    let data = await docs.rows.map((d) => d.doc);
+      let ts_a = []
+      let t1_a = []
+      let h1_a = []
+      let t2_a = []
+      let h2_a = []
+
+    let r = data.map(dp => {
+        // t1
+        let ts = unixToDate(dp.ts - 3 * 3600)
+        let t1 = dp.data[0].value
+        let h1 = dp.data[1].value
+        let t2 = dp.data[2].value
+        let h2 = dp.data[3].value
+
+        ts_a.push(ts)
+        t1_a.push(t1)
+        h1_a.push(h1)
+        t2_a.push(t2)
+        h2_a.push(h2)
+
+      })
+
+      return {ts:ts_a, t1:t1_a, h1:h1_a, t2:t2_a, h2:h2_a}
+
+  }
+
 
   async get_details(device_id: string) {
     try {

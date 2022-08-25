@@ -122,7 +122,6 @@ self.addEventListener('fetch', (event) => {
 
 self.addEventListener('fetch', (event) => {
 
-
   if (event.request.url.endsWith('.json')) {
     // Using the previously-initialized strategies will work as expected.
     const cacheFirst = new strategies.NetworkFirst();
@@ -143,7 +142,7 @@ self.addEventListener('fetch', (event) => {
 
   if (event.request.url.endsWith('.svg') || event.request.url.endsWith('.png')) {
     // Using the previously-initialized strategies will work as expected.
-    const cacheFirst = new strategies.StaleWhileRevalidate();
+    const cacheFirst = new strategies.CacheFirst();
     event.respondWith(cacheFirst.handle({request: event.request, event}));
   }
 
