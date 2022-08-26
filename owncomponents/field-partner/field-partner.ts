@@ -505,7 +505,7 @@ export class FieldPartner extends LitElement {
     .on("complete", (info) => {
       console.log("Replication Completed");
 
-      //this.load_campos_y_settings();
+      this.load_campos_y_settings();
 
       // then two-way, continuous, retriable sync
       this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
