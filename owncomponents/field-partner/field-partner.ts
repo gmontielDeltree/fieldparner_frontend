@@ -349,46 +349,68 @@ export class FieldPartner extends LitElement {
   /**** FIN AUTH0 Stuff */
 
   // #region Bases de Datos
-  crear_dbs(user) {
+  async crear_dbs(user) {
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Nombres validos solo en minusculas
-    this.campos_db = new PouchDB("campos_" + username + "v2");
+    this.campos_db = new PouchDB("campos_" + username + "v3");
     let campos_db_uri = base_url + "campos_" + username;
     console.log("CrearDBS - campos_db_uri", campos_db_uri);
     this.remote_campos_db = new PouchDB(campos_db_uri);
 
-    // https://pouchdb.com/api.html#sync
-    // do one way, one-off sync from the server until completion
-    var opts = { live: true, retry: true };
+    let result_info_local = await this.campos_db.info();
+    let local_is_empty = (result_info_local.doc_count === 0) ? true : false;
 
-    this.load_campos_y_settings(); // Carga para acelerar y no esperar
+    let result_info_remote = await this.remote_campos_db.info();
+    let remote_is_empty = (result_info_remote.doc_count === 0) ? true : false;
 
-    this.campos_db.replicate
-      .from(this.remote_campos_db)
-      .on("complete", (info) => {
-        console.log("Replication Completed");
+    console.log("Local Exists?",!local_is_empty);
+    console.log("Remote Exists?",!remote_is_empty);
 
-        //this.load_campos_y_settings();
+    /* Caso 1
+    0-0 Nuevo Local - Nuevo Remoto
+    */
 
-        // then two-way, continuous, retriable sync
-        this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
-          console.error("SyncError", e);
-        });
+    /* Inicializar lo Necesario */
+    if(remote_is_empty && local_is_empty){
+      await this.init_settings();
+      this.replicar_y_sincronizar();
+      return;
+    }
 
-        // /* Redraw on cambios en campos_db */
-        this.campos_db
-          .changes({
-            since: "now",
-            live: true,
-          })
-          .on("change", () => {
-            this.load_campos_y_settings();
-          });
-      })
-      .on("error", (e) => {
-        console.error(e);
-      });
+    /* Caso 2
+    0-1 Nuevo Local - Remoto Existe
+    */
+    if(!remote_is_empty && local_is_empty){
+      this.replicar_y_sincronizar();
+      return;
+    }
+
+    /* Caso 3
+    1-0 Local Existe - Nuevo Remoto
+    */
+    if(remote_is_empty && !local_is_empty){
+      this.replicar_y_sincronizar();
+      this.load_campos_y_settings();
+      return;
+    }
+
+    /* Caso 4
+    1-1 Local Existe - Remoto Existe
+    */
+    if(!remote_is_empty && !local_is_empty){
+      this.replicar_y_sincronizar();
+      this.load_campos_y_settings();
+      return;
+    }
+
+
+
+   // this.load_campos_y_settings(); // Carga para acelerar y no esperar
+
+
+    // Caso 1-1
+   
 
     // this.campos_db
     //   .sync(this.remote_campos_db, {
@@ -472,7 +494,42 @@ export class FieldPartner extends LitElement {
     // });
   }
 
-  /** Crea el objeto settings y lo graba en la db */
+  replicar_y_sincronizar(){
+
+    // https://pouchdb.com/api.html#sync
+    // do one way, one-off sync from the server until completion
+    var opts = { live: true, retry: true };
+
+    this.campos_db.replicate
+    .from(this.remote_campos_db)
+    .on("complete", (info) => {
+      console.log("Replication Completed");
+
+      //this.load_campos_y_settings();
+
+      // then two-way, continuous, retriable sync
+      this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
+        console.error("SyncError", e);
+      });
+
+      // /* Redraw on cambios en campos_db */
+      this.campos_db
+        .changes({
+          since: "now",
+          live: true,
+        })
+        .on("change", () => {
+          this.load_campos_y_settings();
+        });
+    })
+    .on("error", (e) => {
+      console.error(e);
+    });
+  }
+
+  /** Crea el objeto settings y lo graba en la db 
+   * Crea settings y contratistas
+  */
   async init_settings() {
 
     let settings_doc = {
@@ -505,6 +562,7 @@ export class FieldPartner extends LitElement {
       console.log("BulkDocs Insumos");
       this.campos_db.bulkDocs(insumos).then((d) => {
         settings_doc.insumos_inicializados = true;
+        // Grabar Settings DOC
         this.campos_db.put(settings_doc);
         this.settings = settings_doc;
       });
@@ -546,7 +604,7 @@ export class FieldPartner extends LitElement {
       })
       .catch((e) => {
         if (e?.reason === "missing") {
-          this.init_settings();
+          // this.init_settings();
         }
         console.error("Load Settings", e);
       });
