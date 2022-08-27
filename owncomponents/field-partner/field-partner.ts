@@ -31,6 +31,20 @@ import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import uuid4 from "uuid4";
 import { get_empty_insumo, Insumo } from "../insumos/insumos-types";
 
+var wentOffline, wentOnline;
+    
+function handleConnectionChange(event){
+   if(event.type == "offline"){
+       console.log("You lost connection.");
+       wentOffline = new Date(event.timeStamp);
+   }
+   if(event.type == "online"){
+       console.log("You are now back online.");
+       wentOnline = new Date(event.timeStamp);
+       console.log("You were offline for " + (wentOnline - wentOffline) / 1000 + "seconds.");
+   }
+}
+
 export class FieldPartner extends LitElement {
   @property()
   map: Map;
@@ -72,7 +86,11 @@ export class FieldPartner extends LitElement {
     this.user = {};
     this.user.name = "demo";
     this.loading = true;
+    
 
+   window.addEventListener('online', handleConnectionChange);
+   window.addEventListener('offline', handleConnectionChange);
+   
     window.addEventListener("DOMContentLoaded", () => {
       const parsedUrl = new URL(window.location);
       // searchParams.get() will properly handle decoding the values.
