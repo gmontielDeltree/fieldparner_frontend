@@ -100,24 +100,24 @@ export class CampoOffcanvas extends LitElement {
   show() {
     this._detallesOffcanvas.show();
     //tour.start()
-    introJs()
-      .setOptions({
-        dontShowAgain: true,
-        nextLabel: "Siguiente",
-        doneLabel: "Fin",
-        prevLabel: "Anterior",
-        disableInteraction: false,
-        steps: [
-          {
-            intro: "Has seleccionado un campo",
-          },
-          {
-            element: document.querySelector(".btn-anadir-lote"),
-            intro: "Presiona aqui si quieres agregar un nuevo lote",
-          },
-        ],
-      })
-      .start();
+    // introJs()
+    //   .setOptions({
+    //     dontShowAgain: true,
+    //     nextLabel: "Siguiente",
+    //     doneLabel: "Fin",
+    //     prevLabel: "Anterior",
+    //     disableInteraction: false,
+    //     steps: [
+    //       {
+    //         intro: "Has seleccionado un campo",
+    //       },
+    //       {
+    //         element: document.querySelector(".btn-anadir-lote"),
+    //         intro: "Presiona aqui si quieres agregar un nuevo lote",
+    //       },
+    //     ],
+    //   })
+    //   .start();
       
     this.localizar_campo()
   }

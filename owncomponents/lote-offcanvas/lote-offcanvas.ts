@@ -268,25 +268,25 @@ export class LoteOffcanvas extends LitElement {
     this.reload_lote_doc_y_localizar();
 
     this._lotesOffcanvas.show();
-    introJs()
-      .setOptions({
-        dontShowAgain: true,
-        nextLabel: "Siguiente",
-        doneLabel: "Fin",
-        prevLabel: "Anterior",
-        disableInteraction: false,
-        steps: [
-          {
-            intro:
-              "Es esta persiana podras ver y editar la historia de tu lote",
-          },
-          {
-            element: document.querySelector(".btn-actividad"),
-            intro: "Utiliza estos botones para agregar nuevos registros",
-          },
-        ],
-      })
-      .start();
+    // introJs()
+    //   .setOptions({
+    //     dontShowAgain: true,
+    //     nextLabel: "Siguiente",
+    //     doneLabel: "Fin",
+    //     prevLabel: "Anterior",
+    //     disableInteraction: false,
+    //     steps: [
+    //       {
+    //         intro:
+    //           "Es esta persiana podras ver y editar la historia de tu lote",
+    //       },
+    //       {
+    //         element: document.querySelector(".btn-actividad"),
+    //         intro: "Utiliza estos botones para agregar nuevos registros",
+    //       },
+    //     ],
+    //   })
+    //   .start();
   }
 
   hide() {
