@@ -261,8 +261,6 @@ export class FieldPartner extends LitElement {
       await this.buildAuth0Client();
       console.log("Normal Flow - AUTH Flow");
       await this.handleRedirectCallback();
-      // Campos
-      this.load_campos_y_settings();
     } else if (sitio === "dev--agrotools.netlify.app") {
       // Development - Especial flow
       console.log("Especial Development Flow - Demo User");
@@ -270,8 +268,6 @@ export class FieldPartner extends LitElement {
       this.logged_in = true;
       // Default Databases
       this.crear_dbs(this.user);
-      // Campos
-      this.load_campos_y_settings();
     } else {
       console.log("Especial Development Flow - Randy User");
       // Logged in
@@ -279,8 +275,6 @@ export class FieldPartner extends LitElement {
       this.user.name = "randy";
       // Default Databases
       this.crear_dbs(this.user);
-      // Campos
-      this.load_campos_y_settings();
     }
 
     console.log("Init the whole thing");
@@ -382,6 +376,7 @@ export class FieldPartner extends LitElement {
     0-1 Nuevo Local - Remoto Existe
     */
     if(!remote_is_empty && local_is_empty){
+      this.cargar_desde_remoto();
       this.replicar_y_sincronizar();
       return;
     }
@@ -494,6 +489,29 @@ export class FieldPartner extends LitElement {
     // });
   }
 
+  cargar_desde_remoto(){
+        // Get Campos
+        this.remote_campos_db
+        .allDocs({
+          include_docs: true,
+          startkey: "campos_",
+          endkey: "campos_\ufff0",
+        })
+        .then((result) => (this.campos = result));
+  
+      // Get Settings
+      this.remote_campos_db
+        .get("settings")
+        .then((settings_doc) => {
+          this.settings = settings_doc;
+        })
+        .catch((e) => {
+          if (e?.reason === "missing") {
+          }
+          console.error("Load Settings desde Remote", e);
+        });
+  }
+
   replicar_y_sincronizar(){
 
     // https://pouchdb.com/api.html#sync
@@ -520,6 +538,7 @@ export class FieldPartner extends LitElement {
         })
         .on("change", () => {
           this.load_campos_y_settings();
+          console.log("CHANGES!!")
         });
     })
     .on("error", (e) => {
