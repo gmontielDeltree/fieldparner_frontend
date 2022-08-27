@@ -76,7 +76,7 @@ export class NavbarElement extends LitElement {
 
 
                 <div
-                  style="cursor: pointer;background-image: url('iconodecampo2D.jpg');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  style="cursor: pointer;background-image: url('iconodecampo2D.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-lista-campos", null);
                   }}
@@ -97,7 +97,7 @@ export class NavbarElement extends LitElement {
               <li>
 
               <div
-                  style="cursor: pointer;background-image: url('deposito.jpg');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  style="cursor: pointer;background-image: url('deposito.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-depositos-click", null);
                   }}
@@ -114,7 +114,7 @@ export class NavbarElement extends LitElement {
               </li>
               <li>
               <div
-                  style="cursor: pointer;background-image: url('iconocontratista.jpg');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  style="cursor: pointer;background-image: url('iconocontratista.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-contratistas-click", null);
                   }}
@@ -131,7 +131,7 @@ export class NavbarElement extends LitElement {
               </li>
               <li>
               <div
-                  style="cursor: pointer;background-image: url('icono de insumos.jpg');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  style="cursor: pointer;background-image: url('icono de insumos.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-insumos-click", null);
                   }}

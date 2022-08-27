@@ -735,7 +735,6 @@ export class FieldPartner extends LitElement {
         id="depositos-lista"
         .db=${this.campos_db}
       ></depositos-lista>
-      <db-loader></db-loader>
 
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>

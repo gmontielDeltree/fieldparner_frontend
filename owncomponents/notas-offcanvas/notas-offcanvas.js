@@ -8,6 +8,7 @@ import {Marker} from "mapbox-gl";
 import { format, parse } from "date-fns";
 import '@vaadin/text-area';
 import { touchEvent } from "../helpers";
+import "../audiorecorder/index.js";
 
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 
