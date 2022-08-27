@@ -158,7 +158,7 @@ export class SensoresClass extends LitElement {
           const el = document.createElement("div");
           el.className = "marker";
 
-          el.style.backgroundImage = `url('centralmeteorologica.png')`;
+          el.style.backgroundImage = `url('centralmeteorologica.webp')`;
           el.style.backgroundSize = "cover";
           el.style.width = `90px`;
           el.style.height = `70px`;
