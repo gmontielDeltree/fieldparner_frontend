@@ -260,7 +260,26 @@ export class MapaPrincipal extends LitElement {
             "fill-outline-color": "red",
           },
         }
-      ); 
+      );
+      
+      
+      this.map.addLayer({
+        'id': 'nombres_campos',
+        'type': 'symbol',
+        'source': 'campos',
+        'layout': {
+        'text-field': [
+        'format',
+        ['upcase', ['get', 'nombre']],
+        { 'font-scale': 0.8 },
+        '\n',
+        {},
+        //['downcase', ['get', 'Comments']],
+        //{ 'font-scale': 0.6 }
+        ],
+        'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold']
+        }
+        });
 
       // console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
