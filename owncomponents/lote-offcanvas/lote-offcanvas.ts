@@ -303,7 +303,18 @@ export class LoteOffcanvas extends LitElement {
     document.getElementById("siembra-add-el").start();
   }
 
-  actividad() {
+
+  nueva_actividad(){
+    const someContext = aplicacionMachine.initialState.context;
+    someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
+    this.init_fsm(someContext); 
+ 
+    this.fsm.send({ type: "NEXT" });
+    this.load_insumos()
+
+  }
+  
+  abrir_editor_actividad() {
     this.fsm.start();
     this.fsm.send({ type: "NEXT" });
     this.load_insumos()
@@ -481,7 +492,7 @@ export class LoteOffcanvas extends LitElement {
     if ((actividad.tipo === "aplicacion")) {
       console.log("EDITAR", actividad);
       this.init_fsm(actividad)
-      this.actividad()
+      this.abrir_editor_actividad()
       //document.getElementById("siembra-add-el").editar(actividad);
     }
     
@@ -552,7 +563,7 @@ export class LoteOffcanvas extends LitElement {
     let ts_ahora = new Date().toISOString();
 
     if (tipo === "aplicacion") {
-      this.fsm.send("GUARDAR");
+      this.fsm.send("CANCEL");
       // aplicacion = {
       //   uuid: uuid4(),
       //   tipo: "siembra",
@@ -681,34 +692,7 @@ export class LoteOffcanvas extends LitElement {
 
         const someContext = aplicacionMachine.initialState.context;
         someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
-        this.fsm = interpret(aplicacionMachine.withContext(someContext))
-          .onTransition((state) => {
-            this._ctx = state.context as Actividad;
-            //console.log(state.value);
-            if (state.matches("idle")) {
-              this._steps_elements.map((el) => el.hide());
-            }
-            if (state.matches("editing.fecha")) {
-              this.show_step(0);
-            } else if (state.matches("editing.hectareas")) {
-              this.show_step(1);
-            } else if (state.matches("editing.insumo")) {
-              this.show_step(2);
-            } else if (state.matches("editing.dosis")) {
-              this.show_step(3);
-            } else if (state.matches("editing.motivo")) {
-              this.show_step(4);
-            } else if (state.matches("editing.masinsumos")) {
-              this.show_step(5);
-            } else if (state.matches("editing.comentario")) {
-              this.show_step(6);
-            } else if (state.matches("editing.resumiendo")) {
-              this.show_step(7);
-            } else if (state.matches("editing.share")) {
-              this.show_step(8);
-            }
-          })
-          .start();
+        this.init_fsm(someContext); 
 
         this.reload_actividades();
 
@@ -782,7 +766,7 @@ export class LoteOffcanvas extends LitElement {
     } else if (valor === "cosecha") {
       this.cosecha();
     } else if (valor === "aplicacion") {
-      this.actividad();
+      this.nueva_actividad();
     } else if (valor === "eliminar") {
       this.eliminar_lote();
     } else if (valor === "ndvi") {
@@ -939,7 +923,7 @@ export class LoteOffcanvas extends LitElement {
               </button>
               <button
                 class="btn btn-primary btn-sm btn-actividad"
-                @click=${this.actividad}
+                @click=${this.nueva_actividad}
               >
                 + Aplicación
               </button>
@@ -1008,6 +992,7 @@ export class LoteOffcanvas extends LitElement {
             </div>
             <div class="modal-body mx-auto">
               <date-picker
+                .fecha=${detalles.fecha_ejecucion_tentativa}
                 @change=${(e) => {
                   this.fsm.send({
                     type: "CHANGE",
@@ -1024,6 +1009,7 @@ export class LoteOffcanvas extends LitElement {
                 label="Contratista"
                 item-label-path="nombre"
                 item-value-path="uuid"
+                .selectedItem=${this._ctx.contratista}
                 .items="${this._contratistas
                   ? Object.values(this._contratistas?.contratistas)
                   : []}"
