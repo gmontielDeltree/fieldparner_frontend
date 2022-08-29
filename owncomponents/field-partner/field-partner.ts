@@ -496,20 +496,25 @@ export class FieldPartner extends LitElement {
     //     }
     //   });
 
-    // Changes Lotes para generar NDVI
-    // this.remote_changes_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
-    // this.changes_db = new PouchDB("campos_changes")
+
+  }
+
+
+  init_ndvi_dbs(){
+        // Changes Lotes para generar NDVI
+    this.remote_changes_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
+    this.changes_db = new PouchDB("campos_changes")
 
     // console.log("Changes Sync Set");
-    // this.changes_db.replicate.to(this.remote_changes_db, {
-    //     live: true
-    // }).on('complete', function () {
-    //     // yay, we're done!
-    //     console.log("Changes Uploaded")
-    // }).on('error', function (err) {
-    //     // boo, something went wrong!
-    //     console.log("Error Changes")
-    // });
+    this.changes_db.replicate.to(this.remote_changes_db, {
+        live: true
+    }).on('complete', function () {
+        // yay, we're done!
+        console.log("Changes Uploaded")
+    }).on('error', function (err) {
+        // boo, something went wrong!
+        console.log("Error Changes")
+    });
   }
 
   cargar_desde_remoto() {
@@ -558,6 +563,9 @@ export class FieldPartner extends LitElement {
         this.load_campos_y_settings();
         console.log("CHANGES!!");
       });
+
+
+    this.init_ndvi_dbs()
   }
 
   replicar_y_sincronizar() {
@@ -587,6 +595,8 @@ export class FieldPartner extends LitElement {
             this.load_campos_y_settings();
             console.log("CHANGES!!");
           });
+
+          this.init_ndvi_dbs();
       })
       .on("error", (e) => {
         // Puede llegar aca si la app se abre offline
