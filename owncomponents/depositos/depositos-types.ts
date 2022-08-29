@@ -79,6 +79,10 @@ type DetallesAplicacion = {
 type DetallesCosecha = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
+  rinde: number;
+  comentario: string;
+  humedad: string;
+  
 };
 
 type DetallesSiembra = {

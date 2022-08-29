@@ -295,6 +295,13 @@ const timeline_css = css`
     background-size: cover !important;
     background-position: center !important;
   }
+
+  .icono-nota {
+    background-image: url("iconodenotas_act.webp") !important;
+    background-color: #ffc323 !important;
+    background-size: cover !important;
+    background-position: center !important;
+  }
 `;
 
 const extraer_fecha = (actividad) => {
@@ -564,7 +571,7 @@ export class TimelineElement extends LitElement {
           <time class="cbp_tmtime" datetime="2032-11-04T03:45"
             ><span>${fecha}</span> <span>${elapsed}</span></time
           >
-          <div class="cbp_tmicon bg-blush">
+          <div class="icono-nota cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
           <div class="cbp_tmlabel bg-nota">
@@ -668,6 +675,10 @@ export class TimelineElement extends LitElement {
         //console.log(moment.locale()); // en
         let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
 
+        let estado = item.estado;
+
+        let is_planificada = isFuture(parseISO(fecha));
+
         return html`
           <li>
             <time class="cbp_tmtime" datetime="2032-11-04T03:45"
@@ -683,34 +694,7 @@ export class TimelineElement extends LitElement {
               </h2>
               <p>Rinde: ${rinde} tn/ha - Humedad: ${humedad} %</p>
               <p class="small">${comentarios}</p>
-
-              <button
-                class="btn btn-secondary"
-                @click=${() => {
-                  console.log(item.uuid);
-                  this.evento_download_pdf(item.uuid);
-                }}
-              >
-                Orden de Trabajo
-              </button>
-              ${navigator.share
-                ? html`<button
-                    type="button"
-                    class="btn btn-success"
-                    @click=${() => this.evento_share_pdf(item.uuid)}
-                  >
-                    Compartir Orden
-                  </button>`
-                : null}
-              <button
-                class="btn btn-danger"
-                @click=${() => {
-                  console.log(item.uuid);
-                  this.evento_eliminar(item.uuid);
-                }}
-              >
-                Eliminar
-              </button>
+              ${barra_botones(item, estado)}
             </div>
           </li>
         `;
