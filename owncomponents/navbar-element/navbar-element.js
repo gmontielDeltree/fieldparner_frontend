@@ -97,7 +97,7 @@ export class NavbarElement extends LitElement {
               <li>
 
               <div
-                  style="cursor: pointer;background-image: url('deposito.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  style="cursor: pointer;background-image: url('deposito_2.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-depositos-click", null);
                   }}
