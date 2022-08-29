@@ -32,17 +32,19 @@ import uuid4 from "uuid4";
 import { get_empty_insumo, Insumo } from "../insumos/insumos-types";
 
 var wentOffline, wentOnline;
-    
-function handleConnectionChange(event){
-   if(event.type == "offline"){
-       console.log("You lost connection.");
-       wentOffline = new Date(event.timeStamp);
-   }
-   if(event.type == "online"){
-       console.log("You are now back online.");
-       wentOnline = new Date(event.timeStamp);
-       console.log("You were offline for " + (wentOnline - wentOffline) / 1000 + "seconds.");
-   }
+
+function handleConnectionChange(event) {
+  if (event.type == "offline") {
+    console.log("You lost connection.");
+    wentOffline = new Date(event.timeStamp);
+  }
+  if (event.type == "online") {
+    console.log("You are now back online.");
+    wentOnline = new Date(event.timeStamp);
+    console.log(
+      "You were offline for " + (wentOnline - wentOffline) / 1000 + "seconds."
+    );
+  }
 }
 
 export class FieldPartner extends LitElement {
@@ -86,11 +88,10 @@ export class FieldPartner extends LitElement {
     this.user = {};
     this.user.name = "demo";
     this.loading = true;
-    
 
-   window.addEventListener('online', handleConnectionChange);
-   window.addEventListener('offline', handleConnectionChange);
-   
+    window.addEventListener("online", handleConnectionChange);
+    window.addEventListener("offline", handleConnectionChange);
+
     window.addEventListener("DOMContentLoaded", () => {
       const parsedUrl = new URL(window.location);
       // searchParams.get() will properly handle decoding the values.
@@ -366,64 +367,68 @@ export class FieldPartner extends LitElement {
 
     // Nombres validos solo en minusculas
     this.campos_db = new PouchDB("campos_" + username + "v3");
-    let campos_db_uri = base_url + "campos_" + username;
-    console.log("CrearDBS - campos_db_uri", campos_db_uri);
-    this.remote_campos_db = new PouchDB(campos_db_uri);
 
-    let result_info_local = await this.campos_db.info();
-    let local_is_empty = (result_info_local.doc_count === 0) ? true : false;
+    try {
+      let campos_db_uri = base_url + "campos_" + username;
+      console.log("CrearDBS - campos_db_uri", campos_db_uri);
+      this.remote_campos_db = new PouchDB(campos_db_uri);
 
-    let result_info_remote = await this.remote_campos_db.info();
-    let remote_is_empty = (result_info_remote.doc_count === 0) ? true : false;
+      let result_info_local = await this.campos_db.info();
+      let local_is_empty = result_info_local.doc_count === 0 ? true : false;
 
-    console.log("Local Exists?",!local_is_empty);
-    console.log("Remote Exists?",!remote_is_empty);
+      let result_info_remote = await this.remote_campos_db.info();
+      let remote_is_empty = result_info_remote.doc_count === 0 ? true : false;
 
-    /* Caso 1
-    0-0 Nuevo Local - Nuevo Remoto
-    */
+      console.log("Local Exists?", !local_is_empty);
+      console.log("Remote Exists?", !remote_is_empty);
 
-    /* Inicializar lo Necesario */
-    if(remote_is_empty && local_is_empty){
-      await this.init_settings();
-      this.replicar_y_sincronizar();
-      return;
-    }
+      /* Caso 1
+      0-0 Nuevo Local - Nuevo Remoto
+      */
 
-    /* Caso 2
-    0-1 Nuevo Local - Remoto Existe
-    */
-    if(!remote_is_empty && local_is_empty){
-      this.cargar_desde_remoto();
-      this.replicar_y_sincronizar();
-      return;
-    }
+      /* Inicializar lo Necesario */
+      if (remote_is_empty && local_is_empty) {
+        await this.init_settings();
+        this.replicar_y_sincronizar();
+        return;
+      }
 
-    /* Caso 3
-    1-0 Local Existe - Nuevo Remoto
-    */
-    if(remote_is_empty && !local_is_empty){
-      this.replicar_y_sincronizar();
+      /* Caso 2
+      0-1 Nuevo Local - Remoto Existe
+      */
+      if (!remote_is_empty && local_is_empty) {
+        this.cargar_desde_remoto();
+        this.replicar_y_sincronizar();
+        return;
+      }
+
+      /* Caso 3
+      1-0 Local Existe - Nuevo Remoto
+      */
+      if (remote_is_empty && !local_is_empty) {
+        this.replicar_y_sincronizar();
+        this.load_campos_y_settings();
+        return;
+      }
+
+      /* Caso 4
+      1-1 Local Existe - Remoto Existe
+      */
+      if (!remote_is_empty && !local_is_empty) {
+        this.replicar_y_sincronizar();
+        this.load_campos_y_settings();
+        return;
+      }
+    } catch (e) {
+      console.log("CrearDBs failed!!! Offline?");
+      // Cargar Local
       this.load_campos_y_settings();
-      return;
+      this.sincronizar_cuando_online();
     }
 
-    /* Caso 4
-    1-1 Local Existe - Remoto Existe
-    */
-    if(!remote_is_empty && !local_is_empty){
-      this.replicar_y_sincronizar();
-      this.load_campos_y_settings();
-      return;
-    }
-
-
-
-   // this.load_campos_y_settings(); // Carga para acelerar y no esperar
-
+    // this.load_campos_y_settings(); // Carga para acelerar y no esperar
 
     // Caso 1-1
-   
 
     // this.campos_db
     //   .sync(this.remote_campos_db, {
@@ -507,68 +512,92 @@ export class FieldPartner extends LitElement {
     // });
   }
 
-  cargar_desde_remoto(){
-        // Get Campos
-        this.remote_campos_db
-        .allDocs({
-          include_docs: true,
-          startkey: "campos_",
-          endkey: "campos_\ufff0",
-        })
-        .then((result) => (this.campos = result));
-  
-      // Get Settings
-      this.remote_campos_db
-        .get("settings")
-        .then((settings_doc) => {
-          this.settings = settings_doc;
-        })
-        .catch((e) => {
-          if (e?.reason === "missing") {
-          }
-          console.error("Load Settings desde Remote", e);
-        });
+  cargar_desde_remoto() {
+    // Get Campos
+    this.remote_campos_db
+      .allDocs({
+        include_docs: true,
+        startkey: "campos_",
+        endkey: "campos_\ufff0",
+      })
+      .then((result) => (this.campos = result));
+
+    // Get Settings
+    this.remote_campos_db
+      .get("settings")
+      .then((settings_doc) => {
+        this.settings = settings_doc;
+      })
+      .catch((e) => {
+        if (e?.reason === "missing") {
+        }
+        console.error("Load Settings desde Remote", e);
+      });
   }
 
-  replicar_y_sincronizar(){
+  sincronizar_cuando_online() {
+    var opts = { live: true, retry: true };
+    // then two-way, continuous, retriable sync
+    this.campos_db
+      .sync(this.remote_campos_db, opts)
+      .on("change", function (change) {
+        // yo, something changed!
+        console.info("Change...Sync");
+      })
+      .on("error", (e) => {
+        console.error("SyncError", e);
+      });
 
+    // /* Redraw on cambios en campos_db */
+    this.campos_db
+      .changes({
+        since: "now",
+        live: true,
+      })
+      .on("change", () => {
+        this.load_campos_y_settings();
+        console.log("CHANGES!!");
+      });
+  }
+
+  replicar_y_sincronizar() {
     // https://pouchdb.com/api.html#sync
     // do one way, one-off sync from the server until completion
     var opts = { live: true, retry: true };
 
     this.campos_db.replicate
-    .from(this.remote_campos_db)
-    .on("complete", (info) => {
-      console.log("Replication Completed");
+      .from(this.remote_campos_db)
+      .on("complete", (info) => {
+        console.log("Replication Completed");
 
-      this.load_campos_y_settings();
+        this.load_campos_y_settings();
 
-      // then two-way, continuous, retriable sync
-      this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
-        console.error("SyncError", e);
-      });
-
-      // /* Redraw on cambios en campos_db */
-      this.campos_db
-        .changes({
-          since: "now",
-          live: true,
-        })
-        .on("change", () => {
-          this.load_campos_y_settings();
-          console.log("CHANGES!!")
+        // then two-way, continuous, retriable sync
+        this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
+          console.error("SyncError", e);
         });
-    })
-    .on("error", (e) => {
-      console.error(e);
-    });
+
+        // /* Redraw on cambios en campos_db */
+        this.campos_db
+          .changes({
+            since: "now",
+            live: true,
+          })
+          .on("change", () => {
+            this.load_campos_y_settings();
+            console.log("CHANGES!!");
+          });
+      })
+      .on("error", (e) => {
+        // Puede llegar aca si la app se abre offline
+        console.error(e);
+      });
   }
 
-  /** Crea el objeto settings y lo graba en la db 
+  /** Crea el objeto settings y lo graba en la db
    * Crea settings y contratistas
-  */
+   */
   async init_settings() {
-
     let settings_doc = {
       _id: "settings",
       tipo: "settings",
@@ -605,7 +634,7 @@ export class FieldPartner extends LitElement {
       });
 
       // Creando Contratista
-      let contratista_doc = {_id:"contratistas", contratistas:{}};
+      let contratista_doc = { _id: "contratistas", contratistas: {} };
       this.campos_db.put(contratista_doc);
 
       console.log("INSUMOS", insumos);
@@ -636,7 +665,7 @@ export class FieldPartner extends LitElement {
       .get("settings")
       .then((settings_doc) => {
         this.settings = settings_doc;
-        // agregar insump solo si existe settings 
+        // agregar insump solo si existe settings
         // this.inicializar_insumos();
       })
       .catch((e) => {
