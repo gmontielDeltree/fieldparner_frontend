@@ -299,12 +299,14 @@ export class LoteOffcanvas extends LitElement {
   }
 
   siembra() {
+    this.load_insumos()
     document.getElementById("siembra-add-el").start();
   }
 
   actividad() {
     this.fsm.start();
     this.fsm.send({ type: "NEXT" });
+    this.load_insumos()
   }
 
   notas() {
@@ -313,6 +315,7 @@ export class LoteOffcanvas extends LitElement {
   }
 
   cosecha() {
+    this.load_insumos()
     document.getElementById("cosecha-add-el").start();
   }
 
