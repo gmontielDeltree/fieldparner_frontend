@@ -469,11 +469,10 @@ export class TimelineElement extends LitElement {
                 composed: true,
               });
               this.dispatchEvent(event);
-            } catch (e){
-              console.log("EEROR EEEE",e);
+            } catch (e) {
+              console.log("EEROR EEEE", e);
             }
-          }
-          }
+          }}
           value=${estado}
         ></vaadin-combo-box>
 
@@ -518,103 +517,100 @@ export class TimelineElement extends LitElement {
     `;
 
     const time_item = (item: Actividad) => {
-      if ("doc" in item) {
+      if (item.tipo === "nota") {
         // Es un documento
         //console.log("OOOOOOOOOOO NOTA", item)
-        if (item.doc.tipo === "nota") {
-          let fecha = item.doc.fecha;
-          moment.locale("es");
-          let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
 
-          let imagenes = [];
-          let audio = [];
-          let nota_id = item.doc._id;
+        let fecha = item.fecha;
+        moment.locale("es");
+        let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
 
-          let fecha_string = format(extraer_fecha(item), "dd-MM-yyyy");
+        let imagenes = [];
+        let audio = [];
+        let nota_id = item._id;
 
-          if ("_attachments" in item.doc) {
-            Object.entries(item.doc._attachments).map(([key, item]) => {
-              if (key.indexOf("foto") > -1) {
-                imagenes.push(item);
-              }
-            });
+        //let fecha_string = format(extraer_fecha(item), "dd-MM-yyyy");
 
-            Object.entries(item.doc._attachments).map(([key, item]) => {
-              if (key.indexOf("audio") > -1) {
-                audio.push(item);
-              }
-            });
+        if ("_attachments" in item) {
+          Object.entries(item._attachments).map(([key, item]) => {
+            if (key.indexOf("foto") > -1) {
+              imagenes.push(item);
+            }
+          });
 
-            //console.log("IMG", imagenes, "Audio", audio)
-          }
+          Object.entries(item._attachments).map(([key, item]) => {
+            if (key.indexOf("audio") > -1) {
+              audio.push(item);
+            }
+          });
 
-          let color;
-          if (item.doc.color === "red") {
-            color = html`<span class="badge bg-danger float-end"
-              >Urgente</span
-            >`;
-          } else if (item.doc.color === "yellow") {
-            color = html`<span class="badge bg-warning float-end"
-              >Atención</span
-            >`;
-          } else if (item.doc.color === "green") {
-            color = html`<span class="badge bg-success float-end"
-              >Todo Bien</span
-            >`;
-          }
-
-          return html` <li>
-            <time class="cbp_tmtime" datetime="2032-11-04T03:45"
-              ><span>${fecha_string}</span> <span>${elapsed}</span></time
-            >
-            <div class="cbp_tmicon bg-blush">
-              <i class="zmdi zmdi-label"></i>
-            </div>
-            <div class="cbp_tmlabel bg-nota">
-              <h2><a class="strong">NOTA</a> ${color}</h2>
-
-              ${item.doc.texto}
-
-              <p class="small"></p>
-
-              <div class="row mx-1">
-                ${imagenes.map((img) => {
-                  return html`<img
-                    src=${URL.createObjectURL(img.data)}
-                    class="img-thumbnail col col-4 col-sm-3"
-                    alt="..."
-                  />`;
-                })}
-              </div>
-
-              <div class="row my-1">
-                ${audio.length > 0
-                  ? html`<audio controls><source .src=${URL.createObjectURL(
-                      audio[0].data
-                    )}></source></audio>`
-                  : null}
-              </div>
-
-              <button
-                class="btn btn-danger"
-                @click=${() => {
-                  console.log(item.uuid);
-                  this.nota_eliminar(item.doc);
-                }}
-              >
-                Eliminar
-              </button>
-              <button
-                class="btn btn-danger"
-                @click=${() => {
-                  this.localizar(item.doc);
-                }}
-              >
-                Localizar
-              </button>
-            </div>
-          </li>`;
+          //console.log("IMG", imagenes, "Audio", audio)
         }
+
+        let color_badge;
+        if (item.color === "red") {
+          color_badge = html`<span class="badge bg-danger float-end">Urgente</span>`;
+        } else if (item.color === "yellow") {
+          color_badge = html`<span class="badge bg-warning float-end"
+            >Atención</span
+          >`;
+        } else if (item.color === "green") {
+          color_badge = html`<span class="badge bg-success float-end"
+            >Todo Bien</span
+          >`;
+        }
+
+        return html` <li>
+          <time class="cbp_tmtime" datetime="2032-11-04T03:45"
+            ><span>${fecha}</span> <span>${elapsed}</span></time
+          >
+          <div class="cbp_tmicon bg-blush">
+            <i class="zmdi zmdi-label"></i>
+          </div>
+          <div class="cbp_tmlabel bg-nota">
+            <h2><a class="strong">NOTA</a> ${color_badge}</h2>
+
+            ${item.texto}
+
+            <p class="small"></p>
+
+            <div class="row mx-1">
+              ${imagenes.map((img) => {
+                return html`<img
+                  src=${URL.createObjectURL(img.data)}
+                  class="img-thumbnail col col-4 col-sm-3"
+                  alt="..."
+                />`;
+              })}
+            </div>
+
+            <div class="row my-1">
+              ${audio.length > 0
+                ? html`<audio controls><source .src=${URL.createObjectURL(
+                    audio[0].data
+                  )}></source></audio>`
+                : null}
+            </div>
+
+            <button
+              class="btn btn-danger"
+              @click=${() => {
+                console.log(item.uuid);
+                this.nota_eliminar(item);
+              }}
+            >
+              Eliminar
+            </button>
+            <button
+              class="btn btn-danger"
+              @click=${() => {
+                this.localizar(item);
+              }}
+            >
+              Localizar
+            </button>
+          </div>
+        </li>`;
       }
 
       //console.log("ITEM STT", this.stock_tag_table[item.uuid], item, item.uuid )
@@ -661,10 +657,10 @@ export class TimelineElement extends LitElement {
           </div>
         </li>`;
       } else if (item.tipo === "cosecha") {
-        let fecha = item.detalles.fecha;
+        let fecha = item.detalles.fecha_ejecucion_tentativa;
         let hectareas = item.detalles.hectareas;
         let rinde = item.detalles.rinde;
-        let comentarios = item.detalles.comentarios;
+        let comentarios = item.detalles.comentario;
         let humedad = item.detalles.humedad;
 
         //console.log(moment.locale()); // en

@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-N2LJGN300K"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N2LJGN300K"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
 
-  gtag('config', 'G-N2LJGN300K');
-</script>
+      gtag("config", "G-N2LJGN300K");
+    </script>
 
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -114,12 +118,12 @@
         z-index: 9999;
       }
 
-      vaadin-dialog-overlay{
+      vaadin-dialog-overlay {
         z-index: 9999;
       }
-      
+
       .marker {
-        background-image: url('centralmeteorologica.webp');
+        background-image: url("centralmeteorologica.webp");
         background-size: cover;
         width: 50px;
         height: 50px;
@@ -155,12 +159,10 @@
       }
       const version = "0002";
     </script>
-    
   </head>
   <!-- load the 'header_auto_hide' on the body -->
 
   <body>
-
     <!--Main App Element-->
     <field-partner>
       <div id="tour"></div>

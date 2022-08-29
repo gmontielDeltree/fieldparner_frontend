@@ -104,6 +104,11 @@ interface Actividad {
   adjuntos: string[];
   estado: string;
   detalles: DetallesSiembra | DetallesCosecha | DetallesAplicacion;
+  fecha? : string;
+  color? : string;
+  texto? : string;
+  posicion? : number[];
+  _attachments?: any;
 }
 
 const get_empty_aplicacion = () => {

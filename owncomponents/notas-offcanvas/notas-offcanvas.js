@@ -225,10 +225,17 @@ export class NotasOffcanvas extends LitElement {
     }
 
     let lote_id = this.lote_doc.properties.uuid;
+    let fecha = format(
+                      parse(this.fecha, "yyyy-MM-dd",new Date()),
+                      "yyyyMMdd"
+                    );
+
+    const nota_uuid = uuid4();
+
     const nota = {
-      _id: "actividad:nota:" + lote_id + ":" + uuid4(),
-      ts: new Date().toISOString(),
-      lote_id: this.lote_doc.id,
+      _id: "actividad:" + fecha + ":" + nota_uuid,
+      ts_generacion: new Date().toISOString(),
+      lote_uuid: this.lote_doc.id,
       tipo: "nota",
       color: this.color,
       texto: this.texto,

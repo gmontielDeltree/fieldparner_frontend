@@ -752,6 +752,8 @@ export class LoteOffcanvas extends LitElement {
     this.db
       .allDocs({
         include_docs: true,
+        attachments: true,
+        binary: true,
         //descending:true,
         startkey: "actividad:",
         endkey: "actividad:\ufff0",
