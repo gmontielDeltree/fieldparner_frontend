@@ -57,6 +57,24 @@ class Devices {
     return this._devices_last_telemetry;
   };
 
+
+  get_all_details = async () => {
+    let { public_devices } = await this.db.get("lista_public_devices:unico");
+
+    this._devices_names = public_devices;
+
+    // Construir la keys para last telemetry
+    let keys = this._devices_names.map((device_name) => {
+      return device_name + ":detalles";
+    });
+
+    let r = await this.db.allDocs({ keys: keys, include_docs: true });
+
+    let detalles = r?.rows.map((r) => r.doc) || [];
+
+    return detalles;
+  };
+
   get_daily_cards = async (dia : string) => {
     return this.devices_publicos_daily_get(dia)
   }

@@ -25,12 +25,15 @@ import "../login-modal/login-modal.ts";
 import "../notas-offcanvas/nota-target.ts";
 import "../insumos/insumos-lista.ts";
 import "../lista-centrales-cercanas/lista-centrales-cercanas.ts"
-
+import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 import uuid4 from "uuid4";
 import { get_empty_insumo, Insumo } from "../insumos/insumos-types";
+import { Actividad } from "../depositos/depositos-types";
+import { DailyTelemetryCard } from "../sensores/sensores-types";
+import { format, parse } from "date-fns";
 
 var wentOffline, wentOnline;
 
@@ -183,12 +186,34 @@ export class FieldPartner extends LitElement {
       document.getElementById("contratista-crud").nuevo();
     });
 
-    this.addEventListener('ver-centrales-cercanas', ()=>{
+    this.addEventListener('ver-centrales-cercanas', (e : CustomEvent)=>{
+      let item = (e.detail as Actividad)
+      let lote_uuid = (item.lote_uuid)
+      let lote_geojson = undefined
+      this.campos?.rows.map(({doc})=>{
+        let lotes = doc.lotes as any[];
+        let lote_candidato= lotes.find((lote) => lote.id === lote_uuid)
+        if(lote_candidato){
+          lote_geojson = lote_candidato
+        }
+      })
+
+      console.log("dfsdfsdfsdfs", lote_geojson);
+
+
       const el = document.createElement('centrales-cercanas-lista')
       document.getElementById('container-multiproposito').appendChild(el)
-      el.fecha = "20220830";
+      //"fecha_ejecucion_tentativa": "2022-08-27",
+      el.fecha = item.detalles.fecha_ejecucion_tentativa
+      el.posicion = lote_geojson ? centroid(lote_geojson).geometry.coordinates : [] //lon lat
       el.show();
     })
+
+    this.addEventListener('ver-telemetria-del-dia', (e : CustomEvent)=>{
+      let daily_card = (e.detail as DailyTelemetryCard)
+      document.getElementById('sensores-oc').show(daily_card)
+    })
+
 
     // Borrar un Campo
     this.addEventListener("borrar-campo", (e) => {
@@ -573,7 +598,6 @@ export class FieldPartner extends LitElement {
         console.log("CHANGES!!");
       });
 
-
     this.init_ndvi_dbs()
   }
 
@@ -782,7 +806,7 @@ export class FieldPartner extends LitElement {
       ></color-cultivo>
       <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
 
-      <sensores-oc .map=${this.map}></sensores-oc>
+      <sensores-oc id='sensores-oc' .map=${this.map}></sensores-oc>
 
       <nota-share-target
         id="nota-share-target"

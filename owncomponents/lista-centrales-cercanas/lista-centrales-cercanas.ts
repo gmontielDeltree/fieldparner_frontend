@@ -26,6 +26,31 @@ import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
 import "@vaadin/menu-bar";
 import { Devices } from "../sensores/sensores";
+import { DailyTelemetryCard } from "../sensores/sensores-types";
+import { extract_tele } from "../sensores/sensores";
+import { format, isFuture, parse } from "date-fns";
+import { Actividad } from "../depositos/depositos-types";
+import distance from '@turf/distance';
+
+const valor = (card, key) => {
+  return extract_tele(key, card)?.value || "N/A";
+};
+
+
+const calcular_distancia_al_campo = (posicion:number[], card: DailyTelemetryCard) => {
+
+ let central_posicion = [valor(card,'longitud'),valor(card,'latitud')]
+ let distancia = distance(posicion, central_posicion,{units:'kilometers'})
+
+  return distancia.toFixed(2) + " km";
+}
+
+
+const valor_unidad = (card, key) => {
+  let point = extract_tele(key, card);
+  let result = point ? "" + point.value + " " + point.unit : "No Disponible";
+  return result;
+};
 
 export class ListaCentralesCercanas extends LitElement {
   @state()
@@ -45,47 +70,108 @@ export class ListaCentralesCercanas extends LitElement {
   posicion: number[];
 
   @property()
-  fecha: String;
+  fecha: string;
 
   @state()
-  _daily_telemetry = [];
+  _daily_telemetry: DailyTelemetryCard[] = [];
 
   @state()
-  _devices : Devices = new Devices()
+  _devices: Devices = new Devices();
+
+  @state()
+  _detalles : any[] = []
 
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
 
   override firstUpdated() {
     if (this._modal === undefined) {
       this._modal = new Modal(this.shadowRoot.getElementById("modal"));
-      this.shadowRoot.getElementById("modal").addEventListener('hidden.bs.modal', event => {
-	// Se elimina del parent
-	 let parent = this.parentElement
-	  while (parent.firstChild) {
-	 	parent.firstChild.remove()
-	    }
-      })
-      this._modal.show()
+      this.shadowRoot
+        .getElementById("modal")
+        .addEventListener("hidden.bs.modal", (event) => {
+          // Se elimina del parent
+          let parent = this.parentElement;
+          while (parent.firstChild) {
+            parent.firstChild.remove();
+          }
+        });
+      this._modal.show();
     }
   }
 
   show() {
     // Quizas lo muestro antes del first update
     if (this._modal !== undefined) {
-	this._modal.show();
+      this._modal.show();
     }
- 
 
     this.get_centrales_cercanas(this.posicion, this.fecha);
   }
 
-  async get_centrales_cercanas(posicion : number[], fecha :string) {
-	// Por ahora get todas las centrales
-	this._daily_telemetry = await this._devices.get_daily_cards(fecha);
-	console.log("EEEEEEEEEE",this._daily_telemetry);
+  async get_centrales_cercanas(posicion: number[], fecha_str_1: string) {
+    let fecha = format(
+      parse(fecha_str_1, "yyyy-MM-dd", new Date()),
+      "yyyyMMdd"
+    );
+    // Por ahora get todas las centrales
+    this._daily_telemetry = await this._devices.get_daily_cards(fecha);
+    console.log("EEEEEEEEEE", this._daily_telemetry);
+    console.log("EEEEEEEEEEss", await this._devices.get_all_details());
+    this._detalles = await this._devices.get_all_details()
+  }
+
+  ver_detalles_del_dia(daily_card: DailyTelemetryCard) {
+    this.dispatchEvent(
+      new CustomEvent("ver-telemetria-del-dia", {
+        detail: daily_card,
+        bubbles: true,
+        composed: true,
+      })
+    );
+    this._modal.hide();
+  }
+
+  detalles_de(uuid){
+    return this._detalles.find((d)=>d.device_id === uuid)
   }
 
   render() {
+    let lista_centrales = html`<div class="list-group">
+      ${this._daily_telemetry?.map((dc: DailyTelemetryCard) => {
+
+        //let detalles = await this._devices.get_details(dc.device_id)
+
+
+        return html`<a
+          class="list-group-item list-group-item-action"
+          aria-current="true"
+          @click=${() => this.ver_detalles_del_dia(dc)}
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1 text-primary">${this.detalles_de(dc.device_id).nombre} </h5>
+            <small class='text-muted'>${
+              calcular_distancia_al_campo(this.posicion,dc)}</small>
+          </div>
+          <small>${dc.device_id}</small>
+          <p class="mb-1">Promedios</p>
+
+          <div class="container-fluid row">
+            <div class="col">${valor_unidad(dc, "temperatura_mean")}</div>
+            <div class="col">${valor_unidad(dc, "humedad_mean")}</div>
+            <div class="col">${valor_unidad(dc, "presion_mean")}</div>
+          </div>
+        </a>`;
+      })}
+    </div>`;
+
+    let future_msg = html`
+      <div>Esta actividad esta planificada para ${this.fecha}.</div>
+    `;
+
+    let body = isFuture(parse(this.fecha, "yyyy-MM-dd", new Date()))
+      ? future_msg
+      : lista_centrales;
+
     return html`
       <div
         class="modal fade"
@@ -100,25 +186,9 @@ export class ListaCentralesCercanas extends LitElement {
               <h5 class="modal-title" id="exampleModalLabel">
                 Meteorología ${this.fecha}
               </h5>
+              <h5>Lista de Centrales</h5>
             </div>
-            <div class="modal-body">
-              <div class="list-group">
-                ${this._daily_telemetry.map((dc) => {
-                  html`<a
-                    href="#"
-                    class="list-group-item list-group-item-action active"
-                    aria-current="true"
-                  >
-                    <div class="d-flex w-100 justify-content-between">
-                      <h5 class="mb-1">kk</h5>
-                      <small>3 </small>
-                    </div>
-                    <p class="mb-1">Some placeholder content in a paragraph.</p>
-                    <small>And some small print.</small>
-                  </a>`;
-                })}
-              </div>
-            </div>
+            <div class="modal-body">${body}</div>
           </div>
         </div>
       </div>

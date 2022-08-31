@@ -520,15 +520,15 @@ export class TimelineElement extends LitElement {
         >
           Eliminar
         </button>
-        <!-- <button
+        <button
           class="btn btn-warning"
           @click=${() => {
             console.log(item.uuid);
-            this.dispatchEvent(new CustomEvent('ver-centrales-cercanas',{detail:item ,bubbles:true, composed:true}))
+            this.dispatchEvent(new CustomEvent('ver-centrales-cercanas',{detail:item,bubbles:true, composed:true}))
           }}
         >
           Datos Meteorológicos
-        </button> -->
+        </button>
       </div>
     `;
 

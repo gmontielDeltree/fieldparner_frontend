@@ -24,6 +24,7 @@ import { format, formatDistance, formatRelative, subDays } from "date-fns";
 import format from "date-fns/format";
 import ApexCharts from 'apexcharts'
 import apex_css from "apexcharts/dist/apexcharts.css"
+import { DailyTelemetryCard } from "./sensores-types";
 
 export class SensoresClass extends LitElement {
   static override styles: CSSResultGroup = [
@@ -119,7 +120,7 @@ export class SensoresClass extends LitElement {
   _offcanvas: Offcanvas;
 
   @state()
-  _selected_device: any = undefined;
+  _selected_device_card: any = undefined;
 
   @state()
   _selected_details: any = {};
@@ -172,7 +173,7 @@ export class SensoresClass extends LitElement {
 
           /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
           marker.getElement().addEventListener(touchEvent, () => {
-            this._selected_device = telemetria;
+            this._selected_device_card = telemetria;
             this.show();
           });
         } catch (e) {
@@ -182,8 +183,21 @@ export class SensoresClass extends LitElement {
     }
   }
 
-  async show() {
-    console.log("Selected Device LAST Telemetry", this._selected_device);
+  async show(card : DailyTelemetryCard) {
+
+
+    if(card){
+      // Ya tengo algo que mostrar
+      this._selected_details = await this._devices.get_details(
+        card.device_id
+      );
+
+      this._selected_device_card = card
+      this._offcanvas.show();
+      return
+    }
+
+    console.log("Selected Device LAST Telemetry", this._selected_device_card);
 
     // Obtener la telemetria de todos los devices publicos
     let hoy = format(new Date(), "yyyyMMdd");
@@ -191,7 +205,7 @@ export class SensoresClass extends LitElement {
     console.log("DAiLY TELE", daily_telemetry);
 
     this._selected_details = await this._devices.get_details(
-      this._selected_device.device_id
+      this._selected_device_card.device_id
     );
 
     console.log("Selected Device DETAILS", this._selected_details);
@@ -199,8 +213,8 @@ export class SensoresClass extends LitElement {
   }
 
   valor(key) {
-    return this._selected_device
-      ? extract_tele(key, this._selected_device).value
+    return this._selected_device_card
+      ? extract_tele(key, this._selected_device_card).value
       : "N/A";
   }
 
@@ -460,10 +474,10 @@ export class SensoresClass extends LitElement {
       >
         <div class="offcanvas-header">
           <h5 class="offcanvas-title" id="offcanvasLabel">
-            ${this._selected_device ? this._selected_details.nombre : null}
+            ${this._selected_device_card ? this._selected_details.nombre : null}
           </h5>
           <h6 class="offcanvas-title" id="offcanvasLabel">
-            ${this._selected_device ? this._selected_details.tipo : null}
+            ${this._selected_device_card ? this._selected_details.tipo : null}
           </h6>
 
           <button
@@ -478,12 +492,12 @@ export class SensoresClass extends LitElement {
           <!--Device Detalles-->
           <div>
             ID:
-            ${this._selected_device ? this._selected_device.device_id : null}
+            ${this._selected_device_card ? this._selected_device_card.device_id : null}
             <br />
             Ultimo reporte hace
-            ${this._selected_device
+            ${this._selected_device_card
               ? formatDistance(
-                  new Date(this._selected_device.ts_last * 1000),
+                  new Date(this._selected_device_card.ts_last * 1000),
                   new Date(),
                   { addSuffix: true }
                 )
@@ -673,10 +687,10 @@ export class SensoresClass extends LitElement {
       >
         <div class="offcanvas-header">
           <h5 class="offcanvas-title">
-            ${this._selected_device ? this._selected_details.nombre : null}
+            ${this._selected_device_card ? this._selected_details.nombre : null}
           </h5>
           <h6 class="offcanvas-title">
-            ${this._selected_device ? this._selected_details.tipo : null}
+            ${this._selected_device_card ? this._selected_details.tipo : null}
           </h6>
 
           <button
