@@ -33,7 +33,8 @@ export class SensoresClass extends LitElement {
     css`
       .humedad-body {
         background-image: url("sensor-humedad/suelo.webp");
-       
+        
+        background-position-y: -60px;
       }
 
       .offcanvas-humedad-body {
