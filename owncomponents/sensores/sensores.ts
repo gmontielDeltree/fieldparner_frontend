@@ -57,7 +57,11 @@ class Devices {
     return this._devices_last_telemetry;
   };
 
-  devices_publicos_daily_get = async (dia) => {
+  get_daily_cards = async (dia : string) => {
+    return this.devices_publicos_daily_get(dia)
+  }
+
+  devices_publicos_daily_get = async (dia : string) => {
     let dia_str = dia;
     let { public_devices } = await this.db.get("lista_public_devices:unico");
 

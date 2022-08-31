@@ -24,6 +24,7 @@ import "../mapa-principal/mapa-principal.js";
 import "../login-modal/login-modal.ts";
 import "../notas-offcanvas/nota-target.ts";
 import "../insumos/insumos-lista.ts";
+import "../lista-centrales-cercanas/lista-centrales-cercanas.ts"
 
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -182,6 +183,13 @@ export class FieldPartner extends LitElement {
       document.getElementById("contratista-crud").nuevo();
     });
 
+    this.addEventListener('ver-centrales-cercanas', ()=>{
+      const el = document.createElement('centrales-cercanas-lista')
+      document.getElementById('container-multiproposito').appendChild(el)
+      el.fecha = "20220830";
+      el.show();
+    })
+
     // Borrar un Campo
     this.addEventListener("borrar-campo", (e) => {
       this.campos_db.remove(e.detail.campo_doc).then(() => {
@@ -189,6 +197,7 @@ export class FieldPartner extends LitElement {
         this.load_campos_y_settings();
       });
     });
+
 
     // Share Campo
     this.addEventListener("share-campo", (e: any) => {
@@ -795,6 +804,7 @@ export class FieldPartner extends LitElement {
 
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
       <loading-modal .show=${this.loading}></loading-modal>
+    <div id='container-multiproposito'></div>
     `;
   }
 }
