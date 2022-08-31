@@ -520,7 +520,7 @@ export class TimelineElement extends LitElement {
         >
           Eliminar
         </button>
-        <button
+        <!-- <button
           class="btn btn-warning"
           @click=${() => {
             console.log(item.uuid);
@@ -528,7 +528,7 @@ export class TimelineElement extends LitElement {
           }}
         >
           Datos Meteorológicos
-        </button>
+        </button> -->
       </div>
     `;
 
