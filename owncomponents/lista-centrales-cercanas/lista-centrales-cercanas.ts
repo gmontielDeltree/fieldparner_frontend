@@ -148,7 +148,7 @@ export class ListaCentralesCercanas extends LitElement {
           @click=${() => this.ver_detalles_del_dia(dc)}
         >
           <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1 text-primary">${this.detalles_de(dc.device_id).nombre} </h5>
+            <h5 class="mb-1 text-primary">${this.detalles_de(dc.device_id)?.nombre || ""} </h5>
             <small class='text-muted'>${
               calcular_distancia_al_campo(this.posicion,dc)}</small>
           </div>

@@ -7,7 +7,7 @@ const devices_modelos : any = {
     "LMM-03S" : {
         sensores : ["temperatura", "humedad", "presion"],
     },
-    "hhs-05S" : {
+    "LSMH01-1" : {
         sensores : ["humedad_suelo"]
     }
 }

@@ -25,7 +25,7 @@ import format from "date-fns/format";
 import ApexCharts from 'apexcharts'
 import apex_css from "apexcharts/dist/apexcharts.css"
 import { DailyTelemetryCard } from "./sensores-types";
-
+// background-position-y: -60px;
 export class SensoresClass extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
@@ -33,12 +33,13 @@ export class SensoresClass extends LitElement {
     css`
       .humedad-body {
         background-image: url("sensor-humedad/suelo.webp");
-        background-position-y: -60px;
+       
       }
 
       .offcanvas-humedad-body {
         background-image: url('sensor-humedad/blur_bg.webp');
         background-position-y: -60px;
+        background-size: 100% auto;
       }
 
       .profundidad {
@@ -214,7 +215,7 @@ export class SensoresClass extends LitElement {
 
   valor(key) {
     return this._selected_device_card
-      ? extract_tele(key, this._selected_device_card).value
+      ? (extract_tele(key, this._selected_device_card).value ||  "N/A")
       : "N/A";
   }
 
