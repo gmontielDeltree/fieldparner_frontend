@@ -33,7 +33,7 @@ export class SensoresClass extends LitElement {
     css`
       .humedad-body {
         background-image: url("sensor-humedad/suelo.webp");
-        
+        background-repeat-y: no-repeat;
         background-position-y: -60px;
       }
 
@@ -41,6 +41,12 @@ export class SensoresClass extends LitElement {
         background-image: url('sensor-humedad/blur_bg.webp');
         background-position-y: -60px;
         background-size: 100% auto;
+      }
+
+      .charts-body {
+        background-image: url('sensor-humedad/blur_bg.webp');
+        background-position-y: -70px;
+        
       }
 
       .profundidad {
@@ -704,7 +710,7 @@ export class SensoresClass extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body p-0 container-fluid row offcanvas-humedad-body">
-          <div class="col col-4 p-1 humedad-body">
+          <div class="col col-4 p-1">
           ${this.sensor_renderer({},{},1)}
           ${this.sensor_renderer({},{},2)}
           </div>
