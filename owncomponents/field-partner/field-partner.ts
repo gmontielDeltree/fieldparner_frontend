@@ -827,8 +827,10 @@ export class FieldPartner extends LitElement {
       ></depositos-lista>
 
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
-      <loading-modal .show=${this.loading}></loading-modal>
-    <div id='container-multiproposito'></div>
+      
+    <div id='container-multiproposito'>
+    <loading-modal .show=${this.loading}></loading-modal>
+    </div>
     `;
   }
 }

@@ -1,8 +1,20 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, CSSResultGroup, css, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import Modal from "bootstrap/js/dist/modal";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 
 export class LoadingModal extends LitElement {
+  static override styles: CSSResultGroup = [
+    unsafeCSS(bootstrap),
+    css`
+      .fondo-bg {
+        background-image: url("assets/images/cosechadora_bg.jpg");
+        background-size: 100% auto;
+        background-position-y: -300px;
+      }
+      `,
+  ];
+
   @state({
     hasChanged(newVal: Modal, oldVal: Modal) {
       return false;
@@ -11,19 +23,17 @@ export class LoadingModal extends LitElement {
   _modal: Modal;
 
   @property()
-  show: boolean;
-
-  constructor() {
-    super();
-    this.show = true;
-  }
-
-  //createRenderRoot() {
-  //  return this;
-  //}
+  show: boolean = true;
 
   override firstUpdated() {
     this._modal = new Modal(this.shadowRoot.getElementById("loading-modal"));
+    this.shadowRoot.getElementById("loading-modal").addEventListener('hidden.bs.modal',(e)=>{
+                // Se elimina del parent
+                let parent = this.parentElement;
+                while (parent.firstChild) {
+                  parent.firstChild.remove();
+                }
+    })
     if (this.show) {
       this._modal.show();
     } else {
@@ -42,15 +52,6 @@ export class LoadingModal extends LitElement {
     }
   }
 
-  sendEvent = (name, details) => {
-    let event = new CustomEvent(name, {
-      detail: details,
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
-  };
-
   render() {
     return html`
       <div
@@ -64,7 +65,7 @@ export class LoadingModal extends LitElement {
       >
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
-            <div class="modal-body mx-auto w-100 p-0">
+            <div class="modal-body mx-auto w-100 p-0 fondo-bg">
               <div>
                 <div
                   class="spinner-border text-danger"
@@ -78,11 +79,11 @@ export class LoadingModal extends LitElement {
                   <span class="visually-hidden">Cargando...</span>
                 </div>
 
-                <img
+                 <img
                   src="assets/images/cosechadora_bg.jpg"
                   alt="..."
                   style="height: 100%; width:100%; object-fit:cover;"
-                />
+                /> 
               </div>
             </div>
           </div>
