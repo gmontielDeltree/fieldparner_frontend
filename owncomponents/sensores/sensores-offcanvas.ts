@@ -510,7 +510,7 @@ export class SensoresClass extends LitElement {
         id="offcanvas"
         aria-labelledby="offcanvasLabel"
       >
-        <div class="offcanvas-header">
+        <div class="offcanvas-header header-blue">
           <h5 class="offcanvas-title" id="offcanvasLabel">
             ${this._selected_device_card ? this._selected_details.nombre : null}
           </h5>
@@ -526,8 +526,8 @@ export class SensoresClass extends LitElement {
             @click=${() => this._offcanvas.hide()}
           ></button>
         </div>
-        <div class="offcanvas-body p-1 container-fluid row">
-          <div class='col col-4 p-1'>
+        <div class="offcanvas-body p-1 offcanvas-sensores-body container-fluid row">
+          <div class='col col-4 p-2'>
             <!--Device Detalles-->
             <div>
               ID:
@@ -553,7 +553,7 @@ export class SensoresClass extends LitElement {
                   <div class="container-fluid border-primary border-top p-1">
                     <div class="row">
                       <h5>
-                        Temperatura
+                        <img src='high-temperature-icon.svg' width="50" height="50">
                         <span class="fw-bolder"
                           >${this.valor("temperatura")} ºC</span
                         >
@@ -594,7 +594,7 @@ export class SensoresClass extends LitElement {
                   <div class="container-fluid border-primary border-top p-1">
                     <div class="row">
                       <h5>
-                        Humedad
+                        <img src='water-droplet-icon.svg' width="50" height="50">
                         <span class="fw-bolder"
                           >${this.valor("humedad")} %</span
                         >
@@ -635,7 +635,7 @@ export class SensoresClass extends LitElement {
                   <div class="container-fluid border-primary border-top p-1">
                     <div class="row">
                       <h5>
-                        Presión
+                        <img src='pressure-gauge-meter-icon.svg' width="50" height="50">
                         <span class="fw-bolder"
                           >${this.valor("presion")} hPa</span
                         >
@@ -726,8 +726,8 @@ export class SensoresClass extends LitElement {
           <div class="container-fluid col col-8">
             <h3></h3>
             <div class="spacer" spacer></div>
-            <div class="chart-1" id="chart-1"></div>
-            <div class="chart-2" id="chart-2"></div>
+            <div class="chart-1" id="chart-central-1"></div>
+            <div class="chart-2" id="chart-central-2"></div>
           </div>
 
         </div>
