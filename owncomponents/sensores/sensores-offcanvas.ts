@@ -27,6 +27,7 @@ import apex_css from "apexcharts/dist/apexcharts.css";
 import { DailyTelemetryCard } from "./sensores-types";
 // background-position-y: -60px;
 //background-size: 100% auto;
+//background-position-y: -60px;
 export class SensoresClass extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
@@ -34,14 +35,14 @@ export class SensoresClass extends LitElement {
     css`
       .humedad-body {
         background-image: url("sensor-humedad/suelo.webp");
-        background-repeat-y: no-repeat;
+        background-repeat: no-repeat;
         background-position-y: -60px;
       }
 
       .offcanvas-humedad-body {
         background-image: url("sensor-humedad/blur_bg.webp"),linear-gradient(rgba(255, 255, 255, 0), rgb(78, 62, 55));
-        background-position-y: -60px;
         background-repeat: no-repeat;
+        background-size: 100% 100%;
         background-blend-mode: normal;
       }
 
@@ -53,7 +54,7 @@ export class SensoresClass extends LitElement {
       .offcanvas-sensores-body {
         background-image: url("fondodewindows.jpeg");
         background-size: 100% 100%;
-        background-repeat-y: no-repeat;
+        background-repeat: no-repeat;
       }
 
       .header-blue {
@@ -670,7 +671,7 @@ export class SensoresClass extends LitElement {
             @click=${() => this._offcanvas.hide()}
           ></button>
         </div>
-        <div class="offcanvas-body p-1 offcanvas-sensores-body container-fluid row">
+        <div class="offcanvas-body p-1 p-0 m-0 offcanvas-sensores-body container-fluid row">
           <div class='col col-4 p-2'>
             <!--Device Detalles-->
             <div>
@@ -901,7 +902,7 @@ export class SensoresClass extends LitElement {
           ></button>
         </div>
         <div
-          class="offcanvas-body p-0 container-fluid row offcanvas-humedad-body"
+          class="offcanvas-body p-0 p-0 m-0 container-fluid row offcanvas-humedad-body"
         >
           <div class="col col-4 p-1">
             ${this.sensor_renderer({}, {}, 1)}
