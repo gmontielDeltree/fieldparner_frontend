@@ -2,7 +2,7 @@ import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
 import { base_url } from "../helpers.js";
 import format from "date-fns/format";
-
+import { DataPoints } from "./sensores-types.js";
 /** Helper para extraer la telemetria */
 const extract_tele = (key, tele) => {
   let f = tele.data.filter((punto) => {
@@ -100,11 +100,11 @@ class Devices {
   };
 
 
-  async get_raw_data_for_charts(){
+  async get_raw_data_for_charts(uuid){
     let docs = await this.db_raw.allDocs({
       include_docs: true,
-      startkey: "cd45c56e6a66b825:",
-      endkey: "cd45c56e6a66b825:\ufff0",
+      startkey: uuid + ":",
+      endkey: uuid + ":\ufff0",
     })
 
     let data = await docs.rows.map((d) => d.doc);
@@ -131,6 +131,39 @@ class Devices {
       })
 
       return {ts:ts_a, t1:t1_a, h1:h1_a, t2:t2_a, h2:h2_a}
+
+  }
+
+
+  async get_raw_data_for_charts_generic(uuid){
+    let docs = await this.db_raw.allDocs({
+      include_docs: true,
+      limit:1500,
+      descending:true,
+      endkey: uuid + ":",
+      startkey: uuid + ":\ufff0",
+    })
+
+    let data = await docs.rows.map((d) => d.doc);
+    console.log("Dsa",data);
+    let return_value = {ts:[]}
+
+    let r = data.map(dp => {
+        // t1
+        let array_de_mediciones = dp.data as DataPoints[];
+        return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
+
+        array_de_mediciones.forEach((medicion : DataPoints) => {
+          if(return_value[medicion.sensor_id]){
+            return_value[medicion.sensor_id].push(medicion.value)  
+          }else{
+            return_value[medicion.sensor_id] = []
+            return_value[medicion.sensor_id].push(medicion.value) 
+          }
+        });
+      })
+
+      return return_value
 
   }
 

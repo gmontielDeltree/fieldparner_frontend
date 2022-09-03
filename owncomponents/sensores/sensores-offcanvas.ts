@@ -26,6 +26,7 @@ import ApexCharts from "apexcharts";
 import apex_css from "apexcharts/dist/apexcharts.css";
 import { DailyTelemetryCard } from "./sensores-types";
 // background-position-y: -60px;
+//background-size: 100% auto;
 export class SensoresClass extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
@@ -38,9 +39,10 @@ export class SensoresClass extends LitElement {
       }
 
       .offcanvas-humedad-body {
-        background-image: url("sensor-humedad/blur_bg.webp");
+        background-image: url("sensor-humedad/blur_bg.webp"),linear-gradient(rgba(255, 255, 255, 0), rgb(78, 62, 55));
         background-position-y: -60px;
-        background-size: 100% auto;
+        background-repeat: no-repeat;
+        background-blend-mode: normal;
       }
 
       .charts-body {
@@ -50,7 +52,7 @@ export class SensoresClass extends LitElement {
 
       .offcanvas-sensores-body {
         background-image: url("fondodewindows.jpeg");
-        background-size: cover;
+        background-size: 100% 100%;
         background-repeat-y: no-repeat;
       }
 
@@ -137,7 +139,7 @@ export class SensoresClass extends LitElement {
   _offcanvas: Offcanvas;
 
   @state()
-  _selected_device_card: any = undefined;
+  _selected_device_card: DailyTelemetryCard = undefined;
 
   @state()
   _selected_details: any = {};
@@ -223,6 +225,7 @@ export class SensoresClass extends LitElement {
 
     console.log("Selected Device DETAILS", this._selected_details);
     this._offcanvas.show();
+    this.renderCentralChart();
   }
 
   valor(key) {
@@ -373,7 +376,7 @@ export class SensoresClass extends LitElement {
       },
     };
 
-    let nt = await this._devices.get_raw_data_for_charts();
+    let nt = await this._devices.get_raw_data_for_charts(this._selected_device_card.device_id);
     console.log(nt);
 
     let sim1 = this.simulated_historical_data(1);
@@ -410,6 +413,147 @@ export class SensoresClass extends LitElement {
 
     chart_1.render();
     chart_2.render();
+  }
+
+  device_tiene(sensor){
+    return devices_modelos[this._selected_details?.tipo]?.sensores.includes(
+      sensor
+    )
+  }
+
+  async renderCentralChart() {
+
+
+    await this.updateComplete;
+
+    this.shadowRoot.getElementById('chart-central-1').textContent = '';
+    this.shadowRoot.getElementById('chart-central-2').textContent = '';
+    this.shadowRoot.getElementById('chart-central-3').textContent = '';
+
+    var base_options = {
+      colors:['#F44336', '#E91E63', '#9C27B0'],
+      series: [
+        {
+          name: "",
+          data: [],
+        },
+      ],
+      chart: {
+        height: 300,
+        type: "area",
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      stroke: {
+        curve: "smooth",
+      },
+      xaxis: {
+        type: "datetime",
+        categories: [],
+      },
+      yaxis: [
+        {
+          axisTicks: {
+            show: true,
+          },
+          axisBorder: {
+            show: true,
+            color: "#008FFB",
+          },
+          labels: {
+            style: {
+              colors: "#008FFB",
+            },
+          },
+          title: {
+            text: "Humedad",
+            style: {
+              color: "#eb2a1c",
+            },
+          },
+          tooltip: {
+            enabled: true,
+          },
+        },
+      ],
+      tooltip: {
+        x: {
+          format: "dd/MM/yy HH:mm",
+        },
+      },
+    };
+
+    var options = {
+      ...base_options,
+      chart: {
+        type: "area",
+        height: "180px",
+        foreColor: "#ffffff",
+        //background: '#fff'
+      },
+      title: {
+        text: "Sensor 1",
+        align: "left",
+        margin: 10,
+        offsetX: 0,
+        offsetY: 0,
+        floating: false,
+        style: {
+          fontSize: "14px",
+          fontWeight: "bold",
+          fontFamily: undefined,
+          color: "#ffffff",
+        },
+      },
+    };
+
+    let nt = await this._devices.get_raw_data_for_charts_generic(this._selected_device_card.device_id);
+    console.log("Data for Charts", nt);
+
+    if(this.device_tiene("temperatura")){
+      const this_opts = JSON.parse(JSON.stringify(options));
+      this_opts.xaxis.categories = [...nt.ts];
+      this_opts.series[0].data = [...nt.temperatura];
+      this_opts.series[0].name = "Temperatura"
+      this_opts.title.text = "Temperatura"
+      this_opts.yaxis[0].title = "Temperatura"
+      const chart_1 = new ApexCharts(
+        this.shadowRoot.getElementById("chart-central-1"),
+        this_opts
+      );
+      chart_1.render();
+    }
+
+    if(this.device_tiene("humedad")){
+      const this_opts = JSON.parse(JSON.stringify(options));
+      this_opts.xaxis.categories = [...nt.ts];
+      this_opts.series[0].data = [...nt.humedad];
+      this_opts.series[0].name = "Humedad"
+      this_opts.title.text = "Humedad"
+      this_opts.yaxis[0].title = "Humedad"
+      const chart_1 = new ApexCharts(
+        this.shadowRoot.getElementById("chart-central-2"),
+        this_opts
+      );
+      chart_1.render();
+    }
+
+    if(this.device_tiene("presion")){
+      const this_opts = JSON.parse(JSON.stringify(options));
+      this_opts.xaxis.categories = [...nt.ts];
+      this_opts.series[0].data = [...nt.presion];
+      this_opts.series[0].name = "Presion"
+      this_opts.title.text = "Presion"
+      this_opts.yaxis[0].title = "Presion"
+      const chart_1 = new ApexCharts(
+        this.shadowRoot.getElementById("chart-central-3"),
+        this_opts
+      );
+      chart_1.render();
+    }
+
+
   }
 
   sensor_renderer(sensor_data, detalles, pos) {
@@ -560,21 +704,21 @@ export class SensoresClass extends LitElement {
                       </h5>
                     </div>
                     <div class="row">
-                      <div class="col-4 text-success">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">
                           ${this.valor("temperatura_min")} ºC
                         </div>
                         <div class="fw-light">Min</div>
                       </div>
 
-                      <div class="col-4 text-warning">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">
                           ${this.valor("temperatura_mean")} ºC
                         </div>
                         <div class="fw-light">Promedio</div>
                       </div>
 
-                      <div class="col-4 text-danger">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">
                           ${this.valor("temperatura_max")} ºC
                         </div>
@@ -601,21 +745,21 @@ export class SensoresClass extends LitElement {
                       </h5>
                     </div>
                     <div class="row">
-                      <div class="col-4 text-success">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">
                           ${this.valor("humedad_min")} %
                         </div>
                         <div class="fw-light">Min</div>
                       </div>
 
-                      <div class="col-4 text-warning">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">
                           ${this.valor("humedad_mean")} %
                         </div>
                         <div class="fw-light">Promedio</div>
                       </div>
 
-                      <div class="col-4 text-danger">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">
                           ${this.valor("humedad_max")} %
                         </div>
@@ -642,21 +786,21 @@ export class SensoresClass extends LitElement {
                       </h5>
                     </div>
                     <div class="row">
-                      <div class="col-4 text-success">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">
                           ${this.valor("presion_min")} hPa
                         </div>
                         <div class="fw-light">Min</div>
                       </div>
 
-                      <div class="col-4 text-warning">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">
                           ${this.valor("presion_mean")} hPa
                         </div>
                         <div class="fw-light">Promedio</div>
                       </div>
 
-                      <div class="col-4 text-danger">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">
                           ${this.valor("presion_max")} hPa
                         </div>
@@ -683,17 +827,17 @@ export class SensoresClass extends LitElement {
                       </h5>
                     </div>
                     <div class="row">
-                      <div class="col-4 text-success">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">0 km/h</div>
                         <div class="fw-light">Min</div>
                       </div>
 
-                      <div class="col-4 text-warning">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">6 km/h dirección SE</div>
                         <div class="fw-light">Promedio</div>
                       </div>
 
-                      <div class="col-4 text-danger">
+                      <div class="col-4 text-warning fw-bolder">
                         <div class="fw-strong">16 km/h dirección SE</div>
                         <div class="fw-light">Max</div>
                       </div>
@@ -725,9 +869,9 @@ export class SensoresClass extends LitElement {
 
           <div class="container-fluid col col-8">
             <h3></h3>
-            <div class="spacer" spacer></div>
             <div class="chart-1" id="chart-central-1"></div>
             <div class="chart-2" id="chart-central-2"></div>
+            <div class="chart-3" id="chart-central-3"></div>
           </div>
 
         </div>
