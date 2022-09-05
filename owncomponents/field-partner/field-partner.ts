@@ -191,6 +191,7 @@ export class FieldPartner extends LitElement {
     this.addEventListener('ver-lista-de-sensores', (e)=>{
       const el = document.createElement('lista-de-sensores')
       document.getElementById('container-multiproposito').appendChild(el)
+      el.map = this.map;
       el.show()
     })
 

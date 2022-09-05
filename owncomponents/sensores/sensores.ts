@@ -2,7 +2,7 @@ import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
 import { base_url } from "../helpers.js";
 import format from "date-fns/format";
-import { DataPoints, DeviceDetalles } from "./sensores-types.js";
+import { DataPoints, DeviceDetalles, DailyTelemetryCard } from "./sensores-types.js";
 /** Helper para extraer la telemetria */
 const extract_tele = (key, tele) => {
   let f = tele.data.filter((punto) => {
@@ -92,11 +92,11 @@ class Devices {
 
     let r = await this.db.allDocs({ keys: keys, include_docs: true });
 
-    let docs = r?.rows.map((r) => r.doc) || [];
+    let docs : unknown = r?.rows.map((r) => r.doc) || [];
 
     console.log("PUBLIC DEVICES DAILY", docs);
 
-    return docs;
+    return docs as Promise<DailyTelemetryCard []>;
   };
 
 
