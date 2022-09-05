@@ -1,19 +1,27 @@
 interface DailyTelemetryCard {
-    _id : string;
-    device_id : string;
-    ts_last: number;
-    data: DataPoints[]
-
+  _id: string;
+  device_id: string;
+  ts_last: number;
+  data: DataPoints[];
 }
 
 interface DataPoints {
-    mag : string;
-    value : number;
-    unit: string;
-    ts?: number;
+  mag: string;
+  value: number;
+  unit: string;
+  ts?: number;
 }
 
-
+interface DeviceDetalles {
+  _id: string;
+  device_id: string;
+  nombre: string;
+  fotos: any;
+  tipo: string;
+  installation_date: string;
+  comentario: string;
+  detalles_instalacion: any;
+}
 // {
 //   "_id": "bcddc2ffff106884:1657242669",
 //   "_rev": "1-0b6d03fccdb673b72aaef52b6f7b5bb0",
@@ -28,4 +36,4 @@ interface DataPoints {
 //       "unit": "ºC"
 //     },
 
-export {DailyTelemetryCard, DataPoints}
+export { DailyTelemetryCard, DataPoints, DeviceDetalles };

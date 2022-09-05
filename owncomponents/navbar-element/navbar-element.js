@@ -173,6 +173,16 @@ export class NavbarElement extends LitElement {
                       <a
                         class="dropdown-item"
                         @click=${() => {
+                          this.sendEvent("ver-lista-de-sensores");
+                        }}
+                        href="#"
+                        >Lista de Sensores</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        @click=${() => {
                           location.reload();
                         }}
                         href="#"

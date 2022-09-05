@@ -25,6 +25,8 @@ import "../login-modal/login-modal.ts";
 import "../notas-offcanvas/nota-target.ts";
 import "../insumos/insumos-lista.ts";
 import "../lista-centrales-cercanas/lista-centrales-cercanas.ts"
+import "../sensores/lista-de-sensores.ts"
+
 import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -185,6 +187,12 @@ export class FieldPartner extends LitElement {
     this.addEventListener("nuevo-contratista-click", () => {
       document.getElementById("contratista-crud").nuevo();
     });
+
+    this.addEventListener('ver-lista-de-sensores', (e)=>{
+      const el = document.createElement('lista-de-sensores')
+      document.getElementById('container-multiproposito').appendChild(el)
+      el.show()
+    })
 
     this.addEventListener('ver-centrales-cercanas', (e : CustomEvent)=>{
       let item = (e.detail as Actividad)
