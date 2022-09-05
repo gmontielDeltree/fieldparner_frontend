@@ -176,7 +176,7 @@ export class NavbarElement extends LitElement {
                           this.sendEvent("ver-lista-de-sensores");
                         }}
                         href="#"
-                        >Lista de Sensores</a
+                        >Lista de Dispositivos</a
                       >
                     </li>
                     <li>
