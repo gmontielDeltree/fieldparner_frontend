@@ -108,6 +108,7 @@ export class ListaSensoresClass extends LitElement {
         href="#"
         @click=${() => {
           this.map.flyTo({ center: posicion(id, this._devices_cards) });
+		  this._offcanvas.hide()
         }}
         class="list-group-item list-group-item-action"
         aria-current="true"
@@ -126,7 +127,7 @@ export class ListaSensoresClass extends LitElement {
       tabindex="-1"
       id="offcanvas"
       aria-labelledby="offcanvasLabel"
-	  data-bs-scroll="true" data-bs-backdrop="false"
+	  data-bs-scroll="true"
     >
       <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasLabel">
