@@ -72,7 +72,7 @@ export class NavbarElement extends LitElement {
 
           <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
-              <li>
+              <li class="nav-item"  data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
 
 
                 <div
@@ -94,7 +94,7 @@ export class NavbarElement extends LitElement {
                   Campos
                 </button> -->
               </li>
-              <li>
+              <li class="nav-item"  data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
 
               <div
                   style="cursor: pointer;background-image: url('deposito_2.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
@@ -112,7 +112,7 @@ export class NavbarElement extends LitElement {
                   Depositos
                 </button> -->
               </li>
-              <li>
+              <li class="nav-item"  data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
               <div
                   style="cursor: pointer;background-image: url('iconocontratista.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
@@ -129,7 +129,7 @@ export class NavbarElement extends LitElement {
                   Contratistas
                 </button> -->
               </li>
-              <li>
+              <li class="nav-item"  data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
               <div
                   style="cursor: pointer;background-image: url('icono de insumos.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
@@ -146,7 +146,7 @@ export class NavbarElement extends LitElement {
                   Insumos
                 </button> -->
               </li>
-              <li>
+              <li class="nav-item" >
                 <div class="nav-item dropdown">
                   <a
                     class="nav-link dropdown-toggle"
@@ -159,7 +159,7 @@ export class NavbarElement extends LitElement {
                     Opciones
                   </a>
                   <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <li>
+                    <li data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
                       <a
                         class="dropdown-item"
                         @click=${() => {
@@ -169,7 +169,7 @@ export class NavbarElement extends LitElement {
                         >Color Cultivos</a
                       >
                     </li>
-                    <li>
+                    <li data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
                       <a
                         class="dropdown-item"
                         @click=${() => {
@@ -179,7 +179,7 @@ export class NavbarElement extends LitElement {
                         >Lista de Dispositivos</a
                       >
                     </li>
-                    <li>
+                    <li data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
                       <a
                         class="dropdown-item"
                         @click=${() => {
@@ -192,7 +192,7 @@ export class NavbarElement extends LitElement {
 
                     <!-- <li><a class="dropdown-item" href="#">Another action</a></li> -->
                     <li><hr class="dropdown-divider" /></li>
-                    <li>
+                    <li data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
                       <a
                         class="dropdown-item"
                         @click=${() => {
