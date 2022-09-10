@@ -161,6 +161,8 @@ export class MapaPrincipal extends LitElement {
       preserveDrawingBuffer: false,
     });
 
+
+
     this.draw = new MapboxDraw({
       displayControlsDefault: false,
       // Select which mapbox-gl-draw control buttons to add to the map.
@@ -183,6 +185,13 @@ export class MapaPrincipal extends LitElement {
       //   accessToken: mapboxgl.accessToken,
       //   mapboxgl: mapboxgl,
       // });
+
+// night fog styling
+this.map.setFog({
+  'range': [5, 20],
+  'horizon-blend': 0.3,
+  'color': '#242B4B'
+  });
 
       // this.map.addControl(geocoder);
       this.map.addControl(this.draw); // Sin controles

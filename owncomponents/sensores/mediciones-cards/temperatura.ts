@@ -144,7 +144,7 @@ export class TemperaturaCard extends LitElement {
 
   render() {
     return html`
-      <div class="container-fluid row border-primary border-top p-1">
+      <div class="container-fluid row border-primary border-top p-1 mx-auto">
         <div class="row btn btn-primary d-block d-sm-none mx-auto my-1" @click=${this.toggle}>${!this._show_chart_only ? "Gráfico" : "Datos"}</div> 
         <div class="${this._show_chart_only ? "d-none d-sm-block" : ""} col-12 col-sm-4 my-auto" id="datadiv">
           <div class="row">
