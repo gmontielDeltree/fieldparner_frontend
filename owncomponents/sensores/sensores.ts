@@ -152,7 +152,7 @@ class Devices {
         const el = document.createElement("div");
         el.className = "marker";
 
-        el.style.backgroundImage = `url('centralmeteorologica.webp')`;
+        el.style.backgroundImage = `url('centralmeteorologica70_90.webp')`;
         el.style.backgroundSize = "cover";
         
         el.style.width = `35px`;
