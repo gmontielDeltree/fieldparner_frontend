@@ -2,8 +2,12 @@ import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
 import { base_url, touchEvent } from "../helpers";
 import format from "date-fns/format";
-import { DataPoints, DeviceDetalles, DailyTelemetryCard } from "./sensores-types.js";
-import { Map, Marker } from "mapbox-gl";
+import {
+  DataPoints,
+  DeviceDetalles,
+  DailyTelemetryCard,
+} from "./sensores-types.js";
+import { Map, Marker, Popup } from "mapbox-gl";
 /** Helper para extraer la telemetria */
 const extract_tele = (key, tele) => {
   let f = tele.data.filter((punto) => {
@@ -15,9 +19,9 @@ const extract_tele = (key, tele) => {
   return f[0];
 };
 
-function unixToDate(date){
-	var time 	= new Date(date * 1000);
-	return time.toISOString();
+function unixToDate(date) {
+  var time = new Date(date * 1000);
+  return time.toISOString();
 }
 
 const valor = (card, key) => {
@@ -27,7 +31,6 @@ const valor = (card, key) => {
 class Devices {
   db = new PouchDB(base_url + "processed_device_telemetry");
   db_raw = new PouchDB(base_url + "telemetry_raw");
-
 
   private _devices_names: string[] = [];
 
@@ -62,7 +65,6 @@ class Devices {
     return this._devices_last_telemetry;
   };
 
-
   get_all_details = async () => {
     let { public_devices } = await this.db.get("lista_public_devices:unico");
 
@@ -75,16 +77,16 @@ class Devices {
 
     let r = await this.db.allDocs({ keys: keys, include_docs: true });
 
-    let detalles : unknown = r?.rows.map((r) => r.doc) || [];
+    let detalles: unknown = r?.rows.map((r) => r.doc) || [];
 
-    return (detalles as Promise<DeviceDetalles[]>);
+    return detalles as Promise<DeviceDetalles[]>;
   };
 
-  get_daily_cards = async (dia : string) => {
-    return this.devices_publicos_daily_get(dia)
-  }
+  get_daily_cards = async (dia: string) => {
+    return this.devices_publicos_daily_get(dia);
+  };
 
-  devices_publicos_daily_get = async (dia : string) => {
+  devices_publicos_daily_get = async (dia: string) => {
     let dia_str = dia;
     let { public_devices } = await this.db.get("lista_public_devices:unico");
 
@@ -97,115 +99,131 @@ class Devices {
 
     let r = await this.db.allDocs({ keys: keys, include_docs: true });
 
-    let docs : unknown = r?.rows.map((r) => r.doc) || [];
+    let docs: unknown = r?.rows.map((r) => r.doc) || [];
 
     console.log("PUBLIC DEVICES DAILY", docs);
 
-    return docs as Promise<DailyTelemetryCard []>;
+    return docs as Promise<DailyTelemetryCard[]>;
   };
 
-
-  async get_raw_data_for_charts(uuid){
+  async get_raw_data_for_charts(uuid) {
     let docs = await this.db_raw.allDocs({
       include_docs: true,
       startkey: uuid + ":",
       endkey: uuid + ":\ufff0",
-    })
+    });
 
     let data = await docs.rows.map((d) => d.doc);
-      let ts_a = []
-      let t1_a = []
-      let h1_a = []
-      let t2_a = []
-      let h2_a = []
+    let ts_a = [];
+    let t1_a = [];
+    let h1_a = [];
+    let t2_a = [];
+    let h2_a = [];
 
-    let r = data.map(dp => {
-        // t1
-        let ts = unixToDate(dp.ts - 3 * 3600)
-        let t1 = dp.data[0].value
-        let h1 = dp.data[1].value
-        let t2 = dp.data[2].value
-        let h2 = dp.data[3].value
+    let r = data.map((dp) => {
+      // t1
+      let ts = unixToDate(dp.ts - 3 * 3600);
+      let t1 = dp.data[0].value;
+      let h1 = dp.data[1].value;
+      let t2 = dp.data[2].value;
+      let h2 = dp.data[3].value;
 
-        ts_a.push(ts)
-        t1_a.push(t1)
-        h1_a.push(h1)
-        t2_a.push(t2)
-        h2_a.push(h2)
+      ts_a.push(ts);
+      t1_a.push(t1);
+      h1_a.push(h1);
+      t2_a.push(t2);
+      h2_a.push(h2);
+    });
 
-      })
-
-      return {ts:ts_a, t1:t1_a, h1:h1_a, t2:t2_a, h2:h2_a}
-
+    return { ts: ts_a, t1: t1_a, h1: h1_a, t2: t2_a, h2: h2_a };
   }
 
-  async add_markers_to_map(map : Map){
+  async add_markers_to_map(map: Map) {
     let devices_last_telemetry = await this.devices_publicos_get();
-      //console.log("LAST TELEMETRY", devices_last_telemetry);
+    let detalles = await this.get_all_details();
 
-      devices_last_telemetry.map((telemetria) => {
-        try {
-          let latitud = extract_tele("latitud", telemetria).value;
-          let longitud = extract_tele("longitud", telemetria).value;
+    //console.log("LAST TELEMETRY", devices_last_telemetry);
 
-          const el = document.createElement("div");
-          el.className = "marker";
+    devices_last_telemetry.map((telemetria: DailyTelemetryCard) => {
+      try {
+        let latitud = extract_tele("latitud", telemetria).value;
+        let longitud = extract_tele("longitud", telemetria).value;
 
-          el.style.backgroundImage = `url('centralmeteorologica.webp')`;
-          el.style.backgroundSize = "cover";
-          el.style.width = `90px`;
-          el.style.height = `70px`;
-          //el.style.backgroundSize = '100%';
-          el.style.cursor = "pointer";
+        const el = document.createElement("div");
+        el.className = "marker";
 
+        el.style.backgroundImage = `url('centralmeteorologica.webp')`;
+        el.style.backgroundSize = "cover";
+        
+        el.style.width = `35px`;
+        el.style.height = `45px`;
+        //el.style.backgroundSize = '100%';
+        el.style.cursor = "pointer";
+
+        let detalles_de_este = detalles.find(
+          (d) => d.device_id === telemetria.device_id
+        );
+        if (detalles_de_este) {
+
+          // Popup que no se cierra ni tiene boton de cerrar
+          const popup = new Popup({closeOnClick: false, closeButton: false})
+          popup.setText(detalles_de_este.nombre)
+          popup.setOffset([0,-45])
+          
           //console.info("LATLON", latitud, longitud);
-          const marker = new Marker({ anchor: "bottom", element: el })
+          //
+          const marker = new Marker({element: el, anchor:'bottom' })
             .setLngLat([longitud, latitud])
-            .addTo(map);
+            .setPopup(popup)
+            .addTo(map)
+            .togglePopup()
 
           /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
           marker.getElement().addEventListener(touchEvent, () => {
-            let ev = new CustomEvent('ver-telemetria-del-dia',{detail:telemetria,bubbles:true, composed:true})
-            marker.getElement().dispatchEvent(ev)
+            let ev = new CustomEvent("ver-telemetria-del-dia", {
+              detail: telemetria,
+              bubbles: true,
+              composed: true,
+            });
+            marker.getElement().dispatchEvent(ev);
           });
-        } catch (e) {
-          console.info("Error Al hacer el marcador de dispositivo");
         }
-      });
+      } catch (e) {
+        console.info("Error Al hacer el marcador de dispositivo");
+      }
+    });
   }
 
-  async get_raw_data_for_charts_generic(uuid){
+  async get_raw_data_for_charts_generic(uuid) {
     let docs = await this.db_raw.allDocs({
       include_docs: true,
-      limit:1500,
-      descending:true,
+      limit: 1500,
+      descending: true,
       endkey: uuid + ":",
       startkey: uuid + ":\ufff0",
-    })
+    });
 
     let data = await docs.rows.map((d) => d.doc);
     //console.log("Dsa",data);
-    let return_value = {ts:[]}
+    let return_value = { ts: [] };
 
-    let r = data.map(dp => {
-        // t1
-        let array_de_mediciones = dp.data as DataPoints[];
-        return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
+    let r = data.map((dp) => {
+      // t1
+      let array_de_mediciones = dp.data as DataPoints[];
+      return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
 
-        array_de_mediciones.forEach((medicion : DataPoints) => {
-          if(return_value[medicion.sensor_id]){
-            return_value[medicion.sensor_id].push(medicion.value)  
-          }else{
-            return_value[medicion.sensor_id] = []
-            return_value[medicion.sensor_id].push(medicion.value) 
-          }
-        });
-      })
+      array_de_mediciones.forEach((medicion: DataPoints) => {
+        if (return_value[medicion.sensor_id]) {
+          return_value[medicion.sensor_id].push(medicion.value);
+        } else {
+          return_value[medicion.sensor_id] = [];
+          return_value[medicion.sensor_id].push(medicion.value);
+        }
+      });
+    });
 
-      return return_value
-
+    return return_value;
   }
-
 
   async get_details(device_id: string) {
     try {
