@@ -26,6 +26,7 @@ import ApexCharts from "apexcharts";
 import apex_css from "apexcharts/dist/apexcharts.css";
 import { DailyTelemetryCard } from "./sensores-types";
 import "./mediciones-cards/temperatura";
+import "./mediciones-cards/presion";
 // background-position-y: -60px;
 //background-size: 100% auto;
 //background-position-y: -60px;
@@ -194,10 +195,12 @@ export class SensoresClass extends LitElement {
     if (card) {
       // Ya tengo algo que mostrar
       // console.log("MOSTRAR", card)
+      await this.updateComplete
+      this._offcanvas.show();
       this._selected_device_card = card;
       this._selected_details = await this._devices.get_details(card.device_id);
       this.load_data_points();
-      this._offcanvas.show();
+
       return;
     }
 
@@ -250,7 +253,6 @@ export class SensoresClass extends LitElement {
   }
 
   async load_data_points(){
-    
     let nt = await this._devices.get_raw_data_for_charts_generic(
       this._selected_device_card.device_id
     );
@@ -420,144 +422,33 @@ export class SensoresClass extends LitElement {
     );
   }
 
-  async renderCentralChart() {
-    await this.updateComplete;
 
-    this.shadowRoot.getElementById("chart-temperatura").textContent = "";
-    // this.shadowRoot.getElementById("chart-central-2").textContent = "";
-    // this.shadowRoot.getElementById("chart-central-3").textContent = "";
-
-    var base_options = {
-      colors: ["#F44336", "#E91E63", "#9C27B0"],
-      series: [
-        {
-          name: "",
-          data: [],
-        },
-      ],
-      chart: {
-        height: 300,
-        type: "area",
-        animations: {
-          enabled: false,
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        curve: "smooth",
-      },
-      xaxis: {
-        type: "datetime",
-        categories: [],
-      },
-      yaxis: [
-        {
-          axisTicks: {
-            show: true,
-          },
-          axisBorder: {
-            show: true,
-            color: "#008FFB",
-          },
-          labels: {
-            style: {
-              colors: "#008FFB",
-            },
-          },
-          title: {
-            text: "Humedad",
-            style: {
-              color: "#eb2a1c",
-            },
-          },
-          tooltip: {
-            enabled: true,
-          },
-        },
-      ],
-      tooltip: {
-        x: {
-          format: "dd/MM/yy HH:mm",
-        },
-      },
-    };
-
-    var options = {
-      ...base_options,
-      chart: {
-        type: "area",
-        height: "180px",
-        foreColor: "#ffffff",
-        //background: '#fff'
-        animations: {
-          enabled: false,
-        },
-      },
-      title: {
-        text: "Sensor 1",
-        align: "left",
-        margin: 10,
-        offsetX: 0,
-        offsetY: 0,
-        floating: false,
-        style: {
-          fontSize: "14px",
-          fontWeight: "bold",
-          fontFamily: undefined,
-          color: "#ffffff",
-        },
-      },
-    };
-
-    let nt = await this._devices.get_raw_data_for_charts_generic(
-      this._selected_device_card.device_id
-    );
-    console.log("Data for Charts", nt);
-
-    if (this.device_tiene("temperatura")) {
-      const this_opts = JSON.parse(JSON.stringify(options));
-      this_opts.xaxis.categories = [...nt.ts];
-      this_opts.series[0].data = [...nt.temperatura];
-      this_opts.series[0].name = "Temperatura";
-      this_opts.title.text = "Temperatura";
-      this_opts.yaxis[0].title = "Temperatura";
-      const chart_1 = new ApexCharts(
-        this.shadowRoot.getElementById("chart-temperatura"),
-        this_opts
-      );
-      chart_1.render();
-    }
-
-    if (this.device_tiene("humedad")) {
-      const this_opts = JSON.parse(JSON.stringify(options));
-      this_opts.xaxis.categories = [...nt.ts];
-      this_opts.series[0].data = [...nt.humedad];
-      this_opts.series[0].name = "Humedad";
-      this_opts.title.text = "Humedad";
-      this_opts.yaxis[0].title = "Humedad";
-      const chart_1 = new ApexCharts(
-        this.shadowRoot.getElementById("chart-central-2"),
-        this_opts
-      );
+    // if (this.device_tiene("humedad")) {
+    //   const this_opts = JSON.parse(JSON.stringify(options));
+    //   this_opts.xaxis.categories = [...nt.ts];
+    //   this_opts.series[0].data = [...nt.humedad];
+    //   this_opts.series[0].name = "Humedad";
+    //   this_opts.title.text = "Humedad";
+    //   this_opts.yaxis[0].title = "Humedad";
+    //   const chart_1 = new ApexCharts(
+    //     this.shadowRoot.getElementById("chart-central-2"),
+    //     this_opts
+    //   );
       //chart_1.render();
-    }
+    //}
 
-    if (this.device_tiene("presion")) {
-      const this_opts = JSON.parse(JSON.stringify(options));
-      this_opts.xaxis.categories = [...nt.ts];
-      this_opts.series[0].data = [...nt.presion];
-      this_opts.series[0].name = "Presion";
-      this_opts.title.text = "Presion";
-      this_opts.yaxis[0].title = "Presion";
-      const chart_1 = new ApexCharts(
-        this.shadowRoot.getElementById("chart-central-3"),
-        this_opts
-      );
+    // if (this.device_tiene("presion")) {
+    //   const this_opts = JSON.parse(JSON.stringify(options));
+    //   this_opts.xaxis.categories = [...nt.ts];
+    //   this_opts.series[0].data = [...nt.presion];
+    //   this_opts.series[0].name = "Presion";
+    //   this_opts.title.text = "Presion";
+    //   this_opts.yaxis[0].title = "Presion";
+    //   const chart_1 = new ApexCharts(
+    //     this.shadowRoot.getElementById("chart-central-3"),
+    //     this_opts
+    //   );
       // chart_1.render();
-    }
-  }
 
   sensor_renderer(sensor_data, detalles, pos) {
     // Si no es sensor de humedad suelo no renderiza nada
@@ -647,19 +538,18 @@ export class SensoresClass extends LitElement {
       </div>
     `;
   }
+  
   render() {
-
-
+    
     const ifLoadedShow = (nombre_var)=>{
-     
      let a1 = devices_modelos[this._selected_details?.tipo]?.sensores.includes(
         nombre_var
       )
 
      let a2 = this._selected_device_card ? true : false
-     let a3 = this._datapoints ? true : false;
+     //let a3 = this._datapoints ? true : false;
 
-     return (a1 && a2 && a3)
+     return (a1 && a2)
     }
 
     // Hay algo seleccionado
@@ -715,7 +605,7 @@ export class SensoresClass extends LitElement {
             <!--/temperatura-->
 
             <!-- Humedad -->
-            ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
+            ${ifLoadedShow(
               "humedad"
             )
               ? html`
@@ -760,47 +650,10 @@ export class SensoresClass extends LitElement {
             <!--/humedad-->
 
             <!-- Presion -->
-            ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
+            ${ifLoadedShow(
               "presion"
             )
-              ? html`
-                  <div class="container-fluid border-primary border-top p-1">
-                    <div class="row">
-                      <h5>
-                        <img
-                          src="pressure-gauge-meter-icon.svg"
-                          width="50"
-                          height="50"
-                        />
-                        <span class="fw-bolder"
-                          >${this.valor("presion")} hPa</span
-                        >
-                      </h5>
-                    </div>
-                    <div class="row">
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">
-                          ${this.valor("presion_min")} hPa
-                        </div>
-                        <div class="fw-light">Min</div>
-                      </div>
-
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">
-                          ${this.valor("presion_mean")} hPa
-                        </div>
-                        <div class="fw-light">Promedio</div>
-                      </div>
-
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">
-                          ${this.valor("presion_max")} hPa
-                        </div>
-                        <div class="fw-light">Max</div>
-                      </div>
-                    </div>
-                  </div>
-                `
+              ? html`<presion-card .card=${this._selected_device_card} .data=${this._datapoints}/>`
               : null}
             <!--/presion-->
 

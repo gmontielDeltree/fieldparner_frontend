@@ -22,9 +22,8 @@ export class TemperaturaCard extends LitElement {
   @property()
   data: any;
 
-
   @state()
-  _show_chart_only : boolean = false;
+  _show_chart_only: boolean = false;
 
   // Ocurre cuando ya se renderizo
   override updated(changedProps) {
@@ -145,8 +144,18 @@ export class TemperaturaCard extends LitElement {
   render() {
     return html`
       <div class="container-fluid row border-primary border-top p-1 mx-auto">
-        <div class="row btn btn-primary d-block d-sm-none mx-auto my-1" @click=${this.toggle}>${!this._show_chart_only ? "Gráfico" : "Datos"}</div> 
-        <div class="${this._show_chart_only ? "d-none d-sm-block" : ""} col-12 col-sm-4 my-auto" id="datadiv">
+        <div
+          class="row btn btn-primary d-block d-sm-none mx-auto my-1"
+          @click=${this.toggle}
+        >
+          ${!this._show_chart_only ? "Gráfico" : "Datos"}
+        </div>
+        <div
+          class="${this._show_chart_only
+            ? "d-none d-sm-block"
+            : ""} col-12 col-sm-4 my-auto"
+          id="datadiv"
+        >
           <div class="row">
             <h5>
               <img src="high-temperature-icon.svg" width="50" height="50" />
@@ -178,8 +187,29 @@ export class TemperaturaCard extends LitElement {
             </div>
           </div>
         </div>
+        <!--Spinner-->
+        ${this.data
+          ? ""
+          : html`<div
+              class="${this._show_chart_only
+                ? ""
+                : "d-none d-sm-block"} col-12 col-sm-8 d-flex align-items-center"
+            >
+              <strong>Cargando Datos...</strong>
+              <div
+                class="spinner-grow text-danger ms-auto"
+                role="status"
+                aria-hidden="true"
+              ></div>
+            </div>`}
 
-        <div class="${this._show_chart_only ? "" : "d-none d-sm-block"} col-12 col-sm-8 chart" id="chart">CHRATR</div>
+        <!--Chart-->
+        <div
+          class="${this._show_chart_only
+            ? ""
+            : "d-none d-sm-block"} col-12 col-sm-8 chart"
+          id="chart"
+        ></div>
       </div>
     `;
   }
