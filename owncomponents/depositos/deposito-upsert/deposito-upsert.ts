@@ -2,7 +2,7 @@ import Modal from "bootstrap/js/dist/modal";
 import { LitElement, html, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import uuid4 from "uuid4";
-import { normalizar_username } from "../../helpers.js";
+import { normalizar_username } from "../../helpers";
 import { Deposito, get_empty_deposito } from "../depositos-types.js";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { isThisQuarter } from "date-fns";

@@ -36,6 +36,7 @@ import { get_empty_insumo, Insumo } from "../insumos/insumos-types";
 import { Actividad } from "../depositos/depositos-types";
 import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { format, parse } from "date-fns";
+import { Devices } from "../sensores/sensores";
 
 var wentOffline, wentOnline;
 
@@ -144,6 +145,9 @@ export class FieldPartner extends LitElement {
       this.draw = e.detail.draw;
       // Cuando se carga el mapa considero que terminó la carga
       this.loading = false;
+
+      let devices = new Devices()
+      devices.add_markers_to_map(this.map)
     });
 
     /* Click en ver lista de campos */
@@ -219,8 +223,12 @@ export class FieldPartner extends LitElement {
     })
 
     this.addEventListener('ver-telemetria-del-dia', (e : CustomEvent)=>{
+      const el = document.createElement('sensores-oc')
+      document.getElementById('container-multiproposito').appendChild(el)
+
       let daily_card = (e.detail as DailyTelemetryCard)
-      document.getElementById('sensores-oc').show(daily_card)
+      el.map = this.map
+      el.show(daily_card)
     })
 
 
@@ -815,7 +823,6 @@ export class FieldPartner extends LitElement {
       ></color-cultivo>
       <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
 
-      <sensores-oc id='sensores-oc' .map=${this.map}></sensores-oc>
 
       <nota-share-target
         id="nota-share-target"

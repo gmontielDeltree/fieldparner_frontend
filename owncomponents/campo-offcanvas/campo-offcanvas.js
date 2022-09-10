@@ -2,7 +2,7 @@ import { LitElement, html, css } from "lit";
 import area from "@turf/area";
 import uuid4 from "uuid4";
 import "../share-modal/share-modal.js";
-import { normalizar_username } from "../helpers.js";
+import { normalizar_username } from "../helpers";
 import bbox from "@turf/bbox";
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 

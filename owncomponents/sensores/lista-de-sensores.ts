@@ -18,7 +18,7 @@ import "../contratistas/contratista-crud";
 import "@vaadin/icons";
 import { Map, Marker } from "mapbox-gl";
 import { Devices, extract_tele } from "./sensores";
-import { touchEvent } from "../helpers.js";
+import { touchEvent } from "../helpers";
 import devices_modelos from "./devices_modelos";
 import { format, formatDistance, formatRelative, subDays } from "date-fns";
 import { DailyTelemetryCard, DeviceDetalles } from "./sensores-types";

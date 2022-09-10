@@ -1,8 +1,9 @@
 import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
-import { base_url } from "../helpers.js";
+import { base_url, touchEvent } from "../helpers";
 import format from "date-fns/format";
 import { DataPoints, DeviceDetalles, DailyTelemetryCard } from "./sensores-types.js";
+import { Map, Marker } from "mapbox-gl";
 /** Helper para extraer la telemetria */
 const extract_tele = (key, tele) => {
   let f = tele.data.filter((punto) => {
@@ -18,6 +19,10 @@ function unixToDate(date){
 	var time 	= new Date(date * 1000);
 	return time.toISOString();
 }
+
+const valor = (card, key) => {
+  return extract_tele(key, card)?.value || "N/A";
+};
 
 class Devices {
   db = new PouchDB(base_url + "processed_device_telemetry");
@@ -134,6 +139,40 @@ class Devices {
 
   }
 
+  async add_markers_to_map(map : Map){
+    let devices_last_telemetry = await this.devices_publicos_get();
+      //console.log("LAST TELEMETRY", devices_last_telemetry);
+
+      devices_last_telemetry.map((telemetria) => {
+        try {
+          let latitud = extract_tele("latitud", telemetria).value;
+          let longitud = extract_tele("longitud", telemetria).value;
+
+          const el = document.createElement("div");
+          el.className = "marker";
+
+          el.style.backgroundImage = `url('centralmeteorologica.webp')`;
+          el.style.backgroundSize = "cover";
+          el.style.width = `90px`;
+          el.style.height = `70px`;
+          //el.style.backgroundSize = '100%';
+          el.style.cursor = "pointer";
+
+          //console.info("LATLON", latitud, longitud);
+          const marker = new Marker({ anchor: "bottom", element: el })
+            .setLngLat([longitud, latitud])
+            .addTo(map);
+
+          /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
+          marker.getElement().addEventListener(touchEvent, () => {
+            let ev = new CustomEvent('ver-telemetria-del-dia',{detail:telemetria,bubbles:true, composed:true})
+            marker.getElement().dispatchEvent(ev)
+          });
+        } catch (e) {
+          console.info("Error Al hacer el marcador de dispositivo");
+        }
+      });
+  }
 
   async get_raw_data_for_charts_generic(uuid){
     let docs = await this.db_raw.allDocs({
@@ -145,7 +184,7 @@ class Devices {
     })
 
     let data = await docs.rows.map((d) => d.doc);
-    console.log("Dsa",data);
+    //console.log("Dsa",data);
     let return_value = {ts:[]}
 
     let r = data.map(dp => {
@@ -178,4 +217,4 @@ class Devices {
   }
 }
 
-export { Devices, extract_tele };
+export { Devices, extract_tele, valor };

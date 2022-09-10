@@ -16,7 +16,7 @@ import PouchDB from "pouchdb";
 import { GridItemModel } from "@vaadin/grid";
 import "@vaadin/icons";
 import { Map, Marker } from "mapbox-gl";
-import { touchEvent } from "../helpers.js";
+import { touchEvent } from "../helpers";
 import "./notas-offcanvas.js";
 import {Notification} from '@vaadin/notification';
 import {layer_visibility } from "../helpers";
