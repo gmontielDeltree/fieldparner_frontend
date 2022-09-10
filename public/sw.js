@@ -1,6 +1,6 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.2.0/workbox-sw.js');
 
-const version = "0007"
+const version = "0008"
 
 // This will trigger the importScripts() for workbox.strategies and its dependencies:
 const {strategies, routing, backgroundSync} = workbox;
