@@ -27,6 +27,7 @@ import apex_css from "apexcharts/dist/apexcharts.css";
 import { DailyTelemetryCard } from "./sensores-types";
 import "./mediciones-cards/temperatura";
 import "./mediciones-cards/presion";
+import "./mediciones-cards/humedad";
 // background-position-y: -60px;
 //background-size: 100% auto;
 //background-position-y: -60px;
@@ -608,44 +609,7 @@ export class SensoresClass extends LitElement {
             ${ifLoadedShow(
               "humedad"
             )
-              ? html`
-                  <div class="container-fluid border-primary border-top p-1">
-                    <div class="row">
-                      <h5>
-                        <img
-                          src="water-droplet-icon.svg"
-                          width="50"
-                          height="50"
-                        />
-                        <span class="fw-bolder"
-                          >${this.valor("humedad")} %</span
-                        >
-                      </h5>
-                    </div>
-                    <div class="row">
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">
-                          ${this.valor("humedad_min")} %
-                        </div>
-                        <div class="fw-light">Min</div>
-                      </div>
-
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">
-                          ${this.valor("humedad_mean")} %
-                        </div>
-                        <div class="fw-light">Promedio</div>
-                      </div>
-
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">
-                          ${this.valor("humedad_max")} %
-                        </div>
-                        <div class="fw-light">Max</div>
-                      </div>
-                    </div>
-                  </div>
-                `
+              ? html`<humedad-card .card=${this._selected_device_card} .data=${this._datapoints}/>`
               : null}
             <!--/humedad-->
 

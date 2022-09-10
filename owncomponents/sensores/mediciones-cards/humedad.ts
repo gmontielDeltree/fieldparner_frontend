@@ -1,16 +1,12 @@
-import { html, PropertyValueMap } from "lit";
 import { DailyTelemetryCard } from "../sensores-types";
-import { valor } from "../sensores";
-
-import { LitElement, html, unsafeCSS, render, CSSResultGroup, css } from "lit";
+import { LitElement, html, unsafeCSS, CSSResultGroup} from "lit";
 import { property, state } from "lit/decorators.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
-import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
 import ApexCharts from "apexcharts";
 import apex_css from "apexcharts/dist/apexcharts.css";
 
-export class PresionCard extends LitElement {
+export class HumedadCard extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
     unsafeCSS(apex_css),
@@ -126,10 +122,10 @@ export class PresionCard extends LitElement {
 
     const this_opts = JSON.parse(JSON.stringify(options));
     this_opts.xaxis.categories = [...nt.ts];
-    this_opts.series[0].data = [...nt.presion];
-    this_opts.series[0].name = "Presión";
-    this_opts.title.text = "Presión";
-    this_opts.yaxis[0].title = "Presión";
+    this_opts.series[0].data = [...nt.humedad];
+    this_opts.series[0].name = "Humedad";
+    this_opts.title.text = "Humedad";
+    this_opts.yaxis[0].title = "Humedad";
     const chart_1 = new ApexCharts(
       this.shadowRoot.getElementById("chart"),
       this_opts
@@ -158,30 +154,30 @@ export class PresionCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="pressure-gauge-meter-icon.svg" width="50" height="50" />
+              <img src="water-droplet-icon.svg" width="50" height="50" />
               <span class="fw-bolder"
-                >${valor(this.card, "presion")} hPa</span
+                >${valor(this.card, "humedad")} %</span
               >
             </h5>
           </div>
           <div class="row">
             <div class="col-4 text-warning fw-bolder">
               <div class="fw-strong">
-                ${valor(this.card, "presion_min")} hPa
+                ${valor(this.card, "humedad_min")} %
               </div>
               <div class="fw-light">Min</div>
             </div>
 
             <div class="col-4 text-warning fw-bolder">
               <div class="fw-strong">
-                ${valor(this.card, "presion_mean")} hPa
+                ${valor(this.card, "humedad_mean")} %
               </div>
               <div class="fw-light">Promedio</div>
             </div>
 
             <div class="col-4 text-warning fw-bolder">
               <div class="fw-strong">
-                ${valor(this.card, "presion_max")} hPa
+                ${valor(this.card, "humedad_max")} %
               </div>
               <div class="fw-light">Max</div>
             </div>
@@ -215,10 +211,10 @@ export class PresionCard extends LitElement {
   }
 }
 
-customElements.define("presion-card", PresionCard);
+customElements.define("humedad-card", HumedadCard);
 
 declare global {
   interface HTMLElementTagNameMap {
-    "presion-card": PresionCard;
+    "humedad-card": HumedadCard;
   }
 }
