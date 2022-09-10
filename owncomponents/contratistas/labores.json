@@ -1,0 +1,21 @@
+[
+	{"labor":"Siembra",
+	  "uuid":"1"
+	},
+	{"labor":"Cosecha",
+	"uuid":"3"},
+	{"labor":"Aplicación Aerea",
+	"uuid":"4"},
+	{"labor":"Aplicación Terrestre",
+	"uuid":"5"},
+	{"labor":"Cincel",
+	"uuid":"6"},
+	{"labor":"Disco",
+	"uuid":"7"},
+	{"labor":"Fertilización al Voleo",
+	"uuid":"8"}
+	,
+	{"labor":"Riego",
+	"uuid":"9"}
+
+]

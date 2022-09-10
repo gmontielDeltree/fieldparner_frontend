@@ -126,8 +126,16 @@ const nuevaGeometriaMachine = createMachine(
                   }),
                 ],
               },
+              SUBIDO_MULTIPLE: {
+                target: "modal_multiple"
+              },
               ERROR: "error",
             },
+          },
+          modal_multiple:{
+            on:{
+              GUARDAR:"#idle",
+            }
           },
           error: {
             on: { NEXT: "#idle" },

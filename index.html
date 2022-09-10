@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N2LJGN300K"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-N2LJGN300K");
+    </script>
+
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
@@ -32,23 +47,11 @@
     <!-- Add to homescreen for Safari on iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta name="apple-mobile-web-app-title" content="A zUIx website" />
+    <meta name="apple-mobile-web-app-title" content="Agrotools" />
     <link
       rel="apple-touch-icon-precomposed"
       href="images/icons/desktop/apple-touch-icon.png"
     />
-    <link
-      rel="mask-icon"
-      href="images/icons/desktop/safari-pinned-tab.svg"
-      color="#5bbad5"
-    />
-
-    <!-- Tile color for Windows -->
-    <meta
-      name="msapplication-TileImage"
-      content="images/icons/desktop/mstile-150x150.png"
-    />
-    <meta name="msapplication-TileColor" content="#ffc40d" />
 
     <!-- Place favicon.ico in the root directory -->
     <link
@@ -64,94 +67,33 @@
       href="images/icons/desktop/favicon-16x16.png"
     />
 
-    <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
-    <!--
-  <link rel="canonical" href="http://www.example.com/">
-  -->
-
-    <!-- Bootstrap 5 CSS -->
-    <!--<link href="assets/reroot/bootstrap-5.1.3-dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">-->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous"> -->
-
     <script type="module" src="/main.js"></script>
 
-    <!--<link href="./assets/reroot/Montserrat.css" rel="stylesheet" />-->
-
-    <!-- <link rel="stylesheet" href="./assets/reroot/font-awesome.min.css" />-->
-
-    <!--<link rel="stylesheet" href="./assets/css/charts.css" />
-  <link rel="stylesheet" href="./assets/reroot/bootstrap-icons.css" />-->
-    <script src="assets/reroot/moment.min.js"></script>
-
-    <!-- Bootstrap 5 JS -->
-    <!--<script src="bootstrap.bundle.min.js"></script>-->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script> -->
-
-    <!--Datepicker-->
-    <!--  <link rel="stylesheet" href="./assets/reroot/datepicker.min.css" />
-  <script src="assets/reroot/datepicker-full.min.js" crossorigin="anonymous"></script>
--->
-    <script src="assets/reroot/jquery.slim.min.js"></script>
-    <script src="assets/js/apexcharts/dist/apexcharts.min.js"></script>
-
-    <!-- Material Design Icons -->
-    <!--  <link rel="stylesheet" href="./assets/reroot/MaterialIcons.css">-->
-
-    <!-- import zUIx library (v 0.4.9-54) -->
-    <script src="zuix/zuix.min.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/zuix"></script> -->
-    <script src="zuix/zuix-bundler.min.js"></script>
-    <!--<script src="zuix/app.bundle.js"></script>-->
-
-    <!--MAPA-->
-    <script src="assets/reroot/mapbox-gl.js"></script>
-    <!--<link href='./assets/reroot/mapbox-gl.css' rel='stylesheet' />-->
-
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/0.0.124/turf.min.js" integrity="sha512-jpnZ8xGKbS7L9S6d5fk/zDVgF6OoVKLMoEliLxf24BRX+orWhxqJuUcoM+vGmOaozS9dD9ABjQZKAgjjcwTndA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
-    <script src="assets/reroot/turf.min.js"></script>
-
-    <script src="assets/reroot/mapbox-gl-draw.js"></script>
-    <!--  <link rel="stylesheet" href="./assets/reroot/mapbox-gl-draw.css" type="text/css">-->
-
-    <!--Axios-->
-    <script src="assets/reroot/axios.min.js"></script>
-    <!-- UUID -->
-    <script src="assets/uuidv4.min.js"></script>
-    <!-- main app script -->
-    <script src="index.js" defer></script>
-
-    <script text="javascript">
-      var api_root = "https://fieldpartner-api-v0.herokuapp.com";
-      // var api_root = "http://localhost:1337";
-    </script>
-
-    <!--Audio Recorder-->
-    <script src="assets/components/audiorecorder/index.js"></script>
-
-    <!--Pouch DB-->
-    <script src="assets/pouchdb.min.js"></script>
-
-    <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
-    <link
-      rel="stylesheet"
+    <!-- <link
+      rel="preload"
       href="https://unpkg.com/intro.js/minified/introjs.min.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://unpkg.com/intro.js/minified/introjs.min.css"
+    /></noscript> -->
 
-    <!--AUTH0-->
-    <!-- <script src="https://cdn.auth0.com/js/auth0-spa-js/1.13/auth0-spa-js.production.js"></script> -->
-
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css"
+    <!-- <link
+      rel="preload"
+      href="./src/timeline.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
-    <link rel="stylesheet" href="./src/timeline.css" />
+    <noscript><link rel="stylesheet" href="./src/timeline.css" /></noscript> -->
 
     <style>
       /*mapbox gl css custom settings*/
       #map {
         position: absolute;
-        top: 40px;
+        top: 56px;
         bottom: 0;
         width: 100%;
         height: calc(100vh - 100px) !important;
@@ -160,73 +102,76 @@
       .mapboxgl-ctrl-group button + button {
         border-top: none;
       }
+
+      .mapboxgl-ctrl-top-right {
+        z-index: 0 !important;
+      }
+
+      vaadin-date-picker-overlay {
+        z-index: 9999;
+      }
+
+      vaadin-combo-box-overlay {
+        z-index: 9999;
+      }
+      vaadin-context-menu-overlay {
+        z-index: 9999;
+      }
+
+      vaadin-dialog-overlay {
+        z-index: 9999;
+      }
+
+      .marker {
+        background-image: url("centralmeteorologica.webp");
+        background-size: cover;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
     </style>
 
-    <script></script>
     <!-- shims global para -->
     <script>
       window.process = window.process || {};
       window.global = window;
+      // https://github.com/pouchdb/pouchdb/issues/8051#issuecomment-686332652
+      window.process = {
+        browser: true,
+      };
+    </script>
+
+    <link
+      rel="preload"
+      as="image"
+      href="assets/images/cosechadora_bg.jpg"
+      type="image/jpg"
+    />
+
+    <script>
+      // Register Service Worker
+      if ("serviceWorker" in navigator) {
+        const p = navigator.serviceWorker
+          .register("./sw.js")
+          .then((reg) => console.log("PWA service-worker ready.", reg))
+          .catch((err) => console.error("Could not load service-worker.", err));
+      }
+      const version = "0002";
     </script>
   </head>
   <!-- load the 'header_auto_hide' on the body -->
 
   <body>
-    <script
-      type="module"
-      src="./owncomponents/campo-offcanvas/campo-offcanvas.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/lote-offcanvas/lote-offcanvas.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/nueva-geometria/nueva-geometria.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/nuevo-campo/nuevo-campo.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/lista-de-campos/lista-de-campos.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/field-partner/field-partner.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/navbar-element/navbar-element.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/mapa-principal/mapa-principal.js"
-    ></script>
-    <script
-      type="module"
-      src="./owncomponents/login-modal/login-modal.js"
-    ></script>
-
     <!--Main App Element-->
     <field-partner>
-      <!-- <section data-ui-load="pages/map"></section> -->
       <div id="tour"></div>
-
-      <!-- The DrawerLayout for side menu panel -->
-      <div
-        data-ui-load="@lib/controllers/drawer_layout"
-        data-ui-options="options.drawerLayout"
-        class="drawer"
-        draggable="false"
-      >
-      
-      <!-- Add Navigation Drawer content -->
-      <div data-ui-load="shared/main_menu"></div>
-      </div>
-      
     </field-partner>
+
+    <!-- <script
+      src="https://unpkg.com/intro.js/minified/intro.min.js"
+      async
+    ></script> -->
 
     <noscript> Turn on JavaScript to access this site content. </noscript>
   </body>

@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS } from "lit-element";
+import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 
 export class ListaSearchable extends LitElement {
@@ -6,8 +6,9 @@ export class ListaSearchable extends LitElement {
     es_nuevo: {},
     value: {},
     lista: {},
+    selected: {},
     lista_filtrada: {},
-    item_el: {},
+    //item_el: {},
     principal_key: {},
   };
 
@@ -58,6 +59,7 @@ export class ListaSearchable extends LitElement {
   click_item(item) {
     this.value = item[this.principal_key];
     this.es_nuevo = false;
+    this.selected = item;
     let event = new CustomEvent("input", { detail: this.value });
     this.dispatchEvent(event);
   }

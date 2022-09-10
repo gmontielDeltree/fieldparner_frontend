@@ -2,11 +2,13 @@ import { LitElement, html, unsafeCSS } from "lit";
 import { nuevaGeometriaMachine, initial_ctx } from "./nueva-geometria-machina";
 import { interpret } from "xstate";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import { Offcanvas, Modal } from "bootstrap";
 import centroid from "@turf/centroid";
 import { kml } from "@tmcw/togeojson";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import * as JSZip from "jszip";
+import '@vaadin/text-field'
+import Modal from "bootstrap/js/dist/modal.js";
+import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 
 export class NuevaGeometria extends LitElement {
   static properties = {
@@ -14,13 +16,24 @@ export class NuevaGeometria extends LitElement {
     show: {},
     mapa: {},
     tipo: {},
-    _offcanvas: {},
+    _offcanvas: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
+    _modal_multiple:{hasChanged(newVal, oldVal) {
+      return false;
+    }},
+    _nombre_multiple:{},
     _draw: {},
     _ctx: {},
     _fsm: {},
     _feature_id: {},
-    _modal_elements: {},
-    _bs_inicializado: {},
+    _modal_elements: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
+    _bs_inicializado: {hasChanged(newVal, oldVal) {
+      return false;
+    }},
+    _multiplesfeatures:{},
   };
 
   static styles = unsafeCSS(bootstrap);
@@ -40,9 +53,10 @@ export class NuevaGeometria extends LitElement {
         polygon: false,
         trash: false,
       },
+      touchBuffer:50,
     });
-    console.log("Construction", this.mapa);
-    this._init_fsm()
+    // console.log("Construction", this.mapa);
+    this._init_fsm();
   }
 
   // createRenderRoot() {
@@ -51,6 +65,7 @@ export class NuevaGeometria extends LitElement {
 
   firstUpdated() {
     this._bs_inicializar();
+    this._modal_multiple = new Modal(this.shadowRoot.getElementById('modal-multiple'))
   }
 
   willUpdate(changedProperties) {
@@ -61,11 +76,11 @@ export class NuevaGeometria extends LitElement {
     if (changedProperties.has("show") && this.show) {
       this._init_fsm();
       this._fsm.send("START");
-      console.log("START", this._modal_elements);
+      //console.log("START", this._modal_elements);
     }
 
     if (changedProperties.has("campo_feature")) {
-      console.log("START CF", this._modal_elements);
+      //console.log("START CF", this._modal_elements);
       this._init_fsm();
     }
 
@@ -83,7 +98,7 @@ export class NuevaGeometria extends LitElement {
     );
 
     this._modal_elements = result_object;
-    console.log("nueva-geometria", "firstUpdated", this._modal_elements);
+    //console.log("nueva-geometria", "firstUpdated", this._modal_elements);
 
     this._offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-editing-dibujando")
@@ -102,7 +117,7 @@ export class NuevaGeometria extends LitElement {
     this._fsm = interpret(nuevaGeometriaMachine.withContext(someContext))
       .onTransition((state) => {
         this._ctx = state.context;
-        console.log(state.toStrings());
+        //console.log(state.toStrings());
         this.show_step(state.toStrings());
       })
       .start();
@@ -110,7 +125,7 @@ export class NuevaGeometria extends LitElement {
 
   _init_map() {
     // Set eventos cuando se carga el mapa
-    console.log("Changed Props", this.mapa);
+    //console.log("Changed Props", this.mapa);
 
     // try {
     //   this.mapa.addControl(this._draw, "top-left");
@@ -122,9 +137,9 @@ export class NuevaGeometria extends LitElement {
       /* Si la seleccion cambia a algo distinto del featureId
           que ya genere, volver a seleccionar lo mismo para prevenir
           que pueda seguir dibujando */
-      console.log("SELECTIONCHANGE", e);
+      //console.log("SELECTIONCHANGE", e);
       if (e.features[0]?.id !== this._feature_id) {
-        console.log("RESELECTING");
+        //console.log("RESELECTING");
         this._draw.changeMode("simple_select", {
           featureIds: [this._feature_id],
         });
@@ -132,7 +147,7 @@ export class NuevaGeometria extends LitElement {
     });
 
     this.mapa.on("draw.create", (e) => {
-      console.log("CERRO");
+      //console.log("CERRO");
       /* Guardar la feature */
       this._feature_id = e.features[0].id;
       let feature = e.features[0];
@@ -141,7 +156,7 @@ export class NuevaGeometria extends LitElement {
 
     this.mapa.on("draw.update", (args) => {
       let feature = args.features[0];
-      console.log("UPDATE", args);
+      //console.log("UPDATE", args);
       this._fsm.send({ type: "UPDATE_POLIGONO", feature: feature });
     });
   }
@@ -150,7 +165,7 @@ export class NuevaGeometria extends LitElement {
     this.hide_all_steps();
     let state_value = state_strings.slice(-1)[0];
 
-    console.log("show_step", state_value, this._modal_elements);
+    //console.log("show_step", state_value, this._modal_elements);
     if (state_value === "idle") {
       //this.show = false;
       return;
@@ -170,17 +185,24 @@ export class NuevaGeometria extends LitElement {
       this._offcanvas.show();
     }
 
+
+    if(state_value === 'editing.modal_multiple'){
+      this._modal_multiple.show()
+    }
+
     if (!(state_value in this._modal_elements)) {
-      console.log("Estado no tiene modal");
+      //console.log("Estado no tiene modal");
       return;
     }
 
     if (!this._modal_elements[state_value]?._isShown || false) {
       if (this.show) {
-        console.log("SHOW");
+        //console.log("SHOW");
         this._modal_elements[state_value].show();
       }
     }
+
+
   };
 
   hide_all_steps() {
@@ -221,13 +243,29 @@ export class NuevaGeometria extends LitElement {
   }
 
   guardar() {
-    console.log("GUARDAR_CLICK");
+    //console.log("GUARDAR_CLICK");
     this._draw.changeMode("simple_select");
     this._draw.deleteAll();
     this._offcanvas.hide();
 
     let event = new CustomEvent("guardargeometria", {
       detail: { feature: this._ctx.feature, nombre: this._ctx.nombre },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+
+    this._fsm.send("CANCEL");
+  }
+
+  guardar_geometrias_multiples() {
+    console.log("GUARDAR_MULTIPLES_CLICK");
+    this._draw.changeMode("simple_select");
+    this._draw.deleteAll();
+    this._offcanvas.hide();
+
+    let event = new CustomEvent("guardargeometriasmultiples", {
+      detail: { features: this._multiplesfeatures, nombre:this._nombre_multiple },
       bubbles: true,
       composed: true,
     });
@@ -243,31 +281,49 @@ export class NuevaGeometria extends LitElement {
     let kmlDom = null;
     if (file) {
       JSZip.loadAsync(file) // 1) read the Blob
-        .then( (zip) => {
+        .then(
+          (zip) => {
             zip.forEach((relPath, file) => {
               // 2) print entries
-              console.log("zip", file);
+              //console.log("zip", file);
               if (getExtension(relPath) === "kml" && kmlDom === null) {
                 kmlDom = file.async("string").then((d) => {
                   let feature_collection = kml(getDom(d));
-                  console.log("KMZ", feature_collection);
+                  //console.log("KMZ", feature_collection);
                   if (feature_collection.features.length === 0) {
                     // No hay niguna feature
-                    alert("El archivo no tiene ninguna caracteristica")
+                    alert("El archivo no tiene ninguna caracteristica");
                     return;
                   }
                   if (feature_collection.features.length > 1) {
+                    
                     // Hay mas de un poligono
-                    alert("El archivo tiene mas de un polígono.\nPor el momento solo estan soportados los archivos que contienen un solo polígono." )
-                    return;
+                    // alert(
+                    //   "El archivo tiene mas de un polígono.\nPor el momento solo estan soportados los archivos que contienen un solo polígono."
+                    // );
 
+                    this._multiplesfeatures = feature_collection
+
+                    // Enviar señal
+                    // Add to Draw
+                    this._draw.add(feature_collection);
+                    // Evento para FSM
+                    this._fsm.send({ type: "SUBIDO_MULTIPLE" });
+
+                    // Move map to new feature
+                    this.mapa.flyTo({
+                      center: centroid(feature_collection.features[0]).geometry.coordinates,
+                      zoom: 10,
+                    });
+
+                    return;
                   }
                   if (
                     feature_collection.features[0].geometry.type !== "Polygon"
                   ) {
                     // La geometria no es un poligon
-                    alert("La geometria no es un poligono")
-                    return
+                    alert("La geometria no es un poligono");
+                    return;
                   }
 
                   // feature es el GeoJson
@@ -302,9 +358,9 @@ export class NuevaGeometria extends LitElement {
       reader.readAsText(file, "UTF-8");
       reader.onload = (evt) => {
         let xml = evt.target.result;
-        console.log(evt.target.result);
+        //console.log(evt.target.result);
         // Convertir a geojson
-        console.log("gEOJSON");
+        //console.log("gEOJSON");
         let feature_collection = kml(
           new DOMParser().parseFromString(xml, "text/xml")
         );
@@ -335,7 +391,7 @@ export class NuevaGeometria extends LitElement {
       };
 
       reader.onerror = function (evt) {
-        console.log("error reading file");
+        //console.log("error reading file");
         this._fsm.send({ type: "ERROR", msg: "Error al leer el Archivo" });
       };
     }
@@ -366,9 +422,11 @@ export class NuevaGeometria extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-
-              <button class='btn btn-primary' @click="${this.dibujar}">Dibujar</button>
-              <button class='btn btn-primary'
+              <button class="btn btn-primary" @click="${this.dibujar}">
+                Dibujar
+              </button>
+              <button
+                class="btn btn-primary"
                 @click=${() => {
                   this._fsm.send("SUBIR");
                 }}
@@ -408,8 +466,12 @@ export class NuevaGeometria extends LitElement {
               ></button>
             </div>
             <div class="modal-body mx-auto">
-              <button class='btn btn-primary' @click="${this.open_kml}">KML</button>
-              <button class='btn btn-primary' @click="${this.open_kmz}">KMZ</button>
+              <button class="btn btn-primary" @click="${this.open_kml}">
+                KML
+              </button>
+              <button class="btn btn-primary" @click="${this.open_kmz}">
+                KMZ
+              </button>
             </div>
             <div class="modal-footer">
               <button
@@ -420,14 +482,13 @@ export class NuevaGeometria extends LitElement {
               >
                 Close
               </button>
-
             </div>
           </div>
         </div>
       </div>
 
       <input
-       class="d-none"
+        class="d-none"
         type="file"
         id="kml_file_input"
         name="avatar"
@@ -436,7 +497,7 @@ export class NuevaGeometria extends LitElement {
       />
 
       <input
-       class="d-none"
+        class="d-none"
         type="file"
         id="kmz_file_input"
         @change=${this.kmz_input_changed}
@@ -495,6 +556,29 @@ export class NuevaGeometria extends LitElement {
           </form>
         </div>
       </div>
+
+
+      <!-- Modal -->
+      <div class="modal fade" id="modal-multiple" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Multiples Geometrias</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body mx-auto">
+              Existen multiples geometrias en el archivo. Se agregaran como lotes de un campo.
+              <vaadin-text-field label="Nombre" helper-text='Ingrese el nombre del campo' .value=${this._nombre_multiple} @input=${(e)=>this._nombre_multiple = e.target.value} clear-button-visible>
+              </vaadin-text-field>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${this.cerrar}>Cerrar</button>
+              <button type="button" class="btn btn-primary" @click=${this.guardar_geometrias_multiples}>Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
     `;
   }
 }

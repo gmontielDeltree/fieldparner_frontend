@@ -4,3 +4,5 @@ if ('serviceWorker' in navigator) {
         .then(reg => console.log('PWA service-worker ready.', reg))
         .catch(err => console.error('Could not load service-worker.', err));
 }
+
+const version = "0004"

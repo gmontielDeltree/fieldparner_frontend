@@ -1,9 +1,15 @@
-import { LitElement, html, unsafeCSS } from "lit-element";
+import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap";
+import "bootstrap/js/dist/collapse";
+import "bootstrap/js/dist/dropdown";
+
+import mapboxgl from "mapbox-gl";
+import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 
 export class NavbarElement extends LitElement {
-  static properties = {};
+  static properties = {
+    map: {},
+  };
 
   static styles = unsafeCSS(bootstrap);
 
@@ -13,6 +19,19 @@ export class NavbarElement extends LitElement {
 
   createRenderRoot() {
     return this;
+  }
+
+  willUpdate(properties) {
+    if (properties.has("map")) {
+      const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        mapboxgl: mapboxgl,
+        placeholder: "Buscar Localidad",
+      });
+      document
+        .getElementById("navbarTogglerDemo01")
+        .appendChild(geocoder.onAdd(this.map));
+    }
   }
 
   sendEvent = (name, details) => {
@@ -52,35 +71,142 @@ export class NavbarElement extends LitElement {
           </button>
 
           <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
-            <!-- <form class="d-flex"> -->
-            <button
-              class="btn btn-outline-success"
-              @click=${() => {
-                this.sendEvent("ver-lista-campos", null);
-              }}
-            >Ver Campos</button>
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
+              <li class="nav-item"  data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
 
-            <div class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="navbarDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                Opciones
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" @click=${()=>{this.sendEvent('ver-colores-cultivos')}} href="#">Color Cultivos</a></li>
-                <!-- <li><a class="dropdown-item" href="#">Another action</a></li> -->
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a class="dropdown-item"  @click=${()=>{this.sendEvent('logout-click')}} href="#">Sign Out</a>
-                </li>
-              </ul>
-            </div>
+
+                <div
+                  style="cursor: pointer;background-image: url('iconodecampo2D.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  @click=${() => {
+                    this.sendEvent("ver-lista-campos", null);
+                  }}
+                ></div>
+
+ 
+
+                <!-- <button
+                  type="button"
+                  class="btn btn-outline-success btn-sm mx-1"
+                  @click=${() => {
+                    this.sendEvent("ver-lista-campos", null);
+                  }}
+                >
+                  Campos
+                </button> -->
+              </li>
+              <li class="nav-item"  data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
+
+              <div
+                  style="cursor: pointer;background-image: url('deposito_2.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  @click=${() => {
+                    this.sendEvent("ver-depositos-click", null);
+                  }}
+                ></div>
+                <!-- <button
+                  type="button"
+                  class="btn btn-outline-success btn-sm mx-1"
+                  @click=${() => {
+                    this.sendEvent("ver-depositos-click", null);
+                  }}
+                >
+                  Depositos
+                </button> -->
+              </li>
+              <li class="nav-item"  data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
+              <div
+                  style="cursor: pointer;background-image: url('iconocontratista.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  @click=${() => {
+                    this.sendEvent("ver-contratistas-click", null);
+                  }}
+                ></div>
+                <!-- <button
+                  type="button"
+                  class="btn btn-outline-success btn-sm mx-1"
+                  @click=${() => {
+                    this.sendEvent("ver-contratistas-click", null);
+                  }}
+                >
+                  Contratistas
+                </button> -->
+              </li>
+              <li class="nav-item"  data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
+              <div
+                  style="cursor: pointer;background-image: url('icono de insumos.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
+                  @click=${() => {
+                    this.sendEvent("ver-insumos-click", null);
+                  }}
+                ></div>
+                <!-- <button
+                  type="button"
+                  class="btn btn-outline-success btn-sm mx-1"
+                  @click=${() => {
+                    this.sendEvent("ver-insumos-click", null);
+                  }}
+                >
+                  Insumos
+                </button> -->
+              </li>
+              <li class="nav-item" >
+                <div class="nav-item dropdown">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="navbarDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    Opciones
+                  </a>
+                  <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <li data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
+                      <a
+                        class="dropdown-item"
+                        @click=${() => {
+                          this.sendEvent("ver-colores-cultivos");
+                        }}
+                        href="#"
+                        >Color Cultivos</a
+                      >
+                    </li>
+                    <li data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
+                      <a
+                        class="dropdown-item"
+                        @click=${() => {
+                          this.sendEvent("ver-lista-de-sensores");
+                        }}
+                        href="#"
+                        >Lista de Dispositivos</a
+                      >
+                    </li>
+                    <li data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
+                      <a
+                        class="dropdown-item"
+                        @click=${() => {
+                          location.reload();
+                        }}
+                        href="#"
+                        >Recargar</a
+                      >
+                    </li>
+
+                    <!-- <li><a class="dropdown-item" href="#">Another action</a></li> -->
+                    <li><hr class="dropdown-divider" /></li>
+                    <li data-bs-toggle='collapse' data-bs-target="#navbarTogglerDemo01">
+                      <a
+                        class="dropdown-item"
+                        @click=${() => {
+                          this.sendEvent("logout-click");
+                        }}
+                        href="#"
+                        >Sign Out</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+            <!-- <form class="d-flex"> -->
 
             <!-- </form> -->
           </div>
