@@ -169,14 +169,15 @@ class Devices {
           const popup = new Popup({closeOnClick: false, closeButton: false})
           popup.setText(detalles_de_este.nombre)
           popup.setOffset([0,-45])
-          
+          popup.setLngLat([longitud, latitud])
+          popup.addTo(map)
+
           //console.info("LATLON", latitud, longitud);
           //
           const marker = new Marker({element: el, anchor:'bottom' })
             .setLngLat([longitud, latitud])
-            .setPopup(popup)
             .addTo(map)
-            .togglePopup()
+           
 
           /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
           marker.getElement().addEventListener(touchEvent, () => {
