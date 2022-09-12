@@ -28,6 +28,8 @@ import { DailyTelemetryCard } from "./sensores-types";
 import "./mediciones-cards/temperatura";
 import "./mediciones-cards/presion";
 import "./mediciones-cards/humedad";
+import "./mediciones-cards/viento_velocidad"
+import "./mediciones-cards/viento_direccion"
 // background-position-y: -60px;
 //background-size: 100% auto;
 //background-position-y: -60px;
@@ -625,6 +627,24 @@ export class SensoresClass extends LitElement {
                 />`
               : null}
             <!--/presion-->
+
+            <!-- Vel Viento -->
+              ${ifLoadedShow("viento_velocidad")
+              ? html`<viento-velocidad-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!--/vel viento-->
+
+            <!-- Dir Viento -->
+              ${ifLoadedShow("viento_direccion")
+              ? html`<viento-direccion-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!--/Dir viento-->
 
             <!-- Viento -->
             ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
