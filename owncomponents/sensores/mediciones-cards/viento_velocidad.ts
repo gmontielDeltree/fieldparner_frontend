@@ -154,7 +154,7 @@ export class VientoVelocidadCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="high-temperature-icon.svg" width="50" height="50" />
+              <img src="wind-svgrepo-com.svg" width="50" height="50" />
               <span class="fw-bolder"
                 >${valor(this.card, "viento_velocidad")} km/h</span
               >

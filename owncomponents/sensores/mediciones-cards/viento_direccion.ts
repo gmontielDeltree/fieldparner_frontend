@@ -93,7 +93,7 @@ export class VientoDireccionCard extends LitElement {
     var options = {
       ...base_options,
       chart: {
-        type: "area",
+        type: "scatter",
         height: "180px",
         foreColor: "#ffffff",
         //background: '#fff'
@@ -131,6 +131,9 @@ export class VientoDireccionCard extends LitElement {
       this_opts
     );
     chart_1.render();
+
+
+    console.log(this.shadowRoot.querySelector('.apexcharts-menu.apexcharts-menu-open'),"QUERYSEEL")
   }
 
   toggle() {
@@ -154,30 +157,30 @@ export class VientoDireccionCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="high-temperature-icon.svg" width="50" height="50" />
+              <img src="windrose-svgrepo-com.svg" width="50" height="50" />
               <span class="fw-bolder"
-                >${valor(this.card, "viento_velocidad")} km/h</span
+                >${valor(this.card, "viento_velocidad")} º</span
               >
             </h5>
           </div>
           <div class="row">
             <div class="col-4 text-warning fw-bolder">
               <div class="fw-strong">
-                ${valor(this.card, "viento_velocidad_min")} km/h
+                ${valor(this.card, "viento_velocidad_min")} º
               </div>
               <div class="fw-light">Min</div>
             </div>
 
             <div class="col-4 text-warning fw-bolder">
               <div class="fw-strong">
-                ${valor(this.card, "viento_velocidad_mean")} km/h
+                ${valor(this.card, "viento_velocidad_mean")} º
               </div>
               <div class="fw-light">Promedio</div>
             </div>
 
             <div class="col-4 text-warning fw-bolder">
               <div class="fw-strong">
-                ${valor(this.card, "viento_velocidad_max")} km/h
+                ${valor(this.card, "viento_velocidad_max")} º
               </div>
               <div class="fw-light">Max</div>
             </div>
