@@ -43,7 +43,7 @@ export class NdviOffcanvas extends LitElement {
           .then(this.ndvi_gallery)
           .catch((e) => {
             console.log("Error NDVI: Aun no existe ningun registro",e);
-            alert("Error NDVI: Aun no existe ningun registro");
+            alert("Error NDVI: Aun no existe ningun registro. Si recien creo el lote espere unos instantes hasta que se recopilen las imagenes satelitales");
           });
       });
   }

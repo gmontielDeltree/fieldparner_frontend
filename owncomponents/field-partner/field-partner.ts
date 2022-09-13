@@ -227,6 +227,8 @@ export class FieldPartner extends LitElement {
       document.getElementById('container-multiproposito').appendChild(el)
 
       let daily_card = (e.detail as DailyTelemetryCard)
+
+      console.log("VER TELE DEL DIA", daily_card)
       el.map = this.map
       el.show(daily_card)
     })

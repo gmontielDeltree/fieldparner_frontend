@@ -198,7 +198,7 @@ export class SensoresClass extends LitElement {
   async show(card: DailyTelemetryCard) {
     if (card) {
       // Ya tengo algo que mostrar
-      // console.log("MOSTRAR", card)
+      console.log("MOSTRAR", card)
       await this.updateComplete;
       this._offcanvas.show();
       this._selected_device_card = card;

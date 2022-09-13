@@ -91,9 +91,12 @@ export class ListaCentralesCercanas extends LitElement {
         .addEventListener("hidden.bs.modal", (event) => {
           // Se elimina del parent
           let parent = this.parentElement;
-          while (parent.firstChild) {
-            parent.firstChild.remove();
-          }
+          parent.firstChild.remove()
+          // while (parent.firstChild) {
+          //   parent.
+          //   parent.firstChild.remove;
+          //   parent.firstChild.
+          // }
         });
       this._modal.show();
     }
@@ -121,6 +124,8 @@ export class ListaCentralesCercanas extends LitElement {
   }
 
   ver_detalles_del_dia(daily_card: DailyTelemetryCard) {
+    this._modal.hide();
+
     this.dispatchEvent(
       new CustomEvent("ver-telemetria-del-dia", {
         detail: daily_card,
@@ -128,7 +133,6 @@ export class ListaCentralesCercanas extends LitElement {
         composed: true,
       })
     );
-    this._modal.hide();
   }
 
   detalles_de(uuid){
