@@ -113,6 +113,7 @@ export class NdviOffcanvas extends LitElement {
         source: "ndvi",
         paint: {
           "raster-fade-duration": 0,
+          "raster-resampling":'nearest'
         },
       });
 
