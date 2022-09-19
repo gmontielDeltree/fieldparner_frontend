@@ -48,6 +48,21 @@ export class NdviOffcanvas extends LitElement {
     this.offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-lote-ndvi")
     );
+
+    this.shadowRoot.getElementById("offcanvas-lote-ndvi").addEventListener('hidden.bs.offcanvas',()=>{
+      layer_visibility(this.map, "campos", true);
+      layer_visibility(this.map, "campos_border", true);
+      layer_visibility(this.map, "lotes", false);
+      layer_visibility(this.map, "lotes_border", false);
+      layer_visibility(this.map, "nombres_campos", true);
+
+      /* Hide NDVI */
+      layer_visibility(this.map,'ndvi-layer',false);
+      layer_visibility(this.map,'borde_de_este_lote',false);
+
+      
+
+    })
   }
 
   show() {
@@ -87,6 +102,33 @@ export class NdviOffcanvas extends LitElement {
 
     //layer_visibility(this.map, "lotes_internos", false);
     this.create_or_update_ndvi_source(img_src, bbox);
+
+    /* Hide all polygons */
+    layer_visibility(this.map, "campos", false);
+    layer_visibility(this.map, "campos_border", false);
+    layer_visibility(this.map, "lotes", false);
+    layer_visibility(this.map, "lotes_border", false);
+    layer_visibility(this.map, "nombres_campos", false);
+
+    this.map.addSource("borde_de_este_lote", {
+      type: "geojson",
+      data: this.lote_doc,
+    });
+
+    this.map.addLayer(
+      {
+        id: "borde_de_este_lote",
+        type: "line",
+        source: "borde_de_este_lote",
+        paint: {
+          "line-color": "rgb(60, 183, 251)",
+          "line-width": 4,
+        },
+      },
+    );
+
+
+
     this.selected_obs = ob;
   };
 
@@ -201,58 +243,6 @@ export class NdviOffcanvas extends LitElement {
       // overlay.appendChild(std);
       // overlay.appendChild(max);
       // overlay.appendChild(min);
-    };
-
-    /**
-     * Dibuja la miniatura del NDVI
-     * @param {ob} observacion
-     */
-    const renderNdviThumb = (ob) => {
-      //bbox, fecha, png_url
-      const ndvi_div = this.shadowRoot.getElementById("lote-ndvi");
-      const fecha = ob.fecha;
-      const img_src = img_bucket_url + ob.png_url;
-
-      const year = +fecha.substring(0, 4);
-      const month = +fecha.substring(4, 6);
-      const day = +fecha.substring(6, 8);
-
-      const obs_date = new Date(year, month - 1, day);
-      const dias_diff = Math.floor(
-        (new Date().getTime() - obs_date.getTime()) / (1000 * 3600 * 24)
-      );
-
-      //const fechastr = obs_date.toString()
-
-      let bbox = [
-        [ob.bbox.left, ob.bbox.top],
-        [ob.bbox.right, ob.bbox.top],
-        [ob.bbox.right, ob.bbox.bottom],
-        [ob.bbox.left, ob.bbox.bottom],
-      ];
-
-      /**
-       * Dibuja el render sobre el mapa
-       */
-
-      const ndvi_on_click = (e) => {
-        //layer_visibility(this.map, "lotes_internos", false);
-        create_update_ndvi_source(img_src, bbox);
-        update_overlay_info(ob.estadisticas);
-      };
-
-      let card_html = `<div class="card bg-dark text-white my-1">
-							<img src="${img_src}" class="card-img" alt="...">
-							<div class="card-img-overlay">
-								<h5 class="card-title">${fecha}</h5>
-								<p class="card-text">Hace ${dias_diff} dias</p>
-							</div>
-							</div>`;
-      let card_element = document.createElement("div");
-      card_element.classList.add("col-2");
-      card_element.innerHTML = card_html;
-      card_element.addEventListener("click", (e) => ndvi_on_click(e));
-      ndvi_div.appendChild(card_element);
     };
 
     // Borro Lo anterior
