@@ -126,9 +126,17 @@ export class FieldPartner extends LitElement {
       document.getElementById("nuevo-campo-oc").show = true;
     });
 
-    this.addEventListener("ver-ndvi-click", (e) => {
-      document.getElementById("ndvi-oc").lote_doc = e.detail.lote;
-      document.getElementById("ndvi-oc").show();
+    this.addEventListener("ver-ndvi-click", (e : CustomEvent) => {
+      //document.getElementById("ndvi-oc").lote_doc = e.detail.lote;
+      //document.getElementById("ndvi-oc").show();
+
+      const el = document.createElement('ndvi-offcanvas')
+      document.getElementById('container-multiproposito').appendChild(el)
+      el.map = this.map;
+      el.id = "ndvi-oc"
+      el.lote_doc = e.detail.lote;
+      el.show()
+
     });
 
     this.addEventListener("nuevo-deposito-click", () => {
@@ -823,7 +831,7 @@ export class FieldPartner extends LitElement {
         id="colores-cultivos"
         .cultivos=${this.settings?.user_cultivos}
       ></color-cultivo>
-      <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
+      <!-- <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas> -->
 
 
       <nota-share-target

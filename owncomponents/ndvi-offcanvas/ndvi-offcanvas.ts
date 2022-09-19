@@ -5,6 +5,8 @@ import { hashMessage, layer_visibility } from "../helpers";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { property, state } from "lit/decorators.js";
 import { ImageSource, Map } from "mapbox-gl";
+import { isThisSecond, formatDistanceToNow, parse, format } from "date-fns";
+import es from "date-fns/locale/es";
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
@@ -49,19 +51,31 @@ export class NdviOffcanvas extends LitElement {
       this.shadowRoot.getElementById("offcanvas-lote-ndvi")
     );
 
-    this.shadowRoot.getElementById("offcanvas-lote-ndvi").addEventListener('hidden.bs.offcanvas',()=>{
-      layer_visibility(this.map, "campos", true);
-      layer_visibility(this.map, "campos_border", true);
-      layer_visibility(this.map, "lotes", false);
-      layer_visibility(this.map, "lotes_border", false);
-      layer_visibility(this.map, "nombres_campos", true);
+    this.shadowRoot
+      .getElementById("offcanvas-lote-ndvi")
+      .addEventListener("hidden.bs.offcanvas", () => {
+        layer_visibility(this.map, "campos", true);
+        layer_visibility(this.map, "campos_border", true);
+        layer_visibility(this.map, "lotes", false);
+        layer_visibility(this.map, "lotes_border", false);
+        layer_visibility(this.map, "nombres_campos", true);
 
-      /* Hide NDVI */
-      layer_visibility(this.map,'ndvi-layer',false);
-      layer_visibility(this.map,'borde_de_este_lote',false);
-      this.map.removeLayer("borde_de_este_lote") 
+        /* Hide NDVI */
+        layer_visibility(this.map, "ndvi-layer", false);
+        layer_visibility(this.map, "borde_de_este_lote", false);
+        this.map.removeLayer("borde_de_este_lote");
+        this.map.removeSource("borde_de_este_lote");
+        this.map.removeLayer("ndvi-layer");
+        this.map.removeSource("ndvi");
 
-    })
+        /* Auto destruirme */
+        let parent = this.parentElement;
+        let children_els = [...parent.children];
+        let myself = children_els.find((e) => (e.id = this.id));
+        parent.removeChild(myself);
+
+        //console.log("CHILDEREN",parent.children)
+      });
   }
 
   show() {
@@ -109,13 +123,14 @@ export class NdviOffcanvas extends LitElement {
     layer_visibility(this.map, "lotes_border", false);
     layer_visibility(this.map, "nombres_campos", false);
 
-    this.map.addSource("borde_de_este_lote", {
-      type: "geojson",
-      data: this.lote_doc,
-    });
+    /* Inicialmente dibujo el borde */
+    if (!this.map.getSource("borde_de_este_lote")) {
+      this.map.addSource("borde_de_este_lote", {
+        type: "geojson",
+        data: this.lote_doc,
+      });
 
-    this.map.addLayer(
-      {
+      this.map.addLayer({
         id: "borde_de_este_lote",
         type: "line",
         source: "borde_de_este_lote",
@@ -123,10 +138,8 @@ export class NdviOffcanvas extends LitElement {
           "line-color": "rgb(60, 183, 251)",
           "line-width": 4,
         },
-      },
-    );
-
-
+      });
+    }
 
     this.selected_obs = ob;
   };
@@ -154,17 +167,28 @@ export class NdviOffcanvas extends LitElement {
         source: "ndvi",
         paint: {
           "raster-fade-duration": 0,
-          "raster-resampling":'nearest'
+          "raster-resampling": "nearest",
         },
       });
-
-      this.map.moveLayer("ndvi-layer");
     }
+
+    //this.map.moveLayer("ndvi-layer");
   };
+
+  nubosidad(obs) {
+    let info = obs.estadisticas;
+    if (info.std < 0.1 && info.media < 0.1) {
+      return "Nubosidad Severa";
+    } else if (info.min < 0) {
+      return "Nubosidad";
+    } else {
+      return "";
+    }
+  }
 
   /**
    * Renderiza la galeria de NDVI en los detalles del campo
-   * @param {} result
+   * @param {} result Es el doc de ndvi desde la DB.
    */
   generar_ndvi_gallery = async (result) => {
     /**
@@ -175,36 +199,6 @@ export class NdviOffcanvas extends LitElement {
 
       this.map.moveLayer("ndvi-layer");
     }
-
-    const create_update_ndvi_source = (img_src, bbox) => {
-      // If e
-      if (this.map.getSource("ndvi")) {
-        // EXISTE la source -> Update
-        const mySource = this.map.getSource("ndvi") as ImageSource;
-        mySource.updateImage({
-          url: img_src,
-          coordinates: bbox,
-        });
-      } else {
-        // No existe la source crear
-        this.map.addSource("ndvi", {
-          type: "image",
-          url: img_src,
-          coordinates: bbox,
-        });
-
-        this.map.addLayer({
-          id: "ndvi-layer",
-          type: "raster",
-          source: "ndvi",
-          paint: {
-            "raster-fade-duration": 0,
-          },
-        });
-
-        this.map.moveLayer("ndvi-layer");
-      }
-    };
 
     const update_overlay_info = (info) => {
       // const overlay = document.getElementById("map-overlay");
@@ -244,21 +238,17 @@ export class NdviOffcanvas extends LitElement {
       // overlay.appendChild(min);
     };
 
-    // Borro Lo anterior
-    //let ndvi_div = this.shadowRoot.getElementById("lote-ndvi");
-    //ndvi_div.textContent = "";
-
-    /** Aplico para cada observacion */
     let obs = result.obs;
     this.obs = result.obs;
 
-    //obs.forEach((ob) => renderNdviThumb(ob));
-
     // Muestro el Offcanvas en si mismo
     this.offcanvas.show();
+    this.obs[0] ? this.mostrar_en_mapa(this.obs[0]) : null;
   };
 
   render() {
+    let fecha_date_selected = this.selected_obs ? parse(this.selected_obs.fecha, "yyyyMMdd", new Date()) : new Date();
+
     return html`
       <div
         class="offcanvas offcanvas-start"
@@ -269,6 +259,15 @@ export class NdviOffcanvas extends LitElement {
       >
         <div class="offcanvas-header">
           <h5 class="offcanvas-title">NDVI</h5>
+          ${this.selected_obs
+            ? html`<a
+                class="btn btn-primary"
+                href=${this.img_url(this.selected_obs)}
+                download="ndvi.png"
+                >Descargar Img</a
+              >`
+            : null}
+
           <div
             class="btn btn-primary"
             @click=${() => (this.escala_dinamica = !this.escala_dinamica)}
@@ -288,27 +287,54 @@ export class NdviOffcanvas extends LitElement {
         </div>
         <div class="offcanvas-body small container-fluid row">
           <div class="row">
-            ${this.selected_obs ? html` <div class="">DETALLLES</div> ` : null}
+            ${this.selected_obs ? html` <div class="">
+            <h5 class="mb-1">${format(fecha_date_selected, "d 'de' MMMM yyyy", {
+                          locale: es,
+                        })}</h5>
+            <p class="mb-1">Media: ${this.selected_obs.estadisticas.media.toFixed(2)}</p>
+            <p class="mb-1">Mínimo:  ${this.selected_obs.estadisticas.min.toFixed(2)}</p>
+            <p class="mb-1">Máximo:  ${this.selected_obs.estadisticas.max.toFixed(2)}</p>
+            <p class="mb-1">Desviación Estándar: ${this.selected_obs.estadisticas.std.toFixed(2)}</p>
+
+            </div> ` : null}
           </div>
 
           <div class="row overflow-auto">
             <div class="row mb-1"></div>
+            <!--CARDS con observaciones-->
             ${this.obs.map((ob) => {
-              return html`<div
-                class="card row mb-3 mx-1"
+              let fecha_date = parse(ob.fecha, "yyyyMMdd", new Date());
+              return html` <div
+                class="card text-dark bg-light mb-3"
                 @click=${() => this.mostrar_en_mapa(ob)}
+                style="max-width: 540px;"
               >
-                <img src="${this.img_url(ob)}" class="card-img-top" alt="..." />
-                <div class="card-body">
-                  <h5 class="card-title">${ob.fecha}</h5>
-                  <p class="card-text">
-                    This is a wider card with supporting text below as a natural
-                    lead-in to additional content. This content is a little bit
-                    longer.
-                  </p>
-                  <p class="card-text">
-                    <small class="text-muted">Last updated 3 mins ago</small>
-                  </p>
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    <img
+                      src="${this.img_url(ob)}"
+                      class="img-fluid mt-2 rounded-start"
+                      alt="..."
+                    />
+                  </div>
+                  <div class="col-md-8">
+                    <div class="card-body">
+                      <h5 class="card-title">
+                        ${format(fecha_date, "d 'de' MMMM yyyy", {
+                          locale: es,
+                        })}
+                      </h5>
+                      <p class="card-text">${this.nubosidad(ob)}</p>
+                      <p class="card-text">
+                        <small class="text-muted"
+                          >${formatDistanceToNow(fecha_date, {
+                            addSuffix: true,
+                            locale: es
+                          })}</small
+                        >
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>`;
             })}
@@ -320,3 +346,9 @@ export class NdviOffcanvas extends LitElement {
 }
 
 customElements.define("ndvi-offcanvas", NdviOffcanvas);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "ndvi-offcanvas": NdviOffcanvas;
+  }
+}
