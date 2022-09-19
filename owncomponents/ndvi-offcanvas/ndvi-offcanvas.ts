@@ -59,8 +59,7 @@ export class NdviOffcanvas extends LitElement {
       /* Hide NDVI */
       layer_visibility(this.map,'ndvi-layer',false);
       layer_visibility(this.map,'borde_de_este_lote',false);
-
-      
+      this.map.removeLayer("borde_de_este_lote") 
 
     })
   }

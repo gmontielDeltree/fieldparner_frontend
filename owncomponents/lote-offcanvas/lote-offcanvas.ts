@@ -351,6 +351,8 @@ export class LoteOffcanvas extends LitElement {
       composed: true,
     });
     this.dispatchEvent(event);
+    // Ocultar este offcanvas
+    this._lotesOffcanvas.hide();
   }
 
   share_pdf(uuid) {

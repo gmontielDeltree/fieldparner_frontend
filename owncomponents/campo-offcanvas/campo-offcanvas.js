@@ -24,6 +24,7 @@ export class CampoOffcanvas extends LitElement {
     // console.log("EJECUTANDO COMPONENTE")
     this.show_main = false;
     this.modo = "lote";
+    this.addEventListener('ver-ndvi-click',()=>this._detallesOffcanvas.hide())
   }
 
   createRenderRoot() {
