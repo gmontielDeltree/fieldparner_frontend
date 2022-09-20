@@ -1,10 +1,14 @@
 import { DailyTelemetryCard } from "../sensores-types";
-import { LitElement, html, unsafeCSS, CSSResultGroup} from "lit";
+import { LitElement, html, unsafeCSS, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import { valor } from "../sensores";
 import ApexCharts from "apexcharts";
 import apex_css from "apexcharts/dist/apexcharts.css";
+import { touchEvent } from "../../helpers";
+import { read, writeFile, utils } from "xlsx";
+import { forEach } from "jszip";
+import { add_download_xls_button } from "../excel_boton";
 
 export class HumedadCard extends LitElement {
   static override styles: CSSResultGroup = [
@@ -131,6 +135,10 @@ export class HumedadCard extends LitElement {
       this_opts
     );
     chart_1.render();
+
+    // Agregar boton de descarga Excel
+    add_download_xls_button(this.shadowRoot,this_opts.xaxis.categories, this_opts.series[0].data, this_opts.yaxis[0].title);
+
   }
 
   toggle() {
@@ -155,30 +163,22 @@ export class HumedadCard extends LitElement {
           <div class="row">
             <h5>
               <img src="water-droplet-icon.svg" width="50" height="50" />
-              <span class="fw-bolder"
-                >${valor(this.card, "humedad")} %</span
-              >
+              <span class="fw-bolder">${valor(this.card, "humedad")} %</span>
             </h5>
           </div>
           <div class="row">
             <div class="col-4 text-warning fw-bolder">
-              <div class="fw-strong">
-                ${valor(this.card, "humedad_min")} %
-              </div>
+              <div class="fw-strong">${valor(this.card, "humedad_min")} %</div>
               <div class="fw-light">Min</div>
             </div>
 
             <div class="col-4 text-warning fw-bolder">
-              <div class="fw-strong">
-                ${valor(this.card, "humedad_mean")} %
-              </div>
+              <div class="fw-strong">${valor(this.card, "humedad_mean")} %</div>
               <div class="fw-light">Promedio</div>
             </div>
 
             <div class="col-4 text-warning fw-bolder">
-              <div class="fw-strong">
-                ${valor(this.card, "humedad_max")} %
-              </div>
+              <div class="fw-strong">${valor(this.card, "humedad_max")} %</div>
               <div class="fw-light">Max</div>
             </div>
           </div>

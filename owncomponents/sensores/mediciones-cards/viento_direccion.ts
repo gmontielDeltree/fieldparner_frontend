@@ -6,6 +6,7 @@ import { valor } from "../sensores";
 import ApexCharts from "apexcharts";
 import apex_css from "apexcharts/dist/apexcharts.css";
 
+import { add_download_xls_button } from "../excel_boton";
 export class VientoDireccionCard extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
@@ -133,7 +134,8 @@ export class VientoDireccionCard extends LitElement {
     chart_1.render();
 
 
-    console.log(this.shadowRoot.querySelector('.apexcharts-menu.apexcharts-menu-open'),"QUERYSEEL")
+    add_download_xls_button(this.shadowRoot,this_opts.xaxis.categories, this_opts.series[0].data, this_opts.yaxis[0].title);
+
   }
 
   toggle() {

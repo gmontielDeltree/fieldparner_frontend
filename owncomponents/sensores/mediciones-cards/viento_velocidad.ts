@@ -6,6 +6,7 @@ import { valor } from "../sensores";
 import ApexCharts from "apexcharts";
 import apex_css from "apexcharts/dist/apexcharts.css";
 
+import { add_download_xls_button } from "../excel_boton";
 export class VientoVelocidadCard extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
@@ -131,6 +132,7 @@ export class VientoVelocidadCard extends LitElement {
       this_opts
     );
     chart_1.render();
+    add_download_xls_button(this.shadowRoot,this_opts.xaxis.categories, this_opts.series[0].data, this_opts.yaxis[0].title);
   }
 
   toggle() {
