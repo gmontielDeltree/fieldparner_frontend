@@ -7,6 +7,7 @@ import { property, state } from "lit/decorators.js";
 import { ImageSource, Map } from "mapbox-gl";
 import { isThisSecond, formatDistanceToNow, parse, format } from "date-fns";
 import es from "date-fns/locale/es";
+import './leyenda'
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
@@ -270,7 +271,9 @@ export class NdviOffcanvas extends LitElement {
 
           <div
             class="btn btn-primary"
-            @click=${() => (this.escala_dinamica = !this.escala_dinamica)}
+            @click=${() => {this.escala_dinamica = !this.escala_dinamica
+              this.mostrar_en_mapa(this.selected_obs)
+            }}
           >
             ${this.escala_dinamica
               ? "Ver en Escala Fija"
@@ -341,6 +344,8 @@ export class NdviOffcanvas extends LitElement {
           </div>
         </div>
       </div>
+
+    <leyenda-ndvi .escala=${this.escala_dinamica ? 'dinamica' : 'fija'}></leyenda-ndvi>
     `;
   }
 }
