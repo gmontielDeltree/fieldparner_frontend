@@ -4,12 +4,12 @@ import PouchDB from "pouchdb";
 import { hashMessage, layer_visibility } from "../helpers";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { property, state } from "lit/decorators.js";
-import { ImageSource, Map, MapMouseEvent } from "mapbox-gl";
+import { ImageSource, Map, MapMouseEvent, Popup } from "mapbox-gl";
 import { isThisSecond, formatDistanceToNow, parse, format } from "date-fns";
 import es from "date-fns/locale/es";
-import geoblaze from 'geoblaze';
+import geoblaze from "geoblaze";
 
-import './leyenda'
+import "./leyenda";
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
@@ -112,7 +112,7 @@ export class NdviOffcanvas extends LitElement {
   };
 
   geotiff_url = (ob) => {
-      return img_bucket_url + ob.geotiff_url;
+    return img_bucket_url + ob.geotiff_url;
   };
 
   mostrar_en_mapa = async (ob) => {
@@ -146,22 +146,26 @@ export class NdviOffcanvas extends LitElement {
         type: "fill",
         source: "borde_de_este_lote",
         paint: {
-          'fill-color':'#FFFFFF',
-          'fill-outline-color':'#FF0000',
-          'fill-opacity':0,
-      //    "line-color": "rgb(60, 183, 251)",
-      
-      //    "line-width": 4,
+          "fill-color": "#FFFFFF",
+          "fill-outline-color": "#FF0000",
+          "fill-opacity": 0,
+          //    "line-color": "rgb(60, 183, 251)",
+
+          //    "line-width": 4,
         },
       });
     }
 
-    this.ndvi_geoblaze_raster = await geoblaze.bandArithmetic(this.geotiff_url(ob), '(b - a)/(b + a)')
+    // Crear el NDVI raster
+    this.ndvi_geoblaze_raster = await geoblaze.bandArithmetic(
+      this.geotiff_url(ob),
+      "(a * 2/255)-1"
+    );
 
     this.selected_obs = ob;
   };
 
-  queryNDVIValore(lngLat){
+  queryNDVIValore(lngLat) {
     return geoblaze.identify(this.ndvi_geoblaze_raster, lngLat);
   }
 
@@ -175,25 +179,7 @@ export class NdviOffcanvas extends LitElement {
         coordinates: bbox,
       });
 
-
-      this.map.on('mouseenter', ['borde_de_este_lote'], () => {
-        console.log('A mouseenter event occurred on a visible portion of the water layer.');
-
-          const onMouseMove = (e:MapMouseEvent) => {
-            console.log('A mouseover event has occurred.',e.lngLat);
-            console.log("NDVI",this.queryNDVIValore([e.lngLat.lng,e.lngLat.lat]));
-
-          }
-
-          this.map.on('mousemove',['borde_de_este_lote'],onMouseMove);
-
-          this.map.on('mouseleave',['borde_de_este_lote'],()=>{
-            this.map.off('mousemove','borde_de_este_lote',onMouseMove);
-          })
-
-        });
-
-      console.log("EVENTOS ADDED")
+      
     } else {
       // No existe la source crear
       this.map.addSource("ndvi", {
@@ -212,7 +198,42 @@ export class NdviOffcanvas extends LitElement {
         },
       });
 
- 
+
+
+      this.map.on("mouseenter", ["borde_de_este_lote"], () => {
+        console.log(
+          "A mouseenter event occurred on a visible portion of the water layer."
+        );
+
+        const popup = new Popup({
+          closeButton: false,
+        });
+
+        this.map.getCanvas().style.cursor = "pointer";
+
+        const onMouseMove = (e: MapMouseEvent) => {
+          //console.log("A mouseover event has occurred.", e.lngLat);
+          let ndvi_value = this.queryNDVIValore([e.lngLat.lng, e.lngLat.lat])
+          console.log(
+            "NDVI",
+            ndvi_value
+          );
+          popup
+            .setLngLat(e.lngLat)
+            .setText(ndvi_value[0].toFixed(2))
+            .addTo(this.map);
+        };
+
+        this.map.on("mousemove", ["borde_de_este_lote"], onMouseMove);
+
+        this.map.on("mouseleave", ["borde_de_este_lote"], () => {
+          this.map.getCanvas().style.cursor = "";
+          popup.remove();
+          this.map.off("mousemove", "borde_de_este_lote", onMouseMove);
+        });
+      });
+
+      console.log("EVENTOS ADDED");
     }
 
     //this.map.moveLayer("ndvi-layer");
@@ -290,7 +311,9 @@ export class NdviOffcanvas extends LitElement {
   };
 
   render() {
-    let fecha_date_selected = this.selected_obs ? parse(this.selected_obs.fecha, "yyyyMMdd", new Date()) : new Date();
+    let fecha_date_selected = this.selected_obs
+      ? parse(this.selected_obs.fecha, "yyyyMMdd", new Date())
+      : new Date();
 
     return html`
       <div
@@ -313,8 +336,9 @@ export class NdviOffcanvas extends LitElement {
 
           <div
             class="btn btn-primary"
-            @click=${() => {this.escala_dinamica = !this.escala_dinamica
-              this.mostrar_en_mapa(this.selected_obs)
+            @click=${() => {
+              this.escala_dinamica = !this.escala_dinamica;
+              this.mostrar_en_mapa(this.selected_obs);
             }}
           >
             ${this.escala_dinamica
@@ -332,16 +356,30 @@ export class NdviOffcanvas extends LitElement {
         </div>
         <div class="offcanvas-body small container-fluid row">
           <div class="row">
-            ${this.selected_obs ? html` <div class="">
-            <h5 class="mb-1">${format(fecha_date_selected, "d 'de' MMMM yyyy", {
-                          locale: es,
-                        })}</h5>
-            <p class="mb-1">Media: ${this.selected_obs.estadisticas.media.toFixed(2)}</p>
-            <p class="mb-1">Mínimo:  ${this.selected_obs.estadisticas.min.toFixed(2)}</p>
-            <p class="mb-1">Máximo:  ${this.selected_obs.estadisticas.max.toFixed(2)}</p>
-            <p class="mb-1">Desviación Estándar: ${this.selected_obs.estadisticas.std.toFixed(2)}</p>
-
-            </div> ` : null}
+            ${this.selected_obs
+              ? html`
+                  <div class="">
+                    <h5 class="mb-1">
+                      ${format(fecha_date_selected, "d 'de' MMMM yyyy", {
+                        locale: es,
+                      })}
+                    </h5>
+                    <p class="mb-1">
+                      Media: ${this.selected_obs.estadisticas.media.toFixed(2)}
+                    </p>
+                    <p class="mb-1">
+                      Mínimo: ${this.selected_obs.estadisticas.min.toFixed(2)}
+                    </p>
+                    <p class="mb-1">
+                      Máximo: ${this.selected_obs.estadisticas.max.toFixed(2)}
+                    </p>
+                    <p class="mb-1">
+                      Desviación Estándar:
+                      ${this.selected_obs.estadisticas.std.toFixed(2)}
+                    </p>
+                  </div>
+                `
+              : null}
           </div>
 
           <div class="row overflow-auto">
@@ -374,7 +412,7 @@ export class NdviOffcanvas extends LitElement {
                         <small class="text-muted"
                           >${formatDistanceToNow(fecha_date, {
                             addSuffix: true,
-                            locale: es
+                            locale: es,
                           })}</small
                         >
                       </p>
@@ -387,7 +425,9 @@ export class NdviOffcanvas extends LitElement {
         </div>
       </div>
 
-    <leyenda-ndvi .escala=${this.escala_dinamica ? 'dinamica' : 'fija'}></leyenda-ndvi>
+      <leyenda-ndvi
+        .escala=${this.escala_dinamica ? "dinamica" : "fija"}
+      ></leyenda-ndvi>
     `;
   }
 }
