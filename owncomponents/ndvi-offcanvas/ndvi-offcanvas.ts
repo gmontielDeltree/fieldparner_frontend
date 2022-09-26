@@ -4,9 +4,11 @@ import PouchDB from "pouchdb";
 import { hashMessage, layer_visibility } from "../helpers";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { property, state } from "lit/decorators.js";
-import { ImageSource, Map } from "mapbox-gl";
+import { ImageSource, Map, MapMouseEvent } from "mapbox-gl";
 import { isThisSecond, formatDistanceToNow, parse, format } from "date-fns";
 import es from "date-fns/locale/es";
+import geoblaze from 'geoblaze';
+
 import './leyenda'
 
 const img_bucket_url =
@@ -37,6 +39,9 @@ export class NdviOffcanvas extends LitElement {
     },
   })
   offcanvas: Offcanvas;
+
+  @state()
+  ndvi_geoblaze_raster: any;
 
   constructor() {
     super();
@@ -90,6 +95,7 @@ export class NdviOffcanvas extends LitElement {
         .then(this.generar_ndvi_gallery)
         .catch((e) => {
           console.log("Error NDVI: Aun no existe ningun registro", e);
+          this.offcanvas.hide();
           alert(
             "Error NDVI: Aun no existe ningun registro. Si recien creo el lote espere unos instantes hasta que se recopilen las imagenes satelitales"
           );
@@ -105,7 +111,11 @@ export class NdviOffcanvas extends LitElement {
     }
   };
 
-  mostrar_en_mapa = (ob) => {
+  geotiff_url = (ob) => {
+      return img_bucket_url + ob.geotiff_url;
+  };
+
+  mostrar_en_mapa = async (ob) => {
     let bbox = [
       [ob.bbox.left, ob.bbox.top],
       [ob.bbox.right, ob.bbox.top],
@@ -133,17 +143,27 @@ export class NdviOffcanvas extends LitElement {
 
       this.map.addLayer({
         id: "borde_de_este_lote",
-        type: "line",
+        type: "fill",
         source: "borde_de_este_lote",
         paint: {
-          "line-color": "rgb(60, 183, 251)",
-          "line-width": 4,
+          'fill-color':'#FFFFFF',
+          'fill-outline-color':'#FF0000',
+          'fill-opacity':0,
+      //    "line-color": "rgb(60, 183, 251)",
+      
+      //    "line-width": 4,
         },
       });
     }
 
+    this.ndvi_geoblaze_raster = await geoblaze.bandArithmetic(this.geotiff_url(ob), '(b - a)/(b + a)')
+
     this.selected_obs = ob;
   };
+
+  queryNDVIValore(lngLat){
+    return geoblaze.identify(this.ndvi_geoblaze_raster, lngLat);
+  }
 
   create_or_update_ndvi_source = (img_src, bbox) => {
     // If e
@@ -154,6 +174,26 @@ export class NdviOffcanvas extends LitElement {
         url: img_src,
         coordinates: bbox,
       });
+
+
+      this.map.on('mouseenter', ['borde_de_este_lote'], () => {
+        console.log('A mouseenter event occurred on a visible portion of the water layer.');
+
+          const onMouseMove = (e:MapMouseEvent) => {
+            console.log('A mouseover event has occurred.',e.lngLat);
+            console.log("NDVI",this.queryNDVIValore([e.lngLat.lng,e.lngLat.lat]));
+
+          }
+
+          this.map.on('mousemove',['borde_de_este_lote'],onMouseMove);
+
+          this.map.on('mouseleave',['borde_de_este_lote'],()=>{
+            this.map.off('mousemove','borde_de_este_lote',onMouseMove);
+          })
+
+        });
+
+      console.log("EVENTOS ADDED")
     } else {
       // No existe la source crear
       this.map.addSource("ndvi", {
@@ -171,6 +211,8 @@ export class NdviOffcanvas extends LitElement {
           "raster-resampling": "nearest",
         },
       });
+
+ 
     }
 
     //this.map.moveLayer("ndvi-layer");

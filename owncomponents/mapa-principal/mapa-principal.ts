@@ -179,6 +179,7 @@ export class MapaPrincipal extends LitElement {
     //     });
 
     //this.map.resize();
+  
 
     this.map.on("load", () => {
       // const geocoder = new MapboxGeocoder({
