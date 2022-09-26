@@ -309,7 +309,7 @@ export class SensoresClass extends LitElement {
           },
           labels: {
             style: {
-              colors: "#008FFB",
+              colors: "#000000",
             },
           },
           title: {

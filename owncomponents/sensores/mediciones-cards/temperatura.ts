@@ -62,6 +62,11 @@ export class TemperaturaCard extends LitElement {
       xaxis: {
         type: "datetime",
         categories: [],
+        labels: {
+          style: {
+            colors: "#000000",
+          },
+        },
       },
       yaxis: [
         {

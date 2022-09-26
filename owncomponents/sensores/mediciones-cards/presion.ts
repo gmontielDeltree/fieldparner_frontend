@@ -62,6 +62,12 @@ export class PresionCard extends LitElement {
       xaxis: {
         type: "datetime",
         categories: [],
+        labels: {
+          style: {
+            colors: "#000000",
+          },
+        },
+
       },
       yaxis: [
         {
@@ -74,7 +80,7 @@ export class PresionCard extends LitElement {
           },
           labels: {
             style: {
-              colors: "#008FFB",
+              colors: "#000000",
             },
           },
           title: {
