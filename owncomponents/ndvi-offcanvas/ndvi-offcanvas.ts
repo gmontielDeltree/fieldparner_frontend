@@ -10,6 +10,7 @@ import es from "date-fns/locale/es";
 import geoblaze from "geoblaze";
 
 import "./leyenda";
+import { utils, writeFile } from "xlsx";
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
@@ -115,6 +116,32 @@ export class NdviOffcanvas extends LitElement {
     return img_bucket_url + ob.geotiff_url;
   };
 
+  geoblaze_to_excel = () => {
+    let xmin = this.ndvi_geoblaze_raster._metadata.xmin;
+    let ymax = this.ndvi_geoblaze_raster._metadata.ymax;
+    let pw = this.ndvi_geoblaze_raster.pixelWidth;
+    let ph = this.ndvi_geoblaze_raster.pixelHeight;
+    let w = this.ndvi_geoblaze_raster.width;
+    let h = this.ndvi_geoblaze_raster.height;
+
+    let array_resultado = [["lat", "lon", "ndvi"]];
+    for (let i = 0; i < w; i++) {
+      for (let vs = 0; vs < h; vs++) {
+        let point = [xmin + pw * i, ymax - ph * vs];
+        let n = geoblaze.identify(this.ndvi_geoblaze_raster, point);
+        if (n && n > -1) {
+          array_resultado.push([point[1], point[0], n]);
+        }
+      }
+    }
+
+    /* Guardar Libro */
+    const worksheet = utils.aoa_to_sheet(array_resultado);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "NDVI");
+    writeFile(workbook, "NDVI.xlsx");
+  };
+
   mostrar_en_mapa = async (ob) => {
     let bbox = [
       [ob.bbox.left, ob.bbox.top],
@@ -162,6 +189,8 @@ export class NdviOffcanvas extends LitElement {
       "(a * 2/255)-1"
     );
 
+    console.log("RASTER", this.ndvi_geoblaze_raster);
+
     this.selected_obs = ob;
   };
 
@@ -178,8 +207,6 @@ export class NdviOffcanvas extends LitElement {
         url: img_src,
         coordinates: bbox,
       });
-
-      
     } else {
       // No existe la source crear
       this.map.addSource("ndvi", {
@@ -198,8 +225,6 @@ export class NdviOffcanvas extends LitElement {
         },
       });
 
-
-
       this.map.on("mouseenter", ["borde_de_este_lote"], () => {
         console.log(
           "A mouseenter event occurred on a visible portion of the water layer."
@@ -213,11 +238,8 @@ export class NdviOffcanvas extends LitElement {
 
         const onMouseMove = (e: MapMouseEvent) => {
           //console.log("A mouseover event has occurred.", e.lngLat);
-          let ndvi_value = this.queryNDVIValore([e.lngLat.lng, e.lngLat.lat])
-          console.log(
-            "NDVI",
-            ndvi_value
-          );
+          let ndvi_value = this.queryNDVIValore([e.lngLat.lng, e.lngLat.lat]);
+          console.log("NDVI", ndvi_value);
           popup
             .setLngLat(e.lngLat)
             .setText(ndvi_value[0].toFixed(2))
@@ -325,17 +347,9 @@ export class NdviOffcanvas extends LitElement {
       >
         <div class="offcanvas-header">
           <h5 class="offcanvas-title">NDVI</h5>
-          ${this.selected_obs
-            ? html`<a
-                class="btn btn-primary"
-                href=${this.img_url(this.selected_obs)}
-                download="ndvi.png"
-                >Descargar Img</a
-              >`
-            : null}
 
           <div
-            class="btn btn-primary"
+            class="btn btn-info"
             @click=${() => {
               this.escala_dinamica = !this.escala_dinamica;
               this.mostrar_en_mapa(this.selected_obs);
@@ -355,6 +369,21 @@ export class NdviOffcanvas extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body small container-fluid row">
+          <div class="row">
+            ${this.selected_obs
+              ? html`<a
+                    class="btn btn-primary btn-sm col col-4 m-1"
+                    href=${this.img_url(this.selected_obs)}
+                    download="ndvi.png"
+                    >Descargar Img</a
+                  >
+                  <a
+                    class="btn btn-primary btn-sm col col-4 m-1"
+                    @click=${this.geoblaze_to_excel}
+                    >Descargar XLS</a
+                  > `
+              : null}
+          </div>
           <div class="row">
             ${this.selected_obs
               ? html`
