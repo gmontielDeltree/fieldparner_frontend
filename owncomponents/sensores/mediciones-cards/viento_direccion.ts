@@ -5,8 +5,28 @@ import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
 import ApexCharts from "apexcharts";
 import apex_css from "apexcharts/dist/apexcharts.css";
-import '../rosad3'
-// import Plotly from "plotly.js";
+import "../rosad3";
+import { add_download_xls_button } from "../excel_boton";
+import { forEach } from "jszip";
+
+let puntos_cardinales = [
+  "    N",
+  "    NNE",
+  "    NE",
+  "    ENE",
+  "    E",
+  "    ESE",
+  "    SE",
+  "    SSE",
+  "    S",
+  "    SSW",
+  "    SW",
+  "    WSW",
+  "    W",
+  "    WNW",
+  "    NW",
+  "    NNW",
+];
 
 const matriz_de_vientos = (ts, dir: number[], vel: number[]) => {
   // Supongo que la muestras estan estan espaciadas a intervalos regulares
@@ -23,39 +43,57 @@ const matriz_de_vientos = (ts, dir: number[], vel: number[]) => {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
   ].map((a) => a * (360 / 16));
 
-  let result = {};
+  /* Resultado del proceso */
+  let result = [];
 
-  for (let i = 1; i < rangos_vel.length; i++) {
-    let limite_inf = rangos_vel[i - 1];
-    let limite_sup = rangos_vel[i];
+  /* Nombre de las columnas */
+  let columns = ["angle"];
 
-    console.log("RANGO VEL", limite_inf, limite_sup);
+  for (let i = 1; i < rangos_dir.length; i++) {
+    let limite_dir_inf = rangos_dir[i - 1];
+    let limite_dir_sup = rangos_dir[i];
+
+    //console.log("RANGO VEL", limite_inf, limite_sup);
     // Velocidades en el rango
-    let bin = muestras.filter((d) => {
-      return d.vel > limite_inf && d.vel < limite_sup;
+    let bin_direccion = muestras.filter((d) => {
+      return d.dir > limite_dir_inf && d.dir < limite_dir_sup;
     });
 
-    result["" + limite_sup] = [];
+    //result[i-1] = [];
 
-    for (let z = 1; z < rangos_dir.length; z++) {
-      let limite_dir_inf = rangos_dir[z - 1];
-      let limite_dir_sup = rangos_dir[z];
+    let total_eje_vel = 0;
+    let fila = {};
+    fila["angle"] = puntos_cardinales[i - 1];
 
-      let bin2 = bin.filter((d) => {
-        return d.dir > limite_dir_inf && d.dir < limite_dir_sup;
+    for (let z = 1; z < rangos_vel.length; z++) {
+      let limite_vel_inf = rangos_vel[z - 1];
+      let limite_vel_sup = rangos_vel[z];
+
+      let bin_vel = bin_direccion.filter((d) => {
+        return d.vel > limite_vel_inf && d.vel < limite_vel_sup;
       });
 
-      console.log(limite_dir_inf, limite_dir_sup, bin2);
-      let fraccion = (bin2.length / l_total) * 100;
-      result["" + limite_sup].push(fraccion);
+      // console.log(limite_dir_inf, limite_dir_sup, bin2);
+      let fraccion = (bin_vel.length / l_total) * 100;
+      total_eje_vel += fraccion;
+      fila["" + limite_vel_inf + "-" + limite_vel_sup] = fraccion;
+
+      // Incluir el nombre de la columna si no esta incluida ya
+      if (!columns.includes("" + limite_vel_inf + "-" + limite_vel_sup)) {
+        columns.push("" + limite_vel_inf + "-" + limite_vel_sup);
+      }
     }
+
+    fila["total"] = total_eje_vel;
+    result.push(fila);
   }
 
+  result.unit = "km/h";
+  result.columns = columns;
   return result;
 };
 
-import { add_download_xls_button } from "../excel_boton";
-import { forEach } from "jszip";
+
 export class VientoDireccionCard extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
@@ -71,6 +109,9 @@ export class VientoDireccionCard extends LitElement {
   @state()
   _show_chart_only: boolean = false;
 
+  @state()
+  _matriz_de_vientos: any;
+
   // Ocurre cuando ya se renderizo
   override updated(changedProps) {
     if (changedProps.has("data")) {
@@ -82,7 +123,7 @@ export class VientoDireccionCard extends LitElement {
 
   async renderCentralChart() {
     await this.updateComplete;
-    this.shadowRoot.getElementById("chart").textContent = "";
+    //this.shadowRoot.getElementById("chart").textContent = "";
     var base_options = {
       colors: ["#F44336", "#E91E63", "#9C27B0"],
       series: [
@@ -181,89 +222,23 @@ export class VientoDireccionCard extends LitElement {
     this_opts.series[0].name = "Viento - Dirección";
     this_opts.title.text = "Viento - Dirección";
     this_opts.yaxis[0].title = "Viento - Dirección";
-    const chart_1 = new ApexCharts(
-      this.shadowRoot.getElementById("chart"),
-      this_opts
-    );
-    chart_1.render();
-
-    // console.log("MATRIX", );
+    
+    // const chart_1 = new ApexCharts(
+    //   this.shadowRoot.getElementById("chart"),
+    //   this_opts
+    // );
+    //chart_1.render();
 
     let matriz = matriz_de_vientos(nt.ts, nt.direccion, nt.velocidad);
+    console.log("MATRIX", matriz);
+    this._matriz_de_vientos = matriz;
 
-    let puntos_cardinales = [
-      "North",
-      "NNE",
-      "NE",
-      "ENE",
-      "East",
-      "ESE",
-      "SE",
-      "SSE",
-      "South",
-      "SSW",
-      "SW",
-      "WSW",
-      "West",
-      "WNW",
-      "NW",
-      "NNW",
-    ];
-
-    var data = [
-      {
-        r:matriz['5'],
-        theta: puntos_cardinales,
-        name: "0-5 km/h",
-        marker: { color: "rgb(106,81,163)" },
-        type: "barpolar",
-      },
-      {
-        r: matriz['10'],
-        theta: puntos_cardinales,
-        name: "8-11 m/s",
-        marker: { color: "rgb(158,154,200)" },
-        type: "barpolar",
-      },
-      {
-        r: matriz['15'],
-        theta: puntos_cardinales,
-        name: "5-8 m/s",
-        marker: { color: "rgb(203,201,226)" },
-        type: "barpolar",
-      },
-      {
-        r: matriz['20'],
-        theta: puntos_cardinales,
-        name: "< 5 m/s",
-        marker: { color: "rgb(242,240,247)" },
-        type: "barpolar",
-      },
-    ];
-
-    var layout = {
-      title: "Wind Speed Distribution in Laurel, NE",
-      font: { size: 16 },
-      legend: { font: { size: 16 } },
-      polar: {
-        barmode: "overlay",
-        bargap: 0,
-        radialaxis: { ticksuffix: "%", angle: 45, dtick: 20 },
-        angularaxis: { direction: "clockwise" },
-      },
-    };
-
-    // Plotly.newPlot(this.shadowRoot.getElementById("chart"), data, layout)
-
- 
- 
-
-    add_download_xls_button(
-      this.shadowRoot,
-      this_opts.xaxis.categories,
-      this_opts.series[0].data,
-      this_opts.yaxis[0].title
-    );
+    // add_download_xls_button(
+    //   this.shadowRoot,
+    //   this_opts.xaxis.categories,
+    //   this_opts.series[0].data,
+    //   this_opts.yaxis[0].title
+    // );
   }
 
   toggle() {
@@ -335,12 +310,17 @@ export class VientoDireccionCard extends LitElement {
         <!--Chart-->
         <div
           class="${this._show_chart_only
-            ? ""
-            : "d-none d-sm-block"} col-12 col-sm-8 chart"
+          ? ""
+          : "d-none d-sm-block"} col-12 col-sm-8 chart"
           id="chart"
-        ></div>
+        >
+        ${this._matriz_de_vientos
+            ? html`<rosa-de-vientos class='mx-auto' .data=${this._matriz_de_vientos} />`
+            : null}
+      </div>
 
-        <!-- <rosa-de-vientos class=''/> -->
+
+
       </div>
     `;
   }
