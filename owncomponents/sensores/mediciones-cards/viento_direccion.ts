@@ -5,6 +5,7 @@ import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
 import ApexCharts from "apexcharts";
 import apex_css from "apexcharts/dist/apexcharts.css";
+import '../rosad3'
 // import Plotly from "plotly.js";
 
 const matriz_de_vientos = (ts, dir: number[], vel: number[]) => {
@@ -184,7 +185,7 @@ export class VientoDireccionCard extends LitElement {
       this.shadowRoot.getElementById("chart"),
       this_opts
     );
-    //chart_1.render();
+    chart_1.render();
 
     // console.log("MATRIX", );
 
@@ -338,6 +339,8 @@ export class VientoDireccionCard extends LitElement {
             : "d-none d-sm-block"} col-12 col-sm-8 chart"
           id="chart"
         ></div>
+
+        <!-- <rosa-de-vientos class=''/> -->
       </div>
     `;
   }

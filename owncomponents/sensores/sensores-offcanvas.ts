@@ -28,6 +28,7 @@ import "./mediciones-cards/presion";
 import "./mediciones-cards/humedad";
 import "./mediciones-cards/viento_velocidad"
 import "./mediciones-cards/viento_direccion"
+import "./rosad3"
 // background-position-y: -60px;
 //background-size: 100% auto;
 //background-position-y: -60px;
@@ -640,7 +641,8 @@ export class SensoresClass extends LitElement {
               ? html`<viento-direccion-card
                   .card=${this._selected_device_card}
                   .data=${this._datapoints}
-                />`
+                /> 
+                `
               : null}
             <!--/Dir viento-->
 
