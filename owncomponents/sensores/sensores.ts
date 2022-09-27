@@ -197,11 +197,25 @@ class Devices {
 
   async get_raw_data_for_charts_generic(uuid) {
     let docs = await this.db_raw.allDocs({
-      include_docs: true,
-      limit: 1500,
+      // include_docs: true,
+      limit: 10000,
       descending: true,
       endkey: uuid + ":",
       startkey: uuid + ":\ufff0",
+    });
+
+    let ids = await docs.rows.map((d) => d.id);
+    let ids_decimado = ids.filter((_, index) => index % 10 === 0);
+
+    //console.log("Only IDS", ids)
+
+    docs = await this.db_raw.allDocs({
+      include_docs: true,
+      //limit: 1500,
+      keys: ids_decimado,
+      descending: true,
+      //endkey: uuid + ":",
+      //startkey: uuid + ":\ufff0",
     });
 
     let data = await docs.rows.map((d) => d.doc);
