@@ -5,8 +5,56 @@ import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
 import ApexCharts from "apexcharts";
 import apex_css from "apexcharts/dist/apexcharts.css";
+// import Plotly from "plotly.js";
+
+const matriz_de_vientos = (ts, dir: number[], vel: number[]) => {
+  // Supongo que la muestras estan estan espaciadas a intervalos regulares
+  let l_total = vel.length;
+
+  // 'Unir' dir y vel
+  let muestras = [];
+  for (let i = 0; i < vel.length; i++) {
+    muestras.push({ vel: vel[i], dir: dir[i] });
+  }
+
+  let rangos_vel = [0, 5, 10, 15, 20, 30, 40, Infinity];
+  let rangos_dir = [
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+  ].map((a) => a * (360 / 16));
+
+  let result = {};
+
+  for (let i = 1; i < rangos_vel.length; i++) {
+    let limite_inf = rangos_vel[i - 1];
+    let limite_sup = rangos_vel[i];
+
+    console.log("RANGO VEL", limite_inf, limite_sup);
+    // Velocidades en el rango
+    let bin = muestras.filter((d) => {
+      return d.vel > limite_inf && d.vel < limite_sup;
+    });
+
+    result["" + limite_sup] = [];
+
+    for (let z = 1; z < rangos_dir.length; z++) {
+      let limite_dir_inf = rangos_dir[z - 1];
+      let limite_dir_sup = rangos_dir[z];
+
+      let bin2 = bin.filter((d) => {
+        return d.dir > limite_dir_inf && d.dir < limite_dir_sup;
+      });
+
+      console.log(limite_dir_inf, limite_dir_sup, bin2);
+      let fraccion = (bin2.length / l_total) * 100;
+      result["" + limite_sup].push(fraccion);
+    }
+  }
+
+  return result;
+};
 
 import { add_download_xls_button } from "../excel_boton";
+import { forEach } from "jszip";
 export class VientoDireccionCard extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
@@ -136,11 +184,85 @@ export class VientoDireccionCard extends LitElement {
       this.shadowRoot.getElementById("chart"),
       this_opts
     );
-    chart_1.render();
+    //chart_1.render();
 
+    // console.log("MATRIX", );
 
-    add_download_xls_button(this.shadowRoot,this_opts.xaxis.categories, this_opts.series[0].data, this_opts.yaxis[0].title);
+    let matriz = matriz_de_vientos(nt.ts, nt.direccion, nt.velocidad);
 
+    let puntos_cardinales = [
+      "North",
+      "NNE",
+      "NE",
+      "ENE",
+      "East",
+      "ESE",
+      "SE",
+      "SSE",
+      "South",
+      "SSW",
+      "SW",
+      "WSW",
+      "West",
+      "WNW",
+      "NW",
+      "NNW",
+    ];
+
+    var data = [
+      {
+        r:matriz['5'],
+        theta: puntos_cardinales,
+        name: "0-5 km/h",
+        marker: { color: "rgb(106,81,163)" },
+        type: "barpolar",
+      },
+      {
+        r: matriz['10'],
+        theta: puntos_cardinales,
+        name: "8-11 m/s",
+        marker: { color: "rgb(158,154,200)" },
+        type: "barpolar",
+      },
+      {
+        r: matriz['15'],
+        theta: puntos_cardinales,
+        name: "5-8 m/s",
+        marker: { color: "rgb(203,201,226)" },
+        type: "barpolar",
+      },
+      {
+        r: matriz['20'],
+        theta: puntos_cardinales,
+        name: "< 5 m/s",
+        marker: { color: "rgb(242,240,247)" },
+        type: "barpolar",
+      },
+    ];
+
+    var layout = {
+      title: "Wind Speed Distribution in Laurel, NE",
+      font: { size: 16 },
+      legend: { font: { size: 16 } },
+      polar: {
+        barmode: "overlay",
+        bargap: 0,
+        radialaxis: { ticksuffix: "%", angle: 45, dtick: 20 },
+        angularaxis: { direction: "clockwise" },
+      },
+    };
+
+    // Plotly.newPlot(this.shadowRoot.getElementById("chart"), data, layout)
+
+ 
+ 
+
+    add_download_xls_button(
+      this.shadowRoot,
+      this_opts.xaxis.categories,
+      this_opts.series[0].data,
+      this_opts.yaxis[0].title
+    );
   }
 
   toggle() {
