@@ -264,28 +264,28 @@ export class VientoDireccionCard extends LitElement {
             <h5>
               <img src="windrose-svgrepo-com.svg" width="50" height="50" />
               <span class="fw-bolder"
-                >${valor(this.card, "viento_velocidad")} º</span
+                >${valor(this.card, "direccion")} º</span
               >
             </h5>
           </div>
           <div class="row">
             <div class="col-4 text-warning fw-bolder">
               <div class="fw-strong">
-                ${valor(this.card, "viento_velocidad_min")} º
+                ${valor(this.card, "viento_direccion_min")} º
               </div>
               <div class="fw-light">Min</div>
             </div>
 
             <div class="col-4 text-warning fw-bolder">
               <div class="fw-strong">
-                ${valor(this.card, "viento_velocidad_mean")} º
+                ${valor(this.card, "viento_direccion_mean")} º
               </div>
               <div class="fw-light">Promedio</div>
             </div>
 
             <div class="col-4 text-warning fw-bolder">
               <div class="fw-strong">
-                ${valor(this.card, "viento_velocidad_max")} º
+                ${valor(this.card, "viento_direccion_max")} º
               </div>
               <div class="fw-light">Max</div>
             </div>

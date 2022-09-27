@@ -25,7 +25,11 @@ function unixToDate(date) {
 }
 
 const valor = (card, key) => {
-  return extract_tele(key, card)?.value || "N/A";
+  if(extract_tele(key, card)){
+    return extract_tele(key, card)?.value
+  }else{
+    return 'N/A'
+  }
 };
 
 class Devices {
