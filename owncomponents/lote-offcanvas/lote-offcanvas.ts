@@ -706,13 +706,15 @@ export class LoteOffcanvas extends LitElement {
           (lote) => lote.properties.nombre === this.lote_nombre
         )[0] || {};
 
-      //Preparar NDVI
-      let e = new CustomEvent("generar-ndvi", {
-        detail: { lote_id: this._lote_doc.id, lote_geojson: this._lote_doc },
-        bubbles: true,
-        composed: true,
-      });
-      this.dispatchEvent(e)
+          // Preparar NDVI
+        let e = new CustomEvent("generar-ndvi", {
+          detail: { lote_id: this._lote_doc.id, lote_geojson: this._lote_doc },
+          bubbles: true,
+          composed: true,
+        });
+        this.dispatchEvent(e)
+      
+ 
 
       this.localizar_lote();
     });

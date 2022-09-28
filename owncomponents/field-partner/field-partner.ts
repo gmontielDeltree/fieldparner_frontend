@@ -37,6 +37,7 @@ import { Actividad } from "../depositos/depositos-types";
 import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { format, parse } from "date-fns";
 import { Devices } from "../sensores/sensores";
+import { ndvi_generado_hoy } from "../ndvi-offcanvas/ndvi-functions";
 
 var wentOffline, wentOnline;
 
@@ -139,9 +140,13 @@ export class FieldPartner extends LitElement {
 
     });
 
-    this.addEventListener('generar-ndvi', (e:CustomEvent)=>{
+    this.addEventListener('generar-ndvi', async (e:CustomEvent) => {
       let couch_username = normalizar_username(this.user.name);
        console.log('gen ndvi evnet')
+
+       if(!(await ndvi_generado_hoy(e.detail.lote_geojson.geometry))){
+
+
         this.changes_db.put(
           {
             _id: uuid4(),
@@ -162,6 +167,11 @@ export class FieldPartner extends LitElement {
             }
           }
         );
+
+        
+       }
+
+
     })
 
     this.addEventListener("nuevo-deposito-click", () => {
