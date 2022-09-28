@@ -268,6 +268,7 @@ export class LoteOffcanvas extends LitElement {
     this.reload_lote_doc_y_localizar();
 
     this._lotesOffcanvas.show();
+
     // introJs()
     //   .setOptions({
     //     dontShowAgain: true,
@@ -705,6 +706,14 @@ export class LoteOffcanvas extends LitElement {
           (lote) => lote.properties.nombre === this.lote_nombre
         )[0] || {};
 
+      //Preparar NDVI
+      let e = new CustomEvent("generar-ndvi", {
+        detail: { lote_id: this._lote_doc.id, lote_geojson: this._lote_doc },
+        bubbles: true,
+        composed: true,
+      });
+      this.dispatchEvent(e)
+
       this.localizar_lote();
     });
 
@@ -917,39 +926,31 @@ export class LoteOffcanvas extends LitElement {
                   class="col col-2"
                   style="cursor: pointer;background-image: url('sembradora_act.webp');background-size: contain; background-repeat: no-repeat; background-position: center;"
                   @click=${this.siembra}
-                >
-                </div>
+                ></div>
 
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('pulverizadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.nueva_actividad}
-                >
-                </div>
+                ></div>
 
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('cosechadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.cosecha}
-                >
-                  
-                </div>
+                ></div>
 
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('iconodenotas_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.notas}
-                >
-                  
-                </div>
+                ></div>
 
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('iconosatelite.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.evento_show_ndvi}
-                >
-                  
-                </div>
+                ></div>
               </div>
             </div>
           </div>
