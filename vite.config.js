@@ -1,5 +1,6 @@
 import { visualizer } from "rollup-plugin-visualizer";
 import { splitVendorChunkPlugin } from 'vite';
+import Compression from 'vite-compression-plugin'
 
 export default {
     // config options para pouch
@@ -7,7 +8,7 @@ export default {
         allowNodeBuiltins: ['pouchdb-browser', 'pouchdb-utils']
     },
     
-    plugins: [visualizer()],
+    plugins: [visualizer(), Compression()],
     build: {
         rollupOptions: {
           // https://rollupjs.org/guide/en/#big-list-of-options
