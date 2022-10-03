@@ -1,4 +1,6 @@
 import { visualizer } from "rollup-plugin-visualizer";
+import { splitVendorChunkPlugin } from 'vite';
+
 export default {
     // config options para pouch
     optimizeDeps: {
@@ -12,6 +14,10 @@ export default {
           manualChunks: {
            // pdfmake: ['pdfmake','node_modules/pdfmake/build/vfs_fonts.js'],
            mapboxgl: ['mapbox-gl','node_modules/mapbox-gl/dist/mapbox-gl.js'],
+           geoblaze: ['geoblaze','node_modules/geoblaze/dist/geoblaze.web.min.js'],
+           xlsx: ['xlsx','node_modules/xlsx/xlsx.mjs'],
+           apexcharts: ['apexcharts','node_modules/apexcharts/dist/apexcharts.common.js'],
+           vaadiniconset: ['@vaadin/icons','node_modules/@vaadin/icons/vaadin-iconset.js'],
           }
         }
       }
