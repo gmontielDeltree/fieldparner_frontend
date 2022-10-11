@@ -26,6 +26,7 @@ import { DailyTelemetryCard } from "./sensores-types";
 import "./mediciones-cards/temperatura";
 import "./mediciones-cards/presion";
 import "./mediciones-cards/humedad";
+import "./mediciones-cards/radiacion";
 import "./mediciones-cards/viento_velocidad"
 import "./mediciones-cards/viento_direccion"
 import "./rosad3"
@@ -627,6 +628,15 @@ export class SensoresClass extends LitElement {
               : null}
             <!--/presion-->
 
+             <!-- Radiación -->
+             ${ifLoadedShow("radiacion_solar")
+              ? html`<radiacion-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!--/presion-->
+
             <!-- Vel Viento -->
               ${ifLoadedShow("viento_velocidad")
               ? html`<viento-velocidad-card
@@ -645,40 +655,6 @@ export class SensoresClass extends LitElement {
                 `
               : null}
             <!--/Dir viento-->
-
-            <!-- Viento -->
-            ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
-              "viento"
-            )
-              ? html`
-                  <div class="container-fluid border-primary border-top p-1">
-                    <div class="row">
-                      <h5>
-                        Viento
-                        <span class="fw-bolder"
-                          >${this.valor("velocidad")} km/h</span
-                        >
-                      </h5>
-                    </div>
-                    <div class="row">
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">0 km/h</div>
-                        <div class="fw-light">Min</div>
-                      </div>
-
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">6 km/h dirección SE</div>
-                        <div class="fw-light">Promedio</div>
-                      </div>
-
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">16 km/h dirección SE</div>
-                        <div class="fw-light">Max</div>
-                      </div>
-                    </div>
-                  </div>
-                `
-              : null}
             <!--/viento-->
 
             <!-- Humedad Suelo-->
