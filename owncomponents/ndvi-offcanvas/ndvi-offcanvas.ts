@@ -8,6 +8,7 @@ import { ImageSource, Map, MapMouseEvent, Popup } from "mapbox-gl";
 import { isThisSecond, formatDistanceToNow, parse, format } from "date-fns";
 import es from "date-fns/locale/es";
 import geoblaze from "geoblaze";
+import * as d3 from "d3";
 
 import "./leyenda";
 import { utils, writeFile } from "xlsx";
@@ -44,6 +45,9 @@ export class NdviOffcanvas extends LitElement {
   @state()
   ndvi_geoblaze_raster: any;
 
+  @state()
+  histograma_show: boolean = false;
+
   constructor() {
     super();
     this.ndvi_db = new PouchDB(
@@ -75,7 +79,7 @@ export class NdviOffcanvas extends LitElement {
         this.map.removeLayer("ndvi-layer");
         this.map.removeSource("ndvi");
 
-        this.autodestruirme()
+        this.autodestruirme();
 
         //console.log("CHILDEREN",parent.children)
       });
@@ -101,12 +105,12 @@ export class NdviOffcanvas extends LitElement {
     });
   }
 
-  autodestruirme(){
-        /* Auto destruirme */
-        let parent = this.parentElement;
-        let children_els = [...parent.children];
-        let myself = children_els.find((e) => (e.id = this.id));
-        parent.removeChild(myself);
+  autodestruirme() {
+    /* Auto destruirme */
+    let parent = this.parentElement;
+    let children_els = [...parent.children];
+    let myself = children_els.find((e) => (e.id = this.id));
+    parent.removeChild(myself);
   }
 
   img_url = (ob) => {
@@ -299,7 +303,133 @@ export class NdviOffcanvas extends LitElement {
     this.obs[0] ? this.mostrar_en_mapa(this.obs[0]) : null;
   };
 
+  async histograma() {
+    this.histograma_show = true;
+    await this.updateComplete;
+
+    //let h = geoblaze.histogram(this.ndvi_geoblaze_raster,null,{ scaleType: "nominal" })
+    let pixels: Number[] = geoblaze.get(
+      this.ndvi_geoblaze_raster,
+      null,
+      "flat"
+    );
+
+    let valid_pixels = pixels[0].filter((e) => (e > -1));
+      console.log("Pixels",pixels,"valid",valid_pixels)
+
+    // set the dimensions and margins of the graph
+    const margin = { top: 10, right: 30, bottom: 30, left: 40 },
+      width = 380 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    const svg = d3
+      .select(this.shadowRoot.getElementById("my_dataviz"))
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // console.log("SVG", svg)
+
+    // Data section
+    // X axis: scale and draw:
+    const x = d3
+      .scaleLinear()
+      .domain([d3.min(valid_pixels), d3.max(valid_pixels)]) // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+      .range([0, width]);
+    svg
+      .append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(x));
+
+    // Y axis: initialization
+    const y = d3.scaleLinear().range([height, 0]);
+    const yAxis = svg.append("g");
+
+    let line = svg.append("line")
+
+    // A function that builds the graph for a specific value of bin
+    function update(nBin, thres) {
+      // set the parameters for the histogram
+      const histogram = d3
+        .histogram()
+        .value(function (d) {
+          //console.log("d",d)
+          return d;
+        }) // I need to give the vector of value
+        .domain(x.domain()) // then the domain of the graphic
+        .thresholds(x.ticks(nBin)); // then the numbers of bins
+
+      // And apply this function to data to get the bins
+      const bins = histogram(valid_pixels);
+      //console.log("BINS", bins);
+      // Y axis: update now that we know the domain
+      y.domain([//////
+        0,
+        d3.max(bins, function (d) {
+          return d.length;
+        }),
+      ]); // d3.hist has to be called before the Y axis obviously
+      yAxis.transition().duration(1000).call(d3.axisLeft(y));
+
+      // Join the rect with the bins data
+      const u = svg.selectAll("rect").data(bins);
+
+      // Manage the existing bars and eventually the new ones:
+      u.join("rect") // Add a new rect for each new elements
+        .transition() // and apply changes to all of them
+        .duration(1000)
+        .attr("x", 1)
+        .attr("transform", function (d) {
+          return `translate(${x(d.x0)}, ${y(d.length)})`;
+        })
+        .attr("width", function (d) {
+          return x(d.x1) - x(d.x0) - 1;
+        })
+        .attr("height", function (d) {
+          return height - y(d.length);
+        })
+        //.style("fill", "#69b3a2");
+        .style("fill", function(d){ if(d.x0<thres){return "orange"} else {return "#69b3a2"}})
+
+        line
+          .attr("x1", x(thres) )
+          .attr("x2", x(thres) )
+          .attr("y1", y(0))
+          .attr("y2", y(1600))
+          .attr("stroke", "grey")
+          .attr("stroke-dasharray", "4")
+
+        svg
+        .append("text")
+        .attr("x", x(thres + 10))
+        .attr("y", y(1400))
+        .text("threshold: " + thres)
+        .style("font-size", "15px")
+    }
+
+    // Initialize with 50 bins
+    update(50,0.5);
+
+    // Listen to the button -> update if user change it
+    d3.select(this.shadowRoot.getElementById("nBin")).on("input", function () {
+      update(+this.value,0.5);
+    });
+
+        // Listen to the button -> update if user change it
+        d3.select(this.shadowRoot.getElementById("ambientacion")).on("input", function () {
+          update(50,this.value);
+        });
+
+    console.log("Geoblaze Histo", valid_pixels);
+  }
+
   render() {
+    let back_button = () =>
+      html`<div @click=${() => (this.histograma_show = false)}>back</div>`;
+
     let fecha_date_selected = this.selected_obs
       ? parse(this.selected_obs.fecha, "yyyyMMdd", new Date())
       : new Date();
@@ -313,6 +443,7 @@ export class NdviOffcanvas extends LitElement {
         data-bs-backdrop="false"
       >
         <div class="offcanvas-header">
+          ${this.histograma_show ? back_button() : null}
           <h5 class="offcanvas-title">NDVI</h5>
 
           <div
@@ -335,90 +466,120 @@ export class NdviOffcanvas extends LitElement {
             aria-label="Close"
           ></button>
         </div>
-        <div class="offcanvas-body small container-fluid row">
-          <div class="row">
-            ${this.selected_obs
-              ? html`<a
-                    class="btn btn-primary btn-sm col col-4 m-1"
-                    href=${this.img_url(this.selected_obs)}
-                    download="ndvi.png"
-                    >Descargar Img</a
-                  >
-                  <a
-                    class="btn btn-primary btn-sm col col-4 m-1"
-                    @click=${this.geoblaze_to_excel}
-                    >Descargar XLS</a
-                  > `
-              : null}
-          </div>
-          <div class="row">
-            ${this.selected_obs
-              ? html`
-                  <div class="">
-                    <h5 class="mb-1">
-                      ${format(fecha_date_selected, "d 'de' MMMM yyyy", {
-                        locale: es,
-                      })}
-                    </h5>
-                    <p class="mb-1">
-                      Media: ${this.selected_obs.estadisticas.media.toFixed(2)}
-                    </p>
-                    <p class="mb-1">
-                      Mínimo: ${this.selected_obs.estadisticas.min.toFixed(2)}
-                    </p>
-                    <p class="mb-1">
-                      Máximo: ${this.selected_obs.estadisticas.max.toFixed(2)}
-                    </p>
-                    <p class="mb-1">
-                      Desviación Estándar:
-                      ${this.selected_obs.estadisticas.std.toFixed(2)}
-                    </p>
-                  </div>
-                `
-              : null}
-          </div>
 
-          <div class="row overflow-auto">
-            <div class="row mb-1"></div>
-            <!--CARDS con observaciones-->
-            ${this.obs.map((ob) => {
-              let fecha_date = parse(ob.fecha, "yyyyMMdd", new Date());
-              return html` <div
-                class="card text-dark bg-light mb-3"
-                @click=${() => this.mostrar_en_mapa(ob)}
-                style="max-width: 540px;"
-              >
-                <div class="row g-0">
-                  <div class="col-md-4">
-                    <img
-                      src="${this.img_url(ob)}"
-                      class="img-fluid mt-2 rounded-start"
-                      alt="..."
-                    />
-                  </div>
-                  <div class="col-md-8">
-                    <div class="card-body">
-                      <h5 class="card-title">
-                        ${format(fecha_date, "d 'de' MMMM yyyy", {
-                          locale: es,
-                        })}
-                      </h5>
-                      <p class="card-text">${this.nubosidad(ob)}</p>
-                      <p class="card-text">
-                        <small class="text-muted"
-                          >${formatDistanceToNow(fecha_date, {
-                            addSuffix: true,
-                            locale: es,
-                          })}</small
+        ${this.histograma_show
+          ? html`
+              <!--Histograma-->
+              <div class="offcanvas-body small container-fluid row">
+                <div id="my_dataviz"></div>
+                <p>
+                  <label># bins</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    step="10"
+                    value="50"
+                    id="nBin"
+                  />
+                </p>
+
+                <input type="range" min="0" max="1" step="0.01" class="form-range" id="ambientacion">
+              </div>
+            `
+          : html` <!--Imágenes-->
+              <div class="offcanvas-body small container-fluid row">
+                <div class="row">
+                  ${this.selected_obs
+                    ? html`<a
+                          class="btn btn-primary btn-sm col col-4 m-1"
+                          href=${this.img_url(this.selected_obs)}
+                          download="ndvi.png"
+                          >Descargar Img</a
                         >
-                      </p>
-                    </div>
-                  </div>
+                        <a
+                          class="btn btn-primary btn-sm col col-4 m-1"
+                          @click=${this.geoblaze_to_excel}
+                          >Descargar XLS</a
+                        >
+                        <a
+                          class="btn btn-primary btn-sm col col-4 m-1"
+                          @click=${this.histograma}
+                          >Hist</a
+                        > `
+                    : null}
                 </div>
-              </div>`;
-            })}
-          </div>
-        </div>
+                <div class="row">
+                  ${this.selected_obs
+                    ? html`
+                        <div class="">
+                          <h5 class="mb-1">
+                            ${format(fecha_date_selected, "d 'de' MMMM yyyy", {
+                              locale: es,
+                            })}
+                          </h5>
+                          <p class="mb-1">
+                            Media:
+                            ${this.selected_obs.estadisticas.media.toFixed(2)}
+                          </p>
+                          <p class="mb-1">
+                            Mínimo:
+                            ${this.selected_obs.estadisticas.min.toFixed(2)}
+                          </p>
+                          <p class="mb-1">
+                            Máximo:
+                            ${this.selected_obs.estadisticas.max.toFixed(2)}
+                          </p>
+                          <p class="mb-1">
+                            Desviación Estándar:
+                            ${this.selected_obs.estadisticas.std.toFixed(2)}
+                          </p>
+                        </div>
+                      `
+                    : null}
+                </div>
+
+                <div class="row overflow-auto">
+                  <div class="row mb-1"></div>
+                  <!--CARDS con observaciones-->
+                  ${this.obs.map((ob) => {
+                    let fecha_date = parse(ob.fecha, "yyyyMMdd", new Date());
+                    return html` <div
+                      class="card text-dark bg-light mb-3"
+                      @click=${() => this.mostrar_en_mapa(ob)}
+                      style="max-width: 540px;"
+                    >
+                      <div class="row g-0">
+                        <div class="col-md-4">
+                          <img
+                            src="${this.img_url(ob)}"
+                            class="img-fluid mt-2 rounded-start"
+                            alt="..."
+                          />
+                        </div>
+                        <div class="col-md-8">
+                          <div class="card-body">
+                            <h5 class="card-title">
+                              ${format(fecha_date, "d 'de' MMMM yyyy", {
+                                locale: es,
+                              })}
+                            </h5>
+                            <p class="card-text">${this.nubosidad(ob)}</p>
+                            <p class="card-text">
+                              <small class="text-muted"
+                                >${formatDistanceToNow(fecha_date, {
+                                  addSuffix: true,
+                                  locale: es,
+                                })}</small
+                              >
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>`;
+                  })}
+                </div>
+              </div>`}
       </div>
 
       <leyenda-ndvi
