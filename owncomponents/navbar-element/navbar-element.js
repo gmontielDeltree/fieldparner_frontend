@@ -43,6 +43,10 @@ export class NavbarElement extends LitElement {
     this.dispatchEvent(event);
   };
 
+  version(){
+    return import.meta.env.VITE_VERSION
+  }
+
   render() {
     return html`
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -202,6 +206,8 @@ export class NavbarElement extends LitElement {
                         >Sign Out</a
                       >
                     </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><a class="dropdown-item">Versión ${this.version()}</a></li>
                   </ul>
                 </div>
               </li>
