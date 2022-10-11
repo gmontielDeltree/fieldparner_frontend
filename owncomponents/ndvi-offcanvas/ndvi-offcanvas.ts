@@ -75,11 +75,7 @@ export class NdviOffcanvas extends LitElement {
         this.map.removeLayer("ndvi-layer");
         this.map.removeSource("ndvi");
 
-        /* Auto destruirme */
-        let parent = this.parentElement;
-        let children_els = [...parent.children];
-        let myself = children_els.find((e) => (e.id = this.id));
-        parent.removeChild(myself);
+        this.autodestruirme()
 
         //console.log("CHILDEREN",parent.children)
       });
@@ -100,8 +96,17 @@ export class NdviOffcanvas extends LitElement {
           alert(
             "Error NDVI: Aun no existe ningun registro. Si recien creo el lote espere unos instantes hasta que se recopilen las imagenes satelitales"
           );
+          this.autodestruirme();
         });
     });
+  }
+
+  autodestruirme(){
+        /* Auto destruirme */
+        let parent = this.parentElement;
+        let children_els = [...parent.children];
+        let myself = children_els.find((e) => (e.id = this.id));
+        parent.removeChild(myself);
   }
 
   img_url = (ob) => {
@@ -285,44 +290,6 @@ export class NdviOffcanvas extends LitElement {
 
       this.map.moveLayer("ndvi-layer");
     }
-
-    const update_overlay_info = (info) => {
-      // const overlay = document.getElementById("map-overlay");
-      // const title_div = document.createElement("div");
-      // const title = document.createElement("strong");
-      // title.textContent = "Estadisticas ";
-      // title_div.appendChild(title);
-      // if (info.std < 0.1 && info.media < 0.1) {
-      //   const condicion = document.createElement("span");
-      //   condicion.textContent = "Nubosidad Severa";
-      //   condicion.classList.add("badge");
-      //   condicion.classList.add("bg-danger");
-      //   // condicion.classList.add("text-dark")
-      //   title_div.appendChild(condicion);
-      // } else if (info.min < 0) {
-      //   const condicion = document.createElement("span");
-      //   condicion.textContent = "Nubosidad";
-      //   condicion.classList.add("badge");
-      //   condicion.classList.add("bg-warning");
-      //   condicion.classList.add("text-dark");
-      //   title_div.appendChild(condicion);
-      // }
-      // const media = document.createElement("div");
-      // media.textContent = "Promedio: " + info.media.toFixed(2);
-      // const std = document.createElement("div");
-      // std.textContent = "Desviación Estándar: " + info.std.toFixed(2);
-      // const max = document.createElement("div");
-      // max.textContent = "Máximo: " + info.max.toFixed(2);
-      // const min = document.createElement("div");
-      // min.textContent = "Mínimo: " + info.min.toFixed(2);
-      // overlay.innerHTML = "";
-      // overlay.style.display = "block";
-      // overlay.appendChild(title_div);
-      // overlay.appendChild(media);
-      // overlay.appendChild(std);
-      // overlay.appendChild(max);
-      // overlay.appendChild(min);
-    };
 
     let obs = result.obs;
     this.obs = result.obs;

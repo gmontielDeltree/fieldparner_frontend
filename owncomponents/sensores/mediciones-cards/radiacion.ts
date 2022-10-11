@@ -190,7 +190,7 @@ export class RadiacionCard extends LitElement {
             </div>
 
             <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "radiacion")} W/m\u{00B2}</div>
+              <div class="fw-strong">${valor(this.card, "radiacion_max")} W/m\u{00B2}</div>
               <div class="fw-light">Max</div>
             </div>
           </div>
