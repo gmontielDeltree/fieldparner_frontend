@@ -12,6 +12,7 @@ import * as d3 from "d3";
 
 import "./leyenda";
 import { utils, writeFile } from "xlsx";
+import { drawGeotiffOnMap } from "./ndvi-functions";
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
@@ -314,8 +315,8 @@ export class NdviOffcanvas extends LitElement {
       "flat"
     );
 
-    let valid_pixels = pixels[0].filter((e) => (e > -1));
-      console.log("Pixels",pixels,"valid",valid_pixels)
+    let valid_pixels = pixels[0].filter((e) => e > -1);
+    console.log("Pixels", pixels, "valid", valid_pixels);
 
     // set the dimensions and margins of the graph
     const margin = { top: 10, right: 30, bottom: 30, left: 40 },
@@ -348,7 +349,7 @@ export class NdviOffcanvas extends LitElement {
     const y = d3.scaleLinear().range([height, 0]);
     const yAxis = svg.append("g");
 
-    let line = svg.append("line")
+    let line = svg.append("line");
 
     // A function that builds the graph for a specific value of bin
     function update(nBin, thres) {
@@ -366,7 +367,8 @@ export class NdviOffcanvas extends LitElement {
       const bins = histogram(valid_pixels);
       //console.log("BINS", bins);
       // Y axis: update now that we know the domain
-      y.domain([//////
+      y.domain([
+        //////
         0,
         d3.max(bins, function (d) {
           return d.length;
@@ -392,38 +394,53 @@ export class NdviOffcanvas extends LitElement {
           return height - y(d.length);
         })
         //.style("fill", "#69b3a2");
-        .style("fill", function(d){ if(d.x0<thres){return "orange"} else {return "#69b3a2"}})
+        .style("fill", function (d) {
+          if (d.x0 < thres) {
+            return "orange";
+          } else {
+            return "#69b3a2";
+          }
+        });
 
-        line
-          .attr("x1", x(thres) )
-          .attr("x2", x(thres) )
-          .attr("y1", y(0))
-          .attr("y2", y(1600))
-          .attr("stroke", "grey")
-          .attr("stroke-dasharray", "4")
+      line
+        .attr("x1", x(thres))
+        .attr("x2", x(thres))
+        .attr("y1", y(0))
+        .attr("y2", y(1600))
+        .attr("stroke", "grey")
+        .attr("stroke-dasharray", "4");
 
-        svg
+      svg
         .append("text")
         .attr("x", x(thres + 10))
         .attr("y", y(1400))
         .text("threshold: " + thres)
-        .style("font-size", "15px")
+        .style("font-size", "15px");
     }
 
     // Initialize with 50 bins
-    update(50,0.5);
+    update(50, 0.5);
 
     // Listen to the button -> update if user change it
     d3.select(this.shadowRoot.getElementById("nBin")).on("input", function () {
-      update(+this.value,0.5);
+      update(+this.value, 0.5);
     });
 
-        // Listen to the button -> update if user change it
-        d3.select(this.shadowRoot.getElementById("ambientacion")).on("input", function () {
-          update(50,this.value);
-        });
+    // Listen to the button -> update if user change it
+    d3.select(this.shadowRoot.getElementById("ambientacion")).on(
+      "input",
+      function () {
+        update(50, this.value);
+      }
+    );
 
-    console.log("Geoblaze Histo", valid_pixels);
+    //console.log("Geoblaze Histo", valid_pixels);
+
+    // Dibujar 
+    // new d3GeotiffonMap
+    // map events -> render
+    drawGeotiffOnMap(this.ndvi_geoblaze_raster,this.map);
+
   }
 
   render() {
@@ -484,7 +501,14 @@ export class NdviOffcanvas extends LitElement {
                   />
                 </p>
 
-                <input type="range" min="0" max="1" step="0.01" class="form-range" id="ambientacion">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  class="form-range"
+                  id="ambientacion"
+                />
               </div>
             `
           : html` <!--Imágenes-->

@@ -2,33 +2,173 @@ import PouchDB from "pouchdb";
 import { hashMessage } from "../helpers";
 import { isToday, parse } from "date-fns";
 import { is } from "date-fns/locale";
+import mapboxgl, { Map } from "mapbox-gl";
+import geoblaze from "geoblaze";
+import * as d3 from "d3";
 
 let ndvi_db = new PouchDB(
-    "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi"
-  );
-
-
+  "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi"
+);
 
 export const ndvi_generado_hoy = async (geometry) => {
+  //let geometry = this.lote_doc.geometry;
+  try {
+    let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
+    let lote_hash = await hashMessage(clean_json);
+    console.log("Lote Hash", lote_hash);
+    // Build y  Mostrar la Galeria
+    let ndvi_doc = await ndvi_db.get(lote_hash);
+    console.log("NDVI DOC", ndvi_doc);
 
-    //let geometry = this.lote_doc.geometry;
-    try{
-        let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
-        let lote_hash = await hashMessage(clean_json)
-        console.log("Lote Hash", lote_hash);
-          // Build y  Mostrar la Galeria
-        let ndvi_doc = await ndvi_db.get(lote_hash)
-        console.log("NDVI DOC", ndvi_doc)
-    
-        let fecha_generacion = parse(ndvi_doc.ultima_generacion,"yyyyMMdd",new Date())
-        console.log("Fecha Gen", fecha_generacion)
-        
-        return isToday(fecha_generacion)
+    let fecha_generacion = parse(
+      ndvi_doc.ultima_generacion,
+      "yyyyMMdd",
+      new Date()
+    );
+    console.log("Fecha Gen", fecha_generacion);
 
-    }catch(e){
-        if(e.error==="not_found"){
-            return false; // To force generation
-        }
+    return isToday(fecha_generacion);
+  } catch (e) {
+    if (e.error === "not_found") {
+      return false; // To force generation
     }
-   
-}
+  }
+};
+
+// https://bl.ocks.org/shimizu/5f4cee0fddc7a64b55a9
+// https://geoexamples.com/d3-raster-tools-docs/code_samples/raster-pixels-page.html
+
+export const drawGeotiffOnMap = (geoblaze_raster, map: Map) => {
+  // Contenedor de todos los canvas
+  var container = map.getCanvasContainer();
+
+  // Dimensiones del map
+  let width = map.getCanvas().width;
+  let height = map.getCanvas().height;
+
+
+  var canvas = d3
+    .select(container)
+    .append("canvas")
+    .attr('id','ndvi')
+    .attr("width", width)
+    .attr("height", height)
+    .style("position", "absolute")
+    .style("z-index", 2);
+
+  var context = canvas.node().getContext("2d");
+
+  // Transformaciones para ir desde pixel->LatLong y LatLong -> pixel
+  //var geoTransform = [geoblaze_raster.xmin, geoblaze_raster.pixelWidth, 0, geoblaze_raster.ymax, 0, -1*geoblaze_raster.pixelHeight];
+  //var invGeoTransform = [-geoTransform[0]/geoTransform[1], 1/geoTransform[1],0,-geoTransform[3]/geoTransform[5],0,1/geoTransform[5]];
+
+
+  //Creating the color scale https://github.com/santilland/plotty/blob/master/src/plotty.js
+  var cs_def = {
+    positions: [0, 0.25, 0.5, 0.75, 1],
+    colors: ["#0571b0", "#92c5de", "#eded26", "#22e345", "#025411"],
+  };
+  var scaleWidth = 256;
+  var canvasColorScale = d3
+    .select(container)
+    .append("canvas")
+    .attr("width", scaleWidth)
+    .attr("height", 1)
+    .style("display", "none");
+  var contextColorScale = canvasColorScale.node().getContext("2d");
+  var gradient = contextColorScale.createLinearGradient(0, 0, scaleWidth, 1);
+
+  for (var i = 0; i < cs_def.colors.length; ++i) {
+    gradient.addColorStop(cs_def.positions[i], cs_def.colors[i]);
+  }
+  contextColorScale.fillStyle = gradient;
+  contextColorScale.fillRect(0, 0, scaleWidth, 1);
+
+  var csImageData = contextColorScale.getImageData(
+    0,
+    0,
+    scaleWidth - 1,
+    1
+  ).data;
+
+
+  // Tiff data. Uso el mismo nombre que el ejemplo
+  // TempData en un array 2d donde la primera dimension es la altura y la segunda el ancho.
+  // georaster.values es un array 3d. La primera dimension creo que es la banda.
+  let tempData = geoblaze_raster.values[0];
+  
+
+  //Drawing the image. Mismas dimensiones que el canvas del mapa
+  var canvasRaster = d3
+    .select(container)
+    .append("canvas")
+    .attr('id','rasterd3')
+    .attr("width", map.getCanvas().width)
+    .attr("height", map.getCanvas().height)
+    .style("display", "none");
+
+  var contextRaster = canvasRaster.node().getContext("2d");
+
+  // id==ImageData
+  var id = contextRaster.createImageData(width, height);
+  var data = id.data;
+  
+  // Indice sobre ImageData data
+  var pos = 0;
+  // itero sobre cada pixel del canvas que estoy dibujando.
+  // 1ro proyecto el pixel del canvas a LatLong
+  // 2do LanLong a que pixel corresponde del tiff
+  // 3ro extraigo el valor
+
+  for (var j = 0; j < height; j++) {
+    for (var i = 0; i < width; i++) {
+      // PixelCanvas a LatLog 
+      //var pointCoords = projection.invert([i, j]);
+      var pointCoords : mapboxgl.LngLatLike = map.unproject([i, j]);
+
+      // LatLong a pixeles del tiff
+      // Aca se podria usar geoblaze.identify
+    //   var px = Math.round(
+    //     invGeoTransform[0] + pointCoords.lng * invGeoTransform[1]
+    //   );
+    //   var py = Math.round(
+    //     invGeoTransform[3] + pointCoords.lat * invGeoTransform[5]
+    //   );
+
+      let value = geoblaze.identify(geoblaze_raster,[pointCoords.lng,pointCoords.lat])
+
+      if(value){
+        // Hay un valor valido
+        value = value[0]
+      
+    //   if (
+    //     Math.floor(px) >= 0 &&
+    //     Math.ceil(px) < geoblaze_raster.width &&
+    //     Math.floor(py) >= 0 &&
+    //     Math.ceil(py) < geoblaze_raster.height
+    //   ) {
+
+        //var value = tempData[py][px];
+        //console.log("Value",py,px, value)
+
+        // c 0-255 dependiendo del valor. 0,99 para dejar en offside al -1
+        var c = Math.round((scaleWidth - 1) * ((value + 0.99) / 2));
+        var alpha = 200;
+        if (c < 0 || c > scaleWidth - 1) {
+          alpha = 0;
+        }
+        data[pos] = csImageData[c * 4];
+        data[pos + 1] = csImageData[c * 4 + 1];
+        data[pos + 2] = csImageData[c * 4 + 2];
+        data[pos + 3] = alpha;
+      }
+
+      // Actualizo el indice, siempre
+      pos = pos + 4;
+    }
+  }
+
+  //console.log('Data',data)
+  contextRaster.putImageData(id, 0, 0);
+  context.drawImage(canvasRaster.node(), 0, 0);
+};

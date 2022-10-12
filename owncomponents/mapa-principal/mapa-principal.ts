@@ -16,6 +16,7 @@ import "@spectrum-web-components/menu/sp-menu-item.js";
 import "@spectrum-web-components/theme/sp-theme";
 import "@spectrum-web-components/theme/src/themes";
 
+//https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
 const mapStyle = {
   version: 8,
   sources: {
