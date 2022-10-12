@@ -16,6 +16,28 @@ import "@spectrum-web-components/menu/sp-menu-item.js";
 import "@spectrum-web-components/theme/sp-theme";
 import "@spectrum-web-components/theme/src/themes";
 
+const mapStyle = {
+  version: 8,
+  sources: {
+    worldImagery: {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+      ],
+      tileSize: 256
+    }
+  },
+  layers: [
+    {
+      id: "worldImagery",
+      type: "raster",
+      source: "worldImagery",
+      minzoom: 0,
+      maxzoom: 20
+    }
+  ]
+};
+
 /** Modifica 'features' agregado color y cultivo a las 'properties'
  *  basado en las actividades
  */
@@ -154,7 +176,7 @@ export class MapaPrincipal extends LitElement {
     this.map = new Map({
       container: this.shadowRoot.getElementById("map"),
       //style: "mapbox://styles/mapbox/outdoors-v11",
-      style: "mapbox://styles/mapbox/satellite-v9?optimize=true",
+      style: mapStyle,//"mapbox://styles/mapbox/satellite-v9?optimize=true",
       center: [-59.2965, -35.1923],
       zoom: 6,
       attributionControl: true,
