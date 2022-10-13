@@ -413,12 +413,12 @@ export class NdviOffcanvas extends LitElement {
         .attr("stroke", "grey")
         .attr("stroke-dasharray", "4");
 
-      svg
-        .append("text")
-        .attr("x", x(thres + 10))
-        .attr("y", y(1400))
-        .text("threshold: " + thres)
-        .style("font-size", "15px");
+      // svg
+      //   .append("text")
+      //   .attr("x", x(thres + 10))
+      //   .attr("y", y(1400))
+      //   .text("threshold: " + thres)
+      //   .style("font-size", "15px");
     }
 
     // Initialize with 50 bins
