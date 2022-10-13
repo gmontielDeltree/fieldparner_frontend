@@ -12,7 +12,7 @@ import * as d3 from "d3";
 
 import "./leyenda";
 import { utils, writeFile } from "xlsx";
-import { drawGeotiffOnMap } from "./ndvi-functions";
+import { D3GeoblazeOnMapbox, drawGeotiffOnMap } from "./ndvi-functions";
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
@@ -45,6 +45,9 @@ export class NdviOffcanvas extends LitElement {
 
   @state()
   ndvi_geoblaze_raster: any;
+
+  @state()
+  ambientes_raster :  any;
 
   @state()
   histograma_show: boolean = false;
@@ -420,6 +423,7 @@ export class NdviOffcanvas extends LitElement {
 
     // Initialize with 50 bins
     update(50, 0.5);
+    this.ambientes_raster = await geoblaze.rasterCalculator(this.ndvi_geoblaze_raster,(a) => a > 0.5 ? 1 : 0)
 
     // Listen to the button -> update if user change it
     d3.select(this.shadowRoot.getElementById("nBin")).on("input", function () {
@@ -429,18 +433,35 @@ export class NdviOffcanvas extends LitElement {
     // Listen to the button -> update if user change it
     d3.select(this.shadowRoot.getElementById("ambientacion")).on(
       "input",
-      function () {
-        update(50, this.value);
+      async () => {
+        update(50, this.shadowRoot.getElementById("ambientacion").value);
+        //console.log("consoe", this.value)
+        let t1 = this.shadowRoot.getElementById("ambientacion").value
+        this.ambientes_raster = await geoblaze.rasterCalculator(this.ndvi_geoblaze_raster,(a) => a > t1 ? 1 : 0)
+        d3tiff.geoblaze_raster = this.ambientes_raster
+        d3tiff.render()
       }
     );
 
     //console.log("Geoblaze Histo", valid_pixels);
 
-    // Dibujar 
+    // Dibujar
     // new d3GeotiffonMap
     // map events -> render
-    drawGeotiffOnMap(this.ndvi_geoblaze_raster,this.map);
+    // drawGeotiffOnMap(this.ndvi_geoblaze_raster,this.map);
+    let d3tiff = new D3GeoblazeOnMapbox(this.ambientes_raster, this.map);
 
+    function rerender() {
+      d3tiff.render();
+    }
+    
+    function clear() {
+      d3tiff.clear();
+    }
+
+    //this.map.on("viewreset", rerender);
+    this.map.on("movestart", clear);
+    this.map.on("moveend", rerender);
   }
 
   render() {
