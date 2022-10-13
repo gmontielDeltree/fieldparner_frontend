@@ -96,7 +96,7 @@ export class D3GeoblazeOnMapbox {
     //Creating the color scale https://github.com/santilland/plotty/blob/master/src/plotty.js
     var cs_def = {
       positions: [0, 0.25, 0.5, 0.75, 1],
-      colors: ["#0571b0", "#92c5de", "#eded26", "#22e345", "#025411"],
+      colors: ["#f5a442", "#92c5de", "#eded26", "#69b3a2", "#69b3a2"],
     };
     var canvasColorScale = d3
       .select(this.container)

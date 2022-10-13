@@ -421,9 +421,16 @@ export class NdviOffcanvas extends LitElement {
       //   .style("font-size", "15px");
     }
 
+    const ambientador = (a, t)=>{
+      if(a < -0.99){
+        return a;
+      }
+      return a > t ? 1 : -0.97
+    }
+
     // Initialize with 50 bins
     update(50, 0.5);
-    this.ambientes_raster = await geoblaze.rasterCalculator(this.ndvi_geoblaze_raster,(a) => a > 0.5 ? 1 : 0)
+    this.ambientes_raster = await geoblaze.rasterCalculator(this.ndvi_geoblaze_raster,(a) => ambientador(a,0.5))
 
     // Listen to the button -> update if user change it
     d3.select(this.shadowRoot.getElementById("nBin")).on("input", function () {
@@ -437,7 +444,7 @@ export class NdviOffcanvas extends LitElement {
         update(50, this.shadowRoot.getElementById("ambientacion").value);
         //console.log("consoe", this.value)
         let t1 = this.shadowRoot.getElementById("ambientacion").value
-        this.ambientes_raster = await geoblaze.rasterCalculator(this.ndvi_geoblaze_raster,(a) => a > t1 ? 1 : 0)
+        this.ambientes_raster = await geoblaze.rasterCalculator(this.ndvi_geoblaze_raster,(a) => ambientador(a,t1))
         d3tiff.geoblaze_raster = this.ambientes_raster
         d3tiff.render()
       }
