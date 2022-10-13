@@ -195,6 +195,27 @@ export class D3GeoblazeOnMapbox {
     this.id = this.contextRaster.createImageData(width, height);
     this.data = this.id.data;
 
+
+
+    // Coordenadas geograficas del bbox del raster (el ymin geografico (lat) es el ymax en raster)
+    // xmin,ymin es la esquina superior izquierda
+    // xmax,ymax es la esquina inferior derecha
+    let xmin = this.geoblaze_raster.xmin
+    let xmax = this.geoblaze_raster.xmax
+    let ymin = this.geoblaze_raster.ymax
+    let ymax = this.geoblaze_raster.ymin
+
+    let x_start, x_end, y_start, y_end;
+
+    let p1 = this.map.project({lng:xmin, lat:ymin})
+    x_start = p1.x < 0 ? 0 :  Math.round( p1.x)
+    y_start = p1.y < 0 ? 0 :  Math.round(p1.y)
+
+    let p2 = this.map.project({lng:xmax, lat:ymax})
+    x_end = p2.x > width ? width :  Math.round(p2.x)
+    y_end = p2.y > height ? height :  Math.round(p2.y)
+
+    console.log('xs,xe,ys,ys',x_start,x_end,y_start,y_end)
     // Indice sobre ImageData data
     var pos = 0;
     // itero sobre cada pixel del canvas que estoy dibujando.
@@ -202,8 +223,8 @@ export class D3GeoblazeOnMapbox {
     // 2do LanLong a que pixel corresponde del tiff
     // 3ro extraigo el valor
 
-    for (var j = 0; j < height; j++) {
-      for (var i = 0; i < width; i++) {
+    for (var j = y_start; j < y_end; j++) {
+      for (var i = x_start; i < x_end; i++) {
         // PixelCanvas a LatLog
         //var pointCoords = projection.invert([i, j]);
         var pointCoords: mapboxgl.LngLatLike = this.map.unproject([i, j]);
@@ -238,6 +259,9 @@ export class D3GeoblazeOnMapbox {
           if (c < 0 || c > this.scaleWidth - 1) {
             alpha = 0;
           }
+
+          pos = (width * j + i) * 4;
+
           this.data[pos] = this.csImageData[c * 4];
           this.data[pos + 1] = this.csImageData[c * 4 + 1];
           this.data[pos + 2] = this.csImageData[c * 4 + 2];
@@ -245,7 +269,7 @@ export class D3GeoblazeOnMapbox {
         }
 
         // Actualizo el indice, siempre
-        pos = pos + 4;
+        //pos = pos + 4;
       }
     }
 
