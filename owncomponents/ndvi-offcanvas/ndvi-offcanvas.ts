@@ -466,9 +466,9 @@ export class NdviOffcanvas extends LitElement {
       d3tiff.clear();
     }
 
-    //this.map.on("viewreset", rerender);
-    this.map.on("movestart", clear);
-    this.map.on("moveend", rerender);
+    // //this.map.on("viewreset", rerender);
+    // this.map.on("movestart", clear);
+    // this.map.on("moveend", rerender);
   }
 
   render() {

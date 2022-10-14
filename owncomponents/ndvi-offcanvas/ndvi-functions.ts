@@ -60,10 +60,11 @@ export class D3GeoblazeOnMapbox {
     this.geoblaze_raster = geoblaze_raster;
     // Contenedor de todos los canvas
     this.container = map.getCanvasContainer();
+    
 
-    // Dimensiones del map
-    let width = map.getCanvas().width;
-    let height = map.getCanvas().height;
+    // Dimensiones del raster
+    let width = geoblaze_raster.width//map.getCanvas().width;
+    let height = geoblaze_raster.height;// map.getCanvas().height;
 
     var geoTransform = [
       geoblaze_raster.xmin,
@@ -73,6 +74,7 @@ export class D3GeoblazeOnMapbox {
       0,
       -1 * geoblaze_raster.pixelHeight,
     ];
+
     this.invGeoTransform = [
       -geoTransform[0] / geoTransform[1],
       1 / geoTransform[1],
@@ -88,8 +90,8 @@ export class D3GeoblazeOnMapbox {
       .attr("id", "ndvi")
       .attr("width", width)
       .attr("height", height)
-      .style("position", "absolute")
-      .style("z-index", 1);
+      //.style("position", "absolute")
+      //.style("z-index", 1);
 
     this.context = this.canvas.node().getContext("2d");
 
@@ -98,13 +100,16 @@ export class D3GeoblazeOnMapbox {
       positions: [0, 0.25, 0.5, 0.75, 1],
       colors: ["#f5a442", "#92c5de", "#eded26", "#69b3a2", "#69b3a2"],
     };
+
     var canvasColorScale = d3
       .select(this.container)
       .append("canvas")
       .attr("width", this.scaleWidth)
       .attr("height", 1)
       .style("display", "none");
+
     var contextColorScale = canvasColorScale.node().getContext("2d");
+
     var gradient = contextColorScale.createLinearGradient(
       0,
       0,
@@ -130,8 +135,8 @@ export class D3GeoblazeOnMapbox {
       .select(this.container)
       .append("canvas")
       .attr("id", "rasterd3")
-      .attr("width", this.map.getCanvas().width)
-      .attr("height", this.map.getCanvas().height)
+      .attr("width", width)
+      .attr("height", height)
       .style("display", "none");
 
     this.contextRaster = this.canvasRaster.node().getContext("2d");
@@ -151,16 +156,16 @@ export class D3GeoblazeOnMapbox {
       for (var i = 0; i < width; i++) {
         // PixelCanvas a LatLog
         //var pointCoords = projection.invert([i, j]);
-        var pointCoords: mapboxgl.LngLatLike = this.map.unproject([i, j]);
+        //var pointCoords: mapboxgl.LngLatLike = this.map.unproject([i, j]);
 
-        let value = geoblaze.identify(geoblaze_raster, [
-          pointCoords.lng,
-          pointCoords.lat,
-        ]);
+        // let value = geoblaze.identify(geoblaze_raster, [
+        //   pointCoords.lng,
+        //   pointCoords.lat,
+        // ]);
 
-        if (value) {
+        // if (value) {
           // Hay un valor valido
-          value = value[0];
+          let value = this.geoblaze_raster.values[0][py][px]; //value[0];
 
           // c 0-255 dependiendo del valor. 0,99 para dejar en offside al -1
           var c = Math.round((this.scaleWidth - 1) * ((value + 0.99) / 2));
@@ -172,17 +177,44 @@ export class D3GeoblazeOnMapbox {
           this.data[pos + 1] = this.csImageData[c * 4 + 1];
           this.data[pos + 2] = this.csImageData[c * 4 + 2];
           this.data[pos + 3] = alpha;
-        }
+        // }
 
         // Actualizo el indice, siempre
         pos = pos + 4;
       }
     }
 
+
+    let p1 = this.map.unproject([0,0])
+    let p2 = this.map.unproject([width,0])
+    let p3 = this.map.unproject([width,height])
+    let p4 = this.map.unproject([0,height])
     //console.log('Data',data)
     //https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas#pre-render_similar_primitives_or_repeating_objects_on_an_offscreen_canvas
     this.contextRaster.putImageData(this.id, 0, 0);
     this.context.drawImage(this.canvasRaster.node(), 0, 0);
+
+    console.log("CR", this.canvasRaster, this.canvasRaster.node())
+    this.map.addSource('canvas-source', {
+      type: 'canvas',
+      canvas: this.canvasRaster.node(),
+      coordinates: [
+       [geoblaze_raster.xmin, geoblaze_raster.ymax],
+       [geoblaze_raster.xmax, geoblaze_raster.ymax],
+       [geoblaze_raster.xmax, geoblaze_raster.ymin],
+       [geoblaze_raster.xmin, geoblaze_raster.ymin]
+      ]
+      })
+
+     this.map.addLayer({
+        id: 'radar-layer',
+        'type': 'raster',
+        'source': 'canvas-source',
+        'paint': {
+        'raster-fade-duration': 0
+        }
+        });
+
   }
 
   render() {
@@ -194,8 +226,6 @@ export class D3GeoblazeOnMapbox {
 
     this.id = this.contextRaster.createImageData(width, height);
     this.data = this.id.data;
-
-
 
     // Coordenadas geograficas del bbox del raster (el ymin geografico (lat) es el ymax en raster)
     // xmin,ymin es la esquina superior izquierda
