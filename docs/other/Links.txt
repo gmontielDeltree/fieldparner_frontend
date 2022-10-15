@@ -1,0 +1,8 @@
+# Preescripcion Agrotax Ag 9500
+https://www.youtube.com/watch?v=IJOgxx50cJk
+
+# Preescripcion Manual FieldView
+https://www.youtube.com/watch?v=WQkiJf-yWGU
+
+# WebAssembly
+http://www.zachbennettcodes.com/geospatial/algorithms/2020/12/27/generating-isolines-from-a-geotiff-with-wasm-part-1.html
