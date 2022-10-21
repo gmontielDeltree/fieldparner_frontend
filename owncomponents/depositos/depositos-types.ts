@@ -80,9 +80,7 @@ type DetallesCosecha = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
   rinde: number;
-  comentario: string;
-  humedad: string;
-  
+  humedad: number;
 };
 
 type DetallesSiembra = {
@@ -186,5 +184,6 @@ export {
   get_empty_aplicacion,
   DetallesSiembra,
   DetallesAplicacion,
+  DetallesCosecha,
   LineaDosis
 };

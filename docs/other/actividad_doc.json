@@ -1,0 +1,49 @@
+{
+	"_id": "actividad:20221103:9f8ca6f2-e4bc-489f-ba4d-6e3ededa9b70",
+	"_rev": "1-e85921cd878b159550756fcf03e08a53",
+	"uuid": "9f8ca6f2-e4bc-489f-ba4d-6e3ededa9b70",
+	"ts_generacion": 0,
+	"tipo": "aplicacion",
+	"lote_uuid": "25cc492f-7c67-492c-8b16-a2efa46393d1",
+
+	"contratista": {
+	  "labores": [
+	    {
+	      "labor": "Siembra",
+	      "uuid": "1"
+	    },
+	    {
+	      "labor": "Riego",
+	      "uuid": "9"
+	    },
+	    {
+	      "labor": "Cosecha",
+	      "uuid": "3"
+	    }
+	  ],
+	  "uuid": "98bcf2ec-877e-44e7-9ba6-f9ec44530ef2",
+	  "nombre": "Victor Redondo ",
+	  "cuit": 20123122333,
+	  "datos_generales": {
+	    "email": "jalon.breitenberg94@hotmail.com",
+	    "direccion": "68844 Conroy Gardens",
+	    "telefono": 4898922
+	  }
+	},
+
+	"comentario": "wwww",
+
+	"adjuntos": [],
+
+	"estado": "pendiente",
+
+	"detalles": {
+	  "fecha_ejecucion_tentativa": "2022-11-03",
+	  "hectareas": 20.55,
+	  "motivos": "",
+	  "dosis": []
+	}
+
+}
+
+

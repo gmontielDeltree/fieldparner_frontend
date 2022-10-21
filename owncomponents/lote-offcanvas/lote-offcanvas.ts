@@ -587,13 +587,10 @@ export class LoteOffcanvas extends LitElement {
       this.reload_actividades();
       return;
     } else if (tipo === "cosecha") {
-      detalles = actividad_doc;
-      aplicacion = {
-        uuid: uuid4(),
-        tipo: "cosecha",
-        ts_generacion: ts_ahora,
-        detalles: detalles,
-      };
+
+      this.db.put(actividad_doc);
+      this.reload_actividades();
+
     }
 
     // Condiciones ambientales?
@@ -782,6 +779,7 @@ export class LoteOffcanvas extends LitElement {
       this.notas();
     }
   }
+  
   render() {
     //console.log("RENDER LOTE OFFCANVAS");
 
