@@ -458,6 +458,8 @@ export class NdviOffcanvas extends LitElement {
     // drawGeotiffOnMap(this.ndvi_geoblaze_raster,this.map);
     let d3tiff = new D3GeoblazeOnMapbox(this.ambientes_raster, this.map);
 
+    d3tiff.render_isobands()
+
     function rerender() {
       d3tiff.render();
     }
@@ -518,7 +520,7 @@ export class NdviOffcanvas extends LitElement {
               <div class="offcanvas-body small container-fluid row">
                 <div id="my_dataviz"></div>
                 <p>
-                  <label># bins</label>
+                  <label># Particiones</label>
                   <input
                     type="number"
                     min="1"
