@@ -465,19 +465,25 @@ export class TimelineElement extends LitElement {
           item-value-path="value"
           item-label-path="nombre"
           .items="${estados}"
-          @selected-item-changed=${(e) => {
+          @selected-item-changed=${(ev) => {
             try {
-              item.estado = e.detail.value.value;
-              console.log("Evento Cambiar estado", e, item);
+              // Esto se dispara por aguna razon cuando se cargan los elementos por 
+              // primera vez
+              if(item.estado === ev.detail.value.value){
+                //console.log("NO HAY CAMBIOS")
+                return
+              }
+              item.estado = ev.detail.value.value;
+              //console.log("Evento Cambiar estado", ev, item);
 
               let event = new CustomEvent("cambio-estado", {
-                detail: { e: e, item: item },
+                detail: { e: ev, item: item },
                 bubbles: true,
                 composed: true,
               });
               this.dispatchEvent(event);
             } catch (e) {
-              console.log("EEROR EEEE", e);
+              //console.log("EEROR EEEE", ev);
             }
           }}
           value=${estado}

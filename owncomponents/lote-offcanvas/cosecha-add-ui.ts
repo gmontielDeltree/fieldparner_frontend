@@ -1,13 +1,12 @@
 import { LitElement, html } from "lit";
-import { interpret } from "xstate";
-import { cosechaMachine } from "./cosecha-machine";
 import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import Modal from "bootstrap/js/dist/modal.js";
 import { property, state } from "lit/decorators.js";
 import { Actividad, DetallesCosecha } from "../depositos/depositos-types";
 import { empty_contratista } from "../contratistas/contratista-types";
+import uuid4 from "uuid4";
 
 export class CosechaAddUI extends LitElement {
   @property()
@@ -37,7 +36,7 @@ export class CosechaAddUI extends LitElement {
     _id: "",
     uuid: "",
     ts_generacion: 0,
-    tipo: "siembra",
+    tipo: "cosecha",
     estado: "pendiente",
     lote_uuid: "",
     detalles: {
@@ -53,6 +52,9 @@ export class CosechaAddUI extends LitElement {
 
   @state()
   paso: number = 0;
+
+  @state()
+  editando : boolean = false;
 
   static styles = null;
 
@@ -127,7 +129,9 @@ export class CosechaAddUI extends LitElement {
   start() {
     document.getElementById("contratista-cosecha-combo").clear();
     this.init_fsm();
-    this.next()
+    this.editando = false
+    this.paso = 0;
+    this.show_step(this.paso)
   }
 
   solo_contratistas_cosecha() {
@@ -159,22 +163,48 @@ export class CosechaAddUI extends LitElement {
     return filtered_contratistas;
   }
 
+  editar(doc){
+    this.doc = doc
+    this.editando = true
+    document.getElementById("contratista-cosecha-combo").clear();
+    this.paso = 0;
+    this.show_step(this.paso)
+  }
+
   guardar() {
     // Enviar Evento. se procesa en lote-offcanvas.js
+
+
+    let fecha = format(
+      parseISO(this.doc.detalles.fecha_ejecucion_tentativa),
+      "yyyyMMdd"
+    );
+
+    // Nuevo - No hacer si se esta editando
+    if(!this.editando){
+      let uuid = uuid4();
+      this.doc.lote_uuid = this._lote_doc.properties.uuid;
+      this.doc._id = "actividad:" + fecha + ":" + uuid;
+      this.doc.uuid = uuid;
+  
+    }
+ 
+
     let cosecha = this.doc;
+
     const event = new CustomEvent("guardar-cosecha", {
       detail: cosecha,
       bubbles: true,
       composed: true,
     });
     this.dispatchEvent(event);
-    this.cancel()
+
+    this.cancel();
   }
 
   cancel() {
     this.hideAll();
     this.paso = 0;
-
   }
 
   next() {
@@ -182,7 +212,7 @@ export class CosechaAddUI extends LitElement {
     this.show_step(this.paso);
   }
 
-  back(){
+  back() {
     this.paso = this.paso - 1;
     this.show_step(this.paso);
   }
@@ -294,18 +324,10 @@ export class CosechaAddUI extends LitElement {
               >
                 Cancelar
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.back}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.back}>
                 Atras
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.next}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.next}>
                 Siguiente
               </button>
             </div>
@@ -342,7 +364,7 @@ export class CosechaAddUI extends LitElement {
                   type="number"
                   class="form-control"
                   .value=${this.doc.detalles.rinde}
-                  @change=${(e) => this.doc.detalles.rinde = e.target.value}
+                  @change=${(e) => (this.doc.detalles.rinde = e.target.value)}
                   aria-label="Text input with dropdown button"
                 />
                 <button
@@ -368,18 +390,10 @@ export class CosechaAddUI extends LitElement {
               >
                 Cancelar
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.back}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.back}>
                 Atras
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.next}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.next}>
                 Siguiente
               </button>
             </div>
@@ -416,7 +430,7 @@ export class CosechaAddUI extends LitElement {
                   type="number"
                   class="form-control"
                   .value=${this.doc.detalles.humedad}
-                  @change=${(e) => this.doc.detalles.humedad = e.target.value }
+                  @change=${(e) => (this.doc.detalles.humedad = e.target.value)}
                   aria-label="Text input with dropdown button"
                 />
                 <button
@@ -437,18 +451,10 @@ export class CosechaAddUI extends LitElement {
               >
                 Cancelar
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.back}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.back}>
                 Atras
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.next}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.next}>
                 Siguiente
               </button>
             </div>
@@ -491,18 +497,10 @@ export class CosechaAddUI extends LitElement {
               >
                 Cancelar
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.back}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.back}>
                 Atras
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.next}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.next}>
                 Siguiente
               </button>
             </div>
@@ -540,7 +538,7 @@ export class CosechaAddUI extends LitElement {
                 .value=${this.doc.comentario}
                 name="story"
                 rows="5"
-                @change=${(e) => this.doc.comentario = e.target.value }
+                @change=${(e) => (this.doc.comentario = e.target.value)}
               ></textarea>
             </div>
             <div class="modal-footer">
@@ -552,18 +550,10 @@ export class CosechaAddUI extends LitElement {
               >
                 Cancelar
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.back}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.back}>
                 Atras
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.next}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.next}>
                 Siguiente
               </button>
             </div>
@@ -599,8 +589,11 @@ export class CosechaAddUI extends LitElement {
                 <small>${this.doc.detalles.fecha_ejecucion_tentativa}</small>
               </div>
               <p class="mb-1">
-                Rinde de ${this.doc.detalles.rinde} tn/ha en ${this.doc.detalles.hectareas} ha.
-                - Total ${(this.doc.detalles.rinde * this.doc.detalles.hectareas).toFixed(2)}
+                Rinde de ${this.doc.detalles.rinde} tn/ha en
+                ${this.doc.detalles.hectareas} ha. - Total
+                ${(
+                  this.doc.detalles.rinde * this.doc.detalles.hectareas
+                ).toFixed(2)}
                 tn.
               </p>
               <p class="mb-1">Humedad ${this.doc.detalles.humedad} %</p>
@@ -615,11 +608,7 @@ export class CosechaAddUI extends LitElement {
               >
                 Cancelar
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${this.back}
-              >
+              <button type="button" class="btn btn-primary" @click=${this.back}>
                 Atras
               </button>
               <button

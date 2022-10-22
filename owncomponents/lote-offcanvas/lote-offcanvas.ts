@@ -165,10 +165,16 @@ export class LoteOffcanvas extends LitElement {
      */
     this._ctx = aplicacionMachine.initialState.context;
 
+    this.addEventListener("cambio-estado", (e: CustomEvent) => {
+      let doc = e.detail.item;
+      this.db.put(doc);
+      console.log("Cambio de Estado - PUT", doc);
+      this.reload_actividades()
+    });
+
     this.addEventListener("guardar-cosecha", (e: CustomEvent) =>
       this.guardar_aplicacion("cosecha", e.detail)
     );
-
     this.addEventListener("guardar-siembra", (e: CustomEvent) =>
       this.guardar_aplicacion("siembra", e.detail)
     );
@@ -495,6 +501,10 @@ export class LoteOffcanvas extends LitElement {
       this.abrir_editor_actividad();
       //document.getElementById("siembra-add-el").editar(actividad);
     }
+
+    if (actividad.tipo === "cosecha") {
+      document.getElementById("cosecha-add-el").editar(actividad);
+    }
   }
 
   tiene_cultivo_este_lote() {
@@ -573,8 +583,6 @@ export class LoteOffcanvas extends LitElement {
       this.db.put(actividad_doc);
       this.reload_actividades();
       return;
-      console.warn("GUARDAR APLICACION IMPLEMENT ME");
-      return;
     } else if (tipo === "siembra") {
       // aplicacion = {
       //   uuid: uuid4(),
@@ -587,10 +595,9 @@ export class LoteOffcanvas extends LitElement {
       this.reload_actividades();
       return;
     } else if (tipo === "cosecha") {
-
       this.db.put(actividad_doc);
       this.reload_actividades();
-
+      return;
     }
 
     // Condiciones ambientales?
@@ -703,15 +710,13 @@ export class LoteOffcanvas extends LitElement {
           (lote) => lote.properties.nombre === this.lote_nombre
         )[0] || {};
 
-          // Preparar NDVI
-        let e = new CustomEvent("generar-ndvi", {
-          detail: { lote_id: this._lote_doc.id, lote_geojson: this._lote_doc },
-          bubbles: true,
-          composed: true,
-        });
-        this.dispatchEvent(e)
-      
- 
+      // Preparar NDVI
+      let e = new CustomEvent("generar-ndvi", {
+        detail: { lote_id: this._lote_doc.id, lote_geojson: this._lote_doc },
+        bubbles: true,
+        composed: true,
+      });
+      this.dispatchEvent(e);
 
       this.localizar_lote();
     });
@@ -779,7 +784,7 @@ export class LoteOffcanvas extends LitElement {
       this.notas();
     }
   }
-  
+
   render() {
     //console.log("RENDER LOTE OFFCANVAS");
 
