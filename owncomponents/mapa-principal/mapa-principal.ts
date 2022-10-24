@@ -16,14 +16,20 @@ import "@spectrum-web-components/menu/sp-menu-item.js";
 import "@spectrum-web-components/theme/sp-theme";
 import "@spectrum-web-components/theme/src/themes";
 
-//https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
+// https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
+// https://github.com/kepta/idly/wiki/examples#using-bing-satellite-map
+// Tile Lists
+// http://www.idesa.gob.ar/2021/03/25/mas-mapas-xyz-tiles/
+
 const mapStyle = {
   version: 8,
   sources: {
     worldImagery: {
       type: "raster",
       tiles: [
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        "http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga"
+        //"https://ecn.t1.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=587&mkt=en-gb&n=z"
+        //,"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
       ],
       tileSize: 256
     }
