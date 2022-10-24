@@ -36,7 +36,9 @@ const mapStyle = {
       minzoom: 0,
       maxzoom: 20
     }
-  ]
+  ],
+  glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
+
 };
 
 /** Modifica 'features' agregado color y cultivo a las 'properties'
