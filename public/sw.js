@@ -1,6 +1,6 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.2.0/workbox-sw.js');
 
-const version = "0008"
+const version = "0010"
 
 // This will trigger the importScripts() for workbox.strategies and its dependencies:
 const {strategies, routing, backgroundSync} = workbox;
@@ -27,6 +27,7 @@ routing.registerRoute(/.*\.cloudantnosqldb\.appdomain\.cloud.*\/processed_device
 
 routing.registerRoute(/.*(?<!events\.)(?:mapbox)\.com\/(?!map\-sessions).*$/, new strategies.CacheFirst());
 
+routing.registerRoute(/.*server\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery\/MapServer\/tile.*$/, new strategies.CacheFirst({cacheName:'maptiles'}));
 
 routing.registerRoute(
   ({request}) => request.destination === 'image',
