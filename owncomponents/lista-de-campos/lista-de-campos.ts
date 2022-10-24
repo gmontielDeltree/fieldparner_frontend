@@ -1,21 +1,26 @@
 import { LitElement, html, css, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 import area from "@turf/area";
 import uuid4 from "uuid4";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import centroid from "@turf/centroid";
+import { LngLatLike, Map } from "mapbox-gl";
+import { Router } from "@vaadin/router";
 
 export class ListaDeCampos extends LitElement {
-  static properties = {
-    map: {},
-    campos: {},
-    map: {},
-    _detallesOffcanvas: {
-      hasChanged(newVal, oldVal) {
-        return false;
-      },
+  @property()
+  map: Map;
+
+  @property()
+  campos: any;
+
+  @state({
+    hasChanged(newVal, oldVal) {
+      return false;
     },
-  };
+  })
+  _detallesOffcanvas: Offcanvas;
 
   static styles = unsafeCSS(bootstrap);
 
@@ -28,6 +33,17 @@ export class ListaDeCampos extends LitElement {
     this._detallesOffcanvas = new Offcanvas(
       this.shadowRoot.getElementById("lista-de-campos-oc")
     );
+
+    this.shadowRoot
+      .getElementById("lista-de-campos-oc")
+      .addEventListener("hidden.bs.offcanvas", () => {
+        this._detallesOffcanvas.dispose();
+        Router.go("/");
+      });
+
+    let e = new CustomEvent("dame-map-db", { bubbles: true });
+    this.dispatchEvent(e);
+    this._detallesOffcanvas.show();
   }
 
   show() {
@@ -37,7 +53,7 @@ export class ListaDeCampos extends LitElement {
 
   ir_a(feature) {
     this.map.flyTo({
-      center: centroid(feature).geometry.coordinates,
+      center: centroid(feature).geometry.coordinates as LngLatLike,
       zoom: 10,
     });
     this._detallesOffcanvas.hide();

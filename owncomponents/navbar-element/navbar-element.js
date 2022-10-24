@@ -2,9 +2,11 @@ import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/js/dist/collapse";
 import "bootstrap/js/dist/dropdown";
+import {Router} from '@vaadin/router'
 
 import mapboxgl from "mapbox-gl";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
+import { roundToNearestMinutes } from "date-fns";
 
 export class NavbarElement extends LitElement {
   static properties = {
@@ -82,7 +84,8 @@ export class NavbarElement extends LitElement {
                 <div
                   style="cursor: pointer;background-image: url('iconodecampo2D.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
-                    this.sendEvent("ver-lista-campos", null);
+                   // this.sendEvent("ver-lista-campos", null);
+                   Router.go('/campos')
                   }}
                 ></div>
 

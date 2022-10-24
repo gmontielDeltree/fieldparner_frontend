@@ -1,5 +1,6 @@
-import { LitElement, html } from "lit";
-import { property } from "lit/decorators.js";
+import { LitElement, html, PropertyValueMap } from "lit";
+import { property, state } from "lit/decorators.js";
+import { Router } from "@vaadin/router";
 import PouchDB from "pouchdb";
 import { base_url, normalizar_username } from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
@@ -24,8 +25,9 @@ import "../mapa-principal/mapa-principal.js";
 import "../login-modal/login-modal.ts";
 import "../notas-offcanvas/nota-target.ts";
 import "../insumos/insumos-lista.ts";
-import "../lista-centrales-cercanas/lista-centrales-cercanas.ts"
-import "../sensores/lista-de-sensores.ts"
+import "../lista-centrales-cercanas/lista-centrales-cercanas.ts";
+import "../sensores/lista-de-sensores.ts";
+import '../null-component'
 
 import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
@@ -88,6 +90,12 @@ export class FieldPartner extends LitElement {
   @property()
   settings: any;
 
+  @state()
+  _router: Router;
+
+  @state()
+  _update_elements: HTMLElement[] = [];
+
   constructor() {
     super();
 
@@ -127,26 +135,23 @@ export class FieldPartner extends LitElement {
       document.getElementById("nuevo-campo-oc").show = true;
     });
 
-    this.addEventListener("ver-ndvi-click", (e : CustomEvent) => {
+    this.addEventListener("ver-ndvi-click", (e: CustomEvent) => {
       //document.getElementById("ndvi-oc").lote_doc = e.detail.lote;
       //document.getElementById("ndvi-oc").show();
 
-      const el = document.createElement('ndvi-offcanvas')
-      document.getElementById('container-multiproposito').appendChild(el)
+      const el = document.createElement("ndvi-offcanvas");
+      document.getElementById("container-multiproposito").appendChild(el);
       el.map = this.map;
-      el.id = "ndvi-oc"
+      el.id = "ndvi-oc";
       el.lote_doc = e.detail.lote;
-      el.show()
-
+      el.show();
     });
 
-    this.addEventListener('generar-ndvi', async (e:CustomEvent) => {
+    this.addEventListener("generar-ndvi", async (e: CustomEvent) => {
       let couch_username = normalizar_username(this.user.name);
-       console.log('gen ndvi evnet')
+      console.log("gen ndvi evnet");
 
-       if(!(await ndvi_generado_hoy(e.detail.lote_geojson.geometry))){
-
-
+      if (!(await ndvi_generado_hoy(e.detail.lote_geojson.geometry))) {
         this.changes_db.put(
           {
             _id: uuid4(),
@@ -167,12 +172,8 @@ export class FieldPartner extends LitElement {
             }
           }
         );
-
-        
-       }
-
-
-    })
+      }
+    });
 
     this.addEventListener("nuevo-deposito-click", () => {
       document.getElementById("deposito-upsert").show();
@@ -189,8 +190,8 @@ export class FieldPartner extends LitElement {
       // Cuando se carga el mapa considero que terminó la carga
       this.loading = false;
 
-      let devices = new Devices()
-      devices.add_markers_to_map(this.map)
+      let devices = new Devices();
+      devices.add_markers_to_map(this.map);
     });
 
     /* Click en ver lista de campos */
@@ -235,47 +236,47 @@ export class FieldPartner extends LitElement {
       document.getElementById("contratista-crud").nuevo();
     });
 
-    this.addEventListener('ver-lista-de-sensores', (e)=>{
-      const el = document.createElement('lista-de-sensores')
-      document.getElementById('container-multiproposito').appendChild(el)
+    this.addEventListener("ver-lista-de-sensores", (e) => {
+      const el = document.createElement("lista-de-sensores");
+      document.getElementById("container-multiproposito").appendChild(el);
       el.map = this.map;
-      el.show()
-    })
+      el.show();
+    });
 
-    this.addEventListener('ver-centrales-cercanas', (e : CustomEvent)=>{
-      let item = (e.detail as Actividad)
-      let lote_uuid = (item.lote_uuid)
-      let lote_geojson = undefined
-      this.campos?.rows.map(({doc})=>{
+    this.addEventListener("ver-centrales-cercanas", (e: CustomEvent) => {
+      let item = e.detail as Actividad;
+      let lote_uuid = item.lote_uuid;
+      let lote_geojson = undefined;
+      this.campos?.rows.map(({ doc }) => {
         let lotes = doc.lotes as any[];
-        let lote_candidato= lotes.find((lote) => lote.id === lote_uuid)
-        if(lote_candidato){
-          lote_geojson = lote_candidato
+        let lote_candidato = lotes.find((lote) => lote.id === lote_uuid);
+        if (lote_candidato) {
+          lote_geojson = lote_candidato;
         }
-      })
+      });
 
       console.log("dfsdfsdfsdfs", lote_geojson);
 
-
-      const el = document.createElement('centrales-cercanas-lista')
-      document.getElementById('container-multiproposito').appendChild(el)
+      const el = document.createElement("centrales-cercanas-lista");
+      document.getElementById("container-multiproposito").appendChild(el);
       //"fecha_ejecucion_tentativa": "2022-08-27",
-      el.fecha = item.detalles.fecha_ejecucion_tentativa
-      el.posicion = lote_geojson ? centroid(lote_geojson).geometry.coordinates : [] //lon lat
+      el.fecha = item.detalles.fecha_ejecucion_tentativa;
+      el.posicion = lote_geojson
+        ? centroid(lote_geojson).geometry.coordinates
+        : []; //lon lat
       el.show();
-    })
+    });
 
-    this.addEventListener('ver-telemetria-del-dia', (e : CustomEvent)=>{
-      const el = document.createElement('sensores-oc')
-      document.getElementById('container-multiproposito').appendChild(el)
+    this.addEventListener("ver-telemetria-del-dia", (e: CustomEvent) => {
+      const el = document.createElement("sensores-oc");
+      document.getElementById("container-multiproposito").appendChild(el);
 
-      let daily_card = (e.detail as DailyTelemetryCard)
+      let daily_card = e.detail as DailyTelemetryCard;
 
-      console.log("VER TELE DEL DIA", daily_card)
-      el.map = this.map
-      el.show(daily_card)
-    })
-
+      console.log("VER TELE DEL DIA", daily_card);
+      el.map = this.map;
+      el.show(daily_card);
+    });
 
     // Borrar un Campo
     this.addEventListener("borrar-campo", (e) => {
@@ -284,7 +285,6 @@ export class FieldPartner extends LitElement {
         this.load_campos_y_settings();
       });
     });
-
 
     // Share Campo
     this.addEventListener("share-campo", (e: any) => {
@@ -323,12 +323,21 @@ export class FieldPartner extends LitElement {
       document.getElementById("campo-oc").show();
     });
 
+    this.addEventListener("dame-map-db", (e) => {
+      //this._update_elements.push(e.target);
+      e.target.db = this.campos_db
+      e.target.map = this.map
+      e.target.campos = this.campos
+      console.log("DAME MAP DB", this.campos, this.map);
+    });
+
     this.init_the_whole_thing();
   }
 
   createRenderRoot() {
     return this;
   }
+
 
   delete_insumos = async () => {};
 
@@ -591,26 +600,28 @@ export class FieldPartner extends LitElement {
     //       console.log("Alguien me compartio un Campo");
     //     }
     //   });
-
-
   }
 
-
-  init_ndvi_dbs(){
-        // Changes Lotes para generar NDVI
-    this.remote_changes_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
-    this.changes_db = new PouchDB("campos_changes")
+  init_ndvi_dbs() {
+    // Changes Lotes para generar NDVI
+    this.remote_changes_db = new PouchDB(
+      "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes"
+    );
+    this.changes_db = new PouchDB("campos_changes");
 
     // console.log("Changes Sync Set");
-    this.changes_db.replicate.to(this.remote_changes_db, {
-        live: true
-    }).on('complete', function () {
+    this.changes_db.replicate
+      .to(this.remote_changes_db, {
+        live: true,
+      })
+      .on("complete", function () {
         // yay, we're done!
-        console.log("Changes Uploaded")
-    }).on('error', function (err) {
+        console.log("Changes Uploaded");
+      })
+      .on("error", function (err) {
         // boo, something went wrong!
-        console.log("Error Changes")
-    });
+        console.log("Error Changes");
+      });
   }
 
   cargar_desde_remoto() {
@@ -660,7 +671,7 @@ export class FieldPartner extends LitElement {
         console.log("CHANGES!!");
       });
 
-    this.init_ndvi_dbs()
+    this.init_ndvi_dbs();
   }
 
   replicar_y_sincronizar() {
@@ -691,7 +702,7 @@ export class FieldPartner extends LitElement {
             console.log("CHANGES!!");
           });
 
-          this.init_ndvi_dbs();
+        this.init_ndvi_dbs();
       })
       .on("error", (e) => {
         // Puede llegar aca si la app se abre offline
@@ -816,6 +827,15 @@ export class FieldPartner extends LitElement {
   /**** FIN Bases de Datos */
   // #endregion
 
+  firstUpdated() {
+    this._router = new Router(document.getElementById("router-container"));
+    this._router.setRoutes([
+      { path: "/", component: 'null-component' },
+      {path: '/gf', redirect: '/'},
+      { path: "/campos", component: "lista-de-campos" },
+    ]);
+  }
+
   render() {
     return html`
       <mapa-principal
@@ -848,11 +868,11 @@ export class FieldPartner extends LitElement {
         .campos_db=${this.campos_db}
       ></nuevo-campo>
 
-      <lista-de-campos
+      <!-- <lista-de-campos
         id="lista-de-campos"
         .map=${this.map}
         .campos=${this.campos}
-      ></lista-de-campos>
+      ></lista-de-campos> -->
 
       <contratista-crud
         id="contratista-crud"
@@ -867,7 +887,6 @@ export class FieldPartner extends LitElement {
         .cultivos=${this.settings?.user_cultivos}
       ></color-cultivo>
       <!-- <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas> -->
-
 
       <nota-share-target
         id="nota-share-target"
@@ -888,10 +907,12 @@ export class FieldPartner extends LitElement {
       ></depositos-lista>
 
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
-      
-    <div id='container-multiproposito'>
-    <loading-modal .show=${this.loading}></loading-modal>
-    </div>
+
+      <div id="container-multiproposito">
+        <loading-modal .show=${this.loading}></loading-modal>
+      </div>
+
+      <div id="router-container"></div>
     `;
   }
 }
