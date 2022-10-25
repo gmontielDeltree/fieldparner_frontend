@@ -7,13 +7,15 @@ import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import centroid from "@turf/centroid";
 import { LngLatLike, Map } from "mapbox-gl";
 import { Router } from "@vaadin/router";
+import {StateController} from '@lit-app/state'
+import gbl_state from '../state.js'
 
 export class ListaDeCampos extends LitElement {
-  @property()
-  map: Map;
+ // @property()
+ // map: Map;
 
-  @property()
-  campos: any;
+  //@property()
+  //campos: any;
 
   @state({
     hasChanged(newVal, oldVal) {
@@ -23,6 +25,8 @@ export class ListaDeCampos extends LitElement {
   _detallesOffcanvas: Offcanvas;
 
   static styles = unsafeCSS(bootstrap);
+
+  bindState = new StateController(this, gbl_state)
 
   constructor() {
     super();
@@ -41,18 +45,18 @@ export class ListaDeCampos extends LitElement {
         Router.go("/");
       });
 
-    let e = new CustomEvent("dame-map-db", { bubbles: true });
-    this.dispatchEvent(e);
+   // let e = new CustomEvent("dame-map-db", { bubbles: true });
+   // this.dispatchEvent(e);
     this._detallesOffcanvas.show();
   }
 
   show() {
-    console.log("DETALLE", this.campos);
+    console.log("DETALLE", gbl_state.campos);
     this._detallesOffcanvas.show();
   }
 
   ir_a(feature) {
-    this.map.flyTo({
+    gbl_state.map.flyTo({
       center: centroid(feature).geometry.coordinates as LngLatLike,
       zoom: 10,
     });
@@ -98,7 +102,7 @@ export class ListaDeCampos extends LitElement {
       </div>
       <div class="offcanvas-body">
         <div class="list-group">
-          ${this.campos?.rows.map((campo) =>
+          ${gbl_state.campos?.rows.map((campo) =>
             item(
               campo.doc.nombre,
               campo.doc.campo_geojson.properties.hectareas,

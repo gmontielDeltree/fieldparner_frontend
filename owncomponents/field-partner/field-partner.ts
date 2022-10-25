@@ -41,6 +41,10 @@ import { format, parse } from "date-fns";
 import { Devices } from "../sensores/sensores";
 import { ndvi_generado_hoy } from "../ndvi-offcanvas/ndvi-functions";
 
+import {StateController} from '@lit-app/state'
+import gbl_state from '../state.js'
+
+
 var wentOffline, wentOnline;
 
 function handleConnectionChange(event) {
@@ -186,6 +190,9 @@ export class FieldPartner extends LitElement {
     /* Izar map y draw a este componente para que los otros puedan usarlo */
     this.addEventListener("map-loaded", (e) => {
       this.map = e.detail.map;
+
+    gbl_state.map = e.detail.map;
+
       this.draw = e.detail.draw;
       // Cuando se carga el mapa considero que terminó la carga
       this.loading = false;
@@ -325,10 +332,10 @@ export class FieldPartner extends LitElement {
 
     this.addEventListener("dame-map-db", (e) => {
       //this._update_elements.push(e.target);
-      e.target.db = this.campos_db
-      e.target.map = this.map
-      e.target.campos = this.campos
-      console.log("DAME MAP DB", this.campos, this.map);
+      //e.target.db = this.campos_db
+      //e.target.map = this.map
+      //e.target.campos = this.campos
+      // console.log("DAME MAP DB", this.campos, this.map);
     });
 
     this.init_the_whole_thing();
@@ -472,6 +479,8 @@ export class FieldPartner extends LitElement {
 
     // Nombres validos solo en minusculas
     this.campos_db = new PouchDB("campos_" + username + "v3");
+  
+    gbl_state.db = this.campos_db
 
     try {
       let campos_db_uri = base_url + "campos_" + username;
@@ -632,7 +641,10 @@ export class FieldPartner extends LitElement {
         startkey: "campos_",
         endkey: "campos_\ufff0",
       })
-      .then((result) => (this.campos = result));
+      .then((result) => {
+        this.campos = result
+        gbl_state.campos = this.campos
+      });
 
     // Get Settings
     this.remote_campos_db
@@ -774,7 +786,10 @@ export class FieldPartner extends LitElement {
         startkey: "campos_",
         endkey: "campos_\ufff0",
       })
-      .then((result) => (this.campos = result));
+      .then((result) => {
+        this.campos = result
+        gbl_state.campos = this.campos
+      });
 
     // Get Settings
     this.campos_db
