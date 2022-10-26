@@ -14,18 +14,32 @@ import "./leyenda";
 import { utils, writeFile } from "xlsx";
 import { D3GeoblazeOnMapbox, drawGeotiffOnMap } from "./ndvi-functions";
 
+import {StateController} from '@lit-app/state'
+import gbl_state from '../state.js'
+
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
 export class NdviOffcanvas extends LitElement {
-  @property()
-  map: Map;
+  //@property()
+  //map: Map;
+
+  @property({type: Object}) 
+  location = gbl_state.router.location;
+
+  bindState = new StateController(this, gbl_state)
 
   @property()
   ndvi_db: PouchDB.Database;
 
   @property()
   lote_doc: any;
+
+  @state()
+  indice : string
+
+  @state()
+  lote_uuid : string
 
   @state()
   obs: any[] = [];
@@ -69,28 +83,36 @@ export class NdviOffcanvas extends LitElement {
     this.shadowRoot
       .getElementById("offcanvas-lote-ndvi")
       .addEventListener("hidden.bs.offcanvas", () => {
-        layer_visibility(this.map, "campos", true);
-        layer_visibility(this.map, "campos_border", true);
-        layer_visibility(this.map, "lotes", false);
-        layer_visibility(this.map, "lotes_border", false);
-        layer_visibility(this.map, "nombres_campos", true);
+        layer_visibility(gbl_state.map, "campos", true);
+        layer_visibility(gbl_state.map, "campos_border", true);
+        layer_visibility(gbl_state.map, "lotes", false);
+        layer_visibility(gbl_state.map, "lotes_border", false);
+        layer_visibility(gbl_state.map, "nombres_campos", true);
 
         /* Hide NDVI */
-        layer_visibility(this.map, "ndvi-layer", false);
-        layer_visibility(this.map, "borde_de_este_lote", false);
-        this.map.removeLayer("borde_de_este_lote");
-        this.map.removeSource("borde_de_este_lote");
-        this.map.removeLayer("ndvi-layer");
-        this.map.removeSource("ndvi");
+        layer_visibility(gbl_state.map, "ndvi-layer", false);
+        layer_visibility(gbl_state.map, "borde_de_este_lote", false);
+        gbl_state.map.removeLayer("borde_de_este_lote");
+        gbl_state.map.removeSource("borde_de_este_lote");
+        gbl_state.map.removeLayer("ndvi-layer");
+        gbl_state.map.removeSource("ndvi");
 
         this.autodestruirme();
 
         //console.log("CHILDEREN",parent.children)
       });
+
+      this.indice = this.location.params.indice as string
+      this.lote_uuid = this.location.params.uuid as string
+
+      // Show
+
+      
   }
 
   show() {
     let geometry = this.lote_doc.geometry;
+
     let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
     hashMessage(clean_json).then((lote_hash) => {
       console.log("Lote Hash", lote_hash);
@@ -164,24 +186,24 @@ export class NdviOffcanvas extends LitElement {
     ];
     const img_src = this.img_url(ob);
 
-    //layer_visibility(this.map, "lotes_internos", false);
+    //layer_visibility(gbl_state.map, "lotes_internos", false);
     this.create_or_update_ndvi_source(img_src, bbox);
 
     /* Hide all polygons */
-    layer_visibility(this.map, "campos", false);
-    layer_visibility(this.map, "campos_border", false);
-    layer_visibility(this.map, "lotes", false);
-    layer_visibility(this.map, "lotes_border", false);
-    layer_visibility(this.map, "nombres_campos", false);
+    layer_visibility(gbl_state.map, "campos", false);
+    layer_visibility(gbl_state.map, "campos_border", false);
+    layer_visibility(gbl_state.map, "lotes", false);
+    layer_visibility(gbl_state.map, "lotes_border", false);
+    layer_visibility(gbl_state.map, "nombres_campos", false);
 
     /* Inicialmente dibujo el borde */
-    if (!this.map.getSource("borde_de_este_lote")) {
-      this.map.addSource("borde_de_este_lote", {
+    if (!gbl_state.map.getSource("borde_de_este_lote")) {
+      gbl_state.map.addSource("borde_de_este_lote", {
         type: "geojson",
         data: this.lote_doc,
       });
 
-      this.map.addLayer({
+      gbl_state.map.addLayer({
         id: "borde_de_este_lote",
         type: "fill",
         source: "borde_de_este_lote",
@@ -213,22 +235,22 @@ export class NdviOffcanvas extends LitElement {
 
   create_or_update_ndvi_source = (img_src, bbox) => {
     // If e
-    if (this.map.getSource("ndvi")) {
+    if (gbl_state.map.getSource("ndvi")) {
       // EXISTE la source -> Update
-      const mySource = this.map.getSource("ndvi") as ImageSource;
+      const mySource = gbl_state.map.getSource("ndvi") as ImageSource;
       mySource.updateImage({
         url: img_src,
         coordinates: bbox,
       });
     } else {
       // No existe la source crear
-      this.map.addSource("ndvi", {
+      gbl_state.map.addSource("ndvi", {
         type: "image",
         url: img_src,
         coordinates: bbox,
       });
 
-      this.map.addLayer({
+      gbl_state.map.addLayer({
         id: "ndvi-layer",
         type: "raster",
         source: "ndvi",
@@ -238,7 +260,7 @@ export class NdviOffcanvas extends LitElement {
         },
       });
 
-      this.map.on("mouseenter", ["borde_de_este_lote"], () => {
+      gbl_state.map.on("mouseenter", ["borde_de_este_lote"], () => {
         console.log(
           "A mouseenter event occurred on a visible portion of the water layer."
         );
@@ -247,7 +269,7 @@ export class NdviOffcanvas extends LitElement {
           closeButton: false,
         });
 
-        this.map.getCanvas().style.cursor = "pointer";
+        gbl_state.map.getCanvas().style.cursor = "pointer";
 
         const onMouseMove = (e: MapMouseEvent) => {
           //console.log("A mouseover event has occurred.", e.lngLat);
@@ -256,22 +278,22 @@ export class NdviOffcanvas extends LitElement {
           popup
             .setLngLat(e.lngLat)
             .setText(ndvi_value[0].toFixed(2))
-            .addTo(this.map);
+            .addTo(gbl_state.map);
         };
 
-        this.map.on("mousemove", ["borde_de_este_lote"], onMouseMove);
+        gbl_state.map.on("mousemove", ["borde_de_este_lote"], onMouseMove);
 
-        this.map.on("mouseleave", ["borde_de_este_lote"], () => {
-          this.map.getCanvas().style.cursor = "";
+        gbl_state.map.on("mouseleave", ["borde_de_este_lote"], () => {
+          gbl_state.map.getCanvas().style.cursor = "";
           popup.remove();
-          this.map.off("mousemove", "borde_de_este_lote", onMouseMove);
+          gbl_state.map.off("mousemove", "borde_de_este_lote", onMouseMove);
         });
       });
 
       console.log("EVENTOS ADDED");
     }
 
-    //this.map.moveLayer("ndvi-layer");
+    //gbl_state.map.moveLayer("ndvi-layer");
   };
 
   nubosidad(obs) {
@@ -293,10 +315,10 @@ export class NdviOffcanvas extends LitElement {
     /**
      * NDVI Layer Visible
      */
-    if (this.map.getLayer("ndvi-layer")) {
-      this.map.setLayoutProperty("ndvi-layer", "visibility", "visible");
+    if (gbl_state.map.getLayer("ndvi-layer")) {
+      gbl_state.map.setLayoutProperty("ndvi-layer", "visibility", "visible");
 
-      this.map.moveLayer("ndvi-layer");
+      gbl_state.map.moveLayer("ndvi-layer");
     }
 
     let obs = result.obs;
@@ -455,8 +477,8 @@ export class NdviOffcanvas extends LitElement {
     // Dibujar
     // new d3GeotiffonMap
     // map events -> render
-    // drawGeotiffOnMap(this.ndvi_geoblaze_raster,this.map);
-    let d3tiff = new D3GeoblazeOnMapbox(this.ambientes_raster, this.map);
+    // drawGeotiffOnMap(this.ndvi_geoblaze_raster,gbl_state.map);
+    let d3tiff = new D3GeoblazeOnMapbox(this.ambientes_raster, gbl_state.map);
 
     d3tiff.render_isobands()
 

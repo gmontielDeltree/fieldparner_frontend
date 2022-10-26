@@ -3,7 +3,7 @@
   "short_name": "Agrotools",
   "description": "Agrotools",
   "theme_color": "#f5f8fa",
-  "background_color": "white",
+  "background_color": "#FFFFFF",
   "display": "standalone",
   "scope": "./",
   "start_url": "index.html",

@@ -94,12 +94,6 @@ export class FieldPartner extends LitElement {
   @property()
   settings: any;
 
-  @state()
-  _router: Router;
-
-  @state()
-  _update_elements: HTMLElement[] = [];
-
   constructor() {
     super();
 
@@ -843,8 +837,8 @@ export class FieldPartner extends LitElement {
   // #endregion
 
   firstUpdated() {
-    this._router = new Router(document.getElementById("router-container"));
-    this._router.setRoutes([
+    gbl_state.router = new Router(document.getElementById("router-container"));
+    gbl_state.router.setRoutes([
       { path: "/", component: 'null-component' },
       {path: '/gf', redirect: '/'},
       { path: "/campos", component: "lista-de-campos" },

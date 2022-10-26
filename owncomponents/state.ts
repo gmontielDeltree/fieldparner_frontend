@@ -1,4 +1,5 @@
 import {State, property} from '@lit-app/state'
+import { Router } from '@vaadin/router';
 import { Map } from 'mapbox-gl'
 import PouchDB from "pouchdb";
 
@@ -9,7 +10,7 @@ class MyState extends State {
  @property() db : PouchDB.Database
  @property() campos : any
  @property() selected: any
- 
+ @property() router : Router 
 }
 
 const state = new MyState()
