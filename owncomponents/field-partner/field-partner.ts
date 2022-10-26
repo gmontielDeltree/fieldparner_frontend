@@ -842,7 +842,7 @@ export class FieldPartner extends LitElement {
       { path: "/", component: 'null-component' },
       {path: '/gf', redirect: '/'},
       { path: "/campos", component: "lista-de-campos" },
-      { path: "/indices/:indice/:uuid", component: "ndvi-offcanvas" },
+      { path: "/indices/:uuid", component: "ndvi-offcanvas" },
     ]);
   }
 

@@ -46,6 +46,8 @@ import {
   LineaDosis,
 } from "../depositos/depositos-types";
 import { init } from "xstate/lib/actionTypes";
+import gbl_state from '../state.js'
+import { Router } from "@vaadin/router";
 
 const capitalize = (mySentence) => {
   if (mySentence === null || mySentence === undefined) {
@@ -352,12 +354,13 @@ export class LoteOffcanvas extends LitElement {
   }
 
   evento_show_ndvi(e) {
-    const event = new CustomEvent("ver-ndvi-click", {
-      detail: { lote: this._lote_doc },
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+    Router.go('/indices/'+this._lote_doc.id)
+    // const event = new CustomEvent("ver-ndvi-click", {
+    //   detail: { lote: this._lote_doc },
+    //   bubbles: true,
+    //   composed: true,
+    // });
+    // this.dispatchEvent(event);
     // Ocultar este offcanvas
     this._lotesOffcanvas.hide();
   }

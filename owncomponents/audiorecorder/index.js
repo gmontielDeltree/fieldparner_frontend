@@ -11,7 +11,7 @@ window.customElements.define('audio-recorder',
 
       const linkElem = document.createElement('link');
       linkElem.setAttribute('rel', 'stylesheet');
-      linkElem.setAttribute('href', 'assets/reroot/bootstrap-5.1.3-dist/css/bootstrap.min.css');
+      linkElem.setAttribute('href', '/assets/reroot/bootstrap-5.1.3-dist/css/bootstrap.min.css');
 
       // Attach the created element to the shadow dom
       shadowRoot.appendChild(linkElem);

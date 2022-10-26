@@ -1,7 +1,7 @@
 import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import PouchDB from "pouchdb";
-import { hashMessage, layer_visibility } from "../helpers";
+import { get_lote_doc, hashMessage, layer_visibility } from "../helpers";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { property, state } from "lit/decorators.js";
 import { ImageSource, Map, MapMouseEvent, Popup } from "mapbox-gl";
@@ -14,20 +14,29 @@ import "./leyenda";
 import { utils, writeFile } from "xlsx";
 import { D3GeoblazeOnMapbox, drawGeotiffOnMap } from "./ndvi-functions";
 
-import {StateController} from '@lit-app/state'
-import gbl_state from '../state.js'
+import { StateController } from "@lit-app/state";
+import gbl_state from "../state.js";
+import { Router } from "@vaadin/router";
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
+
+const lista_indices = [
+  { nombre: "NDVI", value: "ndvi" },
+  { nombre: "ReCL", value: "recl" },
+  { nombre: "NDRE", value: "ndre" },
+  { nombre: "MSAVI", value: "msavi" },
+  { nombre: "NDMI", value: "ndmi" },
+];
 
 export class NdviOffcanvas extends LitElement {
   //@property()
   //map: Map;
 
-  @property({type: Object}) 
+  @property({ type: Object })
   location = gbl_state.router.location;
 
-  bindState = new StateController(this, gbl_state)
+  bindState = new StateController(this, gbl_state);
 
   @property()
   ndvi_db: PouchDB.Database;
@@ -36,10 +45,10 @@ export class NdviOffcanvas extends LitElement {
   lote_doc: any;
 
   @state()
-  indice : string
+  indice: any = lista_indices[0];
 
   @state()
-  lote_uuid : string
+  lote_uuid: string;
 
   @state()
   obs: any[] = [];
@@ -61,10 +70,16 @@ export class NdviOffcanvas extends LitElement {
   ndvi_geoblaze_raster: any;
 
   @state()
-  ambientes_raster :  any;
+  ambientes_raster: any;
+
+  @state()
+  fechas: string[] = [];
 
   @state()
   histograma_show: boolean = false;
+
+  @state()
+  selected_geotiff_url: string;
 
   constructor() {
     super();
@@ -75,7 +90,11 @@ export class NdviOffcanvas extends LitElement {
 
   static override styles = unsafeCSS(bootstrap);
 
-  firstUpdated() {
+  get_fechas() {
+    return ["2022-04-18"];
+  }
+
+  async firstUpdated() {
     this.offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-lote-ndvi")
     );
@@ -96,21 +115,27 @@ export class NdviOffcanvas extends LitElement {
         gbl_state.map.removeSource("borde_de_este_lote");
         gbl_state.map.removeLayer("ndvi-layer");
         gbl_state.map.removeSource("ndvi");
+        gbl_state.map.removeLayer("radar-layer");
+        gbl_state.map.removeSource("canvas-source");
 
         this.autodestruirme();
 
         //console.log("CHILDEREN",parent.children)
       });
 
-      this.indice = this.location.params.indice as string
-      this.lote_uuid = this.location.params.uuid as string
+    this.lote_uuid = this.location.params.uuid as string;
 
-      // Show
+    this.fechas = await this.get_fechas();
 
-      
+    // Show
+    console.log("Indice", this.indice, this.lote_uuid);
+    this.show();
   }
 
-  show() {
+  async show() {
+    this.lote_doc = await get_lote_doc(gbl_state.db, this.lote_uuid);
+    console.log(this.lote_doc);
+
     let geometry = this.lote_doc.geometry;
 
     let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
@@ -127,6 +152,7 @@ export class NdviOffcanvas extends LitElement {
             "Error NDVI: Aun no existe ningun registro. Si recien creo el lote espere unos instantes hasta que se recopilen las imagenes satelitales"
           );
           this.autodestruirme();
+          Router.go("/");
         });
     });
   }
@@ -137,6 +163,47 @@ export class NdviOffcanvas extends LitElement {
     let children_els = [...parent.children];
     let myself = children_els.find((e) => (e.id = this.id));
     parent.removeChild(myself);
+  }
+
+  async fetch_georaster(fecha, uuid, bbox) {
+    let url_tentativa = img_bucket_url + uuid + "_" + fecha + ".geotiff";
+
+    // parse array buffer
+    try {
+      const response = await fetch(url_tentativa);
+      const arrayBuffer = await response.arrayBuffer();
+      const georaster = await geoblaze.parse(arrayBuffer);
+      return georaster;
+    } catch (e) {
+      console.log("ERROR al FETCH", e);
+      // if 404
+      let is_generated = await this.call_generator(fecha, uuid, bbox);
+      if (is_generated) {
+        // try again
+        try {
+          const response = await fetch(url_tentativa);
+          const arrayBuffer = await response.arrayBuffer();
+          const georaster = await geoblaze.parse(arrayBuffer);
+          return georaster;
+        } catch (e) {
+          return undefined;
+        }
+      }
+    } 
+  }
+
+  async call_generator(fecha, uuid, bbox) {
+    try {
+      let url_generador = "";
+      const response = await fetch(url_generador);
+      console.log("CALL GENERATOR", response);
+      return true;
+    } catch (e) {
+      console.log("ERROR al FETCH", e);
+
+      return false;
+    } finally {
+    }
   }
 
   img_url = (ob) => {
@@ -443,16 +510,19 @@ export class NdviOffcanvas extends LitElement {
       //   .style("font-size", "15px");
     }
 
-    const ambientador = (a, t)=>{
-      if(a < -0.99){
+    const ambientador = (a, t) => {
+      if (a < -0.99) {
         return a;
       }
-      return a > t ? 1 : -0.97
-    }
+      return a > t ? 1 : -0.97;
+    };
 
     // Initialize with 50 bins
     update(50, 0.5);
-    this.ambientes_raster = await geoblaze.rasterCalculator(this.ndvi_geoblaze_raster,(a) => ambientador(a,0.5))
+    this.ambientes_raster = await geoblaze.rasterCalculator(
+      this.ndvi_geoblaze_raster,
+      (a) => ambientador(a, 0.5)
+    );
 
     // Listen to the button -> update if user change it
     d3.select(this.shadowRoot.getElementById("nBin")).on("input", function () {
@@ -465,10 +535,13 @@ export class NdviOffcanvas extends LitElement {
       async () => {
         update(50, this.shadowRoot.getElementById("ambientacion").value);
         //console.log("consoe", this.value)
-        let t1 = this.shadowRoot.getElementById("ambientacion").value
-        this.ambientes_raster = await geoblaze.rasterCalculator(this.ndvi_geoblaze_raster,(a) => ambientador(a,t1))
-        d3tiff.geoblaze_raster = this.ambientes_raster
-        d3tiff.render()
+        let t1 = this.shadowRoot.getElementById("ambientacion").value;
+        this.ambientes_raster = await geoblaze.rasterCalculator(
+          this.ndvi_geoblaze_raster,
+          (a) => ambientador(a, t1)
+        );
+        d3tiff.geoblaze_raster = this.ambientes_raster;
+        d3tiff.render();
       }
     );
 
@@ -480,12 +553,12 @@ export class NdviOffcanvas extends LitElement {
     // drawGeotiffOnMap(this.ndvi_geoblaze_raster,gbl_state.map);
     let d3tiff = new D3GeoblazeOnMapbox(this.ambientes_raster, gbl_state.map);
 
-    d3tiff.render_isobands()
+    d3tiff.render_isobands();
 
     function rerender() {
       d3tiff.render();
     }
-    
+
     function clear() {
       d3tiff.clear();
     }
@@ -495,9 +568,18 @@ export class NdviOffcanvas extends LitElement {
     // this.map.on("moveend", rerender);
   }
 
+  close() {
+    this.offcanvas.hide();
+    Router.go("/");
+  }
+
+  load_new_index() {}
+
+  render_canvas_with_observacion() {}
+
   render() {
     let back_button = () =>
-      html`<div @click=${() => (this.histograma_show = false)}>back</div>`;
+      html`<div @click=${() => (this.histograma_show = false)}>BACK</div>`;
 
     let fecha_date_selected = this.selected_obs
       ? parse(this.selected_obs.fecha, "yyyyMMdd", new Date())
@@ -513,7 +595,7 @@ export class NdviOffcanvas extends LitElement {
       >
         <div class="offcanvas-header">
           ${this.histograma_show ? back_button() : null}
-          <h5 class="offcanvas-title">NDVI</h5>
+          <h5 class="offcanvas-title">Índices</h5>
 
           <div
             class="btn btn-info"
@@ -531,7 +613,7 @@ export class NdviOffcanvas extends LitElement {
             type="button"
             class="btn-close text-reset"
             data-bs-dismiss="offcanvas"
-            @click=${() => this.offcanvas.hide()}
+            @click=${this.close}
             aria-label="Close"
           ></button>
         </div>
@@ -566,22 +648,40 @@ export class NdviOffcanvas extends LitElement {
           : html` <!--Imágenes-->
               <div class="offcanvas-body small container-fluid row">
                 <div class="row">
+                  <vaadin-combo-box
+                    id="indice-combo"
+                    label="Seleccione Índice"
+                    item-label-path="nombre"
+                    item-value-path="value"
+                    .selectedItem=${this.indice}
+                    .items="${lista_indices}"
+                    @selected-item-changed=${(e) => {
+                      this.indice = e.detail.value;
+                      this.load_new_index();
+                      // // console.log("e", e);
+                      // this._fsm.send({
+                      //   type: "ASSIGN_CONTRATISTA",
+                      //   value: e.detail.value,
+                      // });
+                    }}
+                  ></vaadin-combo-box>
+
                   ${this.selected_obs
                     ? html`<a
-                          class="btn btn-primary btn-sm col col-4 m-1"
+                          class="btn btn-primary btn-sm col col-3 m-1"
                           href=${this.img_url(this.selected_obs)}
                           download="ndvi.png"
-                          >Descargar Img</a
+                          >&#11015;&#65039; Imágen</a
                         >
                         <a
-                          class="btn btn-primary btn-sm col col-4 m-1"
+                          class="btn btn-primary btn-sm col col-3 m-1"
                           @click=${this.geoblaze_to_excel}
-                          >Descargar XLS</a
+                          >&#11015;&#65039; XLS</a
                         >
                         <a
                           class="btn btn-primary btn-sm col col-4 m-1"
                           @click=${this.histograma}
-                          >Hist</a
+                          >&#128202; Histograma</a
                         > `
                     : null}
                 </div>
@@ -590,9 +690,16 @@ export class NdviOffcanvas extends LitElement {
                     ? html`
                         <div class="">
                           <h5 class="mb-1">
-                            ${format(fecha_date_selected, "d 'de' MMMM yyyy", {
-                              locale: es,
-                            })}
+                            Selección
+                            <strong
+                              >${format(
+                                fecha_date_selected,
+                                "d 'de' MMMM yyyy",
+                                {
+                                  locale: es,
+                                }
+                              )}
+                            </strong>
                           </h5>
                           <p class="mb-1">
                             Media:
@@ -618,17 +725,17 @@ export class NdviOffcanvas extends LitElement {
                 <div class="row overflow-auto">
                   <div class="row mb-1"></div>
                   <!--CARDS con observaciones-->
-                  ${this.obs.map((ob) => {
-                    let fecha_date = parse(ob.fecha, "yyyyMMdd", new Date());
+                  ${this.fechas.map((fecha) => {
+                    let fecha_date = parse(fecha, "yyyy-MM-dd", new Date());
                     return html` <div
                       class="card text-dark bg-light mb-3"
-                      @click=${() => this.mostrar_en_mapa(ob)}
+                      @click=${() => this.mostrar_en_mapa(fecha)}
                       style="max-width: 540px;"
                     >
                       <div class="row g-0">
                         <div class="col-md-4">
                           <img
-                            src="${this.img_url(ob)}"
+                            src="${this.img_url(fecha)}"
                             class="img-fluid mt-2 rounded-start"
                             alt="..."
                           />
@@ -640,7 +747,7 @@ export class NdviOffcanvas extends LitElement {
                                 locale: es,
                               })}
                             </h5>
-                            <p class="card-text">${this.nubosidad(ob)}</p>
+                            <p class="card-text">${this.nubosidad(fecha)}</p>
                             <p class="card-text">
                               <small class="text-muted"
                                 >${formatDistanceToNow(fecha_date, {

@@ -8,7 +8,7 @@ export class LoadingModal extends LitElement {
     unsafeCSS(bootstrap),
     css`
       .fondo-bg {
-        background-image: url("assets/images/cosechadora_bg.jpg");
+        background-image: url("/assets/images/cosechadora_bg.jpg");
         background-size: 100% auto;
         background-position-y: -300px;
       }
@@ -80,7 +80,7 @@ export class LoadingModal extends LitElement {
                 </div>
 
                  <img
-                  src="assets/images/cosechadora_bg.jpg"
+                  src="/assets/images/cosechadora_bg.jpg"
                   alt="..."
                   style="height: 100%; width:100%; object-fit:cover;"
                 /> 

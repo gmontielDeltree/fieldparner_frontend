@@ -25,20 +25,64 @@ const layer_visibility = (map, layer_id, status) => {
 const base_url =
   "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/";
 
-const sendEvent = (name,details) => {
+const sendEvent = (name, details) => {
   let event = new CustomEvent(name, {
     detail: details,
     bubbles: true,
     composed: true,
   });
   this.dispatchEvent(event);
-}
+};
 
 const normalizar_username = (un) => {
-  let minusculas = un.replaceAll(" ", "_").toLowerCase()
+  let minusculas = un.replaceAll(" ", "_").toLowerCase();
   return minusculas;
-}
+};
 
+const get_lote_doc = async (db: PouchDB.Database, uuid: string) => {
+  let campos_result = await db.allDocs({
+    include_docs: true,
+    startkey: "campos_",
+    endkey: "campos_\ufff0",
+  });
 
+  let campos_docs = campos_result.rows;
 
-export { emptyGJ, base_url, touchEvent, sendEvent, layer_visibility, hashMessage, normalizar_username };
+  let result = undefined
+  campos_docs.forEach(({ doc }) => {
+    console.log(doc);
+    let _lote_doc = doc.lotes.find((lote) => lote.properties.uuid === uuid);
+
+    if (_lote_doc) {
+      result = _lote_doc;
+    }
+  });
+
+  return result;
+
+  // .then((doc) => {
+  //   this._campo_doc = doc;
+  //   this._lote_doc =
+  //     doc.lotes.filter(
+  //       (lote) => lote.properties.nombre === this.lote_nombre
+  //     )[0] || {};
+
+  //   const someContext = aplicacionMachine.initialState.context;
+  //   someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
+  //   this.init_fsm(someContext);
+
+  //   this.reload_actividades();
+
+  // document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+};
+
+export {
+  emptyGJ,
+  base_url,
+  touchEvent,
+  sendEvent,
+  layer_visibility,
+  hashMessage,
+  normalizar_username,
+  get_lote_doc,
+};
