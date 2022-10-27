@@ -151,8 +151,14 @@ export class NdviOffcanvas extends LitElement {
 
   static override styles = unsafeCSS(bootstrap);
 
-  get_fechas() {
-    return ["2022-04-18", "2022-04-23", "2022-04-25"];
+  async get_fechas() {
+    let bboxs = encodeURIComponent(JSON.stringify(bbox(this.lote_doc)))
+    //https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/indicesdates?dates=2022-04-01%2F2022-11-01&bbox=%5B-59.08562672796121%2C-35.20733062337166%2C-59.07974430745857%2C-35.20304176165523%5D
+    let fechas = encodeURIComponent("2022-04-01/2023-01-01")
+    let r = await fetch("https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/indicesdates?dates="+fechas+"&bbox="+bboxs)
+    return r.json()
+
+//    return ["2022-04-18", "2022-04-23", "2022-04-25"];
   }
 
   async firstUpdated() {
@@ -194,6 +200,7 @@ export class NdviOffcanvas extends LitElement {
     console.log(this.lote_doc);
 
     this.fechas = await this.get_fechas();
+    console.log("FECHAS" ,this.fechas)
     this.populate_lista_georaster(this.fechas, this.lote_doc);
 
     // Show
@@ -209,9 +216,11 @@ export class NdviOffcanvas extends LitElement {
         this.lote_uuid,
         bbox(lote_doc)
       );
+      
       if (geo) {
         let e = { fecha: fecha, georaster: geo };
         this.lista_georasters.push(e);
+        this.render()
       }
     });
   }
@@ -252,44 +261,46 @@ export class NdviOffcanvas extends LitElement {
 
   async fetch_georaster(fecha, uuid, bboxs) {
     let url_tentativa =
-      /*img_bucket_url + */ "/" + uuid + "_" + fecha + ".geotiff";
+      img_bucket_url + uuid + "_" + fecha + ".geotiff";
     console.log("fecha uuid bboz", fecha, uuid, bboxs);
     // Test URL
     //url_tentativa = "/aaaaa_20220418.geotiff";
     // parse array buffer
     try {
       const response = await fetch(url_tentativa);
+      //https://towardsdev.com/how-to-handle-404-500-and-more-using-fetch-api-in-javascript-f4e301925a51
+      if (!response.ok) { 
+        if (response.status == 404){
+          console.log("404 -> Generando...")
+          let response_gen = await this.call_generator(fecha, uuid, bboxs);
+          if (!response_gen.ok) {
+            throw Error(response_gen.statusText); 
+          }
+          const arrayBuffer = await response_gen.arrayBuffer();
+          const georaster = await geoblaze.parse(arrayBuffer);
+          return georaster
+        }
+      }
       const arrayBuffer = await response.arrayBuffer();
       const georaster = await geoblaze.parse(arrayBuffer);
       return georaster;
     } catch (e) {
       console.log("ERROR al FETCH", e);
-      // if 404
-      let is_generated = await this.call_generator(fecha, uuid, bboxs);
-      if (is_generated) {
-        // try again
-        try {
-          const response = await fetch(url_tentativa);
-          const arrayBuffer = await response.arrayBuffer();
-          const georaster = await geoblaze.parse(arrayBuffer);
-          return georaster;
-        } catch (e) {
-          return undefined;
-        }
-      }
+
     }
   }
 
-  async call_generator(fecha, uuid, bbox) {
+  async call_generator(fecha, uuid, bboxs) {
     try {
-      let url_generador = "";
-      const response = await fetch(url_generador);
+      let bboxs_enc = encodeURIComponent(JSON.stringify(bboxs)) 
+      let url_generador = "https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/geotiff_for_date?date="+ fecha +"&bbox="+ bboxs_enc +"&uuid="+uuid
+      const response = fetch(url_generador);
       console.log("CALL GENERATOR", response);
-      return true;
+      return response;
     } catch (e) {
       console.log("ERROR al FETCH", e);
 
-      return false;
+      return;
     } finally {
     }
   }
