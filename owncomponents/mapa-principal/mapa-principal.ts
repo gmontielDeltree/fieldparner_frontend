@@ -185,7 +185,8 @@ export class MapaPrincipal extends LitElement {
     this.map = new Map({
       container: this.shadowRoot.getElementById("map"),
       //style: "mapbox://styles/mapbox/outdoors-v11",
-      style: mapStyle,//"mapbox://styles/mapbox/satellite-v9?optimize=true",
+      style: mapStyle,
+      //style:"mapbox://styles/mapbox/satellite-v9?optimize=true",
       center: [-59.2965, -35.1923],
       zoom: 6,
       attributionControl: true,

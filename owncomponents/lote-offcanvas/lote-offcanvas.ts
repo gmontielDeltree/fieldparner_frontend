@@ -932,31 +932,31 @@ export class LoteOffcanvas extends LitElement {
               >
                 <div
                   class="col col-2"
-                  style="cursor: pointer;background-image: url('sembradora_act.webp');background-size: contain; background-repeat: no-repeat; background-position: center;"
+                  style="cursor: pointer;background-image: url('/sembradora_act.webp');background-size: contain; background-repeat: no-repeat; background-position: center;"
                   @click=${this.siembra}
                 ></div>
 
                 <div
                   class="col col-2"
-                  style="cursor: pointer;background-image: url('pulverizadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
+                  style="cursor: pointer;background-image: url('/pulverizadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.nueva_actividad}
                 ></div>
 
                 <div
                   class="col col-2"
-                  style="cursor: pointer;background-image: url('cosechadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
+                  style="cursor: pointer;background-image: url('/cosechadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.cosecha}
                 ></div>
 
                 <div
                   class="col col-2"
-                  style="cursor: pointer;background-image: url('iconodenotas_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
+                  style="cursor: pointer;background-image: url('/iconodenotas_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.notas}
                 ></div>
 
                 <div
                   class="col col-2"
-                  style="cursor: pointer;background-image: url('iconosatelite.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
+                  style="cursor: pointer;background-image: url('/iconosatelite.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.evento_show_ndvi}
                 ></div>
               </div>

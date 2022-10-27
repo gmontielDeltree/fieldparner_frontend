@@ -4,11 +4,19 @@ import PouchDB from "pouchdb";
 import { get_lote_doc, hashMessage, layer_visibility } from "../helpers";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { property, state } from "lit/decorators.js";
-import { ImageSource, Map, MapMouseEvent, Popup } from "mapbox-gl";
+import {
+  ImageSource,
+  Map,
+  MapMouseEvent,
+  Popup,
+  Source,
+  SourceVectorLayer,
+} from "mapbox-gl";
 import { isThisSecond, formatDistanceToNow, parse, format } from "date-fns";
 import es from "date-fns/locale/es";
 import geoblaze from "geoblaze";
 import * as d3 from "d3";
+import "./card-observacion";
 
 import "./leyenda";
 import { utils, writeFile } from "xlsx";
@@ -17,16 +25,17 @@ import { D3GeoblazeOnMapbox, drawGeotiffOnMap } from "./ndvi-functions";
 import { StateController } from "@lit-app/state";
 import gbl_state from "../state.js";
 import { Router } from "@vaadin/router";
+import bbox from "@turf/bbox";
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
 const lista_indices = [
-  { nombre: "NDVI", value: "ndvi" },
-  { nombre: "ReCL", value: "recl" },
-  { nombre: "NDRE", value: "ndre" },
-  { nombre: "MSAVI", value: "msavi" },
-  { nombre: "NDMI", value: "ndmi" },
+  { nombre: "NDVI", value: "ndvi", banda: 0 },
+  // { nombre: "ReCL", value: "recl", banda: 1 },
+  { nombre: "NDRE", value: "ndre", banda: 1 },
+  { nombre: "NDMI", value: "ndmi", banda: 2 },
+  // { nombre: "MSAVI", value: "msavi", banda: 3 },
 ];
 
 export class NdviOffcanvas extends LitElement {
@@ -76,28 +85,82 @@ export class NdviOffcanvas extends LitElement {
   fechas: string[] = [];
 
   @state()
+  lista_georasters: any[] = [];
+
+  @state()
   histograma_show: boolean = false;
 
   @state()
-  selected_geotiff_url: string;
+  canvas_element: HTMLCanvasElement;
+
+  @state()
+  seleccion: { fecha: string; stats: any };
 
   constructor() {
     super();
     this.ndvi_db = new PouchDB(
       "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi"
     );
+
+    this.addEventListener("obs-selected", async (e: CustomEvent) => {
+      console.log("SAELELELELE");
+      let geoblaze_raster = e.detail.georaster;
+
+      if (gbl_state.map.getSource("canvas-source")) {
+        let s = gbl_state.map.getSource("canvas-source") as Source;
+        console.log("SouceExiste", s);
+        s.canvas = e.detail.canvas;
+      } else {
+        // No existe
+        console.log("SourceNo Existe");
+
+        gbl_state.map.addSource("canvas-source", {
+          type: "canvas",
+          canvas: e.detail.canvas,
+          coordinates: [
+            [geoblaze_raster.xmin, geoblaze_raster.ymax],
+            [geoblaze_raster.xmax, geoblaze_raster.ymax],
+            [geoblaze_raster.xmax, geoblaze_raster.ymin],
+            [geoblaze_raster.xmin, geoblaze_raster.ymin],
+          ],
+        });
+      }
+
+      if (!gbl_state.map.getLayer("radar-layer")) {
+        //No existe
+        console.log("Layer No Existe");
+
+        gbl_state.map.addLayer({
+          id: "radar-layer",
+          type: "raster",
+          source: "canvas-source",
+          paint: {
+            "raster-fade-duration": 0,
+          },
+        });
+      }
+
+      /* stats de la seleccion */
+      this.seleccion = {
+        fecha: e.detail.fecha,
+        stats: await geoblaze.stats(geoblaze_raster, this.lote_doc),
+      };
+      console.log("STATS", this.seleccion, await this.seleccion);
+    });
   }
 
   static override styles = unsafeCSS(bootstrap);
 
   get_fechas() {
-    return ["2022-04-18"];
+    return ["2022-04-18", "2022-04-23", "2022-04-25"];
   }
 
   async firstUpdated() {
     this.offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-lote-ndvi")
     );
+
+    /* Esto deberia ocurri si map y db estan caragado */
 
     this.shadowRoot
       .getElementById("offcanvas-lote-ndvi")
@@ -109,12 +172,14 @@ export class NdviOffcanvas extends LitElement {
         layer_visibility(gbl_state.map, "nombres_campos", true);
 
         /* Hide NDVI */
-        layer_visibility(gbl_state.map, "ndvi-layer", false);
+        //layer_visibility(gbl_state.map, "ndvi-layer", false);
         layer_visibility(gbl_state.map, "borde_de_este_lote", false);
+        layer_visibility(gbl_state.map, "radar-layer", false);
+
         gbl_state.map.removeLayer("borde_de_este_lote");
         gbl_state.map.removeSource("borde_de_este_lote");
-        gbl_state.map.removeLayer("ndvi-layer");
-        gbl_state.map.removeSource("ndvi");
+        //gbl_state.map.removeLayer("ndvi-layer");
+        //gbl_state.map.removeSource("ndvi");
         gbl_state.map.removeLayer("radar-layer");
         gbl_state.map.removeSource("canvas-source");
 
@@ -124,37 +189,57 @@ export class NdviOffcanvas extends LitElement {
       });
 
     this.lote_uuid = this.location.params.uuid as string;
+    this.lote_doc = await get_lote_doc(gbl_state.db, this.lote_uuid);
+
+    console.log(this.lote_doc);
 
     this.fechas = await this.get_fechas();
+    this.populate_lista_georaster(this.fechas, this.lote_doc);
 
     // Show
     console.log("Indice", this.indice, this.lote_uuid);
+
     this.show();
   }
 
-  async show() {
-    this.lote_doc = await get_lote_doc(gbl_state.db, this.lote_uuid);
-    console.log(this.lote_doc);
-
-    let geometry = this.lote_doc.geometry;
-
-    let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
-    hashMessage(clean_json).then((lote_hash) => {
-      console.log("Lote Hash", lote_hash);
-      // Build y  Mostrar la Galeria
-      this.ndvi_db
-        .get(lote_hash)
-        .then(this.generar_ndvi_gallery)
-        .catch((e) => {
-          console.log("Error NDVI: Aun no existe ningun registro", e);
-          this.offcanvas.hide();
-          alert(
-            "Error NDVI: Aun no existe ningun registro. Si recien creo el lote espere unos instantes hasta que se recopilen las imagenes satelitales"
-          );
-          this.autodestruirme();
-          Router.go("/");
-        });
+  async populate_lista_georaster(fechas, lote_doc) {
+    fechas.map(async (fecha) => {
+      let geo = await this.fetch_georaster(
+        fecha,
+        this.lote_uuid,
+        bbox(lote_doc)
+      );
+      if (geo) {
+        let e = { fecha: fecha, georaster: geo };
+        this.lista_georasters.push(e);
+      }
     });
+  }
+
+  async show() {
+    this.init_layers();
+
+    this.offcanvas.show();
+
+    //this.generar_ndvi_gallery(this.fechas);
+
+    // let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
+    // hashMessage(clean_json).then((lote_hash) => {
+    //   console.log("Lote Hash", lote_hash);
+    //   // Build y  Mostrar la Galeria
+    //   this.ndvi_db
+    //     .get(lote_hash)
+    //     .then(this.generar_ndvi_gallery)
+    //     .catch((e) => {
+    //       console.log("Error NDVI: Aun no existe ningun registro", e);
+    //       this.offcanvas.hide();
+    //       alert(
+    //         "Error NDVI: Aun no existe ningun registro. Si recien creo el lote espere unos instantes hasta que se recopilen las imagenes satelitales"
+    //       );
+    //       this.autodestruirme();
+    //       Router.go("/");
+    //     });
+    // });
   }
 
   autodestruirme() {
@@ -165,9 +250,12 @@ export class NdviOffcanvas extends LitElement {
     parent.removeChild(myself);
   }
 
-  async fetch_georaster(fecha, uuid, bbox) {
-    let url_tentativa = img_bucket_url + uuid + "_" + fecha + ".geotiff";
-
+  async fetch_georaster(fecha, uuid, bboxs) {
+    let url_tentativa =
+      /*img_bucket_url + */ "/" + uuid + "_" + fecha + ".geotiff";
+    console.log("fecha uuid bboz", fecha, uuid, bboxs);
+    // Test URL
+    //url_tentativa = "/aaaaa_20220418.geotiff";
     // parse array buffer
     try {
       const response = await fetch(url_tentativa);
@@ -177,7 +265,7 @@ export class NdviOffcanvas extends LitElement {
     } catch (e) {
       console.log("ERROR al FETCH", e);
       // if 404
-      let is_generated = await this.call_generator(fecha, uuid, bbox);
+      let is_generated = await this.call_generator(fecha, uuid, bboxs);
       if (is_generated) {
         // try again
         try {
@@ -189,7 +277,7 @@ export class NdviOffcanvas extends LitElement {
           return undefined;
         }
       }
-    } 
+    }
   }
 
   async call_generator(fecha, uuid, bbox) {
@@ -244,17 +332,17 @@ export class NdviOffcanvas extends LitElement {
     writeFile(workbook, "NDVI.xlsx");
   };
 
-  mostrar_en_mapa = async (ob) => {
-    let bbox = [
-      [ob.bbox.left, ob.bbox.top],
-      [ob.bbox.right, ob.bbox.top],
-      [ob.bbox.right, ob.bbox.bottom],
-      [ob.bbox.left, ob.bbox.bottom],
-    ];
-    const img_src = this.img_url(ob);
+  init_layers = () => {
+    // let bboxs = [
+    //   [ob.bbox.left, ob.bbox.top],
+    //   [ob.bbox.right, ob.bbox.top],
+    //   [ob.bbox.right, ob.bbox.bottom],
+    //   [ob.bbox.left, ob.bbox.bottom],
+    // ];
+    // const img_src = this.img_url(ob);
 
-    //layer_visibility(gbl_state.map, "lotes_internos", false);
-    this.create_or_update_ndvi_source(img_src, bbox);
+    // //layer_visibility(gbl_state.map, "lotes_internos", false);
+    // this.create_or_update_ndvi_source(img_src, bboxs);
 
     /* Hide all polygons */
     layer_visibility(gbl_state.map, "campos", false);
@@ -265,6 +353,7 @@ export class NdviOffcanvas extends LitElement {
 
     /* Inicialmente dibujo el borde */
     if (!gbl_state.map.getSource("borde_de_este_lote")) {
+      console.log("addSource", this.lote_doc);
       gbl_state.map.addSource("borde_de_este_lote", {
         type: "geojson",
         data: this.lote_doc,
@@ -272,28 +361,17 @@ export class NdviOffcanvas extends LitElement {
 
       gbl_state.map.addLayer({
         id: "borde_de_este_lote",
-        type: "fill",
+        type: "line",
         source: "borde_de_este_lote",
         paint: {
-          "fill-color": "#FFFFFF",
-          "fill-outline-color": "#FF0000",
-          "fill-opacity": 0,
-          //    "line-color": "rgb(60, 183, 251)",
-
-          //    "line-width": 4,
+          //"fill-color": "#FFFFFF",
+          //"fill-outline-color": "#FF0000",
+          //"fill-opacity": 1,
+          "line-color": "rgb(60, 183, 251)",
+          "line-width": 4,
         },
       });
     }
-
-    // Crear el NDVI raster
-    this.ndvi_geoblaze_raster = await geoblaze.bandArithmetic(
-      this.geotiff_url(ob),
-      "(a * 2/255)-1"
-    );
-
-    console.log("RASTER", this.ndvi_geoblaze_raster);
-
-    this.selected_obs = ob;
   };
 
   queryNDVIValore(lngLat) {
@@ -364,8 +442,10 @@ export class NdviOffcanvas extends LitElement {
   };
 
   nubosidad(obs) {
-    let info = obs.estadisticas;
-    if (info.std < 0.1 && info.media < 0.1) {
+    //  let info = obs.estadisticas;
+    let info = obs[0];
+
+    if (info.min < 0.1 && info.mean < 0.1) {
       return "Nubosidad Severa";
     } else if (info.min < 0) {
       return "Nubosidad";
@@ -382,18 +462,15 @@ export class NdviOffcanvas extends LitElement {
     /**
      * NDVI Layer Visible
      */
-    if (gbl_state.map.getLayer("ndvi-layer")) {
-      gbl_state.map.setLayoutProperty("ndvi-layer", "visibility", "visible");
-
-      gbl_state.map.moveLayer("ndvi-layer");
-    }
-
-    let obs = result.obs;
-    this.obs = result.obs;
-
+    // if (gbl_state.map.getLayer("ndvi-layer")) {
+    //   gbl_state.map.setLayoutProperty("ndvi-layer", "visibility", "visible");
+    //   gbl_state.map.moveLayer("ndvi-layer");
+    // }
+    // let obs = result.obs;
+    // this.obs = result.obs;
     // Muestro el Offcanvas en si mismo
-    this.offcanvas.show();
-    this.obs[0] ? this.mostrar_en_mapa(this.obs[0]) : null;
+    //this.offcanvas.show();
+    //this.obs[0] ? this.mostrar_en_mapa(this.obs[0]) : null;
   };
 
   async histograma() {
@@ -573,16 +650,12 @@ export class NdviOffcanvas extends LitElement {
     Router.go("/");
   }
 
-  load_new_index() {}
-
-  render_canvas_with_observacion() {}
-
   render() {
     let back_button = () =>
       html`<div @click=${() => (this.histograma_show = false)}>BACK</div>`;
 
-    let fecha_date_selected = this.selected_obs
-      ? parse(this.selected_obs.fecha, "yyyyMMdd", new Date())
+    let fecha_date_selected = this.seleccion
+      ? parse(this.seleccion.fecha, "yyyy-MM-dd", new Date())
       : new Date();
 
     return html`
@@ -601,7 +674,6 @@ export class NdviOffcanvas extends LitElement {
             class="btn btn-info"
             @click=${() => {
               this.escala_dinamica = !this.escala_dinamica;
-              this.mostrar_en_mapa(this.selected_obs);
             }}
           >
             ${this.escala_dinamica
@@ -621,7 +693,7 @@ export class NdviOffcanvas extends LitElement {
         ${this.histograma_show
           ? html`
               <!--Histograma-->
-              <div class="offcanvas-body small container-fluid row">
+              <div class="offcanvas-body container-fluid">
                 <div id="my_dataviz"></div>
                 <p>
                   <label># Particiones</label>
@@ -646,54 +718,51 @@ export class NdviOffcanvas extends LitElement {
               </div>
             `
           : html` <!--Imágenes-->
-              <div class="offcanvas-body small container-fluid row">
+              <div class="offcanvas-body container-fluid">
                 <div class="row">
                   <vaadin-combo-box
                     id="indice-combo"
-                    label="Seleccione Índice"
+                    class='py-0'
+                    label="Seleccione Índice Espectral"
                     item-label-path="nombre"
                     item-value-path="value"
                     .selectedItem=${this.indice}
                     .items="${lista_indices}"
                     @selected-item-changed=${(e) => {
                       this.indice = e.detail.value;
-                      this.load_new_index();
-                      // // console.log("e", e);
-                      // this._fsm.send({
-                      //   type: "ASSIGN_CONTRATISTA",
-                      //   value: e.detail.value,
-                      // });
                     }}
                   ></vaadin-combo-box>
 
-                  ${this.selected_obs
-                    ? html`<a
-                          class="btn btn-primary btn-sm col col-3 m-1"
-                          href=${this.img_url(this.selected_obs)}
-                          download="ndvi.png"
-                          >&#11015;&#65039; Imágen</a
-                        >
-                        <a
-                          class="btn btn-primary btn-sm col col-3 m-1"
-                          @click=${this.geoblaze_to_excel}
-                          >&#11015;&#65039; XLS</a
-                        >
-                        <a
-                          class="btn btn-primary btn-sm col col-4 m-1"
-                          @click=${this.histograma}
-                          >&#128202; Histograma</a
-                        > `
-                    : null}
+                  <div class="row mx-auto">
+                    ${this.seleccion
+                      ? html`<a
+                            class="btn btn-primary btn-sm col col-3 m-1"
+                            href=""
+                            download="ndvi.png"
+                            >&#11015;&#65039; PNG</a
+                          >
+                          <a
+                            class="btn btn-primary btn-sm col col-3 m-1"
+                            @click=${this.geoblaze_to_excel}
+                            >&#11015;&#65039; XLS</a
+                          >
+                          <a
+                            class="btn btn-primary btn-sm col m-1"
+                            @click=${this.histograma}
+                            >&#128202; Histograma</a
+                          > `
+                      : null}
+                  </div>
                 </div>
                 <div class="row">
-                  ${this.selected_obs
+                  ${this.seleccion
                     ? html`
                         <div class="">
                           <h5 class="mb-1">
                             Selección
                             <strong
                               >${format(
-                                fecha_date_selected,
+                                this.seleccion.fecha,
                                 "d 'de' MMMM yyyy",
                                 {
                                   locale: es,
@@ -703,19 +772,21 @@ export class NdviOffcanvas extends LitElement {
                           </h5>
                           <p class="mb-1">
                             Media:
-                            ${this.selected_obs.estadisticas.media.toFixed(2)}
+                            ${this.seleccion.stats[
+                              this.indice.banda
+                            ].mean.toFixed(2)}
                           </p>
                           <p class="mb-1">
                             Mínimo:
-                            ${this.selected_obs.estadisticas.min.toFixed(2)}
+                            ${this.seleccion.stats[
+                              this.indice.banda
+                            ].min.toFixed(2)}
                           </p>
                           <p class="mb-1">
                             Máximo:
-                            ${this.selected_obs.estadisticas.max.toFixed(2)}
-                          </p>
-                          <p class="mb-1">
-                            Desviación Estándar:
-                            ${this.selected_obs.estadisticas.std.toFixed(2)}
+                            ${this.seleccion.stats[
+                              this.indice.banda
+                            ].max.toFixed(2)}
                           </p>
                         </div>
                       `
@@ -725,41 +796,16 @@ export class NdviOffcanvas extends LitElement {
                 <div class="row overflow-auto">
                   <div class="row mb-1"></div>
                   <!--CARDS con observaciones-->
-                  ${this.fechas.map((fecha) => {
+                  ${this.lista_georasters?.map(({ fecha, georaster }) => {
                     let fecha_date = parse(fecha, "yyyy-MM-dd", new Date());
-                    return html` <div
-                      class="card text-dark bg-light mb-3"
-                      @click=${() => this.mostrar_en_mapa(fecha)}
-                      style="max-width: 540px;"
-                    >
-                      <div class="row g-0">
-                        <div class="col-md-4">
-                          <img
-                            src="${this.img_url(fecha)}"
-                            class="img-fluid mt-2 rounded-start"
-                            alt="..."
-                          />
-                        </div>
-                        <div class="col-md-8">
-                          <div class="card-body">
-                            <h5 class="card-title">
-                              ${format(fecha_date, "d 'de' MMMM yyyy", {
-                                locale: es,
-                              })}
-                            </h5>
-                            <p class="card-text">${this.nubosidad(fecha)}</p>
-                            <p class="card-text">
-                              <small class="text-muted"
-                                >${formatDistanceToNow(fecha_date, {
-                                  addSuffix: true,
-                                  locale: es,
-                                })}</small
-                              >
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>`;
+
+                    return html`<observacion-card
+                      .fecha=${fecha_date}
+                      .indice=${this.indice}
+                      .escala_dinamica=${this.escala_dinamica}
+                      .lote_geojson=${this.lote_doc}
+                      .geoblaze_raster=${georaster}
+                    ></observacion-card>`;
                   })}
                 </div>
               </div>`}
@@ -771,6 +817,8 @@ export class NdviOffcanvas extends LitElement {
     `;
   }
 }
+
+//                            <!-- <p class="card-text">${this.nubosidad(geoblaze.stats(georaster,this.lote_doc))}</p> -->
 
 customElements.define("ndvi-offcanvas", NdviOffcanvas);
 

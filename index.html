@@ -29,7 +29,7 @@
 
     <!-- Progressive Web App -->
     <meta name="theme-color" content="#f5f8fa" />
-    <link rel="manifest" href="manifest.json" />
+    <link rel="manifest" href="/manifest.json" />
 
     <!-- Add to homescreen for Chrome on Android -->
     <meta name="mobile-web-app-capable" content="yes" />
@@ -153,7 +153,7 @@
       // Register Service Worker
       if ("serviceWorker" in navigator) {
         const p = navigator.serviceWorker
-          .register("./sw.js")
+          .register("/sw.js")
           .then((reg) => console.log("PWA service-worker ready.", reg))
           .catch((err) => console.error("Could not load service-worker.", err));
       }

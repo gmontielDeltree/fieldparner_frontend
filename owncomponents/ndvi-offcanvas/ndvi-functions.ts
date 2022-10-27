@@ -418,3 +418,8 @@ export const drawGeotiffOnMap = (geoblaze_raster, map: Map) => {
   contextRaster.putImageData(id, 0, 0);
   context.drawImage(canvasRaster.node(), 0, 0);
 };
+
+
+export const canvas_element_from_geotiff = ()=>{
+
+}

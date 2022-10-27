@@ -276,28 +276,28 @@ const timeline_css = css`
   }
 
   .icono-siembra {
-    background-image: url("sembradora_act.webp") !important;
+    background-image: url("/sembradora_act.webp") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;
   }
 
   .icono-cosecha {
-    background-image: url("cosechadora_act.webp") !important;
+    background-image: url("/cosechadora_act.webp") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;
   }
 
   .icono-aplicacion {
-    background-image: url("pulverizadora_act.webp") !important;
+    background-image: url("/pulverizadora_act.webp") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;
   }
 
   .icono-nota {
-    background-image: url("iconodenotas_act.webp") !important;
+    background-image: url("/iconodenotas_act.webp") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;

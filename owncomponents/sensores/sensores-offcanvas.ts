@@ -39,13 +39,13 @@ export class SensoresClass extends LitElement {
     unsafeCSS(apex_css),
     css`
       .humedad-body {
-        background-image: url("sensor-humedad/suelo.webp");
+        background-image: url("/sensor-humedad/suelo.webp");
         background-repeat: no-repeat;
         background-position-y: -60px;
       }
 
       .offcanvas-humedad-body {
-        background-image: url("sensor-humedad/blur_bg.webp"),
+        background-image: url("/sensor-humedad/blur_bg.webp"),
           linear-gradient(rgba(255, 255, 255, 0), rgb(78, 62, 55));
         background-repeat: no-repeat;
         background-size: 100% 100%;
@@ -53,7 +53,7 @@ export class SensoresClass extends LitElement {
       }
 
       .charts-body {
-        background-image: url("sensor-humedad/blur_bg.webp");
+        background-image: url("/sensor-humedad/blur_bg.webp");
         background-position-y: -70px;
       }
 
@@ -105,7 +105,7 @@ export class SensoresClass extends LitElement {
       }
 
       .sensor-imagen {
-        background-image: url("sensor-humedad/sensor-humedad-suelo.webp");
+        background-image: url("/sensor-humedad/sensor-humedad-suelo.webp");
         background-size: 100%;
         background-repeat: no-repeat;
         background-position: center;
