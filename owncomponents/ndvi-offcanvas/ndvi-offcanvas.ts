@@ -313,6 +313,7 @@ export class NdviOffcanvas extends LitElement {
         let punto = point([long, lat]);
         let is_contained = booleanContains(geojson, punto);
         if (!is_contained) {
+          
           for (var banda = 0; banda < (georaster.numberOfRasters-1); banda++) {
             /* for each band!! */
             georaster.values[banda][j][i] = -9999;

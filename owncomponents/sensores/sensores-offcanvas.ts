@@ -30,6 +30,9 @@ import "./mediciones-cards/radiacion";
 import "./mediciones-cards/viento_velocidad"
 import "./mediciones-cards/viento_direccion"
 import "./rosad3"
+
+import "./mediciones-cards/pluviometro"
+
 // background-position-y: -60px;
 //background-size: 100% auto;
 //background-position-y: -60px;
@@ -656,6 +659,15 @@ export class SensoresClass extends LitElement {
               : null}
             <!--/Dir viento-->
             <!--/viento-->
+            
+            <!-- Pluviometro -->
+              ${ifLoadedShow("pluviometro")
+              ? html`<pluviometro-card
+                  .deveui=${this._selected_device_card.device_id}
+                /> 
+                `
+              : null}
+            <!--/Dir pluviometro-->
 
             <!-- Humedad Suelo-->
             ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(

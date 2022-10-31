@@ -19,6 +19,7 @@
     "@auth0/auth0-spa-js": "^1.22.0",
     "@github/auto-complete-element": "^3.3.4",
     "@lit-app/state": "^0.5.4",
+    "@lit-labs/task": "^2.0.0",
     "@mapbox/mapbox-gl-draw": "^1.3.0",
     "@mapbox/mapbox-gl-geocoder": "^5.0.1",
     "@patternfly/pfe-autocomplete": "^1.12.3",
