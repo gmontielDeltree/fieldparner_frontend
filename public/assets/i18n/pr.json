@@ -1,0 +1,19 @@
+{
+    "navbar":{
+
+        "opciones":{
+            "titulo":"Opções",
+            "colorCultivos":"Cor do cultivo",
+            "listaDispositivos":"Lista de dispositivos",
+            "recargar":"Atualizar",
+            "version":"Versão"
+        },
+        "geocoder":{
+            "helper":"Pesquisar cidade"
+        }
+    },
+    
+    "ldcampos":{
+        "titulo":"Fazendas"
+    }
+  }

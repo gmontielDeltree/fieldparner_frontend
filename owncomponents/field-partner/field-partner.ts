@@ -28,6 +28,7 @@ import "../insumos/insumos-lista.ts";
 import "../lista-centrales-cercanas/lista-centrales-cercanas.ts";
 import "../sensores/lista-de-sensores.ts";
 import '../null-component'
+import { use, get,registerTranslateConfig } from "lit-translate";
 
 import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
@@ -102,6 +103,12 @@ export class FieldPartner extends LitElement {
     this.user = {};
     this.user.name = "demo";
     this.loading = true;
+
+    registerTranslateConfig({
+      loader: lang => fetch(`/assets/i18n/${lang}.json`).then(res => res.json())
+    });
+
+    console.log("USE",use('es'))
 
     window.addEventListener("online", handleConnectionChange);
     window.addEventListener("offline", handleConnectionChange);

@@ -10,6 +10,8 @@ import { Router } from "@vaadin/router";
 import {StateController} from '@lit-app/state'
 import gbl_state from '../state.js'
 
+import { translate } from "lit-translate";
+
 export class ListaDeCampos extends LitElement {
  // @property()
  // map: Map;
@@ -89,7 +91,7 @@ export class ListaDeCampos extends LitElement {
       aria-labelledby="offcanvasLabel"
     >
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasLabel">Lista de Campos</h5>
+        <h5 class="offcanvas-title" id="offcanvasLabel">${translate("ldcampos.titulo")}</h5>
         <button
           type="button"
           @click=${() => {

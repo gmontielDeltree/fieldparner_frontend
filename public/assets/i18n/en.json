@@ -1,0 +1,19 @@
+{
+    "navbar":{
+
+        "opciones":{
+            "titulo":"Options",
+            "colorCultivos":"Crop Color",
+            "listaDispositivos":"Device List",
+            "recargar":"Reload",
+            "version":"Version"
+        },
+        "geocoder":{
+            "helper":"Search City"
+        }
+    },
+    
+    "ldcampos":{
+        "titulo":"Field List"
+    }
+  }

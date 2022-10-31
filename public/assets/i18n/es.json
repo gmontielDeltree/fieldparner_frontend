@@ -1,0 +1,19 @@
+{
+    "navbar":{
+
+        "opciones":{
+            "titulo":"Opciones",
+            "colorCultivos":"Color Cultivo",
+            "listaDispositivos":"Lista de Dispositivos",
+            "recargar":"Recargar",
+            "version":"Version"
+        },
+        "geocoder":{
+            "helper":"Buscar Localidad"
+        }
+    },
+    
+    "ldcampos":{
+        "titulo":"Lista de Campos"
+    }
+  }
