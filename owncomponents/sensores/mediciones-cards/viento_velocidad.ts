@@ -168,21 +168,21 @@ export class VientoVelocidadCard extends LitElement {
             </h5>
           </div>
           <div class="row">
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "viento_velocidad_min")} km/h
               </div>
               <div class="fw-light">Min</div>
             </div>
 
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "viento_velocidad_mean")} km/h
               </div>
               <div class="fw-light">Promedio</div>
             </div>
 
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "viento_velocidad_max")} km/h
               </div>

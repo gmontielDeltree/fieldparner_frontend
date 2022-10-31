@@ -269,21 +269,21 @@ export class VientoDireccionCard extends LitElement {
             </h5>
           </div>
           <div class="row">
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "viento_direccion_min")} º
               </div>
               <div class="fw-light">Min</div>
             </div>
 
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "viento_direccion_mean")} º
               </div>
               <div class="fw-light">Promedio</div>
             </div>
 
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "viento_direccion_max")} º
               </div>

@@ -172,21 +172,21 @@ export class TemperaturaCard extends LitElement {
             </h5>
           </div>
           <div class="row">
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "temperatura_min")} ºC
               </div>
               <div class="fw-light">Min</div>
             </div>
 
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "temperatura_mean")} ºC
               </div>
               <div class="fw-light">Promedio</div>
             </div>
 
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "temperatura_max")} ºC
               </div>

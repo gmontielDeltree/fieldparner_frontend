@@ -172,17 +172,17 @@ export class HumedadCard extends LitElement {
             </h5>
           </div>
           <div class="row">
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">${valor(this.card, "humedad_min")} %</div>
               <div class="fw-light">Min</div>
             </div>
 
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">${valor(this.card, "humedad_mean")} %</div>
               <div class="fw-light">Promedio</div>
             </div>
 
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">${valor(this.card, "humedad_max")} %</div>
               <div class="fw-light">Max</div>
             </div>

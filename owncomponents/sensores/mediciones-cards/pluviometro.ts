@@ -17,6 +17,32 @@ import PouchDB from "pouchdb";
 
 import { Task, TaskStatus } from "@lit-labs/task";
 
+const tipos_periodos = [
+  { nombre: "Anual", value: "anual" },
+  { nombre: "Mensual", value: "mensual" },
+  { nombre: "Diario", value: "diario" },
+  { nombre: "Todo el Tiempo", value: "alltime" },
+];
+
+const lista_meses = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
+const lista_dias_por_mes = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const lista_anos = [
+  2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033,
+];
+
 @customElement("pluviometro-card")
 export class PluviometroCard extends LitElement {
   static override styles: CSSResultGroup = [
@@ -34,17 +60,29 @@ export class PluviometroCard extends LitElement {
   _show_chart_only: boolean = false;
 
   @state()
-  _periodo: string = "anual";
+  _periodo: string = "2022";
+
+  @state()
+  _tipo_periodo: { nombre: string; value: string } = tipos_periodos[0];
+
+  @state()
+  selectedYear: number;
+
+  @state()
+  selectedMonth: string;
+
+  @state()
+  selectedDay: number;
 
   private _loadDataTask = new Task(
     this,
-    async ([deveui,periodo]) => {
+    async ([deveui, periodo, tipos_periodo]) => {
       let db = new PouchDB(base_url + "processed_device_telemetry");
-	let results = await db.get(deveui + ":pluviometro:anual:2022")
-	console.log("LOAD DATA TASK", results)
-	return results
+      let results = await db.get(deveui + ":pluviometro:anual:2022");
+      console.log("LOAD DATA TASK", results);
+      return results;
     },
-    () => [this.deveui,this._periodo]
+    () => [this.deveui, this._periodo, this._tipo_periodo]
   );
 
   async renderCentralChart() {
@@ -54,16 +92,16 @@ export class PluviometroCard extends LitElement {
     let categorias;
     let titulo;
 
-    if (this._periodo === "anual") {
+    if (this._tipo_periodo.value === "anual") {
       categorias = ["Enero", "Febrero", "Marzo"];
       titulo = "Precipitacion por hora";
-    } else if (this._periodo === "mensual") {
+    } else if (this._tipo_periodo.value === "mensual") {
       categorias = [
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
         21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
       ];
       titulo = "Precipitacion por dia";
-    } else if (this._periodo === "diario") {
+    } else if (this._tipo_periodo.value === "diario") {
       categorias = [
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
         21, 22, 23, 24,
@@ -175,21 +213,16 @@ export class PluviometroCard extends LitElement {
 
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ): void {}
+
+  protected willUpdate(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
-    this.load_data();
-    this.renderCentralChart();
-    this.data = "dddd";
+    console.log("WILLUPDATE", _changedProperties, this._loadDataTask.status);
+    if (this._loadDataTask.status === TaskStatus.COMPLETE) {
+      this.renderCentralChart();
+    }
   }
-
-  protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-	console.log("WILLUPDATE",_changedProperties,this._loadDataTask.status)
-	if(this._loadDataTask.status === TaskStatus.COMPLETE){
-		this.renderCentralChart()
-	}
-  }
-  load_data() {}
-
-  cambiar_periodo() {}
 
   render() {
     return html`
@@ -211,13 +244,24 @@ export class PluviometroCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="water-droplet-icon.svg" width="50" height="50" />
+              <img src="rain-svgrepo-com.svg" width="50" height="50" />
+              Hoy 4 mm
             </h5>
           </div>
-          <div class="row"></div>
+          <div class="row">
+            <div class="col-4 fw-bolder">
+              <div class="fw-strong">5 mm</div>
+              <div class="fw-light">Este mes</div>
+            </div>
+
+            <div class="col-4 fw-bolder">
+              <div class="fw-strong">152 mm</div>
+              <div class="fw-light">Este año</div>
+            </div>
+          </div>
         </div>
         <!--Spinner-->
-        ${(this._loadDataTask.status === TaskStatus.COMPLETE)
+        ${this._loadDataTask.status === TaskStatus.COMPLETE
           ? ""
           : html`<div
               class="${this._show_chart_only
@@ -239,15 +283,44 @@ export class PluviometroCard extends LitElement {
             : "d-none d-sm-block"} col-12 col-sm-8 chart"
         >
           <div class="toolbar">
-            <button id="one_month" class=""></button>
+            <vaadin-combo-box
+              id="tipo-periodo-combo"
+              label="Periodo"
+              item-label-path="nombre"
+              item-value-path="value"
+              .selectedItem=${this._tipo_periodo}
+              .items="${tipos_periodos}"
+              @selected-item-changed=${(e) => {
+                this._tipo_periodo = e.detail.value;
+              }}
+            ></vaadin-combo-box>
 
-            <button id="six_months" class="">6M</button>
-
-            <button id="one_year" class="">1Y</button>
-
-            <button id="ytd" class="">YTD</button>
-
-            <button id="all" class="active">ALL</button>
+            <vaadin-combo-box
+              label="Year"
+              style="width: 6em;"
+              .items="${lista_anos}"
+              .selectedItem="${this.selectedYear}"
+              @selected-item-changed="${(e) =>
+                (this.selectedYear = e.detail.value)}"
+            ></vaadin-combo-box>
+            <vaadin-combo-box
+              label="Month"
+              style="width: 9em;"
+              .items="${lista_meses}"
+              .selectedItem="${this.selectedMonth}"
+              .disabled="${!this.selectedYear}"
+              @selected-item-changed="${(e) =>
+                (this.selectedMonth = e.detail.value)}"
+            ></vaadin-combo-box>
+            <vaadin-combo-box
+              label="Day"
+              style="width: 5em;"
+              .items="${lista_dias_por_mes}"
+              .selectedItem="${this.selectedDay}"
+              .disabled="${!this.selectedYear || !this.selectedMonth}"
+              @selected-item-changed="${(e) =>
+                (this.selectedDay = e.detail.value)}"
+            ></vaadin-combo-box>
           </div>
 
           <div id="chart"></div>
