@@ -118,7 +118,8 @@ export class ListaCentralesCercanas extends LitElement {
     );
     // Por ahora get todas las centrales
     this._daily_telemetry = await this._devices.get_daily_cards(fecha);
-    console.log("EEEEEEEEEE", this._daily_telemetry);
+    this._daily_telemetry = this._daily_telemetry.filter((dt) => dt)
+    console.log("EEEEEEEEEE", fecha_str_1, this._daily_telemetry);
     console.log("EEEEEEEEEEss", await this._devices.get_all_details());
     this._detalles = await this._devices.get_all_details()
   }
