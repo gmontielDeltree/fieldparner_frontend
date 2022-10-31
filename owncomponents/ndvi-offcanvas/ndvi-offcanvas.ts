@@ -37,7 +37,7 @@ const lista_indices = [
   // { nombre: "ReCL", value: "recl", banda: 1 },
   { nombre: "NDRE", value: "ndre", banda: 1 },
   { nombre: "NDMI", value: "ndmi", banda: 2 },
-  // { nombre: "MSAVI", value: "msavi", banda: 3 },
+  { nombre: "MSAVI", value: "msavi", banda: 3 },
 ];
 
 export class NdviOffcanvas extends LitElement {
@@ -98,6 +98,9 @@ export class NdviOffcanvas extends LitElement {
   @state()
   seleccion: { fecha: string; stats: any };
 
+  @state()
+  selected_georaster: any;
+
   constructor() {
     super();
     this.ndvi_db = new PouchDB(
@@ -107,6 +110,7 @@ export class NdviOffcanvas extends LitElement {
     this.addEventListener("obs-selected", async (e: CustomEvent) => {
       console.log("SAELELELELE");
       let geoblaze_raster = e.detail.georaster;
+      this.selected_georaster = geoblaze_raster;
 
       if (gbl_state.map.getSource("canvas-source")) {
         let s = gbl_state.map.getSource("canvas-source") as Source;
@@ -132,14 +136,17 @@ export class NdviOffcanvas extends LitElement {
         //No existe
         console.log("Layer No Existe");
 
-        gbl_state.map.addLayer({
-          id: "radar-layer",
-          type: "raster",
-          source: "canvas-source",
-          paint: {
-            "raster-fade-duration": 0,
+        gbl_state.map.addLayer(
+          {
+            id: "radar-layer",
+            type: "raster",
+            source: "canvas-source",
+            paint: {
+              "raster-fade-duration": 0,
+            },
           },
-        },'borde_de_este_lote');
+          "borde_de_este_lote"
+        );
       }
 
       /* stats de la seleccion */
@@ -313,8 +320,7 @@ export class NdviOffcanvas extends LitElement {
         let punto = point([long, lat]);
         let is_contained = booleanContains(geojson, punto);
         if (!is_contained) {
-          
-          for (var banda = 0; banda < (georaster.numberOfRasters-1); banda++) {
+          for (var banda = 0; banda < georaster.numberOfRasters - 1; banda++) {
             /* for each band!! */
             georaster.values[banda][j][i] = -9999;
           }
@@ -357,18 +363,18 @@ export class NdviOffcanvas extends LitElement {
   };
 
   geoblaze_to_excel = () => {
-    let xmin = this.ndvi_geoblaze_raster._metadata.xmin;
-    let ymax = this.ndvi_geoblaze_raster._metadata.ymax;
-    let pw = this.ndvi_geoblaze_raster.pixelWidth;
-    let ph = this.ndvi_geoblaze_raster.pixelHeight;
-    let w = this.ndvi_geoblaze_raster.width;
-    let h = this.ndvi_geoblaze_raster.height;
+    let xmin = this.selected_georaster.xmin;
+    let ymax = this.selected_georaster.ymax;
+    let pw = this.selected_georaster.pixelWidth;
+    let ph = this.selected_georaster.pixelHeight;
+    let w = this.selected_georaster.width;
+    let h = this.selected_georaster.height;
 
     let array_resultado = [["lat", "lon", "ndvi"]];
     for (let i = 0; i < w; i++) {
       for (let vs = 0; vs < h; vs++) {
         let point = [xmin + pw * i, ymax - ph * vs];
-        let n = geoblaze.identify(this.ndvi_geoblaze_raster, point);
+        let n = geoblaze.identify(this.selected_georaster, point);
         if (n && n > -1) {
           array_resultado.push([point[1], point[0], n]);
         }
@@ -411,21 +417,52 @@ export class NdviOffcanvas extends LitElement {
 
       gbl_state.map.addLayer({
         id: "borde_de_este_lote",
-        type: "line",
+        type: "fill",
         source: "borde_de_este_lote",
         paint: {
-          //"fill-color": "#FFFFFF",
-          //"fill-outline-color": "#FF0000",
-          //"fill-opacity": 1,
-          "line-color": "rgb(60, 183, 251)",
-          "line-width": 4,
+          "fill-color": "#FFFFFF",
+          "fill-outline-color": "#FF0000",
+          "fill-opacity": 0,
+          //"line-color": "rgb(60, 183, 251)",
+          //"line-width": 4,
         },
+      });
+
+      // Evento Popup con valor
+      gbl_state.map.on("mouseenter", ["borde_de_este_lote"], () => {
+        console.log(
+          "A mouseenter event occurred on a visible portion of the water layer."
+        );
+
+        const popup = new Popup({
+          closeButton: false,
+        });
+
+        gbl_state.map.getCanvas().style.cursor = "pointer";
+
+        const onMouseMove = (e: MapMouseEvent) => {
+          //console.log("A mouseover event has occurred.", e.lngLat);
+          let ndvi_value = this.queryNDVIValore([e.lngLat.lng, e.lngLat.lat]);
+          console.log("NDVI", ndvi_value);
+          popup
+            .setLngLat(e.lngLat)
+            .setText(ndvi_value[this.indice.banda].toFixed(2))
+            .addTo(gbl_state.map);
+        };
+
+        gbl_state.map.on("mousemove", ["borde_de_este_lote"], onMouseMove);
+
+        gbl_state.map.on("mouseleave", ["borde_de_este_lote"], () => {
+          gbl_state.map.getCanvas().style.cursor = "";
+          popup.remove();
+          gbl_state.map.off("mousemove", "borde_de_este_lote", onMouseMove);
+        });
       });
     }
   };
 
   queryNDVIValore(lngLat) {
-    return geoblaze.identify(this.ndvi_geoblaze_raster, lngLat);
+    return geoblaze.identify(this.selected_georaster, lngLat);
   }
 
   create_or_update_ndvi_source = (img_src, bbox) => {
@@ -472,7 +509,7 @@ export class NdviOffcanvas extends LitElement {
           console.log("NDVI", ndvi_value);
           popup
             .setLngLat(e.lngLat)
-            .setText(ndvi_value[0].toFixed(2))
+            .setText(ndvi_value[this.indice.banda].toFixed(2))
             .addTo(gbl_state.map);
         };
 
@@ -527,9 +564,9 @@ export class NdviOffcanvas extends LitElement {
     this.histograma_show = true;
     await this.updateComplete;
 
-    //let h = geoblaze.histogram(this.ndvi_geoblaze_raster,null,{ scaleType: "nominal" })
+    //let h = geoblaze.histogram(this.selected_georaster,null,{ scaleType: "nominal" })
     let pixels: Number[] = geoblaze.get(
-      this.ndvi_geoblaze_raster,
+      this.selected_georaster,
       null,
       "flat"
     );
@@ -647,7 +684,7 @@ export class NdviOffcanvas extends LitElement {
     // Initialize with 50 bins
     update(50, 0.5);
     this.ambientes_raster = await geoblaze.rasterCalculator(
-      this.ndvi_geoblaze_raster,
+      this.selected_georaster,
       (a) => ambientador(a, 0.5)
     );
 
@@ -664,7 +701,7 @@ export class NdviOffcanvas extends LitElement {
         //console.log("consoe", this.value)
         let t1 = this.shadowRoot.getElementById("ambientacion").value;
         this.ambientes_raster = await geoblaze.rasterCalculator(
-          this.ndvi_geoblaze_raster,
+          this.selected_georaster,
           (a) => ambientador(a, t1)
         );
         d3tiff.geoblaze_raster = this.ambientes_raster;
@@ -698,6 +735,20 @@ export class NdviOffcanvas extends LitElement {
   close() {
     this.offcanvas.hide();
     Router.go("/");
+  }
+
+  helper_indice() {
+    let c = this.indice.value;
+    if (c === "msavi") {
+      return "Los valores de MSAVI van de -1 a 1, donde: -1 a 0.2 indican suelo desnudo; 0.2 a 0.4 es la etapa de germinación de la semilla; 0.4 a 0.6 es la etapa de desarrollo de la hoja. Cuando los valores superan 0,6, ya es hora de aplicar NDVI en su lugar. En otras palabras, la vegetación es lo suficientemente densa como para cubrir el suelo.";
+    } else if (c === "ndvi") {
+      return "NDVI define valores de -1.0 a 1.0, donde los valores negativos se forman principalmente a partir de nubes, agua y nieve, y los valores cercanos a cero se forman principalmente a partir de rocas y suelo desnudo. Valores muy pequeños (0,1 o menos) de la función NDVI corresponden a áreas vacías de rocas, arena o nieve. Los valores moderados (de 0,2 a 0,3) representan arbustos y praderas, mientras que los valores altos (de 0,6 a 0,8) indican bosques templados y tropicales.";
+    }else if (c === "ndre") {
+      return "NDRE define valores de -1.0 a 1.0, donde de -1 a 0,2 indican suelo desnudo o un cultivo en desarrollo; 0,2 a 0,6 puede interpretarse como una planta enferma o un cultivo que aún no está maduro; 0,6 a 1 son buenos valores que indican cultivos sanos, maduros y maduros.";
+    }else if (c === "ndmi") {
+      return "El Índice de humedad de diferencia normalizada (NDMI) detecta los niveles de humedad en la vegetación mediante una combinación de bandas espectrales de infrarrojo cercano (NIR) e infrarrojo de onda corta (SWIR). El NDMI solo puede tener valores entre -1 y 1, lo que lo hace muy fácil. interpretar. El estrés hídrico estaría señalado por los valores negativos que se aproximan a -1, mientras que el +1 puede indicar anegamiento.";
+    }
+    return "";
   }
 
   render() {
@@ -778,6 +829,7 @@ export class NdviOffcanvas extends LitElement {
                     item-value-path="value"
                     .selectedItem=${this.indice}
                     .items="${lista_indices}"
+                    helper-text=${this.helper_indice()}
                     @selected-item-changed=${(e) => {
                       this.indice = e.detail.value;
                     }}

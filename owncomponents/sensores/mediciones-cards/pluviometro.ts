@@ -130,6 +130,7 @@ export class PluviometroCard extends LitElement {
           },
         },
       },
+      colors: ['#00E396'],
       dataLabels: {
         enabled: true,
         formatter: function (val) {
@@ -155,7 +156,7 @@ export class PluviometroCard extends LitElement {
           fill: {
             type: "gradient",
             gradient: {
-              colorFrom: "#D8E3F0",
+              colorFrom: "#f25d00",//"#D8E3F0",
               colorTo: "#BED1E6",
               stops: [0, 100],
               opacityFrom: 0.4,
@@ -282,7 +283,7 @@ export class PluviometroCard extends LitElement {
             ? ""
             : "d-none d-sm-block"} col-12 col-sm-8 chart"
         >
-          <div class="toolbar">
+          <div class="toolbar bg-light">
             <vaadin-combo-box
               id="tipo-periodo-combo"
               label="Periodo"
@@ -296,7 +297,7 @@ export class PluviometroCard extends LitElement {
             ></vaadin-combo-box>
 
             <vaadin-combo-box
-              label="Year"
+              label="Año"
               style="width: 6em;"
               .items="${lista_anos}"
               .selectedItem="${this.selectedYear}"
@@ -304,7 +305,7 @@ export class PluviometroCard extends LitElement {
                 (this.selectedYear = e.detail.value)}"
             ></vaadin-combo-box>
             <vaadin-combo-box
-              label="Month"
+              label="Mes"
               style="width: 9em;"
               .items="${lista_meses}"
               .selectedItem="${this.selectedMonth}"
@@ -313,7 +314,7 @@ export class PluviometroCard extends LitElement {
                 (this.selectedMonth = e.detail.value)}"
             ></vaadin-combo-box>
             <vaadin-combo-box
-              label="Day"
+              label="Dia"
               style="width: 5em;"
               .items="${lista_dias_por_mes}"
               .selectedItem="${this.selectedDay}"
