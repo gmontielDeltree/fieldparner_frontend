@@ -1,0 +1,60 @@
+Localizar
+Añadir Lote
+Eliminar Campo
+Agregar
+¿Como quieres agregar la nueva geometria?
+Dibujar
+Subir Archivo
+Cerrar
+Nombre
+Guardar
+Nuevo
+Cultivo Desconocidorder
+Más Acciones
+hace x dias
+hace x meses
+Siembra
+Hectareas
+Editar
+Orden de Trabajo
+Eliminar
+Datos Meteorologicos
+Estado
+Pendiente
+Orden Entregada
+Realizada
+Pagada
+Notas
+Aplicación (de agroquimicos)
+Cosecha
+Indices Espectrales
+Fecha
+Geolocalizar Usando
+Dispositivo
+Mapa
+Color
+Urgente
+Atención
+Todo Bien
+Comentarios
+Añadir Foto
+Grabar Audio
+Nueva Nota
+Contratista
+Deposito
+Insumo
+Marca Comercial
+Principio Activo
+Tipo
+Subtipo
+Unidad
+Se aplica a
+Precio
+Acción
+Importar Excel
+Exportar Excel
+Stocks (Existencias)
+Entradas
+Nueva Entrada
+Cantidad
+Unidad
