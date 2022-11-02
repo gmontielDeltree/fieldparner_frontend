@@ -22,12 +22,22 @@ if (workbox) {
   console.log(`Boo! Workbox didn't load 😬`);
 }
 
+// Mapas tiles
+routing.registerRoute(/.*ecn\.t1\.tiles\.virtualearth\.net.*$/,new strategies.CacheFirst({cacheName:'maptiles'}))
 
 routing.registerRoute(/.*\.cloudantnosqldb\.appdomain\.cloud.*\/processed_device_telemetry/, new strategies.NetworkFirst());
 
 routing.registerRoute(/.*(?<!events\.)(?:mapbox)\.com\/(?!map\-sessions).*$/, new strategies.CacheFirst());
 
 routing.registerRoute(/.*server\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery\/MapServer\/tile.*$/, new strategies.CacheFirst({cacheName:'maptiles'}));
+
+
+
+// Geotiffs
+routing.registerRoute(/.*\.geotiff$/, new strategies.CacheFirst({cacheName:'geotiff'}))
+
+// Fechas de generacion
+routing.registerRoute(/.*us-south\.functions\.appdomain\.cloud\/api\/v1\/web\/2659fadf-b282-4e49-b323-bf8cd87cd5e6\/default\/indicesdates.*$/,new strategies.NetworkFirst({cacheName:'fechas'}))
 
 routing.registerRoute(
   ({request}) => request.destination === 'image',
