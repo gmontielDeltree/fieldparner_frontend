@@ -153,31 +153,31 @@ export class FieldPartner extends LitElement {
     });
 
     this.addEventListener("generar-ndvi", async (e: CustomEvent) => {
-      let couch_username = normalizar_username(this.user.name);
-      console.log("gen ndvi evnet");
+      // let couch_username = normalizar_username(this.user.name);
+      // console.log("gen ndvi evnet");
 
-      if (!(await ndvi_generado_hoy(e.detail.lote_geojson.geometry))) {
-        this.changes_db.put(
-          {
-            _id: uuid4(),
-            tipo: "add-lote",
-            username: couch_username,
-            details: {
-              campo_id: "thisCampoId",
-              db: "campos_" + couch_username,
-              lote_geojson: e.detail.lote_geojson,
-              username: couch_username,
-            },
-          },
-          (err: any, _: any) => {
-            if (!err) {
-              console.log("LocalChanges para NDVI Successfully posted!");
-            } else {
-              console.log(err);
-            }
-          }
-        );
-      }
+      // if (!(await ndvi_generado_hoy(e.detail.lote_geojson.geometry))) {
+      //   this.changes_db.put(
+      //     {
+      //       _id: uuid4(),
+      //       tipo: "add-lote",
+      //       username: couch_username,
+      //       details: {
+      //         campo_id: "thisCampoId",
+      //         db: "campos_" + couch_username,
+      //         lote_geojson: e.detail.lote_geojson,
+      //         username: couch_username,
+      //       },
+      //     },
+      //     (err: any, _: any) => {
+      //       if (!err) {
+      //         console.log("LocalChanges para NDVI Successfully posted!");
+      //       } else {
+      //         console.log(err);
+      //       }
+      //     }
+      //   );
+      // }
     });
 
     this.addEventListener("nuevo-deposito-click", () => {

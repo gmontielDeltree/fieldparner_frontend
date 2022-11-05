@@ -28,6 +28,7 @@ import { Router } from "@vaadin/router";
 import bbox from "@turf/bbox";
 import booleanContains from "@turf/boolean-contains";
 import { point } from "@turf/helpers";
+import { repeat } from "lit/directives/repeat.js";
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
@@ -44,15 +45,12 @@ export class NdviOffcanvas extends LitElement {
   //@property()
   //map: Map;
 
+  bindState = new StateController(this, gbl_state);
+
   @property({ type: Object })
   location = gbl_state.router.location;
 
-  bindState = new StateController(this, gbl_state);
-
-  @property()
-  ndvi_db: PouchDB.Database;
-
-  @property()
+  @state()
   lote_doc: any;
 
   @state()
@@ -61,11 +59,8 @@ export class NdviOffcanvas extends LitElement {
   @state()
   lote_uuid: string;
 
-  @state()
-  obs: any[] = [];
-
-  @state()
-  selected_obs: any;
+  // @state()
+  // selected_obs: any;
 
   @state()
   escala_dinamica: boolean = false;
@@ -77,8 +72,8 @@ export class NdviOffcanvas extends LitElement {
   })
   offcanvas: Offcanvas;
 
-  @state()
-  ndvi_geoblaze_raster: any;
+  // @state()
+  // ndvi_geoblaze_raster: any;
 
   @state()
   ambientes_raster: any;
@@ -86,39 +81,33 @@ export class NdviOffcanvas extends LitElement {
   @state()
   fechas: string[] = [];
 
-  @state()
-  lista_georasters: any[] = [];
+  // @state()
+  // lista_georasters: {fecha:string, georaster:Object, pending: boolean};
 
   @state()
   histograma_show: boolean = false;
 
   @state()
-  canvas_element: HTMLCanvasElement;
-
-  @state()
-  seleccion: { fecha: string; stats: any };
+  seleccion: { fecha: any; stats: any };
 
   @state()
   selected_georaster: any;
 
   constructor() {
     super();
-    this.ndvi_db = new PouchDB(
-      "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/ndvi"
-    );
 
     this.addEventListener("obs-selected", async (e: CustomEvent) => {
-      console.log("SAELELELELE");
+      console.log("Seleccion de Observacion");
       let geoblaze_raster = e.detail.georaster;
       this.selected_georaster = geoblaze_raster;
 
       if (gbl_state.map.getSource("canvas-source")) {
         let s = gbl_state.map.getSource("canvas-source") as Source;
-        console.log("SouceExiste", s);
+        console.log("Souce Existe", s);
         s.canvas = e.detail.canvas;
       } else {
         // No existe
-        console.log("SourceNo Existe");
+        console.log("Source No Existe");
 
         gbl_state.map.addSource("canvas-source", {
           type: "canvas",
@@ -171,8 +160,6 @@ export class NdviOffcanvas extends LitElement {
         bboxs
     );
     return r.json();
-
-    //    return ["2022-04-18", "2022-04-23", "2022-04-25"];
   }
 
   async firstUpdated() {
@@ -180,11 +167,13 @@ export class NdviOffcanvas extends LitElement {
       this.shadowRoot.getElementById("offcanvas-lote-ndvi")
     );
 
-    /* Esto deberia ocurri si map y db estan caragado */
+    /* Esto deberia ocurrir si map y db estan caragado */
 
     this.shadowRoot
       .getElementById("offcanvas-lote-ndvi")
       .addEventListener("hidden.bs.offcanvas", () => {
+        this.enabledMapEvent(false);
+
         layer_visibility(gbl_state.map, "campos", true);
         layer_visibility(gbl_state.map, "campos_border", true);
         layer_visibility(gbl_state.map, "lotes", false);
@@ -197,72 +186,26 @@ export class NdviOffcanvas extends LitElement {
         layer_visibility(gbl_state.map, "radar-layer", false);
 
         gbl_state.map.removeLayer("borde_de_este_lote");
+        gbl_state.map.removeLayer("frontera_de_este_lote");
         gbl_state.map.removeSource("borde_de_este_lote");
         //gbl_state.map.removeLayer("ndvi-layer");
         //gbl_state.map.removeSource("ndvi");
         gbl_state.map.removeLayer("radar-layer");
         gbl_state.map.removeSource("canvas-source");
-
-        this.autodestruirme();
-
-        //console.log("CHILDEREN",parent.children)
       });
 
     this.lote_uuid = this.location.params.uuid as string;
     this.lote_doc = await get_lote_doc(gbl_state.db, this.lote_uuid);
-
-    console.log(this.lote_doc);
-
     this.fechas = await this.get_fechas();
-    console.log("FECHAS", this.fechas);
-    this.populate_lista_georaster(this.fechas, this.lote_doc);
-
-    // Show
-    console.log("Indice", this.indice, this.lote_uuid);
+    this.fechas.reverse();
+    console.log("FECHAS de Indices", this.fechas);
 
     this.show();
   }
 
-  async populate_lista_georaster(fechas, lote_doc) {
-    fechas.map(async (fecha) => {
-      let geo = await this.fetch_georaster(
-        fecha,
-        this.lote_uuid,
-        bbox(lote_doc)
-      );
-
-      if (geo) {
-        let e = { fecha: fecha, georaster: geo };
-        this.lista_georasters.push(e);
-        this.render();
-      }
-    });
-  }
-
   async show() {
     this.init_layers();
-
     this.offcanvas.show();
-
-    //this.generar_ndvi_gallery(this.fechas);
-
-    // let clean_json = JSON.stringify(geometry, Object.keys(geometry).sort());
-    // hashMessage(clean_json).then((lote_hash) => {
-    //   console.log("Lote Hash", lote_hash);
-    //   // Build y  Mostrar la Galeria
-    //   this.ndvi_db
-    //     .get(lote_hash)
-    //     .then(this.generar_ndvi_gallery)
-    //     .catch((e) => {
-    //       console.log("Error NDVI: Aun no existe ningun registro", e);
-    //       this.offcanvas.hide();
-    //       alert(
-    //         "Error NDVI: Aun no existe ningun registro. Si recien creo el lote espere unos instantes hasta que se recopilen las imagenes satelitales"
-    //       );
-    //       this.autodestruirme();
-    //       Router.go("/");
-    //     });
-    // });
   }
 
   autodestruirme() {
@@ -272,95 +215,6 @@ export class NdviOffcanvas extends LitElement {
     let myself = children_els.find((e) => (e.id = this.id));
     parent.removeChild(myself);
   }
-
-  async fetch_georaster(fecha, uuid, bboxs) {
-    let url_tentativa = img_bucket_url + uuid + "_" + fecha + ".geotiff";
-    console.log("fecha uuid bboz", fecha, uuid, bboxs);
-    // Test URL
-    //url_tentativa = "/aaaaa_20220418.geotiff";
-    // parse array buffer
-    try {
-      const response = await fetch(url_tentativa);
-      //https://towardsdev.com/how-to-handle-404-500-and-more-using-fetch-api-in-javascript-f4e301925a51
-      if (!response.ok) {
-        if (response.status == 404) {
-          console.log("404 -> Generando...");
-          let response_gen = await this.call_generator(fecha, uuid, bboxs);
-          if (!response_gen.ok) {
-            throw Error(response_gen.statusText);
-          }
-          const arrayBuffer = await response_gen.arrayBuffer();
-          const georaster = await geoblaze.parse(arrayBuffer);
-          this.clip_raster(georaster, this.lote_doc);
-          return georaster;
-        }
-      }
-      const arrayBuffer = await response.arrayBuffer();
-      const georaster = await geoblaze.parse(arrayBuffer);
-      this.clip_raster(georaster, this.lote_doc);
-      return georaster;
-    } catch (e) {
-      console.log("ERROR al FETCH", e);
-    }
-  }
-
-  clip_raster(georaster, geojson) {
-    let width = georaster.width;
-    let height = georaster.height;
-
-    georaster.noDataVal = -9999;
-    georaster.noDataValue = -9999;
-
-    for (var j = 0; j < height; j++) {
-      for (var i = 0; i < width; i++) {
-        let value = georaster.values[0][j][i];
-        let long = i * georaster.pixelWidth + georaster.xmin;
-        let lat = georaster.ymax - j * georaster.pixelHeight;
-        // lat long de este pixel
-        let punto = point([long, lat]);
-        let is_contained = booleanContains(geojson, punto);
-        if (!is_contained) {
-          for (var banda = 0; banda < georaster.numberOfRasters - 1; banda++) {
-            /* for each band!! */
-            georaster.values[banda][j][i] = -9999;
-          }
-        }
-      }
-    }
-  }
-
-  async call_generator(fecha, uuid, bboxs) {
-    try {
-      let bboxs_enc = encodeURIComponent(JSON.stringify(bboxs));
-      let url_generador =
-        "https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/geotiff_for_date?date=" +
-        fecha +
-        "&bbox=" +
-        bboxs_enc +
-        "&uuid=" +
-        uuid;
-      const response = fetch(url_generador);
-      console.log("CALL GENERATOR", response);
-      return response;
-    } catch (e) {
-      console.log("ERROR al FETCH", e);
-
-      return;
-    } finally {
-    }
-  }
-
-  img_url = (ob) => {
-    if (this.escala_dinamica) {
-      return img_bucket_url + ob.png_dinamica_url;
-    } else {
-      return img_bucket_url + ob.png_fija_url;
-    }
-  };
-
-  geotiff_url = (ob) => {
-    return img_bucket_url + ob.geotiff_url;
-  };
 
   geoblaze_to_excel = () => {
     let xmin = this.selected_georaster.xmin;
@@ -389,17 +243,6 @@ export class NdviOffcanvas extends LitElement {
   };
 
   init_layers = () => {
-    // let bboxs = [
-    //   [ob.bbox.left, ob.bbox.top],
-    //   [ob.bbox.right, ob.bbox.top],
-    //   [ob.bbox.right, ob.bbox.bottom],
-    //   [ob.bbox.left, ob.bbox.bottom],
-    // ];
-    // const img_src = this.img_url(ob);
-
-    // //layer_visibility(gbl_state.map, "lotes_internos", false);
-    // this.create_or_update_ndvi_source(img_src, bboxs);
-
     /* Hide all polygons */
     layer_visibility(gbl_state.map, "campos", false);
     layer_visibility(gbl_state.map, "campos_border", false);
@@ -428,36 +271,18 @@ export class NdviOffcanvas extends LitElement {
         },
       });
 
-      // Evento Popup con valor
-      gbl_state.map.on("mouseenter", ["borde_de_este_lote"], () => {
-        console.log(
-          "A mouseenter event occurred on a visible portion of the water layer."
-        );
-
-        const popup = new Popup({
-          closeButton: false,
-        });
-
-        gbl_state.map.getCanvas().style.cursor = "pointer";
-
-        const onMouseMove = (e: MapMouseEvent) => {
-          //console.log("A mouseover event has occurred.", e.lngLat);
-          let ndvi_value = this.queryNDVIValore([e.lngLat.lng, e.lngLat.lat]);
-          console.log("NDVI", ndvi_value);
-          popup
-            .setLngLat(e.lngLat)
-            .setText(ndvi_value[this.indice.banda].toFixed(2))
-            .addTo(gbl_state.map);
-        };
-
-        gbl_state.map.on("mousemove", ["borde_de_este_lote"], onMouseMove);
-
-        gbl_state.map.on("mouseleave", ["borde_de_este_lote"], () => {
-          gbl_state.map.getCanvas().style.cursor = "";
-          popup.remove();
-          gbl_state.map.off("mousemove", "borde_de_este_lote", onMouseMove);
-        });
+      gbl_state.map.addLayer({
+        id: "frontera_de_este_lote",
+        type: "line",
+        source: "borde_de_este_lote",
+        paint: {
+          "line-color": "rgb(60, 183, 251)",
+          "line-width": 4,
+        },
       });
+
+      // Evento Popup con valor
+      this.enabledMapEvent(true);
     }
   };
 
@@ -465,68 +290,46 @@ export class NdviOffcanvas extends LitElement {
     return geoblaze.identify(this.selected_georaster, lngLat);
   }
 
-  create_or_update_ndvi_source = (img_src, bbox) => {
-    // If e
-    if (gbl_state.map.getSource("ndvi")) {
-      // EXISTE la source -> Update
-      const mySource = gbl_state.map.getSource("ndvi") as ImageSource;
-      mySource.updateImage({
-        url: img_src,
-        coordinates: bbox,
+  enabledMapEvent(is_enabled) {
+    const main_function = () => {
+      console.log(
+        "A mouseenter event occurred on a visible portion of the water layer."
+      );
+
+      const popup = new Popup({
+        closeButton: false,
       });
+
+      gbl_state.map.getCanvas().style.cursor = "pointer";
+
+      const onMouseMove = (e: MapMouseEvent) => {
+        //console.log("A mouseover event has occurred.", e.lngLat);
+        let ndvi_value = this.queryNDVIValore([e.lngLat.lng, e.lngLat.lat]);
+        //console.log("NDVI", ndvi_value);
+        popup
+          .setLngLat(e.lngLat)
+          .setText(ndvi_value[this.indice.banda].toFixed(2))
+          .addTo(gbl_state.map);
+      };
+
+      gbl_state.map.on("mousemove", ["borde_de_este_lote"], onMouseMove);
+
+      gbl_state.map.on("mouseleave", "borde_de_este_lote", () => {
+        gbl_state.map.getCanvas().style.cursor = "";
+        popup.remove();
+        gbl_state.map.off("mousemove", "borde_de_este_lote", onMouseMove);
+      });
+    };
+
+    if (is_enabled) {
+      console.info("Adding Mouse Enter Event");
+      gbl_state.map.on("mouseenter", ["borde_de_este_lote"], main_function);
     } else {
-      // No existe la source crear
-      gbl_state.map.addSource("ndvi", {
-        type: "image",
-        url: img_src,
-        coordinates: bbox,
-      });
-
-      gbl_state.map.addLayer({
-        id: "ndvi-layer",
-        type: "raster",
-        source: "ndvi",
-        paint: {
-          "raster-fade-duration": 0,
-          "raster-resampling": "nearest",
-        },
-      });
-
-      gbl_state.map.on("mouseenter", ["borde_de_este_lote"], () => {
-        console.log(
-          "A mouseenter event occurred on a visible portion of the water layer."
-        );
-
-        const popup = new Popup({
-          closeButton: false,
-        });
-
-        gbl_state.map.getCanvas().style.cursor = "pointer";
-
-        const onMouseMove = (e: MapMouseEvent) => {
-          //console.log("A mouseover event has occurred.", e.lngLat);
-          let ndvi_value = this.queryNDVIValore([e.lngLat.lng, e.lngLat.lat]);
-          console.log("NDVI", ndvi_value);
-          popup
-            .setLngLat(e.lngLat)
-            .setText(ndvi_value[this.indice.banda].toFixed(2))
-            .addTo(gbl_state.map);
-        };
-
-        gbl_state.map.on("mousemove", ["borde_de_este_lote"], onMouseMove);
-
-        gbl_state.map.on("mouseleave", ["borde_de_este_lote"], () => {
-          gbl_state.map.getCanvas().style.cursor = "";
-          popup.remove();
-          gbl_state.map.off("mousemove", "borde_de_este_lote", onMouseMove);
-        });
-      });
-
-      console.log("EVENTOS ADDED");
+      console.info("Removing Mouse Enter Event");
+      gbl_state.map.off("mouseenter", "borde_de_este_lote", main_function);
     }
+  }
 
-    //gbl_state.map.moveLayer("ndvi-layer");
-  };
 
   nubosidad(obs) {
     //  let info = obs.estadisticas;
@@ -541,35 +344,13 @@ export class NdviOffcanvas extends LitElement {
     }
   }
 
-  /**
-   * Renderiza la galeria de NDVI en los detalles del campo
-   * @param {} result Es el doc de ndvi desde la DB.
-   */
-  generar_ndvi_gallery = async (result) => {
-    /**
-     * NDVI Layer Visible
-     */
-    // if (gbl_state.map.getLayer("ndvi-layer")) {
-    //   gbl_state.map.setLayoutProperty("ndvi-layer", "visibility", "visible");
-    //   gbl_state.map.moveLayer("ndvi-layer");
-    // }
-    // let obs = result.obs;
-    // this.obs = result.obs;
-    // Muestro el Offcanvas en si mismo
-    //this.offcanvas.show();
-    //this.obs[0] ? this.mostrar_en_mapa(this.obs[0]) : null;
-  };
 
   async histograma() {
     this.histograma_show = true;
     await this.updateComplete;
 
     //let h = geoblaze.histogram(this.selected_georaster,null,{ scaleType: "nominal" })
-    let pixels: Number[] = geoblaze.get(
-      this.selected_georaster,
-      null,
-      "flat"
-    );
+    let pixels: Number[] = geoblaze.get(this.selected_georaster, null, "flat");
 
     let valid_pixels = pixels[0].filter((e) => e > -1);
     console.log("Pixels", pixels, "valid", valid_pixels);
@@ -743,9 +524,9 @@ export class NdviOffcanvas extends LitElement {
       return "Los valores de MSAVI van de -1 a 1, donde: -1 a 0.2 indican suelo desnudo; 0.2 a 0.4 es la etapa de germinación de la semilla; 0.4 a 0.6 es la etapa de desarrollo de la hoja. Cuando los valores superan 0,6, ya es hora de aplicar NDVI en su lugar. En otras palabras, la vegetación es lo suficientemente densa como para cubrir el suelo.";
     } else if (c === "ndvi") {
       return "NDVI define valores de -1.0 a 1.0, donde los valores negativos se forman principalmente a partir de nubes, agua y nieve, y los valores cercanos a cero se forman principalmente a partir de rocas y suelo desnudo. Valores muy pequeños (0,1 o menos) de la función NDVI corresponden a áreas vacías de rocas, arena o nieve. Los valores moderados (de 0,2 a 0,3) representan arbustos y praderas, mientras que los valores altos (de 0,6 a 0,8) indican bosques templados y tropicales.";
-    }else if (c === "ndre") {
+    } else if (c === "ndre") {
       return "NDRE define valores de -1.0 a 1.0, donde de -1 a 0,2 indican suelo desnudo o un cultivo en desarrollo; 0,2 a 0,6 puede interpretarse como una planta enferma o un cultivo que aún no está maduro; 0,6 a 1 son buenos valores que indican cultivos sanos, maduros y maduros.";
-    }else if (c === "ndmi") {
+    } else if (c === "ndmi") {
       return "El Índice de humedad de diferencia normalizada (NDMI) detecta los niveles de humedad en la vegetación mediante una combinación de bandas espectrales de infrarrojo cercano (NIR) e infrarrojo de onda corta (SWIR). El NDMI solo puede tener valores entre -1 y 1, lo que lo hace muy fácil. interpretar. El estrés hídrico estaría señalado por los valores negativos que se aproximan a -1, mientras que el +1 puede indicar anegamiento.";
     }
     return "";
@@ -898,17 +679,22 @@ export class NdviOffcanvas extends LitElement {
                 <div class="row overflow-auto">
                   <div class="row mb-1"></div>
                   <!--CARDS con observaciones-->
-                  ${this.lista_georasters?.map(({ fecha, georaster }) => {
-                    let fecha_date = parse(fecha, "yyyy-MM-dd", new Date());
+                  ${repeat(
+                    this.fechas,
+                    (f: string) => f,
+                    (fecha, index) => {
+                      // let fecha_date = parse(fecha, "yyyy-MM-dd", new Date());
 
-                    return html`<observacion-card
-                      .fecha=${fecha_date}
-                      .indice=${this.indice}
-                      .escala_dinamica=${this.escala_dinamica}
-                      .lote_geojson=${this.lote_doc}
-                      .geoblaze_raster=${georaster}
-                    ></observacion-card>`;
-                  })}
+                      return html`<observacion-card
+                        .fecha=${fecha}
+                        .indice=${this.indice}
+                        .escala_dinamica=${this.escala_dinamica}
+                        .uuid=${this.lote_uuid}
+                        .lote_geojson=${this.lote_doc}
+                      ></observacion-card>`;
+                    }
+                  )}
+                  <!-- </div> -->
                 </div>
               </div>`}
       </div>
@@ -929,3 +715,16 @@ declare global {
     "ndvi-offcanvas": NdviOffcanvas;
   }
 }
+
+// ${this.fechas?.map((fecha) => {
+//   let fecha_date = parse(fecha, "yyyy-MM-dd", new Date());
+
+//   return html`<observacion-card
+//     .fecha=${fecha_date}
+//     .indice=${this.indice}
+//     .escala_dinamica=${this.escala_dinamica}
+//     .uuid=${this.lote_uuid}
+//     .lote_geojson=${this.lote_doc}
+//     .bbox=${bbox(this.lote_doc)}
+//   ></observacion-card>`;
+// })}
