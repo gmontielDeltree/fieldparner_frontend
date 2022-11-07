@@ -93,6 +93,9 @@ export class NdviOffcanvas extends LitElement {
   @state()
   selected_georaster: any;
 
+  @state()
+  cuanto_muestro = 5;
+
   constructor() {
     super();
 
@@ -195,12 +198,12 @@ export class NdviOffcanvas extends LitElement {
       });
 
     this.lote_uuid = this.location.params.uuid as string;
-    console.time("Tiempo de carga Indices")
+    console.time("Tiempo de carga Indices");
     this.lote_doc = await get_lote_doc(gbl_state.db, this.lote_uuid);
-console.timeLog("Tiempo de carga Indices")
+    console.timeLog("Tiempo de carga Indices");
     this.fechas = await this.get_fechas();
     this.fechas.reverse();
-console.timeEnd("Tiempo de carga Indices")
+    console.timeEnd("Tiempo de carga Indices");
     console.log("FECHAS de Indices", this.fechas);
 
     this.show();
@@ -293,8 +296,6 @@ console.timeEnd("Tiempo de carga Indices")
     return geoblaze.identify(this.selected_georaster, lngLat);
   }
 
-
-
   main_function = (e) => {
     console.log(
       "A mouseenter event occurred on a visible portion of the water layer."
@@ -326,16 +327,14 @@ console.timeEnd("Tiempo de carga Indices")
   };
 
   enabledMapEvent(is_enabled) {
-
     if (is_enabled) {
       console.info("Adding Mouse Enter Event");
-      gbl_state.map.on("mouseenter", "borde_de_este_lote",this.main_function);
+      gbl_state.map.on("mouseenter", "borde_de_este_lote", this.main_function);
     } else {
       console.info("Removing Mouse Enter Event");
       gbl_state.map.off("mouseenter", this.main_function);
     }
   }
-
 
   nubosidad(obs) {
     //  let info = obs.estadisticas;
@@ -349,7 +348,6 @@ console.timeEnd("Tiempo de carga Indices")
       return "";
     }
   }
-
 
   async histograma() {
     this.histograma_show = true;
@@ -686,7 +684,7 @@ console.timeEnd("Tiempo de carga Indices")
                   <div class="row mb-1"></div>
                   <!--CARDS con observaciones-->
                   ${repeat(
-                    this.fechas,
+                    this.fechas.slice(0, this.cuanto_muestro),
                     (f: string) => f,
                     (fecha, index) => {
                       // let fecha_date = parse(fecha, "yyyy-MM-dd", new Date());
@@ -700,6 +698,15 @@ console.timeEnd("Tiempo de carga Indices")
                       ></observacion-card>`;
                     }
                   )}
+
+                  <button
+                    class="btn btn-info"
+                    @click=${() =>
+                      (this.cuanto_muestro = this.cuanto_muestro + 5)}
+                  >
+                    Ver Más
+                  </button>
+
                   <!-- </div> -->
                 </div>
               </div>`}
