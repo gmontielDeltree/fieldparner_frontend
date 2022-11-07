@@ -34,13 +34,21 @@ const fetch_georaster = async (fecha_obj, uuid, lote_doc) => {
         }
         const arrayBuffer = await response_gen.arrayBuffer();
         const georaster = await geoblaze.parse(arrayBuffer);
+
+        console.time("Clipping Time")
         clip_raster(georaster, lote_doc);
+        console.timeEnd("Clipping Time")
+
+        // Georaster is clipped
         return georaster;
       }
     }
     const arrayBuffer = await response.arrayBuffer();
     const georaster = await geoblaze.parse(arrayBuffer);
+        console.time("Clipping Time")
     clip_raster(georaster, lote_doc);
+
+        console.timeEnd("Clipping Time")
     return georaster;
   } catch (e) {
     console.log("ERROR al FETCH", e);
@@ -142,8 +150,8 @@ export class ObservacionCard extends LitElement {
     this,
     async ([fecha, uuid, lote_doc]) => { // Esta funcion se ejectuta cada vez que haya cambios en los argumentos
       let fecha_date = parse(fecha, "yyyy-MM-dd", new Date());
-      let georaster = fetch_georaster(fecha_date, uuid, lote_doc);
-      return await georaster;
+      let georaster = await fetch_georaster(fecha_date, uuid, lote_doc);
+      return georaster;
     },
     () => [this.fecha, this.uuid, this.lote_geojson] // Funcion que devuelve un array de argumentos.
     // tener en cuenta cuando estos argumentos se actualizan. Cuando son referencias a objetos, cuando son valores literales
@@ -272,8 +280,10 @@ export class ObservacionCard extends LitElement {
     if(!this.render_once && (this._loadDataTask.status === TaskStatus.COMPLETE)){
       //console.log("Load Georaster task Completed", this.fecha,this._loadDataTask.status )
       this.geoblaze_raster = this._loadDataTask.value;
+      console.time("Add Canvas Timer")
       this.addCanvas()
       this.rerender_img();
+      console.timeEnd("Add Canvas Timer")
       this.render_once = true;
     }
 
@@ -318,18 +328,18 @@ export class ObservacionCard extends LitElement {
         @click=${() => this.seleccionado(georaster)}
         style="max-width: 540px;"
       >
-        <div class="row g-0">
-          <div id="container" class="col-md-4">
+        <div class="row g-0 my-1">
+          <div id="container" class="col">
             <img
               id="img"
-              src=${this.img_data_url}
               width=50
               height=50
-              class="img-fluid img-thumbnail mt-2 rounded-start ms-2"
+              src=${this.img_data_url}
+              class="img-fluid img-thumbnail rounded-start"
               alt="..."
             />
           </div>
-          <div class="col-md-8">
+          <div class="col-8">
             <div class="card-body">
               <h5 class="card-title">
                 ${fecha_card}
