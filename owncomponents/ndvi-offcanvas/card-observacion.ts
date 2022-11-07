@@ -404,7 +404,7 @@ export class ObservacionCard extends LitElement {
     return html`${this._loadDataTask.render({
       pending: () => html`<div class="spinner-border text-success" role="status">
       <span class="visually-hidden">Loading...</span>
-    </div> Pocesando Imagen...`,
+    </div> Procesando Imagen...`,
       error: () => html`Error al fetching`,
       complete: (georaster) => html`<div
         class="card text-dark bg-light mb-3"
