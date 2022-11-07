@@ -18,7 +18,7 @@ const fetch_georaster = async (fecha_obj, uuid, lote_doc) => {
   let bboxs = bbox(lote_doc)
   let fecha = format(fecha_obj,"yyyy-MM-dd");
   let url_tentativa = img_bucket_url + uuid + "_" + fecha + ".geotiff";
-  console.log("fecha uuid bboz", fecha, uuid, bboxs);
+  // console.log("fecha uuid bboz", fecha, uuid, bboxs);
   // Test URL
   //url_tentativa = "/aaaaa_20220418.geotiff";
   // parse array buffer
@@ -323,7 +323,9 @@ export class ObservacionCard extends LitElement {
             <img
               id="img"
               src=${this.img_data_url}
-              class="img-fluid mt-2 rounded-start ms-2"
+              width=50
+              height=50
+              class="img-fluid img-thumbnail mt-2 rounded-start ms-2"
               alt="..."
             />
           </div>

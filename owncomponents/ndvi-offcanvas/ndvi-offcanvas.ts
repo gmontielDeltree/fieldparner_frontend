@@ -195,9 +195,12 @@ export class NdviOffcanvas extends LitElement {
       });
 
     this.lote_uuid = this.location.params.uuid as string;
+    console.time("Tiempo de carga Indices")
     this.lote_doc = await get_lote_doc(gbl_state.db, this.lote_uuid);
+console.timeLog("Tiempo de carga Indices")
     this.fechas = await this.get_fechas();
     this.fechas.reverse();
+console.timeEnd("Tiempo de carga Indices")
     console.log("FECHAS de Indices", this.fechas);
 
     this.show();

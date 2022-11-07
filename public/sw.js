@@ -37,7 +37,7 @@ routing.registerRoute(/.*server\.arcgisonline\.com\/ArcGIS\/rest\/services\/Worl
 routing.registerRoute(/.*\.geotiff$/, new strategies.CacheFirst({cacheName:'geotiff'}))
 
 // Fechas de generacion
-routing.registerRoute(/.*us-south\.functions\.appdomain\.cloud\/api\/v1\/web\/2659fadf-b282-4e49-b323-bf8cd87cd5e6\/default\/indicesdates.*$/,new strategies.NetworkFirst({cacheName:'fechas'}))
+routing.registerRoute(/.*us-south\.functions\.appdomain\.cloud\/api\/v1\/web\/2659fadf-b282-4e49-b323-bf8cd87cd5e6\/default\/indicesdates.*$/,new strategies.StaleWhileRevalidate({cacheName:'fechas_stale'}))
 
 routing.registerRoute(
   ({request}) => request.destination === 'image',
