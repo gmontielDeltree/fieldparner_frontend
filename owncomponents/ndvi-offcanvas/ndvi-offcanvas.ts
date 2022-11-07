@@ -290,43 +290,46 @@ export class NdviOffcanvas extends LitElement {
     return geoblaze.identify(this.selected_georaster, lngLat);
   }
 
-  enabledMapEvent(is_enabled) {
-    const main_function = () => {
-      console.log(
-        "A mouseenter event occurred on a visible portion of the water layer."
-      );
 
-      const popup = new Popup({
-        closeButton: false,
-      });
 
-      gbl_state.map.getCanvas().style.cursor = "pointer";
+  main_function = (e) => {
+    console.log(
+      "A mouseenter event occurred on a visible portion of the water layer."
+    );
 
-      const onMouseMove = (e: MapMouseEvent) => {
-        //console.log("A mouseover event has occurred.", e.lngLat);
-        let ndvi_value = this.queryNDVIValore([e.lngLat.lng, e.lngLat.lat]);
-        //console.log("NDVI", ndvi_value);
-        popup
-          .setLngLat(e.lngLat)
-          .setText(ndvi_value[this.indice.banda].toFixed(2))
-          .addTo(gbl_state.map);
-      };
+    const popup = new Popup({
+      closeButton: false,
+    });
 
-      gbl_state.map.on("mousemove", ["borde_de_este_lote"], onMouseMove);
+    gbl_state.map.getCanvas().style.cursor = "pointer";
 
-      gbl_state.map.on("mouseleave", "borde_de_este_lote", () => {
-        gbl_state.map.getCanvas().style.cursor = "";
-        popup.remove();
-        gbl_state.map.off("mousemove", "borde_de_este_lote", onMouseMove);
-      });
+    const onMouseMove = (e: MapMouseEvent) => {
+      //console.log("A mouseover event has occurred.", e.lngLat);
+      let ndvi_value = this.queryNDVIValore([e.lngLat.lng, e.lngLat.lat]);
+      //console.log("NDVI", ndvi_value);
+      popup
+        .setLngLat(e.lngLat)
+        .setText(ndvi_value[this.indice.banda].toFixed(2))
+        .addTo(gbl_state.map);
     };
+
+    gbl_state.map.on("mousemove", ["borde_de_este_lote"], onMouseMove);
+
+    gbl_state.map.on("mouseleave", "borde_de_este_lote", () => {
+      gbl_state.map.getCanvas().style.cursor = "";
+      popup.remove();
+      gbl_state.map.off("mousemove", "borde_de_este_lote", onMouseMove);
+    });
+  };
+
+  enabledMapEvent(is_enabled) {
 
     if (is_enabled) {
       console.info("Adding Mouse Enter Event");
-      gbl_state.map.on("mouseenter", ["borde_de_este_lote"], main_function);
+      gbl_state.map.on("mouseenter", "borde_de_este_lote",this.main_function);
     } else {
       console.info("Removing Mouse Enter Event");
-      gbl_state.map.off("mouseenter", "borde_de_este_lote", main_function);
+      gbl_state.map.off("mouseenter", this.main_function);
     }
   }
 
