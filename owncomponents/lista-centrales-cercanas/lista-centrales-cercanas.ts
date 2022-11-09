@@ -119,8 +119,8 @@ export class ListaCentralesCercanas extends LitElement {
     // Por ahora get todas las centrales
     this._daily_telemetry = await this._devices.get_daily_cards(fecha);
     this._daily_telemetry = this._daily_telemetry.filter((dt) => dt)
-    console.log("EEEEEEEEEE", fecha_str_1, this._daily_telemetry);
-    console.log("EEEEEEEEEEss", await this._devices.get_all_details());
+   // console.log("EEEEEEEEEE", fecha_str_1, this._daily_telemetry);
+   // console.log("EEEEEEEEEEss", await this._devices.get_all_details());
     this._detalles = await this._devices.get_all_details()
   }
 
@@ -154,8 +154,8 @@ export class ListaCentralesCercanas extends LitElement {
         >
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1 text-primary">${this.detalles_de(dc.device_id)?.nombre || ""} </h5>
-            <small class='text-muted'>${
-              calcular_distancia_al_campo(this.posicion,dc)}</small>
+            <small class='text-muted'>Ubicada a ${
+              calcular_distancia_al_campo(this.posicion,dc)} del lote</small>
           </div>
           <small>${dc.device_id}</small>
           <p class="mb-1">Promedios</p>
