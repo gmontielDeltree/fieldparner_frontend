@@ -30,21 +30,21 @@ import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { extract_tele } from "../sensores/sensores";
 import { format, isFuture, parse } from "date-fns";
 import { Actividad } from "../depositos/depositos-types";
-import distance from '@turf/distance';
+import distance from "@turf/distance";
 
 const valor = (card, key) => {
   return extract_tele(key, card)?.value || "N/A";
 };
 
-
-const calcular_distancia_al_campo = (posicion:number[], card: DailyTelemetryCard) => {
-
- let central_posicion = [valor(card,'longitud'),valor(card,'latitud')]
- let distancia = distance(posicion, central_posicion,{units:'kilometers'})
+const calcular_distancia_al_campo = (
+  posicion: number[],
+  card: DailyTelemetryCard
+) => {
+  let central_posicion = [valor(card, "longitud"), valor(card, "latitud")];
+  let distancia = distance(posicion, central_posicion, { units: "kilometers" });
 
   return distancia.toFixed(2) + " km";
-}
-
+};
 
 const valor_unidad = (card, key) => {
   let point = extract_tele(key, card);
@@ -79,7 +79,7 @@ export class ListaCentralesCercanas extends LitElement {
   _devices: Devices = new Devices();
 
   @state()
-  _detalles : any[] = []
+  _detalles: any[] = [];
 
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
 
@@ -91,7 +91,7 @@ export class ListaCentralesCercanas extends LitElement {
         .addEventListener("hidden.bs.modal", (event) => {
           // Se elimina del parent
           let parent = this.parentElement;
-          parent.firstChild.remove()
+          parent.firstChild.remove();
           // while (parent.firstChild) {
           //   parent.
           //   parent.firstChild.remove;
@@ -118,10 +118,10 @@ export class ListaCentralesCercanas extends LitElement {
     );
     // Por ahora get todas las centrales
     this._daily_telemetry = await this._devices.get_daily_cards(fecha);
-    this._daily_telemetry = this._daily_telemetry.filter((dt) => dt)
-   // console.log("EEEEEEEEEE", fecha_str_1, this._daily_telemetry);
-   // console.log("EEEEEEEEEEss", await this._devices.get_all_details());
-    this._detalles = await this._devices.get_all_details()
+    this._daily_telemetry = this._daily_telemetry.filter((dt) => dt);
+    // console.log("EEEEEEEEEE", fecha_str_1, this._daily_telemetry);
+    // console.log("EEEEEEEEEEss", await this._devices.get_all_details());
+    this._detalles = await this._devices.get_all_details();
   }
 
   ver_detalles_del_dia(daily_card: DailyTelemetryCard) {
@@ -136,16 +136,14 @@ export class ListaCentralesCercanas extends LitElement {
     );
   }
 
-  detalles_de(uuid){
-    return this._detalles.find((d)=>d.device_id === uuid)
+  detalles_de(uuid) {
+    return this._detalles.find((d) => d.device_id === uuid);
   }
 
   render() {
     let lista_centrales = html`<div class="list-group">
       ${this._daily_telemetry?.map((dc: DailyTelemetryCard) => {
-
         //let detalles = await this._devices.get_details(dc.device_id)
-
 
         return html`<a
           class="list-group-item list-group-item-action"
@@ -153,11 +151,15 @@ export class ListaCentralesCercanas extends LitElement {
           @click=${() => this.ver_detalles_del_dia(dc)}
         >
           <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1 text-primary">${this.detalles_de(dc.device_id)?.nombre || ""} </h5>
-            <small class='text-muted'>Ubicada a ${
-              calcular_distancia_al_campo(this.posicion,dc)} del lote</small>
+            <h5 class="mb-1 text-primary">
+              ${this.detalles_de(dc.device_id)?.nombre || ""}
+            </h5>
+            <small class="text-muted"
+              >Ubicada a ${calcular_distancia_al_campo(this.posicion, dc)} del
+              lote</small
+            >
           </div>
-          <small>${dc.device_id}</small>
+          <small>ID Dispositivo: ${dc.device_id}</small>
           <p class="mb-1">Promedios</p>
 
           <div class="container-fluid row">
@@ -192,9 +194,13 @@ export class ListaCentralesCercanas extends LitElement {
                 Meteorología ${this.fecha}
                 <small class="text-muted">Lista de Centrales</small>
               </h6>
-              
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
             </div>
             <div class="modal-body">${body}</div>
           </div>
