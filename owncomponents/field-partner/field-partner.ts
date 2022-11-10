@@ -40,7 +40,6 @@ import { Actividad } from "../depositos/depositos-types";
 import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { format, parse } from "date-fns";
 import { Devices } from "../sensores/sensores";
-import { ndvi_generado_hoy } from "../ndvi-offcanvas/ndvi-functions";
 
 import {StateController} from '@lit-app/state'
 import gbl_state from '../state.js'
@@ -123,34 +122,38 @@ export class FieldPartner extends LitElement {
 
     /* Clicks en varios botones */
     this.addEventListener("ver-campo-detalles", (e: any) => {
-      this.campos_db.get(e.detail.campo_id).then((campo_doc) => {
-        document.getElementById("campo-oc").campo_doc = campo_doc;
-        document.getElementById("campo-oc").show();
-      });
+      let campo_doc_id = e.detail.campo_id // el ID del doc del campo ("campo:el remanso")
+      Router.go('campo/'+encodeURIComponent(campo_doc_id))
+
+      // this.campos_db.get(e.detail.campo_id).then((campo_doc) => {
+      //   document.getElementById("campo-oc").campo_doc = campo_doc;
+      //   document.getElementById("campo-oc").show();
+      // });
     });
 
     this.addEventListener("ver-lote-detalles", (e) => {
-      document.getElementById("campo-oc").hide();
-      document.getElementById("lote-oc").lote_nombre = e.detail.nombre;
-      document.getElementById("lote-oc").campo_id = e.detail.campo_parent_id;
-      document.getElementById("lote-oc").show();
+
+      // document.getElementById("campo-oc").hide();
+      // document.getElementById("lote-oc").lote_nombre = e.detail.nombre;
+      // document.getElementById("lote-oc").campo_id = e.detail.campo_parent_id;
+      // document.getElementById("lote-oc").show();
     });
 
     this.addEventListener("nuevo-campo-click", (e) => {
       document.getElementById("nuevo-campo-oc").show = true;
     });
 
-    this.addEventListener("ver-ndvi-click", (e: CustomEvent) => {
-      //document.getElementById("ndvi-oc").lote_doc = e.detail.lote;
-      //document.getElementById("ndvi-oc").show();
+    // this.addEventListener("ver-ndvi-click", (e: CustomEvent) => {
+    //   //document.getElementById("ndvi-oc").lote_doc = e.detail.lote;
+    //   //document.getElementById("ndvi-oc").show();
 
-      const el = document.createElement("ndvi-offcanvas");
-      document.getElementById("container-multiproposito").appendChild(el);
-      el.map = this.map;
-      el.id = "ndvi-oc";
-      el.lote_doc = e.detail.lote;
-      el.show();
-    });
+    //   const el = document.createElement("ndvi-offcanvas");
+    //   document.getElementById("container-multiproposito").appendChild(el);
+    //   el.map = this.map;
+    //   el.id = "ndvi-oc";
+    //   el.lote_doc = e.detail.lote;
+    //   el.show();
+    // });
 
     this.addEventListener("generar-ndvi", async (e: CustomEvent) => {
       // let couch_username = normalizar_username(this.user.name);
@@ -192,9 +195,9 @@ export class FieldPartner extends LitElement {
     this.addEventListener("map-loaded", (e) => {
       this.map = e.detail.map;
 
-    gbl_state.map = e.detail.map;
-
+      gbl_state.map = e.detail.map;
       this.draw = e.detail.draw;
+      gbl_state.draw = e.detail.draw;
       // Cuando se carga el mapa considero que terminó la carga
       this.loading = false;
 
@@ -851,6 +854,17 @@ export class FieldPartner extends LitElement {
       { path: "/campos", component: "lista-de-campos" },
       { path: "/indices/:uuid", component: "ndvi-offcanvas" },
       { path: "/cultivos", component: "color-cultivo" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add", component: "lote-offcanvas" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit", component: "lote-offcanvas" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote", component: "lote-offcanvas" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote", component: "lote-offcanvas" },
+      { path: "/campo/add", component: "nuevo-campo" },
+      { path: "/campo/:uuid", component: "campo-offcanvas" },
+      { path: "/contratistas", component: "contratistas-lista" },
+      { path: "/contratistas/add", component: "contratistas-crud" },
+      { path: "/depositos", component: "depositos-lista" },
+      { path: "/depositos/add", component: "depositos-upsert" },
+      { path: "/insumos", component: "insumos-lista" },
     ]);
   }
 
@@ -863,14 +877,14 @@ export class FieldPartner extends LitElement {
 
       <navbar-element .map=${this.map}></navbar-element>
 
-      <campo-offcanvas
+      <!-- <campo-offcanvas
         id="campo-oc"
         .map=${this.map}
         .draw=${this.draw}
         .campos_db=${this.campos_db}
         .local_campos_changes=${this.changes_db}
         .user=${this.user}
-      ></campo-offcanvas>
+      ></campo-offcanvas> -->
 
       <lote-offcanvas
         id="lote-oc"
@@ -892,14 +906,14 @@ export class FieldPartner extends LitElement {
         .campos=${this.campos}
       ></lista-de-campos> -->
 
-      <contratista-crud
+      <!-- <contratista-crud
         id="contratista-crud"
         .db=${this.campos_db}
       ></contratista-crud>
       <contratistas-lista
         id="contratistas-lista"
         .db=${this.campos_db}
-      ></contratistas-lista>
+      ></contratistas-lista> -->
       <!-- <color-cultivo
         id="colores-cultivos"
       ></color-cultivo> -->
@@ -911,9 +925,9 @@ export class FieldPartner extends LitElement {
         .db=${this.campos_db}
       ></nota-share-target>
 
-      <insumos-lista id="insumos-lista" .db=${this.campos_db}></insumos-lista>
+      <!-- <insumos-lista id="insumos-lista" .db=${this.campos_db}></insumos-lista> -->
 
-      <deposito-upsert
+      <!-- <deposito-upsert
         id="deposito-upsert"
         .db=${this.campos_db}
         .draw=${this.draw}
@@ -921,7 +935,7 @@ export class FieldPartner extends LitElement {
       <depositos-lista
         id="depositos-lista"
         .db=${this.campos_db}
-      ></depositos-lista>
+      ></depositos-lista> -->
 
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
 

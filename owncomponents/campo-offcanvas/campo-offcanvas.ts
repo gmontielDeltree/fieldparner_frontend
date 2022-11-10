@@ -1,57 +1,91 @@
-import { LitElement, html, css } from "lit";
+import { LitElement, html, unsafeCSS, PropertyValueMap } from "lit";
 import area from "@turf/area";
 import uuid4 from "uuid4";
 import "../share-modal/share-modal.js";
 import { normalizar_username } from "../helpers";
 import bbox from "@turf/bbox";
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
+import gbl_state from "../state";
+import { state } from "lit/decorators.js";
+import { State, StateController, property } from "@lit-app/state";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+//import bootstrap from "./bootstrap.min.css";
 
 export class CampoOffcanvas extends LitElement {
-  static properties = {
-    map: {},
-    draw: {},
-    campos_db: {},
-    campo_doc: {},
-    user: {},
-    show_main: {},
-    _detallesOffcanvas: {hasChanged(newVal, oldVal) {
-      return false;
-    }},
-  };
+  stateBind = new StateController(this, gbl_state);
 
-  constructor() {
-    super();
-    // console.log("EJECUTANDO COMPONENTE")
-    this.show_main = false;
-    this.modo = "lote";
-    this.addEventListener('ver-ndvi-click',()=>this._detallesOffcanvas.hide())
+  static override styles = unsafeCSS(bootstrap);
+
+  @state()
+  campo_doc: Object;
+
+  @state({
+    hasChanged: (newVal, oldVal) => {
+      return false;
+    },
+  })
+  data_loaded: boolean = false;
+
+  @state({
+    hasChanged: (newVal, oldVal) => {
+      return false;
+    },
+  })
+  _detallesOffcanvas: Offcanvas;
+
+  protected willUpdate(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ): void {
+    if (
+      !this.data_loaded &&
+      gbl_state.router &&
+      gbl_state.db
+    ) {
+      // No hay data y esta disponible router(param) y db
+      this.loadCampo();
+      console.count("loadCampo");
+    }
+    console.count("willUpdate");
   }
 
-  createRenderRoot() {
-    return this;
+  loadCampo() {
+    let location = gbl_state.router.location;
+    let campo_doc_id = decodeURIComponent(location.params.uuid as string);
+    console.log("Campo Doc ID", campo_doc_id, gbl_state.db);
+    this.data_loaded = true;
+    gbl_state.db.get(campo_doc_id).then((campo_doc) => {
+      this.campo_doc = campo_doc;
+    });
   }
 
   firstUpdated() {
     // Build Offcanvas
     this._detallesOffcanvas = new Offcanvas(
-      document.getElementById("offcanvas-campo-detalle")
+      this.shadowRoot.getElementById("offcanvas-campo-detalle")
     );
+
+    this.shadowRoot
+      .getElementById("offcanvas-campo-detalle")
+      .addEventListener("hidden.bs.offcanvas", () => {
+        history.back();
+      });
+
+    this._detallesOffcanvas.show();
 
     this.addEventListener("cerrargeometria", (e) => {
       console.log("cerrar_nueva_geometria");
       this._detallesOffcanvas.show();
     });
 
-    this.addEventListener("guardargeometria", (e) => {
+    this.addEventListener("guardargeometria", (e: CustomEvent) => {
       console.log("guardar_nueva_geometria", e.detail.feature);
-      this.show = false;
       this._detallesOffcanvas.show();
 
       let lote_geojson = e.detail.feature;
       let nombre = e.detail.nombre;
       let thisCampoId = this.campo_doc["_id"];
 
-      console.log("THISSSSS", this.campo_doc);
+      console.log("THIS", this.campo_doc);
 
       // Props adicionales del lote
       lote_geojson.properties.nombre = nombre;
@@ -62,34 +96,11 @@ export class CampoOffcanvas extends LitElement {
         Math.round((area(lote_geojson) / 10000) * 100) / 100;
       lote_geojson.id = this_lote_id;
 
-      this.campos_db.get(thisCampoId).then((doc) => {
+      gbl_state.db.get(thisCampoId).then((doc) => {
         console.log("Lote GeoJSON", lote_geojson);
         doc.lotes.push(lote_geojson);
         // Save Lote en campo doc
-        this.campos_db.put(doc).then(() => console.log("Lote Grabado"));
-
-        // Changes para NDVI
-        let couch_username = normalizar_username(this.user.name);
-        this.local_campos_changes.put(
-          {
-            _id: this_lote_id,
-            tipo: "add-lote",
-            username: couch_username,
-            details: {
-              campo_id: thisCampoId,
-              db: "campos_" + couch_username,
-              lote_geojson: lote_geojson,
-              username: couch_username,
-            },
-          },
-          (err, result) => {
-            if (!err) {
-              console.log("LocalChanges Successfully posted!");
-            } else {
-              console.log(err);
-            }
-          }
-        );
+        gbl_state.db.put(doc).then(() => console.log("Lote Grabado"));
       });
     });
   }
@@ -113,63 +124,60 @@ export class CampoOffcanvas extends LitElement {
     //         intro: "Has seleccionado un campo",
     //       },
     //       {
-    //         element: document.querySelector(".btn-anadir-lote"),
+    //         element: shadowRoot.querySelector(".btn-anadir-lote"),
     //         intro: "Presiona aqui si quieres agregar un nuevo lote",
     //       },
     //     ],
     //   })
     //   .start();
-      
-    this.localizar_campo()
-  }
 
-  enable_siguiente() {
-    document
-      .getElementById("agregar-lote-siguiente-btn")
-      .removeAttribute("disabled");
+    this.localizar_campo();
   }
 
   nuevo_lote_click() {
     // Mostrar Nueva Geometria - Lote
-    document.getElementById("nuevo-lote-ui").show = true;
+    this.shadowRoot.getElementById("nuevo-lote-ui").show = true;
     this.hide();
   }
 
   cerrar_modo() {
     console.log("Cerrar Modo Campo");
     // Show Campos
-    this.map.setLayoutProperty("campos", "visibility", "visible");
+    gbl_state.map.setLayoutProperty("campos", "visibility", "visible");
     // Hide Lotes
-    this.map.setLayoutProperty("lotes", "visibility", "none");
-    // Hide NDVI
-    // this.map.setLayoutProperty("ndvi-layer", "visibility", "none");
+    gbl_state.map.setLayoutProperty("lotes", "visibility", "none");
     // Bordes
-    this.map.setLayoutProperty("campos_border", "visibility", "visible");
-  }
+    gbl_state.map.setLayoutProperty("campos_border", "visibility", "visible");
 
-  share_campo() {
-    document.getElementById("share-modal").start();
-  }
-
-  hide() {
     this._detallesOffcanvas.hide();
   }
 
+  // share_campo() {
+  //   this.shadowRoot.getElementById("share-modal").start();
+  // }
+
   borrar_campo() {
-    let event = new CustomEvent("borrar-campo", {
-      detail: { campo_doc: this.campo_doc },
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+    if(confirm("¿Desea Eliminar el Campo?")){
+      let event = new CustomEvent("borrar-campo", {
+        detail: { campo_doc: this.campo_doc },
+        bubbles: true,
+        composed: true,
+      });
+      this.dispatchEvent(event);
+    }
+    
   }
 
-  localizar_campo(){
-
-    this.map.fitBounds(bbox(this.campo_doc.campo_geojson),{padding: {top:50, bottom:window.innerHeight/4}})
+  localizar_campo() {
+    gbl_state.map.fitBounds(bbox(this.campo_doc.campo_geojson), {
+      padding: { top: 50, bottom: window.innerHeight / 4 },
+    });
   }
 
   render() {
+
+    
+
     return html`
       <div
         class="offcanvas offcanvas-bottom h-25"
@@ -179,7 +187,6 @@ export class CampoOffcanvas extends LitElement {
         data-bs-backdrop="false"
       >
         <div class="offcanvas-header">
-
           <button
             type="button"
             class="btn btn-primary btn-sm"
@@ -216,34 +223,18 @@ export class CampoOffcanvas extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body small col pt-0">
-          <!-- ${this.campo_doc?.shared
-            ? html`<p>
-                Compartido por
-                <span class="badge bg-success"
-                  >${this.campo_doc.owner.name.toUpperCase()}</span
-                >
-              </p>`
-            : null} -->
           <p>Toque en un lote del mapa para ver detalles</p>
 
           <button
             type="button"
-            class="btn btn-success btn-anadir-lote"
+            class="btn btn-success btn-sm btn-anadir-lote"
             @click=${this.nuevo_lote_click}
           >
             Añadir Lote
           </button>
 
-          <!-- <button
-            type="button"
-            class="btn btn-warning"
-            @click=${this.share_campo}
-          >
-            Compartir Campo
-          </button> -->
-
           <button
-            class="btn btn-danger"
+            class="btn btn-sm btn-danger"
             id="eliminar-campo-btn"
             @click=${this.borrar_campo}
           >
@@ -253,12 +244,12 @@ export class CampoOffcanvas extends LitElement {
       </div>
 
       <share-modal id="share-modal" .campo_doc=${this.campo_doc}></share-modal>
-      ${this.map
+      ${gbl_state.map
         ? html`<nueva-geometria-ui
             id="nuevo-lote-ui"
             .tipo="lote"
-            .mapa=${this.map}
-            ._draw=${this.draw}
+            .mapa=${gbl_state.map}
+            ._draw=${gbl_state.draw}
             .campo_feature=${this.campo_doc?.campo_geojson}
           ></nueva-geometria-ui>`
         : null}
@@ -278,3 +269,19 @@ function makeid(length) {
 }
 
 customElements.define("campo-offcanvas", CampoOffcanvas);
+// <!-- ${this.campo_doc?.shared
+//   ? html`<p>
+//       Compartido por
+//       <span class="badge bg-success"
+//         >${this.campo_doc.owner.name.toUpperCase()}</span
+//       >
+//     </p>`
+//   : null} -->
+
+// <!-- <button
+// type="button"
+// class="btn btn-warning"
+// @click=${this.share_campo}
+// >
+// Compartir Campo
+// </button> -->
