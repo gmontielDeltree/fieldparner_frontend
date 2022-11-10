@@ -133,7 +133,6 @@ export class ColorCultivo extends LitElement {
 
     const item = (doc: CultivosDoc) => {
       return html`<a
-        href="#"
         class="list-group-item list-group-item-action bg-light row"
         aria-current="true"
       >
