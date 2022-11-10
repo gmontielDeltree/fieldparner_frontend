@@ -850,6 +850,7 @@ export class FieldPartner extends LitElement {
       {path: '/gf', redirect: '/'},
       { path: "/campos", component: "lista-de-campos" },
       { path: "/indices/:uuid", component: "ndvi-offcanvas" },
+      { path: "/cultivos", component: "color-cultivo" },
     ]);
   }
 
@@ -899,10 +900,9 @@ export class FieldPartner extends LitElement {
         id="contratistas-lista"
         .db=${this.campos_db}
       ></contratistas-lista>
-      <color-cultivo
+      <!-- <color-cultivo
         id="colores-cultivos"
-        .cultivos=${this.settings?.user_cultivos}
-      ></color-cultivo>
+      ></color-cultivo> -->
       <!-- <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas> -->
 
       <nota-share-target

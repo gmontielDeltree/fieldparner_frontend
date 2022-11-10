@@ -58,3 +58,6 @@ Entradas
 Nueva Entrada
 Cantidad
 Unidad
+Ingrese el nombre del Cultivo
+Ubicada a x km del lote
+¿Desea Eliminar?

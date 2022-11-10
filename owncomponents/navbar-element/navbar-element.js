@@ -201,7 +201,8 @@ export class NavbarElement extends LitElement {
                       <a
                         class="dropdown-item"
                         @click=${() => {
-                          this.sendEvent("ver-colores-cultivos");
+                          //this.sendEvent("ver-colores-cultivos");
+                          Router.go("/cultivos");
                         }}
                         href="#"
                         >${translate('navbar.opciones.colorCultivos')}</a
