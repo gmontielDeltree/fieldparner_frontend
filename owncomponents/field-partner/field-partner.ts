@@ -131,8 +131,10 @@ export class FieldPartner extends LitElement {
       // });
     });
 
-    this.addEventListener("ver-lote-detalles", (e) => {
-
+    this.addEventListener("ver-lote-detalles", (e : CustomEvent) => {
+      let campo_doc_id_enc = encodeURIComponent( e.detail.campo_parent_id)
+      let lote_nombre = encodeURIComponent(e.detail.nombre)
+      Router.go('campo/' + campo_doc_id_enc + '/lote/' + lote_nombre)
       // document.getElementById("campo-oc").hide();
       // document.getElementById("lote-oc").lote_nombre = e.detail.nombre;
       // document.getElementById("lote-oc").campo_id = e.detail.campo_parent_id;
@@ -885,13 +887,13 @@ export class FieldPartner extends LitElement {
         .local_campos_changes=${this.changes_db}
         .user=${this.user}
       ></campo-offcanvas> -->
-
+<!-- 
       <lote-offcanvas
         id="lote-oc"
         .map=${this.map}
         .db=${this.campos_db}
         .settings=${this.settings}
-      ></lote-offcanvas>
+      ></lote-offcanvas> -->
 
       <nuevo-campo
         id="nuevo-campo-oc"

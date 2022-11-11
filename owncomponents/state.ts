@@ -16,4 +16,11 @@ class MyState extends State {
 }
 
 const state = new MyState()
+
+export const gblStateLoaded = ()=>{
+	//
+	let loaded = true && state.map && state.db && state.draw && state.router
+	return loaded;
+}
+
 export default state
