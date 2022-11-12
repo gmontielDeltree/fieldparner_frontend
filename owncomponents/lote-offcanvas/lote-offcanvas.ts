@@ -87,11 +87,10 @@ const motivos_2_str = (motivos) => {
 };
 
 export class LoteOffcanvas extends LitElement {
-
   static override styles = unsafeCSS(bootstrap);
 
   bindState = new StateController(this, gbl_state);
-  
+
   @state()
   _insumos: Insumo[];
 
@@ -150,6 +149,9 @@ export class LoteOffcanvas extends LitElement {
   @state()
   _current_dosis: LineaDosis;
 
+  @state()
+  data_loaded: boolean = false;
+
   show_step = (n) => {
     if (!this._steps_elements[n]._isShown) {
       this._steps_elements.map((el) => el.hide());
@@ -168,7 +170,7 @@ export class LoteOffcanvas extends LitElement {
       let doc = e.detail.item;
       gbl_state.db.put(doc);
       console.log("Cambio de Estado - PUT", doc);
-      this.reload_actividades()
+      this.reload_actividades();
     });
 
     this.addEventListener("guardar-cosecha", (e: CustomEvent) =>
@@ -237,7 +239,7 @@ export class LoteOffcanvas extends LitElement {
     });
     //this._actividades = []
   }
-  
+
   load_insumos() {
     gbl_state.db
       .allDocs({
@@ -248,7 +250,7 @@ export class LoteOffcanvas extends LitElement {
       .then((e) => {
         //this._insumos = Object.values(e.);
         console.log("Insumos DOC", e);
-        this._insumos = (e.rows.map((r) => r.doc) as unknown) as Insumo[];
+        this._insumos = e.rows.map((r) => r.doc) as unknown as Insumo[];
       })
       .catch((e) => {});
   }
@@ -260,9 +262,6 @@ export class LoteOffcanvas extends LitElement {
     this._steps_elements = [
       ...this.shadowRoot.querySelectorAll(".aplicacion.step"),
     ].map((el) => new Modal(el));
-
-
-    this.load_insumos();
   }
 
   show() {
@@ -348,7 +347,7 @@ export class LoteOffcanvas extends LitElement {
   }
 
   evento_show_ndvi(e) {
-    Router.go('/indices/'+this._lote_doc.id)
+    Router.go("/indices/" + this._lote_doc.id);
     // const event = new CustomEvent("ver-ndvi-click", {
     //   detail: { lote: this._lote_doc },
     //   bubbles: true,
@@ -673,13 +672,18 @@ export class LoteOffcanvas extends LitElement {
    */
   willUpdate(changedProperties) {
     // only need to check changed properties for an expensive computation.
-    if (
-      changedProperties.has("campo_id") ||
-      changedProperties.has("lote_nombre")
-    ) {
-      if (this.campo_id === "") {
-        return;
-      }
+
+    console.count("LoteOffcanvas willUpdate");
+    if (!this.data_loaded && gblStateLoaded()) {
+      console.log("Data No Loaded y estado loaded");
+      console.count("NoDataLoaded");
+
+      this.data_loaded = true;
+
+      let params = gbl_state.router.location.params;
+
+      this.campo_id = decodeURIComponent(params.uuid_campo);
+      this.lote_nombre = decodeURIComponent(params.uuid_lote);
 
       gbl_state.db.get(this.campo_id).then((doc) => {
         this._campo_doc = doc;
@@ -692,11 +696,38 @@ export class LoteOffcanvas extends LitElement {
         someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
         this.init_fsm(someContext);
 
+        this.load_insumos();
+        this.reload_lote_doc_y_localizar();
         this.reload_actividades();
-
+        this._lotesOffcanvas.show();
         // this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
       });
     }
+
+    // if (
+    //   changedProperties.has("campo_id") ||
+    //   changedProperties.has("lote_nombre")
+    // ) {
+    //   if (this.campo_id === "") {
+    //     return;
+    //   }
+
+    //   gbl_state.db.get(this.campo_id).then((doc) => {
+    //     this._campo_doc = doc;
+    //     this._lote_doc =
+    //       doc.lotes.filter(
+    //         (lote) => lote.properties.nombre === this.lote_nombre
+    //       )[0] || {};
+
+    //     const someContext = aplicacionMachine.initialState.context;
+    //     someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
+    //     this.init_fsm(someContext);
+
+    //     this.reload_actividades();
+
+    //     // this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+    //   });
+    // }
   }
 
   reload_lote_doc_y_localizar() {
@@ -707,13 +738,13 @@ export class LoteOffcanvas extends LitElement {
           (lote) => lote.properties.nombre === this.lote_nombre
         )[0] || {};
 
-      // Preparar NDVI
-      let e = new CustomEvent("generar-ndvi", {
-        detail: { lote_id: this._lote_doc.id, lote_geojson: this._lote_doc },
-        bubbles: true,
-        composed: true,
-      });
-      this.dispatchEvent(e);
+      // // Preparar NDVI
+      // let e = new CustomEvent("generar-ndvi", {
+      //   detail: { lote_id: this._lote_doc.id, lote_geojson: this._lote_doc },
+      //   bubbles: true,
+      //   composed: true,
+      // });
+      // this.dispatchEvent(e);
 
       this.localizar_lote();
     });
@@ -1739,7 +1770,7 @@ export class LoteOffcanvas extends LitElement {
         </div>
       </div>
 
-      <!-- <cosecha-add-ui
+      <cosecha-add-ui
         id="cosecha-add-el"
         .contratistas=${this._contratistas}
         ._lote_doc=${this._lote_doc}
@@ -1752,7 +1783,7 @@ export class LoteOffcanvas extends LitElement {
         .contratistas=${this._contratistas}
         ._lote_doc=${this._lote_doc}
         .settings=${this.settings}
-      ></siembra-add-ui> -->
+      ></siembra-add-ui>
 
       <notas-oc
         id="notas-oc"
