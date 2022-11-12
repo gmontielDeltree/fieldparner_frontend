@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, unsafeCSS } from "lit";
 import "../date-picker/date-picker.ts";
 import "@vaadin/combo-box";
 import { format, parseISO } from "date-fns";
@@ -7,6 +7,7 @@ import { property, state } from "lit/decorators.js";
 import { Actividad, DetallesCosecha } from "../depositos/depositos-types";
 import { empty_contratista } from "../contratistas/contratista-types";
 import uuid4 from "uuid4";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 
 export class CosechaAddUI extends LitElement {
   @property()
@@ -56,11 +57,8 @@ export class CosechaAddUI extends LitElement {
   @state()
   editando : boolean = false;
 
-  static styles = null;
+  static styles = unsafeCSS(bootstrap);
 
-  createRenderRoot() {
-    return this;
-  }
 
   constructor() {
     super();
@@ -115,7 +113,7 @@ export class CosechaAddUI extends LitElement {
   };
 
   firstUpdated() {
-    this._steps_elements = [...document.querySelectorAll(".cosecha.step")].map(
+    this._steps_elements = [...this.shadowRoot.querySelectorAll(".cosecha.step")].map(
       (el) => new Modal(el)
     );
   }
@@ -127,7 +125,7 @@ export class CosechaAddUI extends LitElement {
   willUpdate(changedProperties) {}
 
   start() {
-    document.getElementById("contratista-cosecha-combo").clear();
+    this.shadowRoot.getElementById("contratista-cosecha-combo").clear();
     this.init_fsm();
     this.editando = false
     this.paso = 0;
@@ -166,7 +164,7 @@ export class CosechaAddUI extends LitElement {
   editar(doc){
     this.doc = doc
     this.editando = true
-    document.getElementById("contratista-cosecha-combo").clear();
+    this.shadowRoot.getElementById("contratista-cosecha-combo").clear();
     this.paso = 0;
     this.show_step(this.paso)
   }

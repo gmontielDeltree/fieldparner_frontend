@@ -2,10 +2,10 @@ import { LitElement, html, unsafeCSS, PropertyValueMap } from "lit";
 import area from "@turf/area";
 import uuid4 from "uuid4";
 import "../share-modal/share-modal.js";
-import { normalizar_username } from "../helpers";
+import { layer_visibility, normalizar_username } from "../helpers";
 import bbox from "@turf/bbox";
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
-import gbl_state from "../state";
+import gbl_state, { gblStateLoaded } from "../state";
 import { state } from "lit/decorators.js";
 import { State, StateController, property } from "@lit-app/state";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
@@ -36,16 +36,15 @@ export class CampoOffcanvas extends LitElement {
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
-    if (
-      !this.data_loaded &&
-      gbl_state.router &&
-      gbl_state.db
-    ) {
+    console.count("willUpdate");
+    if (!this.data_loaded && gblStateLoaded()) {
+      // Inicializacion.
       // No hay data y esta disponible router(param) y db
       this.loadCampo();
+      this.data_loaded = true;
+      this.mapShowOnlyThisCampo();
       console.count("loadCampo");
     }
-    console.count("willUpdate");
   }
 
   loadCampo() {
@@ -58,6 +57,20 @@ export class CampoOffcanvas extends LitElement {
     });
   }
 
+  mapShowOnlyThisCampo(){
+    console.log("Showing solo el campo seleccionado")
+    gbl_state.map.hideAllLayers()
+    gbl_state.map.showSelectedCampo()
+    // Hide all layers
+    // Show seleccion border
+    // Show lotes fill
+  }
+
+  mapShowAllCampos(){
+    console.log("Showing todos los campos")
+    // gbl_state.map.l
+  }
+
   firstUpdated() {
     // Build Offcanvas
     this._detallesOffcanvas = new Offcanvas(
@@ -66,12 +79,14 @@ export class CampoOffcanvas extends LitElement {
 
     this.shadowRoot
       .getElementById("offcanvas-campo-detalle")
+      //Cierre callback
       .addEventListener("hidden.bs.offcanvas", () => {
+        this.mapShowAllCampos()
         history.back();
       });
 
-    this._detallesOffcanvas.show();
 
+    /* Otros listeners */
     this.addEventListener("cerrargeometria", (e) => {
       console.log("cerrar_nueva_geometria");
       this._detallesOffcanvas.show();
@@ -103,6 +118,9 @@ export class CampoOffcanvas extends LitElement {
         gbl_state.db.put(doc).then(() => console.log("Lote Grabado"));
       });
     });
+
+
+    this._detallesOffcanvas.show();
   }
 
   hide() {
@@ -137,6 +155,7 @@ export class CampoOffcanvas extends LitElement {
   nuevo_lote_click() {
     // Mostrar Nueva Geometria - Lote
     this.shadowRoot.getElementById("nuevo-lote-ui").show = true;
+    alert("Development!!!! En construccion")
     this.hide();
   }
 
@@ -157,7 +176,7 @@ export class CampoOffcanvas extends LitElement {
   // }
 
   borrar_campo() {
-    if(confirm("¿Desea Eliminar el Campo?")){
+    if (confirm("¿Desea Eliminar el Campo?")) {
       let event = new CustomEvent("borrar-campo", {
         detail: { campo_doc: this.campo_doc },
         bubbles: true,
@@ -165,7 +184,6 @@ export class CampoOffcanvas extends LitElement {
       });
       this.dispatchEvent(event);
     }
-    
   }
 
   localizar_campo() {
@@ -175,9 +193,6 @@ export class CampoOffcanvas extends LitElement {
   }
 
   render() {
-
-    
-
     return html`
       <div
         class="offcanvas offcanvas-bottom h-25"

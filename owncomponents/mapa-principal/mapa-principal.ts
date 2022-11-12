@@ -28,11 +28,11 @@ const mapStyle = {
       type: "raster",
       tiles: [
         //"http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga"
-        "https://ecn.t1.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=587&mkt=en-gb&n=z"
+        "https://ecn.t1.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=587&mkt=en-gb&n=z",
         //,"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
       ],
-      tileSize: 256
-    }
+      tileSize: 256,
+    },
   },
   layers: [
     {
@@ -40,11 +40,10 @@ const mapStyle = {
       type: "raster",
       source: "worldImagery",
       minzoom: 0,
-      maxzoom: 20
-    }
+      maxzoom: 20,
+    },
   ],
-  glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
-
+  glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
 };
 
 /** Modifica 'features' agregado color y cultivo a las 'properties'
@@ -193,8 +192,6 @@ export class MapaPrincipal extends LitElement {
       preserveDrawingBuffer: false,
     });
 
-
-
     this.draw = new MapboxDraw({
       displayControlsDefault: false,
       // Select which mapbox-gl-draw control buttons to add to the map.
@@ -202,7 +199,7 @@ export class MapaPrincipal extends LitElement {
         polygon: false,
         trash: false,
       },
-      touchBuffer: 50
+      touchBuffer: 50,
       //defaultMode: 'draw_polygon'
     });
 
@@ -211,7 +208,6 @@ export class MapaPrincipal extends LitElement {
     //     });
 
     //this.map.resize();
-  
 
     this.map.on("load", () => {
       // const geocoder = new MapboxGeocoder({
@@ -219,16 +215,19 @@ export class MapaPrincipal extends LitElement {
       //   mapboxgl: mapboxgl,
       // });
 
-// night fog styling
-this.map.setFog({
-  'range': [5, 20],
-  'horizon-blend': 0.3,
-  'color': '#242B4B'
-  });
+      // night fog styling
+      this.map.setFog({
+        range: [5, 20],
+        "horizon-blend": 0.3,
+        color: "#242B4B",
+      });
 
       // this.map.addControl(geocoder);
       this.map.addControl(this.draw); // Sin controles
       //tour();
+
+
+      let layers_names = []
       this.map.addSource("campos", {
         type: "geojson",
         data: {
@@ -244,6 +243,60 @@ this.map.setFog({
         },
       });
 
+
+      /* seleccion campo */
+      this.map.addSource("seleccion_campo", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      });
+
+      layers_names.push("seleccion_campo_line")
+      
+      this.map.addLayer(
+        {
+          id: "seleccion_campo_line",
+          type: "line",
+          source: "seleccion_campo",
+          paint: {
+            "line-color": "rgba(255, 0, 0, 1)",
+            "line-width": 4,
+          },
+        }
+      );
+      /* fin seleccion campo */
+
+      /* seleccion lotes */
+      this.map.addSource("seleccion_lotes", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      });
+
+      layers_names.push("seleccion_lotes_fill")
+
+      this.map.addLayer({
+        id: "seleccion_lotes_fill",
+        type: "fill",
+        source: "campos",
+        layout: {
+          //"visibility": 'none'
+        },
+        paint: {
+          "fill-color": "red",
+          "fill-opacity": 0.4,
+          "fill-outline-color": "red",
+        },
+      });
+
+      /* fin seleccion lotes */
+
+      layers_names.push("campos")
+
       this.map.addLayer({
         id: "campos",
         type: "fill",
@@ -257,6 +310,8 @@ this.map.setFog({
           "fill-outline-color": "red",
         },
       });
+
+      layers_names.push("lotes")
 
       this.map.addLayer(
         {
@@ -275,6 +330,8 @@ this.map.setFog({
         "campos"
       );
 
+      layers_names.push("campos_border")
+      
       this.map.addLayer(
         {
           id: "campos_border",
@@ -288,40 +345,51 @@ this.map.setFog({
         "campos"
       );
       
-      this.map.addLayer(
-        {
-          id: "lotes_border",
-          type: "fill",
-          source: "lotes",
-          layout: {
-            visibility: "none",
-          },
-          paint: {
-            "fill-color": "rgba(255, 127, 0, 1)",
-            "fill-opacity": 0.4,
-            "fill-outline-color": "red",
-          },
-        }
-      );
-      
-      
+      layers_names.push("lotes_border")
+
       this.map.addLayer({
-        'id': 'nombres_campos',
-        'type': 'symbol',
-        'source': 'campos',
-        'layout': {
-        'text-field': [
-        'format',
-        ['upcase', ['get', 'nombre']],
-        { 'font-scale': 0.8 },
-        '\n',
-        {},
-        //['downcase', ['get', 'Comments']],
-        //{ 'font-scale': 0.6 }
-        ],
-        'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold']
-        }
-        });
+        id: "lotes_border",
+        type: "fill",
+        source: "lotes",
+        layout: {
+          visibility: "none",
+        },
+        paint: {
+          "fill-color": "rgba(255, 127, 0, 1)",
+          "fill-opacity": 0.4,
+          "fill-outline-color": "red",
+        },
+      });
+
+      layers_names.push("nombres_campos")
+
+      this.map.addLayer({
+        id: "nombres_campos",
+        type: "symbol",
+        source: "campos",
+        layout: {
+          "text-field": [
+            "format",
+            ["upcase", ["get", "nombre"]],
+            { "font-scale": 0.8 },
+            "\n",
+            {},
+            //['downcase', ['get', 'Comments']],
+            //{ 'font-scale': 0.6 }
+          ],
+          "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        },
+      });
+
+      this.map.showSelectedCampo = () =>{
+        console.log("Show selected Campo Function")
+      }
+
+      this.map.hideAllLayers = () => {
+        layers_names.forEach((layername)=>{
+          layer_visibility(this.map,layername,false)
+        })
+      }
 
       // console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
@@ -425,7 +493,7 @@ this.map.setFog({
       <sp-theme scale="medium" color="light">
         <!-- End content requiring theme application. -->
         <sp-action-menu size="m" class="add-button">
-          <span slot="label" style='color:white;' >Agregar</span>
+          <span slot="label" style="color:white;">Agregar</span>
           <sp-menu-item
             @click=${() => {
               this.sendEvent("nuevo-campo-click"), null;

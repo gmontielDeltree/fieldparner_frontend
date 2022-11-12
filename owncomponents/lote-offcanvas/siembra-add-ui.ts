@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, unsafeCSS } from "lit";
 import { interpret, StateMachine } from "xstate";
 import { siembraMachine } from "./siembra-machine";
 import "../lista-searchable/lista-searchable.js";
@@ -14,6 +14,7 @@ import { Actividad, DetallesSiembra } from "../depositos/depositos-types";
 import { property, state } from "lit/decorators.js";
 import { ComboBox } from "@vaadin/combo-box";
 import parseISO from "date-fns/parseISO";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 
 export class SiembraAddUI extends LitElement {
   @property()
@@ -59,12 +60,9 @@ export class SiembraAddUI extends LitElement {
   @state()
   _editando: boolean;
 
-  static styles = null;
+  static styles = unsafeCSS(bootstrap);
 
-  createRenderRoot() {
-    return this;
-  }
-
+  
   load_data() {
     this.db
       .allDocs({
@@ -99,7 +97,7 @@ export class SiembraAddUI extends LitElement {
   };
 
   firstUpdated() {
-    this._steps_elements = [...document.querySelectorAll(".siembra.step")].map(
+    this._steps_elements = [...this.shadowRoot.querySelectorAll(".siembra.step")].map(
       (el) => new Modal(el)
     );
   }
@@ -130,7 +128,7 @@ export class SiembraAddUI extends LitElement {
 
   start() {
     /* Some UI cleaning */
-    (document.getElementById("contratista-combo") as ComboBox).clear();
+    (this.shadowRoot.getElementById("contratista-combo") as ComboBox).clear();
 
     this._fsm.stop();
     this.init_fsm();
@@ -243,8 +241,8 @@ export class SiembraAddUI extends LitElement {
     // Si hay cultivos nuevos y/o varidades enviar otro evento
     // para que la aplicacion tome accion apropiada
 
-    //let es_nuevo_cultivo = document.getElementById("cultivo-input").es_nuevo;
-    //let es_nueva_variedad = document.getElementById("variedad-input").es_nuevo;
+    //let es_nuevo_cultivo = this.shadowRoot.getElementById("cultivo-input").es_nuevo;
+    //let es_nueva_variedad = this.shadowRoot.getElementById("variedad-input").es_nuevo;
 
     // if (es_nuevo_cultivo) {
     //   // Evento para que se actualicen las settings en FP
