@@ -9,6 +9,7 @@ import gbl_state, { gblStateLoaded } from "../state";
 import { state } from "lit/decorators.js";
 import { State, StateController, property } from "@lit-app/state";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import { Router } from "@vaadin/router";
 //import bootstrap from "./bootstrap.min.css";
 
 export class CampoOffcanvas extends LitElement {
@@ -42,7 +43,6 @@ export class CampoOffcanvas extends LitElement {
       // No hay data y esta disponible router(param) y db
       this.loadCampo();
       this.data_loaded = true;
-      this.mapShowOnlyThisCampo();
       console.count("loadCampo");
     }
   }
@@ -54,12 +54,14 @@ export class CampoOffcanvas extends LitElement {
     this.data_loaded = true;
     gbl_state.db.get(campo_doc_id).then((campo_doc) => {
       this.campo_doc = campo_doc;
+      this.mapShowOnlyThisCampo();
     });
   }
 
   mapShowOnlyThisCampo(){
     console.log("Showing solo el campo seleccionado")
     gbl_state.map.hideAllLayers()
+    gbl_state.map.selectCampo(this.campo_doc.campo_geojson,this.campo_doc.lotes)
     gbl_state.map.showSelectedCampo()
     // Hide all layers
     // Show seleccion border
@@ -68,7 +70,8 @@ export class CampoOffcanvas extends LitElement {
 
   mapShowAllCampos(){
     console.log("Showing todos los campos")
-    // gbl_state.map.l
+    gbl_state.map.hideAllLayers()
+    gbl_state.map.showAllCampos()
   }
 
   firstUpdated() {
@@ -81,8 +84,7 @@ export class CampoOffcanvas extends LitElement {
       .getElementById("offcanvas-campo-detalle")
       //Cierre callback
       .addEventListener("hidden.bs.offcanvas", () => {
-        this.mapShowAllCampos()
-        history.back();
+        
       });
 
 
@@ -161,12 +163,9 @@ export class CampoOffcanvas extends LitElement {
 
   cerrar_modo() {
     console.log("Cerrar Modo Campo");
-    // Show Campos
-    gbl_state.map.setLayoutProperty("campos", "visibility", "visible");
-    // Hide Lotes
-    gbl_state.map.setLayoutProperty("lotes", "visibility", "none");
-    // Bordes
-    gbl_state.map.setLayoutProperty("campos_border", "visibility", "visible");
+
+    this.mapShowAllCampos()
+    Router.go('/')
 
     this._detallesOffcanvas.hide();
   }

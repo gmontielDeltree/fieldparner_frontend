@@ -332,17 +332,10 @@ export class FieldPartner extends LitElement {
     });
 
     this.addEventListener("lote-detalles-hide", (e) => {
-      console.log("HIDE LOTE DETALLES");
-      document.getElementById("campo-oc").show();
+      // console.log("HIDE LOTE DETALLES");
+      // document.getElementById("campo-oc").show();
     });
 
-    this.addEventListener("dame-map-db", (e) => {
-      //this._update_elements.push(e.target);
-      //e.target.db = this.campos_db
-      //e.target.map = this.map
-      //e.target.campos = this.campos
-      // console.log("DAME MAP DB", this.campos, this.map);
-    });
 
     this.init_the_whole_thing();
   }
@@ -902,24 +895,14 @@ export class FieldPartner extends LitElement {
         .campos_db=${this.campos_db}
       ></nuevo-campo>
 
-      <!-- <lista-de-campos
-        id="lista-de-campos"
-        .map=${this.map}
-        .campos=${this.campos}
-      ></lista-de-campos> -->
-
-      <!-- <contratista-crud
+      <contratista-crud
         id="contratista-crud"
         .db=${this.campos_db}
       ></contratista-crud>
       <contratistas-lista
         id="contratistas-lista"
         .db=${this.campos_db}
-      ></contratistas-lista> -->
-      <!-- <color-cultivo
-        id="colores-cultivos"
-      ></color-cultivo> -->
-      <!-- <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas> -->
+      ></contratistas-lista>
 
       <nota-share-target
         id="nota-share-target"
@@ -927,9 +910,9 @@ export class FieldPartner extends LitElement {
         .db=${this.campos_db}
       ></nota-share-target>
 
-      <!-- <insumos-lista id="insumos-lista" .db=${this.campos_db}></insumos-lista> -->
+      <insumos-lista id="insumos-lista" .db=${this.campos_db}></insumos-lista>
 
-      <!-- <deposito-upsert
+      <deposito-upsert
         id="deposito-upsert"
         .db=${this.campos_db}
         .draw=${this.draw}
@@ -937,7 +920,7 @@ export class FieldPartner extends LitElement {
       <depositos-lista
         id="depositos-lista"
         .db=${this.campos_db}
-      ></depositos-lista> -->
+      ></depositos-lista>
 
       <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
 

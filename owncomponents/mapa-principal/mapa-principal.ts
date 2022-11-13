@@ -1,6 +1,6 @@
 import { LitElement, html, unsafeCSS, css } from "lit";
 import { touchEvent, layer_visibility } from "../helpers";
-import { Map } from "mapbox-gl";
+import { GeoJSONSource, Map } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
 
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -15,6 +15,7 @@ import "@spectrum-web-components/menu/sp-menu-item.js";
 
 import "@spectrum-web-components/theme/sp-theme";
 import "@spectrum-web-components/theme/src/themes";
+import { tr } from "date-fns/locale";
 
 // https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
 // https://github.com/kepta/idly/wiki/examples#using-bing-satellite-map
@@ -226,8 +227,7 @@ export class MapaPrincipal extends LitElement {
       this.map.addControl(this.draw); // Sin controles
       //tour();
 
-
-      let layers_names = []
+      let layers_names = [];
       this.map.addSource("campos", {
         type: "geojson",
         data: {
@@ -243,7 +243,6 @@ export class MapaPrincipal extends LitElement {
         },
       });
 
-
       /* seleccion campo */
       this.map.addSource("seleccion_campo", {
         type: "geojson",
@@ -253,19 +252,20 @@ export class MapaPrincipal extends LitElement {
         },
       });
 
-      layers_names.push("seleccion_campo_line")
-      
-      this.map.addLayer(
-        {
-          id: "seleccion_campo_line",
-          type: "line",
-          source: "seleccion_campo",
-          paint: {
-            "line-color": "rgba(255, 0, 0, 1)",
-            "line-width": 4,
-          },
-        }
-      );
+      layers_names.push("seleccion_campo_line");
+
+      this.map.addLayer({
+        id: "seleccion_campo_line",
+        type: "line",
+        source: "seleccion_campo",
+        layout: {
+          visibility: "none",
+        },
+        paint: {
+          "line-color": "rgba(14, 209, 227, 1)",
+          "line-width": 3,
+        },
+      });
       /* fin seleccion campo */
 
       /* seleccion lotes */
@@ -277,14 +277,14 @@ export class MapaPrincipal extends LitElement {
         },
       });
 
-      layers_names.push("seleccion_lotes_fill")
+      layers_names.push("seleccion_lotes_fill");
 
       this.map.addLayer({
         id: "seleccion_lotes_fill",
         type: "fill",
-        source: "campos",
+        source: "seleccion_lotes",
         layout: {
-          //"visibility": 'none'
+          visibility: "none",
         },
         paint: {
           "fill-color": "red",
@@ -295,7 +295,7 @@ export class MapaPrincipal extends LitElement {
 
       /* fin seleccion lotes */
 
-      layers_names.push("campos")
+      layers_names.push("campos");
 
       this.map.addLayer({
         id: "campos",
@@ -311,7 +311,7 @@ export class MapaPrincipal extends LitElement {
         },
       });
 
-      layers_names.push("lotes")
+      layers_names.push("lotes");
 
       this.map.addLayer(
         {
@@ -330,8 +330,8 @@ export class MapaPrincipal extends LitElement {
         "campos"
       );
 
-      layers_names.push("campos_border")
-      
+      layers_names.push("campos_border");
+
       this.map.addLayer(
         {
           id: "campos_border",
@@ -344,8 +344,8 @@ export class MapaPrincipal extends LitElement {
         },
         "campos"
       );
-      
-      layers_names.push("lotes_border")
+
+      layers_names.push("lotes_border");
 
       this.map.addLayer({
         id: "lotes_border",
@@ -361,7 +361,7 @@ export class MapaPrincipal extends LitElement {
         },
       });
 
-      layers_names.push("nombres_campos")
+      layers_names.push("nombres_campos");
 
       this.map.addLayer({
         id: "nombres_campos",
@@ -381,15 +381,67 @@ export class MapaPrincipal extends LitElement {
         },
       });
 
-      this.map.showSelectedCampo = () =>{
-        console.log("Show selected Campo Function")
-      }
+
+      layers_names.push("posible_seleccion")
+      this.map.addSource("posible_seleccion", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      })
+
+      this.map.addLayer({
+        id: "posible_seleccion",
+        type: "line",
+        source: "posible_seleccion",
+        paint: {
+          "line-color": "rgba(0, 0, 125, 1)",
+          "line-width": 4,
+        },
+      });
+
+      this.map.showSelectedCampo = () => {
+        console.log("Show selected Campo Function");
+        layer_visibility(this.map, "seleccion_campo_line", true);
+        layer_visibility(this.map,"seleccion_lotes_fill",true)
+      };
+
+      this.map.selectCampo = (geojson, lotes) => {
+        console.log("SELECT", geojson, lotes);
+        let source = this.map.getSource("seleccion_campo") as GeoJSONSource;
+
+        let data_campo = {
+          type: "FeatureCollection",
+          features: [],
+        };
+        data_campo.features.push = geojson;
+
+        source.setData(geojson);
+
+        let lotes_source = this.map.getSource(
+          "seleccion_lotes"
+        ) as GeoJSONSource;
+        //Pintar
+
+        let data_lotes = {
+          type: "FeatureCollection",
+          features: lotes,
+        };
+        lotes_source.setData(data_lotes);
+      };
+
+      this.map.showAllCampos = () => {
+        layer_visibility(this.map, "campos", true);
+        layer_visibility(this.map, "campos_border", true);
+        layer_visibility(this.map, "nombres_campos", true);
+      };
 
       this.map.hideAllLayers = () => {
-        layers_names.forEach((layername)=>{
-          layer_visibility(this.map,layername,false)
-        })
-      }
+        layers_names.forEach((layername) => {
+          layer_visibility(this.map, layername, false);
+        });
+      };
 
       // console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
@@ -401,9 +453,9 @@ export class MapaPrincipal extends LitElement {
       // NDVI not visible
       // console.log("Click en Campo", e.features[0]);
 
-      layer_visibility(this.map, "campos", false);
-      layer_visibility(this.map, "lotes", true);
-      layer_visibility(this.map, "campos_border", true);
+      // layer_visibility(this.map, "campos", false);
+      // layer_visibility(this.map, "lotes", true);
+      // layer_visibility(this.map, "campos_border", true);
 
       // Fly to
       this.map.fitBounds(bbox(e.features[0]));
@@ -413,16 +465,29 @@ export class MapaPrincipal extends LitElement {
       this.sendEvent("ver-campo-detalles", { campo_id: campo_doc.id });
     });
 
-    this.map.on(touchEvent, "lotes", (e) => {
+    this.map.on(touchEvent, ["lotes","seleccion_lotes_fill"], (e) => {
       // console.log("Click en lotes Internos", e.features[0]);
       let { nombre, campo_parent_id } = e.features[0].properties;
       this.sendEvent("ver-lote-detalles", { nombre: nombre, campo_parent_id });
     });
 
+
+
     this.map.on(touchEvent, "lotes_border", (e) => {
       // console.log("Click en lotes selector", e.features[0]);
       let { nombre, campo_parent_id } = e.features[0].properties;
       this.sendEvent("lote-seleccionado", { nombre: nombre, campo_parent_id });
+    });
+
+
+    this.map.on("mouseenter", ["seleccion_lotes_fill","campos"], (e)=>{
+      this.map.getCanvas().style.cursor = "pointer";
+      // console.log("Entering ",e)
+    });
+
+    this.map.on("mouseleave", ["seleccion_lotes_fill","campos"], (e)=>{
+      this.map.getCanvas().style.cursor = "";
+
     });
   }
 

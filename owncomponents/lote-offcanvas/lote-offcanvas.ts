@@ -291,13 +291,18 @@ export class LoteOffcanvas extends LitElement {
     //   .start();
   }
 
-  hide() {
+  cerrar() {
+    gbl_state.map.hideAllLayers()
+    gbl_state.map.showAllCampos()
+
     this._lotesOffcanvas.hide();
-    let event = new CustomEvent("lote-detalles-hide", {
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+
+
+    // let event = new CustomEvent("lote-detalles-hide", {
+    //   bubbles: true,
+    //   composed: true,
+    // });
+    // this.dispatchEvent(event);
   }
 
   siembra() {
@@ -543,7 +548,7 @@ export class LoteOffcanvas extends LitElement {
       doc.lotes = restantes;
       gbl_state.db.put(doc).then((r) => console.log("Lote Eliminado"));
       this._campo_doc = doc;
-      this.hide();
+      this.cerrar();
     });
   }
 
@@ -906,7 +911,7 @@ export class LoteOffcanvas extends LitElement {
             class="btn-close text-reset"
             data-bs-dismiss="offcanvas"
             aria-label="Close"
-            @click=${this.hide}
+            @click=${this.cerrar}
           ></button>
         </div>
         <div class="offcanvas-body small pt-1">
