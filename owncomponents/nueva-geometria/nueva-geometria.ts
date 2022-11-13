@@ -6,35 +6,49 @@ import centroid from "@turf/centroid";
 import { kml } from "@tmcw/togeojson";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import * as JSZip from "jszip";
-import '@vaadin/text-field'
+import "@vaadin/text-field";
 import Modal from "bootstrap/js/dist/modal.js";
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
+import { property, state } from "lit/decorators.js";
 
 export class NuevaGeometria extends LitElement {
   static properties = {
     campo_feature: {},
     show: {},
     mapa: {},
-    tipo: {},
-    _offcanvas: {hasChanged(newVal, oldVal) {
-      return false;
-    }},
-    _modal_multiple:{hasChanged(newVal, oldVal) {
-      return false;
-    }},
-    _nombre_multiple:{},
+    _offcanvas: {
+      hasChanged(newVal, oldVal) {
+        return false;
+      },
+    },
+    _modal_multiple: {
+      hasChanged(newVal, oldVal) {
+        return false;
+      },
+    },
+    _nombre_multiple: {},
     _draw: {},
     _ctx: {},
     _fsm: {},
     _feature_id: {},
-    _modal_elements: {hasChanged(newVal, oldVal) {
-      return false;
-    }},
-    _bs_inicializado: {hasChanged(newVal, oldVal) {
-      return false;
-    }},
-    _multiplesfeatures:{},
+    _modal_elements: {
+      hasChanged(newVal, oldVal) {
+        return false;
+      },
+    },
+    _bs_inicializado: {
+      hasChanged(newVal, oldVal) {
+        return false;
+      },
+    },
+    _multiplesfeatures: {},
   };
+
+  @property()
+  tipo : string = "campo"
+
+  @state()
+  nombre: string = "";
 
   static styles = unsafeCSS(bootstrap);
 
@@ -53,7 +67,7 @@ export class NuevaGeometria extends LitElement {
         polygon: false,
         trash: false,
       },
-      touchBuffer:50,
+      touchBuffer: 50,
     });
     // console.log("Construction", this.mapa);
     this._init_fsm();
@@ -65,10 +79,13 @@ export class NuevaGeometria extends LitElement {
 
   firstUpdated() {
     this._bs_inicializar();
-    this._modal_multiple = new Modal(this.shadowRoot.getElementById('modal-multiple'))
+    this._modal_multiple = new Modal(
+      this.shadowRoot.getElementById("modal-multiple")
+    );
   }
 
   willUpdate(changedProperties) {
+    console.count("willUpdate Nueva Geometria");
     if (!this._bs_inicializado) {
       return;
     }
@@ -185,9 +202,8 @@ export class NuevaGeometria extends LitElement {
       this._offcanvas.show();
     }
 
-
-    if(state_value === 'editing.modal_multiple'){
-      this._modal_multiple.show()
+    if (state_value === "editing.modal_multiple") {
+      this._modal_multiple.show();
     }
 
     if (!(state_value in this._modal_elements)) {
@@ -201,8 +217,6 @@ export class NuevaGeometria extends LitElement {
         this._modal_elements[state_value].show();
       }
     }
-
-
   };
 
   hide_all_steps() {
@@ -265,7 +279,10 @@ export class NuevaGeometria extends LitElement {
     this._offcanvas.hide();
 
     let event = new CustomEvent("guardargeometriasmultiples", {
-      detail: { features: this._multiplesfeatures, nombre:this._nombre_multiple },
+      detail: {
+        features: this._multiplesfeatures,
+        nombre: this._nombre_multiple,
+      },
       bubbles: true,
       composed: true,
     });
@@ -296,13 +313,12 @@ export class NuevaGeometria extends LitElement {
                     return;
                   }
                   if (feature_collection.features.length > 1) {
-                    
                     // Hay mas de un poligono
                     // alert(
                     //   "El archivo tiene mas de un polígono.\nPor el momento solo estan soportados los archivos que contienen un solo polígono."
                     // );
 
-                    this._multiplesfeatures = feature_collection
+                    this._multiplesfeatures = feature_collection;
 
                     // Enviar señal
                     // Add to Draw
@@ -312,7 +328,8 @@ export class NuevaGeometria extends LitElement {
 
                     // Move map to new feature
                     this.mapa.flyTo({
-                      center: centroid(feature_collection.features[0]).geometry.coordinates,
+                      center: centroid(feature_collection.features[0]).geometry
+                        .coordinates,
                       zoom: 10,
                     });
 
@@ -396,6 +413,14 @@ export class NuevaGeometria extends LitElement {
       };
     }
   }
+
+  enable_guardar = () => {
+    if (this.nombre !== "") {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   render() {
     return html`
@@ -531,54 +556,86 @@ export class NuevaGeometria extends LitElement {
                 <input
                   type="text"
                   value=${this._ctx.nombre}
-                  @change=${(e) =>
-                    this._fsm.send({ type: "CHANGE", value: e.target.value })}
+                  @input=${(e) => {
+                    this.nombre = e.target.value;
+                  }}
+                  @change=${(e) => {
+                    this.nombre = e.target.value;
+                    this._fsm.send({ type: "CHANGE", value: e.target.value });
+                  }}
                   class="form-control"
                 />
               </div>
             </div>
 
-            ${this._ctx.guardar_enable
-              ? html` <div class="d-grid gap-2">
-                  <button
+            <div class="d-grid gap-2">
+              ${this.enable_guardar()
+                ? html`<button
                     @click=${this.guardar}
                     class="btn btn-primary btn-success"
                     type="button"
+                    ${this.enable_guardar() ? html`"hgh"` : html`"disabled"`}
                   >
                     Guardar
-                  </button>
-                </div>`
-              : html`
-                  <div class="alert alert-danger" role="alert">
-                    Todos los puntos del lote deben estar dentro del campo!
-                  </div>
-                `}
+                  </button>`
+                : null}
+            </div>
           </form>
         </div>
       </div>
 
-
       <!-- Modal -->
-      <div class="modal fade" id="modal-multiple" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+      <div
+        class="modal fade"
+        id="modal-multiple"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby=""
+        aria-hidden="true"
+      >
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Multiples Geometrias</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
             </div>
             <div class="modal-body mx-auto">
-              Existen multiples geometrias en el archivo. Se agregaran como lotes de un campo.
-              <vaadin-text-field label="Nombre" helper-text='Ingrese el nombre del campo' .value=${this._nombre_multiple} @input=${(e)=>this._nombre_multiple = e.target.value} clear-button-visible>
+              Existen multiples geometrias en el archivo. Se agregaran como
+              lotes de un campo.
+              <vaadin-text-field
+                label="Nombre"
+                helper-text="Ingrese el nombre del campo"
+                .value=${this._nombre_multiple}
+                @input=${(e) => (this._nombre_multiple = e.target.value)}
+                clear-button-visible
+              >
               </vaadin-text-field>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${this.cerrar}>Cerrar</button>
-              <button type="button" class="btn btn-primary" @click=${this.guardar_geometrias_multiples}>Guardar</button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${this.cerrar}
+              >
+                Cerrar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${this.guardar_geometrias_multiples}
+              >
+                Guardar
+              </button>
             </div>
           </div>
         </div>
       </div>
-      
     `;
   }
 }

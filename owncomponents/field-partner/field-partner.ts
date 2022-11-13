@@ -17,7 +17,7 @@ import "../contratistas/contratistas-lista.ts";
 import "../sensores/sensores-offcanvas.ts";
 import "../campo-offcanvas/campo-offcanvas.js";
 import "../lote-offcanvas/lote-offcanvas.js";
-import "../nueva-geometria/nueva-geometria.js";
+import "../nueva-geometria/nueva-geometria.ts";
 import "../nuevo-campo/nuevo-campo.js";
 import "../lista-de-campos/lista-de-campos.js";
 import "../navbar-element/navbar-element.js";
