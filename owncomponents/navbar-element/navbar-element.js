@@ -101,9 +101,9 @@ export class NavbarElement extends LitElement {
                 data-bs-target="#navbarTogglerDemo01"
               >
                 <div
+                  title="Lista de Campos"
                   style="cursor: pointer;background-image: url('/iconodecampo2D.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
-                    // this.sendEvent("ver-lista-campos", null);
                     Router.go("/campos");
                   }}
                 ></div>
@@ -124,6 +124,7 @@ export class NavbarElement extends LitElement {
                 data-bs-target="#navbarTogglerDemo01"
               >
                 <div
+                title="Depositos"
                   style="cursor: pointer;background-image: url('/deposito_2.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-depositos-click", null);
@@ -145,6 +146,7 @@ export class NavbarElement extends LitElement {
                 data-bs-target="#navbarTogglerDemo01"
               >
                 <div
+                title="Contratistas"
                   style="cursor: pointer;background-image: url('/iconocontratista.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-contratistas-click", null);
@@ -166,6 +168,7 @@ export class NavbarElement extends LitElement {
                 data-bs-target="#navbarTogglerDemo01"
               >
                 <div
+                title="Insumos"
                   style="cursor: pointer;background-image: url('/icono de insumos.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-insumos-click", null);
