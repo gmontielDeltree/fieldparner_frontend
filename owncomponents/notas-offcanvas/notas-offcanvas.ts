@@ -4,28 +4,33 @@ import "@vaadin/date-picker";
 import "@vaadin/radio-group";
 import "@vaadin/combo-box";
 import { uuid4 } from "uuid4";
-import {Marker} from "mapbox-gl";
+import { Marker } from "mapbox-gl";
 import { format, parse } from "date-fns";
-import '@vaadin/text-area';
+import "@vaadin/text-area";
 import { touchEvent } from "../helpers";
 import "../audiorecorder/index.js";
 
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
+import { property } from "lit/decorators.js";
 
 export class NotasOffcanvas extends LitElement {
   static properties = {
     map: {},
     db: {},
     lote_doc: {},
-    mostrar:{type:Boolean},
+    mostrar: { type: Boolean },
     /* Internos */
-    nueva_nota_offcanvas: {hasChanged(newVal, oldVal) {
-      return false;
-    }},
+    nueva_nota_offcanvas: {
+      hasChanged(newVal, oldVal) {
+        return false;
+      },
+    },
     imagenes: {},
-    ver_nota_offcanvas: {hasChanged(newVal, oldVal) {
-      return false;
-    }},
+    ver_nota_offcanvas: {
+      hasChanged(newVal, oldVal) {
+        return false;
+      },
+    },
     handler_id: {},
     posicion: {},
     fecha: {},
@@ -36,6 +41,9 @@ export class NotasOffcanvas extends LitElement {
     modo_geolocalizacion: {},
   };
 
+  @property()
+  proxima_fecha;
+
   static styles = unsafeCSS(bootstrap);
 
   constructor() {
@@ -44,7 +52,7 @@ export class NotasOffcanvas extends LitElement {
     this.texto = "sssss";
     this.fecha = new Date().toISOString().split("T")[0];
     this.color = "red";
-    this.modo_geolocalizacion = "dispositivo";
+    this.modo_geolocalizacion = "mapa";
   }
 
   firstUpdated() {
@@ -78,21 +86,34 @@ export class NotasOffcanvas extends LitElement {
       };
     }
 
-    if(this.mostrar){
-      this.nueva_nota()
+    if (this.shadowRoot.getElementById("nota-proxima-date-picker")) {
+      this.shadowRoot.getElementById("nota-proxima-date-picker").i18n = {
+        ...this.shadowRoot.getElementById("nota-proxima-date-picker").i18n,
+        formatDate: formatDateIso8601,
+        parseDate: parseDateIso8601,
+      };
+    }
+
+    if (this.mostrar) {
+      this.nueva_nota();
     }
   }
 
   hide() {
     this.nueva_nota_offcanvas.hide();
-    
+
     this.inicializar_componente();
-    let event = new CustomEvent("nueva-nota",{bubbles:true, composed:true})
-    this.dispatchEvent(event)
+    let event = new CustomEvent("nueva-nota", {
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
 
-
-    let event_fin = new CustomEvent("nueva-nota-finalizada",{bubbles:true, composed:true})
-    this.dispatchEvent(event_fin)
+    let event_fin = new CustomEvent("nueva-nota-finalizada", {
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event_fin);
   }
 
   posicion_error(err) {
@@ -119,7 +140,6 @@ export class NotasOffcanvas extends LitElement {
       this.posicion_error,
       { enableHighAccuracy: true }
     );
-    
   }
 
   ver_nota() {
@@ -151,7 +171,6 @@ export class NotasOffcanvas extends LitElement {
     console.log("Cambio Radio", e, this.modo_geolocalizacion);
 
     if (this.modo_geolocalizacion === "dispositivo") {
-
       this.map.off(touchEvent, this.mover_marcador);
       this.handler_id = navigator.geolocation.watchPosition(
         (pos) => {
@@ -176,7 +195,7 @@ export class NotasOffcanvas extends LitElement {
   }
 
   color_change(e) {
-    console.log("Color Change",e)
+    console.log("Color Change", e);
     this.color = e.target.value;
   }
 
@@ -195,7 +214,6 @@ export class NotasOffcanvas extends LitElement {
       this.map.off(touchEvent, this.mover_marcador);
     }
 
-    
     this.nota_marker?.remove();
 
     this.modo_geolocalizacion = "dispositivo";
@@ -205,12 +223,10 @@ export class NotasOffcanvas extends LitElement {
     this.shadowRoot.getElementById("btnradio-red").checked = true;
 
     // Audio
-    if(this.audio){
-
-    }else{
+    if (this.audio) {
+    } else {
       this.shadowRoot.getElementById("audio-recorder").borrar();
     }
-   
   }
 
   guardar_nota_click() {
@@ -225,10 +241,7 @@ export class NotasOffcanvas extends LitElement {
     }
 
     let lote_id = this.lote_doc.properties.uuid;
-    let fecha = format(
-                      parse(this.fecha, "yyyy-MM-dd",new Date()),
-                      "yyyyMMdd"
-                    );
+    let fecha = format(parse(this.fecha, "yyyy-MM-dd", new Date()), "yyyyMMdd");
 
     const nota_uuid = uuid4();
 
@@ -240,6 +253,7 @@ export class NotasOffcanvas extends LitElement {
       color: this.color,
       texto: this.texto,
       fecha: this.fecha,
+      proxima_visita: this.proxima_fecha,
 
       posicion: [this.posicion.coords.longitude, this.posicion.coords.latitude],
       _attachments: {},
@@ -254,13 +268,13 @@ export class NotasOffcanvas extends LitElement {
     });
 
     // Audio
-    if(this.audio){
+    if (this.audio) {
       // Fruto de compartido
       nota._attachments["audio_" + uuid4()] = {
         data: this.audio, // Es un blob
         type: this.audio.type,
       };
-    }else{
+    } else {
       if (this.shadowRoot.getElementById("audio-recorder").blob) {
         nota._attachments["audio_" + uuid4()] = {
           data: this.shadowRoot.getElementById("audio-recorder").blob,
@@ -269,17 +283,18 @@ export class NotasOffcanvas extends LitElement {
       }
     }
 
-
     this.db
       .put(nota)
       .then(() => {
         console.log("Nota grabada OK");
         this.inicializar_componente();
 
-        this.nueva_nota_offcanvas.hide()
-        let event = new CustomEvent("nueva-nota",{bubbles:true, composed:true})
-        this.dispatchEvent(event)
-        
+        this.nueva_nota_offcanvas.hide();
+        let event = new CustomEvent("nueva-nota", {
+          bubbles: true,
+          composed: true,
+        });
+        this.dispatchEvent(event);
       })
       .catch((e) => {
         console.log("Error al grabar Nota", e);
@@ -292,10 +307,18 @@ export class NotasOffcanvas extends LitElement {
       let url = URL.createObjectURL(file);
       return html`
         <div>
-          <button type="button" class="close" aria-label="Close" @click=${()=>{
-                let event_fin = new CustomEvent("nueva-nota-finalizada",{bubbles:true, composed:true})
-                this.dispatchEvent(event_fin)
-          }}>
+          <button
+            type="button"
+            class="close"
+            aria-label="Close"
+            @click=${() => {
+              let event_fin = new CustomEvent("nueva-nota-finalizada", {
+                bubbles: true,
+                composed: true,
+              });
+              this.dispatchEvent(event_fin);
+            }}
+          >
             <span aria-hidden="true">&times;</span>
           </button>
           <img
@@ -340,7 +363,6 @@ export class NotasOffcanvas extends LitElement {
           >
             Guardar
           </button>
-
         </div>
         <hr class="my-0" />
         <div class="container-fluid offcanvas-body">
@@ -384,8 +406,7 @@ export class NotasOffcanvas extends LitElement {
               id="nota-color-input"
               aria-label="Basic mixed styles example"
             >
-
-            <input
+              <input
                 type="radio"
                 class="btn-check nota-status"
                 name="btnradio"
@@ -430,7 +451,13 @@ export class NotasOffcanvas extends LitElement {
 
           <hr />
 
-          <textarea class="form-control" placeholder="Tus comentarios..." .value=${this.texto} @input=${(e) => (this.texto = e.target.value)} rows="3"></textarea>
+          <textarea
+            class="form-control"
+            placeholder="Tus comentarios..."
+            .value=${this.texto}
+            @input=${(e) => (this.texto = e.target.value)}
+            rows="3"
+          ></textarea>
 
           <!--.value=${this.texto} 
              -->
@@ -460,16 +487,26 @@ export class NotasOffcanvas extends LitElement {
 
           <hr />
 
-
-
-
-          ${this.audio ? html`<audio controls><source .src=${URL.createObjectURL(
-                      this.audio
-                    )}></source></audio>` : html`<div class="row" id="audio-div">
-            <audio-recorder id="audio-recorder"></audio-recorder>
-          </div>`}
+          ${this.audio
+            ? html`<audio controls><source .src=${URL.createObjectURL(
+                this.audio
+              )}></source></audio>`
+            : html`<div class="row" id="audio-div">
+                <audio-recorder id="audio-recorder"></audio-recorder>
+              </div>`}
 
           <hr />
+
+          <div>
+            <vaadin-date-picker
+              id="nota-proxima-date-picker"
+              label="Proxima Visita"
+              placeholder="YYYY-MM-DD"
+              .value=${this.proxima_fecha}
+              clear-button-visible
+              @change=${(e) => (this.proxima_fecha = e.target.value)}
+            ></vaadin-date-picker>
+          </div>
         </div>
       </div>
 

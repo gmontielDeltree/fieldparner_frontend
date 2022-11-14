@@ -7,7 +7,7 @@ import createAuth0Client from "@auth0/auth0-spa-js";
 import "../loading-modal/loading-modal.js";
 import "../color-cultivo/color-cultivo";
 import cultivos_default from "./cultivos.json";
-import "../notas-offcanvas/notas-offcanvas.js";
+import "../notas-offcanvas/notas-offcanvas.ts";
 import "../ndvi-offcanvas/ndvi-offcanvas.ts";
 import "../variedades-loader/variedades-loader.js";
 import "../depositos/deposito-upsert/deposito-upsert.js";

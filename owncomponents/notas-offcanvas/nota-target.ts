@@ -17,7 +17,7 @@ import { GridItemModel } from "@vaadin/grid";
 import "@vaadin/icons";
 import { Map, Marker } from "mapbox-gl";
 import { touchEvent } from "../helpers";
-import "./notas-offcanvas.js";
+import "./notas-offcanvas.ts";
 import {Notification} from '@vaadin/notification';
 import {layer_visibility } from "../helpers";
 

@@ -62,3 +62,4 @@ Ingrese el nombre del Cultivo
 Ubicada a x km del lote
 ¿Desea Eliminar?
 ¿Desea Eliminar el Campo?
+Proxima Visita
