@@ -20,7 +20,7 @@ import "../lote-offcanvas/lote-offcanvas.js";
 import "../nueva-geometria/nueva-geometria.ts";
 import "../nuevo-campo/nuevo-campo.js";
 import "../lista-de-campos/lista-de-campos.js";
-import "../navbar-element/navbar-element.js";
+import "../navbar-element/navbar-element";
 import "../mapa-principal/mapa-principal.js";
 import "../login-modal/login-modal.ts";
 import "../notas-offcanvas/nota-target.ts";

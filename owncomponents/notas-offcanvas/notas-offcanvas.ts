@@ -12,6 +12,7 @@ import "../audiorecorder/index.js";
 
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 import { property } from "lit/decorators.js";
+import formatISO from "date-fns/formatISO";
 
 export class NotasOffcanvas extends LitElement {
   static properties = {
@@ -253,8 +254,8 @@ export class NotasOffcanvas extends LitElement {
       color: this.color,
       texto: this.texto,
       fecha: this.fecha,
-      proxima_visita: this.proxima_fecha,
-
+      proxima_visita: this.proxima_fecha ? formatISO(parse(this.proxima_fecha,"yyyy-MM-dd",new Date())) : "",
+      url_referencia:`/campo/${}/lote/${}`
       posicion: [this.posicion.coords.longitude, this.posicion.coords.latitude],
       _attachments: {},
     };
