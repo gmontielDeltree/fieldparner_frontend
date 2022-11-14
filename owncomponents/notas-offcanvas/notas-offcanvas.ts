@@ -255,7 +255,8 @@ export class NotasOffcanvas extends LitElement {
       texto: this.texto,
       fecha: this.fecha,
       proxima_visita: this.proxima_fecha ? formatISO(parse(this.proxima_fecha,"yyyy-MM-dd",new Date())) : "",
-      url_referencia:`/campo/${}/lote/${}`
+      url_referencia:`/campo/${encodeURIComponent(this.lote_doc.properties.campo_parent_id)}/lote/${encodeURIComponent(this.lote_doc.properties.nombre)}`,
+      lote_nombre : this.lote_doc.properties.nombre,
       posicion: [this.posicion.coords.longitude, this.posicion.coords.latitude],
       _attachments: {},
     };

@@ -15,15 +15,14 @@ import { notificacion_template, Notificacion } from "./notificacion";
 import { NotificacionController } from "./notificacion_controller";
 
 export class NavbarElement extends LitElement {
+  @property()
+  selected_lang: string = "es";
 
   @property()
-  selected_lang : string = 'es';
-
-  @property()
-  map : Map
+  map: Map;
 
   @state()
-  notificaciones : Notification []
+  notificaciones: Notification[];
 
   private noti_controller = new NotificacionController(this, 10000);
 
@@ -315,8 +314,9 @@ export class NavbarElement extends LitElement {
                         @click=${() => this.seleccionar_lang("en")}
                         ><i class="flag-united-kingdom flag"></i>
                         &#x1F1FA;&#x1F1F8; English
-                        <i class="fa fa-check text-success ms-2"></i
-                      ></a>
+                        <!-- <i class="fa fa-check text-success ms-2"></i> -->
+                        </a
+                      >
                     </li>
                   </ul>
                 </div>
@@ -331,20 +331,26 @@ export class NavbarElement extends LitElement {
                     data-bs-toggle="dropdown"
                   >
                     <i class="far fa-bell"></i>
-                    <span
-                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                    >
-                      99+
-                      <span class="visually-hidden">notificaciones</span>
-                    </span>
+                    ${this.noti_controller.notificaciones?.length !== 0
+                      ? html`<span
+                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        >
+                          ${this.noti_controller.notificaciones?.length}
+                          <span class="visually-hidden">notificaciones</span>
+                        </span>`
+                      : null}
                   </button>
 
                   <ul
                     class="dropdown-menu dropdown-menu-end"
                     aria-labelledby="navbarDropdownMenuLink"
                   >
-                  ${map(this.noti_controller.notificaciones,notificacion_template)}  
-
+                    ${this.noti_controller.notificaciones?.length !== 0
+                      ? map(
+                          this.noti_controller.notificaciones,
+                          notificacion_template
+                        )
+                      : html`<li>No hay notificaciones</li>`}
                   </ul>
                 </div>
               </li>

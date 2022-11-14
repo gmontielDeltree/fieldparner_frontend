@@ -5,6 +5,9 @@ import { Actividad } from "../depositos/depositos-types";
 import isFuture from "date-fns/isFuture";
 import parseISO from "date-fns/parseISO";
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
+import es from "date-fns/locale/es";
+import { isThisWeek } from "date-fns/esm";
+
 
 export class NotificacionController implements ReactiveController {
   host: ReactiveControllerHost;
@@ -34,7 +37,7 @@ export class NotificacionController implements ReactiveController {
 
           //   Filtramos lo que es nota y es en el futuro
           let s1 = acts.filter(({ tipo, proxima_visita }) => {
-            if (tipo === "nota" && isFuture(parseISO(proxima_visita))) {
+            if (tipo === "nota" && proxima_visita !== "" && isThisWeek(parseISO(proxima_visita))) {
               return true;
             } else {
               return false;
@@ -44,10 +47,10 @@ export class NotificacionController implements ReactiveController {
           //   por cada actividad que paso el filtro, generamos una notificacion
           let notif = s1.map((nota) => {
             let n: Notificacion = {
-              tipo: "Próxima Visita",
-              url: `/campo/lote/${nota.lote_uuid}`,
+              tipo: "Próxima Visita a lote " + nota.lote_nombre,
+              url: nota.url_referencia,
               fecha_generada: new Date(),
-              msg: "programada en " + formatDistanceToNow(parseISO(nota.proxima_visita)),
+              msg: "programada en " + formatDistanceToNow(parseISO(nota.proxima_visita),{locale:es}),
               distancia_tiempo: new Date(),
             };
 
@@ -55,6 +58,7 @@ export class NotificacionController implements ReactiveController {
           });
 
           this.notificaciones = notif;
+          
 
           console.log("Lista de Notificaciones", this.notificaciones);
           this.host.requestUpdate();

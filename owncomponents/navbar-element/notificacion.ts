@@ -2,6 +2,7 @@ import { formatDistance } from "date-fns";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { html } from "lit";
 
+import es from "date-fns/locale/es";
 export interface Notificacion {
   msg: string;
   distancia_tiempo: any;
@@ -17,19 +18,15 @@ export const notificacion_template = (
 ) => {
   return html`
     <li>
-      <a href="#" class="dropdown-item">
+      <a href=${notificacion.url} class="dropdown-item">
         <!-- Message Start -->
         <div class="media">
-          <img
-            src="dist/img/user3-128x128.jpg"
-            alt="User Avatar"
-            class="img-size-50 img-circle mr-3"
-          />
+        
           <div class="media-body">
-            <h5 class="dropdown-item-title">${notificacion.tipo}</h5>
+            <h5 class="dropdown-item-title"><i class="fa-solid fa-truck-pickup"></i> ${notificacion.tipo}</h5>
             <p class="fs-6">${notificacion.msg}</p>
             <p class="fs-6 text-muted">
-              <i class="far fa-clock mr-1"></i> ${formatDistanceToNow(notificacion.fecha_generada)}
+              <i class="far fa-clock mr-1"></i> ${formatDistanceToNow(notificacion.fecha_generada,{locale:es})}
             </p>
           </div>
         </div>

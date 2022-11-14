@@ -296,7 +296,7 @@ export class LoteOffcanvas extends LitElement {
     gbl_state.map.showAllCampos()
 
     this._lotesOffcanvas.hide();
-
+    Router.go('/')
 
     // let event = new CustomEvent("lote-detalles-hide", {
     //   bubbles: true,
