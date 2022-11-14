@@ -1,6 +1,6 @@
 // import agrotools_logo_b64 from './agrotools_logo_b64.js'
 
-import { Actividad, DetallesAplicacion, LineaDosis } from "../depositos/depositos-types";
+import { Actividad, DetallesAplicacion, LineaDosis, DetallesSiembra } from "../depositos/depositos-types";
 import { Insumo } from "../insumos/insumos-types";
 
 const pdf_line = (linea : LineaDosis, hectareas) => {
@@ -39,6 +39,42 @@ const pdf_line = (linea : LineaDosis, hectareas) => {
   ];
 };
 
+const pdf_linea_siembra = (siembra : DetallesSiembra, hectareas) => {
+  return [
+    {
+      text: siembra.insumo.marca_comercial.toUpperCase(),
+      border: [false, false, false, true],
+      margin: [0, 5, 0, 5],
+      alignment: "left",
+    },
+    {
+      text: siembra.densidad_objetivo,
+      border: [false, false, false, true],
+      margin: [0, 5, 0, 5],
+      alignment: "left",
+    },
+    {
+      text: "kg",
+      border: [false, false, false, true],
+      margin: [0, 5, 0, 5],
+      alignment: "left",
+    },
+    {
+      text: siembra.hectareas,
+      border: [false, false, false, true],
+      margin: [0, 5, 0, 5],
+      alignment: "left",
+    },
+    {
+      border: [false, false, false, true],
+      text: siembra.densidad_objetivo * siembra.hectareas,
+      fillColor: "#f5f5f5",
+      alignment: "right",
+      margin: [0, 5, 0, 5],
+    },
+  ];
+};
+
 const orden_definition = (
   aplicacion : Actividad,
   nombre_campo,
@@ -58,6 +94,8 @@ const orden_definition = (
   if(tipo === 'aplicacion'){
     insumos = (aplicacion.detalles as DetallesAplicacion).dosis || [];
     insumos_tabla = insumos.map((e)=>pdf_line(e,hectareas));
+  }else if(tipo === 'siembra'){
+    insumos_tabla = [pdf_linea_siembra(aplicacion.detalles as DetallesSiembra,hectareas)];
   }
   
 
@@ -297,7 +335,7 @@ const orden_definition = (
                 textTransform: "uppercase",
               },
               {
-                text: "Dosis",
+                text: tipo === 'Aplicacion' ? "Dosis" : "Densidad",
                 fillColor: "#eaf2f5",
                 border: [false, true, false, true],
                 margin: [0, 5, 0, 5],
