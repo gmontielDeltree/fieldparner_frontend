@@ -4,22 +4,29 @@ import "bootstrap/js/dist/collapse";
 import "bootstrap/js/dist/dropdown";
 import { Router } from "@vaadin/router";
 import { use, translate, get } from "lit-translate";
-import mapboxgl from "mapbox-gl";
+import mapboxgl, { Map } from "mapbox-gl";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import { roundToNearestMinutes } from "date-fns";
+import "../notificaciones/notificaciones";
+import fontawesome from "@fortawesome/fontawesome-free/css/fontawesome.min.css";
+import { property, state } from "lit/decorators.js";
+import { map } from "lit/directives/map.js";
+import { notificacion_template, Notificacion } from "./notificacion";
+import { NotificacionController } from "./notificacion_controller";
 
 export class NavbarElement extends LitElement {
-  static properties = {
-    map: {},
-    selected_lang:{}
-  };
+  @property()
+  selected_lang: string = "es";
 
-  static styles = unsafeCSS(bootstrap);
+  @property()
+  map: Map;
 
-  constructor() {
-    super();
-    this.selected_lang = 'es'
-  }
+  @state()
+  notificaciones: Notification[];
+
+  private noti_controller = new NotificacionController(this, 10000);
+
+  static styles = [unsafeCSS(bootstrap), unsafeCSS(fontawesome)];
 
   createRenderRoot() {
     return this;
@@ -30,7 +37,7 @@ export class NavbarElement extends LitElement {
       const geocoder = new MapboxGeocoder({
         accessToken: mapboxgl.accessToken,
         mapboxgl: mapboxgl,
-        placeholder: get('navbar.geocoder.helper'),
+        placeholder: get("navbar.geocoder.helper"),
       });
       document
         .getElementById("navbarTogglerDemo01")
@@ -47,21 +54,21 @@ export class NavbarElement extends LitElement {
     this.dispatchEvent(event);
   };
 
-  selected_lang_flag(){
-    if(this.selected_lang === 'es'){
-      return html`&#127466;&#127462;`
-    }else if(this.selected_lang === 'pr'){
-      return html`&#127463;&#127479;`
-    }else if(this.selected_lang === 'en'){
-      return html`&#x1F1FA;&#x1F1F8;`
+  selected_lang_flag() {
+    if (this.selected_lang === "es") {
+      return html`&#127466;&#127462;`;
+    } else if (this.selected_lang === "pr") {
+      return html`&#127463;&#127479;`;
+    } else if (this.selected_lang === "en") {
+      return html`&#x1F1FA;&#x1F1F8;`;
     }
   }
 
-  seleccionar_lang(l){
-    use(l)
-    this.selected_lang = l
+  seleccionar_lang(l) {
+    use(l);
+    this.selected_lang = l;
   }
-  
+
   version() {
     return import.meta.env.VITE_VERSION;
   }
@@ -101,9 +108,9 @@ export class NavbarElement extends LitElement {
                 data-bs-target="#navbarTogglerDemo01"
               >
                 <div
+                  title="Lista de Campos"
                   style="cursor: pointer;background-image: url('/iconodecampo2D.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
-                    // this.sendEvent("ver-lista-campos", null);
                     Router.go("/campos");
                   }}
                 ></div>
@@ -124,6 +131,7 @@ export class NavbarElement extends LitElement {
                 data-bs-target="#navbarTogglerDemo01"
               >
                 <div
+                  title="Depositos"
                   style="cursor: pointer;background-image: url('/deposito_2.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-depositos-click", null);
@@ -145,6 +153,7 @@ export class NavbarElement extends LitElement {
                 data-bs-target="#navbarTogglerDemo01"
               >
                 <div
+                  title="Contratistas"
                   style="cursor: pointer;background-image: url('/iconocontratista.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-contratistas-click", null);
@@ -166,6 +175,7 @@ export class NavbarElement extends LitElement {
                 data-bs-target="#navbarTogglerDemo01"
               >
                 <div
+                  title="Insumos"
                   style="cursor: pointer;background-image: url('/icono de insumos.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
                     this.sendEvent("ver-insumos-click", null);
@@ -191,7 +201,7 @@ export class NavbarElement extends LitElement {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    ${translate('navbar.opciones.titulo')}
+                    ${translate("navbar.opciones.titulo")}
                   </a>
                   <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                     <li
@@ -205,7 +215,7 @@ export class NavbarElement extends LitElement {
                           Router.go("/cultivos");
                         }}
                         href="#"
-                        >${translate('navbar.opciones.colorCultivos')}</a
+                        >${translate("navbar.opciones.colorCultivos")}</a
                       >
                     </li>
                     <li
@@ -218,7 +228,7 @@ export class NavbarElement extends LitElement {
                           this.sendEvent("ver-lista-de-sensores");
                         }}
                         href="#"
-                        >${translate('navbar.opciones.listaDispositivos')}</a
+                        >${translate("navbar.opciones.listaDispositivos")}</a
                       >
                     </li>
                     <li
@@ -231,7 +241,7 @@ export class NavbarElement extends LitElement {
                           location.reload();
                         }}
                         href="#"
-                        >${translate('navbar.opciones.recargar')}</a
+                        >${translate("navbar.opciones.recargar")}</a
                       >
                     </li>
 
@@ -252,7 +262,10 @@ export class NavbarElement extends LitElement {
                     </li>
                     <li><hr class="dropdown-divider" /></li>
                     <li>
-                      <a class="dropdown-item">${translate('navbar.opciones.version')} ${this.version()}</a>
+                      <a class="dropdown-item"
+                        >${translate("navbar.opciones.version")}
+                        ${this.version()}</a
+                      >
                     </li>
                   </ul>
                 </div>
@@ -268,31 +281,80 @@ export class NavbarElement extends LitElement {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    <i class="flag-united-kingdom flag m-0">${this.selected_lang_flag()}</i>
+                    <i class="flag-united-kingdom flag m-0"
+                      >${this.selected_lang_flag()}</i
+                    >
                   </a>
 
                   <ul class="dropdown-menu" aria-labelledby="Dropdown">
                     <li>
-                      <a class="dropdown-item" href="#" @click=${() => this.seleccionar_lang('es')}
-                        ><i class="flag-spain flag"></i> &#127466;&#127462; Español</a
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        @click=${() => this.seleccionar_lang("es")}
+                        ><i class="flag-spain flag"></i> &#127466;&#127462;
+                        Español</a
                       >
                     </li>
 
                     <li>
-                      <a class="dropdown-item" href="#" @click=${()=>this.seleccionar_lang('pr')}
-                        ><i class="flag-brasil flag"></i> &#127463;&#127479; Português</a
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        @click=${() => this.seleccionar_lang("pr")}
+                        ><i class="flag-brasil flag"></i> &#127463;&#127479;
+                        Português</a
                       >
                     </li>
 
                     <li>
-                      <a class="dropdown-item" href="#" @click=${()=>this.seleccionar_lang('en')}
-                        ><i class="flag-united-kingdom flag"></i> &#x1F1FA;&#x1F1F8; English
-                        <i class="fa fa-check text-success ms-2"></i
-                      ></a>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        @click=${() => this.seleccionar_lang("en")}
+                        ><i class="flag-united-kingdom flag"></i>
+                        &#x1F1FA;&#x1F1F8; English
+                        <!-- <i class="fa fa-check text-success ms-2"></i> -->
+                        </a
+                      >
                     </li>
                   </ul>
                 </div>
               </li>
+
+              <!-- start notificacion -->
+              <li class="nav-item">
+                <div class="nav-item dropdown">
+                  <button
+                    type="button"
+                    class="btn btn-light position-relative nav-link"
+                    data-bs-toggle="dropdown"
+                  >
+                    <i class="far fa-bell"></i>
+                    ${this.noti_controller.notificaciones?.length !== 0
+                      ? html`<span
+                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        >
+                          ${this.noti_controller.notificaciones?.length}
+                          <span class="visually-hidden">notificaciones</span>
+                        </span>`
+                      : null}
+                  </button>
+
+                  <ul
+                    class="dropdown-menu dropdown-menu-end"
+                    aria-labelledby="navbarDropdownMenuLink"
+                  >
+                    ${this.noti_controller.notificaciones?.length !== 0
+                      ? map(
+                          this.noti_controller.notificaciones,
+                          notificacion_template
+                        )
+                      : html`<li>No hay notificaciones</li>`}
+                  </ul>
+                </div>
+              </li>
+              <!-- end notificacion -->
             </ul>
             <!-- <form class="d-flex"> -->
 

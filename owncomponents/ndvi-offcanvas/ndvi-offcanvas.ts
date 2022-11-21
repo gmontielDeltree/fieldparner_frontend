@@ -170,6 +170,8 @@ export class NdviOffcanvas extends LitElement {
       this.shadowRoot.getElementById("offcanvas-lote-ndvi")
     );
 
+
+    this.offcanvas.show();
     /* Esto deberia ocurrir si map y db estan caragado */
 
     this.shadowRoot
@@ -293,6 +295,7 @@ export class NdviOffcanvas extends LitElement {
   };
 
   queryNDVIValore(lngLat) {
+    console.log("selected_georaster", this.selected_georaster)
     return geoblaze.identify(this.selected_georaster, lngLat);
   }
 

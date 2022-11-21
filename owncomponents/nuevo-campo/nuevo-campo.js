@@ -44,6 +44,7 @@ export class NuevoCampo extends LitElement {
       lotes.forEach((lote) => {
         lote.properties.nombre = lote.properties?.name;
         lote.properties.uuid = uuid4()
+        lote.id = lote.properties.uuid
         lote.properties.campo_parent_id = "campos_" + nombre;
         lote.properties.hectareas = area(lote)
         lote.properties.actividades = []

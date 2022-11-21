@@ -58,20 +58,23 @@ export class CampoOffcanvas extends LitElement {
     });
   }
 
-  mapShowOnlyThisCampo(){
-    console.log("Showing solo el campo seleccionado")
-    gbl_state.map.hideAllLayers()
-    gbl_state.map.selectCampo(this.campo_doc.campo_geojson,this.campo_doc.lotes)
-    gbl_state.map.showSelectedCampo()
+  mapShowOnlyThisCampo() {
+    console.log("Showing solo el campo seleccionado");
+    gbl_state.map.hideAllLayers();
+    gbl_state.map.selectCampo(
+      this.campo_doc.campo_geojson,
+      this.campo_doc.lotes
+    );
+    gbl_state.map.showSelectedCampo();
     // Hide all layers
     // Show seleccion border
     // Show lotes fill
   }
 
-  mapShowAllCampos(){
-    console.log("Showing todos los campos")
-    gbl_state.map.hideAllLayers()
-    gbl_state.map.showAllCampos()
+  mapShowAllCampos() {
+    console.log("Showing todos los campos");
+    gbl_state.map.hideAllLayers();
+    gbl_state.map.showAllCampos();
   }
 
   firstUpdated() {
@@ -83,10 +86,7 @@ export class CampoOffcanvas extends LitElement {
     this.shadowRoot
       .getElementById("offcanvas-campo-detalle")
       //Cierre callback
-      .addEventListener("hidden.bs.offcanvas", () => {
-        
-      });
-
+      .addEventListener("hidden.bs.offcanvas", () => {});
 
     /* Otros listeners */
     this.addEventListener("cerrargeometria", (e) => {
@@ -117,10 +117,12 @@ export class CampoOffcanvas extends LitElement {
         console.log("Lote GeoJSON", lote_geojson);
         doc.lotes.push(lote_geojson);
         // Save Lote en campo doc
-        gbl_state.db.put(doc).then(() => console.log("Lote Grabado"));
+        gbl_state.db.put(doc).then(() => {
+          console.log("Lote Grabado");
+          this.loadCampo();
+        });
       });
     });
-
 
     this._detallesOffcanvas.show();
   }
@@ -157,15 +159,15 @@ export class CampoOffcanvas extends LitElement {
   nuevo_lote_click() {
     // Mostrar Nueva Geometria - Lote
     this.shadowRoot.getElementById("nuevo-lote-ui").show = true;
-    alert("Development!!!! En construccion")
+    alert("Development!!!! En construccion");
     this.hide();
   }
 
   cerrar_modo() {
     console.log("Cerrar Modo Campo");
 
-    this.mapShowAllCampos()
-    Router.go('/')
+    this.mapShowAllCampos();
+    Router.go("/");
 
     this._detallesOffcanvas.hide();
   }
@@ -261,7 +263,7 @@ export class CampoOffcanvas extends LitElement {
       ${gbl_state.map
         ? html`<nueva-geometria-ui
             id="nuevo-lote-ui"
-            .tipo="lote"
+            tipo="lote"
             .mapa=${gbl_state.map}
             ._draw=${gbl_state.draw}
             .campo_feature=${this.campo_doc?.campo_geojson}

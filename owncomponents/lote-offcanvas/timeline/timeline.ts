@@ -699,7 +699,7 @@ export class TimelineElement extends LitElement {
             <time class="cbp_tmtime" datetime="2032-11-04T03:45"
               ><span>${fecha}</span> <span>${elapsed}</span></time
             >
-            <div class="cbp_tmicon bg-green">
+            <div class="cbp_tmicon bg-green icono-cosecha ">
               <i class="zmdi zmdi-label"></i>
             </div>
             <div class="cbp_tmlabel bg-cosecha">
