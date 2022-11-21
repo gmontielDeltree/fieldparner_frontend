@@ -60,7 +60,7 @@ export class ListaDeCampos extends LitElement {
   ir_a(feature) {
     gbl_state.map.flyTo({
       center: centroid(feature).geometry.coordinates as LngLatLike,
-      zoom: 10,
+      zoom: 15,
     });
     this._detallesOffcanvas.hide();
   }
