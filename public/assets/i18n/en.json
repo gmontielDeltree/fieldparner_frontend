@@ -23,9 +23,13 @@
 
     "borrar":"Delete",
     "confirmar_borrar":"Are you sure?",
-    "workspaceRights":{"titulo":"User Rights", "invitar":"Invite User","permisos":"User Access Rights"},
 
-    "nombre":"Name"
-    
-    
+    "workspaceRights":{"titulo":"User Rights", "invitar":"Invite User","permisos":"User Access Rights","editar":"Edit Rights"},
+    "nombre":"Name",
+    "cerrar":"Close",
+    "invitar":"Invite",
+    "editar":"Edit",
+    "guardar":"Save",
+
+    "cancelar":"Cancel"
   }

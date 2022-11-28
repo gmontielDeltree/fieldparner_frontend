@@ -59,7 +59,7 @@ export class WorkspaceRights extends LitElement {
     gbl_state.user_db.get(uuid_workspace).then((doc) => {
       this.workspace = doc as unknown as Workspace;
       this.workspace.users = [
-        { user_mail: "aaa@ccc", rights: "admin", nombre: "YOmi" },
+        { user_email: "aaa@ccc", rights: "admin", nombre: "YOmi" },
       ];
       this.loaded = true;
     });
@@ -71,18 +71,22 @@ export class WorkspaceRights extends LitElement {
     console.log("args", args);
   }
 
-  menu_more_click({ detail }) {
-    let valor = detail.value.value;
+  menu_more_click(o, clicked_item) {
+    console.log('Item Clicked',clicked_item)
+    let valor =o.detail.value.value;
     if (valor === "delete") {
       this.deleteDialogOpened = true;
       this.dialogOpened = false;
+      this.user_selected =clicked_item
     } else if (valor === "resend_value") {
       console.log("resend_link");
+      this.user_selected =clicked_item
       this.resend_link();
     } else if (valor === "edit") {
       console.log("");
       this.editDialogOpened = true;
       this.dialogOpened = false;
+      this.user_selected =clicked_item
     }
   }
 
@@ -124,14 +128,14 @@ export class WorkspaceRights extends LitElement {
             >
               <vaadin-grid-column
                 header="E-Mail"
-                path="user_mail"
+                path="user_email"
               ></vaadin-grid-column>
               <vaadin-grid-column
                 header="Nombre"
                 path="nombre"
               ></vaadin-grid-column>
               <vaadin-grid-column
-                header="Role"
+                header="Rol"
                 path="rights"
               ></vaadin-grid-column>
               <vaadin-grid-column
@@ -181,7 +185,7 @@ export class WorkspaceRights extends LitElement {
               style="width: 300px; max-width: 100%; align-items: stretch;"
             >
               <vaadin-vertical-layout style="align-items: stretch;">
-                <vaadin-text-field label="Email"></vaadin-text-field>
+                <vaadin-email-field label='Email' ></vaadin-email-field>
                 <vaadin-text-field label="${translate('nombre')}"></vaadin-text-field>
                 <vaadin-combo-box
                   label="${translate('workspaceRights.permisos')}"
@@ -195,7 +199,10 @@ export class WorkspaceRights extends LitElement {
         ${dialogFooterRenderer(
           () =>
             html`
-              <vaadin-button @click="${this.close}">Cancel</vaadin-button>
+              <vaadin-button @click="${()=>{
+                this.dialogOpened = true
+                this.inviteDialogOpened =false
+              }}">${translate('cerrar')}</vaadin-button>
               <vaadin-button theme="primary success" @click="${this.close}"
                 >${translate('invitar')}</vaadin-button
               >
@@ -231,10 +238,14 @@ export class WorkspaceRights extends LitElement {
               style="width: 300px; max-width: 100%; align-items: stretch;"
             >
               <vaadin-vertical-layout style="align-items: stretch;">
-                <span>sophia.willlina</span>
-                <vaadin-text-field label="${translate('nombre')}"></vaadin-text-field>
+                <span>${this.user_selected?.user_email}</span>
+                <vaadin-text-field value=${this.user_selected.nombre}
+                @input=${(e)=>this.user_selected.nombre = e.target.value}
+                label="${translate('nombre')}"></vaadin-text-field>
                 <vaadin-combo-box
                   label="${translate('workspaceRights.permisos')}"
+                  value="${this.user_selected.rights}"
+
                   .items="${['admin','edit','viewer']}"
                 ></vaadin-combo-box>
               </vaadin-vertical-layout>
@@ -245,9 +256,12 @@ export class WorkspaceRights extends LitElement {
         ${dialogFooterRenderer(
           () =>
             html`
-              <vaadin-button @click="${this.close}">Cancel</vaadin-button>
-              <vaadin-button theme="primary" @click="${this.close}"
-                >Add note</vaadin-button
+              <vaadin-button @click="${()=>{
+                this.dialogOpened =true
+                this.editDialogOpened = false
+              }}">${translate('cerrar')}</vaadin-button>
+              <vaadin-button theme="primary" @click="${this.editar_usuario}"
+                >${translate('guardar')}</vaadin-button
               >
             `,
           []
@@ -257,7 +271,7 @@ export class WorkspaceRights extends LitElement {
 
       <!-- confirm delete dialog -->
       <vaadin-confirm-dialog
-        header='Delete "Report Q4"?'
+        header=${translate('borrar')}
         cancel
         @cancel="${() => {
           this.dialogOpened = true;
@@ -272,7 +286,7 @@ export class WorkspaceRights extends LitElement {
           this.dialogOpened = !this.deleteDialogOpened;
         }}"
       >
-        Are you sure you want to permanently delete this item?
+        ${translate('confirmar_borrar')}
       </vaadin-confirm-dialog>
       <!-- fin confirm delete dialog -->
     `;
@@ -291,12 +305,12 @@ export class WorkspaceRights extends LitElement {
     return item;
   }
 
-  private menuBarRenderer = () => {
+  private menuBarRenderer = (clicked_item) => {
     const items = [{ component: this.makeIcon(), children: this.items }];
     return html`<vaadin-menu-bar
       .items=${items}
       theme="tertiary"
-      @item-selected=${this.menu_more_click}
+      @item-selected=${(e)=>this.menu_more_click(e,clicked_item)}
     ></vaadin-menu-bar>`;
   };
 }
