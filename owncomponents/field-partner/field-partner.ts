@@ -27,6 +27,7 @@ import "../notas-offcanvas/nota-target.ts";
 import "../insumos/insumos-lista.ts";
 import "../lista-centrales-cercanas/lista-centrales-cercanas.ts";
 import "../sensores/lista-de-sensores.ts";
+import "../navbar-element/workspace-rigths.ts"
 import '../null-component'
 import { use, get,registerTranslateConfig } from "lit-translate";
 
@@ -839,6 +840,8 @@ export class FieldPartner extends LitElement {
       { path: "/depositos", component: "depositos-lista" },
       { path: "/depositos/add", component: "depositos-upsert" },
       { path: "/insumos", component: "insumos-lista" },
+      { path: "/rights/:uuid_workspace", component:"workspace-rights"},
+      { path: "/invite", component:"null-component"},
     ]);
   }
 

@@ -21,6 +21,7 @@ interface Workspace {
   nombre: string;
   owner: string;
   propio: boolean;
+  rights: string;
 }
 
 @customElement("workspace-menu")
@@ -31,7 +32,7 @@ export class className extends LitElement {
   @state()
   selected_workspace: Workspace;
 
-  @state()
+  @state({hasChanged:(v,ov)=>false})
   loaded: boolean = false;
 
   stateBind = new StateController(this, gbl_state);
@@ -67,6 +68,7 @@ export class className extends LitElement {
       nombre: nombre,
       owner: gbl_state.user.sub,
       propio: true,
+      rights : 'admin'
     };
 
     gbl_state.user_db.put(new_ws);
