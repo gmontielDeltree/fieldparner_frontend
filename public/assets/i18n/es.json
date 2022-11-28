@@ -1,9 +1,9 @@
 {
     "navbar":{
         "workspace":{
-            "agregar":"Add Workspace",
-            "seleccionar":"Select",
-            "permisos":"User Access Rights"
+            "agregar":"Nuevo Espacio de Trabajo",
+            "seleccionar":"Seleccionar",
+            "permisos":"Permisos de Acceso"
         },
         "opciones":{
             "titulo":"Opciones",
@@ -21,9 +21,9 @@
         "titulo":"Lista de Campos"
     },
 
-    "borrar":"Delete",
-    "confirmar_borrar":"Are you sure?",
-    "workspaceRights":{"titulo":"User Rights", "invitar":"Invite User","permisos":"User Access Rights","editar":"Editar Permisos"},
+    "borrar":"Borrar",
+    "confirmar_borrar":"Estas seguro de borrar?",
+    "workspaceRights":{"titulo":"Permisos", "invitar":"Invitar","permisos":"Permisos de Acceso","editar":"Editar Permisos"},
     "nombre":"Nombre",
     "cerrar":"Cerrar",
     "invitar":"Invitar",
