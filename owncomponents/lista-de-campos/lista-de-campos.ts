@@ -11,6 +11,7 @@ import {StateController} from '@lit-app/state'
 import gbl_state from '../state.js'
 
 import { translate } from "lit-translate";
+import bbox from "@turf/bbox";
 
 export class ListaDeCampos extends LitElement {
  // @property()
@@ -58,10 +59,11 @@ export class ListaDeCampos extends LitElement {
   }
 
   ir_a(feature) {
-    gbl_state.map.flyTo({
-      center: centroid(feature).geometry.coordinates as LngLatLike,
-      zoom: 15,
-    });
+    gbl_state.map.fitBounds(bbox(feature),{padding: {top: 66, bottom:5, left: 0, right: 0}});
+    // gbl_state.map.flyTo({
+    //   center: centroid(feature).geometry.coordinates as LngLatLike,
+    //   zoom: 15,
+    // });
     this._detallesOffcanvas.hide();
   }
 
