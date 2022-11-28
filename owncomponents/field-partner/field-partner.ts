@@ -62,10 +62,10 @@ function handleConnectionChange(event) {
 }
 
 export class FieldPartner extends LitElement {
-  @property()
+  @property({hasChanged:(v,ov)=>false})
   map: Map;
 
-  @property()
+  @property({hasChanged:(v,ov)=>false})
   draw: MapboxDraw;
 
   @property()
@@ -83,12 +83,12 @@ export class FieldPartner extends LitElement {
   @property({hasChanged:(v,ov)=>false})
   auth0Client: any;
 
-  @property()
+  @property({hasChanged:(v,ov)=>false})
   logged_in: boolean = false;
 
   @property()
-  loading: boolean;
-  
+  loading: boolean = true;
+
   @property()
   settings: any;
 
@@ -98,13 +98,13 @@ export class FieldPartner extends LitElement {
     /* Sensible Defaults */
     this.user = {};
     this.user.name = "demo";
-    this.loading = true;
 
+    /* Traducciones */
     registerTranslateConfig({
       loader: lang => fetch(`/assets/i18n/${lang}.json`).then(res => res.json())
     });
 
-    console.log("USE",use('es'))
+    console.log("USE Lang",use('es'))
 
     window.addEventListener("online", handleConnectionChange);
     window.addEventListener("offline", handleConnectionChange);
