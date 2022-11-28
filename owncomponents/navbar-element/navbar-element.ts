@@ -13,6 +13,7 @@ import { property, state } from "lit/decorators.js";
 import { map } from "lit/directives/map.js";
 import { notificacion_template, Notificacion } from "./notificacion";
 import { NotificacionController } from "./notificacion_controller";
+import "./workspace-menu"
 
 export class NavbarElement extends LitElement {
   @property()
@@ -355,6 +356,7 @@ export class NavbarElement extends LitElement {
                 </div>
               </li>
               <!-- end notificacion -->
+              <workspace-menu></workspace-menu>
             </ul>
             <!-- <form class="d-flex"> -->
 

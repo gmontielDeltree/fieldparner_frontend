@@ -1,6 +1,10 @@
 {
     "navbar":{
-
+        "workspace":{
+            "agregar":"Add Workspace",
+            "seleccionar":"Select",
+            "permisos":"User Authorizations"
+        },
         "opciones":{
             "titulo":"Options",
             "colorCultivos":"Crop Color",
@@ -15,5 +19,8 @@
     
     "ldcampos":{
         "titulo":"Field List"
-    }
+    },
+
+    "borrar":"Delete",
+    "confirmar_borrar":"Are you sure?"
   }

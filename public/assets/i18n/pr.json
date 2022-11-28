@@ -15,5 +15,15 @@
     
     "ldcampos":{
         "titulo":"Fazendas"
-    }
+    },
+    
+    "workspace":{
+        "agregar":"Add Workspace",
+        "seleccionar":"Select",
+        "permisos":"User Authorizations"
+    },
+
+    "borrar":"Borrar",
+
+    "confirmar_borrar":"Are you sure?"
   }

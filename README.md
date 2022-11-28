@@ -1,5 +1,19 @@
 # fieldpartner_frontend
 
+# UserId
+El userId viene dado por el campo 'sub' del objeto user que devuelve auth0.
+El userId se utiliza para identificar al usuario el la app
+Nombre de la user_db = ${user.sub}
+
+# Router
+@vaadin/router
+
+# State
+El State del la app es monitoreado por la libreria @lit-app/state
+
+# Traduccion
+
+
 # Demo Database
 darkdb = new PouchDB('dark');
 

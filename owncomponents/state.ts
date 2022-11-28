@@ -12,7 +12,9 @@ class MyState extends State {
  @property() db : PouchDB.Database
  @property() campos : any
  @property() selected: any
- @property() router : Router 
+ @property() router : Router
+ @property() user_db: PouchDB.Database
+ @property() user : any
 }
 
 const state = new MyState()

@@ -1,6 +1,10 @@
 {
     "navbar":{
-
+        "workspace":{
+            "agregar":"Add Workspace",
+            "seleccionar":"Select",
+            "permisos":"User Authorizations"
+        },
         "opciones":{
             "titulo":"Opciones",
             "colorCultivos":"Color Cultivo",
@@ -15,5 +19,8 @@
     
     "ldcampos":{
         "titulo":"Lista de Campos"
-    }
+    },
+
+    "borrar":"Delete",
+    "confirmar_borrar":"Are you sure?"
   }
