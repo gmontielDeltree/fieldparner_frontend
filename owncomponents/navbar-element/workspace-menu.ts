@@ -11,9 +11,10 @@ import "@spectrum-web-components/theme/src/themes";
 
 import { StateController } from "@lit-app/state";
 
-import { use, translate, get } from "lit-translate";
+import { translate, get } from "lit-translate";
 import uuid4 from "uuid4";
 import { map } from "lit/directives/map.js";
+import { Router } from '@vaadin/router';
 
 interface Workspace {
   _id: string;
@@ -27,7 +28,7 @@ interface Workspace {
 @customElement("workspace-menu")
 export class className extends LitElement {
   @state()
-  workspaces: Workspace[];
+  workspaces: Workspace [] = [];
 
   @state()
   selected_workspace: Workspace;
@@ -84,6 +85,7 @@ export class className extends LitElement {
 
   openPermisos(ws) {
     // Router go to
+    Router.go('/rights/' + ws['_id'])
   }
 
   borrar(ws) {
@@ -119,7 +121,7 @@ export class className extends LitElement {
 
         <sp-action-menu>
           <sp-icon-show-menu slot="icon"
-            >${this.selected_workspace.nombre}</sp-icon-show-menu
+            >${this.selected_workspace?.nombre ? this.selected_workspace.nombre : "Default"}</sp-icon-show-menu
           >
           <sp-menu-group role="none">
             ${map(this.workspaces, workspace)}

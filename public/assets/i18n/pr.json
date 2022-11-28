@@ -25,5 +25,8 @@
 
     "borrar":"Borrar",
 
-    "confirmar_borrar":"Are you sure?"
+    "confirmar_borrar":"Are you sure?",
+    
+    "workspaceRights":{"titulo":"User Rights", "invitar":"Invite User","permisos":"User Access Rights"},
+    "nombre":"Nome"
   }
