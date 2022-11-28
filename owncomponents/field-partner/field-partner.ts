@@ -74,23 +74,21 @@ export class FieldPartner extends LitElement {
   @property()
   campos_db: PouchDB.Database;
 
-  @property()
-  shared_db_remote: PouchDB.Database;
-  @property()
+  @property({hasChanged:(v,ov)=>false})
   remote_campos_db: PouchDB.Database;
-  @property()
-  changes_db: PouchDB.Database;
-  @property()
-  remote_changes_db: PouchDB.Database;
+
   @property()
   user: any;
 
-  @property()
+  @property({hasChanged:(v,ov)=>false})
   auth0Client: any;
+
   @property()
-  logged_in: boolean;
+  logged_in: boolean = false;
+
   @property()
   loading: boolean;
+  
   @property()
   settings: any;
 
@@ -98,7 +96,6 @@ export class FieldPartner extends LitElement {
     super();
 
     /* Sensible Defaults */
-    this.logged_in = false;
     this.user = {};
     this.user.name = "demo";
     this.loading = true;
@@ -485,7 +482,7 @@ export class FieldPartner extends LitElement {
 
     gbl_state.user_db = new PouchDB(user.sub)
     gbl_state.user = this.user
-    
+
     try {
       let campos_db_uri = base_url + "campos_" + username;
       console.log("CrearDBS - campos_db_uri", campos_db_uri);
@@ -853,22 +850,6 @@ export class FieldPartner extends LitElement {
       ></mapa-principal>
 
       <navbar-element .map=${this.map}></navbar-element>
-
-      <!-- <campo-offcanvas
-        id="campo-oc"
-        .map=${this.map}
-        .draw=${this.draw}
-        .campos_db=${this.campos_db}
-        .local_campos_changes=${this.changes_db}
-        .user=${this.user}
-      ></campo-offcanvas> -->
-<!-- 
-      <lote-offcanvas
-        id="lote-oc"
-        .map=${this.map}
-        .db=${this.campos_db}
-        .settings=${this.settings}
-      ></lote-offcanvas> -->
 
       <nuevo-campo
         id="nuevo-campo-oc"
