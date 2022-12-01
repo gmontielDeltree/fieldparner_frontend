@@ -76,6 +76,18 @@ const get_lote_doc = async (db: PouchDB.Database, uuid: string) => {
   // document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
 };
 
+const crearWorkspaceDB = (nombre,user,pass) => {
+  0
+}
+
+const setPermisosWorkspaceDB = (nombre,user,pass) => {
+
+}
+
+const getPermisosWorkspaceDB = (nombre,user,pass)=>{
+
+}
+
 export {
   emptyGJ,
   base_url,
@@ -85,4 +97,7 @@ export {
   hashMessage,
   normalizar_username,
   get_lote_doc,
+  crearWorkspaceDB,
+  setPermisosWorkspaceDB,
+  getPermisosWorkspaceDB
 };
