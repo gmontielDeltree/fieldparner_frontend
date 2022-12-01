@@ -26,6 +26,7 @@ import { columnBodyRenderer } from "@vaadin/grid/lit.js";
 
 import { DialogOpenedChangedEvent } from "@vaadin/dialog";
 import { translate, get } from "lit-translate";
+import { Router } from "@vaadin/router";
 
 @customElement("workspace-rights")
 export class WorkspaceRights extends LitElement {
@@ -59,13 +60,17 @@ export class WorkspaceRights extends LitElement {
     gbl_state.user_db.get(uuid_workspace).then((doc) => {
       this.workspace = doc as unknown as Workspace;
       this.workspace.users = [
-        { user_email: "aaa@ccc", rights: "admin", nombre: "YOmi" },
+        { user_email: "elon@tsla.com", rights: "admin", nombre: "Elon Musk" },
+        { user_email: "lgoharriz@gmail.com", rights: "edit", nombre: "Gastón LeClerc" }
       ];
       this.loaded = true;
     });
   }
 
-  close() {}
+  close() {
+    this.dialogOpened = false
+    Router.go('/')
+  }
 
   edit(args) {
     console.log("args", args);
