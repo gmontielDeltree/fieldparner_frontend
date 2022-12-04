@@ -29,6 +29,7 @@ import "../lista-centrales-cercanas/lista-centrales-cercanas.ts";
 import "../sensores/lista-de-sensores.ts";
 import "../navbar-element/workspace-rigths.ts"
 import '../null-component'
+import '../invite/invite'
 import { use, get,registerTranslateConfig } from "lit-translate";
 
 import centroid from "@turf/centroid";
@@ -771,7 +772,7 @@ export class FieldPartner extends LitElement {
       { path: "/depositos/add", component: "depositos-upsert" },
       { path: "/insumos", component: "insumos-lista" },
       { path: "/rights/:uuid_workspace", component:"workspace-rights"},
-      { path: "/invite", component:"null-component"},
+      { path: "/invite", component:"link-invitacion"},
     ]);
   }
 

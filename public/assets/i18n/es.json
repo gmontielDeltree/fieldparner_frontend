@@ -1,34 +1,52 @@
 {
-    "navbar":{
-        "workspace":{
-            "agregar":"Nuevo Espacio de Trabajo",
-            "seleccionar":"Seleccionar",
-            "permisos":"Permisos de Acceso"
-        },
-        "opciones":{
-            "titulo":"Opciones",
-            "colorCultivos":"Color Cultivo",
-            "listaDispositivos":"Lista de Dispositivos",
-            "recargar":"Recargar",
-            "version":"Version"
-        },
-        "geocoder":{
-            "helper":"Buscar Localidad"
-        }
-    },
-    
-    "ldcampos":{
-        "titulo":"Lista de Campos"
-    },
-
-    "borrar":"Borrar",
-    "confirmar_borrar":"Estas seguro de borrar?",
-    "workspaceRights":{"titulo":"Permisos", "invitar":"Invitar","permisos":"Permisos de Acceso","editar":"Editar Permisos"},
-    "nombre":"Nombre",
-    "cerrar":"Cerrar",
-    "invitar":"Invitar",
-    "editar":"Editar",
-    "guardar":"Guardar",
-    "cancelar":"Cancelar"
-
-  }
+	"aceptar": "Aceptar",
+	"borrar": "Borrar",
+	"cancelar": "Cancelar",
+	"cerrar": "Cerrar",
+	"confirmar_borrar": "Estas seguro de borrar?",
+	"editar": "Editar",
+	"guardar": "Guardar",
+	"invitacion": {
+		"body": "El usuario {{username}} ha compartido el espacio de trabajo {{workspacename}} contigo.",
+		"notificacion": {
+			"ok": "Espacio de Trabajo Agregado",
+			"okbody": "<b>{{workspacename}}</b> esta disponible en el menu de <a href=\"#\">Espacios de Trabajo</a>.",
+			"rechazada": "Invitación Rechazada"
+		},
+		"titulo": "Invitación a Espacio de Trabajo"
+	},
+	"invitar": "Invitar",
+	"ldcampos": {
+		"titulo": "Lista de Campos"
+	},
+	"navbar": {
+		"geocoder": {
+			"helper": "Buscar Localidad"
+		},
+		"opciones": {
+			"colorCultivos": "Color Cultivo",
+			"listaDispositivos": "Lista de Dispositivos",
+			"recargar": "Recargar",
+			"titulo": "Opciones",
+			"version": "Version"
+		},
+		"workspace": {
+			"agregar": "Nuevo Espacio de Trabajo",
+			"permisos": "Permisos de Acceso",
+			"seleccionar": "Seleccionar"
+		}
+	},
+	"nombre": "Nombre",
+	"rechazar": "Rechazar",
+	"workspace": {
+		"agregar": "",
+		"permisos": "",
+		"seleccionar": ""
+	},
+	"workspaceRights": {
+		"editar": "Editar Permisos",
+		"invitar": "Invitar",
+		"permisos": "Permisos de Acceso",
+		"titulo": "Permisos"
+	}
+}
