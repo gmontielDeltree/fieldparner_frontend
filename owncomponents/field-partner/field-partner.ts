@@ -53,10 +53,12 @@ function handleConnectionChange(event) {
   if (event.type == "offline") {
     console.log("You lost connection.");
     wentOffline = new Date(event.timeStamp);
+    gbl_state.online = false;
   }
   if (event.type == "online") {
     console.log("You are now back online.");
     wentOnline = new Date(event.timeStamp);
+    gbl_state.online = true;
     console.log(
       "You were offline for " + (wentOnline - wentOffline) / 1000 + "seconds."
     );
@@ -101,6 +103,8 @@ export class FieldPartner extends LitElement {
     this.user = {};
     this.user.name = "demo";
 
+    gbl_state.online = window.navigator.onLine
+    
     /* Traducciones */
     registerTranslateConfig({
       loader: lang => fetch(`/assets/i18n/${lang}.json`).then(res => res.json())
@@ -772,7 +776,7 @@ export class FieldPartner extends LitElement {
       { path: "/depositos/add", component: "depositos-upsert" },
       { path: "/insumos", component: "insumos-lista" },
       { path: "/rights/:uuid_workspace", component:"workspace-rights"},
-      { path: "/invite", component:"link-invitacion"},
+      { path: "/invite/:base64_invitation", component:"link-invitacion"},
     ]);
   }
 

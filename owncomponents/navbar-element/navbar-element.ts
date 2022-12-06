@@ -14,6 +14,7 @@ import { map } from "lit/directives/map.js";
 import { notificacion_template, Notificacion } from "./notificacion";
 import { NotificacionController } from "./notificacion_controller";
 import "./workspace-menu"
+import '../offline-tag/offline-tag'
 
 export class NavbarElement extends LitElement {
   @property()
@@ -87,8 +88,8 @@ export class NavbarElement extends LitElement {
               class="d-inline-block align-text-middle"
             />
             Agrotools
+            <offline-tag/>
           </a>
-
           <button
             class="navbar-toggler"
             type="button"
@@ -355,8 +356,10 @@ export class NavbarElement extends LitElement {
                   </ul>
                 </div>
               </li>
+
               <!-- end notificacion -->
               <workspace-menu></workspace-menu>
+
             </ul>
             <!-- <form class="d-flex"> -->
 

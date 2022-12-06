@@ -95,6 +95,17 @@ export class WorkspaceRights extends LitElement {
     }
   }
 
+  link_shareable = ()=>{
+    let i = {
+      origin: "DemoUser",
+      ws: this.workspace.nombre
+    }
+
+    let p = btoa(encodeURIComponent(JSON.stringify(i)))
+    let link = 'agrotools.netlify.app/invite/'+ p
+    return link
+  }
+
   resend_link() {}
   borrar_usuario() {}
 
@@ -196,6 +207,7 @@ export class WorkspaceRights extends LitElement {
                   label="${translate('workspaceRights.permisos')}"
                   .items="${['admin','edit','viewer']}"
                 ></vaadin-combo-box>
+                ${this.link_shareable()}
               </vaadin-vertical-layout>
             </vaadin-vertical-layout>
           `,

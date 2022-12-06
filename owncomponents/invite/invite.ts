@@ -13,6 +13,8 @@ import '@vaadin/icon';
 import '@vaadin/icons';
 import '@vaadin/notification';
 import '@vaadin/vaadin-lumo-styles/vaadin-iconset';
+import gbl_state from '../state'
+import { Workspace } from '../navbar-element/workspace_types';
 
 @customElement("link-invitacion")
 class LinkInvitacion extends LitElement {
@@ -27,6 +29,9 @@ class LinkInvitacion extends LitElement {
 
   @state()
   workspacename: string = "Valhalla";
+  
+  @state()
+  rights : string = "view"
 
   //  get("invitacion.notificacion.ok")
 
@@ -96,6 +101,12 @@ class LinkInvitacion extends LitElement {
 
   openedChanged(e: ConfirmDialogOpenedChangedEvent) {
     this.dialogOpened = e.detail.value;
+    let p = gbl_state.router.location.params
+    let inv = JSON.parse(decodeURIComponent(atob(p.base64_invitation)))
+    this.workspacename = inv.ws
+    this.username = inv.origin
+    this.rights = inv.rights
+    console.log("PARAMETER ",p,atob(inv))
     if (this.dialogOpened) {
       this.status = "";
     }
