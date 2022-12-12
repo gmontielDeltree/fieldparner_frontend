@@ -30,6 +30,8 @@ import "../sensores/lista-de-sensores.ts";
 import "../navbar-element/workspace-rigths.ts"
 import '../null-component'
 import '../invite/invite'
+import '../lote-offcanvas/repetir-aplicacion/repetir-aplicacion.ts'
+
 import { use, get,registerTranslateConfig } from "lit-translate";
 
 import centroid from "@turf/centroid";
@@ -767,7 +769,7 @@ export class FieldPartner extends LitElement {
       { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add", component: "lote-offcanvas" },
       { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit", component: "lote-offcanvas" },
       { path: "/campo/:uuid_campo/lote/:uuid_lote", component: "lote-offcanvas" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote", component: "lote-offcanvas" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid_actividad/repetir", component: "repetir-aplicacion" },
       { path: "/campo/add", component: "nuevo-campo" },
       { path: "/campo/:uuid", component: "campo-offcanvas" },
       { path: "/contratistas", component: "contratistas-lista" },

@@ -77,14 +77,14 @@ const get_lote_doc = async (db: PouchDB.Database, uuid: string) => {
 };
 
 const crearWorkspaceDB = (nombre,user,pass) => {
-  0
+  
 }
 
 const setPermisosWorkspaceDB = (nombre,user,pass) => {
 
 }
 
-const getPermisosWorkspaceDB = (nombre,user,pass)=>{
+const getPermisosWorkspaceDB = (nombre,user,pass) => {
 
 }
 

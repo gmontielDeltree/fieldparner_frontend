@@ -15,6 +15,10 @@ import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import isFuture from "date-fns/isFuture";
 
 import "@vaadin/combo-box";
+import "@vaadin/horizontal-layout";
+import "@vaadin/icon";
+import "@vaadin/icons";
+import { Router } from "@vaadin/router";
 
 const estados = [
   {
@@ -467,11 +471,11 @@ export class TimelineElement extends LitElement {
           .items="${estados}"
           @selected-item-changed=${(ev) => {
             try {
-              // Esto se dispara por aguna razon cuando se cargan los elementos por 
+              // Esto se dispara por aguna razon cuando se cargan los elementos por
               // primera vez
-              if(item.estado === ev.detail.value.value){
+              if (item.estado === ev.detail.value.value) {
                 //console.log("NO HAY CAMBIOS")
-                return
+                return;
               }
               item.estado = ev.detail.value.value;
               //console.log("Evento Cambiar estado", ev, item);
@@ -530,7 +534,13 @@ export class TimelineElement extends LitElement {
           class="btn btn-warning"
           @click=${() => {
             console.log(item.uuid);
-            this.dispatchEvent(new CustomEvent('ver-centrales-cercanas',{detail:item,bubbles:true, composed:true}))
+            this.dispatchEvent(
+              new CustomEvent("ver-centrales-cercanas", {
+                detail: item,
+                bubbles: true,
+                composed: true,
+              })
+            );
           }}
         >
           Datos Meteorológicos
@@ -571,7 +581,9 @@ export class TimelineElement extends LitElement {
 
         let color_badge;
         if (item.color === "red") {
-          color_badge = html`<span class="badge bg-danger float-end">Urgente</span>`;
+          color_badge = html`<span class="badge bg-danger float-end"
+            >Urgente</span
+          >`;
         } else if (item.color === "yellow") {
           color_badge = html`<span class="badge bg-warning float-end"
             >Atención</span
@@ -665,6 +677,9 @@ export class TimelineElement extends LitElement {
             <h2>
               <a>APLICACIÓN</a>
               <span class="text-muted">en ${hectareas} has.</span>
+              <vaadin-button @click=${()=>Router.go('actividad/ddda')} theme="icon" aria-label="Mas">
+                <vaadin-icon icon="vaadin:ellipsis-dots-h"></vaadin-icon>
+              </vaadin-button>
               ${is_planificada
                 ? html`<span class="badge bg-success rounded-pill float-end"
                     >Planificada</span
