@@ -130,7 +130,7 @@ export class RepetirAplicacionDosis extends LitElement {
           () => html`
             <vaadin-horizontal-layout
 			theme="spacing padding"
-        style="justify-content: flex-end; align-items:center"
+        style="padding-top:0px; justify-content: space-between; align-items:center"
 		>
 		<span>${this.lotes.length} lotes seleccionados</span>
               <vaadin-date-picker
@@ -138,12 +138,14 @@ export class RepetirAplicacionDosis extends LitElement {
                 label="Fecha de Ejecución"
                 value="2022-12-03"
                 placeholder="YYYY-MM-DD"
+				style="padding-top:0px;"
                 .value=${this.actividad.detalles.fecha_ejecucion_tentativa}
                 @change=${(e) =>
                   (this.actividad.detalles.fecha_ejecucion_tentativa =
                     e.target.value)}
               ></vaadin-date-picker>
             </vaadin-horizontal-layout>
+
 
             <vaadin-grid
               .items=${(this.actividad.detalles as DetallesAplicacion).dosis}
@@ -167,6 +169,7 @@ export class RepetirAplicacionDosis extends LitElement {
                   []
                 )}
               ></vaadin-grid-column>
+
               <vaadin-grid-column
                 header="Dosis (por ha.)"
                 auto-width
