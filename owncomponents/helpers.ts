@@ -25,6 +25,11 @@ const layer_visibility = (map, layer_id, status) => {
 const base_url =
   "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/";
 
+
+const deepcopy = (obj)=>{
+  return (JSON.parse(JSON.stringify(obj)))
+}
+
 const sendEvent = (name, details) => {
   let event = new CustomEvent(name, {
     detail: details,
@@ -76,13 +81,29 @@ const get_lote_doc = async (db: PouchDB.Database, uuid: string) => {
   // document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
 };
 
+const crearWorkspaceDB = (nombre,user,pass) => {
+  
+}
+
+const setPermisosWorkspaceDB = (nombre,user,pass) => {
+
+}
+
+const getPermisosWorkspaceDB = (nombre,user,pass) => {
+
+}
+
 export {
   emptyGJ,
   base_url,
   touchEvent,
+  deepcopy,
   sendEvent,
   layer_visibility,
   hashMessage,
   normalizar_username,
   get_lote_doc,
+  crearWorkspaceDB,
+  setPermisosWorkspaceDB,
+  getPermisosWorkspaceDB
 };

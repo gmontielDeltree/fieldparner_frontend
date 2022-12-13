@@ -11,6 +11,7 @@ import {StateController} from '@lit-app/state'
 import gbl_state from '../state.js'
 
 import { translate } from "lit-translate";
+import bbox from "@turf/bbox";
 
 export class ListaDeCampos extends LitElement {
  // @property()
@@ -44,7 +45,6 @@ export class ListaDeCampos extends LitElement {
       .getElementById("lista-de-campos-oc")
       .addEventListener("hidden.bs.offcanvas", () => {
         this._detallesOffcanvas.dispose();
-        Router.go("/");
       });
 
    // let e = new CustomEvent("dame-map-db", { bubbles: true });
@@ -57,12 +57,14 @@ export class ListaDeCampos extends LitElement {
     this._detallesOffcanvas.show();
   }
 
-  ir_a(feature) {
-    gbl_state.map.flyTo({
-      center: centroid(feature).geometry.coordinates as LngLatLike,
-      zoom: 15,
-    });
+  ir_a(nombre,feature) {
+    gbl_state.map.fitBounds(bbox(feature),{padding: {top: 66, bottom:5, left: 0, right: 0}});
+    // gbl_state.map.flyTo({
+    //   center: centroid(feature).geometry.coordinates as LngLatLike,
+    //   zoom: 15,
+    // });
     this._detallesOffcanvas.hide();
+    Router.go(gbl_state.router.urlForName('campo-offcanvas',{uuid:encodeURIComponent('campos_'+nombre)}))
   }
 
   render() {
@@ -70,7 +72,7 @@ export class ListaDeCampos extends LitElement {
       return html`<a
         href="#"
         @click=${() => {
-          this.ir_a(geojson);
+          this.ir_a(name,geojson);
         }}
         class="list-group-item list-group-item-action"
         aria-current="true"

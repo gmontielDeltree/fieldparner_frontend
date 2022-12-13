@@ -170,7 +170,6 @@ export class NdviOffcanvas extends LitElement {
       this.shadowRoot.getElementById("offcanvas-lote-ndvi")
     );
 
-
     this.offcanvas.show();
     /* Esto deberia ocurrir si map y db estan caragado */
 
@@ -295,7 +294,7 @@ export class NdviOffcanvas extends LitElement {
   };
 
   queryNDVIValore(lngLat) {
-    console.log("selected_georaster", this.selected_georaster)
+    console.log("selected_georaster", this.selected_georaster);
     return geoblaze.identify(this.selected_georaster, lngLat);
   }
 
@@ -446,6 +445,8 @@ export class NdviOffcanvas extends LitElement {
           }
         });
 
+      // Divisoria
+      // For each threshold
       line
         .attr("x1", x(thres))
         .attr("x2", x(thres))
@@ -492,8 +493,8 @@ export class NdviOffcanvas extends LitElement {
           this.selected_georaster,
           (a) => ambientador(a, t1)
         );
-        d3tiff.geoblaze_raster = this.ambientes_raster;
-        d3tiff.render();
+        //d3tiff.geoblaze_raster = this.ambientes_raster;
+        //d3tiff.render();
       }
     );
 
@@ -503,17 +504,17 @@ export class NdviOffcanvas extends LitElement {
     // new d3GeotiffonMap
     // map events -> render
     // drawGeotiffOnMap(this.ndvi_geoblaze_raster,gbl_state.map);
-    let d3tiff = new D3GeoblazeOnMapbox(this.ambientes_raster, gbl_state.map);
+    // let d3tiff = new D3GeoblazeOnMapbox(this.ambientes_raster, gbl_state.map);
 
-    d3tiff.render_isobands();
+    // d3tiff.render_isobands();
 
-    function rerender() {
-      d3tiff.render();
-    }
+    // function rerender() {
+    //   d3tiff.render();
+    // }
 
-    function clear() {
-      d3tiff.clear();
-    }
+    // function clear() {
+    //   d3tiff.clear();
+    // }
 
     // //this.map.on("viewreset", rerender);
     // this.map.on("movestart", clear);
@@ -715,9 +716,11 @@ export class NdviOffcanvas extends LitElement {
               </div>`}
       </div>
 
-      <leyenda-ndvi
-        .escala=${this.escala_dinamica ? "dinamica" : "fija"}
-      ></leyenda-ndvi>
+      ${this.histograma_show
+        ? null
+        : html`<leyenda-ndvi
+            .escala=${this.escala_dinamica ? "dinamica" : "fija"}
+          ></leyenda-ndvi>`}
     `;
   }
 }

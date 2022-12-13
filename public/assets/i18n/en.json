@@ -1,19 +1,52 @@
 {
-    "navbar":{
-
-        "opciones":{
-            "titulo":"Options",
-            "colorCultivos":"Crop Color",
-            "listaDispositivos":"Device List",
-            "recargar":"Reload",
-            "version":"Version"
-        },
-        "geocoder":{
-            "helper":"Search City"
-        }
-    },
-    
-    "ldcampos":{
-        "titulo":"Field List"
-    }
-  }
+	"aceptar": "Accept",
+	"borrar": "Delete",
+	"cancelar": "Cancel",
+	"cerrar": "Close",
+	"confirmar_borrar": "Are you sure?",
+	"editar": "Edit",
+	"guardar": "Save",
+	"invitacion": {
+		"body": "User {{username}} has shared workspace {{workspacename}} with you.",
+		"notificacion": {
+			"ok": "Added Workspace",
+			"okbody": "<b>{{workspacename}}</b> is available in the <a href=\"#\">Workspaces</a> menu.",
+			"rechazada": "Invitation rejected"
+		},
+		"titulo": "Workspace Invitation"
+	},
+	"invitar": "Invite",
+	"ldcampos": {
+		"titulo": "Field List"
+	},
+	"navbar": {
+		"geocoder": {
+			"helper": "Search City"
+		},
+		"opciones": {
+			"colorCultivos": "Crop Color",
+			"listaDispositivos": "Device List",
+			"recargar": "Reload",
+			"titulo": "Options",
+			"version": "Version"
+		},
+		"workspace": {
+			"agregar": "Add Workspace",
+			"permisos": "User Authorizations",
+			"seleccionar": "Select"
+		}
+	},
+	"nombre": "Name",
+	"rechazar": "Reject",
+	"workspace": {
+		"agregar": "",
+		"permisos": "",
+		"seleccionar": ""
+	},
+	"workspaceRights": {
+		"editar": "Edit Rights",
+		"invitar": "Invite User",
+		"permisos": "User Access Rights",
+		"titulo": "User Rights"
+	}
+}
