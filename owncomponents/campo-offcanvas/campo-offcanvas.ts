@@ -6,10 +6,10 @@ import { layer_visibility, normalizar_username } from "../helpers";
 import bbox from "@turf/bbox";
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 import gbl_state, { gblStateLoaded } from "../state";
-import { state } from "lit/decorators.js";
-import { State, StateController, property } from "@lit-app/state";
+import { property, state } from "lit/decorators.js";
+import { State, StateController } from "@lit-app/state";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
-import { Router } from "@vaadin/router";
+import { Router, RouterLocation } from '@vaadin/router';
 //import bootstrap from "./bootstrap.min.css";
 
 export class CampoOffcanvas extends LitElement {
@@ -34,10 +34,13 @@ export class CampoOffcanvas extends LitElement {
   })
   _detallesOffcanvas: Offcanvas;
 
+  @property()
+  location : RouterLocation
+
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
-    console.count("willUpdate");
+    console.count("CampoOffcanvas-WillUpdate");
     if (!this.data_loaded && gblStateLoaded()) {
       // Inicializacion.
       // No hay data y esta disponible router(param) y db
@@ -66,6 +69,7 @@ export class CampoOffcanvas extends LitElement {
       this.campo_doc.lotes
     );
     gbl_state.map.showSelectedCampo();
+    gbl_state.map.fitBounds(bbox(this.campo_doc.campo_geojson));
     // Hide all layers
     // Show seleccion border
     // Show lotes fill
