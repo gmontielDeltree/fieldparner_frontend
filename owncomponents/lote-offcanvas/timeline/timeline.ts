@@ -19,6 +19,13 @@ import "@vaadin/horizontal-layout";
 import "@vaadin/icon";
 import "@vaadin/icons";
 import { Router } from "@vaadin/router";
+import gbl_state from "../../state";
+
+const url_repeticion = (actividad_uuid) => {
+  let location = gbl_state.router.location.pathname;
+  let url = location + "/actividad/" +  encodeURIComponent(actividad_uuid) + "/repetir"
+  return url;
+};
 
 const estados = [
   {
@@ -677,7 +684,11 @@ export class TimelineElement extends LitElement {
             <h2>
               <a>APLICACIÓN</a>
               <span class="text-muted">en ${hectareas} has.</span>
-              <vaadin-button @click=${()=>Router.go('actividad/ddda')} theme="icon" aria-label="Mas">
+              <vaadin-button
+                @click=${() => Router.go(url_repeticion(item._id))}
+                theme="icon"
+                aria-label="Mas"
+              >
                 <vaadin-icon icon="vaadin:ellipsis-dots-h"></vaadin-icon>
               </vaadin-button>
               ${is_planificada

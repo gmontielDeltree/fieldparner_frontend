@@ -783,6 +783,8 @@ export class FieldPartner extends LitElement {
   }
 
   render() {
+    console.count("FieldPartner Render")
+    
     return html`
       <mapa-principal
         .campos=${this.campos}

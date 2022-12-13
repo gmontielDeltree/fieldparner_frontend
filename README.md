@@ -11,8 +11,12 @@ Nombre de la user_db = ${user.sub}
 # State
 El State del la app es monitoreado por la libreria @lit-app/state
 
+
 # Traduccion
 
+
+# Mantenimiento 
+npm-check
 
 # Demo Database
 darkdb = new PouchDB('dark');

@@ -12,7 +12,7 @@ import '@vaadin/button';
 import '@vaadin/icon';
 import '@vaadin/icons';
 import '@vaadin/notification';
-import '@vaadin/vaadin-lumo-styles/vaadin-iconset';
+//import '@vaadin/vaadin-lumo-styles/vaadin-iconset';
 import gbl_state from '../state'
 import { Workspace } from '../navbar-element/workspace_types';
 
