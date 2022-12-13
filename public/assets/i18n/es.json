@@ -15,6 +15,15 @@
 		},
 		"titulo": "Invitación a Espacio de Trabajo"
 	},
+	"repetir": {
+		"body": "Actividades Agregadas",
+		"notificacion": {
+			"ok": "Actividades Agregadas",
+			"okbody": "<b></b>Estan disponibles en cada lote.",
+			"rechazada": "Invitación Rechazada"
+		},
+		"titulo": "Invitación a Espacio de Trabajo"
+	},
 	"invitar": "Invitar",
 	"ldcampos": {
 		"titulo": "Lista de Campos"
