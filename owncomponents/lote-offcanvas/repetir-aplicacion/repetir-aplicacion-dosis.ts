@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property, query, state } from "lit/decorators.js";
 import "@vaadin/dialog";
 import "@vaadin/text-field";
 import "@vaadin/vertical-layout";
@@ -20,7 +20,7 @@ import "@vaadin/tooltip";
 import "@vaadin/date-picker";
 import { Notification } from "@vaadin/notification";
 import { get, translate, translateUnsafeHTML } from "lit-translate";
-import gbl_state from '../../state'
+import gbl_state from "../../state";
 import { columnBodyRenderer } from "@vaadin/grid/lit.js";
 import {
   Actividad,
@@ -29,6 +29,9 @@ import {
 } from "../../depositos/depositos-types";
 import { Router } from "@vaadin/router";
 import { deepcopy } from "../../helpers";
+import { base_i18n } from "./date-picker-i18n";
+import uuid4 from "uuid4";
+import { format, parse } from "date-fns";
 
 @customElement("repetir-aplicacion-dosis")
 export class RepetirAplicacionDosis extends LitElement {
@@ -75,47 +78,62 @@ export class RepetirAplicacionDosis extends LitElement {
     // For each lote guardar actividad
     // con uuid cambiado
     // y lote uuid modificado
-	// y hectareas
-    this.lotes.forEach((lote) => {
-		let act = deepcopy(this.actividad) as Actividad
-		act.detalles.hectareas = lote.hectareas
-		act.lote_uuid = lote.lote_uuid
-		act._id =  'actividad:' + ""
-		console.log("Guardando", lote, act)
+    // y hectareas
+    let activity_docs = this.lotes.map((lote) => {
+      let act = deepcopy(this.actividad) as Actividad;
+      let nuevo_uuid = uuid4();
+      let fecha_para_id = format(
+        parse(act.detalles.fecha_ejecucion_tentativa, "yyyy-MM-dd", new Date()),
+        "yyyyMMdd"
+      );
+      act.detalles.hectareas = lote.hectareas;
+      act.lote_uuid = lote.lote_uuid;
+      act._id = "actividad:" + fecha_para_id + ":" + nuevo_uuid;
+      act.uuid = nuevo_uuid
+      console.log("Guardando", lote, act);
+      delete act._rev //Remover si no no graba
+      return act;
+    });
 
-	});
+    console.log("ActivityDocs",activity_docs)
+    gbl_state.db.bulkDocs(activity_docs)
 
-	this.dialogOpened = false;
-	this.showNotificationAgregadas()
-	Router.go('/')
+    this.dialogOpened = false;
+    this.showNotificationAgregadas();
+    Router.go("/");
   }
 
   showNotificationAgregadas = () => {
-    const notification = Notification.show(html`
-    <vaadin-horizontal-layout theme="spacing" style="align-items: center">
-      <vaadin-icon
-        icon="vaadin:check-circle"
-        style="color: var(--lumo-success-color)"
-      ></vaadin-icon>
-      <div>
-        <b style="color: var(--lumo-success-text-color);">${translate("repetir.notificacion.ok")}</b>
-        <div
-          style="font-size: var(--lumo-font-size-s); color: var(--lumo-secondary-text-color)"
-        >
-        ${translateUnsafeHTML('repetir.notificacion.okbody')}
-        </div>
-      </div>
-      <vaadin-button
-        theme="tertiary-inline"
-        @click="${() => notification.close()}"
-        aria-label="Close"
-      >
-        <vaadin-icon icon="lumo:cross"></vaadin-icon>
-      </vaadin-button>
-    </vaadin-horizontal-layout>
-  `, {
-      position: "top-center",
-    });
+    const notification = Notification.show(
+      html`
+        <vaadin-horizontal-layout theme="spacing" style="align-items: center">
+          <vaadin-icon
+            icon="vaadin:check-circle"
+            style="color: var(--lumo-success-color)"
+          ></vaadin-icon>
+          <div>
+            <b style="color: var(--lumo-success-text-color);"
+              >${translate("repetir.notificacion.ok")}</b
+            >
+            <div
+              style="font-size: var(--lumo-font-size-s); color: var(--lumo-secondary-text-color)"
+            >
+              ${translateUnsafeHTML("repetir.notificacion.okbody")}
+            </div>
+          </div>
+          <vaadin-button
+            theme="tertiary-inline"
+            @click="${() => notification.close()}"
+            aria-label="Close"
+          >
+            <vaadin-icon icon="lumo:cross"></vaadin-icon>
+          </vaadin-button>
+        </vaadin-horizontal-layout>
+      `,
+      {
+        position: "top-center",
+      }
+    );
   };
 
   render() {
@@ -129,23 +147,22 @@ export class RepetirAplicacionDosis extends LitElement {
         ${dialogRenderer(
           () => html`
             <vaadin-horizontal-layout
-			theme="spacing padding"
-        style="padding-top:0px; justify-content: space-between; align-items:center"
-		>
-		<span>${this.lotes.length} lotes seleccionados</span>
+              theme="spacing padding"
+              style="padding-top:0px; justify-content: space-between; align-items:center"
+            >
+              <span>${this.lotes.length} lotes seleccionados</span>
               <vaadin-date-picker
-                id="nota-date-picker"
                 label="Fecha de Ejecución"
                 value="2022-12-03"
                 placeholder="YYYY-MM-DD"
-				style="padding-top:0px;"
+                style="padding-top:0px;"
+                .i18n=${base_i18n}
                 .value=${this.actividad.detalles.fecha_ejecucion_tentativa}
                 @change=${(e) =>
                   (this.actividad.detalles.fecha_ejecucion_tentativa =
                     e.target.value)}
               ></vaadin-date-picker>
             </vaadin-horizontal-layout>
-
 
             <vaadin-grid
               .items=${(this.actividad.detalles as DetallesAplicacion).dosis}
