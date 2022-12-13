@@ -200,7 +200,7 @@ export class CampoOffcanvas extends LitElement {
   render() {
     return html`
       <div
-        class="offcanvas offcanvas-bottom h-25"
+        class="offcanvas "
         tabindex="-1"
         id="offcanvas-campo-detalle"
         aria-labelledby="offcanvas-campo-header"
