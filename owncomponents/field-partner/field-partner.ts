@@ -74,16 +74,16 @@ export class FieldPartner extends LitElement {
   @property({hasChanged:(v,ov)=>false})
   draw: MapboxDraw;
 
-  @property()
+  @state()
   campos: any;
 
-  @property()
+  @property({hasChanged:(v,ov)=>false})
   campos_db: PouchDB.Database;
 
   @property({hasChanged:(v,ov)=>false})
   remote_campos_db: PouchDB.Database;
 
-  @property()
+  @property({hasChanged:(v,ov)=>false})
   user: any;
 
   @property({hasChanged:(v,ov)=>false})
@@ -92,10 +92,10 @@ export class FieldPartner extends LitElement {
   @property({hasChanged:(v,ov)=>false})
   logged_in: boolean = false;
 
-  @property()
+  @state()
   loading: boolean = true;
 
-  @property()
+  @property({hasChanged:(v,ov)=>false})
   settings: any;
 
   constructor() {
@@ -349,6 +349,9 @@ export class FieldPartner extends LitElement {
     return this;
   }
 
+  protected willUpdate(_changedProperties: PropertyValueMap<any> | globalThis.Map<PropertyKey, unknown>): void {
+      console.log("FieldPartner-WillUpdate",_changedProperties)
+  }
 
   delete_insumos = async () => {};
 
@@ -784,7 +787,7 @@ export class FieldPartner extends LitElement {
 
   render() {
     console.count("FieldPartner Render")
-    
+
     return html`
       <mapa-principal
         .campos=${this.campos}
