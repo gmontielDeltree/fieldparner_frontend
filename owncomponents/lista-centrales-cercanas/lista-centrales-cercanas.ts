@@ -43,6 +43,11 @@ const calcular_distancia_al_campo = (
   let central_posicion = [valor(card, "longitud"), valor(card, "latitud")];
   let distancia = distance(posicion, central_posicion, { units: "kilometers" });
 
+  if(distancia <=1){
+    distancia = distance(posicion, central_posicion, { units: "meters" });
+    return distancia.toFixed(0) + " mts. del centro";
+  }
+
   return distancia.toFixed(2) + " km";
 };
 
