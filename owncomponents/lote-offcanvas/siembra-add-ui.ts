@@ -14,7 +14,7 @@ import { Actividad, DetallesSiembra } from "../depositos/depositos-types";
 import { property, state } from "lit/decorators.js";
 import { ComboBox } from "@vaadin/combo-box";
 import parseISO from "date-fns/parseISO";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 
 export class SiembraAddUI extends LitElement {
   @property()

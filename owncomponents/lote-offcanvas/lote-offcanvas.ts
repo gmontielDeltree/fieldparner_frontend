@@ -4,7 +4,7 @@ import { aplicacionMachine } from "./lote-machine.ts";
 import { Router } from "@vaadin/router";
 import { StateController } from "@lit-app/state";
 import gbl_state from "../state.js";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { interpret } from "xstate";
 import { mapbox_static_img } from "./mapbox_static_image.js";
 import "../date-picker/date-picker.ts";

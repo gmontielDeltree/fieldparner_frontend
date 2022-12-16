@@ -1,7 +1,7 @@
 import { LitElement, html, CSSResultGroup, css, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import Modal from "bootstrap/js/dist/modal";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 
 export class LoadingModal extends LitElement {
   static override styles: CSSResultGroup = [

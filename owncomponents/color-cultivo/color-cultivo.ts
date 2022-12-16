@@ -1,8 +1,8 @@
 import { LitElement, html, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
-import booleanIcons from "bootstrap-icons/font/bootstrap-icons.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
+import booleanIcons from "bootstrap-icons/font/bootstrap-icons.css?inline";
 import gbl_state from "../state";
 interface CultivosDoc {
   _id: string;

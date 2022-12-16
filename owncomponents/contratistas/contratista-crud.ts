@@ -8,7 +8,7 @@ import "@vaadin/button";
 import "@vaadin/horizontal-layout";
 import "@vaadin/custom-field";
 import "@vaadin/grid";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Modal from "bootstrap/js/dist/modal";
 import lista_de_labores from "./labores.json";
 import { uuid4 } from "uuid4";

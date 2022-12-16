@@ -1,5 +1,5 @@
 import { LitElement, html, unsafeCSS, render, CSSResultGroup, css } from "lit";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { property, state } from "lit/decorators.js";
 import * as d3 from "d3";

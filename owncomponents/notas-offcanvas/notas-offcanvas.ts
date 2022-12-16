@@ -1,5 +1,5 @@
 import { LitElement, html, unsafeCSS } from "lit";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import "@vaadin/date-picker";
 import "@vaadin/radio-group";
 import "@vaadin/combo-box";

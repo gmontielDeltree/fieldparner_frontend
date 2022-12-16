@@ -11,7 +11,7 @@ import {
   DetallesSiembra,
   LineaDosis,
 } from "../../depositos/depositos-types";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import isFuture from "date-fns/isFuture";
 
 import "@vaadin/combo-box";

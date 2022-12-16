@@ -8,9 +8,9 @@ import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 import gbl_state, { gblStateLoaded } from "../state";
 import { property, state } from "lit/decorators.js";
 import { State, StateController } from "@lit-app/state";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { Router, RouterLocation } from '@vaadin/router';
-//import bootstrap from "./bootstrap.min.css";
+//import bootstrap from "./bootstrap.min.css?inline";
 
 export class CampoOffcanvas extends LitElement {
   stateBind = new StateController(this, gbl_state);

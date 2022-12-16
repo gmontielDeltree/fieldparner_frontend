@@ -1,7 +1,7 @@
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import Modal from "bootstrap/js/dist/modal";
 import { LitElement, html, unsafeCSS } from "lit";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { normalizar_username } from "../../helpers";
 import "../../lista-searchable/lista-searchable.js";
 import { property } from "lit/decorators.js";
