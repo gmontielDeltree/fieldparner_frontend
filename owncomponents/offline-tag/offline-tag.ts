@@ -4,7 +4,7 @@ import gbl_state from "../state.js";
 import { StateController } from "@lit-app/state";
 import "@vaadin/icon";
 import "@vaadin/icons";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 
 @customElement("offline-tag")
 export class OfflineTag extends LitElement {

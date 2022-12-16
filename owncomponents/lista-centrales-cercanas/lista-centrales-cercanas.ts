@@ -9,7 +9,7 @@ import "@vaadin/horizontal-layout";
 import "@vaadin/vertical-layout";
 import "@vaadin/custom-field";
 import "@vaadin/grid";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Modal from "bootstrap/js/dist/modal";
 import lista_de_labores from "./labores.json";
 import { uuid4 } from "uuid4";
@@ -42,6 +42,11 @@ const calcular_distancia_al_campo = (
 ) => {
   let central_posicion = [valor(card, "longitud"), valor(card, "latitud")];
   let distancia = distance(posicion, central_posicion, { units: "kilometers" });
+
+  if(distancia <=1){
+    distancia = distance(posicion, central_posicion, { units: "meters" });
+    return distancia.toFixed(0) + " mts. del centro";
+  }
 
   return distancia.toFixed(2) + " km";
 };

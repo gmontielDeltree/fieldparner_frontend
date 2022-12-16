@@ -8,8 +8,8 @@ import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import bbox from "@turf/bbox";
 import { property } from "lit/decorators.js";
 import mapbox_geocoder_style from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
-import mapbox_style from "mapbox-gl/dist/mapbox-gl.css";
-import mapbox_draw_style from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+import mapbox_style from "mapbox-gl/dist/mapbox-gl.css?inline";
+import mapbox_draw_style from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css?inline";
 import "@spectrum-web-components/action-menu/sp-action-menu.js";
 import "@spectrum-web-components/menu/sp-menu-item.js";
 
@@ -458,7 +458,7 @@ export class MapaPrincipal extends LitElement {
       // layer_visibility(this.map, "campos_border", true);
 
       // Fly to
-      this.map.fitBounds(bbox(e.features[0]));
+     
       const campo_doc = e.features[0].properties;
 
       // Event payload: campo_doc

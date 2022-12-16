@@ -1,10 +1,10 @@
 import { LitElement, html, unsafeCSS, render, CSSResultGroup, css } from "lit";
 import { property, state } from "lit/decorators.js";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
 import ApexCharts from "apexcharts";
-import apex_css from "apexcharts/dist/apexcharts.css";
+import apex_css from "apexcharts/dist/apexcharts.css?inline";
 
 import { add_download_xls_button } from "../excel_boton";
 export class VientoVelocidadCard extends LitElement {

@@ -1,6 +1,6 @@
 import { LitElement, html, unsafeCSS } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { format, formatDistanceToNow, parse } from "date-fns";
 import es from "date-fns/locale/es";
 

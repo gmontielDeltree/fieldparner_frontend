@@ -1,7 +1,7 @@
 import { LitElement, html, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import "@vaadin/form-layout";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { Modal } from "bootstrap";
 
 export class ModalGenerico extends LitElement {

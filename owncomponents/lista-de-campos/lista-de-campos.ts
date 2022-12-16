@@ -3,7 +3,7 @@ import { property, state } from "lit/decorators.js";
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 import area from "@turf/area";
 import uuid4 from "uuid4";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import centroid from "@turf/centroid";
 import { LngLatLike, Map } from "mapbox-gl";
 import { Router } from "@vaadin/router";

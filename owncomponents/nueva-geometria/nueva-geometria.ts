@@ -4,7 +4,7 @@ import { interpret } from "xstate";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import centroid from "@turf/centroid";
 import { kml } from "@tmcw/togeojson";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import * as JSZip from "jszip";
 import "@vaadin/text-field";
 import Modal from "bootstrap/js/dist/modal.js";

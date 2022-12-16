@@ -1,5 +1,5 @@
 import { LitElement, html, unsafeCSS } from "lit";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import PouchDB from "pouchdb";
 import { get_lote_doc, hashMessage, layer_visibility } from "../helpers";
 import Offcanvas from "bootstrap/js/dist/offcanvas";

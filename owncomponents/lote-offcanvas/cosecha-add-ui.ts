@@ -7,7 +7,7 @@ import { property, state } from "lit/decorators.js";
 import { Actividad, DetallesCosecha } from "../depositos/depositos-types";
 import { empty_contratista } from "../contratistas/contratista-types";
 import uuid4 from "uuid4";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 
 export class CosechaAddUI extends LitElement {
   @property()
