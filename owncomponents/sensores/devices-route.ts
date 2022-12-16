@@ -39,7 +39,7 @@ export class DevicesRouteHandler extends LitElement {
     return html`<sensores-oc
       .map=${gbl_state.map}
       .uuid=${this.location.params.uuid}
-      .selected_device_card=${this.card}
+      ._selected_device_card=${this.card}
     /> `;
   }
 }

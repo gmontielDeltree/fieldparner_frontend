@@ -165,7 +165,7 @@ export class TemperaturaCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="high-temperature-icon.svg" width="50" height="50" />
+              <img src="/high-temperature-icon.svg" width="50" height="50" />
               <span class="fw-bolder"
                 >${valor(this.card, "temperatura")} ºC</span
               >

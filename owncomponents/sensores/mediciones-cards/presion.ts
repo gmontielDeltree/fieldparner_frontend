@@ -167,7 +167,7 @@ export class PresionCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="pressure-gauge-meter-icon.svg" width="50" height="50" />
+              <img src="/pressure-gauge-meter-icon.svg" width="50" height="50" />
               <span class="fw-bolder"
                 >${valor(this.card, "presion")} hPa</span
               >

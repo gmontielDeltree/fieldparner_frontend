@@ -32,6 +32,7 @@ import "./mediciones-cards/viento_direccion"
 import "./rosad3"
 
 import "./mediciones-cards/pluviometro"
+import { Router } from "@vaadin/router";
 
 // background-position-y: -60px;
 //background-size: 100% auto;
@@ -61,7 +62,7 @@ export class SensoresClass extends LitElement {
       }
 
       .offcanvas-sensores-body {
-        background-image: url("fondodewindows.jpeg");
+        background-image: url("/fondodewindows.jpeg");
         background-size: 100% 100%;
         background-repeat: no-repeat;
       }
@@ -141,12 +142,16 @@ export class SensoresClass extends LitElement {
   @property()
   map: Map;
 
+  @property()
+  uuid:string
+
   @state({
     hasChanged(newVal: Offcanvas, oldVal: Offcanvas) {
       return false;
     },
   })
   _offcanvas: Offcanvas;
+
 
   @property()
   _selected_device_card: DailyTelemetryCard = undefined;
@@ -171,15 +176,15 @@ export class SensoresClass extends LitElement {
   _show_chart_only: boolean = false;
 
   override async firstUpdated() {
-    this.shadowRoot
-      .getElementById("offcanvas")
-      .addEventListener("hidden.bs.offcanvas", (e) => {
-        // Se elimina del parent
-        let parent = this.parentElement;
-        while (parent.firstChild) {
-          parent.firstChild.remove();
-        }
-      });
+    // this.shadowRoot
+    //   .getElementById("offcanvas")
+      // .addEventListener("hidden.bs.offcanvas", (e) => {
+      //   // Se elimina del parent
+      //   let parent = this.parentElement;
+      //   while (parent.firstChild) {
+      //     parent.firstChild.remove();
+      //   }
+      // });
 
     this._offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas")
@@ -188,10 +193,16 @@ export class SensoresClass extends LitElement {
     this._offcanvas_humedad = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-humedad")
     );
-    this._offcanvas.show()
   }
 
-  override async willUpdate(props) {}
+  override async willUpdate(props) {
+    console.log('sensores-offcanvas-WillUpdate',props)
+    if(props.has('uuid')){
+      this._selected_details = await this._devices.get_details(this._selected_device_card.device_id);
+      this.load_data_points();
+      this._offcanvas.show();
+    }
+  }
 
   // Ocurre cuando ya se renderizo
   override updated(changedProps) {
@@ -232,6 +243,8 @@ export class SensoresClass extends LitElement {
       ? extract_tele(key, this._selected_device_card).value || "N/A"
       : "N/A";
   }
+
+
 
   simulated_historical_data(s) {
     let tes = [11, 32, 45, 32, 34, 52, 41];
@@ -581,7 +594,13 @@ export class SensoresClass extends LitElement {
             class="btn-close text-reset"
             data-bs-dismiss="offcanvas"
             aria-label="Close"
-            @click=${() => this._offcanvas.hide()}
+            @click=${() => {
+
+                this._offcanvas.hide()
+                Router.go('/')
+              }
+
+              }
           ></button>
         </div>
         <div

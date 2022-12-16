@@ -262,7 +262,7 @@ export class VientoDireccionCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="windrose-svgrepo-com.svg" width="50" height="50" />
+              <img src="/windrose-svgrepo-com.svg" width="50" height="50" />
               <span class="fw-bolder"
                 >${valor(this.card, "direccion")} º</span
               >
