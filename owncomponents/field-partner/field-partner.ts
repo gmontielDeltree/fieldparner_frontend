@@ -31,6 +31,7 @@ import "../navbar-element/workspace-rigths.ts"
 import '../null-component'
 import '../invite/invite'
 import '../lote-offcanvas/repetir-aplicacion/repetir-aplicacion.ts'
+import '../sensores/devices-route'
 
 import { use, get,registerTranslateConfig } from "lit-translate";
 
@@ -286,14 +287,16 @@ export class FieldPartner extends LitElement {
     });
 
     this.addEventListener("ver-telemetria-del-dia", (e: CustomEvent) => {
-      const el = document.createElement("sensores-oc");
-      document.getElementById("container-multiproposito").appendChild(el);
-
       let daily_card = e.detail as DailyTelemetryCard;
 
-      console.log("VER TELE DEL DIA", daily_card);
-      el.map = this.map;
-      el.show(daily_card);
+      let fecha = daily_card._id.split(':')[2]
+      Router.go(gbl_state.router.urlForName('device-route-handler',{uuid: daily_card.device_id,date:fecha}))
+      
+      // const el = document.createElement("sensores-oc");
+      // document.getElementById("container-multiproposito").appendChild(el);
+      // console.log("VER TELE DEL DIA", daily_card);
+      // el.map = this.map;
+      // el.show(daily_card);
     });
 
     // Borrar un Campo
@@ -782,6 +785,7 @@ export class FieldPartner extends LitElement {
       { path: "/insumos", component: "insumos-lista" },
       { path: "/rights/:uuid_workspace", component:"workspace-rights"},
       { path: "/invite/:base64_invitation", component:"link-invitacion"},
+      { path: "/device/:uuid/dashboard/:date", component:"device-route-handler"},
     ]);
   }
 

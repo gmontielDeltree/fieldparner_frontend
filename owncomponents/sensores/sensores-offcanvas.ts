@@ -148,7 +148,7 @@ export class SensoresClass extends LitElement {
   })
   _offcanvas: Offcanvas;
 
-  @state()
+  @property()
   _selected_device_card: DailyTelemetryCard = undefined;
 
   @state()
@@ -188,6 +188,7 @@ export class SensoresClass extends LitElement {
     this._offcanvas_humedad = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-humedad")
     );
+    this._offcanvas.show()
   }
 
   override async willUpdate(props) {}
