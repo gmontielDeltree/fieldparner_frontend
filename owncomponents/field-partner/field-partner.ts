@@ -17,6 +17,7 @@ import "../contratistas/contratistas-lista.ts";
 import "../sensores/sensores-offcanvas.ts";
 import "../campo-offcanvas/campo-offcanvas.js";
 import "../lote-offcanvas/lote-offcanvas.js";
+import "../lote-offcanvas/lote-offcanvas-side.js";
 import "../nueva-geometria/nueva-geometria.ts";
 import "../nuevo-campo/nuevo-campo.js";
 import "../lista-de-campos/lista-de-campos.js";
@@ -772,9 +773,9 @@ export class FieldPartner extends LitElement {
       { path: "/campos", component: "lista-de-campos" },
       { path: "/indices/:uuid", component: "ndvi-offcanvas" },
       { path: "/cultivos", component: "color-cultivo" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add", component: "lote-offcanvas" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit", component: "lote-offcanvas" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote", component: "lote-offcanvas" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add", component: "lote-offcanvas-side" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit", component: "lote-offcanvas-side" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote", component: "lote-offcanvas-side" },
       { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid_actividad/repetir", component: "repetir-aplicacion" },
       { path: "/campo/add", component: "nuevo-campo" },
       { path: "/campo/:uuid", component: "campo-offcanvas" },
@@ -786,6 +787,7 @@ export class FieldPartner extends LitElement {
       { path: "/rights/:uuid_workspace", component:"workspace-rights"},
       { path: "/invite/:base64_invitation", component:"link-invitacion"},
       { path: "/device/:uuid/dashboard/:date", component:"device-route-handler"},
+      { path: "/ejecucion", component:"null"},
     ]);
   }
 
