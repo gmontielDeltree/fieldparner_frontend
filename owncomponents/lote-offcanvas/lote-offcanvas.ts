@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import parseISO from "date-fns/parseISO";
 import "@vaadin/menu-bar";
 import { gblStateLoaded } from "../state.js";
+import "@vaadin/tooltip";
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
 
@@ -292,11 +293,11 @@ export class LoteOffcanvas extends LitElement {
   }
 
   cerrar() {
-    gbl_state.map.hideAllLayers()
-    gbl_state.map.showAllCampos()
+    gbl_state.map.hideAllLayers();
+    gbl_state.map.showAllCampos();
 
     this._lotesOffcanvas.hide();
-    Router.go('/')
+    Router.go("/");
 
     // let event = new CustomEvent("lote-detalles-hide", {
     //   bubbles: true,
@@ -963,8 +964,10 @@ export class LoteOffcanvas extends LitElement {
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/sembradora_act.webp');background-size: contain; background-repeat: no-repeat; background-position: center;"
-                  @click=${this.siembra}
-                ></div>
+                  @click=${()=>Router.go(gbl_state.router.location.getUrl())}
+                >
+                  <vaadin-tooltip>Siembra</vaadin-tooltip>
+                </div>
 
                 <div
                   class="col col-2"

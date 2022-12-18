@@ -29,6 +29,9 @@ export class ActividadItem extends LitElement {
         {
           text: "Editar",
           tooltip: "Edit",
+        },{
+          text: "Repetir Planificacion",
+          tooltip: "Repetir",
         },
         {
           text: "Orden de Trabajo PDF",

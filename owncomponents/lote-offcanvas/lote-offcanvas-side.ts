@@ -52,6 +52,7 @@ import {
   LineaDosis,
 } from "../depositos/depositos-types";
 import { init } from "xstate/lib/actionTypes";
+import '@vaadin/tooltip'
 
 const capitalize = (mySentence) => {
   if (mySentence === null || mySentence === undefined) {
@@ -798,7 +799,8 @@ export class LoteOffcanvasSide extends LitElement {
   menu_click({ detail }) {
     let valor = detail.value.value;
     if (valor === "siembra") {
-      this.siembra();
+      //this.siembra();
+      Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/siembra')
     } else if (valor === "cosecha") {
       this.cosecha();
     } else if (valor === "aplicacion") {
@@ -951,8 +953,10 @@ export class LoteOffcanvasSide extends LitElement {
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/sembradora_act.webp');background-size: contain; background-repeat: no-repeat; background-position: center;"
-                  @click=${this.siembra}
-                ></div>
+                  @click=${()=>Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/siembra')}
+                  title="Siembra"
+                >
+              </div>
 
                 <div
                   class="col col-2"

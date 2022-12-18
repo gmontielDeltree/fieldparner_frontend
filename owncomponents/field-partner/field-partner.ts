@@ -32,6 +32,9 @@ import "../navbar-element/workspace-rigths.ts"
 import '../null-component'
 import '../invite/invite'
 import '../lote-offcanvas/repetir-aplicacion/repetir-aplicacion.ts'
+import '../lote-offcanvas/upsert-aplicacion/upsert-aplicacion'
+import '../lote-offcanvas/upsert-ejecucion/upsert-ejecucion'
+
 import '../sensores/devices-route'
 
 import { use, get,registerTranslateConfig } from "lit-translate";
@@ -777,6 +780,10 @@ export class FieldPartner extends LitElement {
       { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit", component: "lote-offcanvas-side" },
       { path: "/campo/:uuid_campo/lote/:uuid_lote", component: "lote-offcanvas-side" },
       { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid_actividad/repetir", component: "repetir-aplicacion" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/nueva/:tipo", component: "upsert-aplicacion" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid/editar", component: "upsert-aplicacion" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/nueva", component: "upsert-ejecucion" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/editar", component: "upsert-ejecucion" },
       { path: "/campo/add", component: "nuevo-campo" },
       { path: "/campo/:uuid", component: "campo-offcanvas" },
       { path: "/contratistas", component: "contratistas-lista" },
