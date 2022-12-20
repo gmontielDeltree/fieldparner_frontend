@@ -12,6 +12,7 @@ interface CultivoAplicacion {
 
 interface Insumo {
   _id: string,
+  _rev?:string,
   uuid: string;
   marca_comercial: string;
   principio_activo: string;
@@ -56,4 +57,19 @@ const get_empty_cultivo = ()=>{
   return {...empty_cultivo};
 }
 
-export { Insumo, CultivoAplicacion, get_empty_insumo, get_empty_cultivo };
+const getInsumos = async (db : PouchDB.Database)=>{
+  let result = await db.allDocs({
+    include_docs: true,
+    startkey: "insumo:",
+    endkey: "insumo:_\ufff0",
+  });
+
+  if (result.rows?.length > 0) {
+    // Hay Rows
+    let docs = result.rows.map((r) => r.doc); // Extraer los docs
+    return docs as Insumo[];
+  } else {
+    return []; // Retorna una promesa vacia
+  }
+}
+export { Insumo, CultivoAplicacion, get_empty_insumo, get_empty_cultivo, getInsumos };

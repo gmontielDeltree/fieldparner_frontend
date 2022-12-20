@@ -4,6 +4,8 @@ interface Labor {
 }
 
 interface Contratista {
+  _id: string;
+  _rev?: string;
   labores: Labor[];
   nombre: string;
   uuid: string;
@@ -12,11 +14,29 @@ interface Contratista {
 }
 
 const empty_contratista: Contratista = {
-	labores: [],
-	uuid: "",
-	nombre: "",
-	cuit: "",
-	datos_generales: { email: "", direccion: "", telefono: "" },
-  } ;
+  _id: "contratista:",
+  labores: [],
+  uuid: "",
+  nombre: "",
+  cuit: "",
+  datos_generales: { email: "", direccion: "", telefono: "" },
+};
 
-export { Labor, Contratista, empty_contratista };
+const getContratistas = async (db: PouchDB.Database) => {
+  let result = await db.allDocs({
+    include_docs: true,
+    startkey: "contratista:",
+    endkey: "contratista:_\ufff0",
+  });
+
+  if (result.rows?.length > 0) {
+    // Hay Rows
+    let docs = result.rows.map((r) => r.doc); // Extraer los docs
+    return docs as Contratista[];
+  } else {
+    return []; // Retorna una promesa vacia
+  }
+  
+};
+
+export { Labor, Contratista, empty_contratista, getContratistas };

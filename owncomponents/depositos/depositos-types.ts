@@ -78,6 +78,7 @@ type DetallesAplicacion = {
 
 type DetallesCosecha = {
   fecha_ejecucion_tentativa: string;
+  dosis?: LineaDosis[];
   hectareas: number;
   rinde: number;
   humedad: number;
@@ -85,6 +86,7 @@ type DetallesCosecha = {
 
 type DetallesSiembra = {
   fecha_ejecucion_tentativa: string;
+  dosis?: LineaDosis[];
   insumo: Insumo;
   peso_1000: number;
   densidad_objetivo: number;
@@ -110,6 +112,7 @@ interface Actividad {
   color? : string;
   texto? : string;
   posicion? : number[];
+  condiciones ?: Object; 
   _attachments?: any;
 }
 

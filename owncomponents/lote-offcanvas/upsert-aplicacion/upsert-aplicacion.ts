@@ -1,13 +1,335 @@
-import { LitElement, html } from "lit";
-import { customElement } from "lit/decorators.js";
+import { Router, RouterLocation } from "@vaadin/router";
+import {
+  LitElement,
+  html,
+  PropertyValueMap,
+  CSSResultGroup,
+  unsafeCSS,
+} from "lit";
+import { customElement, property } from "lit/decorators.js";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
+import { Modal } from "bootstrap";
+import "@vaadin/tabs";
+import "@vaadin/tabsheet";
+import gbl_state from "../../state";
+import "@vaadin/icon";
+import "@vaadin/icons";
+import "@vaadin/button";
+import "@vaadin/details";
+import "@vaadin/horizontal-layout";
+import "@vaadin/upload";
+import "@vaadin/menu-bar";
+import { badge } from "@vaadin/vaadin-lumo-styles/badge";
+import { base_i18n } from "../repetir-aplicacion/date-picker-i18n";
+import "@vaadin/grid";
+import "@vaadin/grid/vaadin-grid-tree-column.js";
+import "@vaadin/grid/vaadin-grid-selection-column.js";
+import "@vaadin/horizontal-layout";
+import "@vaadin/icon";
+import "@vaadin/icons";
+import "@vaadin/vaadin-lumo-styles/vaadin-iconset.js";
+import "@vaadin/tooltip";
+import "@vaadin/date-picker";
+import "@vaadin/number-field";
+import "@vaadin/multi-select-combo-box";
+import '@vaadin/text-area';
 
-@customElement('upsert-aplicacion')
-export class UpsertAplicacion extends LitElement{
-	
-	
-	render(){
-		return html
-		`
-		`
-	}
+
+import { Notification } from "@vaadin/notification";
+import { get, translate, translateUnsafeHTML } from "lit-translate";
+import { columnBodyRenderer } from "@vaadin/grid/lit.js";
+import {
+  Actividad,
+  DetallesAplicacion,
+  get_empty_aplicacion,
+  LineaDosis,
+} from "../../depositos/depositos-types";
+import { format } from "date-fns";
+import {
+  Contratista,
+  getContratistas,
+} from "../../contratistas/contratista-types";
+import { getInsumos, Insumo } from "../../insumos/insumos-types";
+
+
+@customElement("upsert-aplicacion")
+export class UpsertAplicacion extends LitElement {
+  static override styles?: CSSResultGroup = [unsafeCSS(bootstrap)];
+
+  @property()
+  location: RouterLocation;
+
+  private modal: Modal;
+  private tipo: string;
+
+  private actividad: Actividad;
+  private editando: boolean = false;
+  private contratistas: Contratista[];
+  private insumos: Insumo[];
+  private linea_de_dosis : LineaDosis
+
+  override firstUpdated() {
+    this.modal = new Modal(this.shadowRoot.getElementById("modal"));
+    this.modal.show();
+  }
+
+  protected willUpdate(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ): void {
+    console.count("UpsertAplicacion-WillUpdate");
+    if (_changedProperties.has("location")) {
+      //
+      this.linea_de_dosis = {dosis:0,insumo:null,motivos:[],uuid:"",total:0}
+
+      this.populateContratistas();
+      this.populateInsumos();
+      if (this.location.params?.tipo) {
+        // Es una nueva
+        this.tipo = this.location.params.tipo as string;
+        this.actividad = get_empty_aplicacion();
+        this.actividad.detalles.fecha_ejecucion_tentativa = format(
+          new Date(),
+          "yyyy-MM-dd"
+        );
+      }
+    } else {
+      // Editando
+      this.editando = true;
+    }
+  }
+
+  populateContratistas() {
+    getContratistas(gbl_state.db).then((c) => {
+      this.contratistas = c;
+      console.log("Contratistas", c);
+      this.requestUpdate();
+    });
+  }
+
+  populateInsumos() {
+    getInsumos(gbl_state.db).then((i) => {
+      this.insumos = i;
+      console.log("insumos", i);
+      this.requestUpdate();
+    });
+  }
+
+  getLote() {}
+
+  borrar(dosis: LineaDosis) {
+    let dosises = (this.actividad.detalles as DetallesAplicacion).dosis;
+    let remanente = dosises.filter(
+      (d) => d.uuid !== dosis.uuid
+    ) as LineaDosis[];
+    (this.actividad.detalles as DetallesAplicacion).dosis = remanente;
+    this.requestUpdate();
+  }
+
+  agregarLineaInsumo(){
+    this.actividad.detalles.dosis.push(this.linea_de_dosis)
+    this.requestUpdate()
+  }
+
+  render() {
+    return html`
+      <div id="modal" class="modal" tabindex="-1">
+        <!-- Full screen modal -->
+        <div class="modal-dialog modal-fullscreen">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Actividad</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                @click=${() => Router.go("/")}
+              ></button>
+            </div>
+            <div class="modal-body">
+              <vaadin-tabsheet>
+                <vaadin-tabs slot="tabs">
+                  <vaadin-tab id="dashboard-tab">Contratista</vaadin-tab>
+                  <vaadin-tab id="payment-tab">Insumos</vaadin-tab>
+                  <vaadin-tab id="shipping-tab">Otros Datos</vaadin-tab>
+                  <vaadin-tab id="shipping-tab">Condiciones</vaadin-tab>
+                  <vaadin-tab id="shipping-tab">Observaciones</vaadin-tab>
+                </vaadin-tabs>
+
+                <!-- Contratista -->
+                <div tab="dashboard-tab">
+                  <vaadin-vertical-layout>
+                    <vaadin-combo-box
+                      label="Contratista"
+                      item-label-path="nombre"
+                      item-value-path="uuid"
+                      .selectedItem=${this.actividad.contratista}
+                      .items="${this.contratistas}"
+                      @selected-item-changed=${(e) => {
+                        this.actividad.contratista = e.detail.value;
+                      }}
+                    ></vaadin-combo-box>
+
+                    <vaadin-horizontal-layout theme="spacing">
+                      <vaadin-date-picker
+                        label="Fecha"
+                        helper-text="Tentativa de ejecución"
+                        value="2022-12-03"
+                        placeholder="YYYY-MM-DD"
+                        .i18n=${base_i18n}
+                        theme="helper-above-field"
+                        .value=${this.actividad.detalles
+                          .fecha_ejecucion_tentativa}
+                        @change=${(e) =>
+                          (this.actividad.detalles.fecha_ejecucion_tentativa =
+                            e.target.value)}
+                      ></vaadin-date-picker>
+
+                      <vaadin-number-field
+                        label="Hectareas"
+                        helper-text="de aplicación"
+                        value=${this.actividad.detalles.hectareas}
+                        theme="helper-above-field"
+                        @change=${(e) =>
+                          (this.actividad.detalles.hectareas = +e.target.value)}
+                      >
+                        <div slot="suffix">Ha.</div>
+                      </vaadin-number-field>
+                    </vaadin-horizontal-layout>
+                  </vaadin-vertical-layout>
+                </div>
+                <!-- Fin Contratista -->
+
+                <!-- Insumos -->
+                <div tab="payment-tab">
+                  <vaadin-horizontal-layout theme="spacing" style="align-items:baseline">
+                    <vaadin-combo-box
+                      label="Insumo"
+                      style="width:16em"
+                      item-label-path="marca_comercial"
+                      item-value-path="uuid"
+                      .items="${this.insumos}"
+                      @selected-item-changed=${(e) => {
+                        this.linea_de_dosis.insumo = e.detail.value
+                        this.requestUpdate()
+                      }}
+                    ></vaadin-combo-box>
+                    <vaadin-text-field
+                      label="Dosis"
+                      value="${this.linea_de_dosis.dosis}"
+                      clear-button-visible
+                    >
+                    <div slot="suffix">${this.linea_de_dosis.insumo?.unidad || ""}</div>
+                    </vaadin-text-field>
+
+                    <vaadin-text-field
+                      label="Total"
+                      value="${this.linea_de_dosis.total}"
+                      readonly
+                    >
+                    <div slot="suffix">${this.linea_de_dosis.insumo?.unidad || ""}</div>
+                    </vaadin-text-field>
+
+                    <vaadin-multi-select-combo-box
+                      label="Motivo"
+                      item-label-path="nombre"
+                      item-id-path="id"
+                      .items="${[{ nombre: "Plaga", id: "plaga" }]}"
+                    ></vaadin-multi-select-combo-box>
+
+                    <vaadin-button theme="primary" @click=${this.agregarLineaInsumo}>Agregar</vaadin-button>
+                  </vaadin-horizontal-layout>
+
+                  <vaadin-vertical-layout
+                    theme="spacing padding"
+                    style="justify-content: center"
+                  >
+                    <vaadin-grid
+                      .items=${(this.actividad.detalles as DetallesAplicacion).dosis}
+                      style="width: 600px; max-width: 100%;"
+                    >
+                      <vaadin-grid-column
+                        header="Nombre"
+                        auto-width
+                        ${columnBodyRenderer<any>(
+                          (item) =>
+                            html` <vaadin-vertical-layout
+                              style="line-height: var(--lumo-line-height-s);"
+                            >
+                              <span>${item.insumo.marca_comercial}</span>
+                              <span
+                                style="font-size: var(--lumo-font-size-s); color: var(--lumo-secondary-text-color);"
+                              >
+                                ${item.insumo.principio_activo}
+                              </span>
+                            </vaadin-vertical-layout>`,
+                          []
+                        )}
+                      ></vaadin-grid-column>
+
+                      <vaadin-grid-column
+                        header="Dosis (por ha.)"
+                        auto-width
+                        ${columnBodyRenderer<any>(
+                          (item) => html` <vaadin-text-field
+                            maxlength="5"
+                            value=${item.dosis}
+                            @change=${(e) => (item.dosis = +e.target.value)}
+                          >
+                            <div slot="suffix">${item.insumo.unidad}</div>
+                          </vaadin-text-field>`,
+                          []
+                        )}
+                      ></vaadin-grid-column>
+                      <vaadin-grid-column
+                        frozen-to-end
+                        auto-width
+                        flex-grow="0"
+                        ${columnBodyRenderer(
+                          (item) => html`
+                            <vaadin-button
+                              @click=${() => this.borrar(item as LineaDosis)}
+                              theme="icon"
+                              aria-label="borrar item"
+                            >
+                              <vaadin-icon icon="lumo:minus"></vaadin-icon>
+                              <vaadin-tooltip
+                                slot="tooltip"
+                                text="Borrar"
+                              ></vaadin-tooltip>
+                            </vaadin-button>
+                          `,
+                          []
+                        )}
+                      ></vaadin-grid-column>
+                    </vaadin-grid>
+
+                    <vaadin-button
+                      @click=${() =>
+                        Router.go(gbl_state.router.urlForPath("/ejecucion"))}
+                      theme="primary success"
+                    >
+                      Ejecutar
+                    </vaadin-button>
+                  </vaadin-vertical-layout>
+                </div>
+                <!-- Fin Insumos -->
+
+                <!-- observaciones -->
+                <div tab="shipping-tab">
+                <vaadin-text-area label="" helper-text="" value="${this.actividad.comentario}"></vaadin-text-area>
+                </div>
+                <!-- observaciones-->
+
+              </vaadin-tabsheet>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary">Atras</button>
+              <button type="button" class="btn btn-primary">Siguiente</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 }
