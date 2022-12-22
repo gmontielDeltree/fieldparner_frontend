@@ -99,6 +99,7 @@ type DetallesSiembra = {
 
 interface Actividad {
   _id: string;
+  _rev ?: string,
   uuid: string;
   ts_generacion: number;
   tipo: string;

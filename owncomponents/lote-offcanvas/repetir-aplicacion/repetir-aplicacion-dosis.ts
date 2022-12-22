@@ -6,12 +6,6 @@ import "@vaadin/vertical-layout";
 import { dialogFooterRenderer, dialogRenderer } from "@vaadin/dialog/lit.js";
 import type { DialogOpenedChangedEvent } from "@vaadin/dialog";
 import "@vaadin/grid";
-import type {
-  GridDataProviderCallback,
-  GridDataProviderParams,
-} from "@vaadin/grid";
-import "@vaadin/grid/vaadin-grid-tree-column.js";
-import "@vaadin/grid/vaadin-grid-selection-column.js";
 import "@vaadin/horizontal-layout";
 import "@vaadin/icon";
 import "@vaadin/icons";
