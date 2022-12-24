@@ -129,53 +129,10 @@ export class ContratistaCrud extends LitElement {
         console.log(e);
       });
 
-      // let uuid = uuid4();
-
-      // this.db
-      //   .get("contratistas")
-      //   .then((result: any) => {
-      //     this.contratista.uuid = uuid
-      //     result.contratistas[uuid] = this.contratista;
-      //     this.db
-      //       .put(result)
-      //       .then(() => {
-      //         console.log("Contratistas Doc Updates");
-      //         this._modal.hide();
-      //       })
-      //       .catch((e) => console.error("Error al update Contratistas", e));
-      //   })
-      //   .catch(() => {
-      //     // El doc no existe. Lo creo.
-
-      //     let lista_contratistas = {};
-      //     this.contratista.uuid = uuid;
-      //     lista_contratistas[uuid] = this.contratista;
-      //     let con_doc = {
-      //       _id: "contratistas",
-      //       contratistas: lista_contratistas,
-      //     };
-      //     this.db
-      //       .put(con_doc)
-      //       .then(() => {
-      //         console.log("Contratistas Doc Creado");
-      //         this._modal.hide();
-      //       })
-      //       .catch((e) => console.error("Error al crear Contratistas", e));
-      //   });
     } else {
       // Editando
       console.log("EDITANDO db", this.db);
       this.db.put(this.contratista).catch((e) => console.error("Error al update Contratistas", e));
-      // this.db.get("contratistas").then((result: any) => {
-      //   result.contratistas[this.contratista.uuid] = this.contratista;
-      //   this.db
-      //     .put(result)
-      //     .then(() => {
-      //       console.log("Contratistas Doc Updated");
-      //       this._modal.hide();
-      //     })
-      //     .catch((e) => console.error("Error al update Contratistas", e));
-      // });
     }
   };
 

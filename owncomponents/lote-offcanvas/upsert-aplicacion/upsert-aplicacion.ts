@@ -6,7 +6,7 @@ import {
   CSSResultGroup,
   unsafeCSS,
 } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { Modal } from "bootstrap";
 import "@vaadin/tabs";
@@ -58,6 +58,9 @@ export class UpsertAplicacion extends LitElement {
 
   @property()
   location: RouterLocation;
+
+  @state()
+  selected_step: number = 0;
 
   private modal: Modal;
   private tipo: string;
@@ -132,14 +135,14 @@ export class UpsertAplicacion extends LitElement {
   }
 
   agregarLineaInsumo() {
-    this.linea_de_dosis.uuid = uuid4()
+    this.linea_de_dosis.uuid = uuid4();
     this.actividad.detalles.dosis.push(this.linea_de_dosis);
-    this.actividad.detalles.dosis = deepcopy(this.actividad.detalles.dosis)
+    this.actividad.detalles.dosis = deepcopy(this.actividad.detalles.dosis);
     this.requestUpdate();
   }
 
   render() {
-    console.count("UpsertAplicacion-Render")
+    console.count("UpsertAplicacion-Render");
     return html`
       <div id="modal" class="modal" tabindex="-1">
         <!-- Full screen modal -->
@@ -156,18 +159,25 @@ export class UpsertAplicacion extends LitElement {
               ></button>
             </div>
             <div class="modal-body">
-              <vaadin-tabsheet>
+              <vaadin-tabsheet
+                .selected=${this.selected_step}
+                @selected-changed=${(e) => {
+                  this.selected_step = e.target.selected;
+                }}
+              >
                 <vaadin-tabs slot="tabs">
                   <vaadin-tab id="dashboard-tab">Contratista</vaadin-tab>
                   <vaadin-tab id="payment-tab">Insumos</vaadin-tab>
-                  <vaadin-tab id="shipping-tab">Otros Datos</vaadin-tab>
+                  <vaadin-tab id="otrosdatos-tab">Otros Datos</vaadin-tab>
                   <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
                   <vaadin-tab id="shipping-tab">Observaciones</vaadin-tab>
                 </vaadin-tabs>
 
                 <!-- Contratista -->
                 <div tab="dashboard-tab">
-                  <vaadin-vertical-layout style="width: 400px; max-width: 100%;">
+                  <vaadin-vertical-layout
+                    style="width: 400px; max-width: 100%;"
+                  >
                     <vaadin-combo-box
                       label="Contratista"
                       item-label-path="nombre"
@@ -180,7 +190,10 @@ export class UpsertAplicacion extends LitElement {
                       }}
                     ></vaadin-combo-box>
 
-                    <vaadin-horizontal-layout theme="spacing" style="width: 100%; justify-content: space-around;">
+                    <vaadin-horizontal-layout
+                      theme="spacing"
+                      style="width: 100%; justify-content: space-around;"
+                    >
                       <vaadin-date-picker
                         label="Fecha"
                         helper-text="Tentativa de ejecución"
@@ -213,7 +226,8 @@ export class UpsertAplicacion extends LitElement {
                 <!-- Insumos -->
                 <div tab="payment-tab">
                   <vaadin-horizontal-layout
-                  theme="spacing-s" style="align-items: baseline; align-self: center; flex-wrap: wrap; flex-direction: row; justify-content: center;"
+                    theme="spacing-s"
+                    style="align-items: baseline; align-self: center; flex-wrap: wrap; flex-direction: row; justify-content: center;"
                   >
                     <vaadin-combo-box
                       label="Insumo"
@@ -229,8 +243,8 @@ export class UpsertAplicacion extends LitElement {
                     <vaadin-text-field
                       label="Dosis"
                       value="${this.linea_de_dosis.dosis}"
-                      @change=${(e)=>{
-                        this.linea_de_dosis.dosis = e.target.value
+                      @change=${(e) => {
+                        this.linea_de_dosis.dosis = +e.target.value;
                       }}
                       clear-button-visible
                     >
@@ -242,7 +256,6 @@ export class UpsertAplicacion extends LitElement {
                     <vaadin-text-field
                       label="Total"
                       value="${this.linea_de_dosis.total}"
-                      readonly
                     >
                       <div slot="suffix">
                         ${this.linea_de_dosis.insumo?.unidad || ""}
@@ -253,7 +266,10 @@ export class UpsertAplicacion extends LitElement {
                       label="Motivo"
                       item-label-path="nombre"
                       item-id-path="id"
-                      .items="${[{ nombre: "Plaga", id: "plaga" }]}"
+                      .items="${[{ nombre: "Plaga", id: 1 }]}"
+                      @selected-items-changed=${(e) => {
+                        this.linea_de_dosis.motivos = e.target.selectedItems;
+                      }}
                     ></vaadin-multi-select-combo-box>
 
                     <vaadin-button
@@ -268,26 +284,26 @@ export class UpsertAplicacion extends LitElement {
                     style="justify-content: center"
                   >
                     <vaadin-grid
-                      .items=${(this.actividad.detalles as DetallesAplicacion).dosis}
-                      style="width: 600px; max-width: 100%; align-self: center;"
+                      .items=${(this.actividad.detalles as DetallesAplicacion)
+                        .dosis}
+                      style="width: 100%; max-width: 100%; align-self: center;"
                     >
                       <vaadin-grid-column
                         header="Nombre"
                         auto-width
-                        ${columnBodyRenderer<LineaDosis>(
-                          (item) => { console.log("render item",item)
-                            return html`<vaadin-vertical-layout
-                              style="line-height: var(--lumo-line-height-s);"
+                        ${columnBodyRenderer<LineaDosis>((item) => {
+                          console.log("render item", item);
+                          return html`<vaadin-vertical-layout
+                            style="line-height: var(--lumo-line-height-s);"
+                          >
+                            <span>${item.insumo.marca_comercial}</span>
+                            <span
+                              style="font-size: var(--lumo-font-size-s); color: var(--lumo-secondary-text-color);"
                             >
-                              <span>${item.insumo.marca_comercial}</span>
-                              <span
-                                style="font-size: var(--lumo-font-size-s); color: var(--lumo-secondary-text-color);"
-                              >
-                                ${item.insumo.principio_activo}
-                              </span>
-                            </vaadin-vertical-layout>`},
-                          this.actividad.detalles.dosis
-                        )}
+                              ${item.insumo.principio_activo}
+                            </span>
+                          </vaadin-vertical-layout>`;
+                        }, this.actividad.detalles.dosis)}
                       ></vaadin-grid-column>
 
                       <vaadin-grid-column
@@ -312,10 +328,24 @@ export class UpsertAplicacion extends LitElement {
                           (item) => html` <vaadin-text-field
                             maxlength="5"
                             value=${item.total}
-                            @change=${(e) => (item.dosis = +e.target.value)}
+                            @change=${(e) => (item.total = +e.target.value)}
                           >
                             <div slot="suffix">${item.insumo.unidad}</div>
                           </vaadin-text-field>`,
+                          []
+                        )}
+                      ></vaadin-grid-column>
+
+                      <vaadin-grid-column
+                        header="Motivos"
+                        auto-width
+                        ${columnBodyRenderer<LineaDosis>(
+                          (item) => html`<vaadin-multi-select-combo-box
+                            item-label-path="nombre"
+                            item-id-path="id"
+                            .items="${[{ nombre: "Plaga", id: 1 }]}"
+                            .selectedItems=${item.motivos}
+                          ></vaadin-multi-select-combo-box>`,
                           []
                         )}
                       ></vaadin-grid-column>
@@ -341,11 +371,24 @@ export class UpsertAplicacion extends LitElement {
                           []
                         )}
                       ></vaadin-grid-column>
-
                     </vaadin-grid>
                   </vaadin-vertical-layout>
                 </div>
                 <!-- Fin Insumos -->
+
+                <!-- Otros Datos -->
+                <div tab="otrosdatos-tab">
+                  <vaadin-horizontal-layout
+                    theme="spacing"
+                    style="width: 100%;"
+                  >
+                    <vaadin-text-area
+                      style="flex-grow: 1; margin: var(--lumo-space-s);"
+                      value=${this.actividad.comentario}
+                    ></vaadin-text-area>
+                  </vaadin-horizontal-layout>
+                </div>
+                <!-- Otros -->
 
                 <!-- observaciones -->
                 <div tab="shipping-tab">
@@ -436,7 +479,17 @@ export class UpsertAplicacion extends LitElement {
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary">Atras</button>
-              <button type="button" class="btn btn-primary">Siguiente</button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${() =>
+                  (this.selected_step =
+                    this.selected_step >= 4
+                      ? this.selected_step
+                      : this.selected_step + 1)}
+              >
+                Siguiente
+              </button>
             </div>
           </div>
         </div>

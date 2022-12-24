@@ -687,10 +687,6 @@ export class FieldPartner extends LitElement {
         this.settings = settings_doc;
       });
 
-      // Creando Contratista
-      let contratista_doc = { _id: "contratistas", contratistas: {} };
-      this.campos_db.put(contratista_doc);
-
       console.log("INSUMOS", insumos);
     } catch (e) {
       console.error("Error Fetch Insumos", e);

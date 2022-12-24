@@ -738,20 +738,7 @@ export class LoteOffcanvasSide extends LitElement {
           (lote) => lote.properties.nombre === this.lote_nombre
         )[0] || {};
 
-      // // Preparar NDVI
-      // let e = new CustomEvent("generar-ndvi", {
-      //   detail: { lote_id: this._lote_doc.id, lote_geojson: this._lote_doc },
-      //   bubbles: true,
-      //   composed: true,
-      // });
-      // this.dispatchEvent(e);
-
       this.localizar_lote();
-    });
-
-    gbl_state.db.get("contratistas").then((result) => {
-      console.log("Contratistas", result);
-      this._contratistas = result;
     });
   }
 
