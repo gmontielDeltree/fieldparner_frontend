@@ -138,6 +138,13 @@ export class UpsertAplicacion extends LitElement {
     this.linea_de_dosis.uuid = uuid4();
     this.actividad.detalles.dosis.push(this.linea_de_dosis);
     this.actividad.detalles.dosis = deepcopy(this.actividad.detalles.dosis);
+    this.linea_de_dosis = {
+      dosis: 0,
+      insumo: null,
+      motivos: [],
+      uuid: "",
+      total: 0,
+    };
     this.requestUpdate();
   }
 
@@ -235,6 +242,7 @@ export class UpsertAplicacion extends LitElement {
                       item-label-path="marca_comercial"
                       item-value-path="uuid"
                       .items="${this.insumos}"
+                      .selected-item=${this.linea_de_dosis.insumo}
                       @selected-item-changed=${(e) => {
                         this.linea_de_dosis.insumo = e.detail.value;
                         this.requestUpdate();
@@ -242,14 +250,14 @@ export class UpsertAplicacion extends LitElement {
                     ></vaadin-combo-box>
                     <vaadin-text-field
                       label="Dosis"
-                      value="${this.linea_de_dosis.dosis}"
+                      .value="${this.linea_de_dosis.dosis}"
                       @change=${(e) => {
                         this.linea_de_dosis.dosis = +e.target.value;
                       }}
                       clear-button-visible
                     >
                       <div slot="suffix">
-                        ${this.linea_de_dosis.insumo?.unidad || ""}
+                        ${this.linea_de_dosis.insumo ? this.linea_de_dosis.insumo.unidad + "/ha" : ""}
                       </div>
                     </vaadin-text-field>
 
@@ -315,7 +323,7 @@ export class UpsertAplicacion extends LitElement {
                             value=${item.dosis}
                             @change=${(e) => (item.dosis = +e.target.value)}
                           >
-                            <div slot="suffix">${item.insumo.unidad}</div>
+                            <div slot="suffix">${item.insumo.unidad}/Ha</div>
                           </vaadin-text-field>`,
                           []
                         )}
