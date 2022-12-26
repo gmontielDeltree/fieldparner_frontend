@@ -778,7 +778,7 @@ export class FieldPartner extends LitElement {
       { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid_actividad/repetir", component: "repetir-aplicacion" },
       { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/nueva/:tipo", component: "upsert-aplicacion" },
       { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid/editar", component: "upsert-aplicacion" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/nueva", component: "upsert-ejecucion" },
+      { path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/nueva", component: "upsert-ejecucion" },
       { path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/editar", component: "upsert-ejecucion" },
       { path: "/campo/add", component: "nuevo-campo" },
       { path: "/campo/:uuid", component: "campo-offcanvas" },

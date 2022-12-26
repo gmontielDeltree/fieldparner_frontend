@@ -175,6 +175,10 @@ export class LoteOffcanvasSide extends LitElement {
       this.reload_actividades();
     });
 
+    this.addEventListener("refrescar-actividades", (e: CustomEvent) =>
+    this.reload_actividades()
+    );
+
     this.addEventListener("guardar-cosecha", (e: CustomEvent) =>
       this.guardar_aplicacion("cosecha", e.detail)
     );
@@ -789,9 +793,11 @@ export class LoteOffcanvasSide extends LitElement {
       //this.siembra();
       Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/siembra')
     } else if (valor === "cosecha") {
-      this.cosecha();
+      Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/cosecha')
+//      this.cosecha();
     } else if (valor === "aplicacion") {
-      this.nueva_actividad();
+      Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/aplicacion')
+//      this.nueva_actividad();
     } else if (valor === "eliminar") {
       this.eliminar_lote();
     } else if (valor === "ndvi") {
@@ -948,13 +954,17 @@ export class LoteOffcanvasSide extends LitElement {
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/pulverizadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
-                  @click=${this.nueva_actividad}
+                  
+                  @click=${()=>Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/aplicacion')}
+
                 ></div>
 
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/cosechadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
-                  @click=${this.cosecha}
+                  
+                  @click=${()=>Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/cosecha')}
+
                 ></div>
 
                 <div

@@ -148,7 +148,7 @@ export class UpsertAplicacion extends LitElement {
         this.lote_doc = result;
         console.log("LoteDoc", this.lote_doc);
         this.actividad.detalles.hectareas = this.lote_doc.properties.hectareas;
-        this.actividad.lote_uuid = this.lote_doc.properties.lote_uuid;
+        this.actividad.lote_uuid = this.lote_doc.properties.uuid;
       }
     );
   }
@@ -215,7 +215,7 @@ export class UpsertAplicacion extends LitElement {
       
       let lote_url = gbl_state.router.urlForPath("/campo/:uuid_campo/lote/:uuid_lote",{uuid_campo:campo_nombre, uuid_lote:lote_nombre})
       Router.go(lote_url)
-      
+      this.modal.hide() 
 
     })
     
@@ -311,12 +311,19 @@ export class UpsertAplicacion extends LitElement {
 
                 <!-- Insumos -->
                 <div tab="payment-tab">
+                <vaadin-horizontal-layout
+                      theme="spacing"
+                      style="align-self: stretch;"
+                    >
+                    Puede ingresar tanto la dosis por hectarea como el total por
+                    lote y los valores se ajustaran automaticamente
+                  </vaadin-horizontal-layout>
                   <vaadin-horizontal-layout
                     theme="spacing-s"
                     style="align-items: baseline; align-self: center; flex-wrap: wrap; flex-direction: row; justify-content: center;"
                   >
-                    Puede ingresar tanto la dosis por hectarea como el total por
-                    lote y los valores se ajustaran automaticamente
+
+
                     <vaadin-combo-box
                       id="insumo1"
                       label="Insumo"
@@ -526,6 +533,7 @@ export class UpsertAplicacion extends LitElement {
                   <vaadin-vertical-layout
                     style="width: 100%; height: 100%; align-items: center; margin: var(--lumo-space-s);"
                   >
+
                     Ingrese los umbrales para los valores recomendados de las
                     variables meteorológicas.
                     <vaadin-horizontal-layout

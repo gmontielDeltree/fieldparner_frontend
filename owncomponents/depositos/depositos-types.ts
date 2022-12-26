@@ -3,7 +3,9 @@ import uuid4 from "uuid4";
 import {
   Contratista,
   empty_contratista,
+  Labor,
 } from "../contratistas/contratista-types";
+import { deepcopy } from "../helpers";
 import { Insumo } from "../insumos/insumos-types";
 
 interface IHash<T> {
@@ -77,6 +79,24 @@ type LineaDosis = {
   precio_estimado: number;
 };
 
+type LineaLabor = {
+  uuid: string;
+  labor : Labor;
+  costo : number;
+  observacion: string;
+}
+
+type LineaDosisEjecucion = {
+  uuid: string;
+  insumo: Insumo;
+  motivos: string[];
+  dosis: number;
+  total: number;
+  precio_estimado:number;
+  precio_real: number;
+};
+
+
 type DetallesAplicacion = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
@@ -112,11 +132,37 @@ interface Condiciones {
   velocidad_min: number;
   velocidad_max: number;
 }
+interface CondicionesEjecucion {
+  temperatura_min: number;
+  temperatura_promedio:number,
+  humedad_promedio:number,
+  velocidad_promedio:number,
+  temperatura_max: number;
+  humedad_min: number;
+  humedad_max: number;
+  velocidad_min: number;
+  velocidad_max: number;
+}
 
 interface Detalles {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
   dosis: LineaDosis[];
+  // Cosecha
+  rinde?: number;
+  humedad?: number;
+  // Siembra
+  peso_1000?: number;
+  densidad_objetivo?: number;
+  semillas_totales?: number;
+  distancia?: number;
+}
+
+interface DetallesEjecucion {
+  fecha_ejecucion: string;
+  hectareas: number;
+  dosis: LineaDosisEjecucion[];
+  costo_labor: LineaLabor[];
   // Cosecha
   rinde?: number;
   humedad?: number;
@@ -148,6 +194,20 @@ interface Actividad {
   _attachments?: any;
 }
 
+
+interface Ejecucion {
+  _id: string;
+  _rev?: string;
+  uuid: string;
+  ts_generacion: string;
+  tipo: string;
+  lote_uuid: string;
+  comentario: string;
+  estado: string;
+  detalles: DetallesEjecucion;
+  condiciones?: CondicionesEjecucion;
+}
+
 const get_empty_aplicacion = () => {
   const a: Actividad = {
     _id: "",
@@ -167,6 +227,7 @@ const get_empty_aplicacion = () => {
     } as Detalles,
     condiciones:{
       temperatura_max:25,
+
       temperatura_min:0,
       humedad_min:45,
       humedad_max:65,
@@ -176,6 +237,36 @@ const get_empty_aplicacion = () => {
   };
 
   return { ...a };
+};
+
+const get_empty_ejecucion = () => {
+  const a: Ejecucion = {
+    _id: "",
+    uuid: uuid4(),
+    ts_generacion: "0",
+    tipo: "aplicacion",
+    lote_uuid: "",
+    comentario: "",
+    estado: "pendiente",
+    detalles: {
+      fecha_ejecucion: "",
+      hectareas: 0,
+      dosis: [],
+    },
+    condiciones:{
+      temperatura_max:25,
+      temperatura_promedio:0,
+      temperatura_min:0,
+      humedad_min:45,
+      humedad_promedio:0,
+      humedad_max:65,
+      velocidad_min:5,
+      velocidad_promedio:0,
+      velocidad_max:15,
+    }
+  };
+
+  return deepcopy(a);
 };
 
 const sumar_entradas = (entradas: Entrada[]) => {
@@ -229,4 +320,8 @@ export {
   DetallesAplicacion,
   DetallesCosecha,
   LineaDosis,
+  Ejecucion,
+  DetallesEjecucion,
+  LineaDosisEjecucion,
+  get_empty_ejecucion
 };
