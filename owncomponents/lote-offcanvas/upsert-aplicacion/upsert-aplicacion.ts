@@ -51,6 +51,9 @@ import {
 } from "../../contratistas/contratista-types";
 import { getInsumos, Insumo } from "../../insumos/insumos-types";
 import { deepcopy } from "../../helpers";
+import { ComboBox } from "@vaadin/combo-box";
+import { TextField } from "@vaadin/text-field";
+import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -146,6 +149,14 @@ export class UpsertAplicacion extends LitElement {
       total: 0,
     };
     this.requestUpdate();
+
+    // Usar document porque estan en un modal que salta 
+    (document.querySelector('#insumo1') as ComboBox).clear();
+    (document.querySelector('#insumo2') as TextField).clear();
+    (document.querySelector('#insumo3') as TextField).clear();
+    (document.querySelector('#insumo4') as MultiSelectComboBox).clear();
+
+
   }
 
   render() {
@@ -237,6 +248,7 @@ export class UpsertAplicacion extends LitElement {
                     style="align-items: baseline; align-self: center; flex-wrap: wrap; flex-direction: row; justify-content: center;"
                   >
                     <vaadin-combo-box
+                      id="insumo1"
                       label="Insumo"
                       style="width:16em"
                       item-label-path="marca_comercial"
@@ -250,6 +262,7 @@ export class UpsertAplicacion extends LitElement {
                     ></vaadin-combo-box>
                     <vaadin-text-field
                       label="Dosis"
+                      id="insumo2"
                       .value="${this.linea_de_dosis.dosis}"
                       @change=${(e) => {
                         this.linea_de_dosis.dosis = +e.target.value;
@@ -263,6 +276,7 @@ export class UpsertAplicacion extends LitElement {
 
                     <vaadin-text-field
                       label="Total"
+                      id="insumo3"
                       value="${this.linea_de_dosis.total}"
                     >
                       <div slot="suffix">
@@ -272,9 +286,12 @@ export class UpsertAplicacion extends LitElement {
 
                     <vaadin-multi-select-combo-box
                       label="Motivo"
+                      id="insumo4"
+                      style="width:20em"
                       item-label-path="nombre"
                       item-id-path="id"
-                      .items="${[{ nombre: "Plaga", id: 1 }]}"
+                      .items="${[{ nombre: "Plaga", id: 1 },{ nombre: "Enfermedad", id: 2 }]}"
+                      .selected-items=${this.linea_de_dosis.motivos}
                       @selected-items-changed=${(e) => {
                         this.linea_de_dosis.motivos = e.target.selectedItems;
                       }}
