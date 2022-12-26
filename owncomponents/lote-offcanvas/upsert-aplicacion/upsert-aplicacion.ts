@@ -44,16 +44,17 @@ import {
   get_empty_aplicacion,
   LineaDosis,
 } from "../../depositos/depositos-types";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import {
   Contratista,
   getContratistas,
 } from "../../contratistas/contratista-types";
 import { getInsumos, Insumo } from "../../insumos/insumos-types";
-import { deepcopy } from "../../helpers";
+import { deepcopy, get_lote_by_names } from "../../helpers";
 import { ComboBox } from "@vaadin/combo-box";
 import { TextField } from "@vaadin/text-field";
 import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
+import { TabSheet } from "@vaadin/tabsheet";
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -73,6 +74,7 @@ export class UpsertAplicacion extends LitElement {
   private contratistas: Contratista[];
   private insumos: Insumo[];
   private linea_de_dosis: LineaDosis;
+  private lote_doc: any;
 
   override firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("modal"));
@@ -91,14 +93,28 @@ export class UpsertAplicacion extends LitElement {
         motivos: [],
         uuid: "",
         total: 0,
+        precio_estimado: 0,
       };
 
       this.populateContratistas();
       this.populateInsumos();
+
       if (this.location.params?.tipo) {
         // Es una nueva
         this.tipo = this.location.params.tipo as string;
+
         this.actividad = get_empty_aplicacion();
+        this.actividad.tipo = this.tipo;
+
+        let lote_nombre = decodeURIComponent(
+          this.location.params.uuid_lote as string
+        );
+        let campo_nombre = decodeURIComponent(
+          this.location.params.uuid_campo as string
+        );
+
+        this.getLote(campo_nombre, lote_nombre);
+
         this.actividad.detalles.fecha_ejecucion_tentativa = format(
           new Date(),
           "yyyy-MM-dd"
@@ -126,18 +142,36 @@ export class UpsertAplicacion extends LitElement {
     });
   }
 
-  getLote() {}
+  getLote(campo_nombre, lote_nombre) {
+    get_lote_by_names(gbl_state.db, campo_nombre, lote_nombre).then(
+      (result) => {
+        this.lote_doc = result;
+        console.log("LoteDoc", this.lote_doc);
+        this.actividad.detalles.hectareas = this.lote_doc.properties.hectareas;
+        this.actividad.lote_uuid = this.lote_doc.properties.lote_uuid;
+      }
+    );
+  }
+
+  getActividad(uuid) {
+    // gbl_state.db.get("actividad")
+  }
 
   borrar(dosis: LineaDosis) {
-    let dosises = (this.actividad.detalles as DetallesAplicacion).dosis;
+    let dosises = this.actividad.detalles.dosis;
     let remanente = dosises.filter(
       (d) => d.uuid !== dosis.uuid
     ) as LineaDosis[];
-    (this.actividad.detalles as DetallesAplicacion).dosis = remanente;
+    this.actividad.detalles.dosis = remanente;
     this.requestUpdate();
   }
 
   agregarLineaInsumo() {
+    if (this.linea_de_dosis.insumo === null) {
+      alert("Debe seleccionar un insumo");
+      return;
+    }
+
     this.linea_de_dosis.uuid = uuid4();
     this.actividad.detalles.dosis.push(this.linea_de_dosis);
     this.actividad.detalles.dosis = deepcopy(this.actividad.detalles.dosis);
@@ -147,16 +181,44 @@ export class UpsertAplicacion extends LitElement {
       motivos: [],
       uuid: "",
       total: 0,
+      precio_estimado: 0,
     };
+
     this.requestUpdate();
 
-    // Usar document porque estan en un modal que salta 
-    (document.querySelector('#insumo1') as ComboBox).clear();
-    (document.querySelector('#insumo2') as TextField).clear();
-    (document.querySelector('#insumo3') as TextField).clear();
-    (document.querySelector('#insumo4') as MultiSelectComboBox).clear();
+    // Usar document porque estan en un modal que salta
+    (document.querySelector("#insumo1") as ComboBox).clear();
+    (document.querySelector("#insumo2") as TextField).clear();
+    (document.querySelector("#insumo3") as TextField).clear();
+    (document.querySelector("#insumo4") as MultiSelectComboBox).clear();
+  }
 
+  guardar() {
+    let fecha = format(
+      parse(
+        this.actividad.detalles.fecha_ejecucion_tentativa,
+        "yyyy-MM-dd",
+        new Date()
+      ),
+      "yyyyMMdd"
+    );
+    this.actividad._id = "actividad:" + fecha + ":" + this.actividad.uuid;
 
+    gbl_state.db.put(this.actividad).then(()=>{
+      alert("Actividad Guardada")
+
+      let lote_nombre = 
+        this.location.params.uuid_lote as string
+    
+      let campo_nombre = 
+        this.location.params.uuid_campo as string
+      
+      let lote_url = gbl_state.router.urlForPath("/campo/:uuid_campo/lote/:uuid_lote",{uuid_campo:campo_nombre, uuid_lote:lote_nombre})
+      Router.go(lote_url)
+      
+
+    })
+    
   }
 
   render() {
@@ -178,6 +240,7 @@ export class UpsertAplicacion extends LitElement {
             </div>
             <div class="modal-body">
               <vaadin-tabsheet
+                id="actividad-tabsheet"
                 .selected=${this.selected_step}
                 @selected-changed=${(e) => {
                   this.selected_step = e.target.selected;
@@ -186,7 +249,12 @@ export class UpsertAplicacion extends LitElement {
                 <vaadin-tabs slot="tabs">
                   <vaadin-tab id="dashboard-tab">Contratista</vaadin-tab>
                   <vaadin-tab id="payment-tab">Insumos</vaadin-tab>
-                  <vaadin-tab id="otrosdatos-tab">Otros Datos</vaadin-tab>
+                  ${this.tipo === "siembra" || this.tipo === "cosecha"
+                    ? html`<vaadin-tab id="otrosdatos-tab"
+                        >Otros Datos</vaadin-tab
+                      >`
+                    : null}
+
                   <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
                   <vaadin-tab id="shipping-tab">Observaciones</vaadin-tab>
                 </vaadin-tabs>
@@ -247,6 +315,8 @@ export class UpsertAplicacion extends LitElement {
                     theme="spacing-s"
                     style="align-items: baseline; align-self: center; flex-wrap: wrap; flex-direction: row; justify-content: center;"
                   >
+                    Puede ingresar tanto la dosis por hectarea como el total por
+                    lote y los valores se ajustaran automaticamente
                     <vaadin-combo-box
                       id="insumo1"
                       label="Insumo"
@@ -264,13 +334,19 @@ export class UpsertAplicacion extends LitElement {
                       label="Dosis"
                       id="insumo2"
                       .value="${this.linea_de_dosis.dosis}"
-                      @change=${(e) => {
+                      @input=${(e) => {
                         this.linea_de_dosis.dosis = +e.target.value;
+                        this.linea_de_dosis.total =
+                          this.linea_de_dosis.dosis *
+                          this.actividad.detalles.hectareas;
+                        this.requestUpdate();
                       }}
                       clear-button-visible
                     >
                       <div slot="suffix">
-                        ${this.linea_de_dosis.insumo ? this.linea_de_dosis.insumo.unidad + "/ha" : ""}
+                        ${this.linea_de_dosis.insumo
+                          ? this.linea_de_dosis.insumo.unidad + "/ha"
+                          : ""}
                       </div>
                     </vaadin-text-field>
 
@@ -278,6 +354,13 @@ export class UpsertAplicacion extends LitElement {
                       label="Total"
                       id="insumo3"
                       value="${this.linea_de_dosis.total}"
+                      @input=${(e) => {
+                        this.linea_de_dosis.total = +e.target.value;
+                        this.linea_de_dosis.dosis =
+                          this.linea_de_dosis.total /
+                          this.actividad.detalles.hectareas;
+                        this.requestUpdate();
+                      }}
                     >
                       <div slot="suffix">
                         ${this.linea_de_dosis.insumo?.unidad || ""}
@@ -290,7 +373,10 @@ export class UpsertAplicacion extends LitElement {
                       style="width:20em"
                       item-label-path="nombre"
                       item-id-path="id"
-                      .items="${[{ nombre: "Plaga", id: 1 },{ nombre: "Enfermedad", id: 2 }]}"
+                      .items="${[
+                        { nombre: "Plaga", id: 1 },
+                        { nombre: "Enfermedad", id: 2 },
+                      ]}"
                       .selected-items=${this.linea_de_dosis.motivos}
                       @selected-items-changed=${(e) => {
                         this.linea_de_dosis.motivos = e.target.selectedItems;
@@ -402,17 +488,20 @@ export class UpsertAplicacion extends LitElement {
                 <!-- Fin Insumos -->
 
                 <!-- Otros Datos -->
-                <div tab="otrosdatos-tab">
-                  <vaadin-horizontal-layout
-                    theme="spacing"
-                    style="width: 100%;"
-                  >
-                    <vaadin-text-area
-                      style="flex-grow: 1; margin: var(--lumo-space-s);"
-                      value=${this.actividad.comentario}
-                    ></vaadin-text-area>
-                  </vaadin-horizontal-layout>
-                </div>
+                ${this.tipo === "siembra" || this.tipo === "cosecha"
+                  ? html`<div tab="otrosdatos-tab">
+                      <vaadin-horizontal-layout
+                        theme="spacing"
+                        style="width: 100%;"
+                      >
+                        <vaadin-text-area
+                          style="flex-grow: 1; margin: var(--lumo-space-s);"
+                          value=${this.actividad.comentario}
+                        ></vaadin-text-area>
+                      </vaadin-horizontal-layout>
+                    </div>`
+                  : null}
+
                 <!-- Otros -->
 
                 <!-- observaciones -->
@@ -424,6 +513,10 @@ export class UpsertAplicacion extends LitElement {
                     <vaadin-text-area
                       style="flex-grow: 1; margin: var(--lumo-space-s);"
                       value=${this.actividad.comentario}
+                      helper-text="Ingrese comentarios, notas o aclaraciones que considere necesarias"
+                      @input=${(e) => {
+                        this.actividad.comentario = "" + e.target.value;
+                      }}
                     ></vaadin-text-area>
                   </vaadin-horizontal-layout>
                 </div>
@@ -441,7 +534,11 @@ export class UpsertAplicacion extends LitElement {
                     >
                       <vaadin-text-field
                         label="Temperatura Min"
-                        value="1000"
+                        value=${this.actividad.condiciones.temperatura_min}
+                        @input=${(e) => {
+                          this.actividad.condiciones.temperatura_min =
+                            +e.target.value;
+                        }}
                         theme="align-right"
                         type="text"
                       >
@@ -449,7 +546,11 @@ export class UpsertAplicacion extends LitElement {
                       </vaadin-text-field>
                       <vaadin-text-field
                         label="Temperatura Max"
-                        value="1000"
+                        value=${this.actividad.condiciones.temperatura_max}
+                        @input=${(e) => {
+                          this.actividad.condiciones.temperatura_max =
+                            +e.target.value;
+                        }}
                         theme="align-right"
                         type="text"
                       >
@@ -462,19 +563,27 @@ export class UpsertAplicacion extends LitElement {
                     >
                       <vaadin-text-field
                         label="Humedad Min"
-                        value="1000"
+                        value=${this.actividad.condiciones.humedad_min}
                         theme="align-right"
+                        @input=${(e) => {
+                          this.actividad.condiciones.humedad_min =
+                            +e.target.value;
+                        }}
                         type="text"
                       >
                         <div slot="suffix">%</div>
                       </vaadin-text-field>
                       <vaadin-text-field
                         label="Humedad Max"
-                        value="1000"
+                        value=${this.actividad.condiciones.humedad_max}
+                        @input=${(e) => {
+                          this.actividad.condiciones.humedad_max =
+                            +e.target.value;
+                        }}
                         theme="align-right"
                         type="text"
                       >
-                        <div slot="suffix">%%</div>
+                        <div slot="suffix">%</div>
                       </vaadin-text-field>
                     </vaadin-horizontal-layout>
                     <vaadin-horizontal-layout
@@ -483,15 +592,23 @@ export class UpsertAplicacion extends LitElement {
                     >
                       <vaadin-text-field
                         label="Viento Min"
-                        value="1000"
+                        value=${this.actividad.condiciones.velocidad_min}
                         theme="align-right"
+                        @input=${(e) => {
+                          this.actividad.condiciones.velocidad_min =
+                            +e.target.value;
+                        }}
                         type="text"
                       >
                         <div slot="suffix">km/h</div>
                       </vaadin-text-field>
                       <vaadin-text-field
                         label="Viento Max"
-                        value="2"
+                        value=${this.actividad.condiciones.velocidad_max}
+                        @input=${(e) => {
+                          this.actividad.condiciones.velocidad_max =
+                            +e.target.value;
+                        }}
                         theme="align-right"
                         type="text"
                       >
@@ -503,18 +620,40 @@ export class UpsertAplicacion extends LitElement {
               </vaadin-tabsheet>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary">Atras</button>
               <button
                 type="button"
-                class="btn btn-primary"
+                class="btn btn-secondary"
                 @click=${() =>
                   (this.selected_step =
-                    this.selected_step >= 4
-                      ? this.selected_step
-                      : this.selected_step + 1)}
+                    this.selected_step > 0
+                      ? this.selected_step - 1
+                      : this.selected_step)}
               >
-                Siguiente
+                Atras
               </button>
+
+              ${(document.querySelector("#actividad-tabsheet") as TabSheet)
+                ?.items.length -
+                1 ===
+              this.selected_step
+                ? html`<button
+                    type="button"
+                    class="btn btn-primary"
+                    @click=${this.guardar}
+                  >
+                    Guardar
+                  </button>`
+                : html` <button
+                    type="button"
+                    class="btn btn-primary"
+                    @click=${() =>
+                      (this.selected_step =
+                        this.selected_step >= 4
+                          ? this.selected_step
+                          : this.selected_step + 1)}
+                  >
+                    Siguiente
+                  </button>`}
             </div>
           </div>
         </div>

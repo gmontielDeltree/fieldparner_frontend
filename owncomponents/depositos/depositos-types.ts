@@ -68,7 +68,14 @@ const get_empty_entrada = () => {
   return { ...empty_entrada };
 };
 
-type LineaDosis =  { uuid:string, insumo: Insumo; motivos:string[], dosis: number; total: number }
+type LineaDosis = {
+  uuid: string;
+  insumo: Insumo;
+  motivos: string[];
+  dosis: number;
+  total: number;
+  precio_estimado: number;
+};
 
 type DetallesAplicacion = {
   fecha_ejecucion_tentativa: string;
@@ -97,9 +104,32 @@ type DetallesSiembra = {
   adjuntos: any;
 };
 
+interface Condiciones {
+  temperatura_min: number;
+  temperatura_max: number;
+  humedad_min: number;
+  humedad_max: number;
+  velocidad_min: number;
+  velocidad_max: number;
+}
+
+interface Detalles {
+  fecha_ejecucion_tentativa: string;
+  hectareas: number;
+  dosis: LineaDosis[];
+  // Cosecha
+  rinde?: number;
+  humedad?: number;
+  // Siembra
+  peso_1000?: number;
+  densidad_objetivo?: number;
+  semillas_totales?: number;
+  distancia?: number;
+}
+
 interface Actividad {
   _id: string;
-  _rev ?: string,
+  _rev?: string;
   uuid: string;
   ts_generacion: number;
   tipo: string;
@@ -108,12 +138,13 @@ interface Actividad {
   comentario: string;
   adjuntos: string[];
   estado: string;
-  detalles: DetallesSiembra | DetallesCosecha | DetallesAplicacion;
-  fecha? : string;
-  color? : string;
-  texto? : string;
-  posicion? : number[];
-  condiciones ?: Object; 
+  detalles: Detalles;
+  fecha?: string;
+  color?: string;
+  texto?: string;
+  posicion?: number[];
+  condiciones?: Condiciones;
+
   _attachments?: any;
 }
 
@@ -131,12 +162,20 @@ const get_empty_aplicacion = () => {
     detalles: {
       fecha_ejecucion_tentativa: "",
       hectareas: 0,
-      motivos:"",
+      motivos: "",
       dosis: [],
-    } as DetallesAplicacion,
+    } as Detalles,
+    condiciones:{
+      temperatura_max:25,
+      temperatura_min:0,
+      humedad_min:45,
+      humedad_max:65,
+      velocidad_min:5,
+      velocidad_max:15,
+    }
   };
 
-  return {...a}
+  return { ...a };
 };
 
 const sumar_entradas = (entradas: Entrada[]) => {
@@ -189,5 +228,5 @@ export {
   DetallesSiembra,
   DetallesAplicacion,
   DetallesCosecha,
-  LineaDosis
+  LineaDosis,
 };

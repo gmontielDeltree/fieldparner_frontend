@@ -25,10 +25,9 @@ const layer_visibility = (map, layer_id, status) => {
 const base_url =
   "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/";
 
-
-const deepcopy = (obj)=>{
-  return (JSON.parse(JSON.stringify(obj)))
-}
+const deepcopy = (obj) => {
+  return JSON.parse(JSON.stringify(obj));
+};
 
 const sendEvent = (name, details) => {
   let event = new CustomEvent(name, {
@@ -53,7 +52,7 @@ const get_lote_doc = async (db: PouchDB.Database, uuid: string) => {
 
   let campos_docs = campos_result.rows;
 
-  let result = undefined
+  let result = undefined;
   campos_docs.forEach(({ doc }) => {
     console.log(doc);
     let _lote_doc = doc.lotes.find((lote) => lote.properties.uuid === uuid);
@@ -81,17 +80,35 @@ const get_lote_doc = async (db: PouchDB.Database, uuid: string) => {
   // document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
 };
 
-const crearWorkspaceDB = (nombre,user,pass) => {
-  
+const get_lote_by_names = async (
+  db: PouchDB.Database,
+  campo_id: string,
+  lote_nombre: string
+) => {
+  let campo_doc = await db.get(campo_id);
+
+  let result = undefined;
+
+  let _lote_doc = campo_doc.lotes.find(
+    (lote) => lote.properties.nombre === lote_nombre
+  );
+
+  if (_lote_doc) {
+    result = _lote_doc;
+  }
+  return result
+};
+
+
+const get_actividad_by_uuid = async (uuid) => {
+
 }
 
-const setPermisosWorkspaceDB = (nombre,user,pass) => {
+const crearWorkspaceDB = (nombre, user, pass) => {};
 
-}
+const setPermisosWorkspaceDB = (nombre, user, pass) => {};
 
-const getPermisosWorkspaceDB = (nombre,user,pass) => {
-
-}
+const getPermisosWorkspaceDB = (nombre, user, pass) => {};
 
 export {
   emptyGJ,
@@ -105,5 +122,6 @@ export {
   get_lote_doc,
   crearWorkspaceDB,
   setPermisosWorkspaceDB,
-  getPermisosWorkspaceDB
+  getPermisosWorkspaceDB,
+  get_lote_by_names,
 };
