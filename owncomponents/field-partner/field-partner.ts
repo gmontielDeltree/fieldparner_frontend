@@ -29,6 +29,7 @@ import "../insumos/insumos-lista.ts";
 import "../lista-centrales-cercanas/lista-centrales-cercanas.ts";
 import "../sensores/lista-de-sensores.ts";
 import "../navbar-element/workspace-rigths.ts"
+import "../navbar-element/new-app-layout.ts"
 import '../null-component'
 import '../invite/invite'
 import '../lote-offcanvas/repetir-aplicacion/repetir-aplicacion.ts'
@@ -798,12 +799,17 @@ export class FieldPartner extends LitElement {
     console.count("FieldPartner Render")
 
     return html`
+
+      <app-layout-navbar-placement>
       <mapa-principal
         .campos=${this.campos}
         .settings=${this.settings}
       ></mapa-principal>
+      <div id="router-container"></div>
+      </app-layout-navbar-placement>
 
-      <navbar-element .map=${this.map}></navbar-element>
+
+      <!-- <navbar-element .map=${this.map}></navbar-element> -->
 
       <nuevo-campo
         id="nuevo-campo-oc"
@@ -816,6 +822,7 @@ export class FieldPartner extends LitElement {
         id="contratista-crud"
         .db=${this.campos_db}
       ></contratista-crud>
+
       <contratistas-lista
         id="contratistas-lista"
         .db=${this.campos_db}
@@ -829,23 +836,23 @@ export class FieldPartner extends LitElement {
 
       <insumos-lista id="insumos-lista" .db=${this.campos_db}></insumos-lista>
 
-      <deposito-upsert
+      <!-- <deposito-upsert
         id="deposito-upsert"
         .db=${this.campos_db}
         .draw=${this.draw}
-      ></deposito-upsert>
+      ></deposito-upsert> -->
       <depositos-lista
         id="depositos-lista"
         .db=${this.campos_db}
       ></depositos-lista>
 
-      <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
+      <!-- <login-modal id="login-modal" .show=${!this.logged_in}></login-modal> -->
 
       <div id="container-multiproposito">
         <loading-modal .show=${this.loading}></loading-modal>
       </div>
 
-      <div id="router-container"></div>
+      <!-- <div id="router-container"></div> -->
     `;
   }
 }

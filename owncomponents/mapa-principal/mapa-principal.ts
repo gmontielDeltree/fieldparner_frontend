@@ -155,10 +155,10 @@ export class MapaPrincipal extends LitElement {
     css`
       #map {
         position: absolute;
-        top: 46px;
+        top: 43px;
         bottom: 0;
         width: 100%;
-        height: calc(100vh - 46px) !important;
+        height: calc(100vh - 43px) !important;
       }
 
       .mapboxgl-ctrl-group button + button {
@@ -176,10 +176,6 @@ export class MapaPrincipal extends LitElement {
     mapboxgl.accessToken =
       "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
   }
-
-  // createRenderRoot() {
-  //   return this;
-  // }
 
   firstUpdated() {
     this.map = new Map({
