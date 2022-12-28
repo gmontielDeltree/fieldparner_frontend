@@ -12,7 +12,13 @@ import "@vaadin/item";
 import "@vaadin/list-box";
 import "@vaadin/select";
 import '@vaadin/tabsheet';
-
+import spain_flag from '../../src/images/icons/spain_flag.png'
+import brazil_flag from '../../src/images/icons/brazil_flag.png'
+import usa_flag from '../../src/images/icons/usa_flag.png'
+import icono_depositos from '../../src/images/icons/deposito_2.webp'
+import icono_campos from '../../src/images/icons/iconodecampo2D.webp'
+import icono_insumos from '../../src/images/icons/icono de insumos.webp'
+import icono_contratistas from '../../src/images/icons/iconocontratista.webp'
 import { selectRenderer } from "@vaadin/select/lit.js";
 
 @customElement("app-layout-navbar-placement")
@@ -37,7 +43,7 @@ export class Example extends LitElement {
     `;
   }
 
-  sendEvent = (name, details) => {
+  sendEvent = (name: string, details: any) => {
     let event = new CustomEvent(name, {
       detail: details,
       bubbles: true,
@@ -47,9 +53,9 @@ export class Example extends LitElement {
   };
 
   private lenguajes = [
-    { nombre: "Español", valor: "es", icono: "/images/icons/spain_flag.png" },
-    { nombre: "Portugues", valor: "pr", icono: "/images/icons/brazil_flag.png" },
-    { nombre: "English", valor: "en", icono: "/images/icons/usa_flag.png" },
+    { nombre: "Español", valor: "es", icono: spain_flag },
+    { nombre: "Portugues", valor: "pr", icono: brazil_flag },
+    { nombre: "English", valor: "en", icono: usa_flag },
   ];
 
   private lang_renderer = () => html` <vaadin-list-box>
@@ -91,7 +97,7 @@ export class Example extends LitElement {
           <vaadin-tab>
             <div
               title="Lista de Campos"
-              style="cursor: pointer;background-image: url('/iconodecampo2D.webp');width: 32px;height: 32px;background-size: cover;background-position: center;"
+              style="cursor: pointer;background-image: url('${icono_campos}');width: 32px;height: 32px;background-size: cover;background-position: center;"
               @click=${() => {
                 Router.go("/campos");
               }}
@@ -100,7 +106,7 @@ export class Example extends LitElement {
           <vaadin-tab>
             <div
               title="Contratistas"
-              style="cursor: pointer;background-image: url('/iconocontratista.webp');width: 32px;height: 32px;background-size: cover;background-position: center;"
+              style="cursor: pointer;background-image: url('${icono_contratistas}');width: 32px;height: 32px;background-size: cover;background-position: center;"
               @click=${() => {
                 this.sendEvent("ver-contratistas-click", null);
               }}
@@ -110,7 +116,7 @@ export class Example extends LitElement {
           <vaadin-tab>
             <div
               title="Insumos"
-              style="cursor: pointer;background-image: url('/icono de insumos.webp');width: 32px;height: 32px;background-size: cover;background-position: center;"
+              style="cursor: pointer;background-image: url('${icono_insumos}');width: 32px;height: 32px;background-size: cover;background-position: center;"
               @click=${() => {
                 this.sendEvent("ver-insumos-click", null);
               }}
@@ -120,7 +126,7 @@ export class Example extends LitElement {
           <vaadin-tab>
             <div
               title="Depositos"
-              style="cursor: pointer;background-image: url('/deposito_2.webp');width: 32px;height: 32px;background-size: cover;background-position: center;"
+              style="cursor: pointer;background-image: url('${icono_depositos}');width: 32px;height: 32px;background-size: cover;background-position: center;"
               @click=${() => {
                 this.sendEvent("ver-depositos-click", null);
               }}

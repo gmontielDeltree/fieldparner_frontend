@@ -28,32 +28,31 @@ import "../notas-offcanvas/nota-target.ts";
 import "../insumos/insumos-lista.ts";
 import "../lista-centrales-cercanas/lista-centrales-cercanas.ts";
 import "../sensores/lista-de-sensores.ts";
-import "../navbar-element/workspace-rigths.ts"
-import "../navbar-element/new-app-layout.ts"
-import '../null-component'
-import '../invite/invite'
-import '../lote-offcanvas/repetir-aplicacion/repetir-aplicacion.ts'
-import '../lote-offcanvas/upsert-aplicacion/upsert-aplicacion'
-import '../lote-offcanvas/upsert-ejecucion/upsert-ejecucion'
+import "../navbar-element/workspace-rigths.ts";
+import "../navbar-element/new-app-layout.ts";
+import "../null-component";
+import "../invite/invite";
+import "../lote-offcanvas/repetir-aplicacion/repetir-aplicacion.ts";
+import "../lote-offcanvas/upsert-aplicacion/upsert-aplicacion";
+import "../lote-offcanvas/upsert-ejecucion/upsert-ejecucion";
 
-import '../sensores/devices-route'
+import "../sensores/devices-route";
 
-import { use, get,registerTranslateConfig } from "lit-translate";
+import { use, get, registerTranslateConfig } from "lit-translate";
 
 import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 import uuid4 from "uuid4";
-import { get_empty_insumo, Insumo } from "../insumos/insumos-types";
+import { download_lista_de_insumos, get_empty_insumo, Insumo } from "../insumos/insumos-types";
 import { Actividad } from "../depositos/depositos-types";
 import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { format, parse } from "date-fns";
 import { Devices } from "../sensores/sensores";
 
-import {StateController} from '@lit-app/state'
-import gbl_state from '../state.js'
-
+import { StateController } from "@lit-app/state";
+import gbl_state from "../state.js";
 
 var wentOffline, wentOnline;
 
@@ -74,34 +73,34 @@ function handleConnectionChange(event) {
 }
 
 export class FieldPartner extends LitElement {
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   map: Map;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   draw: MapboxDraw;
 
   @state()
   campos: any;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   campos_db: PouchDB.Database;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   remote_campos_db: PouchDB.Database;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   user: any;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   auth0Client: any;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   logged_in: boolean = false;
 
   @state()
   loading: boolean = true;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   settings: any;
 
   constructor() {
@@ -111,14 +110,15 @@ export class FieldPartner extends LitElement {
     this.user = {};
     this.user.name = "demo";
 
-    gbl_state.online = window.navigator.onLine
-    
+    gbl_state.online = window.navigator.onLine;
+
     /* Traducciones */
     registerTranslateConfig({
-      loader: lang => fetch(`/assets/i18n/${lang}.json`).then(res => res.json())
+      loader: (lang) =>
+        fetch(`/assets/i18n/${lang}.json`).then((res) => res.json()),
     });
 
-    console.log("USE Lang",use('es'))
+    console.log("USE Lang", use("es"));
 
     window.addEventListener("online", handleConnectionChange);
     window.addEventListener("offline", handleConnectionChange);
@@ -133,8 +133,8 @@ export class FieldPartner extends LitElement {
 
     /* Clicks en varios botones */
     this.addEventListener("ver-campo-detalles", (e: any) => {
-      let campo_doc_id = e.detail.campo_id // el ID del doc del campo ("campo:el remanso")
-      Router.go('campo/'+encodeURIComponent(campo_doc_id))
+      let campo_doc_id = e.detail.campo_id; // el ID del doc del campo ("campo:el remanso")
+      Router.go("campo/" + encodeURIComponent(campo_doc_id));
 
       // this.campos_db.get(e.detail.campo_id).then((campo_doc) => {
       //   document.getElementById("campo-oc").campo_doc = campo_doc;
@@ -142,10 +142,10 @@ export class FieldPartner extends LitElement {
       // });
     });
 
-    this.addEventListener("ver-lote-detalles", (e : CustomEvent) => {
-      let campo_doc_id_enc = encodeURIComponent( e.detail.campo_parent_id)
-      let lote_nombre = encodeURIComponent(e.detail.nombre)
-      Router.go('campo/' + campo_doc_id_enc + '/lote/' + lote_nombre)
+    this.addEventListener("ver-lote-detalles", (e: CustomEvent) => {
+      let campo_doc_id_enc = encodeURIComponent(e.detail.campo_parent_id);
+      let lote_nombre = encodeURIComponent(e.detail.nombre);
+      Router.go("campo/" + campo_doc_id_enc + "/lote/" + lote_nombre);
       // document.getElementById("campo-oc").hide();
       // document.getElementById("lote-oc").lote_nombre = e.detail.nombre;
       // document.getElementById("lote-oc").campo_id = e.detail.campo_parent_id;
@@ -171,7 +171,6 @@ export class FieldPartner extends LitElement {
     this.addEventListener("generar-ndvi", async (e: CustomEvent) => {
       // let couch_username = normalizar_username(this.user.name);
       // console.log("gen ndvi evnet");
-
       // if (!(await ndvi_generado_hoy(e.detail.lote_geojson.geometry))) {
       //   this.changes_db.put(
       //     {
@@ -200,7 +199,7 @@ export class FieldPartner extends LitElement {
       document.getElementById("deposito-upsert").show();
     });
 
-    this.addEventListener("lote-seleccionado", (e) => {
+    this.addEventListener("lote-seleccionado", (e : CustomEvent) => {
       document.getElementById("nota-share-target").seleccion(e.detail);
     });
 
@@ -294,9 +293,14 @@ export class FieldPartner extends LitElement {
     this.addEventListener("ver-telemetria-del-dia", (e: CustomEvent) => {
       let daily_card = e.detail as DailyTelemetryCard;
 
-      let fecha = daily_card._id.split(':')[2]
-      Router.go(gbl_state.router.urlForName('device-route-handler',{uuid: daily_card.device_id,date:fecha}))
-      
+      let fecha = daily_card._id.split(":")[2];
+      Router.go(
+        gbl_state.router.urlForName("device-route-handler", {
+          uuid: daily_card.device_id,
+          date: fecha,
+        })
+      );
+
       // const el = document.createElement("sensores-oc");
       // document.getElementById("container-multiproposito").appendChild(el);
       // console.log("VER TELE DEL DIA", daily_card);
@@ -349,7 +353,6 @@ export class FieldPartner extends LitElement {
       // document.getElementById("campo-oc").show();
     });
 
-
     this.init_the_whole_thing();
   }
 
@@ -357,42 +360,46 @@ export class FieldPartner extends LitElement {
     return this;
   }
 
-  protected willUpdate(_changedProperties: PropertyValueMap<any> | globalThis.Map<PropertyKey, unknown>): void {
-      console.log("FieldPartner-WillUpdate",_changedProperties)
+  protected willUpdate(
+    _changedProperties:
+      | PropertyValueMap<any>
+      | globalThis.Map<PropertyKey, unknown>
+  ): void {
+    console.log("FieldPartner-WillUpdate", _changedProperties);
   }
 
   delete_insumos = async () => {};
 
   inicializar_insumos = async () => {
     try {
-      let settings = await this.campos_db.get("settings");
+      // let settings = await this.campos_db.get("settings");
 
-      if (!settings.insumos_inicializados) {
-        console.log("No hay insumos...Fetching");
-        let data = await fetch("/products.json").then((response) =>
-          response.json()
-        );
-        let products = data.products;
-        let insumos = products.map((p: any) => {
-          let i: Insumo = get_empty_insumo();
-          i.marca_comercial = p.commercial_brand;
-          i.principio_activo = p.supply?.active_substance || "";
-          i.tipo = p.type?.name || "";
-          i.subtipo = p.subtype?.name || "";
-          i.unidad = p.unit.name || "";
-          return i;
-        });
+      // if (!settings.insumos_inicializados) {
+      //   console.log("No hay insumos...Fetching");
+      //   let data = await fetch("/products.json").then((response) =>
+      //     response.json()
+      //   );
+      //   let products = data.products;
+      //   let insumos = products.map((p: any) => {
+      //     let i: Insumo = get_empty_insumo();
+      //     i.marca_comercial = p.commercial_brand;
+      //     i.principio_activo = p.supply?.active_substance || "";
+      //     i.tipo = p.type?.name || "";
+      //     i.subtipo = p.subtype?.name || "";
+      //     i.unidad = p.unit.name || "";
+      //     return i;
+      //   });
 
-        // this.campos_db.bulkDocs(insumos).then((d)=>{
-        //   settings.insumos_inicializados=true;
-        //   this.campos_db.put(settings)
-        //   this.settings = settings;
-        // });
+      //   // this.campos_db.bulkDocs(insumos).then((d)=>{
+      //   //   settings.insumos_inicializados=true;
+      //   //   this.campos_db.put(settings)
+      //   //   this.settings = settings;
+      //   // });
 
-        console.log("INSUMOS", insumos);
-      } else {
-        console.log("Los Insumos ya fueron Inicializados");
-      }
+      //   console.log("INSUMOS", insumos);
+      // } else {
+      //   console.log("Los Insumos ya fueron Inicializados");
+      // }
     } catch (e) {
       console.error("No settings", e);
     }
@@ -410,7 +417,7 @@ export class FieldPartner extends LitElement {
     } else if (sitio === "dev--agrotools.netlify.app") {
       // Development - Especial flow
       console.log("Especial Development Flow - Demo User");
-      this.user.sub = "demo-userdb"
+      this.user.sub = "demo-userdb";
       // Logged in
       this.logged_in = true;
       // Default Databases
@@ -421,7 +428,7 @@ export class FieldPartner extends LitElement {
       this.logged_in = true;
       this.user.name = "randy";
       // Default Databases
-      this.user.sub = "randy-userdb"
+      this.user.sub = "randy-userdb";
       this.crear_dbs(this.user);
     }
 
@@ -495,12 +502,12 @@ export class FieldPartner extends LitElement {
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Nombres validos solo en minusculas
-    this.campos_db = new PouchDB("campos_" + username + "v3");
-  
-    gbl_state.db = this.campos_db
+    this.campos_db = new PouchDB("campos_" + username + "v5");
 
-    gbl_state.user_db = new PouchDB(user.sub)
-    gbl_state.user = this.user
+    gbl_state.db = this.campos_db;
+
+    gbl_state.user_db = new PouchDB(user.sub);
+    gbl_state.user = this.user;
 
     try {
       let campos_db_uri = base_url + "campos_" + username;
@@ -561,7 +568,6 @@ export class FieldPartner extends LitElement {
     }
   }
 
-
   cargar_desde_remoto() {
     // Get Campos
     this.remote_campos_db
@@ -571,8 +577,8 @@ export class FieldPartner extends LitElement {
         endkey: "campos_\ufff0",
       })
       .then((result) => {
-        this.campos = result
-        gbl_state.campos = this.campos
+        this.campos = result;
+        gbl_state.campos = this.campos;
       });
 
     // Get Settings
@@ -611,7 +617,6 @@ export class FieldPartner extends LitElement {
         this.load_campos_y_settings();
         console.log("CHANGES!!");
       });
-
   }
 
   replicar_y_sincronizar() {
@@ -641,7 +646,6 @@ export class FieldPartner extends LitElement {
             this.load_campos_y_settings();
             console.log("CHANGES!!");
           });
-
       })
       .on("error", (e) => {
         // Puede llegar aca si la app se abre offline
@@ -710,8 +714,8 @@ export class FieldPartner extends LitElement {
         endkey: "campos_\ufff0",
       })
       .then((result) => {
-        this.campos = result
-        gbl_state.campos = this.campos
+        this.campos = result;
+        gbl_state.campos = this.campos;
       });
 
     // Get Settings
@@ -768,19 +772,43 @@ export class FieldPartner extends LitElement {
   firstUpdated() {
     gbl_state.router = new Router(document.getElementById("router-container"));
     gbl_state.router.setRoutes([
-      { path: "/", component: 'null-component' },
-      {path: '/gf', redirect: '/'},
+      { path: "/", component: "null-component" },
+      { path: "/gf", redirect: "/" },
       { path: "/campos", component: "lista-de-campos" },
       { path: "/indices/:uuid", component: "ndvi-offcanvas" },
       { path: "/cultivos", component: "color-cultivo" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add", component: "lote-offcanvas-side" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit", component: "lote-offcanvas-side" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote", component: "lote-offcanvas-side" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid_actividad/repetir", component: "repetir-aplicacion" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/nueva/:tipo", component: "upsert-aplicacion" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid/editar", component: "upsert-aplicacion" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/nueva", component: "upsert-ejecucion" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/editar", component: "upsert-ejecucion" },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add",
+        component: "lote-offcanvas-side",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit",
+        component: "lote-offcanvas-side",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote",
+        component: "lote-offcanvas-side",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid_actividad/repetir",
+        component: "repetir-aplicacion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/nueva/:tipo",
+        component: "upsert-aplicacion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid/editar",
+        component: "upsert-aplicacion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/nueva",
+        component: "upsert-ejecucion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/editar",
+        component: "upsert-ejecucion",
+      },
       { path: "/campo/add", component: "nuevo-campo" },
       { path: "/campo/:uuid", component: "campo-offcanvas" },
       { path: "/contratistas", component: "contratistas-lista" },
@@ -788,26 +816,27 @@ export class FieldPartner extends LitElement {
       { path: "/depositos", component: "depositos-lista" },
       { path: "/depositos/add", component: "depositos-upsert" },
       { path: "/insumos", component: "insumos-lista" },
-      { path: "/rights/:uuid_workspace", component:"workspace-rights"},
-      { path: "/invite/:base64_invitation", component:"link-invitacion"},
-      { path: "/device/:uuid/dashboard/:date", component:"device-route-handler"},
-      { path: "/ejecucion", component:"null"},
+      { path: "/rights/:uuid_workspace", component: "workspace-rights" },
+      { path: "/invite/:base64_invitation", component: "link-invitacion" },
+      {
+        path: "/device/:uuid/dashboard/:date",
+        component: "device-route-handler",
+      },
+      { path: "/ejecucion", component: "null" },
     ]);
   }
 
   render() {
-    console.count("FieldPartner Render")
+    console.count("FieldPartner Render");
 
     return html`
-
       <app-layout-navbar-placement>
-      <mapa-principal
-        .campos=${this.campos}
-        .settings=${this.settings}
-      ></mapa-principal>
-      <div id="router-container"></div>
+        <mapa-principal
+          .campos=${this.campos}
+          .settings=${this.settings}
+        ></mapa-principal>
+        <div id="router-container"></div>
       </app-layout-navbar-placement>
-
 
       <!-- <navbar-element .map=${this.map}></navbar-element> -->
 
@@ -846,7 +875,8 @@ export class FieldPartner extends LitElement {
         .db=${this.campos_db}
       ></depositos-lista>
 
-      <!-- <login-modal id="login-modal" .show=${!this.logged_in}></login-modal> -->
+      <!-- <login-modal id="login-modal" .show=${!this
+        .logged_in}></login-modal> -->
 
       <div id="container-multiproposito">
         <loading-modal .show=${this.loading}></loading-modal>

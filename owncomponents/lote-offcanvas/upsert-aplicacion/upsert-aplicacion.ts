@@ -49,7 +49,7 @@ import {
   Contratista,
   getContratistas,
 } from "../../contratistas/contratista-types";
-import { getInsumos, Insumo } from "../../insumos/insumos-types";
+import { getInsumos, get_lista_insumos, Insumo } from "../../insumos/insumos-types";
 import { deepcopy, get_lote_by_names } from "../../helpers";
 import { ComboBox } from "@vaadin/combo-box";
 import { TextField } from "@vaadin/text-field";
@@ -135,7 +135,7 @@ export class UpsertAplicacion extends LitElement {
   }
 
   populateInsumos() {
-    getInsumos(gbl_state.db).then((i) => {
+    get_lista_insumos(gbl_state.db).then((i) => {
       this.insumos = i;
       console.log("insumos", i);
       this.requestUpdate();

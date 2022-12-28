@@ -182,7 +182,7 @@ export class ActividadItem extends LitElement {
             <div slot="summary">Contratista</div>
 
             <ul>
-              <li>${this.item.contratista.nombre}</li>
+              <li>${this.item.contratista?.nombre || "Sin Contratista"}</li>
             </ul>
           </vaadin-details>
           <vaadin-details theme="small">

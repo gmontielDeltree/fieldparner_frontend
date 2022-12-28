@@ -62,6 +62,7 @@ const getInsumos = async (db : PouchDB.Database)=>{
     include_docs: true,
     startkey: "insumo:",
     endkey: "insumo:_\ufff0",
+    inclusive_end:true
   });
 
   if (result.rows?.length > 0) {
@@ -72,4 +73,56 @@ const getInsumos = async (db : PouchDB.Database)=>{
     return []; // Retorna una promesa vacia
   }
 }
-export { Insumo, CultivoAplicacion, get_empty_insumo, get_empty_cultivo, getInsumos };
+
+const get_lista_insumos = async (db:PouchDB.Database)=>{
+
+    let genericos : Insumo [] = await fetch("/insumos_genericos.json").then((response) =>
+        response.json()
+    );
+
+    let propios : Insumo [] = await getInsumos(db)
+
+    console.log("Insumos Gnericos y propios",genericos, propios)
+    // Hay que excluir a los insumos que fueron modificados.
+    // Filtro aquellos que tengan el mismo _id
+    let ids_propios = propios.map((insumo)=>insumo._id)
+
+    let genericos_filtrados = genericos.filter((insumo)=>!ids_propios.includes(insumo._id))
+
+    // Ahora unimos propios + genericos_filtrados
+    let result = [...genericos_filtrados,...propios]
+    return result
+}
+
+const download_lista_de_insumos = async (db : PouchDB.Database) => {
+  let data = await fetch("/products.json").then((response) =>
+          response.json()
+        );
+
+        let products = data.products;
+
+        // Insumos es la lista de "Insumos genericos/ no modificados"
+        let insumos = products.map((p: any) => {
+          let i: Insumo = get_empty_insumo();
+          i.marca_comercial = p.commercial_brand;
+          i.principio_activo = p.supply?.active_substance || "";
+          i.tipo = p.type?.name || "";
+          i.subtipo = p.subtype?.name || "";
+          i.unidad = p.unit.name || "";
+          return i;
+        });
+
+        downloadObjectAsJson(insumos,"insumos_genericos")
+}
+
+  function downloadObjectAsJson(exportObj, exportName){
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
+    var downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", exportName + ".json");
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
+export { Insumo, CultivoAplicacion, get_empty_insumo, get_empty_cultivo, getInsumos, download_lista_de_insumos, get_lista_insumos };
