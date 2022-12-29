@@ -90,7 +90,7 @@ export class Example extends LitElement {
             height="16"
             class="d-inline-block align-text-middle"
           />
-          Agrotools
+          FieldPartner
         </h1>
 
         <vaadin-tabs slot="navbar">
