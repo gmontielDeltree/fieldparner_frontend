@@ -262,13 +262,13 @@ export class UpsertAplicacion extends LitElement {
                 <!-- Contratista -->
                 <div tab="dashboard-tab">
                   <vaadin-vertical-layout
-                    style="width: 400px; max-width: 100%;"
+                    style="width: 100%; max-width: 100%;align-items: center;"
                   >
                     <vaadin-combo-box
                       label="Contratista"
                       item-label-path="nombre"
                       item-value-path="uuid"
-                      style="width: 100%;"
+                      style="width: 20em;"
                       .selectedItem=${this.actividad.contratista}
                       .items="${this.contratistas}"
                       @selected-item-changed=${(e) => {
@@ -278,7 +278,7 @@ export class UpsertAplicacion extends LitElement {
 
                     <vaadin-horizontal-layout
                       theme="spacing"
-                      style="width: 100%; justify-content: space-around;"
+                      style="width: 40em; justify-content: space-around;"
                     >
                       <vaadin-date-picker
                         label="Fecha"
@@ -494,8 +494,8 @@ export class UpsertAplicacion extends LitElement {
                 </div>
                 <!-- Fin Insumos -->
 
-                <!-- Otros Datos -->
-                ${this.tipo === "siembra" || this.tipo === "cosecha"
+                <!-- Otros Datos - no lo usemos en aplicaciones -->
+                ${null
                   ? html`<div tab="otrosdatos-tab">
                       <vaadin-horizontal-layout
                         theme="spacing"
