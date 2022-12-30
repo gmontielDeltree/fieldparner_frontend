@@ -878,9 +878,9 @@ export class FieldPartner extends LitElement {
       <!-- <login-modal id="login-modal" .show=${!this
         .logged_in}></login-modal> -->
 
-      <div id="container-multiproposito">
+      <!--<div id="container-multiproposito">
         <loading-modal .show=${this.loading}></loading-modal>
-      </div>
+      </div> -->
 
       <!-- <div id="router-container"></div> -->
     `;

@@ -254,7 +254,7 @@ export class UpsertAplicacion extends LitElement {
                         >Otros Datos</vaadin-tab
                       >`
                     : null}
-
+                  <vaadin-tab id="labores-tab">Labores</vaadin-tab>
                   <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
                   <vaadin-tab id="shipping-tab">Observaciones</vaadin-tab>
                 </vaadin-tabs>
@@ -262,13 +262,13 @@ export class UpsertAplicacion extends LitElement {
                 <!-- Contratista -->
                 <div tab="dashboard-tab">
                   <vaadin-vertical-layout
-                    style="width: 100%; max-width: 100%;align-items: center;"
+                    style="width: 100%; max-width: 100%;align-items: center; margin: var(--lumo-space-s);"
                   >
                     <vaadin-combo-box
                       label="Contratista"
                       item-label-path="nombre"
                       item-value-path="uuid"
-                      style="width: 20em;"
+                      style="width: 100%; max-width: 20em;"
                       .selectedItem=${this.actividad.contratista}
                       .items="${this.contratistas}"
                       @selected-item-changed=${(e) => {
@@ -278,7 +278,7 @@ export class UpsertAplicacion extends LitElement {
 
                     <vaadin-horizontal-layout
                       theme="spacing"
-                      style="width: 40em; justify-content: space-around;"
+                      style="width: 100%; justify-content: center; flex-wrap: wrap;"
                     >
                       <vaadin-date-picker
                         label="Fecha"
@@ -494,6 +494,19 @@ export class UpsertAplicacion extends LitElement {
                 </div>
                 <!-- Fin Insumos -->
 
+<!--Labores-->
+<div tab="labores-tab">
+                      <vaadin-horizontal-layout
+                        theme="spacing"
+                        style="width: 100%;"
+                      >
+                        <vaadin-text-area
+                          style="flex-grow: 1; margin: var(--lumo-space-s);"
+                          value=${this.actividad.comentario}
+                        ></vaadin-text-area>
+                      </vaadin-horizontal-layout>
+                    </div>
+<!-- Fin Labores -->
                 <!-- Otros Datos - no lo usemos en aplicaciones -->
                 ${null
                   ? html`<div tab="otrosdatos-tab">

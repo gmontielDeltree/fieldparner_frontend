@@ -194,7 +194,7 @@ export class MapaPrincipal extends LitElement {
       style: mapStyle,
       //style:"mapbox://styles/mapbox/satellite-v9?optimize=true",
       center: [-59.2965, -35.1923],
-      zoom: 6,
+      zoom: 14,
       attributionControl: true,
       preserveDrawingBuffer: false,
     });
