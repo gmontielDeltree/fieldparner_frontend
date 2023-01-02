@@ -148,6 +148,7 @@ interface Detalles {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
   dosis: LineaDosis[];
+  costo_labor: LineaLabor[];
   // Cosecha
   rinde?: number;
   humedad?: number;
@@ -224,10 +225,10 @@ const get_empty_aplicacion = () => {
       hectareas: 0,
       motivos: "",
       dosis: [],
+      costo_labor: []
     } as Detalles,
     condiciones:{
       temperatura_max:25,
-
       temperatura_min:0,
       humedad_min:45,
       humedad_max:65,
@@ -252,6 +253,7 @@ const get_empty_ejecucion = () => {
       fecha_ejecucion: "",
       hectareas: 0,
       dosis: [],
+      costo_labor:[]
     },
     condiciones:{
       temperatura_max:25,

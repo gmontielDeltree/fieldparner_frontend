@@ -228,7 +228,26 @@ export class UpsertAplicacion extends LitElement {
     });
   }
 
+  private responsiveSteps: FormLayoutResponsiveStep[] = [
+    { minWidth: 0, columns: 1 },
+    { minWidth: '20em', columns: 4 },
+  ];
+
   render() {
+    const labores_form = html`<vaadin-form-layout .responsiveSteps=${this.responsiveSteps} >
+        <vaadin-combo-box label=${translate("labor")}></vaadin-combo-box>
+        <vaadin-number-field label=${translate("precio")}>
+          <div slot="suffix">USD</div>
+        </vaadin-number-field>
+        <vaadin-text-field label=${translate('comentario')}></vaadin-text-field>
+        <vaadin-button>
+        ${translate('agregar')}
+        </vaadin-button>
+      </vaadin-form-layout>
+      ${this.actividad.detalles.costo_labor.length > 0
+        ? html`<vaadin-grid> </vaadin-grid>`
+        : html`<div></div>`} `;
+
     console.count("UpsertAplicacion-Render");
     return html`
       <div id="modal" class="modal" tabindex="-1">
@@ -282,7 +301,7 @@ export class UpsertAplicacion extends LitElement {
                     ></vaadin-combo-box>
 
                     <vaadin-date-picker
-                      label="Fecha"
+                      label=${translate("fecha")}
                       helper-text="Tentativa de ejecución"
                       value="2022-12-03"
                       placeholder="YYYY-MM-DD"
@@ -319,126 +338,159 @@ export class UpsertAplicacion extends LitElement {
                     lote y los valores se ajustaran automaticamente
                   </vaadin-horizontal-layout>
 
- <vaadin-details opened theme="small">
-                  <div slot='summary'>Lista de Insumos</div>
-
-                  <vaadin-vertical-layout
-                    theme="spacing"
-                    style="justify-content: center"
+                  <vaadin-details
+                    id="lista-insumos-detalles"
+                    opened
+                    theme="small"
                   >
+                    <div slot="summary">Lista de Insumos</div>
 
-                  ${this.actividad.detalles.dosis.length > 0 ? html`
-                    <vaadin-grid
-                      .items=${(this.actividad.detalles as DetallesAplicacion)
-                        .dosis}
-                      style="width: 100%; max-width: 100%; align-self: center;"
-                      all-rows-visible
+                    <vaadin-vertical-layout
+                      theme="spacing"
+                      style="justify-content: center"
                     >
-                      <vaadin-grid-column
-                        header="Nombre"
-                        auto-width
-                        ${columnBodyRenderer<LineaDosis>((item) => {
-                          console.log("render item", item);
-                          return html`<vaadin-vertical-layout
-                            style="line-height: var(--lumo-line-height-s);"
+                      ${this.actividad.detalles.dosis.length > 0
+                        ? html` <vaadin-grid
+                            .items=${(
+                              this.actividad.detalles as DetallesAplicacion
+                            ).dosis}
+                            style="width: 100%; max-width: 100%; align-self: center;"
+                            all-rows-visible
                           >
-                            <span>${item.insumo.marca_comercial}</span>
-                            <span
-                              style="font-size: var(--lumo-font-size-s); color: var(--lumo-secondary-text-color);"
-                            >
-                              ${item.insumo.principio_activo}
-                            </span>
-                          </vaadin-vertical-layout>`;
-                        }, this.actividad.detalles.dosis)}
-                      ></vaadin-grid-column>
+                            <vaadin-grid-column
+                              header="Nombre"
+                              auto-width
+                              ${columnBodyRenderer<LineaDosis>((item) => {
+                                console.log("render item", item);
+                                return html`<vaadin-vertical-layout
+                                  style="line-height: var(--lumo-line-height-s);"
+                                >
+                                  <span>${item.insumo.marca_comercial}</span>
+                                  <span
+                                    style="font-size: var(--lumo-font-size-s); color: var(--lumo-secondary-text-color);"
+                                  >
+                                    ${item.insumo.principio_activo}
+                                  </span>
+                                </vaadin-vertical-layout>`;
+                              }, this.actividad.detalles.dosis)}
+                            ></vaadin-grid-column>
 
-                      <vaadin-grid-column
-                        header="Dosis (por ha.)"
-                        auto-width
-                        ${columnBodyRenderer<any>(
-                          (item) => html` <vaadin-text-field
-                            maxlength="5"
-                            value=${item.dosis}
-                            @change=${(e) => (item.dosis = +e.target.value)}
-                          >
-                            <div slot="suffix">${item.insumo.unidad}/Ha</div>
-                          </vaadin-text-field>`,
-                          []
-                        )}
-                      ></vaadin-grid-column>
+                            <vaadin-grid-column
+                              header="Dosis (por ha.)"
+                              auto-width
+                              ${columnBodyRenderer<any>(
+                                (item) => html` <vaadin-text-field
+                                  maxlength="5"
+                                  value=${item.dosis}
+                                  @change=${(e) =>
+                                    (item.dosis = +e.target.value)}
+                                >
+                                  <div slot="suffix">
+                                    ${item.insumo.unidad}/Ha
+                                  </div>
+                                </vaadin-text-field>`,
+                                []
+                              )}
+                            ></vaadin-grid-column>
 
-                      <vaadin-grid-column
-                        header="Total"
-                        auto-width
-                        ${columnBodyRenderer<LineaDosis>(
-                          (item) => html` <vaadin-text-field
-                            maxlength="5"
-                            value=${item.total}
-                            @change=${(e) => (item.total = +e.target.value)}
-                          >
-                            <div slot="suffix">${item.insumo.unidad}</div>
-                          </vaadin-text-field>`,
-                          []
-                        )}
-                      ></vaadin-grid-column>
+                            <vaadin-grid-column
+                              header="Total"
+                              auto-width
+                              ${columnBodyRenderer<LineaDosis>(
+                                (item) => html` <vaadin-text-field
+                                  maxlength="5"
+                                  value=${item.total}
+                                  @change=${(e) =>
+                                    (item.total = +e.target.value)}
+                                >
+                                  <div slot="suffix">${item.insumo.unidad}</div>
+                                </vaadin-text-field>`,
+                                []
+                              )}
+                            ></vaadin-grid-column>
 
-                      <vaadin-grid-column
-                        header="Motivos"
-                        auto-width
-                        ${columnBodyRenderer<LineaDosis>(
-                          (item) => html`<vaadin-multi-select-combo-box
-                            item-label-path="nombre"
-                            item-id-path="id"
-                            .items=${motivos_items}
-                            .selectedItems=${item.motivos}
-                          ></vaadin-multi-select-combo-box>`,
-                          []
-                        )}
-                      ></vaadin-grid-column>
+                            <vaadin-grid-column
+                              header="Motivos"
+                              auto-width
+                              ${columnBodyRenderer<LineaDosis>(
+                                (item) => html`<vaadin-multi-select-combo-box
+                                  item-label-path="nombre"
+                                  item-id-path="id"
+                                  .items=${motivos_items}
+                                  .selectedItems=${item.motivos}
+                                ></vaadin-multi-select-combo-box>`,
+                                []
+                              )}
+                            ></vaadin-grid-column>
 
-                      <vaadin-grid-column
-                        header="Precio"
-                        auto-width
-                        ${columnBodyRenderer<LineaDosis>(
-                          (item) => html`<vaadin-number-field
-                            value="precio_estimado"
-                          ></vaadin-number-field>`,
-                          []
-                        )}
-                      ></vaadin-grid-column>
+                            <vaadin-grid-column
+                              header="Precio"
+                              auto-width
+                              ${columnBodyRenderer<LineaDosis>(
+                                (item) => html`<vaadin-number-field
+                                  value="${item.precio_estimado}"
+                                  @change=${(e) =>
+                                    (item.precio_estimado = +e.target.value)}
+                                >
+                                  <div slot="suffix">
+                                    ${item.insumo?.unidad
+                                      ? "USD/" + item.insumo.unidad
+                                      : ""}
+                                  </div></vaadin-number-field
+                                >`,
+                                []
+                              )}
+                            ></vaadin-grid-column>
 
-                      <vaadin-grid-column
-                        frozen-to-end
-                        auto-width
-                        flex-grow="0"
-                        ${columnBodyRenderer(
-                          (item) => html`
-                            <vaadin-button
-                              @click=${() => this.borrar(item as LineaDosis)}
-                              theme="icon"
-                              aria-label="borrar item"
-                            >
-                              <vaadin-icon icon="vaadin:trash"></vaadin-icon>
-                              <vaadin-tooltip
-                                slot="tooltip"
-                                text="Borrar"
-                              ></vaadin-tooltip>
-                            </vaadin-button>
-                          `,
-                          []
-                        )}
-                      ></vaadin-grid-column>
-                    </vaadin-grid>`
-                    : html`<div>Sin Insumos Agregados</div>`
-                  }
-
-                  </vaadin-vertical-layout>
-
+                            <vaadin-grid-column
+                              frozen-to-end
+                              auto-width
+                              flex-grow="0"
+                              ${columnBodyRenderer(
+                                (item) => html`
+                                  <vaadin-button
+                                    @click=${() =>
+                                      this.borrar(item as LineaDosis)}
+                                    theme="icon"
+                                    aria-label="borrar item"
+                                  >
+                                    <vaadin-icon
+                                      icon="vaadin:trash"
+                                    ></vaadin-icon>
+                                    <vaadin-tooltip
+                                      slot="tooltip"
+                                      text="Borrar"
+                                    ></vaadin-tooltip>
+                                  </vaadin-button>
+                                `,
+                                []
+                              )}
+                            ></vaadin-grid-column>
+                          </vaadin-grid>`
+                        : html`<div>Sin Insumos Agregados</div>
+                            <vaadin-horizontal-layout
+                              style="align-items=center;"
+                              ><vaadin-button
+                                @click=${() => {
+                                  document.getElementById(
+                                    "agregar-insumo-detalles"
+                                  ).opened = true;
+                                  document.getElementById(
+                                    "lista-insumos-detalles"
+                                  ).opened = false;
+                                }}
+                                >${translate("agregar")}</vaadin-button
+                              ></vaadin-horizontal-layout
+                            >`}
+                    </vaadin-vertical-layout>
                   </vaadin-details>
 
-                  <vaadin-details opened theme="small">
-
-                  <div slot="summary">Agregar Insumo</div>
+                  <vaadin-details
+                    id="agregar-insumo-detalles"
+                    opened
+                    theme="small"
+                  >
+                    <div slot="summary">Agregar Insumo</div>
                     <vaadin-form-layout>
                       <vaadin-combo-box
                         id="insumo1"
@@ -450,6 +502,8 @@ export class UpsertAplicacion extends LitElement {
                         .selected-item=${this.linea_de_dosis.insumo}
                         @selected-item-changed=${(e) => {
                           this.linea_de_dosis.insumo = e.detail.value;
+                          this.linea_de_dosis.precio_estimado =
+                            this.linea_de_dosis.insumo.precio;
                           this.requestUpdate();
                         }}
                       ></vaadin-combo-box>
@@ -461,7 +515,8 @@ export class UpsertAplicacion extends LitElement {
                           this.linea_de_dosis.dosis = +e.target.value;
                           this.linea_de_dosis.total = truncar(
                             this.linea_de_dosis.dosis *
-                            this.actividad.detalles.hectareas)
+                              this.actividad.detalles.hectareas
+                          );
                           this.requestUpdate();
                         }}
                         clear-button-visible
@@ -481,7 +536,8 @@ export class UpsertAplicacion extends LitElement {
                           this.linea_de_dosis.total = +e.target.value;
                           this.linea_de_dosis.dosis = truncar(
                             this.linea_de_dosis.total /
-                            this.actividad.detalles.hectareas)
+                              this.actividad.detalles.hectareas
+                          );
                           this.requestUpdate();
                         }}
                       >
@@ -510,6 +566,11 @@ export class UpsertAplicacion extends LitElement {
                           this.linea_de_dosis.precio_estimado = e.target.value;
                         }}
                       >
+                        <div slot="suffix">
+                          ${this.linea_de_dosis.insumo?.unidad
+                            ? "USD/" + this.linea_de_dosis.insumo.unidad
+                            : ""}
+                        </div>
                       </vaadin-number-field>
 
                       <vaadin-button
@@ -519,41 +580,12 @@ export class UpsertAplicacion extends LitElement {
                       >
                     </vaadin-form-layout>
                   </vaadin-details>
-
-
-                 
                 </div>
                 <!-- Fin Insumos -->
 
                 <!--Labores-->
-                <div tab="labores-tab">
-                  <vaadin-horizontal-layout
-                    theme="spacing"
-                    style="width: 100%;"
-                  >
-                    <vaadin-text-area
-                      style="flex-grow: 1; margin: var(--lumo-space-s);"
-                      value=${this.actividad.comentario}
-                    ></vaadin-text-area>
-                  </vaadin-horizontal-layout>
-                </div>
+                <div tab="labores-tab">${labores_form}</div>
                 <!-- Fin Labores -->
-                <!-- Otros Datos - no lo usemos en aplicaciones -->
-                ${null
-                  ? html`<div tab="otrosdatos-tab">
-                      <vaadin-horizontal-layout
-                        theme="spacing"
-                        style="width: 100%;"
-                      >
-                        <vaadin-text-area
-                          style="flex-grow: 1; margin: var(--lumo-space-s);"
-                          value=${this.actividad.comentario}
-                        ></vaadin-text-area>
-                      </vaadin-horizontal-layout>
-                    </div>`
-                  : null}
-
-                <!-- Otros -->
 
                 <!-- observaciones -->
                 <div tab="shipping-tab">
@@ -574,15 +606,12 @@ export class UpsertAplicacion extends LitElement {
                 <!-- observaciones-->
 
                 <div tab="condiciones-tab">
-                  <vaadin-vertical-layout
+                  <vaadin-form-layout
                     style="width: 100%; height: 100%; align-items: center; margin: var(--lumo-space-s);"
                   >
                     Ingrese los umbrales para los valores recomendados de las
                     variables meteorológicas.
-                    <vaadin-horizontal-layout
-                      theme="spacing"
-                      style="flex-wrap: wrap; justify-content: center;"
-                    >
+             
                       <vaadin-text-field
                         label="Temperatura Min"
                         value=${this.actividad.condiciones.temperatura_min}
@@ -607,11 +636,8 @@ export class UpsertAplicacion extends LitElement {
                       >
                         <div slot="suffix">ºC</div>
                       </vaadin-text-field>
-                    </vaadin-horizontal-layout>
-                    <vaadin-horizontal-layout
-                      theme="spacing"
-                      style="flex-wrap: wrap; justify-content: center;"
-                    >
+
+               
                       <vaadin-text-field
                         label="Humedad Min"
                         value=${this.actividad.condiciones.humedad_min}
@@ -636,11 +662,8 @@ export class UpsertAplicacion extends LitElement {
                       >
                         <div slot="suffix">%</div>
                       </vaadin-text-field>
-                    </vaadin-horizontal-layout>
-                    <vaadin-horizontal-layout
-                      theme="spacing"
-                      style="flex-wrap: wrap; justify-content: center;"
-                    >
+
+                 
                       <vaadin-text-field
                         label="Viento Min"
                         value=${this.actividad.condiciones.velocidad_min}
@@ -665,11 +688,13 @@ export class UpsertAplicacion extends LitElement {
                       >
                         <div slot="suffix">km/h</div>
                       </vaadin-text-field>
-                    </vaadin-horizontal-layout>
-                  </vaadin-vertical-layout>
+                      </vaadin-form-layout>
                 </div>
+                <!-- Fin Condiciones -->
               </vaadin-tabsheet>
-            </div>
+
+
+            </div> <!-- Fin Body modal --> 
             <div class="modal-footer">
               <button
                 type="button"
@@ -713,7 +738,6 @@ export class UpsertAplicacion extends LitElement {
     `;
   }
 }
-
 
 function truncar(x) {
   return +x.toPrecision(4);
