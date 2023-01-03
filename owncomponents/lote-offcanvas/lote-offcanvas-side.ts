@@ -534,7 +534,7 @@ export class LoteOffcanvasSide extends LitElement {
         return actividades[siembras].detalles.cultivo;
       }
     } else {
-      return "Cultivo Desconocido";
+      return ""; // No Pongo nada si no se nada
     }
   }
 
@@ -563,7 +563,7 @@ export class LoteOffcanvasSide extends LitElement {
         ultima_siembra[0].detalles.variedad
       );
     } else {
-      return "Cultivo Desconocido";
+      return ""; // No Pongo nada si no se nada
     }
   }
 
