@@ -277,6 +277,8 @@ export class UpsertAplicacion extends LitElement {
         <vaadin-combo-box
           item-label-path="labor"
           item-value-path="uuid"
+          required
+          error-message=${translate("campo_requerido")}
           label=${translate("labor")}
           .items=${labores}
           @selected-item-changed=${(e) => {
@@ -403,6 +405,9 @@ export class UpsertAplicacion extends LitElement {
                       label="Contratista"
                       item-label-path="nombre"
                       item-value-path="uuid"
+                      helper-text=${this.contratistas.length === 0 ? translate("no_contratistas"):""}
+                      required
+                      error-message=${translate("campo_requerido")}
                       colspan="2"
                       .selectedItem=${this.actividad.contratista}
                       .items="${this.contratistas}"

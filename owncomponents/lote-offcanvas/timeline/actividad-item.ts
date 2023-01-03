@@ -42,23 +42,32 @@ export class ActividadItem extends LitElement {
         {
           text: "Repetir Planificacion",
           tooltip: "Repetir",
+          value: "repetir_actividad",
+          callback: () => this.repetir_aplicacion(),
         },
         {
           text: "Orden de Trabajo PDF",
           tooltip: "Orden de Trabajo",
+          value: "ver_orden_de_trabajo",
+          callback: () => this.evento_download_pdf(),
         },
         {
           text: "Compartir Orden de Trabajo",
           tooltip: "Compartir",
+          value: "compartir_orden_de_trabajo",
+          callback: () => this.evento_share_pdf(),
         },
         {
           text: "Datos Meteorológicos",
           tooltip: "Archive",
+          value: "ver_centrales",
+          callback: () => this.ver_centrales_cercanas(),
         },
         {
           text: "Eliminar",
           tooltip: "Archive",
           value: "eliminar",
+          callback: () => this.borrar_actividad(),
         },
       ],
     },
@@ -111,26 +120,30 @@ export class ActividadItem extends LitElement {
   }
 
   menu_click({ detail }) {
-    //console.log("CLICK,", detail)
-    let valor = detail.value.value;
-    if (valor === "eliminar") {
-      console.log("Borrar Actividad");
-      gbl_state.db.remove(this.item as PouchDB.Core.RemoveDocument);
-      if (this.ejecucion) {
-        gbl_state.db.remove(this.ejecucion as PouchDB.Core.RemoveDocument);
-      }
-      this.solicitar_refresco();
-    }else if (valor === "editar"){
-      console.log("EDITAR")
-      if(!this.ejecucion){
-        this.editar_actividad(this.item)
-      }else{
-        this.editar_ejecucion(this.ejecucion)
-      }
-
-    }else if (valor === "eliminar"){
-      
+    /* Si tiene un callback, lo ejecuto */
+    if (detail.value.callback) {
+      detail.value.callback();
+      return;
     }
+
+    // si no
+    let valor = detail.value.value;
+    if (valor === "editar") {
+      if (!this.ejecucion) {
+        this.editar_actividad(this.item);
+      } else {
+        this.editar_ejecucion(this.ejecucion);
+      }
+    }
+  }
+
+  borrar_actividad() {
+    console.log("Borrar Actividad");
+    gbl_state.db.remove(this.item as PouchDB.Core.RemoveDocument);
+    if (this.ejecucion) {
+      gbl_state.db.remove(this.ejecucion as PouchDB.Core.RemoveDocument);
+    }
+    this.solicitar_refresco();
   }
 
   solicitar_refresco() {
@@ -141,22 +154,26 @@ export class ActividadItem extends LitElement {
     this.dispatchEvent(ev);
   }
 
-  evento_download_pdf(item) {
+  evento_download_pdf() {
     const event = new CustomEvent("generar-ot", {
-      detail: item,
+      detail: this.item,
       bubbles: true,
       composed: true,
     });
     this.dispatchEvent(event);
+
+    this.anotar_orden_generada(this.item);
   }
 
-  evento_share_pdf(uuid) {
+  evento_share_pdf() {
     const event = new CustomEvent("share-ot", {
-      detail: { uuid: uuid },
+      detail: { uuid: this.item.uuid },
       bubbles: true,
       composed: true,
     });
     this.dispatchEvent(event);
+
+    this.anotar_orden_generada(this.item);
   }
 
   anotar_orden_generada(item: Actividad) {
@@ -167,16 +184,28 @@ export class ActividadItem extends LitElement {
       .catch((e) => alert("Error al generar Orden"));
   }
 
-  editar_actividad(actividad : Actividad){
-    let url_tail = `/actividad/editar/${actividad.uuid}`
-    let url_head = gbl_state.router.location.pathname
+  editar_actividad(actividad: Actividad) {
+    let url_tail = `/actividad/editar/${actividad.uuid}`;
+    let url_head = gbl_state.router.location.pathname;
     let target_url = url_head + url_tail;
-    console.log("GoTo",target_url)
-    Router.go(target_url)
+    console.log("GoTo", target_url);
+    Router.go(target_url);
   }
 
-  editar_ejecucion(ejecucion : Ejecucion){
+  editar_ejecucion(ejecucion: Ejecucion) {}
 
+  repetir_aplicacion() {
+    console.error("Repetir no implementado");
+  }
+
+  ver_centrales_cercanas() {
+    this.dispatchEvent(
+      new CustomEvent("ver-centrales-cercanas", {
+        detail: this.item,
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   render() {
@@ -218,16 +247,14 @@ export class ActividadItem extends LitElement {
           <vaadin-vertical-layout>
             <vaadin-button
               @click=${() => {
-                this.evento_download_pdf(this.item);
-                this.anotar_orden_generada(this.item);
+                this.evento_download_pdf();
               }}
               >${translate("descargar_orden")}</vaadin-button
             >
             ${navigator.share
               ? html`<vaadin-button
                   @click=${() => {
-                    this.evento_share_pdf(this.item);
-                    this.anotar_orden_generada(this.item);
+                    this.evento_share_pdf();
                   }}
                   >${translate("compartir_orden")}></vaadin-button
                 >`

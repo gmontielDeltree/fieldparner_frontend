@@ -45,7 +45,11 @@ import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 import uuid4 from "uuid4";
-import { download_lista_de_insumos, get_empty_insumo, Insumo } from "../insumos/insumos-types";
+import {
+  download_lista_de_insumos,
+  get_empty_insumo,
+  Insumo,
+} from "../insumos/insumos-types";
 import { Actividad } from "../depositos/depositos-types";
 import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { format, parse } from "date-fns";
@@ -135,76 +139,28 @@ export class FieldPartner extends LitElement {
     this.addEventListener("ver-campo-detalles", (e: any) => {
       let campo_doc_id = e.detail.campo_id; // el ID del doc del campo ("campo:el remanso")
       Router.go("campo/" + encodeURIComponent(campo_doc_id));
-
-      // this.campos_db.get(e.detail.campo_id).then((campo_doc) => {
-      //   document.getElementById("campo-oc").campo_doc = campo_doc;
-      //   document.getElementById("campo-oc").show();
-      // });
     });
 
     this.addEventListener("ver-lote-detalles", (e: CustomEvent) => {
       let campo_doc_id_enc = encodeURIComponent(e.detail.campo_parent_id);
       let lote_nombre = encodeURIComponent(e.detail.nombre);
       Router.go("campo/" + campo_doc_id_enc + "/lote/" + lote_nombre);
-      // document.getElementById("campo-oc").hide();
-      // document.getElementById("lote-oc").lote_nombre = e.detail.nombre;
-      // document.getElementById("lote-oc").campo_id = e.detail.campo_parent_id;
-      // document.getElementById("lote-oc").show();
     });
 
     this.addEventListener("nuevo-campo-click", (e) => {
       document.getElementById("nuevo-campo-oc").show = true;
     });
 
-    // this.addEventListener("ver-ndvi-click", (e: CustomEvent) => {
-    //   //document.getElementById("ndvi-oc").lote_doc = e.detail.lote;
-    //   //document.getElementById("ndvi-oc").show();
-
-    //   const el = document.createElement("ndvi-offcanvas");
-    //   document.getElementById("container-multiproposito").appendChild(el);
-    //   el.map = this.map;
-    //   el.id = "ndvi-oc";
-    //   el.lote_doc = e.detail.lote;
-    //   el.show();
-    // });
-
-    this.addEventListener("generar-ndvi", async (e: CustomEvent) => {
-      // let couch_username = normalizar_username(this.user.name);
-      // console.log("gen ndvi evnet");
-      // if (!(await ndvi_generado_hoy(e.detail.lote_geojson.geometry))) {
-      //   this.changes_db.put(
-      //     {
-      //       _id: uuid4(),
-      //       tipo: "add-lote",
-      //       username: couch_username,
-      //       details: {
-      //         campo_id: "thisCampoId",
-      //         db: "campos_" + couch_username,
-      //         lote_geojson: e.detail.lote_geojson,
-      //         username: couch_username,
-      //       },
-      //     },
-      //     (err: any, _: any) => {
-      //       if (!err) {
-      //         console.log("LocalChanges para NDVI Successfully posted!");
-      //       } else {
-      //         console.log(err);
-      //       }
-      //     }
-      //   );
-      // }
-    });
-
     this.addEventListener("nuevo-deposito-click", () => {
       document.getElementById("deposito-upsert").show();
     });
 
-    this.addEventListener("lote-seleccionado", (e : CustomEvent) => {
+    this.addEventListener("lote-seleccionado", (e: CustomEvent) => {
       document.getElementById("nota-share-target").seleccion(e.detail);
     });
 
     /* Izar map y draw a este componente para que los otros puedan usarlo */
-    this.addEventListener("map-loaded", (e) => {
+    this.addEventListener("map-loaded", (e : CustomEvent) => {
       this.map = e.detail.map;
 
       gbl_state.map = e.detail.map;
@@ -215,11 +171,6 @@ export class FieldPartner extends LitElement {
 
       let devices = new Devices();
       devices.add_markers_to_map(this.map);
-    });
-
-    /* Click en ver lista de campos */
-    this.addEventListener("ver-lista-campos", (e) => {
-      document.getElementById("lista-de-campos").show();
     });
 
     /* Click en ver lista de depositios */
@@ -300,57 +251,14 @@ export class FieldPartner extends LitElement {
           date: fecha,
         })
       );
-
-      // const el = document.createElement("sensores-oc");
-      // document.getElementById("container-multiproposito").appendChild(el);
-      // console.log("VER TELE DEL DIA", daily_card);
-      // el.map = this.map;
-      // el.show(daily_card);
     });
 
     // Borrar un Campo
-    this.addEventListener("borrar-campo", (e) => {
+    this.addEventListener("borrar-campo", (e : CustomEvent) => {
       this.campos_db.remove(e.detail.campo_doc).then(() => {
         alert("Campo borrado");
         this.load_campos_y_settings();
       });
-    });
-
-    // Share Campo
-    this.addEventListener("share-campo", (e: any) => {
-      console.log("share campo", e.detail);
-
-      let nuevo_shared_campo = { ...e.detail.campo_doc };
-      nuevo_shared_campo.shared = true;
-      nuevo_shared_campo.share_with = [...e.detail.share_with];
-      // Me agrego a mi mismo para compartir
-
-      nuevo_shared_campo.share_with.push(normalizar_username(this.user.name));
-      //
-      nuevo_shared_campo.owner = this.user;
-      // Lo grabo en campos_db
-      this.campos_db
-        .put(nuevo_shared_campo)
-        .then(() => alert("Campo compartido"));
-
-      // Lo upserto en shared_db
-      // this.shared_db_remote.get(nuevo_shared_campo._id).then(old_doc => {
-      //   nuevo_shared_campo._rev = old_doc._rev
-      //   this.shared_db_remote.put(nuevo_shared_campo)
-      // }).catch((e)=>{
-      //   if(e.reason === 'missing'){
-      //     // debe tener _rev si es nuevo
-      //     //delete nuevo_shared_campo._rev
-      //     //this.shared_db_remote.put(nuevo_shared_campo).catch((e)=>{
-      //     //console.log("Error al crear nuevo shared_campo",e)
-      //     // })
-      //   }
-      // });
-    });
-
-    this.addEventListener("lote-detalles-hide", (e) => {
-      // console.log("HIDE LOTE DETALLES");
-      // document.getElementById("campo-oc").show();
     });
 
     this.init_the_whole_thing();
@@ -367,43 +275,6 @@ export class FieldPartner extends LitElement {
   ): void {
     console.log("FieldPartner-WillUpdate", _changedProperties);
   }
-
-  delete_insumos = async () => {};
-
-  inicializar_insumos = async () => {
-    try {
-      // let settings = await this.campos_db.get("settings");
-
-      // if (!settings.insumos_inicializados) {
-      //   console.log("No hay insumos...Fetching");
-      //   let data = await fetch("/products.json").then((response) =>
-      //     response.json()
-      //   );
-      //   let products = data.products;
-      //   let insumos = products.map((p: any) => {
-      //     let i: Insumo = get_empty_insumo();
-      //     i.marca_comercial = p.commercial_brand;
-      //     i.principio_activo = p.supply?.active_substance || "";
-      //     i.tipo = p.type?.name || "";
-      //     i.subtipo = p.subtype?.name || "";
-      //     i.unidad = p.unit.name || "";
-      //     return i;
-      //   });
-
-      //   // this.campos_db.bulkDocs(insumos).then((d)=>{
-      //   //   settings.insumos_inicializados=true;
-      //   //   this.campos_db.put(settings)
-      //   //   this.settings = settings;
-      //   // });
-
-      //   console.log("INSUMOS", insumos);
-      // } else {
-      //   console.log("Los Insumos ya fueron Inicializados");
-      // }
-    } catch (e) {
-      console.error("No settings", e);
-    }
-  };
 
   async init_the_whole_thing() {
     let sitio = window.location.hostname;
@@ -667,39 +538,11 @@ export class FieldPartner extends LitElement {
 
     settings_doc.user_cultivos = cultivos_default;
 
-    try {
-      console.log("No hay insumos...Fetching");
-      let data = await fetch("/products.json").then((response) =>
-        response.json()
-      );
-      let products = data.products;
+    this.campos_db
+      .put(settings_doc)
+      .then(() => console.log("Settings Grabadas"));
 
-      let insumos = products.map((p: any) => {
-        let i: Insumo = get_empty_insumo();
-        i.marca_comercial = p.commercial_brand;
-        i.principio_activo = p.supply?.active_substance || "";
-        i.tipo = p.type?.name || "";
-        i.subtipo = p.subtype?.name || "";
-        i.unidad = p.unit.name || "";
-        return i;
-      });
-
-      console.log("BulkDocs Insumos");
-      this.campos_db.bulkDocs(insumos).then((d) => {
-        settings_doc.insumos_inicializados = true;
-        // Grabar Settings DOC
-        this.campos_db.put(settings_doc);
-        this.settings = settings_doc;
-      });
-
-      console.log("INSUMOS", insumos);
-    } catch (e) {
-      console.error("Error Fetch Insumos", e);
-      // Grabo de todas maneras el resto de settings
-      this.campos_db.put(settings_doc);
-      console.log("Settings Grabadas");
-      this.settings = settings_doc;
-    }
+    this.settings = settings_doc;
   }
 
   /** Recarga los campos y settings.
@@ -732,39 +575,6 @@ export class FieldPartner extends LitElement {
         }
         console.error("Load Settings", e);
       });
-
-    // this.campos_db
-    //   .compact()
-    //   .then((result) => {
-    //     // handle result
-    //     console.log("Compactacion Local DB Completada");
-
-    //     // Get Campos
-    //     this.campos_db
-    //       .allDocs({
-    //         include_docs: true,
-    //         startkey: "campos_",
-    //         endkey: "campos_\ufff0",
-    //       })
-    //       .then((result) => (this.campos = result));
-
-    //     // Get Settings
-    //     this.campos_db
-    //       .get("settings")
-    //       .then((settings_doc) => {
-    //         this.settings = settings_doc;
-    //         this.inicializar_insumos();
-    //       })
-    //       .catch((e) => {
-    //         if (e?.reason === "missing") {
-    //           this.init_settings();
-    //         }
-    //         console.error("Load Settings", e);
-    //       });
-    //   })
-    //   .catch(function (err) {
-    //     console.log(err);
-    //   });
   }
   /**** FIN Bases de Datos */
   // #endregion
@@ -878,9 +688,9 @@ export class FieldPartner extends LitElement {
       <!-- <login-modal id="login-modal" .show=${!this
         .logged_in}></login-modal> -->
 
-      <!--<div id="container-multiproposito">
+      <div id="container-multiproposito">
         <loading-modal .show=${this.loading}></loading-modal>
-      </div> -->
+      </div>
 
       <!-- <div id="router-container"></div> -->
     `;
