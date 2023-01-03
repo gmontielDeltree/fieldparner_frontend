@@ -798,7 +798,7 @@ export class FieldPartner extends LitElement {
         component: "upsert-aplicacion",
       },
       {
-        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid/editar",
+        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/editar/:uuid",
         component: "upsert-aplicacion",
       },
       {

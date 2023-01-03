@@ -193,7 +193,6 @@ interface Actividad {
   texto?: string;
   posicion?: number[];
   condiciones?: Condiciones;
-
   _attachments?: any;
 }
 
