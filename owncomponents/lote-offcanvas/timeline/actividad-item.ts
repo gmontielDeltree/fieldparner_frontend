@@ -10,6 +10,7 @@ import "@vaadin/icons";
 import "@vaadin/button";
 import "@vaadin/details";
 import "@vaadin/horizontal-layout";
+import "@vaadin/vertical-layout";
 import "@vaadin/upload";
 import "@vaadin/menu-bar";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
@@ -44,11 +45,11 @@ export class ActividadItem extends LitElement {
         },
         {
           text: "Orden de Trabajo PDF",
-          tooltip: "Move",
+          tooltip: "Orden de Trabajo",
         },
         {
           text: "Compartir Orden de Trabajo",
-          tooltip: "Duplicate",
+          tooltip: "Compartir",
         },
         {
           text: "Datos Meteorológicos",
@@ -130,6 +131,32 @@ export class ActividadItem extends LitElement {
     this.dispatchEvent(ev);
   }
 
+  evento_download_pdf(item) {
+    const event = new CustomEvent("generar-ot", {
+      detail: item,
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+
+  evento_share_pdf(uuid) {
+    const event = new CustomEvent("share-ot", {
+      detail: { uuid: uuid },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+
+  anotar_orden_generada(item: Actividad) {
+    item.estado = 1;
+    gbl_state.db
+      .put(item)
+      .then(() => this.requestUpdate())
+      .catch((e) => alert("Error al generar Orden"));
+  }
+
   render() {
     let fecha = this.get_fecha_plan_o_ejecucion();
 
@@ -166,19 +193,33 @@ export class ActividadItem extends LitElement {
         </vaadin-tabs>
 
         <div tab="orden-trabajo-tab">
-          ${this.item.estado === 0
-            ? // Orden no Generada
-              html`<div>Generar Orden de Trabajo</div>`
-            : html`<div>FDFD</div>`}
+          <vaadin-vertical-layout>
+            <vaadin-button
+              @click=${() => {
+                this.evento_download_pdf(this.item);
+                this.anotar_orden_generada(this.item);
+              }}
+              >${translate("descargar_orden")}</vaadin-button
+            >
+            ${navigator.share
+              ? html`<vaadin-button
+                  @click=${() => {
+                    this.evento_share_pdf(this.item);
+                    this.anotar_orden_generada(this.item);
+                  }}
+                  >${translate("compartir_orden")}></vaadin-button
+                >`
+              : null}
+          </vaadin-vertical-layout>
         </div>
 
         <!-- Planificacion -->
         <div tab="dashboard-tab">
-          <div>
+          <div style="font-size: small;">
             Fecha Estimada de Aplicación
             ${this.item.detalles.fecha_ejecucion_tentativa}
-            ${actividad_detalles(this.item)}
           </div>
+          ${actividad_detalles(this.item)}
         </div>
         <!-- Fin planificacion -->
 
@@ -187,12 +228,15 @@ export class ActividadItem extends LitElement {
         ${this.ejecucion
           ? html`
               <div tab="payment-tab">
-                Fecha de Ejecución ${this.ejecucion.detalles.fecha_ejecucion}
+                <div style="font-size: small;">
+                  Fecha de Ejecución ${this.ejecucion.detalles.fecha_ejecucion}
+                </div>
                 ${ejecucion_detalles(this.ejecucion, this.item)}
               </div>
             `
           : html`
               <div tab="payment-tab">
+                <div>${translate("actividad_aun_no_ejecutada")}</div>
                 <vaadin-horizontal-layout
                   theme="spacing padding"
                   style="justify-content: center"
@@ -221,7 +265,7 @@ export class ActividadItem extends LitElement {
                           }}
                           theme="primary success"
                         >
-                          Ejecutar
+                          ${translate("ejecutar")}
                         </vaadin-button>
                       `}
                 </vaadin-horizontal-layout>

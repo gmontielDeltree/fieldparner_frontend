@@ -141,6 +141,17 @@ export class UpsertAplicacion extends LitElement {
     } else {
       // Editando
       this.editando = true;
+
+       let lote_nombre = decodeURIComponent(
+          this.location.params.uuid_lote as string
+        );
+        let campo_nombre = decodeURIComponent(
+          this.location.params.uuid_campo as string
+        );
+
+        this.getLote(campo_nombre, lote_nombre);
+
+        
     }
   }
 
@@ -701,12 +712,13 @@ export class UpsertAplicacion extends LitElement {
                 <!-- observaciones-->
 
                 <div tab="condiciones-tab">
+
+                Ingrese los umbrales para los valores recomendados de las
+                    variables meteorológicas.
+
                   <vaadin-form-layout
                     style="width: 100%; height: 100%; align-items: center; margin: var(--lumo-space-s);"
                   >
-                    Ingrese los umbrales para los valores recomendados de las
-                    variables meteorológicas.
-
                     <vaadin-text-field
                       label="Temperatura Min"
                       value=${this.actividad.condiciones.temperatura_min}
