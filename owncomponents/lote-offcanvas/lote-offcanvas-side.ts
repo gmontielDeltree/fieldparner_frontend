@@ -816,56 +816,12 @@ export class LoteOffcanvasSide extends LitElement {
   }
 
   render() {
-    //console.log("RENDER LOTE OFFCANVAS");
-
-    let detalles = this._ctx.detalles as DetallesAplicacion;
-
-    const resumen_item_el = (item: LineaDosis) => html`<a
-      href="#"
-      class="list-group-item list-group-item-action"
-    >
-      <div class="d-flex w-100 justify-content-between">
-        <h5 class="mb-1">${capitalize(item.insumo.marca_comercial)}</h5>
-        <small class="text-muted">${capitalize(item.insumo.tipo)}</small>
-      </div>
-      <p class="mb-1">${item.dosis} ${item.insumo.unidad} - totales</p>
-      <div class="d-flex w-100 justify-content-between">
-        <small class="text-muted">${motivos_2_str(item.motivos)}</small>
-        <div
-          class="btn-group"
-          role="group"
-          aria-label="Basic mixed styles example"
-        >
-          <!-- <button type="button" class="btn btn-danger">Eliminar</button> -->
-        </div>
-      </div>
-    </a>`;
-
-    // const insumo_el = (item) => html`<a
-    //   href="#"
-    //   class="list-group-item list-group-item-action ${this._ctx.current_insumo
-    //     .name === item.name
-    //     ? "active"
-    //     : ""}"
-    //   @click=${(e) =>
-    //     this.fsm?.send({
-    //       type: "SELECTED",
-    //       value: item,
-    //     })}
-    //   aria-current="true"
-    // >
-    //   <div class="d-flex w-100 justify-content-between">
-    //     <h5 class="mb-1 mx-1">${capitalize(item.name)}</h5>
-    //     <small>${capitalize(item.type)}</small>
-    //   </div>
-    //   <p class="mb-1">${capitalize(item.company)}</p>
-    //   <small>${principio_activo(item)}</small>
-    // </a>`;
+  
 
     // Render propiamente dicho
     return html`
       <div
-        class="offcanvas offcanvas-start"
+        class="offcanvas offcanvas-start show"
         tabindex="-1"
         id="lote-offcanvas-side"
         aria-labelledby="offcanvasBottomLabel"

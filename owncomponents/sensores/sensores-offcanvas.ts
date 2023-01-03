@@ -575,7 +575,7 @@ export class SensoresClass extends LitElement {
     // Hay algo seleccionado
     return html`
       <div
-        class="offcanvas offcanvas-start"
+        class="offcanvas offcanvas-start show"
         tabindex="-1"
         style="width: 100%;"
         id="offcanvas"

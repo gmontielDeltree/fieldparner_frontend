@@ -37,7 +37,7 @@ export class ActividadItem extends LitElement {
         {
           text: "Editar",
           tooltip: "Edit",
-          value: "edit",
+          value: "editar",
         },
         {
           text: "Repetir Planificacion",
@@ -115,11 +115,21 @@ export class ActividadItem extends LitElement {
     let valor = detail.value.value;
     if (valor === "eliminar") {
       console.log("Borrar Actividad");
-      gbl_state.db.remove(this.item);
+      gbl_state.db.remove(this.item as PouchDB.Core.RemoveDocument);
       if (this.ejecucion) {
-        gbl_state.db.remove(this.ejecucion);
+        gbl_state.db.remove(this.ejecucion as PouchDB.Core.RemoveDocument);
       }
       this.solicitar_refresco();
+    }else if (valor === "editar"){
+      console.log("EDITAR")
+      if(!this.ejecucion){
+        this.editar_actividad(this.item)
+      }else{
+        this.editar_ejecucion(this.ejecucion)
+      }
+
+    }else if (valor === "eliminar"){
+      
     }
   }
 
@@ -155,6 +165,18 @@ export class ActividadItem extends LitElement {
       .put(item)
       .then(() => this.requestUpdate())
       .catch((e) => alert("Error al generar Orden"));
+  }
+
+  editar_actividad(actividad : Actividad){
+    let url_tail = `/actividad/editar/${actividad.uuid}`
+    let url_head = gbl_state.router.location.pathname
+    let target_url = url_head + url_tail;
+    console.log("GoTo",target_url)
+    Router.go(target_url)
+  }
+
+  editar_ejecucion(ejecucion : Ejecucion){
+
   }
 
   render() {
