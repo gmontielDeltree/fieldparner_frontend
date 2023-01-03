@@ -195,7 +195,8 @@ export class ActividadItem extends LitElement {
   editar_ejecucion(ejecucion: Ejecucion) {}
 
   repetir_aplicacion() {
-    console.error("Repetir no implementado");
+    //console.error("Repetir no implementado");
+    Router.go(url_repeticion(this.item.uuid))
   }
 
   ver_centrales_cercanas() {

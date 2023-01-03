@@ -66,6 +66,7 @@ import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
 import { TabSheet } from "@vaadin/tabsheet";
 import { motivos_items } from "../../jsons/motivos_items";
 import { grid_insumos_template } from "./grid_insumos_template";
+import { insert_insumos_template } from "./insert_insumo_template";
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -81,6 +82,10 @@ export class UpsertAplicacion extends LitElement {
   loading : bootstrap = false;
 
   private modal: Modal;
+  
+  @state()
+  dialogOpened : boolean = false;
+
   private tipo: string;
 
   private actividad: Actividad;
@@ -90,6 +95,7 @@ export class UpsertAplicacion extends LitElement {
   private linea_de_dosis: LineaDosis;
   private lote_doc: any;
   private linea_de_labor: LineaLabor;
+
 
   override firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("modal"));
@@ -277,8 +283,6 @@ export class UpsertAplicacion extends LitElement {
         <vaadin-combo-box
           item-label-path="labor"
           item-value-path="uuid"
-          required
-          error-message=${translate("campo_requerido")}
           label=${translate("labor")}
           .items=${labores}
           @selected-item-changed=${(e) => {
@@ -286,7 +290,7 @@ export class UpsertAplicacion extends LitElement {
           }}
         ></vaadin-combo-box>
         <vaadin-number-field
-          label=${translate("precio")}
+          label=${translate("costo")}
           @input=${(e) => {
             this.linea_de_labor.costo = e.target.value;
           }}
@@ -400,12 +404,14 @@ export class UpsertAplicacion extends LitElement {
 
                 <!-- Contratista -->
                 <div tab="contratista-tab">
+               
                   <vaadin-form-layout>
+                 
                     <vaadin-combo-box
                       label="Contratista"
                       item-label-path="nombre"
                       item-value-path="uuid"
-                      helper-text=${this.contratistas.length === 0 ? translate("no_contratistas"):""}
+                      helper-text=${this.contratistas?.length === 0 ? translate("no_contratistas"):""}
                       required
                       error-message=${translate("campo_requerido")}
                       colspan="2"
@@ -464,6 +470,7 @@ export class UpsertAplicacion extends LitElement {
                     <vaadin-form-layout
                       .responsiveSteps=${this.responsiveSteps}
                     >
+                     ${insert_insumos_template(this)}
                       <vaadin-combo-box
                         id="insumo1"
                         label="Insumo"

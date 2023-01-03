@@ -16,9 +16,12 @@ class MyState extends State {
  @property() user_db: PouchDB.Database
  @property() user : any
  @property() online: boolean
+ @property() campana_seleccionada : Campana
 }
 
 const state = new MyState()
+
+export const gbl_state = state;
 
 export const gblStateLoaded = ()=>{
 	//
@@ -26,4 +29,4 @@ export const gblStateLoaded = ()=>{
 	return loaded;
 }
 
-export default state
+export default state;
