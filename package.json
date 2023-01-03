@@ -68,6 +68,7 @@
     "@vaadin/number-field": "^23.3.0",
     "@vaadin/radio-group": "^23.1.1",
     "@vaadin/router": "^1.7.4",
+    "@vaadin/scroller": "^23.3.2",
     "@vaadin/select": "^23.3.2",
     "@vaadin/tabs": "^23.3.0",
     "@vaadin/tabsheet": "^23.3.0",

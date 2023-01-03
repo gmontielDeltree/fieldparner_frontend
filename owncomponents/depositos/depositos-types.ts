@@ -161,6 +161,8 @@ interface Detalles {
 
 interface DetallesEjecucion {
   fecha_ejecucion: string;
+  fecha_hora_inicio: string;
+  fecha_hora_fin: string; 
   hectareas: number;
   dosis: LineaDosisEjecucion[];
   costo_labor: LineaLabor[];
@@ -184,7 +186,7 @@ interface Actividad {
   contratista: Contratista;
   comentario: string;
   adjuntos: string[];
-  estado: string;
+  estado: number;
   detalles: Detalles;
   fecha?: string;
   color?: string;
@@ -219,7 +221,7 @@ const get_empty_aplicacion = () => {
     contratista: { ...empty_contratista },
     comentario: "",
     adjuntos: [],
-    estado: "pendiente",
+    estado: 0,
     detalles: {
       fecha_ejecucion_tentativa: "",
       hectareas: 0,
@@ -251,6 +253,8 @@ const get_empty_ejecucion = () => {
     estado: "pendiente",
     detalles: {
       fecha_ejecucion: "",
+      fecha_hora_fin: "",
+      fecha_hora_inicio:"",
       hectareas: 0,
       dosis: [],
       costo_labor:[]
@@ -322,6 +326,7 @@ export {
   DetallesAplicacion,
   DetallesCosecha,
   LineaDosis,
+  LineaLabor,
   Ejecucion,
   DetallesEjecucion,
   LineaDosisEjecucion,

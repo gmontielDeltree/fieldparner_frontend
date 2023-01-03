@@ -36,6 +36,7 @@ import "@vaadin/text-area";
 import "@vaadin/form-layout";
 import "@vaadin/form-layout/vaadin-form-item";
 import type { FormLayoutResponsiveStep } from "@vaadin/form-layout";
+import labores from "../../jsons/labores.json";
 
 import { uuid4 } from "uuid4";
 import { Notification } from "@vaadin/notification";
@@ -46,6 +47,7 @@ import {
   DetallesAplicacion,
   get_empty_aplicacion,
   LineaDosis,
+  LineaLabor,
 } from "../../depositos/depositos-types";
 import { format, parse } from "date-fns";
 import {
@@ -62,7 +64,7 @@ import { ComboBox } from "@vaadin/combo-box";
 import { TextField } from "@vaadin/text-field";
 import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
 import { TabSheet } from "@vaadin/tabsheet";
-import { motivos_items } from "../motivos_items";
+import { motivos_items } from "../../jsons/motivos_items";
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -83,6 +85,7 @@ export class UpsertAplicacion extends LitElement {
   private insumos: Insumo[];
   private linea_de_dosis: LineaDosis;
   private lote_doc: any;
+  private linea_de_labor: LineaLabor;
 
   override firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("modal"));
@@ -102,6 +105,13 @@ export class UpsertAplicacion extends LitElement {
         uuid: "",
         total: 0,
         precio_estimado: 0,
+      };
+
+      this.linea_de_labor = {
+        uuid: "",
+        labor: { labor: "", uuid: "" },
+        costo: 0,
+        observacion: "",
       };
 
       this.populateContratistas();
@@ -230,25 +240,105 @@ export class UpsertAplicacion extends LitElement {
 
   private responsiveSteps: FormLayoutResponsiveStep[] = [
     { minWidth: 0, columns: 1 },
-    { minWidth: '20em', columns: 4 },
+    { minWidth: "20em", columns: 4 },
   ];
 
   render() {
-    const labores_form = html`<vaadin-form-layout .responsiveSteps=${this.responsiveSteps} >
-        <vaadin-combo-box label=${translate("labor")}></vaadin-combo-box>
-        <vaadin-number-field label=${translate("precio")}>
+    const labores_form = html`<vaadin-form-layout
+        .responsiveSteps=${this.responsiveSteps}
+      >
+        <vaadin-combo-box
+          item-label-path="labor"
+          item-value-path="uuid"
+          label=${translate("labor")}
+          .items=${labores}
+          @selected-item-changed=${(e) => {
+            this.linea_de_labor.labor = e.detail.value;
+          }}
+        ></vaadin-combo-box>
+        <vaadin-number-field
+          label=${translate("precio")}
+          @input=${(e) => {
+            this.linea_de_labor.costo = e.target.value;
+          }}
+        >
           <div slot="suffix">USD</div>
         </vaadin-number-field>
-        <vaadin-text-field label=${translate('comentario')}></vaadin-text-field>
-        <vaadin-button>
-        ${translate('agregar')}
+        <vaadin-text-field
+          label=${translate("comentario")}
+          @input=${(e) => {
+            this.linea_de_labor.observacion = e.target.value;
+          }}
+        ></vaadin-text-field>
+        <vaadin-button
+          @click=${() => {
+            this.linea_de_labor.uuid = uuid4();
+            let copy = deepcopy(this.linea_de_labor);
+            this.actividad.detalles.costo_labor.push(copy);
+            this.actividad.detalles.costo_labor = deepcopy(this.actividad.detalles.costo_labor)
+            this.linea_de_labor = {
+              uuid : "",
+              labor: { labor: "", uuid: "" },
+              costo: 0,
+              observacion: "",
+            };
+            this.requestUpdate();
+          }}
+        >
+          ${translate("agregar")}
         </vaadin-button>
       </vaadin-form-layout>
       ${this.actividad.detalles.costo_labor.length > 0
-        ? html`<vaadin-grid> </vaadin-grid>`
-        : html`<div></div>`} `;
+        ? html`<vaadin-grid .items=${this.actividad.detalles.costo_labor}>
+            <vaadin-grid-column
+              header="${translate("labor")}"
+              auto-width
+              ${columnBodyRenderer<LineaLabor>(
+                (item : LineaLabor) => html` <vaadin-combo-box
+                  item-label-path="labor"
+                  item-value-path="uuid"
+                  .selectedItem=${item.labor}
+                  .items=${labores}
+                  @selected-item-changed=${(e) => {
+                    item.labor = e.detail.value;
+                  }}
+                ></vaadin-combo-box>`,
+                this.actividad.detalles.costo_labor
+              )}
+            ></vaadin-grid-column>
+
+            <vaadin-grid-column
+              header="${translate("costo")}"
+              auto-width
+              ${columnBodyRenderer<LineaLabor>(
+                (item) => html` <vaadin-number-field
+                  .value=${item.costo}
+                  @input=${(e) => {
+                    item.costo = e.target.value;
+                  }}
+                ></vaadin-number-field>`,
+                []
+              )}
+            ></vaadin-grid-column>
+
+            <vaadin-grid-column
+              header="${translate("comentario")}"
+              auto-width
+              ${columnBodyRenderer<LineaLabor>(
+                (item : LineaLabor) => html` <vaadin-text-field
+                  .value=${item.observacion}
+                  @input=${(e) => {
+                    item.observacion = e.target.value;
+                  }}
+                ></vaadin-text-field>`,
+                []
+              )}
+            ></vaadin-grid-column>
+          </vaadin-grid>`
+        : html`<div>${translate('no_hay_labores')}</div>`} `;
 
     console.count("UpsertAplicacion-Render");
+
     return html`
       <div id="modal" class="modal" tabindex="-1">
         <!-- Full screen modal -->
@@ -275,11 +365,6 @@ export class UpsertAplicacion extends LitElement {
                 <vaadin-tabs slot="tabs">
                   <vaadin-tab id="dashboard-tab">Contratista</vaadin-tab>
                   <vaadin-tab id="payment-tab">Insumos</vaadin-tab>
-                  ${this.tipo === "siembra" || this.tipo === "cosecha"
-                    ? html`<vaadin-tab id="otrosdatos-tab"
-                        >Otros Datos</vaadin-tab
-                      >`
-                    : null}
                   <vaadin-tab id="labores-tab">Labores</vaadin-tab>
                   <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
                   <vaadin-tab id="shipping-tab">Observaciones</vaadin-tab>
@@ -337,6 +422,112 @@ export class UpsertAplicacion extends LitElement {
                     Puede ingresar tanto la dosis por hectarea como el total por
                     lote y los valores se ajustaran automaticamente
                   </vaadin-horizontal-layout>
+
+                  <vaadin-details
+                    id="agregar-insumo-detalles"
+                    opened
+                    theme="small"
+                  >
+                    <div slot="summary">Agregar Insumo</div>
+
+                    <vaadin-form-layout
+                      .responsiveSteps=${this.responsiveSteps}
+                    >
+                      <vaadin-combo-box
+                        id="insumo1"
+                        label="Insumo"
+                        style="width:16em"
+                        colspan="2"
+                        item-label-path="marca_comercial"
+                        item-value-path="uuid"
+                        .items="${this.insumos}"
+                        .selected-item=${this.linea_de_dosis.insumo}
+                        @selected-item-changed=${(e) => {
+                          this.linea_de_dosis.insumo = e.detail.value;
+                          this.linea_de_dosis.precio_estimado =
+                            this.linea_de_dosis.insumo.precio;
+                          this.requestUpdate();
+                        }}
+                      ></vaadin-combo-box>
+
+                      <vaadin-text-field
+                        label="Dosis"
+                        id="insumo2"
+                        colspan="1"
+                        .value="${this.linea_de_dosis.dosis}"
+                        @input=${(e) => {
+                          this.linea_de_dosis.dosis = +e.target.value;
+                          this.linea_de_dosis.total = truncar(
+                            this.linea_de_dosis.dosis *
+                              this.actividad.detalles.hectareas
+                          );
+                          this.requestUpdate();
+                        }}
+                        clear-button-visible
+                      >
+                        <div slot="suffix">
+                          ${this.linea_de_dosis.insumo
+                            ? this.linea_de_dosis.insumo.unidad + "/ha"
+                            : ""}
+                        </div>
+                      </vaadin-text-field>
+
+                      <vaadin-text-field
+                        label="Total"
+                        id="insumo3"
+                        colspan="1"
+                        value="${this.linea_de_dosis.total}"
+                        @input=${(e) => {
+                          this.linea_de_dosis.total = +e.target.value;
+                          this.linea_de_dosis.dosis = truncar(
+                            this.linea_de_dosis.total /
+                              this.actividad.detalles.hectareas
+                          );
+                          this.requestUpdate();
+                        }}
+                      >
+                        <div slot="suffix">
+                          ${this.linea_de_dosis.insumo?.unidad || ""}
+                        </div>
+                      </vaadin-text-field>
+
+                      <vaadin-multi-select-combo-box
+                        label="Motivo"
+                        colspan="2"
+                        id="insumo4"
+                        style="width:20em"
+                        item-label-path="nombre"
+                        item-id-path="id"
+                        .items="${motivos_items}"
+                        .selected-items=${this.linea_de_dosis.motivos}
+                        @selected-items-changed=${(e) => {
+                          this.linea_de_dosis.motivos = e.target.selectedItems;
+                        }}
+                      ></vaadin-multi-select-combo-box>
+
+                      <vaadin-number-field
+                        label="Precio"
+                        colspan="1"
+                        .value=${this.linea_de_dosis.precio_estimado}
+                        @change=${(e) => {
+                          this.linea_de_dosis.precio_estimado = e.target.value;
+                        }}
+                      >
+                        <div slot="suffix">
+                          ${this.linea_de_dosis.insumo?.unidad
+                            ? "USD/" + this.linea_de_dosis.insumo.unidad
+                            : ""}
+                        </div>
+                      </vaadin-number-field>
+
+                      <vaadin-button
+                        colspan="1"
+                        theme="primary"
+                        @click=${this.agregarLineaInsumo}
+                        >Agregar</vaadin-button
+                      >
+                    </vaadin-form-layout>
+                  </vaadin-details>
 
                   <vaadin-details
                     id="lista-insumos-detalles"
@@ -484,102 +675,6 @@ export class UpsertAplicacion extends LitElement {
                             >`}
                     </vaadin-vertical-layout>
                   </vaadin-details>
-
-                  <vaadin-details
-                    id="agregar-insumo-detalles"
-                    opened
-                    theme="small"
-                  >
-                    <div slot="summary">Agregar Insumo</div>
-                    <vaadin-form-layout>
-                      <vaadin-combo-box
-                        id="insumo1"
-                        label="Insumo"
-                        style="width:16em"
-                        item-label-path="marca_comercial"
-                        item-value-path="uuid"
-                        .items="${this.insumos}"
-                        .selected-item=${this.linea_de_dosis.insumo}
-                        @selected-item-changed=${(e) => {
-                          this.linea_de_dosis.insumo = e.detail.value;
-                          this.linea_de_dosis.precio_estimado =
-                            this.linea_de_dosis.insumo.precio;
-                          this.requestUpdate();
-                        }}
-                      ></vaadin-combo-box>
-                      <vaadin-text-field
-                        label="Dosis"
-                        id="insumo2"
-                        .value="${this.linea_de_dosis.dosis}"
-                        @input=${(e) => {
-                          this.linea_de_dosis.dosis = +e.target.value;
-                          this.linea_de_dosis.total = truncar(
-                            this.linea_de_dosis.dosis *
-                              this.actividad.detalles.hectareas
-                          );
-                          this.requestUpdate();
-                        }}
-                        clear-button-visible
-                      >
-                        <div slot="suffix">
-                          ${this.linea_de_dosis.insumo
-                            ? this.linea_de_dosis.insumo.unidad + "/ha"
-                            : ""}
-                        </div>
-                      </vaadin-text-field>
-
-                      <vaadin-text-field
-                        label="Total"
-                        id="insumo3"
-                        value="${this.linea_de_dosis.total}"
-                        @input=${(e) => {
-                          this.linea_de_dosis.total = +e.target.value;
-                          this.linea_de_dosis.dosis = truncar(
-                            this.linea_de_dosis.total /
-                              this.actividad.detalles.hectareas
-                          );
-                          this.requestUpdate();
-                        }}
-                      >
-                        <div slot="suffix">
-                          ${this.linea_de_dosis.insumo?.unidad || ""}
-                        </div>
-                      </vaadin-text-field>
-
-                      <vaadin-multi-select-combo-box
-                        label="Motivo"
-                        id="insumo4"
-                        style="width:20em"
-                        item-label-path="nombre"
-                        item-id-path="id"
-                        .items="${motivos_items}"
-                        .selected-items=${this.linea_de_dosis.motivos}
-                        @selected-items-changed=${(e) => {
-                          this.linea_de_dosis.motivos = e.target.selectedItems;
-                        }}
-                      ></vaadin-multi-select-combo-box>
-
-                      <vaadin-number-field
-                        label="Precio"
-                        .value=${this.linea_de_dosis.precio_estimado}
-                        @change=${(e) => {
-                          this.linea_de_dosis.precio_estimado = e.target.value;
-                        }}
-                      >
-                        <div slot="suffix">
-                          ${this.linea_de_dosis.insumo?.unidad
-                            ? "USD/" + this.linea_de_dosis.insumo.unidad
-                            : ""}
-                        </div>
-                      </vaadin-number-field>
-
-                      <vaadin-button
-                        theme="primary"
-                        @click=${this.agregarLineaInsumo}
-                        >Agregar</vaadin-button
-                      >
-                    </vaadin-form-layout>
-                  </vaadin-details>
                 </div>
                 <!-- Fin Insumos -->
 
@@ -611,90 +706,87 @@ export class UpsertAplicacion extends LitElement {
                   >
                     Ingrese los umbrales para los valores recomendados de las
                     variables meteorológicas.
-             
-                      <vaadin-text-field
-                        label="Temperatura Min"
-                        value=${this.actividad.condiciones.temperatura_min}
-                        @input=${(e) => {
-                          this.actividad.condiciones.temperatura_min =
-                            +e.target.value;
-                        }}
-                        theme="align-right"
-                        type="text"
-                      >
-                        <div slot="suffix">ºC</div>
-                      </vaadin-text-field>
-                      <vaadin-text-field
-                        label="Temperatura Max"
-                        value=${this.actividad.condiciones.temperatura_max}
-                        @input=${(e) => {
-                          this.actividad.condiciones.temperatura_max =
-                            +e.target.value;
-                        }}
-                        theme="align-right"
-                        type="text"
-                      >
-                        <div slot="suffix">ºC</div>
-                      </vaadin-text-field>
 
-               
-                      <vaadin-text-field
-                        label="Humedad Min"
-                        value=${this.actividad.condiciones.humedad_min}
-                        theme="align-right"
-                        @input=${(e) => {
-                          this.actividad.condiciones.humedad_min =
-                            +e.target.value;
-                        }}
-                        type="text"
-                      >
-                        <div slot="suffix">%</div>
-                      </vaadin-text-field>
-                      <vaadin-text-field
-                        label="Humedad Max"
-                        value=${this.actividad.condiciones.humedad_max}
-                        @input=${(e) => {
-                          this.actividad.condiciones.humedad_max =
-                            +e.target.value;
-                        }}
-                        theme="align-right"
-                        type="text"
-                      >
-                        <div slot="suffix">%</div>
-                      </vaadin-text-field>
+                    <vaadin-text-field
+                      label="Temperatura Min"
+                      value=${this.actividad.condiciones.temperatura_min}
+                      @input=${(e) => {
+                        this.actividad.condiciones.temperatura_min =
+                          +e.target.value;
+                      }}
+                      theme="align-right"
+                      type="text"
+                    >
+                      <div slot="suffix">ºC</div>
+                    </vaadin-text-field>
+                    <vaadin-text-field
+                      label="Temperatura Max"
+                      value=${this.actividad.condiciones.temperatura_max}
+                      @input=${(e) => {
+                        this.actividad.condiciones.temperatura_max =
+                          +e.target.value;
+                      }}
+                      theme="align-right"
+                      type="text"
+                    >
+                      <div slot="suffix">ºC</div>
+                    </vaadin-text-field>
 
-                 
-                      <vaadin-text-field
-                        label="Viento Min"
-                        value=${this.actividad.condiciones.velocidad_min}
-                        theme="align-right"
-                        @input=${(e) => {
-                          this.actividad.condiciones.velocidad_min =
-                            +e.target.value;
-                        }}
-                        type="text"
-                      >
-                        <div slot="suffix">km/h</div>
-                      </vaadin-text-field>
-                      <vaadin-text-field
-                        label="Viento Max"
-                        value=${this.actividad.condiciones.velocidad_max}
-                        @input=${(e) => {
-                          this.actividad.condiciones.velocidad_max =
-                            +e.target.value;
-                        }}
-                        theme="align-right"
-                        type="text"
-                      >
-                        <div slot="suffix">km/h</div>
-                      </vaadin-text-field>
-                      </vaadin-form-layout>
+                    <vaadin-text-field
+                      label="Humedad Min"
+                      value=${this.actividad.condiciones.humedad_min}
+                      theme="align-right"
+                      @input=${(e) => {
+                        this.actividad.condiciones.humedad_min =
+                          +e.target.value;
+                      }}
+                      type="text"
+                    >
+                      <div slot="suffix">%</div>
+                    </vaadin-text-field>
+                    <vaadin-text-field
+                      label="Humedad Max"
+                      value=${this.actividad.condiciones.humedad_max}
+                      @input=${(e) => {
+                        this.actividad.condiciones.humedad_max =
+                          +e.target.value;
+                      }}
+                      theme="align-right"
+                      type="text"
+                    >
+                      <div slot="suffix">%</div>
+                    </vaadin-text-field>
+
+                    <vaadin-text-field
+                      label="Viento Min"
+                      value=${this.actividad.condiciones.velocidad_min}
+                      theme="align-right"
+                      @input=${(e) => {
+                        this.actividad.condiciones.velocidad_min =
+                          +e.target.value;
+                      }}
+                      type="text"
+                    >
+                      <div slot="suffix">km/h</div>
+                    </vaadin-text-field>
+                    <vaadin-text-field
+                      label="Viento Max"
+                      value=${this.actividad.condiciones.velocidad_max}
+                      @input=${(e) => {
+                        this.actividad.condiciones.velocidad_max =
+                          +e.target.value;
+                      }}
+                      theme="align-right"
+                      type="text"
+                    >
+                      <div slot="suffix">km/h</div>
+                    </vaadin-text-field>
+                  </vaadin-form-layout>
                 </div>
                 <!-- Fin Condiciones -->
               </vaadin-tabsheet>
-
-
-            </div> <!-- Fin Body modal --> 
+            </div>
+            <!-- Fin Body modal -->
             <div class="modal-footer">
               <button
                 type="button"
@@ -710,8 +802,7 @@ export class UpsertAplicacion extends LitElement {
               </button>
 
               ${(document.querySelector("#actividad-tabsheet") as TabSheet)
-                ?.items.length -
-                1 ===
+                ?.items.length - 1 ===
               this.selected_step
                 ? html`<button
                     type="button"

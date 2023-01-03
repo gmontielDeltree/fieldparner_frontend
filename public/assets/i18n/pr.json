@@ -1,52 +1,55 @@
 {
-	"aceptar": "Aceitar",
-	"borrar": "Borrar",
-	"cancelar": "Cancelar",
-	"cerrar": "Close",
-	"confirmar_borrar": "Are you sure?",
-	"editar": "Editar",
-	"guardar": "Salvar",
-	"invitacion": {
-		"body": "O usuário {{username}} compartilhou o espaço de trabalho {{workspacename}} com você.",
-		"notificacion": {
-			"ok": "Espaço de trabalho adicionado",
-			"okbody": "<b>{{workspacename}}</b> está disponível no menu <a href=\"#\">Espaços de trabalho</a>.",
-			"rechazada": "Convite rejeitado"
-		},
-		"titulo": "Convite para área de trabalho"
-	},
-	"invitar": "Invite",
-	"ldcampos": {
-		"titulo": "Fazendas"
-	},
-	"navbar": {
-		"geocoder": {
-			"helper": "Pesquisar cidade"
-		},
-		"opciones": {
-			"colorCultivos": "Cor do cultivo",
-			"listaDispositivos": "Lista de dispositivos",
-			"recargar": "Atualizar",
-			"titulo": "Opções",
-			"version": "Versão"
-		},
-		"workspace": {
-			"agregar": "Novo espaço de trabalho",
-			"permisos": "",
-			"seleccionar": ""
-		}
-	},
-	"nombre": "Nome",
-	"rechazar": "Rejeitar",
-	"workspace": {
-		"agregar": "Add Workspace",
-		"permisos": "User Authorizations",
-		"seleccionar": "Select"
-	},
-	"workspaceRights": {
-		"editar": "Edit Rights",
-		"invitar": "Convidar",
-		"permisos": "User Access Rights",
-		"titulo": "User Rights"
-	}
+  "aceptar": "Aceitar",
+  "agregar": "Agregar",
+  "borrar": "Borrar",
+  "cancelar": "Cancelar",
+  "cerrar": "Close",
+  "comentarion": "Comentario",
+  "confirmar_borrar": "Are you sure?",
+  "editar": "Editar",
+  "fecha": "Fecha",
+  "guardar": "Salvar",
+  "invitacion": {
+    "body": "O usuário {{username}} compartilhou o espaço de trabalho {{workspacename}} com você.",
+    "notificacion": {
+      "ok": "Espaço de trabalho adicionado",
+      "okbody": "<b>{{workspacename}}</b> está disponível no menu <a href=\"#\">Espaços de trabalho</a>.",
+      "rechazada": "Convite rejeitado"
+    },
+    "titulo": "Convite para área de trabalho"
+  },
+  "invitar": "Invite",
+  "labor": "Labor",
+  "ldcampos": {
+    "titulo": "Fazendas"
+  },
+  "navbar": {
+    "geocoder": {
+      "helper": "Pesquisar cidade"
+    },
+    "opciones": {
+      "colorCultivos": "Cor do cultivo",
+      "listaDispositivos": "Lista de dispositivos",
+      "recargar": "Atualizar",
+      "titulo": "Opções",
+      "version": "Versão"
+    },
+    "workspace": {
+      "agregar": "Novo espaço de trabalho"
+    }
+  },
+  "nombre": "Nome",
+  "precio": "Precio",
+  "rechazar": "Rejeitar",
+  "workspace": {
+    "agregar": "Add Workspace",
+    "permisos": "User Authorizations",
+    "seleccionar": "Select"
+  },
+  "workspaceRights": {
+    "editar": "Edit Rights",
+    "invitar": "Convidar",
+    "permisos": "User Access Rights",
+    "titulo": "User Rights"
+  }
 }

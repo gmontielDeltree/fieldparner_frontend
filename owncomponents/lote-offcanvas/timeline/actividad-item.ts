@@ -15,6 +15,9 @@ import "@vaadin/menu-bar";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
 import { format, parse } from "date-fns";
 import { map } from "lit/directives/map.js";
+import { translate } from "lit-translate";
+import { actividad_detalles } from "./detalles-actividad/detalles-actividad";
+import { ejecucion_detalles } from "./detalles-actividad/detalles-ejecucion";
 
 @customElement("actividad-item")
 export class ActividadItem extends LitElement {
@@ -154,63 +157,26 @@ export class ActividadItem extends LitElement {
       <vaadin-tabsheet>
         <vaadin-tabs slot="tabs">
           <vaadin-tab id="dashboard-tab">Planificación</vaadin-tab>
+          <vaadin-tab id="orden-trabajo-tab">Orden de Trabajo</vaadin-tab>
           <vaadin-tab id="payment-tab">Ejecución</vaadin-tab>
           <vaadin-tab id="shipping-tab">Adjuntos</vaadin-tab>
         </vaadin-tabs>
+
+        <div tab='orden-trabajo-tab'>
+          ${this.item.estado === 0 ? 
+          // Orden no Generada 
+            html`<div>Generar Orden de Trabajo</div>` : html`<div>FDFD</div>`
+          }
+        </div>
 
         <!-- Planificacion -->
         <div tab="dashboard-tab">
           <div>
             Fecha Estimada de Aplicación
             ${this.item.detalles.fecha_ejecucion_tentativa}
+            ${actividad_detalles(this.item)}
           </div>
-          <vaadin-details opened theme="small">
-            <div slot="summary">Insumos</div>
-
-            <ul>
-              ${map(
-                this.item.detalles.dosis,
-                (item) =>
-                  html`<li>
-                    ${item.insumo.marca_comercial} - ${item.dosis.toFixed(3)}
-                    ${item.insumo.unidad}/ha
-                  </li>`
-              )}
-            </ul>
-          </vaadin-details>
-          <vaadin-details theme="small">
-            <div slot="summary">Contratista</div>
-
-            <ul>
-              <li>${this.item.contratista?.nombre || "Sin Contratista"}</li>
-            </ul>
-          </vaadin-details>
-          <vaadin-details theme="small">
-            <div slot="summary">Condiciones Esperadas de Trabajo</div>
-            <ul>
-              <li>
-                Temperatura min...max:
-                ${this.item.condiciones.temperatura_min}...${this.item
-                  .condiciones.temperatura_max}
-              </li>
-              <li>
-                Humedad min...max:
-                ${this.item.condiciones.humedad_min}...${this.item.condiciones
-                  .humedad_max}
-              </li>
-              <li>
-                Velocidad min...max:
-                ${this.item.condiciones.velocidad_min}...${this.item.condiciones
-                  .velocidad_max}
-              </li>
-            </ul>
-          </vaadin-details>
-          <vaadin-details theme="small">
-            <div slot="summary">Observaciones</div>
-            <ul>
-              <li>${this.item.comentario}</li>
-            </ul>
-          </vaadin-details>
+          
         </div>
         <!-- Fin planificacion -->
 
@@ -219,52 +185,13 @@ export class ActividadItem extends LitElement {
         ${this.ejecucion
           ? html`
               <div tab="payment-tab">
+              ${this.item.estado === 0 ? html`
+              ${translate('debe_generar_la_orden_de_trabajo')}
+              `:html`
                 Fecha de Ejecución ${this.ejecucion.detalles.fecha_ejecucion}
 
-                <vaadin-details opened theme="small">
-                  <div slot="summary">Insumos</div>
-
-                  <ul>
-                    ${map(
-                      this.ejecucion.detalles.dosis,
-                      (item) =>
-                        html`<li>
-                          ${item.insumo.marca_comercial} -
-                          ${item.dosis.toFixed(3)} ${item.insumo.unidad}/ha
-                        </li>`
-                    )}
-                  </ul>
-                </vaadin-details>
-                <vaadin-details theme="small">
-                  <div slot="summary">Contratista</div>
-                  <ul>
-                    <li>${this.item.contratista.nombre}</li>
-                  </ul>
-                </vaadin-details>
-                <vaadin-details theme="small">
-                  <div slot="summary">Condiciones de Trabajo</div>
-                  <ul>
-                    <li>
-                      Temperatura promedio:
-                      ${this.ejecucion.condiciones.temperatura_promedio}
-                    </li>
-                    <li>
-                      Humedad promedio:
-                      ${this.ejecucion.condiciones.humedad_promedio}
-                    </li>
-                    <li>
-                      Velocidad promedio:
-                      ${this.ejecucion.condiciones.velocidad_promedio}
-                    </li>
-                  </ul>
-                </vaadin-details>
-                <vaadin-details theme="small">
-                  <div slot="summary">Observaciones</div>
-                  <ul>
-                    <li>${this.ejecucion.comentario}</li>
-                  </ul>
-                </vaadin-details>
-              </div>
+              ${ejecucion_detalles(this.ejecucion, this.item)}
+              </div>`}
             `
           : html`
               <div tab="payment-tab">
@@ -272,6 +199,8 @@ export class ActividadItem extends LitElement {
                   theme="spacing padding"
                   style="justify-content: center"
                 >
+                ${this.item.estado === 0 ? html`
+              ${translate('debe_generar_la_orden_de_trabajo')}` : html`
                   <vaadin-button
                     @click=${() => {
                       let url_base =
@@ -295,6 +224,7 @@ export class ActividadItem extends LitElement {
                   >
                     Ejecutar
                   </vaadin-button>
+                  `}
                 </vaadin-horizontal-layout>
               </div>
             `}

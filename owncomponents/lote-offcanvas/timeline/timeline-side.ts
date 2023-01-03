@@ -21,6 +21,8 @@ import "@vaadin/icons";
 import { Router } from "@vaadin/router";
 import gbl_state from "../../state";
 import './actividad-item'
+import '@vaadin/scroller';
+
 
 const url_repeticion = (actividad_uuid) => {
   let location = gbl_state.router.location.pathname;
@@ -333,17 +335,6 @@ export class TimelineSideElement extends LitElement {
   @property()
   a: Actividad[];
 
-  //static: properties = {
-  //actividades: {},
-  //actividades_docs: {},
-  //a: {},
-  //db: {},
-  //fsm: { state: true },
-  //stock_tag_table: {},
-  //};
-
-  //static styles = [timeline_css];
-
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap), timeline_css];
 
   evento_download_pdf(item) {
@@ -409,21 +400,8 @@ export class TimelineSideElement extends LitElement {
     if (props.has("actividades") && this.db) {
       // Calcular tags
       let nt = {};
-      // this.actividades.map((act) => {
-      //   //console.log("CALC STOKS I")
-      //   stock_suficiente(this.db, act).then((status) => {
-      //     nt[act.uuid] = status;
-      //     this.stock_tag_table = { ...nt };
-      //   });
-      // });
-
-      // //console.log("StockTagTable", this.stock_tag_table)
     }
   }
-
-  // createRenderRoot() {
-  //   return this;
-  // }
 
   comparar_fechas(a, b) {
     let fecha_a = extraer_fecha(a);
@@ -463,11 +441,6 @@ export class TimelineSideElement extends LitElement {
   }
 
   render() {
-    let stock_tag = (stock_suficiente) => html` <p class="small">
-      ${stock_suficiente
-        ? html` <span class="badge bg-success">Stock Suficiente</span>`
-        : html` <span class="badge bg-danger">Stock Insuficiente</span>`}
-    </p>`;
 
     const barra_botones = (item: Actividad, estado) => html`
       <div>
@@ -655,140 +628,15 @@ export class TimelineSideElement extends LitElement {
         </li>`;
       }
 
-      //console.log("ITEM STT", this.stock_tag_table[item.uuid], item, item.uuid )
       if (item.tipo === "aplicacion") {
-        let d = item.detalles as DetallesAplicacion;
-        let fecha = d.fecha_ejecucion_tentativa;
-        let hectareas = d.hectareas;
-        let insumos = d.dosis;
-        let comentarios = item.comentario;
-        let list_of_ps = insumos.map(p_from_insumo);
-        // let tipo_mayuscula = item.tipo.toUpperCase();
-        // //console.log(moment.locale()); // en
-        // moment.locale("es");
-        // //console.log(moment.locale()); // en
-        // let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
-
-        moment.locale("es");
-        let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
-        let estado = item.estado;
-        let is_planificada = isFuture(parseISO(fecha));
-
-        return html` <li>
-          
+        return html` <li>      
           <div class="icono-aplicacion cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
           <div class="cbp_tmlabel bg-aplicacion">
-
-          <actividad-item .item=${item}></actividad-item>
-            <!-- <h2>
-              <a>APLICACIÓN</a>
-              <span class="text-muted">en ${hectareas} has.</span>
-              <vaadin-button
-                @click=${() => Router.go(url_repeticion(item._id))}
-                theme="icon"
-                aria-label="Mas"
-              >
-                <vaadin-icon icon="vaadin:ellipsis-dots-h"></vaadin-icon>
-              </vaadin-button>
-              ${is_planificada
-                ? html`<span class="badge bg-success rounded-pill float-end"
-                    >Planificada</span
-                  >`
-                : null}
-            </h2>
-
-            ${list_of_ps}
-
-            <p class="small">${comentarios}</p>
-            ${barra_botones(item, estado)} -->
+              <actividad-item .item=${item}></actividad-item>
           </div>
         </li>`;
-      } else if (item.tipo === "cosecha") {
-        let fecha = item.detalles.fecha_ejecucion_tentativa;
-        let hectareas = item.detalles.hectareas;
-        let rinde = item.detalles.rinde;
-        let comentarios = item.detalles.comentario;
-        let humedad = item.detalles.humedad;
-
-        //console.log(moment.locale()); // en
-        moment.locale("es");
-        //console.log(moment.locale()); // en
-        let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
-
-        let estado = item.estado;
-
-        let is_planificada = isFuture(parseISO(fecha));
-
-        return html`
-          <li>
-            <time class="cbp_tmtime" datetime="2032-11-04T03:45"
-              ><span>${fecha}</span> <span>${elapsed}</span></time
-            >
-            <div class="cbp_tmicon bg-green icono-cosecha ">
-              <i class="zmdi zmdi-label"></i>
-            </div>
-            <div class="cbp_tmlabel bg-cosecha">
-              <h2>
-                <a href="#">COSECHA</a>
-                <span class="text-muted">de ${hectareas} has.</span>
-              </h2>
-              <p>Rinde: ${rinde} tn/ha - Humedad: ${humedad} %</p>
-              <p class="small">${comentarios}</p>
-              ${barra_botones(item, estado)}
-            </div>
-          </li>
-        `;
-      } else if (item.tipo === "siembra") {
-        let detalles: DetallesSiembra = item.detalles as DetallesSiembra;
-        let fecha = item.detalles.fecha_ejecucion_tentativa;
-        let hectareas = detalles.hectareas;
-        let comentarios = item.comentario;
-        let cultivo = detalles.insumo.marca_comercial;
-        //let varidad = item.detalles.variedad;
-        let peso_1000 = detalles.peso_1000;
-        let densidad_objetivo = detalles.densidad_objetivo;
-        let distancia = detalles.distancia;
-        let contratista = item.contratista;
-
-        //console.log(moment.locale()); // en
-        moment.locale("es");
-        //console.log(moment.locale()); // en
-        let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
-
-        let estado = item.estado;
-
-        let is_planificada = isFuture(parseISO(fecha));
-
-        return html`
-          <li>
-            <time class="cbp_tmtime" datetime="2032-11-04T03:45"
-              ><span>${fecha}</span> <span>${elapsed}</span></time
-            >
-            <div class="icono-siembra cbp_tmicon bg-orange">
-              <i class="zmdi zmdi-label"></i>
-            </div>
-            <div class="cbp_tmlabel bg-siembra">
-              <h2>
-                <a>SIEMBRA</a>
-                <span class="text-muted">en ${hectareas} has.</span>
-                ${is_planificada
-                  ? html`<span class="badge bg-success rounded-pill float-end"
-                      >Planificada</span
-                    >`
-                  : null}
-              </h2>
-
-              <p><strong>${cultivo}</strong></p>
-              <p>${densidad_objetivo} pl/ha - ${distancia} cm entre surcos</p>
-              <p class="small">${comentarios}</p>
-              ${barra_botones(item, estado)}
-            </div>
-          </li>
-        `;
-      } else if (item.tipo === "nota") {
-      } else if (item.tipo === "otro") {
       }
     };
 
@@ -801,12 +649,6 @@ export class TimelineSideElement extends LitElement {
         </div>
       </div>
     </div>`;
-
-    // return timeline(this.actividades || [], this.evento_pdf);
-    //${map(
-    //   this.ordenar_actividades(this.actividades, this.actividades_docs),
-    //   time_item
-    // )}
   }
 }
 
