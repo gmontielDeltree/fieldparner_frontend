@@ -176,10 +176,6 @@ export class CampoOffcanvas extends LitElement {
     this._detallesOffcanvas.hide();
   }
 
-  // share_campo() {
-  //   this.shadowRoot.getElementById("share-modal").start();
-  // }
-
   borrar_campo() {
     if (confirm("¿Desea Eliminar el Campo?")) {
       let event = new CustomEvent("borrar-campo", {
@@ -289,19 +285,3 @@ function makeid(length) {
 }
 
 customElements.define("campo-offcanvas", CampoOffcanvas);
-// <!-- ${this.campo_doc?.shared
-//   ? html`<p>
-//       Compartido por
-//       <span class="badge bg-success"
-//         >${this.campo_doc.owner.name.toUpperCase()}</span
-//       >
-//     </p>`
-//   : null} -->
-
-// <!-- <button
-// type="button"
-// class="btn btn-warning"
-// @click=${this.share_campo}
-// >
-// Compartir Campo
-// </button> -->
