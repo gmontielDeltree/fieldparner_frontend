@@ -16,6 +16,8 @@ import { format } from "date-fns";
 import parseISO from "date-fns/parseISO";
 import "@vaadin/menu-bar";
 import { gblStateLoaded } from "../state.js";
+import "@vaadin/scroller";
+import "@vaadin/vertical-layout"
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
 
@@ -52,7 +54,7 @@ import {
   LineaDosis,
 } from "../depositos/depositos-types";
 import { init } from "xstate/lib/actionTypes";
-import '@vaadin/tooltip'
+import "@vaadin/tooltip";
 
 const capitalize = (mySentence) => {
   if (mySentence === null || mySentence === undefined) {
@@ -176,7 +178,7 @@ export class LoteOffcanvasSide extends LitElement {
     });
 
     this.addEventListener("refrescar-actividades", (e: CustomEvent) =>
-    this.reload_actividades()
+      this.reload_actividades()
     );
 
     this.addEventListener("guardar-cosecha", (e: CustomEvent) =>
@@ -298,11 +300,11 @@ export class LoteOffcanvasSide extends LitElement {
   }
 
   cerrar() {
-    gbl_state.map.hideAllLayers()
-    gbl_state.map.showAllCampos()
+    gbl_state.map.hideAllLayers();
+    gbl_state.map.showAllCampos();
 
     this._lotesOffcanvas.hide();
-    Router.go('/')
+    Router.go("/");
 
     // let event = new CustomEvent("lote-detalles-hide", {
     //   bubbles: true,
@@ -791,13 +793,19 @@ export class LoteOffcanvasSide extends LitElement {
     let valor = detail.value.value;
     if (valor === "siembra") {
       //this.siembra();
-      Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/siembra')
+      Router.go(
+        gbl_state.router.location.getUrl() + "/actividad/nueva/siembra"
+      );
     } else if (valor === "cosecha") {
-      Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/cosecha')
-//      this.cosecha();
+      Router.go(
+        gbl_state.router.location.getUrl() + "/actividad/nueva/cosecha"
+      );
+      //      this.cosecha();
     } else if (valor === "aplicacion") {
-      Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/aplicacion')
-//      this.nueva_actividad();
+      Router.go(
+        gbl_state.router.location.getUrl() + "/actividad/nueva/aplicacion"
+      );
+      //      this.nueva_actividad();
     } else if (valor === "eliminar") {
       this.eliminar_lote();
     } else if (valor === "ndvi") {
@@ -914,7 +922,7 @@ export class LoteOffcanvasSide extends LitElement {
                 <span>Preparando PDF</span>
               </div>`
             : null}
-          <div class="btn-toolbar shadow px-0" role="toolbar">
+          <div class="btn-toolbar shadow py-1" role="toolbar">
             <vaadin-menu-bar
               theme="small"
               class="d-block d-md-none"
@@ -935,7 +943,6 @@ export class LoteOffcanvasSide extends LitElement {
               class="ms-1"
             ></vaadin-menu-bar>
 
-
             <div class="d-none d-md-block w-50">
               <div
                 class="container-fluid row btn-group"
@@ -946,25 +953,32 @@ export class LoteOffcanvasSide extends LitElement {
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/sembradora_act.webp');background-size: contain; background-repeat: no-repeat; background-position: center;"
-                  @click=${()=>Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/siembra')}
+                  @click=${() =>
+                    Router.go(
+                      gbl_state.router.location.getUrl() +
+                        "/actividad/nueva/siembra"
+                    )}
                   title="Siembra"
-                >
-              </div>
+                ></div>
 
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/pulverizadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
-                  
-                  @click=${()=>Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/aplicacion')}
-
+                  @click=${() =>
+                    Router.go(
+                      gbl_state.router.location.getUrl() +
+                        "/actividad/nueva/aplicacion"
+                    )}
                 ></div>
 
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/cosechadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
-                  
-                  @click=${()=>Router.go(gbl_state.router.location.getUrl() + '/actividad/nueva/cosecha')}
-
+                  @click=${() =>
+                    Router.go(
+                      gbl_state.router.location.getUrl() +
+                        "/actividad/nueva/cosecha"
+                    )}
                 ></div>
 
                 <div
@@ -981,8 +995,12 @@ export class LoteOffcanvasSide extends LitElement {
               </div>
             </div>
           </div>
-          <!-- <div class="row"> -->
-            <div class="col shadow mx-1 pt-2 px-0" data-bs-spy="scroll">
+
+            <vaadin-scroller
+              class="py-1"
+              scroll-direction="vertical"
+              style="height: 90%;"
+            >
               <lit-timeline-side
                 .db=${gbl_state.db}
                 .actividades_docs=${this._actividades}
@@ -990,802 +1008,9 @@ export class LoteOffcanvasSide extends LitElement {
                 .a=${this._actividades_docs}
                 id="actividades-timeline"
               ></lit-timeline-side>
-            </div>
-          <!-- </div> -->
+            </vaadin-scroller>
         </div>
       </div>
-
-      <!-- Modal Visible en fecha state -->
-      <div
-        class="modal fade aplicacion step"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="staticBackdropLabel">
-                ¿Cuando se realizará la aplicación?
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => this.fsm?.send("CANCEL")}
-              ></button>
-            </div>
-            <div class="modal-body mx-auto">
-              <date-picker
-                .fecha=${detalles.fecha_ejecucion_tentativa}
-                @change=${(e) => {
-                  this.fsm?.send({
-                    type: "CHANGE",
-                    value: e.target.fecha,
-                  });
-                }}
-              ></date-picker>
-
-              <vaadin-combo-box
-                allow-custom-value
-                @custom-value-set="${() => {
-                  console.log("Nuevo Value");
-                }}"
-                label="Contratista"
-                item-label-path="nombre"
-                item-value-path="uuid"
-                .selectedItem=${this._ctx.contratista}
-                .items="${this._contratistas
-                  ? Object.values(this._contratistas?.contratistas)
-                  : []}"
-                @selected-item-changed=${(e) => {
-                  console.log("e", e);
-                  this.fsm?.send({
-                    type: "ASSIGN_CONTRATISTA",
-                    value: e.detail.value,
-                  });
-                }}
-              ></vaadin-combo-box>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm?.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Visible en hectareas state -->
-      <div
-        class="modal fade aplicacion step"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="staticBackdropLabel">
-                ¿Sobre cuantas hectáreas se realizará la aplicación?
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => this.fsm?.send("CANCEL")}
-              ></button>
-            </div>
-            <div class="modal-body mx-auto">
-              <input
-                type="number"
-                value=${this._ctx.detalles.hectareas}
-                @change=${(e) =>
-                  this.fsm?.send({ type: "CHANGE", value: e.target.value })}
-              />
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm?.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Visible en Insumo state -->
-      <div
-        class="modal fade aplicacion step"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div
-          class="modal-dialog modal-dialog-scrollable modal-fullscreen-md-down"
-        >
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="staticBackdropLabel">
-                Seleccione un insumo
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => this.fsm?.send("CANCEL")}
-              ></button>
-            </div>
-            <div class="modal-body mx-auto container-fluid">
-              <div class="row">
-                <vaadin-combo-box
-                  class="mx-auto"
-                  id="marca-comercial-combo"
-                  allow-custom-value
-                  @custom-value-set="${() => {
-                    console.log("Nuevo Value");
-                  }}"
-                  label="Insumo"
-                  item-label-path="marca_comercial"
-                  item-value-path="uuid"
-                  .items="${this._insumos ? this._insumos : []}"
-                  @selected-item-changed=${(e) => {
-                    console.log("e", e);
-                    this._current_dosis = {
-                      uuid: uuid4(),
-                      insumo: e.detail.value,
-                      dosis: 0,
-                      motivos: [],
-                      total: 0,
-                    };
-                  }}
-                ></vaadin-combo-box>
-
-                <a
-                  class="btn btn-primary btn-sm "
-                  href="#"
-                  role="button"
-                  @click=${() => {
-                    this.fsm?.send("DOSIS");
-                  }}
-                  >Agregar Dosis</a
-                >
-              </div>
-              <!--Row 1-->
-
-              <div class="row list-group">
-                ${map(detalles.dosis, resumen_item_el)}
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm?.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Visible en Dosis state -->
-      <div
-        class="modal fade aplicacion step"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="staticBackdropLabel">
-                ¿Cual es la Dosis?
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => this.fsm?.send("CANCEL")}
-              ></button>
-            </div>
-            <div class="modal-body mx-auto">
-              <h4>
-                ${capitalize(this._current_dosis?.insumo.marca_comercial || "")}
-              </h4>
-              <div class="input-group mb-3">
-                <input
-                  type="number"
-                  class="form-control"
-                  @change=${
-                    (e) => (this._current_dosis.dosis = Number(e.target.value))
-                    //this.fsm?.send({ type: "CHANGE", value: e.target.value })
-                  }
-                  aria-label="Text input with dropdown button"
-                />
-                <button
-                  class="btn btn-outline-secondary"
-                  type="button"
-                  aria-expanded="false"
-                >
-                  ${this._current_dosis?.insumo.unidad}
-                </button>
-              </div>
-
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  value=""
-                  @change=${(e) => {
-                    if (e.target.checked) {
-                      this._current_dosis.motivos.push(e.target.name);
-                    }
-                  }}
-                  name="Enfermedad"
-                />
-                <label class="form-check-label" for="flexCheckDefault">
-                  Enfermedad
-                </label>
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  value=""
-                  name="Plaga"
-                  @change=${(e) => {}}
-                />
-                <label class="form-check-label" for="flexCheckDefault">
-                  Plaga
-                </label>
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  value=""
-                  name="Malezas"
-                  @change=${(e) => {}}
-                />
-                <label class="form-check-label" for="flexCheckDefault">
-                  Malezas
-                </label>
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  value=""
-                  name="Otro"
-                  @change=${(e) => {
-                    this.fsm?.send({
-                      type: "TICK",
-                      value: e.target.checked,
-                      name: e.target.name,
-                    });
-                  }}
-                />
-                <label class="form-check-label" for="flexCheckDefault">
-                  Otro
-                </label>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm?.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => {
-                  this.fsm?.send("NEXT");
-                  let t = [...this._ctx.detalles.dosis];
-                  t.push({ ...this._current_dosis });
-                  this._current_dosis = undefined;
-                  this._ctx.detalles.dosis = t;
-                }}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Visible en Motivo state -->
-      <div
-        class="modal fade aplicacion step"
-        id="lote-hectareas-editor"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="staticBackdropLabel">
-                ¿Cual es el motivo de la aplicación?
-              </h5>
-
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => this.fsm?.send("CANCEL")}
-              ></button>
-            </div>
-            <div class="modal-body mx-auto">
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  value=""
-                  @change=${(e) => {
-                    this.fsm?.send({
-                      type: "TICK",
-                      value: e.target.checked,
-                      name: e.target.name,
-                    });
-                  }}
-                  name="Enfermedad"
-                />
-                <label class="form-check-label" for="flexCheckDefault">
-                  Enfermedad
-                </label>
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  value=""
-                  name="Plaga"
-                  @change=${(e) => {
-                    this.fsm?.send({
-                      type: "TICK",
-                      value: e.target.checked,
-                      name: e.target.name,
-                    });
-                  }}
-                />
-                <label class="form-check-label" for="flexCheckDefault">
-                  Plaga
-                </label>
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  value=""
-                  name="Malezas"
-                  @change=${(e) => {
-                    this.fsm?.send({
-                      type: "TICK",
-                      value: e.target.checked,
-                      name: e.target.name,
-                    });
-                  }}
-                />
-                <label class="form-check-label" for="flexCheckDefault">
-                  Malezas
-                </label>
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  value=""
-                  name="Otro"
-                  @change=${(e) => {
-                    this.fsm?.send({
-                      type: "TICK",
-                      value: e.target.checked,
-                      name: e.target.name,
-                    });
-                  }}
-                />
-                <label class="form-check-label" for="flexCheckDefault">
-                  Otro
-                </label>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm?.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Visible en MasInsumos state -->
-      <div
-        class="modal fade aplicacion step"
-        id="lote-hectareas-editor"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="staticBackdropLabel">
-                ¿Deseas agregar otro insumo?
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => this.fsm?.send("CANCEL")}
-              ></button>
-            </div>
-            <div class="modal-body mx-auto">
-              <button
-                type="button"
-                class="btn btn-success btn-lg"
-                @click=${() => this.fsm?.send("SI")}
-              >
-                SI
-              </button>
-              <button
-                type="button"
-                class="btn btn-danger btn-lg"
-                @click=${() => this.fsm?.send("NO")}
-              >
-                NO
-              </button>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm?.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("BACK")}
-              >
-                Atras
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Visible en Comentarios state -->
-      <div
-        class="modal fade aplicacion step"
-        id="lote-hectareas-editor"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="staticBackdropLabel">
-                ¿Tienes algún comentario adicional?
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => this.fsm?.send("CANCEL")}
-              ></button>
-            </div>
-            <div class="modal-body mx-auto w-100">
-              <h5></h5>
-
-              <textarea
-                class="w-100"
-                id="story"
-                placeholder="Ingresa alguna nota aquí"
-                name="story"
-                rows="5"
-                .value=${this._ctx.comentario}
-                @change=${(e) =>
-                  this.fsm?.send({ type: "CHANGE", value: e.target.value })}
-              ></textarea>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm?.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("NEXT")}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Visible en Resumen state -->
-      <div
-        class="modal fade aplicacion step"
-        id="lote-hectareas-editor"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog modal-fullscreen-md-down">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="staticBackdropLabel">Resumen</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => this.fsm?.send("CANCEL")}
-              ></button>
-            </div>
-            <div class="modal-body">
-              <div class="container-fluid shadow py-2">
-                <div class="row">
-                  <div class="col">
-                    <h5>
-                      Aplicación en "${this.lote_nombre}" -
-                      "${this._campo_doc?.nombre}"
-                    </h5>
-                    <div>
-                      <div class="row">
-                        <div class="col">
-                          <h6>
-                            Fecha de aplicación:
-                            ${this._ctx.detalles.fecha_ejecucion_tentativa}
-                          </h6>
-                        </div>
-                        <!-- <button class='col col-2'> Edit </button> -->
-                      </div>
-                      <div class="row">
-                        +
-                        <h5>${this.tiene_cultivo_este_lote()}</h5>
-                      </div>
-                      <div class="row list-group">
-                        ${map(detalles.dosis, resumen_item_el)}
-                      </div>
-                      <div class="row mt-2">
-                        <h6>Comentarios</h6>
-                        <textarea
-                          class="form-control"
-                          aria-label="With textarea"
-                          .value=${this._ctx.comentario}
-                        ></textarea>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click=${() => this.fsm?.send("CANCEL")}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("BACK")}
-              >
-                Atras
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => {
-                  let uuid = this._ctx.uuid;
-                  if (this._ctx._id === "") {
-                    let fecha = format(
-                      parseISO(this._ctx.detalles.fecha_ejecucion_tentativa),
-                      "yyyyMMdd"
-                    );
-                    this._ctx._id = "actividad:" + fecha + ":" + uuid;
-                    this._ctx.lote_uuid = this._lote_doc.properties.uuid;
-                  }
-                  this.guardar_aplicacion("aplicacion", this._ctx);
-                }}
-              >
-                Guardar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Visible en Sharing state -->
-      <div
-        class="modal fade aplicacion step"
-        id="lote-hectareas-editor"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="staticBackdropLabel">
-                ¿Quieres compartir la Orden de Trabajo para esta aplicación?
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => this.fsm?.send("CANCEL")}
-              ></button>
-            </div>
-            <div class="modal-body mx-auto">
-              <div class="btn-group-vertical col">
-                <button
-                  type="button"
-                  class="btn btn-dark"
-                  @click=${() => this.abrir_pdf()}
-                >
-                  Solo Descargar un PDF
-                </button>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click=${() => this.fsm?.send("CANCEL")}
-              >
-                No Generar Nada por Ahora
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <cosecha-add-ui
-        id="cosecha-add-el"
-        .contratistas=${this._contratistas}
-        ._lote_doc=${this._lote_doc}
-        .settings=${this.settings}
-      ></cosecha-add-ui>
-
-      <siembra-add-ui
-        id="siembra-add-el"
-        .db=${gbl_state.db}
-        .contratistas=${this._contratistas}
-        ._lote_doc=${this._lote_doc}
-        .settings=${this.settings}
-      ></siembra-add-ui>
-
-      <notas-oc
-        id="notas-oc"
-        .map=${gbl_state.map}
-        .db=${gbl_state.db}
-        .lote_doc=${this._lote_doc}
-      ></notas-oc>
-      <!-- <nueva-geometria-ui id='nueva-geometria-el'></nueva-geometria-ui> -->
     `;
   }
 }

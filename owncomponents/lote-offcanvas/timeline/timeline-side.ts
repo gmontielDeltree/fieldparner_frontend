@@ -20,13 +20,13 @@ import "@vaadin/icon";
 import "@vaadin/icons";
 import { Router } from "@vaadin/router";
 import gbl_state from "../../state";
-import './actividad-item'
-import '@vaadin/scroller';
-
+import "./actividad-item";
+import "@vaadin/scroller";
 
 const url_repeticion = (actividad_uuid) => {
   let location = gbl_state.router.location.pathname;
-  let url = location + "/actividad/" +  encodeURIComponent(actividad_uuid) + "/repetir"
+  let url =
+    location + "/actividad/" + encodeURIComponent(actividad_uuid) + "/repetir";
   return url;
 };
 
@@ -82,7 +82,7 @@ const timeline_css = css`
     top: 0;
     bottom: 0;
     width: 3px;
-    background: rgb(40,147,132);
+    background: rgb(40, 147, 132);
     left: 10%;
     margin-left: -6px;
   }
@@ -441,7 +441,6 @@ export class TimelineSideElement extends LitElement {
   }
 
   render() {
-
     const barra_botones = (item: Actividad, estado) => html`
       <div>
         <vaadin-combo-box
@@ -629,26 +628,28 @@ export class TimelineSideElement extends LitElement {
       }
 
       if (item.tipo === "aplicacion") {
-        return html` <li>      
+        return html` <li>
           <div class="icono-aplicacion cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
           <div class="cbp_tmlabel bg-aplicacion">
-              <actividad-item .item=${item}></actividad-item>
+            <actividad-item .item=${item}></actividad-item>
           </div>
         </li>`;
       }
     };
 
-    return html`<div class="container-fluid">
-      <div class="row">
-        <div class="col-md-12 px-1">
-          <ul class="cbp_tmtimeline">
-            ${this.a?.map(time_item) || null}
-          </ul>
+    return html`
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-12 px-1">
+            <ul class="cbp_tmtimeline">
+              ${this.a?.map(time_item) || null}
+            </ul>
+          </div>
         </div>
       </div>
-    </div>`;
+    `;
   }
 }
 

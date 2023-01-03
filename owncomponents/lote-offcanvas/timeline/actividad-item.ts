@@ -123,7 +123,10 @@ export class ActividadItem extends LitElement {
   }
 
   solicitar_refresco() {
-    let ev = new CustomEvent("refrescar-actividades",{bubbles:true,composed:true});
+    let ev = new CustomEvent("refrescar-actividades", {
+      bubbles: true,
+      composed: true,
+    });
     this.dispatchEvent(ev);
   }
 
@@ -162,11 +165,11 @@ export class ActividadItem extends LitElement {
           <vaadin-tab id="shipping-tab">Adjuntos</vaadin-tab>
         </vaadin-tabs>
 
-        <div tab='orden-trabajo-tab'>
-          ${this.item.estado === 0 ? 
-          // Orden no Generada 
-            html`<div>Generar Orden de Trabajo</div>` : html`<div>FDFD</div>`
-          }
+        <div tab="orden-trabajo-tab">
+          ${this.item.estado === 0
+            ? // Orden no Generada
+              html`<div>Generar Orden de Trabajo</div>`
+            : html`<div>FDFD</div>`}
         </div>
 
         <!-- Planificacion -->
@@ -176,7 +179,6 @@ export class ActividadItem extends LitElement {
             ${this.item.detalles.fecha_ejecucion_tentativa}
             ${actividad_detalles(this.item)}
           </div>
-          
         </div>
         <!-- Fin planificacion -->
 
@@ -185,13 +187,9 @@ export class ActividadItem extends LitElement {
         ${this.ejecucion
           ? html`
               <div tab="payment-tab">
-              ${this.item.estado === 0 ? html`
-              ${translate('debe_generar_la_orden_de_trabajo')}
-              `:html`
                 Fecha de Ejecución ${this.ejecucion.detalles.fecha_ejecucion}
-
-              ${ejecucion_detalles(this.ejecucion, this.item)}
-              </div>`}
+                ${ejecucion_detalles(this.ejecucion, this.item)}
+              </div>
             `
           : html`
               <div tab="payment-tab">
@@ -199,32 +197,33 @@ export class ActividadItem extends LitElement {
                   theme="spacing padding"
                   style="justify-content: center"
                 >
-                ${this.item.estado === 0 ? html`
-              ${translate('debe_generar_la_orden_de_trabajo')}` : html`
-                  <vaadin-button
-                    @click=${() => {
-                      let url_base =
-                        "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/nueva";
+                  ${this.item.estado === 0
+                    ? html` ${translate("debe_generar_la_orden_de_trabajo")}`
+                    : html`
+                        <vaadin-button
+                          @click=${() => {
+                            let url_base =
+                              "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/nueva";
 
-                      let lote_nombre = gbl_state.router.location.params
-                        .uuid_lote as string;
+                            let lote_nombre = gbl_state.router.location.params
+                              .uuid_lote as string;
 
-                      let campo_nombre = gbl_state.router.location.params
-                        .uuid_campo as string;
+                            let campo_nombre = gbl_state.router.location.params
+                              .uuid_campo as string;
 
-                      Router.go(
-                        gbl_state.router.urlForPath(url_base, {
-                          uuid_campo: campo_nombre,
-                          uuid_lote: lote_nombre,
-                          uuid: this.item.uuid,
-                        })
-                      );
-                    }}
-                    theme="primary success"
-                  >
-                    Ejecutar
-                  </vaadin-button>
-                  `}
+                            Router.go(
+                              gbl_state.router.urlForPath(url_base, {
+                                uuid_campo: campo_nombre,
+                                uuid_lote: lote_nombre,
+                                uuid: this.item.uuid,
+                              })
+                            );
+                          }}
+                          theme="primary success"
+                        >
+                          Ejecutar
+                        </vaadin-button>
+                      `}
                 </vaadin-horizontal-layout>
               </div>
             `}
