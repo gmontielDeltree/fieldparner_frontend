@@ -37,7 +37,7 @@ import "@vaadin/form-layout";
 import "@vaadin/form-layout/vaadin-form-item";
 import type { FormLayoutResponsiveStep } from "@vaadin/form-layout";
 import labores from "../../jsons/labores.json";
-
+import "./insert_insumo_template";
 import { uuid4 } from "uuid4";
 import { Notification } from "@vaadin/notification";
 import { get, translate, translateUnsafeHTML } from "lit-translate";
@@ -65,8 +65,7 @@ import { TextField } from "@vaadin/text-field";
 import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
 import { TabSheet } from "@vaadin/tabsheet";
 import { motivos_items } from "../../jsons/motivos_items";
-import { grid_insumos_template } from "./grid_insumos_template";
-import { insert_insumos_template } from "./insert_insumo_template";
+import "./grid_insumos_template";
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -79,12 +78,12 @@ export class UpsertAplicacion extends LitElement {
   selected_step: number = 0;
 
   @state()
-  loading : bootstrap = false;
+  loading: bootstrap = false;
 
   private modal: Modal;
-  
+
   @state()
-  dialogOpened : boolean = false;
+  dialogOpened: boolean = false;
 
   private tipo: string;
 
@@ -97,9 +96,10 @@ export class UpsertAplicacion extends LitElement {
   private linea_de_labor: LineaLabor;
 
 
+
   override firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("modal"));
-    this.modal.show();
+    this.modal.show();  
   }
 
   protected willUpdate(
@@ -120,22 +120,22 @@ export class UpsertAplicacion extends LitElement {
     }
   }
 
-  inicializar_lineas(){
-     this.linea_de_dosis = {
-        dosis: 0,
-        insumo: null,
-        motivos: [],
-        uuid: "",
-        total: 0,
-        precio_estimado: 0,
-      };
+  inicializar_lineas() {
+    this.linea_de_dosis = {
+      dosis: 0,
+      insumo: null,
+      motivos: [],
+      uuid: "",
+      total: 0,
+      precio_estimado: 0,
+    };
 
-      this.linea_de_labor = {
-        uuid: "",
-        labor: { labor: "", uuid: "" },
-        costo: 0,
-        observacion: "",
-      };
+    this.linea_de_labor = {
+      uuid: "",
+      labor: { labor: "", uuid: "" },
+      costo: 0,
+      observacion: "",
+    };
   }
 
   inicializar_adicion() {
@@ -178,11 +178,11 @@ export class UpsertAplicacion extends LitElement {
       this.location.params.uuid as string
     );
 
-    this.getActividad(actividad_uuid).then((actividad)=>{
-      this.actividad = actividad
+    this.getActividad(actividad_uuid).then((actividad) => {
+      this.actividad = actividad;
       this.getLote(campo_nombre, lote_nombre);
       this.loading = false;
-    })
+    });
   }
 
   populateContratistas() {
@@ -213,15 +213,15 @@ export class UpsertAplicacion extends LitElement {
   }
 
   async getActividad(uuid) {
-    return gbl_state.db.allDocs({startkey:'actividad',endkey:'actividad\ufff0'}).then((result) => {
-      let actividad_id = result.rows.find((row)=>row.id.includes(uuid))
-      return gbl_state.db.get(actividad_id.id).then((result) => {
-        return result as Actividad
-      })
-    })
+    return gbl_state.db
+      .allDocs({ startkey: "actividad", endkey: "actividad\ufff0" })
+      .then((result) => {
+        let actividad_id = result.rows.find((row) => row.id.includes(uuid));
+        return gbl_state.db.get(actividad_id.id).then((result) => {
+          return result as Actividad;
+        });
+      });
   }
-
-
 
   agregarLineaInsumo() {
     if (this.linea_de_dosis.insumo === null) {
@@ -237,13 +237,32 @@ export class UpsertAplicacion extends LitElement {
     this.requestUpdate();
 
     // Usar document porque estan en un modal que salta
-    (document.querySelector("#insumo1") as ComboBox).clear();
-    (document.querySelector("#insumo2") as TextField).clear();
-    (document.querySelector("#insumo3") as TextField).clear();
-    (document.querySelector("#insumo4") as MultiSelectComboBox).clear();
+    // (document.querySelector("#insumo1") as ComboBox).clear();
+    // (document.querySelector("#insumo2") as TextField).clear();
+    // (document.querySelector("#insumo3") as TextField).clear();
+    // (document.querySelector("#insumo4") as MultiSelectComboBox).clear();
   }
 
   guardar() {
+
+
+    /* chequeos */
+    let errors = [];
+    if(this.actividad.contratista === null){
+      errors.push("Debe seleccionar un contratista");
+    }
+
+    if(this.actividad.detalles.dosis.length === 0){
+      errors.push("Debe agregar algun Insumo");
+   }
+
+   if(errors.length > 0){
+    alert(errors.join("\n"))
+    return
+   }
+
+
+
     let fecha = format(
       parse(
         this.actividad.detalles.fecha_ejecucion_tentativa,
@@ -276,7 +295,6 @@ export class UpsertAplicacion extends LitElement {
   ];
 
   render() {
-
     const labores_form = html`<vaadin-form-layout
         .responsiveSteps=${this.responsiveSteps}
       >
@@ -370,7 +388,11 @@ export class UpsertAplicacion extends LitElement {
     console.count("UpsertAplicacion-Render");
 
     return html`
-      <div id="modal" class="modal" tabindex="-1">
+      <div id="modal" class="modal" tabindex="-1" @cerrar-modal=${()=>this.modal.hide()} @abrir-modal=${()=>this.modal.show()}
+      @nueva-linea-insumo=${(e : CustomEvent)=>{
+        this.agregarLineaInsumo()
+      }}
+      >
         <!-- Full screen modal -->
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
@@ -385,8 +407,6 @@ export class UpsertAplicacion extends LitElement {
               ></button>
             </div>
             <div class="modal-body">
-
-
               <vaadin-tabsheet
                 id="actividad-tabsheet"
                 .selected=${this.selected_step}
@@ -404,14 +424,14 @@ export class UpsertAplicacion extends LitElement {
 
                 <!-- Contratista -->
                 <div tab="contratista-tab">
-               
                   <vaadin-form-layout>
-                 
                     <vaadin-combo-box
                       label="Contratista"
                       item-label-path="nombre"
                       item-value-path="uuid"
-                      helper-text=${this.contratistas?.length === 0 ? translate("no_contratistas"):""}
+                      helper-text=${this.contratistas?.length === 0
+                        ? translate("no_contratistas")
+                        : ""}
                       required
                       error-message=${translate("campo_requerido")}
                       colspan="2"
@@ -460,143 +480,12 @@ export class UpsertAplicacion extends LitElement {
                     lote y los valores se ajustaran automaticamente
                   </vaadin-horizontal-layout>
 
-                  <vaadin-details
-                    id="agregar-insumo-detalles"
-                    opened
-                    theme="small"
-                  >
-                    <div slot="summary">Agregar Insumo</div>
-
-                    <vaadin-form-layout
-                      .responsiveSteps=${this.responsiveSteps}
-                    >
-                     ${insert_insumos_template(this)}
-                      <vaadin-combo-box
-                        id="insumo1"
-                        label="Insumo"
-                        style="width:16em"
-                        colspan="2"
-                        item-label-path="marca_comercial"
-                        item-value-path="uuid"
-                        .items="${this.insumos}"
-                        .selected-item=${this.linea_de_dosis.insumo}
-                        @selected-item-changed=${(e) => {
-                          this.linea_de_dosis.insumo = e.detail.value;
-                          this.linea_de_dosis.precio_estimado =
-                            this.linea_de_dosis.insumo?.precio || 0 ;
-                          this.requestUpdate();
-                        }}
-                      ></vaadin-combo-box>
-
-                      <vaadin-text-field
-                        label="Dosis"
-                        id="insumo2"
-                        colspan="1"
-                        .value="${this.linea_de_dosis.dosis}"
-                        @input=${(e) => {
-                          this.linea_de_dosis.dosis = +e.target.value;
-                          this.linea_de_dosis.total = truncar(
-                            this.linea_de_dosis.dosis *
-                              this.actividad.detalles.hectareas
-                          );
-                          this.requestUpdate();
-                        }}
-                        clear-button-visible
-                      >
-                        <div slot="suffix">
-                          ${this.linea_de_dosis.insumo
-                            ? this.linea_de_dosis.insumo.unidad + "/ha"
-                            : ""}
-                        </div>
-                      </vaadin-text-field>
-
-                      <vaadin-text-field
-                        label="Total"
-                        id="insumo3"
-                        colspan="1"
-                        value="${this.linea_de_dosis.total}"
-                        @input=${(e) => {
-                          this.linea_de_dosis.total = +e.target.value;
-                          this.linea_de_dosis.dosis = truncar(
-                            this.linea_de_dosis.total /
-                              this.actividad.detalles.hectareas
-                          );
-                          this.requestUpdate();
-                        }}
-                      >
-                        <div slot="suffix">
-                          ${this.linea_de_dosis.insumo?.unidad || ""}
-                        </div>
-                      </vaadin-text-field>
-
-                      <vaadin-multi-select-combo-box
-                        label="Motivo"
-                        colspan="2"
-                        id="insumo4"
-                        style="width:20em"
-                        item-label-path="nombre"
-                        item-id-path="id"
-                        .items="${motivos_items}"
-                        .selected-items=${this.linea_de_dosis.motivos}
-                        @selected-items-changed=${(e) => {
-                          this.linea_de_dosis.motivos = e.target.selectedItems;
-                        }}
-                      ></vaadin-multi-select-combo-box>
-
-                      <vaadin-number-field
-                        label="Precio"
-                        colspan="1"
-                        .value=${this.linea_de_dosis.precio_estimado}
-                        @change=${(e) => {
-                          this.linea_de_dosis.precio_estimado = e.target.value;
-                        }}
-                      >
-                        <div slot="suffix">
-                          ${this.linea_de_dosis.insumo?.unidad
-                            ? "USD/" + this.linea_de_dosis.insumo.unidad
-                            : ""}
-                        </div>
-                      </vaadin-number-field>
-
-                      <vaadin-button
-                        colspan="1"
-                        theme="primary"
-                        @click=${this.agregarLineaInsumo}
-                        >Agregar</vaadin-button
-                      >
-                    </vaadin-form-layout>
-                  </vaadin-details>
-
-                  <vaadin-details
-                    id="lista-insumos-detalles"
-                    opened
-                    theme="small"
-                  >
-                    <div slot="summary">Lista de Insumos</div>
-
                     <vaadin-vertical-layout
                       theme="spacing"
                       style="justify-content: center"
                     >
-                      ${this.actividad.detalles.dosis.length > 0
-                        ? grid_insumos_template(this.actividad,this)
-                        : html`<div>Sin Insumos Agregados</div>
-                            <vaadin-horizontal-layout
-                              style="align-items=center;"
-                              ><vaadin-button
-                                @click=${() => {
-                                  document.getElementById(
-                                    "agregar-insumo-detalles"
-                                  ).opened = true;
-                                  document.getElementById(
-                                    "lista-insumos-detalles"
-                                  ).opened = false;
-                                }}
-                                >${translate("agregar")}</vaadin-button
-                              ></vaadin-horizontal-layout
-                            >`}
+                        <grid-insumos .actividad=${this.actividad} .insumos=${this.insumos}></grid-insumos>
                     </vaadin-vertical-layout>
-                  </vaadin-details>
                 </div>
                 <!-- Fin Insumos -->
 
@@ -756,3 +645,102 @@ export class UpsertAplicacion extends LitElement {
 function truncar(x) {
   return +x.toPrecision(4);
 }
+
+// <vaadin-form-layout
+//                      .responsiveSteps=${this.responsiveSteps}
+//                    >
+//                     ${insert_insumos_template(this)}
+//                      <vaadin-combo-box
+//                        id="insumo1"
+//                        label="Insumo"
+//                        style="width:16em"
+//                        colspan="2"
+//                        item-label-path="marca_comercial"
+//                        item-value-path="uuid"
+//                        .items="${this.insumos}"
+//                        .selected-item=${this.linea_de_dosis.insumo}
+//                        @selected-item-changed=${(e) => {
+//                          this.linea_de_dosis.insumo = e.detail.value;
+//                          this.linea_de_dosis.precio_estimado =
+//                            this.linea_de_dosis.insumo?.precio || 0 ;
+//                          this.requestUpdate();
+//                        }}
+//                      ></vaadin-combo-box>
+
+//                      <vaadin-text-field
+//                        label="Dosis"
+//                        id="insumo2"
+//                        colspan="1"
+//                        .value="${this.linea_de_dosis.dosis}"
+//                        @input=${(e) => {
+//                          this.linea_de_dosis.dosis = +e.target.value;
+//                          this.linea_de_dosis.total = truncar(
+//                            this.linea_de_dosis.dosis *
+//                              this.actividad.detalles.hectareas
+//                          );
+//                          this.requestUpdate();
+//                        }}
+//                        clear-button-visible
+//                      >
+//                        <div slot="suffix">
+//                          ${this.linea_de_dosis.insumo
+//                            ? this.linea_de_dosis.insumo.unidad + "/ha"
+//                            : ""}
+//                        </div>
+//                      </vaadin-text-field>
+
+//                      <vaadin-text-field
+//                        label="Total"
+//                        id="insumo3"
+//                        colspan="1"
+//                        value="${this.linea_de_dosis.total}"
+//                        @input=${(e) => {
+//                          this.linea_de_dosis.total = +e.target.value;
+//                          this.linea_de_dosis.dosis = truncar(
+//                            this.linea_de_dosis.total /
+//                              this.actividad.detalles.hectareas
+//                          );
+//                          this.requestUpdate();
+//                        }}
+//                      >
+//                        <div slot="suffix">
+//                          ${this.linea_de_dosis.insumo?.unidad || ""}
+//                        </div>
+//                      </vaadin-text-field>
+
+//                      <vaadin-multi-select-combo-box
+//                        label="Motivo"
+//                        colspan="2"
+//                        id="insumo4"
+//                        style="width:20em"
+//                        item-label-path="nombre"
+//                        item-id-path="id"
+//                        .items="${motivos_items}"
+//                        .selected-items=${this.linea_de_dosis.motivos}
+//                        @selected-items-changed=${(e) => {
+//                          this.linea_de_dosis.motivos = e.target.selectedItems;
+//                        }}
+//                      ></vaadin-multi-select-combo-box>
+
+//                      <vaadin-number-field
+//                        label="Precio"
+//                        colspan="1"
+//                        .value=${this.linea_de_dosis.precio_estimado}
+//                        @change=${(e) => {
+//                          this.linea_de_dosis.precio_estimado = e.target.value;
+//                        }}
+//                      >
+//                        <div slot="suffix">
+//                          ${this.linea_de_dosis.insumo?.unidad
+//                            ? "USD/" + this.linea_de_dosis.insumo.unidad
+//                            : ""}
+//                        </div>
+//                      </vaadin-number-field>
+
+//                      <vaadin-button
+//                        colspan="1"
+//                        theme="primary"
+//                        @click=${this.agregarLineaInsumo}
+//                        >Agregar</vaadin-button
+//                      >
+//                    </vaadin-form-layout>
