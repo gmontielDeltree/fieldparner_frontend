@@ -27,6 +27,7 @@ import { gblStateLoaded, gbl_state } from "../state";
 import { StateController } from "@lit-app/state";
 import { ref, createRef } from "lit/directives/ref.js";
 import "@vaadin/tabsheet";
+import { Lenguage } from "../tipos/tipos-varios";
 
 @customElement("app-layout-navbar-placement")
 export class Example extends LitElement {
@@ -52,13 +53,32 @@ export class Example extends LitElement {
 
   private bindState = new StateController(this, gbl_state);
 
-  private geocoder_inicializado: boolean = false;
+  private idioma_inicializado: boolean = false;
+
+  private selected_language = 'es';
 
   geocoderRef = createRef<HTMLElement>();
 
   willUpdate(properties) {
     //   console.log("STATEEEEE",properties)
-    //  if (!this.geocoder_inicializado && gblStateLoaded()) {
+      if (!this.idioma_inicializado && gblStateLoaded()) {
+        this.idioma_inicializado = true;
+        gbl_state.user_db.allDocs({startkey:"user_language",endkey:"user_language",include_docs:true})
+        .then((result)=>{
+          if(result.rows.length > 0){
+            // Existe
+            let lang_doc : Lenguage = result.rows[0].doc as Lenguage
+            this.selected_language = lang_doc.lang
+            use(lang_doc.lang)
+
+            console.log("USEEEEEEEEEE", lang_doc)
+          }else{
+            // No existe
+            use(this.selected_language)
+          }
+        })
+      }
+
     //   this.geocoder_inicializado = true;
     //   const geocoder = new MapboxGeocoder({
     //     accessToken: mapboxgl.accessToken,
@@ -171,22 +191,33 @@ export class Example extends LitElement {
         <vaadin-tabs slot="drawer" orientation="vertical">
           <vaadin-tab>
             <a tabindex="-1">
-              <vaadin-icon icon="vaadin:dashboard"></vaadin-icon>
+              <vaadin-icon icon="vaadin:desktop"></vaadin-icon>
               <workspace-menu></workspace-menu>
             </a>
           </vaadin-tab>
           <vaadin-tab>
             <a tabindex="-1" href="/campos">
-              <vaadin-icon icon="vaadin:dashboard"></vaadin-icon>
+              <vaadin-icon icon="vaadin:bullseye"></vaadin-icon>
               <span>Campos</span>
             </a>
           </vaadin-tab>
-          <!-- <vaadin-tab>
-            <a tabindex="-1">
-              <vaadin-icon icon="vaadin:cart"></vaadin-icon>
-              <span>Dispositivos</span>
+          <vaadin-tab>
+            <a tabindex="-1" @click=${ () => {
+              let base = ""
+              if(location.hostname === "localhost" || location.hostname === "127.0.0.1"){
+                base += "https://staging--agrotools.netlify.app"
+              }
+
+              fetch(base + '/geolocation').then((response)=>response.json()).then((geodata)=>{
+                alert(JSON.stringify(geodata))
+              })
+              
+            }}>
+              <vaadin-icon icon="vaadin:location-arrow-circle"></vaadin-icon>
+              <span>Test Localizacion</span>
             </a>
           </vaadin-tab>
+          <!--
           <vaadin-tab>
             <a tabindex="-1">
               <vaadin-icon icon="vaadin:user-heart"></vaadin-icon>
@@ -206,7 +237,7 @@ export class Example extends LitElement {
                 location.reload();
               }}
             >
-              <vaadin-icon icon="vaadin:records"></vaadin-icon>
+              <vaadin-icon icon="vaadin:refresh"></vaadin-icon>
               <span>${translate("navbar.opciones.recargar")}</span>
             </a>
           </vaadin-tab>
@@ -231,10 +262,25 @@ export class Example extends LitElement {
           <vaadin-tab>
             <a tabindex="-1">
               <vaadin-select
-                .value=${"es"}
+                .value=${this.selected_language}
                 @change=${(e: CustomEvent) => {
                   let lang = e.target.value;
                   use(lang);
+                  if(gblStateLoaded()){
+                    gbl_state.user_db.allDocs({startkey:"user_language",endkey:"user_language",include_docs:true})
+                    .then((result)=>{
+                      if(result.rows.length > 0){
+                        // Existe
+                        let lang_doc : Lenguage = result.rows[0].doc as Lenguage
+                        lang_doc.lang = lang
+                        gbl_state.user_db.put(lang_doc)
+                      }else{
+                        // No existe
+                        let lang_doc : Lenguage = {_id:"user_language",lang:lang}
+                        gbl_state.user_db.put(lang_doc)
+                      }
+                    })
+                  }
                 }}
                 ${selectRenderer(this.lang_renderer, this.lenguajes)}
               ></vaadin-select>
@@ -248,7 +294,7 @@ export class Example extends LitElement {
                 this.sendEvent("logout-click", {});
               }}
             >
-              <vaadin-icon icon="vaadin:cart"></vaadin-icon>
+              <vaadin-icon icon="vaadin:sign-out"></vaadin-icon>
               <span>Log Out</span>
             </a>
           </vaadin-tab>
