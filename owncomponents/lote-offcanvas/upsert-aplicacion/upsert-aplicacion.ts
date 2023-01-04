@@ -65,7 +65,8 @@ import { TextField } from "@vaadin/text-field";
 import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
 import { TabSheet } from "@vaadin/tabsheet";
 import { motivos_items } from "../../jsons/motivos_items";
-import "./grid_insumos_template";
+import "./grid_insumos";
+import "./grid_labores";
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -295,95 +296,9 @@ export class UpsertAplicacion extends LitElement {
   ];
 
   render() {
-    const labores_form = html`<vaadin-form-layout
-        .responsiveSteps=${this.responsiveSteps}
-      >
-        <vaadin-combo-box
-          item-label-path="labor"
-          item-value-path="uuid"
-          label=${translate("labor")}
-          .items=${labores}
-          @selected-item-changed=${(e) => {
-            this.linea_de_labor.labor = e.detail.value;
-          }}
-        ></vaadin-combo-box>
-        <vaadin-number-field
-          label=${translate("costo")}
-          @input=${(e) => {
-            this.linea_de_labor.costo = e.target.value;
-          }}
-        >
-          <div slot="suffix">USD</div>
-        </vaadin-number-field>
-        <vaadin-text-field
-          label=${translate("comentario")}
-          @input=${(e) => {
-            this.linea_de_labor.observacion = e.target.value;
-          }}
-        ></vaadin-text-field>
-        <vaadin-button
-          @click=${() => {
-            this.linea_de_labor.uuid = uuid4();
-            let copy = deepcopy(this.linea_de_labor);
-            this.actividad.detalles.costo_labor.push(copy);
-            this.actividad.detalles.costo_labor = deepcopy(
-              this.actividad.detalles.costo_labor
-            );
-            this.inicializar_lineas();
-            this.requestUpdate();
-          }}
-        >
-          ${translate("agregar")}
-        </vaadin-button>
-      </vaadin-form-layout>
-      ${this.actividad.detalles.costo_labor.length > 0
-        ? html`<vaadin-grid .items=${this.actividad.detalles.costo_labor}>
-            <vaadin-grid-column
-              header="${translate("labor")}"
-              auto-width
-              ${columnBodyRenderer<LineaLabor>(
-                (item: LineaLabor) => html` <vaadin-combo-box
-                  item-label-path="labor"
-                  item-value-path="uuid"
-                  .selectedItem=${item.labor}
-                  .items=${labores}
-                  @selected-item-changed=${(e) => {
-                    item.labor = e.detail.value;
-                  }}
-                ></vaadin-combo-box>`,
-                this.actividad.detalles.costo_labor
-              )}
-            ></vaadin-grid-column>
-
-            <vaadin-grid-column
-              header="${translate("costo")}"
-              auto-width
-              ${columnBodyRenderer<LineaLabor>(
-                (item) => html` <vaadin-number-field
-                  .value=${item.costo}
-                  @input=${(e) => {
-                    item.costo = e.target.value;
-                  }}
-                ></vaadin-number-field>`,
-                []
-              )}
-            ></vaadin-grid-column>
-
-            <vaadin-grid-column
-              header="${translate("comentario")}"
-              auto-width
-              ${columnBodyRenderer<LineaLabor>(
-                (item: LineaLabor) => html` <vaadin-text-field
-                  .value=${item.observacion}
-                  @input=${(e) => {
-                    item.observacion = e.target.value;
-                  }}
-                ></vaadin-text-field>`,
-                []
-              )}
-            ></vaadin-grid-column>
-          </vaadin-grid>`
-        : html`<div>${translate("no_hay_labores")}</div>`} `;
+    const labores_form = html`
+        <grid-labores .actividad=${this.actividad} .labores=${labores}></grid-labores>
+   `;
 
     console.count("UpsertAplicacion-Render");
 
@@ -480,12 +395,8 @@ export class UpsertAplicacion extends LitElement {
                     lote y los valores se ajustaran automaticamente
                   </vaadin-horizontal-layout>
 
-                    <vaadin-vertical-layout
-                      theme="spacing"
-                      style="justify-content: center"
-                    >
-                        <grid-insumos .actividad=${this.actividad} .insumos=${this.insumos}></grid-insumos>
-                    </vaadin-vertical-layout>
+                  <grid-insumos .actividad=${this.actividad} .insumos=${this.insumos}></grid-insumos>
+                    
                 </div>
                 <!-- Fin Insumos -->
 
@@ -744,3 +655,95 @@ function truncar(x) {
 //                        >Agregar</vaadin-button
 //                      >
 //                    </vaadin-form-layout>
+
+
+
+// <vaadin-form-layout
+// .responsiveSteps=${this.responsiveSteps}
+// >
+// <vaadin-combo-box
+//   item-label-path="labor"
+//   item-value-path="uuid"
+//   label=${translate("labor")}
+//   .items=${labores}
+//   @selected-item-changed=${(e) => {
+//     this.linea_de_labor.labor = e.detail.value;
+//   }}
+// ></vaadin-combo-box>
+// <vaadin-number-field
+//   label=${translate("costo")}
+//   @input=${(e) => {
+//     this.linea_de_labor.costo = e.target.value;
+//   }}
+// >
+//   <div slot="suffix">USD</div>
+// </vaadin-number-field>
+// <vaadin-text-field
+//   label=${translate("comentario")}
+//   @input=${(e) => {
+//     this.linea_de_labor.observacion = e.target.value;
+//   }}
+// ></vaadin-text-field>
+// <vaadin-button
+//   @click=${() => {
+//     this.linea_de_labor.uuid = uuid4();
+//     let copy = deepcopy(this.linea_de_labor);
+//     this.actividad.detalles.costo_labor.push(copy);
+//     this.actividad.detalles.costo_labor = deepcopy(
+//       this.actividad.detalles.costo_labor
+//     );
+//     this.inicializar_lineas();
+//     this.requestUpdate();
+//   }}
+// >
+//   ${translate("agregar")}
+// </vaadin-button>
+// </vaadin-form-layout>
+// ${this.actividad.detalles.costo_labor.length > 0
+// ? html`<vaadin-grid .items=${this.actividad.detalles.costo_labor}>
+//     <vaadin-grid-column
+//       header="${translate("labor")}"
+//       auto-width
+//       ${columnBodyRenderer<LineaLabor>(
+//         (item: LineaLabor) => html` <vaadin-combo-box
+//           item-label-path="labor"
+//           item-value-path="uuid"
+//           .selectedItem=${item.labor}
+//           .items=${labores}
+//           @selected-item-changed=${(e) => {
+//             item.labor = e.detail.value;
+//           }}
+//         ></vaadin-combo-box>`,
+//         this.actividad.detalles.costo_labor
+//       )}
+//     ></vaadin-grid-column>
+
+//     <vaadin-grid-column
+//       header="${translate("costo")}"
+//       auto-width
+//       ${columnBodyRenderer<LineaLabor>(
+//         (item) => html` <vaadin-number-field
+//           .value=${item.costo}
+//           @input=${(e) => {
+//             item.costo = e.target.value;
+//           }}
+//         ></vaadin-number-field>`,
+//         []
+//       )}
+//     ></vaadin-grid-column>
+
+//     <vaadin-grid-column
+//       header="${translate("comentario")}"
+//       auto-width
+//       ${columnBodyRenderer<LineaLabor>(
+//         (item: LineaLabor) => html` <vaadin-text-field
+//           .value=${item.observacion}
+//           @input=${(e) => {
+//             item.observacion = e.target.value;
+//           }}
+//         ></vaadin-text-field>`,
+//         []
+//       )}
+//     ></vaadin-grid-column>
+//   </vaadin-grid>`
+// : html`<div>${translate("no_hay_labores")}</div>`} 

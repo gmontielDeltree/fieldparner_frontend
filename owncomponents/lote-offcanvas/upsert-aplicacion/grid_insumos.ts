@@ -25,7 +25,7 @@ import "@vaadin/multi-select-combo-box";
 import "@vaadin/text-area";
 import "@vaadin/form-layout";
 import "@vaadin/form-layout/vaadin-form-item";
-import { GridColumn, GridItemModel } from '@vaadin/grid';
+import { Grid, GridColumn, GridItemModel } from "@vaadin/grid";
 
 @customElement("grid-insumos")
 export class GridInsumos extends LitElement {
@@ -90,36 +90,20 @@ export class GridInsumos extends LitElement {
     }
   }
 
-  private cellClassNameGenerator(
-    column: GridColumn,
-    model: GridItemModel<LineaDosis>
-  ) {
-    const item = model.item;
-    let classes = "";
-    
-    // Add high-rating class to customer ratings of 8 or higher
-    if (item.uuid === 'nuevo') {
-      classes += " high-rating";
-      // Add low-rating class to customer ratings of 4 or lower
-    } else {
-      classes += " low-rating";
-    }
-    return classes;
-  }
-
   render() {
     return html`<vaadin-grid
+      id="da-grid"
       .items=${this.expanded_items()}
-      .cellClassNameGenerator=${this.cellClassNameGenerator}
-      style="width: 100%; max-width: 100%; align-self: center;"
+      style="align-self: center;"
       all-rows-visible
-      row-stripes
       theme="compact no-border row-stripes"
     >
       <vaadin-grid-column
         header="Nombre"
         frozen
         auto-width
+        flex-grow="0"
+        resizable
         ${columnBodyRenderer<LineaDosis>((item) => {
           console.log("render item", item);
           return item.uuid === "nuevo"
@@ -129,7 +113,7 @@ export class GridInsumos extends LitElement {
                   placeholder="${translate("seleccione_insumo")}"
                   style="width:16em"
                   colspan="2"
-		  class='high-rating'
+                  class="high-rating"
                   .clearButtonVisible=${true}
                   item-label-path="marca_comercial"
                   item-value-path="uuid"
@@ -159,11 +143,21 @@ export class GridInsumos extends LitElement {
       <vaadin-grid-column
         header="Dosis por ha."
         auto-width
+        flex-grow="0"
+        resizable
         ${columnBodyRenderer<LineaDosis>((item) => {
           return html` <vaadin-text-field
             maxlength="5"
+            class=${item.uuid === "nuevo" ? "high-rating" : ""}
             value=${item.dosis}
             @change=${(e) => (item.dosis = +e.target.value)}
+            @input=${(e) => {
+              item.total = +e.target.value;
+              item.dosis = truncar(
+                item.total / this.actividad.detalles.hectareas
+              );
+              this.requestUpdate();
+            }}
           >
             <div slot="suffix">${item.insumo?.unidad || ""}/Ha</div>
           </vaadin-text-field>`;
@@ -173,10 +167,13 @@ export class GridInsumos extends LitElement {
       <vaadin-grid-column
         header="Total"
         auto-width
+        flex-grow="0"
+        resizable
         ${columnBodyRenderer<LineaDosis>(
           (item) => html` <vaadin-text-field
             maxlength="5"
             value=${item.total}
+            class=${item.uuid === "nuevo" ? "high-rating" : ""}
             @change=${(e) => (item.total = +e.target.value)}
             @input=${(e) => {
               item.total = +e.target.value;
@@ -195,10 +192,14 @@ export class GridInsumos extends LitElement {
       <vaadin-grid-column
         header="Motivos"
         auto-width
+        flex-grow="0"
+        resizable
         ${columnBodyRenderer<LineaDosis>(
           (item) => html`<vaadin-multi-select-combo-box
             item-label-path="nombre"
             item-id-path="id"
+        style="width:19em;"
+            class=${item.uuid === "nuevo" ? "high-rating" : ""}
             .items=${motivos_items}
             .selectedItems=${item.motivos}
             @selected-items-changed=${(e) => {
@@ -212,15 +213,22 @@ export class GridInsumos extends LitElement {
       <vaadin-grid-column
         header="Precio"
         auto-width
+        flex-grow="0"
+        resizable
         ${columnBodyRenderer<LineaDosis>(
-          (item) => html`<vaadin-number-field
+          (item) => html`
+          <vaadin-number-field
             value="${item.precio_estimado}"
+            style="width:10em;"
+            class=${item.uuid === "nuevo" ? "high-rating" : ""}
             @change=${(e) => (item.precio_estimado = +e.target.value)}
           >
             <div slot="suffix">
               ${item.insumo?.unidad ? "USD/" + item.insumo.unidad : ""}
-            </div></vaadin-number-field
-          >`,
+            </div>
+            </vaadin-number-field>
+
+            `,
           []
         )}
       ></vaadin-grid-column>
@@ -229,11 +237,13 @@ export class GridInsumos extends LitElement {
         frozen-to-end
         auto-width
         flex-grow="0"
+        resizable
         ${columnBodyRenderer<LineaDosis>(
           (item) =>
             item.uuid === "nuevo"
               ? html`
                   <vaadin-button
+                    class=${item.uuid === "nuevo" ? "high-rating" : ""}
                     @click=${() => {
                       let nuevo = deepcopy(this.linea_de_dosis) as LineaDosis;
                       nuevo.uuid = uuid4();
@@ -243,6 +253,9 @@ export class GridInsumos extends LitElement {
                       );
                       this.inicializar_lineas();
                       this.requestUpdate();
+                      (
+                        this.shadowRoot.getElementById("da-grid") as Grid
+                      ).recalculateColumnWidths();
                     }}
                     theme="icon"
                     aria-label="agregar item"
