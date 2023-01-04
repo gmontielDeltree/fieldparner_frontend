@@ -6,7 +6,7 @@ import { base_url, normalizar_username } from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
 import "../loading-modal/loading-modal.js";
 import "../color-cultivo/color-cultivo";
-import cultivos_default from "./cultivos.json";
+import cultivos_default from "../jsons/cultivos.json";
 import "../notas-offcanvas/notas-offcanvas.ts";
 import "../ndvi-offcanvas/ndvi-offcanvas.ts";
 import "../variedades-loader/variedades-loader.js";
@@ -17,6 +17,7 @@ import "../contratistas/contratistas-lista.ts";
 import "../sensores/sensores-offcanvas.ts";
 import "../campo-offcanvas/campo-offcanvas.js";
 import "../lote-offcanvas/lote-offcanvas.js";
+import "../lote-offcanvas/lote-offcanvas-side.js";
 import "../nueva-geometria/nueva-geometria.ts";
 import "../nuevo-campo/nuevo-campo.js";
 import "../lista-de-campos/lista-de-campos.js";
@@ -27,27 +28,35 @@ import "../notas-offcanvas/nota-target.ts";
 import "../insumos/insumos-lista.ts";
 import "../lista-centrales-cercanas/lista-centrales-cercanas.ts";
 import "../sensores/lista-de-sensores.ts";
-import "../navbar-element/workspace-rigths.ts"
-import '../null-component'
-import '../invite/invite'
-import '../lote-offcanvas/repetir-aplicacion/repetir-aplicacion.ts'
+import "../navbar-element/workspace-rigths.ts";
+import "../navbar-element/new-app-layout.ts";
+import "../null-component";
+import "../invite/invite";
+import "../lote-offcanvas/repetir-aplicacion/repetir-aplicacion.ts";
+import "../lote-offcanvas/upsert-aplicacion/upsert-aplicacion";
+import "../lote-offcanvas/upsert-ejecucion/upsert-ejecucion";
 
-import { use, get,registerTranslateConfig } from "lit-translate";
+import "../sensores/devices-route";
+
+import { use, get, registerTranslateConfig } from "lit-translate";
 
 import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 import uuid4 from "uuid4";
-import { get_empty_insumo, Insumo } from "../insumos/insumos-types";
+import {
+  download_lista_de_insumos,
+  get_empty_insumo,
+  Insumo,
+} from "../insumos/insumos-types";
 import { Actividad } from "../depositos/depositos-types";
 import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { format, parse } from "date-fns";
 import { Devices } from "../sensores/sensores";
 
-import {StateController} from '@lit-app/state'
-import gbl_state from '../state.js'
-
+import { StateController } from "@lit-app/state";
+import gbl_state from "../state.js";
 
 var wentOffline, wentOnline;
 
@@ -68,34 +77,34 @@ function handleConnectionChange(event) {
 }
 
 export class FieldPartner extends LitElement {
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   map: Map;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   draw: MapboxDraw;
 
   @state()
   campos: any;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   campos_db: PouchDB.Database;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   remote_campos_db: PouchDB.Database;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   user: any;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   auth0Client: any;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   logged_in: boolean = false;
 
   @state()
   loading: boolean = true;
 
-  @property({hasChanged:(v,ov)=>false})
+  @property({ hasChanged: (v, ov) => false })
   settings: any;
 
   constructor() {
@@ -105,14 +114,15 @@ export class FieldPartner extends LitElement {
     this.user = {};
     this.user.name = "demo";
 
-    gbl_state.online = window.navigator.onLine
-    
+    gbl_state.online = window.navigator.onLine;
+
     /* Traducciones */
     registerTranslateConfig({
-      loader: lang => fetch(`/assets/i18n/${lang}.json`).then(res => res.json())
+      loader: (lang) =>
+        fetch(`/assets/i18n/${lang}.json`).then((res) => res.json()),
     });
 
-    console.log("USE Lang",use('es'))
+    console.log("USE Lang", use("es"));
 
     window.addEventListener("online", handleConnectionChange);
     window.addEventListener("offline", handleConnectionChange);
@@ -127,79 +137,30 @@ export class FieldPartner extends LitElement {
 
     /* Clicks en varios botones */
     this.addEventListener("ver-campo-detalles", (e: any) => {
-      let campo_doc_id = e.detail.campo_id // el ID del doc del campo ("campo:el remanso")
-      Router.go('campo/'+encodeURIComponent(campo_doc_id))
-
-      // this.campos_db.get(e.detail.campo_id).then((campo_doc) => {
-      //   document.getElementById("campo-oc").campo_doc = campo_doc;
-      //   document.getElementById("campo-oc").show();
-      // });
+      let campo_doc_id = e.detail.campo_id; // el ID del doc del campo ("campo:el remanso")
+      Router.go("campo/" + encodeURIComponent(campo_doc_id));
     });
 
-    this.addEventListener("ver-lote-detalles", (e : CustomEvent) => {
-      let campo_doc_id_enc = encodeURIComponent( e.detail.campo_parent_id)
-      let lote_nombre = encodeURIComponent(e.detail.nombre)
-      Router.go('campo/' + campo_doc_id_enc + '/lote/' + lote_nombre)
-      // document.getElementById("campo-oc").hide();
-      // document.getElementById("lote-oc").lote_nombre = e.detail.nombre;
-      // document.getElementById("lote-oc").campo_id = e.detail.campo_parent_id;
-      // document.getElementById("lote-oc").show();
+    this.addEventListener("ver-lote-detalles", (e: CustomEvent) => {
+      let campo_doc_id_enc = encodeURIComponent(e.detail.campo_parent_id);
+      let lote_nombre = encodeURIComponent(e.detail.nombre);
+      Router.go("campo/" + campo_doc_id_enc + "/lote/" + lote_nombre);
     });
 
     this.addEventListener("nuevo-campo-click", (e) => {
       document.getElementById("nuevo-campo-oc").show = true;
     });
 
-    // this.addEventListener("ver-ndvi-click", (e: CustomEvent) => {
-    //   //document.getElementById("ndvi-oc").lote_doc = e.detail.lote;
-    //   //document.getElementById("ndvi-oc").show();
-
-    //   const el = document.createElement("ndvi-offcanvas");
-    //   document.getElementById("container-multiproposito").appendChild(el);
-    //   el.map = this.map;
-    //   el.id = "ndvi-oc";
-    //   el.lote_doc = e.detail.lote;
-    //   el.show();
-    // });
-
-    this.addEventListener("generar-ndvi", async (e: CustomEvent) => {
-      // let couch_username = normalizar_username(this.user.name);
-      // console.log("gen ndvi evnet");
-
-      // if (!(await ndvi_generado_hoy(e.detail.lote_geojson.geometry))) {
-      //   this.changes_db.put(
-      //     {
-      //       _id: uuid4(),
-      //       tipo: "add-lote",
-      //       username: couch_username,
-      //       details: {
-      //         campo_id: "thisCampoId",
-      //         db: "campos_" + couch_username,
-      //         lote_geojson: e.detail.lote_geojson,
-      //         username: couch_username,
-      //       },
-      //     },
-      //     (err: any, _: any) => {
-      //       if (!err) {
-      //         console.log("LocalChanges para NDVI Successfully posted!");
-      //       } else {
-      //         console.log(err);
-      //       }
-      //     }
-      //   );
-      // }
-    });
-
     this.addEventListener("nuevo-deposito-click", () => {
       document.getElementById("deposito-upsert").show();
     });
 
-    this.addEventListener("lote-seleccionado", (e) => {
+    this.addEventListener("lote-seleccionado", (e: CustomEvent) => {
       document.getElementById("nota-share-target").seleccion(e.detail);
     });
 
     /* Izar map y draw a este componente para que los otros puedan usarlo */
-    this.addEventListener("map-loaded", (e) => {
+    this.addEventListener("map-loaded", (e : CustomEvent) => {
       this.map = e.detail.map;
 
       gbl_state.map = e.detail.map;
@@ -210,11 +171,6 @@ export class FieldPartner extends LitElement {
 
       let devices = new Devices();
       devices.add_markers_to_map(this.map);
-    });
-
-    /* Click en ver lista de campos */
-    this.addEventListener("ver-lista-campos", (e) => {
-      document.getElementById("lista-de-campos").show();
     });
 
     /* Click en ver lista de depositios */
@@ -286,61 +242,24 @@ export class FieldPartner extends LitElement {
     });
 
     this.addEventListener("ver-telemetria-del-dia", (e: CustomEvent) => {
-      const el = document.createElement("sensores-oc");
-      document.getElementById("container-multiproposito").appendChild(el);
-
       let daily_card = e.detail as DailyTelemetryCard;
 
-      console.log("VER TELE DEL DIA", daily_card);
-      el.map = this.map;
-      el.show(daily_card);
+      let fecha = daily_card._id.split(":")[2];
+      Router.go(
+        gbl_state.router.urlForName("device-route-handler", {
+          uuid: daily_card.device_id,
+          date: fecha,
+        })
+      );
     });
 
     // Borrar un Campo
-    this.addEventListener("borrar-campo", (e) => {
+    this.addEventListener("borrar-campo", (e : CustomEvent) => {
       this.campos_db.remove(e.detail.campo_doc).then(() => {
         alert("Campo borrado");
         this.load_campos_y_settings();
       });
     });
-
-    // Share Campo
-    this.addEventListener("share-campo", (e: any) => {
-      console.log("share campo", e.detail);
-
-      let nuevo_shared_campo = { ...e.detail.campo_doc };
-      nuevo_shared_campo.shared = true;
-      nuevo_shared_campo.share_with = [...e.detail.share_with];
-      // Me agrego a mi mismo para compartir
-
-      nuevo_shared_campo.share_with.push(normalizar_username(this.user.name));
-      //
-      nuevo_shared_campo.owner = this.user;
-      // Lo grabo en campos_db
-      this.campos_db
-        .put(nuevo_shared_campo)
-        .then(() => alert("Campo compartido"));
-
-      // Lo upserto en shared_db
-      // this.shared_db_remote.get(nuevo_shared_campo._id).then(old_doc => {
-      //   nuevo_shared_campo._rev = old_doc._rev
-      //   this.shared_db_remote.put(nuevo_shared_campo)
-      // }).catch((e)=>{
-      //   if(e.reason === 'missing'){
-      //     // debe tener _rev si es nuevo
-      //     //delete nuevo_shared_campo._rev
-      //     //this.shared_db_remote.put(nuevo_shared_campo).catch((e)=>{
-      //     //console.log("Error al crear nuevo shared_campo",e)
-      //     // })
-      //   }
-      // });
-    });
-
-    this.addEventListener("lote-detalles-hide", (e) => {
-      // console.log("HIDE LOTE DETALLES");
-      // document.getElementById("campo-oc").show();
-    });
-
 
     this.init_the_whole_thing();
   }
@@ -349,46 +268,13 @@ export class FieldPartner extends LitElement {
     return this;
   }
 
-  protected willUpdate(_changedProperties: PropertyValueMap<any> | globalThis.Map<PropertyKey, unknown>): void {
-      console.log("FieldPartner-WillUpdate",_changedProperties)
+  protected willUpdate(
+    _changedProperties:
+      | PropertyValueMap<any>
+      | globalThis.Map<PropertyKey, unknown>
+  ): void {
+    console.log("FieldPartner-WillUpdate", _changedProperties);
   }
-
-  delete_insumos = async () => {};
-
-  inicializar_insumos = async () => {
-    try {
-      let settings = await this.campos_db.get("settings");
-
-      if (!settings.insumos_inicializados) {
-        console.log("No hay insumos...Fetching");
-        let data = await fetch("/products.json").then((response) =>
-          response.json()
-        );
-        let products = data.products;
-        let insumos = products.map((p: any) => {
-          let i: Insumo = get_empty_insumo();
-          i.marca_comercial = p.commercial_brand;
-          i.principio_activo = p.supply?.active_substance || "";
-          i.tipo = p.type?.name || "";
-          i.subtipo = p.subtype?.name || "";
-          i.unidad = p.unit.name || "";
-          return i;
-        });
-
-        // this.campos_db.bulkDocs(insumos).then((d)=>{
-        //   settings.insumos_inicializados=true;
-        //   this.campos_db.put(settings)
-        //   this.settings = settings;
-        // });
-
-        console.log("INSUMOS", insumos);
-      } else {
-        console.log("Los Insumos ya fueron Inicializados");
-      }
-    } catch (e) {
-      console.error("No settings", e);
-    }
-  };
 
   async init_the_whole_thing() {
     let sitio = window.location.hostname;
@@ -402,7 +288,7 @@ export class FieldPartner extends LitElement {
     } else if (sitio === "dev--agrotools.netlify.app") {
       // Development - Especial flow
       console.log("Especial Development Flow - Demo User");
-      this.user.sub = "demo-userdb"
+      this.user.sub = "demo-userdb";
       // Logged in
       this.logged_in = true;
       // Default Databases
@@ -413,7 +299,7 @@ export class FieldPartner extends LitElement {
       this.logged_in = true;
       this.user.name = "randy";
       // Default Databases
-      this.user.sub = "randy-userdb"
+      this.user.sub = "randy-userdb";
       this.crear_dbs(this.user);
     }
 
@@ -487,12 +373,12 @@ export class FieldPartner extends LitElement {
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Nombres validos solo en minusculas
-    this.campos_db = new PouchDB("campos_" + username + "v3");
-  
-    gbl_state.db = this.campos_db
+    this.campos_db = new PouchDB("campos_" + username + "v5");
 
-    gbl_state.user_db = new PouchDB(user.sub)
-    gbl_state.user = this.user
+    gbl_state.db = this.campos_db;
+
+    gbl_state.user_db = new PouchDB(user.sub);
+    gbl_state.user = this.user;
 
     try {
       let campos_db_uri = base_url + "campos_" + username;
@@ -553,7 +439,6 @@ export class FieldPartner extends LitElement {
     }
   }
 
-
   cargar_desde_remoto() {
     // Get Campos
     this.remote_campos_db
@@ -563,8 +448,8 @@ export class FieldPartner extends LitElement {
         endkey: "campos_\ufff0",
       })
       .then((result) => {
-        this.campos = result
-        gbl_state.campos = this.campos
+        this.campos = result;
+        gbl_state.campos = this.campos;
       });
 
     // Get Settings
@@ -603,7 +488,6 @@ export class FieldPartner extends LitElement {
         this.load_campos_y_settings();
         console.log("CHANGES!!");
       });
-
   }
 
   replicar_y_sincronizar() {
@@ -633,7 +517,6 @@ export class FieldPartner extends LitElement {
             this.load_campos_y_settings();
             console.log("CHANGES!!");
           });
-
       })
       .on("error", (e) => {
         // Puede llegar aca si la app se abre offline
@@ -655,43 +538,11 @@ export class FieldPartner extends LitElement {
 
     settings_doc.user_cultivos = cultivos_default;
 
-    try {
-      console.log("No hay insumos...Fetching");
-      let data = await fetch("/products.json").then((response) =>
-        response.json()
-      );
-      let products = data.products;
+    this.campos_db
+      .put(settings_doc)
+      .then(() => console.log("Settings Grabadas"));
 
-      let insumos = products.map((p: any) => {
-        let i: Insumo = get_empty_insumo();
-        i.marca_comercial = p.commercial_brand;
-        i.principio_activo = p.supply?.active_substance || "";
-        i.tipo = p.type?.name || "";
-        i.subtipo = p.subtype?.name || "";
-        i.unidad = p.unit.name || "";
-        return i;
-      });
-
-      console.log("BulkDocs Insumos");
-      this.campos_db.bulkDocs(insumos).then((d) => {
-        settings_doc.insumos_inicializados = true;
-        // Grabar Settings DOC
-        this.campos_db.put(settings_doc);
-        this.settings = settings_doc;
-      });
-
-      // Creando Contratista
-      let contratista_doc = { _id: "contratistas", contratistas: {} };
-      this.campos_db.put(contratista_doc);
-
-      console.log("INSUMOS", insumos);
-    } catch (e) {
-      console.error("Error Fetch Insumos", e);
-      // Grabo de todas maneras el resto de settings
-      this.campos_db.put(settings_doc);
-      console.log("Settings Grabadas");
-      this.settings = settings_doc;
-    }
+    this.settings = settings_doc;
   }
 
   /** Recarga los campos y settings.
@@ -706,8 +557,8 @@ export class FieldPartner extends LitElement {
         endkey: "campos_\ufff0",
       })
       .then((result) => {
-        this.campos = result
-        gbl_state.campos = this.campos
+        this.campos = result;
+        gbl_state.campos = this.campos;
       });
 
     // Get Settings
@@ -724,39 +575,6 @@ export class FieldPartner extends LitElement {
         }
         console.error("Load Settings", e);
       });
-
-    // this.campos_db
-    //   .compact()
-    //   .then((result) => {
-    //     // handle result
-    //     console.log("Compactacion Local DB Completada");
-
-    //     // Get Campos
-    //     this.campos_db
-    //       .allDocs({
-    //         include_docs: true,
-    //         startkey: "campos_",
-    //         endkey: "campos_\ufff0",
-    //       })
-    //       .then((result) => (this.campos = result));
-
-    //     // Get Settings
-    //     this.campos_db
-    //       .get("settings")
-    //       .then((settings_doc) => {
-    //         this.settings = settings_doc;
-    //         this.inicializar_insumos();
-    //       })
-    //       .catch((e) => {
-    //         if (e?.reason === "missing") {
-    //           this.init_settings();
-    //         }
-    //         console.error("Load Settings", e);
-    //       });
-    //   })
-    //   .catch(function (err) {
-    //     console.log(err);
-    //   });
   }
   /**** FIN Bases de Datos */
   // #endregion
@@ -764,15 +582,43 @@ export class FieldPartner extends LitElement {
   firstUpdated() {
     gbl_state.router = new Router(document.getElementById("router-container"));
     gbl_state.router.setRoutes([
-      { path: "/", component: 'null-component' },
-      {path: '/gf', redirect: '/'},
+      { path: "/", component: "null-component" },
+      { path: "/gf", redirect: "/" },
       { path: "/campos", component: "lista-de-campos" },
       { path: "/indices/:uuid", component: "ndvi-offcanvas" },
       { path: "/cultivos", component: "color-cultivo" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add", component: "lote-offcanvas" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit", component: "lote-offcanvas" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote", component: "lote-offcanvas" },
-      { path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid_actividad/repetir", component: "repetir-aplicacion" },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add",
+        component: "lote-offcanvas-side",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit",
+        component: "lote-offcanvas-side",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote",
+        component: "lote-offcanvas-side",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid_actividad/repetir",
+        component: "repetir-aplicacion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/nueva/:tipo",
+        component: "upsert-aplicacion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/editar/:uuid",
+        component: "upsert-aplicacion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/nueva",
+        component: "upsert-ejecucion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/editar",
+        component: "upsert-ejecucion",
+      },
       { path: "/campo/add", component: "nuevo-campo" },
       { path: "/campo/:uuid", component: "campo-offcanvas" },
       { path: "/contratistas", component: "contratistas-lista" },
@@ -780,21 +626,27 @@ export class FieldPartner extends LitElement {
       { path: "/depositos", component: "depositos-lista" },
       { path: "/depositos/add", component: "depositos-upsert" },
       { path: "/insumos", component: "insumos-lista" },
-      { path: "/rights/:uuid_workspace", component:"workspace-rights"},
-      { path: "/invite/:base64_invitation", component:"link-invitacion"},
+      { path: "/rights/:uuid_workspace", component: "workspace-rights" },
+      { path: "/invite/:base64_invitation", component: "link-invitacion" },
+      {
+        path: "/device/:uuid/dashboard/:date",
+        component: "device-route-handler",
+      },
+      { path: "/ejecucion", component: "null" },
     ]);
   }
 
   render() {
-    console.count("FieldPartner Render")
+    console.count("FieldPartner Render");
 
     return html`
-      <mapa-principal
-        .campos=${this.campos}
-        .settings=${this.settings}
-      ></mapa-principal>
-
-      <navbar-element .map=${this.map}></navbar-element>
+      <app-layout-navbar-placement>
+        <mapa-principal
+          .campos=${this.campos}
+          .settings=${this.settings}
+        ></mapa-principal>
+        <div id="router-container"></div>
+      </app-layout-navbar-placement>
 
       <nuevo-campo
         id="nuevo-campo-oc"
@@ -807,6 +659,7 @@ export class FieldPartner extends LitElement {
         id="contratista-crud"
         .db=${this.campos_db}
       ></contratista-crud>
+
       <contratistas-lista
         id="contratistas-lista"
         .db=${this.campos_db}
@@ -820,23 +673,24 @@ export class FieldPartner extends LitElement {
 
       <insumos-lista id="insumos-lista" .db=${this.campos_db}></insumos-lista>
 
-      <deposito-upsert
+      <!-- <deposito-upsert
         id="deposito-upsert"
         .db=${this.campos_db}
         .draw=${this.draw}
-      ></deposito-upsert>
+      ></deposito-upsert> -->
       <depositos-lista
         id="depositos-lista"
         .db=${this.campos_db}
       ></depositos-lista>
 
-      <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
+      <!-- <login-modal id="login-modal" .show=${!this
+        .logged_in}></login-modal> -->
 
       <div id="container-multiproposito">
         <loading-modal .show=${this.loading}></loading-modal>
       </div>
 
-      <div id="router-container"></div>
+      <!-- <div id="router-container"></div> -->
     `;
   }
 }

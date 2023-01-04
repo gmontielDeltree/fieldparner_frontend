@@ -90,6 +90,11 @@ class Devices {
     return this.devices_publicos_daily_get(dia);
   };
 
+  get_device_daily_card = async (uuid:string,dia_str:string) => { 
+   let doc : unknown = this.db.get(uuid + ":daily:" + dia_str)
+   return (await doc) as  Promise<DailyTelemetryCard>;
+  }
+
   devices_publicos_daily_get = async (dia: string) => {
     let dia_str = dia;
     let { public_devices } = await this.db.get("lista_public_devices:unico");
@@ -254,4 +259,6 @@ class Devices {
   }
 }
 
-export { Devices, extract_tele, valor };
+const gbl_devices = new Devices()
+
+export { Devices, extract_tele, valor,gbl_devices };

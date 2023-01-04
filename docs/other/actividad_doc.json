@@ -41,7 +41,14 @@
 	  "fecha_ejecucion_tentativa": "2022-11-03",
 	  "hectareas": 20.55,
 	  "motivos": "",
-	  "dosis": []
+	  "dosis": [],
+	  "peso_1000": 453,
+	  "densidad_objetivo": 0,
+	  "semillas_totales": 0,
+	  "distancia": 03453,
+	  "densidad": 0345,
+	  "rinde":222,
+	  "humedad":23
 	}
 
 }

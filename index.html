@@ -19,10 +19,11 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <title>Agrotools FieldPartner</title>
-    <meta name="description" content="Agrotools FieldPartner" />
+    <title>FieldPartner</title>
+    <meta name="description" content="FieldPartner" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
     <!-- Disable tap highlight on IE -->
     <meta name="msapplication-tap-highlight" content="no" />
@@ -47,7 +48,7 @@
     <!-- Add to homescreen for Safari on iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta name="apple-mobile-web-app-title" content="Agrotools" />
+    <meta name="apple-mobile-web-app-title" content="Fieldpartner" />
     <link
       rel="apple-touch-icon-precomposed"
       href="/images/icons/desktop/apple-touch-icon.png"
@@ -122,6 +123,10 @@
         z-index: 9999;
       }
 
+      vaadin-multi-select-combo-box-overlay {
+        z-index: 9999;
+      }
+
       .marker {
         background-image: url("/centralmeteorologica.webp");
         background-size: cover;
@@ -129,6 +134,10 @@
         height: 50px;
         border-radius: 50%;
         cursor: pointer;
+      }
+
+      vaadin-tabs {
+        z-index: 9999;
       }
     </style>
 

@@ -11,12 +11,13 @@ import "@vaadin/custom-field";
 import "@vaadin/grid";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Modal from "bootstrap/js/dist/modal";
-import lista_de_labores from "./labores.json";
+import lista_de_labores from "../jsons/labores.json";
 import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
-import { Insumo, get_empty_insumo } from "./insumos-types";
+import { Insumo, get_empty_insumo, get_lista_insumos } from "./insumos-types";
 import { InsumoCrud } from "./insumos-crud";
 import { GridItemModel } from "@vaadin/grid";
+import '@vaadin/grid/vaadin-grid-sort-column.js';
 import "./insumos-crud";
 import "@vaadin/icons";
 import "@vaadin/upload";
@@ -25,14 +26,6 @@ import { read, writeFile, utils } from "xlsx";
 import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
 import '@vaadin/menu-bar';
-
-// import { ModuleManager } from 'igniteui-webcomponents-core';
-// import { IgcDataGridModule } from 'igniteui-webcomponents-grids';
-// import { IgcDataGridComponent } from 'igniteui-webcomponents-grids';
-
-// ModuleManager.register(
-//     IgcDataGridModule
-// );
 
 export class InsumosLista extends LitElement {
   @state()
@@ -97,23 +90,25 @@ export class InsumosLista extends LitElement {
     // Eventos
     this.addEventListener("edicion_insumo_guardado",(e)=>{
       this._modal.show()
+      this.load_data()
       console.log("EVREC")
     })
 
     this.addEventListener("edicion_insumo_cerrado",(e)=>{
       this._modal.show()
+      this.load_data()
       console.log("EVREC")
     })
 
   }
 
   load_data(){
-    this.db.allDocs({startkey:"insumo:", endkey:"insumo:\ufff0", include_docs:true, limit:100 }).then((e: any) => {
-      //this._insumos = Object.values(e.);
-      console.log("Insumos DOC", e);
-      this._insumos = e.rows.map((r) => r.doc)
+
+    get_lista_insumos(this.db).then((lista_insumos)=>{
+      console.log("Lista de Insumos", lista_insumos)
+      this._insumos = lista_insumos
     })
-    .catch((e) => {});
+    .catch((e) => {console.log("Error al get_lista_insumos",e)});
   }
 
   show() {
@@ -225,7 +220,7 @@ export class InsumosLista extends LitElement {
     
 
    console.log("TOLOIS",todos_los_insumos);
-    this.db.bulkDocs(todos_los_insumos)
+   this.db.bulkDocs(todos_los_insumos)
 
   }
 
@@ -356,12 +351,13 @@ export class InsumosLista extends LitElement {
 
             </div>
             <div class="modal-body">
-              <vaadin-grid .items=${this._insumos} all-rows-visible>
-                <vaadin-grid-column
+              <vaadin-grid .items=${this._insumos}>
+                <vaadin-grid-sort-column
+                  direction="asc"
                   header="Marca Comercial"
                   path="marca_comercial"
                   auto-width
-                ></vaadin-grid-column>
+                ></vaadin-grid-sort-column>
                 <vaadin-grid-column
                   header="Principio Activo"
                   path="principio_activo"

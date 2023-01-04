@@ -179,7 +179,7 @@ export class RadiacionCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="sun-svgrepo-com.svg" width="50" height="50" />
+              <img src="/sun-svgrepo-com.svg" width="50" height="50" />
               <span class="fw-bolder">${valor(this.card, "radiacion")} W/m\u{00B2}</span>
             </h5>
           </div>

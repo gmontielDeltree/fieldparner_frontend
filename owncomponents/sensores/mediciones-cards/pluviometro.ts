@@ -245,7 +245,7 @@ export class PluviometroCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="rain-svgrepo-com.svg" width="50" height="50" />
+              <img src="/rain-svgrepo-com.svg" width="50" height="50" />
               Hoy 4 mm
             </h5>
           </div>

@@ -1,11 +1,22 @@
 {
 	"aceptar": "Accept",
+	"actividad_aun_no_ejecutada": "Activity not yet executed",
+	"agregar": "Add",
 	"borrar": "Delete",
+	"campo_requerido": "Required field",
 	"cancelar": "Cancel",
 	"cerrar": "Close",
+	"comentario": "Commentary",
+	"comentarion": "Comment",
 	"confirmar_borrar": "Are you sure?",
+	"contratista": "Contractor",
+	"debe_generar_la_orden_de_trabajo": "To \"Execute\" you must generate the \"Work Order\" first.",
+	"descargar_orden": "Download order",
 	"editar": "Edit",
+	"ejecutar": "Do Activity",
+	"fecha": "Date",
 	"guardar": "Save",
+	"insumos": "Supplies",
 	"invitacion": {
 		"body": "User {{username}} has shared workspace {{workspacename}} with you.",
 		"notificacion": {
@@ -16,6 +27,8 @@
 		"titulo": "Workspace Invitation"
 	},
 	"invitar": "Invite",
+	"labor": "Task",
+	"labores": "Tasks",
 	"ldcampos": {
 		"titulo": "Field List"
 	},
@@ -37,7 +50,18 @@
 		}
 	},
 	"nombre": "Name",
+	"precio": "Price",
 	"rechazar": "Reject",
+	"repetir": {
+		"body": "",
+		"notificacion": {
+			"ok": "",
+			"okbody": "",
+			"rechazada": ""
+		},
+		"titulo": ""
+	},
+	"seleccione_insumo": "Select an Item",
 	"workspace": {
 		"agregar": "",
 		"permisos": "",

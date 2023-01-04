@@ -1,11 +1,22 @@
 {
 	"aceptar": "Aceitar",
+	"actividad_aun_no_ejecutada": "Atividade ainda não executada",
+	"agregar": "Agregar",
 	"borrar": "Borrar",
+	"campo_requerido": "Campo obrigatório",
 	"cancelar": "Cancelar",
 	"cerrar": "Close",
+	"comentario": "Comentário",
+	"comentarion": "Comentario",
 	"confirmar_borrar": "Are you sure?",
+	"contratista": "Empreiteiro",
+	"debe_generar_la_orden_de_trabajo": "Para \"Executar\" você deve primeiro gerar a \"Ordem de Serviço\".",
+	"descargar_orden": "Baixar Ordem",
 	"editar": "Editar",
+	"ejecutar": "Executar Atividade",
+	"fecha": "Fecha",
 	"guardar": "Salvar",
+	"insumos": "Suprimentos",
 	"invitacion": {
 		"body": "O usuário {{username}} compartilhou o espaço de trabalho {{workspacename}} com você.",
 		"notificacion": {
@@ -16,6 +27,8 @@
 		"titulo": "Convite para área de trabalho"
 	},
 	"invitar": "Invite",
+	"labor": "Labor",
+	"labores": "Trabalhos",
 	"ldcampos": {
 		"titulo": "Fazendas"
 	},
@@ -37,7 +50,18 @@
 		}
 	},
 	"nombre": "Nome",
+	"precio": "Precio",
 	"rechazar": "Rejeitar",
+	"repetir": {
+		"body": "",
+		"notificacion": {
+			"ok": "",
+			"okbody": "",
+			"rechazada": ""
+		},
+		"titulo": ""
+	},
+	"seleccione_insumo": "Selecione uma entrada",
 	"workspace": {
 		"agregar": "Add Workspace",
 		"permisos": "User Authorizations",

@@ -1,11 +1,22 @@
 {
 	"aceptar": "Aceptar",
+	"actividad_aun_no_ejecutada": "Actividad aun no ejecutada",
+	"agregar": "Agregar",
 	"borrar": "Borrar",
+	"campo_requerido": "Campo Requerido",
 	"cancelar": "Cancelar",
 	"cerrar": "Cerrar",
+	"comentario": "Comentario",
+	"comentarion": "Comentario",
 	"confirmar_borrar": "Estas seguro de borrar?",
+	"contratista": "Contratista",
+	"debe_generar_la_orden_de_trabajo": "Para \"Ejecutar\" debe generar la \"Orden de Trabajo\" primero.",
+	"descargar_orden": "Descargar Orden",
 	"editar": "Editar",
+	"ejecutar": "Ejecutar Actividad",
+	"fecha": "Fecha",
 	"guardar": "Guardar",
+	"insumos": "Insumos",
 	"invitacion": {
 		"body": "El usuario {{username}} ha compartido el espacio de trabajo {{workspacename}} contigo.",
 		"notificacion": {
@@ -15,16 +26,9 @@
 		},
 		"titulo": "Invitación a Espacio de Trabajo"
 	},
-	"repetir": {
-		"body": "Actividades Agregadas",
-		"notificacion": {
-			"ok": "Actividades Agregadas",
-			"okbody": "<b></b>Estan disponibles en cada lote.",
-			"rechazada": "Invitación Rechazada"
-		},
-		"titulo": "Invitación a Espacio de Trabajo"
-	},
 	"invitar": "Invitar",
+	"labor": "Labor",
+	"labores": "Labores",
 	"ldcampos": {
 		"titulo": "Lista de Campos"
 	},
@@ -46,7 +50,18 @@
 		}
 	},
 	"nombre": "Nombre",
+	"precio": "Precio",
 	"rechazar": "Rechazar",
+	"repetir": {
+		"body": "Actividades Agregadas",
+		"notificacion": {
+			"ok": "Actividades Agregadas",
+			"okbody": "<b></b>Estan disponibles en cada lote.",
+			"rechazada": "Invitación Rechazada"
+		},
+		"titulo": "Invitación a Espacio de Trabajo"
+	},
+	"seleccione_insumo": "Seleccione un Insumo",
 	"workspace": {
 		"agregar": "",
 		"permisos": "",

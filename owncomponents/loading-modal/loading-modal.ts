@@ -1,8 +1,9 @@
 import { LitElement, html, CSSResultGroup, css, unsafeCSS } from "lit";
-import { property, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import Modal from "bootstrap/js/dist/modal";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 
+@customElement('loading-modal')
 export class LoadingModal extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
@@ -24,6 +25,7 @@ export class LoadingModal extends LitElement {
 
   @property()
   show: boolean = true;
+  
 
   override firstUpdated() {
     this._modal = new Modal(this.shadowRoot.getElementById("loading-modal"));
@@ -52,6 +54,7 @@ export class LoadingModal extends LitElement {
     }
   }
 
+  
   render() {
     return html`
       <div
@@ -92,5 +95,3 @@ export class LoadingModal extends LitElement {
     `;
   }
 }
-
-customElements.define("loading-modal", LoadingModal);

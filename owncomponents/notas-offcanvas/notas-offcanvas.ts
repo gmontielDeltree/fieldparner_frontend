@@ -4,7 +4,7 @@ import "@vaadin/date-picker";
 import "@vaadin/radio-group";
 import "@vaadin/combo-box";
 import { uuid4 } from "uuid4";
-import { Marker } from "mapbox-gl";
+import { LngLat, Map, Marker } from "mapbox-gl";
 import { format, parse } from "date-fns";
 import "@vaadin/text-area";
 import { touchEvent } from "../helpers";
@@ -13,34 +13,59 @@ import "../audiorecorder/index.js";
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 import { property } from "lit/decorators.js";
 import formatISO from "date-fns/formatISO";
+import centroid from "@turf/centroid";
+import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n";
 
 export class NotasOffcanvas extends LitElement {
-  static properties = {
-    map: {},
-    db: {},
-    lote_doc: {},
-    mostrar: { type: Boolean },
-    /* Internos */
-    nueva_nota_offcanvas: {
-      hasChanged(newVal, oldVal) {
-        return false;
-      },
+  @property()
+  lote_doc: any;
+
+  @property()
+  mostrar: Boolean;
+
+  /* Internos */
+
+  private nueva_nota_offcanvas: Offcanvas;
+
+  @property()
+  imagenes: any;
+
+  @property({
+    hasChanged(newVal, oldVal) {
+      return false;
     },
-    imagenes: {},
-    ver_nota_offcanvas: {
-      hasChanged(newVal, oldVal) {
-        return false;
-      },
-    },
-    handler_id: {},
-    posicion: {},
-    fecha: {},
-    texto: {},
-    color: {},
-    audio: {},
-    nota_marker: {},
-    modo_geolocalizacion: {},
-  };
+  })
+  ver_nota_offcanvas: boolean;
+
+  @property()
+  handler_id: any;
+
+  @property()
+  posicion: any;
+
+  @property()
+  fecha: any;
+
+  @property()
+  texto: string;
+
+  @property()
+  color: any;
+
+  @property()
+  audio: any;
+
+  @property()
+  nota_marker: Marker;
+
+  @property()
+  modo_geolocalizacion: any;
+
+  @property()
+  db: PouchDB.Database;
+
+  @property()
+  map: Map;
 
   @property()
   proxima_fecha;
@@ -79,21 +104,21 @@ export class NotasOffcanvas extends LitElement {
       };
     };
 
-    if (this.shadowRoot.getElementById("nota-date-picker")) {
-      this.shadowRoot.getElementById("nota-date-picker").i18n = {
-        ...this.shadowRoot.getElementById("nota-date-picker").i18n,
-        formatDate: formatDateIso8601,
-        parseDate: parseDateIso8601,
-      };
-    }
+    // if (this.shadowRoot.getElementById("nota-date-picker")) {
+    //   (this.shadowRoot.getElementById("nota-date-picker")).i18n = {
+    //     ...this.shadowRoot.getElementById("nota-date-picker").i18n,
+    //     formatDate: formatDateIso8601,
+    //     parseDate: parseDateIso8601,
+    //   };
+    // }
 
-    if (this.shadowRoot.getElementById("nota-proxima-date-picker")) {
-      this.shadowRoot.getElementById("nota-proxima-date-picker").i18n = {
-        ...this.shadowRoot.getElementById("nota-proxima-date-picker").i18n,
-        formatDate: formatDateIso8601,
-        parseDate: parseDateIso8601,
-      };
-    }
+    // if (this.shadowRoot.getElementById("nota-proxima-date-picker")) {
+    //   this.shadowRoot.getElementById("nota-proxima-date-picker").i18n = {
+    //     ...this.shadowRoot.getElementById("nota-proxima-date-picker").i18n,
+    //     formatDate: formatDateIso8601,
+    //     parseDate: parseDateIso8601,
+    //   };
+    // }
 
     if (this.mostrar) {
       this.nueva_nota();
@@ -103,7 +128,8 @@ export class NotasOffcanvas extends LitElement {
   hide() {
     this.nueva_nota_offcanvas.hide();
 
-    this.inicializar_componente();
+    this.map.off(touchEvent, this.mover_marcador);
+
     let event = new CustomEvent("nueva-nota", {
       bubbles: true,
       composed: true,
@@ -115,6 +141,9 @@ export class NotasOffcanvas extends LitElement {
       composed: true,
     });
     this.dispatchEvent(event_fin);
+
+   // this.inicializar_componente();
+
   }
 
   posicion_error(err) {
@@ -124,23 +153,20 @@ export class NotasOffcanvas extends LitElement {
   nueva_nota() {
     this.inicializar_componente();
     this.nueva_nota_offcanvas.show();
-    this.nota_marker = new Marker()
-      .setLngLat(this.map.getCenter())
-      .addTo(this.map);
 
-    this.handler_id = navigator.geolocation.watchPosition(
-      (pos) => {
-        this.posicion = pos;
-        this.nota_marker.setLngLat([pos.coords.longitude, pos.coords.latitude]);
-        this.map.flyTo({
-          center: [pos.coords.longitude, pos.coords.latitude],
-          padding: { bottom: 200 },
-          zoom: 15,
-        });
-      },
-      this.posicion_error,
-      { enableHighAccuracy: true }
-    );
+    // this.handler_id = navigator.geolocation.watchPosition(
+    //   (pos) => {
+    //     this.posicion = pos;
+    //     this.nota_marker.setLngLat([pos.coords.longitude, pos.coords.latitude]);
+    //     this.map.flyTo({
+    //       center: [pos.coords.longitude, pos.coords.latitude],
+    //       padding: { bottom: 200 },
+    //       zoom: 15,
+    //     });
+    //   },
+    //   this.posicion_error,
+    //   { enableHighAccuracy: true }
+    // );
   }
 
   ver_nota() {
@@ -161,7 +187,7 @@ export class NotasOffcanvas extends LitElement {
   }
 
   mover_marcador = (e) => {
-    this.nota_marker.setLngLat(e.lngLat);
+    this.nota_marker.setLngLat(e.lngLat as LngLat);
     this.posicion = {
       coords: { longitude: e.lngLat.lng, latitude: e.lngLat.lat },
     };
@@ -215,10 +241,24 @@ export class NotasOffcanvas extends LitElement {
       this.map.off(touchEvent, this.mover_marcador);
     }
 
-    this.nota_marker?.remove();
+    //this.nota_marker?.remove();
 
-    this.modo_geolocalizacion = "dispositivo";
-    this.shadowRoot.getElementById("dispositivo").checked = true;
+    this.nota_marker = new Marker()
+      .setLngLat(this.map.getCenter())
+      .addTo(this.map);
+
+    this.modo_geolocalizacion = "mapa";
+    this.map.on(touchEvent, this.mover_marcador);
+
+    let centroide = centroid(this.lote_doc);
+    let punto_marker: LngLat = new LngLat(
+      centroide.geometry.coordinates[0],
+      centroide.geometry.coordinates[1]
+    );
+    let fake_e = { lngLat: punto_marker };
+    this.mover_marcador(fake_e);
+
+    this.shadowRoot.getElementById("mapa").checked = true;
 
     // Color por defecto
     this.shadowRoot.getElementById("btnradio-red").checked = true;
@@ -254,9 +294,13 @@ export class NotasOffcanvas extends LitElement {
       color: this.color,
       texto: this.texto,
       fecha: this.fecha,
-      proxima_visita: this.proxima_fecha ? formatISO(parse(this.proxima_fecha,"yyyy-MM-dd",new Date())) : "",
-      url_referencia:`/campo/${encodeURIComponent(this.lote_doc.properties.campo_parent_id)}/lote/${encodeURIComponent(this.lote_doc.properties.nombre)}`,
-      lote_nombre : this.lote_doc.properties.nombre,
+      proxima_visita: this.proxima_fecha
+        ? formatISO(parse(this.proxima_fecha, "yyyy-MM-dd", new Date()))
+        : "",
+      url_referencia: `/campo/${encodeURIComponent(
+        this.lote_doc.properties.campo_parent_id
+      )}/lote/${encodeURIComponent(this.lote_doc.properties.nombre)}`,
+      lote_nombre: this.lote_doc.properties.nombre,
       posicion: [this.posicion.coords.longitude, this.posicion.coords.latitude],
       _attachments: {},
     };
@@ -289,7 +333,8 @@ export class NotasOffcanvas extends LitElement {
       .put(nota)
       .then(() => {
         console.log("Nota grabada OK");
-        this.inicializar_componente();
+        //this.inicializar_componente();
+        this.map.off(touchEvent, this.mover_marcador);
 
         this.nueva_nota_offcanvas.hide();
         let event = new CustomEvent("nueva-nota", {
@@ -302,6 +347,8 @@ export class NotasOffcanvas extends LitElement {
         console.log("Error al grabar Nota", e);
         alert("Error al grabar Nota");
       });
+
+
   }
 
   render() {
@@ -377,6 +424,7 @@ export class NotasOffcanvas extends LitElement {
                 placeholder="YYYY-MM-DD"
                 .value=${this.fecha}
                 clear-button-visible
+                .i18n=${base_i18n}
                 @change=${(e) => (this.fecha = e.target.value)}
               ></vaadin-date-picker>
             </div>
@@ -392,6 +440,7 @@ export class NotasOffcanvas extends LitElement {
                 ></vaadin-radio-button>
                 <vaadin-radio-button
                   value="mapa"
+                  id="mapa"
                   label="Mapa"
                   name="mapa"
                   @change=${this.cambio_geo_modo}
@@ -505,6 +554,7 @@ export class NotasOffcanvas extends LitElement {
               label="Proxima Visita"
               placeholder="YYYY-MM-DD"
               .value=${this.proxima_fecha}
+              .i18n=${base_i18n}
               clear-button-visible
               @change=${(e) => (this.proxima_fecha = e.target.value)}
             ></vaadin-date-picker>

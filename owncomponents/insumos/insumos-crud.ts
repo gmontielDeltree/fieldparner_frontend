@@ -299,7 +299,7 @@ export class InsumoCrud extends LitElement {
                   clear-button-visible
                 ></vaadin-text-field>
                 <vaadin-text-field
-                  label="Precio"
+                  label="Precio de Lista"
                   name="precio"
                   .value=${this.insumo.precio}
                   @change=${(e: any) => {

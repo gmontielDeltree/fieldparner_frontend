@@ -167,7 +167,7 @@ export class HumedadCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="water-droplet-icon.svg" width="50" height="50" />
+              <img src="/water-droplet-icon.svg" width="50" height="50" />
               <span class="fw-bolder">${valor(this.card, "humedad")} %</span>
             </h5>
           </div>

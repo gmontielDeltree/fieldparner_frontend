@@ -79,7 +79,7 @@ export class NavbarElement extends LitElement {
     return html`
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-          <a class="navbar-brand" href="#">
+          <a class="navbar-brand" href="/">
             <img
               src="/images/icons/desktop/agrootolss_logo_sol.png"
               alt=""
