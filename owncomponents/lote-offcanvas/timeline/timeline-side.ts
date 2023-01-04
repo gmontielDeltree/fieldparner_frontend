@@ -22,6 +22,7 @@ import { Router } from "@vaadin/router";
 import gbl_state from "../../state";
 import "./actividad-item";
 import "@vaadin/scroller";
+import { badge } from "@vaadin/vaadin-lumo-styles/badge";
 
 const url_repeticion = (actividad_uuid) => {
   let location = gbl_state.router.location.pathname;
@@ -335,7 +336,7 @@ export class TimelineSideElement extends LitElement {
   @property()
   a: Actividad[];
 
-  static override styles: CSSResultGroup = [unsafeCSS(bootstrap), timeline_css];
+  static override styles: CSSResultGroup = [unsafeCSS(bootstrap), timeline_css, badge];
 
   evento_download_pdf(item) {
     const event = new CustomEvent("generar-ot", {
@@ -575,14 +576,11 @@ export class TimelineSideElement extends LitElement {
         }
 
         return html` <li>
-          <time class="cbp_tmtime" datetime="2032-11-04T03:45"
-            ><span>${fecha}</span> <span>${elapsed}</span></time
-          >
           <div class="icono-nota cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
           <div class="cbp_tmlabel bg-nota">
-            <h2><a class="strong">NOTA</a> ${color_badge}</h2>
+            <h2><span theme="badge">${fecha}</span><a> NOTA</a> ${color_badge}</h2>
 
             ${item.texto}
 
@@ -637,6 +635,29 @@ export class TimelineSideElement extends LitElement {
           </div>
         </li>`;
       }
+
+      if (item.tipo === "siembra") {
+        return html` <li>
+          <div class="icono-aplicacion cbp_tmicon bg-blush">
+            <i class="zmdi zmdi-label"></i>
+          </div>
+          <div class="cbp_tmlabel bg-aplicacion">
+            <actividad-item .item=${item}></actividad-item>
+          </div>
+        </li>`;
+      }
+
+      if (item.tipo === "cosecha") {
+        return html` <li>
+          <div class="icono-aplicacion cbp_tmicon bg-blush">
+            <i class="zmdi zmdi-label"></i>
+          </div>
+          <div class="cbp_tmlabel bg-aplicacion">
+            <actividad-item .item=${item}></actividad-item>
+          </div>
+        </li>`;
+      }
+
     };
 
     return html`

@@ -967,6 +967,13 @@ export class LoteOffcanvasSide extends LitElement {
             </vaadin-scroller>
         </div>
       </div>
+
+      <notas-oc
+        id="notas-oc"
+        .map=${gbl_state.map}
+        .db=${gbl_state.db}
+        .lote_doc=${this._lote_doc}
+      ></notas-oc>
     `;
   }
 }

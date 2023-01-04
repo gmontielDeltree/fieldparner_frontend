@@ -648,8 +648,6 @@ export class FieldPartner extends LitElement {
         <div id="router-container"></div>
       </app-layout-navbar-placement>
 
-      <!-- <navbar-element .map=${this.map}></navbar-element> -->
-
       <nuevo-campo
         id="nuevo-campo-oc"
         .map=${this.map}
