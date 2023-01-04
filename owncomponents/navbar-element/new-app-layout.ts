@@ -201,7 +201,7 @@ export class Example extends LitElement {
               <span>Campos</span>
             </a>
           </vaadin-tab>
-          <vaadin-tab>
+          <!-- <vaadin-tab>
             <a tabindex="-1" @click=${ () => {
               let base = ""
               if(location.hostname === "localhost" || location.hostname === "127.0.0.1"){
@@ -216,7 +216,7 @@ export class Example extends LitElement {
               <vaadin-icon icon="vaadin:location-arrow-circle"></vaadin-icon>
               <span>Test Localizacion</span>
             </a>
-          </vaadin-tab>
+          </vaadin-tab> -->
           <!--
           <vaadin-tab>
             <a tabindex="-1">
