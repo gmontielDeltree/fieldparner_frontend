@@ -51,10 +51,12 @@ import { Insumo } from "../insumos/insumos-types";
 import {
   Actividad,
   DetallesAplicacion,
+  Ejecucion,
   LineaDosis,
 } from "../depositos/depositos-types";
 import { init } from "xstate/lib/actionTypes";
 import "@vaadin/tooltip";
+import { informe_diferencias_definition } from "./informe_comparacion_pdf.js";
 
 const capitalize = (mySentence) => {
   if (mySentence === null || mySentence === undefined) {
@@ -191,6 +193,11 @@ export class LoteOffcanvasSide extends LitElement {
     this.addEventListener("generar-ot", (e: CustomEvent) =>
       this.download_pdf(e.detail)
     );
+
+    this.addEventListener("generar-informe-diferencia-pdf", (e: CustomEvent) =>
+    this.informe_comparacion_pdf(e.detail)
+    );
+
     this.addEventListener("share-ot", (e: CustomEvent) =>
       this.share_pdf(e.detail)
     );
@@ -437,6 +444,34 @@ export class LoteOffcanvasSide extends LitElement {
         this._loading_pdf = false;
       });
   }
+
+
+
+  informe_comparacion_pdf({actividad, ejecucion}) {
+
+    console.log("GENERANDO PDF", actividad);
+    let dd = informe_diferencias_definition(
+      actividad,
+      ejecucion,
+      this._campo_doc.nombre,
+      this._lote_doc.properties.nombre
+    );
+    //console.log("DD", JSON.stringify(dd));
+    // Loading
+    this._loading_pdf = true;
+
+    import("pdfmake/build/pdfmake.min.js")
+      .then(({ default: pdfMake }) => {
+        pdfMake.fonts = pdf_fonts;
+        //console.log("Generando PDF");
+        pdfMake.createPdf(dd).open();
+        this._loading_pdf = false;
+      })
+      .catch(() => {
+        this._loading_pdf = false;
+      });
+  }
+
 
   eliminar_actividad(actividad_id) {
     gbl_state.db

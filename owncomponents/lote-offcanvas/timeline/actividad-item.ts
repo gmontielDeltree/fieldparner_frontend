@@ -58,6 +58,24 @@ export class ActividadItem extends LitElement {
           callback: () => this.evento_share_pdf(),
         },
         {
+          text: "Ejecución vs Planificación PDF",
+          tooltip: "Informe PDF",
+          callback: () => {
+            if (!this.ejecucion) {
+              alert("Necesita Ejecutar para hacer el informe");
+              return;
+            }
+
+            this.dispatchEvent(
+              new CustomEvent("generar-informe-diferencia-pdf", {
+                detail: { actividad: this.item, ejecucion: this.ejecucion },
+                bubbles: true,
+                composed: true,
+              })
+            );
+          },
+        },
+        {
           text: "Datos Meteorológicos",
           tooltip: "Archive",
           value: "ver_centrales",
@@ -196,7 +214,7 @@ export class ActividadItem extends LitElement {
 
   repetir_aplicacion() {
     //console.error("Repetir no implementado");
-    Router.go(url_repeticion(this.item.uuid))
+    Router.go(url_repeticion(this.item.uuid));
   }
 
   ver_centrales_cercanas() {
