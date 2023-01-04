@@ -338,11 +338,7 @@ export class LoteOffcanvasSide extends LitElement {
     this.shadowRoot.getElementById("notas-oc").nueva_nota();
   }
 
-  cosecha() {
-    this.load_insumos();
-    this.shadowRoot.getElementById("cosecha-add-el").start();
-  }
-
+ 
   abrir_pdf(params) {
     // import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
     //   pdfMake.fonts = pdf_fonts;

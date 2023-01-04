@@ -91,12 +91,8 @@ const orden_definition = (
 
   let insumos;
   let insumos_tabla;
-  if(tipo === 'aplicacion'){
     insumos = (aplicacion.detalles as DetallesAplicacion).dosis || [];
     insumos_tabla = insumos.map((e)=>pdf_line(e,hectareas));
-  }else if(tipo === 'siembra'){
-    insumos_tabla = [pdf_linea_siembra(aplicacion.detalles as DetallesSiembra,hectareas)];
-  }
   
 
 
@@ -152,7 +148,7 @@ const orden_definition = (
                 {
                   columns: [
                     {
-                      text: "Fecha de Aplicacion",
+                      text: "Fecha de Ejecución",
                       color: "#aaaaab",
                       bold: true,
                       width: "*",
@@ -205,12 +201,12 @@ const orden_definition = (
                ]
             },
             {
-               "text":aplicacion.contratista.nombre,
+               "text":aplicacion.contratista?.nombre,
                "bold":true,
                "color":"#333333",
                "alignment":"left"
             },{
-               "text":aplicacion.contratista.cuit,
+               "text":aplicacion.contratista?.cuit,
                "bold":true,
                "color":"#333333",
                "alignment":"left"
