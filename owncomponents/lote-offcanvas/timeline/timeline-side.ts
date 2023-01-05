@@ -638,7 +638,7 @@ export class TimelineSideElement extends LitElement {
 
       if (item.tipo === "siembra") {
         return html` <li>
-          <div class="icono-aplicacion cbp_tmicon bg-blush">
+          <div class="icono-siembra cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
           <div class="cbp_tmlabel bg-aplicacion">
@@ -649,7 +649,7 @@ export class TimelineSideElement extends LitElement {
 
       if (item.tipo === "cosecha") {
         return html` <li>
-          <div class="icono-aplicacion cbp_tmicon bg-blush">
+          <div class="icono-cosecha cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
           <div class="cbp_tmlabel bg-aplicacion">
