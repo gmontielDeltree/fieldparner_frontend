@@ -245,6 +245,10 @@ export class GridInsumos extends LitElement {
                   <vaadin-button
                     class=${item.uuid === "nuevo" ? "high-rating" : ""}
                     @click=${() => {
+                      if(this.linea_de_dosis.insumo === null){
+                        alert(translate("debe_ingresar_un_insumo"))
+                        return
+                      }
                       let nuevo = deepcopy(this.linea_de_dosis) as LineaDosis;
                       nuevo.uuid = uuid4();
                       this.actividad.detalles.dosis.push(nuevo);
@@ -256,6 +260,7 @@ export class GridInsumos extends LitElement {
                       (
                         this.shadowRoot.getElementById("da-grid") as Grid
                       ).recalculateColumnWidths();
+
                     }}
                     theme="icon"
                     aria-label="agregar item"
