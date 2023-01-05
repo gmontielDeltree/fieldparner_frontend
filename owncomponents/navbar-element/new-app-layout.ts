@@ -50,10 +50,10 @@ export class Example extends LitElement {
       }
     `,
     css`
-      vaadin-select > [part='toggle-button'] {
+      vaadin-select::part(toggle-button) {
         background-color: red;
+        width: 0px;
       }
-
     `,
   ];
 
@@ -66,7 +66,7 @@ export class Example extends LitElement {
   geocoderRef = createRef<HTMLElement>();
 
   firstUpdated(){
-    this.shadowRoot.querySelector("vaadin-select").shadowRoot.querySelector('[part="toggle-button"]').style.display = 'none'
+   // this.shadowRoot.querySelector("vaadin-select").shadowRoot.querySelector('[part="toggle-button"]').style.display = 'none'
   }
 
   willUpdate(properties) {
