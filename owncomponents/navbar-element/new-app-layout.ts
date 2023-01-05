@@ -65,6 +65,10 @@ export class Example extends LitElement {
 
   geocoderRef = createRef<HTMLElement>();
 
+  firstUpdated(){
+    this.shadowRoot.querySelector("vaadin-select").shadowRoot.querySelector('[part="toggle-button"]').style.display = 'none'
+  }
+
   willUpdate(properties) {
     //   console.log("STATEEEEE",properties)
     if (!this.idioma_inicializado && gblStateLoaded()) {
@@ -120,11 +124,11 @@ export class Example extends LitElement {
     ${this.lenguajes.map(
       (lang) => html`
         <vaadin-item value="${lang.valor}">
-          <div style="display: flex; align-items: center;">
+          <div style="display: flex; align-items: center;justify-content:center;">
             <img
               src="${lang.icono}"
               alt="${lang.nombre}"
-              style="width: 1em; margin-right: var(--lumo-space-s);"
+              style="width: 1em;"
             />
           </div>
         </vaadin-item>
@@ -193,9 +197,10 @@ export class Example extends LitElement {
             </vaadin-tab>
             <vaadin-tab id="dummy-tab" ${ref(this.geocoderRef)}></vaadin-tab>
           </vaadin-tabs>
-
+<!--Se pueden usar css variables para pasar o alterar styles -->
+<!--https://stackoverflow.com/questions/70634210/lit-how-to-apply-style-to-nested-template-->
           <vaadin-select
-            style="margin-right:5px; width:4em;"
+            style="margin-right:4px; width:4em; --lumo-icons-dropdown:''; --lumo-contrast-10pct:transparent;"
             .value=${this.selected_language}
             @change=${(e: CustomEvent) => {
               let lang = e.target.value;
