@@ -237,6 +237,24 @@ class Devices {
       return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
 
       array_de_mediciones.forEach((medicion: DataPoints) => {
+        if(medicion.sensor_id === 'temperatura'){
+          if(medicion.value > 60 || medicion.value <-10){
+            return
+          }
+        }
+
+        if(medicion.sensor_id === 'humedad'){
+          if(medicion.value > 100 || medicion.value <0){
+            return
+          }
+        }
+
+        if(medicion.sensor_id === 'presion'){
+          if(medicion.value > 1100 || medicion.value <900){
+            return
+          }
+        }
+
         if (return_value[medicion.sensor_id]) {
           return_value[medicion.sensor_id].push(medicion.value);
         } else {
