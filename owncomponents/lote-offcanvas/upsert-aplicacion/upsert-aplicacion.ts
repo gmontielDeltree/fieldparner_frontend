@@ -96,6 +96,7 @@ export class UpsertAplicacion extends LitElement {
   private lote_doc: any;
   private linea_de_labor: LineaLabor;
 
+  private titulo : string = "Actividad"
 
 
   override firstUpdated() {
@@ -139,10 +140,17 @@ export class UpsertAplicacion extends LitElement {
     };
   }
 
+  tipo_2_titulo = {
+    "siembra" : translate("siembra"),
+    "cosecha" : translate("cosecha"),
+    "aplicacion": translate("aplicación")
+  }
+
   inicializar_adicion() {
     // Es una nueva
     this.tipo = this.location.params.tipo as string;
-
+    this.titulo = this.tipo_2_titulo[this.tipo]
+    
     this.actividad = get_empty_aplicacion();
     this.actividad.tipo = this.tipo;
 
@@ -312,7 +320,7 @@ export class UpsertAplicacion extends LitElement {
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Actividad</h5>
+              <h5 class="modal-title">${this.titulo}</h5>
               <button
                 type="button"
                 class="btn-close"
