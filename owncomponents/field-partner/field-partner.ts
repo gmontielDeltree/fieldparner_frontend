@@ -641,11 +641,11 @@ export class FieldPartner extends LitElement {
 
     return html`
       <app-layout-navbar-placement>
+        <div id="router-container"></div>
         <mapa-principal
           .campos=${this.campos}
           .settings=${this.settings}
         ></mapa-principal>
-        <div id="router-container"></div>
       </app-layout-navbar-placement>
 
       <nuevo-campo
