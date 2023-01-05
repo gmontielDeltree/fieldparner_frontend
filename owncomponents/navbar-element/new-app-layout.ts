@@ -35,8 +35,8 @@ export class Example extends LitElement {
     return import.meta.env.VITE_VERSION;
   }
 
-  static get styles() {
-    return css`
+  static override styles = [
+    css`
       h1 {
         font-size: var(--lumo-font-size-l);
         margin: 0;
@@ -48,36 +48,47 @@ export class Example extends LitElement {
         margin-inline-start: var(--lumo-space-xs);
         padding: var(--lumo-space-xs);
       }
-    `;
-  }
+    `,
+    css`
+      vaadin-select > [part='toggle-button'] {
+        background-color: red;
+      }
+
+    `,
+  ];
 
   private bindState = new StateController(this, gbl_state);
 
   private idioma_inicializado: boolean = false;
 
-  private selected_language = 'es';
+  private selected_language = "es";
 
   geocoderRef = createRef<HTMLElement>();
 
   willUpdate(properties) {
     //   console.log("STATEEEEE",properties)
-      if (!this.idioma_inicializado && gblStateLoaded()) {
-        this.idioma_inicializado = true;
-        gbl_state.user_db.allDocs({startkey:"user_language",endkey:"user_language",include_docs:true})
-        .then((result)=>{
-          if(result.rows.length > 0){
-            // Existe
-            let lang_doc : Lenguage = result.rows[0].doc as Lenguage
-            this.selected_language = lang_doc.lang
-            use(lang_doc.lang)
-
-            console.log("USEEEEEEEEEE", lang_doc)
-          }else{
-            // No existe
-            use(this.selected_language)
-          }
+    if (!this.idioma_inicializado && gblStateLoaded()) {
+      this.idioma_inicializado = true;
+      gbl_state.user_db
+        .allDocs({
+          startkey: "user_language",
+          endkey: "user_language",
+          include_docs: true,
         })
-      }
+        .then((result) => {
+          if (result.rows.length > 0) {
+            // Existe
+            let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
+            this.selected_language = lang_doc.lang;
+            use(lang_doc.lang);
+
+            console.log("USEEEEEEEEEE", lang_doc);
+          } else {
+            // No existe
+            use(this.selected_language);
+          }
+        });
+    }
 
     //   this.geocoder_inicializado = true;
     //   const geocoder = new MapboxGeocoder({
@@ -113,9 +124,8 @@ export class Example extends LitElement {
             <img
               src="${lang.icono}"
               alt="${lang.nombre}"
-              style="width: var(--lumo-size-m); margin-right: var(--lumo-space-s);"
+              style="width: 1em; margin-right: var(--lumo-space-s);"
             />
-            <div>${lang.nombre}</div>
           </div>
         </vaadin-item>
       `
@@ -140,7 +150,11 @@ export class Example extends LitElement {
           FieldPartner
         </h1>
 
-          <vaadin-tabs slot="navbar">
+        <vaadin-horizontal-layout
+          slot="navbar"
+          style="flex-grow: 100; justify-content: space-between;"
+        >
+          <vaadin-tabs>
             <vaadin-tab>
               <div
                 title="Lista de Campos"
@@ -177,47 +191,78 @@ export class Example extends LitElement {
                 }}
               ></div>
             </vaadin-tab>
-            <vaadin-tab
-              id="dummy-tab"
-              ${ref(this.geocoderRef)}
-            ></vaadin-tab>
+            <vaadin-tab id="dummy-tab" ${ref(this.geocoderRef)}></vaadin-tab>
           </vaadin-tabs>
 
-          <vaadin-horizontal-layout slot='navbar'>
-            
-          </vaadin-horizontal-layout>
-          
+          <vaadin-select
+            style="margin-right:5px; width:4em;"
+            .value=${this.selected_language}
+            @change=${(e: CustomEvent) => {
+              let lang = e.target.value;
+              use(lang);
+              if (gblStateLoaded()) {
+                gbl_state.user_db
+                  .allDocs({
+                    startkey: "user_language",
+                    endkey: "user_language",
+                    include_docs: true,
+                  })
+                  .then((result) => {
+                    if (result.rows.length > 0) {
+                      // Existe
+                      let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
+                      lang_doc.lang = lang;
+                      gbl_state.user_db.put(lang_doc);
+                    } else {
+                      // No existe
+                      let lang_doc: Lenguage = {
+                        _id: "user_language",
+                        lang: lang,
+                      };
+                      gbl_state.user_db.put(lang_doc);
+                    }
+                  });
+              }
+            }}
+            ${selectRenderer(this.lang_renderer, this.lenguajes)}
+          ></vaadin-select>
+        </vaadin-horizontal-layout>
 
-        <vaadin-tabs slot="drawer" orientation="vertical">
-          <vaadin-tab>
-            <a tabindex="-1">
-              <vaadin-icon icon="vaadin:desktop"></vaadin-icon>
-              <workspace-menu></workspace-menu>
-            </a>
-          </vaadin-tab>
-          <vaadin-tab>
-            <a tabindex="-1" href="/campos">
-              <vaadin-icon icon="vaadin:bullseye"></vaadin-icon>
-              <span>Campos</span>
-            </a>
-          </vaadin-tab>
-          <!-- <vaadin-tab>
-            <a tabindex="-1" @click=${ () => {
-              let base = ""
-              if(location.hostname === "localhost" || location.hostname === "127.0.0.1"){
-                base += "https://staging--agrotools.netlify.app"
+        <vaadin-vertical-layout slot="drawer" style="height:100%;justify-content: space-between;">
+          <vaadin-tabs orientation="vertical">
+            <vaadin-tab>
+              <a tabindex="-1">
+                <vaadin-icon icon="vaadin:desktop"></vaadin-icon>
+                <workspace-menu></workspace-menu>
+              </a>
+            </vaadin-tab>
+            <vaadin-tab>
+              <a tabindex="-1" href="/campos">
+                <vaadin-icon icon="vaadin:bullseye"></vaadin-icon>
+                <span>Campos</span>
+              </a>
+            </vaadin-tab>
+            <!-- <vaadin-tab>
+            <a tabindex="-1" @click=${() => {
+              let base = "";
+              if (
+                location.hostname === "localhost" ||
+                location.hostname === "127.0.0.1"
+              ) {
+                base += "https://staging--agrotools.netlify.app";
               }
 
-              fetch(base + '/geolocation').then((response)=>response.json()).then((geodata)=>{
-                alert(JSON.stringify(geodata))
-              })
-              
+              fetch(base + "/geolocation")
+                .then((response) => response.json())
+                .then((geodata) => {
+                  alert(JSON.stringify(geodata));
+                });
             }}>
               <vaadin-icon icon="vaadin:location-arrow-circle"></vaadin-icon>
               <span>Test Localizacion</span>
             </a>
           </vaadin-tab> -->
-          <!--
+            <!--
           <vaadin-tab>
             <a tabindex="-1">
               <vaadin-icon icon="vaadin:user-heart"></vaadin-icon>
@@ -230,81 +275,52 @@ export class Example extends LitElement {
               <span>Products</span>
             </a>
           </vaadin-tab> -->
-          <vaadin-tab>
-            <a
-              tabindex="-1"
-              @click=${() => {
-                location.reload();
-              }}
-            >
-              <vaadin-icon icon="vaadin:refresh"></vaadin-icon>
-              <span>${translate("navbar.opciones.recargar")}</span>
-            </a>
-          </vaadin-tab>
-          <vaadin-tab>
-            <a
-              tabindex="-1"
-              @click=${() => {
-                this.sendEvent("ver-lista-de-sensores", null);
-              }}
-            >
-              <vaadin-icon icon="vaadin:list"></vaadin-icon>
-              <span>${translate("navbar.opciones.listaDispositivos")}</span>
-            </a>
-          </vaadin-tab>
-          <!-- <vaadin-tab>
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
+                  location.reload();
+                }}
+              >
+                <vaadin-icon icon="vaadin:refresh"></vaadin-icon>
+                <span>${translate("navbar.opciones.recargar")}</span>
+              </a>
+            </vaadin-tab>
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
+                  this.sendEvent("ver-lista-de-sensores", null);
+                }}
+              >
+                <vaadin-icon icon="vaadin:list"></vaadin-icon>
+                <span>${translate("navbar.opciones.listaDispositivos")}</span>
+              </a>
+            </vaadin-tab>
+
+            <!-- <vaadin-tab>
             <a tabindex="-1" href="/cultivos">
               <vaadin-icon icon="vaadin:chart"></vaadin-icon>
               <span>${translate("navbar.opciones.colorCultivos")}</span>
             </a>
           </vaadin-tab> -->
+          </vaadin-tabs>
 
-          <vaadin-tab>
-            <a tabindex="-1">
-              <vaadin-select
-                .value=${this.selected_language}
-                @change=${(e: CustomEvent) => {
-                  let lang = e.target.value;
-                  use(lang);
-                  if(gblStateLoaded()){
-                    gbl_state.user_db.allDocs({startkey:"user_language",endkey:"user_language",include_docs:true})
-                    .then((result)=>{
-                      if(result.rows.length > 0){
-                        // Existe
-                        let lang_doc : Lenguage = result.rows[0].doc as Lenguage
-                        lang_doc.lang = lang
-                        gbl_state.user_db.put(lang_doc)
-                      }else{
-                        // No existe
-                        let lang_doc : Lenguage = {_id:"user_language",lang:lang}
-                        gbl_state.user_db.put(lang_doc)
-                      }
-                    })
-                  }
+          <vaadin-tabs orientation="vertical">
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
+                  this.sendEvent("logout-click", {});
                 }}
-                ${selectRenderer(this.lang_renderer, this.lenguajes)}
-              ></vaadin-select>
-            </a>
-          </vaadin-tab>
+              >
+                <vaadin-icon icon="vaadin:sign-out"></vaadin-icon>
+                <span>Log Out</span>
+              </a>
+            </vaadin-tab>
 
-          <vaadin-tab>
-            <a
-              tabindex="-1"
-              @click=${() => {
-                this.sendEvent("logout-click", {});
-              }}
-            >
-              <vaadin-icon icon="vaadin:sign-out"></vaadin-icon>
-              <span>Log Out</span>
-            </a>
-          </vaadin-tab>
-
-          <vaadin-tab>
-            <a tabindex="-1">
-              <span>Version: ${this.version()}</span>
-            </a>
-          </vaadin-tab>
-        </vaadin-tabs>
+          </vaadin-tabs>
+        </vaadin-vertical-layout>
 
         <slot></slot>
       </vaadin-app-layout>
