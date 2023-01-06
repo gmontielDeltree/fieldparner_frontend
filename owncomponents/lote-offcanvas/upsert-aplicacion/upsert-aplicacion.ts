@@ -59,7 +59,7 @@ import {
   get_lista_insumos,
   Insumo,
 } from "../../insumos/insumos-types";
-import { deepcopy, get_lote_by_names } from "../../helpers";
+import { deepcopy, es_esta_campana, get_lote_by_names } from "../../helpers";
 import { ComboBox } from "@vaadin/combo-box";
 import { TextField } from "@vaadin/text-field";
 import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
@@ -262,6 +262,13 @@ export class UpsertAplicacion extends LitElement {
   guardar() {
     /* chequeos */
     let errors = [];
+
+    /* fecha */
+
+    if(!es_esta_campana(this.actividad.detalles.fecha_ejecucion_tentativa)){
+      errors.push("Debe seleccionar una fecha dentro de la campaña seleccionada")
+    }
+
     if (this.actividad.contratista === null || this.actividad.contratista.nombre === "") {
       errors.push("Debe seleccionar un contratista");
     }
@@ -427,6 +434,7 @@ export class UpsertAplicacion extends LitElement {
                       helper-text="Tentativa de ejecución"
                       value="2022-12-03"
                       placeholder="YYYY-MM-DD"
+                      error-message="Debe seleccionar una fecha dentro de la campaña seleccionada"
                       .min="${gbl_state.campana_seleccionada.inicio}"
                       .max="${gbl_state.campana_seleccionada.fin}"
                       .i18n=${base_i18n}
