@@ -47,19 +47,27 @@ import {
   get_empty_ejecucion,
   LineaDosis,
   LineaDosisEjecucion,
+  LineaLabor,
 } from "../../depositos/depositos-types";
 import { format, parse } from "date-fns";
 import {
   Contratista,
   getContratistas,
 } from "../../contratistas/contratista-types";
-import { get_lista_insumos, getInsumos, Insumo } from "../../insumos/insumos-types";
+import {
+  get_lista_insumos,
+  getInsumos,
+  Insumo,
+} from "../../insumos/insumos-types";
 import { deepcopy, get_lote_by_names } from "../../helpers";
 import { ComboBox } from "@vaadin/combo-box";
 import { TextField } from "@vaadin/text-field";
 import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
 import { TabSheet } from "@vaadin/tabsheet";
 import "./grid_insumos_exe";
+import { labores } from "../../jsons/labores";
+import "./grid_labores_exe"
+import { otros_datos_siembra_exe_template } from './otros_datos_siembra_exe_template';
 
 @customElement("upsert-ejecucion")
 export class UpsertEjecucion extends LitElement {
@@ -157,11 +165,31 @@ export class UpsertEjecucion extends LitElement {
     this.ejecucion.lote_uuid = this.actividad.lote_uuid;
     this.ejecucion.uuid = this.actividad.uuid;
 
+    this.ejecucion.contratista = deepcopy(this.actividad.contratista)
+
     this.actividad.detalles.dosis.forEach((dosis) => {
       let enl: LineaDosisEjecucion = deepcopy(dosis);
       enl.precio_real = enl.precio_estimado;
       this.ejecucion.detalles.dosis.push(enl);
     });
+
+    this.actividad.detalles.costo_labor.forEach((labor) => {
+      let enl: LineaLabor = deepcopy(labor);
+      this.ejecucion.detalles.costo_labor.push(enl);
+    });
+
+    if(this.ejecucion.tipo === 'siembra'){
+      this.ejecucion.detalles.distancia = this.actividad.detalles.distancia
+      this.ejecucion.detalles.densidad_objetivo = this.actividad.detalles.densidad_objetivo
+      this.ejecucion.detalles.peso_1000 = this.actividad.detalles.peso_1000
+      this.ejecucion.detalles.tipo_siembra = this.actividad.detalles.tipo_siembra
+    }
+
+    if(this.ejecucion.tipo === 'cosecha'){
+      this.ejecucion.detalles.humedad = this.actividad.detalles.humedad_esperado
+      this.ejecucion.detalles.rinde = this.actividad.detalles.rinde_esperado
+    }
+
   }
 
   getActividad(uuid) {
@@ -192,34 +220,6 @@ export class UpsertEjecucion extends LitElement {
     this.requestUpdate();
   }
 
-  agregarLineaInsumo() {
-    if (this.linea_de_dosis.insumo === null) {
-      alert("Debe seleccionar un insumo");
-      return;
-    }
-
-    this.linea_de_dosis.uuid = uuid4();
-    this.actividad.detalles.dosis.push(this.linea_de_dosis);
-    this.actividad.detalles.dosis = deepcopy(this.actividad.detalles.dosis);
-    this.linea_de_dosis = {
-      dosis: 0,
-      insumo: null,
-      motivos: [],
-      uuid: "",
-      total: 0,
-      precio_estimado: 0,
-      precio_real: 0,
-    };
-
-    this.requestUpdate();
-
-    // Usar document porque estan en un modal que salta
-    (document.querySelector("#insumo1") as ComboBox).clear();
-    (document.querySelector("#insumo2") as TextField).clear();
-    (document.querySelector("#insumo3") as TextField).clear();
-    (document.querySelector("#insumo4") as MultiSelectComboBox).clear();
-  }
-
   guardar() {
     let fecha = format(
       parse(this.ejecucion.detalles.fecha_ejecucion, "yyyy-MM-dd", new Date()),
@@ -244,7 +244,15 @@ export class UpsertEjecucion extends LitElement {
   }
 
   render() {
+    const labores_form = html`
+      <grid-labores-exe
+        .ejecucion=${this.ejecucion}
+        .labores=${labores}
+      ></grid-labores-exe>
+    `;
+
     console.count("UpsertEjecucion-Render");
+
     return html`
       <div id="modal" class="modal" tabindex="-1">
         <!-- Full screen modal -->
@@ -271,6 +279,7 @@ export class UpsertEjecucion extends LitElement {
                 <vaadin-tabs slot="tabs">
                   <vaadin-tab id="dashboard-tab">Fecha</vaadin-tab>
                   <vaadin-tab id="payment-tab">Insumos</vaadin-tab>
+                  <vaadin-tab id="labores-tab">Labores</vaadin-tab>
                   ${this.tipo === "siembra" || this.tipo === "cosecha"
                     ? html`<vaadin-tab id="otrosdatos-tab"
                         >Otros Datos</vaadin-tab
@@ -278,7 +287,6 @@ export class UpsertEjecucion extends LitElement {
                     : null}
 
                   <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
-                  <vaadin-tab id="costo-labor-tab">Costo Labor</vaadin-tab>
                   <vaadin-tab id="aporte-social-tab"
                     >Aporte Societario</vaadin-tab
                   >
@@ -356,21 +364,16 @@ export class UpsertEjecucion extends LitElement {
                 <!-- Fin Insumos -->
 
                 <!-- Otros Datos -->
-                ${this.tipo === "siembra" || this.tipo === "cosecha"
+                ${this.tipo === "siembra"
                   ? html`<div tab="otrosdatos-tab">
-                      <vaadin-horizontal-layout
-                        theme="spacing"
-                        style="width: 100%;"
-                      >
-                        <vaadin-text-area
-                          style="flex-grow: 1; margin: var(--lumo-space-s);"
-                          value=${this.actividad.comentario}
-                        ></vaadin-text-area>
-                      </vaadin-horizontal-layout>
+                     ${otros_datos_siembra_exe_template(this.ejecucion)}
                     </div>`
                   : null}
 
                 <!-- Otros -->
+                <!--Labores-->
+                <div tab="labores-tab">${labores_form}</div>
+                <!-- Fin Labores -->
 
                 <!-- observaciones -->
                 <div tab="shipping-tab">
@@ -390,17 +393,6 @@ export class UpsertEjecucion extends LitElement {
                 </div>
                 <!-- observaciones-->
 
-                <!-- Aporte Social -->
-                <div tab="costo-labor-tab">
-                  <vaadin-horizontal-layout
-                    theme="spacing"
-                    style="width: 100%;"
-                  >
-                    Proximamente... En Construcción
-                  </vaadin-horizontal-layout>
-                </div>
-
-                <!-- aporte social-->
                 <!-- Aporte Social -->
                 <div tab="aporte-social-tab">
                   <vaadin-horizontal-layout

@@ -1,4 +1,4 @@
-[
+export const labores = [
 	{"labor":"Siembra",
 	  "uuid":"1"
 	},
@@ -19,3 +19,5 @@
 	"uuid":"9"}
 
 ]
+
+export default labores

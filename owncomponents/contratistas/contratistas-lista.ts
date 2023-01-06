@@ -11,7 +11,7 @@ import "@vaadin/custom-field";
 import "@vaadin/grid";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Modal from "bootstrap/js/dist/modal";
-import lista_de_labores from "../jsons/labores.json";
+import lista_de_labores from "../jsons/labores";
 import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
 import { Contratista, empty_contratista, getContratistas, Labor } from "./contratista-types";

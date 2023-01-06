@@ -1,10 +1,10 @@
 import { html } from "lit";
-import { Actividad } from "../../depositos/depositos-types";
+import { ejecucion, Ejecucion } from "../../depositos/depositos-types";
 import { translate } from "lit-translate";
 import "@vaadin/form-layout";
 import { tipos_siembra } from "../../jsons/tipos_siembra";
 
-export const otros_datos_siembra_exe_template = (actividad: Actividad) => {
+export const otros_datos_siembra_exe_template = (ejecucion: Ejecucion) => {
   return html`
     <vaadin-horizontal-layout>
       <vaadin-form-layout>
@@ -12,18 +12,18 @@ export const otros_datos_siembra_exe_template = (actividad: Actividad) => {
       <vaadin-combo-box
           .items=${tipos_siembra}
           label=${translate("tipo_de_siembra")}
-          .value=${actividad.detalles.tipo_siembra}
+          .value=${ejecucion.detalles.tipo_siembra}
           @selected-item-changed=${(e) => {
-            actividad.detalles.tipo_siembra = e.detail.value;
+            ejecucion.detalles.tipo_siembra = e.detail.value;
           }}
         >
         </vaadin-combo-box>
 	
         <vaadin-number-field
           label=${translate("distancia_entre_surcos")}
-          .value=${actividad.detalles.distancia}
+          .value=${ejecucion.detalles.distancia}
           @input=${(e: CustomEvent) => {
-            actividad.detalles.distancia = +e.target.value;
+            ejecucion.detalles.distancia = +e.target.value;
           }}
         >
           <div slot="suffix">cm</div>
@@ -31,9 +31,9 @@ export const otros_datos_siembra_exe_template = (actividad: Actividad) => {
 
         <vaadin-number-field
           label=${translate("densidad_objetivo")}
-          .value=${actividad.detalles.densidad_objetivo}
+          .value=${ejecucion.detalles.densidad_objetivo}
           @input=${(e: CustomEvent) => {
-            actividad.detalles.densidad_objetivo = +e.target.value;
+            ejecucion.detalles.densidad_objetivo = +e.target.value;
           }}
         >
           <div slot="suffix">plantas/ha</div>
@@ -43,9 +43,9 @@ export const otros_datos_siembra_exe_template = (actividad: Actividad) => {
 
         <vaadin-number-field
           label=${translate("peso_mil_semillas")}
-          .value=${actividad.detalles.peso_1000}
+          .value=${ejecucion.detalles.peso_1000}
           @input=${(e: CustomEvent) => {
-            actividad.detalles.peso_1000 = +e.target.value;
+            ejecucion.detalles.peso_1000 = +e.target.value;
           }}
         >
           <div slot="suffix">grs</div>

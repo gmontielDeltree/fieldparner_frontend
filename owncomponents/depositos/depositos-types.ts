@@ -7,6 +7,7 @@ import {
 } from "../contratistas/contratista-types";
 import { deepcopy } from "../helpers";
 import { Insumo } from "../insumos/insumos-types";
+import { tipos_siembra } from '../jsons/tipos_siembra';
 
 interface IHash<T> {
   [index: string]: T;
@@ -175,6 +176,7 @@ interface DetallesEjecucion {
   densidad_objetivo?: number;
   semillas_totales?: number;
   distancia?: number;
+  tipo_siembra?: string;
 }
 
 interface Actividad {
@@ -202,6 +204,7 @@ interface Ejecucion {
   _id: string;
   _rev?: string;
   uuid: string;
+  contratista: Contratista,
   ts_generacion: string;
   tipo: string;
   lote_uuid: string;

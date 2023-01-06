@@ -36,7 +36,7 @@ import "@vaadin/text-area";
 import "@vaadin/form-layout";
 import "@vaadin/form-layout/vaadin-form-item";
 import type { FormLayoutResponsiveStep } from "@vaadin/form-layout";
-import labores from "../../jsons/labores.json";
+import {labores} from "../../jsons/labores";
 import "./insert_insumo_template";
 import { uuid4 } from "uuid4";
 import { Notification } from "@vaadin/notification";
