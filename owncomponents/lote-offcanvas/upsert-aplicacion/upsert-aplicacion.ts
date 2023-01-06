@@ -268,12 +268,19 @@ export class UpsertAplicacion extends LitElement {
       errors.push("Debe agregar algun Insumo");
     }
 
+    /* TODO translate los strings de Semillas Siembra etc */
     /* DEBE TENER UNA SEMILLA */
     if(this.tipo === 'siembra'){
-      let x = this.actividad.detalles.dosis.find((i)=> (i.insumo.tipo === 'Semillas'))
+      let x = this.actividad.detalles.dosis.find((i) => (i.insumo.tipo === 'Semillas'))
       if(x === undefined){
         errors.push("Debe Agregar una 'Semilla' pues esto es una Siembra")
       }
+
+      let y = this.actividad.detalles.costo_labor.find( (labor) => (labor.labor.labor === "Siembra") )
+      if(y === undefined){
+        errors.push("Debe Agregar una labor de 'Siembra' pues esto es una Siembra")
+      }
+
       console.log("Chequeo TiPO Siembra", x, )
     }
 
