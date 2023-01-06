@@ -368,7 +368,7 @@ export class UpsertEjecucion extends LitElement {
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Ejecución</h5>
+              <h5 class="modal-title">Ejecución  ${this.tipo_2_titulo[this.tipo]} - ${this.editando ? "Edicción" : ""} </h5>
               <button
                 type="button"
                 class="btn-close"
@@ -418,7 +418,7 @@ export class UpsertEjecucion extends LitElement {
 
                     <vaadin-date-picker
                       label=${translate("fecha")}
-                      helper-text="Tentativa de ejecución"
+                      helper-text="real de ejecución"
                       value="2022-12-03"
                       placeholder="YYYY-MM-DD"
                       error-message="Debe seleccionar una fecha igual o posterior a la planificación"
