@@ -262,7 +262,7 @@ export class UpsertAplicacion extends LitElement {
   guardar() {
     /* chequeos */
     let errors = [];
-    if (this.actividad.contratista === null) {
+    if (this.actividad.contratista === null || this.actividad.contratista.nombre === "") {
       errors.push("Debe seleccionar un contratista");
     }
 
