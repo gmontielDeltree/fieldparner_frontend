@@ -67,6 +67,7 @@ import { TabSheet } from "@vaadin/tabsheet";
 import { motivos_items } from "../../jsons/motivos_items";
 import "./grid_insumos";
 import "./grid_labores";
+import { otros_datos_siembra_template } from './otros_datos_siembra_template';
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -147,8 +148,8 @@ export class UpsertAplicacion extends LitElement {
 
   tipo_2_categorias_iniciales = {
     siembra: ["Semillas", "Combustible"],
-    cosecha: ["Otros","Combustible"],
-    aplicacion: ["Agroquímicos","Fertilizantes","Combustible"],
+    cosecha: ["Otros", "Combustible"],
+    aplicacion: ["Agroquímicos", "Fertilizantes", "Combustible"],
   };
 
   inicializar_adicion() {
@@ -194,6 +195,7 @@ export class UpsertAplicacion extends LitElement {
 
     this.getActividad(actividad_uuid).then((actividad) => {
       this.actividad = actividad;
+      this.tipo = actividad.tipo;
       this.getLote(campo_nombre, lote_nombre);
       this.loading = false;
     });
@@ -270,31 +272,39 @@ export class UpsertAplicacion extends LitElement {
 
     /* TODO translate los strings de Semillas Siembra etc */
     /* DEBE TENER UNA SEMILLA */
-    if(this.tipo === 'siembra'){
-      let x = this.actividad.detalles.dosis.find((i) => (i.insumo.tipo === 'Semillas'))
-      if(x === undefined){
-        errors.push("Debe Agregar una 'Semilla' pues esto es una Siembra")
+    if (this.tipo === "siembra") {
+      let x = this.actividad.detalles.dosis.find(
+        (i) => i.insumo.tipo === "Semillas"
+      );
+      if (x === undefined) {
+        errors.push("Debe Agregar una 'Semilla' pues esto es una Siembra");
       }
 
-      let y = this.actividad.detalles.costo_labor.find( (labor) => (labor.labor.labor === "Siembra") )
-      if(y === undefined){
-        errors.push("Debe Agregar una labor de 'Siembra' pues esto es una Siembra")
+      let y = this.actividad.detalles.costo_labor.find(
+        (labor) => labor.labor.labor === "Siembra"
+      );
+      if (y === undefined) {
+        errors.push(
+          "Debe Agregar una labor de 'Siembra' pues esto es una Siembra"
+        );
       }
 
-      console.log("Chequeo TiPO Siembra", x )
+      console.log("Chequeo TiPO Siembra", x);
     }
 
-
-    if(this.tipo === 'cosecha'){
-      let y = this.actividad.detalles.costo_labor.find( (labor) => (labor.labor.labor === "Cosecha") )
-      if(y === undefined){
-        errors.push("Debe Agregar una labor de 'Cosecha' pues esto es una Cosecha")
+    if (this.tipo === "cosecha") {
+      let y = this.actividad.detalles.costo_labor.find(
+        (labor) => labor.labor.labor === "Cosecha"
+      );
+      if (y === undefined) {
+        errors.push(
+          "Debe Agregar una labor de 'Cosecha' pues esto es una Cosecha"
+        );
       }
     }
-
 
     if (errors.length > 0) {
-      alert("Atención - Errores!!!\n\n"+ errors.join("\n"));
+      alert("Atención - Errores!!!\n\n" + errors.join("\n"));
       return;
     }
 
@@ -306,8 +316,19 @@ export class UpsertAplicacion extends LitElement {
       ),
       "yyyyMMdd"
     );
-    this.actividad._id = "actividad:" + fecha + ":" + this.actividad.uuid;
 
+    // si edit y fecha es diferente - borrar rev
+    let nuevoid = "actividad:" + fecha + ":" + this.actividad.uuid;
+
+    if(this.editando && (nuevoid !== this.actividad._id)){
+      //Borrar el anterior doc
+      gbl_state.db.remove(this.actividad as PouchDB.Core.RemoveDocument)
+      delete this.actividad._rev
+    }
+
+    this.actividad._id = nuevoid
+
+  
     gbl_state.db.put(this.actividad).then(() => {
       alert("Actividad Guardada");
 
@@ -374,6 +395,8 @@ export class UpsertAplicacion extends LitElement {
                 <vaadin-tabs slot="tabs">
                   <vaadin-tab id="contratista-tab">Contratista</vaadin-tab>
                   <vaadin-tab id="insumos-tab">Insumos</vaadin-tab>
+                  ${this.tipo === "siembra"
+                    ? html`<vaadin-tab id="otros-datos-tab">Otros Datos</vaadin-tab>` : null}
                   <vaadin-tab id="labores-tab">Labores</vaadin-tab>
                   <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
                   <vaadin-tab id="observaciones-tab">Observaciones</vaadin-tab>
@@ -448,6 +471,14 @@ export class UpsertAplicacion extends LitElement {
                   ></grid-insumos>
                 </div>
                 <!-- Fin Insumos -->
+
+                ${this.tipo === "siembra"
+                  ? html`
+                      <div tab="otros-datos-tab">
+                        ${otros_datos_siembra_template(this.actividad)}
+                      </div>
+                    `
+                  : null}
 
                 <!--Labores-->
                 <div tab="labores-tab">${labores_form}</div>
@@ -588,7 +619,8 @@ export class UpsertAplicacion extends LitElement {
                     class="btn btn-primary"
                     @click=${() =>
                       (this.selected_step =
-                        this.selected_step >= 4
+                        this.selected_step >= (document.querySelector("#actividad-tabsheet") as TabSheet)
+                        ?.items.length
                           ? this.selected_step
                           : this.selected_step + 1)}
                   >

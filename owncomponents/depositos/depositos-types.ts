@@ -150,13 +150,14 @@ interface Detalles {
   dosis: LineaDosis[];
   costo_labor: LineaLabor[];
   // Cosecha
-  rinde?: number;
-  humedad?: number;
+  rinde_esperado?: number;
+  humedad_esperado?: number;
   // Siembra
   peso_1000?: number;
   densidad_objetivo?: number;
   semillas_totales?: number;
   distancia?: number;
+  tipo_siembra?: string
 }
 
 interface DetallesEjecucion {
