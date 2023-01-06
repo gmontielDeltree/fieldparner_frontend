@@ -281,8 +281,17 @@ export class UpsertAplicacion extends LitElement {
         errors.push("Debe Agregar una labor de 'Siembra' pues esto es una Siembra")
       }
 
-      console.log("Chequeo TiPO Siembra", x, )
+      console.log("Chequeo TiPO Siembra", x )
     }
+
+
+    if(this.tipo === 'cosecha'){
+      let y = this.actividad.detalles.costo_labor.find( (labor) => (labor.labor.labor === "Cosecha") )
+      if(y === undefined){
+        errors.push("Debe Agregar una labor de 'Cosecha' pues esto es una Cosecha")
+      }
+    }
+
 
     if (errors.length > 0) {
       alert("Atención - Errores!!!\n\n"+ errors.join("\n"));
