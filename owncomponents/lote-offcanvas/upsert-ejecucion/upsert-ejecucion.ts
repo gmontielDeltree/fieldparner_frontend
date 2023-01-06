@@ -66,8 +66,8 @@ import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
 import { TabSheet } from "@vaadin/tabsheet";
 import "./grid_insumos_exe";
 import { labores } from "../../jsons/labores";
-import "./grid_labores_exe"
-import { otros_datos_siembra_exe_template } from './otros_datos_siembra_exe_template';
+import "./grid_labores_exe";
+import { otros_datos_siembra_exe_template } from "./otros_datos_siembra_exe_template";
 
 @customElement("upsert-ejecucion")
 export class UpsertEjecucion extends LitElement {
@@ -165,7 +165,7 @@ export class UpsertEjecucion extends LitElement {
     this.ejecucion.lote_uuid = this.actividad.lote_uuid;
     this.ejecucion.uuid = this.actividad.uuid;
 
-    this.ejecucion.contratista = deepcopy(this.actividad.contratista)
+    this.ejecucion.contratista = deepcopy(this.actividad.contratista);
 
     this.actividad.detalles.dosis.forEach((dosis) => {
       let enl: LineaDosisEjecucion = deepcopy(dosis);
@@ -178,18 +178,20 @@ export class UpsertEjecucion extends LitElement {
       this.ejecucion.detalles.costo_labor.push(enl);
     });
 
-    if(this.ejecucion.tipo === 'siembra'){
-      this.ejecucion.detalles.distancia = this.actividad.detalles.distancia
-      this.ejecucion.detalles.densidad_objetivo = this.actividad.detalles.densidad_objetivo
-      this.ejecucion.detalles.peso_1000 = this.actividad.detalles.peso_1000
-      this.ejecucion.detalles.tipo_siembra = this.actividad.detalles.tipo_siembra
+    if (this.ejecucion.tipo === "siembra") {
+      this.ejecucion.detalles.distancia = this.actividad.detalles.distancia;
+      this.ejecucion.detalles.densidad_objetivo =
+        this.actividad.detalles.densidad_objetivo;
+      this.ejecucion.detalles.peso_1000 = this.actividad.detalles.peso_1000;
+      this.ejecucion.detalles.tipo_siembra =
+        this.actividad.detalles.tipo_siembra;
     }
 
-    if(this.ejecucion.tipo === 'cosecha'){
-      this.ejecucion.detalles.humedad = this.actividad.detalles.humedad_esperado
-      this.ejecucion.detalles.rinde = this.actividad.detalles.rinde_esperado
+    if (this.ejecucion.tipo === "cosecha") {
+      this.ejecucion.detalles.humedad =
+        this.actividad.detalles.humedad_esperado;
+      this.ejecucion.detalles.rinde = this.actividad.detalles.rinde_esperado;
     }
-
   }
 
   getActividad(uuid) {
@@ -366,7 +368,7 @@ export class UpsertEjecucion extends LitElement {
                 <!-- Otros Datos -->
                 ${this.tipo === "siembra"
                   ? html`<div tab="otrosdatos-tab">
-                     ${otros_datos_siembra_exe_template(this.ejecucion)}
+                      ${otros_datos_siembra_exe_template(this.ejecucion)}
                     </div>`
                   : null}
 
@@ -408,16 +410,18 @@ export class UpsertEjecucion extends LitElement {
                   <vaadin-vertical-layout
                     style="width: 100%; height: 100%; align-items: center; margin: var(--lumo-space-s);"
                   >
-                    <vaadin-horizontal-layout
+                    <vaadin-vertical-layout
                       theme="spacing"
-                      style="flex-wrap: wrap; justify-content: center;"
+                      style="flex-wrap: wrap; align-items: center;"
                     >
-                      Ingrese los valores de las variables ambientales promedio
-                      al momento de la labor.
-                      <vaadin-button theme="success"
+                      <div>
+                        Ingrese los valores de las variables ambientales
+                        promedio al momento de la labor.
+                      </div>
+                      <vaadin-button theme="success" @click=${() => alert("EN CONSTRUCCION!!!! TIENE BUGS!!! EN CONSTRUCCION!!!!")}
                         >Cargar desde Centrales</vaadin-button
                       >
-                    </vaadin-horizontal-layout>
+                    </vaadin-vertical-layout>
 
                     <vaadin-horizontal-layout
                       theme="spacing"
@@ -425,12 +429,13 @@ export class UpsertEjecucion extends LitElement {
                     >
                       <vaadin-text-field
                         label="Temperatura Min"
+                        helper-text="planificada"
                         value=${this.actividad.condiciones.temperatura_min}
                         @input=${(e) => {
                           this.actividad.condiciones.temperatura_min =
                             +e.target.value;
                         }}
-                        theme="align-right"
+                        theme="align-right helper-above-field"
                         type="text"
                         readonly
                       >
@@ -439,12 +444,13 @@ export class UpsertEjecucion extends LitElement {
 
                       <vaadin-text-field
                         label="Temperatura"
+                        helper-text="promedio"
                         value=${this.ejecucion.condiciones.temperatura_promedio}
                         @input=${(e) => {
                           this.ejecucion.condiciones.temperatura_promedio =
                             +e.target.value;
                         }}
-                        theme="align-right"
+                        theme="align-right helper-above-field"
                         type="text"
                       >
                         <div slot="suffix">ºC</div>
@@ -452,12 +458,13 @@ export class UpsertEjecucion extends LitElement {
 
                       <vaadin-text-field
                         label="Temperatura Max"
+                        helper-text="planificada"
                         value=${this.actividad.condiciones.temperatura_max}
                         @input=${(e) => {
                           this.actividad.condiciones.temperatura_max =
                             +e.target.value;
                         }}
-                        theme="align-right"
+                        theme="align-right helper-above-field"
                         type="text"
                         readonly
                       >
@@ -470,8 +477,10 @@ export class UpsertEjecucion extends LitElement {
                     >
                       <vaadin-text-field
                         label="Humedad Min"
+                        helper-text="planificada"
+
                         value=${this.actividad.condiciones.humedad_min}
-                        theme="align-right"
+                        theme="align-right helper-above-field"
                         @input=${(e) => {
                           this.actividad.condiciones.humedad_min =
                             +e.target.value;
@@ -484,8 +493,9 @@ export class UpsertEjecucion extends LitElement {
 
                       <vaadin-text-field
                         label="Humedad"
+                        helper-text="promedio"
                         value=${this.ejecucion.condiciones.humedad_promedio}
-                        theme="align-right"
+                        theme="align-right helper-above-field"
                         @input=${(e) => {
                           this.ejecucion.condiciones.humedad_promedio =
                             +e.target.value;
@@ -497,12 +507,13 @@ export class UpsertEjecucion extends LitElement {
 
                       <vaadin-text-field
                         label="Humedad Max"
+                        helper-text="planificada"
                         value=${this.actividad.condiciones.humedad_max}
                         @input=${(e) => {
                           this.actividad.condiciones.humedad_max =
                             +e.target.value;
                         }}
-                        theme="align-right"
+                        theme="align-right helper-above-field"
                         type="text"
                         readonly
                       >
@@ -515,8 +526,9 @@ export class UpsertEjecucion extends LitElement {
                     >
                       <vaadin-text-field
                         label="Viento Min"
+                        helper-text="planificada"
                         value=${this.actividad.condiciones.velocidad_min}
-                        theme="align-right"
+                        theme="align-right helper-above-field"
                         @input=${(e) => {
                           this.actividad.condiciones.velocidad_min =
                             +e.target.value;
@@ -528,9 +540,10 @@ export class UpsertEjecucion extends LitElement {
                       </vaadin-text-field>
 
                       <vaadin-text-field
-                        label="Viento Min"
+                        label="Viento"
+                        helper-text="promedio"
                         value=${this.ejecucion.condiciones.velocidad_promedio}
-                        theme="align-right"
+                        theme="align-right helper-above-field"
                         @input=${(e) => {
                           this.ejecucion.condiciones.velocidad_promedio =
                             +e.target.value;
@@ -542,12 +555,13 @@ export class UpsertEjecucion extends LitElement {
 
                       <vaadin-text-field
                         label="Viento Max"
+                        helper-text="planificada"
                         value=${this.actividad.condiciones.velocidad_max}
                         @input=${(e) => {
                           this.actividad.condiciones.velocidad_max =
                             +e.target.value;
                         }}
-                        theme="align-right"
+                        theme="align-right helper-above-field"
                         type="text"
                         readonly
                       >
