@@ -268,8 +268,17 @@ export class UpsertAplicacion extends LitElement {
       errors.push("Debe agregar algun Insumo");
     }
 
+    /* DEBE TENER UNA SEMILLA */
+    if(this.tipo === 'siembra'){
+      let x = this.actividad.detalles.dosis.find((i)=> (i.insumo.tipo === 'Semillas'))
+      if(x === undefined){
+        errors.push("Debe Agregar una 'Semilla' pues esto es una Siembra")
+      }
+      console.log("Chequeo TiPO Siembra", x, )
+    }
+
     if (errors.length > 0) {
-      alert(errors.join("\n"));
+      alert("Atención - Errores!!!\n\n"+ errors.join("\n"));
       return;
     }
 
