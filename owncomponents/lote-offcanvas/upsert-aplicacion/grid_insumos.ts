@@ -112,6 +112,7 @@ export class GridInsumos extends LitElement {
           return item.uuid === "nuevo"
             ? html`
                 <combo-box-insumos
+                  id="combo-insumo"
                   .insumos=${this.insumos}
                   .categorias_iniciales=${this.categorias_iniciales}
                   .linea_de_dosis=${item}
@@ -143,21 +144,21 @@ export class GridInsumos extends LitElement {
         flex-grow="0"
         resizable
         ${columnBodyRenderer<LineaDosis>((item) => {
-          return html` <vaadin-text-field
-            maxlength="5"
+          return html` <vaadin-number-field
+            style="width:15em"
             class=${item.uuid === "nuevo" ? "high-rating" : ""}
             value=${item.dosis}
             @change=${(e) => (item.dosis = +e.target.value)}
             @input=${(e) => {
-              item.total = +e.target.value;
-              item.dosis = truncar(
-                item.total / this.actividad.detalles.hectareas
+              item.dosis = +e.target.value;
+              item.total = truncar(
+                item.dosis * this.actividad.detalles.hectareas
               );
               this.requestUpdate();
             }}
           >
             <div slot="suffix">${item.insumo?.unidad || ""}/Ha</div>
-          </vaadin-text-field>`;
+          </vaadin-number-field>`;
         }, [])}
       ></vaadin-grid-column>
 
@@ -167,8 +168,8 @@ export class GridInsumos extends LitElement {
         flex-grow="0"
         resizable
         ${columnBodyRenderer<LineaDosis>(
-          (item) => html` <vaadin-text-field
-            maxlength="5"
+          (item) => html` <vaadin-number-field
+            style="width:15em"
             value=${item.total}
             class=${item.uuid === "nuevo" ? "high-rating" : ""}
             @change=${(e) => (item.total = +e.target.value)}
@@ -181,7 +182,7 @@ export class GridInsumos extends LitElement {
             }}
           >
             <div slot="suffix">${item.insumo?.unidad || ""}</div>
-          </vaadin-text-field>`,
+          </vaadin-number-field>`,
           []
         )}
       ></vaadin-grid-column>
@@ -252,6 +253,7 @@ export class GridInsumos extends LitElement {
                         this.actividad.detalles.dosis
                       );
                       this.inicializar_lineas();
+                      this.shadowRoot.querySelector('#combo-insumo').clear()
                       this.requestUpdate();
                       (
                         this.shadowRoot.getElementById("da-grid") as Grid

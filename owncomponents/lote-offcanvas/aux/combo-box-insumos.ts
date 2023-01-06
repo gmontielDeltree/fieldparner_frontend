@@ -94,6 +94,10 @@ export class ComboBoxInsumos extends LitElement {
     }
   }
 
+  clear(){
+    this.shadowRoot.querySelector('#insumo1').clear()
+  }
+
   render() {
     return html`
       <vaadin-combo-box
