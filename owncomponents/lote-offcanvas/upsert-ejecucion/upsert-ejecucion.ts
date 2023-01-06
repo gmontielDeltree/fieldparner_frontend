@@ -269,9 +269,8 @@ export class UpsertEjecucion extends LitElement {
 
                 <!-- Contratista -->
                 <div tab="dashboard-tab">
-                  <vaadin-vertical-layout
-                    style="width: 400px; max-width: 100%;"
-                  >
+
+  <vaadin-form-layout>
                     <vaadin-combo-box
                       label="Contratista"
                       item-label-path="nombre"
@@ -280,37 +279,37 @@ export class UpsertEjecucion extends LitElement {
                       style="width: 100%;"
                       .selectedItem=${this.actividad.contratista}
                       readonly
+                      colspan="2"
                     ></vaadin-combo-box>
 
-                    <vaadin-horizontal-layout
-                      theme="spacing"
-                      style="width: 100%; justify-content: space-around;"
-                    >
-                      <vaadin-date-picker
-                        label="Fecha"
-                        helper-text="de ejecución"
-                        value="2022-12-03"
-                        placeholder="YYYY-MM-DD"
-                        .i18n=${base_i18n}
-                        theme="helper-above-field"
-                        .value=${this.ejecucion.detalles.fecha_ejecucion}
-                        @change=${(e) =>
-                          (this.ejecucion.detalles.fecha_ejecucion =
-                            e.target.value)}
-                      ></vaadin-date-picker>
+                    <vaadin-date-picker
+                      label=${translate("fecha")}
+                      helper-text="Tentativa de ejecución"
+                      value="2022-12-03"
+                      placeholder="YYYY-MM-DD"
+                      error-message="Debe seleccionar una fecha igual o posterior a la planificación"
+                      .min="${this.actividad.detalles.fecha_ejecucion_tentativa}"
+                      .max="${gbl_state.campana_seleccionada.fin}"
+                      .i18n=${base_i18n}
+                      theme="helper-above-field"
+                      .value=${this.actividad.detalles
+                        .fecha_ejecucion_tentativa}
+                      @change=${(e) =>
+                        (this.ejecucion.detalles.fecha_ejecucion =
+                          e.target.value)}
+                    ></vaadin-date-picker>
 
-                      <vaadin-number-field
-                        label="Hectareas"
-                        helper-text="de aplicación"
-                        value=${this.ejecucion.detalles.hectareas}
-                        theme="helper-above-field"
-                        @change=${(e) =>
-                          (this.ejecucion.detalles.hectareas = +e.target.value)}
-                      >
-                        <div slot="suffix">Ha.</div>
-                      </vaadin-number-field>
-                    </vaadin-horizontal-layout>
-                  </vaadin-vertical-layout>
+                    <vaadin-number-field
+                      label="Hectareas"
+                      helper-text="de aplicación"
+                      value=${this.actividad.detalles.hectareas}
+                      theme="helper-above-field"
+                      @change=${(e) =>
+                        (this.ejecucion.detalles.hectareas = +e.target.value)}
+                    >
+                      <div slot="suffix">Ha.</div>
+                    </vaadin-number-field>
+                  </vaadin-form-layout>
                 </div>
                 <!-- Fin Contratista -->
 
