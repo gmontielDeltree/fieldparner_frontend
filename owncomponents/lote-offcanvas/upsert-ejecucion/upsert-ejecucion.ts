@@ -59,7 +59,7 @@ import {
   getInsumos,
   Insumo,
 } from "../../insumos/insumos-types";
-import { deepcopy, get_lote_by_names } from "../../helpers";
+import { deepcopy, get_lote_by_names, es_esta_campana } from '../../helpers';
 import { ComboBox } from "@vaadin/combo-box";
 import { TextField } from "@vaadin/text-field";
 import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
@@ -122,6 +122,7 @@ export class UpsertEjecucion extends LitElement {
         this.getActividad(actividad_uuid);
       } else {
         this.editando = true;
+        this.getEjecucion(this.location.params.uuid)
       }
     }
   }
@@ -210,6 +211,40 @@ export class UpsertEjecucion extends LitElement {
           }
         }
       });
+  }
+
+  getActividadSinCopiar(uuid) {
+    gbl_state.db
+      .allDocs({ startkey: "actividad:", endkey: "actividad:_\ufff0" })
+      .then((result) => {
+        if (result.rows) {
+          let midoc = result.rows.find((doc) => doc.id.includes(uuid));
+          if (midoc) {
+            gbl_state.db.get(midoc.id).then((doc) => {
+              this.actividad = doc as Actividad;
+            });
+          }
+        }
+      });
+  }
+
+
+  getEjecucion(uuid) {
+    gbl_state.db
+      .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:_\ufff0" })
+      .then((result) => {
+        if (result.rows) {
+          let midoc = result.rows.find((doc) => doc.id.includes(uuid));
+          if (midoc) {
+            gbl_state.db.get(midoc.id).then((doc) => {
+              this.ejecucion = doc as Ejecucion;
+              this.tipo = this.ejecucion.tipo;
+              this.getActividadSinCopiar(uuid)
+              this.requestUpdate();
+            });
+          }
+        }
+      });
     // gbl_state.db.get("actividad")
   }
 
@@ -223,11 +258,83 @@ export class UpsertEjecucion extends LitElement {
   }
 
   guardar() {
+    /* chequeos */
+    let errors = [];
+
+    /* fecha */
+
+    if (!es_esta_campana(this.ejecucion.detalles.fecha_ejecucion)) {
+      errors.push(
+        "Debe seleccionar una fecha dentro de la campaña seleccionada"
+      );
+    }
+
+    if (
+      this.ejecucion.contratista === null ||
+      this.ejecucion.contratista.nombre === ""
+    ) {
+      errors.push("Debe seleccionar un contratista");
+    }
+
+    if (this.ejecucion.detalles.dosis.length === 0) {
+      errors.push("Debe agregar algun Insumo");
+    }
+
+    /* TODO translate los strings de Semillas Siembra etc */
+    /* DEBE TENER UNA SEMILLA */
+    if (this.tipo === "siembra") {
+      let x = this.ejecucion.detalles.dosis.find(
+        (i) => i.insumo.tipo === "Semillas"
+      );
+      if (x === undefined) {
+        errors.push("Debe Agregar una 'Semilla' pues esto es una Siembra");
+      }
+
+      let y = this.ejecucion.detalles.costo_labor.find(
+        (labor) => labor.labor.labor === "Siembra"
+      );
+      if (y === undefined) {
+        errors.push(
+          "Debe Agregar una labor de 'Siembra' pues esto es una Siembra"
+        );
+      }
+
+      console.log("Chequeo TiPO Siembra", x);
+    }
+
+    if (this.tipo === "cosecha") {
+      let y = this.ejecucion.detalles.costo_labor.find(
+        (labor) => labor.labor.labor === "Cosecha"
+      );
+      if (y === undefined) {
+        errors.push(
+          "Debe Agregar una labor de 'Cosecha' pues esto es una Cosecha"
+        );
+      }
+    }
+
+    if (errors.length > 0) {
+      alert("Atención - Errores!!!\n\n" + errors.join("\n"));
+      return;
+    }
+
+    /*--------------- fin checks ---------------------- */
+
     let fecha = format(
       parse(this.ejecucion.detalles.fecha_ejecucion, "yyyy-MM-dd", new Date()),
       "yyyyMMdd"
     );
-    this.ejecucion._id = "ejecucion:" + fecha + ":" + this.ejecucion.uuid;
+
+    // si edit y fecha es diferente - borrar rev
+    let nuevoid = "ejecucion:" + fecha + ":" + this.ejecucion.uuid;
+
+    if (this.editando && nuevoid !== this.ejecucion._id) {
+      //Borrar el anterior doc
+      gbl_state.db.remove(this.ejecucion as PouchDB.Core.RemoveDocument);
+      delete this.ejecucion._rev;
+    }
+
+    this.ejecucion._id = nuevoid;
 
     gbl_state.db.put(this.ejecucion).then(() => {
       alert("Ejecucion Guardada");
@@ -304,7 +411,7 @@ export class UpsertEjecucion extends LitElement {
                       item-value-path="uuid"
                       helper-text="Solo puede cambiar el contratista si modifica la planificación"
                       style="width: 100%;"
-                      .selectedItem=${this.actividad.contratista}
+                      .selectedItem=${this.ejecucion.contratista}
                       readonly
                       colspan="2"
                     ></vaadin-combo-box>
@@ -320,8 +427,8 @@ export class UpsertEjecucion extends LitElement {
                       .max="${gbl_state.campana_seleccionada.fin}"
                       .i18n=${base_i18n}
                       theme="helper-above-field"
-                      .value=${this.actividad.detalles
-                        .fecha_ejecucion_tentativa}
+                      .value=${this.ejecucion.detalles
+                        .fecha_ejecucion}
                       @change=${(e) =>
                         (this.ejecucion.detalles.fecha_ejecucion =
                           e.target.value)}
@@ -418,7 +525,12 @@ export class UpsertEjecucion extends LitElement {
                         Ingrese los valores de las variables ambientales
                         promedio al momento de la labor.
                       </div>
-                      <vaadin-button theme="success" @click=${() => alert("EN CONSTRUCCION!!!! TIENE BUGS!!! EN CONSTRUCCION!!!!")}
+                      <vaadin-button
+                        theme="success"
+                        @click=${() =>
+                          alert(
+                            "EN CONSTRUCCION!!!! TIENE BUGS!!! EN CONSTRUCCION!!!!"
+                          )}
                         >Cargar desde Centrales</vaadin-button
                       >
                     </vaadin-vertical-layout>
@@ -478,7 +590,6 @@ export class UpsertEjecucion extends LitElement {
                       <vaadin-text-field
                         label="Humedad Min"
                         helper-text="planificada"
-
                         value=${this.actividad.condiciones.humedad_min}
                         theme="align-right helper-above-field"
                         @input=${(e) => {
@@ -573,8 +684,7 @@ export class UpsertEjecucion extends LitElement {
               </vaadin-tabsheet>
             </div>
             <div class="modal-footer">
-
-            <button
+              <button
                 type="button"
                 tabindex="-1"
                 class="btn btn-secondary"
@@ -603,47 +713,17 @@ export class UpsertEjecucion extends LitElement {
                     class="btn btn-primary"
                     @click=${() =>
                       (this.selected_step =
-                        this.selected_step >= (document.querySelector("#actividad-tabsheet") as TabSheet)
-                        ?.items.length
+                        this.selected_step >=
+                        (
+                          document.querySelector(
+                            "#actividad-tabsheet"
+                          ) as TabSheet
+                        )?.items.length
                           ? this.selected_step
                           : this.selected_step + 1)}
                   >
                     Siguiente
                   </button>`}
-              <!-- <button
-                type="button"
-                class="btn btn-secondary"
-                @click=${() =>
-                  (this.selected_step =
-                    this.selected_step > 0
-                      ? this.selected_step - 1
-                      : this.selected_step)}
-              >
-                Atras
-              </button>
-
-              ${(document.querySelector("#actividad-tabsheet") as TabSheet)
-                ?.items.length -
-                1 ===
-              this.selected_step
-                ? html`<button
-                    type="button"
-                    class="btn btn-primary"
-                    @click=${this.guardar}
-                  >
-                    Guardar
-                  </button>`
-                : html` <button
-                    type="button"
-                    class="btn btn-primary"
-                    @click=${() =>
-                      (this.selected_step =
-                        this.selected_step >= 5
-                          ? this.selected_step
-                          : this.selected_step + 1)}
-                  >
-                    Siguiente
-                  </button>`} -->
             </div>
           </div>
         </div>
