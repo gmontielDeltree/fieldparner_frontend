@@ -107,6 +107,7 @@ export class ComboBoxInsumos extends LitElement {
     return html`
       <vaadin-combo-box
         id="insumo1"
+        style="background-color: #b1ffb7; width:16em; --vaadin-combo-box-overlay-width: 25em"
         placeholder="${translate("seleccione_insumo")}"
         class="high-rating"
         .clearButtonVisible=${true}
@@ -119,7 +120,6 @@ export class ComboBoxInsumos extends LitElement {
           this.dispatchEvent(new CustomEvent("selected-item-changed",{detail:{value:value},bubbles:true,composed:true}))
         }}
         .filteredItems="${this.filteredItems}"
-        style="background-color: #b1ffb7;width:16em;--vaadin-combo-box-overlay-width: 25em"
         @filter-changed="${this.filterChanged}"
         ${comboBoxRenderer(this.renderer, this.insumos)}
       >
