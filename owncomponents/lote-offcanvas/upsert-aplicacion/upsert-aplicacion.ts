@@ -462,7 +462,7 @@ export class UpsertAplicacion extends LitElement {
                   <vaadin-form-layout
                     style="width: 100%; height: 100%; align-items: center; margin: var(--lumo-space-s);"
                   >
-                    <vaadin-text-field
+                    <vaadin-number-field
                       label="Temperatura Min"
                       value=${this.actividad.condiciones.temperatura_min}
                       @input=${(e) => {
@@ -473,8 +473,8 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">ºC</div>
-                    </vaadin-text-field>
-                    <vaadin-text-field
+                    </vaadin-number-field>
+                    <vaadin-number-field
                       label="Temperatura Max"
                       value=${this.actividad.condiciones.temperatura_max}
                       @input=${(e) => {
@@ -485,9 +485,9 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">ºC</div>
-                    </vaadin-text-field>
+                    </vaadin-number-field>
 
-                    <vaadin-text-field
+                    <vaadin-number-field
                       label="Humedad Min"
                       value=${this.actividad.condiciones.humedad_min}
                       theme="align-right"
@@ -498,8 +498,8 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">%</div>
-                    </vaadin-text-field>
-                    <vaadin-text-field
+                    </vaadin-number-field>
+                    <vaadin-number-field
                       label="Humedad Max"
                       value=${this.actividad.condiciones.humedad_max}
                       @input=${(e) => {
@@ -510,9 +510,9 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">%</div>
-                    </vaadin-text-field>
+                    </vaadin-number-field>
 
-                    <vaadin-text-field
+                    <vaadin-number-field
                       label="Viento Min"
                       value=${this.actividad.condiciones.velocidad_min}
                       theme="align-right"
@@ -523,8 +523,8 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">km/h</div>
-                    </vaadin-text-field>
-                    <vaadin-text-field
+                    </vaadin-number-field>
+                    <vaadin-number-field
                       label="Viento Max"
                       value=${this.actividad.condiciones.velocidad_max}
                       @input=${(e) => {
@@ -535,7 +535,7 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">km/h</div>
-                    </vaadin-text-field>
+                    </vaadin-number-field>
                   </vaadin-form-layout>
                 </div>
                 <!-- Fin Condiciones -->
