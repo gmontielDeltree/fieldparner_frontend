@@ -573,7 +573,44 @@ export class UpsertEjecucion extends LitElement {
               </vaadin-tabsheet>
             </div>
             <div class="modal-footer">
-              <button
+
+            <button
+                type="button"
+                tabindex="-1"
+                class="btn btn-secondary"
+                @click=${() =>
+                  (this.selected_step =
+                    this.selected_step > 0
+                      ? this.selected_step - 1
+                      : this.selected_step)}
+              >
+                Atras
+              </button>
+
+              ${(document.querySelector("#actividad-tabsheet") as TabSheet)
+                ?.items.length -
+                1 ===
+              this.selected_step
+                ? html`<button
+                    type="button"
+                    class="btn btn-primary"
+                    @click=${this.guardar}
+                  >
+                    Guardar
+                  </button>`
+                : html` <button
+                    type="button"
+                    class="btn btn-primary"
+                    @click=${() =>
+                      (this.selected_step =
+                        this.selected_step >= (document.querySelector("#actividad-tabsheet") as TabSheet)
+                        ?.items.length
+                          ? this.selected_step
+                          : this.selected_step + 1)}
+                  >
+                    Siguiente
+                  </button>`}
+              <!-- <button
                 type="button"
                 class="btn btn-secondary"
                 @click=${() =>
@@ -606,7 +643,7 @@ export class UpsertEjecucion extends LitElement {
                           : this.selected_step + 1)}
                   >
                     Siguiente
-                  </button>`}
+                  </button>`} -->
             </div>
           </div>
         </div>
