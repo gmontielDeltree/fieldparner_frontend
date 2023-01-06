@@ -212,7 +212,7 @@ export class UpsertAplicacion extends LitElement {
   populateInsumos() {
     get_lista_insumos(gbl_state.db).then((i) => {
       this.insumos = i;
-      console.log("insumos", i);
+      //console.log("insumos", i);
       this.requestUpdate();
     });
   }

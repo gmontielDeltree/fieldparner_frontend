@@ -3,7 +3,9 @@ import { columnBodyRenderer } from "@vaadin/grid/lit.js";
 import {
   Actividad,
   DetallesAplicacion,
+  Ejecucion,
   LineaDosis,
+  LineaDosisEjecucion,
 } from "../../depositos/depositos-types";
 import { motivos_items } from "../../jsons/motivos_items";
 import uuid4 from "uuid4";
@@ -48,19 +50,23 @@ export class GridInsumosExe extends LitElement {
   actividad: Actividad;
 
   @property()
+  ejecucion: Ejecucion;
+
+  @property()
   insumos: Insumo[];
 
   @property()
   categorias_iniciales : string[]; 
 
   @state()
-  linea_de_dosis: LineaDosis = {
+  linea_de_dosis: LineaDosisEjecucion = {
     dosis: 0,
     insumo: null,
     motivos: [],
     uuid: "nuevo",
     total: 0,
     precio_estimado: 0,
+    precio_real: 0,
   };
 
   inicializar_lineas() {
@@ -70,26 +76,27 @@ export class GridInsumosExe extends LitElement {
       motivos: [],
       uuid: "nuevo",
       total: 0,
-      precio_estimado: 0,
+      precio_real: 0,
+      precio_estimado:0
     };
   }
 
-  borrar(dosis: LineaDosis) {
-    let dosises = this.actividad.detalles.dosis;
+  borrar(dosis: LineaDosisEjecucion) {
+    let dosises = this.ejecucion.detalles.dosis;
     let remanente = dosises.filter(
       (d) => d.uuid !== dosis.uuid
-    ) as LineaDosis[];
-    this.actividad.detalles.dosis = remanente;
+    ) as LineaDosisEjecucion[];
+    this.ejecucion.detalles.dosis = remanente;
     this.requestUpdate();
   }
 
   expanded_items() {
-    if ((this.actividad.detalles as DetallesAplicacion).dosis.length === 0) {
+    if (this.ejecucion.detalles.dosis.length === 0) {
       return [this.linea_de_dosis];
     } else {
       return [
         this.linea_de_dosis,
-        ...(this.actividad.detalles as DetallesAplicacion).dosis,
+        ...this.ejecucion.detalles.dosis,
       ];
     }
   }
@@ -107,7 +114,7 @@ export class GridInsumosExe extends LitElement {
         width="18em" 
         flex-grow="0"
         resizable
-        ${columnBodyRenderer<LineaDosis>((item) => {
+        ${columnBodyRenderer<LineaDosisEjecucion>((item) => {
           console.log("render item", item);
           return item.uuid === "nuevo"
             ? html`
@@ -119,6 +126,8 @@ export class GridInsumosExe extends LitElement {
                   @selected-item-changed=${(e) => {
                     this.linea_de_dosis.insumo = e.detail.value;
                     this.linea_de_dosis.precio_estimado =
+                      this.linea_de_dosis.insumo?.precio || 0;
+                    this.linea_de_dosis.precio_real =
                       this.linea_de_dosis.insumo?.precio || 0;
                     this.requestUpdate();
                   }}
@@ -148,7 +157,7 @@ export class GridInsumosExe extends LitElement {
         auto-width
         flex-grow="0"
         resizable
-        ${columnBodyRenderer<LineaDosis>((item) => {
+        ${columnBodyRenderer<LineaDosisEjecucion>((item) => {
           return html` <vaadin-number-field
             style="width:10em"
             class=${item.uuid === "nuevo" ? "high-rating" : ""}
@@ -157,7 +166,7 @@ export class GridInsumosExe extends LitElement {
             @input=${(e) => {
               item.dosis = +e.target.value;
               item.total = truncar(
-                item.dosis * this.actividad.detalles.hectareas
+                item.dosis * this.ejecucion.detalles.hectareas
               );
               this.requestUpdate();
             }}
@@ -172,7 +181,7 @@ export class GridInsumosExe extends LitElement {
         auto-width
         flex-grow="0"
         resizable
-        ${columnBodyRenderer<LineaDosis>(
+        ${columnBodyRenderer<LineaDosisEjecucion>(
           (item) => html` <vaadin-number-field
             style="width:10em"
             value=${item.total}
@@ -181,7 +190,7 @@ export class GridInsumosExe extends LitElement {
             @input=${(e) => {
               item.total = +e.target.value;
               item.dosis = truncar(
-                item.total / this.actividad.detalles.hectareas
+                item.total / this.ejecucion.detalles.hectareas
               );
               this.requestUpdate();
             }}
@@ -197,7 +206,7 @@ export class GridInsumosExe extends LitElement {
         auto-width
         flex-grow="0"
         resizable
-        ${columnBodyRenderer<LineaDosis>(
+        ${columnBodyRenderer<LineaDosisEjecucion>(
           (item) => html`<vaadin-multi-select-combo-box
             item-label-path="nombre"
             item-id-path="id"
@@ -218,13 +227,13 @@ export class GridInsumosExe extends LitElement {
         auto-width
         flex-grow="0"
         resizable
-        ${columnBodyRenderer<LineaDosis>(
+        ${columnBodyRenderer<LineaDosisEjecucion>(
           (item) => html`
             <vaadin-number-field
-              value="${item.precio_estimado}"
+              value="${item.precio_real}"
               style="width:10em;"
               class=${item.uuid === "nuevo" ? "high-rating" : ""}
-              @change=${(e) => (item.precio_estimado = +e.target.value)}
+              @change=${(e) => (item.precio_real = +e.target.value)}
             >
               <div slot="suffix">
                 ${item.insumo?.unidad ? "USD/" + abrv(item.insumo.unidad) : ""}
@@ -246,7 +255,7 @@ export class GridInsumosExe extends LitElement {
         auto-width
         flex-grow="0"
         resizable
-        ${columnBodyRenderer<LineaDosis>(
+        ${columnBodyRenderer<LineaDosisEjecucion>(
           (item) =>
             item.uuid === "nuevo"
               ? html`
@@ -257,11 +266,11 @@ export class GridInsumosExe extends LitElement {
                         alert(translate("debe_ingresar_un_insumo"));
                         return;
                       }
-                      let nuevo = deepcopy(this.linea_de_dosis) as LineaDosis;
+                      let nuevo = deepcopy(this.linea_de_dosis) as LineaDosisEjecucion;
                       nuevo.uuid = uuid4();
-                      this.actividad.detalles.dosis.push(nuevo);
-                      this.actividad.detalles.dosis = deepcopy(
-                        this.actividad.detalles.dosis
+                      this.ejecucion.detalles.dosis.push(nuevo);
+                      this.ejecucion.detalles.dosis = deepcopy(
+                        this.ejecucion.detalles.dosis
                       );
                       this.inicializar_lineas();
                       this.shadowRoot.querySelector('#combo-insumo').clear()
@@ -282,7 +291,7 @@ export class GridInsumosExe extends LitElement {
                 `
               : html`
                   <vaadin-button
-                    @click=${() => this.borrar(item as LineaDosis)}
+                    @click=${() => this.borrar(item as LineaDosisEjecucion)}
                     theme="icon"
                     aria-label="borrar item"
                   >
