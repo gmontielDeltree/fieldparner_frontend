@@ -49,7 +49,7 @@ import {
   LineaDosis,
   LineaLabor,
 } from "../../depositos/depositos-types";
-import { format, parse } from "date-fns";
+import { format, parse, parseISO } from "date-fns";
 import {
   Contratista,
   getContratistas,
@@ -427,6 +427,8 @@ export class UpsertAplicacion extends LitElement {
                       helper-text="Tentativa de ejecución"
                       value="2022-12-03"
                       placeholder="YYYY-MM-DD"
+                      .min="${gbl_state.campana_seleccionada.inicio}"
+                      .max="${gbl_state.campana_seleccionada.fin}"
                       .i18n=${base_i18n}
                       theme="helper-above-field"
                       .value=${this.actividad.detalles

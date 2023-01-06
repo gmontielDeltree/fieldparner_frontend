@@ -1,3 +1,6 @@
+import { isAfter, isBefore, isWithinInterval } from 'date-fns';
+import { gbl_state } from './state';
+import parseISO from 'date-fns/parseISO';
 var img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
@@ -102,6 +105,13 @@ const get_lote_by_names = async (
 
 const get_actividad_by_uuid = async (uuid) => {
 
+}
+
+export const es_esta_campana = (isofecha) => {
+  let end = parseISO(gbl_state.campana_seleccionada.fin)
+  let start = parseISO(gbl_state.campana_seleccionada.inicio)
+  let fecha = parseISO(isofecha)
+  return isWithinInterval(fecha,{start:start,end:end})
 }
 
 const crearWorkspaceDB = (nombre, user, pass) => {};

@@ -116,6 +116,7 @@ export class FieldPartner extends LitElement {
 
     gbl_state.online = window.navigator.onLine;
 
+    gbl_state.campana_seleccionada = {nombre : "Test Campaña",inicio:"2023-01-01", fin:"2023-06-12"}
     /* Traducciones */
     registerTranslateConfig({
       loader: (lang) =>
