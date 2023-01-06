@@ -26,6 +26,7 @@ import "@vaadin/text-area";
 import "@vaadin/form-layout";
 import "@vaadin/form-layout/vaadin-form-item";
 import { Grid, GridColumn, GridItemModel } from "@vaadin/grid";
+import "../aux/combo-box-insumos";
 
 @customElement("grid-insumos")
 export class GridInsumos extends LitElement {
@@ -48,6 +49,9 @@ export class GridInsumos extends LitElement {
 
   @property()
   insumos: Insumo[];
+
+  @property()
+  categorias_iniciales : string[]; 
 
   @state()
   linea_de_dosis: LineaDosis = {
@@ -101,31 +105,24 @@ export class GridInsumos extends LitElement {
       <vaadin-grid-column
         header="Nombre"
         frozen
-        auto-width
-        flex-grow="0"
+        style="width:30em;"
         resizable
         ${columnBodyRenderer<LineaDosis>((item) => {
           console.log("render item", item);
           return item.uuid === "nuevo"
             ? html`
-                <vaadin-combo-box
-                  id="insumo1"
-                  placeholder="${translate("seleccione_insumo")}"
-                  style="width:16em"
-                  colspan="2"
-                  class="high-rating"
-                  .clearButtonVisible=${true}
-                  item-label-path="marca_comercial"
-                  item-value-path="uuid"
-                  .items="${this.insumos}"
-                  .selected-item=${this.linea_de_dosis.insumo}
+                <combo-box-insumos
+                  .insumos=${this.insumos}
+                  .categorias_iniciales=${this.categorias_iniciales}
+                  .linea_de_dosis=${item}
                   @selected-item-changed=${(e) => {
                     this.linea_de_dosis.insumo = e.detail.value;
                     this.linea_de_dosis.precio_estimado =
                       this.linea_de_dosis.insumo?.precio || 0;
                     this.requestUpdate();
                   }}
-                ></vaadin-combo-box>
+                >
+                </combo-box-insumos>
               `
             : html`<vaadin-vertical-layout
                 style="line-height: var(--lumo-line-height-s);"
@@ -198,7 +195,7 @@ export class GridInsumos extends LitElement {
           (item) => html`<vaadin-multi-select-combo-box
             item-label-path="nombre"
             item-id-path="id"
-        style="width:19em;"
+            style="width:19em;"
             class=${item.uuid === "nuevo" ? "high-rating" : ""}
             .items=${motivos_items}
             .selectedItems=${item.motivos}
@@ -217,18 +214,17 @@ export class GridInsumos extends LitElement {
         resizable
         ${columnBodyRenderer<LineaDosis>(
           (item) => html`
-          <vaadin-number-field
-            value="${item.precio_estimado}"
-            style="width:10em;"
-            class=${item.uuid === "nuevo" ? "high-rating" : ""}
-            @change=${(e) => (item.precio_estimado = +e.target.value)}
-          >
-            <div slot="suffix">
-              ${item.insumo?.unidad ? "USD/" + item.insumo.unidad : ""}
-            </div>
+            <vaadin-number-field
+              value="${item.precio_estimado}"
+              style="width:10em;"
+              class=${item.uuid === "nuevo" ? "high-rating" : ""}
+              @change=${(e) => (item.precio_estimado = +e.target.value)}
+            >
+              <div slot="suffix">
+                ${item.insumo?.unidad ? "USD/" + item.insumo.unidad : ""}
+              </div>
             </vaadin-number-field>
-
-            `,
+          `,
           []
         )}
       ></vaadin-grid-column>
@@ -245,9 +241,9 @@ export class GridInsumos extends LitElement {
                   <vaadin-button
                     class=${item.uuid === "nuevo" ? "high-rating" : ""}
                     @click=${() => {
-                      if(this.linea_de_dosis.insumo === null){
-                        alert(translate("debe_ingresar_un_insumo"))
-                        return
+                      if (this.linea_de_dosis.insumo === null) {
+                        alert(translate("debe_ingresar_un_insumo"));
+                        return;
                       }
                       let nuevo = deepcopy(this.linea_de_dosis) as LineaDosis;
                       nuevo.uuid = uuid4();
@@ -260,7 +256,6 @@ export class GridInsumos extends LitElement {
                       (
                         this.shadowRoot.getElementById("da-grid") as Grid
                       ).recalculateColumnWidths();
-
                     }}
                     theme="icon"
                     aria-label="agregar item"

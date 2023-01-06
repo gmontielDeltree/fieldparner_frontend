@@ -96,12 +96,11 @@ export class UpsertAplicacion extends LitElement {
   private lote_doc: any;
   private linea_de_labor: LineaLabor;
 
-  private titulo : string = "Actividad"
-
+  private titulo: string = "Actividad";
 
   override firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("modal"));
-    this.modal.show();  
+    this.modal.show();
   }
 
   protected willUpdate(
@@ -141,16 +140,22 @@ export class UpsertAplicacion extends LitElement {
   }
 
   tipo_2_titulo = {
-    "siembra" : translate("siembra"),
-    "cosecha" : translate("cosecha"),
-    "aplicacion": translate("aplicación")
-  }
+    siembra: translate("siembra"),
+    cosecha: translate("cosecha"),
+    aplicacion: translate("aplicación"),
+  };
+
+  tipo_2_categorias_iniciales = {
+    siembra: ["Semillas", "Combustible"],
+    cosecha: ["Todos"],
+    aplicacion: ["Todos"],
+  };
 
   inicializar_adicion() {
     // Es una nueva
     this.tipo = this.location.params.tipo as string;
-    this.titulo = this.tipo_2_titulo[this.tipo]
-    
+    this.titulo = this.tipo_2_titulo[this.tipo];
+
     this.actividad = get_empty_aplicacion();
     this.actividad.tipo = this.tipo;
 
@@ -253,24 +258,20 @@ export class UpsertAplicacion extends LitElement {
   }
 
   guardar() {
-
-
     /* chequeos */
     let errors = [];
-    if(this.actividad.contratista === null){
+    if (this.actividad.contratista === null) {
       errors.push("Debe seleccionar un contratista");
     }
 
-    if(this.actividad.detalles.dosis.length === 0){
+    if (this.actividad.detalles.dosis.length === 0) {
       errors.push("Debe agregar algun Insumo");
-   }
+    }
 
-   if(errors.length > 0){
-    alert(errors.join("\n"))
-    return
-   }
-
-
+    if (errors.length > 0) {
+      alert(errors.join("\n"));
+      return;
+    }
 
     let fecha = format(
       parse(
@@ -305,16 +306,24 @@ export class UpsertAplicacion extends LitElement {
 
   render() {
     const labores_form = html`
-        <grid-labores .actividad=${this.actividad} .labores=${labores}></grid-labores>
-   `;
+      <grid-labores
+        .actividad=${this.actividad}
+        .labores=${labores}
+      ></grid-labores>
+    `;
 
     console.count("UpsertAplicacion-Render");
 
     return html`
-      <div id="modal" class="modal" tabindex="-1" @cerrar-modal=${()=>this.modal.hide()} @abrir-modal=${()=>this.modal.show()}
-      @nueva-linea-insumo=${(e : CustomEvent)=>{
-        this.agregarLineaInsumo()
-      }}
+      <div
+        id="modal"
+        class="modal"
+        tabindex="-1"
+        @cerrar-modal=${() => this.modal.hide()}
+        @abrir-modal=${() => this.modal.show()}
+        @nueva-linea-insumo=${(e: CustomEvent) => {
+          this.agregarLineaInsumo();
+        }}
       >
         <!-- Full screen modal -->
         <div class="modal-dialog modal-fullscreen">
@@ -402,9 +411,16 @@ export class UpsertAplicacion extends LitElement {
                     Puede ingresar tanto la dosis por hectarea como el total por
                     lote y los valores se ajustaran automaticamente
                   </vaadin-horizontal-layout>
+                  ATENCIóN!!!!! EN CONSTRUCCION!!!! EN CONSTRUCCION!!!! TIENE
+                  BUGS!!! NO ESTA TERMINADO!!!!!!
 
-                  <grid-insumos .actividad=${this.actividad} .insumos=${this.insumos}></grid-insumos>
-                    
+                  <grid-insumos
+                    .actividad=${this.actividad}
+                    .insumos=${this.insumos}
+                    .categorias_iniciales=${this.tipo_2_categorias_iniciales[
+                      this.tipo
+                    ]}
+                  ></grid-insumos>
                 </div>
                 <!-- Fin Insumos -->
 
@@ -664,8 +680,6 @@ function truncar(x) {
 //                      >
 //                    </vaadin-form-layout>
 
-
-
 // <vaadin-form-layout
 // .responsiveSteps=${this.responsiveSteps}
 // >
@@ -754,4 +768,4 @@ function truncar(x) {
 //       )}
 //     ></vaadin-grid-column>
 //   </vaadin-grid>`
-// : html`<div>${translate("no_hay_labores")}</div>`} 
+// : html`<div>${translate("no_hay_labores")}</div>`}
