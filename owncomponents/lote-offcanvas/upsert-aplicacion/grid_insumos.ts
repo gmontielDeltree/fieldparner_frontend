@@ -104,8 +104,8 @@ export class GridInsumos extends LitElement {
     >
       <vaadin-grid-column
         header="Nombre"
-        style="width:20em;"
-        auto-width
+        width="18em" 
+        flex-grow="0"
         resizable
         ${columnBodyRenderer<LineaDosis>((item) => {
           console.log("render item", item);
@@ -162,7 +162,7 @@ export class GridInsumos extends LitElement {
               this.requestUpdate();
             }}
           >
-            <div slot="suffix">${item.insumo?.unidad || ""}/Ha</div>
+            <div slot="suffix">${abrv(item.insumo?.unidad) || ""}/Ha</div>
           </vaadin-number-field>`;
         }, [])}
       ></vaadin-grid-column>
@@ -186,7 +186,7 @@ export class GridInsumos extends LitElement {
               this.requestUpdate();
             }}
           >
-            <div slot="suffix">${item.insumo?.unidad || ""}</div>
+            <div slot="suffix">${abrv(item.insumo?.unidad) || ""}</div>
           </vaadin-number-field>`,
           []
         )}
@@ -227,7 +227,7 @@ export class GridInsumos extends LitElement {
               @change=${(e) => (item.precio_estimado = +e.target.value)}
             >
               <div slot="suffix">
-                ${item.insumo?.unidad ? "USD/" + item.insumo.unidad : ""}
+                ${item.insumo?.unidad ? "USD/" + abrv(item.insumo.unidad) : ""}
               </div>
             </vaadin-number-field>
           `,
@@ -302,6 +302,19 @@ export class GridInsumos extends LitElement {
 
 function truncar(x) {
   return +x.toPrecision(4);
+}
+
+function abrv(unidad:string){
+
+  if(!unidad){
+    return ""
+  }
+
+  if(unidad.length > 8){
+    return unidad.substring(0,5) + ".."
+  }else{
+    return unidad;
+  }
 }
 
 // <vaadin-grid
