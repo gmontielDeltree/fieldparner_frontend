@@ -147,8 +147,8 @@ export class UpsertAplicacion extends LitElement {
 
   tipo_2_categorias_iniciales = {
     siembra: ["Semillas", "Combustible"],
-    cosecha: ["Todos"],
-    aplicacion: ["Todos"],
+    cosecha: ["Otros","Combustible"],
+    aplicacion: ["Agroquímicos","Fertilizantes","Combustible"],
   };
 
   inicializar_adicion() {
