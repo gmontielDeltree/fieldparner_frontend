@@ -27,6 +27,8 @@ export class ComboFilterButton extends LitElement {
     this.menu_items[0].children.forEach((c) => {
         c.checked = this.selectedItems.includes("Todos") || this.selectedItems.includes(c.text);
     })
+
+    this.dispatchCheckedItems()
   }
 
   willUpdate(cp){
@@ -64,6 +66,11 @@ export class ComboFilterButton extends LitElement {
 
     //console.log("ITEM",item,this.menu_items[0].children);
 
+    this.dispatchCheckedItems()
+
+  }
+
+  dispatchCheckedItems(){
     let checked_menu_items = [...this.menu_items[0].children.filter((m) => m.checked)]
     let a = checked_menu_items.map((m)=>m.text)
 
@@ -71,7 +78,6 @@ export class ComboFilterButton extends LitElement {
     this.dispatchEvent(
         new CustomEvent("selectedItemsChanged",{detail:a,bubbles:true,composed:true})
     )
-
   }
 
   createItem(iconName: string, ariaLabel: string) {

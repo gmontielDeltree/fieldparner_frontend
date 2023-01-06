@@ -76,7 +76,12 @@ export class ComboBoxInsumos extends LitElement {
    */
   filter_1(checkedItems : string []){
     this.insumos_post_filter = this.insumos.filter((i)=>{
-      return checkedItems.includes(i.tipo)
+      // Verdadero si el tipo esta incluido en el selector checkedItems
+      let c1 = checkedItems.includes(i.tipo)
+      // Verdadero si el tipo es "" y  el selector incluye "Otros"
+      let c2 = (i.tipo === "")&& checkedItems.includes("Otros")
+
+      return c1 || c2;
     })
   }
 
