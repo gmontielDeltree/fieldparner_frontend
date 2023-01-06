@@ -392,13 +392,13 @@ export class InsumosLista extends LitElement {
               return value.toLowerCase().indexOf(searchTerm.toLowerCase()) >= 0;
             };
 
-            this.filteredItems = this._insumos.filter((insumo) => {
+            this.filteredItems = this._insumos?.filter((insumo) => {
               return (
                 !searchTerm ||
                 matchesTerm(insumo.marca_comercial) ||
                 matchesTerm(insumo.principio_activo)
               );
-            });
+            }) || [];
           }}"
         >
           <vaadin-icon slot="prefix" icon="vaadin:search"></vaadin-icon>

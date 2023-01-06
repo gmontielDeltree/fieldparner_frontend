@@ -75,28 +75,44 @@ export class ComboBoxInsumos extends LitElement {
    * @param checkedItems 
    */
   filter_1(checkedItems : string []){
-    this.insumos_post_filter = this.insumos.filter((i)=>{
+    this.insumos_post_filter = this.insumos?.filter((i)=>{
       // Verdadero si el tipo esta incluido en el selector checkedItems
       let c1 = checkedItems.includes(i.tipo)
       // Verdadero si el tipo es "" y  el selector incluye "Otros"
       let c2 = (i.tipo === "")&& checkedItems.includes("Otros")
 
       return c1 || c2;
-    })
+    }) || [];
   }
 
   filter_2(filter_string){
-    if(filter_string === ""){
-      this.filteredItems = this.insumos_post_filter
-    }
-    if (this.insumos) {
-      this.filteredItems = this.insumos_post_filter.filter((insumo) => {
-        let condicion_1: boolean = insumo.marca_comercial
-          .toLowerCase()
-          .includes(filter_string.toLowerCase());
-        return condicion_1;
-      });
-    }
+
+    const searchTerm = ((filter_string as string) || "").trim();
+    const matchesTerm = (value: string) => {
+      return value.toLowerCase().indexOf(searchTerm.toLowerCase()) >= 0;
+    };
+
+    this.filteredItems = this.insumos_post_filter.filter((insumo) => {
+      return (
+        !searchTerm ||
+        matchesTerm(insumo.marca_comercial || "") ||
+        matchesTerm(insumo.principio_activo || "") ||
+        matchesTerm(insumo.se_aplica_a[0]?.cultivo || "") ||
+        matchesTerm(insumo.se_aplica_a[1]?.cultivo || "")
+      );
+    });
+
+    // if(filter_string === ""){
+    //   this.filteredItems = this.insumos_post_filter
+    // }
+    // if (this.insumos) {
+    //   this.filteredItems = this.insumos_post_filter.filter((insumo) => {
+    //     let condicion_1: boolean = insumo.marca_comercial
+    //       .toLowerCase()
+    //       .includes(filter_string.toLowerCase());
+    //     return condicion_1;
+    //   });
+    // }
   }
 
   clear(){
@@ -165,7 +181,7 @@ export class ComboBoxInsumos extends LitElement {
           <span-pill style="${var_color}">${insumo.tipo}${insumo.subtipo === "" ? "" : "-" + insumo.subtipo}</span-pill>
           ${map(
             insumo.se_aplica_a,
-            (cultivo) => html`<span-pill>${cultivo.cultivo}</span-pill>`
+            (cultivo) => html`<span-pill style="${var_color}">${cultivo.cultivo}</span-pill>`
           )}
         </div>
       </vaadin-vertical-layout>
