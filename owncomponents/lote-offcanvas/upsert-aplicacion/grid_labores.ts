@@ -27,6 +27,7 @@ import "@vaadin/text-area";
 import "@vaadin/form-layout";
 import "@vaadin/form-layout/vaadin-form-item";
 import { Grid, GridColumn, GridItemModel } from "@vaadin/grid";
+import { ComboBox } from '@vaadin/combo-box';
 
 @customElement("grid-labores")
 export class GridLabores extends LitElement {
@@ -106,6 +107,7 @@ export class GridLabores extends LitElement {
           return item.uuid === "nuevo"
             ? html`
              <vaadin-combo-box
+                id='combo-box'
                 item-label-path="labor"
                 item-value-path="uuid"
                 class=${item.uuid === "nuevo" ? "high-rating" : ""}
@@ -176,8 +178,6 @@ export class GridLabores extends LitElement {
           (item) =>
             item.uuid === "nuevo"
               ? html`
-
-              
                   <vaadin-button
                     class=${item.uuid === "nuevo" ? "high-rating" : ""}
                     @click=${() => {
@@ -188,6 +188,7 @@ export class GridLabores extends LitElement {
                         this.actividad.detalles.costo_labor
                       );
                       this.inicializar_lineas();
+                      (this.shadowRoot.querySelector('#combo-box') as ComboBox).clear()
                       this.requestUpdate();
                       (
                         this.shadowRoot.getElementById("da-grid") as Grid
