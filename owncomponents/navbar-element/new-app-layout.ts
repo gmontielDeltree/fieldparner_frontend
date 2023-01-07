@@ -143,10 +143,11 @@ export class Example extends LitElement {
           slot="navbar [touch-optimized]"
         ></vaadin-drawer-toggle>
 
-        <h1 slot="navbar">
+        <h1 slot="navbar" title="Version ${this.version()}">
           <img
             src="/images/icons/desktop/agrootolss_logo_sol.png"
-            alt=""
+            alt="${this.version()}"
+            title="Version ${this.version()}"
             width="16"
             height="16"
             class="d-inline-block align-text-middle"
