@@ -59,7 +59,7 @@ import {
   getInsumos,
   Insumo,
 } from "../../insumos/insumos-types";
-import { deepcopy, get_lote_by_names, es_esta_campana } from '../../helpers';
+import { deepcopy, get_lote_by_names, es_esta_campana } from "../../helpers";
 import { ComboBox } from "@vaadin/combo-box";
 import { TextField } from "@vaadin/text-field";
 import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
@@ -116,13 +116,12 @@ export class UpsertEjecucion extends LitElement {
       if (this.location.pathname.includes("nueva")) {
         console.log("Nueva Ejecución");
         this.editando = false;
-
         this.ejecucion = get_empty_ejecucion();
         let actividad_uuid = this.location.params.uuid;
         this.getActividad(actividad_uuid);
       } else {
         this.editando = true;
-        this.getEjecucion(this.location.params.uuid)
+        this.getEjecucion(this.location.params.uuid);
       }
     }
   }
@@ -228,7 +227,6 @@ export class UpsertEjecucion extends LitElement {
       });
   }
 
-
   getEjecucion(uuid) {
     gbl_state.db
       .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:_\ufff0" })
@@ -239,7 +237,7 @@ export class UpsertEjecucion extends LitElement {
             gbl_state.db.get(midoc.id).then((doc) => {
               this.ejecucion = doc as Ejecucion;
               this.tipo = this.ejecucion.tipo;
-              this.getActividadSinCopiar(uuid)
+              this.getActividadSinCopiar(uuid);
               this.requestUpdate();
             });
           }
@@ -352,6 +350,10 @@ export class UpsertEjecucion extends LitElement {
     });
   }
 
+  loaded() {
+    return (this.insumos && this.actividad && this.ejecucion);
+  }
+
   render() {
     const labores_form = html`
       <grid-labores-exe
@@ -362,13 +364,301 @@ export class UpsertEjecucion extends LitElement {
 
     console.count("UpsertEjecucion-Render");
 
+    const modal_body = html`
+      <vaadin-tabsheet
+        id="actividad-tabsheet"
+        .selected=${this.selected_step}
+        @selected-changed=${(e) => {
+          this.selected_step = e.target.selected;
+        }}
+      >
+        <vaadin-tabs slot="tabs">
+          <vaadin-tab id="dashboard-tab">Fecha</vaadin-tab>
+          <vaadin-tab id="payment-tab">Insumos</vaadin-tab>
+          <vaadin-tab id="labores-tab">Labores</vaadin-tab>
+          ${this.tipo === "siembra" || this.tipo === "cosecha"
+            ? html`<vaadin-tab id="otrosdatos-tab">Otros Datos</vaadin-tab>`
+            : null}
+
+          <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
+          <vaadin-tab id="aporte-social-tab">Aporte Societario</vaadin-tab>
+          <vaadin-tab id="shipping-tab">Observaciones</vaadin-tab>
+        </vaadin-tabs>
+
+        <!-- Contratista -->
+        <div tab="dashboard-tab">
+          <vaadin-form-layout>
+            <vaadin-combo-box
+              label="Contratista"
+              item-label-path="nombre"
+              item-value-path="uuid"
+              helper-text="Solo puede cambiar el contratista si modifica la planificación"
+              style="width: 100%;"
+              .selectedItem=${this.ejecucion.contratista}
+              readonly
+              colspan="2"
+            ></vaadin-combo-box>
+
+            <vaadin-date-picker
+              label=${translate("fecha")}
+              helper-text="real de ejecución"
+              value="2022-12-03"
+              placeholder="YYYY-MM-DD"
+              error-message="Debe seleccionar una fecha igual o posterior a la planificación"
+              .min="${this.actividad.detalles.fecha_ejecucion_tentativa}"
+              .max="${gbl_state.campana_seleccionada.fin}"
+              .i18n=${base_i18n}
+              theme="helper-above-field"
+              .value=${this.ejecucion.detalles.fecha_ejecucion}
+              @change=${(e) =>
+                (this.ejecucion.detalles.fecha_ejecucion = e.target.value)}
+            ></vaadin-date-picker>
+
+            <vaadin-number-field
+              label="Hectareas"
+              helper-text="de aplicación"
+              value=${this.actividad.detalles.hectareas}
+              theme="helper-above-field"
+              @change=${(e) =>
+                (this.ejecucion.detalles.hectareas = +e.target.value)}
+            >
+              <div slot="suffix">Ha.</div>
+            </vaadin-number-field>
+          </vaadin-form-layout>
+        </div>
+        <!-- Fin Contratista -->
+
+        <!-- Insumos -->
+        <div tab="payment-tab">
+          <vaadin-horizontal-layout
+            theme="spacing"
+            style="align-self: stretch;"
+          >
+            Puede ingresar tanto la dosis por hectarea como el total por lote y
+            los valores se ajustaran automaticamente
+          </vaadin-horizontal-layout>
+
+          ATENCIóN!!!!! EN CONSTRUCCION!!!! EN CONSTRUCCION!!!! TIENE BUGS!!! NO
+          ESTA TERMINADO!!!!!!
+
+          <grid-insumos-exe
+            .actividad=${this.actividad}
+            .ejecucion=${this.ejecucion}
+            .insumos=${this.insumos}
+            .categorias_iniciales=${this.tipo_2_categorias_iniciales[this.tipo]}
+          ></grid-insumos-exe>
+        </div>
+        <!-- Fin Insumos -->
+
+        <!-- Otros Datos -->
+        ${this.tipo === "siembra"
+          ? html`<div tab="otrosdatos-tab">
+              ${otros_datos_siembra_exe_template(this.ejecucion)}
+            </div>`
+          : null}
+        <!-- Otros -->
+
+        <!--Labores-->
+        <div tab="labores-tab">${labores_form}</div>
+        <!-- Fin Labores -->
+
+        <!-- observaciones -->
+        <div tab="shipping-tab">
+          <vaadin-horizontal-layout theme="spacing" style="width: 100%;">
+            <vaadin-text-area
+              style="flex-grow: 1; margin: var(--lumo-space-s);"
+              value=${this.ejecucion.comentario}
+              helper-text="Ingrese comentarios, notas o aclaraciones que considere necesarias"
+              @input=${(e) => {
+                this.ejecucion.comentario = "" + e.target.value;
+              }}
+            ></vaadin-text-area>
+          </vaadin-horizontal-layout>
+        </div>
+        <!-- observaciones-->
+
+        <!-- Aporte Social -->
+        <div tab="aporte-social-tab">
+          <vaadin-horizontal-layout theme="spacing" style="width: 100%;">
+            Proximamente... En Construcción
+          </vaadin-horizontal-layout>
+        </div>
+        <!-- aporte social-->
+
+        <div tab="condiciones-tab">
+          <vaadin-vertical-layout
+            style="width: 100%; height: 100%; align-items: center; margin: var(--lumo-space-s);"
+          >
+            <vaadin-vertical-layout
+              theme="spacing"
+              style="flex-wrap: wrap; align-items: center;"
+            >
+              <div>
+                Ingrese los valores de las variables ambientales promedio al
+                momento de la labor.
+              </div>
+              <vaadin-button
+                theme="success"
+                @click=${() =>
+                  alert(
+                    "EN CONSTRUCCION!!!! TIENE BUGS!!! EN CONSTRUCCION!!!!"
+                  )}
+                >Cargar desde Centrales</vaadin-button
+              >
+            </vaadin-vertical-layout>
+
+            <vaadin-horizontal-layout
+              theme="spacing"
+              style="flex-wrap: wrap; justify-content: center;"
+            >
+              <vaadin-text-field
+                label="Temperatura Min"
+                helper-text="planificada"
+                value=${this.actividad.condiciones.temperatura_min}
+                @input=${(e) => {
+                  this.actividad.condiciones.temperatura_min = +e.target.value;
+                }}
+                theme="align-right helper-above-field"
+                type="text"
+                readonly
+              >
+                <div slot="suffix">ºC</div>
+              </vaadin-text-field>
+
+              <vaadin-text-field
+                label="Temperatura"
+                helper-text="promedio"
+                value=${this.ejecucion.condiciones.temperatura_promedio}
+                @input=${(e) => {
+                  this.ejecucion.condiciones.temperatura_promedio =
+                    +e.target.value;
+                }}
+                theme="align-right helper-above-field"
+                type="text"
+              >
+                <div slot="suffix">ºC</div>
+              </vaadin-text-field>
+
+              <vaadin-text-field
+                label="Temperatura Max"
+                helper-text="planificada"
+                value=${this.actividad.condiciones.temperatura_max}
+                @input=${(e) => {
+                  this.actividad.condiciones.temperatura_max = +e.target.value;
+                }}
+                theme="align-right helper-above-field"
+                type="text"
+                readonly
+              >
+                <div slot="suffix">ºC</div>
+              </vaadin-text-field>
+            </vaadin-horizontal-layout>
+            <vaadin-horizontal-layout
+              theme="spacing"
+              style="flex-wrap: wrap; justify-content: center;"
+            >
+              <vaadin-text-field
+                label="Humedad Min"
+                helper-text="planificada"
+                value=${this.actividad.condiciones.humedad_min}
+                theme="align-right helper-above-field"
+                @input=${(e) => {
+                  this.actividad.condiciones.humedad_min = +e.target.value;
+                }}
+                type="text"
+                readonly
+              >
+                <div slot="suffix">%</div>
+              </vaadin-text-field>
+
+              <vaadin-text-field
+                label="Humedad"
+                helper-text="promedio"
+                value=${this.ejecucion.condiciones.humedad_promedio}
+                theme="align-right helper-above-field"
+                @input=${(e) => {
+                  this.ejecucion.condiciones.humedad_promedio = +e.target.value;
+                }}
+                type="text"
+              >
+                <div slot="suffix">%</div>
+              </vaadin-text-field>
+
+              <vaadin-text-field
+                label="Humedad Max"
+                helper-text="planificada"
+                value=${this.actividad.condiciones.humedad_max}
+                @input=${(e) => {
+                  this.actividad.condiciones.humedad_max = +e.target.value;
+                }}
+                theme="align-right helper-above-field"
+                type="text"
+                readonly
+              >
+                <div slot="suffix">%</div>
+              </vaadin-text-field>
+            </vaadin-horizontal-layout>
+            <vaadin-horizontal-layout
+              theme="spacing"
+              style="flex-wrap: wrap; justify-content: center;"
+            >
+              <vaadin-text-field
+                label="Viento Min"
+                helper-text="planificada"
+                value=${this.actividad.condiciones.velocidad_min}
+                theme="align-right helper-above-field"
+                @input=${(e) => {
+                  this.actividad.condiciones.velocidad_min = +e.target.value;
+                }}
+                type="text"
+                readonly
+              >
+                <div slot="suffix">km/h</div>
+              </vaadin-text-field>
+
+              <vaadin-text-field
+                label="Viento"
+                helper-text="promedio"
+                value=${this.ejecucion.condiciones.velocidad_promedio}
+                theme="align-right helper-above-field"
+                @input=${(e) => {
+                  this.ejecucion.condiciones.velocidad_promedio =
+                    +e.target.value;
+                }}
+                type="text"
+              >
+                <div slot="suffix">km/h</div>
+              </vaadin-text-field>
+
+              <vaadin-text-field
+                label="Viento Max"
+                helper-text="planificada"
+                value=${this.actividad.condiciones.velocidad_max}
+                @input=${(e) => {
+                  this.actividad.condiciones.velocidad_max = +e.target.value;
+                }}
+                theme="align-right helper-above-field"
+                type="text"
+                readonly
+              >
+                <div slot="suffix">km/h</div>
+              </vaadin-text-field>
+            </vaadin-horizontal-layout>
+          </vaadin-vertical-layout>
+        </div>
+      </vaadin-tabsheet>
+    `;
+
     return html`
       <div id="modal" class="modal" tabindex="-1">
         <!-- Full screen modal -->
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Ejecución  ${this.tipo_2_titulo[this.tipo]} - ${this.editando ? "Edicción" : ""} </h5>
+              <h5 class="modal-title">
+                Ejecución ${this.tipo_2_titulo[this.tipo]} -
+                ${this.editando ? "Edición" : ""}
+              </h5>
               <button
                 type="button"
                 class="btn-close"
@@ -377,312 +667,7 @@ export class UpsertEjecucion extends LitElement {
                 @click=${() => Router.go("/")}
               ></button>
             </div>
-            <div class="modal-body">
-              <vaadin-tabsheet
-                id="actividad-tabsheet"
-                .selected=${this.selected_step}
-                @selected-changed=${(e) => {
-                  this.selected_step = e.target.selected;
-                }}
-              >
-                <vaadin-tabs slot="tabs">
-                  <vaadin-tab id="dashboard-tab">Fecha</vaadin-tab>
-                  <vaadin-tab id="payment-tab">Insumos</vaadin-tab>
-                  <vaadin-tab id="labores-tab">Labores</vaadin-tab>
-                  ${this.tipo === "siembra" || this.tipo === "cosecha"
-                    ? html`<vaadin-tab id="otrosdatos-tab"
-                        >Otros Datos</vaadin-tab
-                      >`
-                    : null}
-
-                  <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
-                  <vaadin-tab id="aporte-social-tab"
-                    >Aporte Societario</vaadin-tab
-                  >
-                  <vaadin-tab id="shipping-tab">Observaciones</vaadin-tab>
-                </vaadin-tabs>
-
-                <!-- Contratista -->
-                <div tab="dashboard-tab">
-                  <vaadin-form-layout>
-                    <vaadin-combo-box
-                      label="Contratista"
-                      item-label-path="nombre"
-                      item-value-path="uuid"
-                      helper-text="Solo puede cambiar el contratista si modifica la planificación"
-                      style="width: 100%;"
-                      .selectedItem=${this.ejecucion.contratista}
-                      readonly
-                      colspan="2"
-                    ></vaadin-combo-box>
-
-                    <vaadin-date-picker
-                      label=${translate("fecha")}
-                      helper-text="real de ejecución"
-                      value="2022-12-03"
-                      placeholder="YYYY-MM-DD"
-                      error-message="Debe seleccionar una fecha igual o posterior a la planificación"
-                      .min="${this.actividad.detalles
-                        .fecha_ejecucion_tentativa}"
-                      .max="${gbl_state.campana_seleccionada.fin}"
-                      .i18n=${base_i18n}
-                      theme="helper-above-field"
-                      .value=${this.ejecucion.detalles
-                        .fecha_ejecucion}
-                      @change=${(e) =>
-                        (this.ejecucion.detalles.fecha_ejecucion =
-                          e.target.value)}
-                    ></vaadin-date-picker>
-
-                    <vaadin-number-field
-                      label="Hectareas"
-                      helper-text="de aplicación"
-                      value=${this.actividad.detalles.hectareas}
-                      theme="helper-above-field"
-                      @change=${(e) =>
-                        (this.ejecucion.detalles.hectareas = +e.target.value)}
-                    >
-                      <div slot="suffix">Ha.</div>
-                    </vaadin-number-field>
-                  </vaadin-form-layout>
-                </div>
-                <!-- Fin Contratista -->
-
-                <!-- Insumos -->
-                <div tab="payment-tab">
-                  <vaadin-horizontal-layout
-                    theme="spacing"
-                    style="align-self: stretch;"
-                  >
-                    Puede ingresar tanto la dosis por hectarea como el total por
-                    lote y los valores se ajustaran automaticamente
-                  </vaadin-horizontal-layout>
-
-                  ATENCIóN!!!!! EN CONSTRUCCION!!!! EN CONSTRUCCION!!!! TIENE
-                  BUGS!!! NO ESTA TERMINADO!!!!!!
-
-                  <grid-insumos-exe
-                    .actividad=${this.actividad}
-                    .ejecucion=${this.ejecucion}
-                    .insumos=${this.insumos}
-                    .categorias_iniciales=${this.tipo_2_categorias_iniciales[
-                      this.tipo
-                    ]}
-                  ></grid-insumos-exe>
-                </div>
-                <!-- Fin Insumos -->
-
-                <!-- Otros Datos -->
-                ${this.tipo === "siembra"
-                  ? html`<div tab="otrosdatos-tab">
-                      ${otros_datos_siembra_exe_template(this.ejecucion)}
-                    </div>`
-                  : null}
-
-                <!-- Otros -->
-                <!--Labores-->
-                <div tab="labores-tab">${labores_form}</div>
-                <!-- Fin Labores -->
-
-                <!-- observaciones -->
-                <div tab="shipping-tab">
-                  <vaadin-horizontal-layout
-                    theme="spacing"
-                    style="width: 100%;"
-                  >
-                    <vaadin-text-area
-                      style="flex-grow: 1; margin: var(--lumo-space-s);"
-                      value=${this.ejecucion.comentario}
-                      helper-text="Ingrese comentarios, notas o aclaraciones que considere necesarias"
-                      @input=${(e) => {
-                        this.ejecucion.comentario = "" + e.target.value;
-                      }}
-                    ></vaadin-text-area>
-                  </vaadin-horizontal-layout>
-                </div>
-                <!-- observaciones-->
-
-                <!-- Aporte Social -->
-                <div tab="aporte-social-tab">
-                  <vaadin-horizontal-layout
-                    theme="spacing"
-                    style="width: 100%;"
-                  >
-                    Proximamente... En Construcción
-                  </vaadin-horizontal-layout>
-                </div>
-                <!-- aporte social-->
-
-                <div tab="condiciones-tab">
-                  <vaadin-vertical-layout
-                    style="width: 100%; height: 100%; align-items: center; margin: var(--lumo-space-s);"
-                  >
-                    <vaadin-vertical-layout
-                      theme="spacing"
-                      style="flex-wrap: wrap; align-items: center;"
-                    >
-                      <div>
-                        Ingrese los valores de las variables ambientales
-                        promedio al momento de la labor.
-                      </div>
-                      <vaadin-button
-                        theme="success"
-                        @click=${() =>
-                          alert(
-                            "EN CONSTRUCCION!!!! TIENE BUGS!!! EN CONSTRUCCION!!!!"
-                          )}
-                        >Cargar desde Centrales</vaadin-button
-                      >
-                    </vaadin-vertical-layout>
-
-                    <vaadin-horizontal-layout
-                      theme="spacing"
-                      style="flex-wrap: wrap; justify-content: center;"
-                    >
-                      <vaadin-text-field
-                        label="Temperatura Min"
-                        helper-text="planificada"
-                        value=${this.actividad.condiciones.temperatura_min}
-                        @input=${(e) => {
-                          this.actividad.condiciones.temperatura_min =
-                            +e.target.value;
-                        }}
-                        theme="align-right helper-above-field"
-                        type="text"
-                        readonly
-                      >
-                        <div slot="suffix">ºC</div>
-                      </vaadin-text-field>
-
-                      <vaadin-text-field
-                        label="Temperatura"
-                        helper-text="promedio"
-                        value=${this.ejecucion.condiciones.temperatura_promedio}
-                        @input=${(e) => {
-                          this.ejecucion.condiciones.temperatura_promedio =
-                            +e.target.value;
-                        }}
-                        theme="align-right helper-above-field"
-                        type="text"
-                      >
-                        <div slot="suffix">ºC</div>
-                      </vaadin-text-field>
-
-                      <vaadin-text-field
-                        label="Temperatura Max"
-                        helper-text="planificada"
-                        value=${this.actividad.condiciones.temperatura_max}
-                        @input=${(e) => {
-                          this.actividad.condiciones.temperatura_max =
-                            +e.target.value;
-                        }}
-                        theme="align-right helper-above-field"
-                        type="text"
-                        readonly
-                      >
-                        <div slot="suffix">ºC</div>
-                      </vaadin-text-field>
-                    </vaadin-horizontal-layout>
-                    <vaadin-horizontal-layout
-                      theme="spacing"
-                      style="flex-wrap: wrap; justify-content: center;"
-                    >
-                      <vaadin-text-field
-                        label="Humedad Min"
-                        helper-text="planificada"
-                        value=${this.actividad.condiciones.humedad_min}
-                        theme="align-right helper-above-field"
-                        @input=${(e) => {
-                          this.actividad.condiciones.humedad_min =
-                            +e.target.value;
-                        }}
-                        type="text"
-                        readonly
-                      >
-                        <div slot="suffix">%</div>
-                      </vaadin-text-field>
-
-                      <vaadin-text-field
-                        label="Humedad"
-                        helper-text="promedio"
-                        value=${this.ejecucion.condiciones.humedad_promedio}
-                        theme="align-right helper-above-field"
-                        @input=${(e) => {
-                          this.ejecucion.condiciones.humedad_promedio =
-                            +e.target.value;
-                        }}
-                        type="text"
-                      >
-                        <div slot="suffix">%</div>
-                      </vaadin-text-field>
-
-                      <vaadin-text-field
-                        label="Humedad Max"
-                        helper-text="planificada"
-                        value=${this.actividad.condiciones.humedad_max}
-                        @input=${(e) => {
-                          this.actividad.condiciones.humedad_max =
-                            +e.target.value;
-                        }}
-                        theme="align-right helper-above-field"
-                        type="text"
-                        readonly
-                      >
-                        <div slot="suffix">%</div>
-                      </vaadin-text-field>
-                    </vaadin-horizontal-layout>
-                    <vaadin-horizontal-layout
-                      theme="spacing"
-                      style="flex-wrap: wrap; justify-content: center;"
-                    >
-                      <vaadin-text-field
-                        label="Viento Min"
-                        helper-text="planificada"
-                        value=${this.actividad.condiciones.velocidad_min}
-                        theme="align-right helper-above-field"
-                        @input=${(e) => {
-                          this.actividad.condiciones.velocidad_min =
-                            +e.target.value;
-                        }}
-                        type="text"
-                        readonly
-                      >
-                        <div slot="suffix">km/h</div>
-                      </vaadin-text-field>
-
-                      <vaadin-text-field
-                        label="Viento"
-                        helper-text="promedio"
-                        value=${this.ejecucion.condiciones.velocidad_promedio}
-                        theme="align-right helper-above-field"
-                        @input=${(e) => {
-                          this.ejecucion.condiciones.velocidad_promedio =
-                            +e.target.value;
-                        }}
-                        type="text"
-                      >
-                        <div slot="suffix">km/h</div>
-                      </vaadin-text-field>
-
-                      <vaadin-text-field
-                        label="Viento Max"
-                        helper-text="planificada"
-                        value=${this.actividad.condiciones.velocidad_max}
-                        @input=${(e) => {
-                          this.actividad.condiciones.velocidad_max =
-                            +e.target.value;
-                        }}
-                        theme="align-right helper-above-field"
-                        type="text"
-                        readonly
-                      >
-                        <div slot="suffix">km/h</div>
-                      </vaadin-text-field>
-                    </vaadin-horizontal-layout>
-                  </vaadin-vertical-layout>
-                </div>
-              </vaadin-tabsheet>
-            </div>
+            <div class="modal-body">${this.loaded() ? modal_body : ""}</div>
             <div class="modal-footer">
               <button
                 type="button"
