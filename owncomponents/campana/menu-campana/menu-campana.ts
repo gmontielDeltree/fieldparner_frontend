@@ -188,10 +188,28 @@ export class MenuCampanaButton extends LitElement {
       item.seleccionar_campana()
       this.items[0].text = gbl_state.campana_seleccionada.nombre
       this.items = [...this.items]
+      this.userdbUpdateCampanaSeleccionada()
     } else {
       // Click en nueva
       this.dialogOpened = true;
       this.edit_campana = false;
     }
+  }
+
+
+  userdbUpdateCampanaSeleccionada(){
+    let cs = gbl_state.campana_seleccionada;
+    gbl_state.user_db.allDocs({key:'campana_seleccionada', include_docs:true})
+    .then((result) => {
+      if(result.total_rows > 0){
+        let actual : {_id:string,seleccionada:Campana} = result.rows[0].doc as unknown as {_id:string, _rev: string, seleccionada:Campana}
+        actual.seleccionada = cs
+        gbl_state.user_db.put(actual)
+      }else{
+        //No existe 
+        let s = {_id:'campana_seleccionada',seleccionada : cs}
+        gbl_state.user_db.put(s)
+      }
+    })
   }
 }
