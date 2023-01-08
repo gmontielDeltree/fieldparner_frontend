@@ -49,7 +49,7 @@ export class UpsertCampanaDialog extends LitElement {
   render() {
     let titulo = !this.edit
       ? translate("nueva_campana")
-      : translate("edit_campana");
+      : translate("editar_campana");
 
     return html`
       <!-- tag::snippet[] -->
@@ -106,7 +106,7 @@ export class UpsertCampanaDialog extends LitElement {
 
       ${this.edit ? html`
       <vaadin-button theme="secondary error" style="margin-inline-end: auto;" @click=${() => this.borrar_campana()}>
-          ${translate('borrar campana')}
+          ${translate('borrar_campana')}
       </vaadin-button>` : null}
     </vaadin-vertical-layout>
   `;

@@ -114,7 +114,7 @@ export class MenuCampanaButton extends LitElement {
     children.push({ component: "hr" });
     children.push({
       text: get("nueva_campana"),
-      value: "new_season",
+      value: "nueva",
       callback: () => {
         console.log("nueva_campana");
       },
@@ -182,7 +182,7 @@ export class MenuCampanaButton extends LitElement {
       c.checked = false;
     });
 
-    if (item.text !== get("nueva_campana")) {
+    if (item.value !== "nueva") {
       (item as SubMenuItem).checked = !(item as SubMenuItem).checked;
       // Seleccionar
       item.seleccionar_campana()
