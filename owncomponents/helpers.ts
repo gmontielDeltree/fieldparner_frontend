@@ -122,6 +122,8 @@ export const only_docs = (alldocs : PouchDB.Core.AllDocsResponse<{}>) => {
     return alldocs.rows.map((row) => {
       return row.doc
     })
+  }else{
+      return []
   }
 }
 
