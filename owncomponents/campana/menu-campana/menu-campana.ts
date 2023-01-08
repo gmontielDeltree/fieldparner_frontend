@@ -3,7 +3,12 @@ import { customElement, state } from "lit/decorators.js";
 import "@vaadin/menu-bar";
 import "../upsert-campana/upsert-campana-dialog";
 import { MenuBarItemSelectedEvent, SubMenuItem } from "@vaadin/menu-bar";
-import { touchEvent, gbl_docs_starting, only_docs, deepcopy } from "../../helpers";
+import {
+  touchEvent,
+  gbl_docs_starting,
+  only_docs,
+  deepcopy,
+} from "../../helpers";
 import { get, translate } from "lit-translate";
 import { StateController } from "@lit-app/state";
 import { gbl_state } from "../../state";
@@ -105,11 +110,16 @@ export class MenuCampanaButton extends LitElement {
     let children: Object[] = this.campanas.map((c) => {
       return {
         component: this.createItem(c),
-        seleccionar_campana: ()=>{
-          gbl_state.campana_seleccionada = c
-        }
+        seleccionar_campana: () => {
+          gbl_state.campana_seleccionada = c;
+        },
       };
     });
+
+    if(children.length === 0){
+      // No hay campañas
+  
+    }
 
     children.push({ component: "hr" });
     children.push({
@@ -120,7 +130,10 @@ export class MenuCampanaButton extends LitElement {
       },
     });
 
-    let new_menu = { children: children, text: gbl_state.campana_seleccionada.nombre };
+    let new_menu = {
+      children: children,
+      text: children.length === 0 ? get('sin_temporada') : gbl_state.campana_seleccionada.nombre,
+    };
     this.items = [new_menu];
 
     console.log("Regenerate Menu", this.items);
@@ -131,9 +144,17 @@ export class MenuCampanaButton extends LitElement {
       // Nueva
       let uuid = uuid4();
       c._id = "campana:" + uuid;
+      gbl_state.db.put(c).then(() => {
+        // Seleccionar la nueva campaña por defecto
+        gbl_state.campana_seleccionada = c;
+        this.userdbUpdateCampanaSeleccionada();
+        this.load_campanas();
+      });
+    } else {
+      // Edicion
+      gbl_state.db.put(c);
+      this.load_campanas();
     }
-    gbl_state.db.put(c);
-    this.load_campanas();
   }
 
   borrar_campana(c: Campana) {
@@ -174,10 +195,8 @@ export class MenuCampanaButton extends LitElement {
   }
 
   itemSelected(e: MenuBarItemSelectedEvent) {
-
-
     const item = e.detail.value;
-    console.log("item seleccionado", e.detail.value)
+    console.log("item seleccionado", e.detail.value);
     this.items[0].children.forEach((c) => {
       c.checked = false;
     });
@@ -185,10 +204,10 @@ export class MenuCampanaButton extends LitElement {
     if (item.value !== "nueva") {
       (item as SubMenuItem).checked = !(item as SubMenuItem).checked;
       // Seleccionar
-      item.seleccionar_campana()
-      this.items[0].text = gbl_state.campana_seleccionada.nombre
-      this.items = [...this.items]
-      this.userdbUpdateCampanaSeleccionada()
+      item.seleccionar_campana();
+      this.items[0].text = gbl_state.campana_seleccionada.nombre;
+      this.items = [...this.items];
+      this.userdbUpdateCampanaSeleccionada();
     } else {
       // Click en nueva
       this.dialogOpened = true;
@@ -196,20 +215,25 @@ export class MenuCampanaButton extends LitElement {
     }
   }
 
-
-  userdbUpdateCampanaSeleccionada(){
+  userdbUpdateCampanaSeleccionada() {
     let cs = gbl_state.campana_seleccionada;
-    gbl_state.user_db.allDocs({key:'campana_seleccionada', include_docs:true})
-    .then((result) => {
-      if(result.total_rows > 0){
-        let actual : {_id:string,seleccionada:Campana} = result.rows[0].doc as unknown as {_id:string, _rev: string, seleccionada:Campana}
-        actual.seleccionada = cs
-        gbl_state.user_db.put(actual)
-      }else{
-        //No existe 
-        let s = {_id:'campana_seleccionada',seleccionada : cs}
-        gbl_state.user_db.put(s)
-      }
-    })
+    gbl_state.user_db
+      .allDocs({ key: "campana_seleccionada", include_docs: true })
+      .then((result) => {
+        if (result.total_rows > 0) {
+          let actual: { _id: string; seleccionada: Campana } = result.rows[0]
+            .doc as unknown as {
+            _id: string;
+            _rev: string;
+            seleccionada: Campana;
+          };
+          actual.seleccionada = cs;
+          gbl_state.user_db.put(actual);
+        } else {
+          //No existe
+          let s = { _id: "campana_seleccionada", seleccionada: cs };
+          gbl_state.user_db.put(s);
+        }
+      });
   }
 }
