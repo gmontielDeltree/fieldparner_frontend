@@ -36,7 +36,7 @@ import "@vaadin/text-area";
 import "@vaadin/form-layout";
 import "@vaadin/form-layout/vaadin-form-item";
 import type { FormLayoutResponsiveStep } from "@vaadin/form-layout";
-import labores from "../../jsons/labores.json";
+import {labores} from "../../jsons/labores";
 import "./insert_insumo_template";
 import { uuid4 } from "uuid4";
 import { Notification } from "@vaadin/notification";
@@ -49,7 +49,7 @@ import {
   LineaDosis,
   LineaLabor,
 } from "../../depositos/depositos-types";
-import { format, parse } from "date-fns";
+import { format, parse, parseISO } from "date-fns";
 import {
   Contratista,
   getContratistas,
@@ -59,7 +59,7 @@ import {
   get_lista_insumos,
   Insumo,
 } from "../../insumos/insumos-types";
-import { deepcopy, get_lote_by_names } from "../../helpers";
+import { deepcopy, es_esta_campana, get_lote_by_names } from "../../helpers";
 import { ComboBox } from "@vaadin/combo-box";
 import { TextField } from "@vaadin/text-field";
 import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
@@ -67,6 +67,7 @@ import { TabSheet } from "@vaadin/tabsheet";
 import { motivos_items } from "../../jsons/motivos_items";
 import "./grid_insumos";
 import "./grid_labores";
+import { otros_datos_siembra_template } from './otros_datos_siembra_template';
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -96,11 +97,11 @@ export class UpsertAplicacion extends LitElement {
   private lote_doc: any;
   private linea_de_labor: LineaLabor;
 
-
+  private titulo: string = "Actividad";
 
   override firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("modal"));
-    this.modal.show();  
+    this.modal.show();
   }
 
   protected willUpdate(
@@ -139,9 +140,22 @@ export class UpsertAplicacion extends LitElement {
     };
   }
 
+  tipo_2_titulo = {
+    siembra: translate("siembra"),
+    cosecha: translate("cosecha"),
+    aplicacion: translate("aplicación"),
+  };
+
+  tipo_2_categorias_iniciales = {
+    siembra: ["Semillas", "Combustible"],
+    cosecha: ["Otros", "Combustible"],
+    aplicacion: ["Agroquímicos", "Fertilizantes", "Combustible"],
+  };
+
   inicializar_adicion() {
     // Es una nueva
     this.tipo = this.location.params.tipo as string;
+    this.titulo = this.tipo_2_titulo[this.tipo];
 
     this.actividad = get_empty_aplicacion();
     this.actividad.tipo = this.tipo;
@@ -181,6 +195,7 @@ export class UpsertAplicacion extends LitElement {
 
     this.getActividad(actividad_uuid).then((actividad) => {
       this.actividad = actividad;
+      this.tipo = actividad.tipo;
       this.getLote(campo_nombre, lote_nombre);
       this.loading = false;
     });
@@ -197,7 +212,7 @@ export class UpsertAplicacion extends LitElement {
   populateInsumos() {
     get_lista_insumos(gbl_state.db).then((i) => {
       this.insumos = i;
-      console.log("insumos", i);
+      //console.log("insumos", i);
       this.requestUpdate();
     });
   }
@@ -245,24 +260,60 @@ export class UpsertAplicacion extends LitElement {
   }
 
   guardar() {
-
-
     /* chequeos */
     let errors = [];
-    if(this.actividad.contratista === null){
+
+    /* fecha */
+
+    if(!es_esta_campana(this.actividad.detalles.fecha_ejecucion_tentativa)){
+      errors.push("Debe seleccionar una fecha dentro de la campaña seleccionada")
+    }
+
+    if (this.actividad.contratista === null || this.actividad.contratista.nombre === "") {
       errors.push("Debe seleccionar un contratista");
     }
 
-    if(this.actividad.detalles.dosis.length === 0){
+    if (this.actividad.detalles.dosis.length === 0) {
       errors.push("Debe agregar algun Insumo");
-   }
+    }
 
-   if(errors.length > 0){
-    alert(errors.join("\n"))
-    return
-   }
+    /* TODO translate los strings de Semillas Siembra etc */
+    /* DEBE TENER UNA SEMILLA */
+    if (this.tipo === "siembra") {
+      let x = this.actividad.detalles.dosis.find(
+        (i) => i.insumo.tipo === "Semillas"
+      );
+      if (x === undefined) {
+        errors.push("Debe Agregar una 'Semilla' pues esto es una Siembra");
+      }
 
+      let y = this.actividad.detalles.costo_labor.find(
+        (labor) => labor.labor.labor === "Siembra"
+      );
+      if (y === undefined) {
+        errors.push(
+          "Debe Agregar una labor de 'Siembra' pues esto es una Siembra"
+        );
+      }
 
+      console.log("Chequeo TiPO Siembra", x);
+    }
+
+    if (this.tipo === "cosecha") {
+      let y = this.actividad.detalles.costo_labor.find(
+        (labor) => labor.labor.labor === "Cosecha"
+      );
+      if (y === undefined) {
+        errors.push(
+          "Debe Agregar una labor de 'Cosecha' pues esto es una Cosecha"
+        );
+      }
+    }
+
+    if (errors.length > 0) {
+      alert("Atención - Errores!!!\n\n" + errors.join("\n"));
+      return;
+    }
 
     let fecha = format(
       parse(
@@ -272,8 +323,19 @@ export class UpsertAplicacion extends LitElement {
       ),
       "yyyyMMdd"
     );
-    this.actividad._id = "actividad:" + fecha + ":" + this.actividad.uuid;
 
+    // si edit y fecha es diferente - borrar rev
+    let nuevoid = "actividad:" + fecha + ":" + this.actividad.uuid;
+
+    if(this.editando && (nuevoid !== this.actividad._id)){
+      //Borrar el anterior doc
+      gbl_state.db.remove(this.actividad as PouchDB.Core.RemoveDocument)
+      delete this.actividad._rev
+    }
+
+    this.actividad._id = nuevoid
+
+  
     gbl_state.db.put(this.actividad).then(() => {
       alert("Actividad Guardada");
 
@@ -297,22 +359,30 @@ export class UpsertAplicacion extends LitElement {
 
   render() {
     const labores_form = html`
-        <grid-labores .actividad=${this.actividad} .labores=${labores}></grid-labores>
-   `;
+      <grid-labores
+        .actividad=${this.actividad}
+        .labores=${labores}
+      ></grid-labores>
+    `;
 
     console.count("UpsertAplicacion-Render");
 
     return html`
-      <div id="modal" class="modal" tabindex="-1" @cerrar-modal=${()=>this.modal.hide()} @abrir-modal=${()=>this.modal.show()}
-      @nueva-linea-insumo=${(e : CustomEvent)=>{
-        this.agregarLineaInsumo()
-      }}
+      <div
+        id="modal"
+        class="modal"
+        tabindex="-1"
+        @cerrar-modal=${() => this.modal.hide()}
+        @abrir-modal=${() => this.modal.show()}
+        @nueva-linea-insumo=${(e: CustomEvent) => {
+          this.agregarLineaInsumo();
+        }}
       >
         <!-- Full screen modal -->
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Actividad</h5>
+              <h5 class="modal-title">${this.titulo}</h5>
               <button
                 type="button"
                 class="btn-close"
@@ -332,6 +402,8 @@ export class UpsertAplicacion extends LitElement {
                 <vaadin-tabs slot="tabs">
                   <vaadin-tab id="contratista-tab">Contratista</vaadin-tab>
                   <vaadin-tab id="insumos-tab">Insumos</vaadin-tab>
+                  ${this.tipo === "siembra"
+                    ? html`<vaadin-tab id="otros-datos-tab">Otros Datos</vaadin-tab>` : null}
                   <vaadin-tab id="labores-tab">Labores</vaadin-tab>
                   <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
                   <vaadin-tab id="observaciones-tab">Observaciones</vaadin-tab>
@@ -362,6 +434,9 @@ export class UpsertAplicacion extends LitElement {
                       helper-text="Tentativa de ejecución"
                       value="2022-12-03"
                       placeholder="YYYY-MM-DD"
+                      error-message="Debe seleccionar una fecha dentro de la campaña seleccionada"
+                      .min="${gbl_state.campana_seleccionada.inicio}"
+                      .max="${gbl_state.campana_seleccionada.fin}"
                       .i18n=${base_i18n}
                       theme="helper-above-field"
                       .value=${this.actividad.detalles
@@ -394,11 +469,26 @@ export class UpsertAplicacion extends LitElement {
                     Puede ingresar tanto la dosis por hectarea como el total por
                     lote y los valores se ajustaran automaticamente
                   </vaadin-horizontal-layout>
+                  ATENCIóN!!!!! EN CONSTRUCCION!!!! EN CONSTRUCCION!!!! TIENE
+                  BUGS!!! NO ESTA TERMINADO!!!!!!
 
-                  <grid-insumos .actividad=${this.actividad} .insumos=${this.insumos}></grid-insumos>
-                    
+                  <grid-insumos
+                    .actividad=${this.actividad}
+                    .insumos=${this.insumos}
+                    .categorias_iniciales=${this.tipo_2_categorias_iniciales[
+                      this.tipo
+                    ]}
+                  ></grid-insumos>
                 </div>
                 <!-- Fin Insumos -->
+
+                ${this.tipo === "siembra"
+                  ? html`
+                      <div tab="otros-datos-tab">
+                        ${otros_datos_siembra_template(this.actividad)}
+                      </div>
+                    `
+                  : null}
 
                 <!--Labores-->
                 <div tab="labores-tab">${labores_form}</div>
@@ -429,7 +519,7 @@ export class UpsertAplicacion extends LitElement {
                   <vaadin-form-layout
                     style="width: 100%; height: 100%; align-items: center; margin: var(--lumo-space-s);"
                   >
-                    <vaadin-text-field
+                    <vaadin-number-field
                       label="Temperatura Min"
                       value=${this.actividad.condiciones.temperatura_min}
                       @input=${(e) => {
@@ -440,8 +530,8 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">ºC</div>
-                    </vaadin-text-field>
-                    <vaadin-text-field
+                    </vaadin-number-field>
+                    <vaadin-number-field
                       label="Temperatura Max"
                       value=${this.actividad.condiciones.temperatura_max}
                       @input=${(e) => {
@@ -452,9 +542,9 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">ºC</div>
-                    </vaadin-text-field>
+                    </vaadin-number-field>
 
-                    <vaadin-text-field
+                    <vaadin-number-field
                       label="Humedad Min"
                       value=${this.actividad.condiciones.humedad_min}
                       theme="align-right"
@@ -465,8 +555,8 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">%</div>
-                    </vaadin-text-field>
-                    <vaadin-text-field
+                    </vaadin-number-field>
+                    <vaadin-number-field
                       label="Humedad Max"
                       value=${this.actividad.condiciones.humedad_max}
                       @input=${(e) => {
@@ -477,9 +567,9 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">%</div>
-                    </vaadin-text-field>
+                    </vaadin-number-field>
 
-                    <vaadin-text-field
+                    <vaadin-number-field
                       label="Viento Min"
                       value=${this.actividad.condiciones.velocidad_min}
                       theme="align-right"
@@ -490,8 +580,8 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">km/h</div>
-                    </vaadin-text-field>
-                    <vaadin-text-field
+                    </vaadin-number-field>
+                    <vaadin-number-field
                       label="Viento Max"
                       value=${this.actividad.condiciones.velocidad_max}
                       @input=${(e) => {
@@ -502,7 +592,7 @@ export class UpsertAplicacion extends LitElement {
                       type="text"
                     >
                       <div slot="suffix">km/h</div>
-                    </vaadin-text-field>
+                    </vaadin-number-field>
                   </vaadin-form-layout>
                 </div>
                 <!-- Fin Condiciones -->
@@ -539,7 +629,8 @@ export class UpsertAplicacion extends LitElement {
                     class="btn btn-primary"
                     @click=${() =>
                       (this.selected_step =
-                        this.selected_step >= 4
+                        this.selected_step >= (document.querySelector("#actividad-tabsheet") as TabSheet)
+                        ?.items.length
                           ? this.selected_step
                           : this.selected_step + 1)}
                   >
@@ -656,8 +747,6 @@ function truncar(x) {
 //                      >
 //                    </vaadin-form-layout>
 
-
-
 // <vaadin-form-layout
 // .responsiveSteps=${this.responsiveSteps}
 // >
@@ -746,4 +835,4 @@ function truncar(x) {
 //       )}
 //     ></vaadin-grid-column>
 //   </vaadin-grid>`
-// : html`<div>${translate("no_hay_labores")}</div>`} 
+// : html`<div>${translate("no_hay_labores")}</div>`}

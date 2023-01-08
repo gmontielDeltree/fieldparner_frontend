@@ -90,6 +90,24 @@ export class ActividadItem extends LitElement {
       ],
     },
   ];
+  
+  menu_click({ detail }) {
+    /* Si tiene un callback, lo ejecuto */
+    if (detail.value.callback) {
+      detail.value.callback();
+      return;
+    }
+
+    // si no
+    let valor = detail.value.value;
+    if (valor === "editar") {
+      if (!this.ejecucion) {
+        this.editar_actividad(this.item);
+      } else {
+        this.editar_ejecucion(this.ejecucion);
+      }
+    }
+  }
 
   createItem(iconName: string) {
     const item = document.createElement("vaadin-context-menu-item");
@@ -137,23 +155,7 @@ export class ActividadItem extends LitElement {
     return fecha;
   }
 
-  menu_click({ detail }) {
-    /* Si tiene un callback, lo ejecuto */
-    if (detail.value.callback) {
-      detail.value.callback();
-      return;
-    }
 
-    // si no
-    let valor = detail.value.value;
-    if (valor === "editar") {
-      if (!this.ejecucion) {
-        this.editar_actividad(this.item);
-      } else {
-        this.editar_ejecucion(this.ejecucion);
-      }
-    }
-  }
 
   borrar_actividad() {
     console.log("Borrar Actividad");
@@ -210,7 +212,13 @@ export class ActividadItem extends LitElement {
     Router.go(target_url);
   }
 
-  editar_ejecucion(ejecucion: Ejecucion) {}
+  editar_ejecucion(ejecucion: Ejecucion) {
+    let url_tail = `/ejecucion/${ejecucion.uuid}/editar`;
+    let url_head = gbl_state.router.location.pathname;
+    let target_url = url_head + url_tail;
+    console.log("GoTo", target_url);
+    Router.go(target_url);
+  }
 
   repetir_aplicacion() {
     //console.error("Repetir no implementado");

@@ -28,6 +28,7 @@ import { StateController } from "@lit-app/state";
 import { ref, createRef } from "lit/directives/ref.js";
 import "@vaadin/tabsheet";
 import { Lenguage } from "../tipos/tipos-varios";
+import "../campana/menu-campana/menu-campana"
 
 @customElement("app-layout-navbar-placement")
 export class Example extends LitElement {
@@ -128,7 +129,7 @@ export class Example extends LitElement {
             <img
               src="${lang.icono}"
               alt="${lang.nombre}"
-              style="width: 1em;"
+              style="width: 16px;"
             />
           </div>
         </vaadin-item>
@@ -143,10 +144,11 @@ export class Example extends LitElement {
           slot="navbar [touch-optimized]"
         ></vaadin-drawer-toggle>
 
-        <h1 slot="navbar">
+        <h1 slot="navbar" title="Version ${this.version()}">
           <img
             src="/images/icons/desktop/agrootolss_logo_sol.png"
-            alt=""
+            alt="${this.version()}"
+            title="Version ${this.version()}"
             width="16"
             height="16"
             class="d-inline-block align-text-middle"
@@ -196,6 +198,9 @@ export class Example extends LitElement {
               ></div>
             </vaadin-tab>
             <vaadin-tab id="dummy-tab" ${ref(this.geocoderRef)}></vaadin-tab>
+            <vaadin-tab >
+              <menu-campana-button/>
+            </vaadin-tab>
           </vaadin-tabs>
 <!--Se pueden usar css variables para pasar o alterar styles -->
 <!--https://stackoverflow.com/questions/70634210/lit-how-to-apply-style-to-nested-template-->

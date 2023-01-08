@@ -6,6 +6,8 @@ interface DepositosTransferencias {
 }
 
 interface Campana {
+    _id?:string,
+    _rev?:string,
     nombre: string,
     inicio: string,//ISODATE
     fin: string,

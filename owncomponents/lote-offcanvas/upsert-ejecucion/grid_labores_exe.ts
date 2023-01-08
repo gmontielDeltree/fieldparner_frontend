@@ -3,6 +3,7 @@ import { columnBodyRenderer } from "@vaadin/grid/lit.js";
 import {
   Actividad,
   DetallesAplicacion,
+  Ejecucion,
   LineaDosis,
   LineaLabor,
 } from "../../depositos/depositos-types";
@@ -29,8 +30,8 @@ import "@vaadin/form-layout/vaadin-form-item";
 import { Grid, GridColumn, GridItemModel } from "@vaadin/grid";
 import { ComboBox } from '@vaadin/combo-box';
 
-@customElement("grid-labores")
-export class GridLabores extends LitElement {
+@customElement("grid-labores-exe")
+export class GridLaboresExe extends LitElement {
   static override styles = css`
     .high-rating {
       background-color: #b1ffb7;
@@ -46,7 +47,7 @@ export class GridLabores extends LitElement {
   `;
 
   @property()
-  actividad: Actividad;
+  ejecucion: Ejecucion;
 
   @property()
   labores: Labor[];
@@ -69,21 +70,21 @@ export class GridLabores extends LitElement {
   }
 
   borrar(dosis: LineaLabor) {
-    let dosises = this.actividad.detalles.costo_labor;
+    let dosises = this.ejecucion.detalles.costo_labor;
     let remanente = dosises.filter(
       (d) => d.uuid !== dosis.uuid
     ) as LineaLabor[];
-    this.actividad.detalles.costo_labor = remanente;
+    this.ejecucion.detalles.costo_labor = remanente;
     this.requestUpdate();
   }
 
   expanded_items() {
-    if (this.actividad.detalles.costo_labor.length === 0) {
+    if (this.ejecucion.detalles.costo_labor.length === 0) {
       return [this.linea_de_labor];
     } else {
       return [
         this.linea_de_labor,
-        ...(this.actividad.detalles.costo_labor),
+        ...(this.ejecucion.detalles.costo_labor),
       ];
     }
   }
@@ -125,7 +126,7 @@ export class GridLabores extends LitElement {
               >
                 <span>${item.labor.labor}</span>
               </vaadin-vertical-layout>`;
-        }, this.actividad.detalles.dosis)}
+        }, this.ejecucion.detalles.dosis)}
       ></vaadin-grid-column>
 
       <vaadin-grid-column
@@ -183,9 +184,9 @@ export class GridLabores extends LitElement {
                     @click=${() => {
                       let nuevo = deepcopy(this.linea_de_labor) as LineaLabor;
                       nuevo.uuid = uuid4();
-                      this.actividad.detalles.costo_labor.push(nuevo);
-                      this.actividad.detalles.costo_labor = deepcopy(
-                        this.actividad.detalles.costo_labor
+                      this.ejecucion.detalles.costo_labor.push(nuevo);
+                      this.ejecucion.detalles.costo_labor = deepcopy(
+                        this.ejecucion.detalles.costo_labor
                       );
                       this.inicializar_lineas();
                       (this.shadowRoot.querySelector('#combo-box') as ComboBox).clear()

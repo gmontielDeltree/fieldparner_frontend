@@ -17,6 +17,7 @@ class MyState extends State {
  @property() user : any
  @property() online: boolean
  @property() campana_seleccionada : Campana
+ @property({value: false}) puedo_renderizar: boolean 
 }
 
 const state = new MyState()
@@ -27,6 +28,10 @@ export const gblStateLoaded = ()=>{
 	//
 	let loaded = true && state.map && state.db && state.draw && state.router
 	return loaded;
+}
+
+export const gblCampanaSeleccionadaLoaded = ()=>{
+	return (state.campana_seleccionada !== undefined)
 }
 
 export default state;

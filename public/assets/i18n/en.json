@@ -2,7 +2,9 @@
 	"aceptar": "Accept",
 	"actividad_aun_no_ejecutada": "Activity not yet executed",
 	"agregar": "Add",
+	"aplicación": "Application",
 	"borrar": "Delete",
+	"borrar_campana": "Delete Season",
 	"campo_requerido": "Required field",
 	"cancelar": "Cancel",
 	"cerrar": "Close",
@@ -10,11 +12,17 @@
 	"comentarion": "Comment",
 	"confirmar_borrar": "Are you sure?",
 	"contratista": "Contractor",
+	"cosecha": "Harvest",
 	"debe_generar_la_orden_de_trabajo": "To \"Execute\" you must generate the \"Work Order\" first.",
+	"densidad_objetivo": "Target Density",
 	"descargar_orden": "Download order",
+	"distancia_entre_surcos": "Distance between rows",
 	"editar": "Edit",
+	"editar_campana": "Edit season",
 	"ejecutar": "Do Activity",
 	"fecha": "Date",
+	"fecha_fin": "Final date",
+	"fecha_inicio": "Initial date",
 	"guardar": "Save",
 	"insumos": "Supplies",
 	"invitacion": {
@@ -50,6 +58,8 @@
 		}
 	},
 	"nombre": "Name",
+	"nueva_campana": "+ New Season",
+	"peso_mil_semillas": "Weight 1000 seeds",
 	"precio": "Price",
 	"rechazar": "Reject",
 	"repetir": {
@@ -62,6 +72,9 @@
 		"titulo": ""
 	},
 	"seleccione_insumo": "Select an Item",
+	"siembra": "Sowing",
+	"sin_temporada": "No Season",
+	"tipo_de_siembra": "Planting Type",
 	"workspace": {
 		"agregar": "",
 		"permisos": "",

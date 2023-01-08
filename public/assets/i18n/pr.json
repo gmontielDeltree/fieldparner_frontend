@@ -2,7 +2,9 @@
 	"aceptar": "Aceitar",
 	"actividad_aun_no_ejecutada": "Atividade ainda não executada",
 	"agregar": "Agregar",
+	"aplicación": "Aplicação",
 	"borrar": "Borrar",
+	"borrar_campana": "Excluir campanha",
 	"campo_requerido": "Campo obrigatório",
 	"cancelar": "Cancelar",
 	"cerrar": "Close",
@@ -10,11 +12,17 @@
 	"comentarion": "Comentario",
 	"confirmar_borrar": "Are you sure?",
 	"contratista": "Empreiteiro",
+	"cosecha": "Colheita",
 	"debe_generar_la_orden_de_trabajo": "Para \"Executar\" você deve primeiro gerar a \"Ordem de Serviço\".",
+	"densidad_objetivo": "Densidade Alvo",
 	"descargar_orden": "Baixar Ordem",
+	"distancia_entre_surcos": "Distância entre linhas",
 	"editar": "Editar",
+	"editar_campana": "Editar campanha",
 	"ejecutar": "Executar Atividade",
 	"fecha": "Fecha",
+	"fecha_fin": "Data final",
+	"fecha_inicio": "Data de Início",
 	"guardar": "Salvar",
 	"insumos": "Suprimentos",
 	"invitacion": {
@@ -50,6 +58,8 @@
 		}
 	},
 	"nombre": "Nome",
+	"nueva_campana": "+ Nova campanha",
+	"peso_mil_semillas": "Peso 1000 sementes",
 	"precio": "Precio",
 	"rechazar": "Rejeitar",
 	"repetir": {
@@ -62,6 +72,9 @@
 		"titulo": ""
 	},
 	"seleccione_insumo": "Selecione uma entrada",
+	"siembra": "Semeadura",
+	"sin_temporada": "Sem campanha",
+	"tipo_de_siembra": "Tipo de Plantio",
 	"workspace": {
 		"agregar": "Add Workspace",
 		"permisos": "User Authorizations",

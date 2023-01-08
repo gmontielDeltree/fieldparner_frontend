@@ -2,7 +2,9 @@
 	"aceptar": "Aceptar",
 	"actividad_aun_no_ejecutada": "Actividad aun no ejecutada",
 	"agregar": "Agregar",
+	"aplicación": "Aplicación",
 	"borrar": "Borrar",
+	"borrar_campana": "Borrar Campaña",
 	"campo_requerido": "Campo Requerido",
 	"cancelar": "Cancelar",
 	"cerrar": "Cerrar",
@@ -10,11 +12,17 @@
 	"comentarion": "Comentario",
 	"confirmar_borrar": "Estas seguro de borrar?",
 	"contratista": "Contratista",
+	"cosecha": "Cosecha",
 	"debe_generar_la_orden_de_trabajo": "Para \"Ejecutar\" debe generar la \"Orden de Trabajo\" primero.",
+	"densidad_objetivo": "Densidad Objetivo",
 	"descargar_orden": "Descargar Orden",
+	"distancia_entre_surcos": "Distancia entre surcos",
 	"editar": "Editar",
+	"editar_campana": "Editar Campaña",
 	"ejecutar": "Ejecutar Actividad",
 	"fecha": "Fecha",
+	"fecha_fin": "Fecha Final",
+	"fecha_inicio": "Fecha Inicial",
 	"guardar": "Guardar",
 	"insumos": "Insumos",
 	"invitacion": {
@@ -50,6 +58,8 @@
 		}
 	},
 	"nombre": "Nombre",
+	"nueva_campana": "+ Nueva Campaña",
+	"peso_mil_semillas": "Peso 1000 semillas",
 	"precio": "Precio",
 	"rechazar": "Rechazar",
 	"repetir": {
@@ -62,6 +72,9 @@
 		"titulo": "Invitación a Espacio de Trabajo"
 	},
 	"seleccione_insumo": "Seleccione un Insumo",
+	"siembra": "Siembra",
+	"sin_temporada": "Sin Campaña",
+	"tipo_de_siembra": "Tipo de Siembra",
 	"workspace": {
 		"agregar": "",
 		"permisos": "",

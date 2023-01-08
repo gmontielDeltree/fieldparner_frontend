@@ -10,7 +10,7 @@ Nombre de la user_db = ${user.sub}
 
 # State
 El State del la app es monitoreado por la libreria @lit-app/state
-
+[https://github.com/lit-apps/lit-app/tree/main/packages/state]
 
 # Traduccion
 
