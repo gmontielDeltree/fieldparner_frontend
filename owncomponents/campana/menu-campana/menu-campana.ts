@@ -11,7 +11,7 @@ import {
 } from "../../helpers";
 import { get, translate } from "lit-translate";
 import { StateController } from "@lit-app/state";
-import { gbl_state } from "../../state";
+import { gbl_state, gblStateLoaded, gblCampanaSeleccionadaLoaded } from "../../state";
 import { until } from "lit/directives/until.js";
 import uuid4 from "uuid4";
 
@@ -37,28 +37,12 @@ export class MenuCampanaButton extends LitElement {
   private campana_2_edit: Campana;
   private edit_campana: boolean;
 
-  // private itemse = [
-  //   {
-  //     text: "2022-23",
-  //     children: [
-  //       { text: "Profile" },
-  //       { text: "Account" },
-  //       { component: this.createItem({}), checked: true },
-  //       { component: "hr" },
-  //       {
-  //         text: get("nueva_campana"),
-  //         callback: () => {
-  //           console.log("nueva_campana");
-  //         },
-  //       },
-  //     ],
-  //   },
-  // ];
 
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
-    if (!this.loaded) {
+    console.log("menu-campanas-willUpdate",gblCampanaSeleccionadaLoaded())
+    if (!this.loaded && gblCampanaSeleccionadaLoaded()) {
       this.load_campanas();
     }
   }
@@ -66,14 +50,30 @@ export class MenuCampanaButton extends LitElement {
   private bind = new StateController(
     this,
     gbl_state,
-    () => console.log("State Changed")
+    () => {
+      console.log("State Changed",gbl_state)
+      if(!this.loaded && gblCampanaSeleccionadaLoaded()){
+        this.load_campanas();
+      }
+    }
     // TODO Si cambia la db deberia recargar campanas
   );
 
   async load_campanas() {
+    // Primero checkear
+    console.count("load-campanas")
+    if(gbl_state.campana_seleccionada === undefined){
+      console.log("campaña seleccionada undef")
+      return;
+    }
+
+    console.log("campaña seleccionada def")
+
     return gbl_docs_starting("campana", true)
       .then(only_docs)
       .then((c) => {
+        console.log("campañas disponibes",c)
+
         this.campanas = c as unknown as Campana[];
         this.regenerateMenu();
         this.loaded = true;
@@ -116,10 +116,7 @@ export class MenuCampanaButton extends LitElement {
       };
     });
 
-    if(children.length === 0){
-      // No hay campañas
-  
-    }
+
 
     children.push({ component: "hr" });
     children.push({
@@ -220,7 +217,8 @@ export class MenuCampanaButton extends LitElement {
     gbl_state.user_db
       .allDocs({ key: "campana_seleccionada", include_docs: true })
       .then((result) => {
-        if (result.total_rows > 0) {
+        console.log("RESULT",result)
+        if (result.rows.length > 0) {
           let actual: { _id: string; seleccionada: Campana } = result.rows[0]
             .doc as unknown as {
             _id: string;

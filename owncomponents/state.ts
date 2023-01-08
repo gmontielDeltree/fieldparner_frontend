@@ -29,4 +29,8 @@ export const gblStateLoaded = ()=>{
 	return loaded;
 }
 
+export const gblCampanaSeleccionadaLoaded = ()=>{
+	return (state.campana_seleccionada !== undefined)
+}
+
 export default state;

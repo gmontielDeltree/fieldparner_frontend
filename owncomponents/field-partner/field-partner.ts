@@ -2,7 +2,12 @@ import { LitElement, html, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
 import { Router } from "@vaadin/router";
 import PouchDB from "pouchdb";
-import { base_url, normalizar_username, gbl_docs_starting, only_docs } from '../helpers';
+import {
+  base_url,
+  normalizar_username,
+  gbl_docs_starting,
+  only_docs,
+} from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
 import "../loading-modal/loading-modal.js";
 import "../color-cultivo/color-cultivo";
@@ -116,7 +121,6 @@ export class FieldPartner extends LitElement {
 
     gbl_state.online = window.navigator.onLine;
 
-    // gbl_state.campana_seleccionada = {nombre : "Test Campaña",inicio:"2023-01-01", fin:"2023-06-12"}
     /* Traducciones */
     registerTranslateConfig({
       loader: (lang) =>
@@ -161,7 +165,7 @@ export class FieldPartner extends LitElement {
     });
 
     /* Izar map y draw a este componente para que los otros puedan usarlo */
-    this.addEventListener("map-loaded", (e : CustomEvent) => {
+    this.addEventListener("map-loaded", (e: CustomEvent) => {
       this.map = e.detail.map;
 
       gbl_state.map = e.detail.map;
@@ -255,7 +259,7 @@ export class FieldPartner extends LitElement {
     });
 
     // Borrar un Campo
-    this.addEventListener("borrar-campo", (e : CustomEvent) => {
+    this.addEventListener("borrar-campo", (e: CustomEvent) => {
       this.campos_db.remove(e.detail.campo_doc).then(() => {
         alert("Campo borrado");
         this.load_campos_y_settings();
@@ -371,6 +375,8 @@ export class FieldPartner extends LitElement {
 
   // #region Bases de Datos
   async crear_dbs(user) {
+    console.count("Crear DBS");
+
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Nombres validos solo en minusculas
@@ -379,9 +385,7 @@ export class FieldPartner extends LitElement {
     gbl_state.db = this.campos_db;
     gbl_state.user_db = new PouchDB(user.sub);
     gbl_state.user = this.user;
-    this.cargar_campana_seleccionada()
-    
-
+    this.cargar_campana_seleccionada();
 
     try {
       let campos_db_uri = base_url + "campos_" + username;
@@ -504,6 +508,7 @@ export class FieldPartner extends LitElement {
         console.log("Replication Completed");
 
         this.load_campos_y_settings();
+        this.cargar_campana_seleccionada();
 
         // then two-way, continuous, retriable sync
         this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
@@ -524,6 +529,11 @@ export class FieldPartner extends LitElement {
       .on("error", (e) => {
         // Puede llegar aca si la app se abre offline
         console.error(e);
+        if (gbl_state.online) {
+          //Recargo si estoy online
+          console.log("Restarting......")
+          window.location.reload();
+        }
       });
   }
 
@@ -580,20 +590,34 @@ export class FieldPartner extends LitElement {
       });
   }
 
-  cargar_campana_seleccionada(){
-    gbl_docs_starting('campana',true).then(only_docs).then((campanas)=>{
-      if(campanas.length === 0){
-        // No hay campañas
-        gbl_state.campana_seleccionada = { nombre:get('sin_temporada'),inicio:"2000-01-01",fin:"2100-12-31" }
-      }else{
-        gbl_state.user_db.get('campana_seleccionada').then((campana_selec_doc)=>{
-          gbl_state.campana_seleccionada = campana_selec_doc.seleccionada as Campana
-        }).catch(()=>{
-          //Missing o error
-          gbl_state.campana_seleccionada = { nombre:get('sin_temporada'),inicio:"2000-01-01",fin:"2100-12-31" }
-        })
-      }
-    })
+  cargar_campana_seleccionada() {
+    gbl_docs_starting("campana", true)
+      .then(only_docs)
+      .then((campanas) => {
+        if (campanas.length === 0) {
+          // No hay campañas
+          gbl_state.campana_seleccionada = {
+            nombre: get("sin_temporada"),
+            inicio: "2000-01-01",
+            fin: "2100-12-31",
+          };
+        } else {
+          gbl_state.user_db
+            .get("campana_seleccionada")
+            .then((campana_selec_doc) => {
+              gbl_state.campana_seleccionada =
+                campana_selec_doc.seleccionada as Campana;
+            })
+            .catch(() => {
+              //Missing o error
+              gbl_state.campana_seleccionada = {
+                nombre: get("sin_temporada"),
+                inicio: "2000-01-01",
+                fin: "2100-12-31",
+              };
+            });
+        }
+      });
   }
   /**** FIN Bases de Datos */
   // #endregion

@@ -118,7 +118,7 @@ export const gbl_docs_starting = async (key: string, devolver_docs: boolean) => 
 };
 
 export const only_docs = (alldocs : PouchDB.Core.AllDocsResponse<{}>) => {
-  if(alldocs.total_rows > 0){
+  if(alldocs.rows.length > 0){
     return alldocs.rows.map((row) => {
       return row.doc
     })
