@@ -12,7 +12,7 @@ import "@vaadin/combo-box";
 import "@polymer/paper-spinner/paper-spinner.js";
 import mapboxgl, { Marker, Popup } from "mapbox-gl";
 import { property, state } from "lit/decorators.js";
-import { format } from "date-fns";
+import { format, isWithinInterval } from 'date-fns';
 import parseISO from "date-fns/parseISO";
 import "@vaadin/menu-bar";
 import { gblStateLoaded } from "../state.js";
@@ -779,6 +779,17 @@ export class LoteOffcanvasSide extends LitElement {
     });
   }
 
+  filtro_esta_temporada = (actividades : Actividad[]) => {
+    let inicio = parseISO(gbl_state.campana_seleccionada.inicio)
+    let fin = parseISO(gbl_state.campana_seleccionada.fin)
+    let deesta = actividades.filter((act)=>{
+      let fecha_str = (act.tipo === 'nota') ? act.fecha : act.detalles.fecha_ejecucion_tentativa
+      let fecha = parseISO(fecha_str)
+      return isWithinInterval(fecha, {start:inicio,end:fin} )
+    })
+    return deesta;
+  }
+
   reload_actividades() {
     gbl_state.db
       .allDocs({
@@ -809,7 +820,7 @@ export class LoteOffcanvasSide extends LitElement {
           ({ lote_uuid }) => lote_uuid === this._lote_doc.properties.uuid
         );
 
-        this._actividades_docs = s.reverse();
+        this._actividades_docs = this.filtro_esta_temporada(s.reverse());
       });
   }
 
