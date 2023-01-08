@@ -1,6 +1,7 @@
-import { isAfter, isBefore, isWithinInterval } from 'date-fns';
-import { gbl_state } from './state';
-import parseISO from 'date-fns/parseISO';
+import { isAfter, isBefore, isWithinInterval } from "date-fns";
+import { gbl_state } from "./state";
+import parseISO from "date-fns/parseISO";
+import { ro } from "date-fns/locale";
 var img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
@@ -99,20 +100,37 @@ const get_lote_by_names = async (
   if (_lote_doc) {
     result = _lote_doc;
   }
-  return result
+  return result;
 };
 
+const get_actividad_by_uuid = async (uuid) => {};
 
-const get_actividad_by_uuid = async (uuid) => {
+export const gbl_docs_starting = async (key: string, devolver_docs: boolean) => {
+  return gbl_state.db
+    .allDocs({
+      include_docs: devolver_docs,
+      startkey: key,
+      endkey: key + "\ufff0",
+    })
+    .then((result) => {
+      return result;
+    });
+};
 
+export const only_docs = (alldocs : PouchDB.Core.AllDocsResponse<{}>) => {
+  if(alldocs.total_rows > 0){
+    return alldocs.rows.map((row) => {
+      return row.doc
+    })
+  }
 }
 
 export const es_esta_campana = (isofecha) => {
-  let end = parseISO(gbl_state.campana_seleccionada.fin)
-  let start = parseISO(gbl_state.campana_seleccionada.inicio)
-  let fecha = parseISO(isofecha)
-  return isWithinInterval(fecha,{start:start,end:end})
-}
+  let end = parseISO(gbl_state.campana_seleccionada.fin);
+  let start = parseISO(gbl_state.campana_seleccionada.inicio);
+  let fecha = parseISO(isofecha);
+  return isWithinInterval(fecha, { start: start, end: end });
+};
 
 const crearWorkspaceDB = (nombre, user, pass) => {};
 
