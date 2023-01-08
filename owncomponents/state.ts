@@ -17,6 +17,7 @@ class MyState extends State {
  @property() user : any
  @property() online: boolean
  @property() campana_seleccionada : Campana
+ @property({value: false}) puedo_renderizar: boolean 
 }
 
 const state = new MyState()
