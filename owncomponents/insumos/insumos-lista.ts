@@ -411,34 +411,42 @@ export class InsumosLista extends LitElement {
                   header="Marca Comercial"
                   path="marca_comercial"
                   auto-width
+                  resizable
                 ></vaadin-grid-sort-column>
                 <vaadin-grid-sort-column
                   header="Principio Activo"
                   path="principio_activo"
+                  resizable
                 ></vaadin-grid-sort-column>
                 <vaadin-grid-sort-column
                   header="Tipo"
                   path="tipo"
+                  resizable
                 ></vaadin-grid-sort-column>
                 <vaadin-grid-sort-column
                   header="Subtipo"
                   path="subtipo"
+                  resizable
                 ></vaadin-grid-sort-column>
                 <vaadin-grid-sort-column
                   header="Unidad"
                   path="unidad"
+                  resizable
                 ></vaadin-grid-sort-column>
                 <vaadin-grid-column
                   header="Se aplica a"
                   .renderer=${this.seAplicaARenderer}
+                  resizable
                 ></vaadin-grid-column>                
                 <vaadin-grid-sort-column
                   header="Precio"
                   path="precio"
+                  resizable
                 ></vaadin-grid-sort-column>
                 <vaadin-grid-column
                   header="Acción"
                   .renderer=${this.actionsRenderer}
+                  resizable
                 ></vaadin-grid-column>
               </vaadin-grid>
         </vaadin-vertical-layout>
