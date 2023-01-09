@@ -110,9 +110,6 @@ export class UpsertAplicacion extends LitElement {
     console.count("UpsertAplicacion-WillUpdate");
     if (_changedProperties.has("location")) {
       //
-      this.inicializar_lineas();
-      this.populateContratistas();
-      this.populateInsumos();
 
       if (this.location.params?.tipo) {
         this.inicializar_adicion();
@@ -157,6 +154,10 @@ export class UpsertAplicacion extends LitElement {
     this.tipo = this.location.params.tipo as string;
     this.titulo = this.tipo_2_titulo[this.tipo];
 
+    this.inicializar_lineas();
+    this.populateContratistas();
+    this.populateInsumos();
+
     this.actividad = get_empty_aplicacion();
     this.actividad.tipo = this.tipo;
 
@@ -180,6 +181,9 @@ export class UpsertAplicacion extends LitElement {
     this.editando = true;
     this.loading = true;
 
+    this.inicializar_lineas();
+    this.populateInsumos();
+
     this.actividad = get_empty_aplicacion();
 
     let lote_nombre = decodeURIComponent(
@@ -196,6 +200,7 @@ export class UpsertAplicacion extends LitElement {
     this.getActividad(actividad_uuid).then((actividad) => {
       this.actividad = actividad;
       this.tipo = actividad.tipo;
+      this.populateContratistas();
       this.getLote(campo_nombre, lote_nombre);
       this.loading = false;
     });
@@ -203,7 +208,18 @@ export class UpsertAplicacion extends LitElement {
 
   populateContratistas() {
     getContratistas(gbl_state.db).then((c) => {
-      this.contratistas = c;
+      // Si es aplicacion devolver todos
+      if(this.tipo === 'aplicacion'){
+        this.contratistas = c
+        return
+      }
+
+      // Si es siembra/cosecha filtrar
+      this.contratistas = c.filter(
+        (con)=>con.labores.find(
+            (la) => la.labor.toLocaleLowerCase()===this.tipo
+          )
+        );
       console.log("Contratistas", c);
       this.requestUpdate();
     });
