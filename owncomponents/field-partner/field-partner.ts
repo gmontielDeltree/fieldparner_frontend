@@ -376,11 +376,12 @@ export class FieldPartner extends LitElement {
   // #region Bases de Datos
   async crear_dbs(user) {
     console.count("Crear DBS");
+    
 
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Nombres validos solo en minusculas
-    this.campos_db = new PouchDB("campos_" + username + "v5");
+    this.campos_db = new PouchDB("campos_" + username + "v6");
 
     gbl_state.db = this.campos_db;
     gbl_state.user_db = new PouchDB(user.sub);
@@ -388,7 +389,7 @@ export class FieldPartner extends LitElement {
     this.cargar_campana_seleccionada();
 
     try {
-      let campos_db_uri = base_url + "campos_" + username + "v5";
+      let campos_db_uri = base_url + "campos_" + username + "v6";
       console.log("CrearDBS - campos_db_uri", campos_db_uri);
       this.remote_campos_db = new PouchDB(campos_db_uri);
 
