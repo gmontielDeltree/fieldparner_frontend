@@ -73,7 +73,6 @@ export class Example extends LitElement {
   willUpdate(properties) {
     //   console.log("STATEEEEE",properties)
     // if (!this.idioma_inicializado) {
-      
     //   this.idioma_inicializado = true;
     //   gbl_state.user_db
     //     .allDocs({
@@ -87,7 +86,6 @@ export class Example extends LitElement {
     //         let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
     //         this.selected_language = lang_doc.lang;
     //         use(lang_doc.lang);
-
     //         console.log("Lang Selector", lang_doc);
     //       } else {
     //         // No existe
@@ -95,7 +93,6 @@ export class Example extends LitElement {
     //       }
     //     });
     //}
-
     //   this.geocoder_inicializado = true;
     //   const geocoder = new MapboxGeocoder({
     //     accessToken: mapboxgl.accessToken,
@@ -205,44 +202,58 @@ export class Example extends LitElement {
               <menu-campana-button />
             </vaadin-tab>
           </vaadin-tabs>
-          <!--Se pueden usar css variables para pasar o alterar styles -->
-          <!--https://stackoverflow.com/questions/70634210/lit-how-to-apply-style-to-nested-template-->
-          <vaadin-select
-            style="margin-right:4px; width:4em; --lumo-icons-dropdown:''; --lumo-contrast-10pct:transparent; align-items: center;"
-            .value=${gbl_state.lenguaje_seleccionado.lang}
-            @change=${(e: CustomEvent) => {
-              let lang = e.target.value;
-              use(lang);
-              if (gblStateLoaded()) {
-                gbl_state.user_db
-                  .allDocs({
-                    startkey: "user_language",
-                    endkey: "user_language",
-                    include_docs: true,
-                  })
-                  .then((result) => {
-                    if (result.rows.length > 0) {
-                      // Existe
-                      let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
-                      lang_doc.lang = lang;
-                      gbl_state.user_db
-                        .put(lang_doc)
-                        .then(() => window.location.reload());
-                    } else {
-                      // No existe
-                      let lang_doc: Lenguage = {
-                        _id: "user_language",
-                        lang: lang,
-                      };
-                      gbl_state.user_db
-                        .put(lang_doc)
-                        .then(() => window.location.reload());
-                    }
-                  });
-              }
-            }}
-            ${selectRenderer(this.lang_renderer, this.lenguajes)}
-          ></vaadin-select>
+
+          <div style="align-items: center;display: flex;">
+            <!--Se pueden usar css variables para pasar o alterar styles -->
+            <!--https://stackoverflow.com/questions/70634210/lit-how-to-apply-style-to-nested-template-->
+            <vaadin-select
+              style="margin-right:4px; width:4em; --lumo-icons-dropdown:''; --lumo-contrast-10pct:transparent; align-items: center;"
+              .value=${gbl_state.lenguaje_seleccionado.lang}
+              @change=${(e: CustomEvent) => {
+                let lang = e.target.value;
+                use(lang);
+                if (gblStateLoaded()) {
+                  gbl_state.user_db
+                    .allDocs({
+                      startkey: "user_language",
+                      endkey: "user_language",
+                      include_docs: true,
+                    })
+                    .then((result) => {
+                      if (result.rows.length > 0) {
+                        // Existe
+                        let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
+                        lang_doc.lang = lang;
+                        gbl_state.user_db
+                          .put(lang_doc)
+                          .then(() => window.location.reload());
+                      } else {
+                        // No existe
+                        let lang_doc: Lenguage = {
+                          _id: "user_language",
+                          lang: lang,
+                        };
+                        gbl_state.user_db
+                          .put(lang_doc)
+                          .then(() => window.location.reload());
+                      }
+                    });
+                }
+              }}
+              ${selectRenderer(this.lang_renderer, this.lenguajes)}
+            ></vaadin-select>
+
+            <a
+              tabindex="-1"
+              href='https://www.agrotools.net/'
+              @click=${() => {
+                this.sendEvent("logout-click", {});
+              }}
+            >
+              <vaadin-icon icon="vaadin:sign-out"></vaadin-icon>
+              <span></span>
+            </a>
+          </div>
         </vaadin-horizontal-layout>
 
         <vaadin-vertical-layout
@@ -327,9 +338,10 @@ export class Example extends LitElement {
           </vaadin-tabs>
 
           <vaadin-tabs orientation="vertical">
-            <vaadin-tab>
-              <a
+            <!-- <vaadin-tab>
+              <a 
                 tabindex="-1"
+                
                 @click=${() => {
                   this.sendEvent("logout-click", {});
                 }}
@@ -338,7 +350,7 @@ export class Example extends LitElement {
                 <span>Log Out</span>
               </a>
             </vaadin-tab>
-          </vaadin-tabs>
+          </vaadin-tabs> -->
         </vaadin-vertical-layout>
 
         <slot></slot>
