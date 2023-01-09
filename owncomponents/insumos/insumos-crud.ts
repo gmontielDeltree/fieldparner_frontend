@@ -100,10 +100,10 @@ export class InsumoCrud extends LitElement {
     console.log("Guardar Insumo", this.insumo);
     this.db.put(this.insumo).then(() => {
       console.log("insumo guardado")
-      if(this._editing){
+      //if(this._editing){
         this.dispatchEvent(new CustomEvent("edicion_insumo_guardado",{bubbles:true,composed:true}));
         this._modal.hide()
-      }
+      //}
     }).catch((e)=>{
       alert("hubo un problema a guardar el insumo")
     })
