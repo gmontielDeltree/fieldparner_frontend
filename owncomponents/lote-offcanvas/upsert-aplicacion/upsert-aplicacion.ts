@@ -161,6 +161,16 @@ export class UpsertAplicacion extends LitElement {
     this.actividad = get_empty_aplicacion();
     this.actividad.tipo = this.tipo;
 
+    // Query params 
+    const querystring = window.location.search
+    const params = new URLSearchParams(querystring)
+    console.log("Query EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE ",params.get("motivos"))
+    let motivos = decodeURIComponent(params.get('motivos'))
+    if(this.tipo==='aplicacion' && motivos){
+      let motivos_por_defecto = JSON.parse(motivos)
+      console.log("motivos_por_defecto_",motivos_por_defecto)
+    }
+
     let lote_nombre = decodeURIComponent(
       this.location.params.uuid_lote as string
     );

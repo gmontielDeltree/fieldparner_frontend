@@ -15,6 +15,8 @@ import { property } from "lit/decorators.js";
 import formatISO from "date-fns/formatISO";
 import centroid from "@turf/centroid";
 import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n";
+import { motivos_items } from "../jsons/motivos_items";
+import { translate } from "lit-translate";
 
 export class NotasOffcanvas extends LitElement {
   @property()
@@ -70,6 +72,9 @@ export class NotasOffcanvas extends LitElement {
   @property()
   proxima_fecha;
 
+  @property()
+  motivos_nota : any []
+
   static styles = unsafeCSS(bootstrap);
 
   constructor() {
@@ -79,6 +84,7 @@ export class NotasOffcanvas extends LitElement {
     this.fecha = new Date().toISOString().split("T")[0];
     this.color = "red";
     this.modo_geolocalizacion = "mapa";
+    this.motivos_nota = []
   }
 
   firstUpdated() {
@@ -559,6 +565,14 @@ export class NotasOffcanvas extends LitElement {
               @change=${(e) => (this.proxima_fecha = e.target.value)}
             ></vaadin-date-picker>
           </div>
+
+          <vaadin-multi-select-combo-box
+          .label=${translate('motivos')}
+          .items=${motivos_items}
+          .selected-items-changed=${(e)=>this.motivos_nota = e.target.selectedItems}
+          >
+
+          </vaadin-multi-select-combo-box>
         </div>
       </div>
 

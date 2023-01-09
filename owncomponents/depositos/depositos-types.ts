@@ -197,6 +197,7 @@ interface Actividad {
   posicion?: number[];
   condiciones?: Condiciones;
   _attachments?: any;
+  motivos_nota?: any
 }
 
 
