@@ -3,6 +3,7 @@ import { Router } from '@vaadin/router';
 import { Map } from 'mapbox-gl'
 import PouchDB from "pouchdb";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import { Lenguage } from './tipos/tipos-varios';
 
 // declate a state
 class MyState extends State {
@@ -17,6 +18,7 @@ class MyState extends State {
  @property() user : any
  @property() online: boolean
  @property() campana_seleccionada : Campana
+ @property() lenguaje_seleccionado: Lenguage
  @property({value: false}) puedo_renderizar: boolean 
 }
 

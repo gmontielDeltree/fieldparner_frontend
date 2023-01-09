@@ -72,28 +72,29 @@ export class Example extends LitElement {
 
   willUpdate(properties) {
     //   console.log("STATEEEEE",properties)
-    if (!this.idioma_inicializado && gblStateLoaded()) {
-      this.idioma_inicializado = true;
-      gbl_state.user_db
-        .allDocs({
-          startkey: "user_language",
-          endkey: "user_language",
-          include_docs: true,
-        })
-        .then((result) => {
-          if (result.rows.length > 0) {
-            // Existe
-            let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
-            this.selected_language = lang_doc.lang;
-            use(lang_doc.lang);
+    // if (!this.idioma_inicializado) {
+      
+    //   this.idioma_inicializado = true;
+    //   gbl_state.user_db
+    //     .allDocs({
+    //       startkey: "user_language",
+    //       endkey: "user_language",
+    //       include_docs: true,
+    //     })
+    //     .then((result) => {
+    //       if (result.rows.length > 0) {
+    //         // Existe
+    //         let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
+    //         this.selected_language = lang_doc.lang;
+    //         use(lang_doc.lang);
 
-            console.log("USEEEEEEEEEE", lang_doc);
-          } else {
-            // No existe
-            use(this.selected_language);
-          }
-        });
-    }
+    //         console.log("Lang Selector", lang_doc);
+    //       } else {
+    //         // No existe
+    //         use(this.selected_language);
+    //       }
+    //     });
+    //}
 
     //   this.geocoder_inicializado = true;
     //   const geocoder = new MapboxGeocoder({
@@ -208,7 +209,7 @@ export class Example extends LitElement {
           <!--https://stackoverflow.com/questions/70634210/lit-how-to-apply-style-to-nested-template-->
           <vaadin-select
             style="margin-right:4px; width:4em; --lumo-icons-dropdown:''; --lumo-contrast-10pct:transparent; align-items: center;"
-            .value=${this.selected_language}
+            .value=${gbl_state.lenguaje_seleccionado.lang}
             @change=${(e: CustomEvent) => {
               let lang = e.target.value;
               use(lang);

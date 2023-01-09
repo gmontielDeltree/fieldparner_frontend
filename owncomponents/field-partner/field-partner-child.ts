@@ -8,7 +8,6 @@ import {
   gbl_docs_starting,
   only_docs,
 } from "../helpers";
-import createAuth0Client from "@auth0/auth0-spa-js";
 import "../loading-modal/loading-modal.js";
 import "../color-cultivo/color-cultivo";
 import cultivos_default from "../jsons/cultivos.json";
@@ -81,7 +80,7 @@ function handleConnectionChange(event) {
   }
 }
 
-export class FieldPartner extends LitElement {
+export class FieldPartnerChild extends LitElement {
   @property({ hasChanged: (v, ov) => false })
   map: Map;
 
@@ -92,16 +91,13 @@ export class FieldPartner extends LitElement {
   campos: any;
 
   @property({ hasChanged: (v, ov) => false })
-  campos_db: PouchDB.Database;
+  db: PouchDB.Database;
 
   @property({ hasChanged: (v, ov) => false })
   remote_campos_db: PouchDB.Database;
 
   @property({ hasChanged: (v, ov) => false })
   user: any;
-
-  @property({ hasChanged: (v, ov) => false })
-  auth0Client: any;
 
   @property({ hasChanged: (v, ov) => false })
   logged_in: boolean = false;
@@ -112,22 +108,12 @@ export class FieldPartner extends LitElement {
   @property({ hasChanged: (v, ov) => false })
   settings: any;
 
+  private initialized : boolean = false;
+
   constructor() {
     super();
 
-    /* Sensible Defaults */
-    this.user = {};
-    this.user.name = "demo";
-
     gbl_state.online = window.navigator.onLine;
-
-    /* Traducciones */
-    registerTranslateConfig({
-      loader: (lang) =>
-        fetch(`/assets/i18n/${lang}.json`).then((res) => res.json()),
-    });
-
-    console.log("USE Lang", use("es"));
 
     window.addEventListener("online", handleConnectionChange);
     window.addEventListener("offline", handleConnectionChange);
@@ -199,7 +185,7 @@ export class FieldPartner extends LitElement {
     });
 
     this.addEventListener("save-settings", (e) => {
-      this.campos_db.put(this.settings);
+      this.db.put(this.settings);
     });
 
     // Login
@@ -260,13 +246,13 @@ export class FieldPartner extends LitElement {
 
     // Borrar un Campo
     this.addEventListener("borrar-campo", (e: CustomEvent) => {
-      this.campos_db.remove(e.detail.campo_doc).then(() => {
+      this.db.remove(e.detail.campo_doc).then(() => {
         alert("Campo borrado");
         this.load_campos_y_settings();
       });
     });
 
-    this.init_the_whole_thing();
+    
   }
 
   createRenderRoot() {
@@ -278,204 +264,23 @@ export class FieldPartner extends LitElement {
       | PropertyValueMap<any>
       | globalThis.Map<PropertyKey, unknown>
   ): void {
+    if(!this.initialized){
+      this.init_the_whole_thing()
+    }
     console.log("FieldPartner-WillUpdate", _changedProperties);
   }
 
   async init_the_whole_thing() {
     let sitio = window.location.hostname;
-
-    if (sitio === "agrotools.netlify.app") {
-      // 'Production' - Normal flow
-
-      await this.buildAuth0Client();
-      console.log("Normal Flow - AUTH Flow");
-      await this.handleRedirectCallback();
-    } else if (sitio === "dev--agrotools.netlify.app") {
-      // Development - Especial flow
-      console.log("Especial Development Flow - Demo User");
-      this.user.sub = "demo-userdb";
-      // Logged in
-      this.logged_in = true;
-      // Default Databases
-      this.crear_dbs(this.user);
-    } else {
-      console.log("Especial Development Flow - Randy User");
-      // Logged in
-      this.logged_in = true;
-      this.user.name = "randy";
-      // Default Databases
-      this.user.sub = "randy-userdb";
-      this.crear_dbs(this.user);
-    }
-
     console.log("Init the whole thing");
+    this.load_campos_y_settings();
   }
 
-  /* AUTH0 Stuff */
-  async buildAuth0Client() {
-    this.auth0Client = await createAuth0Client({
-      domain: "dev-xa9-5ghc.us.auth0.com",
-      client_id: "gQx1JtypOHAcCgGBr0ukd3YDQM5k8FtW",
-    });
-  }
-
-  /** En esta funcion ocurre la authenticacion y creacion de DBs */
-  async handleRedirectCallback() {
-    let isAuthenticated = await this.auth0Client.isAuthenticated();
-
-    this.logged_in = isAuthenticated;
-
-    if (isAuthenticated) {
-      /* Cargar el ususario y las bases apropiadas*/
-      console.log("User is Authenticated");
-      this.user = await this.auth0Client.getUser();
-      this.crear_dbs(this.user);
-    }
-
-    if (!isAuthenticated) {
-      console.log("User is NOT Authenticated");
-      const query = window.location.search;
-      if (query.includes("code=") && query.includes("state=")) {
-        // Aca entro si es un redirect desde Auth0
-        await this.auth0Client.handleRedirectCallback();
-        // Checkeo de nuevo
-        let isAuthenticated = await this.auth0Client.isAuthenticated();
-        this.logged_in = isAuthenticated;
-
-        if (isAuthenticated) {
-          /* Cargar el ususario y las bases apropiadas*/
-          console.log("User is NOW Authenticated");
-          this.user = await this.auth0Client.getUser();
-          this.crear_dbs(this.user);
-        }
-
-        window.history.replaceState({}, document.title, "/");
-      }
-    }
-  }
-
-  async loginet() {
-    const isAuthenticated = await this.auth0Client.isAuthenticated();
-
-    if (!isAuthenticated) {
-      await this.auth0Client.loginWithRedirect({
-        redirect_uri: window.location.origin,
-      });
-    } else {
-      // await this.logout();
-    }
-  }
-
-  async logout() {
-    this.auth0Client.logout({
-      returnTo: window.location.origin,
-    });
-  }
-  /**** FIN AUTH0 Stuff */
-
-  // #region Bases de Datos
-  async crear_dbs(user) {
-    console.count("Crear DBS");
-    
-    let username = user.name.replaceAll(" ", "_").toLowerCase();
-
-    // Nombres validos solo en minusculas
-    this.campos_db = new PouchDB("campos_" + username + "v6");
-
-    gbl_state.db = this.campos_db;
-    gbl_state.user_db = new PouchDB(user.sub);
-    gbl_state.user = this.user;
-    this.cargar_campana_seleccionada();
-
-    try {
-      let campos_db_uri = base_url + "campos_" + username + "v6";
-      console.log("CrearDBS - campos_db_uri", campos_db_uri);
-      this.remote_campos_db = new PouchDB(campos_db_uri);
-
-      let result_info_local = await this.campos_db.info();
-      let local_is_empty = result_info_local.doc_count === 0 ? true : false;
-
-      let result_info_remote = await this.remote_campos_db.info();
-      let remote_is_empty = result_info_remote.doc_count === 0 ? true : false;
-
-      console.log("Local Exists?", !local_is_empty);
-      console.log("Remote Exists?", !remote_is_empty);
-
-      /* Caso 1
-      0-0 Nuevo Local - Nuevo Remoto
-      */
-
-      /* Inicializar lo Necesario */
-      if (remote_is_empty && local_is_empty) {
-        await this.init_settings();
-        this.replicar_y_sincronizar();
-        return;
-      }
-
-      /* Caso 2
-      0-1 Nuevo Local - Remoto Existe
-      */
-      if (!remote_is_empty && local_is_empty) {
-        this.cargar_desde_remoto();
-        this.replicar_y_sincronizar();
-        return;
-      }
-
-      /* Caso 3
-      1-0 Local Existe - Nuevo Remoto
-      */
-      if (remote_is_empty && !local_is_empty) {
-        this.replicar_y_sincronizar();
-        this.load_campos_y_settings();
-        return;
-      }
-
-      /* Caso 4
-      1-1 Local Existe - Remoto Existe
-      */
-      if (!remote_is_empty && !local_is_empty) {
-        this.replicar_y_sincronizar();
-        this.load_campos_y_settings();
-        return;
-      }
-    } catch (e) {
-      console.log("CrearDBs failed!!! Offline?");
-      // Cargar Local
-      this.load_campos_y_settings();
-      this.sincronizar_cuando_online();
-    }
-  }
-
-  cargar_desde_remoto() {
-    // Get Campos
-    this.remote_campos_db
-      .allDocs({
-        include_docs: true,
-        startkey: "campos_",
-        endkey: "campos_\ufff0",
-      })
-      .then((result) => {
-        this.campos = result;
-        gbl_state.campos = this.campos;
-      });
-
-    // Get Settings
-    this.remote_campos_db
-      .get("settings")
-      .then((settings_doc) => {
-        this.settings = settings_doc;
-      })
-      .catch((e) => {
-        if (e?.reason === "missing") {
-        }
-        console.error("Load Settings desde Remote", e);
-      });
-  }
 
   sincronizar_cuando_online() {
     var opts = { live: true, retry: true };
     // then two-way, continuous, retriable sync
-    this.campos_db
+    this.db
       .sync(this.remote_campos_db, opts)
       .on("change", function (change) {
         // yo, something changed!
@@ -486,7 +291,7 @@ export class FieldPartner extends LitElement {
       });
 
     // /* Redraw on cambios en campos_db */
-    this.campos_db
+    this.db
       .changes({
         since: "now",
         live: true,
@@ -497,45 +302,6 @@ export class FieldPartner extends LitElement {
       });
   }
 
-  replicar_y_sincronizar() {
-    // https://pouchdb.com/api.html#sync
-    // do one way, one-off sync from the server until completion
-    var opts = { live: true, retry: true };
-
-    this.campos_db.replicate
-      .from(this.remote_campos_db)
-      .on("complete", (info) => {
-        console.log("Replication Completed");
-
-        this.load_campos_y_settings();
-        this.cargar_campana_seleccionada();
-
-        // then two-way, continuous, retriable sync
-        this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
-          console.error("SyncError", e);
-        });
-
-        // /* Redraw on cambios en campos_db */
-        this.campos_db
-          .changes({
-            since: "now",
-            live: true,
-          })
-          .on("change", () => {
-            this.load_campos_y_settings();
-            console.log("CHANGES!!");
-          });
-      })
-      .on("error", (e) => {
-        // Puede llegar aca si la app se abre offline
-        console.error(e);
-        if (gbl_state.online) {
-          //Recargo si estoy online
-          console.log("Restarting......")
-          window.location.reload();
-        }
-      });
-  }
 
   /** Crea el objeto settings y lo graba en la db
    * Crea settings y contratistas
@@ -551,7 +317,7 @@ export class FieldPartner extends LitElement {
 
     settings_doc.user_cultivos = cultivos_default;
 
-    this.campos_db
+    this.db
       .put(settings_doc)
       .then(() => console.log("Settings Grabadas"));
 
@@ -563,7 +329,7 @@ export class FieldPartner extends LitElement {
    */
   load_campos_y_settings() {
     // Get Campos
-    this.campos_db
+    this.db
       .allDocs({
         include_docs: true,
         startkey: "campos_",
@@ -575,7 +341,7 @@ export class FieldPartner extends LitElement {
       });
 
     // Get Settings
-    this.campos_db
+    this.db
       .get("settings")
       .then((settings_doc) => {
         this.settings = settings_doc;
@@ -588,41 +354,15 @@ export class FieldPartner extends LitElement {
         }
         console.error("Load Settings", e);
       });
+      
+      this.initialized = true;
   }
 
-  cargar_campana_seleccionada() {
-    gbl_docs_starting("campana", true)
-      .then(only_docs)
-      .then((campanas) => {
-        if (campanas.length === 0) {
-          // No hay campañas
-          gbl_state.campana_seleccionada = {
-            nombre: get("sin_temporada"),
-            inicio: "2000-01-01",
-            fin: "2100-12-31",
-          };
-        } else {
-          gbl_state.user_db
-            .get("campana_seleccionada")
-            .then((campana_selec_doc) => {
-              gbl_state.campana_seleccionada =
-                campana_selec_doc.seleccionada as Campana;
-            })
-            .catch(() => {
-              //Missing o error
-              gbl_state.campana_seleccionada = {
-                nombre: get("sin_temporada"),
-                inicio: "2000-01-01",
-                fin: "2100-12-31",
-              };
-            });
-        }
-      });
-  }
   /**** FIN Bases de Datos */
   // #endregion
 
   firstUpdated() {
+
     gbl_state.router = new Router(document.getElementById("router-container"));
     gbl_state.router.setRoutes([
       { path: "/", component: "null-component" },
@@ -695,35 +435,35 @@ export class FieldPartner extends LitElement {
         id="nuevo-campo-oc"
         .map=${this.map}
         .draw=${this.draw}
-        .campos_db=${this.campos_db}
+        .campos_db=${this.db}
       ></nuevo-campo>
 
       <contratista-crud
         id="contratista-crud"
-        .db=${this.campos_db}
+        .db=${this.db}
       ></contratista-crud>
 
       <contratistas-lista
         id="contratistas-lista"
-        .db=${this.campos_db}
+        .db=${this.db}
       ></contratistas-lista>
 
       <nota-share-target
         id="nota-share-target"
         .map=${this.map}
-        .db=${this.campos_db}
+        .db=${this.db}
       ></nota-share-target>
 
-      <insumos-lista id="insumos-lista" .db=${this.campos_db}></insumos-lista>
+      <insumos-lista id="insumos-lista" .db=${this.db}></insumos-lista>
 
       <!-- <deposito-upsert
         id="deposito-upsert"
-        .db=${this.campos_db}
+        .db=${this.db}
         .draw=${this.draw}
       ></deposito-upsert> -->
       <depositos-lista
         id="depositos-lista"
-        .db=${this.campos_db}
+        .db=${this.db}
       ></depositos-lista>
 
       <!-- <login-modal id="login-modal" .show=${!this
@@ -738,4 +478,4 @@ export class FieldPartner extends LitElement {
   }
 }
 
-customElements.define("field-partner", FieldPartner);
+customElements.define("field-partner-child", FieldPartnerChild);

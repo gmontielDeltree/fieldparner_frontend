@@ -1,1 +1,3 @@
-import "./owncomponents/field-partner/field-partner.ts";
+import "./owncomponents/loader.ts";
+
+console.log("Main.js")
