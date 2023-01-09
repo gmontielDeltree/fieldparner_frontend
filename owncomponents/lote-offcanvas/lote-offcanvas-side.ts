@@ -827,7 +827,7 @@ export class LoteOffcanvasSide extends LitElement {
   localizar_lote() {
     console.log("LOCALIZAR", this._lote_doc);
     gbl_state.map.fitBounds(bbox(this._lote_doc), {
-      padding: { top: 50, bottom: window.innerHeight / 2 },
+      padding: { top: 50, bottom: window.innerHeight / 2 , left:800},
     });
   }
 
