@@ -210,6 +210,8 @@ export class UpsertAplicacion extends LitElement {
     this.getActividad(actividad_uuid).then((actividad) => {
       this.actividad = actividad;
       this.tipo = actividad.tipo;
+      this.titulo = this.tipo_2_titulo[this.tipo];
+
       this.populateContratistas();
       this.getLote(campo_nombre, lote_nombre);
       this.loading = false;
@@ -504,6 +506,7 @@ export class UpsertAplicacion extends LitElement {
                     .categorias_iniciales=${this.tipo_2_categorias_iniciales[
                       this.tipo
                     ]}
+                    .tipo=${this.tipo}
                   ></grid-insumos>
                 </div>
                 <!-- Fin Insumos -->

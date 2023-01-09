@@ -56,7 +56,10 @@ export class GridInsumosExe extends LitElement {
   insumos: Insumo[];
 
   @property()
-  categorias_iniciales : string[]; 
+  tipo: string;
+
+  @property()
+  categorias_iniciales: string[];
 
   @state()
   linea_de_dosis: LineaDosisEjecucion = {
@@ -77,7 +80,7 @@ export class GridInsumosExe extends LitElement {
       uuid: "nuevo",
       total: 0,
       precio_real: 0,
-      precio_estimado:0
+      precio_estimado: 0,
     };
   }
 
@@ -94,10 +97,7 @@ export class GridInsumosExe extends LitElement {
     if (this.ejecucion.detalles.dosis.length === 0) {
       return [this.linea_de_dosis];
     } else {
-      return [
-        this.linea_de_dosis,
-        ...this.ejecucion.detalles.dosis,
-      ];
+      return [this.linea_de_dosis, ...this.ejecucion.detalles.dosis];
     }
   }
 
@@ -111,7 +111,7 @@ export class GridInsumosExe extends LitElement {
     >
       <vaadin-grid-column
         header="Nombre"
-        width="18em" 
+        width="18em"
         flex-grow="0"
         resizable
         ${columnBodyRenderer<LineaDosisEjecucion>((item) => {
@@ -147,13 +147,10 @@ export class GridInsumosExe extends LitElement {
         }, this.actividad.detalles.dosis)}
       ></vaadin-grid-column>
 
-      <vaadin-grid-column
-        auto-width
-
-      ></vaadin-grid-column>
+      <vaadin-grid-column auto-width></vaadin-grid-column>
 
       <vaadin-grid-column
-        header="Dosis por ha."
+        header=${translate('dosificacion')}
         auto-width
         flex-grow="0"
         resizable
@@ -201,26 +198,30 @@ export class GridInsumosExe extends LitElement {
         )}
       ></vaadin-grid-column>
 
-      <vaadin-grid-column
-        header="Motivos"
-        auto-width
-        flex-grow="0"
-        resizable
-        ${columnBodyRenderer<LineaDosisEjecucion>(
-          (item) => html`<vaadin-multi-select-combo-box
-            item-label-path="nombre"
-            item-id-path="id"
-            style="width:15em;"
-            class=${item.uuid === "nuevo" ? "high-rating" : ""}
-            .items=${motivos_items}
-            .selectedItems=${item.motivos}
-            @selected-items-changed=${(e) => {
-              item.motivos = e.target.selectedItems;
-            }}
-          ></vaadin-multi-select-combo-box>`,
-          []
-        )}
-      ></vaadin-grid-column>
+      ${this.tipo === "aplicacion"
+        ? html`
+            <vaadin-grid-column
+              header="Motivos"
+              auto-width
+              flex-grow="0"
+              resizable
+              ${columnBodyRenderer<LineaDosisEjecucion>(
+                (item) => html`<vaadin-multi-select-combo-box
+                  item-label-path="nombre"
+                  item-id-path="id"
+                  style="width:15em;"
+                  class=${item.uuid === "nuevo" ? "high-rating" : ""}
+                  .items=${motivos_items}
+                  .selectedItems=${item.motivos}
+                  @selected-items-changed=${(e) => {
+                    item.motivos = e.target.selectedItems;
+                  }}
+                ></vaadin-multi-select-combo-box>`,
+                []
+              )}
+            ></vaadin-grid-column>
+          `
+        : null}
 
       <vaadin-grid-column
         header="Precio"
@@ -244,11 +245,7 @@ export class GridInsumosExe extends LitElement {
         )}
       ></vaadin-grid-column>
 
-      <vaadin-grid-column
-        auto-width
-
-      >
-      </vaadin-grid-column>
+      <vaadin-grid-column auto-width> </vaadin-grid-column>
 
       <vaadin-grid-column
         frozen-to-end
@@ -266,14 +263,16 @@ export class GridInsumosExe extends LitElement {
                         alert(translate("debe_ingresar_un_insumo"));
                         return;
                       }
-                      let nuevo = deepcopy(this.linea_de_dosis) as LineaDosisEjecucion;
+                      let nuevo = deepcopy(
+                        this.linea_de_dosis
+                      ) as LineaDosisEjecucion;
                       nuevo.uuid = uuid4();
                       this.ejecucion.detalles.dosis.push(nuevo);
                       this.ejecucion.detalles.dosis = deepcopy(
                         this.ejecucion.detalles.dosis
                       );
                       this.inicializar_lineas();
-                      this.shadowRoot.querySelector('#combo-insumo').clear()
+                      this.shadowRoot.querySelector("#combo-insumo").clear();
                       this.requestUpdate();
                       (
                         this.shadowRoot.getElementById("da-grid") as Grid
@@ -313,15 +312,14 @@ function truncar(x) {
   return +x.toPrecision(4);
 }
 
-function abrv(unidad:string){
-
-  if(!unidad){
-    return ""
+function abrv(unidad: string) {
+  if (!unidad) {
+    return "";
   }
 
-  if(unidad.length > 8){
-    return unidad.substring(0,5) + ".."
-  }else{
+  if (unidad.length > 8) {
+    return unidad.substring(0, 5) + "..";
+  } else {
     return unidad;
   }
 }

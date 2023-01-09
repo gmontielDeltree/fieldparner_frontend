@@ -51,7 +51,10 @@ export class GridInsumos extends LitElement {
   insumos: Insumo[];
 
   @property()
-  categorias_iniciales : string[]; 
+  tipo: string;
+
+  @property()
+  categorias_iniciales: string[];
 
   @state()
   linea_de_dosis: LineaDosis = {
@@ -104,7 +107,7 @@ export class GridInsumos extends LitElement {
     >
       <vaadin-grid-column
         header="Nombre"
-        width="18em" 
+        width="18em"
         flex-grow="0"
         resizable
         ${columnBodyRenderer<LineaDosis>((item) => {
@@ -138,13 +141,10 @@ export class GridInsumos extends LitElement {
         }, this.actividad.detalles.dosis)}
       ></vaadin-grid-column>
 
-      <vaadin-grid-column
-        auto-width
-
-      ></vaadin-grid-column>
+      <vaadin-grid-column auto-width></vaadin-grid-column>
 
       <vaadin-grid-column
-        header="Dosis por ha."
+        header=${translate("dosificacion")}
         auto-width
         flex-grow="0"
         resizable
@@ -192,26 +192,30 @@ export class GridInsumos extends LitElement {
         )}
       ></vaadin-grid-column>
 
-      <vaadin-grid-column
-        header="Motivos"
-        auto-width
-        flex-grow="0"
-        resizable
-        ${columnBodyRenderer<LineaDosis>(
-          (item) => html`<vaadin-multi-select-combo-box
-            item-label-path="nombre"
-            item-id-path="id"
-            style="width:15em;"
-            class=${item.uuid === "nuevo" ? "high-rating" : ""}
-            .items=${motivos_items}
-            .selectedItems=${item.motivos}
-            @selected-items-changed=${(e) => {
-              item.motivos = e.target.selectedItems;
-            }}
-          ></vaadin-multi-select-combo-box>`,
-          []
-        )}
-      ></vaadin-grid-column>
+      ${(this.tipo === "aplicacion")
+        ? html`
+            <vaadin-grid-column
+              header="Motivos"
+              auto-width
+              flex-grow="0"
+              resizable
+              ${columnBodyRenderer<LineaDosis>(
+                (item) => html`<vaadin-multi-select-combo-box
+                  item-label-path="nombre"
+                  item-id-path="id"
+                  style="width:15em;"
+                  class=${item.uuid === "nuevo" ? "high-rating" : ""}
+                  .items=${motivos_items}
+                  .selectedItems=${item.motivos}
+                  @selected-items-changed=${(e) => {
+                    item.motivos = e.target.selectedItems;
+                  }}
+                ></vaadin-multi-select-combo-box>`,
+                []
+              )}
+            ></vaadin-grid-column>
+          `
+        : null}
 
       <vaadin-grid-column
         header="Precio"
@@ -235,11 +239,7 @@ export class GridInsumos extends LitElement {
         )}
       ></vaadin-grid-column>
 
-      <vaadin-grid-column
-        auto-width
-
-      >
-      </vaadin-grid-column>
+      <vaadin-grid-column auto-width> </vaadin-grid-column>
 
       <vaadin-grid-column
         frozen-to-end
@@ -264,7 +264,7 @@ export class GridInsumos extends LitElement {
                         this.actividad.detalles.dosis
                       );
                       this.inicializar_lineas();
-                      this.shadowRoot.querySelector('#combo-insumo').clear()
+                      this.shadowRoot.querySelector("#combo-insumo").clear();
                       this.requestUpdate();
                       (
                         this.shadowRoot.getElementById("da-grid") as Grid
@@ -304,15 +304,14 @@ function truncar(x) {
   return +x.toPrecision(4);
 }
 
-function abrv(unidad:string){
-
-  if(!unidad){
-    return ""
+function abrv(unidad: string) {
+  if (!unidad) {
+    return "";
   }
 
-  if(unidad.length > 8){
-    return unidad.substring(0,5) + ".."
-  }else{
+  if (unidad.length > 8) {
+    return unidad.substring(0, 5) + "..";
+  } else {
     return unidad;
   }
 }

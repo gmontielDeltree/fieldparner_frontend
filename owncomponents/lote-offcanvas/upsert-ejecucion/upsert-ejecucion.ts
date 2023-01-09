@@ -446,6 +446,7 @@ export class UpsertEjecucion extends LitElement {
             .ejecucion=${this.ejecucion}
             .insumos=${this.insumos}
             .categorias_iniciales=${this.tipo_2_categorias_iniciales[this.tipo]}
+            .tipo=${this.tipo}
           ></grid-insumos-exe>
         </div>
         <!-- Fin Insumos -->
