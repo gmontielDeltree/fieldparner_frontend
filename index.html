@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+
+    <script type='text/javascript'>
+      window.smartlook||(function(d) {
+        var o=smartlook=function(){ o.api.push(arguments)},h=d.getElementsByTagName('head')[0];
+        var c=d.createElement('script');o.api=new Array();c.async=true;c.type='text/javascript';
+        c.charset='utf-8';c.src='https://web-sdk.smartlook.com/recorder.js';h.appendChild(c);
+        })(document);
+        smartlook('init', 'ebe5c626b32fb046a0be7907349213b63fb52c32', { region: 'eu' });
+    </script>
+    
     <!-- Google tag (gtag.js) -->
     <script
       async
@@ -168,6 +178,9 @@
       }
       const version = "0004";
     </script>
+
+
+
   </head>
   <!-- load the 'header_auto_hide' on the body -->
 
