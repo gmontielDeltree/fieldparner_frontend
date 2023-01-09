@@ -57,6 +57,7 @@ import {
 import { init } from "xstate/lib/actionTypes";
 import "@vaadin/tooltip";
 import { informe_diferencias_definition } from "./informe_comparacion_pdf.js";
+import { translate } from "lit-translate";
 
 const capitalize = (mySentence) => {
   if (mySentence === null || mySentence === undefined) {
@@ -328,7 +329,7 @@ export class LoteOffcanvasSide extends LitElement {
   nueva_actividad() {
     const someContext = aplicacionMachine.initialState.context;
     someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
-    this.init_fsm(someContext);
+    // this.init_fsm(someContext);
 
     this.fsm?.send({ type: "NEXT" });
     this.load_insumos();
@@ -482,44 +483,6 @@ export class LoteOffcanvasSide extends LitElement {
       .then(() => {
         this.reload_actividades();
       });
-
-    // let restantes = this._lote_doc.properties.actividades.filter(
-    //   (a) => a.uuid !== uuid
-    // );
-    // // Re-Get Lotes y update
-    // gbl_state.db.get(this.campo_id).then((doc) => {
-    //   let lote_index = doc.lotes.findIndex(
-    //     (lote) => lote.properties.nombre === this.lote_nombre
-    //   );
-    //   if (lote_index > -1) {
-    //     // Cool - Existe
-    //     let current_aplicaciones = restantes;
-
-    //     // Ordenar por fecha
-    //     function compare(a, b) {
-    //       let ma = moment(a.detalles.fecha, "DD-MM-YYYY");
-    //       let mb = moment(b.detalles.fecha, "DD-MM-YYYY");
-    //       if (ma.isAfter(mb)) {
-    //         return -1;
-    //       }
-    //       if (ma.isBefore(mb)) {
-    //         return 1;
-    //       }
-    //       // a must be equal to b
-    //       return 0;
-    //     }
-    //     current_aplicaciones.sort(compare);
-
-    //     doc.lotes[lote_index].properties.actividades = current_aplicaciones;
-    //     gbl_state.db.put(doc).then((r) => console.log("Actividad Eliminada"));
-
-    //     // Recargemoslos
-    //     this._campo_doc = doc;
-    //     this._lote_doc = doc.lotes[lote_index];
-
-    //     //this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
-    //   }
-    // });
   }
 
   editar_actividad(actividad) {
@@ -530,7 +493,7 @@ export class LoteOffcanvasSide extends LitElement {
 
     if (actividad.tipo === "aplicacion") {
       console.log("EDITAR", actividad);
-      this.init_fsm(actividad);
+      // this.init_fsm(actividad);
       this.abrir_editor_actividad();
       //this.shadowRoot.getElementById("siembra-add-el").editar(actividad);
     }
@@ -598,110 +561,110 @@ export class LoteOffcanvasSide extends LitElement {
     }
   }
 
-  guardar_aplicacion(tipo, actividad_doc) {
-    let detalles = {};
-    let aplicacion = {};
-    // Save to lote properties
-    let ts_ahora = new Date().toISOString();
+  // guardar_aplicacion(tipo, actividad_doc) {
+  //   let detalles = {};
+  //   let aplicacion = {};
+  //   // Save to lote properties
+  //   let ts_ahora = new Date().toISOString();
 
-    if (tipo === "aplicacion") {
-      this.fsm?.send("CANCEL");
-      // aplicacion = {
-      //   uuid: uuid4(),
-      //   tipo: "siembra",
-      //   ts_generacion: ts_ahora,
-      //   detalles: detalles,
-      // };
-      console.log("Guardando Aplicacion", actividad_doc);
-      gbl_state.db.put(actividad_doc);
-      this.reload_actividades();
-      return;
-    } else if (tipo === "siembra") {
-      // aplicacion = {
-      //   uuid: uuid4(),
-      //   tipo: "siembra",
-      //   ts_generacion: ts_ahora,
-      //   detalles: detalles,
-      // };
+  //   if (tipo === "aplicacion") {
+  //     this.fsm?.send("CANCEL");
+  //     // aplicacion = {
+  //     //   uuid: uuid4(),
+  //     //   tipo: "siembra",
+  //     //   ts_generacion: ts_ahora,
+  //     //   detalles: detalles,
+  //     // };
+  //     console.log("Guardando Aplicacion", actividad_doc);
+  //     gbl_state.db.put(actividad_doc);
+  //     this.reload_actividades();
+  //     return;
+  //   } else if (tipo === "siembra") {
+  //     // aplicacion = {
+  //     //   uuid: uuid4(),
+  //     //   tipo: "siembra",
+  //     //   ts_generacion: ts_ahora,
+  //     //   detalles: detalles,
+  //     // };
 
-      gbl_state.db.put(actividad_doc);
-      this.reload_actividades();
-      return;
-    } else if (tipo === "cosecha") {
-      gbl_state.db.put(actividad_doc);
-      this.reload_actividades();
-      return;
-    }
+  //     gbl_state.db.put(actividad_doc);
+  //     this.reload_actividades();
+  //     return;
+  //   } else if (tipo === "cosecha") {
+  //     gbl_state.db.put(actividad_doc);
+  //     this.reload_actividades();
+  //     return;
+  //   }
 
-    // Condiciones ambientales?
+  //   // Condiciones ambientales?
 
-    // Re-Get Lotes y update
-    gbl_state.db.get(this.campo_id).then((doc) => {
-      let lote_index = doc.lotes.findIndex(
-        (lote) => lote.properties.nombre === this.lote_nombre
-      );
-      if (lote_index > -1) {
-        // Cool - Existe
-        let current_aplicaciones =
-          doc.lotes[lote_index].properties.actividades || [];
-        current_aplicaciones.push(aplicacion);
+  //   // Re-Get Lotes y update
+  //   gbl_state.db.get(this.campo_id).then((doc) => {
+  //     let lote_index = doc.lotes.findIndex(
+  //       (lote) => lote.properties.nombre === this.lote_nombre
+  //     );
+  //     if (lote_index > -1) {
+  //       // Cool - Existe
+  //       let current_aplicaciones =
+  //         doc.lotes[lote_index].properties.actividades || [];
+  //       current_aplicaciones.push(aplicacion);
 
-        // Ordenar por fecha
-        function compare(a, b) {
-          let ma = moment(a.detalles.fecha, "YYYY-MM-DD");
-          let mb = moment(b.detalles.fecha, "YYYY-MM-DD");
-          if (ma.isAfter(mb)) {
-            return -1;
-          }
-          if (ma.isBefore(mb)) {
-            return 1;
-          }
-          // a must be equal to b
-          return 0;
-        }
-        current_aplicaciones.sort(compare);
+  //       // Ordenar por fecha
+  //       function compare(a, b) {
+  //         let ma = moment(a.detalles.fecha, "YYYY-MM-DD");
+  //         let mb = moment(b.detalles.fecha, "YYYY-MM-DD");
+  //         if (ma.isAfter(mb)) {
+  //           return -1;
+  //         }
+  //         if (ma.isBefore(mb)) {
+  //           return 1;
+  //         }
+  //         // a must be equal to b
+  //         return 0;
+  //       }
+  //       current_aplicaciones.sort(compare);
 
-        doc.lotes[lote_index].properties.actividades = current_aplicaciones;
-        gbl_state.db.put(doc).then((r) => console.log("Actividad Agregada"));
+  //       doc.lotes[lote_index].properties.actividades = current_aplicaciones;
+  //       gbl_state.db.put(doc).then((r) => console.log("Actividad Agregada"));
 
-        // Recargemoslos
-        this._campo_doc = doc;
-        this._lote_doc = doc.lotes[lote_index];
-        // this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
-      }
-    });
-  }
+  //       // Recargemoslos
+  //       this._campo_doc = doc;
+  //       this._lote_doc = doc.lotes[lote_index];
+  //       // this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+  //     }
+  //   });
+  // }
 
-  init_fsm(act: Actividad) {
-    this.fsm = interpret(aplicacionMachine.withContext(act))
-      .onTransition((state) => {
-        this._ctx = state.context as Actividad;
-        //console.log(state.value);
-        if (state.matches("idle")) {
-          this._steps_elements.map((el) => el.hide());
-        }
-        if (state.matches("editing.fecha")) {
-          this.show_step(0);
-        } else if (state.matches("editing.hectareas")) {
-          this.show_step(1);
-        } else if (state.matches("editing.insumo")) {
-          this.show_step(2);
-        } else if (state.matches("editing.dosis")) {
-          this.show_step(3);
-        } else if (state.matches("editing.motivo")) {
-          this.show_step(4);
-        } else if (state.matches("editing.masinsumos")) {
-          this.show_step(5);
-        } else if (state.matches("editing.comentario")) {
-          this.show_step(6);
-        } else if (state.matches("editing.resumiendo")) {
-          this.show_step(7);
-        } else if (state.matches("editing.share")) {
-          this.show_step(8);
-        }
-      })
-      .start();
-  }
+  // init_fsm(act: Actividad) {
+  //   this.fsm = interpret(aplicacionMachine.withContext(act))
+  //     .onTransition((state) => {
+  //       this._ctx = state.context as Actividad;
+  //       //console.log(state.value);
+  //       if (state.matches("idle")) {
+  //         this._steps_elements.map((el) => el.hide());
+  //       }
+  //       if (state.matches("editing.fecha")) {
+  //         this.show_step(0);
+  //       } else if (state.matches("editing.hectareas")) {
+  //         this.show_step(1);
+  //       } else if (state.matches("editing.insumo")) {
+  //         this.show_step(2);
+  //       } else if (state.matches("editing.dosis")) {
+  //         this.show_step(3);
+  //       } else if (state.matches("editing.motivo")) {
+  //         this.show_step(4);
+  //       } else if (state.matches("editing.masinsumos")) {
+  //         this.show_step(5);
+  //       } else if (state.matches("editing.comentario")) {
+  //         this.show_step(6);
+  //       } else if (state.matches("editing.resumiendo")) {
+  //         this.show_step(7);
+  //       } else if (state.matches("editing.share")) {
+  //         this.show_step(8);
+  //       }
+  //     })
+  //     .start();
+  // }
 
   /**
    * Actualiza los documentos si las propiedades han cambiando.
@@ -731,7 +694,7 @@ export class LoteOffcanvasSide extends LitElement {
 
         const someContext = aplicacionMachine.initialState.context;
         someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
-        this.init_fsm(someContext);
+        // this.init_fsm(someContext);
 
         this.load_insumos();
         this.reload_lote_doc_y_localizar();
@@ -956,11 +919,11 @@ export class LoteOffcanvasSide extends LitElement {
                       gbl_state.router.location.getUrl() +
                         "/actividad/nueva/siembra"
                     )}
-                  title="Siembra"
+                  title="${translate("planificar_siembra")}"
                 ></div>
 
                 <div
-                  title="Aplicación"
+                  title="${translate("planificar_aplicacion")}"
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/pulverizadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${() =>
@@ -971,7 +934,7 @@ export class LoteOffcanvasSide extends LitElement {
                 ></div>
 
                 <div
-                  title="Cosecha"
+                  title="${translate("planificar_cosecha")}"
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/cosechadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${() =>
