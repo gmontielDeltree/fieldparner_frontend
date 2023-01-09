@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Reporte de Cambios 2022-01-08 &lpar;Version 0&period;1&period;62&rpar;</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <h1 id="reporte-de-cambios-2022-01-08-version-0162">Reporte de Cambios 2022-01-08 (Version 0.1.62)</h1>
+<h3 id="detalles-de-insumos-en-los-items-del-combobox">Detalles de insumos en los items del ComboBox.</h3>
+<p>Cada item de la lista de insumos muestra (segun se encuentren completados para cada insumo):</p>
+<ul>
+<li>Nombre Comercial</li>
+<li>Principio Activo</li>
+<li>Pildora coloreada con &quot;tipo-subtipo&quot;</li>
+<li>Pildora coloreada con cada cultivo de la lista &quot;Se aplica a&quot;</li>
+</ul>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/pills-agroq.png" alt="drawing" width="350"/>
+</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/pill-cultivo.png" alt="drawing" width="350"/>
+</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/combustible.png" alt="drawing" width="350"/>
+</p>
+<h3 id="filtrado-de-insumos-en-pantallas-de-añadireditar-actividades">Filtrado de insumos en pantallas de Añadir/Editar Actividades</h3>
+<h4 id="filtro-1-botón-de-filtrado-de-categorias"><strong>Filtro 1:</strong> Botón de filtrado de categorias.</h4>
+<ul>
+<li>Para filtrar y limitar los insumos visibles se añadio un botón con el ícono de filtro en el ComboBox selector de insumo en donde se listan las distintas categorias de los mismos.</li>
+</ul>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/filtro_categorias.png" alt="drawing" width="400"/>
+</p>
+<ul>
+<li>Por defecto se seleccionan algunas categorias de acuerdo al tipo de actividad en cuestion:
+<ul>
+<li>Siembra -&gt; &quot;Semillas&quot;, &quot;Combustibles&quot;</li>
+<li>Aplicacion -&gt; &quot;Agroquimicos&quot;, &quot;Fertilizantes&quot;, &quot;Combustible&quot;</li>
+<li>Cosecha -&gt; &quot;Otros&quot;, &quot;Combustible&quot;</li>
+</ul>
+</li>
+</ul>
+<p>Independientemente de las categorias seleccionadas por defecto el usuario puede seleccionar/deseleccionar categorias a discrecion.</p>
+<h4 id="filtro-2-string-ingresado-por-el-usuario"><strong>Filtro 2:</strong> String ingresado por el usuario.</h4>
+<ul>
+<li>El fitro 2 opera sobre los insumos que pasan el filtro 1 (categorias seleccionadas).</li>
+<li>El filtro reduce la lista de insumos que cumplen alguna de las siguientes condiciones:
+<ul>
+<li>El string forma parte del nombre comercial.</li>
+<li>El string forma parte del principio activo.</li>
+<li>El string forma parte del alguno de los nombres de los cultivos especificados en la lista de &quot;se aplica a&quot; que corresponde a ese insumo.</li>
+</ul>
+</li>
+</ul>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/principio_activo.png" title="drawing" width="200"/>
+<p align="center">Ej. de busqueda por principio Activo</p>
+</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/filtro_cultivo.png" alt="drawing" width="200"/>
+<p align="center">Ej. de busqueda por cultivo</p>
+</p>
+<h3 id="chequeos-al-crear-o-editar-planificaciones">Chequeos al crear o editar planificaciones.</h3>
+<p>Se realizan los siguientes chequeos antes de guardar la <strong>planificación</strong> de una actividad:</p>
+<ul>
+<li>Para todos los tipos:
+<ul>
+<li>Fecha tentativa de ejecución dentro de la campaña.</li>
+<li>Debe seleccionar un contratista.</li>
+<li>Debe seleccionar un al menos insumo.</li>
+</ul>
+</li>
+<li>Siembra:
+<ul>
+<li>Debe seleccionar al menos un insumo de semilla</li>
+<li>Debe ingresar una labor de 'Siembra'</li>
+</ul>
+</li>
+<li>Cosecha:
+<ul>
+<li>Debe ingresar una labor de 'Cosecha'</li>
+</ul>
+</li>
+</ul>
+<h3 id="chequeos-al-crear-o-editar-ejecuciones">Chequeos al crear o editar ejecuciones.</h3>
+<p>Se realizan los siguientes chequeos antes de guardar la <em>ejecución</em> de una actividad:</p>
+<ul>
+<li>Para todos los tipos:
+<ul>
+<li>Fecha de ejecución posterior o igual a la planificación y dentro de la campaña.</li>
+<li>Debe seleccionar un al menos insumo.</li>
+</ul>
+</li>
+<li>Siembra:
+<ul>
+<li>Debe seleccionar al menos un insumo de semilla</li>
+<li>Debe ingresar una labor de 'Siembra'</li>
+</ul>
+</li>
+<li>Cosecha:
+<ul>
+<li>Debe ingresar una labor de 'Cosecha'</li>
+</ul>
+</li>
+</ul>
+<h2 id="campañas">Campañas</h2>
+<p>Se añadio el concepto de &quot;Campañas&quot;. Mediante un menu en la barra se puede crear, seleccionar y editar.</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/campana_selector.png" alt="drawing" width="200"/>
+<p align="center">Selector de Campaña</p>
+</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/nueva_campana.png" alt="drawing" width="400"/>
+<p align="center">Nueva Campaña</p>
+</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/editar_campana.png" alt="drawing" width="400"/>
+<p align="center">Editar Campaña, con el botón de "Borrar Campaña"</p>
+</p>
+<p>Seleccionar la campaña permite filtrar los datos y limitarlos al periodo de tiempo de la misma.
+Los items mostrados en la linea de tiempo son filtrado por el periodo y los selectores de fechas de las actividades limitan el rango de acuerdo a la campaña seleccionada.
+Va a ser utilizado especialmente a la hora de hacer informes.</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/error_fecha_camp.png" alt="drawing" width="400"/>
+<p align="center">Error mostrado al ingresar una fecha invalida con el teclado</p>
+</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/1weekcamp.png" alt="drawing" width="300"/>
+<p align="center">Ejemplo de campaña de una semana y como se ve en los selectores</p>
+</p>
+<ul>
+<li><strong>Importante</strong> En la implementación actual las campañas no <em><strong>contienen</strong></em> a los datos solo son un mecanismo de filtrado de los mismos por un intervalo de fechas. Esto implica que al borrar una campaña no se eliminan los datos (actividades, notas, etc.). Una actividad (o cualquier otro dato fechado) pertenece a una campaña en virtud de su fecha solamente no existiendo una relación explicita.</li>
+</ul>
+<h3 id="chequeos-al-crear-una-campaña">Chequeos al crear una campaña</h3>
+<ul>
+<li>
+<p>Nombre no vacio</p>
+</li>
+<li>
+<p>Fechas deben ser asignadas</p>
+</li>
+<li>
+<p>Fecha fin &gt; Fecha inicio</p>
+</li>
+<li>
+<p>Fechas que no solapen con campañas ya definidas.</p>
+<p>Al no cumplirse alguna de estas reglas se muestra un alert notificando.</p>
+</li>
+</ul>
+<h2 id="lista-de-insumos---filtro-de-busqueda-rapida-y-otros">Lista de insumos - Filtro de busqueda rapida y otros.</h2>
+<p>En la lista de insumos se realizaron los siguienes cambios:</p>
+<ul>
+<li>
+<p>Caja de busqueda para filtrado rapido. El filtro devuelve los insumos en donde:
+-- El string forma parte del nombre comercial.
+-- El string forma parte del principio activo.
+-- El string forma parte del alguno de los nombres de los cultivos especificados en la lista de &quot;se aplica a&quot; que corresponde a ese insumo.</p>
+</li>
+<li>
+<p>Columnas con botones de reordenamiento ascendente/descendente.</p>
+</li>
+</ul>
+<h2 id="cambio-de-posición-botón-de-lenguaje-y-log-out">Cambio de posición botón de lenguaje y &quot;Log Out&quot;.</h2>
+<ul>
+<li>De acuerdo a lo señalado el 20220104, se añadió un botón selector de lenguaje en la esquina sup. derecha, en la barra de navegación y se eliminó el ComboBox en el cajon izquierdo.</li>
+<li>El botón de &quot;LogOut&quot; se desplazo hacia abajo del cajón.</li>
+</ul>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/logout.jpeg" alt="drawing" width="400"/>
+<p align="center"></p>
+</p>
+<h2 id="indicador-de-versión">Indicador de Versión</h2>
+<ul>
+<li>El indicador de versión se elimino de cajón izquierdo para que no ocupe lugar.</li>
+<li>Se puede visualizar la version actual pasando el puntero del mouse sobre el la imagen del logo en la barra de navegación.</li>
+</ul>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/version.png" alt="drawing" width="200"/>
+<p align="center"></p>
+</p>
+<h3 id="codigo-y-estadisticas">Codigo y Estadisticas</h3>
+<p>Zip con todo el codigo de la app (frontend):
+<a href="https://drive.google.com/file/d/1ZXMjRBfSu522cosYLbrcTvZPjLvPRGyZ/view?usp=sharing">https://drive.google.com/file/d/1ZXMjRBfSu522cosYLbrcTvZPjLvPRGyZ/view?usp=sharing</a></p>
+<h4 id="estadisticas-de-código">Estadisticas de código</h4>
+<p>Archivos (main code): 120
+Lineas de código: 27606</p>
+<hr>
+<h3 id="sigo-trabajando-en">Sigo trabajando en:</h3>
+<ul>
+<li>Incluir &quot;Motivos&quot; en las notas.</li>
+<li>Facilitar la creación de una aplicación partiendo de una nota autocompletando los &quot;Motivos&quot;.</li>
+<li>Adjuntar cualquier archivo a las notas y a las actividades en gral.</li>
+<li>Extraccion de condiciones en ejecución.</li>
+<li>Depositos.</li>
+<li>Transferencias entre depositos/contratistas.</li>
+</ul>
+<hr>
+<hr>
+<h3 id="cambios-anteriores">Cambios Anteriores</h3>
+<h4 id="notas---ubicación-por-defecto-a-mapa">Notas - Ubicación por Defecto a Mapa</h4>
+<ul>
+<li>Cuando se abre una nueva nota, la ubicacion por defecto se cambio por el mapa en vez del dispositivo para evitar desplazamientos si el usuario no esta en el lote en cuestion.</li>
+</ul>
+<h4 id="orden-de-trabajo-interpuesta-entre-planificacion-y-ejecución">Orden de Trabajo 'Interpuesta' entre &quot;Planificacion&quot; y &quot;Ejecución&quot;</h4>
+<ul>
+<li>Para &quot;Ejecutar&quot; es necesario generar al menos una vez la orden de trabajo.</li>
+</ul>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/orden.png" alt="drawing" width="400"/>
+</p>
+<h4 id="informe-pdf-de-comparación-entre-planificación-y-ejecución">Informe PDF de comparación entre Planificación y Ejecución</h4>
+<ul>
+<li>En el menú de item de linea de tiempo (tarjeta de actividad, esquina superior derecha) se añadio un botón &quot;Ejecución vs Planificación PDF&quot; que abre un PDF mostrando las tablas de insumos de planificación/ejecución.</li>
+</ul>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/pdf.png" alt="drawing" width="400"/>
+</p>
+<h4 id="cambio-de-agrotools---fieldpartner">Cambio de &quot;Agrotools&quot; -&gt; &quot;FieldPartner&quot;</h4>
+<ul>
+<li>Se cambiaron todas las referencias al string &quot;Agrotools&quot; por &quot;FieldPartner&quot;</li>
+<li>No deberia quedar ninguna referencia a Agrotools.</li>
+</ul>
+<h4 id="cambios-en-barramenú-de-navegación">Cambios en Barra/Menú de Navegación</h4>
+<ul>
+<li>Se modifico el layout de navegación principal dejando solo el logo y los botones principales en la barra de navegación y moviendo el resto a un cajon accessible via el boton arriba a la izquierda.</li>
+</ul>
+<h4 id="iconos-eliminado-tras-reunión-2023-01-04---posición-de-iconos-y-selector-de-idioma">Iconos (<strong>Eliminado tras reunión 2023-01-04 -&gt; Posición de Iconos y selector de idioma</strong>)</h4>
+<ul>
+<li>Se modificaron los iconos provistos quitandoles los fondos blancos y pasandolos a transparentes.</li>
+<li>Se unificaron la dimensiones de los mismos.</li>
+</ul>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/iconos_fondos_mal_hechos.png" alt="drawing" width="200"/>
+</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/iconos.png" alt="drawing" width="200"/>
+</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/nubar.png" alt="drawing" width="400"/>
+</p>
+<h4 id="detección-iplocalización-eliminado-tras-reunión-2023-01-04---dejarlo-para-despues">Detección IP/Localización (<strong>Eliminado tras reunión 2023-01-04 -&gt; &quot;Dejarlo para despues&quot;</strong>)</h4>
+<ul>
+<li>Partiendo de los comentarios del reporte [<a href="https://staging--agrotools.netlify.app/reportes/rgallardo/20221229.pdf">https://staging--agrotools.netlify.app/reportes/rgallardo/20221229.pdf</a>] y a modo de prueba, en el menú se añadio un item llamado &quot;Test Localización&quot; realiza un request a un endpoint creado especialmente en el sitio (ej <a href="https://dev--agrotools.netlify.app/geolocation">https://dev--agrotools.netlify.app/geolocation</a>) que devuelve la localización basado en la IP de origen del request.
+En la app se imprime un alert con la respuesta de este endpoint.</li>
+</ul>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/loca.png" alt="drawing" width="200"/>
+</p>
+<p align="center">
+<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/res.png" alt="drawing" width="400"/>
+</p>
+
+        
+        
+    </body>
+    </html>

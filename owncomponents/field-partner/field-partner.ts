@@ -388,7 +388,7 @@ export class FieldPartner extends LitElement {
     this.cargar_campana_seleccionada();
 
     try {
-      let campos_db_uri = base_url + "campos_" + username;
+      let campos_db_uri = base_url + "campos_" + username + "v5";
       console.log("CrearDBS - campos_db_uri", campos_db_uri);
       this.remote_campos_db = new PouchDB(campos_db_uri);
 
