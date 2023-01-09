@@ -317,6 +317,8 @@ export class AppLoader extends LitElement {
         } else {
           // No existe - Use 'es'
           console.log("Idioma seleccionado por defecto", "es");
+          gbl_state.lenguaje_seleccionado = {lang: "es"}
+
           return { lang: "es" };
         }
       });
