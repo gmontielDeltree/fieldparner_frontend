@@ -61,11 +61,12 @@ const getInsumos = async (db : PouchDB.Database)=>{
   let result = await db.allDocs({
     include_docs: true,
     startkey: "insumo:",
-    endkey: "insumo:_\ufff0",
+    endkey: "insumo:\ufff0",
     inclusive_end:true
   });
 
-  if (result.rows?.length > 0) {
+   console.log("Insumos from DB",result)
+  if (result.rows.length > 0) {
     // Hay Rows
     let docs = result.rows.map((r) => r.doc); // Extraer los docs
     return docs as Insumo[];
