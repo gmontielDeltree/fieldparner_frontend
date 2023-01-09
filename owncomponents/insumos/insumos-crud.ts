@@ -176,7 +176,7 @@ export class InsumoCrud extends LitElement {
          </div>
          <div class="modal-body">
 
-          <vaadin-vertical-layout style="align-items: stretch;">
+          <vaadin-form-layout style="align-items: stretch;" .responsiveSteps=${this.responsiveSteps}>
 
             <vaadin-text-field label="Cultivo"
             .value=${
@@ -200,11 +200,11 @@ export class InsumoCrud extends LitElement {
               }}
               ></vaadin-text-field>
               <vaadin-text-field label="Estadio Hasta"></vaadin-text-field>
-              <vaadin-text-field label="Dosis min."></vaadin-text-field>
-              <vaadin-text-field label="Dosis sugerida"></vaadin-text-field>
-              <vaadin-text-field label="Dosis max."></vaadin-text-field>
+              <vaadin-number-field label="Dosis min."></vaadin-number-field>
+              <vaadin-number-field label="Dosis sugerida"></vaadin-number-field>
+              <vaadin-number-field label="Dosis max."></vaadin-number-field>
 
-            </vaadin-vertical-layout>
+            </vaadin-form-layout>
 
          </div>
 
@@ -298,7 +298,7 @@ export class InsumoCrud extends LitElement {
                   error-message="Por favor, ingrese una dirección valida"
                   clear-button-visible
                 ></vaadin-text-field>
-                <vaadin-text-field
+                <vaadin-number-field
                   label="Precio de Lista"
                   name="precio"
                   .value=${this.insumo.precio}
@@ -308,7 +308,11 @@ export class InsumoCrud extends LitElement {
                   }}
                   error-message="Por favor, ingrese una dirección valida"
                   clear-button-visible
-                ></vaadin-text-field>
+                  theme="align-right"
+                  autoselect
+                >
+                  <div slot='prefix'>USD</div>
+              </vaadin-number-field>
 
               </vaadin-form-layout>
 
