@@ -28,7 +28,7 @@ import { StateController } from "@lit-app/state";
 import { ref, createRef } from "lit/directives/ref.js";
 import "@vaadin/tabsheet";
 import { Lenguage } from "../tipos/tipos-varios";
-import "../campana/menu-campana/menu-campana"
+import "../campana/menu-campana/menu-campana";
 
 @customElement("app-layout-navbar-placement")
 export class Example extends LitElement {
@@ -66,8 +66,8 @@ export class Example extends LitElement {
 
   geocoderRef = createRef<HTMLElement>();
 
-  firstUpdated(){
-   // this.shadowRoot.querySelector("vaadin-select").shadowRoot.querySelector('[part="toggle-button"]').style.display = 'none'
+  firstUpdated() {
+    // this.shadowRoot.querySelector("vaadin-select").shadowRoot.querySelector('[part="toggle-button"]').style.display = 'none'
   }
 
   willUpdate(properties) {
@@ -125,7 +125,9 @@ export class Example extends LitElement {
     ${this.lenguajes.map(
       (lang) => html`
         <vaadin-item value="${lang.valor}">
-          <div style="display: flex; align-items: center;justify-content:center;">
+          <div
+            style="display: flex; align-items: center; justify-content:center;"
+          >
             <img
               src="${lang.icono}"
               alt="${lang.nombre}"
@@ -198,14 +200,14 @@ export class Example extends LitElement {
               ></div>
             </vaadin-tab>
             <vaadin-tab id="dummy-tab" ${ref(this.geocoderRef)}></vaadin-tab>
-            <vaadin-tab >
-              <menu-campana-button/>
+            <vaadin-tab>
+              <menu-campana-button />
             </vaadin-tab>
           </vaadin-tabs>
-<!--Se pueden usar css variables para pasar o alterar styles -->
-<!--https://stackoverflow.com/questions/70634210/lit-how-to-apply-style-to-nested-template-->
+          <!--Se pueden usar css variables para pasar o alterar styles -->
+          <!--https://stackoverflow.com/questions/70634210/lit-how-to-apply-style-to-nested-template-->
           <vaadin-select
-            style="margin-right:4px; width:4em; --lumo-icons-dropdown:''; --lumo-contrast-10pct:transparent;"
+            style="margin-right:4px; width:4em; --lumo-icons-dropdown:''; --lumo-contrast-10pct:transparent; align-items: center;"
             .value=${this.selected_language}
             @change=${(e: CustomEvent) => {
               let lang = e.target.value;
@@ -222,14 +224,18 @@ export class Example extends LitElement {
                       // Existe
                       let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
                       lang_doc.lang = lang;
-                      gbl_state.user_db.put(lang_doc);
+                      gbl_state.user_db
+                        .put(lang_doc)
+                        .then(() => window.location.reload());
                     } else {
                       // No existe
                       let lang_doc: Lenguage = {
                         _id: "user_language",
                         lang: lang,
                       };
-                      gbl_state.user_db.put(lang_doc);
+                      gbl_state.user_db
+                        .put(lang_doc)
+                        .then(() => window.location.reload());
                     }
                   });
               }
@@ -238,7 +244,10 @@ export class Example extends LitElement {
           ></vaadin-select>
         </vaadin-horizontal-layout>
 
-        <vaadin-vertical-layout slot="drawer" style="height:100%;justify-content: space-between;">
+        <vaadin-vertical-layout
+          slot="drawer"
+          style="height:100%;justify-content: space-between;"
+        >
           <vaadin-tabs orientation="vertical">
             <vaadin-tab>
               <a tabindex="-1">
@@ -328,7 +337,6 @@ export class Example extends LitElement {
                 <span>Log Out</span>
               </a>
             </vaadin-tab>
-
           </vaadin-tabs>
         </vaadin-vertical-layout>
 
