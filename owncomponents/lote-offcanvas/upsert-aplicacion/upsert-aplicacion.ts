@@ -138,9 +138,9 @@ export class UpsertAplicacion extends LitElement {
   }
 
   tipo_2_titulo = {
-    siembra: translate("siembra"),
-    cosecha: translate("cosecha"),
-    aplicacion: translate("aplicación"),
+    siembra: get("siembra"),
+    cosecha: get("cosecha"),
+    aplicacion: get("aplicación"),
   };
 
   tipo_2_categorias_iniciales = {
@@ -149,10 +149,13 @@ export class UpsertAplicacion extends LitElement {
     aplicacion: ["Agroquímicos", "Fertilizantes", "Combustible"],
   };
 
+  full_title(){
+    return gbl_state.campana_seleccionada.nombre + " - " + get('planificacion') + " - " + this.tipo_2_titulo[this.tipo];
+  }
   inicializar_adicion() {
     // Es una nueva
     this.tipo = this.location.params.tipo as string;
-    this.titulo = this.tipo_2_titulo[this.tipo];
+    this.titulo = this.full_title()
 
     this.inicializar_lineas();
     this.populateContratistas();
@@ -210,7 +213,7 @@ export class UpsertAplicacion extends LitElement {
     this.getActividad(actividad_uuid).then((actividad) => {
       this.actividad = actividad;
       this.tipo = actividad.tipo;
-      this.titulo = this.tipo_2_titulo[this.tipo];
+      this.titulo =  this.full_title()
 
       this.populateContratistas();
       this.getLote(campo_nombre, lote_nombre);
