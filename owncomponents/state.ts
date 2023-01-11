@@ -16,7 +16,7 @@ class MyState extends State {
  @property() router : Router
  @property() user_db: PouchDB.Database
  @property() user : any
- @property() online: boolean
+ @property({value: false}) online: boolean
  @property() campana_seleccionada : Campana
  @property() lenguaje_seleccionado: Lenguage
  @property({value: false}) puedo_renderizar: boolean 
