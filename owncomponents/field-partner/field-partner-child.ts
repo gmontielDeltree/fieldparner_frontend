@@ -113,10 +113,7 @@ export class FieldPartnerChild extends LitElement {
   constructor() {
     super();
 
-    gbl_state.online = window.navigator.onLine;
 
-    window.addEventListener("online", handleConnectionChange);
-    window.addEventListener("offline", handleConnectionChange);
 
     window.addEventListener("DOMContentLoaded", () => {
       const parsedUrl = new URL(window.location);

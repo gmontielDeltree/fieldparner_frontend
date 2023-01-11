@@ -18,6 +18,11 @@ El State del la app es monitoreado por la libreria @lit-app/state
 # Mantenimiento 
 npm-check
 
+
+# Links
+### Discusión Multiples DB.
+https://github.com/pouchdb/pouchdb/issues/3732
+
 # Demo Database
 darkdb = new PouchDB('dark');
 

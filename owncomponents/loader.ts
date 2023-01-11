@@ -24,6 +24,7 @@ export class AppLoader extends LitElement {
   private remote_db: PouchDB.Database;
   private user: any = { name: "", sub: "" };
   private logged_in: boolean;
+  private online : boolean = false;
 
   createRenderRoot() {
 	return this;
@@ -42,6 +43,10 @@ export class AppLoader extends LitElement {
   }
 
   render() {
+
+    if(!this.ready && !gbl_state.online ){
+      return html`Not Ready...Offline...Loading Local DBs`
+    }
     if (!this.ready) {
       return html`Not Ready...Loading DBs`;
     }
@@ -51,6 +56,13 @@ export class AppLoader extends LitElement {
   }
 
   async init_the_whole_thing() {
+    // Check si estoy on/offline
+    gbl_state.online = window.navigator.onLine;
+
+    // Handlers para registrar on/offline
+    window.addEventListener("online", handleConnectionChange);
+    window.addEventListener("offline", handleConnectionChange);
+
     let sitio = window.location.hostname;
 
     if (sitio === "agrotools.netlify.app") {
@@ -241,6 +253,16 @@ export class AppLoader extends LitElement {
         //this.load_campos_y_settings();
         console.log("CHANGES!!");
       });
+
+    // Cargar el Idioma y darle Ready
+    this.cargar_idioma()
+    .then(this.set_idioma)
+    .then(this.cargar_campana_seleccionada)
+    .then((r) => {
+      this.ready = true;
+      console.log("Ready...Estado Inicial", gbl_state, r);
+    });
+
   }
 
   replicar_y_sincronizar() {
@@ -330,4 +352,25 @@ export class AppLoader extends LitElement {
   }
   /**** FIN Bases de Datos */
   // #endregion
+
+
+
+}
+
+var wentOffline, wentOnline;
+
+function handleConnectionChange(event) {
+  if (event.type == "offline") {
+    console.log("You lost connection.");
+    wentOffline = new Date(event.timeStamp);
+    gbl_state.online = false;
+  }
+  if (event.type == "online") {
+    console.log("You are now back online.");
+    wentOnline = new Date(event.timeStamp);
+    gbl_state.online = true;
+    console.log(
+      "You were offline for " + (wentOnline - wentOffline) / 1000 + "seconds."
+    );
+  }
 }
