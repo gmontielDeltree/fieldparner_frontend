@@ -289,7 +289,7 @@ export class AppLoader extends LitElement {
       .catch(() => {
         //Missing o error
         gbl_state.campana_seleccionada = {
-          nombre: get("siembra"),
+          nombre: get("sin_temporada"),
           inicio: "2000-01-01",
           fin: "2100-12-31",
         };
