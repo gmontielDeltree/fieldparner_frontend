@@ -1,6 +1,5 @@
 import { LitElement, html, unsafeCSS } from "lit";
 import { map } from "lit/directives/map.js";
-import { aplicacionMachine } from "./lote-machine.ts";
 import { Router } from "@vaadin/router";
 import { StateController } from "@lit-app/state";
 import gbl_state from "../state.js";
@@ -58,6 +57,7 @@ import { init } from "xstate/lib/actionTypes";
 import "@vaadin/tooltip";
 import { informe_diferencias_definition } from "./informe_comparacion_pdf.js";
 import { translate } from "lit-translate";
+import { gbl_docs_starting, only_docs } from "../helpers";
 
 const capitalize = (mySentence) => {
   if (mySentence === null || mySentence === undefined) {
@@ -159,36 +159,14 @@ export class LoteOffcanvasSide extends LitElement {
   @state()
   data_loaded: boolean = false;
 
-  show_step = (n) => {
-    if (!this._steps_elements[n]._isShown) {
-      this._steps_elements.map((el) => el.hide());
-      this._steps_elements[n].show();
-    }
-  };
-
   constructor() {
     super();
     /**
      * Sensible default para el contexto
      */
-    this._ctx = aplicacionMachine.initialState.context;
-
-    this.addEventListener("cambio-estado", (e: CustomEvent) => {
-      let doc = e.detail.item;
-      gbl_state.db.put(doc);
-      console.log("Cambio de Estado - PUT", doc);
-      this.reload_actividades();
-    });
 
     this.addEventListener("refrescar-actividades", (e: CustomEvent) =>
       this.reload_actividades()
-    );
-
-    this.addEventListener("guardar-cosecha", (e: CustomEvent) =>
-      this.guardar_aplicacion("cosecha", e.detail)
-    );
-    this.addEventListener("guardar-siembra", (e: CustomEvent) =>
-      this.guardar_aplicacion("siembra", e.detail)
     );
 
     this.addEventListener("generar-ot", (e: CustomEvent) =>
@@ -206,20 +184,6 @@ export class LoteOffcanvasSide extends LitElement {
     this.addEventListener("eliminar-actividad", (e: CustomEvent) =>
       this.eliminar_actividad(e.detail._id)
     );
-
-    this.addEventListener("editar-actividad", (e: CustomEvent) =>
-      this.editar_actividad(e.detail.act_doc)
-    );
-
-    this.addEventListener("guardar-edicion", async (e: CustomEvent) => {
-      let old_id = e.detail.old_id;
-      let new_doc = e.detail.actividad;
-      delete new_doc._rev;
-
-      this.eliminar_actividad(old_id);
-
-      this.guardar_aplicacion("siembra", new_doc);
-    });
 
     this.addEventListener("eliminar-nota", (e: CustomEvent) => {
       let nota_doc = e.detail.nota_doc;
@@ -256,28 +220,11 @@ export class LoteOffcanvasSide extends LitElement {
     //this._actividades = []
   }
 
-  load_insumos() {
-    gbl_state.db
-      .allDocs({
-        startkey: "insumo:",
-        endkey: "insumo:\ufff0",
-        include_docs: true,
-      })
-      .then((e) => {
-        //this._insumos = Object.values(e.);
-        console.log("Insumos DOC", e);
-        this._insumos = e.rows.map((r) => r.doc) as unknown as Insumo[];
-      })
-      .catch((e) => {});
-  }
 
   firstUpdated() {
     this._lotesOffcanvas = new Offcanvas(
       this.shadowRoot.getElementById("lote-offcanvas-side")
     );
-    this._steps_elements = [
-      ...this.shadowRoot.querySelectorAll(".aplicacion.step"),
-    ].map((el) => new Modal(el));
   }
 
   show() {
@@ -321,25 +268,6 @@ export class LoteOffcanvasSide extends LitElement {
     // this.dispatchEvent(event);
   }
 
-  siembra() {
-    this.load_insumos();
-    this.shadowRoot.getElementById("siembra-add-el").start();
-  }
-
-  nueva_actividad() {
-    const someContext = aplicacionMachine.initialState.context;
-    someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
-    // this.init_fsm(someContext);
-
-    this.fsm?.send({ type: "NEXT" });
-    this.load_insumos();
-  }
-
-  abrir_editor_actividad() {
-    this.fsm.start();
-    this.fsm?.send({ type: "NEXT" });
-    this.load_insumos();
-  }
 
   notas() {
     this._lotesOffcanvas.hide();
@@ -363,7 +291,7 @@ export class LoteOffcanvasSide extends LitElement {
     // this.fsm?.send("CANCEL");
   }
 
-  evento_show_ndvi(e) {
+  evento_show_ndvi() {
     Router.go("/indices/" + this._lote_doc.id);
     this._lotesOffcanvas.hide();
   }
@@ -485,23 +413,7 @@ export class LoteOffcanvasSide extends LitElement {
       });
   }
 
-  editar_actividad(actividad) {
-    if (actividad.tipo === "siembra") {
-      console.log("EDITAR", actividad);
-      this.shadowRoot.getElementById("siembra-add-el").editar(actividad);
-    }
 
-    if (actividad.tipo === "aplicacion") {
-      console.log("EDITAR", actividad);
-      // this.init_fsm(actividad);
-      this.abrir_editor_actividad();
-      //this.shadowRoot.getElementById("siembra-add-el").editar(actividad);
-    }
-
-    if (actividad.tipo === "cosecha") {
-      this.shadowRoot.getElementById("cosecha-add-el").editar(actividad);
-    }
-  }
 
   tiene_cultivo_este_lote() {
     /**
@@ -561,112 +473,7 @@ export class LoteOffcanvasSide extends LitElement {
     }
   }
 
-  // guardar_aplicacion(tipo, actividad_doc) {
-  //   let detalles = {};
-  //   let aplicacion = {};
-  //   // Save to lote properties
-  //   let ts_ahora = new Date().toISOString();
-
-  //   if (tipo === "aplicacion") {
-  //     this.fsm?.send("CANCEL");
-  //     // aplicacion = {
-  //     //   uuid: uuid4(),
-  //     //   tipo: "siembra",
-  //     //   ts_generacion: ts_ahora,
-  //     //   detalles: detalles,
-  //     // };
-  //     console.log("Guardando Aplicacion", actividad_doc);
-  //     gbl_state.db.put(actividad_doc);
-  //     this.reload_actividades();
-  //     return;
-  //   } else if (tipo === "siembra") {
-  //     // aplicacion = {
-  //     //   uuid: uuid4(),
-  //     //   tipo: "siembra",
-  //     //   ts_generacion: ts_ahora,
-  //     //   detalles: detalles,
-  //     // };
-
-  //     gbl_state.db.put(actividad_doc);
-  //     this.reload_actividades();
-  //     return;
-  //   } else if (tipo === "cosecha") {
-  //     gbl_state.db.put(actividad_doc);
-  //     this.reload_actividades();
-  //     return;
-  //   }
-
-  //   // Condiciones ambientales?
-
-  //   // Re-Get Lotes y update
-  //   gbl_state.db.get(this.campo_id).then((doc) => {
-  //     let lote_index = doc.lotes.findIndex(
-  //       (lote) => lote.properties.nombre === this.lote_nombre
-  //     );
-  //     if (lote_index > -1) {
-  //       // Cool - Existe
-  //       let current_aplicaciones =
-  //         doc.lotes[lote_index].properties.actividades || [];
-  //       current_aplicaciones.push(aplicacion);
-
-  //       // Ordenar por fecha
-  //       function compare(a, b) {
-  //         let ma = moment(a.detalles.fecha, "YYYY-MM-DD");
-  //         let mb = moment(b.detalles.fecha, "YYYY-MM-DD");
-  //         if (ma.isAfter(mb)) {
-  //           return -1;
-  //         }
-  //         if (ma.isBefore(mb)) {
-  //           return 1;
-  //         }
-  //         // a must be equal to b
-  //         return 0;
-  //       }
-  //       current_aplicaciones.sort(compare);
-
-  //       doc.lotes[lote_index].properties.actividades = current_aplicaciones;
-  //       gbl_state.db.put(doc).then((r) => console.log("Actividad Agregada"));
-
-  //       // Recargemoslos
-  //       this._campo_doc = doc;
-  //       this._lote_doc = doc.lotes[lote_index];
-  //       // this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
-  //     }
-  //   });
-  // }
-
-  // init_fsm(act: Actividad) {
-  //   this.fsm = interpret(aplicacionMachine.withContext(act))
-  //     .onTransition((state) => {
-  //       this._ctx = state.context as Actividad;
-  //       //console.log(state.value);
-  //       if (state.matches("idle")) {
-  //         this._steps_elements.map((el) => el.hide());
-  //       }
-  //       if (state.matches("editing.fecha")) {
-  //         this.show_step(0);
-  //       } else if (state.matches("editing.hectareas")) {
-  //         this.show_step(1);
-  //       } else if (state.matches("editing.insumo")) {
-  //         this.show_step(2);
-  //       } else if (state.matches("editing.dosis")) {
-  //         this.show_step(3);
-  //       } else if (state.matches("editing.motivo")) {
-  //         this.show_step(4);
-  //       } else if (state.matches("editing.masinsumos")) {
-  //         this.show_step(5);
-  //       } else if (state.matches("editing.comentario")) {
-  //         this.show_step(6);
-  //       } else if (state.matches("editing.resumiendo")) {
-  //         this.show_step(7);
-  //       } else if (state.matches("editing.share")) {
-  //         this.show_step(8);
-  //       }
-  //     })
-  //     .start();
-  // }
-
-  /**
+   /**
    * Actualiza los documentos si las propiedades han cambiando.
    * @param {*} changedProperties
    */
@@ -692,42 +499,12 @@ export class LoteOffcanvasSide extends LitElement {
             (lote) => lote.properties.nombre === this.lote_nombre
           )[0] || {};
 
-        const someContext = aplicacionMachine.initialState.context;
-        someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
-        // this.init_fsm(someContext);
-
-        this.load_insumos();
         this.reload_lote_doc_y_localizar();
         this.reload_actividades();
         this._lotesOffcanvas.show();
-        // this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
       });
     }
 
-    // if (
-    //   changedProperties.has("campo_id") ||
-    //   changedProperties.has("lote_nombre")
-    // ) {
-    //   if (this.campo_id === "") {
-    //     return;
-    //   }
-
-    //   gbl_state.db.get(this.campo_id).then((doc) => {
-    //     this._campo_doc = doc;
-    //     this._lote_doc =
-    //       doc.lotes.filter(
-    //         (lote) => lote.properties.nombre === this.lote_nombre
-    //       )[0] || {};
-
-    //     const someContext = aplicacionMachine.initialState.context;
-    //     someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
-    //     this.init_fsm(someContext);
-
-    //     this.reload_actividades();
-
-    //     // this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
-    //   });
-    // }
   }
 
   reload_lote_doc_y_localizar() {
@@ -754,35 +531,11 @@ export class LoteOffcanvasSide extends LitElement {
   }
 
   reload_actividades() {
-    gbl_state.db
-      .allDocs({
-        include_docs: true,
-        attachments: true,
-        binary: true,
-        startkey: "actividad:nota:" + this._lote_doc.id,
-        endkey: "actividad:nota:" + this._lote_doc.id + "\ufff0",
-      })
-      .then((result) => {
-        let rrows = result.rows;
-        //console.log("Actividad con Attachments", rrows);
-        this._actividades = [...rrows];
-      });
-
-    gbl_state.db
-      .allDocs({
-        include_docs: true,
-        attachments: true,
-        binary: true,
-        //descending:true,
-        startkey: "actividad:",
-        endkey: "actividad:\ufff0",
-      })
-      .then((e) => {
-        let acts = e.rows.map((r) => r.doc);
+    gbl_docs_starting("actividad",true,true,true).then(only_docs)
+    .then((acts : Actividad[]) => {
         let s = acts.filter(
           ({ lote_uuid }) => lote_uuid === this._lote_doc.properties.uuid
         );
-
         this._actividades_docs = this.filtro_esta_temporada(s.reverse());
       });
   }
@@ -892,11 +645,11 @@ export class LoteOffcanvasSide extends LitElement {
                   text: "Más Acciones",
                   children: [
                     { text: "Notas", value: "notas" },
-                    { text: "Siembra", value: "siembra" },
-                    { text: "Aplicación", value: "aplicacion" },
-                    { text: "Cosecha", value: "cosecha" },
+                    { text: "Planificar Siembra", value: "siembra" },
+                    { text: "Planificar Aplicación", value: "aplicacion" },
+                    { text: "Planificar Cosecha", value: "cosecha" },
                     { text: "NDVI", value: "ndvi" },
-                    { text: "Eliminar", value: "eliminar" },
+                    { text: "Eliminar Lote", value: "eliminar" },
                   ],
                 },
               ]}"
