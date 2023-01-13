@@ -2,6 +2,7 @@ import { isAfter, isBefore, isWithinInterval } from "date-fns";
 import { gbl_state } from "./state";
 import parseISO from "date-fns/parseISO";
 import { ro } from "date-fns/locale";
+import { Actividad } from "./depositos/depositos-types";
 var img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
@@ -105,10 +106,12 @@ const get_lote_by_names = async (
 
 const get_actividad_by_uuid = async (uuid) => {};
 
-export const gbl_docs_starting = async (key: string, devolver_docs: boolean) => {
+export const gbl_docs_starting = async (key: string, devolver_docs: boolean=false, attachments:boolean = false, binary:boolean = false) => {
   return gbl_state.db
     .allDocs({
       include_docs: devolver_docs,
+      attachments: attachments,
+      binary: binary,
       startkey: key,
       endkey: key + "\ufff0",
     })
@@ -125,6 +128,30 @@ export const only_docs = (alldocs : PouchDB.Core.AllDocsResponse<{}>) => {
   }else{
       return []
   }
+}
+
+
+const actividades_y_ejecuciones = (lote_uuid)=>{
+  gbl_docs_starting("actividad",true,true,true).then(only_docs)
+  .then((acts : Actividad[]) => {
+      let s = acts.filter(
+        ({ lote_uuid }) => lote_uuid === lote_uuid
+      );
+
+      let _actividades_docs = filtro_esta_temporada(s.reverse());
+      
+    });
+}
+
+const filtro_esta_temporada = (actividades : Actividad[]) => {
+  let inicio = parseISO(gbl_state.campana_seleccionada.inicio)
+  let fin = parseISO(gbl_state.campana_seleccionada.fin)
+  let deesta = actividades.filter((act)=>{
+    let fecha_str = (act.tipo === 'nota') ? act.fecha : act.detalles.fecha_ejecucion_tentativa
+    let fecha = parseISO(fecha_str)
+    return isWithinInterval(fecha, {start:inicio,end:fin} )
+  })
+  return deesta;
 }
 
 export const es_esta_campana = (isofecha) => {
