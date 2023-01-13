@@ -11,12 +11,12 @@ import "@vaadin/combo-box";
 import "@polymer/paper-spinner/paper-spinner.js";
 import mapboxgl, { Marker, Popup } from "mapbox-gl";
 import { property, state } from "lit/decorators.js";
-import { format, isWithinInterval } from 'date-fns';
+import { format, isWithinInterval } from "date-fns";
 import parseISO from "date-fns/parseISO";
 import "@vaadin/menu-bar";
 import { gblStateLoaded } from "../state.js";
 import "@vaadin/scroller";
-import "@vaadin/vertical-layout"
+import "@vaadin/vertical-layout";
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
 
@@ -57,7 +57,11 @@ import { init } from "xstate/lib/actionTypes";
 import "@vaadin/tooltip";
 import { informe_diferencias_definition } from "./informe_comparacion_pdf.js";
 import { translate } from "lit-translate";
-import { gbl_docs_starting, only_docs } from "../helpers";
+import {
+  gbl_docs_starting,
+  only_docs,
+  actividades_y_ejecuciones,
+} from "../helpers";
 
 const capitalize = (mySentence) => {
   if (mySentence === null || mySentence === undefined) {
@@ -130,7 +134,7 @@ export class LoteOffcanvasSide extends LitElement {
   _actividades: any;
 
   @state()
-  _actividades_docs: any;
+  _actividades_ejecuciones_docs: any;
 
   @state({
     hasChanged(newVal, oldVal) {
@@ -174,7 +178,7 @@ export class LoteOffcanvasSide extends LitElement {
     );
 
     this.addEventListener("generar-informe-diferencia-pdf", (e: CustomEvent) =>
-    this.informe_comparacion_pdf(e.detail)
+      this.informe_comparacion_pdf(e.detail)
     );
 
     this.addEventListener("share-ot", (e: CustomEvent) =>
@@ -219,7 +223,6 @@ export class LoteOffcanvasSide extends LitElement {
     });
     //this._actividades = []
   }
-
 
   firstUpdated() {
     this._lotesOffcanvas = new Offcanvas(
@@ -268,13 +271,11 @@ export class LoteOffcanvasSide extends LitElement {
     // this.dispatchEvent(event);
   }
 
-
   notas() {
     this._lotesOffcanvas.hide();
     this.shadowRoot.getElementById("notas-oc").nueva_nota();
   }
 
- 
   abrir_pdf(params) {
     // import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
     //   pdfMake.fonts = pdf_fonts;
@@ -374,10 +375,7 @@ export class LoteOffcanvasSide extends LitElement {
       });
   }
 
-
-
-  informe_comparacion_pdf({actividad, ejecucion}) {
-
+  informe_comparacion_pdf({ actividad, ejecucion }) {
     console.log("GENERANDO PDF", actividad);
     let dd = informe_diferencias_definition(
       actividad,
@@ -401,7 +399,6 @@ export class LoteOffcanvasSide extends LitElement {
       });
   }
 
-
   eliminar_actividad(actividad_id) {
     gbl_state.db
       .get(actividad_id)
@@ -412,8 +409,6 @@ export class LoteOffcanvasSide extends LitElement {
         this.reload_actividades();
       });
   }
-
-
 
   tiene_cultivo_este_lote() {
     /**
@@ -473,7 +468,7 @@ export class LoteOffcanvasSide extends LitElement {
     }
   }
 
-   /**
+  /**
    * Actualiza los documentos si las propiedades han cambiando.
    * @param {*} changedProperties
    */
@@ -504,7 +499,6 @@ export class LoteOffcanvasSide extends LitElement {
         this._lotesOffcanvas.show();
       });
     }
-
   }
 
   reload_lote_doc_y_localizar() {
@@ -519,31 +513,38 @@ export class LoteOffcanvasSide extends LitElement {
     });
   }
 
-  filtro_esta_temporada = (actividades : Actividad[]) => {
-    let inicio = parseISO(gbl_state.campana_seleccionada.inicio)
-    let fin = parseISO(gbl_state.campana_seleccionada.fin)
-    let deesta = actividades.filter((act)=>{
-      let fecha_str = (act.tipo === 'nota') ? act.fecha : act.detalles.fecha_ejecucion_tentativa
-      let fecha = parseISO(fecha_str)
-      return isWithinInterval(fecha, {start:inicio,end:fin} )
-    })
+  filtro_esta_temporada = (actividades: Actividad[]) => {
+    let inicio = parseISO(gbl_state.campana_seleccionada.inicio);
+    let fin = parseISO(gbl_state.campana_seleccionada.fin);
+    let deesta = actividades.filter((act) => {
+      let fecha_str =
+        act.tipo === "nota"
+          ? act.fecha
+          : act.detalles.fecha_ejecucion_tentativa;
+      let fecha = parseISO(fecha_str);
+      return isWithinInterval(fecha, { start: inicio, end: fin });
+    });
     return deesta;
-  }
+  };
 
   reload_actividades() {
-    gbl_docs_starting("actividad",true,true,true).then(only_docs)
-    .then((acts : Actividad[]) => {
-        let s = acts.filter(
-          ({ lote_uuid }) => lote_uuid === this._lote_doc.properties.uuid
-        );
-        this._actividades_docs = this.filtro_esta_temporada(s.reverse());
-      });
+    actividades_y_ejecuciones(this._lote_doc.properties.uuid).then((res) => {
+      this._actividades_ejecuciones_docs = res;
+      console.log("RESSSS", res);
+    });
+    // gbl_docs_starting("actividad",true,true,true).then(only_docs)
+    // .then((acts : Actividad[]) => {
+    //     let s = acts.filter(
+    //       ({ lote_uuid }) => lote_uuid === this._lote_doc.properties.uuid
+    //     );
+    //     this._actividades_docs = this.filtro_esta_temporada(s.reverse());
+    //   });
   }
 
   localizar_lote() {
     console.log("LOCALIZAR", this._lote_doc);
     gbl_state.map.fitBounds(bbox(this._lote_doc), {
-      padding: { top: 50, bottom: window.innerHeight / 2 , left:800},
+      padding: { top: 50, bottom: window.innerHeight / 2, left: 800 },
     });
   }
 
@@ -574,8 +575,6 @@ export class LoteOffcanvasSide extends LitElement {
   }
 
   render() {
-  
-
     // Render propiamente dicho
     return html`
       <div
@@ -714,19 +713,17 @@ export class LoteOffcanvasSide extends LitElement {
             </div>
           </div>
 
-            <vaadin-scroller
-              class="py-1"
-              scroll-direction="vertical"
-              style="height: 90%;"
-            >
-              <lit-timeline-side
-                .db=${gbl_state.db}
-                .actividades_docs=${this._actividades}
-                .actividades=${this._lote_doc?.properties.actividades}
-                .a=${this._actividades_docs}
-                id="actividades-timeline"
-              ></lit-timeline-side>
-            </vaadin-scroller>
+          <vaadin-scroller
+            class="py-1"
+            scroll-direction="vertical"
+            style="height: 90%;"
+          >
+            <lit-timeline-side
+              .db=${gbl_state.db}
+              .a=${this._actividades_ejecuciones_docs}
+              id="actividades-timeline"
+            ></lit-timeline-side>
+          </vaadin-scroller>
         </div>
       </div>
 
@@ -739,5 +736,8 @@ export class LoteOffcanvasSide extends LitElement {
     `;
   }
 }
+
+// .actividades_docs=${this._actividades}
+// .actividades=${this._lote_doc?.properties.actividades}
 
 customElements.define("lote-offcanvas-side", LoteOffcanvasSide);

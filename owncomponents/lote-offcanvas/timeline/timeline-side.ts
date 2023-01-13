@@ -23,6 +23,7 @@ import gbl_state from "../../state";
 import "./actividad-item";
 import "@vaadin/scroller";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
+import { GridItemModel } from '@vaadin/grid';
 
 const url_repeticion = (actividad_uuid) => {
   let location = gbl_state.router.location.pathname;
@@ -529,7 +530,8 @@ export class TimelineSideElement extends LitElement {
       </div>
     `;
 
-    const time_item = (item: Actividad) => {
+    const time_item = ({actividad, ejecucion_id}:{actividad:Actividad, ejecucion_id:string}) => {
+      let item = actividad
       if (item.tipo === "nota") {
         // Es un documento
         //console.log("OOOOOOOOOOO NOTA", item)

@@ -106,7 +106,12 @@ const get_lote_by_names = async (
 
 const get_actividad_by_uuid = async (uuid) => {};
 
-export const gbl_docs_starting = async (key: string, devolver_docs: boolean=false, attachments:boolean = false, binary:boolean = false) => {
+export const gbl_docs_starting = async (
+  key: string,
+  devolver_docs: boolean = false,
+  attachments: boolean = false,
+  binary: boolean = false
+) => {
   return gbl_state.db
     .allDocs({
       include_docs: devolver_docs,
@@ -120,39 +125,62 @@ export const gbl_docs_starting = async (key: string, devolver_docs: boolean=fals
     });
 };
 
-export const only_docs = (alldocs : PouchDB.Core.AllDocsResponse<{}>) => {
-  if(alldocs.rows.length > 0){
+export const only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
+  if (alldocs.rows.length > 0) {
     return alldocs.rows.map((row) => {
-      return row.doc
-    })
-  }else{
-      return []
+      return row.doc;
+    });
+  } else {
+    return [];
   }
-}
+};
 
-
-const actividades_y_ejecuciones = (lote_uuid)=>{
-  gbl_docs_starting("actividad",true,true,true).then(only_docs)
-  .then((acts : Actividad[]) => {
-      let s = acts.filter(
-        ({ lote_uuid }) => lote_uuid === lote_uuid
-      );
+export const actividades_y_ejecuciones = (lote_uuid) => {
+  return gbl_docs_starting("actividad", true, true, true)
+    .then(only_docs)
+    .then((acts: Actividad[]) => {
+      let s = acts.filter(({ lote_uuid }) => lote_uuid === lote_uuid);
 
       let _actividades_docs = filtro_esta_temporada(s.reverse());
-      
-    });
-}
+      return gbl_state.db
+        .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:_\ufff0" })
+        .then((result) => {
+          let respuesta : {actividad: Actividad, ejecucion_id:string} []= [];
+          if (result.rows) {
+            // Iter 1: Actividades
+            _actividades_docs.forEach((actividad) => {
+              let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid));
+              respuesta.push({actividad:actividad,ejecucion_id:midoc?.id})
+            });
 
-const filtro_esta_temporada = (actividades : Actividad[]) => {
-  let inicio = parseISO(gbl_state.campana_seleccionada.inicio)
-  let fin = parseISO(gbl_state.campana_seleccionada.fin)
-  let deesta = actividades.filter((act)=>{
-    let fecha_str = (act.tipo === 'nota') ? act.fecha : act.detalles.fecha_ejecucion_tentativa
-    let fecha = parseISO(fecha_str)
-    return isWithinInterval(fecha, {start:inicio,end:fin} )
-  })
+            console.log("Respuesta actividades y ejecuciones preorden", respuesta)
+            // Ordenar respuesta teniendo en cuenta la ejecución.
+            respuesta.sort((a,b) => {
+              // Si tiene ejecucion usar la fecha de ejecucion
+              let fecha_1 = a.ejecucion_id ? parseISO(a.ejecucion_id.split(":")[1]) : parseISO(a.actividad.tipo==='nota' ? a.actividad.fecha : a.actividad.detalles.fecha_ejecucion_tentativa)
+              let fecha_2 = b.ejecucion_id ? parseISO(b.ejecucion_id.split(":")[1]) : parseISO(b.actividad.tipo==='nota' ? b.actividad.fecha : b.actividad.detalles.fecha_ejecucion_tentativa)
+              return isBefore(fecha_1,fecha_2) ? 1 : -1;
+            })
+          }
+
+          console.log("Respuesta actividades y ejecuciones post orden", respuesta)
+
+          return respuesta;
+        });
+    });
+};
+
+const filtro_esta_temporada = (actividades: Actividad[]) => {
+  let inicio = parseISO(gbl_state.campana_seleccionada.inicio);
+  let fin = parseISO(gbl_state.campana_seleccionada.fin);
+  let deesta = actividades.filter((act) => {
+    let fecha_str =
+      act.tipo === "nota" ? act.fecha : act.detalles.fecha_ejecucion_tentativa;
+    let fecha = parseISO(fecha_str);
+    return isWithinInterval(fecha, { start: inicio, end: fin });
+  });
   return deesta;
-}
+};
 
 export const es_esta_campana = (isofecha) => {
   let end = parseISO(gbl_state.campana_seleccionada.fin);
