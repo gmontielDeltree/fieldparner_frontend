@@ -61,7 +61,7 @@ export class RepetirAplicacion extends LitElement {
       .allDocs({
         include_docs: true,
         startkey: "campos",
-        endkey: "campos_\ufff0",
+        endkey: "campos\ufff0",
       })
       .then(({ rows }) => {
         this.campos = rows.map(({ doc }) => doc);

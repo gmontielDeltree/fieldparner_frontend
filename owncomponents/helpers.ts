@@ -143,7 +143,7 @@ export const actividades_y_ejecuciones = (lote_uuid) => {
 
       let _actividades_docs = filtro_esta_temporada(s.reverse());
       return gbl_state.db
-        .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:_\ufff0" })
+        .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:\ufff0" })
         .then((result) => {
           let respuesta : {actividad: Actividad, ejecucion_id:string} []= [];
           if (result.rows) {

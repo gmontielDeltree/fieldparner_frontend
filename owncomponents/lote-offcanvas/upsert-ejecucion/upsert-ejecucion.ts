@@ -200,7 +200,7 @@ export class UpsertEjecucion extends LitElement {
 
   inicializarDesdeActividad(uuid) {
     gbl_state.db
-      .allDocs({ startkey: "actividad:", endkey: "actividad:_\ufff0" })
+      .allDocs({ startkey: "actividad:", endkey: "actividad:\ufff0" })
       .then((result) => {
         if (result.rows) {
           let midoc = result.rows.find((doc) => doc.id.includes(uuid));
@@ -219,7 +219,7 @@ export class UpsertEjecucion extends LitElement {
 
   getActividadSinCopiar(uuid) {
     return gbl_state.db
-      .allDocs({ startkey: "actividad:", endkey: "actividad:_\ufff0" })
+      .allDocs({ startkey: "actividad:", endkey: "actividad:\ufff0" })
       .then((result) => {
         if (result.rows) {
           let midoc = result.rows.find((doc) => doc.id.includes(uuid));
@@ -235,7 +235,7 @@ export class UpsertEjecucion extends LitElement {
 
   inicializarDesdeEjecucion(uuid) {
     gbl_state.db
-      .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:_\ufff0" })
+      .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:\ufff0" })
       .then((result) => {
         if (result.rows) {
           let midoc = result.rows.find((doc) => doc.id.includes(uuid));
