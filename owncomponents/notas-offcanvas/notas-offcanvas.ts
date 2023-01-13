@@ -518,7 +518,7 @@ export class NotasOffcanvas extends LitElement {
               @borrarImagen=${(e)=>{
                 let index = e.detail.index
                 let instance = e.detail.instance
-                alert('borrar imagen index')
+                //alert('borrar imagen index')
                 this.imagenes.splice(index,1)
                 this.requestUpdate()
               }}

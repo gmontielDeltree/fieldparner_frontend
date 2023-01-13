@@ -73,7 +73,7 @@ export class LightGalleryDemo extends LitElement {
           button.textContent = get('eliminar')
           
           button.addEventListener(touchEvent,()=>{
-            alert('borrar ' + this.selected_index)
+            //alert('borrar ' + this.selected_index)
             
             this.emit_borrar(this.selected_index,this.lgInstance)
             this.lgInstance.closeGallery()
