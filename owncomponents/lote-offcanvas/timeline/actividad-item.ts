@@ -241,9 +241,11 @@ export class ActividadItem extends LitElement {
         style="align-items:center; justify-content:space-between;"
       >
         <div>
-          <span theme="badge ${this.ejecucion ? "success" : "error"}"
-            >${fecha} ${this.ejecucion ? "Ejecutada" : "Planificada"}</span
-          >
+          <!--Badge Ejecucion-->
+          ${this.ejecucion ? html`<span theme="badge success"
+            >${fecha} Ejecutada</span>` : null}
+          <!--Badge Planificacion-->
+          <span theme="badge error">${this.item.detalles.fecha_ejecucion_tentativa} Planificada</span>
           <a
             >${this.item?.tipo.toUpperCase()}
             <span class="text-muted">
@@ -262,9 +264,9 @@ export class ActividadItem extends LitElement {
       </vaadin-horizontal-layout>
       <vaadin-tabsheet>
         <vaadin-tabs slot="tabs">
-          <vaadin-tab id="dashboard-tab">Planificación</vaadin-tab>
+          <vaadin-tab id="dashboard-tab"  ?selected=${!this.ejecucion}>Planificación</vaadin-tab>
           <vaadin-tab id="orden-trabajo-tab">Orden de Trabajo</vaadin-tab>
-          <vaadin-tab id="payment-tab">Ejecución</vaadin-tab>
+          <vaadin-tab id="payment-tab" ?selected=${this.ejecucion}>Ejecución</vaadin-tab>
           <vaadin-tab id="shipping-tab">Adjuntos</vaadin-tab>
         </vaadin-tabs>
 
@@ -281,7 +283,7 @@ export class ActividadItem extends LitElement {
                   @click=${() => {
                     this.evento_share_pdf();
                   }}
-                  >${translate("compartir_orden")}></vaadin-button
+                  >${translate("compartir_orden")}</vaadin-button
                 >`
               : null}
           </vaadin-vertical-layout>
