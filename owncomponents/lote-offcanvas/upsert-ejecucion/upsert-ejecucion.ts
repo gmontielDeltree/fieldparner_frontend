@@ -89,6 +89,10 @@ export class UpsertEjecucion extends LitElement {
   private linea_de_dosis: LineaDosisEjecucion;
   private lote_doc: any;
 
+  @state()
+  private ready : boolean = false;
+  
+
   override firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("modal"));
     this.modal.show();
@@ -118,10 +122,10 @@ export class UpsertEjecucion extends LitElement {
         this.editando = false;
         this.ejecucion = get_empty_ejecucion();
         let actividad_uuid = this.location.params.uuid;
-        this.getActividad(actividad_uuid);
+        this.inicializarDesdeActividad(actividad_uuid);
       } else {
         this.editando = true;
-        this.getEjecucion(this.location.params.uuid);
+        this.inicializarDesdeEjecucion(this.location.params.uuid);
       }
     }
   }
@@ -194,7 +198,7 @@ export class UpsertEjecucion extends LitElement {
     }
   }
 
-  getActividad(uuid) {
+  inicializarDesdeActividad(uuid) {
     gbl_state.db
       .allDocs({ startkey: "actividad:", endkey: "actividad:_\ufff0" })
       .then((result) => {
@@ -205,7 +209,8 @@ export class UpsertEjecucion extends LitElement {
               this.actividad = doc as Actividad;
               this.copiarInsumosDesdeActividad();
               this.tipo = this.actividad.tipo;
-              this.requestUpdate();
+              this.ready = true;
+              //this.requestUpdate();
             });
           }
         }
@@ -213,32 +218,35 @@ export class UpsertEjecucion extends LitElement {
   }
 
   getActividadSinCopiar(uuid) {
-    gbl_state.db
+    return gbl_state.db
       .allDocs({ startkey: "actividad:", endkey: "actividad:_\ufff0" })
       .then((result) => {
         if (result.rows) {
           let midoc = result.rows.find((doc) => doc.id.includes(uuid));
           if (midoc) {
-            gbl_state.db.get(midoc.id).then((doc) => {
+            return gbl_state.db.get(midoc.id).then((doc) => {
               this.actividad = doc as Actividad;
+              return doc as Actividad
             });
           }
         }
       });
   }
 
-  getEjecucion(uuid) {
+  inicializarDesdeEjecucion(uuid) {
     gbl_state.db
       .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:_\ufff0" })
       .then((result) => {
         if (result.rows) {
           let midoc = result.rows.find((doc) => doc.id.includes(uuid));
           if (midoc) {
-            gbl_state.db.get(midoc.id).then((doc) => {
+            gbl_state.db.get(midoc.id).then(async (doc) => {
               this.ejecucion = doc as Ejecucion;
               this.tipo = this.ejecucion.tipo;
-              this.getActividadSinCopiar(uuid);
-              this.requestUpdate();
+              await this.getActividadSinCopiar(uuid);
+              console.log("EJE ACT",this.ejecucion,this.actividad)
+              this.ready = true;
+              //this.requestUpdate();
             });
           }
         }
@@ -364,7 +372,7 @@ export class UpsertEjecucion extends LitElement {
 
     console.count("UpsertEjecucion-Render");
 
-    const modal_body = html`
+    const modal_body = () => html`
       <vaadin-tabsheet
         id="actividad-tabsheet"
         .selected=${this.selected_step}
@@ -668,7 +676,7 @@ export class UpsertEjecucion extends LitElement {
                 @click=${() => Router.go("/")}
               ></button>
             </div>
-            <div class="modal-body">${this.loaded() ? modal_body : ""}</div>
+            <div class="modal-body">${this.ready ? modal_body() : ""}</div>
             <div class="modal-footer">
               <button
                 type="button"
