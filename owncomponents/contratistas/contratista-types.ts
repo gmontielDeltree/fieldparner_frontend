@@ -26,7 +26,7 @@ const getContratistas = async (db: PouchDB.Database) => {
   let result = await db.allDocs({
     include_docs: true,
     startkey: "contratista:",
-    endkey: "contratista:_\ufff0",
+    endkey: "contratista:\ufff0",
   });
 
   if (result.rows?.length > 0) {
