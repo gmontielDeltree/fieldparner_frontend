@@ -515,6 +515,13 @@ export class NotasOffcanvas extends LitElement {
                 this.nueva_nota_offcanvas.hide();
                 console.log("hide offcanvas");
               }}
+              @borrarImagen=${(e)=>{
+                let index = e.detail.index
+                let instance = e.detail.instance
+                alert('borrar imagen index')
+                this.imagenes.splice(index,1)
+                this.requestUpdate()
+              }}
               @afterClose=${() => this.nueva_nota_offcanvas.show()}
             >
             </light-gallery-demo>
