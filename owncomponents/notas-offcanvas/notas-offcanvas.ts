@@ -5,7 +5,7 @@ import "@vaadin/radio-group";
 import "@vaadin/combo-box";
 import { uuid4 } from "uuid4";
 import { LngLat, Map, Marker } from "mapbox-gl";
-import { format, parse } from "date-fns";
+import { format, parse, isBefore, parseISO } from "date-fns";
 import "@vaadin/text-area";
 import { touchEvent } from "../helpers";
 import "../audiorecorder/index.js";
@@ -17,6 +17,7 @@ import centroid from "@turf/centroid";
 import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n";
 import { motivos_items } from "../jsons/motivos_items";
 import { translate } from "lit-translate";
+import { gbl_state } from "../state";
 
 export class NotasOffcanvas extends LitElement {
   @property()
@@ -73,7 +74,7 @@ export class NotasOffcanvas extends LitElement {
   proxima_fecha;
 
   @property()
-  motivos_nota : any []
+  motivos_nota: any[];
 
   static styles = unsafeCSS(bootstrap);
 
@@ -84,7 +85,7 @@ export class NotasOffcanvas extends LitElement {
     this.fecha = new Date().toISOString().split("T")[0];
     this.color = "red";
     this.modo_geolocalizacion = "mapa";
-    this.motivos_nota = []
+    this.motivos_nota = [];
   }
 
   firstUpdated() {
@@ -148,8 +149,7 @@ export class NotasOffcanvas extends LitElement {
     });
     this.dispatchEvent(event_fin);
 
-   // this.inicializar_componente();
-
+    // this.inicializar_componente();
   }
 
   posicion_error(err) {
@@ -353,11 +353,17 @@ export class NotasOffcanvas extends LitElement {
         console.log("Error al grabar Nota", e);
         alert("Error al grabar Nota");
       });
-
-
   }
 
   render() {
+    let limite_maximo = isBefore(
+      new Date(),
+      parseISO(gbl_state.campana_seleccionada.fin)
+    )
+      ? format(new Date(), "yyyy-MM-dd")
+      : gbl_state.campana_seleccionada.fin;
+    console.log("nota render limite maximo", limite_maximo);
+
     const imagen_element = (file) => {
       let url = URL.createObjectURL(file);
       return html`
@@ -428,7 +434,10 @@ export class NotasOffcanvas extends LitElement {
                 label="Fecha"
                 value="2022-12-03"
                 placeholder="YYYY-MM-DD"
+                .min=${gbl_state.campana_seleccionada.inicio}
+                .max=${limite_maximo}
                 .value=${this.fecha}
+                allowed-char-pattern="[]"
                 clear-button-visible
                 .i18n=${base_i18n}
                 @change=${(e) => (this.fecha = e.target.value)}
@@ -567,11 +576,11 @@ export class NotasOffcanvas extends LitElement {
           </div>
 
           <vaadin-multi-select-combo-box
-          .label=${translate('motivos')}
-          .items=${motivos_items}
-          .selected-items-changed=${(e)=>this.motivos_nota = e.target.selectedItems}
+            .label=${translate("motivos")}
+            .items=${motivos_items}
+            .selected-items-changed=${(e) =>
+              (this.motivos_nota = e.target.selectedItems)}
           >
-
           </vaadin-multi-select-combo-box>
         </div>
       </div>
