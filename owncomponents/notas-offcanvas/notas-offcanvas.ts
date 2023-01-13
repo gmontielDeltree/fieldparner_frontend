@@ -429,6 +429,7 @@ export class NotasOffcanvas extends LitElement {
         <div class="container-fluid offcanvas-body">
           <div class="row">
             <div class="col col-sm-12 col-md-6">
+              <!-- Prevenir que puede ingresar con el teclado  allowed-char-pattern="[]"-->
               <vaadin-date-picker
                 id="nota-date-picker"
                 label="Fecha"
@@ -438,7 +439,6 @@ export class NotasOffcanvas extends LitElement {
                 .max=${limite_maximo}
                 .value=${this.fecha}
                 allowed-char-pattern="[]"
-                clear-button-visible
                 .i18n=${base_i18n}
                 @change=${(e) => (this.fecha = e.target.value)}
               ></vaadin-date-picker>
@@ -570,7 +570,9 @@ export class NotasOffcanvas extends LitElement {
               placeholder="YYYY-MM-DD"
               .value=${this.proxima_fecha}
               .i18n=${base_i18n}
-              clear-button-visible
+              .min=${format(new Date(), 'yyyy-MM-dd')}
+              .max=${gbl_state.campana_seleccionada.fin}
+              allowed-char-pattern="[]"
               @change=${(e) => (this.proxima_fecha = e.target.value)}
             ></vaadin-date-picker>
           </div>
