@@ -14,7 +14,7 @@ import "@vaadin/vertical-layout";
 import "@vaadin/upload";
 import "@vaadin/menu-bar";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
-import { format, parse } from "date-fns";
+import { format, isBefore, parse, parseISO } from "date-fns";
 import { map } from "lit/directives/map.js";
 import { translate } from "lit-translate";
 import { actividad_detalles } from "./detalles-actividad/detalles-actividad";
@@ -90,7 +90,7 @@ export class ActividadItem extends LitElement {
       ],
     },
   ];
-  
+
   menu_click({ detail }) {
     /* Si tiene un callback, lo ejecuto */
     if (detail.value.callback) {
@@ -154,8 +154,6 @@ export class ActividadItem extends LitElement {
     }
     return fecha;
   }
-
-
 
   borrar_actividad() {
     console.log("Borrar Actividad");
@@ -319,8 +317,17 @@ export class ActividadItem extends LitElement {
                 >
                   ${this.item.estado === 0
                     ? html` ${translate("debe_generar_la_orden_de_trabajo")}`
-                    : html`
+                    : html`<vaadin-vertical-layout style='align-items:center;'>
+                        ${!isBefore(parseISO(fecha), new Date())
+                          ? html`<div>
+                              ${translate(
+                                "actividad_se_podra_ejecutar_a_partir_del_dia"
+                              )}
+                              ${fecha}
+                            </div>`
+                          : null}
                         <vaadin-button
+                          ?disabled=${!isBefore(parseISO(fecha), new Date())}
                           @click=${() => {
                             let url_base =
                               "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/nueva";
@@ -343,7 +350,7 @@ export class ActividadItem extends LitElement {
                         >
                           ${translate("ejecutar")}
                         </vaadin-button>
-                      `}
+                      </vaadin-vertical-layout> `}
                 </vaadin-horizontal-layout>
               </div>
             `}
