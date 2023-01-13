@@ -18,6 +18,7 @@ import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n
 import { motivos_items } from "../jsons/motivos_items";
 import { translate } from "lit-translate";
 import { gbl_state } from "../state";
+import "../image-gallery/images-gallery";
 
 export class NotasOffcanvas extends LitElement {
   @property()
@@ -92,40 +93,6 @@ export class NotasOffcanvas extends LitElement {
     this.nueva_nota_offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-nueva-nota")
     );
-
-    /* Format date */
-    const formatDateIso8601 = (dateParts) => {
-      const { year, month, day } = dateParts;
-      const date = new Date(year, month, day);
-
-      return format(date, "yyyy-MM-dd");
-    };
-
-    const parseDateIso8601 = (inputValue) => {
-      const date = parse(inputValue, "yyyy-MM-dd", new Date());
-
-      return {
-        year: date.getFullYear(),
-        month: date.getMonth(),
-        day: date.getDate(),
-      };
-    };
-
-    // if (this.shadowRoot.getElementById("nota-date-picker")) {
-    //   (this.shadowRoot.getElementById("nota-date-picker")).i18n = {
-    //     ...this.shadowRoot.getElementById("nota-date-picker").i18n,
-    //     formatDate: formatDateIso8601,
-    //     parseDate: parseDateIso8601,
-    //   };
-    // }
-
-    // if (this.shadowRoot.getElementById("nota-proxima-date-picker")) {
-    //   this.shadowRoot.getElementById("nota-proxima-date-picker").i18n = {
-    //     ...this.shadowRoot.getElementById("nota-proxima-date-picker").i18n,
-    //     formatDate: formatDateIso8601,
-    //     parseDate: parseDateIso8601,
-    //   };
-    // }
 
     if (this.mostrar) {
       this.nueva_nota();
@@ -394,10 +361,27 @@ export class NotasOffcanvas extends LitElement {
       `;
     };
 
+    const imagen_objeto_gallery = (file: Blob) => {
+      let objeto = {
+        id: "3",
+        size: "", // Size como 1900-720
+        src: "", // Src URL
+        thumb: "", //Thumb URL
+        subHtml: ``, // Template de lo que aparece abajo
+      };
+
+      let url = URL.createObjectURL(file);
+      objeto.src = url;
+      objeto.thumb = url;
+
+      return objeto;
+    };
+
+    //h-50 offcanvas heigth
     return html`
       <!--Add Nota Form-->
       <div
-        class="offcanvas offcanvas-bottom h-50"
+        class="offcanvas offcanvas-start"
         data-bs-scroll="true"
         data-bs-backdrop="false"
         tabindex="-1"
@@ -427,8 +411,11 @@ export class NotasOffcanvas extends LitElement {
         </div>
         <hr class="my-0" />
         <div class="container-fluid offcanvas-body">
-          <div class="row">
-            <div class="col col-sm-12 col-md-6">
+          <vaadin-vertical-layout
+            style="align-items: stretch; justify-content:space-between"
+          >
+            <!--Row 1-->
+            <vaadin-horizontal-layout>
               <!-- Prevenir que puede ingresar con el teclado  allowed-char-pattern="[]"-->
               <vaadin-date-picker
                 id="nota-date-picker"
@@ -442,9 +429,7 @@ export class NotasOffcanvas extends LitElement {
                 .i18n=${base_i18n}
                 @change=${(e) => (this.fecha = e.target.value)}
               ></vaadin-date-picker>
-            </div>
 
-            <div class="col col-6">
               <vaadin-radio-group label="Geolocalizar Usando">
                 <vaadin-radio-button
                   value="dispositivo"
@@ -461,129 +446,128 @@ export class NotasOffcanvas extends LitElement {
                   @change=${this.cambio_geo_modo}
                 ></vaadin-radio-button>
               </vaadin-radio-group>
-            </div>
-          </div>
+            </vaadin-horizontal-layout>
+            <!--Fin Row 1-->
 
-          <div class="row">
-            <label for="nota-color-input" class="col-2">Color</label>
-            <div
-              class="btn-group col-10"
-              role="group"
-              id="nota-color-input"
-              aria-label="Basic mixed styles example"
+            <!--Row 2-->
+            <vaadin-horizontal-layout>
+              <label for="nota-color-input" class="col-2">Color</label>
+              <div
+                class="btn-group col-10"
+                role="group"
+                id="nota-color-input"
+                aria-label="Basic mixed styles example"
+              >
+                <input
+                  type="radio"
+                  class="btn-check nota-status"
+                  name="btnradio"
+                  value="red"
+                  id="btnradio-red"
+                  autocomplete="off"
+                  checked
+                  @change=${this.color_change}
+                />
+                <label class="btn btn-outline-danger" for="btnradio-red"
+                  >Urgente</label
+                >
+
+                <input
+                  type="radio"
+                  class="btn-check nota-status"
+                  name="btnradio"
+                  value="yellow"
+                  id="btnradio-warning"
+                  autocomplete="off"
+                  @change=${this.color_change}
+                />
+                <label class="btn btn-outline-warning" for="btnradio-warning"
+                  >Atención</label
+                >
+
+                <input
+                  type="radio"
+                  class="btn-check nota-status"
+                  name="btnradio"
+                  value="green"
+                  id="btnradio-success"
+                  autocomplete="off"
+                  @change=${this.color_change}
+                />
+                <label class="btn btn-outline-success" for="btnradio-success"
+                  >Todo Bien</label
+                >
+              </div>
+            </vaadin-horizontal-layout>
+            <!--Fin Row 2-->
+
+            <vaadin-text-area
+              placeholder="Tus comentarios..."
+              .value=${this.texto}
+              autoselect
+              @input=${(e) => (this.texto = e.target.value)}
+            ></vaadin-text-area>
+
+            <!--Galeria-->
+            <light-gallery-demo
+              .list=${this.imagenes.map(imagen_objeto_gallery)}
+              @beforeOpen=${() => {
+                this.nueva_nota_offcanvas.hide();
+                console.log("hide offcanvas");
+              }}
+              @afterClose=${() => this.nueva_nota_offcanvas.show()}
             >
-              <input
-                type="radio"
-                class="btn-check nota-status"
-                name="btnradio"
-                value="red"
-                id="btnradio-red"
-                autocomplete="off"
-                checked
-                @change=${this.color_change}
-              />
-              <label class="btn btn-outline-danger" for="btnradio-red"
-                >Urgente</label
-              >
+            </light-gallery-demo>
+            <!-- <div class="row mb-2" id="img-preview">
+              ${this.imagenes.map(imagen_element)}
+            </div> -->
 
-              <input
-                type="radio"
-                class="btn-check nota-status"
-                name="btnradio"
-                value="yellow"
-                id="btnradio-warning"
-                autocomplete="off"
-                @change=${this.color_change}
-              />
-              <label class="btn btn-outline-warning" for="btnradio-warning"
-                >Atención</label
-              >
+            <input
+              id="foto-upload-input"
+              class="d-none"
+              type="file"
+              accept="image/*"
+              @change=${this.nueva_imagen_anadida}
+            />
 
-              <input
-                type="radio"
-                class="btn-check nota-status"
-                name="btnradio"
-                value="green"
-                id="btnradio-success"
-                autocomplete="off"
-                @change=${this.color_change}
-              />
-              <label class="btn btn-outline-success" for="btnradio-success"
-                >Todo Bien</label
-              >
-            </div>
-            <!-- <input type="color" class="form-control form-control-color col-4" id="nota-color-input" value="#563d7c" title="Choose your color"> -->
-          </div>
+            <button
+              type="button"
+              @click=${this.anadir_foto_click}
+              id="anadir-foto-btn"
+              class="btn btn-success"
+            >
+              Añadir Foto
+            </button>
 
-          <hr />
+            ${this.audio
+              ? html`<audio controls><source .src=${URL.createObjectURL(
+                  this.audio
+                )}></source></audio>`
+              : html`<div class="row" id="audio-div">
+                  <audio-recorder id="audio-recorder"></audio-recorder>
+                </div>`}
 
-          <textarea
-            class="form-control"
-            placeholder="Tus comentarios..."
-            .value=${this.texto}
-            @input=${(e) => (this.texto = e.target.value)}
-            rows="3"
-          ></textarea>
-
-          <!--.value=${this.texto} 
-             -->
-
-          <hr />
-
-          <div class="row mb-2" id="img-preview">
-            ${this.imagenes.map(imagen_element)}
-          </div>
-
-          <input
-            id="foto-upload-input"
-            class="d-none"
-            type="file"
-            accept="image/*"
-            @change=${this.nueva_imagen_anadida}
-          />
-
-          <button
-            type="button"
-            @click=${this.anadir_foto_click}
-            id="anadir-foto-btn"
-            class="btn btn-success"
-          >
-            Añadir Foto
-          </button>
-
-          <hr />
-
-          ${this.audio
-            ? html`<audio controls><source .src=${URL.createObjectURL(
-                this.audio
-              )}></source></audio>`
-            : html`<div class="row" id="audio-div">
-                <audio-recorder id="audio-recorder"></audio-recorder>
-              </div>`}
-
-          <hr />
-
-          <div>
             <vaadin-date-picker
               id="nota-proxima-date-picker"
               label="Proxima Visita"
               placeholder="YYYY-MM-DD"
               .value=${this.proxima_fecha}
               .i18n=${base_i18n}
-              .min=${format(new Date(), 'yyyy-MM-dd')}
+              .min=${format(new Date(), "yyyy-MM-dd")}
               .max=${gbl_state.campana_seleccionada.fin}
               allowed-char-pattern="[]"
               @change=${(e) => (this.proxima_fecha = e.target.value)}
             ></vaadin-date-picker>
-          </div>
 
-          <vaadin-multi-select-combo-box
-            .label=${translate("motivos")}
-            .items=${motivos_items}
-            .selected-items-changed=${(e) =>
-              (this.motivos_nota = e.target.selectedItems)}
-          >
-          </vaadin-multi-select-combo-box>
+            <vaadin-multi-select-combo-box
+              .label=${translate("motivos")}
+              .items=${motivos_items}
+              item-label-path="nombre"
+              .selected-items-changed=${(e) =>
+                (this.motivos_nota = e.target.selectedItems)}
+            >
+            </vaadin-multi-select-combo-box>
+          </vaadin-vertical-layout>
         </div>
       </div>
 
