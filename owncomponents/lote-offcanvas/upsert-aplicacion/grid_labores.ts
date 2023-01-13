@@ -109,7 +109,7 @@ export class GridLabores extends LitElement {
                   item-value-path="uuid"
                   class=${item.uuid === "nuevo" ? "high-rating" : ""}
                   style="width:20em"
-                  placeholder="${translate("seleccione_insumo")}"
+                  placeholder="${translate("seleccione_labor")}"
                   .items=${this.labores}
                   .selected-item=${this.linea_de_labor.labor}
                   @selected-item-changed=${(e) => {
@@ -179,7 +179,7 @@ export class GridLabores extends LitElement {
                         this.linea_de_labor.labor === null ||
                         this.linea_de_labor.labor.labor === ""
                       ) {
-                        alert(get("debe_ingresar_un_insumo"));
+                        alert(get("debe_ingresar_una_labor"));
                         return;
                       }
                       let nuevo = deepcopy(this.linea_de_labor) as LineaLabor;
