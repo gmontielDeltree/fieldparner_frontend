@@ -36,7 +36,7 @@ import "@vaadin/text-area";
 import "@vaadin/form-layout";
 import "@vaadin/form-layout/vaadin-form-item";
 import type { FormLayoutResponsiveStep } from "@vaadin/form-layout";
-import {labores} from "../../jsons/labores";
+import { labores } from "../../jsons/labores";
 import "./insert_insumo_template";
 import { uuid4 } from "uuid4";
 import { Notification } from "@vaadin/notification";
@@ -67,7 +67,7 @@ import { TabSheet } from "@vaadin/tabsheet";
 import { motivos_items } from "../../jsons/motivos_items";
 import "./grid_insumos";
 import "./grid_labores";
-import { otros_datos_siembra_template } from './otros_datos_siembra_template';
+import { otros_datos_siembra_template } from "./otros_datos_siembra_template";
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -150,13 +150,19 @@ export class UpsertAplicacion extends LitElement {
     aplicacion: ["Agroquímicos", "Fertilizantes", "Combustible"],
   };
 
-  full_title(){
-    return gbl_state.campana_seleccionada.nombre + " - " + get('planificacion') + " - " + this.tipo_2_titulo[this.tipo];
+  full_title() {
+    return (
+      gbl_state.campana_seleccionada.nombre +
+      " - " +
+      get("planificacion") +
+      " - " +
+      this.tipo_2_titulo[this.tipo]
+    );
   }
   inicializar_adicion() {
     // Es una nueva
     this.tipo = this.location.params.tipo as string;
-    this.titulo = this.full_title()
+    this.titulo = this.full_title();
 
     this.inicializar_lineas();
     this.populateContratistas();
@@ -165,16 +171,22 @@ export class UpsertAplicacion extends LitElement {
     this.actividad = get_empty_aplicacion();
     this.actividad.tipo = this.tipo;
 
-    // Query params 
-    const querystring = window.location.search
-    const params = new URLSearchParams(querystring)
-    let parametros_nota_str = decodeURIComponent(params.get('params'))
-    if(this.tipo==='aplicacion' && parametros_nota_str){
-      let parametros = JSON.parse(parametros_nota_str)
-        console.log("motivos_por_defecto_",parametros)
-        this.motivos_sugeridos_iniciales = parametros.motivos
-      this.actividad.comentario = "Nota del " + parametros.fecha_nota + ":\n" + parametros.comentario
-    
+    // Query params
+    const querystring = window.location.search;
+    const params = new URLSearchParams(querystring);
+    let parametros_nota_str = decodeURIComponent(params.get("params"));
+    let parametros = JSON.parse(parametros_nota_str);
+    console.log("Params;",parametros === null);
+
+    if ((this.tipo === "aplicacion") && !(parametros === null)) {
+
+      console.log("Params;2", params, parametros_nota_str === null,params.get("params"));
+
+      
+      console.log("motivos_por_defecto_", parametros);
+      this.motivos_sugeridos_iniciales = parametros.motivos;
+      this.actividad.comentario =
+        "Nota del " + parametros.fecha_nota + ":\n" + parametros.comentario;
     }
 
     let lote_nombre = decodeURIComponent(
@@ -216,7 +228,7 @@ export class UpsertAplicacion extends LitElement {
     this.getActividad(actividad_uuid).then((actividad) => {
       this.actividad = actividad;
       this.tipo = actividad.tipo;
-      this.titulo =  this.full_title()
+      this.titulo = this.full_title();
 
       this.populateContratistas();
       this.getLote(campo_nombre, lote_nombre);
@@ -227,17 +239,15 @@ export class UpsertAplicacion extends LitElement {
   populateContratistas() {
     getContratistas(gbl_state.db).then((c) => {
       // Si es aplicacion devolver todos
-      if(this.tipo === 'aplicacion'){
-        this.contratistas = c
-        return
+      if (this.tipo === "aplicacion") {
+        this.contratistas = c;
+        return;
       }
 
       // Si es siembra/cosecha filtrar
-      this.contratistas = c.filter(
-        (con)=>con.labores.find(
-            (la) => la.labor.toLocaleLowerCase()===this.tipo
-          )
-        );
+      this.contratistas = c.filter((con) =>
+        con.labores.find((la) => la.labor.toLocaleLowerCase() === this.tipo)
+      );
       console.log("Contratistas", c);
       this.requestUpdate();
     });
@@ -299,11 +309,16 @@ export class UpsertAplicacion extends LitElement {
 
     /* fecha */
 
-    if(!es_esta_campana(this.actividad.detalles.fecha_ejecucion_tentativa)){
-      errors.push("Debe seleccionar una fecha dentro de la campaña seleccionada")
+    if (!es_esta_campana(this.actividad.detalles.fecha_ejecucion_tentativa)) {
+      errors.push(
+        "Debe seleccionar una fecha dentro de la campaña seleccionada"
+      );
     }
 
-    if (this.actividad.contratista === null || this.actividad.contratista.nombre === "") {
+    if (
+      this.actividad.contratista === null ||
+      this.actividad.contratista.nombre === ""
+    ) {
       errors.push("Debe seleccionar un contratista");
     }
 
@@ -361,15 +376,14 @@ export class UpsertAplicacion extends LitElement {
     // si edit y fecha es diferente - borrar rev
     let nuevoid = "actividad:" + fecha + ":" + this.actividad.uuid;
 
-    if(this.editando && (nuevoid !== this.actividad._id)){
+    if (this.editando && nuevoid !== this.actividad._id) {
       //Borrar el anterior doc
-      gbl_state.db.remove(this.actividad as PouchDB.Core.RemoveDocument)
-      delete this.actividad._rev
+      gbl_state.db.remove(this.actividad as PouchDB.Core.RemoveDocument);
+      delete this.actividad._rev;
     }
 
-    this.actividad._id = nuevoid
+    this.actividad._id = nuevoid;
 
-  
     gbl_state.db.put(this.actividad).then(() => {
       alert("Actividad Guardada");
 
@@ -437,7 +451,10 @@ export class UpsertAplicacion extends LitElement {
                   <vaadin-tab id="contratista-tab">Contratista</vaadin-tab>
                   <vaadin-tab id="insumos-tab">Insumos</vaadin-tab>
                   ${this.tipo === "siembra"
-                    ? html`<vaadin-tab id="otros-datos-tab">Otros Datos</vaadin-tab>` : null}
+                    ? html`<vaadin-tab id="otros-datos-tab"
+                        >Otros Datos</vaadin-tab
+                      >`
+                    : null}
                   <vaadin-tab id="labores-tab">Labores</vaadin-tab>
                   <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
                   <vaadin-tab id="observaciones-tab">Observaciones</vaadin-tab>
@@ -513,7 +530,8 @@ export class UpsertAplicacion extends LitElement {
                       this.tipo
                     ]}
                     .tipo=${this.tipo}
-                    .motivos_sugeridos_iniciales=${this.motivos_sugeridos_iniciales}
+                    .motivos_sugeridos_iniciales=${this
+                      .motivos_sugeridos_iniciales}
                   ></grid-insumos>
                 </div>
                 <!-- Fin Insumos -->
@@ -665,8 +683,12 @@ export class UpsertAplicacion extends LitElement {
                     class="btn btn-primary"
                     @click=${() =>
                       (this.selected_step =
-                        this.selected_step >= (document.querySelector("#actividad-tabsheet") as TabSheet)
-                        ?.items.length
+                        this.selected_step >=
+                        (
+                          document.querySelector(
+                            "#actividad-tabsheet"
+                          ) as TabSheet
+                        )?.items.length
                           ? this.selected_step
                           : this.selected_step + 1)}
                   >
