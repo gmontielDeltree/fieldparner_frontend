@@ -135,11 +135,11 @@ export const only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
   }
 };
 
-export const actividades_y_ejecuciones = (lote_uuid) => {
+export const actividades_y_ejecuciones = (uuid_del_lote) => {
   return gbl_docs_starting("actividad", true, true, true)
     .then(only_docs)
     .then((acts: Actividad[]) => {
-      let s = acts.filter(({ lote_uuid }) => lote_uuid === lote_uuid);
+      let s = acts.filter(({ lote_uuid }) => (lote_uuid === uuid_del_lote));
 
       let _actividades_docs = filtro_esta_temporada(s.reverse());
       return gbl_state.db
