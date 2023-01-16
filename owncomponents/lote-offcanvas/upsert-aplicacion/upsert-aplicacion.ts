@@ -422,7 +422,7 @@ export class UpsertAplicacion extends LitElement {
     const labores_form = html`
       <grid-labores
         .actividad=${this.actividad}
-        .labores=${labores}
+        .labores=${this.actividad.contratista.labores}
       ></grid-labores>
     `;
 
