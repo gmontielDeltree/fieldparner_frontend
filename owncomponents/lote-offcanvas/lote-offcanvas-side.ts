@@ -722,6 +722,8 @@ export class LoteOffcanvasSide extends LitElement {
               .db=${gbl_state.db}
               .a=${this._actividades_ejecuciones_docs}
               id="actividades-timeline"
+              @gallery-open=${() => this._lotesOffcanvas.hide()}
+              @gallery-closed=${() => this._lotesOffcanvas.show()}
             ></lit-timeline-side>
           </vaadin-scroller>
         </div>

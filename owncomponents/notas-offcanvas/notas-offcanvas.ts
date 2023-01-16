@@ -276,6 +276,7 @@ export class NotasOffcanvas extends LitElement {
       lote_nombre: this.lote_doc.properties.nombre,
       posicion: [this.posicion.coords.longitude, this.posicion.coords.latitude],
       _attachments: {},
+      motivos_nota:this.motivos_nota
     };
 
     // Imagenes
@@ -570,7 +571,7 @@ export class NotasOffcanvas extends LitElement {
               .label=${translate("motivos")}
               .items=${motivos_items}
               item-label-path="nombre"
-              .selected-items-changed=${(e) =>
+              @selected-items-changed=${(e) =>
                 (this.motivos_nota = e.target.selectedItems)}
             >
             </vaadin-multi-select-combo-box>

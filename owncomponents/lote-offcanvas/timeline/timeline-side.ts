@@ -24,6 +24,7 @@ import "./actividad-item";
 import "@vaadin/scroller";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
 import { GridItemModel } from '@vaadin/grid';
+import './nota-item'
 
 const url_repeticion = (actividad_uuid) => {
   let location = gbl_state.router.location.pathname;
@@ -393,236 +394,20 @@ export class TimelineSideElement extends LitElement {
     this.dispatchEvent(event);
   }
 
-  constructor() {
-    super();
-    // this.stock_tag_table = {};
-  }
-
-  willUpdate(props) {
-    if (props.has("actividades") && this.db) {
-      // Calcular tags
-      let nt = {};
-    }
-  }
-
-  comparar_fechas(a, b) {
-    let fecha_a = extraer_fecha(a);
-    let fecha_b = extraer_fecha(b);
-
-    let result = compareDesc(fecha_a, fecha_b);
-    if (result === 0) {
-      // Si alguno es nota poner la nota primero
-      if (a?.doc?.tipo === "nota") {
-        result = 1;
-      } else if (b?.doc?.tipo === "nota") {
-        result = -1;
-      }
-    }
-    // if (a es menor que b según criterio de ordenamiento) {
-    //   return -1;
-    // }
-
-    // if (a es mayor que b según criterio de ordenamiento) {
-    //   return 1;
-    // }
-
-    // a debe ser igual b
-    return result;
-  }
-
-  ordenar_actividades(act, notas) {
-    if (act === undefined) {
-      act = [];
-    }
-    if (notas === undefined) {
-      notas = [];
-    }
-    //console.log("ORDENADOR", act, notas);
-    let todos = act.concat(notas);
-    return todos.sort(this.comparar_fechas);
-  }
-
   render() {
-    const barra_botones = (item: Actividad, estado) => html`
-      <div>
-        <vaadin-combo-box
-          class="d-flex"
-          label="Estado"
-          item-value-path="value"
-          item-label-path="nombre"
-          .items="${estados}"
-          @selected-item-changed=${(ev) => {
-            try {
-              // Esto se dispara por aguna razon cuando se cargan los elementos por
-              // primera vez
-              if (item.estado === ev.detail.value.value) {
-                //console.log("NO HAY CAMBIOS")
-                return;
-              }
-              item.estado = ev.detail.value.value;
-              //console.log("Evento Cambiar estado", ev, item);
-
-              let event = new CustomEvent("cambio-estado", {
-                detail: { e: ev, item: item },
-                bubbles: true,
-                composed: true,
-              });
-              this.dispatchEvent(event);
-            } catch (e) {
-              //console.log("EEROR EEEE", ev);
-            }
-          }}
-          value=${estado}
-        ></vaadin-combo-box>
-
-        <button
-          class="btn btn-primary"
-          @click=${() => {
-            console.log(item.uuid);
-            this.evento_editar(item);
-          }}
-        >
-          Editar
-        </button>
-
-        <button
-          class="btn btn-secondary"
-          @click=${() => {
-            console.log(item.uuid);
-            this.evento_download_pdf(item);
-          }}
-        >
-          Orden de Trabajo
-        </button>
-        ${navigator.share
-          ? html`<button
-              type="button"
-              class="btn btn-success"
-              @click=${() => this.evento_share_pdf(item)}
-            >
-              Compartir Orden
-            </button>`
-          : null}
-        <button
-          class="btn btn-danger"
-          @click=${() => {
-            console.log(item.uuid);
-            this.evento_eliminar(item);
-          }}
-        >
-          Eliminar
-        </button>
-        <button
-          class="btn btn-warning"
-          @click=${() => {
-            console.log(item.uuid);
-            this.dispatchEvent(
-              new CustomEvent("ver-centrales-cercanas", {
-                detail: item,
-                bubbles: true,
-                composed: true,
-              })
-            );
-          }}
-        >
-          Datos Meteorológicos
-        </button>
-      </div>
-    `;
-
+   
     const time_item = ({actividad, ejecucion_id}:{actividad:Actividad, ejecucion_id:string}) => {
       let item = actividad
       if (item.tipo === "nota") {
         // Es un documento
         //console.log("OOOOOOOOOOO NOTA", item)
 
-        let fecha = item.fecha;
-        moment.locale("es");
-        let elapsed = moment(fecha, "YYYY-MM-DD").fromNow();
-
-        let imagenes = [];
-        let audio = [];
-        let nota_id = item._id;
-
-        //let fecha_string = format(extraer_fecha(item), "dd-MM-yyyy");
-
-        if ("_attachments" in item) {
-          Object.entries(item._attachments).map(([key, item]) => {
-            if (key.indexOf("foto") > -1) {
-              imagenes.push(item);
-            }
-          });
-
-          Object.entries(item._attachments).map(([key, item]) => {
-            if (key.indexOf("audio") > -1) {
-              audio.push(item);
-            }
-          });
-
-          //console.log("IMG", imagenes, "Audio", audio)
-        }
-
-        let color_badge;
-        if (item.color === "red") {
-          color_badge = html`<span class="badge bg-danger float-end"
-            >Urgente</span
-          >`;
-        } else if (item.color === "yellow") {
-          color_badge = html`<span class="badge bg-warning float-end"
-            >Atención</span
-          >`;
-        } else if (item.color === "green") {
-          color_badge = html`<span class="badge bg-success float-end"
-            >Todo Bien</span
-          >`;
-        }
-
         return html` <li>
           <div class="icono-nota cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
           <div class="cbp_tmlabel bg-nota">
-            <h2><span theme="badge">${fecha}</span><a> NOTA</a> ${color_badge}</h2>
-
-            ${item.texto}
-
-            <p class="small"></p>
-
-            <div class="row mx-1">
-              ${imagenes.map((img) => {
-                return html`<img
-                  src=${URL.createObjectURL(img.data)}
-                  class="img-thumbnail col col-4 col-sm-3"
-                  alt="..."
-                />`;
-              })}
-            </div>
-
-            <div class="row my-1">
-              ${audio.length > 0
-                ? html`<audio controls><source .src=${URL.createObjectURL(
-                    audio[0].data
-                  )}></source></audio>`
-                : null}
-            </div>
-
-            <button
-              class="btn btn-danger"
-              @click=${() => {
-                console.log(item.uuid);
-                this.nota_eliminar(item);
-              }}
-            >
-              Eliminar
-            </button>
-            <button
-              class="btn btn-danger"
-              @click=${() => {
-                this.localizar(item);
-              }}
-            >
-              Localizar
-            </button>
+            <nota-item .item=${item}></nota-item>
           </div>
         </li>`;
       }
