@@ -514,9 +514,16 @@ export class MapaPrincipal extends LitElement {
 
       let html = "";
       if (solo_futuros.length > 0) {
-        let proxima_actividad =
+        let act = solo_futuros[0].actividad
+        let proxima_actividad=
           solo_futuros[0].actividad.detalles.fecha_ejecucion_tentativa;
-        html += `<h5>Próxima Actividad: ${proxima_actividad}</h5>`;
+        html += `<h4 style='color:green;'>Actividad de hoy: ${act.tipo.toUpperCase()}</h4>`;
+        html += '<ul>'
+        act.detalles.dosis.forEach((i)=>{
+          html += `<li style='color:red;'>${i.insumo.marca_comercial}</li>`
+        })
+        html += '</ul>'
+        
       }else{
         html += get('sin_actividades_para_hoy')
       }

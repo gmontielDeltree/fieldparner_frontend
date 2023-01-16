@@ -217,7 +217,7 @@ export class LoteOffcanvasSide extends LitElement {
 
       gbl_state.map.flyTo({
         center: posicion,
-        padding: { bottom: 200 },
+        padding: { left:500, bottom: 200 },
         zoom: 15,
       });
     });
