@@ -96,6 +96,7 @@ export class UpsertAplicacion extends LitElement {
   private linea_de_dosis: LineaDosis;
   private lote_doc: any;
   private linea_de_labor: LineaLabor;
+  private motivos_sugeridos_iniciales;
 
   private titulo: string = "Actividad";
 
@@ -167,11 +168,13 @@ export class UpsertAplicacion extends LitElement {
     // Query params 
     const querystring = window.location.search
     const params = new URLSearchParams(querystring)
-    console.log("Query EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE ",params.get("motivos"))
-    let motivos = decodeURIComponent(params.get('motivos'))
-    if(this.tipo==='aplicacion' && motivos){
-      let motivos_por_defecto = JSON.parse(motivos)
-      console.log("motivos_por_defecto_",motivos_por_defecto)
+    let parametros_nota_str = decodeURIComponent(params.get('params'))
+    if(this.tipo==='aplicacion' && parametros_nota_str){
+      let parametros = JSON.parse(parametros_nota_str)
+        console.log("motivos_por_defecto_",parametros)
+        this.motivos_sugeridos_iniciales = parametros.motivos
+      this.actividad.comentario = "Nota del " + parametros.fecha_nota + ":\n" + parametros.comentario
+    
     }
 
     let lote_nombre = decodeURIComponent(
@@ -510,6 +513,7 @@ export class UpsertAplicacion extends LitElement {
                       this.tipo
                     ]}
                     .tipo=${this.tipo}
+                    .motivos_sugeridos_iniciales=${this.motivos_sugeridos_iniciales}
                   ></grid-insumos>
                 </div>
                 <!-- Fin Insumos -->

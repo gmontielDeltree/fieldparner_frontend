@@ -56,6 +56,9 @@ export class GridInsumos extends LitElement {
   @property()
   categorias_iniciales: string[];
 
+  @property()
+  motivos_sugeridos_iniciales: any;
+
   @state()
   linea_de_dosis: LineaDosis = {
     dosis: 0,
@@ -87,6 +90,9 @@ export class GridInsumos extends LitElement {
   }
 
   expanded_items() {
+    if(this.motivos_sugeridos_iniciales){
+      this.linea_de_dosis.motivos = this.motivos_sugeridos_iniciales
+    }
     if ((this.actividad.detalles as DetallesAplicacion).dosis.length === 0) {
       return [this.linea_de_dosis];
     } else {

@@ -250,7 +250,7 @@ const url_planificacion = (item_nota:Actividad) => {
   console.log("PARAMS",params)
 
   let url =
-    location + "/actividad/nueva/aplicacion?" + encodeURIComponent(JSON.stringify(params));
+    location + "/actividad/nueva/aplicacion?params=" + encodeURIComponent(JSON.stringify(params));
   return url;
 };
 
