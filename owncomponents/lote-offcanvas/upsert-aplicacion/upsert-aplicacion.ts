@@ -176,13 +176,16 @@ export class UpsertAplicacion extends LitElement {
     const params = new URLSearchParams(querystring);
     let parametros_nota_str = decodeURIComponent(params.get("params"));
     let parametros = JSON.parse(parametros_nota_str);
-    console.log("Params;",parametros === null);
+    console.log("Params;", parametros === null);
 
-    if ((this.tipo === "aplicacion") && !(parametros === null)) {
+    if (this.tipo === "aplicacion" && !(parametros === null)) {
+      console.log(
+        "Params;2",
+        params,
+        parametros_nota_str === null,
+        params.get("params")
+      );
 
-      console.log("Params;2", params, parametros_nota_str === null,params.get("params"));
-
-      
       console.log("motivos_por_defecto_", parametros);
       this.motivos_sugeridos_iniciales = parametros.motivos;
       this.actividad.comentario =
@@ -240,7 +243,17 @@ export class UpsertAplicacion extends LitElement {
     getContratistas(gbl_state.db).then((c) => {
       // Si es aplicacion devolver todos
       if (this.tipo === "aplicacion") {
-        this.contratistas = c;
+        this.contratistas = c.filter((con) => {
+          return (
+            con.labores.find(
+              (la) => la.labor.toLocaleLowerCase() === "aplicación aerea"
+            ) ||
+            con.labores.find(
+              (la) => la.labor.toLocaleLowerCase() === "aplicación terrestre"
+            )
+          );
+        });
+
         return;
       }
 
