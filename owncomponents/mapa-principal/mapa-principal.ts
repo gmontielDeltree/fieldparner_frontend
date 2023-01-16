@@ -1,5 +1,9 @@
 import { LitElement, html, unsafeCSS, css } from "lit";
-import { touchEvent, layer_visibility } from "../helpers";
+import {
+  touchEvent,
+  layer_visibility,
+  actividades_y_ejecuciones,
+} from "../helpers";
 import { GeoJSONSource, Map } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
 
@@ -16,6 +20,9 @@ import "@spectrum-web-components/menu/sp-menu-item.js";
 import "@spectrum-web-components/theme/sp-theme";
 import "@spectrum-web-components/theme/src/themes";
 import { tr } from "date-fns/locale";
+import centroid from "@turf/centroid";
+import { isFuture, isPast, isToday, parseISO } from "date-fns";
+import { get } from "lit-translate";
 
 // https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
 // https://github.com/kepta/idly/wiki/examples#using-bing-satellite-map
@@ -453,6 +460,12 @@ export class MapaPrincipal extends LitElement {
       this._redraw_map();
     });
 
+    // Create a popup, but don't add it to the map yet.
+    const popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+    });
+
     /** Mapbox handler para mostrar el offcanvas de detalles  'lotes', */
     this.map.on(touchEvent, "campos", (e) => {
       // NDVI not visible
@@ -480,6 +493,42 @@ export class MapaPrincipal extends LitElement {
       // console.log("Click en lotes selector", e.features[0]);
       let { nombre, campo_parent_id } = e.features[0].properties;
       this.sendEvent("lote-seleccionado", { nombre: nombre, campo_parent_id });
+    });
+
+    this.map.on("mouseenter", ["lotes", "seleccion_lotes_fill"], async (e) => {
+      console.log("OVER EL LOTE", e.features[0].properties);
+      let lote_uuid = e.features[0].properties.uuid;
+      console.time("Acti Ejecuciones");
+      let acts = await actividades_y_ejecuciones(lote_uuid);
+
+      let solo_futuros = acts.filter((act) =>
+        act.actividad.tipo !== "nota"
+          ? isToday(parseISO(act.actividad.detalles.fecha_ejecucion_tentativa))
+          : false
+      );
+      console.log(solo_futuros);
+
+      let centroide = centroid(e.features[0].geometry);
+      console.log(centroide);
+      let coordenadas_centroide = centroide.geometry.coordinates; //lng, lat
+
+      let html = "";
+      if (solo_futuros.length > 0) {
+        let proxima_actividad =
+          solo_futuros[0].actividad.detalles.fecha_ejecucion_tentativa;
+        html += `<h5>Próxima Actividad: ${proxima_actividad}</h5>`;
+      }else{
+        html += get('sin_actividades_para_hoy')
+      }
+
+      popup.setLngLat(coordenadas_centroide).setHTML(html).addTo(this.map);
+      console.timeEnd("Acti Ejecuciones");
+      //popup.setLngLat(coordinates).setHTML(description).addTo(map);
+    });
+
+    this.map.on("mouseleave", ["lotes", "seleccion_lotes_fill"], () => {
+      console.log("OUT EL LOTE");
+      popup.remove();
     });
 
     this.map.on("mouseenter", ["seleccion_lotes_fill", "campos"], (e) => {
