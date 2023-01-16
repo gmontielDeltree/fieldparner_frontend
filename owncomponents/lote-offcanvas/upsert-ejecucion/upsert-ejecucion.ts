@@ -414,7 +414,7 @@ export class UpsertEjecucion extends LitElement {
               placeholder="YYYY-MM-DD"
               error-message="Debe seleccionar una fecha igual o posterior a la planificación"
               .min="${this.actividad.detalles.fecha_ejecucion_tentativa}"
-              .max="${gbl_state.campana_seleccionada.fin}"
+              .max="${format(new Date(),'yyyy-MM-dd')}"
               .i18n=${base_i18n}
               theme="helper-above-field"
               .value=${this.ejecucion.detalles.fecha_ejecucion}
