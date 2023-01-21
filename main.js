@@ -1,4 +1,7 @@
-import "./owncomponents/loader.ts";
-//import './owncomponents/devel_loader.ts'
+if (import.meta.env.DEV) {
+  await import("./owncomponents/devel_loader.ts");
+} else {
+  await import("./owncomponents/loader.ts");
+}
 
-console.log("Main.js")
+console.log("Main.js");
