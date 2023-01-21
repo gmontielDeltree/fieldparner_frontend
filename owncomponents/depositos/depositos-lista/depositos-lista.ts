@@ -11,16 +11,7 @@ import { uuid4 } from "uuid4";
 import "../../lista-searchable/lista-searchable.js";
 
 export class DepositosLista extends LitElement {
-  // static override properties = {
-  //   offcanvas_lista: {},
-  //   deposito_modal: {},
-  //   deposito: {},
-  //   lineas_de_stock: {},
-  //   depositos: {},
-  //   db: {},
-  //   nueva_entrada_modal:{},
-  // };
-
+ 
   @property({
     hasChanged(newVal: Offcanvas, oldVal: Offcanvas) {
       return false;

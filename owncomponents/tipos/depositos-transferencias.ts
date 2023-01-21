@@ -1,14 +1,28 @@
+import { CreatedTag, Deposito, LastUpdateTag } from '../depositos/depositos-types';
+import { Insumo } from "../insumos/insumos-types";
 
-interface DepositosTransferencias {
-    deposito_origen_uuid: string,
-    deposito_destino_uuid: string,
-    lineas_de_transferencia : string,
+
+export interface LineaTransferencia {
+    uuid: string,
+    insumo:Insumo,
+    cantidad: number,
+    obs: string,
 }
 
-interface Campana {
-    _id?:string,
-    _rev?:string,
-    nombre: string,
-    inicio: string,//ISODATE
-    fin: string,
+export interface DepositosTransferencia {
+    _id: string,
+    _rev ?: string,
+    uuid: string,
+    fecha: string,
+    pais?:string,
+    referencia ?: string,
+    referencia_actividad ?: string,
+    es_ingreso: boolean,
+    deposito_origen: Deposito ,
+    deposito_destino: Deposito,
+    lineas : LineaTransferencia [],
+    obs: string,
+    adjuntos ?: string[]
+    last_updated : LastUpdateTag,
+    created: CreatedTag
 }

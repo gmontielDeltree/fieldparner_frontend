@@ -8,16 +8,34 @@ import {
 import { deepcopy } from "../helpers";
 import { Insumo } from "../insumos/insumos-types";
 import { tipos_siembra } from '../jsons/tipos_siembra';
+import { Proveedor } from '../tipos/proveedores';
 
 interface IHash<T> {
   [index: string]: T;
 }
+export interface LastUpdateTag {
+  last_updated: string, last_updated_by: Object
+}
+
+export interface CreatedTag{
+  created: string, created_by: Object
+}
 
 interface Deposito {
   _id: string;
+  _rev ?: string;
   uuid: string;
   nombre: string;
-  posicion: number[];
+  contratista_asociado ?: Contratista,
+  proveedor_asociado ? : Proveedor,
+  posicion ?: number[]; //Lng Lat
+  direccion ?: string;
+  car ?: string;
+  /** iso dates zulu */
+  last_updated : LastUpdateTag
+  created : CreatedTag
+  pais ?: string;
+  archivado: boolean
 }
 
 interface LineaInsumo {

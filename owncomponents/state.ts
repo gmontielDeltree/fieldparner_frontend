@@ -4,6 +4,7 @@ import { Map } from 'mapbox-gl'
 import PouchDB from "pouchdb";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { Lenguage } from './tipos/tipos-varios';
+import { Campana } from './tipos/tipos-varios';
 
 // declate a state
 class MyState extends State {

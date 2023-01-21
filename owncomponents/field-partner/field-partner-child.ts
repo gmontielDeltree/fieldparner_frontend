@@ -11,11 +11,12 @@ import {
 import "../loading-modal/loading-modal.js";
 import "../color-cultivo/color-cultivo";
 import cultivos_default from "../jsons/cultivos.json";
-import "../notas-offcanvas/notas-offcanvas.ts";
+import "../notas-offcanvas/notas-offcanvas";
 import "../ndvi-offcanvas/ndvi-offcanvas.ts";
 import "../variedades-loader/variedades-loader.js";
 import "../depositos/deposito-upsert/deposito-upsert.js";
 import "../depositos/depositos-lista/depositos-lista.ts";
+import "../depositos/depositos-lista/depositos-listado";
 import "../contratistas/contratista-crud.ts";
 import "../contratistas/contratistas-lista.ts";
 import "../sensores/sensores-offcanvas.ts";
@@ -403,7 +404,7 @@ export class FieldPartnerChild extends LitElement {
       { path: "/campo/:uuid", component: "campo-offcanvas" },
       { path: "/contratistas", component: "contratistas-lista" },
       { path: "/contratistas/add", component: "contratistas-crud" },
-      { path: "/depositos", component: "depositos-lista" },
+      { path: "/depositos", component: "depositos-listado" },
       { path: "/depositos/add", component: "depositos-upsert" },
       { path: "/insumos", component: "insumos-lista" },
       { path: "/rights/:uuid_workspace", component: "workspace-rights" },

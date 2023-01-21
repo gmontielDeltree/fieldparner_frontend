@@ -1,4 +1,4 @@
-import { isAfter, isBefore, isWithinInterval } from "date-fns";
+import { format, isAfter, isBefore, isWithinInterval } from "date-fns";
 import { gbl_state } from "./state";
 import parseISO from "date-fns/parseISO";
 import { ro } from "date-fns/locale";
@@ -194,6 +194,17 @@ const crearWorkspaceDB = (nombre, user, pass) => {};
 const setPermisosWorkspaceDB = (nombre, user, pass) => {};
 
 const getPermisosWorkspaceDB = (nombre, user, pass) => {};
+
+/** la fecha/hora en utc */
+export const format_iso_c = (date)=>format(date, "yyyy-MM-dd'T'HH:mm:ss'Z'")
+
+export const createMenuDots = (iconName: string) => {
+  const item = document.createElement("vaadin-context-menu-item");
+  const icon = document.createElement("vaadin-icon");
+  icon.setAttribute("icon", `vaadin:${iconName}`);
+  item.appendChild(icon);
+  return item;
+}
 
 export {
   emptyGJ,
