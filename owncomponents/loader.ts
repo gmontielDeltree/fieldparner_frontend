@@ -9,7 +9,7 @@ import uuid4 from "uuid4";
 import { Lenguage } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
 
-import "./field-partner/field-partner-child"
+import("./field-partner/field-partner-child")
 
 /**
  * La mision de este componente es login, cargar/sinc las dbs.
