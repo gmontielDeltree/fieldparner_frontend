@@ -6,6 +6,7 @@ export interface LineaTransferencia {
     uuid: string,
     insumo:Insumo,
     cantidad: number,
+    precio ?:number,
     obs: string,
 }
 

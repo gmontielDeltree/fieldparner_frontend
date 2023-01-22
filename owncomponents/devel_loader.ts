@@ -9,7 +9,7 @@ import uuid4 from "uuid4";
 import { Lenguage } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
 // import './depositos/depositos-lista/depositos-listado';
-import './depositos/deposito-detalles/deposito-detalles';
+import './depositos/deposito-transferencias/deposito-nuevo-transferencias';
 
 /**
  * La mision de este componente es login, cargar/sinc las dbs.
@@ -52,7 +52,7 @@ export class DevelAppLoader extends LitElement {
     }
 
     // Elemento a testear
-    return html`<deposito-detalles .location=${{params : {uuid:''}}}/>`;
+    return html`<deposito-nuevo-transferencias .location=${{params : {uuid:''}}}/>`;
   }
 
   async init_the_whole_thing() {

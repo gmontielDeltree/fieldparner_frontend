@@ -1,20 +1,24 @@
+import { LineaTransferencia } from "./../../tipos/depositos-transferencias";
 import { css, html, LitElement, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-
+import "../../modal-generico/modal-generico";
 import "@vaadin/button";
+import "@vaadin/vaadin-lumo-styles/typography";
+import "@vaadin/icon";
+import "@vaadin/vaadin-lumo-styles/vaadin-iconset.js";
+
 import "@vaadin/dialog";
 import "@vaadin/text-field";
+import "@vaadin/number-field";
 import "@vaadin/vertical-layout";
+import "@vaadin/horizontal-layout";
 import "@vaadin/combo-box";
 import "@vaadin/upload";
+import "@vaadin/date-picker";
 
 import { dialogFooterRenderer, dialogRenderer } from "@vaadin/dialog/lit.js";
 import type { DialogOpenedChangedEvent } from "@vaadin/dialog";
-import {
-  nuevo_deposito,
-  guardar_deposito,
-  listar_depositos,
-} from "../depositos_funciones";
+import { listar_depositos } from "../depositos_funciones";
 import { Deposito } from "../depositos-types";
 import { translate } from "lit-translate";
 import { DepositosTransferencia } from "../../tipos/depositos-transferencias";
@@ -23,13 +27,16 @@ import { base_i18n } from "../../lote-offcanvas/repetir-aplicacion/date-picker-i
 import { Task, TaskStatus } from "@lit-labs/task";
 import { RouterLocation } from "@vaadin/router";
 
-import { get_lista_insumos } from "../../insumos/insumos-types";
-import { gbl_state } from '../../state';
+import { Insumo, get_lista_insumos } from "../../insumos/insumos-types";
+import { gbl_state } from "../../state";
+
+import { uuid4 } from "uuid4";
+import { deepcopy } from "../../helpers";
+import { map } from "lit/directives/map.js";
 
 @customElement("deposito-nuevo-transferencias")
 export class DepositoNuevoTransferencias extends LitElement {
-  @property()
-  opened: boolean = false;
+  private opened: boolean = true;
 
   @property()
   edit: boolean = false;
@@ -43,18 +50,30 @@ export class DepositoNuevoTransferencias extends LitElement {
   @state()
   private depos: Deposito[] = [];
 
+  private insumos: Insumo[] = [];
+
+  linea_insumo: LineaTransferencia = {
+    uuid: uuid4(),
+    insumo: null,
+    cantidad: 0,
+    precio: 0,
+    obs: "",
+  };
+
   private trans: DepositosTransferencia = nueva_transfer();
+
   private _loadTask = new Task(
     this,
-    () => listar_depositos(),
+    () => this.loadData(),
     () => [this.location, this.opened]
   );
 
-  private _loadInsumosTask = new Task(
-    this,
-    () => get_lista_insumos(gbl_state.db),
-    () => [this.location, this.opened]
-  );
+  loadData() {
+    return listar_depositos()
+      .then((d) => (this.depos = d))
+      .then(() => get_lista_insumos(gbl_state.db))
+      .then((i) => (this.insumos = i));
+  }
 
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -78,6 +97,7 @@ export class DepositoNuevoTransferencias extends LitElement {
   emit_nuevo() {
     guardar_transfer(this.trans);
     //this.dialogOpened = false;
+    //Back URL
     this.dispatchEvent(
       new CustomEvent("nueva-trans", { bubbles: true, composed: true })
     );
@@ -96,133 +116,182 @@ export class DepositoNuevoTransferencias extends LitElement {
   render() {
     return html`
       <!-- tag::snippet[] -->
-      <vaadin-dialog
-        header-title=${this.edit
-          ? translate("edit")
-          : translate("nueva_transferencia")}
-        .opened="${this.opened}"
-        @opened-changed="${(e: DialogOpenedChangedEvent) => {
-          this.opened = e.detail.value;
-          this.emit_opened_changed();
-        }}"
-        ${
-          dialogRenderer(this.renderDialog, [
-            this.opened,
-            this._loadTask.status,
-          ]) /**hay que poner una prop sino no se rerender */
-        }
-        ${dialogFooterRenderer(this.renderFooter, [])}
-      ></vaadin-dialog>
+      <modal-generico .modalOpened=${this.opened}>
+        <div slot="title">${translate("depositos")}</div>
 
-      <!-- insumo dialog -->
-      <vaadin-dialog
-        header-title=${translate("insumo")}
-        .opened="${this.insumosOpened}"
-        @opened-changed="${(e: DialogOpenedChangedEvent) => {
-          this.insumosOpened = e.detail.value;
-          this.emit_opened_changed();
-        }}"
-        ${
-          dialogRenderer(this.renderInsumoDialog, [
-            this.insumosOpened,
-            this._loadTask.status,
-          ]) /**hay que poner una prop sino no se rerender */
-        }
-        ${dialogFooterRenderer(this.renderInsumoFooter, [])}
-      ></vaadin-dialog>
+        <div slot="body">
+          ${this._loadTask.render({
+            pending: () => html`${translate("cargando")}`,
+            complete: (_) => html`
+              <vaadin-horizontal-layout>
+                <vaadin-vertical-layout
+                  style="align-items: stretch; max-width: 40%;"
+                >
+                  <vaadin-horizontal-layout theme="spacing">
+                    <!-- fecha -->
+                    <vaadin-date-picker
+                      label=${translate("fecha")}
+                      required
+                      allowed-char-pattern="[]"
+                      placeholder="YYYY-MM-DD"
+                      .i18n=${base_i18n}
+                      theme="helper-above-field"
+                      .value=${this.trans.fecha}
+                      @change=${(e) => (this.trans.fecha = e.target.value)}
+                    ></vaadin-date-picker>
 
-      <!-- end::snippet[] -->
+                    <!-- referencia  -->
+                    <vaadin-text-field
+                      autoselect
+                      label="${translate("referencia")}"
+                      .value=${this.trans.referencia}
+                      helper-text=${translate("la_referencia_es_un_indicador")}
+                      @input=${(e) => (this.trans.referencia = e.target.value)}
+                    ></vaadin-text-field>
+                  </vaadin-horizontal-layout>
+
+                  <!-- origen -->
+
+                  <vaadin-combo-box
+                    label="${translate("origen")}"
+                    item-label-path="nombre"
+                    item-value-path="uuid"
+                    helper-text=${""}
+                    required
+                    error-message=${translate("campo_requerido")}
+                    colspan="2"
+                    .selectedItem=${this.trans.deposito_origen}
+                    .items="${this.depos}"
+                    @selected-item-changed=${(e) => {
+                      this.trans.deposito_origen = e.detail.value;
+                    }}
+                  ></vaadin-combo-box>
+                  <!-- destino -->
+                  <vaadin-combo-box
+                    label="${translate("destino")}"
+                    item-label-path="nombre"
+                    item-value-path="uuid"
+                    helper-text=${""}
+                    required
+                    error-message=${translate("campo_requerido")}
+                    colspan="2"
+                    .selectedItem=${this.trans.deposito_destino}
+                    .items="${this.depos}"
+                    @selected-item-changed=${(e) => {
+                      this.trans.deposito_destino = e.detail.value;
+                    }}
+                  ></vaadin-combo-box>
+
+                  <!-- obs  -->
+                  <vaadin-text-field
+                    autoselect
+                    label="${translate("observaciones")}"
+                    .value=${this.trans.obs}
+                    @input=${(e) => (this.trans.obs = e.target.value)}
+                  ></vaadin-text-field>
+                  <!-- Adjuntos -->
+                  <vaadin-upload></vaadin-upload>
+                </vaadin-vertical-layout>
+
+                <vaadin-vertical-layout>
+                  lado derecho
+                  <vaadin-horizontal-layout>
+                    <vaadin-combo-box
+                      id="insumo1"
+                      label=${translate("insumo")}
+                      style="width:16em"
+                      colspan="2"
+                      item-label-path="marca_comercial"
+                      item-value-path="uuid"
+                      .items=${this.insumos}
+                      .selectedItem=${this.linea_insumo.insumo}
+                      @selected-item-changed=${(e) => {
+                        this.linea_insumo.insumo = e.detail.value;
+                        this.linea_insumo.precio =
+                          this.linea_insumo.insumo?.precio || 0;
+                        this.requestUpdate();
+                      }}
+                    ></vaadin-combo-box>
+
+                    <vaadin-number-field
+                      label=${translate("cantidad")}
+                      .value=${+this.linea_insumo.cantidad}
+                      @input=${(e) => {
+                        this.linea_insumo.cantidad = +e.target.value;
+                        this.requestUpdate();
+                      }}
+                    ></vaadin-number-field>
+
+                    <vaadin-number-field
+                      label=${translate("precio_unitario")}
+                      .value=${this.linea_insumo.precio}
+                      @input=${(e) => {
+                        this.linea_insumo.precio = +e.target.value;
+                        this.requestUpdate();
+                      }}
+                    ></vaadin-number-field>
+
+                    <vaadin-number-field
+                      label=${translate("total")}
+                      readonly
+                      .value=${this.linea_insumo.precio *
+                      this.linea_insumo.cantidad}
+                    ></vaadin-number-field>
+
+                    <vaadin-button
+                      @click=${() => {
+                        this.trans.lineas.push(deepcopy(this.linea_insumo));
+                        this.linea_insumo = {
+                          uuid: uuid4(),
+                          insumo: null,
+                          cantidad: 0,
+                          precio: 0,
+                          obs: "",
+                        };
+                        this.requestUpdate();
+                      }}
+                    >
+                      <vaadin-icon icon="lumo:plus" />
+                    </vaadin-button>
+                  </vaadin-horizontal-layout>
+
+                  ${map(
+                    this.trans.lineas,
+                    (linea: LineaTransferencia) => html`
+                      <vaadin-item>
+                        ${linea.insumo.marca_comercial} ${linea.cantidad}
+                        ${linea.precio}
+                      </vaadin-item>
+                    `
+                  )}
+                </vaadin-vertical-layout>
+              </vaadin-horizontal-layout>
+            `,
+          })}
+        </div>
+
+        <vaadin-horizontal-layout
+          slot="footer"
+          theme="spacing"
+          style="justify-content:end;"
+          >${this.renderFooter()}</vaadin-horizontal-layout
+        >
+      </modal-generico>
     `;
   }
 
-  private renderDialog = () => html`
-    ${this._loadTask.render({
-      pending: () => html`${translate("cargando")}`,
-      complete: (depos) => html`
-        <vaadin-vertical-layout
-          style="align-items: stretch; width: 30rem; max-width: 100%;"
-        >
-          <!-- fecha -->
-          <vaadin-date-picker
-            label=${translate("fecha")}
-            required
-            allowed-char-pattern="[]"
-            placeholder="YYYY-MM-DD"
-            .i18n=${base_i18n}
-            theme="helper-above-field"
-            .value=${this.trans.fecha}
-            @change=${(e) => (this.trans.fecha = e.target.value)}
-          ></vaadin-date-picker>
-          <!-- origen -->
-
-          <vaadin-combo-box
-            label="${translate("origen")}"
-            item-label-path="nombre"
-            item-value-path="uuid"
-            helper-text=${""}
-            required
-            error-message=${translate("campo_requerido")}
-            colspan="2"
-            .selectedItem=${this.trans.deposito_origen}
-            .items="${depos}"
-            @selected-item-changed=${(e) => {
-              this.trans.deposito_origen = e.detail.value;
-            }}
-          ></vaadin-combo-box>
-          <!-- destino -->
-          <vaadin-combo-box
-            label="${translate("destino")}"
-            item-label-path="nombre"
-            item-value-path="uuid"
-            helper-text=${""}
-            required
-            error-message=${translate("campo_requerido")}
-            colspan="2"
-            .selectedItem=${this.trans.deposito_destino}
-            .items="${depos}"
-            @selected-item-changed=${(e) => {
-              this.trans.deposito_destino = e.detail.value;
-            }}
-          ></vaadin-combo-box>
-          <!-- insumos -->
-            <vaadin-button @click=${
-              () => {
-                this.opened = false
-                this.insumosOpened = true
-              }
-            }>
-            ${translate("agregar")}
-          </vaadin-button>
-          <!-- referencia  -->
-          <vaadin-text-field
-            autoselect
-            label="${translate("referencia")}"
-            .value=${this.trans.referencia}
-            helper-text=${translate("la_referencia_es_un_indicador")}
-            @input=${(e) => (this.trans.referencia = e.target.value)}
-          ></vaadin-text-field>
-          <!-- obs  -->
-          <vaadin-text-field
-            autoselect
-            label="${translate("observaciones")}"
-            .value=${this.trans.obs}
-            @input=${(e) => (this.trans.obs = e.target.value)}
-          ></vaadin-text-field>
-          <!-- Adjuntos -->
-          <vaadin-upload></vaadin-upload>
-        </vaadin-vertical-layout>
-      `,
-    })}
-  `;
-
   private renderFooter = () => html`
     <vaadin-button @click="${this.close}">${translate("cerrar")}</vaadin-button>
-    <vaadin-button theme="primary" @click="${this.emit_nuevo}"
+    <vaadin-button
+      theme="primary"
+      @click="${this.emit_nuevo}"
+      ?disabled = ${!this.validate()}
       >${translate("guardar")}</vaadin-button
     >
   `;
 
   private close() {
+    // back URL
     this.dispatchEvent(
       new CustomEvent("opened-changed", {
         detail: { value: false },
@@ -232,85 +301,13 @@ export class DepositoNuevoTransferencias extends LitElement {
     );
   }
 
-  private renderInsumoDialog = () => html`
-  ${this._loadInsumosTask.render({
-    pending: () => html`${translate("cargando")}`,
-    complete: (items) => html`
-      <vaadin-vertical-layout
-        style="align-items: stretch; width: 30rem; max-width: 100%;"
-      >
-        <!-- fecha -->
-        <vaadin-date-picker
-          label=${translate("fecha")}
-          required
-          allowed-char-pattern="[]"
-          placeholder="YYYY-MM-DD"
-          .i18n=${base_i18n}
-          theme="helper-above-field"
-          .value=${this.trans.fecha}
-          @change=${(e) => (this.trans.fecha = e.target.value)}
-        ></vaadin-date-picker>
-        <!-- origen -->
-
-        <vaadin-combo-box
-          label="${translate("origen")}"
-          item-label-path="nombre"
-          item-value-path="uuid"
-          helper-text=${""}
-          required
-          error-message=${translate("campo_requerido")}
-          colspan="2"
-          .selectedItem=${this.trans.deposito_origen}
-          .items="${items}"
-          @selected-item-changed=${(e) => {
-            this.trans.deposito_origen = e.detail.value;
-          }}
-        ></vaadin-combo-box>
-        <!-- destino -->
-        <vaadin-combo-box
-          label="${translate("destino")}"
-          item-label-path="nombre"
-          item-value-path="uuid"
-          helper-text=${""}
-          required
-          error-message=${translate("campo_requerido")}
-          colspan="2"
-          .selectedItem=${this.trans.deposito_destino}
-          .items="${items}"
-          @selected-item-changed=${(e) => {
-            this.trans.deposito_destino = e.detail.value;
-          }}
-        ></vaadin-combo-box>
-        <!-- insumos -->
-
-        <!-- referencia  -->
-        <vaadin-text-field
-          autoselect
-          label="${translate("referencia")}"
-          .value=${this.trans.referencia}
-          helper-text=${translate("la_referencia_es_un_indicador")}
-          @input=${(e) => (this.trans.referencia = e.target.value)}
-        ></vaadin-text-field>
-        <!-- obs  -->
-        <vaadin-text-field
-          autoselect
-          label="${translate("observaciones")}"
-          .value=${this.trans.obs}
-          @input=${(e) => (this.trans.obs = e.target.value)}
-        ></vaadin-text-field>
-        <!-- Adjuntos -->
-        <vaadin-upload></vaadin-upload>
-      </vaadin-vertical-layout>
-    `,
-  })}
-`;
-
-  private renderInsumoFooter = () => html`
-    <vaadin-button @click="${this.close}">${translate("cerrar")}</vaadin-button>
-    <vaadin-button theme="primary" @click="${this.emit_nuevo}"
-      >${translate("guardar")}</vaadin-button
-    >
-  `;
+  private validate() {
+   //return true;
+   console.log((this.trans.deposito_destino && this.trans.deposito_origen))
+    return (this.trans.deposito_destino && this.trans.deposito_origen)
+      ? true
+      : false;
+  }
 
   static styles = css`
     /* Center the button within the example */
