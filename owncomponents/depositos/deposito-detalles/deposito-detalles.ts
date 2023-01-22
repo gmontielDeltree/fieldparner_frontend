@@ -32,8 +32,10 @@ import {
 } from "../depositos_funciones";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { createMenuDots } from "../../helpers";
-import { DepositosTransferencia } from "../../tipos/depositos-transferencias";
+import { DepositosTransferencia, LineaStock, Stock } from "../../tipos/depositos-transferencias";
 import { listar_transferencias } from "../transferencias_funciones";
+import { calcular_stock } from '../stock_funciones';
+import { map } from "lit/directives/map.js";
 
 @customElement("deposito-detalles")
 export class DepositoDetalles extends LitElement {
@@ -45,6 +47,7 @@ export class DepositoDetalles extends LitElement {
 
   private depo: Deposito = nuevo_deposito();
   private transferencias: DepositosTransferencia;
+  private stock : Stock
 
   @state()
   errorNotificationOpened: boolean;
@@ -65,8 +68,13 @@ export class DepositoDetalles extends LitElement {
   loadData(depo_uuid) {
     return cargar_depo(depo_uuid)
       .then((d) => (this.depo = d))
+      .then(() => calcular_stock(depo_uuid))
+      .then((stock)=>{
+        this.stock = stock
+      })
       .then(() => listar_transferencias(depo_uuid))
-      .catch(() => {
+      .catch((e) => {
+        console.error(e)
         this.errorNotificationOpened = true;
         return [] as DepositosTransferencia[];
       });
@@ -174,7 +182,10 @@ export class DepositoDetalles extends LitElement {
               >
             </vaadin-tabs>
 
-            <div tab="stock-tab">This is the Dashboard tab content</div>
+            <div tab="stock-tab">
+              ${this._loadTask.render({pending: () => html`${translate("cargando")}`,
+                  complete: (trans) => this.stock_tab()})}
+            </div>
             <div tab="es-tab">
               ${
                 this._loadTask.render({
@@ -281,5 +292,65 @@ export class DepositoDetalles extends LitElement {
   closeError() {
     this.errorNotificationOpened = false;
     console.log('clicked')
+  }
+
+  stock_tab(){
+    
+    return html`
+       ${map(Object.values(this.stock),
+                      (item : LineaStock) => html`
+                        <vaadin-item
+                          style="line-height: var(--lumo-line-height-m);"
+                        >
+                          <vaadin-horizontal-layout
+                            style="align-items: center; justify-content: space-between;"
+                            theme="spacing"
+                          >
+                            <vaadin-horizontal-layout
+                              style="align-items: center;"
+                              theme="spacing"
+                            >
+                              <vaadin-avatar
+                                .name="${item.insumo.marca_comercial}"
+                              ></vaadin-avatar>
+                              <vaadin-vertical-layout>
+                                <span>
+                                  ${item.insumo.marca_comercial}
+                                </span>
+                                <span
+                                  style="color: var(--lumo-secondary-text-color); font-size: var(--lumo-font-size-s);"
+                                >
+                                  ${item.insumo.principio_activo}
+                                </span>
+                              </vaadin-vertical-layout>
+                              <span>
+                                  ${item.cantidad}
+                                </span>
+                            </vaadin-horizontal-layout>
+
+                            <vaadin-horizontal-layout
+                              style="align-items: center;"
+                              theme="spacing"
+                            >
+                              <vaadin-button
+                                @click=${() => {
+                                  
+                                }}
+                                >${translate("ver")}</vaadin-button
+                              >
+
+                              <vaadin-menu-bar
+                                .items=[]
+                                @item-selected=${this.menu_click}
+                                theme="icon"
+                              >
+                                <vaadin-tooltip slot="tooltip"></vaadin-tooltip>
+                              </vaadin-menu-bar>
+                            </vaadin-horizontal-layout>
+                          </vaadin-horizontal-layout>
+                        </vaadin-item>
+                      `)}
+                    
+    `
   }
 }

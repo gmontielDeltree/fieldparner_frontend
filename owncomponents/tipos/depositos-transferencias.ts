@@ -27,3 +27,13 @@ export interface DepositosTransferencia {
     last_updated : LastUpdateTag,
     created: CreatedTag
 }
+
+export interface LineaStock {
+    insumo : Insumo,
+    cantidad : number,
+    valoracion : number,
+}
+
+export interface Stock {
+    [insumo_uuid : string] : LineaStock
+}

@@ -10,6 +10,7 @@ import { Lenguage } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
 // import './depositos/depositos-lista/depositos-listado';
 import './depositos/deposito-transferencias/deposito-nuevo-transferencias';
+import './depositos/deposito-detalles/deposito-detalles';
 
 /**
  * La mision de este componente es login, cargar/sinc las dbs.
@@ -52,7 +53,8 @@ export class DevelAppLoader extends LitElement {
     }
 
     // Elemento a testear
-    return html`<deposito-nuevo-transferencias .location=${{params : {uuid:''}}}/>`;
+    return html`<deposito-detalles .location=${{params : {uuid:'8eb90c81-bb62-4d2f-b090-bdd1955be664'}}}/>`;
+    // return html`<deposito-nuevo-transferencias .location=${{params : {uuid:''}}}/>`;
   }
 
   async init_the_whole_thing() {

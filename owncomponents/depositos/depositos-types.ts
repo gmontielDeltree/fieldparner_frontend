@@ -231,6 +231,7 @@ interface Ejecucion {
   estado: string;
   detalles: DetallesEjecucion;
   condiciones?: CondicionesEjecucion;
+  deposito_origen ?: Deposito,
 }
 
 const get_empty_aplicacion = () => {
