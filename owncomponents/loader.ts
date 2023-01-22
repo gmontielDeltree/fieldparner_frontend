@@ -8,6 +8,7 @@ import createAuth0Client from "@auth0/auth0-spa-js";
 import uuid4 from "uuid4";
 import { Lenguage } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
+
 import "./field-partner/field-partner-child"
 
 /**

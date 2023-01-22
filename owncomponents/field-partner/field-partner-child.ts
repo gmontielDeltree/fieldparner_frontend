@@ -1,66 +1,50 @@
-import { LitElement, html, PropertyValueMap } from "lit";
+import { LitElement, html, PropertyValueMap, css, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import { Router } from "@vaadin/router";
-import PouchDB from "pouchdb";
-import {
-  base_url,
-  normalizar_username,
-  gbl_docs_starting,
-  only_docs,
-} from "../helpers";
-import "../loading-modal/loading-modal.js";
-import "../color-cultivo/color-cultivo";
+
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
+import("../loading-modal/loading-modal.js");
+import ("../color-cultivo/color-cultivo");
 import cultivos_default from "../jsons/cultivos.json";
-import "../notas-offcanvas/notas-offcanvas";
-import "../ndvi-offcanvas/ndvi-offcanvas.ts";
-import "../variedades-loader/variedades-loader.js";
-import "../depositos/deposito-upsert/deposito-upsert.js";
-import "../depositos/depositos-lista/depositos-lista.ts";
-import "../depositos/depositos-lista/depositos-listado";
-import "../contratistas/contratista-crud.ts";
-import "../contratistas/contratistas-lista.ts";
-import "../sensores/sensores-offcanvas.ts";
-import "../campo-offcanvas/campo-offcanvas.js";
-import "../lote-offcanvas/lote-offcanvas.js";
-import "../lote-offcanvas/lote-offcanvas-side.js";
-import "../nueva-geometria/nueva-geometria.ts";
-import "../nuevo-campo/nuevo-campo.js";
-import "../lista-de-campos/lista-de-campos.js";
-import "../navbar-element/navbar-element";
-import "../mapa-principal/mapa-principal.js";
-import "../login-modal/login-modal.ts";
-import "../notas-offcanvas/nota-target.ts";
-import "../insumos/insumos-lista.ts";
-import "../lista-centrales-cercanas/lista-centrales-cercanas.ts";
-import "../sensores/lista-de-sensores.ts";
-import "../navbar-element/workspace-rigths.ts";
-import "../navbar-element/new-app-layout.ts";
+import ("../notas-offcanvas/notas-offcanvas");
+import ("../ndvi-offcanvas/ndvi-offcanvas");
+//import "../variedades-loader/variedades-loader.js";
+import ("../depositos/deposito-upsert/deposito-upsert.js");
+import ("../depositos/depositos-lista/depositos-listado");
+import ("../contratistas/contratista-crud");
+import ("../contratistas/contratistas-lista");
+import ("../sensores/sensores-offcanvas");
+import ("../campo-offcanvas/campo-offcanvas")
+import ("../lote-offcanvas/lote-offcanvas-side");
+import ("../nueva-geometria/nueva-geometria");
+import ("../nuevo-campo/nuevo-campo.js");
+import ("../lista-de-campos/lista-de-campos");
+import "../mapa-principal/mapa-principal";
+import "../login-modal/login-modal";
+import ("../notas-offcanvas/nota-target");
+import ("../insumos/insumos-lista");
+import "../lista-centrales-cercanas/lista-centrales-cercanas";
+import "../sensores/lista-de-sensores";
+import "../navbar-element/workspace-rigths";
+import "../navbar-element/new-app-layout";
 import "../null-component";
-import "../invite/invite";
-import "../lote-offcanvas/repetir-aplicacion/repetir-aplicacion.ts";
-import "../lote-offcanvas/upsert-aplicacion/upsert-aplicacion";
-import "../lote-offcanvas/upsert-ejecucion/upsert-ejecucion";
+import ("../invite/invite");
+import ("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
+import ("../lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
+import ("../lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
+import "../navbar-element/navbar-element";
 
-import "../sensores/devices-route";
-
-import { use, get, registerTranslateConfig, translate } from "lit-translate";
+import ("../sensores/devices-route");
 
 import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 import uuid4 from "uuid4";
-import {
-  download_lista_de_insumos,
-  get_empty_insumo,
-  Insumo,
-} from "../insumos/insumos-types";
 import { Actividad } from "../depositos/depositos-types";
 import { DailyTelemetryCard } from "../sensores/sensores-types";
-import { format, parse } from "date-fns";
 import { Devices } from "../sensores/sensores";
 
-import { StateController } from "@lit-app/state";
 import gbl_state from "../state.js";
 
 var wentOffline, wentOnline;
@@ -82,6 +66,9 @@ function handleConnectionChange(event) {
 }
 
 export class FieldPartnerChild extends LitElement {
+
+  static override styles = [unsafeCSS(bootstrap)]
+
   @property({ hasChanged: (v, ov) => false })
   map: Map;
 
