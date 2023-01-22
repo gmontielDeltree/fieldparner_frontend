@@ -193,8 +193,8 @@ export class Example extends LitElement {
                 title="Depositos"
                 style="cursor: pointer;background-image: url('${icono_depositos}');width: 32px;height: 32px;background-size: cover;background-position: center;"
                 @click=${() => {
-                  this.sendEvent("ver-depositos-click", null);
-                }}
+                    Router.go('depositos')
+                  }}
               ></div>
             </vaadin-tab>
             <vaadin-tab id="dummy-tab" ${ref(this.geocoderRef)}></vaadin-tab>

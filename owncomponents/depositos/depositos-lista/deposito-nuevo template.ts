@@ -1,3 +1,4 @@
+import { RouterLocation } from '@vaadin/router';
 import { css, html, LitElement, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
@@ -15,6 +16,9 @@ import { translate } from "lit-translate";
 export class DepositoNuevo extends LitElement {
   @property()
   opened: boolean = false;
+
+  @property()
+  location : RouterLocation
 
   private depo: Deposito = nuevo_deposito();
 
@@ -85,17 +89,17 @@ export class DepositoNuevo extends LitElement {
     );
   }
 
-  static styles = css`
-    /* Center the button within the example */
-    :host {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
-    }
-  `;
+  // static styles = css`
+  //   /* Center the button within the example */
+  //   :host {
+  //     position: fixed;
+  //     top: 0;
+  //     right: 0;
+  //     bottom: 0;
+  //     left: 0;
+  //     display: flex !important;
+  //     align-items: center;
+  //     justify-content: center;
+  //   }
+  // `;
 }

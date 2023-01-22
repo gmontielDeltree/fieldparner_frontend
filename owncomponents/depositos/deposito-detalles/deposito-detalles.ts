@@ -1,3 +1,4 @@
+import { gbl_state } from './../../state';
 import { customElement, property, state } from "lit/decorators.js";
 import "../../modal-generico/modal-generico";
 import "../deposito-transferencias/deposito-nuevo-transferencias";
@@ -88,9 +89,9 @@ export class DepositoDetalles extends LitElement {
       tooltip: get("mas"),
       children: [
         {
-          text: get("nuevo"),
+          text: get("nueva_transferencia_entrada"),
           callback: () => {
-            this.abrirNuevoDialog = true;
+            Router.go(gbl_state.router.urlForPath('/deposito/:uuid/transfer/add/in', {uuid: this.location.params.uuid}))
             console.log("Nuevo");
           },
         },
@@ -133,7 +134,7 @@ export class DepositoDetalles extends LitElement {
 
   render() {
     return html`
-      <modal-generico .modalOpened=${this.openedModal}>
+      <modal-generico .modalOpened=${this.openedModal} backurl='/depositos' >
         <h4 slot="title">${this.depo.nombre}</h4>
         <div slot="menu">
           <vaadin-menu-bar
@@ -145,31 +146,7 @@ export class DepositoDetalles extends LitElement {
           </vaadin-menu-bar>
         </div>
         <div slot="body">
-          <deposito-nuevo-transferencias
-            .opened=${this.abrirNuevoDialog}
-            @nuevo-depo=${() => {
-              console.log("Nuevo Click");
-              this.abrirNuevoDialog = false;
-              //Refresh
-              // Notificación
-            }}
-            @opened-changed=${(e: CustomEvent) => {
-              this.abrirNuevoDialog = e.detail.value;
-            }}
-          ></deposito-nuevo-transferencias>
-          <deposito-nuevo-transferencias
-            .edit=${true}
-            .depo_to_edit=${this.trans_to_edit}
-            .opened=${this.abrirEditDialog}
-            @nuevo-depo=${() => {
-              this.abrirEditDialog = false;
-              //Refresh
-              // Notificación
-            }}
-            @opened-changed=${(e: CustomEvent) => {
-              this.abrirEditDialog = e.detail.value;
-            }}
-          ></deposito-nuevo-transferencias>
+          
 
           <vaadin-tabsheet>
             <vaadin-tabs slot="tabs">
@@ -258,6 +235,32 @@ export class DepositoDetalles extends LitElement {
             </div>
           </vaadin-tabsheet>
 
+          <deposito-nuevo-transferencias
+            .opened=${this.abrirNuevoDialog}
+            @nuevo-depo=${() => {
+              console.log("Nuevo Click");
+              this.abrirNuevoDialog = false;
+              //Refresh
+              // Notificación
+            }}
+            @opened-changed=${(e: CustomEvent) => {
+              this.abrirNuevoDialog = e.detail.value;
+            }}
+          ></deposito-nuevo-transferencias>
+          <deposito-nuevo-transferencias
+            .edit=${true}
+            .depo_to_edit=${this.trans_to_edit}
+            .opened=${this.abrirEditDialog}
+            @nuevo-depo=${() => {
+              this.abrirEditDialog = false;
+              //Refresh
+              // Notificación
+            }}
+            @opened-changed=${(e: CustomEvent) => {
+              this.abrirEditDialog = e.detail.value;
+            }}
+          ></deposito-nuevo-transferencias>
+
           <vaadin-notification
             theme="error"
             duration="0"
@@ -270,6 +273,7 @@ export class DepositoDetalles extends LitElement {
           ></vaadin-notification>
         </div>
         <!-- end body -->
+        <slot><slot>
       </modal-generico>
     `;
   }

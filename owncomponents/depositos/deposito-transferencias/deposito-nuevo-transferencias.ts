@@ -10,6 +10,7 @@ import "@vaadin/vaadin-lumo-styles/vaadin-iconset.js";
 import "@vaadin/dialog";
 import "@vaadin/text-field";
 import "@vaadin/number-field";
+import "@vaadin/text-area"
 import "@vaadin/vertical-layout";
 import "@vaadin/horizontal-layout";
 import "@vaadin/combo-box";
@@ -116,14 +117,14 @@ export class DepositoNuevoTransferencias extends LitElement {
   render() {
     return html`
       <!-- tag::snippet[] -->
-      <modal-generico .modalOpened=${this.opened}>
+      <modal-generico .modalOpened=${this.opened} backurl='${gbl_state.router.urlForPath('/deposito/:uuid',{uuid:this.location.params.uuid})}'>
         <div slot="title">${translate("depositos")}</div>
 
         <div slot="body">
           ${this._loadTask.render({
             pending: () => html`${translate("cargando")}`,
             complete: (_) => html`
-              <vaadin-horizontal-layout>
+              <vaadin-horizontal-layout theme='spacing'>
                 <vaadin-vertical-layout
                   style="align-items: stretch; max-width: 40%;"
                 >
@@ -183,19 +184,18 @@ export class DepositoNuevoTransferencias extends LitElement {
                   ></vaadin-combo-box>
 
                   <!-- obs  -->
-                  <vaadin-text-field
+                  <vaadin-text-area
                     autoselect
                     label="${translate("observaciones")}"
                     .value=${this.trans.obs}
                     @input=${(e) => (this.trans.obs = e.target.value)}
-                  ></vaadin-text-field>
+                  ></vaadin-text-area>
                   <!-- Adjuntos -->
                   <vaadin-upload></vaadin-upload>
                 </vaadin-vertical-layout>
 
                 <vaadin-vertical-layout>
-                  lado derecho
-                  <vaadin-horizontal-layout>
+                  <vaadin-horizontal-layout style='align-items:end' theme='spacing'>
                     <vaadin-combo-box
                       id="insumo1"
                       label=${translate("insumo")}
@@ -309,17 +309,17 @@ export class DepositoNuevoTransferencias extends LitElement {
       : false;
   }
 
-  static styles = css`
-    /* Center the button within the example */
-    :host {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
-    }
-  `;
+  // static styles = css`
+  //   /* Center the button within the example */
+  //   :host {
+  //     position: fixed;
+  //     top: 0;
+  //     right: 0;
+  //     bottom: 0;
+  //     left: 0;
+  //     display: flex !important;
+  //     align-items: center;
+  //     justify-content: center;
+  //   }
+  // `;
 }

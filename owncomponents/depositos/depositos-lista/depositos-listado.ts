@@ -94,7 +94,7 @@ export class DepositosListado extends LitElement {
 
   render() {
     return html`
-      <modal-generico .modalOpened=${this.openedModal}>
+      <modal-generico .modalOpened=${this.openedModal} backurl='/'>
         <h4 slot="title">${translate("depositos")}</h4>
         <div slot="menu" s>
           <vaadin-menu-bar

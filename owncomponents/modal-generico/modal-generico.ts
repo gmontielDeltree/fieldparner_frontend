@@ -19,6 +19,9 @@ export class ModalGenerico extends LitElement {
   size;
 
   @property()
+  backurl : string
+
+  @property()
   titulo: any = {};
 
   @property()
@@ -124,12 +127,6 @@ export class ModalGenerico extends LitElement {
     );
   }
 
-  back_click() {}
-
-  back_url() {
-    return "#";
-  }
-
   render() {
     return html`<!-- Modal -->
 
@@ -141,9 +138,8 @@ export class ModalGenerico extends LitElement {
         <vaadin-vertical-layout class="overlay-content" id="container">
           <header>
             <a
-              href=${this.back_url()}
+              href="${this.backurl || "/"}"
               aria-label="Go back"
-              @click=${this.back_click}
             >
               <vaadin-icon
                 icon="vaadin:arrow-left"

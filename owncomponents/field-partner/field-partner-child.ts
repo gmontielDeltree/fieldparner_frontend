@@ -4,37 +4,37 @@ import { Router } from "@vaadin/router";
 
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import("../loading-modal/loading-modal.js");
-import ("../color-cultivo/color-cultivo");
+import("../color-cultivo/color-cultivo");
 import cultivos_default from "../jsons/cultivos.json";
-import ("../notas-offcanvas/notas-offcanvas");
-import ("../ndvi-offcanvas/ndvi-offcanvas");
+import("../notas-offcanvas/notas-offcanvas");
+import("../ndvi-offcanvas/ndvi-offcanvas");
 //import "../variedades-loader/variedades-loader.js";
-import ("../depositos/deposito-upsert/deposito-upsert.js");
-import ("../depositos/depositos-lista/depositos-listado");
-import ("../contratistas/contratista-crud");
-import ("../contratistas/contratistas-lista");
-import ("../sensores/sensores-offcanvas");
-import ("../campo-offcanvas/campo-offcanvas")
-import ("../lote-offcanvas/lote-offcanvas-side");
-import ("../nueva-geometria/nueva-geometria");
-import ("../nuevo-campo/nuevo-campo.js");
-import ("../lista-de-campos/lista-de-campos");
+import("../depositos/deposito-upsert/deposito-upsert.js");
+import("../depositos/depositos-lista/depositos-listado");
+import("../contratistas/contratista-crud");
+import("../contratistas/contratistas-lista");
+import("../sensores/sensores-offcanvas");
+import("../campo-offcanvas/campo-offcanvas");
+import("../lote-offcanvas/lote-offcanvas-side");
+import("../nueva-geometria/nueva-geometria");
+import("../nuevo-campo/nuevo-campo.js");
+import("../lista-de-campos/lista-de-campos");
 import "../mapa-principal/mapa-principal";
 import "../login-modal/login-modal";
-import ("../notas-offcanvas/nota-target");
-import ("../insumos/insumos-lista");
+import("../notas-offcanvas/nota-target");
+import("../insumos/insumos-lista");
 import "../lista-centrales-cercanas/lista-centrales-cercanas";
 import "../sensores/lista-de-sensores";
 import "../navbar-element/workspace-rigths";
 import "../navbar-element/new-app-layout";
 import "../null-component";
-import ("../invite/invite");
-import ("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
-import ("../lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
-import ("../lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
+import("../invite/invite");
+import("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
+import("../lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
+import("../lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
 import "../navbar-element/navbar-element";
 
-import ("../sensores/devices-route");
+import("../sensores/devices-route");
 
 import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
@@ -46,6 +46,8 @@ import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { Devices } from "../sensores/sensores";
 
 import gbl_state from "../state.js";
+
+import("../depositos/deposito-detalles/deposito-detalles");
 
 var wentOffline, wentOnline;
 
@@ -66,8 +68,7 @@ function handleConnectionChange(event) {
 }
 
 export class FieldPartnerChild extends LitElement {
-
-  static override styles = [unsafeCSS(bootstrap)]
+  static override styles = [unsafeCSS(bootstrap)];
 
   @property({ hasChanged: (v, ov) => false })
   map: Map;
@@ -96,12 +97,10 @@ export class FieldPartnerChild extends LitElement {
   @property({ hasChanged: (v, ov) => false })
   settings: any;
 
-  private initialized : boolean = false;
+  private initialized: boolean = false;
 
   constructor() {
     super();
-
-
 
     window.addEventListener("DOMContentLoaded", () => {
       const parsedUrl = new URL(window.location);
@@ -236,8 +235,6 @@ export class FieldPartnerChild extends LitElement {
         this.load_campos_y_settings();
       });
     });
-
-    
   }
 
   createRenderRoot() {
@@ -249,8 +246,8 @@ export class FieldPartnerChild extends LitElement {
       | PropertyValueMap<any>
       | globalThis.Map<PropertyKey, unknown>
   ): void {
-    if(!this.initialized){
-      this.init_the_whole_thing()
+    if (!this.initialized) {
+      this.init_the_whole_thing();
     }
     console.log("FieldPartner-WillUpdate", _changedProperties);
   }
@@ -260,7 +257,6 @@ export class FieldPartnerChild extends LitElement {
     console.log("Init the whole thing");
     this.load_campos_y_settings();
   }
-
 
   sincronizar_cuando_online() {
     var opts = { live: true, retry: true };
@@ -287,7 +283,6 @@ export class FieldPartnerChild extends LitElement {
       });
   }
 
-
   /** Crea el objeto settings y lo graba en la db
    * Crea settings y contratistas
    */
@@ -302,9 +297,7 @@ export class FieldPartnerChild extends LitElement {
 
     settings_doc.user_cultivos = cultivos_default;
 
-    this.db
-      .put(settings_doc)
-      .then(() => console.log("Settings Grabadas"));
+    this.db.put(settings_doc).then(() => console.log("Settings Grabadas"));
 
     this.settings = settings_doc;
   }
@@ -339,15 +332,14 @@ export class FieldPartnerChild extends LitElement {
         }
         console.error("Load Settings", e);
       });
-      
-      this.initialized = true;
+
+    this.initialized = true;
   }
 
   /**** FIN Bases de Datos */
   // #endregion
 
   firstUpdated() {
-
     gbl_state.router = new Router(document.getElementById("router-container"));
     gbl_state.router.setRoutes([
       { path: "/", component: "null-component" },
@@ -393,6 +385,24 @@ export class FieldPartnerChild extends LitElement {
       { path: "/contratistas/add", component: "contratistas-crud" },
       { path: "/depositos", component: "depositos-listado" },
       { path: "/depositos/add", component: "depositos-upsert" },
+      {
+        path: "/deposito/:uuid",
+        
+        children: [
+          {
+            path:'/',
+            component: "deposito-detalles",
+          },
+          {
+            path: "/transfer/add/in",
+            component: "deposito-nuevo-transferencias",
+          },
+          {
+            path: "/transfer/add/out",
+            component: "deposito-nuevo-transferencias",
+          },
+        ],
+      },
       { path: "/insumos", component: "insumos-lista" },
       { path: "/rights/:uuid_workspace", component: "workspace-rights" },
       { path: "/invite/:base64_invitation", component: "link-invitacion" },
@@ -423,10 +433,7 @@ export class FieldPartnerChild extends LitElement {
         .campos_db=${this.db}
       ></nuevo-campo>
 
-      <contratista-crud
-        id="contratista-crud"
-        .db=${this.db}
-      ></contratista-crud>
+      <contratista-crud id="contratista-crud" .db=${this.db}></contratista-crud>
 
       <contratistas-lista
         id="contratistas-lista"
@@ -446,10 +453,7 @@ export class FieldPartnerChild extends LitElement {
         .db=${this.db}
         .draw=${this.draw}
       ></deposito-upsert> -->
-      <depositos-lista
-        id="depositos-lista"
-        .db=${this.db}
-      ></depositos-lista>
+      <depositos-lista id="depositos-lista" .db=${this.db}></depositos-lista>
 
       <!-- <login-modal id="login-modal" .show=${!this
         .logged_in}></login-modal> -->

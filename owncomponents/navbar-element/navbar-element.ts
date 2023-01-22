@@ -1,3 +1,4 @@
+import { gbl_state } from './../state';
 import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/js/dist/collapse";
@@ -136,18 +137,10 @@ export class NavbarElement extends LitElement {
                   title="Depositos"
                   style="cursor: pointer;background-image: url('/deposito_2.webp');width: 50px;height: 50px;background-size: cover;background-position: center;"
                   @click=${() => {
-                    this.sendEvent("ver-depositos-click", null);
+                    Router.go('depositos')
                   }}
+
                 ></div>
-                <!-- <button
-                  type="button"
-                  class="btn btn-outline-success btn-sm mx-1"
-                  @click=${() => {
-                  this.sendEvent("ver-depositos-click", null);
-                }}
-                >
-                  Depositos
-                </button> -->
               </li>
               <li
                 class="nav-item"

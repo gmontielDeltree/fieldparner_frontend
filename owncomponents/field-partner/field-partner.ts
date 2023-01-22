@@ -716,16 +716,6 @@ export class FieldPartner extends LitElement {
 
       <insumos-lista id="insumos-lista" .db=${this.campos_db}></insumos-lista>
 
-      <!-- <deposito-upsert
-        id="deposito-upsert"
-        .db=${this.campos_db}
-        .draw=${this.draw}
-      ></deposito-upsert> -->
-      <depositos-lista
-        id="depositos-lista"
-        .db=${this.campos_db}
-      ></depositos-lista>
-
       <!-- <login-modal id="login-modal" .show=${!this
         .logged_in}></login-modal> -->
 
