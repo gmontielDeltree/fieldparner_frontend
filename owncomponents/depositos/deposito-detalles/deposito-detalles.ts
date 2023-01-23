@@ -95,6 +95,13 @@ export class DepositoDetalles extends LitElement {
             console.log("Nuevo");
           },
         },
+        {
+          text: get("nueva_transferencia_salida"),
+          callback: () => {
+            Router.go(gbl_state.router.urlForPath('/deposito/:uuid/transfer/add/out', {uuid: this.location.params.uuid}))
+            console.log("Nuevo");
+          },
+        },
       ],
     },
   ];
