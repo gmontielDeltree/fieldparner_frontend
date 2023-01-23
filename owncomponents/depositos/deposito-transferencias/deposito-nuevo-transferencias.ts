@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, isDate } from "date-fns";
 import { cargar_depo } from "./../depositos_funciones";
 import { LineaTransferencia } from "./../../tipos/depositos-transferencias";
 import { css, html, LitElement, PropertyValueMap } from "lit";
@@ -28,7 +28,7 @@ import { DepositosTransferencia } from "../../tipos/depositos-transferencias";
 import { guardar_transfer, nueva_transfer } from "../transferencias_funciones";
 import { base_i18n } from "../../lote-offcanvas/repetir-aplicacion/date-picker-i18n";
 import { Task, TaskStatus } from "@lit-labs/task";
-import { RouterLocation } from "@vaadin/router";
+import { Router, RouterLocation } from "@vaadin/router";
 
 import { Insumo, get_lista_insumos } from "../../insumos/insumos-types";
 import { gbl_state } from "../../state";
@@ -52,6 +52,9 @@ export class DepositoNuevoTransferencias extends LitElement {
 
   @state()
   private depos: Deposito[] = [];
+
+  @state()
+  private valido: boolean;
 
   private insumos: Insumo[] = [];
   private destino_fixed: boolean = false;
@@ -122,6 +125,8 @@ export class DepositoNuevoTransferencias extends LitElement {
     this.dispatchEvent(
       new CustomEvent("nueva-trans", { bubbles: true, composed: true })
     );
+
+    Router.go(gbl_state.router.urlForPath('deposito/:uuid',{...this.location.params}))
   }
 
   emit_opened_changed() {
@@ -143,7 +148,7 @@ export class DepositoNuevoTransferencias extends LitElement {
           uuid: this.location.params.uuid,
         })}"
       >
-        <div slot="title">${translate("depositos")}</div>
+        <div slot="title">${translate("nueva_transferencia")}</div>
 
         <div slot="body">
           ${this._loadTask.render({
@@ -159,12 +164,15 @@ export class DepositoNuevoTransferencias extends LitElement {
                       label=${translate("fecha")}
                       required
                       allowed-char-pattern="[]"
-                      max="${format(new Date(),'yyyy-MM-dd')}"
+                      max="${format(new Date(), "yyyy-MM-dd")}"
                       placeholder="YYYY-MM-DD"
                       .i18n=${base_i18n}
                       theme="helper-above-field"
                       .value=${this.trans.fecha}
-                      @change=${(e) => (this.trans.fecha = e.target.value)}
+                      @change=${(e) => {
+                        this.trans.fecha = e.target.value;
+                        this.validate();
+                      }}
                     ></vaadin-date-picker>
 
                     <!-- referencia  -->
@@ -192,6 +200,7 @@ export class DepositoNuevoTransferencias extends LitElement {
                     .items="${this.depos}"
                     @selected-item-changed=${(e) => {
                       this.trans.deposito_origen = e.detail.value;
+                      this.validate();
                     }}
                   ></vaadin-combo-box>
                   <!-- destino -->
@@ -208,6 +217,7 @@ export class DepositoNuevoTransferencias extends LitElement {
                     .items="${this.depos}"
                     @selected-item-changed=${(e) => {
                       this.trans.deposito_destino = e.detail.value;
+                      this.validate();
                     }}
                   ></vaadin-combo-box>
 
@@ -223,7 +233,7 @@ export class DepositoNuevoTransferencias extends LitElement {
                 </vaadin-vertical-layout>
 
                 <vaadin-vertical-layout
-                theme='padding'
+                  theme="padding"
                   style="border: 1px solid var(--lumo-primary-color);border-radius: var(--lumo-border-radius-l);"
                 >
                   <div>${translate("lista_insumos")}</div>
@@ -283,6 +293,7 @@ export class DepositoNuevoTransferencias extends LitElement {
                           precio: 0,
                           obs: "",
                         };
+                        this.validate()
                         this.requestUpdate();
                       }}
                     >
@@ -316,11 +327,13 @@ export class DepositoNuevoTransferencias extends LitElement {
   }
 
   private renderFooter = () => html`
-    <vaadin-button @click="${this.close}">${translate("cerrar")}</vaadin-button>
+    <!-- <vaadin-button @click="${this.close}">${translate(
+      "cerrar"
+    )}</vaadin-button> -->
     <vaadin-button
       theme="primary"
       @click="${this.emit_nuevo}"
-      ?disabled=${!this.validate()}
+      ?disabled=${!this.valido}
       >${translate("guardar")}</vaadin-button
     >
   `;
@@ -339,9 +352,14 @@ export class DepositoNuevoTransferencias extends LitElement {
   private validate() {
     //return true;
     console.log(this.trans.deposito_destino && this.trans.deposito_origen);
-    return this.trans.deposito_destino && this.trans.deposito_origen
-      ? true
-      : false;
+    // Destino y Origen definidos
+    let c1 = this.trans.deposito_destino && this.trans.deposito_origen;
+    // fecha
+    let c2 = this.trans.fecha && this.trans.fecha !== "";
+    // al menos una linea
+    let c3 = this.trans.lineas && this.trans.lineas.length > 0;
+    console.log("Validacion", c1, c2, c3);
+    this.valido = c1 && c2 && c3;
   }
 
   // static styles = css`
