@@ -1,5 +1,5 @@
 import { customElement, state } from "lit/decorators.js";
-import { LitElement, PropertyValueMap, html } from "lit";
+import { LitElement, PropertyValueMap, html, css } from "lit";
 import { base_url, gbl_docs_starting, only_docs } from "./helpers";
 import { gbl_state } from "./state";
 import { get, translate, use, registerTranslateConfig } from "lit-translate";
@@ -9,7 +9,7 @@ import uuid4 from "uuid4";
 import { Lenguage } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
 
-import("./field-partner/field-partner-child")
+import("./field-partner/field-partner-child");
 
 /**
  * La mision de este componente es login, cargar/sinc las dbs.
@@ -20,15 +20,18 @@ export class AppLoader extends LitElement {
   @state()
   ready: boolean = false;
 
+  @state()
+  map_ready: boolean = false;
+
   private auth0Client: any;
   private db: PouchDB.Database;
   private remote_db: PouchDB.Database;
   private user: any = { name: "", sub: "" };
   private logged_in: boolean;
-  private online : boolean = false;
+  private online: boolean = false;
 
   createRenderRoot() {
-	return this;
+    return this;
   }
 
   protected firstUpdated(
@@ -44,16 +47,24 @@ export class AppLoader extends LitElement {
   }
 
   render() {
-
-    if(!this.ready && !gbl_state.online ){
-      return html`Not Ready...Offline...Loading Local DBs`
-    }
-    if (!this.ready) {
-      return html`Not Ready...Loading DBs`;
-    }
-    return html`<field-partner-child
-	.db=${this.db}
-    />`;
+    // if (!this.ready && !gbl_state.online) {
+    //   return html`Not Ready...Offline...Loading Local DBs`;
+    // }
+    return html`
+      ${(!this.ready || !this.map_ready)
+        ? html`<div class="bg">
+            <div class="hero-text">
+              <h1>FieldPartner</h1>
+              <p>by QTS Agro</p>
+            </div>
+          </div>`
+        : null}
+      ${this.ready
+        ? html`<field-partner-child
+            @map-loaded=${() => (this.map_ready = true)} .db=${this.db}
+          />`
+        : null}
+    `;
   }
 
   async init_the_whole_thing() {
@@ -257,13 +268,12 @@ export class AppLoader extends LitElement {
 
     // Cargar el Idioma y darle Ready
     this.cargar_idioma()
-    .then(this.set_idioma)
-    .then(this.cargar_campana_seleccionada)
-    .then((r) => {
-      this.ready = true;
-      console.log("Ready...Estado Inicial", gbl_state, r);
-    });
-
+      .then(this.set_idioma)
+      .then(this.cargar_campana_seleccionada)
+      .then((r) => {
+        this.ready = true;
+        console.log("Ready...Estado Inicial", gbl_state, r);
+      });
   }
 
   replicar_y_sincronizar() {
@@ -334,13 +344,13 @@ export class AppLoader extends LitElement {
         if (result.rows.length > 0) {
           // Existe
           let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
-          gbl_state.lenguaje_seleccionado = lang_doc
+          gbl_state.lenguaje_seleccionado = lang_doc;
           console.log("Idioma seleccionado", lang_doc);
           return lang_doc;
         } else {
           // No existe - Use 'es'
           console.log("Idioma seleccionado por defecto", "es");
-          gbl_state.lenguaje_seleccionado = {lang: "es"}
+          gbl_state.lenguaje_seleccionado = { lang: "es" };
 
           return { lang: "es" };
         }
@@ -353,9 +363,6 @@ export class AppLoader extends LitElement {
   }
   /**** FIN Bases de Datos */
   // #endregion
-
-
-
 }
 
 var wentOffline, wentOnline;

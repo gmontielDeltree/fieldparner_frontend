@@ -444,18 +444,11 @@ export class FieldPartnerChild extends LitElement {
 
       <insumos-lista id="insumos-lista" .db=${this.db}></insumos-lista>
 
-      <!-- <deposito-upsert
-        id="deposito-upsert"
-        .db=${this.db}
-        .draw=${this.draw}
-      ></deposito-upsert> -->
-      <depositos-lista id="depositos-lista" .db=${this.db}></depositos-lista>
-
       <!-- <login-modal id="login-modal" .show=${!this
         .logged_in}></login-modal> -->
 
       <div id="container-multiproposito">
-        <loading-modal .show=${this.loading}></loading-modal>
+        <!-- <loading-modal .show=${this.loading}></loading-modal> -->
       </div>
 
       <!-- <div id="router-container"></div> -->

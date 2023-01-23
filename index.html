@@ -1,16 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-
-    <script type='text/javascript'>
-      window.smartlook||(function(d) {
-        var o=smartlook=function(){ o.api.push(arguments)},h=d.getElementsByTagName('head')[0];
-        var c=d.createElement('script');o.api=new Array();c.async=true;c.type='text/javascript';
-        c.charset='utf-8';c.src='https://web-sdk.smartlook.com/recorder.js';h.appendChild(c);
+    <script type="text/javascript">
+      window.smartlook ||
+        (function (d) {
+          var o = (smartlook = function () {
+              o.api.push(arguments);
+            }),
+            h = d.getElementsByTagName("head")[0];
+          var c = d.createElement("script");
+          o.api = new Array();
+          c.async = true;
+          c.type = "text/javascript";
+          c.charset = "utf-8";
+          c.src = "https://web-sdk.smartlook.com/recorder.js";
+          h.appendChild(c);
         })(document);
-        smartlook('init', 'ebe5c626b32fb046a0be7907349213b63fb52c32', { region: 'eu' });
+      smartlook("init", "ebe5c626b32fb046a0be7907349213b63fb52c32", {
+        region: "eu",
+      });
     </script>
-    
+
     <!-- Google tag (gtag.js) -->
     <script
       async
@@ -33,7 +43,10 @@
     <meta name="description" content="FieldPartner" />
 
     <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
 
     <!-- Disable tap highlight on IE -->
     <meta name="msapplication-tap-highlight" content="no" />
@@ -173,14 +186,43 @@
       if ("serviceWorker" in navigator) {
         const p = navigator.serviceWorker
           .register("/sw.js")
-          .then((reg) => console.log("PWA service-worker ready. From Index", reg))
+          .then((reg) =>
+            console.log("PWA service-worker ready. From Index", reg)
+          )
           .catch((err) => console.error("Could not load service-worker.", err));
       }
       const version = "0004";
     </script>
 
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+      }
 
+      .bg {
+        /* The image used */
+        background-image: url("/assets/images/load-bg.jpg");
 
+        /* Full height */
+        height: 100%;
+
+        /* Center and scale the image nicely */
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+
+      .hero-text {
+        text-align: center;
+        position: absolute;
+        top: 70%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+      }
+    </style>
   </head>
   <!-- load the 'header_auto_hide' on the body -->
 

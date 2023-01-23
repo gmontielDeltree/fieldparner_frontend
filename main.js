@@ -1,3 +1,5 @@
+// Se inyecta bootstrap https://vitejs.dev/guide/features.html#css
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./owncomponents/loader.ts";
 
 // if (import.meta.env.DEV) {
