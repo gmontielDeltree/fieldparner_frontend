@@ -154,9 +154,9 @@ export class DepositoDetalles extends LitElement {
               <vaadin-tab id="es-tab"
                 >${translate("entrada-salida")}
               </vaadin-tab>
-              <vaadin-button style="margin-left:auto;"
+              <!-- <vaadin-button style="margin-left:auto;"
                 >${translate("filtrar")}</vaadin-button
-              >
+              > -->
             </vaadin-tabs>
 
             <div tab="stock-tab">
@@ -204,7 +204,7 @@ export class DepositoDetalles extends LitElement {
                               style="align-items: center;"
                               theme="spacing"
                             >
-                              <vaadin-button
+                              <!-- <vaadin-button
                                 @click=${() => {
                                   Router.go(
                                     "/deposito/" +
@@ -214,7 +214,7 @@ export class DepositoDetalles extends LitElement {
                                   );
                                 }}
                                 >${translate("ver")}</vaadin-button
-                              >
+                              > -->
 
                               <vaadin-menu-bar
                                 .items="${this.menu_depo_items(item)}"
@@ -335,12 +335,12 @@ export class DepositoDetalles extends LitElement {
                               style="align-items: center;"
                               theme="spacing"
                             >
-                              <vaadin-button
+                              <!-- <vaadin-button
                                 @click=${() => {
                                   
                                 }}
                                 >${translate("ver")}</vaadin-button
-                              >
+                              > -->
 
                               <vaadin-menu-bar
                                 .items=[]
