@@ -1,3 +1,4 @@
+import { cargar_depo } from "./../depositos_funciones";
 import { LineaTransferencia } from "./../../tipos/depositos-transferencias";
 import { css, html, LitElement, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
@@ -10,7 +11,7 @@ import "@vaadin/vaadin-lumo-styles/vaadin-iconset.js";
 import "@vaadin/dialog";
 import "@vaadin/text-field";
 import "@vaadin/number-field";
-import "@vaadin/text-area"
+import "@vaadin/text-area";
 import "@vaadin/vertical-layout";
 import "@vaadin/horizontal-layout";
 import "@vaadin/combo-box";
@@ -52,6 +53,8 @@ export class DepositoNuevoTransferencias extends LitElement {
   private depos: Deposito[] = [];
 
   private insumos: Insumo[] = [];
+  private destino_fixed: boolean = false;
+  private origen_fixed: boolean = false;
 
   linea_insumo: LineaTransferencia = {
     uuid: uuid4(),
@@ -79,11 +82,27 @@ export class DepositoNuevoTransferencias extends LitElement {
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
-    if (_changedProperties.has("opened")) {
-      if (this.opened) {
-        console.log("clear");
+    if (_changedProperties.has("location")) {
+      // Cuando se abre en efecto
+      if (this.location.params.direccion === "in") {
+        console.log("Transfer In");
         this.trans = nueva_transfer();
+        // Cargar destino
+        cargar_depo(this.location.params.uuid as string).then(
+          (s) => (this.trans.deposito_destino = s)
+        );
+        this.destino_fixed = true;
+      } else if (this.location.params.direccion === "out") {
+        console.log("Transfer Out");
+        this.trans = nueva_transfer();
+        // Cargar destino
+        cargar_depo(this.location.params.uuid as string).then(
+          (s) => (this.trans.deposito_origen = s)
+        );
+        this.origen_fixed = true;
       }
+    } else {
+      console.log("Transfer Generic");
     }
   }
 
@@ -117,14 +136,19 @@ export class DepositoNuevoTransferencias extends LitElement {
   render() {
     return html`
       <!-- tag::snippet[] -->
-      <modal-generico .modalOpened=${this.opened} backurl='${gbl_state.router.urlForPath('/deposito/:uuid',{uuid:this.location.params.uuid})}'>
+      <modal-generico
+        .modalOpened=${this.opened}
+        backurl="${gbl_state.router.urlForPath("/deposito/:uuid", {
+          uuid: this.location.params.uuid,
+        })}"
+      >
         <div slot="title">${translate("depositos")}</div>
 
         <div slot="body">
           ${this._loadTask.render({
             pending: () => html`${translate("cargando")}`,
             complete: (_) => html`
-              <vaadin-horizontal-layout theme='spacing'>
+              <vaadin-horizontal-layout theme="spacing">
                 <vaadin-vertical-layout
                   style="align-items: stretch; max-width: 40%;"
                 >
@@ -154,6 +178,7 @@ export class DepositoNuevoTransferencias extends LitElement {
                   <!-- origen -->
 
                   <vaadin-combo-box
+                    ?readonly=${this.origen_fixed}
                     label="${translate("origen")}"
                     item-label-path="nombre"
                     item-value-path="uuid"
@@ -169,6 +194,7 @@ export class DepositoNuevoTransferencias extends LitElement {
                   ></vaadin-combo-box>
                   <!-- destino -->
                   <vaadin-combo-box
+                    ?readonly=${this.destino_fixed}
                     label="${translate("destino")}"
                     item-label-path="nombre"
                     item-value-path="uuid"
@@ -194,8 +220,15 @@ export class DepositoNuevoTransferencias extends LitElement {
                   <vaadin-upload></vaadin-upload>
                 </vaadin-vertical-layout>
 
-                <vaadin-vertical-layout>
-                  <vaadin-horizontal-layout style='align-items:end' theme='spacing'>
+                <vaadin-vertical-layout
+                theme='padding'
+                  style="border: 1px solid var(--lumo-primary-color);border-radius: var(--lumo-border-radius-l);"
+                >
+                  <div>${translate("lista_insumos")}</div>
+                  <vaadin-horizontal-layout
+                    style="align-items:end"
+                    theme="spacing"
+                  >
                     <vaadin-combo-box
                       id="insumo1"
                       label=${translate("insumo")}
@@ -285,7 +318,7 @@ export class DepositoNuevoTransferencias extends LitElement {
     <vaadin-button
       theme="primary"
       @click="${this.emit_nuevo}"
-      ?disabled = ${!this.validate()}
+      ?disabled=${!this.validate()}
       >${translate("guardar")}</vaadin-button
     >
   `;
@@ -302,9 +335,9 @@ export class DepositoNuevoTransferencias extends LitElement {
   }
 
   private validate() {
-   //return true;
-   console.log((this.trans.deposito_destino && this.trans.deposito_origen))
-    return (this.trans.deposito_destino && this.trans.deposito_origen)
+    //return true;
+    console.log(this.trans.deposito_destino && this.trans.deposito_origen);
+    return this.trans.deposito_destino && this.trans.deposito_origen
       ? true
       : false;
   }

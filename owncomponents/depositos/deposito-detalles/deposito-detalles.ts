@@ -260,7 +260,6 @@ export class DepositoDetalles extends LitElement {
               this.abrirEditDialog = e.detail.value;
             }}
           ></deposito-nuevo-transferencias>
-
           <vaadin-notification
             theme="error"
             duration="0"

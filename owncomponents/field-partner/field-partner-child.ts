@@ -394,11 +394,7 @@ export class FieldPartnerChild extends LitElement {
             component: "deposito-detalles",
           },
           {
-            path: "/transfer/add/in",
-            component: "deposito-nuevo-transferencias",
-          },
-          {
-            path: "/transfer/add/out",
+            path: "/transfer/add/:direccion",
             component: "deposito-nuevo-transferencias",
           },
         ],
