@@ -32,7 +32,7 @@ export class DepositosListado extends LitElement {
   private _loadTask = new Task(
     this,
     () => listar_depositos(),
-    () => [this.location, this.openedModal]
+    () => [this.location, this.openedModal,this.abrirNuevoDialog,this.abrirEditDialog]
   );
 
   @state() // Tiene que ser state para forzar rerender
@@ -76,7 +76,7 @@ export class DepositosListado extends LitElement {
         {
           text: get("eliminar"),
           callback: () => {
-            this.abrirNuevoDialog = true;
+            alert("TODO: En construccion")
             console.log("Nuevo");
           },
         },
@@ -113,6 +113,7 @@ export class DepositosListado extends LitElement {
               console.log("Nuevo Click");
               this.abrirNuevoDialog = false;
               //Refresh
+              this.requestUpdate()
               // Notificación
             }}
             @opened-changed=${(e: CustomEvent) => {

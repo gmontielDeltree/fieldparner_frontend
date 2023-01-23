@@ -162,11 +162,11 @@ export class ContratistasLista extends LitElement {
       html`
         <vaadin-vertical-layout>
           ${labores.map((labor) => {
-            if (labor.labor === "Siembra") {
+            if (labor?.labor === "Siembra") {
               return html`<vaadin-button theme="primary success small"
                 >${labor.labor}</vaadin-button
               >`;
-            } else if (labor.labor === "Cosecha") {
+            } else if (labor?.labor === "Cosecha") {
               return html`<vaadin-button theme="primary error small"
                 >${labor.labor}</vaadin-button
               >`;

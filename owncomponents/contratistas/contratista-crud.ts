@@ -1,3 +1,4 @@
+import { nuevo_deposito, guardar_deposito } from './../depositos/depositos_funciones';
 import { LitElement, html, unsafeCSS, render } from "lit";
 import { property, state } from "lit/decorators.js";
 import "@vaadin/form-layout";
@@ -15,6 +16,7 @@ import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
 import { Labor, Contratista } from "./contratista-types";
 import { isThisSecond } from "date-fns";
+import { Deposito } from '../depositos/depositos-types';
 
 const empty_contratista: Contratista = {
   labores: [],
@@ -126,6 +128,14 @@ export class ContratistaCrud extends LitElement {
       this.contratista._id = "contratista:" + this.contratista.uuid;
       this.db.put(this.contratista).catch((e) => {
         alert("Error al agregar contratista");
+
+        let depo : Deposito = nuevo_deposito()
+        depo.contratista_asociado = this.contratista
+        depo._id = 'deposito:'+this.contratista.uuid
+        depo.uuid = this.contratista.uuid
+        depo.nombre = 'Contratista:' + this.contratista.nombre
+        guardar_deposito(depo)
+
         console.log(e);
       });
 

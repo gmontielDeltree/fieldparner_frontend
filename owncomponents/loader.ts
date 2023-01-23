@@ -180,14 +180,14 @@ export class AppLoader extends LitElement {
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Nombres validos solo en minusculas
-    this.db = new PouchDB("campos_" + username + "v6");
+    this.db = new PouchDB("campos_" + username + "v7");
 
     gbl_state.db = this.db;
     gbl_state.user_db = new PouchDB(user.sub);
     gbl_state.user = this.user;
 
     try {
-      let campos_db_uri = base_url + "campos_" + username + "v6";
+      let campos_db_uri = base_url + "campos_" + username + "v7";
       console.log("CrearDBS - campos_db_uri", campos_db_uri);
       this.remote_db = new PouchDB(campos_db_uri);
 
