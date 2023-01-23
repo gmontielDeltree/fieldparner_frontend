@@ -1,9 +1,9 @@
-import { gbl_state } from './../../state';
+import { gbl_state } from "./../../state";
 import { customElement, property, state } from "lit/decorators.js";
 import "../../modal-generico/modal-generico";
 import "../deposito-transferencias/deposito-nuevo-transferencias";
 
-import { LitElement, PropertyValueMap, html, render } from "lit";
+import { LitElement, PropertyValueMap, html, render, css } from "lit";
 import { Router, RouterLocation } from "@vaadin/router";
 import { get, translate } from "lit-translate";
 
@@ -33,9 +33,13 @@ import {
 } from "../depositos_funciones";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { createMenuDots } from "../../helpers";
-import { DepositosTransferencia, LineaStock, Stock } from "../../tipos/depositos-transferencias";
+import {
+  DepositosTransferencia,
+  LineaStock,
+  Stock,
+} from "../../tipos/depositos-transferencias";
 import { listar_transferencias } from "../transferencias_funciones";
-import { calcular_stock } from '../stock_funciones';
+import { calcular_stock } from "../stock_funciones";
 import { map } from "lit/directives/map.js";
 
 @customElement("deposito-detalles")
@@ -48,7 +52,7 @@ export class DepositoDetalles extends LitElement {
 
   private depo: Deposito = nuevo_deposito();
   private transferencias: DepositosTransferencia;
-  private stock : Stock
+  private stock: Stock;
 
   @state()
   errorNotificationOpened: boolean;
@@ -70,12 +74,12 @@ export class DepositoDetalles extends LitElement {
     return cargar_depo(depo_uuid)
       .then((d) => (this.depo = d))
       .then(() => calcular_stock(depo_uuid))
-      .then((stock)=>{
-        this.stock = stock
+      .then((stock) => {
+        this.stock = stock;
       })
       .then(() => listar_transferencias(depo_uuid))
       .catch((e) => {
-        console.error(e)
+        console.error(e);
         this.errorNotificationOpened = true;
         return [] as DepositosTransferencia[];
       });
@@ -91,14 +95,22 @@ export class DepositoDetalles extends LitElement {
         {
           text: get("nueva_transferencia_entrada"),
           callback: () => {
-            Router.go(gbl_state.router.urlForPath('/deposito/:uuid/transfer/add/in', {uuid: this.location.params.uuid}))
+            Router.go(
+              gbl_state.router.urlForPath("/deposito/:uuid/transfer/add/in", {
+                uuid: this.location.params.uuid,
+              })
+            );
             console.log("Nuevo");
           },
         },
         {
           text: get("nueva_transferencia_salida"),
           callback: () => {
-            Router.go(gbl_state.router.urlForPath('/deposito/:uuid/transfer/add/out', {uuid: this.location.params.uuid}))
+            Router.go(
+              gbl_state.router.urlForPath("/deposito/:uuid/transfer/add/out", {
+                uuid: this.location.params.uuid,
+              })
+            );
             console.log("Nuevo");
           },
         },
@@ -167,8 +179,10 @@ export class DepositoDetalles extends LitElement {
             </vaadin-tabs>
 
             <div tab="stock-tab">
-              ${this._loadTask.render({pending: () => html`${translate("cargando")}`,
-                  complete: (trans) => this.stock_tab()})}
+              ${this._loadTask.render({
+                pending: () => html`${translate("cargando")}`,
+                complete: (trans) => this.stock_tab(),
+              })}
             </div>
             <div tab="es-tab">
               ${
@@ -213,13 +227,13 @@ export class DepositoDetalles extends LitElement {
                             >
                               <!-- <vaadin-button
                                 @click=${() => {
-                                  Router.go(
-                                    "/deposito/" +
-                                      item.uuid +
-                                      "?from=" +
-                                      this.location.pathname
-                                  );
-                                }}
+                                Router.go(
+                                  "/deposito/" +
+                                    item.uuid +
+                                    "?from=" +
+                                    this.location.pathname
+                                );
+                              }}
                                 >${translate("ver")}</vaadin-button
                               > -->
 
@@ -301,66 +315,70 @@ export class DepositoDetalles extends LitElement {
 
   closeError() {
     this.errorNotificationOpened = false;
-    console.log('clicked')
+    console.log("clicked");
   }
 
-  stock_tab(){
-    
+  stock_tab() {
     return html`
-       ${map(Object.values(this.stock),
-                      (item : LineaStock) => html`
-                        <vaadin-item
-                          style="line-height: var(--lumo-line-height-m);"
-                        >
-                          <vaadin-horizontal-layout
-                            style="align-items: center; justify-content: space-between;"
-                            theme="spacing"
-                          >
-                            <vaadin-horizontal-layout
-                              style="align-items: center;"
-                              theme="spacing"
-                            >
-                              <vaadin-avatar
-                                .name="${item.insumo.marca_comercial}"
-                              ></vaadin-avatar>
-                              <vaadin-vertical-layout>
-                                <span>
-                                  ${item.insumo.marca_comercial}
-                                </span>
-                                <span
-                                  style="color: var(--lumo-secondary-text-color); font-size: var(--lumo-font-size-s);"
-                                >
-                                  ${item.insumo.principio_activo}
-                                </span>
-                              </vaadin-vertical-layout>
-                              <span>
-                                  ${item.cantidad}
-                                </span>
-                            </vaadin-horizontal-layout>
+      ${map(
+        Object.values(this.stock),
+        (item: LineaStock) => html`
+          <vaadin-item style="line-height: var(--lumo-line-height-m);">
+            <vaadin-horizontal-layout
+              style="align-items: center; justify-content: space-between;"
+              theme="spacing"
+            >
+              <vaadin-horizontal-layout
+                style="align-items: center;"
+                theme="spacing"
+              >
+                <vaadin-avatar
+                  .name="${item.insumo.marca_comercial}"
+                ></vaadin-avatar>
+                <vaadin-vertical-layout>
+                  <span> ${item.insumo.marca_comercial} </span>
+                  <span
+                    style="color: var(--lumo-secondary-text-color); font-size: var(--lumo-font-size-s);"
+                  >
+                    ${item.insumo.principio_activo}
+                  </span>
+                </vaadin-vertical-layout>
+                <span> ${item.cantidad} </span>
+              </vaadin-horizontal-layout>
 
-                            <vaadin-horizontal-layout
-                              style="align-items: center;"
-                              theme="spacing"
-                            >
-                              <!-- <vaadin-button
-                                @click=${() => {
-                                  
-                                }}
+              <vaadin-horizontal-layout
+                style="align-items: center;"
+                theme="spacing"
+              >
+                <!-- <vaadin-button
+                                @click=${() => {}}
                                 >${translate("ver")}</vaadin-button
                               > -->
 
-                              <vaadin-menu-bar
-                                .items=[]
-                                @item-selected=${this.menu_click}
-                                theme="icon"
-                              >
-                                <vaadin-tooltip slot="tooltip"></vaadin-tooltip>
-                              </vaadin-menu-bar>
-                            </vaadin-horizontal-layout>
-                          </vaadin-horizontal-layout>
-                        </vaadin-item>
-                      `)}
-                    
-    `
+                <vaadin-menu-bar
+                  .items="[]"
+                  @item-selected=${this.menu_click}
+                  theme="icon"
+                >
+                  <vaadin-tooltip slot="tooltip"></vaadin-tooltip>
+                </vaadin-menu-bar>
+              </vaadin-horizontal-layout>
+            </vaadin-horizontal-layout>
+          </vaadin-item>
+        `
+      )}
+    `;
   }
+
+  static override styles = css`
+    vaadin-avatar[name="IN"] {
+      color: azure;
+      background-color: darkgreen;
+    }
+
+    vaadin-avatar[name="OUT"] {
+      color: azure;
+      background-color: firebrick;
+    }
+  `;
 }
