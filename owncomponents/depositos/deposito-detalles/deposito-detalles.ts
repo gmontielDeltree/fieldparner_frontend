@@ -1,3 +1,4 @@
+import { listar_ejecuciones_por_depo } from './../depositos_funciones';
 import { gbl_state } from "./../../state";
 import { customElement, property, state } from "lit/decorators.js";
 import "../../modal-generico/modal-generico";
@@ -25,7 +26,7 @@ import type { NotificationOpenedChangedEvent } from "@vaadin/notification";
 import { notificationRenderer } from "@vaadin/notification/lit.js";
 import type { NotificationLitRenderer } from "@vaadin/notification/lit.js";
 
-import { Deposito } from "../depositos-types";
+import { Deposito, Ejecucion } from "../depositos-types";
 import {
   listar_depositos,
   nuevo_deposito,
@@ -52,6 +53,7 @@ export class DepositoDetalles extends LitElement {
 
   private depo: Deposito = nuevo_deposito();
   private transferencias: DepositosTransferencia;
+  private ejecuciones: Ejecucion[];
   private stock: Stock;
 
   @state()
@@ -76,6 +78,10 @@ export class DepositoDetalles extends LitElement {
       .then(() => calcular_stock(depo_uuid))
       .then((stock) => {
         this.stock = stock;
+      })
+      .then(()=> listar_ejecuciones_por_depo(depo_uuid))
+      .then((e)=>{this.ejecuciones = e
+        console.log("Ejecuciones del depo",e)
       })
       .then(() => listar_transferencias(depo_uuid))
       .catch((e) => {
@@ -143,6 +149,22 @@ export class DepositoDetalles extends LitElement {
     },
   ];
 
+  /* Tiene que ser una funcion para que genere los html elements del boton */
+  private menu_depo_items_ejecucion = (trans: Ejecucion) => [
+    {
+      component: createMenuDots("ellipsis-dots-v"),
+      tooltip: get("mas"),
+      children: [
+        {
+          text: get("editar"),
+          callback: () => {
+            console.log("edit ejecucion");
+          },
+        },
+      ],
+    },
+  ];
+
   menu_click({ detail }) {
     /* Si tiene un callback, lo ejecuto */
     if (detail.value.callback) {
@@ -189,6 +211,7 @@ export class DepositoDetalles extends LitElement {
                 this._loadTask.render({
                   pending: () => html`${translate("cargando")}`,
                   complete: (trans) => html`
+                    <div class='titulo-seccion'>${translate("transferencias")}</div>
                     ${trans.map(
                       (item) => html`
                         <vaadin-item
@@ -239,6 +262,49 @@ export class DepositoDetalles extends LitElement {
 
                               <vaadin-menu-bar
                                 .items="${this.menu_depo_items(item)}"
+                                @item-selected=${this.menu_click}
+                                theme="icon"
+                              >
+                                <vaadin-tooltip slot="tooltip"></vaadin-tooltip>
+                              </vaadin-menu-bar>
+                            </vaadin-horizontal-layout>
+                          </vaadin-horizontal-layout>
+                        </vaadin-item>
+                      `
+                    )}
+
+                    <div class='titulo-seccion'>${translate("ejecuciones")}</div>
+
+                    ${this.ejecuciones.map(
+                      (item) => html`
+                        <vaadin-item
+                          style="line-height: var(--lumo-line-height-m);"
+                        >
+                          <vaadin-horizontal-layout
+                            style="align-items: center; justify-content: space-between;"
+                            theme="spacing"
+                          >
+                            <vaadin-horizontal-layout
+                              style="align-items: center;"
+                              theme="spacing"
+                            >
+                              <vaadin-avatar name="OUT"></vaadin-avatar>
+                              <vaadin-vertical-layout>
+                                <span> ${item.tipo} </span>
+                                <span
+                                  style="color: var(--lumo-secondary-text-color); font-size: var(--lumo-font-size-s);"
+                                >
+                                  ${item.detalles.fecha_ejecucion}
+                                </span>
+                              </vaadin-vertical-layout>
+                            </vaadin-horizontal-layout>
+
+                            <vaadin-horizontal-layout
+                              style="align-items: center;"
+                              theme="spacing"
+                            >
+                              <vaadin-menu-bar
+                                .items="${this.menu_depo_items_ejecucion(item)}"
                                 @item-selected=${this.menu_click}
                                 theme="icon"
                               >

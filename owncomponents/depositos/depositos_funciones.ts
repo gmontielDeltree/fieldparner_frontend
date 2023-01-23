@@ -1,5 +1,5 @@
 import { gbl_state } from "../state";
-import { Deposito } from "./depositos-types";
+import { Deposito, Ejecucion } from "./depositos-types";
 import {
   deepcopy,
   gbl_docs_starting,
@@ -7,7 +7,7 @@ import {
   format_iso_c,
 } from "../helpers";
 import uuid4 from "uuid4";
-import { formatISO } from "date-fns";
+import { formatISO, isBefore, parseISO } from "date-fns";
 
 export const listar_depositos = () => {
   return gbl_docs_starting("deposito", true)
@@ -15,9 +15,9 @@ export const listar_depositos = () => {
     .then((depos) => depos as unknown as Deposito[]);
 };
 
-export const cargar_depo = (uuid : string) =>{
-  return gbl_state.db.get('deposito:'+uuid).then((d)=>d as Deposito)
-}
+export const cargar_depo = (uuid: string) => {
+  return gbl_state.db.get("deposito:" + uuid).then((d) => d as Deposito);
+};
 
 /** Devuelve un depo en blanco */
 export const nuevo_deposito = () => {
@@ -56,6 +56,22 @@ export const borrar_deposito = (depo: Deposito) => {
   return gbl_state.db.remove(depo as unknown as PouchDB.Core.RemoveDocument);
 };
 
+export const listar_ejecuciones_por_depo = (depo_uuid: string) => {
+  return gbl_docs_starting("ejecucion:", true)
+    .then(only_docs)
+    .then((exes) => {
+      let filtradas: Ejecucion[] = (exes as Ejecucion[]).filter(
+        (e) => e.deposito_origen?.uuid === depo_uuid
+      );
+
+
+      filtradas = filtradas.sort((a, b) =>
+        isBefore(parseISO(a.detalles.fecha_ejecucion), parseISO(b.detalles.fecha_ejecucion)) ? -1 : 1
+      );
+
+      return filtradas;
+    });
+};
 
 /** Expo/Impo */
 export const exportar_lista_depositos = () => {};
