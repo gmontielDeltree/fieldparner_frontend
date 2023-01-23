@@ -18,7 +18,7 @@ import "@vaadin/horizontal-layout";
 import "@vaadin/combo-box";
 import "@vaadin/upload";
 import "@vaadin/date-picker";
-
+import "@vaadin/accordion";
 import { dialogFooterRenderer, dialogRenderer } from "@vaadin/dialog/lit.js";
 import type { DialogOpenedChangedEvent } from "@vaadin/dialog";
 import { listar_depositos } from "../depositos_funciones";
@@ -126,7 +126,9 @@ export class DepositoNuevoTransferencias extends LitElement {
       new CustomEvent("nueva-trans", { bubbles: true, composed: true })
     );
 
-    Router.go(gbl_state.router.urlForPath('deposito/:uuid',{...this.location.params}))
+    Router.go(
+      gbl_state.router.urlForPath("deposito/:uuid", { ...this.location.params })
+    );
   }
 
   emit_opened_changed() {
@@ -197,10 +199,15 @@ export class DepositoNuevoTransferencias extends LitElement {
                     error-message=${translate("campo_requerido")}
                     colspan="2"
                     .selectedItem=${this.trans.deposito_origen}
-                    .items="${this.depos}"
+                    .items="${this.trans.deposito_destino
+                      ? this.depos.filter(
+                          (d) => d.uuid !== this.trans.deposito_destino.uuid
+                        )
+                      : this.depos}"
                     @selected-item-changed=${(e) => {
                       this.trans.deposito_origen = e.detail.value;
                       this.validate();
+                      this.requestUpdate();
                     }}
                   ></vaadin-combo-box>
                   <!-- destino -->
@@ -214,10 +221,15 @@ export class DepositoNuevoTransferencias extends LitElement {
                     error-message=${translate("campo_requerido")}
                     colspan="2"
                     .selectedItem=${this.trans.deposito_destino}
-                    .items="${this.depos}"
+                    .items="${this.trans.deposito_origen
+                      ? this.depos.filter(
+                          (d) => d.uuid !== this.trans.deposito_origen.uuid
+                        )
+                      : this.depos}"
                     @selected-item-changed=${(e) => {
                       this.trans.deposito_destino = e.detail.value;
                       this.validate();
+                      this.requestUpdate();
                     }}
                   ></vaadin-combo-box>
 
@@ -254,12 +266,14 @@ export class DepositoNuevoTransferencias extends LitElement {
                         this.linea_insumo.insumo = e.detail.value;
                         this.linea_insumo.precio =
                           this.linea_insumo.insumo?.precio || 0;
+
                         this.requestUpdate();
                       }}
                     ></vaadin-combo-box>
 
                     <vaadin-number-field
                       label=${translate("cantidad")}
+                      autoselect
                       .value=${+this.linea_insumo.cantidad}
                       @input=${(e) => {
                         this.linea_insumo.cantidad = +e.target.value;
@@ -269,6 +283,7 @@ export class DepositoNuevoTransferencias extends LitElement {
 
                     <vaadin-number-field
                       label=${translate("precio_unitario")}
+                      autoselect
                       .value=${this.linea_insumo.precio}
                       @input=${(e) => {
                         this.linea_insumo.precio = +e.target.value;
@@ -284,7 +299,12 @@ export class DepositoNuevoTransferencias extends LitElement {
                     ></vaadin-number-field>
 
                     <vaadin-button
+                      ?disabled=${this.linea_insumo.insumo === null}
                       @click=${() => {
+                        if (!this.linea_insumo.insumo) {
+                          //notify_error('debe seleccionar')
+                          return;
+                        }
                         this.trans.lineas.push(deepcopy(this.linea_insumo));
                         this.linea_insumo = {
                           uuid: uuid4(),
@@ -293,7 +313,7 @@ export class DepositoNuevoTransferencias extends LitElement {
                           precio: 0,
                           obs: "",
                         };
-                        this.validate()
+                        this.validate();
                         this.requestUpdate();
                       }}
                     >
@@ -301,15 +321,36 @@ export class DepositoNuevoTransferencias extends LitElement {
                     </vaadin-button>
                   </vaadin-horizontal-layout>
 
-                  ${map(
-                    this.trans.lineas,
-                    (linea: LineaTransferencia) => html`
-                      <vaadin-item>
-                        ${linea.insumo.marca_comercial} ${linea.cantidad}
-                        ${linea.precio}
-                      </vaadin-item>
-                    `
-                  )}
+                  <vaadin-accordion style="width:100%" .opened=${undefined}>
+                    ${map(
+                      this.trans.lineas,
+                      (linea: LineaTransferencia) => html`
+                        <vaadin-accordion-panel theme="filled reverse">
+                          <div slot="summary">
+                            <vaadin-item>
+                              ${linea.insumo.marca_comercial} ${linea.cantidad}  
+                              ${linea.precio}
+                            </vaadin-item>
+                          </div>
+
+                          <vaadin-horizontal-layout
+                            style="justify-content:center"
+                          >
+                            <vaadin-button
+                              theme="primary error"
+                              @click=${() => {
+                                this.trans.lineas = this.trans.lineas.filter(
+                                  (l) => l.uuid !== linea.uuid
+                                );
+                                this.requestUpdate();
+                              }}
+                              >${translate("borrar")}</vaadin-button
+                            >
+                          </vaadin-horizontal-layout>
+                        </vaadin-accordion-panel>
+                      `
+                    )}
+                  </vaadin-accordion>
                 </vaadin-vertical-layout>
               </vaadin-horizontal-layout>
             `,
