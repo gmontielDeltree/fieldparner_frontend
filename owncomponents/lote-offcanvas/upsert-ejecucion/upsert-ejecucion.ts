@@ -1,3 +1,4 @@
+import { listar_depositos } from "./../../depositos/depositos_funciones";
 import { Router, RouterLocation } from "@vaadin/router";
 import {
   LitElement,
@@ -33,6 +34,7 @@ import "@vaadin/date-picker";
 import "@vaadin/number-field";
 import "@vaadin/multi-select-combo-box";
 import "@vaadin/text-area";
+import "@vaadin/radio-group";
 
 import { uuid4 } from "uuid4";
 import { Notification } from "@vaadin/notification";
@@ -40,6 +42,7 @@ import { get, translate, translateUnsafeHTML } from "lit-translate";
 import { columnBodyRenderer } from "@vaadin/grid/lit.js";
 import {
   Actividad,
+  Deposito,
   DetallesAplicacion,
   DetallesEjecucion,
   Ejecucion,
@@ -88,10 +91,11 @@ export class UpsertEjecucion extends LitElement {
   private insumos: Insumo[];
   private linea_de_dosis: LineaDosisEjecucion;
   private lote_doc: any;
+  private origen_insumos: string = "contratista";
+  private depositos: Deposito[];
 
   @state()
-  private ready : boolean = false;
-  
+  private ready: boolean = false;
 
   override firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("modal"));
@@ -115,6 +119,8 @@ export class UpsertEjecucion extends LitElement {
       };
 
       this.populateInsumos();
+
+      listar_depositos().then((d) => (this.depositos = d));
 
       //Es una aplicacion Nueva
       if (this.location.pathname.includes("nueva")) {
@@ -226,7 +232,7 @@ export class UpsertEjecucion extends LitElement {
           if (midoc) {
             return gbl_state.db.get(midoc.id).then((doc) => {
               this.actividad = doc as Actividad;
-              return doc as Actividad
+              return doc as Actividad;
             });
           }
         }
@@ -244,7 +250,7 @@ export class UpsertEjecucion extends LitElement {
               this.ejecucion = doc as Ejecucion;
               this.tipo = this.ejecucion.tipo;
               await this.getActividadSinCopiar(uuid);
-              console.log("EJE ACT",this.ejecucion,this.actividad)
+              console.log("EJE ACT", this.ejecucion, this.actividad);
               this.ready = true;
               //this.requestUpdate();
             });
@@ -359,7 +365,7 @@ export class UpsertEjecucion extends LitElement {
   }
 
   loaded() {
-    return (this.insumos && this.actividad && this.ejecucion);
+    return this.insumos && this.actividad && this.ejecucion;
   }
 
   render() {
@@ -414,7 +420,7 @@ export class UpsertEjecucion extends LitElement {
               placeholder="YYYY-MM-DD"
               error-message="Debe seleccionar una fecha igual o posterior a la planificación"
               .min="${this.actividad.detalles.fecha_ejecucion_tentativa}"
-              .max="${format(new Date(),'yyyy-MM-dd')}"
+              .max="${format(new Date(), "yyyy-MM-dd")}"
               .i18n=${base_i18n}
               theme="helper-above-field"
               .value=${this.ejecucion.detalles.fecha_ejecucion}
@@ -432,6 +438,52 @@ export class UpsertEjecucion extends LitElement {
             >
               <div slot="suffix">Ha.</div>
             </vaadin-number-field>
+
+            <!-- seleccion de origen insumos -->
+            <vaadin-radio-group
+              label="${translate("insumos_desde")}"
+              theme="vertical"
+              .value="${this.es_depo_del_contratista()
+                ? "contratista"
+                : "deposito"}"
+              @value-changed=${(e) => {
+                console.log("CAMBIO");
+                this.origen_insumos = e.target.value;
+                if (this.origen_insumos === "contratista") {
+                  // Selecciono el depo del contratista
+                  this.ejecucion.deposito_origen = this.depositos.find((d) =>
+                    d.uuid.includes(this.ejecucion.contratista.uuid)
+                  );
+                }
+                this.requestUpdate();
+              }}
+            >
+              <vaadin-radio-button value="contratista">
+                <label slot="label">
+                  <vaadin-horizontal-layout theme="spacing">
+                    <span>${translate("contratista")}</span>
+                  </vaadin-horizontal-layout>
+                </label>
+              </vaadin-radio-button>
+              <vaadin-radio-button value="deposito">
+                <label slot="label">
+                  <vaadin-combo-box
+                    ?readonly=${this.origen_insumos === "contratista"}
+                    label="${translate("deposito")}"
+                    item-label-path="nombre"
+                    item-value-path="uuid"
+                    helper-text=""
+                    style="width: 100%;"
+                    .selectedItem=${this.ejecucion.deposito_origen}
+                    colspan="2"
+                    .items=${this.depositos}
+                    @selected-item-changed=${(e) => {
+                      this.ejecucion.deposito_origen = e.detail.value;
+                    }}
+                  ></vaadin-combo-box>
+                </label>
+              </vaadin-radio-button>
+            </vaadin-radio-group>
           </vaadin-form-layout>
         </div>
         <!-- Fin Contratista -->
@@ -723,5 +775,10 @@ export class UpsertEjecucion extends LitElement {
         </div>
       </div>
     `;
+  }
+
+
+  es_depo_del_contratista(){
+    return (this.ejecucion.deposito_origen?.uuid === this.ejecucion.contratista.uuid)
   }
 }

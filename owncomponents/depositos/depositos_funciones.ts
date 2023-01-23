@@ -56,6 +56,7 @@ export const borrar_deposito = (depo: Deposito) => {
   return gbl_state.db.remove(depo as unknown as PouchDB.Core.RemoveDocument);
 };
 
+
 /** Expo/Impo */
 export const exportar_lista_depositos = () => {};
 
