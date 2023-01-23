@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { cargar_depo } from "./../depositos_funciones";
 import { LineaTransferencia } from "./../../tipos/depositos-transferencias";
 import { css, html, LitElement, PropertyValueMap } from "lit";
@@ -158,6 +159,7 @@ export class DepositoNuevoTransferencias extends LitElement {
                       label=${translate("fecha")}
                       required
                       allowed-char-pattern="[]"
+                      max="${format(new Date(),'yyyy-MM-dd')}"
                       placeholder="YYYY-MM-DD"
                       .i18n=${base_i18n}
                       theme="helper-above-field"
