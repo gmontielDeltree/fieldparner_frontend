@@ -4,6 +4,7 @@ import { gbl_state } from "../state";
 import { gbl_docs_starting, only_docs } from "../helpers";
 import { filter } from "jszip";
 import { Ejecucion } from "./depositos-types";
+import { lineas_stock } from "../helpers/stock";
 
 // IMHAPPY
 
@@ -56,3 +57,12 @@ export const calcular_stock = async (depo_uuid) => {
 
   return stock;
 };
+
+/* Devuelve el id si tiene o no insumos */
+export const depo_tiene_stock_negativo = async (depo_uuid:string) => {
+  return calcular_stock(depo_uuid).then((stock)=>{
+    let negativos = Object.values(stock).filter((lineas_stock : LineaStock)=> lineas_stock.cantidad<0)
+    return (negativos.length>0) ? depo_uuid : ""       
+    
+  })
+}

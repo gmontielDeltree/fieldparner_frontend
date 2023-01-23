@@ -1,3 +1,4 @@
+import { listar_depositos } from './../depositos/depositos_funciones';
 import { ReactiveController, ReactiveControllerHost } from "lit";
 import { Notificacion } from "./notificacion";
 import gbl_state, { gblStateLoaded } from "../state";
@@ -7,6 +8,7 @@ import parseISO from "date-fns/parseISO";
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import es from "date-fns/locale/es";
 import { isThisWeek } from "date-fns/esm";
+import { calcular_stock, depo_tiene_stock_negativo } from '../depositos/stock_funciones';
 
 
 export class NotificacionController implements ReactiveController {
@@ -48,6 +50,7 @@ export class NotificacionController implements ReactiveController {
           let notif = s1.map((nota) => {
             let n: Notificacion = {
               tipo: "Próxima Visita a lote " + nota.lote_nombre,
+              desde:'nota',
               url: nota.url_referencia,
               fecha_generada: new Date(),
               msg: "programada en " + formatDistanceToNow(parseISO(nota.proxima_visita),{locale:es}),
@@ -57,7 +60,29 @@ export class NotificacionController implements ReactiveController {
             return n;
           });
 
-          this.notificaciones = notif;
+
+          // check stock < 0
+          listar_depositos().then( (ds)=>{
+            let esto = Promise.all( ds.map( (depo)=>  depo_tiene_stock_negativo(depo.uuid)))
+            return esto
+          }).then((e)=>{
+            let solo_id_con_neg = e.filter((d)=>d !=='')
+            if(solo_id_con_neg.length>0){
+              // Hay con stock negativo
+              let hay_con_neg : Notificacion = {  msg: "Hay depositos con stock negativo",
+                distancia_tiempo: 0,
+                url: "/depositos",
+                fecha_generada: new Date(),
+                tipo: "Insumos insuficientes",
+                desde: "depos"} 
+              this.notificaciones = [...notif,hay_con_neg];
+            }else{
+              this.notificaciones = notif;
+            }
+          })
+
+
+         
           
 
           console.log("Lista de Notificaciones", this.notificaciones);

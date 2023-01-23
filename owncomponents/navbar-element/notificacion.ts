@@ -9,6 +9,7 @@ export interface Notificacion {
   url: string;
   fecha_generada: Date;
   tipo: string;
+  desde: string;
 }
 
 
