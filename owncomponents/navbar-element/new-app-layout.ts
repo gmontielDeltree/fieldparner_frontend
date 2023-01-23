@@ -29,6 +29,7 @@ import { ref, createRef } from "lit/directives/ref.js";
 import "@vaadin/tabsheet";
 import { Lenguage } from "../tipos/tipos-varios";
 import "../campana/menu-campana/menu-campana";
+import "../campana-notificacion/campana-notificacion";
 
 @customElement("app-layout-navbar-placement")
 export class Example extends LitElement {
@@ -158,7 +159,7 @@ export class Example extends LitElement {
 
         <vaadin-horizontal-layout
           slot="navbar"
-          style="flex-grow: 100; justify-content: space-between;"
+          style="flex-grow: 100; justify-content: space-between;align-items: center;"
         >
           <vaadin-tabs>
             <vaadin-tab>
@@ -193,17 +194,22 @@ export class Example extends LitElement {
                 title="Depositos"
                 style="cursor: pointer;background-image: url('${icono_depositos}');width: 32px;height: 32px;background-size: cover;background-position: center;"
                 @click=${() => {
-                    Router.go('depositos')
-                  }}
+                  Router.go("depositos");
+                }}
               ></div>
             </vaadin-tab>
             <vaadin-tab id="dummy-tab" ${ref(this.geocoderRef)}></vaadin-tab>
+            <vaadin-tab>
+
+          <campana-notificacion></campana-notificacion>
+            </vaadin-tab>
             <vaadin-tab>
               <menu-campana-button />
             </vaadin-tab>
           </vaadin-tabs>
 
           <div style="align-items: center;display: flex;">
+
             <!--Se pueden usar css variables para pasar o alterar styles -->
             <!--https://stackoverflow.com/questions/70634210/lit-how-to-apply-style-to-nested-template-->
             <vaadin-select
