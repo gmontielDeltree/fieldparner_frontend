@@ -9,7 +9,8 @@ import { dialogFooterRenderer, dialogRenderer } from "@vaadin/dialog/lit.js";
 import type { DialogOpenedChangedEvent } from "@vaadin/dialog";
 import { nuevo_deposito, guardar_deposito } from "../depositos_funciones";
 import { Deposito } from "../depositos-types";
-import { translate } from "lit-translate";
+import { get, translate } from "lit-translate";
+import { showNotification } from "../../helpers/notificaciones";
 
 @customElement("deposito-nuevo")
 export class DepositoNuevo extends LitElement {
@@ -39,7 +40,12 @@ export class DepositoNuevo extends LitElement {
   }
 
   emit_nuevo() {
-    guardar_deposito(this.depo);
+    guardar_deposito(this.depo).then(()=>{
+      showNotification(get('deposito_guardado'),'success')
+    }).catch((e)=>{
+      console.log(e)
+      showNotification(get('error_al_guardar'),'error')
+    })
     //this.dialogOpened = false;
     this.dispatchEvent(
       new CustomEvent("nuevo-depo", { bubbles: true, composed: true })
