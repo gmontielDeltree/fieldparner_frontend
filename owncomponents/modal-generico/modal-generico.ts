@@ -38,7 +38,7 @@ export class ModalGenerico extends LitElement {
         top: 0;
         left: 0;
         background-color: rgb(255, 255, 255);
-        background-color: rgba(255, 255, 255, 0.9);
+        background-color: rgba(255, 255, 255, 1);
       }
 
       .overlay-content {
