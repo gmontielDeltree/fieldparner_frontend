@@ -3,7 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import "@vaadin/combo-box";
 import { comboBoxRenderer } from "@vaadin/combo-box/lit.js";
 import type { ComboBoxLitRenderer } from "@vaadin/combo-box/lit.js";
-import type { ComboBoxFilterChangedEvent } from "@vaadin/combo-box";
+import type { ComboBox, ComboBoxFilterChangedEvent } from "@vaadin/combo-box";
 import { CultivoAplicacion, Insumo } from "../../insumos/insumos-types";
 import { LineaDosis } from "../../depositos/depositos-types";
 import { translate } from "lit-translate";
@@ -18,13 +18,15 @@ export class ComboBoxInsumos extends LitElement {
   insumos: Insumo[];
 
   @property()
-  linea_de_dosis: LineaDosis;
+  selectedItem : any;
 
   @property()
   categorias_iniciales = []
 
   @state()
   insumos_post_filter : Insumo[] = []
+
+
 
   @state()
   private filteredItems: Insumo[] = [];
@@ -116,13 +118,13 @@ export class ComboBoxInsumos extends LitElement {
   }
 
   clear(){
-    this.shadowRoot.querySelector('#insumo1').clear()
+    (this.shadowRoot.querySelector('#insumo1') as ComboBox).clear()
   }
 
   render() {
     return html`
       <vaadin-combo-box
-        id="insumo1"
+        id="insumosss"
         style="background-color: #b1ffb7; width:16em; --vaadin-combo-box-overlay-width: 25em"
         placeholder="${translate("seleccione_insumo")}"
         class="high-rating"
@@ -130,14 +132,14 @@ export class ComboBoxInsumos extends LitElement {
         item-label-path="marca_comercial"
         item-value-path="uuid"
         .items=${this.insumos_post_filter}
-        .selected-item=${this.linea_de_dosis.insumo}
+        .selectedItem=${this.selectedItem}
         @selected-item-changed=${(e) => {
           let value = e.detail.value
           this.dispatchEvent(new CustomEvent("selected-item-changed",{detail:{value:value},bubbles:true,composed:true}))
         }}
         .filteredItems="${this.filteredItems}"
         @filter-changed="${this.filterChanged}"
-        ${comboBoxRenderer(this.renderer, this.insumos)}
+        ${comboBoxRenderer(this.renderer, [this.insumos])}
       >
         <menu-bar-checkable
           .selectedItems=${this.categorias_iniciales}
@@ -150,7 +152,7 @@ export class ComboBoxInsumos extends LitElement {
               this.filter_2("")
             }
           }
-        />
+        ></menu-bar-checkable>
       </vaadin-combo-box>
     `;
   }
@@ -187,4 +189,11 @@ export class ComboBoxInsumos extends LitElement {
       </vaadin-vertical-layout>
     `;
   };
+}
+
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "combo-box-insumos": ComboBoxInsumos;
+  }
 }

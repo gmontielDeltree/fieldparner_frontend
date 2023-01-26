@@ -113,6 +113,7 @@ type LineaDosisEjecucion = {
   total: number;
   precio_estimado:number;
   precio_real: number;
+  deposito_origen_uuid: string;
 };
 
 
@@ -195,6 +196,7 @@ interface DetallesEjecucion {
   semillas_totales?: number;
   distancia?: number;
   tipo_siembra?: string;
+
 }
 
 interface Actividad {

@@ -2,6 +2,7 @@ import { css, html, LitElement } from "lit";
 import { columnBodyRenderer } from "@vaadin/grid/lit.js";
 import {
   Actividad,
+  Deposito,
   DetallesAplicacion,
   Ejecucion,
   LineaDosis,
@@ -53,6 +54,9 @@ export class GridInsumosExe extends LitElement {
   ejecucion: Ejecucion;
 
   @property()
+  depositos: Deposito[];
+
+  @property()
   insumos: Insumo[];
 
   @property()
@@ -70,6 +74,7 @@ export class GridInsumosExe extends LitElement {
     total: 0,
     precio_estimado: 0,
     precio_real: 0,
+    deposito_origen_uuid: null,
   };
 
   inicializar_lineas() {
@@ -81,6 +86,7 @@ export class GridInsumosExe extends LitElement {
       total: 0,
       precio_real: 0,
       precio_estimado: 0,
+      deposito_origen_uuid: null,
     };
   }
 
@@ -122,7 +128,7 @@ export class GridInsumosExe extends LitElement {
                   id="combo-insumo"
                   .insumos=${this.insumos}
                   .categorias_iniciales=${this.categorias_iniciales}
-                  .linea_de_dosis=${item}
+                  .selectedItem=${this.linea_de_dosis.insumo}
                   @selected-item-changed=${(e) => {
                     this.linea_de_dosis.insumo = e.detail.value;
                     this.linea_de_dosis.precio_estimado =
@@ -144,18 +150,19 @@ export class GridInsumosExe extends LitElement {
                   ${item.insumo.principio_activo}
                 </span>
               </vaadin-vertical-layout>`;
-        }, this.actividad.detalles.dosis)}
+        }, this.ejecucion.detalles.dosis)}
       ></vaadin-grid-column>
 
       <vaadin-grid-column auto-width></vaadin-grid-column>
 
       <vaadin-grid-column
-        header=${translate('dosificacion')}
+        header=${translate("dosificacion")}
         auto-width
         flex-grow="0"
         resizable
         ${columnBodyRenderer<LineaDosisEjecucion>((item) => {
           return html` <vaadin-number-field
+              autoselect
             style="width:10em"
             class=${item.uuid === "nuevo" ? "high-rating" : ""}
             value=${item.dosis}
@@ -180,6 +187,7 @@ export class GridInsumosExe extends LitElement {
         resizable
         ${columnBodyRenderer<LineaDosisEjecucion>(
           (item) => html` <vaadin-number-field
+              autoselect
             style="width:10em"
             value=${item.total}
             class=${item.uuid === "nuevo" ? "high-rating" : ""}
@@ -231,6 +239,7 @@ export class GridInsumosExe extends LitElement {
         ${columnBodyRenderer<LineaDosisEjecucion>(
           (item) => html`
             <vaadin-number-field
+              autoselect
               value="${item.precio_real}"
               style="width:10em;"
               class=${item.uuid === "nuevo" ? "high-rating" : ""}
@@ -245,7 +254,27 @@ export class GridInsumosExe extends LitElement {
         )}
       ></vaadin-grid-column>
 
-      <vaadin-grid-column auto-width> </vaadin-grid-column>
+      <vaadin-grid-column
+        header="${translate("deposito")}"
+        auto-width
+        ${columnBodyRenderer<LineaDosisEjecucion>(
+          (item) => html`
+            <vaadin-combo-box
+              class=${item.uuid === "nuevo" ? "high-rating" : ""}
+              item-label-path="nombre"
+              item-value-path="uuid"
+              helper-text=""
+              style="width: 100%;"
+              .selectedItem=${item.deposito_origen_uuid}
+              .items=${this.depositos}
+              @selected-item-changed=${(e) => {
+                item.deposito_origen_uuid = e.detail.value;
+              }}
+            ></vaadin-combo-box>
+          `
+        )}
+      >
+      </vaadin-grid-column>
 
       <vaadin-grid-column
         frozen-to-end
@@ -272,7 +301,7 @@ export class GridInsumosExe extends LitElement {
                         this.ejecucion.detalles.dosis
                       );
                       this.inicializar_lineas();
-                      this.shadowRoot.querySelector("#combo-insumo").clear();
+                      //this.shadowRoot.querySelector("#combo-insumo").clear();
                       this.requestUpdate();
                       (
                         this.shadowRoot.getElementById("da-grid") as Grid
@@ -305,6 +334,12 @@ export class GridInsumosExe extends LitElement {
         )}
       ></vaadin-grid-column>
     </vaadin-grid>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "grid-insumos-exe": GridInsumosExe;
   }
 }
 

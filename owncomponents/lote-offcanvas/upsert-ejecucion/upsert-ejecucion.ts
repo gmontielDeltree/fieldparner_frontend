@@ -395,7 +395,7 @@ export class UpsertEjecucion extends LitElement {
             : null}
 
           <vaadin-tab id="condiciones-tab">Condiciones</vaadin-tab>
-          <vaadin-tab id="aporte-social-tab">Aporte Societario</vaadin-tab>
+          <!-- <vaadin-tab id="aporte-social-tab">Aporte Societario</vaadin-tab> -->
           <vaadin-tab id="shipping-tab">Observaciones</vaadin-tab>
         </vaadin-tabs>
 
@@ -439,51 +439,6 @@ export class UpsertEjecucion extends LitElement {
               <div slot="suffix">Ha.</div>
             </vaadin-number-field>
 
-            <!-- seleccion de origen insumos -->
-            <vaadin-radio-group
-              label="${translate("insumos_desde")}"
-              theme="vertical"
-              .value="${this.es_depo_del_contratista()
-                ? "contratista"
-                : "deposito"}"
-              @value-changed=${(e) => {
-                console.log("CAMBIO");
-                this.origen_insumos = e.target.value;
-                if (this.origen_insumos === "contratista") {
-                  // Selecciono el depo del contratista
-                  this.ejecucion.deposito_origen = this.depositos.find((d) =>
-                    d.uuid.includes(this.ejecucion.contratista.uuid)
-                  );
-                }
-                this.requestUpdate();
-              }}
-            >
-              <vaadin-radio-button value="contratista">
-                <label slot="label">
-                  <vaadin-horizontal-layout theme="spacing">
-                    <span>${translate("contratista")}</span>
-                  </vaadin-horizontal-layout>
-                </label>
-              </vaadin-radio-button>
-              <vaadin-radio-button value="deposito">
-                <label slot="label">
-                  <vaadin-combo-box
-                    ?readonly=${this.origen_insumos === "contratista"}
-                    label="${translate("deposito")}"
-                    item-label-path="nombre"
-                    item-value-path="uuid"
-                    helper-text=""
-                    style="width: 100%;"
-                    .selectedItem=${this.ejecucion.deposito_origen}
-                    colspan="2"
-                    .items=${this.depositos}
-                    @selected-item-changed=${(e) => {
-                      this.ejecucion.deposito_origen = e.detail.value;
-                    }}
-                  ></vaadin-combo-box>
-                </label>
-              </vaadin-radio-button>
-            </vaadin-radio-group>
           </vaadin-form-layout>
         </div>
         <!-- Fin Contratista -->
@@ -505,6 +460,7 @@ export class UpsertEjecucion extends LitElement {
             .actividad=${this.actividad}
             .ejecucion=${this.ejecucion}
             .insumos=${this.insumos}
+            .depositos=${this.depositos}
             .categorias_iniciales=${this.tipo_2_categorias_iniciales[this.tipo]}
             .tipo=${this.tipo}
           ></grid-insumos-exe>

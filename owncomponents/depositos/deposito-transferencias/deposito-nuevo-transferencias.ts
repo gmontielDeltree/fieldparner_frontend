@@ -254,7 +254,6 @@ export class DepositoNuevoTransferencias extends LitElement {
                     theme="spacing"
                   >
                     <vaadin-combo-box
-                      id="insumo1"
                       label=${translate("insumo")}
                       style="width:16em"
                       colspan="2"
