@@ -153,7 +153,7 @@ export class GridInsumosExe extends LitElement {
         }, this.ejecucion.detalles.dosis)}
       ></vaadin-grid-column>
 
-      <vaadin-grid-column auto-width></vaadin-grid-column>
+      <!-- <vaadin-grid-column auto-width></vaadin-grid-column> -->
 
       <vaadin-grid-column
         header=${translate("dosificacion")}

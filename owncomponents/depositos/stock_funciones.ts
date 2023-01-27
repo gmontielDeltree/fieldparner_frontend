@@ -17,12 +17,14 @@ export const calcular_stock = async (depo_uuid) => {
   let todas_ejecuciones = (await gbl_docs_starting("ejecucion", true).then(
     only_docs
   )) as unknown as Ejecucion[];
-  let ejecuciones_del_depo = todas_ejecuciones.filter((e) => {
-    if (e.deposito_origen) {
-      return e.deposito_origen.uuid === depo_uuid;
-    }
-    return false;
-  });
+
+  let ejecuciones_del_depo = todas_ejecuciones
+  // .filter((e) => {
+  //   if (e.deposito_origen) {
+  //     return e.deposito_origen.uuid === depo_uuid;
+  //   }
+  //   return false;
+  // });
 
   // Iterar por cada trasfer
   transfers.forEach((t) => {
@@ -45,6 +47,9 @@ export const calcular_stock = async (depo_uuid) => {
   // Iterar por cada ejecucion
   ejecuciones_del_depo.forEach((e) => {
     e.detalles.dosis.forEach((l) => {
+      if(l.deposito_origen_uuid !== depo_uuid){
+        return
+      }
       if (!(l.insumo.uuid in stock)) {
         // No esta en stock aun
         stock[l.insumo.uuid] = { insumo: l.insumo, cantidad: 0, valoracion: 0 };
