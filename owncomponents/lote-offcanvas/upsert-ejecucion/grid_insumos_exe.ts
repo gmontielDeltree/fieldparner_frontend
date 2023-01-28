@@ -74,7 +74,7 @@ export class GridInsumosExe extends LitElement {
     total: 0,
     precio_estimado: 0,
     precio_real: 0,
-    deposito_origen_uuid: null,
+    deposito_origen: null,
   };
 
   inicializar_lineas() {
@@ -86,7 +86,7 @@ export class GridInsumosExe extends LitElement {
       total: 0,
       precio_real: 0,
       precio_estimado: 0,
-      deposito_origen_uuid: null,
+      deposito_origen: null,
     };
   }
 
@@ -265,10 +265,10 @@ export class GridInsumosExe extends LitElement {
               item-value-path="uuid"
               helper-text=""
               style="width: 100%;"
-              .selectedItem=${item.deposito_origen_uuid}
+              .selectedItem=${item.deposito_origen}
               .items=${this.depositos}
               @selected-item-changed=${(e) => {
-                item.deposito_origen_uuid = e.detail.value;
+                item.deposito_origen = e.detail.value;
               }}
             ></vaadin-combo-box>
           `

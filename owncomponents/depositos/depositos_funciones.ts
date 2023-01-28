@@ -61,12 +61,26 @@ export const listar_ejecuciones_por_depo = (depo_uuid: string) => {
     .then(only_docs)
     .then((exes) => {
       let filtradas: Ejecucion[] = (exes as Ejecucion[]).filter(
-        (e) => e.deposito_origen?.uuid === depo_uuid
+        // Filtrar ejecuciones que tengan
+        // insumos desde este depo
+        (e) => {
+          let deeste = e.detalles.dosis.filter(
+            (i) => (i?.deposito_origen?.uuid === depo_uuid)
+          );
+          console.log("DEESTE",deeste)
+          // Si encuentro algo -> hay
+          return (deeste.length > 0) ? true : false;
+        }
       );
 
-
+      
       filtradas = filtradas.sort((a, b) =>
-        isBefore(parseISO(a.detalles.fecha_ejecucion), parseISO(b.detalles.fecha_ejecucion)) ? -1 : 1
+        isBefore(
+          parseISO(a.detalles.fecha_ejecucion),
+          parseISO(b.detalles.fecha_ejecucion)
+        )
+          ? -1
+          : 1
       );
 
       return filtradas;

@@ -1,4 +1,4 @@
-import { listar_ejecuciones_por_depo } from './../depositos_funciones';
+import { listar_ejecuciones_por_depo } from "./../depositos_funciones";
 import { gbl_state } from "./../../state";
 import { customElement, property, state } from "lit/decorators.js";
 import "../../modal-generico/modal-generico";
@@ -79,9 +79,10 @@ export class DepositoDetalles extends LitElement {
       .then((stock) => {
         this.stock = stock;
       })
-      .then(()=> listar_ejecuciones_por_depo(depo_uuid))
-      .then((e)=>{this.ejecuciones = e
-        console.log("Ejecuciones del depo",e)
+      .then(() => listar_ejecuciones_por_depo(depo_uuid))
+      .then((e) => {
+        this.ejecuciones = e;
+        console.log("Ejecuciones del depo", e);
       })
       .then(() => listar_transferencias(depo_uuid))
       .catch((e) => {
@@ -211,7 +212,9 @@ export class DepositoDetalles extends LitElement {
                 this._loadTask.render({
                   pending: () => html`${translate("cargando")}`,
                   complete: (trans) => html`
-                    <div class='titulo-seccion'>${translate("transferencias")}</div>
+                    <div class="titulo-seccion">
+                      ${translate("transferencias")}
+                    </div>
                     ${trans.map(
                       (item) => html`
                         <vaadin-item
@@ -273,7 +276,9 @@ export class DepositoDetalles extends LitElement {
                       `
                     )}
 
-                    <div class='titulo-seccion'>${translate("ejecuciones")}</div>
+                    <div class="titulo-seccion">
+                      ${translate("ejecuciones")}
+                    </div>
 
                     ${this.ejecuciones.map(
                       (item) => html`
@@ -322,31 +327,6 @@ export class DepositoDetalles extends LitElement {
             </div>
           </vaadin-tabsheet>
 
-          <deposito-nuevo-transferencias
-            .opened=${this.abrirNuevoDialog}
-            @nuevo-depo=${() => {
-              console.log("Nuevo Click");
-              this.abrirNuevoDialog = false;
-              //Refresh
-              // Notificación
-            }}
-            @opened-changed=${(e: CustomEvent) => {
-              this.abrirNuevoDialog = e.detail.value;
-            }}
-          ></deposito-nuevo-transferencias>
-          <deposito-nuevo-transferencias
-            .edit=${true}
-            .depo_to_edit=${this.trans_to_edit}
-            .opened=${this.abrirEditDialog}
-            @nuevo-depo=${() => {
-              this.abrirEditDialog = false;
-              //Refresh
-              // Notificación
-            }}
-            @opened-changed=${(e: CustomEvent) => {
-              this.abrirEditDialog = e.detail.value;
-            }}
-          ></deposito-nuevo-transferencias>
           <vaadin-notification
             theme="error"
             duration="0"
@@ -399,7 +379,8 @@ export class DepositoDetalles extends LitElement {
                 theme="spacing"
               >
                 <vaadin-avatar
-                  .name="${item.insumo.marca_comercial}"
+                  .name="${item.insumo.tipo}"
+                  .colorIndex=${item.insumo.tipo.length % 7}
                 ></vaadin-avatar>
                 <vaadin-vertical-layout>
                   <span> ${item.insumo.marca_comercial} </span>
@@ -409,7 +390,12 @@ export class DepositoDetalles extends LitElement {
                     ${item.insumo.principio_activo}
                   </span>
                 </vaadin-vertical-layout>
-                <span> ${item.cantidad} </span>
+              </vaadin-horizontal-layout>
+
+              <vaadin-horizontal-layout style="margin-left:auto;">
+                <vaadin-text-field  readonly .value=${item.cantidad}>
+                  <div slot="suffix">${item.insumo.unidad}</div>
+                </vaadin-text-field>
               </vaadin-horizontal-layout>
 
               <vaadin-horizontal-layout

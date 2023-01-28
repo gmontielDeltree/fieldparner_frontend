@@ -113,7 +113,7 @@ type LineaDosisEjecucion = {
   total: number;
   precio_estimado:number;
   precio_real: number;
-  deposito_origen_uuid: string;
+  deposito_origen: Deposito;
 };
 
 
