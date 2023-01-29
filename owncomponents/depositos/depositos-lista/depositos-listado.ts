@@ -55,6 +55,12 @@ export class DepositosListado extends LitElement {
             console.log("Nuevo");
           },
         },
+        {
+          text: get('proveedores'),
+          callback: () => {
+            Router.go('/proveedores')
+          }
+        }
       ],
     },
   ];
