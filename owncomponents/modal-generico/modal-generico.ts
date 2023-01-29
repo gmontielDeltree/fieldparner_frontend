@@ -10,6 +10,7 @@ import "@vaadin/scroller";
 import "@vaadin/text-area";
 import "@vaadin/text-field";
 import "@vaadin/vertical-layout";
+import "@vaadin/vaadin-lumo-styles"
 
 /**
  * https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_overlay
@@ -84,7 +85,7 @@ export class ModalGenerico extends LitElement {
         align-items: center;
         display: flex;
         justify-content: space-between;
-        border-bottom: 1px solid var(--lumo-contrast-20pct);
+        border-bottom: 1px solid var(--lumo-contrast-90pct);
         padding: var(--lumo-space-s);
       }
 
@@ -135,7 +136,7 @@ export class ModalGenerico extends LitElement {
         class="overlay"
         style=${this.modalOpened ? "display:block;" : "display:none;"}
       >
-        <vaadin-vertical-layout class="overlay-content" id="container">
+        <vaadin-vertical-layout class="overlay-content" id="container"  theme='dark'>
           <header>
             <a
               href="${this.backurl || "/"}"

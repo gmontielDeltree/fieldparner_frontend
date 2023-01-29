@@ -339,7 +339,7 @@ export class DepositoDetalles extends LitElement {
           ></vaadin-notification>
         </div>
         <!-- end body -->
-        <slot><slot>
+        <slot></slot>
       </modal-generico>
     `;
   }

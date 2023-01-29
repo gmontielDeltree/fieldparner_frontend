@@ -38,9 +38,9 @@ export class NotificationPopup extends LitElement {
         ${contextMenuRenderer(
           () => html`<div style="padding: var(--lumo-space-l);">
             <ul>
-              ${this.noti_controller.notificaciones?.length !== 0
+              ${this.noti_controller?.notificaciones?.length > 0
                 ? map(
-                    this.noti_controller.notificaciones,
+                    this.noti_controller?.notificaciones ?? [],
                     notificacion_template
                   )
                 : html`<li>No hay notificaciones</li>`}
@@ -51,8 +51,8 @@ export class NotificationPopup extends LitElement {
       >
         <vaadin-button aria-label="notifications" theme="tertiary">
           <vaadin-icon icon="vaadin:bell-o"></vaadin-icon>
-          ${this.noti_controller.notificaciones.length > 0
-            ? html`</span> <span theme="badge error primary small pill">${this.noti_controller.notificaciones.length}</span>`
+          ${this.noti_controller?.notificaciones?.length > 0
+            ? html`</span> <span theme="badge error primary small pill">${this.noti_controller?.notificaciones?.length || null}</span>`
             : null}
         </vaadin-button>
       </vaadin-context-menu>
