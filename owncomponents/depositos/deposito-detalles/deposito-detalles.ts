@@ -340,7 +340,7 @@ export class DepositoDetalles extends LitElement {
       ${map(
         Object.values(this.stock),
         (item: LineaStock) => html`
-          <vaadin-item style="line-height: var(--lumo-line-height-m);">
+          <vaadin-item style="line-height: var(--lumo-line-height-s); font-size:var(--lumo-font-size-xs);">
             <vaadin-horizontal-layout
               style="align-items: center; justify-content: space-between;"
               theme="spacing"
@@ -364,7 +364,7 @@ export class DepositoDetalles extends LitElement {
               </vaadin-horizontal-layout>
 
               <vaadin-horizontal-layout style="margin-left:auto;">
-                <vaadin-text-field readonly .value="${item.cantidad}">
+                <vaadin-text-field theme="align-right" readonly .value="${item.cantidad}">
                   <div slot="suffix">${item.insumo.unidad}</div>
                 </vaadin-text-field>
               </vaadin-horizontal-layout>
