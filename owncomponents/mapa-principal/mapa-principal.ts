@@ -4,7 +4,7 @@ import {
   layer_visibility,
   actividades_y_ejecuciones,
 } from "../helpers";
-import { GeoJSONSource, Map } from "mapbox-gl";
+import { GeoJSONSource, Layer, Map } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
 
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -23,6 +23,7 @@ import { tr } from "date-fns/locale";
 import centroid from "@turf/centroid";
 import { isFuture, isPast, isToday, parseISO } from "date-fns";
 import { get } from "lit-translate";
+import { MapboxLayers } from "plotly.js";
 
 // https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
 // https://github.com/kepta/idly/wiki/examples#using-bing-satellite-map
@@ -142,6 +143,8 @@ export class MapaPrincipal extends LitElement {
 
   @property()
   settings: any;
+
+  private layers : Layer[]
 
   static override styles = [
     unsafeCSS(mapbox_geocoder_style),

@@ -134,7 +134,8 @@ export class DepositoDetalles extends LitElement {
         {
           text: get("editar"),
           callback: () => {
-            let gourl = "transfer/" + trans.uuid + "/edit?from="+this.location.pathname;
+            let gourl =
+              "transfer/" + trans.uuid + "/edit?from=" + this.location.pathname;
             Router.go(gourl);
             console.log("edit");
           },
@@ -213,66 +214,7 @@ export class DepositoDetalles extends LitElement {
                     <div class="titulo-seccion">
                       ${translate("transferencias")}
                     </div>
-                    ${trans.map(
-                      (item) => html`
-                        <vaadin-item
-                          style="line-height: var(--lumo-line-height-m);"
-                        >
-                          <vaadin-horizontal-layout
-                            style="align-items: center; justify-content: space-between;"
-                            theme="spacing"
-                          >
-                            <vaadin-horizontal-layout
-                              style="align-items: center;"
-                              theme="spacing"
-                            >
-                              <vaadin-avatar
-                                .name="${item.deposito_origen.uuid ===
-                                this.depo.uuid
-                                  ? "OUT"
-                                  : "IN"}"
-                              ></vaadin-avatar>
-                              <vaadin-vertical-layout>
-                                <span>
-                                  ${item.deposito_origen.nombre} ->
-                                  ${item.deposito_destino.nombre}
-                                </span>
-                                <span
-                                  style="color: var(--lumo-secondary-text-color); font-size: var(--lumo-font-size-s);"
-                                >
-                                  ${item.fecha}
-                                </span>
-                              </vaadin-vertical-layout>
-                            </vaadin-horizontal-layout>
-
-                            <vaadin-horizontal-layout
-                              style="align-items: center;"
-                              theme="spacing"
-                            >
-                              <!-- <vaadin-button
-                                @click=${() => {
-                                Router.go(
-                                  "/deposito/" +
-                                    item.uuid +
-                                    "?from=" +
-                                    this.location.pathname
-                                );
-                              }}
-                                >${translate("ver")}</vaadin-button
-                              > -->
-
-                              <vaadin-menu-bar
-                                .items="${this.menu_depo_items(item)}"
-                                @item-selected=${this.menu_click}
-                                theme="icon"
-                              >
-                                <vaadin-tooltip slot="tooltip"></vaadin-tooltip>
-                              </vaadin-menu-bar>
-                            </vaadin-horizontal-layout>
-                          </vaadin-horizontal-layout>
-                        </vaadin-item>
-                      `
-                    )}
+                    ${trans.map(this.item_de_transferencia)}
 
                     <div class="titulo-seccion">
                       ${translate("ejecuciones")}
@@ -419,6 +361,50 @@ export class DepositoDetalles extends LitElement {
       )}
     `;
   }
+
+  item_de_transferencia = (item: DepositosTransferencia) => html`
+    <vaadin-item style="line-height: var(--lumo-line-height-m);">
+      <vaadin-horizontal-layout
+        style="align-items: center; justify-content: space-between;"
+        theme="spacing"
+      >
+        <vaadin-horizontal-layout style="align-items: center;" theme="spacing">
+          <vaadin-avatar
+            .name="${item.deposito_origen.uuid === this.depo.uuid
+              ? "OUT"
+              : "IN"}"
+          ></vaadin-avatar>
+          <vaadin-vertical-layout>
+            <span>
+              ${item.deposito_origen.nombre} -> ${item.deposito_destino.nombre}
+            </span>
+            <span
+              style="color: var(--lumo-secondary-text-color); font-size: var(--lumo-font-size-s);"
+            >
+              ${item.fecha}
+            </span>
+          </vaadin-vertical-layout>
+          <div>
+            ${item.referencia != null && item.referencia != ""
+              ? "Ref.:" + item.referencia
+              : ""}
+          </div>
+          <div>${item.lineas.length} ${translate("insumos")}</div>
+          <div>${item.obs}</div>
+        </vaadin-horizontal-layout>
+
+        <vaadin-horizontal-layout style="align-items: center;" theme="spacing">
+          <vaadin-menu-bar
+            .items="${this.menu_depo_items(item)}"
+            @item-selected=${this.menu_click}
+            theme="icon"
+          >
+            <vaadin-tooltip slot="tooltip"></vaadin-tooltip>
+          </vaadin-menu-bar>
+        </vaadin-horizontal-layout>
+      </vaadin-horizontal-layout>
+    </vaadin-item>
+  `;
 
   static override styles = css`
     vaadin-avatar[name="IN"] {
