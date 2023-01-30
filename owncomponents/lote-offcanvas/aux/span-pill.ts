@@ -45,3 +45,9 @@ export class SpanPill extends LitElement {
 
 
 }
+
+declare global {
+    interface HTMLElementTagNameMap {
+      "span-pill": SpanPill;
+    }
+  }

@@ -4,10 +4,19 @@ import { customElement, property, state } from "lit/decorators.js";
 import "../../modal-generico/modal-generico";
 import "../deposito-transferencias/deposito-nuevo-transferencias";
 
-import { LitElement, PropertyValueMap, html, render, css } from "lit";
+import {
+  LitElement,
+  PropertyValueMap,
+  html,
+  render,
+  css,
+  unsafeCSS,
+} from "lit";
 import { Router, RouterLocation } from "@vaadin/router";
 import { get, translate } from "lit-translate";
 
+import { badge } from "@vaadin/vaadin-lumo-styles/badge.js";
+import "../../lote-offcanvas/aux/span-pill";
 import "@vaadin/avatar";
 import "@vaadin/button";
 import "@vaadin/item";
@@ -70,6 +79,28 @@ export class DepositoDetalles extends LitElement {
 
   @state() // Tiene que ser state para forzar rerender
   abrirEditDialog: boolean = false;
+
+  static override styles = [
+    badge,
+    css`
+      .transferencia-item {
+        width: 100%;
+        justify-content: space-around;
+        font-size: var(--lumo-font-size-s);
+      }
+
+      .direccion-transferencia {
+        font-weight: bolder;
+      }
+      .cantidad-insumos {
+        font-weight: bold;
+      }
+
+      .titulo-seccion {
+        font-weight: bold;
+      }
+    `,
+  ];
 
   // Encadeno promises
   loadData(depo_uuid) {
@@ -333,7 +364,7 @@ export class DepositoDetalles extends LitElement {
               </vaadin-horizontal-layout>
 
               <vaadin-horizontal-layout style="margin-left:auto;">
-                <vaadin-text-field readonly .value=${item.cantidad}>
+                <vaadin-text-field readonly .value="${item.cantidad}">
                   <div slot="suffix">${item.insumo.unidad}</div>
                 </vaadin-text-field>
               </vaadin-horizontal-layout>
@@ -363,34 +394,47 @@ export class DepositoDetalles extends LitElement {
   }
 
   item_de_transferencia = (item: DepositosTransferencia) => html`
-    <vaadin-item style="line-height: var(--lumo-line-height-m);">
+    <vaadin-item
+      style="line-height: var(--lumo-line-height-s); font-size:var(--lumo-font-size-xs);"
+    >
       <vaadin-horizontal-layout
         style="align-items: center; justify-content: space-between;"
         theme="spacing"
       >
-        <vaadin-horizontal-layout style="align-items: center;" theme="spacing">
-          <vaadin-avatar
-            .name="${item.deposito_origen.uuid === this.depo.uuid
-              ? "OUT"
-              : "IN"}"
-          ></vaadin-avatar>
-          <vaadin-vertical-layout>
-            <span>
-              ${item.deposito_origen.nombre} -> ${item.deposito_destino.nombre}
-            </span>
-            <span
-              style="color: var(--lumo-secondary-text-color); font-size: var(--lumo-font-size-s);"
-            >
-              ${item.fecha}
-            </span>
-          </vaadin-vertical-layout>
-          <div>
+        <vaadin-horizontal-layout
+          class="transferencia-item"
+          style="align-items: center; width:100%; justify-content:space-around"
+          theme="spacing"
+        >
+          <vaadin-horizontal-layout style="width:25%;" theme='spacing'>
+            <vaadin-avatar
+              .name="${item.deposito_origen.uuid === this.depo.uuid
+                ? "OUT"
+                : "IN"}"
+            ></vaadin-avatar>
+            <vaadin-vertical-layout>
+              <span class="direccion-transferencia" style="font-weight:bolder">
+                ${item.deposito_origen.nombre} ->
+                ${item.deposito_destino.nombre}
+              </span>
+              <span
+                style="color: var(--lumo-secondary-text-color); font-size: var(--lumo-font-size-s);"
+              >
+                ${item.fecha}
+              </span>
+            </vaadin-vertical-layout>
+          </vaadin-horizontal-layout>
+          <div style='width:20%'>
+          <span-pill style="--bg-color:green;">
             ${item.referencia != null && item.referencia != ""
               ? "Ref.:" + item.referencia
-              : ""}
+              : translate("sin_referencia")}
+          </span-pill>
           </div>
-          <div>${item.lineas.length} ${translate("insumos")}</div>
-          <div>${item.obs}</div>
+          <div class="cantidad-insumos" style="font-weight:bold; width:20%">
+            ${item.lineas.length} ${translate("insumos")}
+          </div>
+          <div style="width:20%">${item.obs}</div>
         </vaadin-horizontal-layout>
 
         <vaadin-horizontal-layout style="align-items: center;" theme="spacing">
