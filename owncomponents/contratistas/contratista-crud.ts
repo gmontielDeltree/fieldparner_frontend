@@ -1,4 +1,8 @@
-import { nuevo_deposito, guardar_deposito } from './../depositos/depositos_funciones';
+import {
+  nuevo_deposito,
+  guardar_deposito,
+  cargar_depo,
+} from "./../depositos/depositos_funciones";
 import { LitElement, html, unsafeCSS, render } from "lit";
 import { property, state } from "lit/decorators.js";
 import "@vaadin/form-layout";
@@ -16,7 +20,7 @@ import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
 import { Labor, Contratista } from "./contratista-types";
 import { isThisSecond } from "date-fns";
-import { Deposito } from '../depositos/depositos-types';
+import { Deposito } from "../depositos/depositos-types";
 
 const empty_contratista: Contratista = {
   labores: [],
@@ -126,23 +130,34 @@ export class ContratistaCrud extends LitElement {
       let uuid = uuid4();
       this.contratista.uuid = uuid;
       this.contratista._id = "contratista:" + this.contratista.uuid;
-      this.db.put(this.contratista).catch((e) => {
-        alert("Error al agregar contratista");
+      this.db
+        .put(this.contratista)
+        .then(() => {
+          let depo: Deposito = nuevo_deposito();
+          depo.contratista_asociado = this.contratista;
+          depo._id = "deposito:" + this.contratista.uuid;
+          depo.uuid = this.contratista.uuid;
+          depo.nombre =  this.contratista.nombre;
+          depo.direccion = this.contratista.datos_generales.direccion;
 
-        let depo : Deposito = nuevo_deposito()
-        depo.contratista_asociado = this.contratista
-        depo._id = 'deposito:'+this.contratista.uuid
-        depo.uuid = this.contratista.uuid
-        depo.nombre = 'Contratista:' + this.contratista.nombre
-        guardar_deposito(depo)
+          guardar_deposito(depo);
+        })
+        .catch((e) => {
+          alert("Error al agregar contratista");
 
-        console.log(e);
-      });
-
+          console.log(e);
+        });
     } else {
       // Editando
       console.log("EDITANDO db", this.db);
-      this.db.put(this.contratista).catch((e) => console.error("Error al update Contratistas", e));
+      this.db
+        .put(this.contratista)
+        .then(() => cargar_depo(this.contratista.uuid))
+        .then((d) => {
+          d.nombre = this.contratista.nombre;
+          d.direccion = this.contratista.datos_generales.direccion;
+        })
+        .catch((e) => console.error("Error al update Contratistas", e));
     }
   };
 
@@ -315,10 +330,10 @@ export class ContratistaCrud extends LitElement {
               <button
                 type="button"
                 class="btn btn-primary"
-                @click=${()=>{
-                  this.guardar_contratista()
-                  this._modal.hide()
-                  }}
+                @click=${() => {
+                  this.guardar_contratista();
+                  this._modal.hide();
+                }}
               >
                 Guardar
               </button>

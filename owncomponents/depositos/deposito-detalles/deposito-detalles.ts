@@ -134,8 +134,8 @@ export class DepositoDetalles extends LitElement {
         {
           text: get("editar"),
           callback: () => {
-            this.abrirEditDialog = true;
-            this.trans_to_edit = trans;
+            let gourl = "transfer/" + trans.uuid + "/edit?from="+this.location.pathname;
+            Router.go(gourl);
             console.log("edit");
           },
         },
@@ -176,7 +176,7 @@ export class DepositoDetalles extends LitElement {
 
   render() {
     return html`
-      <modal-generico .modalOpened=${this.openedModal} backurl='/depositos' >
+      <modal-generico .modalOpened=${this.openedModal} backurl="/depositos">
         <h4 slot="title">${this.depo.nombre}</h4>
         <div slot="menu">
           <vaadin-menu-bar
@@ -188,8 +188,6 @@ export class DepositoDetalles extends LitElement {
           </vaadin-menu-bar>
         </div>
         <div slot="body">
-          
-
           <vaadin-tabsheet>
             <vaadin-tabs slot="tabs">
               <vaadin-tab id="stock-tab">${translate("stock")}</vaadin-tab>
@@ -393,7 +391,7 @@ export class DepositoDetalles extends LitElement {
               </vaadin-horizontal-layout>
 
               <vaadin-horizontal-layout style="margin-left:auto;">
-                <vaadin-text-field  readonly .value=${item.cantidad}>
+                <vaadin-text-field readonly .value=${item.cantidad}>
                   <div slot="suffix">${item.insumo.unidad}</div>
                 </vaadin-text-field>
               </vaadin-horizontal-layout>

@@ -1,3 +1,4 @@
+import { listar_depositos } from "./depositos_funciones";
 import { gbl_state } from "../state";
 import { Deposito, Ejecucion } from "./depositos-types";
 import {
@@ -13,6 +14,20 @@ export const listar_depositos = () => {
   return gbl_docs_starting("deposito", true)
     .then(only_docs)
     .then((depos) => depos as unknown as Deposito[]);
+};
+
+export const listar_solo_depositos = () => {
+  return listar_depositos().then((des) => {
+    return des.filter(
+      (d) => d.proveedor_asociado == null && d.contratista_asociado == null
+    );
+  });
+};
+
+export const listar_solo_depositos_contratistas = () => {
+  return listar_depositos().then((des) => {
+    return des.filter((d) => d.contratista_asociado != null);
+  });
 };
 
 export const cargar_depo = (uuid: string) => {
@@ -65,15 +80,14 @@ export const listar_ejecuciones_por_depo = (depo_uuid: string) => {
         // insumos desde este depo
         (e) => {
           let deeste = e.detalles.dosis.filter(
-            (i) => (i?.deposito_origen?.uuid === depo_uuid)
+            (i) => i?.deposito_origen?.uuid === depo_uuid
           );
-          console.log("DEESTE",deeste)
+          console.log("DEESTE", deeste);
           // Si encuentro algo -> hay
-          return (deeste.length > 0) ? true : false;
+          return deeste.length > 0 ? true : false;
         }
       );
 
-      
       filtradas = filtradas.sort((a, b) =>
         isBefore(
           parseISO(a.detalles.fecha_ejecucion),

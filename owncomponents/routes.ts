@@ -79,6 +79,10 @@ export const routes = [
     path: "/proveedores/:uuid",
     component: "proveedores-detalles",
   },
+  { // Edit transfer
+    path : "/transfer/:uuid/edit",
+    component: "deposito-nuevo-transferencias"
+  },
   { path: "/insumos", component: "insumos-lista" },
   { path: "/rights/:uuid_workspace", component: "workspace-rights" },
   { path: "/invite/:base64_invitation", component: "link-invitacion" },

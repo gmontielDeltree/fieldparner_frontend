@@ -1,3 +1,4 @@
+import { borrar_deposito, cargar_depo } from './../depositos/depositos_funciones';
 import { LitElement, html, unsafeCSS, render, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
 import "@vaadin/form-layout";
@@ -110,6 +111,7 @@ export class ContratistasLista extends LitElement {
   borrar_contratista(c: Contratista) {
 
     this.db.remove(c as PouchDB.Core.RemoveDocument).then(()=>{
+      cargar_depo(c.uuid).then((d)=>borrar_deposito(d))
       getContratistas(this.db).then((contratistas)=>{
         this._contratistas = contratistas
       })

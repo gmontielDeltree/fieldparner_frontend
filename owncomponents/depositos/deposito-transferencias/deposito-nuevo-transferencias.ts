@@ -1,3 +1,5 @@
+import { uuidv7 } from "uuidv7";
+import { cargar_transferencia } from "./../transferencias_funciones";
 import { format, isDate } from "date-fns";
 import { cargar_depo } from "./../depositos_funciones";
 import { LineaTransferencia } from "./../../tipos/depositos-transferencias";
@@ -23,7 +25,7 @@ import { dialogFooterRenderer, dialogRenderer } from "@vaadin/dialog/lit.js";
 import type { DialogOpenedChangedEvent } from "@vaadin/dialog";
 import { listar_depositos } from "../depositos_funciones";
 import { Deposito } from "../depositos-types";
-import { translate } from "lit-translate";
+import { get, translate } from "lit-translate";
 import { DepositosTransferencia } from "../../tipos/depositos-transferencias";
 import { guardar_transfer, nueva_transfer } from "../transferencias_funciones";
 import { base_i18n } from "../../lote-offcanvas/repetir-aplicacion/date-picker-i18n";
@@ -36,6 +38,8 @@ import { gbl_state } from "../../state";
 import { uuid4 } from "uuid4";
 import { deepcopy } from "../../helpers";
 import { map } from "lit/directives/map.js";
+import { showNotification } from "../../helpers/notificaciones";
+import "../../iconos/my-icons"
 
 @customElement("deposito-nuevo-transferencias")
 export class DepositoNuevoTransferencias extends LitElement {
@@ -60,8 +64,11 @@ export class DepositoNuevoTransferencias extends LitElement {
   private destino_fixed: boolean = false;
   private origen_fixed: boolean = false;
 
+  @state()
+  back_url: string;
+
   linea_insumo: LineaTransferencia = {
-    uuid: uuid4(),
+    uuid: uuidv7(),
     insumo: null,
     cantidad: 0,
     precio: 0,
@@ -83,10 +90,28 @@ export class DepositoNuevoTransferencias extends LitElement {
       .then((i) => (this.insumos = i));
   }
 
+  cargar_back_url() {
+    // https://github.com/vaadin/router/pull/582/commits/cd458fe4f912419c6bbd9902ad1632e1c0dad370
+    this.back_url =
+      new URLSearchParams(this.location.search).get("from") ||
+      gbl_state.router.urlForPath("/deposito/:uuid", {
+        uuid: this.location.params.uuid,
+      });
+  }
+
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
     if (_changedProperties.has("location")) {
+      this.cargar_back_url();
+      // Check if edit
+      if (this.location.pathname.includes("edit")) {
+        let transfer_uuid = this.location.params.uuid;
+        cargar_transferencia(transfer_uuid as string).then(
+          (t) => (this.trans = t)
+        );
+      }
+
       // Cuando se abre en efecto
       if (this.location.params.direccion === "in") {
         console.log("Transfer In");
@@ -126,9 +151,8 @@ export class DepositoNuevoTransferencias extends LitElement {
       new CustomEvent("nueva-trans", { bubbles: true, composed: true })
     );
 
-    Router.go(
-      gbl_state.router.urlForPath("deposito/:uuid", { ...this.location.params })
-    );
+    showNotification(get('guardado'),'success')
+    Router.go(this.back_url);
   }
 
   emit_opened_changed() {
@@ -144,12 +168,7 @@ export class DepositoNuevoTransferencias extends LitElement {
   render() {
     return html`
       <!-- tag::snippet[] -->
-      <modal-generico
-        .modalOpened=${this.opened}
-        backurl="${gbl_state.router.urlForPath("/deposito/:uuid", {
-          uuid: this.location.params.uuid,
-        })}"
-      >
+      <modal-generico .modalOpened=${this.opened} backurl="${this.back_url}">
         <div slot="title">${translate("nueva_transferencia")}</div>
 
         <div slot="body">
@@ -327,7 +346,7 @@ export class DepositoNuevoTransferencias extends LitElement {
                         <vaadin-accordion-panel theme="filled reverse">
                           <div slot="summary">
                             <vaadin-item>
-                              ${linea.insumo.marca_comercial} ${linea.cantidad}  
+                              ${linea.insumo.marca_comercial} ${linea.cantidad}
                               ${linea.precio}
                             </vaadin-item>
                           </div>
