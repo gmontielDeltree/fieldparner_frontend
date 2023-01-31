@@ -246,7 +246,7 @@ export class MapPicker extends LitElement {
         <!-- Overlay content -->
         <vaadin-horizontal-layout style="width:100%;justify-content:center">
           <div class="lnglat">
-            ${this.posicion?.lat.toFixed(6) ?? ""},${this.posicion?.lng.toFixed(
+            ${this.posicion?.lat?.toFixed(6) ?? ""},${this.posicion?.lng?.toFixed(
               6
             ) ?? ""}
           </div>

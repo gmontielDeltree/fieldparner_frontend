@@ -1,3 +1,4 @@
+import { depositos_update, depositos_layer_init } from './depositos-layer';
 import { LitElement, html, unsafeCSS, css } from "lit";
 import { property } from "lit/decorators.js";
 import {
@@ -458,6 +459,7 @@ export class MapaPrincipal extends LitElement {
       };
 
       this.proveedores_layer_init();
+      depositos_layer_init(this.map)
       this.cargar_marcadores();
 
       // console.info("Mapa Cargado");
@@ -647,6 +649,8 @@ export class MapaPrincipal extends LitElement {
         features: features,
       });
     });
+
+    depositos_update(this.map)
   }
 
   _redraw_map = () => {

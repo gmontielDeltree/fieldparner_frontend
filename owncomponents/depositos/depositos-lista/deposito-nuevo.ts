@@ -11,6 +11,7 @@ import { nuevo_deposito, guardar_deposito } from "../depositos_funciones";
 import { Deposito } from "../depositos-types";
 import { get, translate } from "lit-translate";
 import { showNotification } from "../../helpers/notificaciones";
+import "../../map-picker/map-picker"
 
 @customElement("deposito-nuevo")
 export class DepositoNuevo extends LitElement {
@@ -21,31 +22,35 @@ export class DepositoNuevo extends LitElement {
   edit: boolean = false;
 
   @property()
-  depo_to_edit : Deposito;
+  depo_to_edit: Deposito;
 
   private depo: Deposito = nuevo_deposito();
 
-  protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-	if(_changedProperties.has('opened') && !this.edit){
-		if(this.opened){
-			this.depo = nuevo_deposito()
-		}
-	}
+  protected willUpdate(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ): void {
+    if (_changedProperties.has("opened") && !this.edit) {
+      if (this.opened) {
+        this.depo = nuevo_deposito();
+      }
+    }
 
-	if(_changedProperties.has('depo_to_edit') && this.edit){
-		if(this.depo_to_edit){
-			this.depo = this.depo_to_edit
-		}
-	}
+    if (_changedProperties.has("depo_to_edit") && this.edit) {
+      if (this.depo_to_edit) {
+        this.depo = this.depo_to_edit;
+      }
+    }
   }
 
   emit_nuevo() {
-    guardar_deposito(this.depo).then(()=>{
-      showNotification(get('deposito_guardado'),'success')
-    }).catch((e)=>{
-      console.log(e)
-      showNotification(get('error_al_guardar'),'error')
-    })
+    guardar_deposito(this.depo)
+      .then(() => {
+        showNotification(get("deposito_guardado"), "success");
+      })
+      .catch((e) => {
+        console.log(e);
+        showNotification(get("error_al_guardar"), "error");
+      });
     //this.dialogOpened = false;
     this.dispatchEvent(
       new CustomEvent("nuevo-depo", { bubbles: true, composed: true })
@@ -66,14 +71,19 @@ export class DepositoNuevo extends LitElement {
     return html`
       <!-- tag::snippet[] -->
       <vaadin-dialog
-        header-title=${this.edit ? translate("edit") : translate("nuevo_deposito")}
+        header-title=${this.edit
+          ? translate("edit")
+          : translate("nuevo_deposito")}
         .opened="${this.opened}"
-	
         @opened-changed="${(e: DialogOpenedChangedEvent) => {
           this.opened = e.detail.value;
           this.emit_opened_changed();
         }}"
-        ${dialogRenderer(this.renderDialog, [this.opened]) /**hay que poner una prop sino no se rerender */}
+        ${
+          dialogRenderer(this.renderDialog, [
+            this.opened,
+          ]) /**hay que poner una prop sino no se rerender */
+        }
         ${dialogFooterRenderer(this.renderFooter, [])}
       ></vaadin-dialog>
 
@@ -85,8 +95,25 @@ export class DepositoNuevo extends LitElement {
     <vaadin-vertical-layout
       style="align-items: stretch; width: 18rem; max-width: 100%;"
     >
-      <vaadin-text-field autoselect label="${translate("nombre")}" .value=${this.depo.nombre} @keypress=${()=>console.log("keypresssss")} @input=${(e)=>this.depo.nombre = e.target.value}></vaadin-text-field>
-      <vaadin-text-field autoselect label="${translate("direccion")}" .value=${this.depo.direccion} @input=${(e)=>this.depo.direccion = e.target.value}></vaadin-text-field>
+      <vaadin-text-field
+        autoselect
+        label="${translate("nombre")}"
+        .value=${this.depo.nombre}
+        @keypress=${() => console.log("keypresssss")}
+        @input=${(e) => (this.depo.nombre = e.target.value)}
+      ></vaadin-text-field>
+      <vaadin-text-field
+        autoselect
+        label="${translate("direccion")}"
+        .value=${this.depo.direccion}
+        @input=${(e) => (this.depo.direccion = e.target.value)}
+      ></vaadin-text-field>
+      <map-picker
+        .posicion=${this.depo.posicion}
+        @input=${(e) => {
+          this.depo.posicion = e.detail;
+        }}
+      ></map-picker>
     </vaadin-vertical-layout>
   `;
 
@@ -99,9 +126,11 @@ export class DepositoNuevo extends LitElement {
 
   private close() {
     this.dispatchEvent(
-      new CustomEvent("opened-changed", { detail: {value:false}, bubbles: true, composed: true })
+      new CustomEvent("opened-changed", {
+        detail: { value: false },
+        bubbles: true,
+        composed: true,
+      })
     );
   }
-
-
 }

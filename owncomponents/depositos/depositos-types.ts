@@ -1,3 +1,4 @@
+import { LngLatLike } from 'mapbox-gl';
 import { PartType } from "lit-html/directive";
 import uuid4 from "uuid4";
 import {
@@ -28,7 +29,7 @@ interface Deposito {
   nombre: string;
   contratista_asociado ?: Contratista,
   proveedor_asociado ? : Proveedor,
-  posicion ?: number[]; //Lng Lat
+  posicion ?: LngLatLike; //Lng Lat
   direccion ?: string;
   car ?: string;
   /** iso dates zulu */
