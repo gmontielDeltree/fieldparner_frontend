@@ -47,7 +47,7 @@ export const calcular_stock = async (depo_uuid) => {
   // Iterar por cada ejecucion
   ejecuciones_del_depo.forEach((e) => {
     e.detalles.dosis.forEach((l) => {
-      if(l.deposito_origen !== depo_uuid){
+      if(l.deposito_origen?.uuid !== depo_uuid){
         return
       }
       if (!(l.insumo.uuid in stock)) {
