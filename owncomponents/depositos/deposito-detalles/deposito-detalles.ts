@@ -1,3 +1,5 @@
+import { showNotification } from "./../../helpers/notificaciones";
+import { borrar_transfer } from "./../transferencias_funciones";
 import { listar_ejecuciones_por_depo } from "./../depositos_funciones";
 import { gbl_state } from "./../../state";
 import { customElement, property, state } from "lit/decorators.js";
@@ -51,6 +53,8 @@ import {
 import { listar_transferencias } from "../transferencias_funciones";
 import { calcular_stock } from "../stock_funciones";
 import { map } from "lit/directives/map.js";
+import { showNotification } from "../../helpers/notificaciones";
+import { confirmar_eliminar } from "../../helpers/confirmar-eliminar";
 
 @customElement("deposito-detalles")
 export class DepositoDetalles extends LitElement {
@@ -64,9 +68,6 @@ export class DepositoDetalles extends LitElement {
   private transferencias: DepositosTransferencia;
   private ejecuciones: Ejecucion[];
   private stock: Stock;
-
-  @state()
-  errorNotificationOpened: boolean;
 
   private _loadTask = new Task(
     this,
@@ -118,7 +119,7 @@ export class DepositoDetalles extends LitElement {
       .then(() => listar_transferencias(depo_uuid))
       .catch((e) => {
         console.error(e);
-        this.errorNotificationOpened = true;
+        showNotification(get("error_al_cargar"), "error");
         return [] as DepositosTransferencia[];
       });
   }
@@ -174,8 +175,11 @@ export class DepositoDetalles extends LitElement {
         {
           text: get("eliminar"),
           callback: () => {
-            this.abrirNuevoDialog = true;
-            console.log("Nuevo");
+            confirmar_eliminar(() => {
+              borrar_transfer(trans).then(() =>
+                showNotification(get("item_borrado"))
+              ).then(()=>this._loadTask.run())
+            });
           },
         },
       ],
@@ -297,17 +301,6 @@ export class DepositoDetalles extends LitElement {
               }
             </div>
           </vaadin-tabsheet>
-
-          <vaadin-notification
-            theme="error"
-            duration="0"
-            position="middle"
-            .opened="${this.errorNotificationOpened}"
-            @opened-changed="${(e: NotificationOpenedChangedEvent) => {
-              this.errorNotificationOpened = e.detail.value;
-            }}"
-            ${notificationRenderer(this.renderer, [])}
-          ></vaadin-notification>
         </div>
         <!-- end body -->
         <slot></slot>
@@ -315,32 +308,14 @@ export class DepositoDetalles extends LitElement {
     `;
   }
 
-  renderer: NotificationLitRenderer = () => {
-    return html`
-      <vaadin-horizontal-layout theme="spacing" style="align-items: center;">
-        <div>${translate("error_al_cargar_refresque")}</div>
-        <vaadin-button
-          theme="tertiary-inline"
-          @click="${this.closeError}"
-          aria-label="Close"
-        >
-          <vaadin-icon icon="lumo:cross"></vaadin-icon>
-        </vaadin-button>
-      </vaadin-horizontal-layout>
-    `;
-  };
-
-  closeError() {
-    this.errorNotificationOpened = false;
-    console.log("clicked");
-  }
-
   stock_tab() {
     return html`
       ${map(
         Object.values(this.stock),
         (item: LineaStock) => html`
-          <vaadin-item style="line-height: var(--lumo-line-height-s); font-size:var(--lumo-font-size-xs);">
+          <vaadin-item
+            style="line-height: var(--lumo-line-height-s); font-size:var(--lumo-font-size-xs);"
+          >
             <vaadin-horizontal-layout
               style="align-items: center; justify-content: space-between;"
               theme="spacing"
@@ -364,7 +339,11 @@ export class DepositoDetalles extends LitElement {
               </vaadin-horizontal-layout>
 
               <vaadin-horizontal-layout style="margin-left:auto;">
-                <vaadin-text-field theme="align-right" readonly .value="${item.cantidad}">
+                <vaadin-text-field
+                  theme="align-right"
+                  readonly
+                  .value="${item.cantidad}"
+                >
                   <div slot="suffix">${item.insumo.unidad}</div>
                 </vaadin-text-field>
               </vaadin-horizontal-layout>
@@ -406,7 +385,7 @@ export class DepositoDetalles extends LitElement {
           style="align-items: center; width:100%; justify-content:space-around"
           theme="spacing"
         >
-          <vaadin-horizontal-layout style="width:25%;" theme='spacing'>
+          <vaadin-horizontal-layout style="width:25%;" theme="spacing">
             <vaadin-avatar
               .name="${item.deposito_origen.uuid === this.depo.uuid
                 ? "OUT"
@@ -424,12 +403,12 @@ export class DepositoDetalles extends LitElement {
               </span>
             </vaadin-vertical-layout>
           </vaadin-horizontal-layout>
-          <div style='width:20%'>
-          <span-pill style="--bg-color:green;">
-            ${item.referencia != null && item.referencia != ""
-              ? "Ref.:" + item.referencia
-              : translate("sin_referencia")}
-          </span-pill>
+          <div style="width:20%">
+            <span-pill style="--bg-color:green;">
+              ${item.referencia != null && item.referencia != ""
+                ? "Ref.:" + item.referencia
+                : translate("sin_referencia")}
+            </span-pill>
           </div>
           <div class="cantidad-insumos" style="font-weight:bold; width:20%">
             ${item.lineas.length} ${translate("insumos")}
