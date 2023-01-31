@@ -5,7 +5,7 @@ import {
   layer_visibility,
   actividades_y_ejecuciones,
 } from "../helpers";
-import { GeoJSONSource, Layer, Map } from "mapbox-gl";
+import { CircleLayer, GeoJSONSource, Layer, Map, SymbolLayer } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import mapbox_geocoder_style from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -17,8 +17,12 @@ import "@spectrum-web-components/menu/sp-menu-item.js";
 import "@spectrum-web-components/theme/sp-theme";
 import "@spectrum-web-components/theme/src/themes";
 import centroid from "@turf/centroid";
-import {  isToday, parseISO } from "date-fns";
-import { get } from "lit-translate";
+import { isToday, parseISO } from "date-fns";
+import { get, translate } from "lit-translate";
+import { listar_proveedores } from "../depositos/proveedores_funciones";
+import { map } from "lit/directives/map.js";
+import { Feature, FeatureCollection } from "@turf/helpers";
+import { Router } from "@vaadin/router";
 
 // https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
 // https://github.com/kepta/idly/wiki/examples#using-bing-satellite-map
@@ -139,7 +143,7 @@ export class MapaPrincipal extends LitElement {
   @property()
   settings: any;
 
-  private layers : Layer[]
+  private layers: Layer[];
 
   static override styles = [
     unsafeCSS(mapbox_geocoder_style),
@@ -197,7 +201,7 @@ export class MapaPrincipal extends LitElement {
       container: this.shadowRoot.getElementById("map"),
       //style: "mapbox://styles/mapbox/outdoors-v11",
       //style: mapStyle,
-      style:"mapbox://styles/mapbox/satellite-v9?optimize=true",
+      style: "mapbox://styles/mapbox/satellite-v9?optimize=true",
       center: [-59.2965, -35.1923],
       zoom: 14,
       attributionControl: true,
@@ -453,6 +457,9 @@ export class MapaPrincipal extends LitElement {
         });
       };
 
+      this.proveedores_layer_init();
+      this.cargar_marcadores();
+
       // console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
       this._redraw_map();
@@ -512,18 +519,17 @@ export class MapaPrincipal extends LitElement {
 
       let html = "";
       if (solo_futuros.length > 0) {
-        let act = solo_futuros[0].actividad
-        let proxima_actividad=
+        let act = solo_futuros[0].actividad;
+        let proxima_actividad =
           solo_futuros[0].actividad.detalles.fecha_ejecucion_tentativa;
         html += `<h4 style='color:green;'>Actividad de hoy: ${act.tipo.toUpperCase()}</h4>`;
-        html += '<ul>'
-        act.detalles.dosis.forEach((i)=>{
-          html += `<li style='color:red;'>${i.insumo.marca_comercial}</li>`
-        })
-        html += '</ul>'
-        
-      }else{
-        html += get('sin_actividades_para_hoy')
+        html += "<ul>";
+        act.detalles.dosis.forEach((i) => {
+          html += `<li style='color:red;'>${i.insumo.marca_comercial}</li>`;
+        });
+        html += "</ul>";
+      } else {
+        html += get("sin_actividades_para_hoy");
       }
 
       popup.setLngLat(coordenadas_centroide).setHTML(html).addTo(this.map);
@@ -554,6 +560,94 @@ export class MapaPrincipal extends LitElement {
     });
     this.dispatchEvent(event);
   };
+
+  proveedores_layer_init() {
+    this.map.addSource("proveedores-src", {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: [],
+      },
+    });
+    // Add a circle layer
+    this.map.addLayer({
+      id: "proveedores-layer",
+      type: "circle",
+      source: "proveedores-src",
+      paint: {
+        "circle-color": "#4264fb",
+        "circle-radius": 8,
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "#ffffff",
+      },
+    });
+
+    // Create a popup, but don't add it to the map yet.
+    const popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+    });
+
+    this.map.on("mouseenter", "proveedores-layer", (e) => {
+      // Change the cursor style as a UI indicator.
+      this.map.getCanvas().style.cursor = "pointer";
+
+      // Copy coordinates array.
+      const coordinates = e.features[0].geometry.coordinates.slice();
+      const description = e.features[0].properties.description;
+
+      // Ensure that if the map is zoomed out such that multiple
+      // copies of the feature are visible, the popup appears
+      // over the copy being pointed to.
+      while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+      }
+
+      // Populate the popup and set its coordinates
+      // based on the feature found.
+      popup.setLngLat(coordinates).setHTML(description).addTo(this.map);
+    });
+
+    this.map.on("mouseleave", "proveedores-layer", () => {
+      this.map.getCanvas().style.cursor = "";
+      popup.remove();
+    });
+
+    this.map.on(touchEvent, "proveedores-layer", (e) => {
+      this.map.getCanvas().style.cursor = "";
+      popup.remove();
+      Router.go(e.features[0].properties.url);
+    });
+  }
+
+  cargar_marcadores() {
+    listar_proveedores().then((des) => {
+      // Filtrar solo los que tengan posicion
+      let conpos = des.filter((d) => {
+        return d.posicion != null;
+      });
+
+      let features = conpos.map((d) => {
+        let feature: Feature = {
+          type: "Feature",
+          properties: {
+            item: d,
+            url: "/proveedores/" + d.uuid,
+            description: `<strong style='font-size:16px'>${d.nombre}</strong><br><div>${get("proveedor")}</div>`,
+          },
+          geometry: {
+            type: "Point",
+            coordinates: [d.posicion.lng, d.posicion.lat],
+          },
+        };
+        return feature;
+      });
+      let src = this.map.getSource("proveedores-src").setData({
+        type: "FeatureCollection",
+        features: features,
+      });
+    });
+  }
 
   _redraw_map = () => {
     let campos_source = this.map.getSource("campos");
