@@ -105,5 +105,17 @@
     "insumos_desde": "Insumos desde",
     "deposito": "Deposito",
     "seleccione_labor": "Seleccione Labor",
-    "motivos": "Motivos"
+    "motivos": "Motivos",
+    "nuevo_deposito": "Nuevo Deposito",
+    "direccion": "Dirección",
+    "nueva_transferencia": "Nueva Transferencia",
+    "referencia": "Referencia",
+    "lista_insumos": "Lista de Insumos",
+    "origen": "Origen",
+    "destino": "Destino",
+    "observaciones": "Observaciones",
+    "la_referencia_es_un_indicador": "Puede ser un de remito, factura, etc.",
+    "proveedor": "Proveedor",
+    "depositos_de_contratistas\n\n": "Depositos de Contratistas",
+    "proveedores": "Proveedores"
 }
