@@ -3,6 +3,7 @@ import { gbl_state } from "./state";
 import parseISO from "date-fns/parseISO";
 import { ro } from "date-fns/locale";
 import { Actividad } from "./depositos/depositos-types";
+import { Lote } from "./tipos/lotes";
 var img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
@@ -205,6 +206,33 @@ export const createMenuDots = (iconName: string) => {
   item.appendChild(icon);
   return item;
 }
+
+
+export const get_lote_detalles_by_uuid = async (uuid: string) => {
+  let campos_docs = await gbl_docs_starting('campos_',true).then(only_docs)
+
+  let result : Lote = null;
+  campos_docs.forEach((doc) => {
+    console.log(doc);
+    let _lote_doc : Lote = doc.lotes.find((lote) => lote.properties.uuid === uuid);
+
+    if (_lote_doc) {
+      result = _lote_doc;
+    }
+  });
+
+  return result;
+};
+
+export const get_campo_detalles_by_uuid = async (uuid: string) => {
+  let campos_docs = await gbl_docs_starting(uuid,true).then(only_docs)
+
+  let result : Object = null;
+  if (campos_docs.length>0) {
+    result = campos_docs;
+  }
+  return result;
+};
 
 export {
   emptyGJ,

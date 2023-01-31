@@ -5,6 +5,7 @@ import { gbl_state } from "./../../state";
 import { customElement, property, state } from "lit/decorators.js";
 import "../../modal-generico/modal-generico";
 import "../deposito-transferencias/deposito-nuevo-transferencias";
+import "./item-transferencia-ejecucion"
 
 import {
   LitElement,
@@ -195,6 +196,8 @@ export class DepositoDetalles extends LitElement {
         {
           text: get("editar"),
           callback: () => {
+
+             Router.go("")
             console.log("edit ejecucion");
           },
         },
@@ -256,44 +259,7 @@ export class DepositoDetalles extends LitElement {
                     </div>
 
                     ${this.ejecuciones.map(
-                      (item) => html`
-                        <vaadin-item
-                          style="line-height: var(--lumo-line-height-m);"
-                        >
-                          <vaadin-horizontal-layout
-                            style="align-items: center; justify-content: space-between;"
-                            theme="spacing"
-                          >
-                            <vaadin-horizontal-layout
-                              style="align-items: center;"
-                              theme="spacing"
-                            >
-                              <vaadin-avatar name="OUT"></vaadin-avatar>
-                              <vaadin-vertical-layout>
-                                <span> ${item.tipo} </span>
-                                <span
-                                  style="color: var(--lumo-secondary-text-color); font-size: var(--lumo-font-size-s);"
-                                >
-                                  ${item.detalles.fecha_ejecucion}
-                                </span>
-                              </vaadin-vertical-layout>
-                            </vaadin-horizontal-layout>
-
-                            <vaadin-horizontal-layout
-                              style="align-items: center;"
-                              theme="spacing"
-                            >
-                              <vaadin-menu-bar
-                                .items="${this.menu_depo_items_ejecucion(item)}"
-                                @item-selected=${this.menu_click}
-                                theme="icon"
-                              >
-                                <vaadin-tooltip slot="tooltip"></vaadin-tooltip>
-                              </vaadin-menu-bar>
-                            </vaadin-horizontal-layout>
-                          </vaadin-horizontal-layout>
-                        </vaadin-item>
-                      `
+                      (e)=>html`<item-transferencia-ejecucion .item=${e}></item-transferencia-ejecucion>`
                     )}
                   `,
                 })
