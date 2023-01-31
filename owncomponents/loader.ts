@@ -8,6 +8,9 @@ import createAuth0Client from "@auth0/auth0-spa-js";
 import uuid4 from "uuid4";
 import { Lenguage } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
+import es_json from "./i18n/es.json?url";
+import en_json from "./i18n/en.json?url";
+import pr_json from "./i18n/pr.json?url";
 
 import("./field-partner/field-partner-child");
 
@@ -39,8 +42,15 @@ export class AppLoader extends LitElement {
   ): void {
     /* Traducciones */
     registerTranslateConfig({
-      loader: (lang) =>
-        fetch(`/assets/i18n/${lang}.json`).then((res) => res.json()),
+      loader: (lang) => {
+        if (lang === "es") {
+          return fetch(es_json).then((res) => res.json());
+        } else if (lang === "en") {
+          return fetch(en_json).then((res) => res.json());
+        } else if (lang === "pr") {
+          return fetch(pr_json).then((res) => res.json());
+        }
+      },
     });
 
     this.init_the_whole_thing();
@@ -51,7 +61,7 @@ export class AppLoader extends LitElement {
     //   return html`Not Ready...Offline...Loading Local DBs`;
     // }
     return html`
-      ${(!this.ready || !this.map_ready)
+      ${!this.ready || !this.map_ready
         ? html`<div class="bg">
             <div class="hero-text">
               <h1>FieldPartner</h1>
@@ -61,7 +71,8 @@ export class AppLoader extends LitElement {
         : null}
       ${this.ready
         ? html`<field-partner-child
-            @map-loaded=${() => (this.map_ready = true)} .db=${this.db}
+            @map-loaded=${() => (this.map_ready = true)}
+            .db=${this.db}
           />`
         : null}
     `;
@@ -315,6 +326,9 @@ export class AppLoader extends LitElement {
     return gbl_state.user_db
       .get("campana_seleccionada")
       .then((campana_selec_doc) => {
+        // TODO Checkear que la campaña exista
+        // si no hay campaña crear una por defecto "Sin Campaña seleccionada"
+        // o toda la historia
         gbl_state.campana_seleccionada =
           campana_selec_doc.seleccionada as Campana;
         console.log("Campaña seleccionada", gbl_state.campana_seleccionada);
