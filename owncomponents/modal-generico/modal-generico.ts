@@ -86,6 +86,7 @@ export class ModalGenerico extends LitElement {
         display: flex;
         justify-content: space-between;
         border-bottom: 1px solid var(--lumo-contrast-90pct);
+        background-color: var(--lumo-primary-color-10pct);
         padding: var(--lumo-space-s);
       }
 
