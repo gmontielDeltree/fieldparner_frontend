@@ -1,4 +1,5 @@
 import {
+  borrar_deposito,
   listar_solo_depositos_contratistas,
 } from "./../depositos_funciones";
 import { customElement, property, state } from "lit/decorators.js";
@@ -30,6 +31,8 @@ import {
 } from "../depositos_funciones";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { createMenuDots } from "../../helpers";
+import { confirmar_eliminar } from "../../helpers/confirmar-eliminar";
+import { showNotification } from "../../helpers/notificaciones";
 
 @customElement("depositos-listado")
 export class DepositosListado extends LitElement {
@@ -123,9 +126,13 @@ export class DepositosListado extends LitElement {
         },
         {
           text: get("eliminar"),
-          callback: () => {
-            alert("TODO: En construccion");
-            console.log("Nuevo");
+          callback:
+          () => {
+            confirmar_eliminar(() => {
+              borrar_deposito(depo)
+                .then(() => showNotification(get("item_borrado")))
+                .then(() => this._loadTask.run());
+            });
           },
         },
       ],

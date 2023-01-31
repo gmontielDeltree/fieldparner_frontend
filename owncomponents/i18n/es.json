@@ -116,6 +116,10 @@
     "observaciones": "Observaciones",
     "la_referencia_es_un_indicador": "Puede ser un de remito, factura, etc.",
     "proveedor": "Proveedor",
-    "depositos_de_contratistas\n\n": "Depositos de Contratistas",
-    "proveedores": "Proveedores"
+    "depositos_de_contratistas": "Depositos de Contratistas",
+    "proveedores": "Proveedores",
+    "borrar_este_item": "Borrar Item",
+    "seguro_de_borrar_este_item": "¿Esta seguro de borrar?",
+    "item_borrado": "Item borrado",
+    "guardado": "Guardado"
 }

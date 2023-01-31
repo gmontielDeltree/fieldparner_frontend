@@ -1,5 +1,8 @@
-import { Proveedor } from './../tipos/proveedores';
-import { listar_proveedores } from './../depositos/proveedores_funciones';
+import { Proveedor } from "./../tipos/proveedores";
+import {
+  borrar_proveedor,
+  listar_proveedores,
+} from "./../depositos/proveedores_funciones";
 
 import { customElement, property, state } from "lit/decorators.js";
 import "../modal-generico/modal-generico";
@@ -19,9 +22,15 @@ import "@vaadin/menu-bar";
 import "@vaadin/tooltip";
 
 import { Deposito } from "../depositos/depositos-types";
-import { listar_depositos, nuevo_deposito } from "../depositos/depositos_funciones";
+import {
+  listar_depositos,
+  nuevo_deposito,
+} from "../depositos/depositos_funciones";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { createMenuDots } from "./../helpers";
+import { confirmar_eliminar } from "../helpers/confirmar-eliminar";
+import { borrar_transfer } from "../depositos/transferencias_funciones";
+import { showNotification } from "../helpers/notificaciones";
 
 @customElement("proveedores-lista")
 export class ProveedoresLista extends LitElement {
@@ -34,7 +43,7 @@ export class ProveedoresLista extends LitElement {
   private _loadTask = new Task(
     this,
     () => listar_proveedores(),
-  () => [this.location, this.openedModal]
+    () => [this.location, this.openedModal]
   );
 
   private menu_items = [
@@ -45,7 +54,7 @@ export class ProveedoresLista extends LitElement {
         {
           text: get("nuevo"),
           callback: () => {
-            Router.go('proveedores/add')
+            Router.go("proveedores/add");
             console.log("Nuevo");
           },
         },
@@ -62,15 +71,18 @@ export class ProveedoresLista extends LitElement {
         {
           text: get("editar"),
           callback: () => {
-            Router.go('proveedores/' + proveedor.uuid + '/edit')
+            Router.go("proveedores/" + proveedor.uuid + "/edit");
             console.log("edit");
           },
         },
         {
           text: get("eliminar"),
           callback: () => {
-            alert("TODO: En construccion")
-            console.log("Nuevo");
+            confirmar_eliminar(() => {
+              borrar_proveedor(proveedor)
+                .then(() => showNotification(get("item_borrado")))
+                .then(() => this._loadTask.run());
+            });
           },
         },
       ],
@@ -87,7 +99,7 @@ export class ProveedoresLista extends LitElement {
 
   render() {
     return html`
-      <modal-generico .modalOpened=${this.openedModal} backurl='/'>
+      <modal-generico .modalOpened=${this.openedModal} backurl="/">
         <h4 slot="title">${translate("proveedores")}</h4>
         <div slot="menu" s>
           <vaadin-menu-bar
@@ -95,12 +107,11 @@ export class ProveedoresLista extends LitElement {
             @item-selected=${this.menu_click}
             theme="icon"
           >
-          
             <vaadin-tooltip slot="tooltip"></vaadin-tooltip>
           </vaadin-menu-bar>
         </div>
         <div slot="body">
-            <slot></slot>
+          <slot></slot>
           ${
             this._loadTask.render({
               pending: () => html`${translate("cargando")}`,
@@ -114,8 +125,13 @@ export class ProveedoresLista extends LitElement {
                         style="align-items: center; justify-content: space-between;"
                         theme="spacing"
                       >
-                        <vaadin-horizontal-layout style="align-items: center;" theme="spacing">
-                          <vaadin-avatar .name="${proveedor.nombre}"></vaadin-avatar>
+                        <vaadin-horizontal-layout
+                          style="align-items: center;"
+                          theme="spacing"
+                        >
+                          <vaadin-avatar
+                            .name="${proveedor.nombre}"
+                          ></vaadin-avatar>
                           <vaadin-vertical-layout>
                             <span> ${proveedor.nombre} </span>
                             <span
@@ -126,7 +142,10 @@ export class ProveedoresLista extends LitElement {
                           </vaadin-vertical-layout>
                         </vaadin-horizontal-layout>
 
-                        <vaadin-horizontal-layout style="align-items: center;" theme="spacing">
+                        <vaadin-horizontal-layout
+                          style="align-items: center;"
+                          theme="spacing"
+                        >
                           <vaadin-button
                             @click=${() => {
                               Router.go(
@@ -147,7 +166,6 @@ export class ProveedoresLista extends LitElement {
                             <vaadin-tooltip slot="tooltip"></vaadin-tooltip>
                           </vaadin-menu-bar>
                         </vaadin-horizontal-layout>
-
                       </vaadin-horizontal-layout>
                     </vaadin-item>
                   `
@@ -163,7 +181,7 @@ export class ProveedoresLista extends LitElement {
 }
 
 declare global {
-    interface HTMLElementTagNameMap {
-      "proveedores-lista": ProveedoresLista;
-    }
+  interface HTMLElementTagNameMap {
+    "proveedores-lista": ProveedoresLista;
   }
+}
