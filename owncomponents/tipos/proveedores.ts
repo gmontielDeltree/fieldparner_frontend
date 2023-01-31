@@ -1,4 +1,5 @@
 import { LastUpdateTag, CreatedTag } from '../depositos/depositos-types';
+import { LngLatLike } from 'mapbox-gl';
 export interface Proveedor {
 	_id: string,
 	_rev ?: string,
@@ -6,6 +7,7 @@ export interface Proveedor {
 	nombre: string,
 	cuit: string,
 	direccion: string,
+	posicion?: LngLatLike,
 	telefono: string,
 	obs: string,
 	last_updated: LastUpdateTag,

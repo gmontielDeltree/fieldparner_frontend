@@ -23,6 +23,7 @@ import {
   nuevo_proveedor,
 } from "../depositos/proveedores_funciones";
 import { Route, RouteWithRedirect } from "@vaadin/router";
+import "../map-picker/map-picker"
 
 @customElement("proveedores-editor")
 export class ProveedoresEditor extends LitElement {
@@ -116,7 +117,7 @@ export class ProveedoresEditor extends LitElement {
 
   private renderDialog = () => html`
     <vaadin-vertical-layout
-      style="align-items: stretch; width: 18rem; max-width: 100%;"
+      style="align-items: stretch; width: 25rem; max-width: 100%;"
     >
       <vaadin-text-field
         autoselect
@@ -137,8 +138,12 @@ export class ProveedoresEditor extends LitElement {
         this.validar()
         }}
       >
-    <vaadin-button @click=${this.pick_desde_mapa}>Mapa</vaadin-button>
     </vaadin-text-field>
+    <map-picker .posicion=${this.proveedor.posicion} @input=${
+      (e)=>{
+        this.proveedor.posicion = e.detail
+      }
+    }></map-picker>
     </vaadin-vertical-layout>
   `;
 

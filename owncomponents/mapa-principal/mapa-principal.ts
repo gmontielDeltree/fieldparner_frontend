@@ -1,4 +1,5 @@
 import { LitElement, html, unsafeCSS, css } from "lit";
+import { property } from "lit/decorators.js";
 import {
   touchEvent,
   layer_visibility,
@@ -6,24 +7,18 @@ import {
 } from "../helpers";
 import { GeoJSONSource, Layer, Map } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
-
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
-import bbox from "@turf/bbox";
-import { property } from "lit/decorators.js";
 import mapbox_geocoder_style from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import mapbox_style from "mapbox-gl/dist/mapbox-gl.css?inline";
 import mapbox_draw_style from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css?inline";
+
 import "@spectrum-web-components/action-menu/sp-action-menu.js";
 import "@spectrum-web-components/menu/sp-menu-item.js";
-
 import "@spectrum-web-components/theme/sp-theme";
 import "@spectrum-web-components/theme/src/themes";
-import { tr } from "date-fns/locale";
 import centroid from "@turf/centroid";
-import { isFuture, isPast, isToday, parseISO } from "date-fns";
+import {  isToday, parseISO } from "date-fns";
 import { get } from "lit-translate";
-import { MapboxLayers } from "plotly.js";
 
 // https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
 // https://github.com/kepta/idly/wiki/examples#using-bing-satellite-map
