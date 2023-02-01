@@ -10,6 +10,7 @@ export const showNotification = (message: string, theme?: string) => {
     if (theme) {
       notification.setAttribute("theme", theme);
     }
+   //notification.setAttribute("position","top-center")
     notification.opened = true;
     window.document.body.appendChild(notification);
     notification.addEventListener('opened-changed', () => window.document.body.removeChild(notification));

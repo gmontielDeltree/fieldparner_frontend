@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS } from "lit";
+import { LitElement, html, unsafeCSS, css } from "lit";
 import { map } from "lit/directives/map.js";
 import { Router } from "@vaadin/router";
 import { StateController } from "@lit-app/state";
@@ -98,7 +98,9 @@ const motivos_2_str = (motivos) => {
 };
 
 export class LoteOffcanvasSide extends LitElement {
-  static override styles = unsafeCSS(bootstrap);
+  static override styles = [
+    unsafeCSS(bootstrap)
+  ];
 
   bindState = new StateController(this, gbl_state);
 
@@ -217,7 +219,7 @@ export class LoteOffcanvasSide extends LitElement {
 
       gbl_state.map.flyTo({
         center: posicion,
-        padding: { left:500, bottom: 200 },
+        padding: { left: 500, bottom: 200 },
         zoom: 15,
       });
     });
@@ -584,7 +586,7 @@ export class LoteOffcanvasSide extends LitElement {
         aria-labelledby="offcanvasBottomLabel"
         data-bs-scroll="true"
         data-bs-backdrop="false"
-        style="--bs-offcanvas-width: 800px;"
+        style="--bs-offcanvas-width: 800px;--bs-offcanvas-zindex: 500;"
       >
         <div class="offcanvas-header py-2">
           <button

@@ -98,7 +98,7 @@ export const routes = [
     component: "ingenieros-listado",
     children: [
       { path: "/add", component: "ingenieros-editor" },
-      { path: "/:uuid/edit", component: "ingeniero-editor" },
+      { path: "/:uuid/edit", component: "ingenieros-editor" },
     ],
   },
   { path: "/ingenieros/:uuid", component: "ingenieros-detalles" },
