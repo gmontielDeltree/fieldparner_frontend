@@ -11,6 +11,11 @@ import { Insumo } from "../insumos/insumos-types";
 import { tipos_siembra } from '../jsons/tipos_siembra';
 import { Proveedor } from '../tipos/proveedores';
 
+interface Ingeniero {
+  nombre: string
+
+}
+
 interface IHash<T> {
   [index: string]: T;
 }
@@ -31,6 +36,7 @@ interface Deposito {
   proveedor_asociado ? : Proveedor,
   posicion ?: LngLatLike; //Lng Lat
   direccion ?: string;
+  tipo: "virtual" | "fisico";
   car ?: string;
   /** iso dates zulu */
   last_updated : LastUpdateTag
@@ -121,8 +127,10 @@ type LineaDosisEjecucion = {
 type DetallesAplicacion = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
+  ingeniero: Ingeniero
   dosis: LineaDosis[];
 };
+
 
 type DetallesCosecha = {
   fecha_ejecucion_tentativa: string;
@@ -167,6 +175,7 @@ interface CondicionesEjecucion {
 
 interface Detalles {
   fecha_ejecucion_tentativa: string;
+  ingeniero: Ingeniero;
   hectareas: number;
   dosis: LineaDosis[];
   costo_labor: LineaLabor[];
@@ -182,6 +191,7 @@ interface Detalles {
 }
 
 interface DetallesEjecucion {
+  ingeniero: Ingeniero;
   fecha_ejecucion: string;
   fecha_hora_inicio: string;
   fecha_hora_fin: string; 
@@ -250,6 +260,7 @@ const get_empty_aplicacion = () => {
     estado: 0,
     detalles: {
       fecha_ejecucion_tentativa: "",
+      ingeniero : null,
       hectareas: 0,
       motivos: "",
       dosis: [],
@@ -278,6 +289,7 @@ const get_empty_ejecucion = () => {
     comentario: "",
     estado: "pendiente",
     detalles: {
+      ingeniero:null,
       fecha_ejecucion: "",
       fecha_hora_fin: "",
       fecha_hora_inicio:"",
