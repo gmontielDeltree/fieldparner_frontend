@@ -1,5 +1,19 @@
 import uuid4 from 'uuid4'
 
+interface Cultivo{
+  uuid: string,
+  nombre:string,
+}
+
+interface Tipo{
+  uuid: string,
+  nombre:string,
+}
+interface Subtipo{
+  uuid: string,
+  nombre:string,
+}
+
 interface CultivoAplicacion {
   cultivo : any;
   uuid: string;
@@ -9,6 +23,7 @@ interface CultivoAplicacion {
   dosis_max: number;
   dosis_sugerida: number;
 }
+
 
 interface Insumo {
   _id: string,
@@ -21,7 +36,7 @@ interface Insumo {
   unidad: string;
   precio: number;
   se_aplica_a: CultivoAplicacion[];
-  
+  cultivo ?:Cultivo; // Si se trata de una semilla
 }
 
 const get_empty_insumo = () => {
