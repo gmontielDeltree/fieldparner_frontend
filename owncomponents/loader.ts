@@ -3,7 +3,7 @@ import { LitElement, PropertyValueMap, html, css } from "lit";
 import { base_url, gbl_docs_starting, only_docs } from "./helpers";
 import { gbl_state } from "./state";
 import { get, translate, use, registerTranslateConfig } from "lit-translate";
-
+import "@vaadin/button"
 import createAuth0Client from "@auth0/auth0-spa-js";
 import uuid4 from "uuid4";
 import { Lenguage } from "./tipos/tipos-varios";
@@ -67,6 +67,11 @@ export class AppLoader extends LitElement {
               <h1>FieldPartner</h1>
               <p>by QTS Agro</p>
             </div>
+            ${(window.location.hostname === "agrotools.netlify.app")
+              ? html`<vaadin-button class='login-button' theme='primary success' @click=${this.loginet}
+                  >Login</vaadin-button
+                >`
+              : null}
           </div>`
         : null}
       ${this.ready
