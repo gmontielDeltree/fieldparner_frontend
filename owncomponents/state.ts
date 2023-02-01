@@ -1,4 +1,5 @@
-import {State, property} from '@lit-app/state'
+import { LngLat } from 'mapbox-gl';
+import {State, property, storage} from '@lit-app/state'
 import { Router } from '@vaadin/router';
 import { Map } from 'mapbox-gl'
 import PouchDB from "pouchdb";
@@ -8,7 +9,9 @@ import { Campana } from './tipos/tipos-varios';
 
 // declate a state
 class MyState extends State {
- @property({value: 'Bob'}) name  
+ @storage({key: 'ultima_posicion_key'})
+ @property({value: {lng:-59.2965, lat:-35.1923},type:Object}) ultima_posicion : LngLat
+
  @property() map : Map
  @property() draw : MapboxDraw
  @property() db : PouchDB.Database

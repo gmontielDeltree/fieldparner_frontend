@@ -1,3 +1,4 @@
+import { gbl_state } from './../state';
 import { depositos_update, depositos_layer_init } from './depositos-layer';
 import { LitElement, html, unsafeCSS, css } from "lit";
 import { property } from "lit/decorators.js";
@@ -198,12 +199,13 @@ export class MapaPrincipal extends LitElement {
   }
 
   firstUpdated() {
+
     this.map = new Map({
       container: this.shadowRoot.getElementById("map"),
       //style: "mapbox://styles/mapbox/outdoors-v11",
       //style: mapStyle,
       style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
-      center: [-59.2965, -35.1923],
+      center: gbl_state.ultima_posicion,
       zoom: 14,
       attributionControl: true,
       preserveDrawingBuffer: false,
@@ -552,6 +554,10 @@ export class MapaPrincipal extends LitElement {
     this.map.on("mouseleave", ["seleccion_lotes_fill", "campos"], (e) => {
       this.map.getCanvas().style.cursor = "";
     });
+
+    this.map.on('move',(e)=>{
+      gbl_state.ultima_posicion = this.map.getCenter()
+    })
   }
 
   sendEvent = (name, details) => {
