@@ -1,7 +1,7 @@
 import { Router } from "@vaadin/router";
 import { guardar_proveedor } from "./proveedores-funciones";
 import { RouterLocation } from "@vaadin/router";
-import { Proveedor } from "./../tipos/proveedores";
+import { Proveedor as Ingeniero } from "./../tipos/proveedores";
 import { css, html, LitElement, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
@@ -18,15 +18,13 @@ import {
 import { Deposito } from "../depositos/depositos-types";
 import { get, translate } from "lit-translate";
 import { showNotification } from "../helpers/notificaciones";
-import {
-  cargar_proveedor,
-  nuevo_proveedor,
-} from "./proveedores-funciones";
+
 import { Route, RouteWithRedirect } from "@vaadin/router";
 import "../map-picker/map-picker"
+import { nuevo_ingeniero, cargar_ingeniero, guardar_ingeniero } from './ingenieros-funciones';
 
-@customElement("proveedores-editor")
-export class ProveedoresEditor extends LitElement {
+@customElement("ingenieros-editor")
+export class IngenierosEditor extends LitElement {
   @property()
   opened: boolean = true;
 
@@ -37,7 +35,7 @@ export class ProveedoresEditor extends LitElement {
   location: RouterLocation;
 
   @state()
-  proveedor: Proveedor = nuevo_proveedor();
+  ingeniero: Ingeniero = nuevo_ingeniero();
 
   @state()
   valido: boolean = false;
@@ -49,12 +47,12 @@ export class ProveedoresEditor extends LitElement {
       let is_edit = this.location.pathname.includes("edit");
 
       if (!is_edit) {
-        this.proveedor = nuevo_proveedor();
+        this.ingeniero = nuevo_ingeniero();
       } else {
         //Edit
-        cargar_proveedor(this.location.params.uuid as string).then(
-          (proveedor) => {
-            this.proveedor = proveedor;
+        cargar_ingeniero(this.location.params.uuid as string).then(
+          (ing) => {
+            this.ingeniero = ing;
           }
         );
       }
@@ -64,10 +62,10 @@ export class ProveedoresEditor extends LitElement {
   }
 
   emit_nuevo() {
-    guardar_proveedor(this.proveedor)
+    guardar_ingeniero(this.ingeniero)
       .then(() => {
-        showNotification(get("proveedor_guardado"), "success");
-        Router.go("/proveedores");
+        showNotification(get("ingeniero_guardado"), "success");
+        Router.go("/ingenieros");
       })
       .catch((e) => {
         console.log(e);
@@ -75,7 +73,7 @@ export class ProveedoresEditor extends LitElement {
       });
     //this.dialogOpened = false;
     this.dispatchEvent(
-      new CustomEvent("nuevo-proveedor", { bubbles: true, composed: true })
+      new CustomEvent("nuevo-ingeniero", { bubbles: true, composed: true })
     );
   }
 
@@ -95,7 +93,7 @@ export class ProveedoresEditor extends LitElement {
       <vaadin-dialog
         header-title=${this.edit
           ? translate("edit")
-          : translate("nuevo_proveedor")}
+          : translate("nuevo_ingeniero")}
         .opened="${this.opened}"
         no-close-on-esc
         no-close-on-outside-click
@@ -105,7 +103,7 @@ export class ProveedoresEditor extends LitElement {
         }}"
         ${
           dialogRenderer(this.renderDialog, [
-            this.opened, this.proveedor
+            this.opened, this.ingeniero
           ]) /**hay que poner una prop sino no se rerender */
         }
         ${dialogFooterRenderer(this.renderFooter, [this.valido])}
@@ -123,25 +121,25 @@ export class ProveedoresEditor extends LitElement {
         autoselect
         required
         label="${translate("nombre")}"
-        .value=${this.proveedor.nombre}
+        .value=${this.ingeniero.nombre}
         @keypress=${() => console.log("keypresssss")}
         @input=${(e) => {
-          this.proveedor.nombre = e.target.value;
+          this.ingeniero.nombre = e.target.value;
           this.validar();
         }}
       ></vaadin-text-field>
       <vaadin-text-field
         autoselect
         label="${translate("direccion")}"
-        .value=${this.proveedor.direccion}
-        @input=${(e) => {this.proveedor.direccion = e.target.value
+        .value=${this.ingeniero.direccion}
+        @input=${(e) => {this.ingeniero.direccion = e.target.value
         this.validar()
         }}
       >
     </vaadin-text-field>
-    <map-picker .posicion=${this.proveedor.posicion} @input=${
+    <map-picker .posicion=${this.ingeniero.posicion} @input=${
       (e)=>{
-        this.proveedor.posicion = e.detail
+        this.ingeniero.posicion = e.detail
       }
     }></map-picker>
     </vaadin-vertical-layout>
@@ -174,13 +172,13 @@ export class ProveedoresEditor extends LitElement {
 
   validar() {
     // Nombre es nulo o igual a de ""
-    let c1 = (this.proveedor.nombre == null ) || (this.proveedor.nombre === "")
+    let c1 = (this.ingeniero.nombre == null ) || (this.ingeniero.nombre === "")
     this.valido = !c1
   }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "proveedores-editor": ProveedoresEditor;
+    "ingenieros-editor": IngenierosEditor;
   }
 }

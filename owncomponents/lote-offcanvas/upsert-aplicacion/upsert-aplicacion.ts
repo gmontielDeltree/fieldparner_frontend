@@ -460,7 +460,7 @@ export class UpsertAplicacion extends LitElement {
                 }}
               >
                 <vaadin-tabs slot="tabs">
-                  <vaadin-tab id="contratista-tab">Contratista</vaadin-tab>
+                  <vaadin-tab id="contratista-tab">Personal</vaadin-tab>
                   <vaadin-tab id="insumos-tab">Insumos</vaadin-tab>
                   ${this.tipo === "siembra"
                     ? html`<vaadin-tab id="otros-datos-tab"
@@ -475,6 +475,24 @@ export class UpsertAplicacion extends LitElement {
                 <!-- Contratista -->
                 <div tab="contratista-tab">
                   <vaadin-form-layout>
+                  <vaadin-combo-box
+                      label="${translate("ingeniero")}"
+                      item-label-path="nombre"
+                      item-value-path="uuid"
+                      helper-text=${this.ingenieros?.length === 0
+                        ? translate("no_hay_ingenieros")
+                        : ""}
+                      required
+                      error-message=${translate("campo_requerido")}
+                      colspan="2"
+                      .selectedItem=${this.actividad.ingeniero}
+                      .items="${this.ingenieros}"
+                      @selected-item-changed=${(e) => {
+                        this.actividad.ingenieros = e.detail.value;
+                      }}
+                    ></vaadin-combo-box>
+
+
                     <vaadin-combo-box
                       label="Contratista"
                       item-label-path="nombre"

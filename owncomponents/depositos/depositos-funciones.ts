@@ -1,4 +1,4 @@
-import { listar_depositos } from "./depositos_funciones";
+import { listar_depositos } from "./depositos-funciones";
 import { gbl_state } from "../state";
 import { Deposito, Ejecucion } from "./depositos-types";
 import {

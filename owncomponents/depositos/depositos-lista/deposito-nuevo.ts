@@ -7,7 +7,7 @@ import "@vaadin/text-field";
 import "@vaadin/vertical-layout";
 import { dialogFooterRenderer, dialogRenderer } from "@vaadin/dialog/lit.js";
 import type { DialogOpenedChangedEvent } from "@vaadin/dialog";
-import { nuevo_deposito, guardar_deposito } from "../depositos_funciones";
+import { nuevo_deposito, guardar_deposito } from "../depositos-funciones";
 import { Deposito } from "../depositos-types";
 import { get, translate } from "lit-translate";
 import { showNotification } from "../../helpers/notificaciones";

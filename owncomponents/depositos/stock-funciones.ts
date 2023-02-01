@@ -1,4 +1,4 @@
-import { listar_transferencias } from "./transferencias_funciones";
+import { listar_transferencias } from "./transferencias-funciones";
 import { LineaStock, Stock } from "../tipos/depositos-transferencias";
 import { gbl_state } from "../state";
 import { gbl_docs_starting, only_docs } from "../helpers";

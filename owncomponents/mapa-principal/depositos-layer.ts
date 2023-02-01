@@ -2,7 +2,7 @@ import { get } from 'lit-translate';
 import { Feature } from "@turf/helpers";
 import { Router } from "@vaadin/router";
 import mapboxgl from "mapbox-gl";
-import { listar_depositos } from "../depositos/depositos_funciones";
+import { listar_depositos } from "../depositos/depositos-funciones";
 import { touchEvent } from "../helpers";
 
 export const depositos_layer_init = (map) => {

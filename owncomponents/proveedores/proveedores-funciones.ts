@@ -2,9 +2,9 @@ import {
   nuevo_deposito,
   guardar_deposito,
   cargar_depo,
-} from "./depositos_funciones";
+} from "../depositos/depositos-funciones";
 import { gbl_state } from "../state";
-import { Deposito } from "./depositos-types";
+import { Deposito } from "../depositos/depositos-types";
 import {
   deepcopy,
   gbl_docs_starting,

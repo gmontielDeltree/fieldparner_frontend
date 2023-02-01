@@ -1,9 +1,3 @@
-import { Proveedor } from "./../tipos/proveedores";
-import {
-  borrar_proveedor,
-  listar_proveedores,
-} from "./proveedores-funciones";
-
 import { customElement, property, state } from "lit/decorators.js";
 import "../modal-generico/modal-generico";
 
@@ -21,19 +15,16 @@ import "@vaadin/vertical-layout";
 import "@vaadin/menu-bar";
 import "@vaadin/tooltip";
 
-import { Deposito } from "../depositos/depositos-types";
-import {
-  listar_depositos,
-  nuevo_deposito,
-} from "../depositos/depositos-funciones";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { createMenuDots } from "./../helpers";
 import { confirmar_eliminar } from "../helpers/confirmar-eliminar";
 import { borrar_transfer } from "../depositos/transferencias-funciones";
 import { showNotification } from "../helpers/notificaciones";
+import { listar_ingenieros, borrar_ingeniero } from "./ingenieros-funciones";
+import { Ingeniero } from "../tipos/ingenieros";
 
-@customElement("proveedores-lista")
-export class ProveedoresLista extends LitElement {
+@customElement("ingenieros-listado")
+export class IngenierosListado extends LitElement {
   @property()
   openedModal: boolean = true;
 
@@ -42,7 +33,7 @@ export class ProveedoresLista extends LitElement {
 
   private _loadTask = new Task(
     this,
-    () => listar_proveedores(),
+    () => listar_ingenieros(),
     () => [this.location, this.openedModal]
   );
 
@@ -54,7 +45,7 @@ export class ProveedoresLista extends LitElement {
         {
           text: get("nuevo"),
           callback: () => {
-            Router.go("proveedores/add");
+            Router.go("ingenieros/add");
             console.log("Nuevo");
           },
         },
@@ -63,7 +54,7 @@ export class ProveedoresLista extends LitElement {
   ];
 
   /* Tiene que ser una funcion para que genere los html elements del boton */
-  private menu_proveedor_items = (proveedor: Proveedor) => [
+  private menu_ingeniero_items = (ing: Ingeniero) => [
     {
       component: createMenuDots("ellipsis-dots-v"),
       tooltip: get("mas"),
@@ -71,7 +62,7 @@ export class ProveedoresLista extends LitElement {
         {
           text: get("editar"),
           callback: () => {
-            Router.go("proveedores/" + proveedor.uuid + "/edit");
+            Router.go("ingenieros/" + ing.uuid + "/edit");
             console.log("edit");
           },
         },
@@ -79,7 +70,7 @@ export class ProveedoresLista extends LitElement {
           text: get("eliminar"),
           callback: () => {
             confirmar_eliminar(() => {
-              borrar_proveedor(proveedor)
+              borrar_ingeniero(ing)
                 .then(() => showNotification(get("item_borrado")))
                 .then(() => this._loadTask.run());
             });
@@ -100,7 +91,7 @@ export class ProveedoresLista extends LitElement {
   render() {
     return html`
       <modal-generico .modalOpened=${this.openedModal} backurl="/">
-        <h4 slot="title">${translate("proveedores")}</h4>
+        <h4 slot="title">${translate("ingenieros")}</h4>
         <div slot="menu" s>
           <vaadin-menu-bar
             .items="${this.menu_items}"
@@ -111,7 +102,7 @@ export class ProveedoresLista extends LitElement {
           </vaadin-menu-bar>
         </div>
         <div slot="body">
-          <slot></slot>
+          <slot></slot> <!--para renderizar childs-->
           ${
             this._loadTask.render({
               pending: () => html`${translate("cargando")}`,
@@ -149,7 +140,7 @@ export class ProveedoresLista extends LitElement {
                           <vaadin-button
                             @click=${() => {
                               Router.go(
-                                "/proveedores/" +
+                                "/ingenieros/" +
                                   proveedor.uuid +
                                   "?from=" +
                                   this.location.pathname
@@ -159,7 +150,7 @@ export class ProveedoresLista extends LitElement {
                           >
 
                           <vaadin-menu-bar
-                            .items="${this.menu_proveedor_items(proveedor)}"
+                            .items="${this.menu_ingeniero_items(proveedor)}"
                             @item-selected=${this.menu_click}
                             theme="icon"
                           >
@@ -182,6 +173,6 @@ export class ProveedoresLista extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "proveedores-lista": ProveedoresLista;
+    "ingenieros-listado": IngenierosListado;
   }
 }

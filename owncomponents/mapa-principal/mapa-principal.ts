@@ -21,7 +21,7 @@ import "@spectrum-web-components/theme/src/themes";
 import centroid from "@turf/centroid";
 import { isToday, parseISO } from "date-fns";
 import { get, translate } from "lit-translate";
-import { listar_proveedores } from "../depositos/proveedores_funciones";
+import { listar_proveedores } from "../proveedores/proveedores-funciones";
 import { map } from "lit/directives/map.js";
 import { Feature, FeatureCollection } from "@turf/helpers";
 import { Router } from "@vaadin/router";

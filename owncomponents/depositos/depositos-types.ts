@@ -10,11 +10,9 @@ import { deepcopy } from "../helpers";
 import { Insumo } from "../insumos/insumos-types";
 import { tipos_siembra } from '../jsons/tipos_siembra';
 import { Proveedor } from '../tipos/proveedores';
+import { Ingeniero } from '../tipos/ingenieros';
 
-interface Ingeniero {
-  nombre: string
 
-}
 
 interface IHash<T> {
   [index: string]: T;
@@ -127,7 +125,6 @@ type LineaDosisEjecucion = {
 type DetallesAplicacion = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
-  ingeniero: Ingeniero
   dosis: LineaDosis[];
 };
 
@@ -175,7 +172,6 @@ interface CondicionesEjecucion {
 
 interface Detalles {
   fecha_ejecucion_tentativa: string;
-  ingeniero: Ingeniero;
   hectareas: number;
   dosis: LineaDosis[];
   costo_labor: LineaLabor[];
@@ -191,7 +187,6 @@ interface Detalles {
 }
 
 interface DetallesEjecucion {
-  ingeniero: Ingeniero;
   fecha_ejecucion: string;
   fecha_hora_inicio: string;
   fecha_hora_fin: string; 
@@ -218,6 +213,7 @@ interface Actividad {
   tipo: string;
   lote_uuid: string;
   contratista: Contratista;
+  ingeniero: Ingeniero;
   comentario: string;
   adjuntos: string[];
   estado: number;
@@ -237,6 +233,7 @@ interface Ejecucion {
   _rev?: string;
   uuid: string;
   contratista: Contratista,
+  ingeniero: Ingeniero,
   ts_generacion: string;
   tipo: string;
   lote_uuid: string;

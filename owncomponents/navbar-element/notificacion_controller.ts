@@ -1,4 +1,4 @@
-import { listar_depositos } from './../depositos/depositos_funciones';
+import { listar_depositos } from '../depositos/depositos-funciones';
 import { ReactiveController, ReactiveControllerHost } from "lit";
 import { Notificacion } from "./notificacion";
 import gbl_state, { gblStateLoaded } from "../state";
@@ -8,7 +8,7 @@ import parseISO from "date-fns/parseISO";
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import es from "date-fns/locale/es";
 import { isThisWeek } from "date-fns/esm";
-import { calcular_stock, depo_tiene_stock_negativo } from '../depositos/stock_funciones';
+import { calcular_stock, depo_tiene_stock_negativo } from '../depositos/stock-funciones';
 
 
 export class NotificacionController implements ReactiveController {

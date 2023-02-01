@@ -1,4 +1,4 @@
-import { listar_depositos } from "./../../depositos/depositos_funciones";
+import { listar_depositos } from "../../depositos/depositos-funciones";
 import { Router, RouterLocation } from "@vaadin/router";
 import {
   LitElement,

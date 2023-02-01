@@ -2,7 +2,7 @@ import {
   nuevo_deposito,
   guardar_deposito,
   cargar_depo,
-} from "./../depositos/depositos_funciones";
+} from "../depositos/depositos-funciones";
 import { LitElement, html, unsafeCSS, render } from "lit";
 import { property, state } from "lit/decorators.js";
 import "@vaadin/form-layout";

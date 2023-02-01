@@ -1,9 +1,9 @@
 import {
   cargar_proveedor,
   nuevo_proveedor,
-} from "./../depositos/proveedores_funciones";
+} from "./proveedores-funciones";
 import { Proveedor } from "./../tipos/proveedores";
-import { listar_ejecuciones_por_depo } from "../depositos/depositos_funciones";
+import { listar_ejecuciones_por_depo } from "../depositos/depositos-funciones";
 import { gbl_state } from "../state";
 import { customElement, property, state } from "lit/decorators.js";
 import "../modal-generico/modal-generico";
@@ -32,7 +32,7 @@ import {
   listar_depositos,
   nuevo_deposito,
   cargar_depo,
-} from "../depositos/depositos_funciones";
+} from "../depositos/depositos-funciones";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { createMenuDots } from "../helpers";
 import {
@@ -40,8 +40,8 @@ import {
   LineaStock,
   Stock,
 } from "../tipos/depositos-transferencias";
-import { listar_transferencias } from "../depositos/transferencias_funciones";
-import { calcular_stock } from "../depositos/stock_funciones";
+import { listar_transferencias } from "../depositos/transferencias-funciones";
+import { calcular_stock } from "../depositos/stock-funciones";
 import { map } from "lit/directives/map.js";
 import { showNotification } from "../helpers/notificaciones";
 

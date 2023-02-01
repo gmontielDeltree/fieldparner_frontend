@@ -1,6 +1,9 @@
 import "./proveedores/proveedores-lista";
 import "./proveedores/proveedores-editor";
 import "./proveedores/proveedores-detalles";
+import './ingenieros/ingenieros-listado'
+import './ingenieros/ingenieros-editor'
+import './ingenieros/ingenieros-detalles'
 
 export const routes = [
   { path: "/", component: "null-component" },
@@ -72,16 +75,16 @@ export const routes = [
         path: "/:uuid/edit",
         component: "proveedores-editor",
       },
-     
     ],
   },
   {
     path: "/proveedores/:uuid",
     component: "proveedores-detalles",
   },
-  { // Edit transfer
-    path : "/transfer/:uuid/edit",
-    component: "deposito-nuevo-transferencias"
+  {
+    // Edit transfer
+    path: "/transfer/:uuid/edit",
+    component: "deposito-nuevo-transferencias",
   },
   { path: "/insumos", component: "insumos-lista" },
   { path: "/rights/:uuid_workspace", component: "workspace-rights" },
@@ -90,5 +93,14 @@ export const routes = [
     path: "/device/:uuid/dashboard/:date",
     component: "device-route-handler",
   },
+  {
+    path: "/ingenieros",
+    component: "ingenieros-listado",
+    children: [
+      { path: "/add", component: "ingenieros-editor" },
+      { path: "/:uuid/edit", component: "ingeniero-editor" },
+    ],
+  },
+  { path: "/ingenieros/:uuid", component: "ingenieros-detalles" },
   { path: "/ejecucion", component: "null" },
 ];
