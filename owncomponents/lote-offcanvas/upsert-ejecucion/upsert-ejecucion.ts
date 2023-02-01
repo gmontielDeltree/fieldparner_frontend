@@ -71,6 +71,7 @@ import "./grid_insumos_exe";
 import { labores } from "../../jsons/labores";
 import "./grid_labores_exe";
 import { otros_datos_siembra_exe_template } from "./otros_datos_siembra_exe_template";
+import { Ingeniero } from '../../tipos/ingenieros';
 
 @customElement("upsert-ejecucion")
 export class UpsertEjecucion extends LitElement {
@@ -96,6 +97,7 @@ export class UpsertEjecucion extends LitElement {
 
   @state()
   private ready: boolean = false;
+
 
   override firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("modal"));
@@ -176,7 +178,8 @@ export class UpsertEjecucion extends LitElement {
     this.ejecucion.uuid = this.actividad.uuid;
 
     this.ejecucion.contratista = deepcopy(this.actividad.contratista);
-
+    this.ejecucion.ingeniero =deepcopy(this.actividad.ingeniero);
+    
     this.actividad.detalles.dosis.forEach((dosis) => {
       let enl: LineaDosisEjecucion = deepcopy(dosis);
       enl.precio_real = enl.precio_estimado;
@@ -402,6 +405,19 @@ export class UpsertEjecucion extends LitElement {
         <!-- Contratista -->
         <div tab="dashboard-tab">
           <vaadin-form-layout>
+          ${this.tipo !== "aplicacion"
+                      ? null
+                      : html`
+                          <vaadin-combo-box
+                            label="${translate("ingeniero")}"
+                            item-label-path="nombre"
+                            item-value-path="uuid"
+                            readonly
+                            error-message=${translate("campo_requerido")}
+                            colspan="2"
+                            .selectedItem=${this.ejecucion.ingeniero}
+                          ></vaadin-combo-box>
+                        `}
             <vaadin-combo-box
               label="Contratista"
               item-label-path="nombre"
