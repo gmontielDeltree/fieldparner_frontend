@@ -1,5 +1,5 @@
 import { LitElement, html, unsafeCSS } from "lit";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { normalizar_username } from "../helpers";
 import Modal from "bootstrap/js/dist/modal.js";
 

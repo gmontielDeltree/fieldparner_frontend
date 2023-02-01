@@ -9,14 +9,15 @@ import "@vaadin/horizontal-layout";
 import "@vaadin/vertical-layout";
 import "@vaadin/custom-field";
 import "@vaadin/grid";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Modal from "bootstrap/js/dist/modal";
-import lista_de_labores from "./labores.json";
+import lista_de_labores from "../jsons/labores";
 import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
-import { Insumo, get_empty_insumo } from "./insumos-types";
+import { Insumo, get_empty_insumo, get_lista_insumos } from "./insumos-types";
 import { InsumoCrud } from "./insumos-crud";
 import { GridItemModel } from "@vaadin/grid";
+import "@vaadin/grid/vaadin-grid-sort-column.js";
 import "./insumos-crud";
 import "@vaadin/icons";
 import "@vaadin/upload";
@@ -24,15 +25,10 @@ import "@vaadin/dialog";
 import { read, writeFile, utils } from "xlsx";
 import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
-import '@vaadin/menu-bar';
-
-// import { ModuleManager } from 'igniteui-webcomponents-core';
-// import { IgcDataGridModule } from 'igniteui-webcomponents-grids';
-// import { IgcDataGridComponent } from 'igniteui-webcomponents-grids';
-
-// ModuleManager.register(
-//     IgcDataGridModule
-// );
+import "@vaadin/menu-bar";
+import { deepcopy } from "../helpers";
+import { translate } from "lit-translate";
+import { TextFieldValueChangedEvent } from "@vaadin/text-field";
 
 export class InsumosLista extends LitElement {
   @state()
@@ -56,14 +52,17 @@ export class InsumosLista extends LitElement {
   _modal_excel: Modal;
 
   @state()
-  _uploaded_insumos : any; 
+  _uploaded_insumos: any;
 
   @state({
     hasChanged(newVal: Upload, oldVal: Upload) {
       return false;
     },
   })
-  _excel_file_input : Upload;
+  _excel_file_input: Upload;
+
+  @state()
+  private filteredItems: Insumo[] = [];
 
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
 
@@ -73,7 +72,9 @@ export class InsumosLista extends LitElement {
       this.shadowRoot.getElementById("modal-importar-excel")
     );
 
-    this._excel_file_input = this.shadowRoot.getElementById('upload-drop-enabled') as Upload
+    this._excel_file_input = this.shadowRoot.getElementById(
+      "upload-drop-enabled"
+    ) as Upload;
 
     /**Recepcion del mensaje enviado por el sw al recibir el POST del archivo */
     navigator.serviceWorker.addEventListener("message", async (event) => {
@@ -88,32 +89,35 @@ export class InsumosLista extends LitElement {
       console.log(workbook);
       workbook.SheetNames.forEach((sheet) => {
         let rowObject = utils.sheet_to_json(workbook.Sheets[sheet]);
-        this._uploaded_insumos = rowObject
+        this._uploaded_insumos = rowObject;
         console.log(rowObject);
       });
     });
 
-
     // Eventos
-    this.addEventListener("edicion_insumo_guardado",(e)=>{
-      this._modal.show()
-      console.log("EVREC")
-    })
+    this.addEventListener("edicion_insumo_guardado", (e) => {
+      this._modal.show();
+      this.load_data();
+      console.log("EVREC");
+    });
 
-    this.addEventListener("edicion_insumo_cerrado",(e)=>{
-      this._modal.show()
-      console.log("EVREC")
-    })
-
+    this.addEventListener("edicion_insumo_cerrado", (e) => {
+      this._modal.show();
+      this.load_data();
+      console.log("EVREC");
+    });
   }
 
-  load_data(){
-    this.db.allDocs({startkey:"insumo:", endkey:"insumo:\ufff0", include_docs:true, limit:100 }).then((e: any) => {
-      //this._insumos = Object.values(e.);
-      console.log("Insumos DOC", e);
-      this._insumos = e.rows.map((r) => r.doc)
-    })
-    .catch((e) => {});
+  load_data() {
+    get_lista_insumos(this.db)
+      .then((lista_insumos) => {
+        console.log("Lista de Insumos", lista_insumos);
+        this._insumos = lista_insumos;
+        this.filteredItems = deepcopy(this._insumos);
+      })
+      .catch((e) => {
+        console.log("Error al get_lista_insumos", e);
+      });
   }
 
   show() {
@@ -123,13 +127,15 @@ export class InsumosLista extends LitElement {
 
   edit(c: Insumo) {
     this._modal.hide();
-    let ic = this.shadowRoot.getElementById("insumo-crud") as InsumoCrud 
+    let ic = this.shadowRoot.getElementById("insumo-crud") as InsumoCrud;
     ic.edit(c);
   }
 
   borrar(c: Insumo) {
-    this.db.remove(c as any).then((e: any) => {
-       this.load_data() // Reload
+    this.db
+      .remove(c as any)
+      .then((e: any) => {
+        this.load_data(); // Reload
       })
       .catch((e) => {});
   }
@@ -166,17 +172,17 @@ export class InsumosLista extends LitElement {
       html`
         <vaadin-vertical-layout>
           ${se_aplica_a.map((c) => {
-            let theme = ""
+            let theme = "";
             if (c.cultivo === "Soja") {
-              theme="primary success small"
+              theme = "primary success small";
             } else if (c.cultivo === "Maiz") {
-              theme="primary error small";
+              theme = "primary error small";
             } else {
-              theme="primary contrast small";
+              theme = "primary contrast small";
             }
-            return html`<vaadin-button theme=theme
+            return html`<vaadin-button theme="theme"
               >${c.cultivo}</vaadin-button
-            >`
+            >`;
           })}
         </vaadin-vertical-layout>
       `,
@@ -188,78 +194,72 @@ export class InsumosLista extends LitElement {
     this._uploaded_insumos = undefined;
     this._modal.hide();
     this._modal_excel.show();
-    this._excel_file_input.files = []
+    this._excel_file_input.files = [];
   }
 
-  save_imports(){
-
+  save_imports() {
     /**
      * Convierte la "fila de excel" a Contratista
-     * @param up 
-     * @returns 
+     * @param up
+     * @returns
      */
-   const up_to_contratista = (up) => {
-      let insumo : Insumo = {...get_empty_insumo()}
-      
-      insumo.marca_comercial = up.marca_comercial || ""
-      insumo.principio_activo = up.principio_activo || ""
-      insumo.tipo = up.tipo || ""
-      insumo.subtipo = up.subtipo || ""
-      insumo.unidad = up.unidad || ""
-      insumo.precio= up.precio || ""
+    const up_to_contratista = (up) => {
+      let insumo: Insumo = { ...get_empty_insumo() };
 
-      return insumo
-    }
+      insumo.marca_comercial = up.marca_comercial || "";
+      insumo.principio_activo = up.principio_activo || "";
+      insumo.tipo = up.tipo || "";
+      insumo.subtipo = up.subtipo || "";
+      insumo.unidad = up.unidad || "";
+      insumo.precio = up.precio || "";
 
-
+      return insumo;
+    };
 
     // //console.log("CONT uc", this._uploaded_insumos)
-   let todos_los_insumos = this._uploaded_insumos.map(up_to_contratista)
+    let todos_los_insumos = this._uploaded_insumos.map(up_to_contratista);
 
     // //console.log("CONT sin uuid", todos_los_contratistas, this._uploaded_insumos)
-   // let todos_los_insumos_con_uuid : (Insumo) [] = todos_los_insumos.map((c : Insumo) => {
-      //let nuevo_uuid = uuid4()
-     // c.uuid = nuevo_uuid
-     // return c;
-   // })
-    
+    // let todos_los_insumos_con_uuid : (Insumo) [] = todos_los_insumos.map((c : Insumo) => {
+    //let nuevo_uuid = uuid4()
+    // c.uuid = nuevo_uuid
+    // return c;
+    // })
 
-   console.log("TOLOIS",todos_los_insumos);
-    this.db.bulkDocs(todos_los_insumos)
-
+    console.log("TOLOIS", todos_los_insumos);
+    this.db.bulkDocs(todos_los_insumos);
   }
 
-  menu_click({detail}){
+  menu_click({ detail }) {
     //console.log("CLICK,", detail)
-    let valor = detail.value.value
-    if(valor === 'importar_excel' ){
-      this.importar()
-    }else if(valor === 'exportar_excel'){
-      const insumo_a_row = (c : Insumo) => {
+    let valor = detail.value.value;
+    if (valor === "importar_excel") {
+      this.importar();
+    } else if (valor === "exportar_excel") {
+      const insumo_a_row = (c: Insumo) => {
         let row = {
-          "marca_comercial":c.marca_comercial,
-          "principio_activo":c.principio_activo,
-          "tipo":c.tipo,
-          "subtipo":c.subtipo,
-          "unidad":c.unidad,
-          "precio":c.precio
-        }
+          marca_comercial: c.marca_comercial,
+          principio_activo: c.principio_activo,
+          tipo: c.tipo,
+          subtipo: c.subtipo,
+          unidad: c.unidad,
+          precio: c.precio,
+        };
         return row;
-      }
+      };
 
+      let data = this._insumos.map(insumo_a_row);
 
-      let data = this._insumos.map(insumo_a_row)
-
-      
       const worksheet = utils.json_to_sheet(data);
       const workbook = utils.book_new();
       utils.book_append_sheet(workbook, worksheet, "Insumos");
       writeFile(workbook, "Insumos.xlsx");
-      console.log(this._insumos)
-    }else if(valor === 'nuevo'){
-      ((this.shadowRoot.getElementById('insumo-crud')) as InsumoCrud).insumo = get_empty_insumo();
-      ((this.shadowRoot.getElementById('insumo-crud')) as InsumoCrud).show();
-      this._modal.hide()
+      console.log(this._insumos);
+    } else if (valor === "nuevo") {
+      (this.shadowRoot.getElementById("insumo-crud") as InsumoCrud).insumo =
+        get_empty_insumo();
+      (this.shadowRoot.getElementById("insumo-crud") as InsumoCrud).show();
+      this._modal.hide();
     }
   }
 
@@ -296,18 +296,32 @@ export class InsumosLista extends LitElement {
                 max-files="1"
                 target="/excel-insumos-upload"
                 .i18n=${i18n_upload}
-                @files-changed=${(e) => {if(e.target.files.length === 0){
-                  this._uploaded_insumos = undefined
-                }}}
+                @files-changed=${(e) => {
+                  if (e.target.files.length === 0) {
+                    this._uploaded_insumos = undefined;
+                  }
+                }}
               ></vaadin-upload>
 
 
               ${
-                this._uploaded_insumos ? html`<h4>Preview</h4>
-                <vaadin-grid .items="${this._uploaded_insumos}" theme="compact" style="height: 200px;">
-                <vaadin-grid-column path="marca_comercial" header="Nombre"></vaadin-grid-column>
-                <vaadin-grid-column path="principio_activo" header="P.Activo"></vaadin-grid-column>
-              </vaadin-grid>`:null
+                this._uploaded_insumos
+                  ? html`<h4>Preview</h4>
+                      <vaadin-grid
+                        .items="${this._uploaded_insumos}"
+                        theme="compact"
+                        style="height: 200px;"
+                      >
+                        <vaadin-grid-column
+                          path="marca_comercial"
+                          header="Nombre"
+                        ></vaadin-grid-column>
+                        <vaadin-grid-column
+                          path="principio_activo"
+                          header="P.Activo"
+                        ></vaadin-grid-column>
+                      </vaadin-grid>`
+                  : null
               }
               
 
@@ -325,7 +339,9 @@ export class InsumosLista extends LitElement {
               >
                 Cerrar
               </button>
-              <button type="button" class="btn btn-primary" @click=${this.save_imports}>Guardar</button>
+              <button type="button" class="btn btn-primary" @click=${
+                this.save_imports
+              }>Guardar</button>
             </div>
           </div>
         </div>
@@ -349,49 +365,91 @@ export class InsumosLista extends LitElement {
 
               <vaadin-menu-bar
                 theme="small"
-                .items="${[{ text: 'Más Acciones', children: [{ text: 'Nuevo',value : "nuevo" }, { text: 'Importar Excel', value: 'importar_excel' }, { text: 'Exportar Excel', value: 'exportar_excel' }] }]}"
+                .items="${[
+                  {
+                    text: "Más Acciones",
+                    children: [
+                      { text: "Nuevo", value: "nuevo" },
+                      { text: "Importar Excel", value: "importar_excel" },
+                      { text: "Exportar Excel", value: "exportar_excel" },
+                    ],
+                  },
+                ]}"
                 @item-selected=${this.menu_click}
                 class='ms-1'
               ></vaadin-menu-bar>
 
             </div>
             <div class="modal-body">
-              <vaadin-grid .items=${this._insumos} all-rows-visible>
-                <vaadin-grid-column
+
+            <vaadin-vertical-layout theme="spacing">
+        <vaadin-text-field
+          placeholder=${translate('buscar')}
+          style="width: 50%;"
+          @value-changed="${(e: TextFieldValueChangedEvent) => {
+            const searchTerm = ((e.detail.value as string) || "").trim();
+            const matchesTerm = (value: string) => {
+              return value.toLowerCase().indexOf(searchTerm.toLowerCase()) >= 0;
+            };
+
+            this.filteredItems = this._insumos?.filter((insumo) => {
+              return (
+                !searchTerm ||
+                matchesTerm(insumo.marca_comercial) ||
+                matchesTerm(insumo.principio_activo)
+              );
+            }) || [];
+          }}"
+        >
+          <vaadin-icon slot="prefix" icon="vaadin:search"></vaadin-icon>
+        </vaadin-text-field>
+
+        <!--GRID INSUMOS-->
+              <vaadin-grid .items=${this.filteredItems}>
+                <vaadin-grid-sort-column
+                  direction="asc"
                   header="Marca Comercial"
                   path="marca_comercial"
                   auto-width
-                ></vaadin-grid-column>
-                <vaadin-grid-column
+                  resizable
+                ></vaadin-grid-sort-column>
+                <vaadin-grid-sort-column
                   header="Principio Activo"
                   path="principio_activo"
-                ></vaadin-grid-column>
-                <vaadin-grid-column
+                  resizable
+                ></vaadin-grid-sort-column>
+                <vaadin-grid-sort-column
                   header="Tipo"
                   path="tipo"
-                ></vaadin-grid-column>
-                <vaadin-grid-column
+                  resizable
+                ></vaadin-grid-sort-column>
+                <vaadin-grid-sort-column
                   header="Subtipo"
                   path="subtipo"
-                ></vaadin-grid-column>
-                <vaadin-grid-column
+                  resizable
+                ></vaadin-grid-sort-column>
+                <vaadin-grid-sort-column
                   header="Unidad"
                   path="unidad"
-                ></vaadin-grid-column>
+                  resizable
+                ></vaadin-grid-sort-column>
                 <vaadin-grid-column
                   header="Se aplica a"
                   .renderer=${this.seAplicaARenderer}
+                  resizable
                 ></vaadin-grid-column>                
-                <vaadin-grid-column
+                <vaadin-grid-sort-column
                   header="Precio"
                   path="precio"
-                ></vaadin-grid-column>
+                  resizable
+                ></vaadin-grid-sort-column>
                 <vaadin-grid-column
                   header="Acción"
                   .renderer=${this.actionsRenderer}
+                  resizable
                 ></vaadin-grid-column>
-
               </vaadin-grid>
+        </vaadin-vertical-layout>
             </div>
             <div class="modal-footer">
               <button

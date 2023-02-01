@@ -11,7 +11,7 @@ import "@vaadin/custom-field";
 import "@vaadin/grid";
 import "@vaadin/icons";
 import "@vaadin/dialog";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Modal from "bootstrap/js/dist/modal";
 import lista_de_labores from "./labores.json";
 import { uuid4 } from "uuid4";
@@ -100,10 +100,10 @@ export class InsumoCrud extends LitElement {
     console.log("Guardar Insumo", this.insumo);
     this.db.put(this.insumo).then(() => {
       console.log("insumo guardado")
-      if(this._editing){
+      //if(this._editing){
         this.dispatchEvent(new CustomEvent("edicion_insumo_guardado",{bubbles:true,composed:true}));
         this._modal.hide()
-      }
+      //}
     }).catch((e)=>{
       alert("hubo un problema a guardar el insumo")
     })
@@ -176,7 +176,7 @@ export class InsumoCrud extends LitElement {
          </div>
          <div class="modal-body">
 
-          <vaadin-vertical-layout style="align-items: stretch;">
+          <vaadin-form-layout style="align-items: stretch;" .responsiveSteps=${this.responsiveSteps}>
 
             <vaadin-text-field label="Cultivo"
             .value=${
@@ -200,11 +200,11 @@ export class InsumoCrud extends LitElement {
               }}
               ></vaadin-text-field>
               <vaadin-text-field label="Estadio Hasta"></vaadin-text-field>
-              <vaadin-text-field label="Dosis min."></vaadin-text-field>
-              <vaadin-text-field label="Dosis sugerida"></vaadin-text-field>
-              <vaadin-text-field label="Dosis max."></vaadin-text-field>
+              <vaadin-number-field label="Dosis min."></vaadin-number-field>
+              <vaadin-number-field label="Dosis sugerida"></vaadin-number-field>
+              <vaadin-number-field label="Dosis max."></vaadin-number-field>
 
-            </vaadin-vertical-layout>
+            </vaadin-form-layout>
 
          </div>
 
@@ -298,8 +298,8 @@ export class InsumoCrud extends LitElement {
                   error-message="Por favor, ingrese una dirección valida"
                   clear-button-visible
                 ></vaadin-text-field>
-                <vaadin-text-field
-                  label="Precio"
+                <vaadin-number-field
+                  label="Precio de Lista"
                   name="precio"
                   .value=${this.insumo.precio}
                   @change=${(e: any) => {
@@ -308,7 +308,11 @@ export class InsumoCrud extends LitElement {
                   }}
                   error-message="Por favor, ingrese una dirección valida"
                   clear-button-visible
-                ></vaadin-text-field>
+                  theme="align-right"
+                  autoselect
+                >
+                  <div slot='prefix'>USD</div>
+              </vaadin-number-field>
 
               </vaadin-form-layout>
 

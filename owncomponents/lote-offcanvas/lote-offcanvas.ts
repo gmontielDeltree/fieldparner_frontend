@@ -1,6 +1,10 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, unsafeCSS } from "lit";
 import { map } from "lit/directives/map.js";
 import { aplicacionMachine } from "./lote-machine.ts";
+import { Router } from "@vaadin/router";
+import { StateController } from "@lit-app/state";
+import gbl_state from "../state.js";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { interpret } from "xstate";
 import { mapbox_static_img } from "./mapbox_static_image.js";
 import "../date-picker/date-picker.ts";
@@ -11,6 +15,8 @@ import { property, state } from "lit/decorators.js";
 import { format } from "date-fns";
 import parseISO from "date-fns/parseISO";
 import "@vaadin/menu-bar";
+import { gblStateLoaded } from "../state.js";
+import "@vaadin/tooltip";
 // import * as pdfFonts from "pdfmake/build/vfs_fonts.js";
 // import pdfMake from "pdfmake/build/pdfmake.min.js";
 
@@ -34,7 +40,7 @@ import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 //import PouchDB from "pouchdb";
 import uuid4 from "uuid4";
 import moment from "moment";
-import "../notas-offcanvas/notas-offcanvas.js";
+import "../notas-offcanvas/notas-offcanvas.ts";
 import "./cosecha-add-ui.ts";
 import "./siembra-add-ui.ts";
 import { google_maps_link_go_to } from "./google_maps.js";
@@ -82,11 +88,9 @@ const motivos_2_str = (motivos) => {
 };
 
 export class LoteOffcanvas extends LitElement {
-  @property()
-  db: PouchDB.Database;
+  static override styles = unsafeCSS(bootstrap);
 
-  @property()
-  map: mapboxgl.Map;
+  bindState = new StateController(this, gbl_state);
 
   @state()
   _insumos: Insumo[];
@@ -107,13 +111,10 @@ export class LoteOffcanvas extends LitElement {
   @state()
   _contratistas: any;
 
-  @property()
+  @state()
   campo_id: string = "";
 
-  @property()
-  username: string = "";
-
-  @property()
+  @state()
   lote_nombre: string = "";
 
   @property()
@@ -149,7 +150,8 @@ export class LoteOffcanvas extends LitElement {
   @state()
   _current_dosis: LineaDosis;
 
-  static styles = null;
+  @state()
+  data_loaded: boolean = false;
 
   show_step = (n) => {
     if (!this._steps_elements[n]._isShown) {
@@ -165,10 +167,16 @@ export class LoteOffcanvas extends LitElement {
      */
     this._ctx = aplicacionMachine.initialState.context;
 
+    this.addEventListener("cambio-estado", (e: CustomEvent) => {
+      let doc = e.detail.item;
+      gbl_state.db.put(doc);
+      console.log("Cambio de Estado - PUT", doc);
+      this.reload_actividades();
+    });
+
     this.addEventListener("guardar-cosecha", (e: CustomEvent) =>
       this.guardar_aplicacion("cosecha", e.detail)
     );
-
     this.addEventListener("guardar-siembra", (e: CustomEvent) =>
       this.guardar_aplicacion("siembra", e.detail)
     );
@@ -200,7 +208,7 @@ export class LoteOffcanvas extends LitElement {
 
     this.addEventListener("eliminar-nota", (e: CustomEvent) => {
       let nota_doc = e.detail.nota_doc;
-      this.db.remove(nota_doc);
+      gbl_state.db.remove(nota_doc);
       this.reload_actividades();
     });
 
@@ -222,9 +230,9 @@ export class LoteOffcanvas extends LitElement {
       })
         .setPopup(new Popup().setHTML(`<h4>${texto}</h4>`))
         .setLngLat(posicion)
-        .addTo(this.map);
+        .addTo(gbl_state.map);
 
-      this.map.flyTo({
+      gbl_state.map.flyTo({
         center: posicion,
         padding: { bottom: 200 },
         zoom: 15,
@@ -233,12 +241,8 @@ export class LoteOffcanvas extends LitElement {
     //this._actividades = []
   }
 
-  createRenderRoot() {
-    return this;
-  }
-
   load_insumos() {
-    this.db
+    gbl_state.db
       .allDocs({
         startkey: "insumo:",
         endkey: "insumo:\ufff0",
@@ -247,20 +251,18 @@ export class LoteOffcanvas extends LitElement {
       .then((e) => {
         //this._insumos = Object.values(e.);
         console.log("Insumos DOC", e);
-        this._insumos = e.rows.map((r) => r.doc);
+        this._insumos = e.rows.map((r) => r.doc) as unknown as Insumo[];
       })
       .catch((e) => {});
   }
 
   firstUpdated() {
     this._lotesOffcanvas = new Offcanvas(
-      document.getElementById("lote-offcanvas")
+      this.shadowRoot.getElementById("lote-offcanvas")
     );
     this._steps_elements = [
-      ...document.querySelectorAll(".aplicacion.step"),
+      ...this.shadowRoot.querySelectorAll(".aplicacion.step"),
     ].map((el) => new Modal(el));
-
-    this.load_insumos();
   }
 
   show() {
@@ -268,6 +270,7 @@ export class LoteOffcanvas extends LitElement {
     this.reload_lote_doc_y_localizar();
 
     this._lotesOffcanvas.show();
+
     // introJs()
     //   .setOptions({
     //     dontShowAgain: true,
@@ -281,7 +284,7 @@ export class LoteOffcanvas extends LitElement {
     //           "Es esta persiana podras ver y editar la historia de tu lote",
     //       },
     //       {
-    //         element: document.querySelector(".btn-actividad"),
+    //         element: this.shadowRoot.querySelector(".btn-actividad"),
     //         intro: "Utiliza estos botones para agregar nuevos registros",
     //       },
     //     ],
@@ -289,18 +292,23 @@ export class LoteOffcanvas extends LitElement {
     //   .start();
   }
 
-  hide() {
+  cerrar() {
+    gbl_state.map.hideAllLayers();
+    gbl_state.map.showAllCampos();
+
     this._lotesOffcanvas.hide();
-    let event = new CustomEvent("lote-detalles-hide", {
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+    Router.go("/");
+
+    // let event = new CustomEvent("lote-detalles-hide", {
+    //   bubbles: true,
+    //   composed: true,
+    // });
+    // this.dispatchEvent(event);
   }
 
   siembra() {
     this.load_insumos();
-    document.getElementById("siembra-add-el").start();
+    this.shadowRoot.getElementById("siembra-add-el").start();
   }
 
   nueva_actividad() {
@@ -320,12 +328,12 @@ export class LoteOffcanvas extends LitElement {
 
   notas() {
     this._lotesOffcanvas.hide();
-    document.getElementById("notas-oc").nueva_nota();
+    this.shadowRoot.getElementById("notas-oc").nueva_nota();
   }
 
   cosecha() {
     this.load_insumos();
-    document.getElementById("cosecha-add-el").start();
+    this.shadowRoot.getElementById("cosecha-add-el").start();
   }
 
   abrir_pdf(params) {
@@ -345,12 +353,15 @@ export class LoteOffcanvas extends LitElement {
   }
 
   evento_show_ndvi(e) {
-    const event = new CustomEvent("ver-ndvi-click", {
-      detail: { lote: this._lote_doc },
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+    Router.go("/indices/" + this._lote_doc.id);
+    // const event = new CustomEvent("ver-ndvi-click", {
+    //   detail: { lote: this._lote_doc },
+    //   bubbles: true,
+    //   composed: true,
+    // });
+    // this.dispatchEvent(event);
+    // Ocultar este offcanvas
+    this._lotesOffcanvas.hide();
   }
 
   share_pdf(uuid) {
@@ -432,10 +443,10 @@ export class LoteOffcanvas extends LitElement {
   }
 
   eliminar_actividad(actividad_id) {
-    this.db
+    gbl_state.db
       .get(actividad_id)
       .then((doc) => {
-        return this.db.remove(doc);
+        return gbl_state.db.remove(doc);
       })
       .then(() => {
         this.reload_actividades();
@@ -445,7 +456,7 @@ export class LoteOffcanvas extends LitElement {
     //   (a) => a.uuid !== uuid
     // );
     // // Re-Get Lotes y update
-    // this.db.get(this.campo_id).then((doc) => {
+    // gbl_state.db.get(this.campo_id).then((doc) => {
     //   let lote_index = doc.lotes.findIndex(
     //     (lote) => lote.properties.nombre === this.lote_nombre
     //   );
@@ -469,13 +480,13 @@ export class LoteOffcanvas extends LitElement {
     //     current_aplicaciones.sort(compare);
 
     //     doc.lotes[lote_index].properties.actividades = current_aplicaciones;
-    //     this.db.put(doc).then((r) => console.log("Actividad Eliminada"));
+    //     gbl_state.db.put(doc).then((r) => console.log("Actividad Eliminada"));
 
     //     // Recargemoslos
     //     this._campo_doc = doc;
     //     this._lote_doc = doc.lotes[lote_index];
 
-    //     //document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+    //     //this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
     //   }
     // });
   }
@@ -483,14 +494,18 @@ export class LoteOffcanvas extends LitElement {
   editar_actividad(actividad) {
     if (actividad.tipo === "siembra") {
       console.log("EDITAR", actividad);
-      document.getElementById("siembra-add-el").editar(actividad);
+      this.shadowRoot.getElementById("siembra-add-el").editar(actividad);
     }
 
     if (actividad.tipo === "aplicacion") {
       console.log("EDITAR", actividad);
       this.init_fsm(actividad);
       this.abrir_editor_actividad();
-      //document.getElementById("siembra-add-el").editar(actividad);
+      //this.shadowRoot.getElementById("siembra-add-el").editar(actividad);
+    }
+
+    if (actividad.tipo === "cosecha") {
+      this.shadowRoot.getElementById("cosecha-add-el").editar(actividad);
     }
   }
 
@@ -527,14 +542,14 @@ export class LoteOffcanvas extends LitElement {
     let restantes = this._campo_doc.lotes.filter(
       (lote) => lote.id !== this._lote_doc.id
     );
-    this.db.get(this.campo_id).then((doc) => {
+    gbl_state.db.get(this.campo_id).then((doc) => {
       let restantes = this._campo_doc.lotes.filter(
         (lote) => lote.id !== this._lote_doc.id
       );
       doc.lotes = restantes;
-      this.db.put(doc).then((r) => console.log("Lote Eliminado"));
+      gbl_state.db.put(doc).then((r) => console.log("Lote Eliminado"));
       this._campo_doc = doc;
-      this.hide();
+      this.cerrar();
     });
   }
 
@@ -567,10 +582,8 @@ export class LoteOffcanvas extends LitElement {
       //   detalles: detalles,
       // };
       console.log("Guardando Aplicacion", actividad_doc);
-      this.db.put(actividad_doc);
+      gbl_state.db.put(actividad_doc);
       this.reload_actividades();
-      return;
-      console.warn("GUARDAR APLICACION IMPLEMENT ME");
       return;
     } else if (tipo === "siembra") {
       // aplicacion = {
@@ -580,23 +593,19 @@ export class LoteOffcanvas extends LitElement {
       //   detalles: detalles,
       // };
 
-      this.db.put(actividad_doc);
+      gbl_state.db.put(actividad_doc);
       this.reload_actividades();
       return;
     } else if (tipo === "cosecha") {
-      detalles = actividad_doc;
-      aplicacion = {
-        uuid: uuid4(),
-        tipo: "cosecha",
-        ts_generacion: ts_ahora,
-        detalles: detalles,
-      };
+      gbl_state.db.put(actividad_doc);
+      this.reload_actividades();
+      return;
     }
 
     // Condiciones ambientales?
 
     // Re-Get Lotes y update
-    this.db.get(this.campo_id).then((doc) => {
+    gbl_state.db.get(this.campo_id).then((doc) => {
       let lote_index = doc.lotes.findIndex(
         (lote) => lote.properties.nombre === this.lote_nombre
       );
@@ -622,12 +631,12 @@ export class LoteOffcanvas extends LitElement {
         current_aplicaciones.sort(compare);
 
         doc.lotes[lote_index].properties.actividades = current_aplicaciones;
-        this.db.put(doc).then((r) => console.log("Actividad Agregada"));
+        gbl_state.db.put(doc).then((r) => console.log("Actividad Agregada"));
 
         // Recargemoslos
         this._campo_doc = doc;
         this._lote_doc = doc.lotes[lote_index];
-        // document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+        // this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
       }
     });
   }
@@ -669,15 +678,20 @@ export class LoteOffcanvas extends LitElement {
    */
   willUpdate(changedProperties) {
     // only need to check changed properties for an expensive computation.
-    if (
-      changedProperties.has("campo_id") ||
-      changedProperties.has("lote_nombre")
-    ) {
-      if (this.campo_id === "") {
-        return;
-      }
 
-      this.db.get(this.campo_id).then((doc) => {
+    console.count("LoteOffcanvas willUpdate");
+    if (!this.data_loaded && gblStateLoaded()) {
+      console.log("Data No Loaded y estado loaded");
+      console.count("NoDataLoaded");
+
+      this.data_loaded = true;
+
+      let params = gbl_state.router.location.params;
+
+      this.campo_id = decodeURIComponent(params.uuid_campo);
+      this.lote_nombre = decodeURIComponent(params.uuid_lote);
+
+      gbl_state.db.get(this.campo_id).then((doc) => {
         this._campo_doc = doc;
         this._lote_doc =
           doc.lotes.filter(
@@ -688,32 +702,67 @@ export class LoteOffcanvas extends LitElement {
         someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
         this.init_fsm(someContext);
 
+        this.load_insumos();
+        this.reload_lote_doc_y_localizar();
         this.reload_actividades();
-
-        // document.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+        this._lotesOffcanvas.show();
+        // this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
       });
     }
+
+    // if (
+    //   changedProperties.has("campo_id") ||
+    //   changedProperties.has("lote_nombre")
+    // ) {
+    //   if (this.campo_id === "") {
+    //     return;
+    //   }
+
+    //   gbl_state.db.get(this.campo_id).then((doc) => {
+    //     this._campo_doc = doc;
+    //     this._lote_doc =
+    //       doc.lotes.filter(
+    //         (lote) => lote.properties.nombre === this.lote_nombre
+    //       )[0] || {};
+
+    //     const someContext = aplicacionMachine.initialState.context;
+    //     someContext.detalles.hectareas = this._lote_doc.properties.hectareas;
+    //     this.init_fsm(someContext);
+
+    //     this.reload_actividades();
+
+    //     // this.shadowRoot.getElementById('actividades-timeline').actividades = this._lote_doc.properties.actividades;
+    //   });
+    // }
   }
 
   reload_lote_doc_y_localizar() {
-    this.db.get(this.campo_id).then((doc) => {
+    gbl_state.db.get(this.campo_id).then((doc) => {
       this._campo_doc = doc;
       this._lote_doc =
         doc.lotes.filter(
           (lote) => lote.properties.nombre === this.lote_nombre
         )[0] || {};
 
+      // // Preparar NDVI
+      // let e = new CustomEvent("generar-ndvi", {
+      //   detail: { lote_id: this._lote_doc.id, lote_geojson: this._lote_doc },
+      //   bubbles: true,
+      //   composed: true,
+      // });
+      // this.dispatchEvent(e);
+
       this.localizar_lote();
     });
 
-    this.db.get("contratistas").then((result) => {
+    gbl_state.db.get("contratistas").then((result) => {
       console.log("Contratistas", result);
       this._contratistas = result;
     });
   }
 
   reload_actividades() {
-    this.db
+    gbl_state.db
       .allDocs({
         include_docs: true,
         attachments: true,
@@ -727,7 +776,7 @@ export class LoteOffcanvas extends LitElement {
         this._actividades = [...rrows];
       });
 
-    this.db
+    gbl_state.db
       .allDocs({
         include_docs: true,
         attachments: true,
@@ -748,7 +797,7 @@ export class LoteOffcanvas extends LitElement {
 
   localizar_lote() {
     console.log("LOCALIZAR", this._lote_doc);
-    this.map.fitBounds(bbox(this._lote_doc), {
+    gbl_state.map.fitBounds(bbox(this._lote_doc), {
       padding: { top: 50, bottom: window.innerHeight / 2 },
     });
   }
@@ -769,6 +818,7 @@ export class LoteOffcanvas extends LitElement {
       this.notas();
     }
   }
+
   render() {
     //console.log("RENDER LOTE OFFCANVAS");
 
@@ -862,7 +912,7 @@ export class LoteOffcanvas extends LitElement {
             class="btn-close text-reset"
             data-bs-dismiss="offcanvas"
             aria-label="Close"
-            @click=${this.hide}
+            @click=${this.cerrar}
           ></button>
         </div>
         <div class="offcanvas-body small pt-1">
@@ -913,48 +963,42 @@ export class LoteOffcanvas extends LitElement {
               >
                 <div
                   class="col col-2"
-                  style="cursor: pointer;background-image: url('sembradora_act.webp');background-size: contain; background-repeat: no-repeat; background-position: center;"
-                  @click=${this.siembra}
+                  style="cursor: pointer;background-image: url('/sembradora_act.webp');background-size: contain; background-repeat: no-repeat; background-position: center;"
+                  @click=${()=>Router.go(gbl_state.router.location.getUrl())}
                 >
+                  <vaadin-tooltip>Siembra</vaadin-tooltip>
                 </div>
 
                 <div
                   class="col col-2"
-                  style="cursor: pointer;background-image: url('pulverizadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
+                  style="cursor: pointer;background-image: url('/pulverizadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.nueva_actividad}
-                >
-                </div>
+                ></div>
 
                 <div
                   class="col col-2"
-                  style="cursor: pointer;background-image: url('cosechadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
+                  style="cursor: pointer;background-image: url('/cosechadora_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.cosecha}
-                >
-                  
-                </div>
+                ></div>
 
                 <div
                   class="col col-2"
-                  style="cursor: pointer;background-image: url('iconodenotas_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
+                  style="cursor: pointer;background-image: url('/iconodenotas_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.notas}
-                >
-                  
-                </div>
+                ></div>
 
                 <div
                   class="col col-2"
-                  style="cursor: pointer;background-image: url('iconosatelite.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
+                  style="cursor: pointer;background-image: url('/iconosatelite.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.evento_show_ndvi}
-                >
-                  
-                </div>
+                ></div>
               </div>
             </div>
           </div>
           <div class="row">
             <div class="col shadow mx-2 p-3 max-vh-25">
               <lit-timeline
-                .db=${this.db}
+                .db=${gbl_state.db}
                 .actividades_docs=${this._actividades}
                 .actividades=${this._lote_doc?.properties.actividades}
                 .a=${this._actividades_docs}
@@ -1743,7 +1787,7 @@ export class LoteOffcanvas extends LitElement {
 
       <siembra-add-ui
         id="siembra-add-el"
-        .db=${this.db}
+        .db=${gbl_state.db}
         .contratistas=${this._contratistas}
         ._lote_doc=${this._lote_doc}
         .settings=${this.settings}
@@ -1751,8 +1795,8 @@ export class LoteOffcanvas extends LitElement {
 
       <notas-oc
         id="notas-oc"
-        .map=${this.map}
-        .db=${this.db}
+        .map=${gbl_state.map}
+        .db=${gbl_state.db}
         .lote_doc=${this._lote_doc}
       ></notas-oc>
       <!-- <nueva-geometria-ui id='nueva-geometria-el'></nueva-geometria-ui> -->

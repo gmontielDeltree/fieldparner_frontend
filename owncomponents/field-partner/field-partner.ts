@@ -1,13 +1,19 @@
-import { LitElement, html } from "lit";
-import { property } from "lit/decorators.js";
+import { LitElement, html, PropertyValueMap } from "lit";
+import { property, state } from "lit/decorators.js";
+import { Router } from "@vaadin/router";
 import PouchDB from "pouchdb";
-import { base_url, normalizar_username } from "../helpers";
+import {
+  base_url,
+  normalizar_username,
+  gbl_docs_starting,
+  only_docs,
+} from "../helpers";
 import createAuth0Client from "@auth0/auth0-spa-js";
 import "../loading-modal/loading-modal.js";
 import "../color-cultivo/color-cultivo";
-import cultivos_default from "./cultivos.json";
-import "../notas-offcanvas/notas-offcanvas.js";
-import "../ndvi-offcanvas/ndvi-offcanvas.js";
+import cultivos_default from "../jsons/cultivos.json";
+import "../notas-offcanvas/notas-offcanvas.ts";
+import "../ndvi-offcanvas/ndvi-offcanvas.ts";
 import "../variedades-loader/variedades-loader.js";
 import "../depositos/deposito-upsert/deposito-upsert.js";
 import "../depositos/depositos-lista/depositos-lista.ts";
@@ -16,27 +22,46 @@ import "../contratistas/contratistas-lista.ts";
 import "../sensores/sensores-offcanvas.ts";
 import "../campo-offcanvas/campo-offcanvas.js";
 import "../lote-offcanvas/lote-offcanvas.js";
-import "../nueva-geometria/nueva-geometria.js";
+import "../lote-offcanvas/lote-offcanvas-side.js";
+import "../nueva-geometria/nueva-geometria.ts";
 import "../nuevo-campo/nuevo-campo.js";
 import "../lista-de-campos/lista-de-campos.js";
-import "../navbar-element/navbar-element.js";
+import "../navbar-element/navbar-element";
 import "../mapa-principal/mapa-principal.js";
 import "../login-modal/login-modal.ts";
 import "../notas-offcanvas/nota-target.ts";
 import "../insumos/insumos-lista.ts";
-import "../lista-centrales-cercanas/lista-centrales-cercanas.ts"
-import "../sensores/lista-de-sensores.ts"
+import "../lista-centrales-cercanas/lista-centrales-cercanas.ts";
+import "../sensores/lista-de-sensores.ts";
+import "../navbar-element/workspace-rigths.ts";
+import "../navbar-element/new-app-layout.ts";
+import "../null-component";
+import "../invite/invite";
+import "../lote-offcanvas/repetir-aplicacion/repetir-aplicacion.ts";
+import "../lote-offcanvas/upsert-aplicacion/upsert-aplicacion";
+import "../lote-offcanvas/upsert-ejecucion/upsert-ejecucion";
+
+import "../sensores/devices-route";
+
+import { use, get, registerTranslateConfig, translate } from "lit-translate";
 
 import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 import uuid4 from "uuid4";
-import { get_empty_insumo, Insumo } from "../insumos/insumos-types";
+import {
+  download_lista_de_insumos,
+  get_empty_insumo,
+  Insumo,
+} from "../insumos/insumos-types";
 import { Actividad } from "../depositos/depositos-types";
 import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { format, parse } from "date-fns";
 import { Devices } from "../sensores/sensores";
+
+import { StateController } from "@lit-app/state";
+import gbl_state from "../state.js";
 
 var wentOffline, wentOnline;
 
@@ -44,10 +69,12 @@ function handleConnectionChange(event) {
   if (event.type == "offline") {
     console.log("You lost connection.");
     wentOffline = new Date(event.timeStamp);
+    gbl_state.online = false;
   }
   if (event.type == "online") {
     console.log("You are now back online.");
     wentOnline = new Date(event.timeStamp);
+    gbl_state.online = true;
     console.log(
       "You were offline for " + (wentOnline - wentOffline) / 1000 + "seconds."
     );
@@ -55,46 +82,52 @@ function handleConnectionChange(event) {
 }
 
 export class FieldPartner extends LitElement {
-  @property()
+  @property({ hasChanged: (v, ov) => false })
   map: Map;
 
-  @property()
+  @property({ hasChanged: (v, ov) => false })
   draw: MapboxDraw;
 
-  @property()
+  @state()
   campos: any;
 
-  @property()
+  @property({ hasChanged: (v, ov) => false })
   campos_db: PouchDB.Database;
 
-  @property()
-  shared_db_remote: PouchDB.Database;
-  @property()
+  @property({ hasChanged: (v, ov) => false })
   remote_campos_db: PouchDB.Database;
-  @property()
-  changes_db: PouchDB.Database;
-  @property()
-  remote_changes_db: PouchDB.Database;
-  @property()
+
+  @property({ hasChanged: (v, ov) => false })
   user: any;
 
-  @property()
+  @property({ hasChanged: (v, ov) => false })
   auth0Client: any;
-  @property()
-  logged_in: boolean;
-  @property()
-  loading: boolean;
-  @property()
+
+  @property({ hasChanged: (v, ov) => false })
+  logged_in: boolean = false;
+
+  @state()
+  loading: boolean = true;
+
+  @property({ hasChanged: (v, ov) => false })
   settings: any;
 
   constructor() {
     super();
 
     /* Sensible Defaults */
-    this.logged_in = false;
     this.user = {};
     this.user.name = "demo";
-    this.loading = true;
+
+    gbl_state.online = window.navigator.onLine;
+
+    /* Traducciones */
+    registerTranslateConfig({
+      loader: (lang) =>
+        fetch(`/assets/i18n/${lang}.json`).then((res) => res.json()),
+    });
+
+    console.log("USE Lang", use("es"));
 
     window.addEventListener("online", handleConnectionChange);
     window.addEventListener("offline", handleConnectionChange);
@@ -109,50 +142,40 @@ export class FieldPartner extends LitElement {
 
     /* Clicks en varios botones */
     this.addEventListener("ver-campo-detalles", (e: any) => {
-      this.campos_db.get(e.detail.campo_id).then((campo_doc) => {
-        document.getElementById("campo-oc").campo_doc = campo_doc;
-        document.getElementById("campo-oc").show();
-      });
+      let campo_doc_id = e.detail.campo_id; // el ID del doc del campo ("campo:el remanso")
+      Router.go("campo/" + encodeURIComponent(campo_doc_id));
     });
 
-    this.addEventListener("ver-lote-detalles", (e) => {
-      document.getElementById("campo-oc").hide();
-      document.getElementById("lote-oc").lote_nombre = e.detail.nombre;
-      document.getElementById("lote-oc").campo_id = e.detail.campo_parent_id;
-      document.getElementById("lote-oc").show();
+    this.addEventListener("ver-lote-detalles", (e: CustomEvent) => {
+      let campo_doc_id_enc = encodeURIComponent(e.detail.campo_parent_id);
+      let lote_nombre = encodeURIComponent(e.detail.nombre);
+      Router.go("campo/" + campo_doc_id_enc + "/lote/" + lote_nombre);
     });
 
     this.addEventListener("nuevo-campo-click", (e) => {
       document.getElementById("nuevo-campo-oc").show = true;
     });
 
-    this.addEventListener("ver-ndvi-click", (e) => {
-      document.getElementById("ndvi-oc").lote_doc = e.detail.lote;
-      document.getElementById("ndvi-oc").show();
-    });
-
     this.addEventListener("nuevo-deposito-click", () => {
       document.getElementById("deposito-upsert").show();
     });
 
-    this.addEventListener("lote-seleccionado", (e) => {
+    this.addEventListener("lote-seleccionado", (e: CustomEvent) => {
       document.getElementById("nota-share-target").seleccion(e.detail);
     });
 
     /* Izar map y draw a este componente para que los otros puedan usarlo */
-    this.addEventListener("map-loaded", (e) => {
+    this.addEventListener("map-loaded", (e: CustomEvent) => {
       this.map = e.detail.map;
+
+      gbl_state.map = e.detail.map;
       this.draw = e.detail.draw;
+      gbl_state.draw = e.detail.draw;
       // Cuando se carga el mapa considero que terminó la carga
       this.loading = false;
 
-      let devices = new Devices()
-      devices.add_markers_to_map(this.map)
-    });
-
-    /* Click en ver lista de campos */
-    this.addEventListener("ver-lista-campos", (e) => {
-      document.getElementById("lista-de-campos").show();
+      let devices = new Devices();
+      devices.add_markers_to_map(this.map);
     });
 
     /* Click en ver lista de depositios */
@@ -192,90 +215,55 @@ export class FieldPartner extends LitElement {
       document.getElementById("contratista-crud").nuevo();
     });
 
-    this.addEventListener('ver-lista-de-sensores', (e)=>{
-      const el = document.createElement('lista-de-sensores')
-      document.getElementById('container-multiproposito').appendChild(el)
+    this.addEventListener("ver-lista-de-sensores", (e) => {
+      const el = document.createElement("lista-de-sensores");
+      document.getElementById("container-multiproposito").appendChild(el);
       el.map = this.map;
-      el.show()
-    })
+      el.show();
+    });
 
-    this.addEventListener('ver-centrales-cercanas', (e : CustomEvent)=>{
-      let item = (e.detail as Actividad)
-      let lote_uuid = (item.lote_uuid)
-      let lote_geojson = undefined
-      this.campos?.rows.map(({doc})=>{
+    this.addEventListener("ver-centrales-cercanas", (e: CustomEvent) => {
+      let item = e.detail as Actividad;
+      let lote_uuid = item.lote_uuid;
+      let lote_geojson = undefined;
+      this.campos?.rows.map(({ doc }) => {
         let lotes = doc.lotes as any[];
-        let lote_candidato= lotes.find((lote) => lote.id === lote_uuid)
-        if(lote_candidato){
-          lote_geojson = lote_candidato
+        let lote_candidato = lotes.find((lote) => lote.id === lote_uuid);
+        if (lote_candidato) {
+          lote_geojson = lote_candidato;
         }
-      })
+      });
 
       console.log("dfsdfsdfsdfs", lote_geojson);
 
-
-      const el = document.createElement('centrales-cercanas-lista')
-      document.getElementById('container-multiproposito').appendChild(el)
+      const el = document.createElement("centrales-cercanas-lista");
+      document.getElementById("container-multiproposito").appendChild(el);
       //"fecha_ejecucion_tentativa": "2022-08-27",
-      el.fecha = item.detalles.fecha_ejecucion_tentativa
-      el.posicion = lote_geojson ? centroid(lote_geojson).geometry.coordinates : [] //lon lat
+      el.fecha = item.detalles.fecha_ejecucion_tentativa;
+      el.posicion = lote_geojson
+        ? centroid(lote_geojson).geometry.coordinates
+        : []; //lon lat
       el.show();
-    })
+    });
 
-    this.addEventListener('ver-telemetria-del-dia', (e : CustomEvent)=>{
-      const el = document.createElement('sensores-oc')
-      document.getElementById('container-multiproposito').appendChild(el)
+    this.addEventListener("ver-telemetria-del-dia", (e: CustomEvent) => {
+      let daily_card = e.detail as DailyTelemetryCard;
 
-      let daily_card = (e.detail as DailyTelemetryCard)
-      el.map = this.map
-      el.show(daily_card)
-    })
-
+      let fecha = daily_card._id.split(":")[2];
+      Router.go(
+        gbl_state.router.urlForName("device-route-handler", {
+          uuid: daily_card.device_id,
+          date: fecha,
+        })
+      );
+    });
 
     // Borrar un Campo
-    this.addEventListener("borrar-campo", (e) => {
+    this.addEventListener("borrar-campo", (e: CustomEvent) => {
       this.campos_db.remove(e.detail.campo_doc).then(() => {
         alert("Campo borrado");
         this.load_campos_y_settings();
       });
-    });
-
-
-    // Share Campo
-    this.addEventListener("share-campo", (e: any) => {
-      console.log("share campo", e.detail);
-
-      let nuevo_shared_campo = { ...e.detail.campo_doc };
-      nuevo_shared_campo.shared = true;
-      nuevo_shared_campo.share_with = [...e.detail.share_with];
-      // Me agrego a mi mismo para compartir
-
-      nuevo_shared_campo.share_with.push(normalizar_username(this.user.name));
-      //
-      nuevo_shared_campo.owner = this.user;
-      // Lo grabo en campos_db
-      this.campos_db
-        .put(nuevo_shared_campo)
-        .then(() => alert("Campo compartido"));
-
-      // Lo upserto en shared_db
-      // this.shared_db_remote.get(nuevo_shared_campo._id).then(old_doc => {
-      //   nuevo_shared_campo._rev = old_doc._rev
-      //   this.shared_db_remote.put(nuevo_shared_campo)
-      // }).catch((e)=>{
-      //   if(e.reason === 'missing'){
-      //     // debe tener _rev si es nuevo
-      //     //delete nuevo_shared_campo._rev
-      //     //this.shared_db_remote.put(nuevo_shared_campo).catch((e)=>{
-      //     //console.log("Error al crear nuevo shared_campo",e)
-      //     // })
-      //   }
-      // });
-    });
-
-    this.addEventListener("lote-detalles-hide", (e) => {
-      console.log("HIDE LOTE DETALLES");
-      document.getElementById("campo-oc").show();
     });
 
     this.init_the_whole_thing();
@@ -285,42 +273,13 @@ export class FieldPartner extends LitElement {
     return this;
   }
 
-  delete_insumos = async () => {};
-
-  inicializar_insumos = async () => {
-    try {
-      let settings = await this.campos_db.get("settings");
-
-      if (!settings.insumos_inicializados) {
-        console.log("No hay insumos...Fetching");
-        let data = await fetch("/products.json").then((response) =>
-          response.json()
-        );
-        let products = data.products;
-        let insumos = products.map((p: any) => {
-          let i: Insumo = get_empty_insumo();
-          i.marca_comercial = p.commercial_brand;
-          i.principio_activo = p.supply?.active_substance || "";
-          i.tipo = p.type?.name || "";
-          i.subtipo = p.subtype?.name || "";
-          i.unidad = p.unit.name || "";
-          return i;
-        });
-
-        // this.campos_db.bulkDocs(insumos).then((d)=>{
-        //   settings.insumos_inicializados=true;
-        //   this.campos_db.put(settings)
-        //   this.settings = settings;
-        // });
-
-        console.log("INSUMOS", insumos);
-      } else {
-        console.log("Los Insumos ya fueron Inicializados");
-      }
-    } catch (e) {
-      console.error("No settings", e);
-    }
-  };
+  protected willUpdate(
+    _changedProperties:
+      | PropertyValueMap<any>
+      | globalThis.Map<PropertyKey, unknown>
+  ): void {
+    console.log("FieldPartner-WillUpdate", _changedProperties);
+  }
 
   async init_the_whole_thing() {
     let sitio = window.location.hostname;
@@ -334,6 +293,7 @@ export class FieldPartner extends LitElement {
     } else if (sitio === "dev--agrotools.netlify.app") {
       // Development - Especial flow
       console.log("Especial Development Flow - Demo User");
+      this.user.sub = "demo-userdb";
       // Logged in
       this.logged_in = true;
       // Default Databases
@@ -344,6 +304,7 @@ export class FieldPartner extends LitElement {
       this.logged_in = true;
       this.user.name = "randy";
       // Default Databases
+      this.user.sub = "randy-userdb";
       this.crear_dbs(this.user);
     }
 
@@ -414,13 +375,20 @@ export class FieldPartner extends LitElement {
 
   // #region Bases de Datos
   async crear_dbs(user) {
+    console.count("Crear DBS");
+    
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Nombres validos solo en minusculas
-    this.campos_db = new PouchDB("campos_" + username + "v3");
+    this.campos_db = new PouchDB("campos_" + username + "v6");
+
+    gbl_state.db = this.campos_db;
+    gbl_state.user_db = new PouchDB(user.sub);
+    gbl_state.user = this.user;
+    this.cargar_campana_seleccionada();
 
     try {
-      let campos_db_uri = base_url + "campos_" + username;
+      let campos_db_uri = base_url + "campos_" + username + "v6";
       console.log("CrearDBS - campos_db_uri", campos_db_uri);
       this.remote_campos_db = new PouchDB(campos_db_uri);
 
@@ -476,96 +444,6 @@ export class FieldPartner extends LitElement {
       this.load_campos_y_settings();
       this.sincronizar_cuando_online();
     }
-
-    // this.load_campos_y_settings(); // Carga para acelerar y no esperar
-
-    // Caso 1-1
-
-    // this.campos_db
-    //   .sync(this.remote_campos_db, {
-    //     live: true,
-    //     retry: true,
-    //   })
-    //   .on("change", function (change) {
-    //     // yo, something changed!
-    //   })
-    //   .on("paused", function (info) {
-    //     // replication was paused, usually because of a lost connection
-    //   })
-    //   .on("active", function (info) {
-    //     // replication was resumed
-    //   })
-    //   .on("error", function (err) {
-    //     // totally unhandled error (shouldn't happen)
-    //   });
-
-    /** Init Settings */
-    // this.campos_db
-    //   .get("settings")
-    //   .then((doc) => {
-    //     console.info("Settings Loaded", doc);
-    //     this.settings = doc;
-    //   })
-    //   .catch((e) => {
-    //     console.log("Settings error", e);
-    //     if (e.reason === "missing") {
-    //       console.log("No existe 'Settings'");
-    //       this.init_settings();
-    //     }
-    //   });
-
-    /** Replicacion hacia arriba cuando se comparte un campo */
-    // this.shared_db_remote = new PouchDb(base_url + "shared_campos");
-    // this.campos_db
-    //   .replicate.to(this.shared_db_remote, {
-    //     live: true,
-    //     retry: true,
-    //     filter: "share/by_sharing_status",
-    //   })
-    // .on("change", function (result) {
-    //   if (change.deleted) {
-    //     // remove
-    //   } else {
-    //     // upsert
-    //   }
-    // });
-
-    /** Replicacion bi */
-    // this.campos_db
-    //   .sync(this.shared_db_remote, {
-    //     live: true,
-    //     retry: true,
-    //     filter: "share/by_share_with_list",
-    //     query_params: { my_self: normalizar_username(this.user.name) },
-    //   })
-    //   .on("change", function (result) {
-    //     if (change.deleted) {
-    //       // remove
-    //     } else {
-    //       // upsert
-    //       console.log("Alguien me compartio un Campo");
-    //     }
-    //   });
-
-
-  }
-
-
-  init_ndvi_dbs(){
-        // Changes Lotes para generar NDVI
-    this.remote_changes_db = new PouchDB("https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_changes")
-    this.changes_db = new PouchDB("campos_changes")
-
-    // console.log("Changes Sync Set");
-    this.changes_db.replicate.to(this.remote_changes_db, {
-        live: true
-    }).on('complete', function () {
-        // yay, we're done!
-        console.log("Changes Uploaded")
-    }).on('error', function (err) {
-        // boo, something went wrong!
-        console.log("Error Changes")
-    });
   }
 
   cargar_desde_remoto() {
@@ -576,7 +454,10 @@ export class FieldPartner extends LitElement {
         startkey: "campos_",
         endkey: "campos_\ufff0",
       })
-      .then((result) => (this.campos = result));
+      .then((result) => {
+        this.campos = result;
+        gbl_state.campos = this.campos;
+      });
 
     // Get Settings
     this.remote_campos_db
@@ -614,8 +495,6 @@ export class FieldPartner extends LitElement {
         this.load_campos_y_settings();
         console.log("CHANGES!!");
       });
-
-    this.init_ndvi_dbs()
   }
 
   replicar_y_sincronizar() {
@@ -629,6 +508,7 @@ export class FieldPartner extends LitElement {
         console.log("Replication Completed");
 
         this.load_campos_y_settings();
+        this.cargar_campana_seleccionada();
 
         // then two-way, continuous, retriable sync
         this.campos_db.sync(this.remote_campos_db, opts).on("error", (e) => {
@@ -645,12 +525,15 @@ export class FieldPartner extends LitElement {
             this.load_campos_y_settings();
             console.log("CHANGES!!");
           });
-
-          this.init_ndvi_dbs();
       })
       .on("error", (e) => {
         // Puede llegar aca si la app se abre offline
         console.error(e);
+        if (gbl_state.online) {
+          //Recargo si estoy online
+          console.log("Restarting......")
+          window.location.reload();
+        }
       });
   }
 
@@ -668,43 +551,11 @@ export class FieldPartner extends LitElement {
 
     settings_doc.user_cultivos = cultivos_default;
 
-    try {
-      console.log("No hay insumos...Fetching");
-      let data = await fetch("/products.json").then((response) =>
-        response.json()
-      );
-      let products = data.products;
+    this.campos_db
+      .put(settings_doc)
+      .then(() => console.log("Settings Grabadas"));
 
-      let insumos = products.map((p: any) => {
-        let i: Insumo = get_empty_insumo();
-        i.marca_comercial = p.commercial_brand;
-        i.principio_activo = p.supply?.active_substance || "";
-        i.tipo = p.type?.name || "";
-        i.subtipo = p.subtype?.name || "";
-        i.unidad = p.unit.name || "";
-        return i;
-      });
-
-      console.log("BulkDocs Insumos");
-      this.campos_db.bulkDocs(insumos).then((d) => {
-        settings_doc.insumos_inicializados = true;
-        // Grabar Settings DOC
-        this.campos_db.put(settings_doc);
-        this.settings = settings_doc;
-      });
-
-      // Creando Contratista
-      let contratista_doc = { _id: "contratistas", contratistas: {} };
-      this.campos_db.put(contratista_doc);
-
-      console.log("INSUMOS", insumos);
-    } catch (e) {
-      console.error("Error Fetch Insumos", e);
-      // Grabo de todas maneras el resto de settings
-      this.campos_db.put(settings_doc);
-      console.log("Settings Grabadas");
-      this.settings = settings_doc;
-    }
+    this.settings = settings_doc;
   }
 
   /** Recarga los campos y settings.
@@ -718,7 +569,10 @@ export class FieldPartner extends LitElement {
         startkey: "campos_",
         endkey: "campos_\ufff0",
       })
-      .then((result) => (this.campos = result));
+      .then((result) => {
+        this.campos = result;
+        gbl_state.campos = this.campos;
+      });
 
     // Get Settings
     this.campos_db
@@ -734,67 +588,108 @@ export class FieldPartner extends LitElement {
         }
         console.error("Load Settings", e);
       });
+  }
 
-    // this.campos_db
-    //   .compact()
-    //   .then((result) => {
-    //     // handle result
-    //     console.log("Compactacion Local DB Completada");
-
-    //     // Get Campos
-    //     this.campos_db
-    //       .allDocs({
-    //         include_docs: true,
-    //         startkey: "campos_",
-    //         endkey: "campos_\ufff0",
-    //       })
-    //       .then((result) => (this.campos = result));
-
-    //     // Get Settings
-    //     this.campos_db
-    //       .get("settings")
-    //       .then((settings_doc) => {
-    //         this.settings = settings_doc;
-    //         this.inicializar_insumos();
-    //       })
-    //       .catch((e) => {
-    //         if (e?.reason === "missing") {
-    //           this.init_settings();
-    //         }
-    //         console.error("Load Settings", e);
-    //       });
-    //   })
-    //   .catch(function (err) {
-    //     console.log(err);
-    //   });
+  cargar_campana_seleccionada() {
+    gbl_docs_starting("campana", true)
+      .then(only_docs)
+      .then((campanas) => {
+        if (campanas.length === 0) {
+          // No hay campañas
+          gbl_state.campana_seleccionada = {
+            nombre: get("sin_temporada"),
+            inicio: "2000-01-01",
+            fin: "2100-12-31",
+          };
+        } else {
+          gbl_state.user_db
+            .get("campana_seleccionada")
+            .then((campana_selec_doc) => {
+              gbl_state.campana_seleccionada =
+                campana_selec_doc.seleccionada as Campana;
+            })
+            .catch(() => {
+              //Missing o error
+              gbl_state.campana_seleccionada = {
+                nombre: get("sin_temporada"),
+                inicio: "2000-01-01",
+                fin: "2100-12-31",
+              };
+            });
+        }
+      });
   }
   /**** FIN Bases de Datos */
   // #endregion
 
+  firstUpdated() {
+    gbl_state.router = new Router(document.getElementById("router-container"));
+    gbl_state.router.setRoutes([
+      { path: "/", component: "null-component" },
+      { path: "/gf", redirect: "/" },
+      { path: "/campos", component: "lista-de-campos" },
+      { path: "/indices/:uuid", component: "ndvi-offcanvas" },
+      { path: "/cultivos", component: "color-cultivo" },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add",
+        component: "lote-offcanvas-side",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit",
+        component: "lote-offcanvas-side",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote",
+        component: "lote-offcanvas-side",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/:uuid_actividad/repetir",
+        component: "repetir-aplicacion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/nueva/:tipo",
+        component: "upsert-aplicacion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/editar/:uuid",
+        component: "upsert-aplicacion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/nueva",
+        component: "upsert-ejecucion",
+      },
+      {
+        path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/editar",
+        component: "upsert-ejecucion",
+      },
+      { path: "/campo/add", component: "nuevo-campo" },
+      { path: "/campo/:uuid", component: "campo-offcanvas" },
+      { path: "/contratistas", component: "contratistas-lista" },
+      { path: "/contratistas/add", component: "contratistas-crud" },
+      { path: "/depositos", component: "depositos-lista" },
+      { path: "/depositos/add", component: "depositos-upsert" },
+      { path: "/insumos", component: "insumos-lista" },
+      { path: "/rights/:uuid_workspace", component: "workspace-rights" },
+      { path: "/invite/:base64_invitation", component: "link-invitacion" },
+      {
+        path: "/device/:uuid/dashboard/:date",
+        component: "device-route-handler",
+      },
+      { path: "/ejecucion", component: "null" },
+    ]);
+  }
+
   render() {
+    console.count("FieldPartner Render");
+
     return html`
-      <mapa-principal
-        .campos=${this.campos}
-        .settings=${this.settings}
-      ></mapa-principal>
-
-      <navbar-element .map=${this.map}></navbar-element>
-
-      <campo-offcanvas
-        id="campo-oc"
-        .map=${this.map}
-        .draw=${this.draw}
-        .campos_db=${this.campos_db}
-        .local_campos_changes=${this.changes_db}
-        .user=${this.user}
-      ></campo-offcanvas>
-
-      <lote-offcanvas
-        id="lote-oc"
-        .map=${this.map}
-        .db=${this.campos_db}
-        .settings=${this.settings}
-      ></lote-offcanvas>
+      <app-layout-navbar-placement>
+        <div id="router-container"></div>
+        <mapa-principal
+          .campos=${this.campos}
+          .settings=${this.settings}
+        ></mapa-principal>
+      </app-layout-navbar-placement>
 
       <nuevo-campo
         id="nuevo-campo-oc"
@@ -803,26 +698,15 @@ export class FieldPartner extends LitElement {
         .campos_db=${this.campos_db}
       ></nuevo-campo>
 
-      <lista-de-campos
-        id="lista-de-campos"
-        .map=${this.map}
-        .campos=${this.campos}
-      ></lista-de-campos>
-
       <contratista-crud
         id="contratista-crud"
         .db=${this.campos_db}
       ></contratista-crud>
+
       <contratistas-lista
         id="contratistas-lista"
         .db=${this.campos_db}
       ></contratistas-lista>
-      <color-cultivo
-        id="colores-cultivos"
-        .cultivos=${this.settings?.user_cultivos}
-      ></color-cultivo>
-      <ndvi-offcanvas id="ndvi-oc" .map=${this.map}></ndvi-offcanvas>
-
 
       <nota-share-target
         id="nota-share-target"
@@ -832,21 +716,14 @@ export class FieldPartner extends LitElement {
 
       <insumos-lista id="insumos-lista" .db=${this.campos_db}></insumos-lista>
 
-      <deposito-upsert
-        id="deposito-upsert"
-        .db=${this.campos_db}
-        .draw=${this.draw}
-      ></deposito-upsert>
-      <depositos-lista
-        id="depositos-lista"
-        .db=${this.campos_db}
-      ></depositos-lista>
+      <!-- <login-modal id="login-modal" .show=${!this
+        .logged_in}></login-modal> -->
 
-      <login-modal id="login-modal" .show=${!this.logged_in}></login-modal>
-      
-    <div id='container-multiproposito'>
-    <loading-modal .show=${this.loading}></loading-modal>
-    </div>
+      <div id="container-multiproposito">
+        <loading-modal .show=${this.loading}></loading-modal>
+      </div>
+
+      <!-- <div id="router-container"></div> -->
     `;
   }
 }

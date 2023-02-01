@@ -1,0 +1,20 @@
+{
+    "http://mynamespace/couchdb": {
+        "couchDB": {
+            "username": "202a86b7-7b91-43a2-8115-244a8bd6edbd",
+            "password": "c0fbb94d-12e9-47ce-8887-1141f40e32b4",
+            "campos": "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/campos_202a86b7-7b91-43a2-8115-244a8bd6edbd",
+            "notas": "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/notas_202a86b7-7b91-43a2-8115-244a8bd6edbd"
+        }
+    },
+    "given_name": "Vid",
+    "family_name": "Facultad",
+    "nickname": "lacasillademail",
+    "name": "Vid Facultad",
+    "picture": "https://lh3.googleusercontent.com/a/ALm5wu0aeW_iBVbVSMrOZSLfWxgViuOy-fLH6_qhy5Fz=s96-c",
+    "locale": "en",
+    "updated_at": "2022-11-27T21:14:54.786Z",
+    "email": "lacasillademail@gmail.com",
+    "email_verified": true,
+    "sub": "google-oauth2|113145060150044582242"
+}

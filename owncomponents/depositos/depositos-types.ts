@@ -1,20 +1,48 @@
+import { LngLatLike } from 'mapbox-gl';
 import { PartType } from "lit-html/directive";
 import uuid4 from "uuid4";
 import {
   Contratista,
   empty_contratista,
+  Labor,
 } from "../contratistas/contratista-types";
+import { deepcopy } from "../helpers";
 import { Insumo } from "../insumos/insumos-types";
+import { tipos_siembra } from '../jsons/tipos_siembra';
+import { Proveedor } from '../tipos/proveedores';
+
+interface Ingeniero {
+  nombre: string
+
+}
 
 interface IHash<T> {
   [index: string]: T;
 }
+export interface LastUpdateTag {
+  last_updated: string, last_updated_by: Object
+}
+
+export interface CreatedTag{
+  created: string, created_by: Object
+}
 
 interface Deposito {
   _id: string;
+  _rev ?: string;
   uuid: string;
   nombre: string;
-  posicion: number[];
+  contratista_asociado ?: Contratista,
+  proveedor_asociado ? : Proveedor,
+  posicion ?: LngLatLike; //Lng Lat
+  direccion ?: string;
+  tipo: "virtual" | "fisico";
+  car ?: string;
+  /** iso dates zulu */
+  last_updated : LastUpdateTag
+  created : CreatedTag
+  pais ?: string;
+  archivado: boolean
 }
 
 interface LineaInsumo {
@@ -68,25 +96,53 @@ const get_empty_entrada = () => {
   return { ...empty_entrada };
 };
 
-type LineaDosis =  { uuid:string, insumo: Insumo; motivos:string[], dosis: number; total: number }
+type LineaDosis = {
+  uuid: string;
+  insumo: Insumo;
+  motivos: string[];
+  dosis: number;
+  total: number;
+  precio_estimado: number;
+};
+
+type LineaLabor = {
+  uuid: string;
+  labor : Labor;
+  costo : number;
+  observacion: string;
+}
+
+type LineaDosisEjecucion = {
+  uuid: string;
+  insumo: Insumo;
+  motivos: string[];
+  dosis: number;
+  total: number;
+  precio_estimado:number;
+  precio_real: number;
+  deposito_origen: Deposito;
+};
+
 
 type DetallesAplicacion = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
+  ingeniero: Ingeniero
   dosis: LineaDosis[];
 };
 
+
 type DetallesCosecha = {
   fecha_ejecucion_tentativa: string;
+  dosis?: LineaDosis[];
   hectareas: number;
   rinde: number;
-  comentario: string;
-  humedad: string;
-  
+  humedad: number;
 };
 
 type DetallesSiembra = {
   fecha_ejecucion_tentativa: string;
+  dosis?: LineaDosis[];
   insumo: Insumo;
   peso_1000: number;
   densidad_objetivo: number;
@@ -97,8 +153,66 @@ type DetallesSiembra = {
   adjuntos: any;
 };
 
+interface Condiciones {
+  temperatura_min: number;
+  temperatura_max: number;
+  humedad_min: number;
+  humedad_max: number;
+  velocidad_min: number;
+  velocidad_max: number;
+}
+interface CondicionesEjecucion {
+  temperatura_min: number;
+  temperatura_promedio:number,
+  humedad_promedio:number,
+  velocidad_promedio:number,
+  temperatura_max: number;
+  humedad_min: number;
+  humedad_max: number;
+  velocidad_min: number;
+  velocidad_max: number;
+}
+
+interface Detalles {
+  fecha_ejecucion_tentativa: string;
+  ingeniero: Ingeniero;
+  hectareas: number;
+  dosis: LineaDosis[];
+  costo_labor: LineaLabor[];
+  // Cosecha
+  rinde_esperado?: number;
+  humedad_esperado?: number;
+  // Siembra
+  peso_1000?: number;
+  densidad_objetivo?: number;
+  semillas_totales?: number;
+  distancia?: number;
+  tipo_siembra?: string
+}
+
+interface DetallesEjecucion {
+  ingeniero: Ingeniero;
+  fecha_ejecucion: string;
+  fecha_hora_inicio: string;
+  fecha_hora_fin: string; 
+  hectareas: number;
+  dosis: LineaDosisEjecucion[];
+  costo_labor: LineaLabor[];
+  // Cosecha
+  rinde?: number;
+  humedad?: number;
+  // Siembra
+  peso_1000?: number;
+  densidad_objetivo?: number;
+  semillas_totales?: number;
+  distancia?: number;
+  tipo_siembra?: string;
+
+}
+
 interface Actividad {
   _id: string;
+  _rev?: string;
   uuid: string;
   ts_generacion: number;
   tipo: string;
@@ -106,13 +220,31 @@ interface Actividad {
   contratista: Contratista;
   comentario: string;
   adjuntos: string[];
-  estado: string;
-  detalles: DetallesSiembra | DetallesCosecha | DetallesAplicacion;
-  fecha? : string;
-  color? : string;
-  texto? : string;
-  posicion? : number[];
+  estado: number;
+  detalles: Detalles;
+  fecha?: string;
+  color?: string;
+  texto?: string;
+  posicion?: number[];
+  condiciones?: Condiciones;
   _attachments?: any;
+  motivos_nota?: any
+}
+
+
+interface Ejecucion {
+  _id: string;
+  _rev?: string;
+  uuid: string;
+  contratista: Contratista,
+  ts_generacion: string;
+  tipo: string;
+  lote_uuid: string;
+  comentario: string;
+  estado: string;
+  detalles: DetallesEjecucion;
+  condiciones?: CondicionesEjecucion;
+  deposito_origen ?: Deposito,
 }
 
 const get_empty_aplicacion = () => {
@@ -125,16 +257,60 @@ const get_empty_aplicacion = () => {
     contratista: { ...empty_contratista },
     comentario: "",
     adjuntos: [],
-    estado: "pendiente",
+    estado: 0,
     detalles: {
       fecha_ejecucion_tentativa: "",
+      ingeniero : null,
       hectareas: 0,
-      motivos:"",
+      motivos: "",
       dosis: [],
-    } as DetallesAplicacion,
+      costo_labor: []
+    } as Detalles,
+    condiciones:{
+      temperatura_max:25,
+      temperatura_min:0,
+      humedad_min:45,
+      humedad_max:65,
+      velocidad_min:5,
+      velocidad_max:15,
+    }
   };
 
-  return {...a}
+  return { ...a };
+};
+
+const get_empty_ejecucion = () => {
+  const a: Ejecucion = {
+    _id: "",
+    uuid: uuid4(),
+    ts_generacion: "0",
+    tipo: "aplicacion",
+    lote_uuid: "",
+    comentario: "",
+    estado: "pendiente",
+    detalles: {
+      ingeniero:null,
+      fecha_ejecucion: "",
+      fecha_hora_fin: "",
+      fecha_hora_inicio:"",
+      hectareas: 0,
+      dosis: [],
+      costo_labor:[]
+    },
+    condiciones:{
+      temperatura_max:25,
+      temperatura_promedio:0,
+      temperatura_min:0,
+      humedad_min:45,
+      humedad_promedio:0,
+      humedad_max:65,
+      velocidad_min:5,
+      velocidad_promedio:0,
+      velocidad_max:15,
+    }
+  };
+
+  return deepcopy(a);
 };
 
 const sumar_entradas = (entradas: Entrada[]) => {
@@ -186,5 +362,11 @@ export {
   get_empty_aplicacion,
   DetallesSiembra,
   DetallesAplicacion,
-  LineaDosis
+  DetallesCosecha,
+  LineaDosis,
+  LineaLabor,
+  Ejecucion,
+  DetallesEjecucion,
+  LineaDosisEjecucion,
+  get_empty_ejecucion
 };

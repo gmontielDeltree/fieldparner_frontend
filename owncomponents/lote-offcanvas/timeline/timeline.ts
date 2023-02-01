@@ -11,10 +11,21 @@ import {
   DetallesSiembra,
   LineaDosis,
 } from "../../depositos/depositos-types";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import isFuture from "date-fns/isFuture";
 
 import "@vaadin/combo-box";
+import "@vaadin/horizontal-layout";
+import "@vaadin/icon";
+import "@vaadin/icons";
+import { Router } from "@vaadin/router";
+import gbl_state from "../../state";
+
+const url_repeticion = (actividad_uuid) => {
+  let location = gbl_state.router.location.pathname;
+  let url = location + "/actividad/" +  encodeURIComponent(actividad_uuid) + "/repetir"
+  return url;
+};
 
 const estados = [
   {
@@ -276,28 +287,28 @@ const timeline_css = css`
   }
 
   .icono-siembra {
-    background-image: url("sembradora_act.webp") !important;
+    background-image: url("/sembradora_act.webp") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;
   }
 
   .icono-cosecha {
-    background-image: url("cosechadora_act.webp") !important;
+    background-image: url("/cosechadora_act.webp") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;
   }
 
   .icono-aplicacion {
-    background-image: url("pulverizadora_act.webp") !important;
+    background-image: url("/pulverizadora_act.webp") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;
   }
 
   .icono-nota {
-    background-image: url("iconodenotas_act.webp") !important;
+    background-image: url("/iconodenotas_act.webp") !important;
     background-color: #ffc323 !important;
     background-size: cover !important;
     background-position: center !important;
@@ -465,19 +476,25 @@ export class TimelineElement extends LitElement {
           item-value-path="value"
           item-label-path="nombre"
           .items="${estados}"
-          @selected-item-changed=${(e) => {
+          @selected-item-changed=${(ev) => {
             try {
-              item.estado = e.detail.value.value;
-              console.log("Evento Cambiar estado", e, item);
+              // Esto se dispara por aguna razon cuando se cargan los elementos por
+              // primera vez
+              if (item.estado === ev.detail.value.value) {
+                //console.log("NO HAY CAMBIOS")
+                return;
+              }
+              item.estado = ev.detail.value.value;
+              //console.log("Evento Cambiar estado", ev, item);
 
               let event = new CustomEvent("cambio-estado", {
-                detail: { e: e, item: item },
+                detail: { e: ev, item: item },
                 bubbles: true,
                 composed: true,
               });
               this.dispatchEvent(event);
             } catch (e) {
-              console.log("EEROR EEEE", e);
+              //console.log("EEROR EEEE", ev);
             }
           }}
           value=${estado}
@@ -524,7 +541,13 @@ export class TimelineElement extends LitElement {
           class="btn btn-warning"
           @click=${() => {
             console.log(item.uuid);
-            this.dispatchEvent(new CustomEvent('ver-centrales-cercanas',{detail:item,bubbles:true, composed:true}))
+            this.dispatchEvent(
+              new CustomEvent("ver-centrales-cercanas", {
+                detail: item,
+                bubbles: true,
+                composed: true,
+              })
+            );
           }}
         >
           Datos Meteorológicos
@@ -565,7 +588,9 @@ export class TimelineElement extends LitElement {
 
         let color_badge;
         if (item.color === "red") {
-          color_badge = html`<span class="badge bg-danger float-end">Urgente</span>`;
+          color_badge = html`<span class="badge bg-danger float-end"
+            >Urgente</span
+          >`;
         } else if (item.color === "yellow") {
           color_badge = html`<span class="badge bg-warning float-end"
             >Atención</span
@@ -659,6 +684,13 @@ export class TimelineElement extends LitElement {
             <h2>
               <a>APLICACIÓN</a>
               <span class="text-muted">en ${hectareas} has.</span>
+              <vaadin-button
+                @click=${() => Router.go(url_repeticion(item._id))}
+                theme="icon"
+                aria-label="Mas"
+              >
+                <vaadin-icon icon="vaadin:ellipsis-dots-h"></vaadin-icon>
+              </vaadin-button>
               ${is_planificada
                 ? html`<span class="badge bg-success rounded-pill float-end"
                     >Planificada</span
@@ -693,7 +725,7 @@ export class TimelineElement extends LitElement {
             <time class="cbp_tmtime" datetime="2032-11-04T03:45"
               ><span>${fecha}</span> <span>${elapsed}</span></time
             >
-            <div class="cbp_tmicon bg-green">
+            <div class="cbp_tmicon bg-green icono-cosecha ">
               <i class="zmdi zmdi-label"></i>
             </div>
             <div class="cbp_tmlabel bg-cosecha">

@@ -1,3 +1,4 @@
+import { format_iso_c } from "./../helpers";
 import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
 import { base_url, touchEvent } from "../helpers";
@@ -8,6 +9,7 @@ import {
   DailyTelemetryCard,
 } from "./sensores-types.js";
 import { Map, Marker, Popup } from "mapbox-gl";
+import { formatISO, fromUnixTime } from "date-fns";
 /** Helper para extraer la telemetria */
 const extract_tele = (key, tele) => {
   let f = tele.data.filter((punto) => {
@@ -25,7 +27,11 @@ function unixToDate(date) {
 }
 
 const valor = (card, key) => {
-  return extract_tele(key, card)?.value || "N/A";
+  if (extract_tele(key, card)) {
+    return extract_tele(key, card)?.value;
+  } else {
+    return "N/A";
+  }
 };
 
 class Devices {
@@ -84,6 +90,11 @@ class Devices {
 
   get_daily_cards = async (dia: string) => {
     return this.devices_publicos_daily_get(dia);
+  };
+
+  get_device_daily_card = async (uuid: string, dia_str: string) => {
+    let doc: unknown = this.db.get(uuid + ":daily:" + dia_str);
+    return (await doc) as Promise<DailyTelemetryCard>;
   };
 
   devices_publicos_daily_get = async (dia: string) => {
@@ -149,12 +160,16 @@ class Devices {
         let latitud = extract_tele("latitud", telemetria).value;
         let longitud = extract_tele("longitud", telemetria).value;
 
+        let temperatura = extract_tele("temperatura", telemetria).value;
+        let humedad = extract_tele("humedad", telemetria).value;
+        let presion = extract_tele("presion", telemetria).value;
+
         const el = document.createElement("div");
         el.className = "marker";
 
-        el.style.backgroundImage = `url('centralmeteorologica70_90.webp')`;
+        el.style.backgroundImage = `url('/centralmeteorologica70_90.webp')`;
         el.style.backgroundSize = "cover";
-        
+
         el.style.width = `35px`;
         el.style.height = `45px`;
         //el.style.backgroundSize = '100%';
@@ -164,20 +179,30 @@ class Devices {
           (d) => d.device_id === telemetria.device_id
         );
         if (detalles_de_este) {
-
           // Popup que no se cierra ni tiene boton de cerrar
-          const popup = new Popup({closeOnClick: false, closeButton: false})
-          popup.setText(detalles_de_este.nombre)
-          popup.setOffset([0,-45])
-          popup.setLngLat([longitud, latitud])
-          popup.addTo(map)
+          const popup = new Popup({ closeOnClick: false, closeButton: false });
+          popup.setHTML(`<div style:'display:flex'>
+          <div style='font-weight:bold'>${detalles_de_este.nombre}</div>
+          <div style='font-size:10px;font-weight: lighter;'>${formatISO(
+            fromUnixTime(telemetria.ts_last)
+          )}</div>
+            <ul style='padding-left:2em'>
+              <li>Temperatura: ${temperatura}ºC</li>
+              <li>Humedad: ${humedad}%</li>
+              <li>Presión: ${presion}hPa.</li>
+            </ul>
+            </div>
+          `);
+          popup.setOffset([0, -45]);
+          //popup.setLngLat([longitud, latitud])
+          // popup.addTo(map)
 
           //console.info("LATLON", latitud, longitud);
           //
-          const marker = new Marker({element: el, anchor:'bottom' })
+          const marker = new Marker({ element: el, anchor: "bottom" })
             .setLngLat([longitud, latitud])
-            .addTo(map)
-           
+            .setPopup(popup)
+            .addTo(map);
 
           /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
           marker.getElement().addEventListener(touchEvent, () => {
@@ -188,6 +213,13 @@ class Devices {
             });
             marker.getElement().dispatchEvent(ev);
           });
+
+          marker.getElement().addEventListener("mouseenter", () => {
+            marker.togglePopup();
+          });
+          marker.getElement().addEventListener("mouseleave", () => {
+            marker.togglePopup();
+          });
         }
       } catch (e) {
         console.info("Error Al hacer el marcador de dispositivo");
@@ -197,11 +229,25 @@ class Devices {
 
   async get_raw_data_for_charts_generic(uuid) {
     let docs = await this.db_raw.allDocs({
-      include_docs: true,
-      limit: 1500,
+      // include_docs: true,
+      limit: 10000,
       descending: true,
       endkey: uuid + ":",
       startkey: uuid + ":\ufff0",
+    });
+
+    let ids = await docs.rows.map((d) => d.id);
+    let ids_decimado = ids.filter((_, index) => index % 10 === 0);
+
+    //console.log("Only IDS", ids)
+
+    docs = await this.db_raw.allDocs({
+      include_docs: true,
+      //limit: 1500,
+      keys: ids_decimado,
+      descending: true,
+      //endkey: uuid + ":",
+      //startkey: uuid + ":\ufff0",
     });
 
     let data = await docs.rows.map((d) => d.doc);
@@ -214,6 +260,24 @@ class Devices {
       return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
 
       array_de_mediciones.forEach((medicion: DataPoints) => {
+        if (medicion.sensor_id === "temperatura") {
+          if (medicion.value > 60 || medicion.value < -10) {
+            return;
+          }
+        }
+
+        if (medicion.sensor_id === "humedad") {
+          if (medicion.value > 100 || medicion.value < 0) {
+            return;
+          }
+        }
+
+        if (medicion.sensor_id === "presion") {
+          if (medicion.value > 1100 || medicion.value < 900) {
+            return;
+          }
+        }
+
         if (return_value[medicion.sensor_id]) {
           return_value[medicion.sensor_id].push(medicion.value);
         } else {
@@ -236,4 +300,6 @@ class Devices {
   }
 }
 
-export { Devices, extract_tele, valor };
+const gbl_devices = new Devices();
+
+export { Devices, extract_tele, valor, gbl_devices };

@@ -9,25 +9,31 @@ import "@vaadin/horizontal-layout";
 import "@vaadin/vertical-layout";
 import "@vaadin/custom-field";
 import "@vaadin/grid";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
-import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
-import { GridItemModel } from "@vaadin/grid";
 import "../contratistas/contratista-crud";
 import "@vaadin/icons";
-import { Map, Marker } from "mapbox-gl";
+import { Map} from "mapbox-gl";
 import { Devices, extract_tele } from "./sensores";
 import { touchEvent } from "../helpers";
 import devices_modelos from "./devices_modelos.ts";
 import { format, formatDistance, formatRelative, subDays } from "date-fns";
 import format from "date-fns/format";
 import ApexCharts from "apexcharts";
-import apex_css from "apexcharts/dist/apexcharts.css";
+import apex_css from "apexcharts/dist/apexcharts.css?inline";
 import { DailyTelemetryCard } from "./sensores-types";
 import "./mediciones-cards/temperatura";
 import "./mediciones-cards/presion";
 import "./mediciones-cards/humedad";
+import "./mediciones-cards/radiacion";
+import "./mediciones-cards/viento_velocidad"
+import "./mediciones-cards/viento_direccion"
+import "./rosad3"
+
+import "./mediciones-cards/pluviometro"
+import { Router } from "@vaadin/router";
+
 // background-position-y: -60px;
 //background-size: 100% auto;
 //background-position-y: -60px;
@@ -37,13 +43,13 @@ export class SensoresClass extends LitElement {
     unsafeCSS(apex_css),
     css`
       .humedad-body {
-        background-image: url("sensor-humedad/suelo.webp");
+        background-image: url("/sensor-humedad/suelo.webp");
         background-repeat: no-repeat;
         background-position-y: -60px;
       }
 
       .offcanvas-humedad-body {
-        background-image: url("sensor-humedad/blur_bg.webp"),
+        background-image: url("/sensor-humedad/blur_bg.webp"),
           linear-gradient(rgba(255, 255, 255, 0), rgb(78, 62, 55));
         background-repeat: no-repeat;
         background-size: 100% 100%;
@@ -51,12 +57,12 @@ export class SensoresClass extends LitElement {
       }
 
       .charts-body {
-        background-image: url("sensor-humedad/blur_bg.webp");
+        background-image: url("/sensor-humedad/blur_bg.webp");
         background-position-y: -70px;
       }
 
       .offcanvas-sensores-body {
-        background-image: url("fondodewindows.jpeg");
+        background-image: url("/fondodewindows.jpeg");
         background-size: 100% 100%;
         background-repeat: no-repeat;
       }
@@ -103,7 +109,7 @@ export class SensoresClass extends LitElement {
       }
 
       .sensor-imagen {
-        background-image: url("sensor-humedad/sensor-humedad-suelo.webp");
+        background-image: url("/sensor-humedad/sensor-humedad-suelo.webp");
         background-size: 100%;
         background-repeat: no-repeat;
         background-position: center;
@@ -136,6 +142,9 @@ export class SensoresClass extends LitElement {
   @property()
   map: Map;
 
+  @property()
+  uuid:string
+
   @state({
     hasChanged(newVal: Offcanvas, oldVal: Offcanvas) {
       return false;
@@ -143,7 +152,8 @@ export class SensoresClass extends LitElement {
   })
   _offcanvas: Offcanvas;
 
-  @state()
+
+  @property()
   _selected_device_card: DailyTelemetryCard = undefined;
 
   @state()
@@ -153,7 +163,7 @@ export class SensoresClass extends LitElement {
   _devices: Devices = new Devices();
 
   @state()
-  _datapoints : any;
+  _datapoints: any;
 
   @state({
     hasChanged(newVal: Offcanvas, oldVal: Offcanvas) {
@@ -162,16 +172,19 @@ export class SensoresClass extends LitElement {
   })
   _offcanvas_humedad: Offcanvas;
 
+  @state()
+  _show_chart_only: boolean = false;
+
   override async firstUpdated() {
-    this.shadowRoot
-    .getElementById("offcanvas")
-    .addEventListener("hidden.bs.offcanvas", (e) => {
-      // Se elimina del parent
-      let parent = this.parentElement;
-      while (parent.firstChild) {
-        parent.firstChild.remove();
-      }
-    });
+    // this.shadowRoot
+    //   .getElementById("offcanvas")
+      // .addEventListener("hidden.bs.offcanvas", (e) => {
+      //   // Se elimina del parent
+      //   let parent = this.parentElement;
+      //   while (parent.firstChild) {
+      //     parent.firstChild.remove();
+      //   }
+      // });
 
     this._offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas")
@@ -183,20 +196,25 @@ export class SensoresClass extends LitElement {
   }
 
   override async willUpdate(props) {
+    console.log('sensores-offcanvas-WillUpdate',props)
+    if(props.has('uuid')){
+      this._selected_details = await this._devices.get_details(this._selected_device_card.device_id);
+      this.load_data_points();
+      this._offcanvas.show();
+    }
   }
 
   // Ocurre cuando ya se renderizo
   override updated(changedProps) {
     if (changedProps.has("_selected_details")) {
-      
     }
   }
 
   async show(card: DailyTelemetryCard) {
     if (card) {
       // Ya tengo algo que mostrar
-      // console.log("MOSTRAR", card)
-      await this.updateComplete
+      console.log("MOSTRAR", card)
+      await this.updateComplete;
       this._offcanvas.show();
       this._selected_device_card = card;
       this._selected_details = await this._devices.get_details(card.device_id);
@@ -226,6 +244,8 @@ export class SensoresClass extends LitElement {
       : "N/A";
   }
 
+
+
   simulated_historical_data(s) {
     let tes = [11, 32, 45, 32, 34, 52, 41];
     let haches = [31, 40, 28, 51, 42, 109, 100];
@@ -253,12 +273,12 @@ export class SensoresClass extends LitElement {
     return { temperatura: [...tes], humedad: [...haches], ts: [...dates] };
   }
 
-  async load_data_points(){
+  async load_data_points() {
     let nt = await this._devices.get_raw_data_for_charts_generic(
       this._selected_device_card.device_id
     );
     console.log("Data for Charts LDP", nt);
-      this._datapoints = nt
+    this._datapoints = nt;
   }
 
   async renderChart() {
@@ -308,7 +328,7 @@ export class SensoresClass extends LitElement {
           },
           labels: {
             style: {
-              colors: "#008FFB",
+              colors: "#000000",
             },
           },
           title: {
@@ -423,33 +443,32 @@ export class SensoresClass extends LitElement {
     );
   }
 
+  // if (this.device_tiene("humedad")) {
+  //   const this_opts = JSON.parse(JSON.stringify(options));
+  //   this_opts.xaxis.categories = [...nt.ts];
+  //   this_opts.series[0].data = [...nt.humedad];
+  //   this_opts.series[0].name = "Humedad";
+  //   this_opts.title.text = "Humedad";
+  //   this_opts.yaxis[0].title = "Humedad";
+  //   const chart_1 = new ApexCharts(
+  //     this.shadowRoot.getElementById("chart-central-2"),
+  //     this_opts
+  //   );
+  //chart_1.render();
+  //}
 
-    // if (this.device_tiene("humedad")) {
-    //   const this_opts = JSON.parse(JSON.stringify(options));
-    //   this_opts.xaxis.categories = [...nt.ts];
-    //   this_opts.series[0].data = [...nt.humedad];
-    //   this_opts.series[0].name = "Humedad";
-    //   this_opts.title.text = "Humedad";
-    //   this_opts.yaxis[0].title = "Humedad";
-    //   const chart_1 = new ApexCharts(
-    //     this.shadowRoot.getElementById("chart-central-2"),
-    //     this_opts
-    //   );
-      //chart_1.render();
-    //}
-
-    // if (this.device_tiene("presion")) {
-    //   const this_opts = JSON.parse(JSON.stringify(options));
-    //   this_opts.xaxis.categories = [...nt.ts];
-    //   this_opts.series[0].data = [...nt.presion];
-    //   this_opts.series[0].name = "Presion";
-    //   this_opts.title.text = "Presion";
-    //   this_opts.yaxis[0].title = "Presion";
-    //   const chart_1 = new ApexCharts(
-    //     this.shadowRoot.getElementById("chart-central-3"),
-    //     this_opts
-    //   );
-      // chart_1.render();
+  // if (this.device_tiene("presion")) {
+  //   const this_opts = JSON.parse(JSON.stringify(options));
+  //   this_opts.xaxis.categories = [...nt.ts];
+  //   this_opts.series[0].data = [...nt.presion];
+  //   this_opts.series[0].name = "Presion";
+  //   this_opts.title.text = "Presion";
+  //   this_opts.yaxis[0].title = "Presion";
+  //   const chart_1 = new ApexCharts(
+  //     this.shadowRoot.getElementById("chart-central-3"),
+  //     this_opts
+  //   );
+  // chart_1.render();
 
   sensor_renderer(sensor_data, detalles, pos) {
     // Si no es sensor de humedad suelo no renderiza nada
@@ -463,9 +482,9 @@ export class SensoresClass extends LitElement {
 
     let c = "";
     if (pos === 1) {
-      c = "sensor-1 mx-0 p-0 container-fluid row";
+      c = "mx-0 p-0 container-fluid row";
     } else if (pos === 2) {
-      c = "sensor-2 mx-0 p-0 container-fluid row";
+      c = "mx-0 p-0 container-fluid row";
     }
 
     return html`
@@ -539,24 +558,24 @@ export class SensoresClass extends LitElement {
       </div>
     `;
   }
-  
+
   render() {
-    
-    const ifLoadedShow = (nombre_var)=>{
-     let a1 = devices_modelos[this._selected_details?.tipo]?.sensores.includes(
-        nombre_var
-      )
+    const ifLoadedShow = (nombre_var) => {
+      let a1 =
+        devices_modelos[this._selected_details?.tipo]?.sensores.includes(
+          nombre_var
+        );
 
-     let a2 = this._selected_device_card ? true : false
-     //let a3 = this._datapoints ? true : false;
+      let a2 = this._selected_device_card ? true : false;
+      //let a3 = this._datapoints ? true : false;
 
-     return (a1 && a2)
-    }
+      return a1 && a2;
+    };
 
     // Hay algo seleccionado
     return html`
       <div
-        class="offcanvas offcanvas-start"
+        class="offcanvas offcanvas-start show"
         tabindex="-1"
         style="width: 100%;"
         id="offcanvas"
@@ -575,7 +594,13 @@ export class SensoresClass extends LitElement {
             class="btn-close text-reset"
             data-bs-dismiss="offcanvas"
             aria-label="Close"
-            @click=${() => this._offcanvas.hide()}
+            @click=${() => {
+
+                this._offcanvas.hide()
+                Router.go('/')
+              }
+
+              }
           ></button>
         </div>
         <div
@@ -600,61 +625,69 @@ export class SensoresClass extends LitElement {
             </div>
 
             <!-- Temperatura -->
-            ${ifLoadedShow('temperatura')
-              ? html`<temperatura-card .card=${this._selected_device_card} .data=${this._datapoints}></temperatura-card>`
+            ${ifLoadedShow("temperatura")
+              ? html`<temperatura-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                ></temperatura-card>`
               : null}
             <!--/temperatura-->
 
             <!-- Humedad -->
-            ${ifLoadedShow(
-              "humedad"
-            )
-              ? html`<humedad-card .card=${this._selected_device_card} .data=${this._datapoints}/>`
+            ${ifLoadedShow("humedad")
+              ? html`<humedad-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
               : null}
             <!--/humedad-->
 
             <!-- Presion -->
-            ${ifLoadedShow(
-              "presion"
-            )
-              ? html`<presion-card .card=${this._selected_device_card} .data=${this._datapoints}/>`
+            ${ifLoadedShow("presion")
+              ? html`<presion-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
               : null}
             <!--/presion-->
 
-            <!-- Viento -->
-            ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
-              "viento"
-            )
-              ? html`
-                  <div class="container-fluid border-primary border-top p-1">
-                    <div class="row">
-                      <h5>
-                        Viento
-                        <span class="fw-bolder"
-                          >${this.valor("velocidad")} km/h</span
-                        >
-                      </h5>
-                    </div>
-                    <div class="row">
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">0 km/h</div>
-                        <div class="fw-light">Min</div>
-                      </div>
+             <!-- Radiación -->
+             ${ifLoadedShow("radiacion_solar")
+              ? html`<radiacion-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!--/presion-->
 
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">6 km/h dirección SE</div>
-                        <div class="fw-light">Promedio</div>
-                      </div>
+            <!-- Vel Viento -->
+              ${ifLoadedShow("viento_velocidad")
+              ? html`<viento-velocidad-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!--/vel viento-->
 
-                      <div class="col-4 text-warning fw-bolder">
-                        <div class="fw-strong">16 km/h dirección SE</div>
-                        <div class="fw-light">Max</div>
-                      </div>
-                    </div>
-                  </div>
+            <!-- Dir Viento -->
+              ${ifLoadedShow("viento_direccion")
+              ? html`<viento-direccion-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                /> 
                 `
               : null}
+            <!--/Dir viento-->
             <!--/viento-->
+            
+            <!-- Pluviometro -->
+              ${ifLoadedShow("pluviometro")
+              ? html`<pluviometro-card
+                  .deveui=${this._selected_device_card.device_id}
+                /> 
+                `
+              : null}
+            <!--/Dir pluviometro-->
 
             <!-- Humedad Suelo-->
             ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(
@@ -707,19 +740,56 @@ export class SensoresClass extends LitElement {
             @click=${() => this._offcanvas_humedad.hide()}
           ></button>
         </div>
+
         <div
           class="offcanvas-body p-0 p-0 m-0 container-fluid row offcanvas-humedad-body"
         >
-          <div class="col col-4 p-1">
-            ${this.sensor_renderer({}, {}, 1)}
-            ${this.sensor_renderer({}, {}, 2)}
+          <div class="row spacer d-none d-md-block"></div>
+
+          <!--Boton-->
+          <div class="row  d-block d-md-none mx-auto my-1">
+            <div
+              class="btn btn-primary btn-sm"
+              @click=${() => (this._show_chart_only = !this._show_chart_only)}
+            >
+              ${!this._show_chart_only ? "Gráficos" : "Datos"}
+            </div>
           </div>
 
-          <div class="container-fluid col col-8">
-            <h3></h3>
-            <div class="spacer" spacer></div>
-            <div class="chart-1" id="chart-1"></div>
-            <div class="chart-2" id="chart-2"></div>
+          <!--Primero Sensor-->
+          <div class="row">
+            <div
+              class="${this._show_chart_only
+                ? "d-none d-md-block"
+                : ""} col-12 col-md-4 p-1"
+            >
+              ${this.sensor_renderer({}, {}, 1)}
+            </div>
+            <div
+              class="${this._show_chart_only
+                ? ""
+                : "d-none d-md-block"} col-12 col-md-8"
+            >
+              <div class="chart-1" id="chart-1"></div>
+            </div>
+          </div>
+
+          <!--Segundo Sensor-->
+          <div class="row">
+            <div
+              class="${this._show_chart_only
+                ? "d-none d-md-block"
+                : ""} col-12 col-md-4 p-1"
+            >
+              ${this.sensor_renderer({}, {}, 2)}
+            </div>
+            <div
+              class="${this._show_chart_only
+                ? ""
+                : "d-none d-md-block"} col-12 col-md-8"
+            >
+              <div class="chart-2" id="chart-2"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -729,7 +799,7 @@ export class SensoresClass extends LitElement {
 
 customElements.define("sensores-oc", SensoresClass);
 declare global {
-	interface HTMLElementTagNameMap {
-	  "sensores-oc": SensoresClass;
-	}
-      }
+  interface HTMLElementTagNameMap {
+    "sensores-oc": SensoresClass;
+  }
+}

@@ -4,11 +4,12 @@ import { valor } from "../sensores";
 
 import { LitElement, html, unsafeCSS, render, CSSResultGroup, css } from "lit";
 import { property, state } from "lit/decorators.js";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
 import ApexCharts from "apexcharts";
-import apex_css from "apexcharts/dist/apexcharts.css";
+import apex_css from "apexcharts/dist/apexcharts.css?inline";
+import { add_download_xls_button } from "../excel_boton";
 
 export class PresionCard extends LitElement {
   static override styles: CSSResultGroup = [
@@ -61,6 +62,12 @@ export class PresionCard extends LitElement {
       xaxis: {
         type: "datetime",
         categories: [],
+        labels: {
+          style: {
+            colors: "#000000",
+          },
+        },
+
       },
       yaxis: [
         {
@@ -73,7 +80,7 @@ export class PresionCard extends LitElement {
           },
           labels: {
             style: {
-              colors: "#008FFB",
+              colors: "#000000",
             },
           },
           title: {
@@ -135,6 +142,8 @@ export class PresionCard extends LitElement {
       this_opts
     );
     chart_1.render();
+    
+    add_download_xls_button(this.shadowRoot,this_opts.xaxis.categories, this_opts.series[0].data, this_opts.yaxis[0].title);
   }
 
   toggle() {
@@ -158,28 +167,28 @@ export class PresionCard extends LitElement {
         >
           <div class="row">
             <h5>
-              <img src="pressure-gauge-meter-icon.svg" width="50" height="50" />
+              <img src="/pressure-gauge-meter-icon.svg" width="50" height="50" />
               <span class="fw-bolder"
                 >${valor(this.card, "presion")} hPa</span
               >
             </h5>
           </div>
           <div class="row">
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "presion_min")} hPa
               </div>
               <div class="fw-light">Min</div>
             </div>
 
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "presion_mean")} hPa
               </div>
               <div class="fw-light">Promedio</div>
             </div>
 
-            <div class="col-4 text-warning fw-bolder">
+            <div class="col-4 fw-bolder">
               <div class="fw-strong">
                 ${valor(this.card, "presion_max")} hPa
               </div>

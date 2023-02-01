@@ -1,14 +1,15 @@
 import { LitElement, html, CSSResultGroup, css, unsafeCSS } from "lit";
-import { property, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import Modal from "bootstrap/js/dist/modal";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 
+@customElement('loading-modal')
 export class LoadingModal extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
     css`
       .fondo-bg {
-        background-image: url("assets/images/cosechadora_bg.jpg");
+        background-image: url("/assets/images/cosechadora_bg.jpg");
         background-size: 100% auto;
         background-position-y: -300px;
       }
@@ -24,6 +25,7 @@ export class LoadingModal extends LitElement {
 
   @property()
   show: boolean = true;
+  
 
   override firstUpdated() {
     this._modal = new Modal(this.shadowRoot.getElementById("loading-modal"));
@@ -52,6 +54,7 @@ export class LoadingModal extends LitElement {
     }
   }
 
+  
   render() {
     return html`
       <div
@@ -80,7 +83,7 @@ export class LoadingModal extends LitElement {
                 </div>
 
                  <img
-                  src="assets/images/cosechadora_bg.jpg"
+                  src="/assets/images/cosechadora_bg.jpg"
                   alt="..."
                   style="height: 100%; width:100%; object-fit:cover;"
                 /> 
@@ -92,5 +95,3 @@ export class LoadingModal extends LitElement {
     `;
   }
 }
-
-customElements.define("loading-modal", LoadingModal);

@@ -130,7 +130,7 @@ export const siembraMachine = createMachine({
             CHANGE: {
               actions: assign({
                 detalles: (ctx, e) => {
-                  ctx.detalles.densidad = e.value;
+                  ctx.detalles.densidad_objetivo = e.value;
                   return ctx.detalles;
                 },
               }),

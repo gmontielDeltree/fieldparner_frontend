@@ -9,7 +9,7 @@ import "@vaadin/horizontal-layout";
 import "@vaadin/vertical-layout";
 import "@vaadin/custom-field";
 import "@vaadin/grid";
-// import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+// import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
@@ -17,7 +17,7 @@ import { GridItemModel } from "@vaadin/grid";
 import "@vaadin/icons";
 import { Map, Marker } from "mapbox-gl";
 import { touchEvent } from "../helpers";
-import "./notas-offcanvas.js";
+import "./notas-offcanvas.ts";
 import {Notification} from '@vaadin/notification';
 import {layer_visibility } from "../helpers";
 

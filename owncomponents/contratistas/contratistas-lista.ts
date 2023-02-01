@@ -1,3 +1,4 @@
+import { borrar_deposito, cargar_depo } from './../depositos/depositos_funciones';
 import { LitElement, html, unsafeCSS, render, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
 import "@vaadin/form-layout";
@@ -9,12 +10,12 @@ import "@vaadin/horizontal-layout";
 import "@vaadin/vertical-layout";
 import "@vaadin/custom-field";
 import "@vaadin/grid";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Modal from "bootstrap/js/dist/modal";
-import lista_de_labores from "./labores.json";
+import lista_de_labores from "../jsons/labores";
 import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
-import { Contratista, empty_contratista, Labor } from "./contratista-types";
+import { Contratista, empty_contratista, getContratistas, Labor } from "./contratista-types";
 import { ContratistaCrud } from "./contratista-crud";
 import { GridItemModel } from "@vaadin/grid";
 import "../contratistas/contratista-crud";
@@ -88,13 +89,18 @@ export class ContratistasLista extends LitElement {
 
   show() {
     this._modal.show();
-    this.db
-      .get("contratistas")
-      .then((e: any) => {
-        this._contratistas = Object.values(e.contratistas);
-        console.log("Contratistas", e);
-      })
-      .catch((e) => {});
+
+    getContratistas(this.db).then((contratistas)=>{
+      this._contratistas = contratistas
+    })
+
+    // this.db
+    //   .get("contratistas")
+    //   .then((e: any) => {
+    //     this._contratistas = Object.values(e.contratistas);
+    //     console.log("Contratistas", e);
+    //   })
+    //   .catch((e) => {});
   }
 
   edit_contratista(c: Contratista) {
@@ -103,16 +109,27 @@ export class ContratistasLista extends LitElement {
   }
 
   borrar_contratista(c: Contratista) {
-    this.db
-      .get("contratistas")
-      .then((e: any) => {
-        delete e.contratistas[c.uuid];
-        this.db.put(e);
-        this._contratistas = Object.values(e.contratistas);
 
-        console.log("Contratistas", e);
+    this.db.remove(c as PouchDB.Core.RemoveDocument).then(()=>{
+      cargar_depo(c.uuid).then((d)=>borrar_deposito(d))
+      getContratistas(this.db).then((contratistas)=>{
+        this._contratistas = contratistas
       })
-      .catch((e) => {});
+    }).catch((e) => {
+      console.log("Error", e);
+      alert("Error al Borrar")
+    })
+
+    // this.db
+    //   .get("contratistas")
+    //   .then((e: any) => {
+    //     delete e.contratistas[c.uuid];
+    //     this.db.put(e);
+    //     this._contratistas = Object.values(e.contratistas);
+
+    //     console.log("Contratistas", e);
+    //   })
+    //   .catch((e) => {});
   }
 
   private statusRenderer = (
@@ -147,11 +164,11 @@ export class ContratistasLista extends LitElement {
       html`
         <vaadin-vertical-layout>
           ${labores.map((labor) => {
-            if (labor.labor === "Siembra") {
+            if (labor?.labor === "Siembra") {
               return html`<vaadin-button theme="primary success small"
                 >${labor.labor}</vaadin-button
               >`;
-            } else if (labor.labor === "Cosecha") {
+            } else if (labor?.labor === "Cosecha") {
               return html`<vaadin-button theme="primary error small"
                 >${labor.labor}</vaadin-button
               >`;
@@ -183,7 +200,8 @@ export class ContratistasLista extends LitElement {
      */
     const up_to_contratista = (up) => {
       let contratista : Contratista = {...empty_contratista}
-      
+      contratista.uuid = uuid4()
+      contratista._id = "contratista:"+contratista.uuid 
       contratista.nombre = up.Nombre || ""
       contratista.cuit = up.CUIT || ""
       contratista.datos_generales = {...empty_contratista.datos_generales}
@@ -241,49 +259,51 @@ export class ContratistasLista extends LitElement {
     let todos_los_contratistas = this._uploaded_contratistas.map(up_to_contratista)
 
     //console.log("CONT sin uuid", todos_los_contratistas, this._uploaded_contratistas)
-    let todos_los_contratistas_con_uuid : (Contratista & {uuid:string}) [] = todos_los_contratistas.map((c : Contratista) => {
-      let nuevo_uuid = uuid4()
-      c.uuid = nuevo_uuid
-      return c;
-    })
+    // let todos_los_contratistas_con_uuid : (Contratista & {uuid:string}) [] = todos_los_contratistas.map((c : Contratista) => {
+    //   let nuevo_uuid = uuid4()
+    //   c.uuid = nuevo_uuid
+    //   return c;
+    // })
     
     //console.log("CONT", todos_los_contratistas_con_uuid)
-    this.db
-        .get("contratistas")
-        .then((result: any) => {
-          todos_los_contratistas_con_uuid.map((c) => {
-            result.contratistas[c.uuid] = c
-            return c;
-          })
-          this.db
-            .put(result)
-            .then(() => {
-              console.log("Contratistas Doc Updated");
-              this._modal_excel.hide();
-              this.show()
-            })
-            .catch((e) => console.error("Error al update Contratistas", e));
-        })
-        .catch(() => {
-          // El doc no existe. Lo creo.
-          let lista_contratistas = {};
-          todos_los_contratistas_con_uuid.map((c) => {
-            lista_contratistas[c.uuid] = c
-            return c;
-          })
-          let con_doc = {
-            _id: "contratistas",
-            contratistas: lista_contratistas,
-          };
-          this.db
-            .put(con_doc)
-            .then(() => {
-              console.log("Contratistas Doc Creado");
-              this._modal_excel.hide();
-              this.show()
-            })
-            .catch((e) => console.error("Error al crear Contratistas", e));
-        });
+    this.db.bulkDocs(todos_los_contratistas)
+
+    // this.db
+    //     .get("contratistas")
+    //     .then((result: any) => {
+    //       todos_los_contratistas_con_uuid.map((c) => {
+    //         result.contratistas[c.uuid] = c
+    //         return c;
+    //       })
+    //       this.db
+    //         .put(result)
+    //         .then(() => {
+    //           console.log("Contratistas Doc Updated");
+    //           this._modal_excel.hide();
+    //           this.show()
+    //         })
+    //         .catch((e) => console.error("Error al update Contratistas", e));
+    //     })
+    //     .catch(() => {
+    //       // El doc no existe. Lo creo.
+    //       let lista_contratistas = {};
+    //       todos_los_contratistas_con_uuid.map((c) => {
+    //         lista_contratistas[c.uuid] = c
+    //         return c;
+    //       })
+    //       let con_doc = {
+    //         _id: "contratistas",
+    //         contratistas: lista_contratistas,
+    //       };
+    //       this.db
+    //         .put(con_doc)
+    //         .then(() => {
+    //           console.log("Contratistas Doc Creado");
+    //           this._modal_excel.hide();
+    //           this.show()
+    //         })
+    //         .catch((e) => console.error("Error al crear Contratistas", e));
+    //     });
   }
 
   menu_click({detail}){
