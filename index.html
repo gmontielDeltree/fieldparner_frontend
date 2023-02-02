@@ -105,14 +105,6 @@
         href="https://unpkg.com/intro.js/minified/introjs.min.css"
     /></noscript> -->
 
-    <!-- <link
-      rel="preload"
-      href="./src/timeline.css"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <noscript><link rel="stylesheet" href="./src/timeline.css" /></noscript> -->
-
     <style>
       /*mapbox gl css custom settings*/
       #map {
@@ -163,7 +155,7 @@
         z-index: 9999;
       }
 
-      :root{
+      :root {
         --bs-offcanvas-zindex: 500;
       }
     </style>
@@ -178,24 +170,19 @@
       };
     </script>
 
-    <link
-      rel="preload"
-      as="image"
-      href="/assets/images/cosechadora_bg.jpg"
-      type="image/jpg"
-    />
-
     <script>
-      // Register Service Worker
-      if ("serviceWorker" in navigator) {
-        const p = navigator.serviceWorker
-          .register("/sw.js")
-          .then((reg) =>
-            console.log("PWA service-worker ready. From Index", reg)
-          )
-          .catch((err) => console.error("Could not load service-worker.", err));
-      }
-      const version = "0004";
+            // Register Service Worker
+            // if ("serviceWorker" in navigator) {
+            //   const p = navigator.serviceWorker
+            //     .register("/sw.js")
+            //     .then((reg) =>
+            //       console.log("PWA service-worker ready. From Index", reg)
+            //     )
+            //     .catch((err) => console.error("Could not load service-worker.", err));
+            // }
+            // const version = "0004";
+
+  
     </script>
 
     <style>
@@ -239,9 +226,6 @@
 
   <body>
     <!--Main App Element-->
-    <!-- <field-partner>
-      <div id="tour"></div>
-    </field-partner> -->
 
     <app-loader></app-loader>
     <!-- <script
