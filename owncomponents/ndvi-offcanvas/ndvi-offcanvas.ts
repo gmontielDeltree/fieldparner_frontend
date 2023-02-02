@@ -1,34 +1,31 @@
 import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
-import PouchDB from "pouchdb";
-import { get_lote_doc, hashMessage, layer_visibility } from "../helpers";
+import { get_lote_doc,  layer_visibility } from "../helpers";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { property, state } from "lit/decorators.js";
 import {
-  ImageSource,
-  Map,
   MapMouseEvent,
   Popup,
   Source,
-  SourceVectorLayer,
 } from "mapbox-gl";
-import { isThisSecond, formatDistanceToNow, parse, format } from "date-fns";
+import { parse, format } from "date-fns";
 import es from "date-fns/locale/es";
-import geoblaze from "geoblaze";
+
 import * as d3 from "d3";
 import "./card-observacion";
 
 import "./leyenda";
-import { utils, writeFile } from "xlsx";
-import { D3GeoblazeOnMapbox, drawGeotiffOnMap } from "./ndvi-functions";
+// import { utils, writeFile } from "xlsx";
+const {read, writeFile, utils} = await import('xlsx')
 
 import { StateController } from "@lit-app/state";
 import gbl_state from "../state.js";
 import { Router } from "@vaadin/router";
 import bbox from "@turf/bbox";
-import booleanContains from "@turf/boolean-contains";
-import { point } from "@turf/helpers";
 import { repeat } from "lit/directives/repeat.js";
+
+//import geoblaze from "geoblaze";
+const {default:geoblaze} = await import('geoblaze')
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";

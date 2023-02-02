@@ -1,5 +1,6 @@
 import { touchEvent } from "../helpers";
-import { writeFile, utils } from "xlsx";
+// import { writeFile, utils } from "xlsx";
+const {read, writeFile, utils} = await import('xlsx')
 
 export const add_download_xls_button = (root, ts, data, title)=>{
 

@@ -21,7 +21,6 @@ import("../nueva-geometria/nueva-geometria");
 import("../nuevo-campo/nuevo-campo.js");
 import("../lista-de-campos/lista-de-campos");
 import "../mapa-principal/mapa-principal";
-import "../login-modal/login-modal";
 import("../notas-offcanvas/nota-target");
 import("../insumos/insumos-lista");
 import "../lista-centrales-cercanas/lista-centrales-cercanas";
@@ -173,12 +172,7 @@ export class FieldPartnerChild extends LitElement {
       this.db.put(this.settings);
     });
 
-    // Login
-    this.addEventListener("login-click", () => {
-      this.loginet();
-    });
-
-    this.addEventListener("logout-click", () => {
+     this.addEventListener("logout-click", () => {
       this.logout();
     });
 
@@ -257,31 +251,6 @@ export class FieldPartnerChild extends LitElement {
     let sitio = window.location.hostname;
     console.log("Init the whole thing");
     this.load_campos_y_settings();
-  }
-
-  sincronizar_cuando_online() {
-    var opts = { live: true, retry: true };
-    // then two-way, continuous, retriable sync
-    this.db
-      .sync(this.remote_campos_db, opts)
-      .on("change", function (change) {
-        // yo, something changed!
-        console.info("Change...Sync");
-      })
-      .on("error", (e) => {
-        console.error("SyncError", e);
-      });
-
-    // /* Redraw on cambios en campos_db */
-    this.db
-      .changes({
-        since: "now",
-        live: true,
-      })
-      .on("change", () => {
-        this.load_campos_y_settings();
-        console.log("CHANGES!!");
-      });
   }
 
   /** Crea el objeto settings y lo graba en la db
@@ -379,14 +348,9 @@ export class FieldPartnerChild extends LitElement {
 
       <insumos-lista id="insumos-lista" .db=${this.db}></insumos-lista>
 
-      <!-- <login-modal id="login-modal" .show=${!this
-        .logged_in}></login-modal> -->
-
       <div id="container-multiproposito">
-        <!-- <loading-modal .show=${this.loading}></loading-modal> -->
       </div>
 
-      <!-- <div id="router-container"></div> -->
     `;
   }
 }

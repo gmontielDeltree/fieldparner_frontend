@@ -4,7 +4,9 @@ import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { format, formatDistanceToNow, parse } from "date-fns";
 import es from "date-fns/locale/es";
 
-import geoblaze from "geoblaze";
+//import geoblaze from "geoblaze";
+//const geoblaze = import('geoblaze')
+const {default:geoblaze} = await import('geoblaze')
 import * as d3 from "d3";
 import booleanContains from "@turf/boolean-contains";
 import { point } from "@turf/helpers";
