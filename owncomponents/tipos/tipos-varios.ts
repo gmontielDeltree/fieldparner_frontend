@@ -1,5 +1,5 @@
 
-export interface Lenguage {
+export interface Lenguaje {
 	_id ?: string,
 	_rev ?: string,
 	lang: string

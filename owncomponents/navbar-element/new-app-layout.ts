@@ -27,7 +27,7 @@ import { gblStateLoaded, gbl_state } from "../state";
 import { StateController } from "@lit-app/state";
 import { ref, createRef } from "lit/directives/ref.js";
 import "@vaadin/tabsheet";
-import { Lenguage } from "../tipos/tipos-varios";
+import { Lenguaje } from "../tipos/tipos-varios";
 import "../campana/menu-campana/menu-campana";
 import "../campana-notificacion/campana-notificacion";
 
@@ -228,14 +228,14 @@ export class Example extends LitElement {
                     .then((result) => {
                       if (result.rows.length > 0) {
                         // Existe
-                        let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
+                        let lang_doc: Lenguaje = result.rows[0].doc as Lenguaje;
                         lang_doc.lang = lang;
                         gbl_state.user_db
                           .put(lang_doc)
                           .then(() => window.location.reload());
                       } else {
                         // No existe
-                        let lang_doc: Lenguage = {
+                        let lang_doc: Lenguaje = {
                           _id: "user_language",
                           lang: lang,
                         };

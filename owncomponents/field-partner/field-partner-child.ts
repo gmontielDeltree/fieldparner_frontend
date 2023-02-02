@@ -3,7 +3,7 @@ import { LitElement, html, PropertyValueMap, css, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import { Router } from "@vaadin/router";
 
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
+// import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import("../loading-modal/loading-modal.js");
 import("../color-cultivo/color-cultivo");
 import cultivos_default from "../jsons/cultivos.json";
@@ -23,16 +23,16 @@ import("../lista-de-campos/lista-de-campos");
 import "../mapa-principal/mapa-principal";
 import("../notas-offcanvas/nota-target");
 import("../insumos/insumos-lista");
-import "../lista-centrales-cercanas/lista-centrales-cercanas";
-import "../sensores/lista-de-sensores";
-import "../navbar-element/workspace-rigths";
+import ("../lista-centrales-cercanas/lista-centrales-cercanas");
+import ("../sensores/lista-de-sensores");
+import ("../navbar-element/workspace-rigths");
 import "../navbar-element/new-app-layout";
 import "../null-component";
 import("../invite/invite");
 import("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
 import("../lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
 import("../lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
-import "../navbar-element/navbar-element";
+//import "../navbar-element/navbar-element";
 
 import("../sensores/devices-route");
 
@@ -68,7 +68,8 @@ function handleConnectionChange(event) {
 }
 
 export class FieldPartnerChild extends LitElement {
-  static override styles = [unsafeCSS(bootstrap)];
+  // NO estamos usando el shadow dom (createRenderRoot=>this)
+  //static override styles = [unsafeCSS(bootstrap)];
 
   @property({ hasChanged: (v, ov) => false })
   map: Map;
