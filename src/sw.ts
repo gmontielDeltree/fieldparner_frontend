@@ -18,6 +18,14 @@ import type { ManifestEntry } from "workbox-build";
 const global = self;
 
 import PouchDB from "pouchdb";
+import {
+  postData,
+  SWFileAttachment,
+  sw_docs_starting,
+  sw_get_file_doc,
+  sw_only_docs,
+  sw_post_file_doc,
+} from "./sw-helpers";
 
 let adjuntos_db = new PouchDB("adjuntos");
 //adjuntos_db.put({_id:'esbolonio',bolonio:3})
@@ -69,13 +77,54 @@ self.addEventListener("activate", (event) => {
 registerRoute(
   "/attachments",
   async ({ url, request, event, params }) => {
+    console.log("ATT GET", url, event, params);
+    let filename = url.searchParams.get("file");
+    let file_doc: SWFileAttachment = (await sw_get_file_doc(
+      adjuntos_db,
+      filename
+    )) as SWFileAttachment;
+    if (file_doc !== null) {
+      //existe
+      let blob = file_doc._attachments["file_0"].data;
+      let content_type = file_doc._attachments["file_0"].data;
+      //request.clone()
+      const response = await fetch(request);
+      const responseBody = await response.text();
+      return new Response(blob, {
+        headers: response.headers,
+      });
+    } else {
+      // no existe
+      const response = await fetch(request);
+      const responseBody = await response.text();
+      return new Response(`{"error":"no se encuentra el archivo"}`, {
+        headers: response.headers,
+        status: 404,
+      });
+    }
+  },
+  "GET"
+);
+
+registerRoute(
+  "/attachments",
+  async ({ url, request, event, params }) => {
     const response = await fetch(request);
-    const responseBody = await response.text();
-    return new Response(`${responseBody} <!-- Look Ma. Added Content. -->`, {
+    const data = await request.formData();
+
+
+    // Get the data from the named element 'file'
+    const file = data.get("file");
+    console.log("FILE UPLOAD", file)
+    postData('serverurl')
+
+    //sw_post_file_doc(adjuntos_db,)
+
+    return new Response(`<!-- Look Ma. Added Content. -->`, {
       headers: response.headers,
     });
   },
-  "GET"
+  "POST"
 );
 
 /* Upload Excel handler */

@@ -361,7 +361,7 @@ export class ActividadItem extends LitElement {
 
         <!-- Adjuntos -->
         <div tab="shipping-tab">
-          <vaadin-upload target="/api/fileupload"></vaadin-upload>
+          <vaadin-upload target="/attachments"></vaadin-upload>
         </div>
         <!-- FinAdjuntos-->
       </vaadin-tabsheet>`;
