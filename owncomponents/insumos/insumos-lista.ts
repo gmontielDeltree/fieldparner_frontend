@@ -23,7 +23,12 @@ import "@vaadin/icons";
 import "@vaadin/upload";
 import "@vaadin/dialog";
 // import { read, writeFile, utils } from "xlsx";
-const {read, writeFile, utils} = await import('xlsx')
+let read, writeFile, utils;
+ import('xlsx').then((mod)=>{
+  read = mod.read
+  writeFile = mod.writeFile
+  utils = mod.utils
+ })
 import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
 import "@vaadin/menu-bar";

@@ -3,7 +3,10 @@ import { LitElement, html, unsafeCSS, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { valor } from "../sensores";
-const {default:ApexCharts} = await import("apexcharts")
+let ApexCharts;
+import('apexcharts').then(({default:a})=>{
+  ApexCharts=a
+})
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
 import { touchEvent } from "../../helpers";
 import { add_download_xls_button } from "../excel_boton";

@@ -16,7 +16,12 @@ import "./card-observacion";
 
 import "./leyenda";
 // import { utils, writeFile } from "xlsx";
-const {read, writeFile, utils} = await import('xlsx')
+let read, writeFile, utils;
+ import('xlsx').then((mod)=>{
+  read = mod.read
+  writeFile = mod.writeFile
+  utils = mod.utils
+ })
 
 import { StateController } from "@lit-app/state";
 import gbl_state from "../state.js";
@@ -25,7 +30,10 @@ import bbox from "@turf/bbox";
 import { repeat } from "lit/directives/repeat.js";
 
 //import geoblaze from "geoblaze";
-const {default:geoblaze} = await import('geoblaze')
+let geoblaze;
+import('geoblaze').then(({default:a})=>{
+  geoblaze=a
+})
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";

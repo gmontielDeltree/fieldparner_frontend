@@ -20,7 +20,10 @@ import { touchEvent } from "../helpers";
 import devices_modelos from "./devices_modelos.ts";
 import { format, formatDistance, formatRelative, subDays } from "date-fns";
 import format from "date-fns/format";
-const {default:ApexCharts} = await import("apexcharts")
+let ApexCharts;
+import('apexcharts').then(({default:a})=>{
+  ApexCharts=a
+})
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
 import { DailyTelemetryCard } from "./sensores-types";
 import "./mediciones-cards/temperatura";

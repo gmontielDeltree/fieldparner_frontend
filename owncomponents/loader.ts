@@ -220,6 +220,11 @@ export class AppLoader extends LitElement {
     gbl_state.user_db = new PouchDB(user.sub);
     gbl_state.user = this.user;
 
+    if(import.meta.env.DEV){
+      this.dev_fast_start()
+      return;
+    }
+
     try {
       console.time('DBCheck')
       let campos_db_uri = base_url + "campos_" + username + "v7";
@@ -346,6 +351,18 @@ export class AppLoader extends LitElement {
           console.log("Restarting......");
           window.location.reload();
         }
+      });
+  }
+
+  dev_fast_start(){
+    // Cargar el Idioma y darle Ready
+    console.log('DEV FAST START')
+    this.cargar_idioma()
+      .then(this.set_idioma)
+      .then(this.cargar_campana_seleccionada)
+      .then((r) => {
+        this.ready = true;
+        console.log("Ready...Estado Inicial", gbl_state, r);
       });
   }
 

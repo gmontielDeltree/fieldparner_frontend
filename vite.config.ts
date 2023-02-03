@@ -1,27 +1,39 @@
 import { visualizer } from "rollup-plugin-visualizer";
 import { splitVendorChunkPlugin } from "vite";
 import Compression from "vite-compression-plugin";
-import { VitePWA } from 'vite-plugin-pwa'
+import { VitePWA } from "vite-plugin-pwa";
+import manifest_json from "./src/manifest.json"
 
 export default {
   // config options para pouch
   optimizeDeps: {
-    allowNodeBuiltins: ["pouchdb-browser", "pouchdb-utils"],
+    allowNodeBuiltins: ["pouchdb-browser", "pouchdb-utils",'pouchdb'],
+    esbuildOptions: {
+            // Node.js global to browser globalThis
+            //https://gist.github.com/FbN/0e651105937c8000f10fefdf9ec9af3d
+            // indispensable para poder importar pouchdb en el service worker
+            // 
+            define: {
+                global: 'globalThis' 
+            },}
   },
-
   plugins: [
     visualizer(),
     Compression(),
     VitePWA({
       devOptions: {
         enabled: true,
-        type: 'module',
+        type: "module",
       },
-      injectRegister: null,// Registrar 'a mano' en index.html
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.ts'
-    })
+      manifest: manifest_json,
+      injectRegister: null, // Registrar 'a mano' en index.html
+      strategies: "injectManifest",
+      injectManifest: {
+        injectionPoint: undefined
+      },
+      srcDir: "src",
+      filename: "sw.ts",
+    }),
   ],
   build: {
     rollupOptions: {
@@ -42,6 +54,7 @@ export default {
           "@vaadin/icons",
           "node_modules/@vaadin/icons/vaadin-iconset.js",
         ],
+
       },
     },
   },
