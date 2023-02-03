@@ -1,3 +1,4 @@
+import { actividad_adjuntar_archivo } from './../../helpers/actividad-funciones';
 import { LitElement, html, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { Actividad, Ejecucion } from "../../depositos/depositos-types";
@@ -242,10 +243,13 @@ export class ActividadItem extends LitElement {
       >
         <div>
           <!--Badge Ejecucion-->
-          ${this.ejecucion ? html`<span theme="badge success"
-            >${fecha} Ejecutada</span>` : null}
+          ${this.ejecucion
+            ? html`<span theme="badge success">${fecha} Ejecutada</span>`
+            : null}
           <!--Badge Planificacion-->
-          <span theme="badge error">${this.item.detalles.fecha_ejecucion_tentativa} Planificada</span>
+          <span theme="badge error"
+            >${this.item.detalles.fecha_ejecucion_tentativa} Planificada</span
+          >
           <a
             >${this.item?.tipo.toUpperCase()}
             <span class="text-muted">
@@ -264,9 +268,13 @@ export class ActividadItem extends LitElement {
       </vaadin-horizontal-layout>
       <vaadin-tabsheet>
         <vaadin-tabs slot="tabs">
-          <vaadin-tab id="dashboard-tab"  ?selected=${!this.ejecucion}>Planificación</vaadin-tab>
+          <vaadin-tab id="dashboard-tab" ?selected=${!this.ejecucion}
+            >Planificación</vaadin-tab
+          >
           <vaadin-tab id="orden-trabajo-tab">Orden de Trabajo</vaadin-tab>
-          <vaadin-tab id="payment-tab" ?selected=${this.ejecucion}>Ejecución</vaadin-tab>
+          <vaadin-tab id="payment-tab" ?selected=${this.ejecucion !== null}
+            >Ejecución</vaadin-tab
+          >
           <vaadin-tab id="shipping-tab">Adjuntos</vaadin-tab>
         </vaadin-tabs>
 
@@ -319,7 +327,7 @@ export class ActividadItem extends LitElement {
                 >
                   ${this.item.estado === 0
                     ? html` ${translate("debe_generar_la_orden_de_trabajo")}`
-                    : html`<vaadin-vertical-layout style='align-items:center;'>
+                    : html`<vaadin-vertical-layout style="align-items:center;">
                         ${!isBefore(parseISO(fecha), new Date())
                           ? html`<div>
                               ${translate(
@@ -361,7 +369,34 @@ export class ActividadItem extends LitElement {
 
         <!-- Adjuntos -->
         <div tab="shipping-tab">
-          <vaadin-upload target="/attachments"></vaadin-upload>
+          ${this.item.attachments
+            ? this.item.attachments.map(
+                (att) => html`
+                  <vaadin-button
+                    @click=${() => {
+                      fetch(
+                        "/attachments?file="+ encodeURIComponent(att.filename)
+                      )
+                        .then((r) => {
+                          return r.blob();
+                        })
+                        .then((data) => {
+                          var a = document.createElement("a");
+                          a.href = window.URL.createObjectURL(data);
+                          a.download = att.filename;
+                          a.click();
+                        });
+                    }}
+                    >${att.filename}</vaadin-button
+                  >
+                `
+              )
+            : html`${translate("sin_adjuntos")}`}
+
+          <vaadin-upload target="/attachments" @upload-success=${(e)=>{
+            //console.log("successevent",e.detail.file)
+            actividad_adjuntar_archivo(this.item,e.detail.file).then(()=>this.requestUpdate())
+          }}></vaadin-upload>
         </div>
         <!-- FinAdjuntos-->
       </vaadin-tabsheet>`;

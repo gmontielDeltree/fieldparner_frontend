@@ -75,10 +75,10 @@ self.addEventListener("activate", (event) => {
 });
 
 registerRoute(
-  "/attachments",
+  /attachments.*$/,
   async ({ url, request, event, params }) => {
     console.log("ATT GET", url, event, params);
-    let filename = url.searchParams.get("file");
+    let filename = url.searchParams.get("file"); //esta URL encoded,pero se decode solo.
     let file_doc: SWFileAttachment = (await sw_get_file_doc(
       adjuntos_db,
       filename
@@ -86,15 +86,17 @@ registerRoute(
     if (file_doc !== null) {
       //existe
       let blob = file_doc._attachments["file_0"].data;
-      let content_type = file_doc._attachments["file_0"].data;
+      let content_type = file_doc._attachments["file_0"].content_type;
       //request.clone()
+      //console.log("BLOB GET", blob);
       const response = await fetch(request);
       const responseBody = await response.text();
       return new Response(blob, {
-        headers: response.headers,
+        headers: { ...response.headers, "Content-Type": blob.type },
       });
     } else {
       // no existe
+      // Buscarlo en linea 
       const response = await fetch(request);
       const responseBody = await response.text();
       return new Response(`{"error":"no se encuentra el archivo"}`, {
@@ -106,22 +108,27 @@ registerRoute(
   "GET"
 );
 
+/**
+ * Procesa el post que viene desde vaadin/upload 
+ * El archivo viene en el campo data de el "form"ulario posteado.
+ */
 registerRoute(
   "/attachments",
   async ({ url, request, event, params }) => {
-    const response = await fetch(request);
+    //const response = await fetch(request);
     const data = await request.formData();
 
-
     // Get the data from the named element 'file'
-    const file = data.get("file");
-    console.log("FILE UPLOAD", file)
-    postData('serverurl')
+    const file: File = data.get("file") as File;
+    console.log("FILE UPLOAD", file, file.name, file.type);
 
-    //sw_post_file_doc(adjuntos_db,)
+    postData("serverurl");
 
-    return new Response(`<!-- Look Ma. Added Content. -->`, {
-      headers: response.headers,
+    // La _id es el nombre del archivo URIencodedeado
+    sw_post_file_doc(adjuntos_db,file,false);
+
+    return new Response(`{"status":"ok"}`, {
+      headers: { ...request.headers },
     });
   },
   "POST"

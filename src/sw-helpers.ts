@@ -30,35 +30,71 @@ export const sw_only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
 };
 
 /**
- * 
- * @param db 
- * @param filename_or_id 
+ *
+ * @param db
+ * @param filename_or_id
  * @returns null si no existe el archivo, el doc si existe
  */
-export const sw_get_file_doc = async (db:PouchDB.Database, filename_or_id:string) => {
-	return sw_docs_starting(db,filename_or_id,true,true,true).then(sw_only_docs).then((docs)=>{
-		if(docs.length===0){
-			return null as SWFileAttachment
-		}else{
-			return docs[0] as unknown as SWFileAttachment
-		}
-	})
+export const sw_get_file_doc = async (
+  db: PouchDB.Database,
+  filename_or_id: string //uriEncoded
+) => {
+  console.log("FILENAME REQUESTED",filename_or_id)
+  return sw_docs_starting(db, ASCIItoHex(filename_or_id), true, true, true)
+    .then(sw_only_docs)
+    .then((docs) => {
+      if (docs.length === 0) {
+        return null as SWFileAttachment;
+      } else {
+        return docs[0] as unknown as SWFileAttachment;
+      }
+    });
+};
+
+export const sw_post_file_doc = async (
+  db: PouchDB.Database,
+  file: File,
+  uploaded: boolean
+) => {
+  let new_doc: SWFileAttachment = {
+    _id: ASCIItoHex(file.name),
+    filename: file.name,
+    uploaded: uploaded,
+    _attachments: { file_0: { type: file.type, data: file } },
+  };
+
+  db.put(new_doc);
+};
+
+export interface SWFileAttachment {
+  _id: string;
+  filename: string;
+  upload_date?: string;
+  uploaded: boolean;
+  _attachments: { file_0: { data: File; type: string } };
 }
 
-export const sw_post_file_doc = async (db:PouchDB.Database, filename:string, file: File) => {
-	let new_doc = {_id:filename, filename:filename}
-	db.put(new_doc)
+export async function postData(url = "", data = {}) {
+  // Opciones por defecto estan marcadas con un *
+  console.log("POST AL SERVER");
 }
 
-export interface SWFileAttachment{
-	_id:string,
-	filename:string,
-	upload_date: string,
-	uploaded:boolean,
-	_attachments: {"file_0" : {data: Blob, content_type: string}}
+function ASCIItoHex(ascii) {
+  let hex = "";
+  let tASCII, Hex;
+  ascii.split("").map((i) => {
+    tASCII = i.charCodeAt(0);
+    Hex = tASCII.toString(16);
+    hex = hex + Hex;
+  });
+  return hex = hex.trim();
 }
 
-export async function postData(url = '', data = {}) {
-	// Opciones por defecto estan marcadas con un *
-	console.log('POST AL SERVER')
+function hextoASCII(ascii) {
+  let string = "";
+  ascii.split(" ").map((i) => {
+    let merge = parseInt(i, 16);
+    string = string + String.fromCharCode(merge);
+  });
+  return string
 }
