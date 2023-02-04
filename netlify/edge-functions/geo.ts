@@ -1,5 +1,7 @@
 import { Context } from "https://edge.netlify.com";
 
+//https://edge-functions-examples.netlify.app/example/geolocation
+
 export default async (request: Request, context: Context) => {
   // Here's what's available on context.geo
 

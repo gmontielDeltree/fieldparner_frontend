@@ -147,6 +147,8 @@ export class FieldPartnerChild extends LitElement {
 
       let devices = new Devices();
       devices.add_markers_to_map(this.map);
+      
+      //devices.get_timeseries_by_name('1111111111111111','radiacion',0,10000000000)
     });
 
     /* Click en ver lista de depositios */

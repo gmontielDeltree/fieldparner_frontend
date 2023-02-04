@@ -298,6 +298,14 @@ class Devices {
       console.error("Error get_details", e);
     }
   }
+
+  async get_timeseries_by_name(uuid,tsname,start,end){
+    let key =[uuid , tsname,start]
+    let endkey=[uuid, tsname, end]
+    this.db_raw.query('telemetria/ts_by_name',{startkey:key,endkey:endkey}).then((r)=>{
+      console.log("ESTO ES COOL",r)
+    })
+  }
 }
 
 const gbl_devices = new Devices();
