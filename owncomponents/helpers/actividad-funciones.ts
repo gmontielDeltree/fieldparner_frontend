@@ -17,7 +17,7 @@ export const actividad_remover_adjunto = async (
   act: Actividad,
   uuid: string
 ) => {
-  act.attachments.filter((a) => a.uuid !== uuid);
+  act.attachments = act.attachments.filter((a) => a.uuid !== uuid);
   return guardar_actividad(act);
 };
 

@@ -1,4 +1,7 @@
-import { actividad_adjuntar_archivo } from './../../helpers/actividad-funciones';
+import {
+  actividad_adjuntar_archivo,
+  actividad_remover_adjunto,
+} from "./../../helpers/actividad-funciones";
 import { LitElement, html, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { Actividad, Ejecucion } from "../../depositos/depositos-types";
@@ -369,34 +372,75 @@ export class ActividadItem extends LitElement {
 
         <!-- Adjuntos -->
         <div tab="shipping-tab">
-          ${this.item.attachments
-            ? this.item.attachments.map(
-                (att) => html`
-                  <vaadin-button
-                    @click=${() => {
-                      fetch(
-                        "/attachments?file="+ encodeURIComponent(att.filename)
-                      )
-                        .then((r) => {
-                          return r.blob();
-                        })
-                        .then((data) => {
-                          var a = document.createElement("a");
-                          a.href = window.URL.createObjectURL(data);
-                          a.download = att.filename;
-                          a.click();
-                        });
-                    }}
-                    >${att.filename}</vaadin-button
-                  >
-                `
-              )
-            : html`${translate("sin_adjuntos")}`}
+          <vaadin-vertical-layout style="align-self:stretch">
+            ${this.item.attachments
+              ? this.item.attachments.map(
+                  (att) => html`
+                    <vaadin-horizontal-layout
+                      style="width:100%; align-items:center; justify-content:space-between"
+                      theme="spacing"
+                    >
+                      <div>${att.filename}</div>
+                      <div> <!-- Grupo botones -->
 
-          <vaadin-upload target="/attachments" @upload-success=${(e)=>{
-            //console.log("successevent",e.detail.file)
-            actividad_adjuntar_archivo(this.item,e.detail.file).then(()=>this.requestUpdate())
-          }}></vaadin-upload>
+                      <vaadin-button @click=${
+                       ()=>{
+                        let n = att.filename
+                        if(n.includes('.shp')){
+                          //Show on map
+                        }else if(n.includes('.jpg')){
+                          // Open lightbox
+                        }
+                       } 
+                      }>
+                      <vaadin-icon icon='lumo:eye'></vaadin-icon>
+                      </vaadin-button>
+                        <vaadin-button
+                          @click=${() => {
+                            fetch(
+                              "/attachments?file=" +
+                                encodeURIComponent(att.filename)
+                            )
+                              .then((r) => {
+                                return r.blob();
+                              })
+                              .then((data) => {
+                                // Download Fetch
+                                var a = document.createElement("a");
+                                a.href = window.URL.createObjectURL(data);
+                                a.download = att.filename;
+                                a.click();
+                              });
+                          }}
+                        >
+                          <vaadin-icon icon="lumo:download"></vaadin-icon>
+                        </vaadin-button>
+                        <vaadin-button
+                          @click=${() => {
+                            // Solicitar borrado en server y en la db
+                            actividad_remover_adjunto(this.item, att.uuid).then(
+                              () => this.requestUpdate()
+                            );
+                          }}
+                          ><vaadin-icon icon="vaadin:trash"></vaadin-icon
+                        ></vaadin-button>
+                      </div>
+                    </vaadin-horizontal-layout>
+                  `
+                )
+              : html`${translate("sin_adjuntos")}`}
+          </vaadin-vertical-layout>
+
+          <vaadin-upload
+            target="/attachments"
+            .files=${[] /* Previene que se agregen los archivos debajo del control*/} 
+            @upload-success=${(e) => {
+              console.log("successevent", e);
+              actividad_adjuntar_archivo(this.item, e.detail.file).then(() => {
+                this.requestUpdate();
+              });
+            }}
+          ></vaadin-upload>
         </div>
         <!-- FinAdjuntos-->
       </vaadin-tabsheet>`;
