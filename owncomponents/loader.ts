@@ -213,6 +213,9 @@ export class AppLoader extends LitElement {
 
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
+    // Device Databases
+    gbl_state.db_sensores_pro = new PouchDB(base_url + "processed_device_telemetry");
+    gbl_state.db_sensores_raw = new PouchDB(base_url + "telemetry_raw");
     // Nombres validos solo en minusculas
     this.db = new PouchDB("campos_" + username + "v7");
 

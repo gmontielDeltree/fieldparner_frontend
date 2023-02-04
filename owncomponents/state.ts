@@ -15,6 +15,8 @@ class MyState extends State {
  @property() map : Map
  @property() draw : MapboxDraw
  @property() db : PouchDB.Database
+ @property() db_sensores_raw : PouchDB.Database
+ @property() db_sensores_pro : PouchDB.Database
  @property() campos : any
  @property() selected: any
  @property() router : Router
