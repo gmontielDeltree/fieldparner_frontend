@@ -9,12 +9,12 @@ window.customElements.define('audio-recorder',
     connectedCallback(){
       const shadowRoot = this.attachShadow({mode: 'open'});
 
-      const linkElem = document.createElement('link');
-      linkElem.setAttribute('rel', 'stylesheet');
-      linkElem.setAttribute('href', '/assets/reroot/bootstrap-5.1.3-dist/css/bootstrap.min.css');
+      // const linkElem = document.createElement('link');
+      // linkElem.setAttribute('rel', 'stylesheet');
+      // linkElem.setAttribute('href', '/assets/reroot/bootstrap-5.1.3-dist/css/bootstrap.min.css');
 
-      // Attach the created element to the shadow dom
-      shadowRoot.appendChild(linkElem);
+      // // Attach the created element to the shadow dom
+      // shadowRoot.appendChild(linkElem);
 
       shadowRoot.appendChild(this.style);
       shadowRoot.appendChild(this.content);

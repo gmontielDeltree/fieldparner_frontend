@@ -36,8 +36,8 @@ import "@vaadin/multi-select-combo-box";
 import "@vaadin/text-area";
 import "@vaadin/radio-group";
 
-import { uuid4 } from "uuid4";
-import { Notification } from "@vaadin/notification";
+import "../../sensores/selector-dispositivos/selector-dispositivos"
+
 import { get, translate, translateUnsafeHTML } from "lit-translate";
 import { columnBodyRenderer } from "@vaadin/grid/lit.js";
 import {
@@ -111,6 +111,7 @@ export class UpsertEjecucion extends LitElement {
     if (_changedProperties.has("location")) {
       //
       this.linea_de_dosis = {
+        deposito_origen:null,
         dosis: 0,
         insumo: null,
         motivos: [],
@@ -530,14 +531,11 @@ export class UpsertEjecucion extends LitElement {
                 Ingrese los valores de las variables ambientales promedio al
                 momento de la labor.
               </div>
-              <vaadin-button
-                theme="success"
-                @click=${() =>
-                  alert(
-                    "EN CONSTRUCCION!!!! TIENE BUGS!!! EN CONSTRUCCION!!!!"
-                  )}
-                >Cargar desde Centrales</vaadin-button
-              >
+              <selector-dispositivos .location=${this.location} @selected-changed=${(e)=>{
+                let device = e.detail
+                //
+              }}></selector-dispositivos>
+
             </vaadin-vertical-layout>
 
             <vaadin-horizontal-layout
@@ -700,7 +698,9 @@ export class UpsertEjecucion extends LitElement {
                 @click=${() => Router.go("/")}
               ></button>
             </div>
-            <div class="modal-body">${this.ready ? modal_body() : ""}</div>
+            <div class="modal-body">${this.ready ? modal_body() : ""}
+                <slot></slot>
+          </div>
             <div class="modal-footer">
               <button
                 type="button"

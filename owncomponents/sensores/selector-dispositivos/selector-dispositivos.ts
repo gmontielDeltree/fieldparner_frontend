@@ -1,10 +1,15 @@
+import { listar_sensores } from "./../sensores-funciones";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 import { RouterLocation } from "@vaadin/router";
-import { map } from "lit/directives/map";
+import { map } from "lit/directives/map.js";
 import { dialogFooterRenderer, dialogRenderer } from "@vaadin/dialog/lit.js";
 import type { DialogOpenedChangedEvent } from "@vaadin/dialog";
 import { translate } from "lit-translate";
+import "@vaadin/button";
+import "@vaadin/dialog";
+import { Task, TaskStatus } from "@lit-labs/task";
+import { DeviceDetalles } from "../sensores-types";
 
 @customElement("selector-dispositivos")
 export class SelectorDispositivos extends LitElement {
@@ -12,28 +17,37 @@ export class SelectorDispositivos extends LitElement {
   location: RouterLocation;
 
   @state()
-  dispositivos: Object[];
+  dispositivos: DeviceDetalles[];
 
   @state()
-  private dialogOpened = true;
+  private dialogOpened = false;
 
-  loadData(){
+  private _loadTask = new Task(
+    this,
+    () => this.loadData(this.location.params.uuid),
+    () => [this.location, this.dialogOpened]
+  );
 
+  loadData(uuid) {
+    return listar_sensores().then((dis) => (this.dispositivos = dis));
   }
 
-  emit_selected_changed() {
+  emit_selected_changed(d :DeviceDetalles) {
+    this.dispatchEvent(new CustomEvent("selected-changed",{detail:d,bubbles:true,composed:true}))
+  }
 
- }
- 
   render() {
     return html`
+      <vaadin-button theme="success" @click=${() => (this.dialogOpened = true)}
+        >Cargar desde Centrales</vaadin-button
+      >
       <vaadin-dialog
         header-title="${translate("dispositivos")}"
         .opened="${this.dialogOpened}"
         @opened-changed="${(event: DialogOpenedChangedEvent) => {
           this.dialogOpened = event.detail.value;
         }}"
-        ${dialogRenderer(this.renderDialog, [])}
+        ${dialogRenderer(this.renderDialog, [this.dispositivos])}
         ${dialogFooterRenderer(this.renderFooter, [])}
       ></vaadin-dialog>
     `;
@@ -43,20 +57,23 @@ export class SelectorDispositivos extends LitElement {
     <vaadin-vertical-layout
       style="align-items: stretch; width: 18rem; max-width: 100%;"
     >
-      ${map(
-        this.dispositivos,
-        (d) => html`
-          <div
-            @click=${() => {
-              this.emit_selected_changed();
-              this.dialogOpened = false;
-              window.history.back();
-            }}
-          >
-            ${d.nombre}
-          </div>
-        `
-      )}
+      ${this._loadTask.render({
+        pending: () => html`${translate("cargando")}`,
+        complete: (trans) =>
+          map(
+            this.dispositivos,
+            (d) => html`
+              <div
+                @click=${() => {
+                  this.emit_selected_changed(d);
+                  this.dialogOpened = false;
+                }}
+              >
+                ${d.nombre}
+              </div>
+            `
+          ),
+      })}
     </vaadin-vertical-layout>
   `;
 

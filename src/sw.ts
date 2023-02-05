@@ -15,7 +15,6 @@ import {
 } from "workbox-strategies";
 import type { ManifestEntry } from "workbox-build";
 
-const global = self;
 
 import PouchDB from "pouchdb";
 import {
@@ -86,7 +85,7 @@ registerRoute(
     if (file_doc !== null) {
       //existe
       let blob = file_doc._attachments["file_0"].data;
-      let content_type = file_doc._attachments["file_0"].content_type;
+      //let content_type = file_doc._attachments["file_0"].content_type;
       //request.clone()
       //console.log("BLOB GET", blob);
       const response = await fetch(request);
