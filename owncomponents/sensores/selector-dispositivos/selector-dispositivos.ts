@@ -1,3 +1,4 @@
+import { booleanContains } from '@turf/boolean-contains';
 import { listar_sensores } from "./../sensores-funciones";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
@@ -15,6 +16,9 @@ import { DeviceDetalles } from "../sensores-types";
 export class SelectorDispositivos extends LitElement {
   @property()
   location: RouterLocation;
+
+  @property()
+  enabled:boolean
 
   @state()
   dispositivos: DeviceDetalles[];
@@ -38,7 +42,9 @@ export class SelectorDispositivos extends LitElement {
 
   render() {
     return html`
+    ${this.enabled ? null: html`<div>Seleccione las fechas y horas de inicio y fin para podes elegir datos desde las centrales</div>`}
       <vaadin-button theme="success" @click=${() => (this.dialogOpened = true)}
+        ?disabled=${!this.enabled}
         >Cargar desde Centrales</vaadin-button
       >
       <vaadin-dialog

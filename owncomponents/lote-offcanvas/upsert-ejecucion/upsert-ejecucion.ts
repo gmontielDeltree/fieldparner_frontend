@@ -1,3 +1,5 @@
+import { format_iso_c, format_min } from './../../helpers';
+import { sensores_central_mas_cercana_al_lote } from "./../../sensores/sensores-funciones";
 import { listar_depositos } from "../../depositos/depositos-funciones";
 import { Router, RouterLocation } from "@vaadin/router";
 import {
@@ -175,6 +177,8 @@ export class UpsertEjecucion extends LitElement {
     this.ejecucion.tipo = this.actividad.tipo;
     this.ejecucion.detalles.fecha_ejecucion =
       this.actividad.detalles.fecha_ejecucion_tentativa;
+    this.ejecucion.detalles.fecha_hora_inicio = format_min(parseISO(this.ejecucion.detalles.fecha_ejecucion))
+    this.ejecucion.detalles.fecha_hora_fin = format_min(parseISO(this.ejecucion.detalles.fecha_ejecucion))
     this.ejecucion.detalles.hectareas = this.actividad.detalles.hectareas;
     this.ejecucion.lote_uuid = this.actividad.lote_uuid;
     this.ejecucion.uuid = this.actividad.uuid;
@@ -257,6 +261,13 @@ export class UpsertEjecucion extends LitElement {
               await this.getActividadSinCopiar(uuid);
               console.log("EJE ACT", this.ejecucion, this.actividad);
               this.ready = true;
+              console.log(formatISO(
+                parse(
+                  this.ejecucion.detalles.fecha_ejecucion,
+                  "yyyy-MM-dd",
+                  new Date()
+                )
+              ))
               //this.requestUpdate();
             });
           }
@@ -374,6 +385,9 @@ export class UpsertEjecucion extends LitElement {
   }
 
   render() {
+
+    console.log(formatISO(new Date()))
+
     const labores_form = html`
       <grid-labores-exe
         .ejecucion=${this.ejecucion}
@@ -431,7 +445,7 @@ export class UpsertEjecucion extends LitElement {
               colspan="2"
             ></vaadin-combo-box>
 
-            <vaadin-date-picker
+            <!-- <vaadin-date-picker
               label=${translate("fecha")}
               helper-text="real de ejecución"
               value="2022-12-03"
@@ -443,26 +457,10 @@ export class UpsertEjecucion extends LitElement {
               theme="helper-above-field"
               .value=${this.ejecucion.detalles.fecha_ejecucion}
               @change=${(e) =>
-                (this.ejecucion.detalles.fecha_ejecucion = e.target.value)}
-            ></vaadin-date-picker>
-
-            <vaadin-date-time-picker
-              label="${translate("hora_comienzo")}"
-              value="${this.ejecucion.detalles.fecha_hora_inicio}"
-              .min="${formatISO(parseISO(this.ejecucion.detalles.fecha_ejecucion))}"
-              @change=${(e)=>{
-                this.ejecucion.detalles.fecha_hora_inicio = e.target.value
-              }}
-            ></vaadin-date-time-picker>
-
-            <vaadin-date-time-picker
-              label="${translate("hora_finalizacion")}"
-              value=${this.ejecucion.detalles.fecha_hora_fin}
-              .min=${this.ejecucion.detalles.fecha_hora_inicio}
-              @change=${(e)=>{
-                this.ejecucion.detalles.fecha_hora_fin = e.target.value
-              }}
-            ></vaadin-date-time-picker>
+                {(this.ejecucion.detalles.fecha_ejecucion = e.target.value)
+                this.requestUpdate()}
+                }
+            ></vaadin-date-picker> -->
 
             <vaadin-number-field
               label="Hectareas"
@@ -474,6 +472,48 @@ export class UpsertEjecucion extends LitElement {
             >
               <div slot="suffix">Ha.</div>
             </vaadin-number-field>
+
+            <vaadin-horizontal-layout
+              theme="spacing"
+              style="flex-wrap: wrap; align-items: center;"
+              colspan="2"
+            >
+              <vaadin-date-time-picker
+                label="${translate("hora_comienzo")}"
+                value="${this.ejecucion.detalles.fecha_hora_inicio}"
+                .i18n=${base_i18n}
+                .min="${format_min(parseISO(this.actividad.detalles.fecha_ejecucion_tentativa))}"
+                .max=${format(new Date(),"yyyy-MM-dd'T'HH:mm")}
+                               
+                @change=${(e) => {
+                  this.ejecucion.detalles.fecha_hora_inicio = e.target.value;
+                  this.ejecucion.detalles.fecha_ejecucion = format(parseISO(e.target.value),'yyyy-MM-dd')
+                  this.requestUpdate();
+                }}
+              ></vaadin-date-time-picker>
+
+              <vaadin-date-time-picker
+                label="${translate("hora_finalizacion")}"
+                value=${this.ejecucion.detalles.fecha_hora_fin}
+                .i18n=${base_i18n}
+                .min=${this.ejecucion.detalles.fecha_hora_inicio}
+                .max=${format(new Date(),"yyyy-MM-dd'T'HH:mm")}
+                @change=${(e) => {
+                  this.ejecucion.detalles.fecha_hora_fin = e.target.value;
+                  this.requestUpdate();
+                  /* Si estan definidos fecha y hora buscar la central mas cercana */
+                  // let inicio = this.ejecucion.detalles.fecha_hora_inicio;
+                  // let fin = this.ejecucion.detalles.fecha_hora_fin;
+                  // if (inicio && fin && inicio !== "" && fin !== "") {
+                  //   sensores_central_mas_cercana_al_lote(
+                  //     this.ejecucion.lote_uuid,
+                  //     this.ejecucion.detalles.fecha_hora_inicio,
+                  //     this.ejecucion.detalles.fecha_hora_fin
+                  //   );
+                  // }
+                }}
+              ></vaadin-date-time-picker>
+            </vaadin-horizontal-layout>
           </vaadin-form-layout>
         </div>
         <!-- Fin Contratista -->
@@ -541,34 +581,44 @@ export class UpsertEjecucion extends LitElement {
           <vaadin-vertical-layout
             style="width: 100%; height: 100%; align-items: center; margin: var(--lumo-space-s);"
           >
+
             <vaadin-vertical-layout
               theme="spacing"
               style="flex-wrap: wrap; align-items: center;"
             >
               <div>
                 Ingrese los valores de las variables ambientales promedio al
-                momento de la labor.
+                momento de la labor o seleccione central.
               </div>
               <selector-dispositivos
+                .enabled=${this.habilitar_seleccion_centrales()}
                 .location=${this.location}
                 @selected-changed=${(e) => {
                   let device = e.detail;
-                  console.log("Picked Device",device)
-                  sensores_valores_promedios(device,this.ejecucion.detalles.fecha_hora_inicio,this.ejecucion.detalles.fecha_hora_fin).then((promedios)=>{
-                    console.log("promedios",promedios)
-                    
-                    this.ejecucion.condiciones.temperatura.device =device
-                    this.ejecucion.condiciones.humedad.device =device
-                    this.ejecucion.condiciones.velocidad.device =device
-                    this.ejecucion.condiciones.humedad_suelo.device =device
+                  console.log("Picked Device", device);
+                  sensores_valores_promedios(
+                    device,
+                    this.ejecucion.detalles.fecha_hora_inicio,
+                    this.ejecucion.detalles.fecha_hora_fin
+                  ).then((promedios) => {
+                    console.log("promedios", promedios);
 
-                    this.ejecucion.condiciones.temperatura.value = promedios.temperatura?.avg
-                    this.ejecucion.condiciones.humedad.value = promedios.humedad?.avg
-                    this.ejecucion.condiciones.velocidad.value = promedios.velocidad?.avg
-                    this.ejecucion.condiciones.humedad_suelo.value = promedios.humedad_suelo?.avg
+                    this.ejecucion.condiciones.temperatura.device = device;
+                    this.ejecucion.condiciones.humedad.device = device;
+                    this.ejecucion.condiciones.velocidad.device = device;
+                    this.ejecucion.condiciones.humedad_suelo.device = device;
 
-                    this.requestUpdate()
-                  })
+                    this.ejecucion.condiciones.temperatura.value =
+                      promedios.temperatura?.avg;
+                    this.ejecucion.condiciones.humedad.value =
+                      promedios.humedad?.avg;
+                    this.ejecucion.condiciones.velocidad.value =
+                      promedios.velocidad?.avg;
+                    this.ejecucion.condiciones.humedad_suelo.value =
+                      promedios.humedad_suelo?.avg;
+
+                    this.requestUpdate();
+                  });
                 }}
               ></selector-dispositivos>
             </vaadin-vertical-layout>
@@ -594,7 +644,7 @@ export class UpsertEjecucion extends LitElement {
               <vaadin-text-field
                 label="Temperatura"
                 helper-text="promedio"
-                value=${this.ejecucion.condiciones.temperatura.value}
+                value=${this.ejecucion.condiciones.temperatura?.value}
                 @input=${(e) => {
                   this.ejecucion.condiciones.temperatura.value =
                     +e.target.value;
@@ -688,8 +738,7 @@ export class UpsertEjecucion extends LitElement {
                 value=${this.ejecucion.condiciones.velocidad.value}
                 theme="align-right helper-above-field"
                 @input=${(e) => {
-                  this.ejecucion.condiciones.velocidad.value =
-                    +e.target.value;
+                  this.ejecucion.condiciones.velocidad.value = +e.target.value;
                 }}
                 type="text"
               >
@@ -830,6 +879,12 @@ export class UpsertEjecucion extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  habilitar_seleccion_centrales() {
+    let inicio = this.ejecucion.detalles.fecha_hora_inicio;
+    let fin = this.ejecucion.detalles.fecha_hora_fin;
+    return inicio && fin && inicio !== "" && fin !== "";
   }
 
   es_depo_del_contratista() {

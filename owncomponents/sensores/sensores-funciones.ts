@@ -1,8 +1,12 @@
+import { filter } from 'jszip';
+import distance from "@turf/distance";
 import { gbl_state } from "../state";
 import { DeviceDetalles } from "./sensores-types";
 import devices_modelos from "./devices_modelos";
 import { parseISO } from "date-fns";
-import { LngLatLike } from 'mapbox-gl';
+import { LngLatLike } from "mapbox-gl";
+import { get_lote_detalles_by_uuid } from "../helpers";
+import centroid from "@turf/centroid";
 
 /**
  *
@@ -25,7 +29,10 @@ export const sensores_detalles = async (uuid: string) => {
 
 /*
   Devuelve una lista con los promedios.
-  {temperatura : 34.3}
+  {temperatura : {..._stats,avg},
+  humedad: {..._stats,avg}
+  ...
+}
 */
 export const sensores_valores_promedios = async (
   dev: DeviceDetalles,
@@ -36,7 +43,7 @@ export const sensores_valores_promedios = async (
   let end_ts = Math.floor(parseISO(end_str).getTime() / 1000);
 
   // Que series/sensores contiene este device
-  let lista_sensores: string[] = devices_modelos[dev.tipo].sensores_reales;
+  let lista_sensores: string[] = devices_modelos[dev.tipo].sensores_reales.filter((a:string)=>['temperatura','humedad','velocidad','humedad_suelo'].includes(a));
   let result = lista_sensores.map((tsname) =>
     get_timeseries_avg_by_name(dev.device_id, tsname, start_ts, end_ts)
   );
@@ -89,23 +96,61 @@ export const get_timeseries_avg_by_name = async (uuid, tsname, start, end) => {
     });
 };
 
-export const sensor_mas_cercano_al_lote = async (lote_uuid, start_iso, end_iso) => {
-  // sensores con datos en ese intervalo
-  let sensores = await listar_sensores()
-  let promedios = await Promise.all(sensores.map((d)=>{
-    return sensores_valores_promedios(d,start_iso,end_iso)
-  }))
-  
+export const sensores_central_mas_cercana_al_lote = async (
+  lote_uuid,
+  start_iso,
+  end_iso
+) => {
+  let start_ts = Math.floor(parseISO(start_iso).getTime() / 1000);
+  let end_ts = Math.floor(parseISO(end_iso).getTime() / 1000);
 
+  // sensores con datareaos en ese intervalo
+  let sensores = await listar_sensores();
+  // filtro centrales con datos en el periodo
+  let con_datos = await Promise.all(
+    sensores.filter(async (d) => {
+      let key = [d.device_id, "temperatura", start_ts];
+      let endkey = [d.device_id, "temperatura", end_ts];
+      let result = await gbl_state.db_sensores_raw.query(
+        "telemetria/ts_avg_by_name",
+        { startkey: key, endkey: endkey }
+      );
+      if (result.rows.length > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    })
+  );
+
+  let coordenadas = await Promise.all(
+    con_datos.map(async (d) => {
+      let p = await sensor_posicion(d.device_id);
+      return { dev: d, posicion: p };
+    })
+  );
+
+  // get lote y centro
+  let lote = await get_lote_detalles_by_uuid(lote_uuid);
+  let centro_del_lote = centroid(lote.geometry);
+  let distancias = coordenadas.map((c) =>
+    {let distancia = distance([c.posicion.lng, c.posicion.lng], centro_del_lote, { units: "kilometers" })
+    return {dev:c.dev,distancia:distancia}
+  }
+  );
+
+  let distancia_ordenadas = distancias.sort((a,b)=>a.distancia-b.distancia)
+  console.log("Distancias desde el lote a centrales",distancia_ordenadas)
+  console.log("La central mas cercana es",distancia_ordenadas[0].dev)
+  return distancia_ordenadas[0].dev
 };
 
-export const sensor_posicion = async (uuid:string) => {
-  let key = [uuid, "latitud"];
-  let endkey = [uuid, "latitud"];
+export const sensor_posicion = async (uuid: string) => {
+  let key = [uuid, "latitud",{}];
+  let endkey = [uuid, "latitud",{}];
   let latitud = null;
   let longitud = null;
-  let ret_value :{[tsname:string]:LngLatLike} = {}
-  ret_value[uuid] = {lng:null,lat:null}
+  let ret_value: LngLatLike = { lng: null, lat: null };
   return gbl_state.db_sensores_raw
     .query("telemetria/ts_by_name", { startkey: key, endkey: endkey, limit: 1 })
     .then((r) => {
@@ -122,9 +167,8 @@ export const sensor_posicion = async (uuid:string) => {
           .then((r) => {
             if (r.rows.length > 0) {
               longitud = r.rows[0].value;
-              ret_value[uuid].lng = longitud
-              ret_value[uuid].lat = latitud
-              return ret_value
+              ret_value = { lng: longitud, lat: latitud };
+              return ret_value;
             }
           });
       }

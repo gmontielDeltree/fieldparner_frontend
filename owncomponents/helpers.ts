@@ -198,6 +198,7 @@ const getPermisosWorkspaceDB = (nombre, user, pass) => {};
 
 /** la fecha/hora en utc */
 export const format_iso_c = (date)=>format(date, "yyyy-MM-dd'T'HH:mm:ss'Z'")
+export const format_min = (date)=>format(date, "yyyy-MM-dd'T'HH:mm")
 
 export const createMenuDots = (iconName: string) => {
   const item = document.createElement("vaadin-context-menu-item");
