@@ -12,6 +12,7 @@ import { Insumo } from "../insumos/insumos-types";
 import { tipos_siembra } from "../jsons/tipos_siembra";
 import { Proveedor } from "../tipos/proveedores";
 import { Ingeniero } from "../tipos/ingenieros";
+import { DeviceDetalles } from "../sensores/sensores-types";
 
 interface IHash<T> {
   [index: string]: T;
@@ -158,6 +159,10 @@ interface Condiciones {
   velocidad_max: number;
 }
 interface CondicionesEjecucion {
+  "temperatura":{device: DeviceDetalles,value:number,planificado:{min:number,max:number}}
+  "humedad":{device: DeviceDetalles,value:number,planificado:{min:number,max:number}}
+  "velocidad":{device: DeviceDetalles,value:number,planificado:{min:number,max:number}}
+  "humedad_suelo":{device: DeviceDetalles,value:number,planificado:{min:number,max:number}}
   temperatura_min: number;
   temperatura_promedio: number;
   humedad_promedio: number;
@@ -292,6 +297,11 @@ const get_empty_ejecucion = () => {
       costo_labor: [],
     },
     condiciones: {
+      "temperatura":{device: null,value:0,planificado:{min:25,max:0}},
+      "humedad":{device: null,value:0,planificado:{min:45,max:65}},
+      "velocidad":{device: null,value:0,planificado:{min:5,max:15}},
+      "humedad_suelo":{device: null,value:0,planificado:{min:10,max:45}},
+      
       temperatura_max: 25,
       temperatura_promedio: 0,
       temperatura_min: 0,

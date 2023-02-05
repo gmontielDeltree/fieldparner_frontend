@@ -557,9 +557,16 @@ export class UpsertEjecucion extends LitElement {
                   sensores_valores_promedios(device,this.ejecucion.detalles.fecha_hora_inicio,this.ejecucion.detalles.fecha_hora_fin).then((promedios)=>{
                     console.log("promedios",promedios)
                     
-                    this.ejecucion.condiciones.temperatura_promedio = promedios.temperatura?.avg
-                    this.ejecucion.condiciones.humedad_promedio = promedios.humedad?.avg
-                    this.ejecucion.condiciones.velocidad_promedio = promedios.velocidad?.avg
+                    this.ejecucion.condiciones.temperatura.device =device
+                    this.ejecucion.condiciones.humedad.device =device
+                    this.ejecucion.condiciones.velocidad.device =device
+                    this.ejecucion.condiciones.humedad_suelo.device =device
+
+                    this.ejecucion.condiciones.temperatura.value = promedios.temperatura?.avg
+                    this.ejecucion.condiciones.humedad.value = promedios.humedad?.avg
+                    this.ejecucion.condiciones.velocidad.value = promedios.velocidad?.avg
+                    this.ejecucion.condiciones.humedad_suelo.value = promedios.humedad_suelo?.avg
+
                     this.requestUpdate()
                   })
                 }}
@@ -587,9 +594,9 @@ export class UpsertEjecucion extends LitElement {
               <vaadin-text-field
                 label="Temperatura"
                 helper-text="promedio"
-                value=${this.ejecucion.condiciones.temperatura_promedio}
+                value=${this.ejecucion.condiciones.temperatura.value}
                 @input=${(e) => {
-                  this.ejecucion.condiciones.temperatura_promedio =
+                  this.ejecucion.condiciones.temperatura.value =
                     +e.target.value;
                 }}
                 theme="align-right helper-above-field"
@@ -633,10 +640,10 @@ export class UpsertEjecucion extends LitElement {
               <vaadin-text-field
                 label="Humedad"
                 helper-text="promedio"
-                value=${this.ejecucion.condiciones.humedad_promedio}
+                value=${this.ejecucion.condiciones.humedad.value}
                 theme="align-right helper-above-field"
                 @input=${(e) => {
-                  this.ejecucion.condiciones.humedad_promedio = +e.target.value;
+                  this.ejecucion.condiciones.humedad.value = +e.target.value;
                 }}
                 type="text"
               >
@@ -678,10 +685,10 @@ export class UpsertEjecucion extends LitElement {
               <vaadin-text-field
                 label="Viento"
                 helper-text="promedio"
-                value=${this.ejecucion.condiciones.velocidad_promedio}
+                value=${this.ejecucion.condiciones.velocidad.value}
                 theme="align-right helper-above-field"
                 @input=${(e) => {
-                  this.ejecucion.condiciones.velocidad_promedio =
+                  this.ejecucion.condiciones.velocidad.value =
                     +e.target.value;
                 }}
                 type="text"
@@ -691,6 +698,53 @@ export class UpsertEjecucion extends LitElement {
 
               <vaadin-text-field
                 label="Viento Max"
+                helper-text="planificada"
+                value=${this.actividad.condiciones.velocidad_max}
+                @input=${(e) => {
+                  this.actividad.condiciones.velocidad_max = +e.target.value;
+                }}
+                theme="align-right helper-above-field"
+                type="text"
+                readonly
+              >
+                <div slot="suffix">km/h</div>
+              </vaadin-text-field>
+            </vaadin-horizontal-layout>
+
+            <vaadin-horizontal-layout
+              theme="spacing"
+              style="flex-wrap: wrap; justify-content: center;"
+            >
+              <vaadin-text-field
+                label="Humedad Suelo Min"
+                helper-text="planificada"
+                value=${this.actividad.condiciones.velocidad_min}
+                theme="align-right helper-above-field"
+                @input=${(e) => {
+                  this.actividad.condiciones.velocidad_min = +e.target.value;
+                }}
+                type="text"
+                readonly
+              >
+                <div slot="suffix">km/h</div>
+              </vaadin-text-field>
+
+              <vaadin-text-field
+                label="Humedad Suelo"
+                helper-text="promedio"
+                value=${this.ejecucion.condiciones.humedad_suelo.value}
+                theme="align-right helper-above-field"
+                @input=${(e) => {
+                  this.ejecucion.condiciones.humedad_suelo.value =
+                    +e.target.value;
+                }}
+                type="text"
+              >
+                <div slot="suffix">km/h</div>
+              </vaadin-text-field>
+
+              <vaadin-text-field
+                label="Humedad Suelo Max"
                 helper-text="planificada"
                 value=${this.actividad.condiciones.velocidad_max}
                 @input=${(e) => {
