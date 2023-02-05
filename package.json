@@ -63,6 +63,7 @@
     "@vaadin/confirm-dialog": "^23.2.10",
     "@vaadin/custom-field": "^23.1.1",
     "@vaadin/date-picker": "^23.1.1",
+    "@vaadin/date-time-picker": "^23.3.6",
     "@vaadin/details": "^23.3.0",
     "@vaadin/dialog": "^23.1.4",
     "@vaadin/email-field": "^23.1.1",

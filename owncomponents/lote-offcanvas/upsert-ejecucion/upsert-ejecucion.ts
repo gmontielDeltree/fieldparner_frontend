@@ -31,12 +31,13 @@ import "@vaadin/icons";
 import "@vaadin/vaadin-lumo-styles/vaadin-iconset.js";
 import "@vaadin/tooltip";
 import "@vaadin/date-picker";
+import "@vaadin/date-time-picker";
 import "@vaadin/number-field";
 import "@vaadin/multi-select-combo-box";
 import "@vaadin/text-area";
 import "@vaadin/radio-group";
 
-import "../../sensores/selector-dispositivos/selector-dispositivos"
+import "../../sensores/selector-dispositivos/selector-dispositivos";
 
 import { get, translate, translateUnsafeHTML } from "lit-translate";
 import { columnBodyRenderer } from "@vaadin/grid/lit.js";
@@ -52,7 +53,7 @@ import {
   LineaDosisEjecucion,
   LineaLabor,
 } from "../../depositos/depositos-types";
-import { format, parse } from "date-fns";
+import { format, formatISO, parse, parseISO } from "date-fns";
 import {
   Contratista,
   getContratistas,
@@ -71,7 +72,8 @@ import "./grid_insumos_exe";
 import { labores } from "../../jsons/labores";
 import "./grid_labores_exe";
 import { otros_datos_siembra_exe_template } from "./otros_datos_siembra_exe_template";
-import { Ingeniero } from '../../tipos/ingenieros';
+import { Ingeniero } from "../../tipos/ingenieros";
+import { sensores_valores_promedios } from "../../sensores/sensores-funciones";
 
 @customElement("upsert-ejecucion")
 export class UpsertEjecucion extends LitElement {
@@ -98,7 +100,6 @@ export class UpsertEjecucion extends LitElement {
   @state()
   private ready: boolean = false;
 
-
   override firstUpdated() {
     this.modal = new Modal(this.shadowRoot.getElementById("modal"));
     this.modal.show();
@@ -111,7 +112,7 @@ export class UpsertEjecucion extends LitElement {
     if (_changedProperties.has("location")) {
       //
       this.linea_de_dosis = {
-        deposito_origen:null,
+        deposito_origen: null,
         dosis: 0,
         insumo: null,
         motivos: [],
@@ -179,8 +180,8 @@ export class UpsertEjecucion extends LitElement {
     this.ejecucion.uuid = this.actividad.uuid;
 
     this.ejecucion.contratista = deepcopy(this.actividad.contratista);
-    this.ejecucion.ingeniero =deepcopy(this.actividad.ingeniero);
-    
+    this.ejecucion.ingeniero = deepcopy(this.actividad.ingeniero);
+
     this.actividad.detalles.dosis.forEach((dosis) => {
       let enl: LineaDosisEjecucion = deepcopy(dosis);
       enl.precio_real = enl.precio_estimado;
@@ -406,19 +407,19 @@ export class UpsertEjecucion extends LitElement {
         <!-- Contratista -->
         <div tab="dashboard-tab">
           <vaadin-form-layout>
-          ${this.tipo !== "aplicacion"
-                      ? null
-                      : html`
-                          <vaadin-combo-box
-                            label="${translate("ingeniero")}"
-                            item-label-path="nombre"
-                            item-value-path="uuid"
-                            readonly
-                            error-message=${translate("campo_requerido")}
-                            colspan="2"
-                            .selectedItem=${this.ejecucion.ingeniero}
-                          ></vaadin-combo-box>
-                        `}
+            ${this.tipo !== "aplicacion"
+              ? null
+              : html`
+                  <vaadin-combo-box
+                    label="${translate("ingeniero")}"
+                    item-label-path="nombre"
+                    item-value-path="uuid"
+                    readonly
+                    error-message=${translate("campo_requerido")}
+                    colspan="2"
+                    .selectedItem=${this.ejecucion.ingeniero}
+                  ></vaadin-combo-box>
+                `}
             <vaadin-combo-box
               label="Contratista"
               item-label-path="nombre"
@@ -445,6 +446,24 @@ export class UpsertEjecucion extends LitElement {
                 (this.ejecucion.detalles.fecha_ejecucion = e.target.value)}
             ></vaadin-date-picker>
 
+            <vaadin-date-time-picker
+              label="${translate("hora_comienzo")}"
+              value="${this.ejecucion.detalles.fecha_hora_inicio}"
+              .min="${formatISO(parseISO(this.ejecucion.detalles.fecha_ejecucion))}"
+              @change=${(e)=>{
+                this.ejecucion.detalles.fecha_hora_inicio = e.target.value
+              }}
+            ></vaadin-date-time-picker>
+
+            <vaadin-date-time-picker
+              label="${translate("hora_finalizacion")}"
+              value=${this.ejecucion.detalles.fecha_hora_fin}
+              .min=${this.ejecucion.detalles.fecha_hora_inicio}
+              @change=${(e)=>{
+                this.ejecucion.detalles.fecha_hora_fin = e.target.value
+              }}
+            ></vaadin-date-time-picker>
+
             <vaadin-number-field
               label="Hectareas"
               helper-text="de aplicación"
@@ -455,7 +474,6 @@ export class UpsertEjecucion extends LitElement {
             >
               <div slot="suffix">Ha.</div>
             </vaadin-number-field>
-
           </vaadin-form-layout>
         </div>
         <!-- Fin Contratista -->
@@ -531,11 +549,21 @@ export class UpsertEjecucion extends LitElement {
                 Ingrese los valores de las variables ambientales promedio al
                 momento de la labor.
               </div>
-              <selector-dispositivos .location=${this.location} @selected-changed=${(e)=>{
-                let device = e.detail
-                //
-              }}></selector-dispositivos>
-
+              <selector-dispositivos
+                .location=${this.location}
+                @selected-changed=${(e) => {
+                  let device = e.detail;
+                  console.log("Picked Device",device)
+                  sensores_valores_promedios(device,this.ejecucion.detalles.fecha_hora_inicio,this.ejecucion.detalles.fecha_hora_fin).then((promedios)=>{
+                    console.log("promedios",promedios)
+                    
+                    this.ejecucion.condiciones.temperatura_promedio = promedios.temperatura?.avg
+                    this.ejecucion.condiciones.humedad_promedio = promedios.humedad?.avg
+                    this.ejecucion.condiciones.velocidad_promedio = promedios.velocidad?.avg
+                    this.requestUpdate()
+                  })
+                }}
+              ></selector-dispositivos>
             </vaadin-vertical-layout>
 
             <vaadin-horizontal-layout
@@ -698,9 +726,10 @@ export class UpsertEjecucion extends LitElement {
                 @click=${() => Router.go("/")}
               ></button>
             </div>
-            <div class="modal-body">${this.ready ? modal_body() : ""}
-                <slot></slot>
-          </div>
+            <div class="modal-body">
+              ${this.ready ? modal_body() : ""}
+              <slot></slot>
+            </div>
             <div class="modal-footer">
               <button
                 type="button"
@@ -749,8 +778,9 @@ export class UpsertEjecucion extends LitElement {
     `;
   }
 
-
-  es_depo_del_contratista(){
-    return (this.ejecucion.deposito_origen?.uuid === this.ejecucion.contratista.uuid)
+  es_depo_del_contratista() {
+    return (
+      this.ejecucion.deposito_origen?.uuid === this.ejecucion.contratista.uuid
+    );
   }
 }
