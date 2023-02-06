@@ -39,6 +39,7 @@ export class IngenierosEditor extends LitElement {
 
   @state()
   valido: boolean = false;
+  
 
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -65,7 +66,8 @@ export class IngenierosEditor extends LitElement {
     guardar_ingeniero(this.ingeniero)
       .then(() => {
         showNotification(get("ingeniero_guardado"), "success");
-        Router.go("/ingenieros");
+        window.history.back()
+        //Router.go("/");
       })
       .catch((e) => {
         console.log(e);
@@ -93,7 +95,7 @@ export class IngenierosEditor extends LitElement {
       <vaadin-dialog
         header-title=${this.edit
           ? translate("edit")
-          : translate("nuevo_ingeniero")}
+          : translate("nuevo")}
         .opened="${this.opened}"
         no-close-on-esc
         no-close-on-outside-click
@@ -158,7 +160,7 @@ export class IngenierosEditor extends LitElement {
   private close() {
     this.opened = false;
     this.emit_opened_changed();
-    Router.go("/proveedores");
+    Router.go("/personal");
 
     // this.dispatchEvent(
     //   new CustomEvent("opened-changed", { detail: {value:false}, bubbles: true, composed: true })

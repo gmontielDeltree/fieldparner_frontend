@@ -494,9 +494,6 @@ export class UpsertAplicacion extends LitElement {
                             label="${translate("ingeniero")}"
                             item-label-path="nombre"
                             item-value-path="uuid"
-                            helper-text=${this.ingenieros?.length === 0
-                              ? translate("no_hay_ingenieros")
-                              : ""}
                             required
                             error-message=${translate("campo_requerido")}
                             colspan="2"
@@ -505,7 +502,18 @@ export class UpsertAplicacion extends LitElement {
                             @selected-item-changed=${(e) => {
                               this.actividad.ingeniero = e.detail.value;
                             }}
-                          ></vaadin-combo-box>
+                          >
+                            <div slot="helper">
+                              ${this.ingenieros?.length === 0
+                                ? html`${translate("no_hay_ingenieros")}
+                                    <a
+                                      href=${"/personal/add?from=" +
+                                      this.location.pathname}
+                                      >Agrega uno</a
+                                    >`
+                                : ""}
+                            </div>
+                          </vaadin-combo-box>
                         `}
 
                     <vaadin-combo-box

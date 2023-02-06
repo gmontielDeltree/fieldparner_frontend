@@ -3,6 +3,7 @@ import uuid4 from 'uuid4'
 interface Cultivo{
   uuid: string,
   nombre:string,
+  langkey:string,
 }
 
 interface Tipo{
@@ -15,7 +16,7 @@ interface Subtipo{
 }
 
 interface CultivoAplicacion {
-  cultivo : any;
+  cultivo : Cultivo;
   uuid: string;
   estadio_desde: string;
   estadio_hasta: string;

@@ -267,12 +267,12 @@ export class Example extends LitElement {
           style="height:100%;justify-content: space-between;"
         >
           <vaadin-tabs orientation="vertical">
-            <vaadin-tab>
+            <!-- <vaadin-tab>
               <a tabindex="-1">
                 <vaadin-icon icon="vaadin:desktop"></vaadin-icon>
                 <workspace-menu></workspace-menu>
               </a>
-            </vaadin-tab>
+            </vaadin-tab> -->
             <vaadin-tab>
               <a tabindex="-1" href="/campos">
                 <vaadin-icon icon="vaadin:bullseye"></vaadin-icon>
@@ -332,6 +332,28 @@ export class Example extends LitElement {
               >
                 <vaadin-icon icon="vaadin:list"></vaadin-icon>
                 <span>${translate("navbar.opciones.listaDispositivos")}</span>
+              </a>
+            </vaadin-tab>
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
+                  Router.go('/personal')
+                }}
+              >
+                <vaadin-icon icon="vaadin:users"></vaadin-icon>
+                <span>${translate("personal")}</span>
+              </a>
+            </vaadin-tab>
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
+                  Router.go('/settings')
+                }}
+              >
+                <vaadin-icon icon="vaadin:cogs"></vaadin-icon>
+                <span>${translate("ajustes")}</span>
               </a>
             </vaadin-tab>
 

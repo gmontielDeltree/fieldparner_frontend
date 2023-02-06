@@ -5,8 +5,7 @@ import { Router } from "@vaadin/router";
 
 // import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import("../loading-modal/loading-modal.js");
-import("../color-cultivo/color-cultivo");
-import cultivos_default from "../jsons/cultivos.json";
+import cultivos_default from "../jsons/cultivos";
 import("../notas-offcanvas/notas-offcanvas");
 import("../ndvi-offcanvas/ndvi-offcanvas");
 //import "../variedades-loader/variedades-loader.js";

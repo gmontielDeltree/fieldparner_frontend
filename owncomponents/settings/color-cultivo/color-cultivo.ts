@@ -3,7 +3,7 @@ import { property, state } from "lit/decorators.js";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import booleanIcons from "bootstrap-icons/font/bootstrap-icons.css?inline";
-import gbl_state from "../state";
+import gbl_state from "../../state";
 interface CultivosDoc {
   _id: string;
   nombre: string;
@@ -13,12 +13,7 @@ interface CultivosDoc {
 export class ColorCultivo extends LitElement {
   static styles = [unsafeCSS(bootstrap), unsafeCSS(booleanIcons)];
 
-  @state({
-    hasChanged(newVal: Offcanvas, oldVal: Offcanvas) {
-      return false;
-    },
-  })
-  _detallesOffcanvas: Offcanvas;
+
 
   @state()
   cultivos: CultivosDoc[] = [];
@@ -38,32 +33,12 @@ export class ColorCultivo extends LitElement {
 
   firstUpdated() {
     this.loadCultivos();
-
-    this._detallesOffcanvas = new Offcanvas(
-      this.shadowRoot.getElementById("colores-settings-oc")
-    );
-
-    this._detallesOffcanvas.show();
-    this.shadowRoot
-      .getElementById("colores-settings-oc")
-      .addEventListener("hidden.bs.offcanvas", () => {
-        history.back();
-      });
   }
 
   willUpdate(props) {
-    //   if(props.has('show')){
-    //     if(this.show){
-    //         this._detallesOffcanvas?.show()
-    //     }else{
-    //         this._detallesOffcanvas?.hide()
-    //     }
-    //   }
+
   }
 
-  show() {
-    this._detallesOffcanvas?.show();
-  }
 
   update_color_settings(color, doc) {
     doc.color = color;
@@ -159,34 +134,16 @@ export class ColorCultivo extends LitElement {
       </a>`;
     };
 
-    let offcanvas_html = html`<div
-      class="offcanvas offcanvas-start show"
-      tabindex="-1"
-      id="colores-settings-oc"
-      aria-labelledby="offcanvasLabel"
-    >
-      <div class="offcanvas-header">
-        <h6 class="offcanvas-title" id="offcanvasLabel">Cultivos</h6>
 
-        <button
-          type="button"
-          @click=${() => {
-            this._detallesOffcanvas.hide();
-          }}
-          class="btn-close text-reset"
-          data-bs-dismiss="offcanvas"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="offcanvas-body">
         
-        <div class="list-group">
+       
+
+
+    return html`
+     <div class="list-group">
         ${nuevo_fake_item()}
         ${this.cultivos.map((doc) => item(doc))}</div>
-      </div>
-    </div>`;
-
-    return html` ${offcanvas_html} `;
+    `;
   }
 }
 

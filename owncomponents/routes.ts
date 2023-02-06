@@ -4,13 +4,14 @@ import "./proveedores/proveedores-detalles";
 import './ingenieros/ingenieros-listado'
 import './ingenieros/ingenieros-editor'
 import './ingenieros/ingenieros-detalles'
+import './settings/settings'
 
 export const routes = [
   { path: "/", component: "null-component" },
   { path: "/gf", redirect: "/" },
   { path: "/campos", component: "lista-de-campos" },
   { path: "/indices/:uuid", component: "ndvi-offcanvas" },
-  { path: "/cultivos", component: "color-cultivo" },
+  { path: "/settings", component: "settings-modal" },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add",
     component: "lote-offcanvas-side",
@@ -94,13 +95,13 @@ export const routes = [
     component: "device-route-handler",
   },
   {
-    path: "/ingenieros",
+    path: "/personal",
     component: "ingenieros-listado",
     children: [
       { path: "/add", component: "ingenieros-editor" },
       { path: "/:uuid/edit", component: "ingenieros-editor" },
     ],
   },
-  { path: "/ingenieros/:uuid", component: "ingenieros-detalles" },
+  { path: "/personal/:uuid", component: "ingenieros-detalles" },
   { path: "/ejecucion", component: "null" },
 ];

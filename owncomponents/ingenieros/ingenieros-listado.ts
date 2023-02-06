@@ -45,7 +45,7 @@ export class IngenierosListado extends LitElement {
         {
           text: get("nuevo"),
           callback: () => {
-            Router.go("ingenieros/add");
+            Router.go("personal/add");
             console.log("Nuevo");
           },
         },
@@ -62,7 +62,7 @@ export class IngenierosListado extends LitElement {
         {
           text: get("editar"),
           callback: () => {
-            Router.go("ingenieros/" + ing.uuid + "/edit");
+            Router.go("personal/" + ing.uuid + "/edit");
             console.log("edit");
           },
         },
@@ -140,7 +140,7 @@ export class IngenierosListado extends LitElement {
                           <vaadin-button
                             @click=${() => {
                               Router.go(
-                                "/ingenieros/" +
+                                "/personal/" +
                                   proveedor.uuid +
                                   "?from=" +
                                   this.location.pathname
