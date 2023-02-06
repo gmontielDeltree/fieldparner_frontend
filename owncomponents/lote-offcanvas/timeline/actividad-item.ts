@@ -383,7 +383,7 @@ export class ActividadItem extends LitElement {
                       <div>${att.filename}</div>
                       <div> <!-- Grupo botones -->
 
-                      <vaadin-button @click=${
+                      <!-- <vaadin-button @click=${
                        ()=>{
                         let n = att.filename
                         if(n.includes('.shp')){
@@ -394,7 +394,7 @@ export class ActividadItem extends LitElement {
                        } 
                       }>
                       <vaadin-icon icon='lumo:eye'></vaadin-icon>
-                      </vaadin-button>
+                      </vaadin-button> -->
                         <vaadin-button
                           @click=${() => {
                             fetch(

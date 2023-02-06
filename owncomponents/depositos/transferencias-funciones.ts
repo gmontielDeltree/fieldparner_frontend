@@ -88,6 +88,27 @@ export const borrar_transfer = (transfer: DepositosTransferencia) => {
   );
 };
 
+
+export const transfer_adjuntar_archivo = async (
+  act: DepositosTransferencia,
+  file: File
+) => {
+  if (act.attachments == null) {
+    act.attachments = [];
+  }
+  act.attachments.push({ uuid: uuidv7(), filename: file.name });
+  //return guardar_transfer(act);
+};
+
+export const transfer_remover_adjunto = async (
+  act: DepositosTransferencia,
+  uuid: string
+) => {
+  act.attachments = act.attachments.filter((a) => a.uuid !== uuid);
+  //return guardar_tr(act);
+};
+
+
 /** Expo/Impo */
 export const exportar_lista_transfers = () => {};
 

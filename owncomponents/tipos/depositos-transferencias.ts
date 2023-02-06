@@ -1,3 +1,4 @@
+import { Attachment } from './attachments';
 import { CreatedTag, Deposito, LastUpdateTag } from '../depositos/depositos-types';
 import { Insumo } from "../insumos/insumos-types";
 
@@ -23,7 +24,7 @@ export interface DepositosTransferencia {
     deposito_destino: Deposito,
     lineas : LineaTransferencia [],
     obs: string,
-    adjuntos ?: string[]
+    attachments ?: Attachment[]
     last_updated : LastUpdateTag,
     created: CreatedTag
 }

@@ -1,3 +1,7 @@
+import {
+  transfer_adjuntar_archivo,
+  transfer_remover_adjunto,
+} from "./../transferencias-funciones";
 import { uuidv7 } from "uuidv7";
 import { cargar_transferencia } from "../transferencias-funciones";
 import { format, isDate } from "date-fns";
@@ -39,7 +43,7 @@ import { uuid4 } from "uuid4";
 import { deepcopy } from "../../helpers";
 import { map } from "lit/directives/map.js";
 import { showNotification } from "../../helpers/notificaciones";
-import "../../iconos/my-icons"
+import "../../iconos/my-icons";
 
 @customElement("deposito-nuevo-transferencias")
 export class DepositoNuevoTransferencias extends LitElement {
@@ -151,7 +155,7 @@ export class DepositoNuevoTransferencias extends LitElement {
       new CustomEvent("nueva-trans", { bubbles: true, composed: true })
     );
 
-    showNotification(get('guardado'),'success')
+    showNotification(get("guardado"), "success");
     Router.go(this.back_url);
   }
 
@@ -260,7 +264,74 @@ export class DepositoNuevoTransferencias extends LitElement {
                     @input=${(e) => (this.trans.obs = e.target.value)}
                   ></vaadin-text-area>
                   <!-- Adjuntos -->
-                  <vaadin-upload></vaadin-upload>
+
+                  <div>
+                    <!--upload-->
+                    <vaadin-vertical-layout style="align-self:stretch">
+                      ${this.trans.attachments
+                        ? this.trans.attachments.map(
+                            (att) => html`
+                    <vaadin-horizontal-layout
+                      style="width:100%; align-items:center; justify-content:space-between"
+                      theme="spacing"
+                    >
+                      <div>${att.filename}</div>
+                      <div> <!-- Grupo botones -->
+
+                    
+                      </vaadin-button>
+                        <vaadin-button
+                          @click=${() => {
+                            fetch(
+                              "/attachments?file=" +
+                                encodeURIComponent(att.filename)
+                            )
+                              .then((r) => {
+                                return r.blob();
+                              })
+                              .then((data) => {
+                                // Download Fetch
+                                var a = document.createElement("a");
+                                a.href = window.URL.createObjectURL(data);
+                                a.download = att.filename;
+                                a.click();
+                              });
+                          }}
+                        >
+                          <vaadin-icon icon="lumo:download"></vaadin-icon>
+                        </vaadin-button>
+                        <vaadin-button
+                          @click=${() => {
+                            // Solicitar borrado en server y en la db
+                            transfer_remover_adjunto(this.trans, att.uuid).then(
+                              () => this.requestUpdate()
+                            );
+                          }}
+                          ><vaadin-icon icon="vaadin:trash"></vaadin-icon
+                        ></vaadin-button>
+                      </div>
+                    </vaadin-horizontal-layout>
+                  `
+                          )
+                        : html`${translate("sin_adjuntos")}`}
+                    </vaadin-vertical-layout>
+
+                    <vaadin-upload
+                      target="/attachments"
+                      .files=${
+                        [] /* Previene que se agregen los archivos debajo del control*/
+                      }
+                      @upload-success=${(e) => {
+                        console.log("successevent", e);
+                        transfer_adjuntar_archivo(
+                          this.trans,
+                          e.detail.file
+                        ).then(() => {
+                          this.requestUpdate();
+                        });
+                      }}
+                    ></vaadin-upload>
+                  </div>
                 </vaadin-vertical-layout>
 
                 <vaadin-vertical-layout
