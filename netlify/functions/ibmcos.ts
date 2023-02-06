@@ -5,7 +5,8 @@ var config = {
 	endpoint: 's3.us-south.cloud-object-storage.appdomain.cloud',
 	apiKeyId: 'RIblWRFHdnOlBeJpdwVFBh0LTltoNHIVcbwLkFs60XuD',
 	serviceInstanceId: 'crn:v1:bluemix:public:cloud-object-storage:global:a/e1088f762da34a8c97ec402e732b5b60:3bf39259-ef2b-4b16-9261-193d59371b90::',
-    };
+  signatureVersion: 'iam',   
+};
 
 const s3 = new AWS.S3(
 	config
