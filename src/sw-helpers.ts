@@ -76,7 +76,7 @@ export interface SWFileAttachment {
 
 export async function postData(file: File) {
   // Opciones por defecto estan marcadas con un *
-  console.log("POST AL SERVER");
+  console.log("POST AL SERVER",file);
 
   fetch("https://staging--agrotools.netlify.app/.netlify/functions/ibmcos", {
     method: "POST",
@@ -92,14 +92,18 @@ export async function postData(file: File) {
       return response.json();
     })
     .then(function (json) {
+      console.log("UPLOAD URL",json)
       return fetch(json.uploadURL, {
         method: "PUT",
         body: file,
       });
     })
-    .then(function () {
-      console.log("UPLOADED to https://adjuntos-fieldpartner.s3.us-south.cloud-object-storage.appdomain.cloud/" +
-      file.name)
+    .then(function (e) {
+      console.log(e)
+      console.log(
+        "UPLOADED to https://adjuntos-fieldpartner.s3.us-south.cloud-object-storage.appdomain.cloud/" +
+          file.name
+      );
     });
 }
 
