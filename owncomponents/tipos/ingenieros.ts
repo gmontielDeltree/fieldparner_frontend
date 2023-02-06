@@ -3,6 +3,7 @@ export interface Ingeniero {
   _id: string;
   _rev?: string;
   nombre: string;
+  email: string;
   uuid: string;
   cuit: string;
   direccion: string;

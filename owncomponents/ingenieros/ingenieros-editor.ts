@@ -1,7 +1,7 @@
+import { Ingeniero } from "./../tipos/ingenieros";
 import { Router } from "@vaadin/router";
 import { guardar_proveedor } from "./proveedores-funciones";
 import { RouterLocation } from "@vaadin/router";
-import { Proveedor as Ingeniero } from "./../tipos/proveedores";
 import { css, html, LitElement, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
@@ -9,6 +9,7 @@ import "@vaadin/button";
 import "@vaadin/dialog";
 import "@vaadin/text-field";
 import "@vaadin/vertical-layout";
+import "@vaadin/email-field";
 import { dialogFooterRenderer, dialogRenderer } from "@vaadin/dialog/lit.js";
 import type { DialogOpenedChangedEvent } from "@vaadin/dialog";
 import {
@@ -20,8 +21,12 @@ import { get, translate } from "lit-translate";
 import { showNotification } from "../helpers/notificaciones";
 
 import { Route, RouteWithRedirect } from "@vaadin/router";
-import "../map-picker/map-picker"
-import { nuevo_ingeniero, cargar_ingeniero, guardar_ingeniero } from './ingenieros-funciones';
+import "../map-picker/map-picker";
+import {
+  nuevo_ingeniero,
+  cargar_ingeniero,
+  guardar_ingeniero,
+} from "./ingenieros-funciones";
 
 @customElement("ingenieros-editor")
 export class IngenierosEditor extends LitElement {
@@ -39,7 +44,9 @@ export class IngenierosEditor extends LitElement {
 
   @state()
   valido: boolean = false;
-  
+
+  @state()
+  lista_invalidos: string[] = ["nombre"];
 
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -51,22 +58,23 @@ export class IngenierosEditor extends LitElement {
         this.ingeniero = nuevo_ingeniero();
       } else {
         //Edit
-        cargar_ingeniero(this.location.params.uuid as string).then(
-          (ing) => {
-            this.ingeniero = ing;
-          }
-        );
+        cargar_ingeniero(this.location.params.uuid as string).then((ing) => {
+          this.ingeniero = ing;
+        });
       }
     }
-
-
   }
 
   emit_nuevo() {
+    // Check y validar
+    if(this.ingeniero.nombre === ""){
+      showNotification(get('ingrese_un_nombre'),'error')
+      return
+    }
     guardar_ingeniero(this.ingeniero)
       .then(() => {
         showNotification(get("ingeniero_guardado"), "success");
-        window.history.back()
+        window.history.back();
         //Router.go("/");
       })
       .catch((e) => {
@@ -95,7 +103,7 @@ export class IngenierosEditor extends LitElement {
       <vaadin-dialog
         header-title=${this.edit
           ? translate("edit")
-          : translate("nuevo")}
+          : translate("nuevo_personal")}
         .opened="${this.opened}"
         no-close-on-esc
         no-close-on-outside-click
@@ -105,7 +113,8 @@ export class IngenierosEditor extends LitElement {
         }}"
         ${
           dialogRenderer(this.renderDialog, [
-            this.opened, this.ingeniero
+            this.opened,
+            this.ingeniero,
           ]) /**hay que poner una prop sino no se rerender */
         }
         ${dialogFooterRenderer(this.renderFooter, [this.valido])}
@@ -122,28 +131,52 @@ export class IngenierosEditor extends LitElement {
       <vaadin-text-field
         autoselect
         required
+        invalid
         label="${translate("nombre")}"
+        pattern="^(?!s*$).+"
         .value=${this.ingeniero.nombre}
         @keypress=${() => console.log("keypresssss")}
+        @invalid-changed=${(e) => {
+          let es_invalido = e.detail.value;
+          this.validar("nombre", es_invalido);
+        }}
         @input=${(e) => {
           this.ingeniero.nombre = e.target.value;
-          this.validar();
         }}
       ></vaadin-text-field>
       <vaadin-text-field
         autoselect
         label="${translate("direccion")}"
         .value=${this.ingeniero.direccion}
-        @input=${(e) => {this.ingeniero.direccion = e.target.value
-        this.validar()
+        @input=${(e) => {
+          this.ingeniero.direccion = e.target.value;
         }}
       >
-    </vaadin-text-field>
-    <map-picker .posicion=${this.ingeniero.posicion} @input=${
-      (e)=>{
-        this.ingeniero.posicion = e.detail
-      }
-    }></map-picker>
+      </vaadin-text-field>
+      <vaadin-text-field
+        autoselect
+        pattern="^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$"
+        label="${translate("telefono")}"
+        .value=${this.ingeniero.telefono}
+        @invalid-changed=${(e) => {
+          let es_invalido = e.detail.value;
+          this.validar("telefono", es_invalido);
+        }}
+        @input=${(e) => {
+          this.ingeniero.telefono = e.target.value;
+        }}
+      ></vaadin-text-field>
+      <vaadin-email-field
+        label="Email address"
+        name="email"
+        value="julia.scheider@email.com"
+        error-message="Enter a valid email address"
+        clear-button-visible
+        .value=${this.ingeniero.email}
+        @input=${(e) => {
+          this.ingeniero.email = e.target.value;
+        }}
+      ></vaadin-email-field>
     </vaadin-vertical-layout>
   `;
 
@@ -167,15 +200,30 @@ export class IngenierosEditor extends LitElement {
     // );
   }
 
-  pick_desde_mapa(){
-    this.opened = false
-    this.dispatchEvent(new CustomEvent('open-map-picker', {bubbles:true,composed:true}))
+  pick_desde_mapa() {
+    this.opened = false;
+    this.dispatchEvent(
+      new CustomEvent("open-map-picker", { bubbles: true, composed: true })
+    );
   }
 
-  validar() {
+  validar(variable: string, es_invalido: boolean) {
+    if (es_invalido) {
+      if (!this.lista_invalidos.includes(variable)) {
+        this.lista_invalidos = [...this.lista_invalidos, variable];
+      }
+    } else {
+      if (this.lista_invalidos.includes(variable)) {
+        this.lista_invalidos = this.lista_invalidos.filter((s) => s !== variable);
+      }
+    }
+    this.valido = this.lista_invalidos.length === 0;
+    console.log(variable + " es invalido?", es_invalido,this.lista_invalidos);
+
     // Nombre es nulo o igual a de ""
-    let c1 = (this.ingeniero.nombre == null ) || (this.ingeniero.nombre === "")
-    this.valido = !c1
+    //let c1 = (this.ingeniero.nombre == null ) || (this.ingeniero.nombre === "")
+    //this.valido = !c1
+    //this.validador = [...this.validador, ]
   }
 }
 

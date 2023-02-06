@@ -91,7 +91,7 @@ export class IngenierosListado extends LitElement {
   render() {
     return html`
       <modal-generico .modalOpened=${this.openedModal} backurl="/">
-        <h4 slot="title">${translate("ingenieros")}</h4>
+        <div slot="title">${translate("ingenieros")}</div>
         <div slot="menu" s>
           <vaadin-menu-bar
             .items="${this.menu_items}"
@@ -128,7 +128,7 @@ export class IngenierosListado extends LitElement {
                             <span
                               style="color: var(--lumo-secondary-text-color); font-size: var(--lumo-font-size-s);"
                             >
-                              ${proveedor.direccion}
+                              ${proveedor.direccion} - ${proveedor.telefono} - ${proveedor.email}
                             </span>
                           </vaadin-vertical-layout>
                         </vaadin-horizontal-layout>
@@ -137,7 +137,7 @@ export class IngenierosListado extends LitElement {
                           style="align-items: center;"
                           theme="spacing"
                         >
-                          <vaadin-button
+                          <!-- <vaadin-button
                             @click=${() => {
                               Router.go(
                                 "/personal/" +
@@ -147,7 +147,7 @@ export class IngenierosListado extends LitElement {
                               );
                             }}
                             >${translate("ver")}</vaadin-button
-                          >
+                          > -->
 
                           <vaadin-menu-bar
                             .items="${this.menu_ingeniero_items(proveedor)}"
