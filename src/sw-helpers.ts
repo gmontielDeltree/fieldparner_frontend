@@ -78,7 +78,7 @@ export async function postData(file: File) {
   // Opciones por defecto estan marcadas con un *
   console.log("POST AL SERVER");
 
-  fetch("/.netlify/functions/ibmcos", {
+  fetch("https://staging--agrotools.netlify.app/.netlify/functions/ibmcos", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -107,7 +107,7 @@ export const fetch_file = async (filename: string) => {
   return fetch(
     "https://adjuntos-fieldpartner.s3.us-south.cloud-object-storage.appdomain.cloud/" +
       filename
-  ).then((r) => r.blob() as File);
+  ).then((r) => r.body);
 };
 
 function ASCIItoHex(ascii) {
