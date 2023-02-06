@@ -121,7 +121,7 @@ registerRoute(
     const file: File = data.get("file") as File;
     console.log("FILE UPLOAD", file, file.name, file.type);
 
-    postData("serverurl");
+    postData(file);
 
     // La _id es el nombre del archivo URIencodedeado
     sw_post_file_doc(adjuntos_db,file,false);

@@ -39,7 +39,7 @@ export const sw_get_file_doc = async (
   db: PouchDB.Database,
   filename_or_id: string //uriEncoded
 ) => {
-  console.log("FILENAME REQUESTED",filename_or_id)
+  console.log("FILENAME REQUESTED", filename_or_id);
   return sw_docs_starting(db, ASCIItoHex(filename_or_id), true, true, true)
     .then(sw_only_docs)
     .then((docs) => {
@@ -74,10 +74,41 @@ export interface SWFileAttachment {
   _attachments: { file_0: { data: File; type: string } };
 }
 
-export async function postData(url = "", data = {}) {
+export async function postData(file: File) {
   // Opciones por defecto estan marcadas con un *
   console.log("POST AL SERVER");
+
+  fetch("/.netlify/functions/ibmcos", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: file.name,
+      type: file.type,
+    }),
+  })
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (json) {
+      return fetch(json.uploadURL, {
+        method: "PUT",
+        body: file,
+      });
+    })
+    .then(function () {
+      console.log("UPLOADED to https://adjuntos-fieldpartner.s3.us-south.cloud-object-storage.appdomain.cloud/" +
+      file.name)
+    });
 }
+
+export const fetch_file = async (filename: string) => {
+  return fetch(
+    "https://adjuntos-fieldpartner.s3.us-south.cloud-object-storage.appdomain.cloud/" +
+      filename
+  ).then((r) => r.blob() as File);
+};
 
 function ASCIItoHex(ascii) {
   let hex = "";
@@ -87,7 +118,7 @@ function ASCIItoHex(ascii) {
     Hex = tASCII.toString(16);
     hex = hex + Hex;
   });
-  return hex = hex.trim();
+  return (hex = hex.trim());
 }
 
 function hextoASCII(ascii) {
@@ -96,5 +127,5 @@ function hextoASCII(ascii) {
     let merge = parseInt(i, 16);
     string = string + String.fromCharCode(merge);
   });
-  return string
+  return string;
 }
