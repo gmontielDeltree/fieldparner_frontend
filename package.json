@@ -95,6 +95,7 @@
     "geoblaze": "^1.1.0",
     "geojson-precision": "^1.0.0",
     "glslify": "^7.1.1",
+    "ibm-cos-sdk": "^1.12.2",
     "igniteui-webcomponents-core": "^3.2.3",
     "igniteui-webcomponents-grids": "^3.2.3",
     "js-xlsx": "^0.8.22",
