@@ -84,8 +84,8 @@ export async function postData(file: File) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      name: file.name,
-      type: file.type,
+      fileName: file.name,
+      fileType: file.type,
     }),
   })
     .then(function (response) {
