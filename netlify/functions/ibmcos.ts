@@ -49,5 +49,8 @@ module.exports.handler = async (event, context) => {
     body: JSON.stringify({
       uploadURL: uploadURL
     }),
+    headers: {
+      "access-control-allow-origin": "*",
+    },
   }
 }
