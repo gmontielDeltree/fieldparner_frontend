@@ -15,9 +15,9 @@ import {
 } from "workbox-strategies";
 import type { ManifestEntry } from "workbox-build";
 
-
 import PouchDB from "pouchdb";
 import {
+  fetch_file,
   postData,
   SWFileAttachment,
   sw_docs_starting,
@@ -84,6 +84,7 @@ registerRoute(
     )) as SWFileAttachment;
     if (file_doc !== null) {
       //existe
+      console.log("El archivo existe en la db")
       let blob = file_doc._attachments["file_0"].data;
       //let content_type = file_doc._attachments["file_0"].content_type;
       //request.clone()
@@ -94,21 +95,29 @@ registerRoute(
         headers: { ...response.headers, "Content-Type": blob.type },
       });
     } else {
+      console.log("El archivo no existe en la db")
       // no existe
-      // Buscarlo en linea 
-      const response = await fetch(request);
-      const responseBody = await response.text();
-      return new Response(`{"error":"no se encuentra el archivo"}`, {
-        headers: response.headers,
-        status: 404,
-      });
+      // Buscarlo en linea
+      return fetch_file(filename)
+        .then((f: File) => {
+          console.log("File Encontrado en server",f)
+          return new Response(f);
+        })
+        .catch(async () => {
+          const response = await fetch(request);
+          const responseBody = await response.text();
+          return new Response(`{"error":"no se encuentra el archivo"}`, {
+            headers: response.headers,
+            status: 404,
+          });
+        });
     }
   },
   "GET"
 );
 
 /**
- * Procesa el post que viene desde vaadin/upload 
+ * Procesa el post que viene desde vaadin/upload
  * El archivo viene en el campo data de el "form"ulario posteado.
  */
 registerRoute(
@@ -124,7 +133,7 @@ registerRoute(
     postData(file);
 
     // La _id es el nombre del archivo URIencodedeado
-    sw_post_file_doc(adjuntos_db,file,false);
+    sw_post_file_doc(adjuntos_db, file, false);
 
     return new Response(`{"status":"ok"}`, {
       headers: { ...request.headers },

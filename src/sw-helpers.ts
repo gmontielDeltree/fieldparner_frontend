@@ -111,7 +111,7 @@ export const fetch_file = async (filename: string) => {
   return fetch(
     "https://adjuntos-fieldpartner.s3.us-south.cloud-object-storage.appdomain.cloud/" +
       filename
-  ).then((r) => r.body);
+  ).then((r) => r.blob());
 };
 
 function ASCIItoHex(ascii) {
