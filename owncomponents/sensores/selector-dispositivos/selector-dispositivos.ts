@@ -69,17 +69,18 @@ export class SelectorDispositivos extends LitElement {
           map(
             this.dispositivos,
             (d) => html`
-              <div
+              <vaadin-item
                 @click=${() => {
                   this.emit_selected_changed(d);
                   this.dialogOpened = false;
                 }}
               >
                 ${d.nombre}
-              </div>
+              </vaadin-item>
             `
           ),
       })}
+      <div style='font-weight:bolder;font-size:9px;'>ToDo: Distancias y auto seleccion</div>
     </vaadin-vertical-layout>
   `;
 

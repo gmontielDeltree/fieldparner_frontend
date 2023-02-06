@@ -17,7 +17,9 @@ export const listar_sensores = async () => {
     .get("lista_public_devices:unico")
     .then((lista) => {
       let public_devices = lista.public_devices as string[];
+      // crear keys y hacer una sola request
       return Promise.all(public_devices.map(sensores_detalles));
+
     });
 };
 
@@ -148,6 +150,41 @@ export const sensores_central_mas_cercana_al_lote = async (
 export const sensor_posicion = async (uuid: string) => {
   let key = [uuid, "latitud",{}];
   let endkey = [uuid, "latitud",{}];
+  let latitud = null;
+  let longitud = null;
+  let ret_value: LngLatLike = { lng: null, lat: null };
+  return gbl_state.db_sensores_raw
+    .query("telemetria/ts_by_name", { startkey: key, endkey: endkey, limit: 1 })
+    .then((r) => {
+      if (r.rows.length > 0) {
+        latitud = r.rows[0].value;
+        key = [uuid, "longitud"];
+        endkey = [uuid, "longitud"];
+        return gbl_state.db_sensores_raw
+          .query("telemetria/ts_by_name", {
+            startkey: key,
+            endkey: endkey,
+            limit: 1,
+          })
+          .then((r) => {
+            if (r.rows.length > 0) {
+              longitud = r.rows[0].value;
+              ret_value = { lng: longitud, lat: latitud };
+              return ret_value;
+            }
+          });
+      }
+    });
+};
+
+/**
+ * Listar la posicion de todos los devices con una sola call
+ * @param uuid 
+ * @returns 
+ */
+export const sensores_posiciones = async (uuid: string) => {
+  let key = [{}, "latitud",{}];
+  let endkey = [{}, "latitud",{}];
   let latitud = null;
   let longitud = null;
   let ret_value: LngLatLike = { lng: null, lat: null };
