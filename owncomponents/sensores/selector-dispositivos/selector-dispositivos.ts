@@ -1,7 +1,7 @@
 import { booleanContains } from '@turf/boolean-contains';
 import { listar_sensores } from "./../sensores-funciones";
 import { customElement, property, state } from "lit/decorators.js";
-import { html, LitElement } from "lit";
+import { CSSResultGroup, html, LitElement, unsafeCSS } from 'lit';
 import { RouterLocation } from "@vaadin/router";
 import { map } from "lit/directives/map.js";
 import { dialogFooterRenderer, dialogRenderer } from "@vaadin/dialog/lit.js";
@@ -11,9 +11,12 @@ import "@vaadin/button";
 import "@vaadin/dialog";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { DeviceDetalles } from "../sensores-types";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 
 @customElement("selector-dispositivos")
 export class SelectorDispositivos extends LitElement {
+  static styles?: CSSResultGroup = unsafeCSS(bootstrap)
+
   @property()
   location: RouterLocation;
 
@@ -42,11 +45,10 @@ export class SelectorDispositivos extends LitElement {
 
   render() {
     return html`
-    ${this.enabled ? null: html`<div>Seleccione las fechas y horas de inicio y fin para podes elegir datos desde las centrales</div>`}
+    ${this.enabled ? null: html`<div class='alert alert-danger'>Las fechas de inicio y final deben ser diferentes entre si.</div>`}
       <vaadin-button theme="success" @click=${() => (this.dialogOpened = true)}
         ?disabled=${!this.enabled}
-        >Cargar desde Centrales</vaadin-button
-      >
+        >Cargar desde Centrales</vaadin-button>
       <vaadin-dialog
         header-title="${translate("dispositivos")}"
         .opened="${this.dialogOpened}"

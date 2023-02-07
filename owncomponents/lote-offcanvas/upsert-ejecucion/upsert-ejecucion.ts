@@ -1,4 +1,4 @@
-import { format_iso_c, format_min } from './../../helpers';
+import { format_iso_c, format_min } from "./../../helpers";
 import { sensores_central_mas_cercana_al_lote } from "./../../sensores/sensores-funciones";
 import { listar_depositos } from "../../depositos/depositos-funciones";
 import { Router, RouterLocation } from "@vaadin/router";
@@ -177,8 +177,12 @@ export class UpsertEjecucion extends LitElement {
     this.ejecucion.tipo = this.actividad.tipo;
     this.ejecucion.detalles.fecha_ejecucion =
       this.actividad.detalles.fecha_ejecucion_tentativa;
-    this.ejecucion.detalles.fecha_hora_inicio = format_min(parseISO(this.ejecucion.detalles.fecha_ejecucion))
-    this.ejecucion.detalles.fecha_hora_fin = format_min(parseISO(this.ejecucion.detalles.fecha_ejecucion))
+    this.ejecucion.detalles.fecha_hora_inicio = format_min(
+      parseISO(this.ejecucion.detalles.fecha_ejecucion)
+    );
+    this.ejecucion.detalles.fecha_hora_fin = format_min(
+      parseISO(this.ejecucion.detalles.fecha_ejecucion)
+    );
     this.ejecucion.detalles.hectareas = this.actividad.detalles.hectareas;
     this.ejecucion.lote_uuid = this.actividad.lote_uuid;
     this.ejecucion.uuid = this.actividad.uuid;
@@ -261,13 +265,15 @@ export class UpsertEjecucion extends LitElement {
               await this.getActividadSinCopiar(uuid);
               console.log("EJE ACT", this.ejecucion, this.actividad);
               this.ready = true;
-              console.log(formatISO(
-                parse(
-                  this.ejecucion.detalles.fecha_ejecucion,
-                  "yyyy-MM-dd",
-                  new Date()
+              console.log(
+                formatISO(
+                  parse(
+                    this.ejecucion.detalles.fecha_ejecucion,
+                    "yyyy-MM-dd",
+                    new Date()
+                  )
                 )
-              ))
+              );
               //this.requestUpdate();
             });
           }
@@ -385,8 +391,7 @@ export class UpsertEjecucion extends LitElement {
   }
 
   render() {
-
-    console.log(formatISO(new Date()))
+    console.log(formatISO(new Date()));
 
     const labores_form = html`
       <grid-labores-exe
@@ -456,10 +461,10 @@ export class UpsertEjecucion extends LitElement {
               .i18n=${base_i18n}
               theme="helper-above-field"
               .value=${this.ejecucion.detalles.fecha_ejecucion}
-              @change=${(e) =>
-                {(this.ejecucion.detalles.fecha_ejecucion = e.target.value)
-                this.requestUpdate()}
-                }
+              @change=${(e) => {
+              this.ejecucion.detalles.fecha_ejecucion = e.target.value;
+              this.requestUpdate();
+            }}
             ></vaadin-date-picker> -->
 
             <vaadin-number-field
@@ -482,12 +487,16 @@ export class UpsertEjecucion extends LitElement {
                 label="${translate("hora_comienzo")}"
                 value="${this.ejecucion.detalles.fecha_hora_inicio}"
                 .i18n=${base_i18n}
-                .min="${format_min(parseISO(this.actividad.detalles.fecha_ejecucion_tentativa))}"
-                .max=${format(new Date(),"yyyy-MM-dd'T'HH:mm")}
-                               
+                .min="${format_min(
+                  parseISO(this.actividad.detalles.fecha_ejecucion_tentativa)
+                )}"
+                .max=${format(new Date(), "yyyy-MM-dd'T'HH:mm")}
                 @change=${(e) => {
                   this.ejecucion.detalles.fecha_hora_inicio = e.target.value;
-                  this.ejecucion.detalles.fecha_ejecucion = format(parseISO(e.target.value),'yyyy-MM-dd')
+                  this.ejecucion.detalles.fecha_ejecucion = format(
+                    parseISO(e.target.value),
+                    "yyyy-MM-dd"
+                  );
                   this.requestUpdate();
                 }}
               ></vaadin-date-time-picker>
@@ -497,7 +506,7 @@ export class UpsertEjecucion extends LitElement {
                 value=${this.ejecucion.detalles.fecha_hora_fin}
                 .i18n=${base_i18n}
                 .min=${this.ejecucion.detalles.fecha_hora_inicio}
-                .max=${format(new Date(),"yyyy-MM-dd'T'HH:mm")}
+                .max=${format(new Date(), "yyyy-MM-dd'T'HH:mm")}
                 @change=${(e) => {
                   this.ejecucion.detalles.fecha_hora_fin = e.target.value;
                   this.requestUpdate();
@@ -581,7 +590,6 @@ export class UpsertEjecucion extends LitElement {
           <vaadin-vertical-layout
             style="width: 100%; height: 100%; align-items: center; margin: var(--lumo-space-s);"
           >
-
             <vaadin-vertical-layout
               theme="spacing"
               style="flex-wrap: wrap; align-items: center;"
@@ -590,10 +598,13 @@ export class UpsertEjecucion extends LitElement {
                 Ingrese los valores de las variables ambientales promedio al
                 momento de la labor o seleccione central.
               </div>
+
               <selector-dispositivos
                 .enabled=${this.habilitar_seleccion_centrales()}
                 .location=${this.location}
                 @selected-changed=${(e) => {
+                  // Reseleccionar el tab
+                  console.log("STEP", this.selected_step);
                   let device = e.detail;
                   console.log("Picked Device", device);
                   sensores_valores_promedios(
@@ -861,8 +872,15 @@ export class UpsertEjecucion extends LitElement {
                 : html` <button
                     type="button"
                     class="btn btn-primary"
-                    @click=${() =>
-                      (this.selected_step =
+                    @click=${() => {
+                      console.log("STEP_PB", this.selected_step);
+
+                      this.selected_step =
+                        this.selected_step === undefined
+                          ? 3
+                          : this.selected_step;
+
+                      this.selected_step =
                         this.selected_step >=
                         (
                           document.querySelector(
@@ -870,7 +888,8 @@ export class UpsertEjecucion extends LitElement {
                           ) as TabSheet
                         )?.items.length
                           ? this.selected_step
-                          : this.selected_step + 1)}
+                          : this.selected_step + 1;
+                    }}
                   >
                     Siguiente
                   </button>`}
@@ -881,10 +900,15 @@ export class UpsertEjecucion extends LitElement {
     `;
   }
 
+  same_time_check() {
+    let inicio = this.ejecucion.detalles.fecha_hora_inicio;
+    let fin = this.ejecucion.detalles.fecha_hora_fin;
+    return fin === inicio;
+  }
   habilitar_seleccion_centrales() {
     let inicio = this.ejecucion.detalles.fecha_hora_inicio;
     let fin = this.ejecucion.detalles.fecha_hora_fin;
-    return inicio && fin && inicio !== "" && fin !== "";
+    return inicio && fin && inicio !== "" && fin !== "" && fin !== inicio;
   }
 
   es_depo_del_contratista() {
