@@ -26,7 +26,7 @@ export class ColorCultivo extends LitElement {
       endkey: "cultivo:\ufff0",
     }).then(({ rows }) => {
       this.cultivos = rows.map(({ doc }) => {
-        return doc;
+        return doc as unknown as CultivosDoc;
       });
     });
   }
