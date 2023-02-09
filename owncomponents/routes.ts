@@ -5,6 +5,7 @@ import './ingenieros/ingenieros-listado'
 import './ingenieros/ingenieros-editor'
 import './ingenieros/ingenieros-detalles'
 import './settings/settings'
+import './analisis-suelo/analisis-suelo-editor'
 
 export const routes = [
   { path: "/", component: "null-component" },
@@ -104,4 +105,5 @@ export const routes = [
   },
   { path: "/personal/:uuid", component: "ingenieros-detalles" },
   { path: "/ejecucion", component: "null" },
+  { path: "/analisissuelo/add", component: "analisis-suelo-editor" },
 ];
