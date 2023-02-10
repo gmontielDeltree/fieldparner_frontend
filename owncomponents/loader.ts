@@ -1,7 +1,7 @@
 import { customElement, state } from "lit/decorators.js";
 import { LitElement, PropertyValueMap, html, css } from "lit";
 import { base_url, gbl_docs_starting, only_docs } from "./helpers";
-import { gbl_state } from './state';
+import { gbl_state } from "./state";
 import { get, translate, use, registerTranslateConfig } from "lit-translate";
 import "@vaadin/button";
 import createAuth0Client from "@auth0/auth0-spa-js";
@@ -104,7 +104,7 @@ export class AppLoader extends LitElement {
     // Check si estoy on/offline
     gbl_state.online = window.navigator.onLine;
 
-    console.info("User is " + (gbl_state.online ? 'ONLINE': 'OFFLINE'))
+    console.info("User is " + (gbl_state.online ? "ONLINE" : "OFFLINE"));
     // Handlers para registrar on/offline
     window.addEventListener("online", handleConnectionChange);
     window.addEventListener("offline", handleConnectionChange);
@@ -214,7 +214,9 @@ export class AppLoader extends LitElement {
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
     // Device Databases
-    gbl_state.db_sensores_pro = new PouchDB(base_url + "processed_device_telemetry");
+    gbl_state.db_sensores_pro = new PouchDB(
+      base_url + "processed_device_telemetry"
+    );
     gbl_state.db_sensores_raw = new PouchDB(base_url + "telemetry_raw");
     // Nombres validos solo en minusculas
     this.db = new PouchDB("campos_" + username + "v7");
@@ -223,13 +225,13 @@ export class AppLoader extends LitElement {
     gbl_state.user_db = new PouchDB(user.sub);
     gbl_state.user = this.user;
 
-    if(import.meta.env.DEV){
-      this.dev_fast_start()
+    if (import.meta.env.DEV) {
+      this.dev_fast_start();
       return;
     }
 
     try {
-      console.time('DBCheck')
+      console.time("DBCheck");
       let campos_db_uri = base_url + "campos_" + username + "v7";
       console.log("CrearDBS - campos_db_uri", campos_db_uri);
       this.remote_db = new PouchDB(campos_db_uri);
@@ -243,7 +245,7 @@ export class AppLoader extends LitElement {
       console.log("Local Exists?", !local_is_empty);
       console.log("Remote Exists?", !remote_is_empty);
 
-      console.timeEnd('DBCheck')
+      console.timeEnd("DBCheck");
 
       /* Caso 1
 	  0-0 Nuevo Local - Nuevo Remoto
@@ -326,6 +328,7 @@ export class AppLoader extends LitElement {
     // do one way, one-off sync from the server until completion
     var opts = { live: true, retry: true };
     console.time("Replication");
+
     this.db.replicate
       .from(this.remote_db)
       .on("complete", (info) => {
@@ -335,10 +338,15 @@ export class AppLoader extends LitElement {
         // Cargar el Idioma
         this.cargar_idioma()
           .then(this.set_idioma)
-          .then(this.cargar_campana_seleccionada)
           .then((r) => {
-            this.ready = true;
-            console.log("Ready...Estado Inicial", gbl_state, r);
+            gbl_state.user_db.replicate
+              .from(base_url + gbl_state.user.sub)
+              .on("complete", () => {
+                this.cargar_campana_seleccionada("").then(() => {
+                  this.ready = true;
+                  console.log("Ready...Estado Inicial", gbl_state, r);
+                });
+              });
           });
 
         // then two-way, continuous, retriable sync
@@ -357,9 +365,9 @@ export class AppLoader extends LitElement {
       });
   }
 
-  dev_fast_start(){
+  dev_fast_start() {
     // Cargar el Idioma y darle Ready
-    console.log('DEV FAST START')
+    console.log("DEV FAST START");
     this.cargar_idioma()
       .then(this.set_idioma)
       .then(this.cargar_campana_seleccionada)
