@@ -41,7 +41,7 @@ export const cargar_analisis_suelo = async (uuid: string) => {
   return gbl_state.db.get("anasuelo:" + uuid).then((d) => d as AnalisisSuelo);
 };
 
-export const guardar_proveedor = (ana: AnalisisSuelo) => {
+export const guardar_analisis_suelo = (ana: AnalisisSuelo) => {
   if ("_rev" in ana) {
     // Editar
     // Cambiar last update

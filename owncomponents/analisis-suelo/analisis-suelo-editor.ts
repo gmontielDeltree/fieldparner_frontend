@@ -1,7 +1,10 @@
 import {
   analisis_suelo_adjuntar,
   analisis_suelo_remover_adjunto,
+  borrar_analisis_suelo,
+  guardar_analisis_suelo,
   nuevo_analisis_suelo,
+  validate_analisis_suelo,
 } from "./analisis-suelo-funciones";
 import { Router } from "@vaadin/router";
 import { RouterLocation } from "@vaadin/router";
@@ -38,8 +41,9 @@ export class AnalisisSueloEditor extends LitElement {
   @state()
   ana: AnalisisSuelo = nuevo_analisis_suelo();
 
-  private caraterizaciones = []
-  private texturas = []
+  private caraterizaciones = [];
+  private texturas = [];
+  private valido: boolean = false;
 
   loadData() {}
 
@@ -72,7 +76,10 @@ export class AnalisisSueloEditor extends LitElement {
 
   laboratorio_form = (item: AnalisisSuelo) => {
     return html`
-      <vaadin-vertical-layout theme="spacing" style="width:100%;justify-content:center;" >
+      <vaadin-vertical-layout
+        theme="spacing"
+        style="width:100%;justify-content:center;"
+      >
         <vaadin-horizontal-layout theme="spacing">
           <vaadin-text-field
             readonly
@@ -135,67 +142,68 @@ export class AnalisisSueloEditor extends LitElement {
 
   suelo_form = (ana: AnalisisSuelo) => {
     return html`
-      <vaadin-vertical-layout theme='spacing' style='width:100%'>
+      <vaadin-vertical-layout theme="spacing" style="width:100%">
         <vaadin-combo-box
-        label=${translate("caracterizacion")}
-        .items=${this.caraterizaciones}
-        .selectedItem=${ana.caracterizacion}
-        @selected-item-changed=${(e)=>{
-            ana.caracterizacion = e.detail.value
-        }}
+          label=${translate("caracterizacion")}
+          .items=${this.caraterizaciones}
+          .selectedItem=${ana.caracterizacion}
+          @selected-item-changed=${(e) => {
+            ana.caracterizacion = e.detail.value;
+          }}
         ></vaadin-combo-box>
         <vaadin-combo-box
-        label=${translate("textura")}
-        .items=${this.texturas}
-        .selectedItem=${ana.textura}
-        @selected-item-changed=${(e)=>{
-            ana.textura= e.detail.value
-        }}
+          label=${translate("textura")}
+          .items=${this.texturas}
+          .selectedItem=${ana.textura}
+          @selected-item-changed=${(e) => {
+            ana.textura = e.detail.value;
+          }}
         ></vaadin-combo-box>
         <vaadin-number-field
-        theme="align-right"
-        label=${translate("profundidad")}
-        value=${ana.profundidad}
-        @input=${(e)=>{
-            ana.profundidad = e.target.value
-        }}
+          theme="align-right"
+          label=${translate("profundidad")}
+          value=${ana.profundidad}
+          @input=${(e) => {
+            ana.profundidad = e.target.value;
+          }}
         >
-    <div slot='suffix'>cm</div></vaadin-number-field>
+          <div slot="suffix">cm</div></vaadin-number-field
+        >
       </vaadin-vertical-layout>
     `;
   };
 
   variables_form = (ana: AnalisisSuelo) => {
     return html`
-      <vaadin-vertical-layout theme='spacing'>
-      <vaadin-horizontal-layout theme='spacing'>
-         ${this.variable_input(ana,'carbono_organico','%')}
-         ${this.variable_input(ana,'materia_organica','%')}
-         ${this.variable_input(ana,'pH','')}
+      <vaadin-vertical-layout theme="spacing">
+        <vaadin-horizontal-layout theme="spacing">
+          ${this.variable_input(ana, "carbono_organico", "%")}
+          ${this.variable_input(ana, "materia_organica", "%")}
+          ${this.variable_input(ana, "pH", "")}
         </vaadin-horizontal-layout>
-        <vaadin-horizontal-layout theme='spacing'>
-         ${this.variable_input(ana,'fosforo_bray','ppm')}
-         ${this.variable_input(ana,'fosforo_ii','ppm')}
-         ${this.variable_input(ana,'fosforo_iii','ppm')}
+        <vaadin-horizontal-layout theme="spacing">
+          ${this.variable_input(ana, "fosforo_bray", "ppm")}
+          ${this.variable_input(ana, "fosforo_ii", "ppm")}
+          ${this.variable_input(ana, "fosforo_iii", "ppm")}
         </vaadin-horizontal-layout>
-        <vaadin-horizontal-layout theme='spacing'>
-         ${this.variable_input(ana,'calcio','ppm')}
-         ${this.variable_input(ana,'potasio','ppm')}
-         ${this.variable_input(ana,'sodio','')}
+        <vaadin-horizontal-layout theme="spacing">
+          ${this.variable_input(ana, "calcio", "ppm")}
+          ${this.variable_input(ana, "potasio", "ppm")}
+          ${this.variable_input(ana, "sodio", "")}
         </vaadin-horizontal-layout>
-        <vaadin-horizontal-layout theme='spacing'>
-         ${this.variable_input(ana,'azufre','ppm')}
-         ${this.variable_input(ana,'zinc_zn','ppm')}
-         ${this.variable_input(ana,'nitratos_no3','ppm')}
+        <vaadin-horizontal-layout theme="spacing">
+          ${this.variable_input(ana, "azufre", "ppm")}
+          ${this.variable_input(ana, "zinc_zn", "ppm")}
+          ${this.variable_input(ana, "nitratos_no3", "ppm")}
         </vaadin-horizontal-layout>
-        <vaadin-horizontal-layout theme='spacing'>
-         ${this.variable_input(ana,'sulfatos_s_so4','ppm')}
-         ${this.variable_input(ana,'nitratos_n_n03','ppm')}
-         ${this.variable_input(ana,'nitrogeno_total','ppm')}
+        <vaadin-horizontal-layout theme="spacing">
+          ${this.variable_input(ana, "sulfatos_s_so4", "ppm")}
+          ${this.variable_input(ana, "nitratos_n_n03", "ppm")}
+          ${this.variable_input(ana, "nitrogeno_total", "ppm")}
         </vaadin-horizontal-layout>
-        <vaadin-horizontal-layout theme='spacing'>
-         ${this.variable_input(ana,'humedad','%')}
-         ${this.variable_input(ana,'conductividad_electrica','sS/m')}
+        <vaadin-horizontal-layout theme="spacing">
+          ${this.variable_input(ana, "humedad", "%")}
+          ${this.variable_input(ana, "conductividad_electrica", "sS/m")}
         </vaadin-horizontal-layout>
       </vaadin-vertical-layout>
     `;
@@ -262,20 +270,37 @@ export class AnalisisSueloEditor extends LitElement {
     `;
   }
 
-  variable_input = (item,key,unit)=>{
+  variable_input = (item, key, unit) => {
     return html`
-         <vaadin-number-field theme="small"
-          theme="align-right"
-          label=${translate(key)}
-          value=${item[key]}
-          @input=${(e)=>{
-            item[key] = e.target.value
-          }}
-          >
-          <div slot='suffix'>${unit}</div>
-        </vaadin-number-field>
-    `
-  }
+      <vaadin-number-field
+        theme="small"
+        theme="align-right"
+        label=${translate(key)}
+        value=${item[key]}
+        @input=${(e) => {
+          item[key] = e.target.value;
+        }}
+      >
+        <div slot="suffix">${unit}</div>
+      </vaadin-number-field>
+    `;
+  };
+
+  footer = () => {
+    return html`<vaadin-horizontal-layout>
+      <vaadin-button
+        theme="primary"
+        @click="${() => {
+          if ((this.valido = validate_analisis_suelo(this.ana))) {
+            guardar_analisis_suelo(this.ana);
+            window.history.back();
+          }
+        }}"
+        ?disabled=${!this.valido}
+        >${translate("guardar")}</vaadin-button
+      >
+    </vaadin-horizontal-layout>`;
+  };
 }
 
 declare global {

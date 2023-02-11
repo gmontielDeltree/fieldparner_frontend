@@ -1,6 +1,9 @@
 import { format_iso_c, format_min } from "./../../helpers";
-import { sensores_central_mas_cercana_al_lote } from "./../../sensores/sensores-funciones";
-import { listar_depositos } from "../../depositos/depositos-funciones";
+import { sensores_central_mas_cercana_al_lote, sensores_detalles } from "./../../sensores/sensores-funciones";
+import {
+  listar_depositos,
+  listar_solo_depositos_contratistas,
+} from "../../depositos/depositos-funciones";
 import { Router, RouterLocation } from "@vaadin/router";
 import {
   LitElement,
@@ -76,6 +79,7 @@ import "./grid_labores_exe";
 import { otros_datos_siembra_exe_template } from "./otros_datos_siembra_exe_template";
 import { Ingeniero } from "../../tipos/ingenieros";
 import { sensores_valores_promedios } from "../../sensores/sensores-funciones";
+import { DeviceDetalles } from "../../sensores/sensores-types";
 
 @customElement("upsert-ejecucion")
 export class UpsertEjecucion extends LitElement {
@@ -507,8 +511,15 @@ export class UpsertEjecucion extends LitElement {
                 .i18n=${base_i18n}
                 .min=${this.ejecucion.detalles.fecha_hora_inicio}
                 .max=${format(new Date(), "yyyy-MM-dd'T'HH:mm")}
-                @change=${(e) => {
+                @change=${async (e) => {
                   this.ejecucion.detalles.fecha_hora_fin = e.target.value;
+                  let mas_cercana_uuid = await sensores_central_mas_cercana_al_lote(
+                    this.ejecucion.lote_uuid,
+                    this.ejecucion.detalles.fecha_hora_inicio,
+                    this.ejecucion.detalles.fecha_hora_fin
+                  )
+                  let detalles = await sensores_detalles(mas_cercana_uuid)
+                  await this.llenar_promedios(detalles)
                   this.requestUpdate();
                   /* Si estan definidos fecha y hora buscar la central mas cercana */
                   // let inicio = this.ejecucion.detalles.fecha_hora_inicio;
@@ -607,29 +618,7 @@ export class UpsertEjecucion extends LitElement {
                   console.log("STEP", this.selected_step);
                   let device = e.detail;
                   console.log("Picked Device", device);
-                  sensores_valores_promedios(
-                    device,
-                    this.ejecucion.detalles.fecha_hora_inicio,
-                    this.ejecucion.detalles.fecha_hora_fin
-                  ).then((promedios) => {
-                    console.log("promedios", promedios);
-
-                    this.ejecucion.condiciones.temperatura.device = device;
-                    this.ejecucion.condiciones.humedad.device = device;
-                    this.ejecucion.condiciones.velocidad.device = device;
-                    this.ejecucion.condiciones.humedad_suelo.device = device;
-
-                    this.ejecucion.condiciones.temperatura.value =
-                      promedios.temperatura?.avg;
-                    this.ejecucion.condiciones.humedad.value =
-                      promedios.humedad?.avg;
-                    this.ejecucion.condiciones.velocidad.value =
-                      promedios.velocidad?.avg;
-                    this.ejecucion.condiciones.humedad_suelo.value =
-                      promedios.humedad_suelo?.avg;
-
-                    this.requestUpdate();
-                  });
+                  this.llenar_promedios(device);
                 }}
               ></selector-dispositivos>
             </vaadin-vertical-layout>
@@ -915,5 +904,26 @@ export class UpsertEjecucion extends LitElement {
     return (
       this.ejecucion.deposito_origen?.uuid === this.ejecucion.contratista.uuid
     );
+  }
+
+  async llenar_promedios(device: DeviceDetalles) {
+    return sensores_valores_promedios(
+      device,
+      this.ejecucion.detalles.fecha_hora_inicio,
+      this.ejecucion.detalles.fecha_hora_fin
+    ).then((promedios) => {
+      console.log("promedios a llenar", promedios);
+
+      this.ejecucion.condiciones.temperatura.device = device;
+      this.ejecucion.condiciones.humedad.device = device;
+      this.ejecucion.condiciones.velocidad.device = device;
+      this.ejecucion.condiciones.humedad_suelo.device = device;
+
+      this.ejecucion.condiciones.temperatura.value = promedios.temperatura?.avg;
+      this.ejecucion.condiciones.humedad.value = promedios.humedad?.avg;
+      this.ejecucion.condiciones.velocidad.value = promedios.velocidad?.avg;
+      this.ejecucion.condiciones.humedad_suelo.value =
+        promedios.humedad_suelo?.avg;
+    });
   }
 }
