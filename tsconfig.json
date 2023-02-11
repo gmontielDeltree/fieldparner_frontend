@@ -8,6 +8,7 @@
       "plotly.js": [
           "../node_modules/plotly.js/lib/core.js"
       ]
-    }
+    },
+    "plugins": [{ "name": "typescript-plugin-css-modules" }]
   }
 }

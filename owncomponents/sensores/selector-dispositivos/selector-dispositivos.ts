@@ -11,7 +11,7 @@ import "@vaadin/button";
 import "@vaadin/dialog";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { DeviceDetalles } from "../sensores-types";
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
+import bootstrap from "bootstrap/dist/css/bootstrap.min.css";
 
 @customElement("selector-dispositivos")
 export class SelectorDispositivos extends LitElement {
@@ -40,7 +40,7 @@ export class SelectorDispositivos extends LitElement {
   }
 
   emit_selected_changed(d :DeviceDetalles) {
-    this.dispatchEvent(new CustomEvent("selected-changed",{detail:d,bubbles:true,composed:true}))
+    this.dispatchEvent(new CustomEvent("selected-changed",{detail:{device:d,distancia:0},bubbles:true,composed:true}))
   }
 
   render() {

@@ -80,6 +80,7 @@ import { otros_datos_siembra_exe_template } from "./otros_datos_siembra_exe_temp
 import { Ingeniero } from "../../tipos/ingenieros";
 import { sensores_valores_promedios } from "../../sensores/sensores-funciones";
 import { DeviceDetalles } from "../../sensores/sensores-types";
+import { DateTimePickerI18n } from "@vaadin/date-time-picker";
 
 @customElement("upsert-ejecucion")
 export class UpsertEjecucion extends LitElement {
@@ -490,7 +491,7 @@ export class UpsertEjecucion extends LitElement {
               <vaadin-date-time-picker
                 label="${translate("hora_comienzo")}"
                 value="${this.ejecucion.detalles.fecha_hora_inicio}"
-                .i18n=${base_i18n}
+                .i18n=${base_i18n as DateTimePickerI18n}
                 .min="${format_min(
                   parseISO(this.actividad.detalles.fecha_ejecucion_tentativa)
                 )}"
@@ -508,18 +509,18 @@ export class UpsertEjecucion extends LitElement {
               <vaadin-date-time-picker
                 label="${translate("hora_finalizacion")}"
                 value=${this.ejecucion.detalles.fecha_hora_fin}
-                .i18n=${base_i18n}
+                .i18n=${base_i18n as DateTimePickerI18n}
                 .min=${this.ejecucion.detalles.fecha_hora_inicio}
                 .max=${format(new Date(), "yyyy-MM-dd'T'HH:mm")}
                 @change=${async (e) => {
                   this.ejecucion.detalles.fecha_hora_fin = e.target.value;
-                  let mas_cercana_uuid = await sensores_central_mas_cercana_al_lote(
+                  let mas_cercana = await sensores_central_mas_cercana_al_lote(
                     this.ejecucion.lote_uuid,
                     this.ejecucion.detalles.fecha_hora_inicio,
                     this.ejecucion.detalles.fecha_hora_fin
                   )
-                  let detalles = await sensores_detalles(mas_cercana_uuid)
-                  await this.llenar_promedios(detalles)
+                  let detalles = await sensores_detalles(mas_cercana.device_uuid)
+                  await this.llenar_promedios(detalles,mas_cercana.distancia)
                   this.requestUpdate();
                   /* Si estan definidos fecha y hora buscar la central mas cercana */
                   // let inicio = this.ejecucion.detalles.fecha_hora_inicio;
@@ -616,11 +617,16 @@ export class UpsertEjecucion extends LitElement {
                 @selected-changed=${(e) => {
                   // Reseleccionar el tab
                   console.log("STEP", this.selected_step);
-                  let device = e.detail;
-                  console.log("Picked Device", device);
-                  this.llenar_promedios(device);
+                  let device = e.detail.device;
+                  let distancia = e.detail.distancia;
+                  console.log("Picked Device", device, distancia);
+                  this.llenar_promedios(device,distancia).then(()=>{
+                    this.requestUpdate()
+                  });
                 }}
               ></selector-dispositivos>
+
+              <div>${this.ejecucion.condiciones?.temperatura?.device.nombre ?? "" }</div>
             </vaadin-vertical-layout>
 
             <vaadin-horizontal-layout
@@ -906,7 +912,7 @@ export class UpsertEjecucion extends LitElement {
     );
   }
 
-  async llenar_promedios(device: DeviceDetalles) {
+  async llenar_promedios(device: DeviceDetalles,distancia_km : number) {
     return sensores_valores_promedios(
       device,
       this.ejecucion.detalles.fecha_hora_inicio,
@@ -918,6 +924,11 @@ export class UpsertEjecucion extends LitElement {
       this.ejecucion.condiciones.humedad.device = device;
       this.ejecucion.condiciones.velocidad.device = device;
       this.ejecucion.condiciones.humedad_suelo.device = device;
+
+      this.ejecucion.condiciones.temperatura.distancia = distancia_km;
+      this.ejecucion.condiciones.humedad.distancia = distancia_km;
+      this.ejecucion.condiciones.velocidad.distancia = distancia_km;
+      this.ejecucion.condiciones.humedad_suelo.distancia = distancia_km;
 
       this.ejecucion.condiciones.temperatura.value = promedios.temperatura?.avg;
       this.ejecucion.condiciones.humedad.value = promedios.humedad?.avg;

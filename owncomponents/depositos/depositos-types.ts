@@ -159,10 +159,10 @@ interface Condiciones {
   velocidad_max: number;
 }
 interface CondicionesEjecucion {
-  "temperatura":{device: DeviceDetalles,value:number,planificado:{min:number,max:number}}
-  "humedad":{device: DeviceDetalles,value:number,planificado:{min:number,max:number}}
-  "velocidad":{device: DeviceDetalles,value:number,planificado:{min:number,max:number}}
-  "humedad_suelo":{device: DeviceDetalles,value:number,planificado:{min:number,max:number}}
+  "temperatura":{device: DeviceDetalles,value:number,planificado:{min:number,max:number},distancia:number}
+  "humedad":{device: DeviceDetalles,value:number,planificado:{min:number,max:number},distancia:number}
+  "velocidad":{device: DeviceDetalles,value:number,planificado:{min:number,max:number},distancia:number}
+  "humedad_suelo":{device: DeviceDetalles,value:number,planificado:{min:number,max:number},distancia:number}
   temperatura_min: number;
   temperatura_promedio: number;
   humedad_promedio: number;

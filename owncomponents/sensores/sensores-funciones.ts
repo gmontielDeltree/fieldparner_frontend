@@ -1,7 +1,7 @@
 import { filter } from "jszip";
 import distance from "@turf/distance";
 import { gbl_state } from "../state";
-import { DeviceDetalles } from "./sensores-types";
+import { DailyTelemetryCard, DeviceDetalles } from "./sensores-types";
 import devices_modelos from "./devices_modelos";
 import { parseISO } from "date-fns";
 import { LngLatLike } from "mapbox-gl";
@@ -140,17 +140,15 @@ export const sensores_central_mas_cercana_al_lote = async (
 
   console.log("Sensores con datos", con_datos);
   let coordenadas = await sensores_posiciones(con_datos, parseISO(start_iso));
-  console.log("Coordenadas",coordenadas)
+  console.log("Coordenadas", coordenadas);
 
   // get lote y centro
   let lote = await get_lote_detalles_by_uuid(lote_uuid);
   let centro_del_lote = centroid(lote.geometry);
   let distancias = coordenadas.map((c) => {
-    let distancia = distance(
-      [c.posicion[0], c.posicion[1]],
-      centro_del_lote,
-      { units: "kilometers" }
-    );
+    let distancia = distance([c.posicion[0], c.posicion[1]], centro_del_lote, {
+      units: "kilometers",
+    });
     return { dev: c.device_id, distancia: distancia };
   });
 
@@ -159,9 +157,11 @@ export const sensores_central_mas_cercana_al_lote = async (
   );
   console.log("Distancias desde el lote a centrales", distancia_ordenadas);
   console.log("La central mas cercana es", distancia_ordenadas[0].dev);
-  return distancia_ordenadas[0].dev as string
+  return {
+    device_uuid: distancia_ordenadas[0].dev,
+    distancia: distancia_ordenadas[0].distancia,
+  };
 };
-
 export const sensor_posicion = async (uuid: string) => {
   let key = [uuid, "latitud", {}];
   let endkey = [uuid, "latitud", {}];
@@ -208,10 +208,11 @@ export const sensores_posiciones = async (
     .allDocs({ include_docs: true, keys: keys })
     .then(only_docs)
     .then((tes) => {
-      return tes.map((d) => {
+      return tes.map((dt) => {
+        let d = dt as unknown as DailyTelemetryCard
         let lat = d.data.find((mags) => mags.mag === "latitud")?.value;
         let lng = d.data.find((mags) => mags.mag === "longitud")?.value;
-        console.log("lng,lat",lng,lat,d,tes)
+        console.log("lng,lat", lng, lat, d, tes);
         if (lat && lng) {
           let device_id = d.device_id;
           return { device_id: device_id, posicion: [lng, lat] };
