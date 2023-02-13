@@ -43,6 +43,8 @@ import { cargar_analisis_suelo } from "./analisis-suelo-funciones";
 import { Campo } from "../tipos/campos";
 
 import { Task, TaskStatus } from "@lit-labs/task";
+import { parse } from "date-fns";
+import format from "date-fns/format";
 
 @customElement("analisis-suelo-editor")
 export class AnalisisSueloEditor extends LitElement {
@@ -52,10 +54,14 @@ export class AnalisisSueloEditor extends LitElement {
   @state()
   ana: AnalisisSuelo = nuevo_analisis_suelo();
 
+  @state()
+  edit:boolean = false
+
   static styles = [
     css`
       tbody {
-        background-color: #ebebf2;align-items: center;
+        background-color: #ebebf2;
+        align-items: center;
       }
     `,
   ];
@@ -68,7 +74,7 @@ export class AnalisisSueloEditor extends LitElement {
   private _loadTask = new Task(
     this,
     () => this.loadData(),
-    () => [this.location]
+    () => []
   );
 
   async loadData() {
@@ -77,6 +83,7 @@ export class AnalisisSueloEditor extends LitElement {
       this.ana = await cargar_analisis_suelo(
         this.location.params.uuid as string
       );
+      this.edit=true
       this.backUrl = `/campo/${this.ana.lote.properties.campo_parent_id}/lote/${this.ana.lote.properties.nombre}`;
     } else {
       let lote_uuid = url_param(this.location, "lote_uuid");
@@ -152,7 +159,7 @@ export class AnalisisSueloEditor extends LitElement {
       <vaadin-vertical-layout
         theme="spacing padding"
         style="width:100%;justify-content:center;background-color: #ebebf2;align-items: center;"
-        class='tbody'
+        class="tbody"
       >
         <vaadin-horizontal-layout theme="spacing">
           <vaadin-text-field
@@ -216,7 +223,10 @@ export class AnalisisSueloEditor extends LitElement {
 
   suelo_form = (ana: AnalisisSuelo) => {
     return html`
-      <vaadin-vertical-layout theme="spacing" style="width:100%;background-color: #ebebf2;align-items: center;">
+      <vaadin-vertical-layout
+        theme="spacing"
+        style="width:100%;background-color: #ebebf2;align-items: center;"
+      >
         <vaadin-text-field
           label=${translate("caracterizacion")}
           value=${ana.caracterizacion}
@@ -265,11 +275,14 @@ export class AnalisisSueloEditor extends LitElement {
 
   variables_form = (ana: AnalisisSuelo) => {
     return html`
-      <vaadin-vertical-layout theme="spacing" style="background-color: #ebebf2;align-items: center;">
+      <vaadin-vertical-layout
+        theme="spacing"
+        style="background-color: #ebebf2;align-items: center;"
+      >
         <vaadin-horizontal-layout theme="spacing">
           ${this.variable_input(ana, "carbono_organico", "%")}
           ${this.variable_input(ana, "materia_organica", "%")}
-          ${this.variable_input(ana, "pH", "")}
+          ${this.variable_input(ana, "ph", "")}
         </vaadin-horizontal-layout>
         <vaadin-horizontal-layout theme="spacing">
           ${this.variable_input(ana, "fosforo_bray", "ppm")}
@@ -377,7 +390,10 @@ export class AnalisisSueloEditor extends LitElement {
   };
 
   footer = () => {
-    return html`<vaadin-horizontal-layout slot="footer" style='justify-content:right;'>
+    return html`<vaadin-horizontal-layout
+      slot="footer"
+      style="justify-content:right;"
+    >
       <vaadin-button
         theme="primary"
         @click="${() => {
@@ -401,9 +417,14 @@ export class AnalisisSueloEditor extends LitElement {
         {
           text: get("importar_excel"),
           callback: () => {
+            if(this.edit){
+              Router.go(
+                gbl_state.router.urlForPath(this.location.pathname + "/importar")
+              );
+            }else{
             Router.go(
               gbl_state.router.urlForPath("/analisissuelo/add/importar")
-            );
+            );}
             console.log("Nuevo");
           },
         },
@@ -420,9 +441,46 @@ export class AnalisisSueloEditor extends LitElement {
   }
 
   fillAnalisis(data: { variable: string; valor: any }[]) {
-    const v = (d, variable) => d.find((p) => p.variable === variable).valor;
+    const v = (d, variable) =>
+      d.find((p) => p.variable === variable)?.valor ?? "";
+
+    this.ana.fecha = format(
+      parse(v(data, "Fecha (dd-mm-yyyy)"), "dd-MM-yyyy", new Date()),
+      "yyyy-MM-dd"
+    );
+    this.ana.laboratorio = v(data, "Laboratorio");
+    this.ana.referencia_laboratorio = v(
+      data,
+      "Nro Informe Referencia Laboratorio"
+    );
+    this.ana.nombre_responsable = v(data, "Nombre Responsable");
+    this.ana.matricula_responsable = v(data, "Matricula Responsable");
+
+    this.ana.caracterizacion = v(data, "Caracterizacion");
+    this.ana.textura = v(data, "Textura");
+    this.ana.profundidad = v(data, "Profundidad (cm)");
+
+    this.ana.carbono_organico = v(data, "Carbono Organico (%)");
+    this.ana.materia_organica = v(data, "Materia Organica (%)");
+    this.ana.fosforo_bray = v(data, "Fosforo (Bray – ppm)");
+    this.ana.fosforo_ii = v(data, "Fosforo II (ppm)");
+    this.ana.fosforo_iii = v(data, "Fosforo III (ppm)");
+    this.ana.calcio = v(data, "Calcio (ppm)");
+    this.ana.potasio = v(data, "Potasio (ppm)");
+    this.ana.sodio = v(data, "Sodio (ppm)");
+    this.ana.ph = v(data, "pH");
     this.ana.azufre = v(data, "Azufre (ppm)");
     this.ana.zinc_zn = v(data, "Zinc (Zn – ppm)");
+    this.ana.nitratos_no3 = v(data, "Nitratos (NO3 – ppm)");
+    this.ana.sulfatos_s_so4 = v(data, "Sulfatos (S-SO4 – ppm)");
+    this.ana.nitratos_n_n03 = v(data, "Nitratos (N-NO3 – ppm)");
+    this.ana.conductividad_electrica = v(
+      data,
+      "Conductividad Electrica (mS/m)"
+    );
+    this.ana.humedad = v(data, "Humedad (%)");
+    this.ana.nitrogeno_total = v(data, "Nitrogeno Total");
+
     this.requestUpdate();
   }
 }
