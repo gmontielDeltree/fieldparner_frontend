@@ -9,6 +9,7 @@ export interface AnalisisSuelo{
     _rev?:string
     attachments?: Attachment[]
     uuid: string
+    tipo: "analisis-suelo",
     fecha: string
     laboratorio: string
     referencia_laboratorio: string

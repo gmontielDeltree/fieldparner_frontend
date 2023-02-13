@@ -1,11 +1,12 @@
 import "./proveedores/proveedores-lista";
 import "./proveedores/proveedores-editor";
 import "./proveedores/proveedores-detalles";
-import './ingenieros/ingenieros-listado'
-import './ingenieros/ingenieros-editor'
-import './ingenieros/ingenieros-detalles'
-import './settings/settings'
-import './analisis-suelo/analisis-suelo-editor'
+import "./ingenieros/ingenieros-listado";
+import "./ingenieros/ingenieros-editor";
+import "./ingenieros/ingenieros-detalles";
+import "./settings/settings";
+import "./analisis-suelo/analisis-suelo-editor";
+import "./analisis-suelo/analisis-suelo-import-export";
 
 export const routes = [
   { path: "/", component: "null-component" },
@@ -105,5 +106,24 @@ export const routes = [
   },
   { path: "/personal/:uuid", component: "ingenieros-detalles" },
   { path: "/ejecucion", component: "null" },
-  { path: "/analisissuelo/add", component: "analisis-suelo-editor" },
+  {
+    path: "/analisissuelo/add",
+    component: "analisis-suelo-editor",
+    children: [
+      {
+        path: "/importar",
+        component: "analisis-suelo-import-export",
+      },
+    ],
+  },
+  {
+    path: "/analisissuelo/:uuid/edit",
+    component: "analisis-suelo-editor",
+    children: [
+      {
+        path: "/importar",
+        component: "analisis-suelo-import-export",
+      },
+    ],
+  },
 ];

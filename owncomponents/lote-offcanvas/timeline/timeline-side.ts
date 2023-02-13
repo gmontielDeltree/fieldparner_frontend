@@ -3,7 +3,7 @@ import { map } from "lit/directives/map.js";
 import moment from "moment";
 import "moment/dist/locale/es";
 import { stock_suficiente } from "../../helpers/stock.ts";
-import { parse, compareDesc, format, parseISO } from "date-fns";
+import { parse, compareDesc, format, parseISO, isBefore } from "date-fns";
 import { property, state } from "lit/decorators.js";
 import {
   Actividad,
@@ -23,8 +23,10 @@ import gbl_state from "../../state";
 import "./actividad-item";
 import "@vaadin/scroller";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
-import { GridItemModel } from '@vaadin/grid';
-import './nota-item'
+import { GridItemModel } from "@vaadin/grid";
+import "./nota-item";
+import { AnalisisSuelo } from "../../tipos/analisis-suelo";
+import "./analisis-item";
 
 const url_repeticion = (actividad_uuid) => {
   let location = gbl_state.router.location.pathname;
@@ -338,7 +340,14 @@ export class TimelineSideElement extends LitElement {
   @property()
   a: Actividad[];
 
-  static override styles: CSSResultGroup = [unsafeCSS(bootstrap), timeline_css, badge];
+  @property()
+  analisis_suelo: AnalisisSuelo[];
+
+  static override styles: CSSResultGroup = [
+    unsafeCSS(bootstrap),
+    timeline_css,
+    badge,
+  ];
 
   evento_download_pdf(item) {
     const event = new CustomEvent("generar-ot", {
@@ -394,10 +403,56 @@ export class TimelineSideElement extends LitElement {
     this.dispatchEvent(event);
   }
 
+  listar_items() {
+    let items = [];
+    if (this.a) {
+      items = [...this.a];
+    }
+
+    if (this.analisis_suelo) {
+      items = [...items, ...this.analisis_suelo];
+    }
+
+    // Ordenar
+    const extraer_fecha = (a) => {
+      let fecha;
+      if (("ejecucion_id" in a) && a.ejecucion_id ) {
+        fecha = a.ejecucion_id.split(":")[1];
+      } else if ("actividad" in a) {
+        if (a.actividad.tipo === "nota") {
+          fecha = a.actividad.fecha;
+        } else {
+          fecha = a.actividad.detalles.fecha_ejecucion_tentativa;
+        }
+      } else {
+        fecha = a.fecha;
+      }
+      return fecha;
+    };
+
+    let items_ordenados = items.sort((a, b) => {
+      let fecha_1 = extraer_fecha(a);
+      let fecha_2 = extraer_fecha(b);
+
+      return isBefore(parseISO(fecha_1), parseISO(fecha_2)) ? 1 : -1;
+    });
+    return items_ordenados;
+  }
+
   render() {
-   
-    const time_item = ({actividad, ejecucion_id}:{actividad:Actividad, ejecucion_id:string}) => {
-      let item = actividad
+    const time_item = (
+      evento_de_timeline:
+        | { actividad: Actividad; ejecucion_id: string }
+        | AnalisisSuelo
+    ) => {
+      let item;
+
+      if ("actividad" in evento_de_timeline) {
+        item = evento_de_timeline.actividad;
+      } else {
+        item = evento_de_timeline;
+      }
+
       if (item.tipo === "nota") {
         // Es un documento
         //console.log("OOOOOOOOOOO NOTA", item)
@@ -445,6 +500,16 @@ export class TimelineSideElement extends LitElement {
         </li>`;
       }
 
+      if (item.tipo === "analisis-suelo") {
+        return html` <li>
+          <div class="cbp_tmicon bg-blush">
+            <i class="zmdi zmdi-label"></i>
+          </div>
+          <div class="cbp_tmlabel bg-aplicacion">
+            <analisis-suelo-item .ana=${item}></analisis-suelo-item>
+          </div>
+        </li>`;
+      }
     };
 
     return html`
@@ -452,7 +517,7 @@ export class TimelineSideElement extends LitElement {
         <div class="row">
           <div class="col-md-12 px-1">
             <ul class="cbp_tmtimeline">
-              ${this.a?.map(time_item) || null}
+              ${this.listar_items().map(time_item) || null}
             </ul>
           </div>
         </div>

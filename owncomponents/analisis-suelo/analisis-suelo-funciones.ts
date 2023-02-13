@@ -1,5 +1,5 @@
-import { AnalisisSuelo } from './../tipos/analisis-suelo';
-import { uuidv7 } from 'uuidv7';
+import { AnalisisSuelo } from "./../tipos/analisis-suelo";
+import { uuidv7 } from "uuidv7";
 import { gbl_state } from "../state";
 import {
   deepcopy,
@@ -14,22 +14,34 @@ export const listar_analisis_suelo = () => {
     .then((depos) => depos as unknown as AnalisisSuelo[]);
 };
 
+export const listar_analisis_suelo_by_lote_uuid = (lote_uuid: string) => {
+  return gbl_docs_starting("anasuelo", true)
+    .then(only_docs)
+    .then((depos) => {
+      let deestelote = (depos as unknown as AnalisisSuelo[]).filter(
+        (a) => (a.lote.id === lote_uuid)
+      );
+      return deestelote;
+    });
+};
+
 /** Devuelve un depo en blanco */
 export const nuevo_analisis_suelo = () => {
   let uuid = uuidv7();
   let newdepo: AnalisisSuelo = {
     uuid: uuid,
     _id: "anasuelo:" + uuid,
-    fecha:"",
-    laboratorio:"",
-    nombre_responsable:"",
-    referencia_laboratorio:"",
-    matricula_responsable:"",
-    campo:null,
-    lote:null,
-    caracterizacion:null,
-    textura:null,
-    profundidad:0,
+    tipo:'analisis-suelo',
+    fecha: "",
+    laboratorio: "",
+    nombre_responsable: "",
+    referencia_laboratorio: "",
+    matricula_responsable: "",
+    campo: null,
+    lote: null,
+    caracterizacion: null,
+    textura: null,
+    profundidad: 0,
     created: { created: "", created_by: {} },
     last_updated: { last_updated: "", last_updated_by: {} },
   };
@@ -58,37 +70,37 @@ export const guardar_analisis_suelo = (ana: AnalisisSuelo) => {
 };
 
 /**
- * 
- * @param ana 
+ *
+ * @param ana
  * @returns True si es valido
  */
-export const validate_analisis_suelo = (ana:AnalisisSuelo)=>{
-    if(ana.fecha===""){
-        return false
-    }
-}
+export const validate_analisis_suelo = (ana: AnalisisSuelo) => {
+  if (ana.fecha === "") {
+    return false;
+  }
+
+  return true;
+};
 
 export const borrar_analisis_suelo = (ana: AnalisisSuelo) => {
   return gbl_state.db.remove(ana as unknown as PouchDB.Core.RemoveDocument);
 };
 
-export const analisis_suelo_adjuntar = (act: AnalisisSuelo,file:File)=>{
-    if (act.attachments == null) {
-        act.attachments = [];
-      }
-      act.attachments.push({ uuid: uuidv7(), filename: file.name });
-}
+export const analisis_suelo_adjuntar = (act: AnalisisSuelo, file: File) => {
+  if (act.attachments == null) {
+    act.attachments = [];
+  }
+  act.attachments.push({ uuid: uuidv7(), filename: file.name });
+};
 
 export const analisis_suelo_remover_adjunto = async (
-    act: AnalisisSuelo,
-    uuid: string
-  ) => {
-    act.attachments = act.attachments.filter((a) => a.uuid !== uuid);
-  };
+  act: AnalisisSuelo,
+  uuid: string
+) => {
+  act.attachments = act.attachments.filter((a) => a.uuid !== uuid);
+};
 
 /** Expo/Impo */
 export const exportar_analisis_suelo = () => {};
 
 export const importar_analisis_suelo = () => {};
-
-

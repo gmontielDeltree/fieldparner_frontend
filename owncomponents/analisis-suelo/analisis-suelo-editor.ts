@@ -32,6 +32,17 @@ import "@vaadin/tabs";
 import "@vaadin/tabsheet";
 import { AnalisisSuelo } from "../tipos/analisis-suelo";
 import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n";
+import {
+  createMenuDots,
+  url_param,
+  get_campo_detalles_by_uuid,
+  get_lote_detalles_by_uuid,
+} from "../helpers";
+import { gbl_state } from "../state";
+import { validate_analisis_suelo, cargar_analisis_suelo } from './analisis-suelo-funciones';
+import { Campo } from "../tipos/campos";
+
+import { Task, TaskStatus } from "@lit-labs/task";
 
 @customElement("analisis-suelo-editor")
 export class AnalisisSueloEditor extends LitElement {
@@ -44,33 +55,84 @@ export class AnalisisSueloEditor extends LitElement {
   private caraterizaciones = [];
   private texturas = [];
   private valido: boolean = false;
+  private backUrl;
 
-  loadData() {}
+  private _loadTask = new Task(
+    this,
+    () => this.loadData(),
+    () => [this.location]
+  );
+
+  async loadData() {
+
+    if(this.location.params.uuid){
+      // Edit
+      this.ana = await cargar_analisis_suelo(this.location.params.uuid as string)
+      this.backUrl = `/campo/${this.ana.lote.properties.campo_parent_id}/lote/${this.ana.lote.properties.nombre}`;
+    }else{
+      let lote_uuid = url_param(this.location, "lote_uuid");
+      let lote_doc = await get_lote_detalles_by_uuid(lote_uuid);
+      let campo_id = lote_doc.properties.campo_parent_id;
+      let campo_detalles = await get_campo_detalles_by_uuid(campo_id);
+      this.ana.campo = campo_detalles as Campo;
+      this.ana.lote = lote_doc;
+  
+      let lote_name = lote_doc.properties.nombre;
+      this.backUrl = `/campo/${campo_id}/lote/${lote_name}`;
+    }
+
+  }
 
   render() {
     return html`
-      <modal-generico .modalOpened=${true}>
-        <div slot="title">${translate("analisis_suelo")}</div>
-        <vaadin-tabsheet slot="body">
-          <vaadin-tabs slot="tabs">
-            <vaadin-tab id="laboratorio-tab"
-              >${translate("laboratorio")}</vaadin-tab
-            >
-            <vaadin-tab id="suelo-tab"
-              >${translate("caracteristicas_del_suelo")}</vaadin-tab
-            >
-            <vaadin-tab id="variables-tab"
-              >${translate("variables")}</vaadin-tab
-            >
-            <vaadin-tab id="adjuntos-tab">${translate("adjuntos")}</vaadin-tab>
-          </vaadin-tabs>
+      ${this._loadTask.render({
+        pending: () => html`${translate("cargando")}`,
+        complete: (_) => html`
+          <modal-generico .modalOpened=${true}>
+            <div slot="title">${translate("analisis_suelo")} - ${this.ana.lote.properties.nombre}</div>
+            <div slot="menu">
+              <vaadin-menu-bar
+                .items="${this.menu_items}"
+                @item-selected=${this.menu_click}
+                theme="icon"
+              >
+                <vaadin-tooltip slot="tooltip"></vaadin-tooltip>
+              </vaadin-menu-bar>
+            </div>
+            <vaadin-tabsheet slot="body">
+              <slot
+                @uploaded=${(e) => {
+                  console.log("FILE UPLOADED EVENT", e);
+                  this.fillAnalisis(e.detail);
+                }}
+              ></slot>
+              <vaadin-tabs slot="tabs">
+                <vaadin-tab id="laboratorio-tab"
+                  >${translate("laboratorio")}</vaadin-tab
+                >
+                <vaadin-tab id="suelo-tab"
+                  >${translate("caracteristicas_del_suelo")}</vaadin-tab
+                >
+                <vaadin-tab id="variables-tab"
+                  >${translate("variables")}</vaadin-tab
+                >
+                <vaadin-tab id="adjuntos-tab"
+                  >${translate("adjuntos")}</vaadin-tab
+                >
+              </vaadin-tabs>
 
-          <div tab="laboratorio-tab">${this.laboratorio_form(this.ana)}</div>
-          <div tab="suelo-tab">${this.suelo_form(this.ana)}</div>
-          <div tab="variables-tab">${this.variables_form(this.ana)}</div>
-          <div tab="adjuntos-tab">${this.adjuntos_form(this.ana)}</div>
-        </vaadin-tabsheet>
-      </modal-generico>
+              <div tab="laboratorio-tab">
+                ${this.laboratorio_form(this.ana)}
+              </div>
+              <div tab="suelo-tab">${this.suelo_form(this.ana)}</div>
+              <div tab="variables-tab">${this.variables_form(this.ana)}</div>
+              <div tab="adjuntos-tab">${this.adjuntos_form(this.ana)}</div>
+            </vaadin-tabsheet>
+
+            ${this.footer()}
+          </modal-generico>
+        `,
+      })}
     `;
   }
 
@@ -203,7 +265,7 @@ export class AnalisisSueloEditor extends LitElement {
         </vaadin-horizontal-layout>
         <vaadin-horizontal-layout theme="spacing">
           ${this.variable_input(ana, "humedad", "%")}
-          ${this.variable_input(ana, "conductividad_electrica", "sS/m")}
+          ${this.variable_input(ana, "conductividad_electrica", "mS/m")}
         </vaadin-horizontal-layout>
       </vaadin-vertical-layout>
     `;
@@ -287,20 +349,54 @@ export class AnalisisSueloEditor extends LitElement {
   };
 
   footer = () => {
-    return html`<vaadin-horizontal-layout>
+    return html`<vaadin-horizontal-layout slot="footer">
       <vaadin-button
         theme="primary"
         @click="${() => {
           if ((this.valido = validate_analisis_suelo(this.ana))) {
             guardar_analisis_suelo(this.ana);
-            window.history.back();
+            Router.go(this.backUrl);
+          } else {
+            // invalido
           }
         }}"
-        ?disabled=${!this.valido}
         >${translate("guardar")}</vaadin-button
       >
     </vaadin-horizontal-layout>`;
   };
+
+  private menu_items = [
+    {
+      component: createMenuDots("ellipsis-dots-v"),
+      tooltip: get("mas"),
+      children: [
+        {
+          text: get("importar_excel"),
+          callback: () => {
+            Router.go(
+              gbl_state.router.urlForPath("/analisissuelo/add/importar")
+            );
+            console.log("Nuevo");
+          },
+        },
+      ],
+    },
+  ];
+
+  menu_click({ detail }) {
+    /* Si tiene un callback, lo ejecuto */
+    if (detail.value.callback) {
+      detail.value.callback();
+      return;
+    }
+  }
+
+  fillAnalisis(data: { variable: string; valor: any }[]) {
+    const v = (d, variable) => d.find((p) => p.variable === variable).valor;
+    this.ana.azufre = v(data, "Azufre (ppm)");
+    this.ana.zinc_zn = v(data, "Zinc (Zn – ppm)");
+    this.requestUpdate();
+  }
 }
 
 declare global {

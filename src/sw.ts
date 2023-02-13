@@ -25,6 +25,7 @@ import {
   sw_only_docs,
   sw_post_file_doc,
 } from "./sw-helpers";
+import { process_analisis_suelo } from "./sw-importers";
 
 let adjuntos_db = new PouchDB("adjuntos");
 //adjuntos_db.put({_id:'esbolonio',bolonio:3})
@@ -84,7 +85,7 @@ registerRoute(
     )) as SWFileAttachment;
     if (file_doc !== null) {
       //existe
-      console.log("El archivo existe en la db")
+      console.log("El archivo existe en la db");
       let blob = file_doc._attachments["file_0"].data;
       //let content_type = file_doc._attachments["file_0"].content_type;
       //request.clone()
@@ -95,12 +96,12 @@ registerRoute(
         headers: { ...response.headers, "Content-Type": blob.type },
       });
     } else {
-      console.log("El archivo no existe en la db")
+      console.log("El archivo no existe en la db");
       // no existe
       // Buscarlo en linea
       return fetch_file(filename)
         .then((f: File) => {
-          console.log("File Encontrado en server",f)
+          console.log("File Encontrado en server", f);
           return new Response(f);
         })
         .catch(async () => {
@@ -146,33 +147,39 @@ registerRoute(
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "POST") return;
   // Es POST
-  if (event.request.url.includes("excel-contratistas-upload") === false) return;
+  if (event.request.url.includes("excel-contratistas-upload")) {
+    /* This is to fix the issue Jake found */
+    //event.respondWith(Response.redirect('/index.html'));
+    event.respondWith(
+      new Response(
+        "<p>This is a response that comes from your service worker!</p>",
+        {
+          headers: { "Content-Type": "text/html" },
+        }
+      )
+    );
+
+    event.waitUntil(
+      (async function () {
+        const data = await event.request.formData();
+        const client = await self.clients.get(
+          event.resultingClientId || event.clientId
+        );
+        // Get the data from the named element 'file'
+        const file = data.get("file");
+
+        console.log("Excel file", file);
+        client.postMessage({ file, action: "load-excel" });
+      })()
+    );
+  }
+
+  if (event.request.url.includes("upload-analisis-suelo")) {
+    process_analisis_suelo(self,event);
+  }
+
+
   // Es shared-audio
-
-  /* This is to fix the issue Jake found */
-  //event.respondWith(Response.redirect('/index.html'));
-  event.respondWith(
-    new Response(
-      "<p>This is a response that comes from your service worker!</p>",
-      {
-        headers: { "Content-Type": "text/html" },
-      }
-    )
-  );
-
-  event.waitUntil(
-    (async function () {
-      const data = await event.request.formData();
-      const client = await self.clients.get(
-        event.resultingClientId || event.clientId
-      );
-      // Get the data from the named element 'file'
-      const file = data.get("file");
-
-      console.log("Excel file", file);
-      client.postMessage({ file, action: "load-excel" });
-    })()
-  );
 });
 
 /* Upload Excel handler */

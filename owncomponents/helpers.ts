@@ -4,6 +4,7 @@ import parseISO from "date-fns/parseISO";
 import { ro } from "date-fns/locale";
 import { Actividad } from "./depositos/depositos-types";
 import { Lote } from "./tipos/lotes";
+import { RouterLocation } from '@vaadin/router';
 var img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
@@ -234,6 +235,10 @@ export const get_campo_detalles_by_uuid = async (uuid: string) => {
   }
   return result;
 };
+
+export const url_param = (location : RouterLocation,param)=>{
+  return (new URLSearchParams(location.search).get(param))
+}
 
 export {
   emptyGJ,
