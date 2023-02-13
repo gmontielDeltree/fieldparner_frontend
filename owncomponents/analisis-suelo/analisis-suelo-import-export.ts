@@ -91,7 +91,7 @@ export class AnalisisSueloImportExport extends LitElement {
     <vaadin-vertical-layout
       style="align-items: stretch; width: 18rem; max-width: 100%;"
     >
-      <div><a href='/templates-xlsx/analisis_suelo.xlsx'>
+      <div><a href='/templates-xlsx/analisis_suelo.xlsx' download>
 	Descargar la plantilla para importar!!!!
       </a></div>
       <vaadin-upload target="/upload-analisis-suelo"></vaadin-upload>
