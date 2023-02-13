@@ -17,8 +17,8 @@ export interface AnalisisSuelo{
     matricula_responsable: string
     campo: Campo
     lote: Lote
-    caracterizacion: CaracterizacionSuelo
-    textura: TexturaSuelo
+    caracterizacion: string,//CaracterizacionSuelo
+    textura: string//TexturaSuelo
     profundidad: number
     carbono_organico?:number 
     materia_organica?:number

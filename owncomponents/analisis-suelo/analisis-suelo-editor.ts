@@ -39,7 +39,7 @@ import {
   get_lote_detalles_by_uuid,
 } from "../helpers";
 import { gbl_state } from "../state";
-import { validate_analisis_suelo, cargar_analisis_suelo } from './analisis-suelo-funciones';
+import { cargar_analisis_suelo } from "./analisis-suelo-funciones";
 import { Campo } from "../tipos/campos";
 
 import { Task, TaskStatus } from "@lit-labs/task";
@@ -51,6 +51,14 @@ export class AnalisisSueloEditor extends LitElement {
 
   @state()
   ana: AnalisisSuelo = nuevo_analisis_suelo();
+
+  static styles = [
+    css`
+      tbody {
+        background-color: #ebebf2;align-items: center;
+      }
+    `,
+  ];
 
   private caraterizaciones = [];
   private texturas = [];
@@ -64,23 +72,23 @@ export class AnalisisSueloEditor extends LitElement {
   );
 
   async loadData() {
-
-    if(this.location.params.uuid){
+    if (this.location.params.uuid) {
       // Edit
-      this.ana = await cargar_analisis_suelo(this.location.params.uuid as string)
+      this.ana = await cargar_analisis_suelo(
+        this.location.params.uuid as string
+      );
       this.backUrl = `/campo/${this.ana.lote.properties.campo_parent_id}/lote/${this.ana.lote.properties.nombre}`;
-    }else{
+    } else {
       let lote_uuid = url_param(this.location, "lote_uuid");
       let lote_doc = await get_lote_detalles_by_uuid(lote_uuid);
       let campo_id = lote_doc.properties.campo_parent_id;
       let campo_detalles = await get_campo_detalles_by_uuid(campo_id);
       this.ana.campo = campo_detalles as Campo;
       this.ana.lote = lote_doc;
-  
+
       let lote_name = lote_doc.properties.nombre;
       this.backUrl = `/campo/${campo_id}/lote/${lote_name}`;
     }
-
   }
 
   render() {
@@ -89,7 +97,10 @@ export class AnalisisSueloEditor extends LitElement {
         pending: () => html`${translate("cargando")}`,
         complete: (_) => html`
           <modal-generico .modalOpened=${true}>
-            <div slot="title">${translate("analisis_suelo")} - ${this.ana.lote.properties.nombre}</div>
+            <div slot="title">
+              ${translate("analisis_suelo")} -
+              ${this.ana.lote.properties.nombre}
+            </div>
             <div slot="menu">
               <vaadin-menu-bar
                 .items="${this.menu_items}"
@@ -139,8 +150,9 @@ export class AnalisisSueloEditor extends LitElement {
   laboratorio_form = (item: AnalisisSuelo) => {
     return html`
       <vaadin-vertical-layout
-        theme="spacing"
-        style="width:100%;justify-content:center;"
+        theme="spacing padding"
+        style="width:100%;justify-content:center;background-color: #ebebf2;align-items: center;"
+        class='tbody'
       >
         <vaadin-horizontal-layout theme="spacing">
           <vaadin-text-field
@@ -204,23 +216,39 @@ export class AnalisisSueloEditor extends LitElement {
 
   suelo_form = (ana: AnalisisSuelo) => {
     return html`
-      <vaadin-vertical-layout theme="spacing" style="width:100%">
-        <vaadin-combo-box
+      <vaadin-vertical-layout theme="spacing" style="width:100%;background-color: #ebebf2;align-items: center;">
+        <vaadin-text-field
+          label=${translate("caracterizacion")}
+          value=${ana.caracterizacion}
+          @input=${(e) => {
+            ana.caracterizacion = e.target.value;
+          }}
+          theme="align-right"
+        ></vaadin-text-field>
+        <vaadin-text-field
+          label=${translate("textura")}
+          value=${ana.textura}
+          @input=${(e) => {
+            ana.textura = e.target.value;
+          }}
+          theme="align-right"
+        ></vaadin-text-field>
+        <!-- <vaadin-combo-box
           label=${translate("caracterizacion")}
           .items=${this.caraterizaciones}
           .selectedItem=${ana.caracterizacion}
           @selected-item-changed=${(e) => {
-            ana.caracterizacion = e.detail.value;
-          }}
+          ana.caracterizacion = e.detail.value;
+        }}
         ></vaadin-combo-box>
         <vaadin-combo-box
           label=${translate("textura")}
           .items=${this.texturas}
           .selectedItem=${ana.textura}
           @selected-item-changed=${(e) => {
-            ana.textura = e.detail.value;
-          }}
-        ></vaadin-combo-box>
+          ana.textura = e.detail.value;
+        }}
+        ></vaadin-combo-box> -->
         <vaadin-number-field
           theme="align-right"
           label=${translate("profundidad")}
@@ -237,7 +265,7 @@ export class AnalisisSueloEditor extends LitElement {
 
   variables_form = (ana: AnalisisSuelo) => {
     return html`
-      <vaadin-vertical-layout theme="spacing">
+      <vaadin-vertical-layout theme="spacing" style="background-color: #ebebf2;align-items: center;">
         <vaadin-horizontal-layout theme="spacing">
           ${this.variable_input(ana, "carbono_organico", "%")}
           ${this.variable_input(ana, "materia_organica", "%")}
@@ -251,7 +279,7 @@ export class AnalisisSueloEditor extends LitElement {
         <vaadin-horizontal-layout theme="spacing">
           ${this.variable_input(ana, "calcio", "ppm")}
           ${this.variable_input(ana, "potasio", "ppm")}
-          ${this.variable_input(ana, "sodio", "")}
+          ${this.variable_input(ana, "sodio", "ppm")}
         </vaadin-horizontal-layout>
         <vaadin-horizontal-layout theme="spacing">
           ${this.variable_input(ana, "azufre", "ppm")}
@@ -349,7 +377,7 @@ export class AnalisisSueloEditor extends LitElement {
   };
 
   footer = () => {
-    return html`<vaadin-horizontal-layout slot="footer">
+    return html`<vaadin-horizontal-layout slot="footer" style='justify-content:right;'>
       <vaadin-button
         theme="primary"
         @click="${() => {
