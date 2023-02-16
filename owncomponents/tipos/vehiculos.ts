@@ -1,0 +1,25 @@
+export interface Vehiculo{
+    _id: string,
+    _rev: string,
+    tipo: string,
+    descripcion: string,
+    status:string,
+    placa: string,
+    marca:string,
+    modelo:string,
+    ano:string,
+    tara:number,
+    neto:number,
+    bruto:number,
+    tipo_combustible:string,
+    capacidad_combustible:string,
+    unidad_medida:string,
+    conectividad:string,
+    propietario:string,
+    propiedad:string,
+    conductor:string,
+    ultimo_mantenimiento:string,
+
+    uuid: string,
+
+}

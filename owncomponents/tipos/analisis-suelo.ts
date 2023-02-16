@@ -17,9 +17,9 @@ export interface AnalisisSuelo{
     matricula_responsable: string
     campo: Campo
     lote: Lote
-    caracterizacion: string,//CaracterizacionSuelo
-    textura: string//TexturaSuelo
-    profundidad: number
+    caracterizacion?: string,//CaracterizacionSuelo
+    textura?: string//TexturaSuelo
+    profundidad?: number
     carbono_organico?:number 
     materia_organica?:number
     fosforo_bray?:number
@@ -37,6 +37,15 @@ export interface AnalisisSuelo{
     conductividad_electrica?:number
     humedad?:number
     nitrogeno_total?:number
+    magnesio?: number;
+    cobre?:number;
+    hierro?:number;
+    boro?:number;
+    capacidad_intercambio_cationico?: number;
+    arcilla?:number;
+    limo?:number;
+    arena?:number;
+    azufre_kg_ha?:number;
     created: CreatedTag
     last_updated: LastUpdateTag
 }
