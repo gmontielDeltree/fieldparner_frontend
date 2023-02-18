@@ -1,4 +1,4 @@
-import { cargar_vehiculo, nuevo_vehiculo } from "./vehiculos-funciones";
+import { cargar_vehiculo, guardar_vehiculo, nuevo_vehiculo } from "./vehiculos-funciones";
 import { listar_ejecuciones_por_depo } from "../depositos/depositos-funciones";
 import { gbl_state } from "../state";
 import { customElement, property, state } from "lit/decorators.js";
@@ -22,10 +22,12 @@ import "@vaadin/tabs";
 import "@vaadin/tabsheet";
 import "@vaadin/notification";
 import "@vaadin/vaadin-lumo-styles/vaadin-iconset";
+import { TextField } from "@vaadin/text-field";
 
 import { Task } from "@lit-labs/task";
 import { showNotification } from "../helpers/notificaciones";
-import { Vehiculo } from "../tipos/vehiculos";
+import { Vehiculo } from '../tipos/vehiculos';
+import { fi } from "date-fns/locale";
 
 @customElement("vehiculos-detalles")
 export class VehiculosDetalles extends LitElement {
@@ -52,6 +54,8 @@ export class VehiculosDetalles extends LitElement {
   @state()
   editing: boolean = false;
 
+  private back_url = 'vehiculos'
+
   // Encadeno promises
   loadData(location: RouterLocation) {
     // Estoy editando o haciendo uno nuevo
@@ -68,6 +72,15 @@ export class VehiculosDetalles extends LitElement {
     }
   }
 
+  emit_nuevo() {
+    guardar_vehiculo(this.item);
+    //this.dialogOpened = false;
+    //Back URL
+
+    showNotification(get("guardado"), "success");
+    Router.go(this.back_url);
+  }
+
   render() {
     return html`
       <modal-generico .modalOpened=${this.openedModal} backurl="/vehiculos">
@@ -77,7 +90,7 @@ export class VehiculosDetalles extends LitElement {
           <vaadin-tabsheet>
             <vaadin-tabs slot="tabs">
               <vaadin-tab id="es-tab"
-                >${translate("transferencias")}
+                >${translate("datos")}
               </vaadin-tab>
             </vaadin-tabs>
 
@@ -90,13 +103,54 @@ export class VehiculosDetalles extends LitElement {
           </vaadin-tabsheet>
         </div>
         <!-- end body -->
+
+        <vaadin-horizontal-layout
+          slot="footer"
+          theme="spacing"
+          style="justify-content:end;"
+          >${this.renderFooter()}</vaadin-horizontal-layout
+        >
+
         <slot></slot>
       </modal-generico>
     `;
   }
 
+  private renderFooter = () => html`
+  <vaadin-button
+    theme="primary"
+    @click="${this.emit_nuevo}"
+    ?disabled=${!this.valido}
+    >${translate("guardar")}</vaadin-button
+  >
+`;
+
   /* Lo principal */
   vehiculos_form = () => {
-    return html``;
+    return html`
+    ${this.text_field('marca')}
+    ${this.text_field('modelo')}
+    ${this.text_field('ano')}
+    ${this.text_field('placa')}
+    ${this.text_field('bruto')}
+    `;
   };
+
+  // text_field('nombre')
+  // text_field<nombre>()
+  text_field = <T extends Vehiculo, K extends keyof T>(field : keyof Vehiculo, label?: string)=>{
+    return html`
+      <vaadin-text-field
+        .label=${label ?? field}
+        .value=${this.item[field] as string}
+        @input=${(e : Event)=>{
+          (this.item[field] as string) = (e.target as TextField).value as string
+        }}
+      ></vaadin-text-field>
+    `
+  }
+
+  number_field = (key)=>{
+
+  }
 }
