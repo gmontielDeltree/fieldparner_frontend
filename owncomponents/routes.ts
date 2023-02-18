@@ -7,6 +7,8 @@ import "./ingenieros/ingenieros-detalles";
 import "./settings/settings";
 import "./analisis-suelo/analisis-suelo-editor";
 import "./analisis-suelo/analisis-suelo-import-export";
+import "./vehiculos/vehiculos-detalles";
+import "./vehiculos/vehiculos-lista";
 
 export const routes = [
   { path: "/", component: "null-component" },
@@ -124,6 +126,14 @@ export const routes = [
         path: "/importar",
         component: "analisis-suelo-import-export",
       },
+    ],
+  },
+  {
+    path: "/vehiculos",
+    children: [
+      { path: "/", component: "vehiculos-lista" },
+      { path: "/:uuid/edit", component: "vehiculos-detalles" },
+      { path: "/add", component: "vehiculos-detalles" },
     ],
   },
 ];
