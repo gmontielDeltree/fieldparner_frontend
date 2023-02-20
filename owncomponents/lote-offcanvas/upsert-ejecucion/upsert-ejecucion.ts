@@ -1,5 +1,8 @@
 import { format_iso_c, format_min } from "./../../helpers";
-import { sensores_central_mas_cercana_al_lote, sensores_detalles } from "./../../sensores/sensores-funciones";
+import {
+  sensores_central_mas_cercana_al_lote,
+  sensores_detalles,
+} from "./../../sensores/sensores-funciones";
 import {
   listar_depositos,
   listar_solo_depositos_contratistas,
@@ -71,8 +74,11 @@ import {
 import { deepcopy, get_lote_by_names, es_esta_campana } from "../../helpers";
 import { ComboBox } from "@vaadin/combo-box";
 import { TextField } from "@vaadin/text-field";
-import { MultiSelectComboBox } from "@vaadin/multi-select-combo-box";
-import { TabSheet } from "@vaadin/tabsheet";
+import {
+  MultiSelectComboBox,
+  MultiSelectComboBoxSelectedItemsChangedEvent,
+} from "@vaadin/multi-select-combo-box";
+import { TabSheet, TabSheetSelectedChangedEvent } from "@vaadin/tabsheet";
 import "./grid_insumos_exe";
 import { labores } from "../../jsons/labores";
 import "./grid_labores_exe";
@@ -81,6 +87,12 @@ import { Ingeniero } from "../../tipos/ingenieros";
 import { sensores_valores_promedios } from "../../sensores/sensores-funciones";
 import { DeviceDetalles } from "../../sensores/sensores-types";
 import { DateTimePickerI18n } from "@vaadin/date-time-picker";
+import { Vehiculo } from "../../tipos/vehiculos";
+import { listar_vehiculos } from "../../vehiculos/vehiculos-funciones";
+
+import { Task } from "@lit-labs/task";
+import { listar_insumos } from "../../insumos/insumos-functiones";
+import "../../modal-generico/modal-generico";
 
 @customElement("upsert-ejecucion")
 export class UpsertEjecucion extends LitElement {
@@ -103,48 +115,57 @@ export class UpsertEjecucion extends LitElement {
   private lote_doc: any;
   private origen_insumos: string = "contratista";
   private depositos: Deposito[];
+  private vehiculos: Vehiculo[];
 
   @state()
   private ready: boolean = false;
 
-  override firstUpdated() {
-    this.modal = new Modal(this.shadowRoot.getElementById("modal"));
-    this.modal.show();
+  private _loadTask = new Task(
+    this,
+    () => this.loadData(this.location),
+    () => [this.location]
+  );
+
+  async loadData(location) {
+    // Popular los datos auxiliares
+    let [vehiculos, depositos, insumos] = await Promise.all([
+      listar_vehiculos(),
+      listar_depositos(),
+      listar_insumos(),
+    ]);
+    this.vehiculos = vehiculos;
+    this.depositos = depositos;
+    this.insumos = insumos;
+
+    //Limpiar linea
+    this.linea_de_dosis = {
+      deposito_origen: null,
+      dosis: 0,
+      insumo: null,
+      motivos: [],
+      uuid: "",
+      total: 0,
+      precio_estimado: 0,
+      precio_real: 0,
+    };
+
+    //Es una aplicacion Nueva?
+    if (this.location.pathname.includes("nueva")) {
+      console.log("Nueva Ejecución");
+      this.editando = false;
+      this.ejecucion = get_empty_ejecucion();
+      let actividad_uuid = this.location.params.uuid;
+      await this.inicializarDesdeActividad(actividad_uuid);
+    } else {
+      this.editando = true;
+      await this.inicializarDesdeEjecucion(this.location.params.uuid);
+    }
   }
 
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
     console.count("UpsertEjecucion-WillUpdate");
-    if (_changedProperties.has("location")) {
-      //
-      this.linea_de_dosis = {
-        deposito_origen: null,
-        dosis: 0,
-        insumo: null,
-        motivos: [],
-        uuid: "",
-        total: 0,
-        precio_estimado: 0,
-        precio_real: 0,
-      };
-
-      this.populateInsumos();
-
-      listar_depositos().then((d) => (this.depositos = d));
-
-      //Es una aplicacion Nueva
-      if (this.location.pathname.includes("nueva")) {
-        console.log("Nueva Ejecución");
-        this.editando = false;
-        this.ejecucion = get_empty_ejecucion();
-        let actividad_uuid = this.location.params.uuid;
-        this.inicializarDesdeActividad(actividad_uuid);
-      } else {
-        this.editando = true;
-        this.inicializarDesdeEjecucion(this.location.params.uuid);
-      }
-    }
   }
 
   tipo_2_titulo = {
@@ -160,7 +181,7 @@ export class UpsertEjecucion extends LitElement {
   };
 
   populateInsumos() {
-    get_lista_insumos(gbl_state.db).then((i) => {
+    return get_lista_insumos(gbl_state.db).then((i) => {
       this.insumos = i;
       //console.log("insumos", i);
       this.requestUpdate();
@@ -223,13 +244,13 @@ export class UpsertEjecucion extends LitElement {
   }
 
   inicializarDesdeActividad(uuid) {
-    gbl_state.db
+    return gbl_state.db
       .allDocs({ startkey: "actividad:", endkey: "actividad:\ufff0" })
       .then((result) => {
         if (result.rows) {
           let midoc = result.rows.find((doc) => doc.id.includes(uuid));
           if (midoc) {
-            gbl_state.db.get(midoc.id).then((doc) => {
+            return gbl_state.db.get(midoc.id).then((doc) => {
               this.actividad = doc as Actividad;
               this.copiarInsumosDesdeActividad();
               this.tipo = this.actividad.tipo;
@@ -258,13 +279,13 @@ export class UpsertEjecucion extends LitElement {
   }
 
   inicializarDesdeEjecucion(uuid) {
-    gbl_state.db
+    return gbl_state.db
       .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:\ufff0" })
       .then((result) => {
         if (result.rows) {
           let midoc = result.rows.find((doc) => doc.id.includes(uuid));
           if (midoc) {
-            gbl_state.db.get(midoc.id).then(async (doc) => {
+            return gbl_state.db.get(midoc.id).then(async (doc) => {
               this.ejecucion = doc as Ejecucion;
               this.tipo = this.ejecucion.tipo;
               await this.getActividadSinCopiar(uuid);
@@ -387,7 +408,7 @@ export class UpsertEjecucion extends LitElement {
         { uuid_campo: campo_nombre, uuid_lote: lote_nombre }
       );
       Router.go(lote_url);
-      this.modal.hide();
+      // this.modal.hide();
     });
   }
 
@@ -398,11 +419,29 @@ export class UpsertEjecucion extends LitElement {
   render() {
     console.log(formatISO(new Date()));
 
-    const labores_form = html`
-      <grid-labores-exe
-        .ejecucion=${this.ejecucion}
-        .labores=${labores}
-      ></grid-labores-exe>
+    const labores_form = () => html`
+      <vaadin-vertical-layout theme="spacing">
+        <grid-labores-exe
+          .ejecucion=${this.ejecucion}
+          .labores=${labores}
+        ></grid-labores-exe>
+
+        <div>
+          <h5>${translate("vehiculos")}</h5>
+          <vaadin-multi-select-combo-box
+            style="width:500px"
+            .items=${this.vehiculos}
+            item-label-path="nombre"
+            helper-text="Seleccione los vehiculos que utilizara durante la actividad"
+            .selectedItems=${this.ejecucion.detalles?.vehiculos}
+            @selected-items-changed=${(
+              e: MultiSelectComboBoxSelectedItemsChangedEvent<Vehiculo>
+            ) => {
+              this.ejecucion.detalles.vehiculos = e.detail.value;
+            }}
+          ></vaadin-multi-select-combo-box>
+        </div>
+      </vaadin-vertical-layout>
     `;
 
     console.count("UpsertEjecucion-Render");
@@ -411,8 +450,14 @@ export class UpsertEjecucion extends LitElement {
       <vaadin-tabsheet
         id="actividad-tabsheet"
         .selected=${this.selected_step}
-        @selected-changed=${(e) => {
-          this.selected_step = e.target.selected;
+        @selected-changed=${(e: TabSheetSelectedChangedEvent) => {
+          let number_of_tabs = (e.target as TabSheet)?.items.length;
+          if(number_of_tabs === undefined) return;// No cambiar selected is es undef
+          console.log("SelectedChanged", e, number_of_tabs);
+          this.selected_step =
+            e.detail.value < number_of_tabs
+              ? e.detail.value
+              : number_of_tabs - 1;
         }}
       >
         <vaadin-tabs slot="tabs">
@@ -518,9 +563,11 @@ export class UpsertEjecucion extends LitElement {
                     this.ejecucion.lote_uuid,
                     this.ejecucion.detalles.fecha_hora_inicio,
                     this.ejecucion.detalles.fecha_hora_fin
-                  )
-                  let detalles = await sensores_detalles(mas_cercana.device_uuid)
-                  await this.llenar_promedios(detalles,mas_cercana.distancia)
+                  );
+                  let detalles = await sensores_detalles(
+                    mas_cercana.device_uuid
+                  );
+                  await this.llenar_promedios(detalles, mas_cercana.distancia);
                   this.requestUpdate();
                   /* Si estan definidos fecha y hora buscar la central mas cercana */
                   // let inicio = this.ejecucion.detalles.fecha_hora_inicio;
@@ -572,7 +619,7 @@ export class UpsertEjecucion extends LitElement {
         <!-- Otros -->
 
         <!--Labores-->
-        <div tab="labores-tab">${labores_form}</div>
+        <div tab="labores-tab">${labores_form()}</div>
         <!-- Fin Labores -->
 
         <!-- observaciones -->
@@ -620,13 +667,15 @@ export class UpsertEjecucion extends LitElement {
                   let device = e.detail.device;
                   let distancia = e.detail.distancia;
                   console.log("Picked Device", device, distancia);
-                  this.llenar_promedios(device,distancia).then(()=>{
-                    this.requestUpdate()
+                  this.llenar_promedios(device, distancia).then(() => {
+                    this.requestUpdate();
                   });
                 }}
               ></selector-dispositivos>
 
-              <div>${this.ejecucion.condiciones?.temperatura?.device?.nombre ?? "" }</div>
+              <div>
+                ${this.ejecucion.condiciones?.temperatura?.device?.nombre ?? ""}
+              </div>
             </vaadin-vertical-layout>
 
             <vaadin-horizontal-layout
@@ -817,82 +866,58 @@ export class UpsertEjecucion extends LitElement {
       </vaadin-tabsheet>
     `;
 
-    return html`
-      <div id="modal" class="modal" tabindex="-1">
-        <!-- Full screen modal -->
-        <div class="modal-dialog modal-fullscreen">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">
-                Ejecución ${this.tipo_2_titulo[this.tipo]} -
-                ${this.editando ? "Edición" : ""}
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => Router.go("/")}
-              ></button>
-            </div>
-            <div class="modal-body">
-              ${this.ready ? modal_body() : ""}
-              <slot></slot>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                tabindex="-1"
-                class="btn btn-secondary"
-                @click=${() =>
-                  (this.selected_step =
-                    this.selected_step > 0
-                      ? this.selected_step - 1
-                      : this.selected_step)}
-              >
-                Atras
-              </button>
-
-              ${(document.querySelector("#actividad-tabsheet") as TabSheet)
-                ?.items.length -
-                1 ===
-              this.selected_step
-                ? html`<button
-                    type="button"
-                    class="btn btn-primary"
-                    @click=${this.guardar}
-                  >
-                    Guardar
-                  </button>`
-                : html` <button
-                    type="button"
-                    class="btn btn-primary"
-                    @click=${() => {
-                      console.log("STEP_PB", this.selected_step);
-
-                      this.selected_step =
-                        this.selected_step === undefined
-                          ? 3
-                          : this.selected_step;
-
-                      this.selected_step =
-                        this.selected_step >=
-                        (
-                          document.querySelector(
-                            "#actividad-tabsheet"
-                          ) as TabSheet
-                        )?.items.length
-                          ? this.selected_step
-                          : this.selected_step + 1;
-                    }}
-                  >
-                    Siguiente
-                  </button>`}
-            </div>
+    return this._loadTask.render({
+      pending: () => html`${translate("cargando")}`,
+      complete: () => html`
+        <modal-generico .modalOpened=${true}>
+          <div slot="title">
+              Ejecución ${this.tipo_2_titulo[this.tipo]} -
+              ${this.editando ? "Edición" : ""}
           </div>
-        </div>
-      </div>
-    `;
+
+          <div slot="body" class="modal-body">
+            ${this.ready ? modal_body() : ""}
+            <slot></slot>
+          </div>
+
+          <vaadin-horizontal-layout
+            slot="footer"
+            theme="spacing"
+            style="justify-content:right"
+          >
+            <vaadin-button
+              type="button"
+              tabindex="-1"
+              class="btn btn-secondary"
+              @click=${() =>
+                (this.selected_step =
+                  this.selected_step > 0
+                    ? this.selected_step - 1
+                    : this.selected_step)}
+            >
+              Atras
+            </vaadin-button>
+
+            <vaadin-button
+              @click=${() => {
+                console.log("STEP_PB", this.selected_step);
+
+                this.selected_step =
+                  this.selected_step === undefined ? 3 : this.selected_step;
+
+                this.selected_step = this.selected_step + 1;
+              }}
+            >
+              Siguiente
+            </vaadin-button>
+
+            <vaadin-button theme="primary success" @click=${this.guardar}>
+              Guardar
+            </vaadin-button>
+          </vaadin-horizontal-layout>
+        </modal-generico>
+      `,
+    });
   }
 
   same_time_check() {
@@ -912,7 +937,7 @@ export class UpsertEjecucion extends LitElement {
     );
   }
 
-  async llenar_promedios(device: DeviceDetalles,distancia_km : number) {
+  async llenar_promedios(device: DeviceDetalles, distancia_km: number) {
     return sensores_valores_promedios(
       device,
       this.ejecucion.detalles.fecha_hora_inicio,

@@ -31,7 +31,6 @@ import { TextField } from "@vaadin/text-field";
 import { Task } from "@lit-labs/task";
 import { showNotification } from "../helpers/notificaciones";
 import { Vehiculo } from "../tipos/vehiculos";
-import { fi } from "date-fns/locale";
 
 @customElement("vehiculos-detalles")
 export class VehiculosDetalles extends LitElement {

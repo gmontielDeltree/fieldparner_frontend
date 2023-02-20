@@ -13,6 +13,7 @@ import { tipos_siembra } from "../jsons/tipos_siembra";
 import { Proveedor } from "../tipos/proveedores";
 import { Ingeniero } from "../tipos/ingenieros";
 import { DeviceDetalles } from "../sensores/sensores-types";
+import { Vehiculo } from '../tipos/vehiculos';
 
 interface IHash<T> {
   [index: string]: T;
@@ -188,6 +189,7 @@ interface Detalles {
   semillas_totales?: number;
   distancia?: number;
   tipo_siembra?: string;
+  vehiculos?:Vehiculo[];
 }
 
 interface DetallesEjecucion {
@@ -206,6 +208,7 @@ interface DetallesEjecucion {
   semillas_totales?: number;
   distancia?: number;
   tipo_siembra?: string;
+  vehiculos?:Vehiculo[];
 }
 
 interface Actividad {

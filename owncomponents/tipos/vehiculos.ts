@@ -8,6 +8,7 @@ export interface Vehiculo{
 	created: CreatedTag,
     tipo:"vehiculo",
     tipo_vehiculo: string,
+    nombre:string, // Es la combinacion de tipo_vehiculo + marca + model
     descripcion: string,
     status:string,
     placa: string,

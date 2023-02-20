@@ -71,6 +71,7 @@ import { listar_ingenieros } from "../../ingenieros/ingenieros-funciones";
 import { thumbnailsSettings } from "lightgallery/plugins/thumbnail/lg-thumbnail-settings";
 import { Ingeniero } from "../../tipos/ingenieros";
 import { showNotification } from "../../helpers/notificaciones";
+import { listar_vehiculos } from '../../vehiculos/vehiculos-funciones';
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -100,6 +101,7 @@ export class UpsertAplicacion extends LitElement {
   private lote_doc: any;
   private linea_de_labor: LineaLabor;
   private motivos_sugeridos_iniciales;
+  private vehiculos;
 
   @state()
   ingenieros: Ingeniero[];
@@ -174,6 +176,7 @@ export class UpsertAplicacion extends LitElement {
     this.populateContratistas();
     this.populateInsumos();
     this.populateIngenieros();
+    this.populateVehiculos();
 
     this.actividad = get_empty_aplicacion();
     this.actividad.tipo = this.tipo;
@@ -222,6 +225,7 @@ export class UpsertAplicacion extends LitElement {
     this.inicializar_lineas();
     this.populateInsumos();
     this.populateIngenieros();
+    this.populateVehiculos();
     this.actividad = get_empty_aplicacion();
 
     let lote_nombre = decodeURIComponent(
@@ -285,6 +289,10 @@ export class UpsertAplicacion extends LitElement {
     listar_ingenieros().then((is) => {
       this.ingenieros = is;
     });
+  }
+
+  populateVehiculos(){
+      listar_vehiculos().then((d) => (this.vehiculos = d));
   }
 
   getLote(campo_nombre, lote_nombre) {

@@ -43,9 +43,10 @@ export const cargar_vehiculo = async (uuid: string) => {
 };
 
 export const guardar_vehiculo = (item: Vehiculo) => {
+  item.nombre = `${item.marca} ${item.modelo}`
   if ("_rev" in item) {
     // Editar
-
+    
     // Cambiar last update
     item.last_updated.last_updated = format_iso_c(new Date());
     item.last_updated.last_updated_by = gbl_state.user;
