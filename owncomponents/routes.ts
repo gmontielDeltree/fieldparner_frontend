@@ -9,6 +9,8 @@ import "./analisis-suelo/analisis-suelo-editor";
 import "./analisis-suelo/analisis-suelo-import-export";
 import "./vehiculos/vehiculos-detalles";
 import "./vehiculos/vehiculos-lista";
+import "./null-component";
+import("./ndvi-offcanvas/ndvi-offcanvas");
 
 export const routes = [
   { path: "/", component: "null-component" },

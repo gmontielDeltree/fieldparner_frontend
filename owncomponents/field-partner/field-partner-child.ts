@@ -1,16 +1,9 @@
-import { routes } from './../routes';
+import { routes } from "./../routes";
+import "../mapa-principal/mapa-principal";
 import { LitElement, html, PropertyValueMap, css, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import { Router } from "@vaadin/router";
-
-// import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
-import("../loading-modal/loading-modal.js");
-import cultivos_default from "../jsons/cultivos";
 import("../notas-offcanvas/notas-offcanvas");
-import("../ndvi-offcanvas/ndvi-offcanvas");
-//import "../variedades-loader/variedades-loader.js";
-import("../depositos/deposito-upsert/deposito-upsert.js");
-import("../depositos/depositos-lista/depositos-listado");
 import("../contratistas/contratista-crud");
 import("../contratistas/contratistas-lista");
 import("../sensores/sensores-offcanvas");
@@ -18,21 +11,13 @@ import("../campo-offcanvas/campo-offcanvas");
 import("../lote-offcanvas/lote-offcanvas-side");
 import("../nueva-geometria/nueva-geometria");
 import("../nuevo-campo/nuevo-campo.js");
-import("../lista-de-campos/lista-de-campos");
-import "../mapa-principal/mapa-principal";
 import("../notas-offcanvas/nota-target");
 import("../insumos/insumos-lista");
-import ("../lista-centrales-cercanas/lista-centrales-cercanas");
-import ("../sensores/lista-de-sensores");
-import ("../navbar-element/workspace-rigths");
+import("../lista-centrales-cercanas/lista-centrales-cercanas");
+import("../sensores/lista-de-sensores");
 import "../navbar-element/new-app-layout";
-import "../null-component";
 import("../invite/invite");
 import("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
-import("../lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
-import("../lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
-//import "../navbar-element/navbar-element";
-
 import("../sensores/devices-route");
 
 import centroid from "@turf/centroid";
@@ -45,8 +30,6 @@ import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { Devices } from "../sensores/sensores";
 
 import gbl_state from "../state.js";
-
-import("../depositos/deposito-detalles/deposito-detalles");
 
 var wentOffline, wentOnline;
 
@@ -91,9 +74,6 @@ export class FieldPartnerChild extends LitElement {
   @property({ hasChanged: (v, ov) => false })
   logged_in: boolean = false;
 
-  @state()
-  loading: boolean = true;
-
   @property({ hasChanged: (v, ov) => false })
   settings: any;
 
@@ -103,7 +83,7 @@ export class FieldPartnerChild extends LitElement {
     super();
 
     window.addEventListener("DOMContentLoaded", () => {
-      const parsedUrl = new URL(window.location);
+      const parsedUrl = new URL(window.location as unknown as string);
       // searchParams.get() will properly handle decoding the values.
       console.log("Title shared: " + parsedUrl.searchParams.get("title"));
       console.log("Text shared: " + parsedUrl.searchParams.get("text"));
@@ -126,10 +106,6 @@ export class FieldPartnerChild extends LitElement {
       document.getElementById("nuevo-campo-oc").show = true;
     });
 
-    this.addEventListener("nuevo-deposito-click", () => {
-      document.getElementById("deposito-upsert").show();
-    });
-
     this.addEventListener("lote-seleccionado", (e: CustomEvent) => {
       document.getElementById("nota-share-target").seleccion(e.detail);
     });
@@ -141,18 +117,11 @@ export class FieldPartnerChild extends LitElement {
       gbl_state.map = e.detail.map;
       this.draw = e.detail.draw;
       gbl_state.draw = e.detail.draw;
-      // Cuando se carga el mapa considero que terminó la carga
-      this.loading = false;
 
       let devices = new Devices();
       devices.add_markers_to_map(this.map);
-      
-      //devices.get_timeseries_by_name('1111111111111111','radiacion',0,10000000000)
-    });
 
-    /* Click en ver lista de depositios */
-    this.addEventListener("ver-depositos-click", (e) => {
-      document.getElementById("depositos-lista").show();
+      //devices.get_timeseries_by_name('1111111111111111','radiacion',0,10000000000)
     });
 
     /* Click en ver lista de contratistas */
@@ -165,16 +134,11 @@ export class FieldPartnerChild extends LitElement {
       document.getElementById("insumos-lista").show();
     });
 
-    /* Click en ver lista de campos */
-    this.addEventListener("ver-colores-cultivos", (e) => {
-      document.getElementById("colores-cultivos").show();
-    });
-
     this.addEventListener("save-settings", (e) => {
       this.db.put(this.settings);
     });
 
-     this.addEventListener("logout-click", () => {
+    this.addEventListener("logout-click", () => {
       this.logout();
     });
 
@@ -267,7 +231,7 @@ export class FieldPartnerChild extends LitElement {
       user_cultivos: {},
     };
 
-    settings_doc.user_cultivos = cultivos_default;
+    //settings_doc.user_cultivos = cultivos_default;
 
     this.db.put(settings_doc).then(() => console.log("Settings Grabadas"));
 
@@ -350,9 +314,7 @@ export class FieldPartnerChild extends LitElement {
 
       <insumos-lista id="insumos-lista" .db=${this.db}></insumos-lista>
 
-      <div id="container-multiproposito">
-      </div>
-
+      <div id="container-multiproposito"></div>
     `;
   }
 }

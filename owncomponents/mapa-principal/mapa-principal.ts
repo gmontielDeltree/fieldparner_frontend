@@ -164,21 +164,25 @@ export class MapaPrincipal extends LitElement {
       }
     `,
     css`
+      /* Pantalla 'Pequeña' */
       #map {
         position: absolute;
-        top: 43px;
-        bottom: 0;
-        width: 100%;
-        height: calc(100vh - 86px) !important;
+        top: var(--_vaadin-app-layout-navbar-offset-size);
+        /*bottom: 3;*/
+        width: 100vw;
+        z-index: 0;
+        height: calc(100vh - var(--_vaadin-app-layout-navbar-offset-size)) !important;
       }
 
       @media only screen and (min-width: 800px) {
+        /* Pantalla 'Grande' */
         #map {
           position: absolute;
-          top: 43px;
-          bottom: 0;
-          width: 100%;
-          height: calc(100vh - 43px) !important;
+          top:  var(--_vaadin-app-layout-navbar-offset-size);
+          /*bottom: 3;*/
+          width:100vw;
+          z-index: 0;
+          height: calc(100vh - var(--_vaadin-app-layout-navbar-offset-size)) !important;
         }
       }
 
@@ -464,9 +468,11 @@ export class MapaPrincipal extends LitElement {
       depositos_layer_init(this.map)
       this.cargar_marcadores();
 
+      this._redraw_map();
+      this.map.resize()
+
       // console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
-      this._redraw_map();
     });
 
     // Create a popup, but don't add it to the map yet.
@@ -702,6 +708,7 @@ export class MapaPrincipal extends LitElement {
     // console.log("Set lotes internos DS", lotes_collection.features);
     lotes_source?.setData(lotes_collection);
     // console.log("Redraw Campos", this.campos);
+    this.map.resize()
   };
 
   willUpdate(props) {
@@ -731,13 +738,6 @@ export class MapaPrincipal extends LitElement {
             }}
           >
             Agregar un Contratista
-          </sp-menu-item>
-          <sp-menu-item
-            @click=${() => {
-              this.sendEvent("nuevo-deposito-click"), null;
-            }}
-          >
-            Agregar un Deposito
           </sp-menu-item>
         </sp-action-menu>
       </sp-theme>
