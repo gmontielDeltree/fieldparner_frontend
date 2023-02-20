@@ -420,7 +420,7 @@ export class UpsertEjecucion extends LitElement {
     console.log(formatISO(new Date()));
 
     const labores_form = () => html`
-      <vaadin-vertical-layout theme="spacing">
+    <vaadin-vertical-layout theme="spacing">
         <grid-labores-exe
           .ejecucion=${this.ejecucion}
           .labores=${labores}
@@ -451,8 +451,9 @@ export class UpsertEjecucion extends LitElement {
         id="actividad-tabsheet"
         .selected=${this.selected_step}
         @selected-changed=${(e: TabSheetSelectedChangedEvent) => {
-          let number_of_tabs = (e.target as TabSheet)?.items.length;
-          if(number_of_tabs === undefined) return;// No cambiar selected is es undef
+
+          let number_of_tabs = (e.target as TabSheet).items.length;
+          if (number_of_tabs === undefined) return; // No cambiar selected is es undef
           console.log("SelectedChanged", e, number_of_tabs);
           this.selected_step =
             e.detail.value < number_of_tabs
@@ -871,8 +872,8 @@ export class UpsertEjecucion extends LitElement {
       complete: () => html`
         <modal-generico .modalOpened=${true}>
           <div slot="title">
-              Ejecución ${this.tipo_2_titulo[this.tipo]} -
-              ${this.editando ? "Edición" : ""}
+            Ejecución ${this.tipo_2_titulo[this.tipo]} -
+            ${this.editando ? "Edición" : ""}
           </div>
 
           <div slot="body" class="modal-body">

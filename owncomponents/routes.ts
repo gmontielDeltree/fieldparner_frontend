@@ -11,6 +11,10 @@ import "./vehiculos/vehiculos-detalles";
 import "./vehiculos/vehiculos-lista";
 import "./null-component";
 import("./ndvi-offcanvas/ndvi-offcanvas");
+import("./campo-offcanvas/campo-offcanvas");
+import("./lote-offcanvas/lote-offcanvas-side");
+import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion")
+import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion")
 
 export const routes = [
   { path: "/", component: "null-component" },

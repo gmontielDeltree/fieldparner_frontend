@@ -1,14 +1,11 @@
 import { routes } from "./../routes";
 import "../mapa-principal/mapa-principal";
-import { LitElement, html, PropertyValueMap, css, unsafeCSS } from "lit";
+import { LitElement, html, PropertyValueMap} from "lit";
 import { property, state } from "lit/decorators.js";
 import { Router } from "@vaadin/router";
-import("../notas-offcanvas/notas-offcanvas");
 import("../contratistas/contratista-crud");
 import("../contratistas/contratistas-lista");
 import("../sensores/sensores-offcanvas");
-import("../campo-offcanvas/campo-offcanvas");
-import("../lote-offcanvas/lote-offcanvas-side");
 import("../nueva-geometria/nueva-geometria");
 import("../nuevo-campo/nuevo-campo.js");
 import("../notas-offcanvas/nota-target");
@@ -31,23 +28,6 @@ import { Devices } from "../sensores/sensores";
 
 import gbl_state from "../state.js";
 
-var wentOffline, wentOnline;
-
-function handleConnectionChange(event) {
-  if (event.type == "offline") {
-    console.log("You lost connection.");
-    wentOffline = new Date(event.timeStamp);
-    gbl_state.online = false;
-  }
-  if (event.type == "online") {
-    console.log("You are now back online.");
-    wentOnline = new Date(event.timeStamp);
-    gbl_state.online = true;
-    console.log(
-      "You were offline for " + (wentOnline - wentOffline) / 1000 + "seconds."
-    );
-  }
-}
 
 export class FieldPartnerChild extends LitElement {
   // NO estamos usando el shadow dom (createRenderRoot=>this)
