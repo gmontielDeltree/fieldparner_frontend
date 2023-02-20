@@ -134,6 +134,7 @@ export const routes = [
       { path: "/", component: "vehiculos-lista" },
       { path: "/:uuid/edit", component: "vehiculos-detalles" },
       { path: "/add", component: "vehiculos-detalles" },
+      { path: "/:uuid", component: "vehiculos-detalles" },
     ],
   },
 ];

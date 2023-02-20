@@ -1,4 +1,8 @@
-import { cargar_vehiculo, guardar_vehiculo, nuevo_vehiculo } from "./vehiculos-funciones";
+import {
+  cargar_vehiculo,
+  guardar_vehiculo,
+  nuevo_vehiculo,
+} from "./vehiculos-funciones";
 import { listar_ejecuciones_por_depo } from "../depositos/depositos-funciones";
 import { gbl_state } from "../state";
 import { customElement, property, state } from "lit/decorators.js";
@@ -26,7 +30,7 @@ import { TextField } from "@vaadin/text-field";
 
 import { Task } from "@lit-labs/task";
 import { showNotification } from "../helpers/notificaciones";
-import { Vehiculo } from '../tipos/vehiculos';
+import { Vehiculo } from "../tipos/vehiculos";
 import { fi } from "date-fns/locale";
 
 @customElement("vehiculos-detalles")
@@ -54,12 +58,15 @@ export class VehiculosDetalles extends LitElement {
   @state()
   editing: boolean = false;
 
-  private back_url = 'vehiculos'
+  private back_url = "vehiculos";
 
   // Encadeno promises
   loadData(location: RouterLocation) {
     // Estoy editando o haciendo uno nuevo
-    if (location.pathname.includes("edit")) {
+    if (location.params.uuid) {
+      if (location.pathname.includes("edit")) {
+        this.editing = true;
+      }
       let item_uuid = location.params.uuid as string;
       return cargar_vehiculo(item_uuid)
         .then((d) => (this.item = d))
@@ -69,6 +76,7 @@ export class VehiculosDetalles extends LitElement {
         });
     } else {
       this.item = nuevo_vehiculo();
+      this.editing = true;
     }
   }
 
@@ -84,14 +92,14 @@ export class VehiculosDetalles extends LitElement {
   render() {
     return html`
       <modal-generico .modalOpened=${this.openedModal} backurl="/vehiculos">
-        <h4 slot="title">${this.item.tipo}</h4>
+        <div slot="title">
+          <div>${this.item.tipo}</div>
+        </div>
 
         <div slot="body">
           <vaadin-tabsheet>
             <vaadin-tabs slot="tabs">
-              <vaadin-tab id="es-tab"
-                >${translate("datos")}
-              </vaadin-tab>
+              <vaadin-tab id="es-tab">${translate("datos")} </vaadin-tab>
             </vaadin-tabs>
 
             <div tab="es-tab">
@@ -100,6 +108,15 @@ export class VehiculosDetalles extends LitElement {
                 complete: this.vehiculos_form,
               })}
             </div>
+
+            ${!this.editing
+              ? html`<vaadin-button
+                  theme="primary success"
+                  slot="suffix"
+                  @click=${() => (this.editing = true)}
+                  >${translate("edit")}</vaadin-button
+                >`
+              : null}
           </vaadin-tabsheet>
         </div>
         <!-- end body -->
@@ -116,41 +133,42 @@ export class VehiculosDetalles extends LitElement {
     `;
   }
 
-  private renderFooter = () => html`
-  <vaadin-button
-    theme="primary"
-    @click="${this.emit_nuevo}"
-    ?disabled=${!this.valido}
-    >${translate("guardar")}</vaadin-button
-  >
-`;
+  private renderFooter = () =>
+    this.editing
+      ? html`
+          <vaadin-button theme="primary" @click="${this.emit_nuevo}"
+            >${translate("guardar")}</vaadin-button
+          >
+        `
+      : null;
 
   /* Lo principal */
   vehiculos_form = () => {
     return html`
-    ${this.text_field('marca')}
-    ${this.text_field('modelo')}
-    ${this.text_field('ano')}
-    ${this.text_field('placa')}
-    ${this.text_field('bruto')}
+      ${this.text_field("marca")} ${this.text_field("modelo")}
+      ${this.text_field("ano")} ${this.text_field("placa")}
+      ${this.text_field("bruto")}
     `;
   };
 
   // text_field('nombre')
   // text_field<nombre>()
-  text_field = <T extends Vehiculo, K extends keyof T>(field : keyof Vehiculo, label?: string)=>{
+  text_field = <T extends Vehiculo, K extends keyof T>(
+    field: keyof Vehiculo,
+    label?: string
+  ) => {
     return html`
       <vaadin-text-field
         .label=${label ?? field}
+        ?readonly=${!this.editing}
         .value=${this.item[field] as string}
-        @input=${(e : Event)=>{
-          (this.item[field] as string) = (e.target as TextField).value as string
+        @input=${(e: Event) => {
+          (this.item[field] as string) = (e.target as TextField)
+            .value as string;
         }}
       ></vaadin-text-field>
-    `
-  }
+    `;
+  };
 
-  number_field = (key)=>{
-
-  }
+  number_field = (key) => {};
 }

@@ -626,7 +626,7 @@ export class UpsertEjecucion extends LitElement {
                 }}
               ></selector-dispositivos>
 
-              <div>${this.ejecucion.condiciones?.temperatura?.device.nombre ?? "" }</div>
+              <div>${this.ejecucion.condiciones?.temperatura?.device?.nombre ?? "" }</div>
             </vaadin-vertical-layout>
 
             <vaadin-horizontal-layout

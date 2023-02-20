@@ -92,7 +92,7 @@ export class VehiculosLista extends LitElement {
   render() {
     return html`
       <modal-generico .modalOpened=${this.openedModal} backurl="/">
-        <h4 slot="title">${translate("vehiculos")}</h4>
+        <div slot="title">${translate("vehiculos")}</div>
         <div slot="menu" s>
           <vaadin-menu-bar
             .items="${this.menu_items}"
