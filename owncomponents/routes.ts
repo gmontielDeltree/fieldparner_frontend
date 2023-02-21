@@ -15,6 +15,7 @@ import("./campo-offcanvas/campo-offcanvas");
 import("./lote-offcanvas/lote-offcanvas-side");
 import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion")
 import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion")
+import("./lista-de-campos/lista-de-campos")
 
 export const routes = [
   { path: "/", component: "null-component" },
