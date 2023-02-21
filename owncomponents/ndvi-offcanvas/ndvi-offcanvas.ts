@@ -160,7 +160,7 @@ export class NdviOffcanvas extends LitElement {
   async get_fechas() {
     let bboxs = encodeURIComponent(JSON.stringify(bbox(this.lote_doc)));
     //https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/indicesdates?dates=2022-04-01%2F2022-11-01&bbox=%5B-59.08562672796121%2C-35.20733062337166%2C-59.07974430745857%2C-35.20304176165523%5D
-    let fechas = encodeURIComponent("2022-04-01/2023-01-01");
+    let fechas = encodeURIComponent("2020-04-01/2040-01-01");
     let r = await fetch(
       "https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/indicesdates?dates=" +
         fechas +
@@ -220,14 +220,6 @@ export class NdviOffcanvas extends LitElement {
     this.offcanvas.show();
   }
 
-  autodestruirme() {
-    /* Auto destruirme */
-    let parent = this.parentElement;
-    let children_els = [...parent.children];
-    let myself = children_els.find((e) => (e.id = this.id));
-    parent.removeChild(myself);
-  }
-
   geoblaze_to_excel = () => {
     let xmin = this.selected_georaster.xmin;
     let ymax = this.selected_georaster.ymax;
@@ -235,18 +227,17 @@ export class NdviOffcanvas extends LitElement {
     let ph = this.selected_georaster.pixelHeight;
     let w = this.selected_georaster.width;
     let h = this.selected_georaster.height;
-
+    console.log("Selected Georaster",this.selected_georaster)
     let array_resultado = [["lat", "lon", "ndvi"]];
     for (let i = 0; i < w; i++) {
       for (let vs = 0; vs < h; vs++) {
         let point = [xmin + pw * i, ymax - ph * vs];
         let n = geoblaze.identify(this.selected_georaster, point);
-        if (n && n > -1) {
-          array_resultado.push([point[1], point[0], n]);
+        if (n && n[0] > -1) {
+          array_resultado.push([point[1], point[0], n[0]]);
         }
       }
     }
-
     /* Guardar Libro */
     const worksheet = utils.aoa_to_sheet(array_resultado);
     const workbook = utils.book_new();
@@ -641,12 +632,7 @@ export class NdviOffcanvas extends LitElement {
                             class="btn btn-primary btn-sm col col-3 m-1"
                             @click=${this.geoblaze_to_excel}
                             >&#11015;&#65039; XLS</a
-                          >
-                          <a
-                            class="btn btn-primary btn-sm col m-1"
-                            @click=${this.histograma}
-                            >&#128202; Histograma</a
-                          > `
+                          >`
                       : null}
                   </div>
                 </div>
