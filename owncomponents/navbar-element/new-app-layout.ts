@@ -185,7 +185,7 @@ export class Example extends LitElement {
                 title="Insumos"
                 style="cursor: pointer;background-image: url('${icono_insumos}');width: 32px;height: 32px;background-size: cover;background-position: center;"
                 @click=${() => {
-                  this.sendEvent("ver-insumos-click", null);
+                  Router.go("insumos");
                 }}
               ></div>
             </vaadin-tab>
@@ -338,7 +338,7 @@ export class Example extends LitElement {
               <a
                 tabindex="-1"
                 @click=${() => {
-                  Router.go('/personal')
+                  Router.go("/personal");
                 }}
               >
                 <vaadin-icon icon="vaadin:users"></vaadin-icon>
@@ -349,7 +349,7 @@ export class Example extends LitElement {
               <a
                 tabindex="-1"
                 @click=${() => {
-                  Router.go('/vehiculos')
+                  Router.go("/vehiculos");
                 }}
               >
                 <vaadin-icon icon="vaadin:truck"></vaadin-icon>
@@ -360,7 +360,7 @@ export class Example extends LitElement {
               <a
                 tabindex="-1"
                 @click=${() => {
-                  Router.go('/settings')
+                  Router.go("/settings");
                 }}
               >
                 <vaadin-icon icon="vaadin:cogs"></vaadin-icon>

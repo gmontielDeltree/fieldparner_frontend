@@ -321,6 +321,18 @@ const timeline_css = css`
     background-size: cover !important;
     background-position: center !important;
   }
+  .icono-suelo {
+    background-image: url("/suelo_act.webp") !important;
+    background-color: #ffc323 !important;
+    background-size: cover !important;
+    background-position: center !important;
+  }
+
+  .background-suelo {
+    background-color: #ffc323 !important;
+    background-size: cover !important;
+    background-position: center !important;
+  }
 `;
 
 const extraer_fecha = (actividad) => {
@@ -502,10 +514,10 @@ export class TimelineSideElement extends LitElement {
 
       if (item.tipo === "analisis-suelo") {
         return html` <li>
-          <div class="cbp_tmicon bg-blush">
+          <div class="icono-suelo cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
-          <div class="cbp_tmlabel bg-aplicacion">
+          <div class="background-suelo cbp_tmlabel bg-aplicacion">
             <analisis-suelo-item .ana=${item}></analisis-suelo-item>
           </div>
         </li>`;
