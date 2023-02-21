@@ -13,6 +13,7 @@ import PouchDB from "pouchdb";
 import es_json from "./i18n/es.json?url";
 import en_json from "./i18n/en.json?url";
 import pr_json from "./i18n/pr.json?url";
+import { showNotification } from "./helpers/notificaciones";
 
 import("./field-partner/field-partner-child");
 
@@ -333,7 +334,7 @@ export class AppLoader extends LitElement {
       .from(this.remote_db)
       .on("complete", (info) => {
         console.log("Replication Completed");
-
+        showNotification('Replicacion Completada','success');
         console.timeEnd("Replication");
         // Cargar el Idioma
         this.cargar_idioma()
@@ -344,6 +345,7 @@ export class AppLoader extends LitElement {
               .on("complete", () => {
                 this.cargar_campana_seleccionada("").then(() => {
                   this.ready = true;
+                  showNotification('Ready','success');
                   console.log("Ready...Estado Inicial", gbl_state, r);
                 });
               });
@@ -373,6 +375,7 @@ export class AppLoader extends LitElement {
       .then(this.cargar_campana_seleccionada)
       .then((r) => {
         this.ready = true;
+        showNotification('Fast Start Ready','success');
         console.log("Ready...Estado Inicial", gbl_state, r);
       });
   }
