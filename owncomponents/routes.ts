@@ -10,29 +10,44 @@ import "./analisis-suelo/analisis-suelo-import-export";
 import "./vehiculos/vehiculos-detalles";
 import "./vehiculos/vehiculos-lista";
 import "./null-component";
-import("./ndvi-offcanvas/ndvi-offcanvas");
+// import("./ndvi-offcanvas/ndvi-offcanvas");
 import("./campo-offcanvas/campo-offcanvas");
-import("./lote-offcanvas/lote-offcanvas-side");
-import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion")
-import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion")
-import("./lista-de-campos/lista-de-campos")
+// import("./lote-offcanvas/lote-offcanvas-side");
+//import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
+//import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
+import("./lista-de-campos/lista-de-campos");
 
 export const routes = [
   { path: "/", component: "null-component" },
   { path: "/gf", redirect: "/" },
   { path: "/campos", component: "lista-de-campos" },
-  { path: "/indices/:uuid", component: "ndvi-offcanvas" },
+  {
+    path: "/indices/:uuid",
+    action: async () => {
+      await import("./ndvi-offcanvas/ndvi-offcanvas");
+    },
+    component: "ndvi-offcanvas",
+  },
   { path: "/settings", component: "settings-modal" },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add",
+    action: async () => {
+      await import("./lote-offcanvas/lote-offcanvas-side");
+    },
     component: "lote-offcanvas-side",
   },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/edit",
+    action: async () => {
+      await import("./lote-offcanvas/lote-offcanvas-side");
+    },
     component: "lote-offcanvas-side",
   },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote",
+    action: async () => {
+      await import("./lote-offcanvas/lote-offcanvas-side");
+    },
     component: "lote-offcanvas-side",
   },
   {
@@ -41,18 +56,30 @@ export const routes = [
   },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/nueva/:tipo",
+    action: async () => {
+      await import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
+    },
     component: "upsert-aplicacion",
   },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/editar/:uuid",
+    action: async () => {
+      await import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
+    },
     component: "upsert-aplicacion",
   },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/nueva",
+    action: async () => {
+      await import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
+    },
     component: "upsert-ejecucion",
   },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/editar",
+    action: async () => {
+      await import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
+    },
     component: "upsert-ejecucion",
   },
   { path: "/campo/add", component: "nuevo-campo" },
