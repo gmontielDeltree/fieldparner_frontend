@@ -11,8 +11,6 @@ import "@vaadin/custom-field";
 import "@vaadin/grid";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Modal from "bootstrap/js/dist/modal";
-import lista_de_labores from "../jsons/labores";
-import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
 import { Insumo, get_empty_insumo, get_lista_insumos } from "./insumos-types";
 import { InsumoCrud } from "./insumos-crud";
@@ -24,17 +22,21 @@ import "@vaadin/upload";
 import "@vaadin/dialog";
 // import { read, writeFile, utils } from "xlsx";
 let read, writeFile, utils;
- import('xlsx').then((mod)=>{
-  read = mod.read
-  writeFile = mod.writeFile
-  utils = mod.utils
- })
+import("xlsx").then((mod) => {
+  read = mod.read;
+  writeFile = mod.writeFile;
+  utils = mod.utils;
+});
 import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
 import "@vaadin/menu-bar";
 import { deepcopy } from "../helpers";
 import { translate } from "lit-translate";
 import { TextFieldValueChangedEvent } from "@vaadin/text-field";
+
+import { Task, TaskStatus } from "@lit-labs/task";
+import "../modal-generico/modal-generico";
+import { RouterLocation } from "@vaadin/router";
 
 export class InsumosLista extends LitElement {
   @state()
@@ -70,10 +72,19 @@ export class InsumosLista extends LitElement {
   @state()
   private filteredItems: Insumo[] = [];
 
+  @property()
+  location: RouterLocation;
+
+  private _loadTask = new Task(
+    this,
+    () => this.load_data(),
+    () => [this.location]
+  );
+
   static override styles: CSSResultGroup = [unsafeCSS(bootstrap)];
 
   override firstUpdated() {
-    this._modal = new Modal(this.shadowRoot.getElementById("modal"));
+    // this._modal = new Modal(this.shadowRoot.getElementById("modal"));
     this._modal_excel = new Modal(
       this.shadowRoot.getElementById("modal-importar-excel")
     );
@@ -124,11 +135,6 @@ export class InsumosLista extends LitElement {
       .catch((e) => {
         console.log("Error al get_lista_insumos", e);
       });
-  }
-
-  show() {
-    this._modal.show();
-    this.load_data();
   }
 
   edit(c: Insumo) {
@@ -357,19 +363,13 @@ export class InsumosLista extends LitElement {
     
     
     
-    <div
-        class="modal fade"
-        id="modal"
-        tabindex="-1"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog modal-fullscreen">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel">Insumos</h5>
+    <modal-generico .modalOpened=${true}>
+        
+   
+              <div slot='title'>Insumos</div>
 
               <vaadin-menu-bar
+                slot='menu'
                 theme="small"
                 .items="${[
                   {
@@ -382,15 +382,14 @@ export class InsumosLista extends LitElement {
                   },
                 ]}"
                 @item-selected=${this.menu_click}
-                class='ms-1'
               ></vaadin-menu-bar>
 
-            </div>
-            <div class="modal-body">
+          
+      
 
-            <vaadin-vertical-layout theme="spacing">
+            <vaadin-vertical-layout slot='body' theme="spacing">
         <vaadin-text-field
-          placeholder=${translate('buscar')}
+          placeholder=${translate("buscar")}
           style="width: 50%;"
           @value-changed="${(e: TextFieldValueChangedEvent) => {
             const searchTerm = ((e.detail.value as string) || "").trim();
@@ -398,13 +397,14 @@ export class InsumosLista extends LitElement {
               return value.toLowerCase().indexOf(searchTerm.toLowerCase()) >= 0;
             };
 
-            this.filteredItems = this._insumos?.filter((insumo) => {
-              return (
-                !searchTerm ||
-                matchesTerm(insumo.marca_comercial) ||
-                matchesTerm(insumo.principio_activo)
-              );
-            }) || [];
+            this.filteredItems =
+              this._insumos?.filter((insumo) => {
+                return (
+                  !searchTerm ||
+                  matchesTerm(insumo.marca_comercial) ||
+                  matchesTerm(insumo.principio_activo)
+                );
+              }) || [];
           }}"
         >
           <vaadin-icon slot="prefix" icon="vaadin:search"></vaadin-icon>
@@ -456,19 +456,19 @@ export class InsumosLista extends LitElement {
                 ></vaadin-grid-column>
               </vaadin-grid>
         </vaadin-vertical-layout>
-            </div>
-            <div class="modal-footer">
-              <button
+            
+            <div slot='footer'>
+              <vaadin-button
                 type="button"
                 class="btn btn-secondary"
                 data-bs-dismiss="modal"
               >
                 Cerrar
-              </button>
+              </vaadin-button>
             </div>
-          </div>
-        </div>
-      </div>
+          
+      
+        </modal-generico>
 
     
 

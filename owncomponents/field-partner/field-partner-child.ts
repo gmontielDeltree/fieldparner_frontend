@@ -9,7 +9,6 @@ import("../sensores/sensores-offcanvas");
 import("../nueva-geometria/nueva-geometria");
 import("../nuevo-campo/nuevo-campo.js");
 import("../notas-offcanvas/nota-target");
-import("../insumos/insumos-lista");
 import("../lista-centrales-cercanas/lista-centrales-cercanas");
 import("../sensores/lista-de-sensores");
 import "../navbar-element/new-app-layout";
@@ -292,7 +291,6 @@ export class FieldPartnerChild extends LitElement {
         .db=${this.db}
       ></nota-share-target>
 
-      <insumos-lista id="insumos-lista" .db=${this.db}></insumos-lista>
 
       <div id="container-multiproposito"></div>
     `;
