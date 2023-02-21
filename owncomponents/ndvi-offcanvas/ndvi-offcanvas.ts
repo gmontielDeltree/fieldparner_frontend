@@ -1,13 +1,9 @@
 import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
-import { get_lote_doc,  layer_visibility } from "../helpers";
+import { get_lote_doc, layer_visibility } from "../helpers";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { property, state } from "lit/decorators.js";
-import {
-  MapMouseEvent,
-  Popup,
-  Source,
-} from "mapbox-gl";
+import { CanvasSource, MapMouseEvent, Popup, Source } from "mapbox-gl";
 import { parse, format } from "date-fns";
 import es from "date-fns/locale/es";
 
@@ -17,11 +13,11 @@ import "./card-observacion";
 import "./leyenda";
 // import { utils, writeFile } from "xlsx";
 let read, writeFile, utils;
- import('xlsx').then((mod)=>{
-  read = mod.read
-  writeFile = mod.writeFile
-  utils = mod.utils
- })
+import("xlsx").then((mod) => {
+  read = mod.read;
+  writeFile = mod.writeFile;
+  utils = mod.utils;
+});
 
 import { StateController } from "@lit-app/state";
 import gbl_state from "../state.js";
@@ -31,9 +27,9 @@ import { repeat } from "lit/directives/repeat.js";
 
 //import geoblaze from "geoblaze";
 let geoblaze;
-import('geoblaze').then(({default:a})=>{
-  geoblaze=a
-})
+import("geoblaze").then(({ default: a }) => {
+  geoblaze = a;
+});
 
 const img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
@@ -101,6 +97,8 @@ export class NdviOffcanvas extends LitElement {
   @state()
   cuanto_muestro = 5;
 
+  private selected_canvas: HTMLCanvasElement;
+
   constructor() {
     super();
 
@@ -108,9 +106,10 @@ export class NdviOffcanvas extends LitElement {
       console.log("Seleccion de Observacion");
       let geoblaze_raster = e.detail.georaster;
       this.selected_georaster = geoblaze_raster;
+      this.selected_canvas = e.detail.canvas;
 
       if (gbl_state.map.getSource("canvas-source")) {
-        let s = gbl_state.map.getSource("canvas-source") as Source;
+        let s = gbl_state.map.getSource("canvas-source") as CanvasSource;
         console.log("Souce Existe", s);
         s.canvas = e.detail.canvas;
       } else {
@@ -227,7 +226,7 @@ export class NdviOffcanvas extends LitElement {
     let ph = this.selected_georaster.pixelHeight;
     let w = this.selected_georaster.width;
     let h = this.selected_georaster.height;
-    console.log("Selected Georaster",this.selected_georaster)
+    console.log("Selected Georaster", this.selected_georaster);
     let array_resultado = [["lat", "lon", "ndvi"]];
     for (let i = 0; i < w; i++) {
       for (let vs = 0; vs < h; vs++) {
@@ -536,6 +535,19 @@ export class NdviOffcanvas extends LitElement {
     return "";
   }
 
+  download_png() {
+    // Convert the canvas to data
+    var image = this.selected_canvas.toDataURL();
+    // Create a link
+    var aDownloadLink = document.createElement("a");
+    // Add the name of the file to the link
+    aDownloadLink.download = "indice.png";
+    // Attach the data to the link
+    aDownloadLink.href = image;
+    // Get the code to click the download link
+    aDownloadLink.click();
+  }
+
   render() {
     let back_button = () =>
       html`<div @click=${() => (this.histograma_show = false)}>BACK</div>`;
@@ -620,12 +632,11 @@ export class NdviOffcanvas extends LitElement {
                     }}
                   ></vaadin-combo-box>
 
-                  <div class="row mx-auto">
+                  <vaadin-horizontal-layout theme='spacing'>
                     ${this.seleccion
                       ? html`<a
                             class="btn btn-primary btn-sm col col-3 m-1"
-                            href=""
-                            download="ndvi.png"
+                            @click=${this.download_png}
                             >&#11015;&#65039; PNG</a
                           >
                           <a
@@ -634,7 +645,7 @@ export class NdviOffcanvas extends LitElement {
                             >&#11015;&#65039; XLS</a
                           >`
                       : null}
-                  </div>
+                  </vaadin-horizontal-layout>
                 </div>
                 <div class="row">
                   ${this.seleccion
