@@ -1,15 +1,9 @@
 import { LitElement, html, css, unsafeCSS, CSSResultGroup } from "lit";
-import { map } from "lit/directives/map.js";
-import moment from "moment";
 import "moment/dist/locale/es";
-import { stock_suficiente } from "../../helpers/stock.ts";
-import { parse, compareDesc, format, parseISO, isBefore } from "date-fns";
+import {  parseISO, isBefore } from "date-fns";
 import { property, state } from "lit/decorators.js";
 import {
   Actividad,
-  DetallesAplicacion,
-  DetallesSiembra,
-  LineaDosis,
 } from "../../depositos/depositos-types";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import isFuture from "date-fns/isFuture";
@@ -23,7 +17,6 @@ import gbl_state from "../../state";
 import "./actividad-item";
 import "@vaadin/scroller";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
-import { GridItemModel } from "@vaadin/grid";
 import "./nota-item";
 import { AnalisisSuelo } from "../../tipos/analisis-suelo";
 import "./analisis-item";
@@ -35,43 +28,6 @@ const url_repeticion = (actividad_uuid) => {
   return url;
 };
 
-const estados = [
-  {
-    nombre: "Pendiente",
-    value: "pendiente",
-  },
-  {
-    nombre: "Orden Entregada",
-    value: "orden_entregada",
-  },
-  {
-    nombre: "Realizada",
-    value: "realizada",
-  },
-  {
-    nombre: "Pagada",
-    value: "pagada",
-  },
-  {
-    nombre: "Cancelada",
-    value: "cancelada",
-  },
-];
-
-const estados_ = ["pendiente", "realizada"];
-
-const p_from_insumo = (i: LineaDosis) => {
-  const motivos_2_str = (motivos: string[]) => {
-    let motivos_array = Object.keys(motivos);
-    let solo_verdaderos = motivos_array.filter((m) => motivos[m]);
-    return solo_verdaderos.join(", ");
-  };
-
-  return html`<p class="small">
-    <strong>${i.insumo.marca_comercial.toUpperCase()}</strong> - Dosis:
-    ${i.dosis} ${i.insumo.unidad} - Motivo: ${motivos_2_str(i.motivos)}
-  </p>`;
-};
 
 const timeline_css = css`
   .cbp_tmtimeline {
@@ -334,19 +290,6 @@ const timeline_css = css`
     background-position: center !important;
   }
 `;
-
-const extraer_fecha = (actividad) => {
-  let fecha_objeto;
-  // Extraer fecha de b
-  if ("doc" in actividad) {
-    // Nota
-    fecha_objeto = parse(actividad.doc.fecha, "yyyy-MM-dd", new Date());
-  } else {
-    // Aplicacion antigua
-    fecha_objeto = parse(actividad.detalles.fecha, "yyyy-MM-dd", new Date());
-  }
-  return fecha_objeto;
-};
 
 export class TimelineSideElement extends LitElement {
   @property()
