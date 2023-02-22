@@ -144,9 +144,26 @@ export class VehiculosDetalles extends LitElement {
   /* Lo principal */
   vehiculos_form = () => {
     return html`
-      ${this.text_field("marca")} ${this.text_field("modelo")}
-      ${this.text_field("ano")} ${this.text_field("placa")}
-      ${this.text_field("bruto")}
+      ${this.text_field("marca")} 
+      ${this.text_field("modelo")}
+      ${this.text_field("ano","Año")} 
+      ${this.text_field("placa","Patente")}
+      ${this.text_field("tara")}
+      ${this.text_field("neto")}
+      ${this.text_field("tipo_combustible")}
+      ${this.text_field("tipo_vehiculo")}
+      ${this.text_field("capacidad_combustible")}
+      ${this.text_field("unidad_medida")}
+      ${this.text_field("conectividad")}
+      ${this.text_field("propietario")}
+      ${this.text_field("ultimo_mantenimiento")}
+      ${this.text_field("seguro")}
+      ${this.text_field("seguro_compania")}
+      ${this.text_field("seguro_tipo_de_cobertura")}
+      ${this.text_field("seguro_numero_de_poliza")}
+      ${this.text_field("seguro_fecha_de_inicio")}
+      ${this.text_field("seguro_fecha_de_vencimiento")}
+      <!-- ${this.text_field("")} -->
     `;
   };
 
