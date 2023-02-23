@@ -169,7 +169,7 @@ export const routes = [
     ],
   },
   {
-    path: "/vehiculos",
+    path: "/equipos",
     children: [
       { path: "/", component: "vehiculos-lista" },
       { path: "/:uuid/edit", component: "vehiculos-detalles" },

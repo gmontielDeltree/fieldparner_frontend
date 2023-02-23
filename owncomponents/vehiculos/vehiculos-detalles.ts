@@ -90,7 +90,7 @@ export class VehiculosDetalles extends LitElement {
 
   render() {
     return html`
-      <modal-generico .modalOpened=${this.openedModal} backurl="/vehiculos">
+      <modal-generico .modalOpened=${this.openedModal} backurl="/equipos">
         <div slot="title">
           <div>${this.item.tipo}</div>
         </div>
@@ -144,6 +144,7 @@ export class VehiculosDetalles extends LitElement {
   /* Lo principal */
   vehiculos_form = () => {
     return html`
+      ${this.text_field("tipo_vehiculo")}
       ${this.text_field("marca")} 
       ${this.text_field("modelo")}
       ${this.text_field("ano","Año")} 
@@ -151,14 +152,13 @@ export class VehiculosDetalles extends LitElement {
       ${this.text_field("tara")}
       ${this.text_field("neto")}
       ${this.text_field("tipo_combustible")}
-      ${this.text_field("tipo_vehiculo")}
       ${this.text_field("capacidad_combustible")}
       ${this.text_field("unidad_medida")}
       ${this.text_field("conectividad")}
       ${this.text_field("propietario")}
       ${this.text_field("ultimo_mantenimiento")}
       ${this.text_field("seguro")}
-      ${this.text_field("seguro_compania")}
+      ${this.text_field("seguro_compania",get('seguro_compania'))}
       ${this.text_field("seguro_tipo_de_cobertura")}
       ${this.text_field("seguro_numero_de_poliza")}
       ${this.text_field("seguro_fecha_de_inicio")}

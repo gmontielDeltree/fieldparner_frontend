@@ -204,7 +204,7 @@ export class Example extends LitElement {
           <campana-notificacion></campana-notificacion>
             </vaadin-tab>
             <vaadin-tab>
-              <menu-campana-button />
+              <menu-campana-button></menu-campana-button>
             </vaadin-tab>
           </vaadin-tabs>
 
@@ -349,11 +349,11 @@ export class Example extends LitElement {
               <a
                 tabindex="-1"
                 @click=${() => {
-                  Router.go("/vehiculos");
+                  Router.go("/equipos");
                 }}
               >
                 <vaadin-icon icon="vaadin:truck"></vaadin-icon>
-                <span>${translate("vehiculos")}</span>
+                <span>${translate("equipos")}</span>
               </a>
             </vaadin-tab>
             <vaadin-tab>
