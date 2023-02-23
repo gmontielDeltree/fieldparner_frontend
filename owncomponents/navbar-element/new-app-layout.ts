@@ -251,7 +251,7 @@ export class Example extends LitElement {
 
             <a
               tabindex="-1"
-              href='https://www.agrotools.net/'
+              href='https://www.qtsagro.net/'
               @click=${() => {
                 this.sendEvent("logout-click", {});
               }}
