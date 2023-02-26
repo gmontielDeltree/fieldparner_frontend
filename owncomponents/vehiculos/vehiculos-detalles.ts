@@ -57,7 +57,7 @@ export class VehiculosDetalles extends LitElement {
   @state()
   editing: boolean = false;
 
-  private back_url = "vehiculos";
+  private back_url = "equipos";
 
   // Encadeno promises
   loadData(location: RouterLocation) {

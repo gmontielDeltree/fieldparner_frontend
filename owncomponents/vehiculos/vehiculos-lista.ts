@@ -46,7 +46,7 @@ export class VehiculosLista extends LitElement {
         {
           text: get("nuevo"),
           callback: () => {
-            Router.go("vehiculos/add");
+            Router.go("equipos/add");
             console.log("Nuevo");
           },
         },
@@ -63,7 +63,7 @@ export class VehiculosLista extends LitElement {
         {
           text: get("editar"),
           callback: () => {
-            Router.go("vehiculos/" + item.uuid + "/edit");
+            Router.go("equipos/" + item.uuid + "/edit");
             console.log("edit");
           },
         },
@@ -92,7 +92,7 @@ export class VehiculosLista extends LitElement {
   render() {
     return html`
       <modal-generico .modalOpened=${this.openedModal} backurl="/">
-        <div slot="title">${translate("vehiculos")}</div>
+        <div slot="title">${translate("equipos")}</div>
         <div slot="menu" s>
           <vaadin-menu-bar
             .items="${this.menu_items}"
@@ -141,7 +141,7 @@ export class VehiculosLista extends LitElement {
                           <vaadin-button
                             @click=${() => {
                               Router.go(
-                                "/vehiculos/" +
+                                "/equipos/" +
                                   item.uuid +
                                   "?from=" +
                                   this.location.pathname

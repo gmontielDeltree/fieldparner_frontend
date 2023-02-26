@@ -86,11 +86,26 @@ export const routes = [
   { path: "/campo/:uuid", component: "campo-offcanvas" },
   { path: "/contratistas", component: "contratistas-lista" },
   { path: "/contratistas/add", component: "contratistas-crud" },
-  { path: "/depositos", component: "depositos-listado" },
-  { path: "/depositos/add", component: "depositos-upsert" },
+  {
+    path: "/depositos",
+    action: async () => {
+      await import("./depositos/depositos-lista/depositos-listado");
+    },
+    component: "depositos-listado",
+  },
+
+  {
+    path: "/depositos/add",
+    action: async () => {
+      await import("./depositos/depositos-lista/deposito-nuevo");
+    },
+    component: "depositos-upsert",
+  },
   {
     path: "/deposito/:uuid",
-
+    action: async () => {
+      await import("./depositos/deposito-detalles/deposito-detalles");
+    },
     children: [
       {
         path: "/",
@@ -98,6 +113,9 @@ export const routes = [
       },
       {
         path: "/transfer/add/:direccion",
+        action: async () => {
+          await import("./depositos/deposito-transferencias/deposito-nuevo-transferencias");
+        },
         component: "deposito-nuevo-transferencias",
       },
     ],
