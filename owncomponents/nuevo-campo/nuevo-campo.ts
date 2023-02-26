@@ -1,6 +1,7 @@
 import { LitElement, html } from "lit";
 import area from "@turf/area";
 import convex from '@turf/convex'
+import "../nueva-geometria/nueva-geometria";
 
 import uuid4 from "uuid4";
 export class NuevoCampo extends LitElement {
@@ -107,7 +108,7 @@ export class NuevoCampo extends LitElement {
     return this.map
       ? html`<nueva-geometria-ui
           id="nuevo-campo-ui"
-          .tipo="campo"
+          .tipo=${"campo"}
           .mapa=${this.map}
           ._draw=${this.draw}
           .show=${this.show}

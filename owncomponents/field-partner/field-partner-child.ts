@@ -6,8 +6,8 @@ import { Router } from "@vaadin/router";
 import("../contratistas/contratista-crud");
 import("../contratistas/contratistas-lista");
 import("../sensores/sensores-offcanvas");
-import("../nueva-geometria/nueva-geometria");
-import("../nuevo-campo/nuevo-campo.js");
+import "../nueva-geometria/nueva-geometria";
+import "../nuevo-campo/nuevo-campo";
 import("../notas-offcanvas/nota-target");
 import("../lista-centrales-cercanas/lista-centrales-cercanas");
 import("../sensores/lista-de-sensores");
@@ -32,7 +32,7 @@ export class FieldPartnerChild extends LitElement {
   // NO estamos usando el shadow dom (createRenderRoot=>this)
   //static override styles = [unsafeCSS(bootstrap)];
 
-  @property({ hasChanged: (v, ov) => false })
+  @property()
   map: Map;
 
   @property({ hasChanged: (v, ov) => false })
@@ -92,6 +92,7 @@ export class FieldPartnerChild extends LitElement {
     /* Izar map y draw a este componente para que los otros puedan usarlo */
     this.addEventListener("map-loaded", (e: CustomEvent) => {
       this.map = e.detail.map;
+      console.log("MAP LOADED EVT HANDLER")
 
       gbl_state.map = e.detail.map;
       this.draw = e.detail.draw;
