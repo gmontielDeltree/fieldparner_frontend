@@ -1,5 +1,16 @@
 import { CreatedTag, LastUpdateTag } from "../depositos/depositos-types";
 
+export interface TipoVehiculo {
+    uuid:string,
+    nombre:string,
+    key?:string,
+}
+export interface TipoCombustible{
+    uuid:string,
+    nombre:string,
+    key?:string,
+}
+
 export interface Vehiculo{
     _id: string,
     _rev?: string,
@@ -7,7 +18,7 @@ export interface Vehiculo{
     last_updated: LastUpdateTag,
 	created: CreatedTag,
     tipo:"vehiculo",
-    tipo_vehiculo: string,
+    tipo_vehiculo: TipoVehiculo,
     nombre:string, // Es la combinacion de tipo_vehiculo + marca + model
     descripcion: string,
     status:string,
@@ -18,7 +29,7 @@ export interface Vehiculo{
     tara?:number,
     neto?:number,
     bruto?:number,
-    tipo_combustible?:string,
+    tipo_combustible?: TipoCombustible,
     capacidad_combustible?:string,
     unidad_medida?:string,
     conectividad?:string,
@@ -32,4 +43,6 @@ export interface Vehiculo{
     seguro_numero_de_poliza?:string,
     seguro_fecha_de_inicio?:string,
     seguro_fecha_de_vencimiento?:string,
+    distancia_entre_picos?:number,
+    ancho?:number,
 }

@@ -1,3 +1,5 @@
+import { tipos_combustible } from "./../jsons/tipos_equipos";
+import { TipoVehiculo } from "./../tipos/vehiculos";
 import {
   cargar_vehiculo,
   guardar_vehiculo,
@@ -31,6 +33,11 @@ import { TextField } from "@vaadin/text-field";
 import { Task } from "@lit-labs/task";
 import { showNotification } from "../helpers/notificaciones";
 import { Vehiculo } from "../tipos/vehiculos";
+import { ComboBoxSelectedItemChangedEvent } from "@vaadin/combo-box";
+import { tipos_equipos } from "../jsons/tipos_equipos";
+import { DatePickerChangeEvent } from "@vaadin/date-picker";
+import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n";
+import { NumberField } from "@vaadin/number-field";
 
 @customElement("vehiculos-detalles")
 export class VehiculosDetalles extends LitElement {
@@ -144,26 +151,26 @@ export class VehiculosDetalles extends LitElement {
   /* Lo principal */
   vehiculos_form = () => {
     return html`
-      ${this.text_field("tipo_vehiculo")}
-      ${this.text_field("marca")} 
-      ${this.text_field("modelo")}
-      ${this.text_field("ano","Año")} 
-      ${this.text_field("placa","Patente")}
-      ${this.text_field("tara")}
-      ${this.text_field("neto")}
-      ${this.text_field("tipo_combustible")}
-      ${this.text_field("capacidad_combustible")}
-      ${this.text_field("unidad_medida")}
-      ${this.text_field("conectividad")}
+      ${this.combo_box("tipo_vehiculo", tipos_equipos, "nombre")}
+      ${this.text_field("marca")} ${this.text_field("modelo")}
+      ${this.combo_box("ano",this.years, "Año")} 
+      ${this.text_field("placa", "Patente")}
+      ${this.number_field("tara","kg")} ${this.number_field("neto","kg")}
+      ${this.combo_box("tipo_combustible", tipos_combustible, "nombre")}
+      ${this.number_field("capacidad_combustible",'l')}
+      ${this.text_field("unidad_medida")} ${this.text_field("conectividad")}
       ${this.text_field("propietario")}
-      ${this.text_field("ultimo_mantenimiento")}
-      ${this.text_field("seguro")}
-      ${this.text_field("seguro_compania",get('seguro_compania'))}
+      ${this.date_picker("ultimo_mantenimiento")} ${this.text_field("seguro")}
+      ${this.text_field("seguro_compania", get("seguro_compania"))}
       ${this.text_field("seguro_tipo_de_cobertura")}
       ${this.text_field("seguro_numero_de_poliza")}
-      ${this.text_field("seguro_fecha_de_inicio")}
-      ${this.text_field("seguro_fecha_de_vencimiento")}
+      ${this.date_picker("seguro_fecha_de_inicio")}
+      ${this.date_picker("seguro_fecha_de_vencimiento")}
       <!-- ${this.text_field("")} -->
+
+      ${this.item.tipo_vehiculo.key === "pulverizadora"
+        ? this.pulverizadora_fields()
+        : null}
     `;
   };
 
@@ -175,7 +182,7 @@ export class VehiculosDetalles extends LitElement {
   ) => {
     return html`
       <vaadin-text-field
-        .label=${label ?? field}
+        .label=${label ?? get(field)}
         ?readonly=${!this.editing}
         .value=${this.item[field] as string}
         @input=${(e: Event) => {
@@ -186,5 +193,71 @@ export class VehiculosDetalles extends LitElement {
     `;
   };
 
-  number_field = (key) => {};
+  combo_box = <T extends Vehiculo, K extends keyof T>(
+    field: keyof Vehiculo,
+    items,
+    label_path: string,
+    label?: string
+  ) => {
+    return html`
+      <vaadin-combo-box
+        .label=${label ?? get(field)}
+        ?readonly=${!this.editing}
+        .itemLabelPath=${label_path}
+        .selectedItem=${this.item[field]}
+        .items=${items}
+        @selected-item-changed=${(e: ComboBoxSelectedItemChangedEvent<any>) => {
+          (<any>this.item[field]) = e.detail.value;
+          this.requestUpdate()
+        }}
+      ></vaadin-combo-box>
+    `;
+  };
+
+  date_picker = <T extends Vehiculo, K extends keyof T>(
+    field: keyof Vehiculo,
+    label?: string
+  ) => {
+    return html`
+      <vaadin-date-picker
+        .label=${label ?? get(field)}
+        ?readonly=${!this.editing}
+        .i18n=${base_i18n}
+        .value=${<string>this.item[field]}
+        @change=${(e: DatePickerChangeEvent) => {
+          (<any>this.item[field]) = e.target.value;
+        }}
+      ></vaadin-date-picker>
+    `;
+  };
+
+
+  number_field = <T extends Vehiculo, K extends keyof T>(
+    field: keyof Vehiculo,
+    suffix: string,
+    label?: string
+
+  ) => {
+    return html`
+      <vaadin-number-field
+        .label=${label ?? get(field)}
+        ?readonly=${!this.editing}
+        .value=${this.item[field] as string}
+        @input=${(e: Event) => {
+          (this.item[field] as number) = (e.target as NumberField).value as unknown as number;
+        }}
+      ><div slot='suffix'>${suffix}</div></vaadin-number-field>
+    `;
+  };
+
+
+  pulverizadora_fields = ()=>{
+    return html`
+    ${this.number_field("distancia_entre_picos","cm")}
+    ${this.number_field("ancho","m")}
+    `
+  }
+
+  private years = Array.from({ length: 100 }, (_, k) => new Date().getFullYear() - 99 + k);
+
 }
