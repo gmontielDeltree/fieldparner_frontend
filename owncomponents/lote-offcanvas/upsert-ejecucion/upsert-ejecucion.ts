@@ -433,7 +433,7 @@ export class UpsertEjecucion extends LitElement {
             .items=${this.vehiculos}
             item-label-path="nombre"
             helper-text="Seleccione los vehiculos que utilizara durante la actividad"
-            .selectedItems=${this.ejecucion.detalles?.vehiculos}
+            .selectedItems=${this.ejecucion.detalles?.vehiculos ?? []}
             @selected-items-changed=${(
               e: MultiSelectComboBoxSelectedItemsChangedEvent<Vehiculo>
             ) => {
