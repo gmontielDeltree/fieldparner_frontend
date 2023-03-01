@@ -19,11 +19,10 @@ import { Route, RouteWithRedirect } from "@vaadin/router";
 import "../map-picker/map-picker";
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
 import { add_download_xls_button } from "../sensores/excel_boton";
+import ApexCharts from "apexcharts";
+import { createRef, ref } from "lit/directives/ref.js";
 
-let ApexCharts;
-import("apexcharts").then(({ default: a }) => {
-  ApexCharts = a;
-});
+import { Task, TaskStatus } from "@lit-labs/task";
 
 @customElement("analisis-precios")
 export class AnalisisPrecios extends LitElement {
@@ -40,9 +39,25 @@ export class AnalisisPrecios extends LitElement {
   @state()
   valido: boolean = false;
 
-  private mercados: any[];
-  private products: any[];
+  private _loadTask = new Task(
+    this,
+    () => this.load_data(),
+    () => []
+  );
+
+  private mercados: any[] = [
+    { nombre: "Cámara Arbitral de Rosario", value: "car" },
+  ];
+  private products: any[] = [
+    { nombre: "Soja (pesos)", value: "soja" },
+    { nombre: "Trigo (pesos)", value: "trigo" },
+    { nombre: "Maiz (pesos)", value: "maiz" },
+    { nombre: "Girasol (pesos)", value: "girasol" },
+    { nombre: "Sorgo (pesos)", value: "sorgo" },
+  ];
   private chart: ApexCharts;
+
+  chartRef = createRef();
 
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -53,10 +68,9 @@ export class AnalisisPrecios extends LitElement {
 
   // Ocurre cuando ya se renderizo
   override updated(changedProps) {
-    if (changedProps.has("data")) {
-      if (this.shadowRoot.getElementById("chart")) {
-        this.renderCentralChart();
-      }
+    console.log("ChartRef", this.chartRef);
+    if (this.shadowRoot.getElementById("chart")) {
+      this.renderCentralChart();
     }
   }
 
@@ -122,7 +136,10 @@ export class AnalisisPrecios extends LitElement {
       },
     };
 
-    this.chart = new ApexCharts(document.querySelector("#chart"), options);
+    this.chart = new ApexCharts(
+      this.shadowRoot.querySelector("#chart"),
+      options
+    );
     this.chart.render();
 
     // Agregar boton de descarga Excel
@@ -135,20 +152,6 @@ export class AnalisisPrecios extends LitElement {
   }
 
   updateChart(data) {
-    /*
-    "data": [
-  {
-    "x": timestamp,
-    "y": value
-  },
-  .
-  .
-  {
-    "x": timestamp,
-    "y": value
-  },
-]
-*/
     this.chart.updateSeries([
       {
         name: "Price",
@@ -157,27 +160,55 @@ export class AnalisisPrecios extends LitElement {
     ]);
   }
 
+  load_data() {
+    fetch('/prices/car/soja/precios.csv').then((result)=>{
+      console.log(result.body);
+      return result.body
+    }).then((b)=>{
+      console.log("B",b)
+    })
+  }
+
   render() {
     return html`
       <modal-generico .modalOpened=${this.opened} backurl="/">
         <div slot="title">${translate("precios")}</div>
         <div slot="body">
-          <vaadin-vertical-layout>
-            <vaadin-horizontal-layout>
+          <vaadin-vertical-layout theme="spacing">
+            <vaadin-horizontal-layout theme="spacing">
               <vaadin-combo-box
+                style="width:20em"
                 .label=${get("mercado")}
                 .items=${this.mercados}
+                .selectedItem=${this.mercados[0]}
+                .itemLabelPath=${"nombre"}
+                @selected-item-changed=${(e) => {
+                  this.mercado = e.detail.value;
+                  this.load_data();
+                }}
               >
               </vaadin-combo-box>
               <vaadin-combo-box
                 .label=${get("productos")}
                 .items=${this.products}
+                .itemLabelPath=${"nombre"}
+                @selected-item-changed=${(e) => {
+                  this.selected_product = e.detail.value;
+                  this.load_data();
+                }}
               >
               </vaadin-combo-box>
             </vaadin-horizontal-layout>
-            <div id="chart" style="width:100%; height:400px;"></div>
+            <div
+              id="chart"
+              style="width:100%; height:400px;"
+              ${ref(this.chartRef)}
+            ></div>
           </vaadin-vertical-layout>
-
+          ${this._loadTask.render({
+            pending: () => html`${translate("cargando")}`,
+            complete: (vehiculos) => html``,
+          })}
           <slot></slot>
         </div>
       </modal-generico>
