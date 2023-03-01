@@ -195,4 +195,14 @@ export const routes = [
       { path: "/:uuid", component: "vehiculos-detalles" },
     ],
   },
+  {
+    path : "/prices",
+    children:[
+      {path:"/",
+      action: async () => {
+        await import("./analisis-precios/analisis-precios");
+      },
+      component : "analisis-precios"},
+    ]
+  },
 ];
