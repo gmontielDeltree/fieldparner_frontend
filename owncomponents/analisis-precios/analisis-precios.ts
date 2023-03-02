@@ -158,14 +158,19 @@ export class AnalisisPrecios extends LitElement {
         data: data,
       },
     ]);
+    this.chart.zoomX(
+      new Date('3 Dec 2022').getTime(),
+      new Date('22 Feb 2023').getTime()
+    )
   }
 
-  load_data() {
-    fetch('/prices/car/soja/precios.csv').then((result)=>{
+  load_data(sp) {
+    fetch('/prices/car/'+ sp.value +'/precio.json').then((result)=>{
       console.log(result.body);
-      return result.body
+      return result.json()
     }).then((b)=>{
       console.log("B",b)
+      this.updateChart(b)
     })
   }
 
@@ -194,7 +199,7 @@ export class AnalisisPrecios extends LitElement {
                 .itemLabelPath=${"nombre"}
                 @selected-item-changed=${(e) => {
                   this.selected_product = e.detail.value;
-                  this.load_data();
+                  this.load_data(this.selected_product);
                 }}
               >
               </vaadin-combo-box>

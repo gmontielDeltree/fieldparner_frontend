@@ -356,6 +356,19 @@ export class Example extends LitElement {
                 <span>${translate("equipos")}</span>
               </a>
             </vaadin-tab>
+
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
+                  Router.go("/prices");
+                }}
+              >
+                <vaadin-icon icon="vaadin:dollar"></vaadin-icon>
+                <span>${translate("precios")}</span>
+              </a>
+            </vaadin-tab>
+
             <vaadin-tab>
               <a
                 tabindex="-1"
