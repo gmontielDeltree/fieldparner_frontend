@@ -23,6 +23,7 @@ import { map } from "lit/directives/map.js";
 import { translate } from "lit-translate";
 import { actividad_detalles } from "./detalles-actividad/detalles-actividad";
 import { ejecucion_detalles } from "./detalles-actividad/detalles-ejecucion";
+import { Cultivo } from '../../insumos/insumos-types';
 
 @customElement("actividad-item")
 export class ActividadItem extends LitElement {
@@ -239,6 +240,24 @@ export class ActividadItem extends LitElement {
 
   render() {
     let fecha = this.get_fecha_plan_o_ejecucion();
+    
+    let titulo = this.item?.tipo.toUpperCase()
+    
+    if(this.item?.tipo === 'siembra'){
+      let cultivo: Cultivo = null;
+      if (this.item) {
+        let t = this.item.detalles.dosis.find(
+          (d) => d.insumo.tipo?.key === "semillas"
+        );
+        // t es la primera linea de dosis con semillas
+        if (t) {
+          cultivo = t.insumo.cultivo;
+          titulo += " " + cultivo.nombre
+        }
+      }
+    }
+   
+
 
     return html` <vaadin-horizontal-layout
         theme=""
@@ -254,7 +273,7 @@ export class ActividadItem extends LitElement {
             >${this.item.detalles.fecha_ejecucion_tentativa} Planificada</span
           >
           <a
-            >${this.item?.tipo.toUpperCase()}
+            >${titulo}
             <span class="text-muted">
               en ${this.item.detalles.hectareas} has.</span
             ></a
