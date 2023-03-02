@@ -13,9 +13,7 @@ import "@vaadin/icons";
 import "@vaadin/dialog";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Modal from "bootstrap/js/dist/modal";
-import lista_de_labores from "./labores.json";
-import { uuid4 } from "uuid4";
-import PouchDB from "pouchdb";
+import lista_de_labores from "../jsons/labores";
 import {
   Insumo,
   get_empty_insumo,
@@ -25,6 +23,8 @@ import {
 import { isThisSecond } from "date-fns";
 import { GridItemModel } from "@vaadin/grid";
 import cultivos from "../jsons/cultivos";
+import { old_tipo_2_new, tipos_insumos } from "../jsons/tipos_insumos";
+import { get } from 'lit-translate';
 
 export class InsumoCrud extends LitElement {
   @property()
@@ -297,19 +297,23 @@ export class InsumoCrud extends LitElement {
                   }}
                 ></vaadin-text-field>
                 <!-- Stretch the username field over 2 columns -->
-                <vaadin-text-field
+                <vaadin-combo-box
                   label="Tipo"
-                  .value=${this.insumo.tipo}
-                  @change=${(e: any) => {
+                  .selectedItem=${(typeof this.insumo.tipo) === 'string'? old_tipo_2_new(<string>(this.insumo.tipo as unknown)) : this.insumo.tipo}
+                  .itemLabelPath=${"nombre"}
+                  .items=${tipos_insumos}
+                  @selected-item-changed=${(e: any) => {
                     //this.insumo.datos_generales.direccion = e.target.value;
-                    this.insumo = { ...this.insumo, tipo: e.target.value };
+                    this.insumo = { ...this.insumo, tipo: e.detail.value };
                   }}
-                ></vaadin-text-field>
+                ></vaadin-combo-box>
 
-                ${this._es_semilla
+                ${this.insumo.tipo.key === 'semillas'
                   ? html`
                       <vaadin-combo-box
+                        .label=${get('cultivo')}
                         .items=${cultivos}
+                        .itemLabelPath=${"nombre"}
                         @selected-item-changed=${(e) => {
                           this.insumo.cultivo = e.detail.value;
                         }}
@@ -339,7 +343,7 @@ export class InsumoCrud extends LitElement {
                 <vaadin-number-field
                   label="Precio de Lista"
                   name="precio"
-                  .value=${this.insumo.precio}
+                  .value=${<unknown>this.insumo.precio as string}
                   @change=${(e: any) => {
                     //this.insumo.datos_generales.email = e.target.value;
                     this.insumo = { ...this.insumo, precio: e.target.value };

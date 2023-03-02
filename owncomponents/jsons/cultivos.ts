@@ -1,4 +1,5 @@
-export const cultivos = {
+import { get } from 'lit-translate';
+const cultivos_og = {
   "1": { color: "#f7e7ce", nombre: "Algod\u00f3n" },
   "2": { color: "#0000ff", nombre: "Arroz" },
   "3": { color: "#3cb371", nombre: "Arveja" },
@@ -63,4 +64,11 @@ export const cultivos = {
   "1338": { color: "#c66a89", nombre: "Sorgo 2\u00b0" },
 };
 
+let keys = Object.keys(cultivos_og);
+let cultivos = keys.map((k) => {
+  let key = cultivos_og[k].nombre.toLowerCase()
+  return { nombre: get(key), key: key, uuid:k };
+});
+
+export {cultivos}
 export default cultivos;

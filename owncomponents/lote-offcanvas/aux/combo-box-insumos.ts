@@ -11,6 +11,9 @@ import { badge } from "@vaadin/vaadin-lumo-styles/badge";
 import { map } from "lit/directives/map.js";
 import "../aux/span-pill";
 import "../aux/test";
+import { tipo_insumo_conv_si_necesario } from "../../jsons/tipos_insumos";
+import { kml } from "@tmcw/togeojson";
+import cultivos from '../../jsons/cultivos';
 
 @customElement("combo-box-insumos")
 export class ComboBoxInsumos extends LitElement {
@@ -18,27 +21,25 @@ export class ComboBoxInsumos extends LitElement {
   insumos: Insumo[];
 
   @property()
-  selectedItem : any;
+  selectedItem: any;
 
   @property()
-  categorias_iniciales = []
+  categorias_iniciales = [];
 
   @state()
-  insumos_post_filter : Insumo[] = []
-
-
+  insumos_post_filter: Insumo[] = [];
 
   @state()
   private filteredItems: Insumo[] = [];
 
   private categorias: string[];
 
-  private filtro_1_categorias : string [] = []
-  private filtro_1_categorias_initial : string [] = ["Semillas"]
+  private filtro_1_categorias: string[] = [];
+  private filtro_1_categorias_initial: string[] = ["semillas"];
 
   async firstUpdated() {
-    this.filter_1(this.categorias_iniciales)
-    this.filter_2("")
+    this.filter_1(this.categorias_iniciales);
+    this.filter_2("");
   }
 
   protected willUpdate(
@@ -65,7 +66,10 @@ export class ComboBoxInsumos extends LitElement {
     let categorias: string[] = [];
     if (this.insumos) {
       this.insumos.map((insumo) => {
-        let cultivos: string[] = [insumo.tipo === "" ? "Otros" : insumo.tipo]; // + (insumo.subtipo !== "" ? (" " +insumo.subtipo) : "")]
+        let new_tipo = tipo_insumo_conv_si_necesario(insumo.tipo);
+        let cultivos: string[] = [
+          new_tipo?.key === "" ? "Otros" : new_tipo?.key,
+        ]; // + (insumo.subtipo !== "" ? (" " +insumo.subtipo) : "")]
         categorias = [...new Set([...categorias, ...cultivos] as string[])];
       });
     }
@@ -74,21 +78,22 @@ export class ComboBoxInsumos extends LitElement {
 
   /**
    * Filtrado por el selector
-   * @param checkedItems 
+   * @param checkedItems
    */
-  filter_1(checkedItems : string []){
-    this.insumos_post_filter = this.insumos?.filter((i)=>{
-      // Verdadero si el tipo esta incluido en el selector checkedItems
-      let c1 = checkedItems.includes(i.tipo)
-      // Verdadero si el tipo es "" y  el selector incluye "Otros"
-      let c2 = (i.tipo === "")&& checkedItems.includes("Otros")
+  filter_1(checkedItems: string[]) {
+    this.insumos_post_filter =
+      this.insumos?.filter((i) => {
+        // Verdadero si el tipo esta incluido en el selector checkedItems
+        let new_tipo = tipo_insumo_conv_si_necesario(i.tipo);
+        let c1 = checkedItems.includes(new_tipo?.key);
+        // Verdadero si el tipo es "" y  el selector incluye "Otros"
+        let c2 = new_tipo?.key === "" && checkedItems.includes("Otros");
 
-      return c1 || c2;
-    }) || [];
+        return c1 || c2;
+      }) || [];
   }
 
-  filter_2(filter_string){
-
+  filter_2(filter_string) {
     const searchTerm = ((filter_string as string) || "").trim();
     const matchesTerm = (value: string) => {
       return value.toLowerCase().indexOf(searchTerm.toLowerCase()) >= 0;
@@ -99,8 +104,9 @@ export class ComboBoxInsumos extends LitElement {
         !searchTerm ||
         matchesTerm(insumo.marca_comercial || "") ||
         matchesTerm(insumo.principio_activo || "") ||
-        matchesTerm(insumo.se_aplica_a[0]?.cultivo || "") ||
-        matchesTerm(insumo.se_aplica_a[1]?.cultivo || "")
+        matchesTerm(insumo.se_aplica_a[0]?.cultivo.nombre || "") ||
+        matchesTerm(insumo.se_aplica_a[1]?.cultivo.nombre || "") ||
+        matchesTerm(insumo.cultivo?.nombre || "")
       );
     });
 
@@ -117,8 +123,8 @@ export class ComboBoxInsumos extends LitElement {
     // }
   }
 
-  clear(){
-    (this.shadowRoot.querySelector('#insumo1') as ComboBox).clear()
+  clear() {
+    (this.shadowRoot.querySelector("#insumo1") as ComboBox).clear();
   }
 
   render() {
@@ -134,8 +140,14 @@ export class ComboBoxInsumos extends LitElement {
         .items=${this.insumos_post_filter}
         .selectedItem=${this.selectedItem}
         @selected-item-changed=${(e) => {
-          let value = e.detail.value
-          this.dispatchEvent(new CustomEvent("selected-item-changed",{detail:{value:value},bubbles:true,composed:true}))
+          let value = e.detail.value;
+          this.dispatchEvent(
+            new CustomEvent("selected-item-changed", {
+              detail: { value: value },
+              bubbles: true,
+              composed: true,
+            })
+          );
         }}
         .filteredItems="${this.filteredItems}"
         @filter-changed="${this.filterChanged}"
@@ -146,12 +158,11 @@ export class ComboBoxInsumos extends LitElement {
           .items=${this.categorias}
           slot="prefix"
           @selectedItemsChanged=${(e) => {
-              console.log("SELECTED FILTER", e.detail)
-              this.filter_1(e.detail)
-              this.filtro_1_categorias = e.detail
-              this.filter_2("")
-            }
-          }
+            console.log("SELECTED FILTER", e.detail);
+            this.filter_1(e.detail);
+            this.filtro_1_categorias = e.detail;
+            this.filter_2("");
+          }}
         ></menu-bar-checkable>
       </vaadin-combo-box>
     `;
@@ -159,7 +170,7 @@ export class ComboBoxInsumos extends LitElement {
 
   private filterChanged(e: ComboBoxFilterChangedEvent) {
     const filter = e.detail.value;
-    this.filter_2(filter)
+    this.filter_2(filter);
   }
 
   // NOTE
@@ -168,8 +179,18 @@ export class ComboBoxInsumos extends LitElement {
   // encapsulating the styling in a new component.
 
   private renderer: ComboBoxLitRenderer<Insumo> = (insumo) => {
-    let insumo_2_color = {semillas : "green", fertilizantes: "yellow", agroquímicos: "red", combustible:"blue", otros:"orange"}
-    let var_color = "--bg-color:" + insumo_2_color[insumo.tipo.toLowerCase()] + ";"
+    let tipo = tipo_insumo_conv_si_necesario(insumo.tipo);
+    let subtipo = insumo.subtipo;
+
+    let insumo_2_color = {
+      semillas: "green",
+      fertilizantes: "yellow",
+      agroquímicos: "red",
+      combustible: "blue",
+      otros: "orange",
+    };
+    let var_color =
+      "--bg-color:" + insumo_2_color[tipo.key.toLowerCase()] + ";";
 
     return html`
       <vaadin-vertical-layout style="line-height: var(--lumo-line-height-s);">
@@ -180,17 +201,28 @@ export class ComboBoxInsumos extends LitElement {
           ${insumo.principio_activo}
         </span>
         <div>
-          <span-pill style="${var_color}">${insumo.tipo}${insumo.subtipo === "" ? "" : "-" + insumo.subtipo}</span-pill>
+          <span-pill style="${var_color}"
+            >${tipo.nombre}${subtipo === "" ? "" : "-" + subtipo}</span-pill
+          >
+          ${insumo.cultivo
+            ? html`
+                <span-pill style="${var_color}"
+                  >${insumo.cultivo.nombre}</span-pill
+                >
+              `
+            : null}
           ${map(
             insumo.se_aplica_a,
-            (cultivo) => html`<span-pill style="${var_color}">${cultivo.cultivo}</span-pill>`
+            (cultivo) =>
+              html`<span-pill style="${var_color}"
+                >${cultivo.cultivo}</span-pill
+              >`
           )}
         </div>
       </vaadin-vertical-layout>
     `;
   };
 }
-
 
 declare global {
   interface HTMLElementTagNameMap {

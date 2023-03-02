@@ -1,11 +1,13 @@
-import { gbl_state } from './../state';
-import { depositos_update, depositos_layer_init } from './depositos-layer';
+import { gbl_state } from "./../state";
+import { depositos_update, depositos_layer_init } from "./depositos-layer";
 import { LitElement, html, unsafeCSS, css } from "lit";
 import { property } from "lit/decorators.js";
 import {
   touchEvent,
   layer_visibility,
   actividades_y_ejecuciones,
+  buscar_ultima_siembra,
+  tabla_de_colores,
 } from "../helpers";
 import { CircleLayer, GeoJSONSource, Layer, Map, SymbolLayer } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
@@ -59,38 +61,31 @@ const mapStyle = {
 /** Modifica 'features' agregado color y cultivo a las 'properties'
  *  basado en las actividades
  */
-const colorear_lotes = (features, cultivos) => {
+const colorear_lotes = async (features) => {
   // features[].properties.actividades
+  let tabla = await tabla_de_colores()
+  console.log("TAbla DE cOLORES",tabla)
   // Para cada lote
-  features.map(({ properties }) => {
-    if ("actividades" in properties) {
-      let cultivo = tiene_cultivo_este_lote(properties.actividades);
-      let color = cultivo_to_color(cultivo, cultivos);
-      properties.cultivo = cultivo;
-      properties.color = color;
-    } else {
-      properties.cultivo = "Cultivo Desconocido";
-      properties.color = "grey";
-    }
-  });
+  await Promise.all(
+    features.map(async ({ properties }) => {
+      let uuid = properties.uuid;
+      let cultivo = await buscar_ultima_siembra(uuid);
+
+      if (cultivo) {
+        let color = tabla[cultivo.key];
+        properties.cultivo = cultivo.nombre;
+        properties.color = color;
+      } else {
+        properties.cultivo = "Sin Cultivo";
+        properties.color = "grey";
+      }
+      console.log("COLORSET");
+      return;
+    })
+  );
 };
 
-const cultivo_to_color = (cultivo, cultivos) => {
-  if (cultivo === "Barbecho") {
-    return "grey";
-  } else if (cultivo === "Cultivo Desconocido") {
-    return "green";
-  }
-
-  for (const cultivo_map in cultivos) {
-    if (Object.hasOwnProperty.call(cultivos, cultivo_map)) {
-      const element = cultivos[cultivo_map];
-      if (element.nombre === cultivo) {
-        return element.color;
-      }
-    }
-  }
-
+const cultivo_to_color = (cultivo) => {
   // Custom Colors
 
   return "blue";
@@ -171,18 +166,22 @@ export class MapaPrincipal extends LitElement {
         /*bottom: 3;*/
         width: 100vw;
         z-index: 0;
-        height: calc(100vh - var(--_vaadin-app-layout-navbar-offset-size)) !important;
+        height: calc(
+          100vh - var(--_vaadin-app-layout-navbar-offset-size)
+        ) !important;
       }
 
       @media only screen and (min-width: 800px) {
         /* Pantalla 'Grande' */
         #map {
           position: absolute;
-          top:  var(--_vaadin-app-layout-navbar-offset-size);
+          top: var(--_vaadin-app-layout-navbar-offset-size);
           /*bottom: 3;*/
-          width:100vw;
+          width: 100vw;
           z-index: 0;
-          height: calc(100vh - var(--_vaadin-app-layout-navbar-offset-size)) !important;
+          height: calc(
+            100vh - var(--_vaadin-app-layout-navbar-offset-size)
+          ) !important;
         }
       }
 
@@ -203,7 +202,6 @@ export class MapaPrincipal extends LitElement {
   }
 
   firstUpdated() {
-
     this.map = new Map({
       container: this.shadowRoot.getElementById("map"),
       //style: "mapbox://styles/mapbox/outdoors-v11",
@@ -309,8 +307,8 @@ export class MapaPrincipal extends LitElement {
           visibility: "none",
         },
         paint: {
-          "fill-color": "red",
-          "fill-opacity": 0.4,
+          "fill-color": ["get", "color"],
+          "fill-opacity": 0.9,
           "fill-outline-color": "red",
         },
       });
@@ -377,7 +375,7 @@ export class MapaPrincipal extends LitElement {
           visibility: "none",
         },
         paint: {
-          "fill-color": "rgba(255, 127, 0, 1)",
+          "fill-color": ["get", "color"],
           "fill-opacity": 0.4,
           "fill-outline-color": "red",
         },
@@ -449,7 +447,11 @@ export class MapaPrincipal extends LitElement {
           type: "FeatureCollection",
           features: lotes,
         };
-        lotes_source.setData(data_lotes);
+
+        colorear_lotes(data_lotes.features).then(()=>
+        lotes_source.setData(data_lotes)
+        )
+        
       };
 
       this.map.showAllCampos = () => {
@@ -465,11 +467,11 @@ export class MapaPrincipal extends LitElement {
       };
 
       this.proveedores_layer_init();
-      depositos_layer_init(this.map)
+      depositos_layer_init(this.map);
       this.cargar_marcadores();
 
       this._redraw_map();
-      this.map.resize()
+      this.map.resize();
 
       // console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
@@ -561,9 +563,9 @@ export class MapaPrincipal extends LitElement {
       this.map.getCanvas().style.cursor = "";
     });
 
-    this.map.on('move',(e)=>{
-      gbl_state.ultima_posicion = this.map.getCenter()
-    })
+    this.map.on("move", (e) => {
+      gbl_state.ultima_posicion = this.map.getCenter();
+    });
   }
 
   sendEvent = (name, details) => {
@@ -647,7 +649,9 @@ export class MapaPrincipal extends LitElement {
           properties: {
             item: d,
             url: "/proveedores/" + d.uuid,
-            description: `<strong style='font-size:16px'>${d.nombre}</strong><br><div>${get("proveedor")}</div>`,
+            description: `<strong style='font-size:16px'>${
+              d.nombre
+            }</strong><br><div>${get("proveedor")}</div>`,
           },
           geometry: {
             type: "Point",
@@ -662,7 +666,7 @@ export class MapaPrincipal extends LitElement {
       });
     });
 
-    depositos_update(this.map)
+    depositos_update(this.map);
   }
 
   _redraw_map = () => {
@@ -703,12 +707,13 @@ export class MapaPrincipal extends LitElement {
       }) || [];
     lotes_collection.features = lotes_collection.features.flat();
 
-    colorear_lotes(lotes_collection.features, this.settings?.user_cultivos);
-
-    // console.log("Set lotes internos DS", lotes_collection.features);
-    lotes_source?.setData(lotes_collection);
-    // console.log("Redraw Campos", this.campos);
-    this.map.resize()
+    colorear_lotes(lotes_collection.features).then(() => {
+      console.log("LOTES", lotes_collection);
+      // console.log("Set lotes internos DS", lotes_collection.features);
+      lotes_source?.setData(lotes_collection);
+      // console.log("Redraw Campos", this.campos);
+      this.map.resize();
+    });
   };
 
   willUpdate(props) {

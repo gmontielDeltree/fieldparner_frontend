@@ -72,6 +72,7 @@ import { thumbnailsSettings } from "lightgallery/plugins/thumbnail/lg-thumbnail-
 import { Ingeniero } from "../../tipos/ingenieros";
 import { showNotification } from "../../helpers/notificaciones";
 import { listar_vehiculos } from '../../vehiculos/vehiculos-funciones';
+import { tipo_insumo_conv_si_necesario } from "../../jsons/tipos_insumos";
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -153,9 +154,9 @@ export class UpsertAplicacion extends LitElement {
   };
 
   tipo_2_categorias_iniciales = {
-    siembra: ["Semillas", "Combustible"],
-    cosecha: ["Otros", "Combustible"],
-    aplicacion: ["Agroquímicos", "Fertilizantes", "Combustible"],
+    siembra: ["semillas", "combustible"],
+    cosecha: ["Otros", "combustible"],
+    aplicacion: ["agroquímicos", "fertilizantes", "combustible"],
   };
 
   full_title() {
@@ -358,7 +359,7 @@ export class UpsertAplicacion extends LitElement {
     /* DEBE TENER UNA SEMILLA */
     if (this.tipo === "siembra") {
       let x = this.actividad.detalles.dosis.find(
-        (i) => i.insumo.tipo === "Semillas"
+        (i) => tipo_insumo_conv_si_necesario(i.insumo.tipo).key === "semillas"
       );
       if (x === undefined) {
         errors.push("Debe Agregar una 'Semilla' pues esto es una Siembra");

@@ -4,30 +4,83 @@ import Offcanvas from "bootstrap/js/dist/offcanvas";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import booleanIcons from "bootstrap-icons/font/bootstrap-icons.css?inline";
 import gbl_state from "../../state";
+import cultivos from "../../jsons/cultivos";
+import { Cultivo } from "../../insumos/insumos-types";
+
+function djb2(str) {
+  var hash = 5381;
+  for (var i = 0; i < str.length; i++) {
+    hash = (hash << 5) + hash + str.charCodeAt(i); /* hash * 33 + c */
+  }
+  return hash;
+}
+
+function hashStringToColor(str) {
+  var hash = djb2(str);
+  var r = (hash & 0xff0000) >> 16;
+  var g = (hash & 0x00ff00) >> 8;
+  var b = hash & 0x0000ff;
+  return (
+    "#" +
+    ("0" + r.toString(16)).substr(-2) +
+    ("0" + g.toString(16)).substr(-2) +
+    ("0" + b.toString(16)).substr(-2)
+  );
+}
+
+/*
+  Color de cultivos en un doc.
+*/
 interface CultivosDoc {
   _id: string;
-  nombre: string;
-  color: string;
+  _rev?: string;
+  colors: CultivoColor;
+}
+
+interface CultivoColor {
+  // soja : azul
+  [key: string]: string;
 }
 
 export class ColorCultivo extends LitElement {
   static styles = [unsafeCSS(bootstrap), unsafeCSS(booleanIcons)];
 
-
-
   @state()
-  cultivos: CultivosDoc[] = [];
+  cultivo_color_tabla: CultivoColor = {};
+
+  private cultivos: Cultivo[] = cultivos;
+  private color_doc: CultivosDoc = {_id:"cultivo_color",colors:null};
 
   loadCultivos() {
-    let db = gbl_state.db;
+    let db = gbl_state.user_db;
     db.allDocs({
       include_docs: true,
-      startkey: "cultivo:",
-      endkey: "cultivo:\ufff0",
-    }).then(({ rows }) => {
-      this.cultivos = rows.map(({ doc }) => {
-        return doc as unknown as CultivosDoc;
-      });
+      startkey: "cultivo_color",
+      endkey: "cultivo_color\ufff0",
+    }).then((doc) => {
+      if (doc.rows.length > 0) {
+        let tabla = doc.rows[0].doc as unknown as CultivosDoc;
+        this.color_doc = doc.rows[0].doc as unknown as CultivosDoc;
+        let colores = this.color_doc.colors;
+        // Build extended table
+        cultivos.forEach((cultivo) => {
+          if (cultivo.key in colores) {
+            // nada
+          } else {
+            colores[cultivo.key] = hashStringToColor(cultivo.key);
+          }
+        });
+        this.cultivo_color_tabla = colores;
+        this.requestUpdate()
+      } else {
+        cultivos.forEach((cultivo) => {
+          this.cultivo_color_tabla[cultivo.key] = hashStringToColor(
+            cultivo.key
+          );
+        })
+        this.requestUpdate()
+
+      }
     });
   }
 
@@ -35,14 +88,16 @@ export class ColorCultivo extends LitElement {
     this.loadCultivos();
   }
 
-  willUpdate(props) {
+  willUpdate(props) {}
 
-  }
+  update_color_settings(color, key) {
 
-
-  update_color_settings(color, doc) {
-    doc.color = color;
-    gbl_state.db.put(doc);
+    this.cultivo_color_tabla[key] = color;
+    if(this.color_doc){
+      this.color_doc.colors = this.cultivo_color_tabla
+      console.log("COLOR DOC",this.color_doc)
+      gbl_state.user_db.put(this.color_doc);
+    }
 
     this.sendEvent("cambio-de-color", null);
     //this.sendEvent("save-settings", null);
@@ -82,67 +137,33 @@ export class ColorCultivo extends LitElement {
   }
 
   render() {
-    const nuevo_fake_item = () => {
-      return html`<a
-        href="#"
-        class="list-group-item list-group-item-action bg-light row"
-        aria-current="true"
-      >
-        <button
-          type="button"
-          @click=${() => {
-            let nombre = prompt("Ingrese el nombre del Cultivo");
-            if (nombre) {
-              this.nuevoCultivo(nombre);
-            }
-          }}
-          class="btn btn-primary"
-          data-bs-dismiss="offcanvas"
-          aria-label="Close"
-        >
-          Nuevo
-        </button>
-      </a>`;
-    };
-
-
-    const item = (doc: CultivosDoc) => {
+   
+    const item = (key, value) => {
       return html`<a
         class="list-group-item list-group-item-action bg-light row"
         aria-current="true"
       >
         <div class="row">
-          <button
-            class="btn btn-danger btn-sm col-2"
-            @click=${() => this.deleteCultivo(doc)}
-          >
-            <i class="bi bi-trash3"></i>
-          </button>
-
           <label for="exampleColorInput" class="form-label col-8 col-form-label"
-            >${doc.nombre}</label
+            >${key}</label
           >
           <input
             type="color"
             class="form-control form-control-color col-2"
-            @change=${(e) => this.update_color_settings(e.target.value, doc)}
-            id="exampleColorInput"
-            value=${doc.color}
+            @change=${(e) => this.update_color_settings(e.target.value, key)}
+            value=${value}
             title="Choose your color"
           />
         </div>
       </a>`;
     };
 
-
-        
-       
-
-
     return html`
-     <div class="list-group">
-        ${nuevo_fake_item()}
-        ${this.cultivos.map((doc) => item(doc))}</div>
+      <div class="list-group">
+        ${Object.entries(this.cultivo_color_tabla).map(([key,value]) => {
+          return item(key,value);
+        })}
+      </div>
     `;
   }
 }

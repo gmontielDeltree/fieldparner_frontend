@@ -1,15 +1,17 @@
 import uuid4 from 'uuid4'
 
-interface Cultivo{
+export interface Cultivo{
   uuid: string,
   nombre:string,
-  langkey:string,
+  key:string,
 }
 
-interface Tipo{
+export interface TipoInsumo{
   uuid: string,
   nombre:string,
+  key:string,
 }
+
 interface Subtipo{
   uuid: string,
   nombre:string,
@@ -32,7 +34,7 @@ interface Insumo {
   uuid: string;
   marca_comercial: string;
   principio_activo: string;
-  tipo: string;
+  tipo: TipoInsumo;
   subtipo: string;
   unidad: string;
   precio: number;
@@ -47,7 +49,7 @@ const get_empty_insumo = () => {
     uuid: uuid,
     marca_comercial: "",
     principio_activo: "",
-    tipo: "",
+    tipo: null,
     subtipo: "",
     unidad: "",
     precio: 0.0,
@@ -61,7 +63,7 @@ const get_empty_cultivo = ()=>{
   let uuid = uuid4()
 
   const empty_cultivo : CultivoAplicacion = {
-    cultivo : "",
+    cultivo : null,
     uuid : uuid,
     estadio_desde : "",
     estadio_hasta : "",
