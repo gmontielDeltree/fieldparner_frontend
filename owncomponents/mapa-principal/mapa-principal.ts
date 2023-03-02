@@ -442,13 +442,14 @@ export class MapaPrincipal extends LitElement {
           "seleccion_lotes"
         ) as GeoJSONSource;
         //Pintar
-
+        
         let data_lotes = {
           type: "FeatureCollection",
           features: lotes,
         };
 
         colorear_lotes(data_lotes.features).then(()=>
+        
         lotes_source.setData(data_lotes)
         )
         
@@ -670,6 +671,7 @@ export class MapaPrincipal extends LitElement {
   }
 
   _redraw_map = () => {
+    console.log("Redrawing Map")
     let campos_source = this.map.getSource("campos");
     // console.log("CS", campos_source);
     let campos_collection = {
@@ -708,9 +710,18 @@ export class MapaPrincipal extends LitElement {
     lotes_collection.features = lotes_collection.features.flat();
 
     colorear_lotes(lotes_collection.features).then(() => {
-      console.log("LOTES", lotes_collection);
+      //console.log("LOTES", lotes_collection);
       // console.log("Set lotes internos DS", lotes_collection.features);
       lotes_source?.setData(lotes_collection);
+
+
+      // Colorear lotes seleccionados
+      let a = this.map.getSource('seleccion_lotes')._data
+      colorear_lotes(a.features).then(()=>
+        this.map.getSource('seleccion_lotes').setData(a)
+      )
+      
+
       // console.log("Redraw Campos", this.campos);
       this.map.resize();
     });

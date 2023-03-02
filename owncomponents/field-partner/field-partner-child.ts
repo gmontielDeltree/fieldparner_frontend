@@ -197,6 +197,15 @@ export class FieldPartnerChild extends LitElement {
     let sitio = window.location.hostname;
     console.log("Init the whole thing");
     this.load_campos_y_settings();
+    this.db
+    .changes({
+      since: "now",
+      live: true,
+    })
+    .on("change", () => {
+      this.load_campos_y_settings();
+      console.log("CHANGES!!");
+    });
   }
 
   /** Crea el objeto settings y lo graba en la db

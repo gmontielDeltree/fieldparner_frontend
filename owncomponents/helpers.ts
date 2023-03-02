@@ -7,6 +7,7 @@ import { Lote } from "./tipos/lotes";
 import { RouterLocation } from "@vaadin/router";
 import { Campana } from "./tipos/tipos-varios";
 import { Cultivo, CultivoAplicacion } from "./insumos/insumos-types";
+import cultivos from "./jsons/cultivos";
 var img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
@@ -285,6 +286,27 @@ export const buscar_ultima_siembra = async (lote_uuid: string) => {
   return cultivo;
 };
 
+function djb2(str) {
+  var hash = 5381;
+  for (var i = 0; i < str.length; i++) {
+    hash = (hash << 5) + hash + str.charCodeAt(i); /* hash * 33 + c */
+  }
+  return hash;
+}
+
+function hashStringToColor(str) {
+  var hash = djb2(str);
+  var r = (hash & 0xff0000) >> 16;
+  var g = (hash & 0x00ff00) >> 8;
+  var b = hash & 0x0000ff;
+  return (
+    "#" +
+    ("0" + r.toString(16)).substr(-2) +
+    ("0" + g.toString(16)).substr(-2) +
+    ("0" + b.toString(16)).substr(-2)
+  );
+}
+
 export const tabla_de_colores = async () => {
   return gbl_state.user_db
     .allDocs({
@@ -295,6 +317,14 @@ export const tabla_de_colores = async () => {
     .then((doc) => {
       if (doc.rows.length > 0) {
         return doc.rows[0].doc.colors;
+      }else{
+        let tabla = {}
+        cultivos.forEach((cultivo) => {
+          tabla[cultivo.key] = hashStringToColor(
+            cultivo.key
+          );
+        })
+        return tabla;
       }
     });
 };
