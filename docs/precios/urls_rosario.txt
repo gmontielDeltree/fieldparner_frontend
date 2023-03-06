@@ -5,4 +5,7 @@ Maiz (3)
 Girasol (9)
 Sorgo (6)
 
+Cambio
+https://apis.datos.gob.ar/series/api/series/?ids=168.1_T_CAMBIOR_D_0_0_26&limit=5000&format=json
+
 
