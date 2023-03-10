@@ -18,7 +18,7 @@ const devices_modelos : any = {
     }, // GW santiago
     "GWMM05" : {
         sensores : ['temperatura', "humedad", "presion", "viento_velocidad", "viento_direccion", "pluviometro", "radiacion_solar"],
-        sensores_reales : ['temperatura', "humedad", "presion", "velocidad", "viento_direccion", "pluviometro", "radiacion_solar"]
+        sensores_reales : ['temperatura', "humedad", "presion", "viento_velocidad", "viento_direccion", "pluviometro", "radiacion_solar"]
     },
     "AGTRACK01": {
         sensores: ["rssi"]

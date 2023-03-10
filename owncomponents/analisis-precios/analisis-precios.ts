@@ -141,14 +141,6 @@ export class AnalisisPrecios extends LitElement {
       options
     );
     this.chart.render();
-
-    // Agregar boton de descarga Excel
-    add_download_xls_button(
-      this.shadowRoot,
-      options.xaxis.categories,
-      options.series[0].data,
-      options.yaxis[0].title
-    );
   }
 
   updateChart(data) {
@@ -159,19 +151,30 @@ export class AnalisisPrecios extends LitElement {
       },
     ]);
     this.chart.zoomX(
-      new Date('3 Dec 2022').getTime(),
-      new Date('22 Feb 2023').getTime()
-    )
+      new Date("3 Dec 2022").getTime(),
+      new Date("6 Mar 2023").getTime()
+    );
+
+    add_download_xls_button(
+      this.shadowRoot,
+      [],
+      data,
+      "Precios"
+    );
   }
 
   load_data(sp) {
-    fetch('/prices/car/'+ sp.value +'/precio.json').then((result)=>{
-      console.log(result.body);
-      return result.json()
-    }).then((b)=>{
-      console.log("B",b)
-      this.updateChart(b)
-    })
+    fetch("/prices/car/" + sp.value + "/precio.json")
+      .then((result) => {
+        console.log(result.body);
+        return result.json();
+      })
+      .then((b) => {
+        console.log("B", b);
+        this.updateChart(b);
+        // Agregar boton de descarga Excel
+
+      });
   }
 
   render() {
@@ -197,6 +200,7 @@ export class AnalisisPrecios extends LitElement {
                 .label=${get("productos")}
                 .items=${this.products}
                 .itemLabelPath=${"nombre"}
+                .helper-text=${get("seleccione_un_item_para_mostrar")}
                 @selected-item-changed=${(e) => {
                   this.selected_product = e.detail.value;
                   this.load_data(this.selected_product);
