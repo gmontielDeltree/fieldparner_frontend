@@ -144,7 +144,7 @@ export class RadiacionCard extends LitElement {
 
     const this_opts = JSON.parse(JSON.stringify(options));
     this_opts.xaxis.categories = [...nt.ts];
-    this_opts.series[0].data = [...nt.radiacion];
+    this_opts.series[0].data = [...nt.radiacion_solar];
     this_opts.series[0].name = "Radiación Solar";
     this_opts.title.text = "Radiación Solar (W/m\u{00B2})";
     this_opts.yaxis[0].title = "Radiación Solar";
@@ -181,17 +181,17 @@ export class RadiacionCard extends LitElement {
           <div class="row">
             <h5>
               <img src="/sun-svgrepo-com.svg" width="50" height="50" />
-              <span class="fw-bolder">${valor(this.card, "radiacion")} W/m\u{00B2}</span>
+              <span class="fw-bolder">${valor(this.card, "radiacion_solar")} W/m\u{00B2}</span>
             </h5>
           </div>
           <div class="row">
             <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "radiacion_mean")} W/m\u{00B2}</div>
+              <div class="fw-strong">${valor(this.card, "radiacion_solar_mean")} W/m\u{00B2}</div>
               <div class="fw-light">Promedio</div>
             </div>
 
             <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "radiacion_max")} W/m\u{00B2}</div>
+              <div class="fw-strong">${valor(this.card, "radiacion_solar_max")} W/m\u{00B2}</div>
               <div class="fw-light">Max</div>
             </div>
           </div>

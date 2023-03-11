@@ -228,16 +228,22 @@ class Devices {
   }
 
   async get_raw_data_for_charts_generic(uuid) {
+    let utc_now = Date.now() / 1000;
+    let utc_1_mes = utc_now - 3600 * 24 * 30;
     let docs = await this.db_raw.allDocs({
       // include_docs: true,
       limit: 10000,
       descending: true,
-      endkey: uuid + ":",
-      startkey: uuid + ":\ufff0",
+      endkey: uuid + ":" + utc_1_mes,
+      startkey: uuid + ":" + utc_now + "\ufff0",
     });
 
     let ids = await docs.rows.map((d) => d.id);
-    let ids_decimado = ids.filter((_, index) => index % 10 === 0);
+    let ids_decimado = ids.filter((_, index) => {
+      let c2 = index % 10 === 0;
+      let c3 = index === ids.length - 1;
+      return c2 || c3;
+    });
 
     //console.log("Only IDS", ids)
 
@@ -257,6 +263,7 @@ class Devices {
     let r = data.map((dp) => {
       // t1
       let array_de_mediciones = dp.data as DataPoints[];
+      // Hora Argentina
       return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
 
       array_de_mediciones.forEach((medicion: DataPoints) => {
@@ -299,12 +306,14 @@ class Devices {
     }
   }
 
-  async get_timeseries_by_name(uuid,tsname,start,end){
-    let key =[uuid , tsname,start]
-    let endkey=[uuid, tsname, end]
-    this.db_raw.query('telemetria/ts_by_name',{startkey:key,endkey:endkey}).then((r)=>{
-      console.log("ESTO ES COOL",r)
-    })
+  async get_timeseries_by_name(uuid, tsname, start, end) {
+    let key = [uuid, tsname, start];
+    let endkey = [uuid, tsname, end];
+    this.db_raw
+      .query("telemetria/ts_by_name", { startkey: key, endkey: endkey })
+      .then((r) => {
+        console.log("ESTO ES COOL", r);
+      });
   }
 }
 

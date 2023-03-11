@@ -30,7 +30,7 @@ const valor = (card, key) => {
 /* Busca el uuid del device en 'cards' y devuelve la posicion */
 const posicion = (uuid: string, cards: DailyTelemetryCard[]) => {
   let card_del_device = cards.find(
-    (d: DailyTelemetryCard) => d.device_id === uuid
+    (d: DailyTelemetryCard) => d?.device_id === uuid
   );
   if (card_del_device) {
     return [

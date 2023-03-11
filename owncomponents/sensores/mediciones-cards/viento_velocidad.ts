@@ -4,9 +4,9 @@ import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
 let ApexCharts;
-import('apexcharts').then(({default:a})=>{
-  ApexCharts=a
-})
+import("apexcharts").then(({ default: a }) => {
+  ApexCharts = a;
+});
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
 
 import { add_download_xls_button } from "../excel_boton";
@@ -131,7 +131,11 @@ export class VientoVelocidadCard extends LitElement {
 
     const this_opts = JSON.parse(JSON.stringify(options));
     this_opts.xaxis.categories = [...nt.ts];
-    this_opts.series[0].data = [...nt.velocidad];
+    if ("velocidad" in nt) {
+      this_opts.series[0].data = [...nt.velocidad];
+    } else if ("viento_velocidad") {
+      this_opts.series[0].data = [...nt.viento_velocidad];
+    }
     this_opts.series[0].name = "Viento - Velocidad";
     this_opts.title.text = "Viento - Velocidad";
     this_opts.yaxis[0].title = "Viento - Velocidad";
@@ -140,7 +144,12 @@ export class VientoVelocidadCard extends LitElement {
       this_opts
     );
     chart_1.render();
-    add_download_xls_button(this.shadowRoot,this_opts.xaxis.categories, this_opts.series[0].data, this_opts.yaxis[0].title);
+    add_download_xls_button(
+      this.shadowRoot,
+      this_opts.xaxis.categories,
+      this_opts.series[0].data,
+      this_opts.yaxis[0].title
+    );
   }
 
   toggle() {
@@ -166,7 +175,10 @@ export class VientoVelocidadCard extends LitElement {
             <h5>
               <img src="/wind-svgrepo-com.svg" width="50" height="50" />
               <span class="fw-bolder"
-                >${valor(this.card, "velocidad")} km/h</span
+                >${valor(this.card, "velocidad") === "N/A"
+                  ? valor(this.card, "viento_velocidad")
+                  : valor(this.card, "velocidad")}
+                km/h</span
               >
             </h5>
           </div>

@@ -85,6 +85,7 @@ export const get_timeseries_by_name = async (uuid, tsname, start, end) => {
     .query("telemetria/ts_by_name", { startkey: key, endkey: endkey })
     .then((r) => {
       console.log("ESTO ES COOL", r);
+      return r;
     });
 };
 

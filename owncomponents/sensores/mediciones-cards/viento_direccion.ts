@@ -4,9 +4,9 @@ import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
 let ApexCharts;
-import('apexcharts').then(({default:a})=>{
-  ApexCharts=a
-})
+import("apexcharts").then(({ default: a }) => {
+  ApexCharts = a;
+});
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
 import "../rosad3";
 import { add_download_xls_button } from "../excel_boton";
@@ -95,7 +95,6 @@ const matriz_de_vientos = (ts, dir: number[], vel: number[]) => {
   result.columns = columns;
   return result;
 };
-
 
 export class VientoDireccionCard extends LitElement {
   static override styles: CSSResultGroup = [
@@ -221,18 +220,28 @@ export class VientoDireccionCard extends LitElement {
 
     const this_opts = JSON.parse(JSON.stringify(options));
     this_opts.xaxis.categories = [...nt.ts];
-    this_opts.series[0].data = [...nt.direccion];
+    let matriz;
+    if ("direccion" in nt) {
+      this_opts.series[0].data = [...nt.direccion];
+      matriz = matriz_de_vientos(nt.ts, nt.direccion, nt.velocidad);
+    } else if ("viento_direccion" in nt) {
+      this_opts.series[0].data = [...nt.viento_direccion];
+      matriz = matriz_de_vientos(
+        nt.ts,
+        nt.viento_direccion,
+        nt.viento_velocidad
+      );
+    }
     this_opts.series[0].name = "Viento - Dirección";
     this_opts.title.text = "Viento - Dirección";
     this_opts.yaxis[0].title = "Viento - Dirección";
-    
+
     // const chart_1 = new ApexCharts(
     //   this.shadowRoot.getElementById("chart"),
     //   this_opts
     // );
     //chart_1.render();
 
-    let matriz = matriz_de_vientos(nt.ts, nt.direccion, nt.velocidad);
     console.log("MATRIX", matriz);
     this._matriz_de_vientos = matriz;
 
@@ -267,7 +276,10 @@ export class VientoDireccionCard extends LitElement {
             <h5>
               <img src="/windrose-svgrepo-com.svg" width="50" height="50" />
               <span class="fw-bolder"
-                >${valor(this.card, "direccion")} º</span
+                >${valor(this.card, "direccion") === "N/A"
+                  ? valor(this.card, "viento_direccion")
+                  : valor(this.card, "direccion")}
+                º</span
               >
             </h5>
           </div>
@@ -313,17 +325,17 @@ export class VientoDireccionCard extends LitElement {
         <!--Chart-->
         <div
           class="${this._show_chart_only
-          ? ""
-          : "d-none d-sm-block"} col-12 col-sm-8 chart"
+            ? ""
+            : "d-none d-sm-block"} col-12 col-sm-8 chart"
           id="chart"
         >
-        ${this._matriz_de_vientos
-            ? html`<rosa-de-vientos class='mx-auto' .data=${this._matriz_de_vientos} />`
+          ${this._matriz_de_vientos
+            ? html`<rosa-de-vientos
+                class="mx-auto"
+                .data=${this._matriz_de_vientos}
+              />`
             : null}
-      </div>
-
-
-
+        </div>
       </div>
     `;
   }
