@@ -7,9 +7,9 @@ import { property, state } from "lit/decorators.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { valor } from "../sensores";
 let ApexCharts;
-import('apexcharts').then(({default:a})=>{
-  ApexCharts=a
-})
+import("apexcharts").then(({ default: a }) => {
+  ApexCharts = a;
+});
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
 import { base_url } from "../../helpers";
 import { add_download_xls_button } from "../excel_boton";
@@ -17,12 +17,18 @@ import { add_download_xls_button } from "../excel_boton";
 import PouchDB from "pouchdb";
 
 import { Task, TaskStatus } from "@lit-labs/task";
+import { de } from "date-fns/locale";
+import { get_pluviometro_daily_value } from '../sensores-funciones';
+import {
+  get_timeseries_by_name,
+  get_timeseries_by_name_agregated,
+} from "../sensores-funciones";
 
 const tipos_periodos = [
-  { nombre: "Anual", value: "anual" },
-  { nombre: "Mensual", value: "mensual" },
-  { nombre: "Diario", value: "diario" },
-  { nombre: "Todo el Tiempo", value: "alltime" },
+  { nombre: "Anual", value: "ano" },
+  { nombre: "Mensual", value: "mes" },
+  { nombre: "Diaria", value: "dia" },
+  { nombre: "Horaria", value: "hora" },
 ];
 
 const lista_meses = [
@@ -54,6 +60,9 @@ export class PluviometroCard extends LitElement {
   @property()
   deveui: string;
 
+  @property()
+  fecha_seleccionada : string = '20230312'; //yyyymmdd
+
   @state()
   data: any;
 
@@ -75,16 +84,33 @@ export class PluviometroCard extends LitElement {
   @state()
   selectedDay: number;
 
+  @state()
+  lluvia_de_la_fecha : number = 0;
+
+  private chart_1: ApexCharts;
+
   private _loadDataTask = new Task(
     this,
-    async ([deveui, periodo, tipos_periodo]) => {
-      let db = new PouchDB(base_url + "processed_device_telemetry");
-      let results = await db.get(deveui + ":pluviometro:anual:2022");
-      console.log("LOAD DATA TASK", results);
-      return results;
+    async ([deveui, periodo, tipo_periodo,fecha]) => {
+      this.load_data(deveui, tipo_periodo.value ?? 'dia',fecha);
     },
-    () => [this.deveui, this._periodo, this._tipo_periodo]
+    () => [this.deveui, this._periodo, this._tipo_periodo,this.fecha_seleccionada]
   );
+
+  load_data = async (deveui, agregacion, fecha) => {
+    console.log("Load Data",agregacion)
+    let data = await get_timeseries_by_name_agregated(
+      deveui,
+      "pluviometro",
+      Date.now() / 1000 - 3600 * 24 * 60,
+      Date.now() / 1000,
+      agregacion
+    );
+    this.chart_1.updateSeries(data);
+
+    this.lluvia_de_la_fecha = await get_pluviometro_daily_value(deveui,fecha)
+      
+  };
 
   async renderCentralChart() {
     await this.updateComplete;
@@ -93,22 +119,12 @@ export class PluviometroCard extends LitElement {
     let categorias;
     let titulo;
 
-    if (this._tipo_periodo.value === "anual") {
-      categorias = ["Enero", "Febrero", "Marzo"];
-      titulo = "Precipitacion por hora";
-    } else if (this._tipo_periodo.value === "mensual") {
-      categorias = [
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-      ];
-      titulo = "Precipitacion por dia";
-    } else if (this._tipo_periodo.value === "diario") {
-      categorias = [
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-        21, 22, 23, 24,
-      ];
-      titulo = "Precipitacion por hora";
-    }
+    titulo = "Precipitacion";
+
+    categorias = [
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+      22, 23, 24,
+    ];
 
     let data = [2.3, 3.1, 4.0, 10.1, 4.0, 3.6, 3.2, 2.3, 1.4, 0.8, 0.5, 0.2];
 
@@ -131,7 +147,7 @@ export class PluviometroCard extends LitElement {
           },
         },
       },
-      colors: ['#00E396'],
+      colors: ["#00E396"],
       dataLabels: {
         enabled: true,
         formatter: function (val) {
@@ -145,7 +161,7 @@ export class PluviometroCard extends LitElement {
       },
 
       xaxis: {
-        categories: categorias,
+        type:'category',
         position: "top",
         axisBorder: {
           show: false,
@@ -157,7 +173,7 @@ export class PluviometroCard extends LitElement {
           fill: {
             type: "gradient",
             gradient: {
-              colorFrom: "#f25d00",//"#D8E3F0",
+              colorFrom: "#f25d00", //"#D8E3F0",
               colorTo: "#BED1E6",
               stops: [0, 100],
               opacityFrom: 0.4,
@@ -194,11 +210,11 @@ export class PluviometroCard extends LitElement {
       },
     };
 
-    const chart_1 = new ApexCharts(
+    this.chart_1 = new ApexCharts(
       this.shadowRoot.getElementById("chart"),
       options
     );
-    chart_1.render();
+    this.chart_1.render();
 
     // Agregar boton de descarga Excel
     add_download_xls_button(
@@ -215,14 +231,17 @@ export class PluviometroCard extends LitElement {
 
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-  ): void {}
+  ): void {
+    // Render el grafico por primera vez
+    this.renderCentralChart();
+  }
 
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
     console.log("WILLUPDATE", _changedProperties, this._loadDataTask.status);
     if (this._loadDataTask.status === TaskStatus.COMPLETE) {
-      this.renderCentralChart();
+      
     }
   }
 
@@ -247,10 +266,10 @@ export class PluviometroCard extends LitElement {
           <div class="row">
             <h5>
               <img src="/rain-svgrepo-com.svg" width="50" height="50" />
-              Hoy 4 mm
+              Hoy ${this.lluvia_de_la_fecha} mm.
             </h5>
           </div>
-          <div class="row">
+          <!-- <div class="row">
             <div class="col-4 fw-bolder">
               <div class="fw-strong">5 mm</div>
               <div class="fw-light">Este mes</div>
@@ -260,7 +279,7 @@ export class PluviometroCard extends LitElement {
               <div class="fw-strong">152 mm</div>
               <div class="fw-light">Este año</div>
             </div>
-          </div>
+          </div> -->
         </div>
         <!--Spinner-->
         ${this._loadDataTask.status === TaskStatus.COMPLETE
@@ -284,10 +303,10 @@ export class PluviometroCard extends LitElement {
             ? ""
             : "d-none d-sm-block"} col-12 col-sm-8 chart"
         >
-          <div class="toolbar bg-light">
+          <div class="toolbar">
             <vaadin-combo-box
               id="tipo-periodo-combo"
-              label="Periodo"
+              label="Agrupación"
               item-label-path="nombre"
               item-value-path="value"
               .selectedItem=${this._tipo_periodo}
@@ -297,7 +316,7 @@ export class PluviometroCard extends LitElement {
               }}
             ></vaadin-combo-box>
 
-            <vaadin-combo-box
+            <!-- <vaadin-combo-box
               label="Año"
               style="width: 6em;"
               .items="${lista_anos}"
@@ -322,7 +341,7 @@ export class PluviometroCard extends LitElement {
               .disabled="${!this.selectedYear || !this.selectedMonth}"
               @selected-item-changed="${(e) =>
                 (this.selectedDay = e.detail.value)}"
-            ></vaadin-combo-box>
+            ></vaadin-combo-box> -->
           </div>
 
           <div id="chart"></div>
