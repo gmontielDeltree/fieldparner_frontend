@@ -1,3 +1,8 @@
+import {
+  nota_adjuntar_archivo,
+  Nota,
+  nota_remover_adjunto,
+} from "./notas-fuciones";
 import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import "@vaadin/date-picker";
@@ -78,6 +83,8 @@ export class NotasOffcanvas extends LitElement {
   motivos_nota: any[];
 
   static styles = unsafeCSS(bootstrap);
+
+  private lanota: Nota = { attachments: null };
 
   constructor() {
     super();
@@ -276,7 +283,7 @@ export class NotasOffcanvas extends LitElement {
       lote_nombre: this.lote_doc.properties.nombre,
       posicion: [this.posicion.coords.longitude, this.posicion.coords.latitude],
       _attachments: {},
-      motivos_nota:this.motivos_nota
+      motivos_nota: this.motivos_nota,
     };
 
     // Imagenes
@@ -516,12 +523,12 @@ export class NotasOffcanvas extends LitElement {
                 this.nueva_nota_offcanvas.hide();
                 console.log("hide offcanvas");
               }}
-              @borrarImagen=${(e)=>{
-                let index = e.detail.index
-                let instance = e.detail.instance
+              @borrarImagen=${(e) => {
+                let index = e.detail.index;
+                let instance = e.detail.instance;
                 //alert('borrar imagen index')
-                this.imagenes.splice(index,1)
-                this.requestUpdate()
+                this.imagenes.splice(index, 1);
+                this.requestUpdate();
               }}
               @afterClose=${() => this.nueva_nota_offcanvas.show()}
             >
@@ -554,6 +561,71 @@ export class NotasOffcanvas extends LitElement {
               : html`<div class="row" id="audio-div">
                   <audio-recorder id="audio-recorder"></audio-recorder>
                 </div>`}
+
+            <div>
+              <!--upload-->
+              <vaadin-vertical-layout style="align-self:stretch">
+                ${this.lanota.attachments
+                  ? this.lanota.attachments.map(
+                      (att) => html`
+                    <vaadin-horizontal-layout
+                      style="width:100%; align-items:center; justify-content:space-between"
+                      theme="spacing"
+                    >
+                      <div>${att.filename}</div>
+                      <div> <!-- Grupo botones -->
+
+                    
+                      </vaadin-button>
+                        <vaadin-button
+                          @click=${() => {
+                            fetch(
+                              "/attachments?file=" +
+                                encodeURIComponent(att.filename)
+                            )
+                              .then((r) => {
+                                return r.blob();
+                              })
+                              .then((data) => {
+                                // Download Fetch
+                                var a = document.createElement("a");
+                                a.href = window.URL.createObjectURL(data);
+                                a.download = att.filename;
+                                a.click();
+                              });
+                          }}
+                        >
+                          <vaadin-icon icon="lumo:download"></vaadin-icon>
+                        </vaadin-button>
+                        <vaadin-button
+                          @click=${() => {
+                            // Solicitar borrado en server y en la db
+                            nota_remover_adjunto(this.lanota, att.uuid).then(
+                              () => this.requestUpdate()
+                            );
+                          }}
+                          ><vaadin-icon icon="vaadin:trash"></vaadin-icon
+                        ></vaadin-button>
+                      </div>
+                    </vaadin-horizontal-layout>
+                  `
+                    )
+                  : html`${translate("sin_adjuntos")}`}
+              </vaadin-vertical-layout>
+
+              <vaadin-upload
+                target="/attachments"
+                .files=${
+                  [] /* Previene que se agregen los archivos debajo del control*/
+                }
+                @upload-success=${(e) => {
+                  console.log("successevent", e);
+                  nota_adjuntar_archivo(this.lanota, e.detail.file).then(() => {
+                    this.requestUpdate();
+                  });
+                }}
+              ></vaadin-upload>
+            </div>
 
             <vaadin-date-picker
               id="nota-proxima-date-picker"
