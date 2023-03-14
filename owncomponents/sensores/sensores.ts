@@ -160,6 +160,12 @@ class Devices {
         let latitud = extract_tele("latitud", telemetria).value;
         let longitud = extract_tele("longitud", telemetria).value;
 
+        if(telemetria.device_id === "f008d1ffffd30a6c")
+        {
+          latitud = -35.1579821;
+          longitud = -59.09232;
+        }
+
         let temperatura = extract_tele("temperatura", telemetria).value;
         let humedad = extract_tele("humedad", telemetria).value;
         let presion = extract_tele("presion", telemetria).value;
@@ -269,31 +275,34 @@ class Devices {
       array_de_mediciones.forEach((medicion: DataPoints) => {
         if (medicion.sensor_id === "temperatura") {
           if (medicion.value > 60 || medicion.value < -10) {
-            return;
+            medicion.value= NaN;
           }
         }
 
         if (medicion.sensor_id === "humedad") {
           if (medicion.value > 100 || medicion.value < 0) {
-            return;
+            medicion.value = NaN;
           }
         }
 
         if (medicion.sensor_id === "presion") {
           if (medicion.value > 1100 || medicion.value < 900) {
-            return;
+            medicion.value = NaN;
           }
         }
 
         if (return_value[medicion.sensor_id]) {
           return_value[medicion.sensor_id].push(medicion.value);
+
         } else {
           return_value[medicion.sensor_id] = [];
           return_value[medicion.sensor_id].push(medicion.value);
+
         }
       });
     });
 
+    console.log("RETURN VALUE CHRATRS,", return_value)
     return return_value;
   }
 

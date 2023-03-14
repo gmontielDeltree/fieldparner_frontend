@@ -144,6 +144,7 @@ export class TemperaturaCard extends LitElement {
       this_opts
     );
     chart_1.render();
+    //chart_1.zoomX(new Date().getTime() - (24*3600*1000), new Date().getTime())
     add_download_xls_button(this.shadowRoot,this_opts.xaxis.categories, this_opts.series[0].data, this_opts.yaxis[0].title);
   }
 

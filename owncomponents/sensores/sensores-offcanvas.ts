@@ -65,7 +65,7 @@ export class SensoresClass extends LitElement {
       }
 
       .offcanvas-sensores-body {
-        background-image: url("/fondodewindows.jpeg");
+        background-image: url("/sky-1441936_1280.jpg");
         background-size: 100% 100%;
         background-repeat: no-repeat;
       }
