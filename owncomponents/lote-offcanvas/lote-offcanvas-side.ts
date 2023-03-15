@@ -727,7 +727,7 @@ export class LoteOffcanvasSide extends LitElement {
 
                 <vaadin-menu-bar
                   theme="small"
-                  class='col col-2'
+                  class="col col-2"
                   .items="${[
                     {
                       text: get("analisis_de_suelo"),
@@ -745,14 +745,26 @@ export class LoteOffcanvasSide extends LitElement {
             scroll-direction="vertical"
             style="height: 90%;"
           >
-            <lit-timeline-side
-              .db=${gbl_state.db}
-              .a=${this._actividades_ejecuciones_docs}
-              .analisis_suelo=${this.analisis_de_suelo}
-              id="actividades-timeline"
-              @gallery-open=${() => this._lotesOffcanvas.hide()}
-              @gallery-closed=${() => this._lotesOffcanvas.show()}
-            ></lit-timeline-side>
+            ${this._actividades_ejecuciones_docs?.length > 0 ||
+            this.analisis_de_suelo?.length > 0
+              ? html`
+                  <lit-timeline-side
+                    .db=${gbl_state.db}
+                    .a=${this._actividades_ejecuciones_docs}
+                    .analisis_suelo=${this.analisis_de_suelo}
+                    id="actividades-timeline"
+                    @gallery-open=${() => this._lotesOffcanvas.hide()}
+                    @gallery-closed=${() => this._lotesOffcanvas.show()}
+                  ></lit-timeline-side>
+                `
+              : html` <div>
+                  <div  style="display:flex;justify-content:center;font-weight:bold">${translate("no_hay_actividades")}</div>
+                  <div  style="display:flex;justify-content:center;font-weight:bold">
+                    ${translate(
+                      "agregue_alguna_utilizando_los_botones_superiores"
+                    )}
+                  </div>
+                </div>`}
           </vaadin-scroller>
         </div>
       </div>
