@@ -213,6 +213,9 @@ export class MapaPrincipal extends LitElement {
       preserveDrawingBuffer: false,
     });
 
+
+    this.map.addControl(new mapboxgl.NavigationControl());
+
     this.draw = new MapboxDraw({
       displayControlsDefault: false,
       // Select which mapbox-gl-draw control buttons to add to the map.
