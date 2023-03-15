@@ -182,7 +182,7 @@ export class ContratistasLista extends LitElement {
               >`;
             } else {
               return html`<vaadin-button theme="primary contrast small"
-                >${labor.labor}</vaadin-button
+                >${labor?.labor ?? null}</vaadin-button
               >`;
             }
           })}
