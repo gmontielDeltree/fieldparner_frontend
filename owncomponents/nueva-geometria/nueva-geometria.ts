@@ -10,6 +10,7 @@ import "@vaadin/text-field";
 import Modal from "bootstrap/js/dist/modal.js";
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 import { property, state } from "lit/decorators.js";
+import { get, translate } from "lit-translate";
 
 export class NuevaGeometria extends LitElement {
   static properties = {
@@ -45,7 +46,7 @@ export class NuevaGeometria extends LitElement {
   };
 
   @property()
-  tipo : string = "campo"
+  tipo: string = "campo";
 
   @state()
   nombre: string = "";
@@ -536,7 +537,7 @@ export class NuevaGeometria extends LitElement {
         data-bs-backdrop="false"
       >
         <div class="offcanvas-header py-1">
-          <h5 class="offcanvas-title mx-auto">Nuevo ${this.tipo}</h5>
+          <div class="offcanvas-title mx-auto">Nuevo ${this.tipo}</div>
 
           <button
             type="button"
@@ -547,40 +548,34 @@ export class NuevaGeometria extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body pt-1">
-          <form>
-            <div class="row mb-1">
-              <label for="inputNombreLote" class="col-4 col-form-label"
-                >Nombre</label
-              >
-              <div class="col-8">
-                <input
-                  type="text"
-                  value=${this._ctx.nombre}
-                  @input=${(e) => {
-                    this.nombre = e.target.value;
-                  }}
-                  @change=${(e) => {
-                    this.nombre = e.target.value;
-                    this._fsm.send({ type: "CHANGE", value: e.target.value });
-                  }}
-                  class="form-control"
-                />
-              </div>
-            </div>
+          <vaadin-text-field
+            type="text"
+            style="width: 100%"
+            .label=${get("nombre")}
+            value=${this._ctx.nombre}
+            helper-text=${this.enable_guardar() ?  "" : get("edite_el_nombre")}
+            @input=${(e) => {
+              this.nombre = e.target.value;
+            }}
+            @change=${(e) => {
+              this.nombre = e.target.value;
+              this._fsm.send({ type: "CHANGE", value: e.target.value });
+            }}
+          ></vaadin-text-field>
 
-            <div class="d-grid gap-2">
-              ${this.enable_guardar()
-                ? html`<button
-                    @click=${this.guardar}
-                    class="btn btn-primary btn-success"
-                    type="button"
-                    ${this.enable_guardar() ? html`"hgh"` : html`"disabled"`}
-                  >
-                    Guardar
-                  </button>`
-                : null}
-            </div>
-          </form>
+          <div>
+            ${this.enable_guardar()
+              ? html`<button
+                  style="width: 100%;"
+                  @click=${this.guardar}
+                  class="btn btn-primary btn-success"
+                  type="button"
+                  ${this.enable_guardar() ? html`hgh` : html`disabled`}
+                >
+                  ${translate("guardar")}
+                </button>`
+              : null}
+          </div>
         </div>
       </div>
 
