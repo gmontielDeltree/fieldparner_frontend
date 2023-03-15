@@ -1,3 +1,4 @@
+import { Campo } from './tipos/campos';
 import { format, isAfter, isBefore, isWithinInterval } from "date-fns";
 import { gbl_state } from "./state";
 import parseISO from "date-fns/parseISO";
@@ -328,6 +329,10 @@ export const tabla_de_colores = async () => {
       }
     });
 };
+
+export const campo_guardar = async (campodoc:Campo) => {
+  return gbl_state.db.put(campodoc);
+}
 
 export {
   emptyGJ,

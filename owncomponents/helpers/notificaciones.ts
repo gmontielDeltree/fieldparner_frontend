@@ -2,7 +2,7 @@
 import '@vaadin/notification';
 import {Notification} from "@vaadin/notification/src/vaadin-notification";
 
-export const showNotification = (message: string, theme?: string) => {
+export const showNotification = (message: string, theme?: string, position?: string) => {
     const notification = <Notification> document.createElement('vaadin-notification');
     notification.renderer = (root: any, _owner: any) => {
       root.textContent = message;
@@ -10,7 +10,10 @@ export const showNotification = (message: string, theme?: string) => {
     if (theme) {
       notification.setAttribute("theme", theme);
     }
-   //notification.setAttribute("position","top-center")
+    if(position){
+      notification.setAttribute("position",position)
+    }
+   //
     notification.opened = true;
     window.document.body.appendChild(notification);
     notification.addEventListener('opened-changed', () => window.document.body.removeChild(notification));
