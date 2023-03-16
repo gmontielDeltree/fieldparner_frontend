@@ -13,6 +13,21 @@ extractor
             arguments: {
                 text: 0,
             }
+        }),
+        JsExtractors.callExpression('v', {
+            arguments: {
+                text: 1,
+            }
+        }),
+        JsExtractors.callExpression('[this].text_field', {
+            arguments: {
+                text: 0,
+            }
+        }),
+        JsExtractors.callExpression('[this].variable_input', {
+            arguments: {
+                text: 1,
+            }
         })
     ])
     .parseFilesGlob('./owncomponents/**/*.@(ts|js|tsx|jsx)');

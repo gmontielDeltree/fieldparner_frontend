@@ -160,7 +160,8 @@ export class VehiculosDetalles extends LitElement {
       ${this.number_field("capacidad_combustible",'l')}
       ${this.text_field("unidad_medida")} ${this.text_field("conectividad")}
       ${this.text_field("propietario")}
-      ${this.date_picker("ultimo_mantenimiento")} ${this.text_field("seguro")}
+      ${this.date_picker("ultimo_mantenimiento")} 
+      <!-- ${this.text_field("seguro")} -->
       ${this.text_field("seguro_compania", get("seguro_compania"))}
       ${this.text_field("seguro_tipo_de_cobertura")}
       ${this.text_field("seguro_numero_de_poliza")}

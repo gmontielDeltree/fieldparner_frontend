@@ -2,6 +2,10 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 
+#: owncomponents/vehiculos/vehiculos-detalles.ts:170
+msgid ""
+msgstr ""
+
 #: owncomponents/invite/invite.ts:85
 msgid "aceptar"
 msgstr ""
@@ -32,6 +36,10 @@ msgstr ""
 msgid "agregue_alguna_utilizando_los_botones_superiores"
 msgstr ""
 
+#: owncomponents/jsons/tipos_insumos.ts:27
+msgid "agroquímicos"
+msgstr ""
+
 #: owncomponents/navbar-element/new-app-layout.ts:380
 #: owncomponents/settings/settings.ts:19
 msgid "ajustes"
@@ -56,6 +64,14 @@ msgstr ""
 msgid "autogenerado"
 msgstr ""
 
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:298
+msgid "azufre"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:472
+msgid "Azufre (ppm)"
+msgstr ""
+
 #: owncomponents/depositos/deposito-transferencias/deposito-nuevo-transferencias.ts:436
 #: owncomponents/helpers/confirmar-eliminar.ts:42
 #: owncomponents/navbar-element/workspace-menu.ts:112
@@ -73,6 +89,18 @@ msgstr ""
 
 #: owncomponents/insumos/insumos-lista.ts:297
 msgid "buscar"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:293
+msgid "calcio"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:468
+msgid "Calcio (ppm)"
+msgstr ""
+
+#: owncomponents/jsons/tipos_equipos.ts:12
+msgid "camioneta"
 msgstr ""
 
 #: owncomponents/depositos/deposito-transferencias/deposito-nuevo-transferencias.ts:222
@@ -94,6 +122,18 @@ msgstr ""
 #: owncomponents/analisis-suelo/analisis-suelo-editor.ts:231
 #: owncomponents/analisis-suelo/analisis-suelo-editor.ts:247
 msgid "caracterizacion"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:459
+msgid "Caracterizacion"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:463
+msgid "Carbono Organico (%)"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:283
+msgid "carbono_organico"
 msgstr ""
 
 #: owncomponents/analisis-precios/analisis-precios.ts:218
@@ -134,6 +174,10 @@ msgstr ""
 msgid "colores_cultivos"
 msgstr ""
 
+#: owncomponents/jsons/tipos_insumos.ts:28
+msgid "combustible"
+msgstr ""
+
 #: owncomponents/lote-offcanvas/upsert-aplicacion/grid_labores.ts:150
 #: owncomponents/lote-offcanvas/upsert-ejecucion/grid_labores_exe.ts:151
 msgid "comentario"
@@ -141,6 +185,18 @@ msgstr ""
 
 #: owncomponents/lote-offcanvas/timeline/actividad-item.ts:316
 msgid "compartir_orden"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:477
+msgid "Conductividad Electrica (mS/m)"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:309
+msgid "conductividad_electrica"
+msgstr ""
+
+#: owncomponents/vehiculos/vehiculos-detalles.ts:161
+msgid "conectividad"
 msgstr ""
 
 #: owncomponents/navbar-element/workspace-menu.ts:92
@@ -151,6 +207,10 @@ msgstr ""
 #: owncomponents/lote-offcanvas/upsert-aplicacion/upsert-aplicacion.ts:152
 #: owncomponents/lote-offcanvas/upsert-ejecucion/upsert-ejecucion.ts:173
 msgid "cosecha"
+msgstr ""
+
+#: owncomponents/jsons/tipos_equipos.ts:9
+msgid "cosechadora"
 msgstr ""
 
 #: owncomponents/campo-offcanvas/campo-offcanvas.ts:288
@@ -219,6 +279,10 @@ msgstr ""
 
 #: owncomponents/lote-offcanvas/timeline/analisis-item.ts:114
 msgid "detalles"
+msgstr ""
+
+#: owncomponents/jsons/tipos_equipos.ts:18
+msgid "diesel"
 msgstr ""
 
 #: owncomponents/depositos/depositos-lista/deposito-nuevo template.ts:75
@@ -344,6 +408,10 @@ msgstr ""
 msgid "fecha"
 msgstr ""
 
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:448
+msgid "Fecha (dd-mm-yyyy)"
+msgstr ""
+
 #: owncomponents/campana/upsert-campana/upsert-campana-dialog.ts:97
 msgid "fecha_fin"
 msgstr ""
@@ -352,8 +420,36 @@ msgstr ""
 msgid "fecha_inicio"
 msgstr ""
 
+#: owncomponents/jsons/tipos_insumos.ts:26
+msgid "fertilizantes"
+msgstr ""
+
 #: owncomponents/depositos/deposito-detalles/deposito-detalles.ts:237
 msgid "filtrar"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:465
+msgid "Fosforo (Bray – ppm)"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:466
+msgid "Fosforo II (ppm)"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:467
+msgid "Fosforo III (ppm)"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:288
+msgid "fosforo_bray"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:289
+msgid "fosforo_ii"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:290
+msgid "fosforo_iii"
 msgstr ""
 
 #: owncomponents/depositos/deposito-transferencias/deposito-nuevo-transferencias.ts:158
@@ -382,6 +478,14 @@ msgstr ""
 
 #: owncomponents/lote-offcanvas/upsert-ejecucion/upsert-ejecucion.ts:556
 msgid "hora_finalizacion"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:308
+msgid "humedad"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:481
+msgid "Humedad (%)"
 msgstr ""
 
 #: owncomponents/analisis-suelo/analisis-suelo-import-export.ts:104
@@ -465,6 +569,10 @@ msgstr ""
 msgid "laboratorio"
 msgstr ""
 
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:451
+msgid "Laboratorio"
+msgstr ""
+
 #: owncomponents/map-picker/map-picker.ts:217
 msgid "latitud"
 msgstr ""
@@ -489,6 +597,10 @@ msgstr ""
 msgid "lote_creado"
 msgstr ""
 
+#: owncomponents/vehiculos/vehiculos-detalles.ts:155
+msgid "marca"
+msgstr ""
+
 #: owncomponents/analisis-suelo/analisis-suelo-editor.ts:415
 #: owncomponents/depositos/deposito-detalles/deposito-detalles.ts:133
 #: owncomponents/depositos/deposito-detalles/deposito-detalles.ts:165
@@ -511,16 +623,36 @@ msgstr ""
 msgid "mas"
 msgstr ""
 
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:464
+msgid "Materia Organica (%)"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:284
+msgid "materia_organica"
+msgstr ""
+
 #: owncomponents/analisis-suelo/analisis-suelo-editor.ts:212
 msgid "matricula"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:457
+msgid "Matricula Responsable"
 msgstr ""
 
 #: owncomponents/analisis-precios/analisis-precios.ts:189
 msgid "mercado"
 msgstr ""
 
+#: owncomponents/vehiculos/vehiculos-detalles.ts:155
+msgid "modelo"
+msgstr ""
+
 #: owncomponents/notas-offcanvas/notas-offcanvas.ts:643
 msgid "motivos"
+msgstr ""
+
+#: owncomponents/jsons/tipos_equipos.ts:19
+msgid "nafta"
 msgstr ""
 
 #: owncomponents/navbar-element/navbar-element.ts:43
@@ -563,6 +695,30 @@ msgstr ""
 msgid "navbar.workspace.seleccionar"
 msgstr ""
 
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:476
+msgid "Nitratos (N-NO3 – ppm)"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:474
+msgid "Nitratos (NO3 – ppm)"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:304
+msgid "nitratos_n_n03"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:300
+msgid "nitratos_no3"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:482
+msgid "Nitrogeno Total"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:305
+msgid "nitrogeno_total"
+msgstr ""
+
 #: owncomponents/lote-offcanvas/upsert-aplicacion/upsert-aplicacion.ts:533
 msgid "no_contratistas"
 msgstr ""
@@ -586,6 +742,14 @@ msgstr ""
 #: owncomponents/terceros/terceros-editor.ts:125
 #: owncomponents/vehiculos/vehiculos-editor.ts:125
 msgid "nombre"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:456
+msgid "Nombre Responsable"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:452
+msgid "Nro Informe Referencia Laboratorio"
 msgstr ""
 
 #: owncomponents/campana/menu-campana/menu-campana.ts:123
@@ -647,6 +811,18 @@ msgstr ""
 msgid "peso_mil_semillas"
 msgstr ""
 
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:285
+msgid "ph"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:471
+msgid "pH"
+msgstr ""
+
+#: owncomponents/vehiculos/vehiculos-detalles.ts:157
+msgid "placa"
+msgstr ""
+
 #: owncomponents/lote-offcanvas/upsert-aplicacion/upsert-aplicacion.ts:166
 msgid "planificacion"
 msgstr ""
@@ -661,6 +837,14 @@ msgstr ""
 
 #: owncomponents/lote-offcanvas/lote-offcanvas-side.ts:689
 msgid "planificar_siembra"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:294
+msgid "potasio"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:469
+msgid "Potasio (ppm)"
 msgstr ""
 
 #: owncomponents/depositos/deposito-transferencias/deposito-nuevo-transferencias.ts:374
@@ -681,6 +865,14 @@ msgstr ""
 msgid "profundidad"
 msgstr ""
 
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:461
+msgid "Profundidad (cm)"
+msgstr ""
+
+#: owncomponents/vehiculos/vehiculos-detalles.ts:162
+msgid "propietario"
+msgstr ""
+
 #: owncomponents/mapa-principal/mapa-principal.ts:658
 msgid "proveedor"
 msgstr ""
@@ -694,6 +886,10 @@ msgstr ""
 #: owncomponents/depositos/depositos-lista/depositos-listado.ts:91
 #: owncomponents/proveedores/proveedores-lista.ts:103
 msgid "proveedores"
+msgstr ""
+
+#: owncomponents/jsons/tipos_equipos.ts:10
+msgid "pulverizadora"
 msgstr ""
 
 #: owncomponents/invite/invite.ts:80
@@ -717,11 +913,23 @@ msgid "responsable_tecnico"
 msgstr ""
 
 #: owncomponents/vehiculos/vehiculos-detalles.ts:164
+msgid "seguro"
+msgstr ""
+
+#: owncomponents/vehiculos/vehiculos-detalles.ts:165
 msgid "seguro_compania"
 msgstr ""
 
 #: owncomponents/helpers/confirmar-eliminar.ts:57
 msgid "seguro_de_borrar_este_item"
+msgstr ""
+
+#: owncomponents/vehiculos/vehiculos-detalles.ts:167
+msgid "seguro_numero_de_poliza"
+msgstr ""
+
+#: owncomponents/vehiculos/vehiculos-detalles.ts:166
+msgid "seguro_tipo_de_cobertura"
 msgstr ""
 
 #: owncomponents/lote-offcanvas/aux/combo-box-insumos.ts:135
@@ -735,6 +943,10 @@ msgstr ""
 
 #: owncomponents/analisis-precios/analisis-precios.ts:203
 msgid "seleccione_un_item_para_mostrar"
+msgstr ""
+
+#: owncomponents/jsons/tipos_insumos.ts:25
+msgid "semillas"
 msgstr ""
 
 #: owncomponents/lote-offcanvas/upsert-aplicacion/upsert-aplicacion.ts:151
@@ -754,6 +966,10 @@ msgstr ""
 msgid "sin_adjuntos"
 msgstr ""
 
+#: owncomponents/jsons/tipos_insumos.ts:29
+msgid "sin_especificar"
+msgstr ""
+
 #: owncomponents/depositos/deposito-detalles/deposito-detalles.ts:376
 msgid "sin_referencia"
 msgstr ""
@@ -770,8 +986,24 @@ msgstr ""
 msgid "sin_transferencias"
 msgstr ""
 
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:295
+msgid "sodio"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:470
+msgid "Sodio (ppm)"
+msgstr ""
+
 #: owncomponents/depositos/deposito-detalles/deposito-detalles.ts:232
 msgid "stock"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:475
+msgid "Sulfatos (S-SO4 – ppm)"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:303
+msgid "sulfatos_s_so4"
 msgstr ""
 
 #: owncomponents/ingenieros/ingenieros-editor.ts:159
@@ -787,19 +1019,35 @@ msgstr ""
 msgid "textura"
 msgstr ""
 
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:460
+msgid "Textura"
+msgstr ""
+
 #: owncomponents/lote-offcanvas/upsert-aplicacion/otros_datos_siembra_template.ts:14
 #: owncomponents/lote-offcanvas/upsert-ejecucion/otros_datos_siembra_exe_template.ts:14
 msgid "tipo_de_siembra"
+msgstr ""
+
+#: owncomponents/jsons/tipos_equipos.ts:13
+msgid "tolva"
 msgstr ""
 
 #: owncomponents/depositos/deposito-transferencias/deposito-nuevo-transferencias.ts:384
 msgid "total"
 msgstr ""
 
+#: owncomponents/jsons/tipos_equipos.ts:11
+msgid "tractor"
+msgstr ""
+
 #: owncomponents/depositos/deposito-detalles/deposito-detalles.ts:253
 #: owncomponents/proveedores/proveedores-detalles.ts:154
 #: owncomponents/terceros/terceros-detalles.ts:80
 msgid "transferencias"
+msgstr ""
+
+#: owncomponents/vehiculos/vehiculos-detalles.ts:161
+msgid "unidad_medida"
 msgstr ""
 
 #: owncomponents/analisis-suelo/analisis-suelo-editor.ts:135
@@ -835,4 +1083,12 @@ msgstr ""
 
 #: owncomponents/navbar-element/workspace-rigths.ts:123
 msgid "workspaceRights.titulo"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:473
+msgid "Zinc (Zn – ppm)"
+msgstr ""
+
+#: owncomponents/analisis-suelo/analisis-suelo-editor.ts:299
+msgid "zinc_zn"
 msgstr ""
