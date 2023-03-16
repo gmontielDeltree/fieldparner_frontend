@@ -344,7 +344,7 @@ export class UpsertEjecucion extends LitElement {
     /* DEBE TENER UNA SEMILLA */
     if (this.tipo === "siembra") {
       let x = this.ejecucion.detalles.dosis.find(
-        (i) => i.insumo.tipo === "Semillas"
+        (i) => i.insumo.tipo.key === "semillas"
       );
       if (x === undefined) {
         errors.push("Debe Agregar una 'Semilla' pues esto es una Siembra");
