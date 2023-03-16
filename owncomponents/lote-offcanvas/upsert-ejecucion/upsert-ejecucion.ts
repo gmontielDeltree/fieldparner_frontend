@@ -597,8 +597,8 @@ export class UpsertEjecucion extends LitElement {
             los valores se ajustaran automaticamente
           </vaadin-horizontal-layout>
 
-          ATENCIóN!!!!! EN CONSTRUCCION!!!! EN CONSTRUCCION!!!! TIENE BUGS!!! NO
-          ESTA TERMINADO!!!!!!
+          <!-- ATENCIóN!!!!! EN CONSTRUCCION!!!! EN CONSTRUCCION!!!! TIENE BUGS!!! NO
+          ESTA TERMINADO!!!!!! -->
 
           <grid-insumos-exe
             .actividad=${this.actividad}

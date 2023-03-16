@@ -582,8 +582,8 @@ export class UpsertAplicacion extends LitElement {
                     Puede ingresar tanto la dosis por hectarea como el total por
                     lote y los valores se ajustaran automaticamente
                   </vaadin-horizontal-layout>
-                  ATENCIóN!!!!! EN CONSTRUCCION!!!! EN CONSTRUCCION!!!! TIENE
-                  BUGS!!! NO ESTA TERMINADO!!!!!!
+                  <!-- ATENCIóN!!!!! EN CONSTRUCCION!!!! EN CONSTRUCCION!!!! TIENE
+                  BUGS!!! NO ESTA TERMINADO!!!!!! -->
 
                   <grid-insumos
                     .actividad=${this.actividad}
