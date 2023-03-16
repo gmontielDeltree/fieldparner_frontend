@@ -97,6 +97,7 @@
     "events": "^3.3.0",
     "geoblaze": "^1.1.0",
     "geojson-precision": "^1.0.0",
+    "gettext-extractor": "^3.7.0",
     "glslify": "^7.1.1",
     "ibm-cos-sdk": "^1.12.2",
     "igniteui-webcomponents-core": "^3.2.3",
