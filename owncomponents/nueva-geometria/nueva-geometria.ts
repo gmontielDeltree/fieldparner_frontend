@@ -190,8 +190,11 @@ export class NuevaGeometria extends LitElement {
     }
 
     if (state_value === "editing.dibujando.abierto") {
+      console.log("A modo DIBUJO")
       if (this._draw.getMode() !== "draw_polygon") {
         this._draw.changeMode("draw_polygon");
+        console.log("A modo DIBUJO confirmado")
+
       }
     }
 

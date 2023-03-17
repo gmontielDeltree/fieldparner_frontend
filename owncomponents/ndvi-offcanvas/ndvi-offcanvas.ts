@@ -3,7 +3,13 @@ import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { get_lote_doc, layer_visibility } from "../helpers";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { property, state } from "lit/decorators.js";
-import { CanvasSource, MapMouseEvent, Popup, Source } from "mapbox-gl";
+import {
+  CanvasSource,
+  GeoJSONSource,
+  MapMouseEvent,
+  Popup,
+  Source,
+} from "mapbox-gl";
 import { parse, format } from "date-fns";
 import es from "date-fns/locale/es";
 
@@ -99,67 +105,43 @@ export class NdviOffcanvas extends LitElement {
 
   private selected_canvas: HTMLCanvasElement;
 
-  constructor() {
-    super();
-
-    this.addEventListener("obs-selected", async (e: CustomEvent) => {
-      console.log("Seleccion de Observacion");
-      let geoblaze_raster = e.detail.georaster;
-      this.selected_georaster = geoblaze_raster;
-      this.selected_canvas = e.detail.canvas;
-
-      if (gbl_state.map.getSource("canvas-source")) {
-        let s = gbl_state.map.getSource("canvas-source") as CanvasSource;
-        console.log("Souce Existe", s);
-        s.canvas = e.detail.canvas;
-      } else {
-        // No existe
-        console.log("Source No Existe");
-
-        gbl_state.map.addSource("canvas-source", {
-          type: "canvas",
-          canvas: e.detail.canvas,
-          coordinates: [
-            [geoblaze_raster.xmin, geoblaze_raster.ymax],
-            [geoblaze_raster.xmax, geoblaze_raster.ymax],
-            [geoblaze_raster.xmax, geoblaze_raster.ymin],
-            [geoblaze_raster.xmin, geoblaze_raster.ymin],
-          ],
-        });
-      }
-
-      if (!gbl_state.map.getLayer("radar-layer")) {
-        //No existe
-        console.log("Layer No Existe");
-
-        gbl_state.map.addLayer(
-          {
-            id: "radar-layer",
-            type: "raster",
-            source: "canvas-source",
-            paint: {
-              "raster-fade-duration": 0,
-            },
-          },
-          "borde_de_este_lote"
-        );
-      }
-
-      /* stats de la seleccion */
-      this.seleccion = {
-        fecha: e.detail.fecha,
-        stats: await geoblaze.stats(geoblaze_raster, this.lote_doc),
-      };
-      console.log("STATS", this.seleccion, await this.seleccion);
-    });
-  }
-
   static override styles = unsafeCSS(bootstrap);
+
+  item_selected = async (e: CustomEvent) => {
+    console.log("Seleccion de Observacion");
+
+    this.enabledMapEvent(false);
+
+    let geoblaze_raster = e.detail.georaster;
+    this.selected_georaster = geoblaze_raster;
+    this.selected_canvas = e.detail.canvas;
+
+    if (gbl_state.map.getSource("canvas-source")) {
+      let s = gbl_state.map.getSource("canvas-source") as CanvasSource;
+      console.log("Souce Existe", s);
+      s.canvas = e.detail.canvas;
+      s.setCoordinates([
+        [geoblaze_raster.xmin, geoblaze_raster.ymax],
+        [geoblaze_raster.xmax, geoblaze_raster.ymax],
+        [geoblaze_raster.xmax, geoblaze_raster.ymin],
+        [geoblaze_raster.xmin, geoblaze_raster.ymin],
+      ]);
+    }
+
+    /* stats de la seleccion */
+    this.seleccion = {
+      fecha: e.detail.fecha,
+      stats: await geoblaze.stats(geoblaze_raster, this.lote_doc),
+    };
+    console.log("STATS", this.seleccion, await this.seleccion);
+    this.enabledMapEvent(true);
+
+  };
 
   async get_fechas() {
     let bboxs = encodeURIComponent(JSON.stringify(bbox(this.lote_doc)));
     //https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/indicesdates?dates=2022-04-01%2F2022-11-01&bbox=%5B-59.08562672796121%2C-35.20733062337166%2C-59.07974430745857%2C-35.20304176165523%5D
-    let fechas = encodeURIComponent("2020-04-01/2040-01-01");
+    let fechas = encodeURIComponent("2022-04-01/2040-01-01");
     let r = await fetch(
       "https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/indicesdates?dates=" +
         fechas +
@@ -179,27 +161,31 @@ export class NdviOffcanvas extends LitElement {
 
     this.shadowRoot
       .getElementById("offcanvas-lote-ndvi")
-      .addEventListener("hidden.bs.offcanvas", () => {
+      .addEventListener("hide.bs.offcanvas", () => {
         this.enabledMapEvent(false);
 
+        // Reestablecer Mapa
         layer_visibility(gbl_state.map, "campos", true);
         layer_visibility(gbl_state.map, "campos_border", true);
         layer_visibility(gbl_state.map, "lotes", false);
         layer_visibility(gbl_state.map, "lotes_border", false);
         layer_visibility(gbl_state.map, "nombres_campos", true);
+        //layer_visibility(gbl_state.map, "seleccion_lotes", false);
+        layer_visibility(gbl_state.map, "seleccion_lotes_fill", false);
 
         /* Hide NDVI */
         //layer_visibility(gbl_state.map, "ndvi-layer", false);
         layer_visibility(gbl_state.map, "borde_de_este_lote", false);
         layer_visibility(gbl_state.map, "radar-layer", false);
-
-        gbl_state.map.removeLayer("borde_de_este_lote");
-        gbl_state.map.removeLayer("frontera_de_este_lote");
-        gbl_state.map.removeSource("borde_de_este_lote");
-        //gbl_state.map.removeLayer("ndvi-layer");
-        //gbl_state.map.removeSource("ndvi");
-        gbl_state.map.removeLayer("radar-layer");
-        gbl_state.map.removeSource("canvas-source");
+        layer_visibility(gbl_state.map, "frontera_de_este_lote", false);
+        gbl_state.map.getSource("canvas-source").pause();
+        // gbl_state.map.removeLayer("borde_de_este_lote");
+        // gbl_state.map.removeLayer("frontera_de_este_lote");
+        // gbl_state.map.removeSource("borde_de_este_lote");
+        // //gbl_state.map.removeLayer("ndvi-layer");
+        // //gbl_state.map.removeSource("ndvi");
+        // gbl_state.map.removeLayer("radar-layer");
+        // gbl_state.map.removeSource("canvas-source");
       });
 
     this.lote_uuid = this.location.params.uuid as string;
@@ -251,44 +237,56 @@ export class NdviOffcanvas extends LitElement {
     layer_visibility(gbl_state.map, "lotes", false);
     layer_visibility(gbl_state.map, "lotes_border", false);
     layer_visibility(gbl_state.map, "nombres_campos", false);
+    //layer_visibility(gbl_state.map, "seleccion_lotes", false);
+    layer_visibility(gbl_state.map, "seleccion_lotes_fill", false);
 
     /* Inicialmente dibujo el borde */
-    if (!gbl_state.map.getSource("borde_de_este_lote")) {
-      console.log("addSource", this.lote_doc);
-      gbl_state.map.addSource("borde_de_este_lote", {
-        type: "geojson",
-        data: this.lote_doc,
-      });
+    let borde_src = gbl_state.map.getSource(
+      "borde_de_este_lote"
+    ) as GeoJSONSource;
+    borde_src.setData(this.lote_doc);
 
-      gbl_state.map.addLayer({
-        id: "borde_de_este_lote",
-        type: "fill",
-        source: "borde_de_este_lote",
-        paint: {
-          "fill-color": "#FFFFFF",
-          "fill-outline-color": "#FF0000",
-          "fill-opacity": 0,
-          //"line-color": "rgb(60, 183, 251)",
-          //"line-width": 4,
-        },
-      });
+    layer_visibility(gbl_state.map, "borde_de_este_lote", true);
+    layer_visibility(gbl_state.map, "frontera_de_este_lote", true);
+    layer_visibility(gbl_state.map, "radar-layer", true);
+    gbl_state.map.getSource("canvas-source").play();
 
-      gbl_state.map.addLayer({
-        id: "frontera_de_este_lote",
-        type: "line",
-        source: "borde_de_este_lote",
-        paint: {
-          "line-color": "rgb(60, 183, 251)",
-          "line-width": 4,
-        },
-      });
+    // if (!gbl_state.map.getSource("borde_de_este_lote")) {
+    //   console.log("addSource", this.lote_doc);
+    //   gbl_state.map.addSource("borde_de_este_lote", {
+    //     type: "geojson",
+    //     data: this.lote_doc,
+    //   });
 
-      // Evento Popup con valor
-      this.enabledMapEvent(true);
-    }
+    //   gbl_state.map.addLayer({
+    //     id: "borde_de_este_lote",
+    //     type: "fill",
+    //     source: "borde_de_este_lote",
+    //     paint: {
+    //       "fill-color": "#FFFFFF",
+    //       "fill-outline-color": "#FF0000",
+    //       "fill-opacity": 0,
+    //       //"line-color": "rgb(60, 183, 251)",
+    //       //"line-width": 4,
+    //     },
+    //   });
+
+    //   gbl_state.map.addLayer({
+    //     id: "frontera_de_este_lote",
+    //     type: "line",
+    //     source: "borde_de_este_lote",
+    //     paint: {
+    //       "line-color": "rgb(60, 183, 251)",
+    //       "line-width": 4,
+    //     },
+    //   });
+
+    // Evento Popup con valor
+    //this.enabledMapEvent(true);
+    // }
   };
 
-  queryNDVIValore(lngLat) {
+  queryNDVIValore = (lngLat)=>{
     console.log("selected_georaster", this.selected_georaster);
     return geoblaze.identify(this.selected_georaster, lngLat);
   }
@@ -306,7 +304,7 @@ export class NdviOffcanvas extends LitElement {
 
     const onMouseMove = (e: MapMouseEvent) => {
       //console.log("A mouseover event has occurred.", e.lngLat);
-      let ndvi_value = this.queryNDVIValore([e.lngLat.lng, e.lngLat.lat]);
+      let ndvi_value = geoblaze.identify(this.selected_georaster,[e.lngLat.lng, e.lngLat.lat]);
       //console.log("NDVI", ndvi_value);
       popup
         .setLngLat(e.lngLat)
@@ -329,7 +327,7 @@ export class NdviOffcanvas extends LitElement {
       gbl_state.map.on("mouseenter", "borde_de_este_lote", this.main_function);
     } else {
       console.info("Removing Mouse Enter Event");
-      gbl_state.map.off("mouseenter", this.main_function);
+      gbl_state.map.off("mouseenter","borde_de_este_lote", this.main_function);
     }
   }
 
@@ -632,7 +630,7 @@ export class NdviOffcanvas extends LitElement {
                     }}
                   ></vaadin-combo-box>
 
-                  <vaadin-horizontal-layout theme='spacing'>
+                  <vaadin-horizontal-layout theme="spacing">
                     ${this.seleccion
                       ? html`<a
                             class="btn btn-primary btn-sm col col-3 m-1"
@@ -701,6 +699,7 @@ export class NdviOffcanvas extends LitElement {
                         .escala_dinamica=${this.escala_dinamica}
                         .uuid=${this.lote_uuid}
                         .lote_geojson=${this.lote_doc}
+                        @obs-selected=${this.item_selected}
                       ></observacion-card>`;
                     }
                   )}

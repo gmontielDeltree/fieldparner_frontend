@@ -1,3 +1,4 @@
+import { ndvi_layers_init } from './ndvi-layers';
 import { gbl_state } from "./../state";
 import { depositos_update, depositos_layer_init } from "./depositos-layer";
 import { LitElement, html, unsafeCSS, css } from "lit";
@@ -472,6 +473,8 @@ export class MapaPrincipal extends LitElement {
 
       this.proveedores_layer_init();
       depositos_layer_init(this.map);
+
+      ndvi_layers_init(this.map);
       this.cargar_marcadores();
 
       this._redraw_map();
