@@ -308,7 +308,7 @@ export class InsumoCrud extends LitElement {
                   }}
                 ></vaadin-combo-box>
 
-                ${this.insumo.tipo.key === 'semillas'
+                ${this.insumo.tipo?.key === 'semillas'
                   ? html`
                       <vaadin-combo-box
                         .label=${get('cultivo')}

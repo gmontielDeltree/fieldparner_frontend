@@ -292,7 +292,7 @@ export class InsumosLista extends LitElement {
             @item-selected=${this.menu_click}
           ></vaadin-menu-bar>
 
-          <vaadin-vertical-layout slot="body" theme="spacing">
+          <vaadin-vertical-layout slot="body" theme="spacing" style="height: 100%;">
             <vaadin-text-field
               placeholder=${translate("buscar")}
               style="width: 50%;"
@@ -364,7 +364,7 @@ export class InsumosLista extends LitElement {
             </vaadin-grid>
           </vaadin-vertical-layout>
 
-          <div slot="footer">
+          <!-- <div slot="footer">
             <vaadin-button
               type="button"
               class="btn btn-secondary"
@@ -372,7 +372,7 @@ export class InsumosLista extends LitElement {
             >
               Cerrar
             </vaadin-button>
-          </div>
+          </div> -->
         </modal-generico>
 
         <insumo-crud id="insumo-crud" .db=${gbl_state.db}></insumo-crud>`;
