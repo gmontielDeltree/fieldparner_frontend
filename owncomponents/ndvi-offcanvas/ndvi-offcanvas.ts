@@ -251,39 +251,6 @@ export class NdviOffcanvas extends LitElement {
     layer_visibility(gbl_state.map, "radar-layer", true);
     gbl_state.map.getSource("canvas-source").play();
 
-    // if (!gbl_state.map.getSource("borde_de_este_lote")) {
-    //   console.log("addSource", this.lote_doc);
-    //   gbl_state.map.addSource("borde_de_este_lote", {
-    //     type: "geojson",
-    //     data: this.lote_doc,
-    //   });
-
-    //   gbl_state.map.addLayer({
-    //     id: "borde_de_este_lote",
-    //     type: "fill",
-    //     source: "borde_de_este_lote",
-    //     paint: {
-    //       "fill-color": "#FFFFFF",
-    //       "fill-outline-color": "#FF0000",
-    //       "fill-opacity": 0,
-    //       //"line-color": "rgb(60, 183, 251)",
-    //       //"line-width": 4,
-    //     },
-    //   });
-
-    //   gbl_state.map.addLayer({
-    //     id: "frontera_de_este_lote",
-    //     type: "line",
-    //     source: "borde_de_este_lote",
-    //     paint: {
-    //       "line-color": "rgb(60, 183, 251)",
-    //       "line-width": 4,
-    //     },
-    //   });
-
-    // Evento Popup con valor
-    //this.enabledMapEvent(true);
-    // }
   };
 
   queryNDVIValore = (lngLat)=>{
