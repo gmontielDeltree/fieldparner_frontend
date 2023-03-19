@@ -35,8 +35,8 @@ declare let self: ServiceWorkerGlobalScope;
 declare type ExtendableEvent = any;
 
 // self.__WB_MANIFEST is default injection point
-// precacheAndRoute(self.__WB_MANIFEST);
-precacheAndRoute([]);
+precacheAndRoute(self.__WB_MANIFEST);
+//precacheAndRoute([]);
 
 registerRoute(
   /.*index.html*$/,

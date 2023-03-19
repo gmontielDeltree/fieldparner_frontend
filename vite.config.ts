@@ -28,9 +28,9 @@ export default {
       manifest: manifest_json,
       injectRegister: null, // Registrar 'a mano' en index.html
       strategies: "injectManifest",
-      injectManifest: {
-        injectionPoint: undefined
-      },
+      // injectManifest: {
+      //   injectionPoint: undefined
+      // },
       srcDir: "src",
       filename: "sw.ts",
     }),
