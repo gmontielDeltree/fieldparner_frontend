@@ -38,6 +38,21 @@ declare type ExtendableEvent = any;
 // precacheAndRoute(self.__WB_MANIFEST);
 precacheAndRoute([]);
 
+registerRoute(
+  /.*index.html*$/,
+  new NetworkFirst({ cacheName: "html" })
+);
+
+registerRoute(
+  /.*.css*$/,
+  new NetworkFirst({ cacheName: "css" })
+);
+
+registerRoute(
+  /.*.js*$/,
+  new NetworkFirst({ cacheName: "js" })
+);
+
 // Mapas tiles
 registerRoute(
   /.*ecn\.t1\.tiles\.virtualearth\.net.*$/,
@@ -247,11 +262,11 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(cacheFirst.handle({ request: event.request, event }));
   }
 
-  if (event.request.url.endsWith(".html")) {
-    // Using the previously-initialized strategies will work as expected.
-    const cacheFirst = new NetworkFirst();
-    event.respondWith(cacheFirst.handle({ request: event.request, event }));
-  }
+  // if (event.request.url.endsWith(".html")) {
+  //   // Using the previously-initialized strategies will work as expected.
+  //   const cacheFirst = new NetworkFirst({ cacheName: "html-cache" });
+  //   event.respondWith(cacheFirst.handle({ request: event.request, event }));
+  // }
 
   if (event.request.url.endsWith(".js") || event.request.url.endsWith(".css")) {
     // Using the previously-initialized strategies will work as expected.
