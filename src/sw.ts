@@ -14,6 +14,7 @@ import {
   StaleWhileRevalidate,
 } from "workbox-strategies";
 import type { ManifestEntry } from "workbox-build";
+import {ExpirationPlugin} from 'workbox-expiration';
 
 import PouchDB from "pouchdb";
 import {
@@ -38,19 +39,27 @@ declare type ExtendableEvent = any;
 precacheAndRoute(self.__WB_MANIFEST);
 //precacheAndRoute([]);
 
+registerRoute(/.*index.html*$/, new NetworkFirst({ cacheName: "html" }));
+
+registerRoute(/.*.css*$/, new NetworkFirst({ cacheName: "css" }));
+
+registerRoute(/.*.js*$/, new NetworkFirst({ cacheName: "js" }));
+
 registerRoute(
-  /.*index.html*$/,
-  new NetworkFirst({ cacheName: "html" })
+  /\.(?:png|gif|jpg|svg)$/,
+  new CacheFirst({ cacheName: "images" })
 );
 
 registerRoute(
-  /.*.css*$/,
-  new NetworkFirst({ cacheName: "css" })
-);
-
-registerRoute(
-  /.*.js*$/,
-  new NetworkFirst({ cacheName: "js" })
+  /\.(?:json)$/,
+  new CacheFirst({
+    cacheName: "jsons",
+    plugins: [
+      new ExpirationPlugin({
+        maxAgeSeconds: 60,
+      }),
+    ],
+  })
 );
 
 // Mapas tiles
@@ -61,7 +70,7 @@ registerRoute(
 
 registerRoute(
   /.*\.cloudantnosqldb\.appdomain\.cloud.*\/processed_device_telemetry/,
-  new NetworkFirst()
+  new NetworkFirst({cacheName : "processed_device_telemetry"})
 );
 
 registerRoute(
@@ -190,9 +199,8 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (event.request.url.includes("upload-analisis-suelo")) {
-    process_analisis_suelo(self,event);
+    process_analisis_suelo(self, event);
   }
-
 
   // Es shared-audio
 });
@@ -256,11 +264,11 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.url.endsWith(".json")) {
-    // Using the previously-initialized strategies will work as expected.
-    const cacheFirst = new NetworkFirst();
-    event.respondWith(cacheFirst.handle({ request: event.request, event }));
-  }
+  // if (event.request.url.endsWith(".json")) {
+  //   // Using the previously-initialized strategies will work as expected.
+  //   const cacheFirst = new NetworkFirst();
+  //   event.respondWith(cacheFirst.handle({ request: event.request, event }));
+  // }
 
   // if (event.request.url.endsWith(".html")) {
   //   // Using the previously-initialized strategies will work as expected.
@@ -268,20 +276,20 @@ self.addEventListener("fetch", (event) => {
   //   event.respondWith(cacheFirst.handle({ request: event.request, event }));
   // }
 
-  if (event.request.url.endsWith(".js") || event.request.url.endsWith(".css")) {
-    // Using the previously-initialized strategies will work as expected.
-    const cacheFirst = new NetworkFirst();
-    event.respondWith(cacheFirst.handle({ request: event.request, event }));
-  }
+  // if (event.request.url.endsWith(".js") || event.request.url.endsWith(".css")) {
+  //   // Using the previously-initialized strategies will work as expected.
+  //   const cacheFirst = new NetworkFirst();
+  //   event.respondWith(cacheFirst.handle({ request: event.request, event }));
+  // }
 
-  if (
-    event.request.url.endsWith(".svg") ||
-    event.request.url.endsWith(".png")
-  ) {
-    // Using the previously-initialized strategies will work as expected.
-    const cacheFirst = new CacheFirst();
-    event.respondWith(cacheFirst.handle({ request: event.request, event }));
-  }
+  // if (
+  //   event.request.url.endsWith(".svg") ||
+  //   event.request.url.endsWith(".png")
+  // ) {
+  //   // Using the previously-initialized strategies will work as expected.
+  //   const cacheFirst = new CacheFirst();
+  //   event.respondWith(cacheFirst.handle({ request: event.request, event }));
+  // }
 
   if (event.request.url.includes("https://events.mapbox.com/")) {
     event.respondWith(
