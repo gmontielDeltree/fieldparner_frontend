@@ -333,28 +333,28 @@ export class NotasOffcanvas extends LitElement {
     // };
 
     // Imagenes
-    this.imagenes.map((i) => {
-      this.lanota._attachments["foto_" + uuid4()] = {
-        data: i,
-        type: i.type,
-      };
-    });
+    // this.imagenes.map((i) => {
+    //   this.lanota._attachments["foto_" + uuid4()] = {
+    //     data: i,
+    //     type: i.type,
+    //   };
+    // });
 
     // Audio
-    if (this.audio) {
-      // Fruto de compartido
-      this.lanota._attachments["audio_" + uuid4()] = {
-        data: this.audio, // Es un blob
-        type: this.audio.type,
-      };
-    } else {
-      if (this.shadowRoot.getElementById("audio-recorder").blob) {
-        this.lanota._attachments["audio_" + uuid4()] = {
-          data: this.shadowRoot.getElementById("audio-recorder").blob,
-          type: this.shadowRoot.getElementById("audio-recorder").blob.type,
-        };
-      }
-    }
+    // if (this.audio) {
+    //   // Fruto de compartido
+    //   this.lanota._attachments["audio_" + uuid4()] = {
+    //     data: this.audio, // Es un blob
+    //     type: this.audio.type,
+    //   };
+    // } else {
+    //   if (this.shadowRoot.getElementById("audio-recorder").blob) {
+    //     this.lanota._attachments["audio_" + uuid4()] = {
+    //       data: this.shadowRoot.getElementById("audio-recorder").blob,
+    //       type: this.shadowRoot.getElementById("audio-recorder").blob.type,
+    //     };
+    //   }
+    // }
 
     guardar_nota(this.lanota)
       .then(() => {

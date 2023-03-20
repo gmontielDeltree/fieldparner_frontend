@@ -334,8 +334,7 @@ export const campo_guardar = async (campodoc: Campo) => {
 
 export const upload_file = async (fileblob: File) => {
   let formData = new FormData();
-  formData.set("file", fileblob);
-  formData.set("filename",fileblob.name)
+  formData.append("file", fileblob, fileblob.name);
   // const data = new URLSearchParams();
   // data.append('file',fileblob);
 
