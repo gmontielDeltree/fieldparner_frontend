@@ -214,7 +214,7 @@ export class NotaItem extends LitElement {
           <div class="row mx-1">
             <!--Galeria-->
             <light-gallery-demo
-              .list=${this.imagenes.map(imagen_objeto_gallery)}
+              .list=${this.item.imagenes.map(imagen_objeto_gallery_url)}
               @beforeOpen=${() => {
                 //this.nueva_nota_offcanvas.hide();
                 this.emit_gallery_open();
@@ -224,7 +224,7 @@ export class NotaItem extends LitElement {
                 let index = e.detail.index;
                 let instance = e.detail.instance;
                 //alert('borrar imagen index')
-                this.imagenes.splice(index, 1);
+                this.item.imagenes.splice(index, 1);
                 this.requestUpdate();
               }}
               @afterClose=${() => this.emit_gallery_closed()}
@@ -233,10 +233,8 @@ export class NotaItem extends LitElement {
           </div>
 
           <div class="row my-1">
-            ${this.audio.length > 0
-              ? html`<audio controls><source .src=${URL.createObjectURL(
-                  this.audio[0].data
-                )}></source></audio>`
+            ${this.item.audio_url
+              ? html`<audio controls><source .src=${"/attachments?file="+this.item.audio_url}></source></audio>`
               : null}
           </div>
 
@@ -343,7 +341,8 @@ const url_planificacion = (item_nota: Nota) => {
   return url;
 };
 
-const imagen_objeto_gallery = (file: Blob) => {
+const imagen_objeto_gallery_url = (url : string) => {
+  let full_url = "/attachments?file=" + url
   let objeto = {
     id: "3",
     size: "", // Size como 1900-720
@@ -352,9 +351,8 @@ const imagen_objeto_gallery = (file: Blob) => {
     subHtml: ``, // Template de lo que aparece abajo
   };
 
-  let url = URL.createObjectURL(file);
-  objeto.src = url;
-  objeto.thumb = url;
+  objeto.src = full_url;
+  objeto.thumb = full_url;
 
   return objeto;
 };
