@@ -437,6 +437,22 @@ export class NotasOffcanvas extends LitElement {
       return objeto;
     };
 
+    const imagen_objeto_gallery_url = (url : string) => {
+      let full_url = "/attachments?file=" + url
+      let objeto = {
+        id: "3",
+        size: "", // Size como 1900-720
+        src: "", // Src URL
+        thumb: "", //Thumb URL
+        subHtml: ``, // Template de lo que aparece abajo
+      };
+
+      objeto.src = full_url;
+      objeto.thumb = full_url;
+
+      return objeto;
+    };
+
     //h-50 offcanvas heigth
     return html`
       <!--Add Nota Form-->
@@ -568,27 +584,49 @@ export class NotasOffcanvas extends LitElement {
               @input=${(e) => (this.lanota.texto = e.target.value)}
             ></vaadin-text-area>
 
-            <!-- Galeria
-            <light-gallery-demo
-              .list=${this.imagenes.map(imagen_objeto_gallery)}
+            <!-- Galeria -->
+             <light-gallery-demo
+              .list=${this.lanota.imagenes.map(imagen_objeto_gallery_url)}
               @beforeOpen=${() => {
-              this.nueva_nota_offcanvas.hide();
-              console.log("hide offcanvas");
-            }}
+                this.nueva_nota_offcanvas.hide();
+                console.log("hide offcanvas");
+              }}
               @borrarImagen=${(e) => {
-              let index = e.detail.index;
-              let instance = e.detail.instance;
-              //alert('borrar imagen index')
-              this.imagenes.splice(index, 1);
-              this.requestUpdate();
-            }}
+                let index = e.detail.index;
+                let instance = e.detail.instance;
+                //alert('borrar imagen index')
+                this.lanota.imagenes.splice(index, 1);
+                this.requestUpdate();
+              }}
               @afterClose=${() => this.nueva_nota_offcanvas.show()}
             >
-            </light-gallery-demo>
+            </light-gallery-demo> 
             <!-- <div class="row mb-2" id="img-preview">
               ${this.imagenes.map(imagen_element)}
-            </div> -->
+            </div>  -->
 
+            
+
+            <vaadin-upload
+              target="/attachments"
+              accept="image/*"
+              max-files="5"
+              .files=${
+                [] as UploadFile[] /* Previene que se agregen los archivos debajo del control*/
+              }
+              @upload-success=${(e) => {
+                console.log("successevent", e);
+                this.lanota.imagenes.push(e.detail.file.name);
+                this.requestUpdate()
+                // nota_adjuntar_archivo(this.lanota, e.detail.file).then(() => {
+                //   this.requestUpdate();
+                // });
+              }}
+            >
+              <vaadin-button slot="add-button" theme="primary">
+                Agregar Imagen...
+              </vaadin-button>
+            </vaadin-upload>
             <!-- <input
               id="foto-upload-input"
               class="d-none"
@@ -612,6 +650,7 @@ export class NotasOffcanvas extends LitElement {
                 @recordingCompleted=${(e) => {
                   console.log("RECORDING COMPLETED", e);
                   let audio = e.detail as File;
+                  audio.name = uuidv7();
                   upload_file(audio).then(() => {
                     this.lanota.audio_url = audio.name;
                   });
