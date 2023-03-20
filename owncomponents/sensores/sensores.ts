@@ -160,8 +160,7 @@ class Devices {
         let latitud = extract_tele("latitud", telemetria).value;
         let longitud = extract_tele("longitud", telemetria).value;
 
-        if(telemetria.device_id === "f008d1ffffd30a6c")
-        {
+        if (telemetria.device_id === "f008d1ffffd30a6c") {
           latitud = -35.1579821;
           longitud = -59.09232;
         }
@@ -269,13 +268,23 @@ class Devices {
     let r = data.map((dp) => {
       // t1
       let array_de_mediciones = dp.data as DataPoints[];
-      // Hora Argentina
-      return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
+      console.log("array mediciones", array_de_mediciones);
+
+      if (uuid !== "sfdfsd") {
+        return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
+      } else {
+        // Hora Argentina
+        // TODO Mejorar esto
+        if (array_de_mediciones[0].sensor_id !== "latitud") {
+          // Ignorar si es un punto de posicion
+          return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
+        }
+      }
 
       array_de_mediciones.forEach((medicion: DataPoints) => {
         if (medicion.sensor_id === "temperatura") {
           if (medicion.value > 60 || medicion.value < -10) {
-            medicion.value= NaN;
+            medicion.value = NaN;
           }
         }
 
@@ -293,16 +302,14 @@ class Devices {
 
         if (return_value[medicion.sensor_id]) {
           return_value[medicion.sensor_id].push(medicion.value);
-
         } else {
           return_value[medicion.sensor_id] = [];
           return_value[medicion.sensor_id].push(medicion.value);
-
         }
       });
     });
 
-    console.log("RETURN VALUE CHRATRS,", return_value)
+    console.log("RETURN VALUE CHRATRS,", return_value);
     return return_value;
   }
 
