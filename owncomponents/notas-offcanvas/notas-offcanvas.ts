@@ -653,6 +653,8 @@ export class NotasOffcanvas extends LitElement {
                   audio.name = uuidv7();
                   upload_file(audio).then(() => {
                     this.lanota.audio_url = audio.name;
+                    console.log("audio_url", this.lanota.audio_url)
+                    this.requestUpdate()
                   });
                 }}
               ></audio-recorder>

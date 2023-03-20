@@ -45,10 +45,6 @@ registerRoute(/.*.css*$/, new NetworkFirst({ cacheName: "css" }));
 
 registerRoute(/.*.js*$/, new NetworkFirst({ cacheName: "js" }));
 
-registerRoute(
-  /\.(?:png|gif|jpg|svg|webp)$/,
-  new CacheFirst({ cacheName: "images" })
-);
 
 registerRoute(
   /\.(?:json)$/,
@@ -166,6 +162,12 @@ registerRoute(
   },
   "POST"
 );
+
+registerRoute(
+  /\.(?:png|gif|jpg|svg|webp)$/,
+  new CacheFirst({ cacheName: "images" })
+);
+
 
 /* Upload Excel handler */
 self.addEventListener("fetch", (event) => {
