@@ -416,7 +416,7 @@ export class TimelineSideElement extends LitElement {
           <div class="icono-nota cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
-          <div class="cbp_tmlabel bg-nota">
+          <div class="cbp_tmlabel bg-nota" style="background:blanchedalmond" >
             <nota-item .item=${item}></nota-item>
           </div>
         </li>`;
@@ -427,7 +427,7 @@ export class TimelineSideElement extends LitElement {
           <div class="icono-aplicacion cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
-          <div class="cbp_tmlabel bg-aplicacion">
+          <div class="cbp_tmlabel bg-aplicacion" style="background:#f3ded7;">
             <actividad-item .item=${item}></actividad-item>
           </div>
         </li>`;
@@ -438,7 +438,7 @@ export class TimelineSideElement extends LitElement {
           <div class="icono-siembra cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
-          <div class="cbp_tmlabel bg-aplicacion">
+          <div class="cbp_tmlabel bg-aplicacion"  style="background:#a8e7eb;">
             <actividad-item .item=${item}></actividad-item>
           </div>
         </li>`;
@@ -449,7 +449,7 @@ export class TimelineSideElement extends LitElement {
           <div class="icono-cosecha cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
-          <div class="cbp_tmlabel bg-aplicacion">
+          <div class="cbp_tmlabel bg-aplicacion" style="background:#a1e34d">
             <actividad-item .item=${item}></actividad-item>
           </div>
         </li>`;
