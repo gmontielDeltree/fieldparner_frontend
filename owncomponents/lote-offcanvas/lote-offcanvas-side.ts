@@ -715,7 +715,11 @@ export class LoteOffcanvasSide extends LitElement {
                   title="Notas"
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/iconodenotas_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
-                  @click=${this.notas}
+                  @click=${() =>
+                    Router.go(
+                      gbl_state.router.location.getUrl() +
+                        "/nota/add"
+                    )}
                 ></div>
 
                 <div
@@ -758,8 +762,14 @@ export class LoteOffcanvasSide extends LitElement {
                   ></lit-timeline-side>
                 `
               : html` <div>
-                  <div  style="display:flex;justify-content:center;font-weight:bold">${translate("no_hay_actividades")}</div>
-                  <div  style="display:flex;justify-content:center;font-weight:bold">
+                  <div
+                    style="display:flex;justify-content:center;font-weight:bold"
+                  >
+                    ${translate("no_hay_actividades")}
+                  </div>
+                  <div
+                    style="display:flex;justify-content:center;font-weight:bold"
+                  >
                     ${translate(
                       "agregue_alguna_utilizando_los_botones_superiores"
                     )}
@@ -769,12 +779,12 @@ export class LoteOffcanvasSide extends LitElement {
         </div>
       </div>
 
-      <notas-oc
+      <!-- <notas-oc
         id="notas-oc"
         .map=${gbl_state.map}
         .db=${gbl_state.db}
         .lote_doc=${this._lote_doc}
-      ></notas-oc>
+      ></notas-oc> -->
     `;
   }
 }

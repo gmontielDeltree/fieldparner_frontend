@@ -20,12 +20,17 @@ import { translate } from "lit-translate";
 import { actividad_detalles } from "./detalles-actividad/detalles-actividad";
 import { ejecucion_detalles } from "./detalles-actividad/detalles-ejecucion";
 import "../../image-gallery/images-gallery";
+import {
+  Nota,
+  nota_adjuntar_archivo,
+  nota_remover_adjunto,
+} from "../../notas-offcanvas/notas-fuciones";
 
 @customElement("nota-item")
 export class NotaItem extends LitElement {
   static override styles = [badge];
   @property()
-  item: Actividad;
+  item: Nota;
 
   private menu_items = [
     {
@@ -36,18 +41,16 @@ export class NotaItem extends LitElement {
           text: "Editar Nota",
           tooltip: "Edit",
           value: "editar",
-          callback: () => {
-            console.log("Editar Nota CLICK");
-            alert('En construccion')
-          },
+          callback: () => 
+            Router.go(gbl_state.router.location.getUrl() + "/nota/"+ this.item._id+"/edit"),
         },
         {
           text: "Generar Planificación",
           tooltip: "Generar Planificación",
           value: "generar_planificacion",
           callback: () => {
-            let url_pla = url_planificacion(this.item)
-            Router.go(url_pla)
+            let url_pla = url_planificacion(this.item);
+            Router.go(url_pla);
             console.log("Generar Aplicacion CLICK");
           },
         },
@@ -57,7 +60,7 @@ export class NotaItem extends LitElement {
           value: "generar_planificacion",
           callback: () => {
             console.log("Borrar CLICK");
-            this.borrar_nota(this.item)
+            this.borrar_nota();
           },
         },
       ],
@@ -87,7 +90,7 @@ export class NotaItem extends LitElement {
 
   borrar_nota() {
     console.log("Borrar Nota");
-    gbl_state.db.remove(this.item as PouchDB.Core.RemoveDocument);
+    gbl_state.db.remove((<unknown>this.item) as PouchDB.Core.RemoveDocument);
     this.solicitar_refresco();
   }
 
@@ -120,9 +123,8 @@ export class NotaItem extends LitElement {
   private audio = [];
 
   willUpdate(p) {
-
-    if(p.has('item')){
-      if ("_attachments" in (this.item)) {
+    if (p.has("item")) {
+      if ("_attachments" in this.item) {
         Object.entries(this.item._attachments).map(([key, item]) => {
           if (key.indexOf("foto") > -1) {
             this.imagenes.push(item.data);
@@ -135,7 +137,7 @@ export class NotaItem extends LitElement {
           }
         });
 
-        console.log("IMG", this.imagenes, "Audio", this.audio)
+        console.log("IMG", this.imagenes, "Audio", this.audio);
       }
     }
   }
@@ -149,28 +151,34 @@ export class NotaItem extends LitElement {
     this.dispatchEvent(event);
   }
 
-  emit_gallery_open(){
-    this.dispatchEvent(new CustomEvent('gallery-open',{detail:{},bubbles:true,composed:true}))
+  emit_gallery_open() {
+    this.dispatchEvent(
+      new CustomEvent("gallery-open", {
+        detail: {},
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
-  emit_gallery_closed(){
-    this.dispatchEvent(new CustomEvent('gallery-closed',{detail:{},bubbles:true,composed:true}))
+  emit_gallery_closed() {
+    this.dispatchEvent(
+      new CustomEvent("gallery-closed", {
+        detail: {},
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   render() {
     let color_badge;
     if (this.item.color === "red") {
-      color_badge = html`<span theme="badge error"
-        >Urgente</span
-      >`;
+      color_badge = html`<span theme="badge error">Urgente</span>`;
     } else if (this.item.color === "yellow") {
-      color_badge = html`<span theme="badge warning"
-        >Atención</span
-      >`;
+      color_badge = html`<span theme="badge warning">Atención</span>`;
     } else if (this.item.color === "green") {
-      color_badge = html`<span theme="badge success"
-        >Todo Bien</span
-      >`;
+      color_badge = html`<span theme="badge success">Todo Bien</span>`;
     }
 
     return html`
@@ -181,7 +189,7 @@ export class NotaItem extends LitElement {
         <div>
           <span theme="badge">${this.item.fecha}</span>
           ${color_badge}
-          <a> NOTA</a> 
+          <a> NOTA</a>
         </div>
         <vaadin-menu-bar
           .items="${this.menu_items}"
@@ -192,65 +200,146 @@ export class NotaItem extends LitElement {
         </vaadin-menu-bar>
       </vaadin-horizontal-layout>
 
-      ${this.item.texto}
+      <vaadin-tabsheet>
+        <vaadin-tabs slot="tabs">
+          <vaadin-tab id="nota-tab">Nota</vaadin-tab>
+          <vaadin-tab id="attachments-tab">Adjuntos</vaadin-tab>
+        </vaadin-tabs>
 
-      <p class="small"></p>
+        <div tab="nota-tab">
+          ${this.item.texto}
 
-      <div class="row mx-1">
+          <p class="small"></p>
 
-                  <!--Galeria-->
-                  <light-gallery-demo
+          <div class="row mx-1">
+            <!--Galeria-->
+            <light-gallery-demo
               .list=${this.imagenes.map(imagen_objeto_gallery)}
               @beforeOpen=${() => {
                 //this.nueva_nota_offcanvas.hide();
-                this.emit_gallery_open()
+                this.emit_gallery_open();
                 console.log("hide offcanvas");
               }}
-              @borrarImagen=${(e)=>{
-                let index = e.detail.index
-                let instance = e.detail.instance
+              @borrarImagen=${(e) => {
+                let index = e.detail.index;
+                let instance = e.detail.instance;
                 //alert('borrar imagen index')
-                this.imagenes.splice(index,1)
-                this.requestUpdate()
+                this.imagenes.splice(index, 1);
+                this.requestUpdate();
               }}
               @afterClose=${() => this.emit_gallery_closed()}
             >
             </light-gallery-demo>
+          </div>
 
+          <div class="row my-1">
+            ${this.audio.length > 0
+              ? html`<audio controls><source .src=${URL.createObjectURL(
+                  this.audio[0].data
+                )}></source></audio>`
+              : null}
+          </div>
 
-      </div>
+          <vaadin-button
+            class="btn btn-danger"
+            @click=${() => {
+              this.localizar(this.item);
+            }}
+          >
+            Localizar
+          </vaadin-button>
+        </div>
 
-      <div class="row my-1">
-        ${this.audio.length > 0
-          ? html`<audio controls><source .src=${URL.createObjectURL(
-              this.audio[0].data
-            )}></source></audio>`
-          : null}
-      </div>
+        <div tab="attachments-tab">
+          <vaadin-vertical-layout style="align-self:stretch">
+            ${this.item.attachments
+              ? this.item.attachments.map(
+                  (att) => html`
+                    <vaadin-horizontal-layout
+                      style="width:100%; align-items:center; justify-content:space-between"
+                      theme="spacing"
+                    >
+                      <div>${att.filename}</div>
+                      <div>
+                        <!-- Grupo botones -->
 
-      <vaadin-button
-        class="btn btn-danger"
-        @click=${() => {
-          this.localizar(this.item);
-        }}
-      >
-        Localizar
-      </vaadin-button>
+                        <!-- <vaadin-button @click=${() => {
+                          let n = att.filename;
+                          if (n.includes(".shp")) {
+                            //Show on map
+                          } else if (n.includes(".jpg")) {
+                            // Open lightbox
+                          }
+                        }}>
+                      <vaadin-icon icon='lumo:eye'></vaadin-icon>
+                      </vaadin-button> -->
+                        <vaadin-button
+                          @click=${() => {
+                            fetch(
+                              "/attachments?file=" +
+                                encodeURIComponent(att.filename)
+                            )
+                              .then((r) => {
+                                return r.blob();
+                              })
+                              .then((data) => {
+                                // Download Fetch
+                                var a = document.createElement("a");
+                                a.href = window.URL.createObjectURL(data);
+                                a.download = att.filename;
+                                a.click();
+                              });
+                          }}
+                        >
+                          <vaadin-icon icon="lumo:download"></vaadin-icon>
+                        </vaadin-button>
+                        <vaadin-button
+                          @click=${() => {
+                            // Solicitar borrado en server y en la db
+                            nota_remover_adjunto(this.item, att.uuid).then(() =>
+                              this.requestUpdate()
+                            );
+                          }}
+                          ><vaadin-icon icon="vaadin:trash"></vaadin-icon
+                        ></vaadin-button>
+                      </div>
+                    </vaadin-horizontal-layout>
+                  `
+                )
+              : html`${translate("sin_adjuntos")}`}
+          </vaadin-vertical-layout>
+
+          <vaadin-upload
+            target="/attachments"
+            .files=${
+              [] /* Previene que se agregen los archivos debajo del control*/
+            }
+            @upload-success=${(e) => {
+              console.log("successevent", e);
+              nota_adjuntar_archivo(this.item, e.detail.file).then(() => {
+                this.requestUpdate();
+              });
+            }}
+          ></vaadin-upload>
+        </div>
+      </vaadin-tabsheet>
     `;
   }
 }
 
-const url_planificacion = (item_nota:Actividad) => {
+const url_planificacion = (item_nota: Nota) => {
   let location = gbl_state.router.location.pathname;
-  let params ={
+  let params = {
     motivos: item_nota.motivos_nota,
     comentario: item_nota.texto,
-    fecha_nota:item_nota.fecha
-  }
-  console.log("PARAMS",params)
+    fecha_nota: item_nota.fecha,
+  };
+  console.log("PARAMS", params);
 
   let url =
-    location + "/actividad/nueva/aplicacion?params=" + encodeURIComponent(JSON.stringify(params));
+    location +
+    "/actividad/nueva/aplicacion?params=" +
+    encodeURIComponent(JSON.stringify(params));
   return url;
 };
 
@@ -269,7 +358,6 @@ const imagen_objeto_gallery = (file: Blob) => {
 
   return objeto;
 };
-
 
 // <!-- ${this.imagenes.map((img) => {
 //   return html`<img

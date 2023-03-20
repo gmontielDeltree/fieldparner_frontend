@@ -1,4 +1,4 @@
-import { Campo } from './tipos/campos';
+import { Campo } from "./tipos/campos";
 import { format, isAfter, isBefore, isWithinInterval } from "date-fns";
 import { gbl_state } from "./state";
 import parseISO from "date-fns/parseISO";
@@ -318,21 +318,31 @@ export const tabla_de_colores = async () => {
     .then((doc) => {
       if (doc.rows.length > 0) {
         return doc.rows[0].doc.colors;
-      }else{
-        let tabla = {}
+      } else {
+        let tabla = {};
         cultivos.forEach((cultivo) => {
-          tabla[cultivo.key] = hashStringToColor(
-            cultivo.key
-          );
-        })
+          tabla[cultivo.key] = hashStringToColor(cultivo.key);
+        });
         return tabla;
       }
     });
 };
 
-export const campo_guardar = async (campodoc:Campo) => {
+export const campo_guardar = async (campodoc: Campo) => {
   return gbl_state.db.put(campodoc);
-}
+};
+
+export const upload_file = async (fileblob: File) => {
+  let formData = new FormData();
+  formData.set("file", fileblob);
+  // const data = new URLSearchParams();
+  // data.append('file',fileblob);
+
+  return fetch("/attachments", {
+    method: "post",
+    body: formData,
+  });
+};
 
 export {
   emptyGJ,

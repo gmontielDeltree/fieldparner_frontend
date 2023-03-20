@@ -1,7 +1,11 @@
+import { upload_file } from "./../helpers";
 import {
   nota_adjuntar_archivo,
   Nota,
   nota_remover_adjunto,
+  nota_nueva,
+  cargar_nota,
+  guardar_nota,
 } from "./notas-fuciones";
 import { LitElement, html, unsafeCSS } from "lit";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
@@ -12,39 +16,40 @@ import { uuid4 } from "uuid4";
 import { LngLat, Map, Marker } from "mapbox-gl";
 import { format, parse, isBefore, parseISO } from "date-fns";
 import "@vaadin/text-area";
-import { touchEvent } from "../helpers";
+import { get_lote_by_names, touchEvent } from "../helpers";
 import "../audiorecorder/index.js";
 
 import Offcanvas from "bootstrap/js/dist/offcanvas.js";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import formatISO from "date-fns/formatISO";
 import centroid from "@turf/centroid";
 import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n";
 import { motivos_items } from "../jsons/motivos_items";
-import { translate } from "lit-translate";
+import { get, translate } from "lit-translate";
 import { gbl_state } from "../state";
 import "../image-gallery/images-gallery";
+import { RouterLocation } from "@vaadin/router";
+import { uuidv7 } from "uuidv7";
+import { Task } from "@lit-labs/task";
+import { showNotification } from "../helpers/notificaciones";
+import { RadioGroup } from "@vaadin/radio-group";
+import { UploadFile } from "@vaadin/upload";
 
 export class NotasOffcanvas extends LitElement {
   @property()
-  lote_doc: any;
+  location: RouterLocation;
 
   @property()
-  mostrar: Boolean;
+  lote_doc: any;
+
+  private mostrar: Boolean = true;
 
   /* Internos */
 
   private nueva_nota_offcanvas: Offcanvas;
 
-  @property()
-  imagenes: any;
-
-  @property({
-    hasChanged(newVal, oldVal) {
-      return false;
-    },
-  })
-  ver_nota_offcanvas: boolean;
+  @state()
+  imagenes: any = [];
 
   @property()
   handler_id: any;
@@ -53,63 +58,86 @@ export class NotasOffcanvas extends LitElement {
   posicion: any;
 
   @property()
-  fecha: any;
-
-  @property()
-  texto: string;
-
-  @property()
-  color: any;
-
-  @property()
   audio: any;
 
   @property()
   nota_marker: Marker;
 
   @property()
-  modo_geolocalizacion: any;
+  proxima_fecha: string;
 
-  @property()
-  db: PouchDB.Database;
-
-  @property()
-  map: Map;
-
-  @property()
-  proxima_fecha;
-
-  @property()
-  motivos_nota: any[];
+  @state()
+  editing: boolean = false;
 
   static styles = unsafeCSS(bootstrap);
 
-  private lanota: Nota = { attachments: null };
+  private lanota: Nota = nota_nueva();
 
-  constructor() {
-    super();
-    this.imagenes = [];
-    this.texto = "sssss";
-    this.fecha = new Date().toISOString().split("T")[0];
-    this.color = "red";
-    this.modo_geolocalizacion = "mapa";
-    this.motivos_nota = [];
+  private _loadTask = new Task(
+    this,
+    () => this.load_data(this.location),
+    () => [this.location]
+  );
+
+  async load_data(location: RouterLocation) {
+    // Editando o nuevo
+    if (location.params.uuid) {
+      if (location.pathname.includes("edit")) {
+        this.editing = true;
+      }
+      let item_uuid = location.params.uuid as string;
+      let lote_uuid = location.params.uuid_lote as string;
+      let campo_uuid = location.params.uuid_campo as string;
+      get_lote_by_names(gbl_state.db, campo_uuid, lote_uuid).then((lote) => {
+        this.lote_doc = lote;
+        this.nueva_nota();
+      });
+
+      return cargar_nota(item_uuid)
+        .then((d) => (this.lanota = d))
+        .catch((e) => {
+          console.error(e);
+          showNotification(get("error_al_cargar"), "error");
+        });
+    } else {
+      let lote_uuid = location.params.uuid_lote as string;
+      let campo_uuid = location.params.uuid_campo as string;
+
+      return get_lote_by_names(gbl_state.db, campo_uuid, lote_uuid).then(
+        (lote) => {
+          this.lote_doc = lote;
+          this.lanota = nota_nueva();
+          //this.editing = true;
+          this.nueva_nota();
+        }
+      );
+    }
   }
+  // constructor() {
+  //   super();
+  //   this.imagenes = [];
+  //   this.texto = "sssss";
+  //   this.fecha = new Date().toISOString().split("T")[0];
+  //   this.color = "red";
+  //   this.modo_geolocalizacion = "mapa";
+  //   this.motivos_nota = [];
+  // }
 
   firstUpdated() {
+    console.log("FIRST UPDATE NOTAS OFFANVAS");
     this.nueva_nota_offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas-nueva-nota")
     );
 
-    if (this.mostrar) {
-      this.nueva_nota();
-    }
+    // if (this.mostrar) {
+    //   this.nueva_nota();
+    // }
   }
 
   hide() {
     this.nueva_nota_offcanvas.hide();
 
-    this.map.off(touchEvent, this.mover_marcador);
+    gbl_state.map.off(touchEvent, this.mover_marcador);
 
     let event = new CustomEvent("nueva-nota", {
       bubbles: true,
@@ -123,6 +151,7 @@ export class NotasOffcanvas extends LitElement {
     });
     this.dispatchEvent(event_fin);
 
+    history.back();
     // this.inicializar_componente();
   }
 
@@ -138,7 +167,7 @@ export class NotasOffcanvas extends LitElement {
     //   (pos) => {
     //     this.posicion = pos;
     //     this.nota_marker.setLngLat([pos.coords.longitude, pos.coords.latitude]);
-    //     this.map.flyTo({
+    //     gbl_state.map.flyTo({
     //       center: [pos.coords.longitude, pos.coords.latitude],
     //       padding: { bottom: 200 },
     //       zoom: 15,
@@ -147,10 +176,6 @@ export class NotasOffcanvas extends LitElement {
     //   this.posicion_error,
     //   { enableHighAccuracy: true }
     // );
-  }
-
-  ver_nota() {
-    this.ver_nota_offcanvas.show();
   }
 
   anadir_foto_click() {
@@ -174,11 +199,11 @@ export class NotasOffcanvas extends LitElement {
   };
 
   cambio_geo_modo(e) {
-    this.modo_geolocalizacion = e.target.value;
-    console.log("Cambio Radio", e, this.modo_geolocalizacion);
+    this.lanota.modo_geolocalizacion = e.target.value;
+    console.log("Cambio Radio", e, this.lanota.modo_geolocalizacion);
 
-    if (this.modo_geolocalizacion === "dispositivo") {
-      this.map.off(touchEvent, this.mover_marcador);
+    if (this.lanota.modo_geolocalizacion === "dispositivo") {
+      gbl_state.map.off(touchEvent, this.mover_marcador);
       this.handler_id = navigator.geolocation.watchPosition(
         (pos) => {
           this.posicion = pos;
@@ -186,49 +211,49 @@ export class NotasOffcanvas extends LitElement {
             pos.coords.longitude,
             pos.coords.latitude,
           ]);
-          this.map.flyTo({
+          gbl_state.map.flyTo({
             center: [pos.coords.longitude, pos.coords.latitude],
-            padding: { bottom: 200 },
+            padding: { bottom: 200, top: 0, left: 0, right: 0 },
             zoom: 15,
           });
         },
         this.posicion_error,
         { enableHighAccuracy: true }
       );
-    } else if (this.modo_geolocalizacion === "mapa") {
-      this.map.on(touchEvent, this.mover_marcador);
+    } else if (this.lanota.modo_geolocalizacion === "mapa") {
+      gbl_state.map.on(touchEvent, this.mover_marcador);
       navigator.geolocation.clearWatch(this.handler_id);
     }
   }
 
   color_change(e) {
     console.log("Color Change", e);
-    this.color = e.target.value;
+    this.lanota.color = e.target.value;
   }
 
   inicializar_componente() {
     //this.nueva_nota_offcanvas.hide();
-    this.imagenes = [];
-    this.color = "red";
-    this.texto = "";
-    this.fecha = new Date().toISOString().split("T")[0];
+    // this.imagenes = [];
+    // this.color = "red";
+    // this.texto = "";
+    // this.fecha = new Date().toISOString().split("T")[0];
 
-    if (this.modo_geolocalizacion === "dispositivo") {
+    if (this.lanota.modo_geolocalizacion === "dispositivo") {
       // Remover el handler de refresco de posicion
       navigator.geolocation.clearWatch(this.handler_id);
     } else {
       // Remover el callback de hacer click
-      this.map.off(touchEvent, this.mover_marcador);
+      gbl_state.map.off(touchEvent, this.mover_marcador);
     }
 
     //this.nota_marker?.remove();
 
     this.nota_marker = new Marker()
-      .setLngLat(this.map.getCenter())
-      .addTo(this.map);
+      .setLngLat(gbl_state.map.getCenter())
+      .addTo(gbl_state.map);
 
-    this.modo_geolocalizacion = "mapa";
-    this.map.on(touchEvent, this.mover_marcador);
+    this.lanota.modo_geolocalizacion = "mapa";
+    gbl_state.map.on(touchEvent, this.mover_marcador);
 
     let centroide = centroid(this.lote_doc);
     let punto_marker: LngLat = new LngLat(
@@ -238,10 +263,11 @@ export class NotasOffcanvas extends LitElement {
     let fake_e = { lngLat: punto_marker };
     this.mover_marcador(fake_e);
 
-    this.shadowRoot.getElementById("mapa").checked = true;
+    (<HTMLInputElement>this.shadowRoot.getElementById("mapa")).checked = true;
 
     // Color por defecto
-    this.shadowRoot.getElementById("btnradio-red").checked = true;
+    (<HTMLInputElement>this.shadowRoot.getElementById("btnradio-red")).checked =
+      true;
 
     // Audio
     if (this.audio) {
@@ -262,33 +288,53 @@ export class NotasOffcanvas extends LitElement {
     }
 
     let lote_id = this.lote_doc.properties.uuid;
-    let fecha = format(parse(this.fecha, "yyyy-MM-dd", new Date()), "yyyyMMdd");
+    let fecha = format(
+      parse(this.lanota.fecha, "yyyy-MM-dd", new Date()),
+      "yyyyMMdd"
+    );
 
-    const nota_uuid = uuid4();
+    if (!this.editing) {
+      const nota_uuid = uuidv7();
+      this.lanota._id = "actividad:" + fecha + ":" + nota_uuid;
+    }
 
-    const nota = {
-      _id: "actividad:" + fecha + ":" + nota_uuid,
-      ts_generacion: new Date().toISOString(),
-      lote_uuid: this.lote_doc.id,
-      tipo: "nota",
-      color: this.color,
-      texto: this.texto,
-      fecha: this.fecha,
-      proxima_visita: this.proxima_fecha
-        ? formatISO(parse(this.proxima_fecha, "yyyy-MM-dd", new Date()))
-        : "",
-      url_referencia: `/campo/${encodeURIComponent(
-        this.lote_doc.properties.campo_parent_id
-      )}/lote/${encodeURIComponent(this.lote_doc.properties.nombre)}`,
-      lote_nombre: this.lote_doc.properties.nombre,
-      posicion: [this.posicion.coords.longitude, this.posicion.coords.latitude],
-      _attachments: {},
-      motivos_nota: this.motivos_nota,
-    };
+    this.lanota.lote_uuid = this.lote_doc.id;
+
+    // this.lanota.proxima_visita = this.lanota.proxima_visita
+    //   ? formatISO(parse(this.lanota.proxima_visita, "yyyy-MM-dd", new Date()))
+    //   : "";
+
+    this.lanota.url_referencia = `/campo/${encodeURIComponent(
+      this.lote_doc.properties.campo_parent_id
+    )}/lote/${encodeURIComponent(this.lote_doc.properties.nombre)}`;
+
+    this.lanota.lote_nombre = this.lote_doc.properties.nombre;
+    this.lanota.posicion = [
+      this.posicion.coords.longitude,
+      this.posicion.coords.latitude,
+    ];
+    // const nota: Nota = {
+    //   _id:
+    //   lote_uuid: this.lote_doc.id,
+    //   tipo: "nota",
+    //   color: this.color,
+    //   texto: this.texto,
+    //   fecha: this.fecha,
+    //   proxima_visita: this.proxima_fecha
+    //     ? formatISO(parse(this.proxima_fecha, "yyyy-MM-dd", new Date()))
+    //     : "",
+    //   url_referencia: `/campo/${encodeURIComponent(
+    //     this.lote_doc.properties.campo_parent_id
+    //   )}/lote/${encodeURIComponent(this.lote_doc.properties.nombre)}`,
+    //   lote_nombre: this.lote_doc.properties.nombre,
+    //   posicion: [this.posicion.coords.longitude, this.posicion.coords.latitude],
+    //   _attachments: {},
+    //   motivos_nota: this.motivos_nota,
+    // };
 
     // Imagenes
     this.imagenes.map((i) => {
-      nota._attachments["foto_" + uuid4()] = {
+      this.lanota._attachments["foto_" + uuid4()] = {
         data: i,
         type: i.type,
       };
@@ -297,25 +343,24 @@ export class NotasOffcanvas extends LitElement {
     // Audio
     if (this.audio) {
       // Fruto de compartido
-      nota._attachments["audio_" + uuid4()] = {
+      this.lanota._attachments["audio_" + uuid4()] = {
         data: this.audio, // Es un blob
         type: this.audio.type,
       };
     } else {
       if (this.shadowRoot.getElementById("audio-recorder").blob) {
-        nota._attachments["audio_" + uuid4()] = {
+        this.lanota._attachments["audio_" + uuid4()] = {
           data: this.shadowRoot.getElementById("audio-recorder").blob,
           type: this.shadowRoot.getElementById("audio-recorder").blob.type,
         };
       }
     }
 
-    this.db
-      .put(nota)
+    guardar_nota(this.lanota)
       .then(() => {
-        console.log("Nota grabada OK");
+        console.log("Nota grabada OK", this.lanota);
         //this.inicializar_componente();
-        this.map.off(touchEvent, this.mover_marcador);
+        gbl_state.map.off(touchEvent, this.mover_marcador);
 
         this.nueva_nota_offcanvas.hide();
         let event = new CustomEvent("nueva-nota", {
@@ -323,14 +368,21 @@ export class NotasOffcanvas extends LitElement {
           composed: true,
         });
         this.dispatchEvent(event);
+        history.back();
       })
       .catch((e) => {
         console.log("Error al grabar Nota", e);
         alert("Error al grabar Nota");
+
+        history.back();
       });
   }
 
   render() {
+    const es_imagen = (filename: string) => {
+      return filename.includes("png");
+    };
+
     let limite_maximo = isBefore(
       new Date(),
       parseISO(gbl_state.campana_seleccionada.fin)
@@ -432,10 +484,10 @@ export class NotasOffcanvas extends LitElement {
                 placeholder="YYYY-MM-DD"
                 .min=${gbl_state.campana_seleccionada.inicio}
                 .max=${limite_maximo}
-                .value=${this.fecha}
+                .value=${this.lanota.fecha}
                 allowed-char-pattern="[]"
                 .i18n=${base_i18n}
-                @change=${(e) => (this.fecha = e.target.value)}
+                @change=${(e) => (this.lanota.fecha = e.target.value)}
               ></vaadin-date-picker>
 
               <vaadin-radio-group label="Geolocalizar Usando">
@@ -511,25 +563,25 @@ export class NotasOffcanvas extends LitElement {
 
             <vaadin-text-area
               placeholder="Tus comentarios..."
-              .value=${this.texto}
+              .value=${this.lanota.texto}
               autoselect
-              @input=${(e) => (this.texto = e.target.value)}
+              @input=${(e) => (this.lanota.texto = e.target.value)}
             ></vaadin-text-area>
 
-            <!--Galeria-->
+            <!-- Galeria
             <light-gallery-demo
               .list=${this.imagenes.map(imagen_objeto_gallery)}
               @beforeOpen=${() => {
-                this.nueva_nota_offcanvas.hide();
-                console.log("hide offcanvas");
-              }}
+              this.nueva_nota_offcanvas.hide();
+              console.log("hide offcanvas");
+            }}
               @borrarImagen=${(e) => {
-                let index = e.detail.index;
-                let instance = e.detail.instance;
-                //alert('borrar imagen index')
-                this.imagenes.splice(index, 1);
-                this.requestUpdate();
-              }}
+              let index = e.detail.index;
+              let instance = e.detail.instance;
+              //alert('borrar imagen index')
+              this.imagenes.splice(index, 1);
+              this.requestUpdate();
+            }}
               @afterClose=${() => this.nueva_nota_offcanvas.show()}
             >
             </light-gallery-demo>
@@ -537,7 +589,7 @@ export class NotasOffcanvas extends LitElement {
               ${this.imagenes.map(imagen_element)}
             </div> -->
 
-            <input
+            <!-- <input
               id="foto-upload-input"
               class="d-none"
               type="file"
@@ -552,15 +604,25 @@ export class NotasOffcanvas extends LitElement {
               class="btn btn-success"
             >
               Añadir Foto
-            </button>
+            </button>  -->
 
-            ${this.audio
-              ? html`<audio controls><source .src=${URL.createObjectURL(
-                  this.audio
-                )}></source></audio>`
-              : html`<div class="row" id="audio-div">
-                  <audio-recorder id="audio-recorder"></audio-recorder>
-                </div>`}
+            <div class="row" id="audio-div">
+              <audio-recorder
+                id="audio-recorder"
+                @recordingCompleted=${(e) => {
+                  console.log("RECORDING COMPLETED", e);
+                  let audio = e.detail as File;
+                  upload_file(audio).then(() => {
+                    this.lanota.audio_url = audio.name;
+                  });
+                }}
+              ></audio-recorder>
+            </div>
+            ${this.lanota.audio_url
+              ? html`<audio controls><source .src=${
+                  "/attachments?file=" + this.lanota.audio_url
+                }></source></audio>`
+              : null}
 
             <div>
               <!--upload-->
@@ -572,6 +634,7 @@ export class NotasOffcanvas extends LitElement {
                       style="width:100%; align-items:center; justify-content:space-between"
                       theme="spacing"
                     >
+                      ${es_imagen(att.filename) ? html`` : null}
                       <div>${att.filename}</div>
                       <div> <!-- Grupo botones -->
 
@@ -616,7 +679,7 @@ export class NotasOffcanvas extends LitElement {
               <vaadin-upload
                 target="/attachments"
                 .files=${
-                  [] /* Previene que se agregen los archivos debajo del control*/
+                  [] as UploadFile[] /* Previene que se agregen los archivos debajo del control*/
                 }
                 @upload-success=${(e) => {
                   console.log("successevent", e);
@@ -631,12 +694,12 @@ export class NotasOffcanvas extends LitElement {
               id="nota-proxima-date-picker"
               label="Proxima Visita"
               placeholder="YYYY-MM-DD"
-              .value=${this.proxima_fecha}
+              .value=${this.lanota.proxima_visita}
               .i18n=${base_i18n}
               .min=${format(new Date(), "yyyy-MM-dd")}
               .max=${gbl_state.campana_seleccionada.fin}
               allowed-char-pattern="[]"
-              @change=${(e) => (this.proxima_fecha = e.target.value)}
+              @change=${(e) => (this.lanota.proxima_visita = e.target.value)}
             ></vaadin-date-picker>
 
             <vaadin-multi-select-combo-box
@@ -644,10 +707,15 @@ export class NotasOffcanvas extends LitElement {
               .items=${motivos_items}
               item-label-path="nombre"
               @selected-items-changed=${(e) =>
-                (this.motivos_nota = e.target.selectedItems)}
+                (this.lanota.motivos_nota = e.target.selectedItems)}
             >
             </vaadin-multi-select-combo-box>
           </vaadin-vertical-layout>
+
+          ${this._loadTask.render({
+            pending: () => html`${translate("cargando")}`,
+            complete: (proveedores) => html``,
+          })}
         </div>
       </div>
 

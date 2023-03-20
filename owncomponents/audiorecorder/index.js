@@ -100,6 +100,9 @@ window.customElements.define('audio-recorder',
         });
     }
 
+    emitEvent(fileblob){
+      this.dispatchEvent(new CustomEvent('recordingCompleted',{detail:fileblob,bubbles:true,composed:true}))
+    }
     // Evento Stop
     stop(){
       let startStopButton = this.shadowRoot.querySelector('#start-stop');
@@ -119,31 +122,32 @@ window.customElements.define('audio-recorder',
 
       this.blob = audioBlob
 
-      let audio = document.createElement('audio');
-      audio.blob = audioBlob
-      audio.setAttribute('src', blobUrl);
-      audio.setAttribute('controls', '');
-      audio.classList.add('my-2');
-      audio.classList.add('col-8');
+      // let audio = document.createElement('audio');
+      // audio.blob = audioBlob
+      // audio.setAttribute('src', blobUrl);
+      // audio.setAttribute('controls', '');
+      // audio.classList.add('my-2');
+      // audio.classList.add('col-8');
 
-      audio.classList.add('nota-audio');
-      div.append(audio);
+      // audio.classList.add('nota-audio');
+      // div.append(audio);
 
-      let a = document.createElement('button');
-      a.innerText = "Borrar"
-      a.classList.add("btn");
-      a.classList.add("btn-danger");
-      a.classList.add("col-2");
-      a.addEventListener("click",(e)=>{
-        audio.remove();
-        a.remove();
-      })
+      // let a = document.createElement('button');
+      // a.innerText = "Borrar"
+      // a.classList.add("btn");
+      // a.classList.add("btn-danger");
+      // a.classList.add("col-2");
+      // a.addEventListener("click",(e)=>{
+      //   audio.remove();
+      //   a.remove();
+      // })
 
-      div.append(a);
-      //a.setAttribute('href', blobUrl);
-      //a.setAttribute('download', `recording-${new Date().toISOString()}.oga`);
-      //a.innerText = 'Download';
-      this.shadowRoot.append(div);
+      // div.append(a);
+      // //a.setAttribute('href', blobUrl);
+      // //a.setAttribute('download', `recording-${new Date().toISOString()}.oga`);
+      // //a.innerText = 'Download';
+      // this.shadowRoot.append(div);
+      this.emitEvent(audioBlob)
     }
   }
 );

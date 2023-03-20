@@ -114,7 +114,9 @@ export const routes = [
       {
         path: "/transfer/add/:direccion",
         action: async () => {
-          await import("./depositos/deposito-transferencias/deposito-nuevo-transferencias");
+          await import(
+            "./depositos/deposito-transferencias/deposito-nuevo-transferencias"
+          );
         },
         component: "deposito-nuevo-transferencias",
       },
@@ -196,13 +198,37 @@ export const routes = [
     ],
   },
   {
-    path : "/prices",
-    children:[
-      {path:"/",
-      action: async () => {
-        await import("./analisis-precios/analisis-precios");
+    path: "/prices",
+    children: [
+      {
+        path: "/",
+        action: async () => {
+          await import("./analisis-precios/analisis-precios");
+        },
+        component: "analisis-precios",
       },
-      component : "analisis-precios"},
-    ]
+    ],
+  },
+  {
+    path: "/campo/:uuid_campo/lote/:uuid_lote/nota",
+    action: async () => {
+      await import("./notas-offcanvas/notas-offcanvas");
+    },
+    children: [
+      {
+        path: "/:uuid/edit",
+        action: async () => {
+          await import("./notas-offcanvas/notas-offcanvas");
+        },
+        component: "notas-oc",
+      },
+      {
+        path: "/add",
+        component: "notas-oc",
+        action: async () => {
+          await import("./notas-offcanvas/notas-offcanvas");
+        },
+      },
+    ],
   },
 ];
