@@ -169,7 +169,7 @@ export class CampoOffcanvas extends LitElement {
   nuevo_lote_click() {
     // Mostrar Nueva Geometria - Lote
     this.shadowRoot.getElementById("nuevo-lote-ui").show = true;
-    alert("Development!!!! En construccion");
+    //alert("Development!!!! En construccion");
     this.hide();
   }
 
