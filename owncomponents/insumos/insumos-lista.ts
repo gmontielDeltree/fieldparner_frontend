@@ -165,30 +165,18 @@ export class InsumosLista extends LitElement {
     );
   };
 
-  private seAplicaARenderer = (
+  private tipoRenderer = (
     root: HTMLElement,
     _: HTMLElement,
     model: GridItemModel<Insumo>
   ) => {
     const insumo = model.item;
-    const se_aplica_a = insumo.se_aplica_a;
+    const tipo = insumo.tipo;
 
     render(
       html`
         <vaadin-vertical-layout>
-          ${se_aplica_a.map((c) => {
-            let theme = "";
-            if (c.cultivo === "Soja") {
-              theme = "primary success small";
-            } else if (c.cultivo === "Maiz") {
-              theme = "primary error small";
-            } else {
-              theme = "primary contrast small";
-            }
-            return html`<vaadin-button theme="theme"
-              >${c.cultivo}</vaadin-button
-            >`;
-          })}
+        ${tipo.nombre ?? insumo.tipo}
         </vaadin-vertical-layout>
       `,
       root
@@ -334,6 +322,7 @@ export class InsumosLista extends LitElement {
               <vaadin-grid-sort-column
                 header="Tipo"
                 path="tipo"
+                .renderer=${this.tipoRenderer}
                 resizable
               ></vaadin-grid-sort-column>
               <vaadin-grid-sort-column
@@ -346,11 +335,6 @@ export class InsumosLista extends LitElement {
                 path="unidad"
                 resizable
               ></vaadin-grid-sort-column>
-              <vaadin-grid-column
-                header="Se aplica a"
-                .renderer=${this.seAplicaARenderer}
-                resizable
-              ></vaadin-grid-column>
               <vaadin-grid-sort-column
                 header="Precio"
                 path="precio"
