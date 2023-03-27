@@ -24,7 +24,7 @@ import { isThisSecond } from "date-fns";
 import { GridItemModel } from "@vaadin/grid";
 import cultivos from "../jsons/cultivos";
 import { old_tipo_2_new, tipos_insumos } from "../jsons/tipos_insumos";
-import { get } from 'lit-translate';
+import { get } from "lit-translate";
 
 export class InsumoCrud extends LitElement {
   @property()
@@ -274,6 +274,41 @@ export class InsumoCrud extends LitElement {
             </div>
             <div class="modal-body">
               <vaadin-form-layout .responsiveSteps="${this.responsiveSteps}">
+                <!-- Stretch the username field over 2 columns -->
+                <vaadin-combo-box
+                  label="Tipo"
+                  .selectedItem=${typeof this.insumo.tipo === "string"
+                    ? old_tipo_2_new(<string>(this.insumo.tipo as unknown))
+                    : this.insumo.tipo}
+                  .itemLabelPath=${"nombre"}
+                  .items=${tipos_insumos}
+                  @selected-item-changed=${(e: any) => {
+                    //this.insumo.datos_generales.direccion = e.target.value;
+                    this.insumo = { ...this.insumo, tipo: e.detail.value };
+                  }}
+                ></vaadin-combo-box>
+
+                ${this.insumo.tipo?.key === "semillas"
+                  ? html`
+                      <vaadin-combo-box
+                        .label=${get("cultivo")}
+                        .items=${cultivos}
+                        .itemLabelPath=${"nombre"}
+                        @selected-item-changed=${(e) => {
+                          this.insumo.cultivo = e.detail.value;
+                        }}
+                      ></vaadin-combo-box>
+                    `
+                  : null}
+                <vaadin-text-field
+                  label="Subtipo"
+                  .value=${this.insumo.subtipo}
+                  @change=${(e: any) => {
+                    //this.insumo.datos_generales.telefono = e.target.value;
+                    this.insumo = { ...this.insumo, subtipo: e.target.value };
+                  }}
+                ></vaadin-text-field>
+
                 <vaadin-text-field
                   label="Marca Comercial"
                   .value=${this.insumo.marca_comercial}
@@ -296,38 +331,6 @@ export class InsumoCrud extends LitElement {
                     };
                   }}
                 ></vaadin-text-field>
-                <!-- Stretch the username field over 2 columns -->
-                <vaadin-combo-box
-                  label="Tipo"
-                  .selectedItem=${(typeof this.insumo.tipo) === 'string'? old_tipo_2_new(<string>(this.insumo.tipo as unknown)) : this.insumo.tipo}
-                  .itemLabelPath=${"nombre"}
-                  .items=${tipos_insumos}
-                  @selected-item-changed=${(e: any) => {
-                    //this.insumo.datos_generales.direccion = e.target.value;
-                    this.insumo = { ...this.insumo, tipo: e.detail.value };
-                  }}
-                ></vaadin-combo-box>
-
-                ${this.insumo.tipo?.key === 'semillas'
-                  ? html`
-                      <vaadin-combo-box
-                        .label=${get('cultivo')}
-                        .items=${cultivos}
-                        .itemLabelPath=${"nombre"}
-                        @selected-item-changed=${(e) => {
-                          this.insumo.cultivo = e.detail.value;
-                        }}
-                      ></vaadin-combo-box>
-                    `
-                  : null}
-                <vaadin-text-field
-                  label="Subtipo"
-                  .value=${this.insumo.subtipo}
-                  @change=${(e: any) => {
-                    //this.insumo.datos_generales.telefono = e.target.value;
-                    this.insumo = { ...this.insumo, subtipo: e.target.value };
-                  }}
-                ></vaadin-text-field>
 
                 <vaadin-text-field
                   label="Unidad"
@@ -343,7 +346,7 @@ export class InsumoCrud extends LitElement {
                 <vaadin-number-field
                   label="Precio de Lista"
                   name="precio"
-                  .value=${<unknown>this.insumo.precio as string}
+                  .value=${(<unknown>this.insumo.precio) as string}
                   @change=${(e: any) => {
                     //this.insumo.datos_generales.email = e.target.value;
                     this.insumo = { ...this.insumo, precio: e.target.value };
@@ -355,44 +358,29 @@ export class InsumoCrud extends LitElement {
                 >
                   <div slot="prefix">USD</div>
                 </vaadin-number-field>
+
+                <vaadin-horizontal-layout theme='spacing'>
+                  <vaadin-number-field label="Dosis min." 
+                  .value=${this.insumo.dosis_min ?? 0}
+                  @input=${(e)=>{
+                    this.insumo.dosis_min = e.target.value
+                  }}></vaadin-number-field>
+                  <vaadin-number-field
+                    label="Dosis sugerida"
+                    .value=${this.insumo.dosis_sugerida ?? 0}
+
+                    @input=${(e)=>{
+                    this.insumo.dosis_sugerida = e.target.value
+                  }}
+                  ></vaadin-number-field>
+                  <vaadin-number-field label="Dosis max."
+                  .value=${this.insumo.dosis_max ?? 0}
+
+                  @input=${(e)=>{
+                    this.insumo.dosis_max = e.target.value
+                  }}></vaadin-number-field>
+                </vaadin-horizontal-layout>
               </vaadin-form-layout>
-
-              ${!this._es_semilla
-                ? html`
-                    <!-- Grid detalles cultivos de insumo -->
-                    <div>
-                      <vaadin-button
-                        @click=${this.agregar_cultivo}
-                        theme="primary"
-                        tabindex="0"
-                        role="button"
-                        >Agregar Cultivo</vaadin-button
-                      >
-
-                      <vaadin-grid
-                        .items="${this.insumo.se_aplica_a.length === 0
-                          ? []
-                          : this.insumo.se_aplica_a}"
-                        all-rows-visible
-                      >
-                        <vaadin-grid-column
-                          header="Cultivo"
-                          path="cultivo"
-                          auto-width
-                        ></vaadin-grid-column>
-                        <vaadin-grid-column
-                          header="Estadio Desde"
-                          path="estadio_desde"
-                          auto-width
-                        ></vaadin-grid-column>
-                        <vaadin-grid-column
-                          header=""
-                          .renderer="${this.actionsRenderer}"
-                        ></vaadin-grid-column>
-                      </vaadin-grid>
-                    </div>
-                  `
-                : null}
             </div>
             <!-- End Modal Body -->
 
@@ -442,3 +430,40 @@ declare global {
     "insumo-crud": InsumoCrud;
   }
 }
+
+// <!-- ${!this._es_semilla
+//   ? html`
+//       <!-- Grid detalles cultivos de insumo -->
+//       <div>
+//         <vaadin-button
+//           @click=${this.agregar_cultivo}
+//           theme="primary"
+//           tabindex="0"
+//           role="button"
+//           >Agregar Cultivo</vaadin-button
+//         >
+
+//         <vaadin-grid
+//           .items="${this.insumo.se_aplica_a.length === 0
+//             ? []
+//             : this.insumo.se_aplica_a}"
+//           all-rows-visible
+//         >
+//           <vaadin-grid-column
+//             header="Cultivo"
+//             path="cultivo"
+//             auto-width
+//           ></vaadin-grid-column>
+//           <vaadin-grid-column
+//             header="Estadio Desde"
+//             path="estadio_desde"
+//             auto-width
+//           ></vaadin-grid-column>
+//           <vaadin-grid-column
+//             header=""
+//             .renderer="${this.actionsRenderer}"
+//           ></vaadin-grid-column>
+//         </vaadin-grid>
+//       </div>
+//     `
+//   : null} -->

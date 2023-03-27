@@ -38,6 +38,9 @@ interface Insumo {
   subtipo: string;
   unidad: string;
   precio: number;
+  dosis_min?:number;
+  dosis_sugerida?:number;
+  dosis_max?:number;
   se_aplica_a: CultivoAplicacion[];
   cultivo ?:Cultivo; // Si se trata de una semilla
 }

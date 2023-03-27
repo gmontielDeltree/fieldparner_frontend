@@ -11,7 +11,7 @@ import {
 import { motivos_items } from "../../jsons/motivos_items";
 import uuid4 from "uuid4";
 import { deepcopy } from "../../helpers";
-import { translate } from "lit-translate";
+import { get, translate } from "lit-translate";
 import { customElement, property, state } from "lit/decorators.js";
 import { Insumo } from "../../insumos/insumos-types";
 import "@vaadin/grid";
@@ -131,6 +131,7 @@ export class GridInsumosExe extends LitElement {
                   .selectedItem=${this.linea_de_dosis.insumo}
                   @selected-item-changed=${(e) => {
                     this.linea_de_dosis.insumo = e.detail.value;
+                    this.linea_de_dosis.dosis = this.linea_de_dosis.insumo.dosis_sugerida;
                     this.linea_de_dosis.precio_estimado =
                       this.linea_de_dosis.insumo?.precio || 0;
                     this.linea_de_dosis.precio_real =
@@ -167,8 +168,15 @@ export class GridInsumosExe extends LitElement {
             class=${item.uuid === "nuevo" ? "high-rating" : ""}
             value=${item.dosis}
             @change=${(e) => (item.dosis = +e.target.value)}
+            .min=${item.insumo?.dosis_min ?? -Infinity}
+            .max=${item.insumo?.dosis_max ?? Infinity}
+            helper-text=${item.uuid === "nuevo" && item.insumo
+            ?
+            "min: "+ (item.insumo?.dosis_min ?? "NA") +",max: " + (item.insumo?.dosis_max ?? "NA") : ""}
             @input=${(e) => {
               item.dosis = +e.target.value;
+              // Validacion dosis
+              console.log("Insumo dosis recomendada", item.insumo.se_aplica_a)
               item.total = truncar(
                 item.dosis * this.ejecucion.detalles.hectareas
               );
@@ -289,7 +297,15 @@ export class GridInsumosExe extends LitElement {
                     class=${item.uuid === "nuevo" ? "high-rating" : ""}
                     @click=${() => {
                       if (this.linea_de_dosis.insumo === null) {
-                        alert(translate("debe_ingresar_un_insumo"));
+                        alert(get("debe_ingresar_un_insumo"));
+                        return;
+                      }
+                      if (this.linea_de_dosis.dosis < this.linea_de_dosis.insumo.dosis_min) {
+                        alert(get("la dosis debe estar entre min y max"));
+                        return;
+                      }
+                      if (this.linea_de_dosis.dosis > this.linea_de_dosis.insumo.dosis_max) {
+                        alert(get("la dosis debe estar entre min y max"));
                         return;
                       }
                       let nuevo = deepcopy(
