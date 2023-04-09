@@ -46,14 +46,17 @@ export class AnalisisPrecios extends LitElement {
   );
 
   private mercados: any[] = [
-    { nombre: "Cámara Arbitral de Rosario", value: "car" },
+    { nombre: "Cámara Arbitral de Rosario", value: "car" }
   ];
   private products: any[] = [
-    { nombre: "Soja (pesos)", value: "soja" },
-    { nombre: "Trigo (pesos)", value: "trigo" },
-    { nombre: "Maiz (pesos)", value: "maiz" },
-    { nombre: "Girasol (pesos)", value: "girasol" },
-    { nombre: "Sorgo (pesos)", value: "sorgo" },
+    { nombre: "Rosario - Soja (pesos)", value: "soja" },
+    { nombre: "Rosario - Trigo (pesos)", value: "trigo" },
+    { nombre: "Rosario - Maiz (pesos)", value: "maiz" },
+    { nombre: "Rosario - Girasol (pesos)", value: "girasol" },
+    { nombre: "Rosario - Sorgo (pesos)", value: "sorgo" },
+    { nombre: "Chicago (CBOT) - Soja Front Month (usd)", value: "chicago_soybeans" },
+    { nombre: "Chicago (CBOT) - Trigo Front Month (usd)", value: "chicago_wheat" },
+    { nombre: "Chicago (CBOT) - Maiz Front Month (usd)", value: "chicago_corn" },
   ];
   private chart: ApexCharts;
 
@@ -184,7 +187,7 @@ export class AnalisisPrecios extends LitElement {
         <div slot="body">
           <vaadin-vertical-layout theme="spacing">
             <vaadin-horizontal-layout theme="spacing">
-              <vaadin-combo-box
+              <!-- <vaadin-combo-box
                 style="width:20em"
                 .label=${get("mercado")}
                 .items=${this.mercados}
@@ -195,8 +198,10 @@ export class AnalisisPrecios extends LitElement {
                   this.load_data();
                 }}
               >
-              </vaadin-combo-box>
+              </vaadin-combo-box> -->
               <vaadin-combo-box
+                style='width:25em'
+                placeholder=${get('seleccione_un_producto')}
                 .label=${get("productos")}
                 .items=${this.products}
                 .itemLabelPath=${"nombre"}
