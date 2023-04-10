@@ -12,7 +12,9 @@ import { touchEvent } from "../../helpers";
 import { forEach } from "jszip";
 import { add_download_xls_button } from "../excel_boton";
 
-export class HumedadCard extends LitElement {
+let variable = 'sensacion_termica'
+
+export class SensacionTermicaCard extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
     unsafeCSS(apex_css),
@@ -153,6 +155,7 @@ export class HumedadCard extends LitElement {
   }
 
   render() {
+    
     return html`
       <div class="container-fluid row border-primary border-top p-1 mx-auto">
         <div
@@ -170,22 +173,22 @@ export class HumedadCard extends LitElement {
           <div class="row">
             <h5>
               <img src="/water-droplet-icon.svg" width="50" height="50" />
-              <span class="fw-bolder">${valor(this.card, "humedad")} %</span>
+              <span class="fw-bolder">${valor(this.card, variable)} %</span>
             </h5>
           </div>
           <div class="row">
             <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "humedad_min")} %</div>
+              <div class="fw-strong">${valor(this.card, variable + "_min")} %</div>
               <div class="fw-light">Min</div>
             </div>
 
             <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "humedad_mean")} %</div>
+              <div class="fw-strong">${valor(this.card, variable + "_mean")} %</div>
               <div class="fw-light">Promedio</div>
             </div>
 
             <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "humedad_max")} %</div>
+              <div class="fw-strong">${valor(this.card, variable + "_max")} %</div>
               <div class="fw-light">Max</div>
             </div>
           </div>
@@ -218,10 +221,10 @@ export class HumedadCard extends LitElement {
   }
 }
 
-customElements.define("humedad-card", HumedadCard);
+customElements.define(variable + "-card", SensacionTermicaCard);
 
 declare global {
   interface HTMLElementTagNameMap {
-    "humedad-card": HumedadCard;
+    "sensacion-termica-card": SensacionTermicaCard;
   }
 }
