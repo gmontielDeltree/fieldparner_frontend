@@ -5,9 +5,9 @@ import { format, formatDistanceToNow, parse } from "date-fns";
 import es from "date-fns/locale/es";
 
 let geoblaze;
-import('geoblaze').then(({default:a})=>{
-  geoblaze=a
-})
+import("geoblaze").then(({ default: a }) => {
+  geoblaze = a;
+});
 
 import * as d3 from "d3";
 import booleanContains from "@turf/boolean-contains";
@@ -273,9 +273,9 @@ export class ObservacionCard extends LitElement {
     let id = contextRaster.createImageData(width, height);
     let data = id.data;
   }
-  rerender_img() {
-    //let container = this.shadowRoot.getElementById("container");
 
+  async rerender_img() {
+    //let container = this.shadowRoot.getElementById("container");
     // Dimensiones del raster
     let width = this.geoblaze_raster.width;
     let height = this.geoblaze_raster.height;
@@ -283,16 +283,37 @@ export class ObservacionCard extends LitElement {
     //Creating the color scale https://github.com/santilland/plotty/blob/master/src/plotty.js
     let cs;
 
-    if (this.escala_dinamica) {
-      cs = ["#001aff", "#ff1100", "#25a305"];
+    console.log("RERENDER IMG", this.indice);
+
+    if (this.indice.value === "ndmi") {
+      cs = ["#ffffff", "#86a4c8", "#084081"];
+    } else if (this.indice.value === "ndvi") {
+      if (this.escala_dinamica) {
+        cs = ["#001aff", "#ff1100", "#25a305"];
+      } else {
+        cs = ["#0f0505", "#ff0000", "#1aff00"];
+      }
     } else {
-      cs = ["#ff0000", "#ffff0d", "#1aff00"];
+      if (this.escala_dinamica) {
+        cs = ["#001aff", "#ff1100", "#25a305"];
+      } else {
+        cs = ["#ff0000", "#ffff0d", "#1aff00"];
+      }
     }
 
     var cs_def = {
       positions: [0, 0.5, 1],
       colors: cs,
     };
+
+    // if(this.escala_dinamica){
+    //   let pe = await geoblaze.stats(this.geoblaze_raster,this.lote_geojson);
+    //   console.log("ESCALA DINAMICA",pe[0].min, pe[0].mean, pe[0].max)
+    //   cs_def = {
+    //     positions: [pe[0].min, pe[0].mean, pe[0].max],
+    //     colors: cs,
+    //   };
+    // }
 
     var contextColorScale = this.canvasColorScale.node().getContext("2d");
 
@@ -314,7 +335,7 @@ export class ObservacionCard extends LitElement {
 
     //this.georaster_indice = this.geoblaze_raster; //await geoblaze.bandArithmetic(this.geoblaze_raster, "(a * 1)");
 
-    this.generar_canvas_data(
+    await this.generar_canvas_data(
       this.geoblaze_raster,
       data,
       height,
@@ -331,7 +352,11 @@ export class ObservacionCard extends LitElement {
     this.img_data_url = this.canvasRaster.node().toDataURL();
   }
 
-  generar_canvas_data(raster, data, h, w, scaleWidth, csImageData) {
+  async generar_canvas_data(raster, data, h, w, scaleWidth, csImageData) {
+    let pe = await geoblaze.stats(this.geoblaze_raster, this.lote_geojson);
+    let min = pe[0].min;
+    let max = pe[0].max;
+
     // Indice sobre ImageData data
     var pos = 0;
     // itero sobre cada pixel del canvas que estoy dibujando.
@@ -342,9 +367,19 @@ export class ObservacionCard extends LitElement {
     for (var j = 0; j < h; j++) {
       for (var i = 0; i < w; i++) {
         let value = raster.values[this.indice.banda][j][i];
-
+        // Value va desde -1 a 1
+        // -1..1 a 0..255
         // c 0-255 dependiendo del valor. 0,99 para dejar en offside al -1
+
+        // En escala dinamica hay que reescalar para que min..max a 0..255
+        // 1ra transformacion min..max to -1..1
+        if (this.escala_dinamica) {
+          let v_prima = (2 * (value - min)) / (max - min) - 1;
+          value = v_prima;
+        }
+
         var c = Math.round((scaleWidth - 1) * ((value + 0.99) / 2));
+
         var alpha = 255;
         if (c < 0 || c > scaleWidth - 1) {
           alpha = 0;
@@ -406,9 +441,13 @@ export class ObservacionCard extends LitElement {
     });
 
     return html`${this._loadDataTask.render({
-      pending: () => html`<div class="spinner-border text-success" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div> Procesando Imagen...`,
+      pending: () => html`<div
+          class="spinner-border text-success"
+          role="status"
+        >
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        Procesando Imagen...`,
       error: () => html`Error al fetching`,
       complete: (georaster) => html`<div
         class="card text-dark bg-light mb-3"

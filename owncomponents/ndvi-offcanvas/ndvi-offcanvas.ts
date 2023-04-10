@@ -688,6 +688,7 @@ export class NdviOffcanvas extends LitElement {
         ? null
         : html`<leyenda-ndvi
             .escala=${this.escala_dinamica ? "dinamica" : "fija"}
+            .index_value=${this.indice.value}
           ></leyenda-ndvi>`}
     `;
   }
