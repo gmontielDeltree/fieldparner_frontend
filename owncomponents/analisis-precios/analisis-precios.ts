@@ -147,6 +147,7 @@ export class AnalisisPrecios extends LitElement {
   }
 
   updateChart(data) {
+    
     this.chart.updateSeries([
       {
         name: "Price",
