@@ -3,7 +3,7 @@
 const devices_modelos : any = {
     // Chacabuco Altura
     "WMM-05S" : {
-        sensores : ["temperatura", "humedad", "presion","viento_velocidad","viento_direccion","punto_de_rocio", "inversion_termica", "stress_termico"],
+        sensores : ["temperatura", "humedad", "presion","viento_velocidad","viento_direccion","sensacion_termica","punto_de_rocio", "inversion_termica_chacabuco_baja", "stress_termico"],
         sensores_reales : ["temperatura", "humedad", "presion","velocidad","direccion"],
     },
     // Chacabuco Baja

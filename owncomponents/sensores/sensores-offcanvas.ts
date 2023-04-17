@@ -32,6 +32,8 @@ import "./mediciones-cards/humedad";
 import "./mediciones-cards/radiacion";
 import "./mediciones-cards/viento_velocidad";
 import "./mediciones-cards/viento_direccion";
+import "./mediciones-cards/sensacion_termica";
+import "./mediciones-cards/punto_de_rocio";
 import "./rosad3";
 
 import "./mediciones-cards/pluviometro";
@@ -686,6 +688,24 @@ export class SensoresClass extends LitElement {
                 /> `
               : null}
             <!--/Dir pluviometro-->
+
+            <!-- S. Termica  -->
+            ${ifLoadedShow("sensacion_termica")
+              ? html`<sensacion-termica-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!-- /S. Termica -->
+
+            <!-- P. Rocio  -->
+            ${ifLoadedShow("punto_de_rocio")
+              ? html`<punto-de-rocio-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!-- /P. Rocio -->
 
             <!-- Humedad Suelo-->
             ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(

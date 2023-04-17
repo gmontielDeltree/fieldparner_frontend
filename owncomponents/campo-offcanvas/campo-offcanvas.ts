@@ -266,23 +266,23 @@ export class CampoOffcanvas extends LitElement {
         </div>
         <div class="offcanvas-body small col pt-0">
           <p style="font-weight: bold">
-            ${this.campo_doc.campo_geojson.properties.hectareas} has.
+            ${this.campo_doc?.campo_geojson.properties.hectareas} has.
           </p>
 
           <p style="font-weight: bold">
-            ${this.campo_doc.lotes.length > 0
-              ? this.campo_doc.lotes.length + " lotes"
+            ${this.campo_doc?.lotes.length > 0
+              ? this.campo_doc?.lotes.length + " lotes"
               : null}
           </p>
 
           <p>
-            ${this.campo_doc.lotes.length > 0
+            ${this.campo_doc?.lotes.length > 0
               ? "Toque en un lote del mapa para ver detalles"
               : "Sin Lotes - Agregue uno!!!"}
           </p>
 
           <!-- <p>Toque en un lote del mapa para ver detalles</p> -->
-          ${this.campo_doc.lotes.length > 0
+          ${this.campo_doc?.lotes.length > 0
             ? null
             : html`<vaadin-button @click=${() => this.crear_lote_unico()}
                 >${get("crear_lote_unico")}</vaadin-button

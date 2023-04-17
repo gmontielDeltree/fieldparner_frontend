@@ -268,7 +268,7 @@ class Devices {
     let r = data.map((dp) => {
       // t1
       let array_de_mediciones = dp.data as DataPoints[];
-      console.log("array mediciones", array_de_mediciones);
+      // console.log("array mediciones", array_de_mediciones);
 
       if (uuid !== "sfdfsd") {
         return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));

@@ -12,15 +12,15 @@ import { touchEvent } from "../../helpers";
 import { forEach } from "jszip";
 import { add_download_xls_button } from "../excel_boton";
 import "../chart-component";
+import { HumedadCard } from "./humedad";
 
-let variable = "sensacion_termica";
-let titulo = "S. Térmica"
-let unidad = '°C'
-let icono = "/heat-2-svgrepo-com.svg"
-let component_name = "sensacion-termica-card"
+let variable = "punto_de_rocio";
+let titulo = "P. Rocio";
+let unidad = "°C";
+let icono = "/heat-2-svgrepo-com.svg";
+let component_name = "punto-de-rocio-card";
 
-
-export class SensacionTermicaCard extends LitElement {
+export class PuntoDeRocioCard extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
     unsafeCSS(apex_css),
@@ -43,31 +43,27 @@ export class SensacionTermicaCard extends LitElement {
   willUpdate(props) {
     // Esta es una propiedad derivada de la temp y la humedad
     if (props.has("data")) {
-
-
       let ts = this.data.ts;
 
       // Calcular la serie con los datos base
-      let serie : number[] = [];
-      let viento = this.data.velocidad
+      let serie: number[] = [];
+      let humedad = this.data.humedad;
+      let temperatura = this.data.temperatura;
 
       // 13.12 + 0.6215 T -11.37 V ^0.16 + 0.3965 T V ^0,16
-      this.data.temperatura.forEach((t,i) => {
-        let v = viento[i]
-        let st = 13.12 + 0.6215 * t - 11.37 * (v **(0.16)) + 0.3965 * t * (v ** 0.16)
-        serie.push(+(st.toFixed(1)))
+      temperatura.forEach((t, i) => {
+        let h = humedad[i];
+        let pc = ((h / 100) ** (1 / 8)) * (112 + 0.9 * t) + 0.1 * t - 112;
+        serie.push(+pc.toFixed(1));
       });
 
-      this.data[variable] = serie
-
-      
-
+      this.data[variable] = serie;
 
       // Serie podria ser filtrado por fecha
-      this._min =  +(Math.min(...serie).toFixed(1))
-      this._max = +(Math.max(...serie).toFixed(1))
-      this._avg  = +((serie.reduce((a,b) => a + b, 0) / serie.length).toFixed(1))
-      this._last_value = +(serie[serie.length-1].toFixed(1))
+      this._min = +Math.min(...serie).toFixed(1);
+      this._max = +Math.max(...serie).toFixed(1);
+      this._avg = +(serie.reduce((a, b) => a + b, 0) / serie.length).toFixed(1);
+      this._last_value = +serie[serie.length - 1].toFixed(1);
 
       console.log("DATA ST", this.data);
     }
@@ -95,7 +91,9 @@ export class SensacionTermicaCard extends LitElement {
           <div class="row">
             <h5>
               <img src=${icono} width="50" height="50" />
-              <span class="fw-bolder">${titulo} ${this._last_value} ${unidad}</span>
+              <span class="fw-bolder"
+                >${titulo} ${this._last_value} ${unidad}</span
+              >
             </h5>
           </div>
           <div class="row">
@@ -131,10 +129,10 @@ export class SensacionTermicaCard extends LitElement {
   }
 }
 
-customElements.define(component_name, SensacionTermicaCard);
+customElements.define(component_name, PuntoDeRocioCard);
 
 declare global {
   interface HTMLElementTagNameMap {
-    "sensacion-termica-card": SensacionTermicaCard;
+    "punto-de-rocio-card": PuntoDeRocioCard;
   }
 }

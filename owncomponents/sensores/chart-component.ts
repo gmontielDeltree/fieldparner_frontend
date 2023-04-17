@@ -1,16 +1,13 @@
-import { DailyTelemetryCard } from "../sensores-types";
 import { LitElement, html, unsafeCSS, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
-import { valor } from "../sensores";
+import { valor } from "./sensores";
 let ApexCharts;
 import("apexcharts").then(({ default: a }) => {
   ApexCharts = a;
 });
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
-import { touchEvent } from "../../helpers";
-import { forEach } from "jszip";
-import { add_download_xls_button } from "../excel_boton";
+import { add_download_xls_button } from "./excel_boton";
 
 export class ChartComponent extends LitElement {
   static override styles: CSSResultGroup = [
@@ -19,17 +16,21 @@ export class ChartComponent extends LitElement {
   ];
 
   @property()
-  card: DailyTelemetryCard;
+  variable_name: string;
 
   @property()
   data: any;
 
-  @state()
-  _show_chart_only: boolean = false;
+  @property()
+  show_chart_only: boolean = false;
+
+  private chart_1 : ApexCharts
 
   // Ocurre cuando ya se renderizo
   override updated(changedProps) {
     if (changedProps.has("data")) {
+      console.log("RENDER CHART")
+
       if (this.shadowRoot.getElementById("chart")) {
         this.renderCentralChart();
       }
@@ -133,15 +134,16 @@ export class ChartComponent extends LitElement {
 
     const this_opts = JSON.parse(JSON.stringify(options));
     this_opts.xaxis.categories = [...nt.ts];
-    this_opts.series[0].data = [...nt.humedad];
-    this_opts.series[0].name = "Humedad";
-    this_opts.title.text = "Humedad";
-    this_opts.yaxis[0].title = "Humedad";
-    const chart_1 = new ApexCharts(
+    this_opts.series[0].data = [...nt[this.variable_name]];
+    this_opts.series[0].name = this.variable_name.toUpperCase();
+    this_opts.title.text = this.variable_name.toLocaleUpperCase();
+    this_opts.yaxis[0].title = this.variable_name.toLocaleUpperCase();
+
+    this.chart_1 = new ApexCharts(
       this.shadowRoot.getElementById("chart"),
       this_opts
     );
-    chart_1.render();
+    this.chart_1.render();
 
     // Agregar boton de descarga Excel
     add_download_xls_button(
@@ -153,54 +155,19 @@ export class ChartComponent extends LitElement {
   }
 
   toggle() {
-    this._show_chart_only = !this._show_chart_only;
+    this.show_chart_only = !this.show_chart_only;
   }
 
   render() {
     return html`
-      <div class="container-fluid row border-primary border-top p-1 mx-auto">
-        <div
-          class="row btn btn-primary d-block d-sm-none mx-auto my-1"
-          @click=${this.toggle}
-        >
-          ${!this._show_chart_only ? "Gráfico" : "Datos"}
-        </div>
-        <div
-          class="${this._show_chart_only
-            ? "d-none d-sm-block"
-            : ""} col-12 col-sm-4 my-auto"
-          id="datadiv"
-        >
-          <div class="row">
-            <h5>
-              <img src="/water-droplet-icon.svg" width="50" height="50" />
-              <span class="fw-bolder">${valor(this.card, "humedad")} %</span>
-            </h5>
-          </div>
-          <div class="row">
-            <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "humedad_min")} %</div>
-              <div class="fw-light">Min</div>
-            </div>
-
-            <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "humedad_mean")} %</div>
-              <div class="fw-light">Promedio</div>
-            </div>
-
-            <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "humedad_max")} %</div>
-              <div class="fw-light">Max</div>
-            </div>
-          </div>
-        </div>
+      <div class="container-fluid row p-1 mx-auto">
         <!--Spinner-->
         ${this.data
           ? ""
           : html`<div
-              class="${this._show_chart_only
+              class="${this.show_chart_only
                 ? ""
-                : "d-none d-sm-block"} col-12 col-sm-8 d-flex align-items-center"
+                : "d-none d-sm-block"} col-12 col-sm-12 d-flex align-items-center"
             >
               <strong>Cargando Datos...</strong>
               <div
@@ -212,9 +179,9 @@ export class ChartComponent extends LitElement {
 
         <!--Chart-->
         <div
-          class="${this._show_chart_only
+          class="${this.show_chart_only
             ? ""
-            : "d-none d-sm-block"} col-12 col-sm-8 chart"
+            : "d-none d-sm-block"} col-12 col-sm-12 chart"
           id="chart"
         ></div>
       </div>
