@@ -49,7 +49,8 @@ export class SensacionTermicaCard extends LitElement {
 
       // Calcular la serie con los datos base
       let serie : number[] = [];
-      let viento = this.data.velocidad
+
+      let viento = this.data.velocidad || this.data.viento_velocidad
 
       // 13.12 + 0.6215 T -11.37 V ^0.16 + 0.3965 T V ^0,16
       this.data.temperatura.forEach((t,i) => {

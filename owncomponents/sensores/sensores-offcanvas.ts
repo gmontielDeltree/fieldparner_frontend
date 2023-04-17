@@ -34,6 +34,8 @@ import "./mediciones-cards/viento_velocidad";
 import "./mediciones-cards/viento_direccion";
 import "./mediciones-cards/sensacion_termica";
 import "./mediciones-cards/punto_de_rocio";
+import "./mediciones-cards/inversion_termica_chacabuco_baja";
+import "./mediciones-cards/stress_termico";
 import "./rosad3";
 
 import "./mediciones-cards/pluviometro";
@@ -706,6 +708,24 @@ export class SensoresClass extends LitElement {
                 />`
               : null}
             <!-- /P. Rocio -->
+
+            <!-- Inv Térmica -->
+            ${ifLoadedShow("inversion_termica_chacabuco_baja")
+              ? html`<inversion-termica-chacabuco-baja-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!-- /Inv Térmica -->
+
+            <!-- Stress Térmico -->
+            ${ifLoadedShow("stress_termico")
+              ? html`<stress-termico-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!-- /Stress Térmico -->
 
             <!-- Humedad Suelo-->
             ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(

@@ -14,13 +14,13 @@ import { add_download_xls_button } from "../excel_boton";
 import "../chart-component";
 import { HumedadCard } from "./humedad";
 
-let variable = "punto_de_rocio";
-let titulo = "P. Rocio";
-let unidad = "°C";
-let icono = "/dew-svgrepo-com.svg";
-let component_name = "punto-de-rocio-card";
+let variable = "stress_termico";
+let titulo = "Estrés Térmico (ITH)";
+let unidad = "";
+let icono = "/heartbeat-svgrepo-com.svg";
+let component_name = "stress-termico-card";
 
-export class PuntoDeRocioCard extends LitElement {
+export class StressTermicoCard extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
     unsafeCSS(apex_css),
@@ -50,11 +50,12 @@ export class PuntoDeRocioCard extends LitElement {
       let humedad = this.data.humedad;
       let temperatura = this.data.temperatura;
 
-      // 13.12 + 0.6215 T -11.37 V ^0.16 + 0.3965 T V ^0,16
+      // ITH = (1,8 x T° + 32) – (0,55 – 0,55 x HR / 100) x (1,8 x T° – 26)
+      // https://inta.gob.ar/sites/default/files/inta_estres_por_calor_bovinos_para_carne.pdf
       temperatura.forEach((t, i) => {
         let h = humedad[i];
-        let pc = ((h / 100) ** (1 / 8)) * (112 + 0.9 * t) + 0.1 * t - 112;
-        serie.push(+pc.toFixed(1));
+        let ith = (1.8 * t + 32) - (0.55 - 0.55 * h/100) * (1.8 * t - 26)
+        serie.push(+ith.toFixed(0));
       });
 
       this.data[variable] = serie;
@@ -129,10 +130,10 @@ export class PuntoDeRocioCard extends LitElement {
   }
 }
 
-customElements.define(component_name, PuntoDeRocioCard);
+customElements.define(component_name, StressTermicoCard);
 
 declare global {
   interface HTMLElementTagNameMap {
-    "punto-de-rocio-card": PuntoDeRocioCard;
+    "stress-termico-card": StressTermicoCard;
   }
 }

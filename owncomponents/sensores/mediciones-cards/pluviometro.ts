@@ -61,7 +61,7 @@ export class PluviometroCard extends LitElement {
   deveui: string;
 
   @property()
-  fecha_seleccionada : string = '20230317'; //yyyymmdd
+  fecha_seleccionada : string = '20230417'; //yyyymmdd
 
   @state()
   data: any;

@@ -2,7 +2,7 @@ import { DailyTelemetryCard } from "../sensores-types";
 import { LitElement, html, unsafeCSS, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
-import { valor } from "../sensores";
+import { Devices, valor } from "../sensores";
 let ApexCharts;
 import("apexcharts").then(({ default: a }) => {
   ApexCharts = a;
@@ -14,13 +14,13 @@ import { add_download_xls_button } from "../excel_boton";
 import "../chart-component";
 import { HumedadCard } from "./humedad";
 
-let variable = "punto_de_rocio";
-let titulo = "P. Rocio";
-let unidad = "°C";
-let icono = "/dew-svgrepo-com.svg";
-let component_name = "punto-de-rocio-card";
+let variable = "inversion_termica_chacabuco_baja";
+let titulo = "Inv. Térmica";
+let unidad = "";
+let icono = "/invert-svgrepo-com.svg";
+let component_name = "inversion-termica-chacabuco-baja-card";
 
-export class PuntoDeRocioCard extends LitElement {
+export class InversionTermicaChacabucoBajaCard extends LitElement {
   static override styles: CSSResultGroup = [
     unsafeCSS(bootstrap),
     unsafeCSS(apex_css),
@@ -40,7 +40,9 @@ export class PuntoDeRocioCard extends LitElement {
   private _max: number;
   private _last_value: number;
 
-  willUpdate(props) {
+  private _devices: Devices = new Devices();
+
+  async willUpdate(props) {
     // Esta es una propiedad derivada de la temp y la humedad
     if (props.has("data")) {
       let ts = this.data.ts;
@@ -50,10 +52,14 @@ export class PuntoDeRocioCard extends LitElement {
       let humedad = this.data.humedad;
       let temperatura = this.data.temperatura;
 
+      let data_baja = await this._devices.get_raw_data_for_charts_generic("sfdfsd");
+      
+      console.log("Data for Charts Chaca Baja", data_baja);
+
       // 13.12 + 0.6215 T -11.37 V ^0.16 + 0.3965 T V ^0,16
       temperatura.forEach((t, i) => {
         let h = humedad[i];
-        let pc = ((h / 100) ** (1 / 8)) * (112 + 0.9 * t) + 0.1 * t - 112;
+        let pc = (h / 100) ** (1 / 8) * (112 + 0.9 * t) + 0.1 * t - 112;
         serie.push(+pc.toFixed(1));
       });
 
@@ -129,10 +135,10 @@ export class PuntoDeRocioCard extends LitElement {
   }
 }
 
-customElements.define(component_name, PuntoDeRocioCard);
+customElements.define(component_name, InversionTermicaChacabucoBajaCard);
 
 declare global {
   interface HTMLElementTagNameMap {
-    "punto-de-rocio-card": PuntoDeRocioCard;
+    "inversion-termica-chacabuco-baja-card": InversionTermicaChacabucoBajaCard;
   }
 }
