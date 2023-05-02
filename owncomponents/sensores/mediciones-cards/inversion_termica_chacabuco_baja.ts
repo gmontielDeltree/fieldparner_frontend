@@ -52,9 +52,6 @@ export class InversionTermicaChacabucoBajaCard extends LitElement {
       let humedad = this.data.humedad;
       let temperatura = this.data.temperatura;
 
-      let data_baja = await this._devices.get_raw_data_for_charts_generic("sfdfsd");
-      
-      console.log("Data for Charts Chaca Baja", data_baja);
 
       // 13.12 + 0.6215 T -11.37 V ^0.16 + 0.3965 T V ^0,16
       temperatura.forEach((t, i) => {
@@ -72,6 +69,8 @@ export class InversionTermicaChacabucoBajaCard extends LitElement {
       this._last_value = +serie[serie.length - 1].toFixed(1);
 
       console.log("DATA ST", this.data);
+      let data_baja = await this._devices.get_raw_data_for_charts_generic("sfdfsd");
+      console.log("Data for Charts Chaca Baja", data_baja);
     }
   }
 

@@ -47,7 +47,7 @@ registerRoute(/.*.js*$/, new NetworkFirst({ cacheName: "js" }));
 
 
 registerRoute(
-  /\.(?:json)$/,
+  /.*.json*$/,
   new CacheFirst({
     cacheName: "jsons",
     plugins: [
