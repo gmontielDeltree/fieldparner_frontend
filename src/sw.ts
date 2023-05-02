@@ -50,11 +50,11 @@ registerRoute(
   /.*.json*$/,
   new CacheFirst({
     cacheName: "jsons",
-    plugins: [
-      new ExpirationPlugin({
-        maxAgeSeconds: 60,
-      }),
-    ],
+    // plugins: [
+    //   new ExpirationPlugin({
+    //     maxAgeSeconds: 60,
+    //   }),
+    // ],
   })
 );
 
