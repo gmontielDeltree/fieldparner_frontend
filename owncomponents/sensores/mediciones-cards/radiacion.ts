@@ -4,9 +4,9 @@ import { property, state } from "lit/decorators.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { valor } from "../sensores";
 let ApexCharts;
-import('apexcharts').then(({default:a})=>{
-  ApexCharts=a
-})
+import("apexcharts").then(({ default: a }) => {
+  ApexCharts = a;
+});
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
 import { touchEvent } from "../../helpers";
 import { add_download_xls_button } from "../excel_boton";
@@ -41,15 +41,15 @@ export class RadiacionCard extends LitElement {
     var base_options = {
       colors: ["#F44336", "#E91E63", "#9C27B0"],
       fill: {
-        type: 'gradient',
+        type: "gradient",
         gradient: {
-          shade: 'dark',
-          gradientToColors: [ '#FDD835'],
+          shade: "dark",
+          gradientToColors: ["#FDD835"],
           shadeIntensity: 1,
-          type: 'vertical',
+          type: "vertical",
           opacityFrom: 1,
           opacityTo: 1,
-          stops: [0, 100, 100, 100]
+          stops: [0, 100, 100, 100],
         },
       },
       series: [
@@ -155,8 +155,12 @@ export class RadiacionCard extends LitElement {
     chart_1.render();
 
     // Agregar boton de descarga Excel
-    add_download_xls_button(this.shadowRoot,this_opts.xaxis.categories, this_opts.series[0].data, this_opts.yaxis[0].title);
-
+    add_download_xls_button(
+      this.shadowRoot,
+      this_opts.xaxis.categories,
+      this_opts.series[0].data,
+      this_opts.yaxis[0].title
+    );
   }
 
   toggle() {
@@ -167,31 +171,31 @@ export class RadiacionCard extends LitElement {
     return html`
       <div class="container-fluid row border-primary border-top p-1 mx-auto">
         <div
-          class="row btn btn-primary d-block d-sm-none mx-auto my-1"
-          @click=${this.toggle}
-        >
-          ${!this._show_chart_only ? "Gráfico" : "Datos"}
-        </div>
-        <div
           class="${this._show_chart_only
-            ? "d-none d-sm-block"
-            : ""} col-12 col-sm-4 my-auto"
+            ? "d-none"
+            : "col-11 col-sm-11 my-auto"} "
           id="datadiv"
         >
           <div class="row">
             <h5>
               <img src="/sun-svgrepo-com.svg" width="50" height="50" />
-              <span class="fw-bolder">${valor(this.card, "radiacion_solar")} W/m\u{00B2}</span>
+              <span class="fw-bolder"
+                >${valor(this.card, "radiacion_solar")} W/m²</span
+              >
             </h5>
           </div>
           <div class="row">
             <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "radiacion_solar_mean")} W/m\u{00B2}</div>
+              <div class="fw-strong">
+                ${valor(this.card, "radiacion_solar_mean")} W/m²
+              </div>
               <div class="fw-light">Promedio</div>
             </div>
 
             <div class="col-4 fw-bolder">
-              <div class="fw-strong">${valor(this.card, "radiacion_solar_max")} W/m\u{00B2}</div>
+              <div class="fw-strong">
+                ${valor(this.card, "radiacion_solar_max")} W/m²
+              </div>
               <div class="fw-light">Max</div>
             </div>
           </div>
@@ -201,8 +205,8 @@ export class RadiacionCard extends LitElement {
           ? ""
           : html`<div
               class="${this._show_chart_only
-                ? ""
-                : "d-none d-sm-block"} col-12 col-sm-8 d-flex align-items-center"
+                ? "col-11 col-sm-11 d-flex align-items-center"
+                : "d-none"} "
             >
               <strong>Cargando Datos...</strong>
               <div
@@ -215,10 +219,21 @@ export class RadiacionCard extends LitElement {
         <!--Chart-->
         <div
           class="${this._show_chart_only
-            ? ""
-            : "d-none d-sm-block"} col-12 col-sm-8 chart"
+            ? "col-11 col-sm-11"
+            : "d-none"}  chart"
           id="chart"
         ></div>
+
+        <div
+          class="col-1 my-1"
+          style="display:flex; align-items: center;"
+          @click=${this.toggle}
+        >
+          <span class="btn btn-warning mx-auto">
+            ${!this._show_chart_only ? ">" : "<"}
+          </span>
+        </div>
+        
       </div>
     `;
   }

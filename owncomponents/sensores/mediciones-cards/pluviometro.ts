@@ -18,7 +18,7 @@ import PouchDB from "pouchdb";
 
 import { Task, TaskStatus } from "@lit-labs/task";
 import { de } from "date-fns/locale";
-import { get_pluviometro_daily_value } from '../sensores-funciones';
+import { get_pluviometro_daily_value } from "../sensores-funciones";
 import {
   get_timeseries_by_name,
   get_timeseries_by_name_agregated,
@@ -61,7 +61,7 @@ export class PluviometroCard extends LitElement {
   deveui: string;
 
   @property()
-  fecha_seleccionada : string = '20230417'; //yyyymmdd
+  fecha_seleccionada: string = "20230417"; //yyyymmdd
 
   @state()
   data: any;
@@ -85,20 +85,25 @@ export class PluviometroCard extends LitElement {
   selectedDay: number;
 
   @state()
-  lluvia_de_la_fecha : number = 0;
+  lluvia_de_la_fecha: number = 0;
 
   private chart_1: ApexCharts;
 
   private _loadDataTask = new Task(
     this,
-    async ([deveui, periodo, tipo_periodo,fecha]) => {
-      this.load_data(deveui, tipo_periodo.value ?? 'dia',fecha);
+    async ([deveui, periodo, tipo_periodo, fecha]) => {
+      this.load_data(deveui, tipo_periodo.value ?? "dia", fecha);
     },
-    () => [this.deveui, this._periodo, this._tipo_periodo,this.fecha_seleccionada]
+    () => [
+      this.deveui,
+      this._periodo,
+      this._tipo_periodo,
+      this.fecha_seleccionada,
+    ]
   );
 
   load_data = async (deveui, agregacion, fecha) => {
-    console.log("Load Data",agregacion)
+    console.log("Load Data", agregacion);
     let data = await get_timeseries_by_name_agregated(
       deveui,
       "pluviometro",
@@ -108,8 +113,7 @@ export class PluviometroCard extends LitElement {
     );
     this.chart_1.updateSeries(data);
 
-    this.lluvia_de_la_fecha = await get_pluviometro_daily_value(deveui,fecha)
-      
+    this.lluvia_de_la_fecha = await get_pluviometro_daily_value(deveui, fecha);
   };
 
   async renderCentralChart() {
@@ -161,7 +165,7 @@ export class PluviometroCard extends LitElement {
       },
 
       xaxis: {
-        type:'category',
+        type: "category",
         position: "top",
         axisBorder: {
           show: false,
@@ -241,7 +245,6 @@ export class PluviometroCard extends LitElement {
   ): void {
     console.log("WILLUPDATE", _changedProperties, this._loadDataTask.status);
     if (this._loadDataTask.status === TaskStatus.COMPLETE) {
-      
     }
   }
 
@@ -252,15 +255,9 @@ export class PluviometroCard extends LitElement {
         id="contenedor"
       >
         <div
-          class="row btn btn-primary d-block d-sm-none mx-auto my-1"
-          @click=${this.toggle}
-        >
-          ${!this._show_chart_only ? "Gráfico" : "Datos"}
-        </div>
-        <div
           class="${this._show_chart_only
-            ? "d-none d-sm-block"
-            : ""} col-12 col-sm-4 my-auto"
+            ? "d-none "
+            : "col-11 col-sm-11 my-auto"} "
           id="datadiv"
         >
           <div class="row">
@@ -287,7 +284,7 @@ export class PluviometroCard extends LitElement {
           : html`<div
               class="${this._show_chart_only
                 ? ""
-                : "d-none d-sm-block"} col-12 col-sm-8 d-flex align-items-center"
+                : "d-none d-sm-block"} col-11 col-sm-11 d-flex align-items-center"
             >
               <strong>Cargando Datos...</strong>
               <div
@@ -299,9 +296,7 @@ export class PluviometroCard extends LitElement {
 
         <!--Chart-->
         <div
-          class="${this._show_chart_only
-            ? ""
-            : "d-none d-sm-block"} col-12 col-sm-8 chart"
+          class="${this._show_chart_only ? "col-11 col-sm-11" : "d-none"}  chart"
         >
           <div class="toolbar">
             <vaadin-combo-box
@@ -322,7 +317,7 @@ export class PluviometroCard extends LitElement {
               .items="${lista_anos}"
               .selectedItem="${this.selectedYear}"
               @selected-item-changed="${(e) =>
-                (this.selectedYear = e.detail.value)}"
+              (this.selectedYear = e.detail.value)}"
             ></vaadin-combo-box>
             <vaadin-combo-box
               label="Mes"
@@ -331,7 +326,7 @@ export class PluviometroCard extends LitElement {
               .selectedItem="${this.selectedMonth}"
               .disabled="${!this.selectedYear}"
               @selected-item-changed="${(e) =>
-                (this.selectedMonth = e.detail.value)}"
+              (this.selectedMonth = e.detail.value)}"
             ></vaadin-combo-box>
             <vaadin-combo-box
               label="Dia"
@@ -340,12 +335,23 @@ export class PluviometroCard extends LitElement {
               .selectedItem="${this.selectedDay}"
               .disabled="${!this.selectedYear || !this.selectedMonth}"
               @selected-item-changed="${(e) =>
-                (this.selectedDay = e.detail.value)}"
+              (this.selectedDay = e.detail.value)}"
             ></vaadin-combo-box> -->
           </div>
 
           <div id="chart"></div>
+
         </div>
+
+        <div
+            class="col-1 my-1"
+            style="display:flex; align-items: center;"
+            @click=${this.toggle}
+          >
+            <span class="btn btn-warning mx-auto">
+              ${!this._show_chart_only ? ">" : "<"}
+            </span>
+          </div>
       </div>
     `;
   }

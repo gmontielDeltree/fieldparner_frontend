@@ -49,6 +49,16 @@ export class SensoresClass extends LitElement {
     unsafeCSS(bootstrap),
     unsafeCSS(apex_css),
     css`
+      @media only screen and (max-width: 600px) {
+        .mioffcanvas {
+          width: 100%;
+        }
+      }
+
+      .mioffcanvas {
+        width : 50%;
+      }
+
       .humedad-body {
         background-image: url("/sensor-humedad/suelo.webp");
         background-repeat: no-repeat;
@@ -581,11 +591,12 @@ export class SensoresClass extends LitElement {
     // Hay algo seleccionado
     return html`
       <div
-        class="offcanvas offcanvas-start show"
+        class="offcanvas offcanvas-start show mioffcanvas"
         tabindex="-1"
-        style="width: 100%;"
         id="offcanvas"
         aria-labelledby="offcanvasLabel"
+        data-bs-scroll="true"
+        data-bs-backdrop="false"
       >
         <div class="offcanvas-header header-blue">
           <div class="offcanvas-title" id="offcanvasLabel" style="color:white">
