@@ -26,7 +26,7 @@ import "@vaadin/text-area";
 import "@vaadin/form-layout";
 import "@vaadin/form-layout/vaadin-form-item";
 import { Grid, GridColumn, GridItemModel } from "@vaadin/grid";
-import "../aux/combo-box-insumos";
+import "../auxiliar/combo-box-insumos";
 
 @customElement("grid-insumos")
 export class GridInsumos extends LitElement {

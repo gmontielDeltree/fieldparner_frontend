@@ -19,7 +19,7 @@ import { Router, RouterLocation } from "@vaadin/router";
 import { get, translate } from "lit-translate";
 
 import { badge } from "@vaadin/vaadin-lumo-styles/badge.js";
-import "../../lote-offcanvas/aux/span-pill";
+import "../../lote-offcanvas/auxiliar/span-pill";
 import "@vaadin/avatar";
 import "@vaadin/button";
 import "@vaadin/item";
