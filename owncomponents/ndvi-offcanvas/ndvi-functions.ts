@@ -3,7 +3,12 @@ import { hashMessage } from "../helpers";
 import { isToday, parse } from "date-fns";
 import { is } from "date-fns/locale";
 import mapboxgl, { Map } from "mapbox-gl";
-import geoblaze from "geoblaze";
+//import geoblaze from "geoblaze";
+// const geoblaze = import('geoblaze')
+let geoblaze;
+import('geoblaze').then(({default:a})=>{
+  geoblaze=a
+})
 import * as d3 from "d3";
 import * as rastertools from 'raster-marching-squares/build/raster-marching-squares.js'
 

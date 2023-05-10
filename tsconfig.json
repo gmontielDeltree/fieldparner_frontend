@@ -3,10 +3,12 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
+    "lib": ["WebWorker"], // Para poder usar ServiceWorker
     "paths": {
       "plotly.js": [
           "../node_modules/plotly.js/lib/core.js"
       ]
-    }
+    },
+    "plugins": [{ "name": "typescript-plugin-css-modules" }]
   }
 }

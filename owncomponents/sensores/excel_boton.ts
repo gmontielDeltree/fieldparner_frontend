@@ -1,5 +1,11 @@
 import { touchEvent } from "../helpers";
-import { writeFile, utils } from "xlsx";
+// import { writeFile, utils } from "xlsx";
+let read, writeFile, utils;
+ import('xlsx').then((mod)=>{
+  read = mod.read
+  writeFile = mod.writeFile
+  utils = mod.utils
+ })
 
 export const add_download_xls_button = (root, ts, data, title)=>{
 

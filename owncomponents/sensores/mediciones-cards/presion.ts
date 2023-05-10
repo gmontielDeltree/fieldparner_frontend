@@ -7,7 +7,10 @@ import { property, state } from "lit/decorators.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
-import ApexCharts from "apexcharts";
+let ApexCharts;
+import('apexcharts').then(({default:a})=>{
+  ApexCharts=a
+})
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
 import { add_download_xls_button } from "../excel_boton";
 
@@ -153,16 +156,11 @@ export class PresionCard extends LitElement {
   render() {
     return html`
       <div class="container-fluid row border-primary border-top p-1 mx-auto">
-        <div
-          class="row btn btn-primary d-block d-sm-none mx-auto my-1"
-          @click=${this.toggle}
-        >
-          ${!this._show_chart_only ? "Gráfico" : "Datos"}
-        </div>
+        
         <div
           class="${this._show_chart_only
-            ? "d-none d-sm-block"
-            : ""} col-12 col-sm-4 my-auto"
+            ? "d-none"
+            : "col-11 col-sm-11 my-auto"} "
           id="datadiv"
         >
           <div class="row">
@@ -201,8 +199,8 @@ export class PresionCard extends LitElement {
           ? ""
           : html`<div
               class="${this._show_chart_only
-                ? ""
-                : "d-none d-sm-block"} col-12 col-sm-8 d-flex align-items-center"
+                ? "col-11 col-sm-11 d-flex align-items-center"
+                : "d-none"}"
             >
               <strong>Cargando Datos...</strong>
               <div
@@ -215,10 +213,20 @@ export class PresionCard extends LitElement {
         <!--Chart-->
         <div
           class="${this._show_chart_only
-            ? ""
-            : "d-none d-sm-block"} col-12 col-sm-8 chart"
+            ? "col-11 col-sm-11"
+            : "d-none"}  chart"
           id="chart"
         ></div>
+
+        <div
+          class="col-1 my-1"
+          style="display:flex; align-items: center;"
+          @click=${this.toggle}
+        >
+        <span class="btn btn-warning mx-auto">
+          ${!this._show_chart_only ? ">" : "<"}
+          </span>
+        </div>
       </div>
     `;
   }

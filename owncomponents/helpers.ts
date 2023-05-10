@@ -1,9 +1,14 @@
+import { Campo } from "./tipos/campos";
 import { format, isAfter, isBefore, isWithinInterval } from "date-fns";
 import { gbl_state } from "./state";
 import parseISO from "date-fns/parseISO";
 import { ro } from "date-fns/locale";
 import { Actividad } from "./depositos/depositos-types";
 import { Lote } from "./tipos/lotes";
+import { RouterLocation } from "@vaadin/router";
+import { Campana } from "./tipos/tipos-varios";
+import { Cultivo, CultivoAplicacion } from "./insumos/insumos-types";
+import cultivos from "./jsons/cultivos";
 var img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
@@ -140,31 +145,51 @@ export const actividades_y_ejecuciones = (uuid_del_lote) => {
   return gbl_docs_starting("actividad", true, true, true)
     .then(only_docs)
     .then((acts: Actividad[]) => {
-      let s = acts.filter(({ lote_uuid }) => (lote_uuid === uuid_del_lote));
+      let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote);
 
       let _actividades_docs = filtro_esta_temporada(s.reverse());
       return gbl_state.db
         .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:\ufff0" })
         .then((result) => {
-          let respuesta : {actividad: Actividad, ejecucion_id:string} []= [];
+          let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
           if (result.rows) {
             // Iter 1: Actividades
             _actividades_docs.forEach((actividad) => {
-              let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid));
-              respuesta.push({actividad:actividad,ejecucion_id:midoc?.id})
+              let midoc = result.rows.find((doc) =>
+                doc.id.includes(actividad.uuid)
+              );
+              respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
             });
 
-            console.log("Respuesta actividades y ejecuciones preorden", respuesta)
+            console.log(
+              "Respuesta actividades y ejecuciones preorden",
+              respuesta
+            );
             // Ordenar respuesta teniendo en cuenta la ejecución.
-            respuesta.sort((a,b) => {
+            respuesta.sort((a, b) => {
               // Si tiene ejecucion usar la fecha de ejecucion
-              let fecha_1 = a.ejecucion_id ? parseISO(a.ejecucion_id.split(":")[1]) : parseISO(a.actividad.tipo==='nota' ? a.actividad.fecha : a.actividad.detalles.fecha_ejecucion_tentativa)
-              let fecha_2 = b.ejecucion_id ? parseISO(b.ejecucion_id.split(":")[1]) : parseISO(b.actividad.tipo==='nota' ? b.actividad.fecha : b.actividad.detalles.fecha_ejecucion_tentativa)
-              return isBefore(fecha_1,fecha_2) ? 1 : -1;
-            })
+              let fecha_1 = a.ejecucion_id
+                ? parseISO(a.ejecucion_id.split(":")[1])
+                : parseISO(
+                    a.actividad.tipo === "nota"
+                      ? a.actividad.fecha
+                      : a.actividad.detalles.fecha_ejecucion_tentativa
+                  );
+              let fecha_2 = b.ejecucion_id
+                ? parseISO(b.ejecucion_id.split(":")[1])
+                : parseISO(
+                    b.actividad.tipo === "nota"
+                      ? b.actividad.fecha
+                      : b.actividad.detalles.fecha_ejecucion_tentativa
+                  );
+              return isBefore(fecha_1, fecha_2) ? 1 : -1;
+            });
           }
 
-          console.log("Respuesta actividades y ejecuciones post orden", respuesta)
+          console.log(
+            "Respuesta actividades y ejecuciones post orden",
+            respuesta
+          );
 
           return respuesta;
         });
@@ -197,7 +222,8 @@ const setPermisosWorkspaceDB = (nombre, user, pass) => {};
 const getPermisosWorkspaceDB = (nombre, user, pass) => {};
 
 /** la fecha/hora en utc */
-export const format_iso_c = (date)=>format(date, "yyyy-MM-dd'T'HH:mm:ss'Z'")
+export const format_iso_c = (date) => format(date, "yyyy-MM-dd'T'HH:mm:ss'Z'");
+export const format_min = (date) => format(date, "yyyy-MM-dd'T'HH:mm");
 
 export const createMenuDots = (iconName: string) => {
   const item = document.createElement("vaadin-context-menu-item");
@@ -205,16 +231,17 @@ export const createMenuDots = (iconName: string) => {
   icon.setAttribute("icon", `vaadin:${iconName}`);
   item.appendChild(icon);
   return item;
-}
-
+};
 
 export const get_lote_detalles_by_uuid = async (uuid: string) => {
-  let campos_docs = await gbl_docs_starting('campos_',true).then(only_docs)
+  let campos_docs = await gbl_docs_starting("campos_", true).then(only_docs);
 
-  let result : Lote = null;
+  let result: Lote = null;
   campos_docs.forEach((doc) => {
     console.log(doc);
-    let _lote_doc : Lote = doc.lotes.find((lote) => lote.properties.uuid === uuid);
+    let _lote_doc: Lote = doc.lotes.find(
+      (lote) => lote.properties.uuid === uuid
+    );
 
     if (_lote_doc) {
       result = _lote_doc;
@@ -225,13 +252,96 @@ export const get_lote_detalles_by_uuid = async (uuid: string) => {
 };
 
 export const get_campo_detalles_by_uuid = async (uuid: string) => {
-  let campos_docs = await gbl_docs_starting(uuid,true).then(only_docs)
+  let campos_docs = await gbl_docs_starting(uuid, true).then(only_docs);
 
-  let result : Object = null;
-  if (campos_docs.length>0) {
+  let result: Object = null;
+  if (campos_docs.length > 0) {
     result = campos_docs;
   }
   return result;
+};
+
+export const url_param = (location: RouterLocation, param) => {
+  return new URLSearchParams(location.search).get(param);
+};
+
+export const buscar_ultima_siembra = async (lote_uuid: string) => {
+  // Act y ejecucioes para esta campaña ordenadas
+  let aye = await actividades_y_ejecuciones(lote_uuid);
+  let siembra = aye.find((a) => {
+    let act = a.actividad;
+    return act.tipo === "siembra";
+  });
+
+  let cultivo: Cultivo = null;
+  if (siembra) {
+    let t = siembra.actividad.detalles.dosis.find(
+      (d) => d.insumo.tipo?.key === "semillas"
+    );
+    // t es la primera linea de dosis con semillas
+    if (t) {
+      cultivo = t.insumo.cultivo;
+    }
+  }
+  console.log("Ultima Siembra", lote_uuid, siembra, cultivo);
+  return cultivo;
+};
+
+function djb2(str) {
+  var hash = 5381;
+  for (var i = 0; i < str.length; i++) {
+    hash = (hash << 5) + hash + str.charCodeAt(i); /* hash * 33 + c */
+  }
+  return hash;
+}
+
+function hashStringToColor(str) {
+  var hash = djb2(str);
+  var r = (hash & 0xff0000) >> 16;
+  var g = (hash & 0x00ff00) >> 8;
+  var b = hash & 0x0000ff;
+  return (
+    "#" +
+    ("0" + r.toString(16)).substr(-2) +
+    ("0" + g.toString(16)).substr(-2) +
+    ("0" + b.toString(16)).substr(-2)
+  );
+}
+
+export const tabla_de_colores = async () => {
+  return gbl_state.user_db
+    .allDocs({
+      include_docs: true,
+      startkey: "cultivo_color",
+      endkey: "cultivo_color\ufff0",
+    })
+    .then((doc) => {
+      if (doc.rows.length > 0) {
+        return doc.rows[0].doc.colors;
+      } else {
+        let tabla = {};
+        cultivos.forEach((cultivo) => {
+          tabla[cultivo.key] = hashStringToColor(cultivo.key);
+        });
+        return tabla;
+      }
+    });
+};
+
+export const campo_guardar = async (campodoc: Campo) => {
+  return gbl_state.db.put(campodoc);
+};
+
+export const upload_file = async (fileblob: File) => {
+  let formData = new FormData();
+  formData.append("file", fileblob, fileblob.name);
+  // const data = new URLSearchParams();
+  // data.append('file',fileblob);
+
+  return fetch("/attachments", {
+    method: "post",
+    body: formData,
+  });
 };
 
 export {

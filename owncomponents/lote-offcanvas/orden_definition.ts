@@ -103,7 +103,7 @@ const orden_definition = (
       {
         columns: [
           {
-            text: "AGROTOOLS",
+            text: "FieldPartner",
             width: 200,
             color: "#16a825",
             bold: true,

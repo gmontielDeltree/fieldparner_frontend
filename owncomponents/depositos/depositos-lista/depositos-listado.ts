@@ -1,7 +1,7 @@
 import {
   borrar_deposito,
   listar_solo_depositos_contratistas,
-} from "./../depositos_funciones";
+} from "../depositos-funciones";
 import { customElement, property, state } from "lit/decorators.js";
 import "../../modal-generico/modal-generico";
 import "./deposito-nuevo";
@@ -28,7 +28,7 @@ import {
   listar_depositos,
   listar_solo_depositos,
   nuevo_deposito,
-} from "../depositos_funciones";
+} from "../depositos-funciones";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { createMenuDots } from "../../helpers";
 import { confirmar_eliminar } from "../../helpers/confirmar-eliminar";

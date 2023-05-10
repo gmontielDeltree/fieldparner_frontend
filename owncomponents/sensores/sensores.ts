@@ -160,6 +160,11 @@ class Devices {
         let latitud = extract_tele("latitud", telemetria).value;
         let longitud = extract_tele("longitud", telemetria).value;
 
+        if (telemetria.device_id === "f008d1ffffd30a6c") {
+          latitud = -35.1579821;
+          longitud = -59.09232;
+        }
+
         let temperatura = extract_tele("temperatura", telemetria).value;
         let humedad = extract_tele("humedad", telemetria).value;
         let presion = extract_tele("presion", telemetria).value;
@@ -228,16 +233,22 @@ class Devices {
   }
 
   async get_raw_data_for_charts_generic(uuid) {
+    let utc_now = Date.now() / 1000;
+    let utc_1_mes = utc_now - 3600 * 24 * 30;
     let docs = await this.db_raw.allDocs({
       // include_docs: true,
       limit: 10000,
       descending: true,
-      endkey: uuid + ":",
-      startkey: uuid + ":\ufff0",
+      endkey: uuid + ":" + utc_1_mes,
+      startkey: uuid + ":" + utc_now + "\ufff0",
     });
 
     let ids = await docs.rows.map((d) => d.id);
-    let ids_decimado = ids.filter((_, index) => index % 10 === 0);
+    let ids_decimado = ids.filter((_, index) => {
+      let c2 = index % 10 === 0;
+      let c3 = index === ids.length - 1;
+      return c2 || c3;
+    });
 
     //console.log("Only IDS", ids)
 
@@ -257,24 +268,35 @@ class Devices {
     let r = data.map((dp) => {
       // t1
       let array_de_mediciones = dp.data as DataPoints[];
-      return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
+      // console.log("array mediciones", array_de_mediciones);
+
+      if (uuid !== "sfdfsd") {
+        return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
+      } else {
+        // Hora Argentina
+        // TODO Mejorar esto
+        if (array_de_mediciones[0].sensor_id !== "latitud") {
+          // Ignorar si es un punto de posicion
+          return_value["ts"].push(unixToDate(dp.ts - 3 * 3600));
+        }
+      }
 
       array_de_mediciones.forEach((medicion: DataPoints) => {
         if (medicion.sensor_id === "temperatura") {
           if (medicion.value > 60 || medicion.value < -10) {
-            return;
+            medicion.value = NaN;
           }
         }
 
         if (medicion.sensor_id === "humedad") {
           if (medicion.value > 100 || medicion.value < 0) {
-            return;
+            medicion.value = NaN;
           }
         }
 
         if (medicion.sensor_id === "presion") {
           if (medicion.value > 1100 || medicion.value < 900) {
-            return;
+            medicion.value = NaN;
           }
         }
 
@@ -287,6 +309,7 @@ class Devices {
       });
     });
 
+    console.log("RETURN VALUE CHRATRS,", return_value);
     return return_value;
   }
 
@@ -297,6 +320,16 @@ class Devices {
     } catch (e) {
       console.error("Error get_details", e);
     }
+  }
+
+  async get_timeseries_by_name(uuid, tsname, start, end) {
+    let key = [uuid, tsname, start];
+    let endkey = [uuid, tsname, end];
+    this.db_raw
+      .query("telemetria/ts_by_name", { startkey: key, endkey: endkey })
+      .then((r) => {
+        console.log("ESTO ES COOL", r);
+      });
   }
 }
 

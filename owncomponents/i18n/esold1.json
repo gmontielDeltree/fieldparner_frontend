@@ -1,0 +1,125 @@
+{
+    "aceptar": "Aceptar",
+    "actividad_aun_no_ejecutada": "Actividad aun no ejecutada",
+    "agregar": "Agregar",
+    "aplicación": "Aplicación",
+    "borrar": "Borrar",
+    "borrar_campana": "Borrar Campaña",
+    "campo_requerido": "Campo Requerido",
+    "cancelar": "Cancelar",
+    "cerrar": "Cerrar",
+    "comentario": "Comentario",
+    "comentarion": "Comentario",
+    "confirmar_borrar": "Estas seguro de borrar?",
+    "contratista": "Contratista",
+    "cosecha": "Cosecha",
+    "debe_generar_la_orden_de_trabajo": "Para \"Ejecutar\" debe generar la \"Orden de Trabajo\" primero.",
+    "densidad_objetivo": "Densidad Objetivo",
+    "descargar_orden": "Descargar Orden",
+    "distancia_entre_surcos": "Distancia entre surcos",
+    "editar": "Editar",
+    "editar_campana": "Editar Campaña",
+    "ejecutar": "Ejecutar Actividad",
+    "fecha": "Fecha",
+    "fecha_fin": "Fecha Final",
+    "fecha_inicio": "Fecha Inicial",
+    "guardar": "Guardar",
+    "insumos": "Insumos",
+    "invitacion": {
+        "body": "El usuario {{username}} ha compartido el espacio de trabajo {{workspacename}} contigo.",
+        "notificacion": {
+            "ok": "Espacio de Trabajo Agregado",
+            "okbody": "<b>{{workspacename}}</b> esta disponible en el menu de <a href=\"#\">Espacios de Trabajo</a>.",
+            "rechazada": "Invitación Rechazada"
+        },
+        "titulo": "Invitación a Espacio de Trabajo"
+    },
+    "invitar": "Invitar",
+    "labor": "Labor",
+    "labores": "Labores",
+    "ldcampos": {
+        "titulo": "Lista de Campos"
+    },
+    "navbar": {
+        "geocoder": {
+            "helper": "Buscar Localidad"
+        },
+        "opciones": {
+            "colorCultivos": "Color Cultivo",
+            "listaDispositivos": "Lista de Dispositivos",
+            "recargar": "Recargar",
+            "titulo": "Opciones",
+            "version": "Version"
+        },
+        "workspace": {
+            "agregar": "Nuevo Espacio de Trabajo",
+            "permisos": "Permisos de Acceso",
+            "seleccionar": "Seleccionar"
+        }
+    },
+    "nombre": "Nombre",
+    "nueva_campana": "+ Nueva Campaña",
+    "peso_mil_semillas": "Peso 1000 semillas",
+    "precio": "Precio",
+    "rechazar": "Rechazar",
+    "repetir": {
+        "body": "Actividades Agregadas",
+        "notificacion": {
+            "ok": "Actividades Agregadas",
+            "okbody": "<b></b>Estan disponibles en cada lote.",
+            "rechazada": "Invitación Rechazada"
+        },
+        "titulo": "Invitación a Espacio de Trabajo"
+    },
+    "seleccione_insumo": "Seleccione un Insumo",
+    "siembra": "Siembra",
+    "sin_temporada": "Sin Campaña",
+    "tipo_de_siembra": "Tipo de Siembra",
+    "workspace": {
+        "agregar": "Agregar",
+        "permisos": "Permisos",
+        "seleccionar": "Seleccionar"
+    },
+    "workspaceRights": {
+        "editar": "Editar Permisos",
+        "invitar": "Invitar",
+        "permisos": "Permisos de Acceso",
+        "titulo": "Permisos"
+    },
+    "depositos": "Depositos",
+    "ver": "Ver",
+    "eliminar": "Eliminar",
+    "nuevo": "Nuevo",
+    "stock": "Stock",
+    "entrada-salida": "Entradas-Salidas",
+    "transferencias": "Transferencias",
+    "ejecuciones": "Ejecuciones",
+    "mas": "Mas",
+    "nueva_transferencia_entrada": "Nueva Transferencia Entrada",
+    "nueva_transferencia_salida": "Nueva Transferencia Salida",
+    "sin_ejecuciones": "Sin ejecuciones",
+    "cargando": "Cargando",
+    "dosificacion": "Dosificación",
+    "planificacion": "Planificación",
+    "sin_actividades_para_hoy": "Sin actividades hoy",
+    "insumos_desde": "Insumos desde",
+    "deposito": "Deposito",
+    "seleccione_labor": "Seleccione Labor",
+    "motivos": "Motivos",
+    "nuevo_deposito": "Nuevo Deposito",
+    "direccion": "Dirección",
+    "nueva_transferencia": "Nueva Transferencia",
+    "referencia": "Referencia",
+    "lista_insumos": "Lista de Insumos",
+    "origen": "Origen",
+    "destino": "Destino",
+    "observaciones": "Observaciones",
+    "la_referencia_es_un_indicador": "Puede ser un de remito, factura, etc.",
+    "proveedor": "Proveedor",
+    "depositos_de_contratistas": "Depositos de Contratistas",
+    "proveedores": "Proveedores",
+    "borrar_este_item": "Borrar Item",
+    "seguro_de_borrar_este_item": "¿Esta seguro de borrar?",
+    "item_borrado": "Item borrado",
+    "guardado": "Guardado"
+}

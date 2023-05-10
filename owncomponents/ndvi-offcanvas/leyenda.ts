@@ -1,9 +1,13 @@
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
+import {classMap} from 'lit/directives/class-map.js';
 
 export class LeyendaNdvi extends LitElement {
   @property()
   escala: string = "fija"; // 'dinamica'
+
+  @property()
+  index_value: string = "";
 
   static override styles = css`
     #grad1 {
@@ -13,11 +17,15 @@ export class LeyendaNdvi extends LitElement {
     }
 
     .escala-fija {
-        background-image: linear-gradient(to right,red, yellow, green);
+        background-image: linear-gradient(to right,black, red, green);
     }
 
     .escala-dinamica{
         background-image: linear-gradient(to right, blue, red, green);
+    }
+
+    .escala-fija-ndmi{
+        background-image: linear-gradient(to right, white, blue);
     }
 
     .legend-back {
@@ -61,7 +69,7 @@ export class LeyendaNdvi extends LitElement {
           <div class="eti">0.5</div>
           <div class="eti">1</div>
         </div>
-        <div class="escala-fija" id="grad1"></div>
+        <div class=${this.index_value==='ndmi' ? classMap({"escala-fija-ndmi":true}):classMap({'escala-fija':true})} id="grad1"></div>
       </div>`;
     }
    

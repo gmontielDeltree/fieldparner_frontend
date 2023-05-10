@@ -29,15 +29,15 @@ const ejecucion_detalles = (ejecucion : Ejecucion, actividad: Actividad) => html
                   <ul>
                     <li>
                       Temperatura promedio:
-                      ${ejecucion.condiciones.temperatura_promedio}
+                      ${ejecucion.condiciones.temperatura.value}
                     </li>
                     <li>
                       Humedad promedio:
-                      ${ejecucion.condiciones.humedad_promedio}
+                      ${ejecucion.condiciones.humedad.value}
                     </li>
                     <li>
-                      Velocidad promedio:
-                      ${ejecucion.condiciones.velocidad_promedio}
+                      Velocidad viento promedio:
+                      ${ejecucion.condiciones.velocidad.value}
                     </li>
                   </ul>
                 </vaadin-details>

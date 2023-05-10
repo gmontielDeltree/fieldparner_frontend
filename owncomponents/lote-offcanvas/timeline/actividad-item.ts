@@ -1,3 +1,7 @@
+import {
+  actividad_adjuntar_archivo,
+  actividad_remover_adjunto,
+} from "./../../helpers/actividad-funciones";
 import { LitElement, html, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { Actividad, Ejecucion } from "../../depositos/depositos-types";
@@ -19,6 +23,7 @@ import { map } from "lit/directives/map.js";
 import { translate } from "lit-translate";
 import { actividad_detalles } from "./detalles-actividad/detalles-actividad";
 import { ejecucion_detalles } from "./detalles-actividad/detalles-ejecucion";
+import { Cultivo } from '../../insumos/insumos-types';
 
 @customElement("actividad-item")
 export class ActividadItem extends LitElement {
@@ -235,6 +240,24 @@ export class ActividadItem extends LitElement {
 
   render() {
     let fecha = this.get_fecha_plan_o_ejecucion();
+    
+    let titulo = this.item?.tipo.toUpperCase()
+    
+    if(this.item?.tipo === 'siembra'){
+      let cultivo: Cultivo = null;
+      if (this.item) {
+        let t = this.item.detalles.dosis.find(
+          (d) => d.insumo.tipo?.key === "semillas"
+        );
+        // t es la primera linea de dosis con semillas
+        if (t) {
+          cultivo = t.insumo.cultivo;
+          titulo += " " + cultivo.nombre
+        }
+      }
+    }
+   
+
 
     return html` <vaadin-horizontal-layout
         theme=""
@@ -242,12 +265,15 @@ export class ActividadItem extends LitElement {
       >
         <div>
           <!--Badge Ejecucion-->
-          ${this.ejecucion ? html`<span theme="badge success"
-            >${fecha} Ejecutada</span>` : null}
+          ${this.ejecucion
+            ? html`<span theme="badge success">${fecha} Ejecutada</span>`
+            : null}
           <!--Badge Planificacion-->
-          <span theme="badge error">${this.item.detalles.fecha_ejecucion_tentativa} Planificada</span>
+          <span theme="badge error"
+            >${this.item.detalles.fecha_ejecucion_tentativa} Planificada</span
+          >
           <a
-            >${this.item?.tipo.toUpperCase()}
+            >${titulo}
             <span class="text-muted">
               en ${this.item.detalles.hectareas} has.</span
             ></a
@@ -264,9 +290,13 @@ export class ActividadItem extends LitElement {
       </vaadin-horizontal-layout>
       <vaadin-tabsheet>
         <vaadin-tabs slot="tabs">
-          <vaadin-tab id="dashboard-tab"  ?selected=${!this.ejecucion}>Planificación</vaadin-tab>
+          <vaadin-tab id="dashboard-tab" ?selected=${!this.ejecucion}
+            >Planificación</vaadin-tab
+          >
           <vaadin-tab id="orden-trabajo-tab">Orden de Trabajo</vaadin-tab>
-          <vaadin-tab id="payment-tab" ?selected=${this.ejecucion}>Ejecución</vaadin-tab>
+          <vaadin-tab id="payment-tab" ?selected=${this.ejecucion !== null}
+            >Ejecución</vaadin-tab
+          >
           <vaadin-tab id="shipping-tab">Adjuntos</vaadin-tab>
         </vaadin-tabs>
 
@@ -319,7 +349,7 @@ export class ActividadItem extends LitElement {
                 >
                   ${this.item.estado === 0
                     ? html` ${translate("debe_generar_la_orden_de_trabajo")}`
-                    : html`<vaadin-vertical-layout style='align-items:center;'>
+                    : html`<vaadin-vertical-layout style="align-items:center;">
                         ${!isBefore(parseISO(fecha), new Date())
                           ? html`<div>
                               ${translate(
@@ -361,7 +391,75 @@ export class ActividadItem extends LitElement {
 
         <!-- Adjuntos -->
         <div tab="shipping-tab">
-          <vaadin-upload target="/api/fileupload"></vaadin-upload>
+          <vaadin-vertical-layout style="align-self:stretch">
+            ${this.item.attachments
+              ? this.item.attachments.map(
+                  (att) => html`
+                    <vaadin-horizontal-layout
+                      style="width:100%; align-items:center; justify-content:space-between"
+                      theme="spacing"
+                    >
+                      <div>${att.filename}</div>
+                      <div> <!-- Grupo botones -->
+
+                      <!-- <vaadin-button @click=${
+                       ()=>{
+                        let n = att.filename
+                        if(n.includes('.shp')){
+                          //Show on map
+                        }else if(n.includes('.jpg')){
+                          // Open lightbox
+                        }
+                       } 
+                      }>
+                      <vaadin-icon icon='lumo:eye'></vaadin-icon>
+                      </vaadin-button> -->
+                        <vaadin-button
+                          @click=${() => {
+                            fetch(
+                              "/attachments?file=" +
+                                encodeURIComponent(att.filename)
+                            )
+                              .then((r) => {
+                                return r.blob();
+                              })
+                              .then((data) => {
+                                // Download Fetch
+                                var a = document.createElement("a");
+                                a.href = window.URL.createObjectURL(data);
+                                a.download = att.filename;
+                                a.click();
+                              });
+                          }}
+                        >
+                          <vaadin-icon icon="lumo:download"></vaadin-icon>
+                        </vaadin-button>
+                        <vaadin-button
+                          @click=${() => {
+                            // Solicitar borrado en server y en la db
+                            actividad_remover_adjunto(this.item, att.uuid).then(
+                              () => this.requestUpdate()
+                            );
+                          }}
+                          ><vaadin-icon icon="vaadin:trash"></vaadin-icon
+                        ></vaadin-button>
+                      </div>
+                    </vaadin-horizontal-layout>
+                  `
+                )
+              : html`${translate("sin_adjuntos")}`}
+          </vaadin-vertical-layout>
+
+          <vaadin-upload
+            target="/attachments"
+            .files=${[] /* Previene que se agregen los archivos debajo del control*/} 
+            @upload-success=${(e) => {
+              console.log("successevent", e);
+              actividad_adjuntar_archivo(this.item, e.detail.file).then(() => {
+                this.requestUpdate();
+              });
+            }}
+          ></vaadin-upload>
         </div>
         <!-- FinAdjuntos-->
       </vaadin-tabsheet>`;

@@ -27,7 +27,7 @@ import { gblStateLoaded, gbl_state } from "../state";
 import { StateController } from "@lit-app/state";
 import { ref, createRef } from "lit/directives/ref.js";
 import "@vaadin/tabsheet";
-import { Lenguage } from "../tipos/tipos-varios";
+import { Lenguaje } from "../tipos/tipos-varios";
 import "../campana/menu-campana/menu-campana";
 import "../campana-notificacion/campana-notificacion";
 
@@ -185,7 +185,7 @@ export class Example extends LitElement {
                 title="Insumos"
                 style="cursor: pointer;background-image: url('${icono_insumos}');width: 32px;height: 32px;background-size: cover;background-position: center;"
                 @click=${() => {
-                  this.sendEvent("ver-insumos-click", null);
+                  Router.go("insumos");
                 }}
               ></div>
             </vaadin-tab>
@@ -204,7 +204,7 @@ export class Example extends LitElement {
           <campana-notificacion></campana-notificacion>
             </vaadin-tab>
             <vaadin-tab>
-              <menu-campana-button />
+              <menu-campana-button></menu-campana-button>
             </vaadin-tab>
           </vaadin-tabs>
 
@@ -228,14 +228,14 @@ export class Example extends LitElement {
                     .then((result) => {
                       if (result.rows.length > 0) {
                         // Existe
-                        let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
+                        let lang_doc: Lenguaje = result.rows[0].doc as Lenguaje;
                         lang_doc.lang = lang;
                         gbl_state.user_db
                           .put(lang_doc)
                           .then(() => window.location.reload());
                       } else {
                         // No existe
-                        let lang_doc: Lenguage = {
+                        let lang_doc: Lenguaje = {
                           _id: "user_language",
                           lang: lang,
                         };
@@ -251,7 +251,7 @@ export class Example extends LitElement {
 
             <a
               tabindex="-1"
-              href='https://www.agrotools.net/'
+              href='https://www.qtsagro.net/'
               @click=${() => {
                 this.sendEvent("logout-click", {});
               }}
@@ -267,12 +267,12 @@ export class Example extends LitElement {
           style="height:100%;justify-content: space-between;"
         >
           <vaadin-tabs orientation="vertical">
-            <vaadin-tab>
+            <!-- <vaadin-tab>
               <a tabindex="-1">
                 <vaadin-icon icon="vaadin:desktop"></vaadin-icon>
                 <workspace-menu></workspace-menu>
               </a>
-            </vaadin-tab>
+            </vaadin-tab> -->
             <vaadin-tab>
               <a tabindex="-1" href="/campos">
                 <vaadin-icon icon="vaadin:bullseye"></vaadin-icon>
@@ -332,6 +332,52 @@ export class Example extends LitElement {
               >
                 <vaadin-icon icon="vaadin:list"></vaadin-icon>
                 <span>${translate("navbar.opciones.listaDispositivos")}</span>
+              </a>
+            </vaadin-tab>
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
+                  Router.go("/personal");
+                }}
+              >
+                <vaadin-icon icon="vaadin:users"></vaadin-icon>
+                <span>${translate("personal")}</span>
+              </a>
+            </vaadin-tab>
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
+                  Router.go("/equipos");
+                }}
+              >
+                <vaadin-icon icon="vaadin:truck"></vaadin-icon>
+                <span>${translate("equipos")}</span>
+              </a>
+            </vaadin-tab>
+
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
+                  Router.go("/prices");
+                }}
+              >
+                <vaadin-icon icon="vaadin:dollar"></vaadin-icon>
+                <span>${translate("precios")}</span>
+              </a>
+            </vaadin-tab>
+
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
+                  Router.go("/settings");
+                }}
+              >
+                <vaadin-icon icon="vaadin:cogs"></vaadin-icon>
+                <span>${translate("ajustes")}</span>
               </a>
             </vaadin-tab>
 

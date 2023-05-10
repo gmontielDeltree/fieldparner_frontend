@@ -2,7 +2,7 @@ import { Proveedor } from "./../tipos/proveedores";
 import {
   borrar_proveedor,
   listar_proveedores,
-} from "./../depositos/proveedores_funciones";
+} from "./proveedores-funciones";
 
 import { customElement, property, state } from "lit/decorators.js";
 import "../modal-generico/modal-generico";
@@ -25,11 +25,11 @@ import { Deposito } from "../depositos/depositos-types";
 import {
   listar_depositos,
   nuevo_deposito,
-} from "../depositos/depositos_funciones";
+} from "../depositos/depositos-funciones";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { createMenuDots } from "./../helpers";
 import { confirmar_eliminar } from "../helpers/confirmar-eliminar";
-import { borrar_transfer } from "../depositos/transferencias_funciones";
+import { borrar_transfer } from "../depositos/transferencias-funciones";
 import { showNotification } from "../helpers/notificaciones";
 
 @customElement("proveedores-lista")

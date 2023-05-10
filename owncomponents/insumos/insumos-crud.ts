@@ -13,9 +13,7 @@ import "@vaadin/icons";
 import "@vaadin/dialog";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Modal from "bootstrap/js/dist/modal";
-import lista_de_labores from "./labores.json";
-import { uuid4 } from "uuid4";
-import PouchDB from "pouchdb";
+import lista_de_labores from "../jsons/labores";
 import {
   Insumo,
   get_empty_insumo,
@@ -24,6 +22,9 @@ import {
 } from "./insumos-types";
 import { isThisSecond } from "date-fns";
 import { GridItemModel } from "@vaadin/grid";
+import cultivos from "../jsons/cultivos";
+import { old_tipo_2_new, tipos_insumos } from "../jsons/tipos_insumos";
+import { get } from "lit-translate";
 
 export class InsumoCrud extends LitElement {
   @property()
@@ -51,6 +52,9 @@ export class InsumoCrud extends LitElement {
 
   @state()
   _cultivos_opened: boolean = false;
+
+  @state()
+  _es_semilla: boolean = false;
 
   @state()
   _seaplicacultivo: CultivoAplicacion = get_empty_cultivo();
@@ -98,15 +102,23 @@ export class InsumoCrud extends LitElement {
 
   private guardar_insumo = () => {
     console.log("Guardar Insumo", this.insumo);
-    this.db.put(this.insumo).then(() => {
-      console.log("insumo guardado")
-      //if(this._editing){
-        this.dispatchEvent(new CustomEvent("edicion_insumo_guardado",{bubbles:true,composed:true}));
-        this._modal.hide()
-      //}
-    }).catch((e)=>{
-      alert("hubo un problema a guardar el insumo")
-    })
+    this.db
+      .put(this.insumo)
+      .then(() => {
+        console.log("insumo guardado");
+        //if(this._editing){
+        this.dispatchEvent(
+          new CustomEvent("edicion_insumo_guardado", {
+            bubbles: true,
+            composed: true,
+          })
+        );
+        this._modal.hide();
+        //}
+      })
+      .catch((e) => {
+        alert("hubo un problema a guardar el insumo");
+      });
   };
 
   private edit_cultivo(insumo: CultivoAplicacion) {
@@ -164,65 +176,81 @@ export class InsumoCrud extends LitElement {
   };
 
   render() {
-    return html`
-   
-   <!-- Modal Cultivo-->
-   <div class="modal fade" id="modal_cultivos" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-     <div class="modal-dialog" role="document">
-       <div class="modal-content">
-         <div class="modal-header">
-           <h5 class="modal-title">Se aplica a...</h5>
-             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-         </div>
-         <div class="modal-body">
+    return html` <!-- Modal Cultivo-->
+      <div
+        class="modal fade"
+        id="modal_cultivos"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="modelTitleId"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Se aplica a...</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <vaadin-form-layout
+                style="align-items: stretch;"
+                .responsiveSteps=${this.responsiveSteps}
+              >
+                <vaadin-text-field
+                  label="Cultivo"
+                  .value=${this._seaplicacultivo.cultivo}
+                  @change=${(e: any) => {
+                    this._seaplicacultivo = {
+                      ...this._seaplicacultivo,
+                      cultivo: e.target.value,
+                    };
+                  }}
+                ></vaadin-text-field>
+                <vaadin-text-field
+                  label="Estadio Desde"
+                  .value=${this._seaplicacultivo.estadio_desde}
+                  @change=${(e: any) => {
+                    this._seaplicacultivo = {
+                      ...this._seaplicacultivo,
+                      estadio_desde: e.target.value,
+                    };
+                  }}
+                ></vaadin-text-field>
+                <vaadin-text-field label="Estadio Hasta"></vaadin-text-field>
+                <vaadin-number-field label="Dosis min."></vaadin-number-field>
+                <vaadin-number-field
+                  label="Dosis sugerida"
+                ></vaadin-number-field>
+                <vaadin-number-field label="Dosis max."></vaadin-number-field>
+              </vaadin-form-layout>
+            </div>
 
-          <vaadin-form-layout style="align-items: stretch;" .responsiveSteps=${this.responsiveSteps}>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click=${this.volver}
+              >
+                Cerrar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click=${this.volver_y_guardar}
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <vaadin-text-field label="Cultivo"
-            .value=${
-                this._seaplicacultivo.cultivo
-              } 
-              @change=${(e: any) => {
-                this._seaplicacultivo = {
-                  ...this._seaplicacultivo,
-                  cultivo: e.target.value,
-                };
-              }}
-            ></vaadin-text-field>
-              <vaadin-text-field label="Estadio Desde" .value=${
-                this._seaplicacultivo.estadio_desde
-              } 
-              @change=${(e: any) => {
-                this._seaplicacultivo = {
-                  ...this._seaplicacultivo,
-                  estadio_desde: e.target.value,
-                };
-              }}
-              ></vaadin-text-field>
-              <vaadin-text-field label="Estadio Hasta"></vaadin-text-field>
-              <vaadin-number-field label="Dosis min."></vaadin-number-field>
-              <vaadin-number-field label="Dosis sugerida"></vaadin-number-field>
-              <vaadin-number-field label="Dosis max."></vaadin-number-field>
-
-            </vaadin-form-layout>
-
-         </div>
-
-         
-         <div class="modal-footer">
-           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click=${
-             this.volver
-           }>Cerrar</button>
-           <button type="button" class="btn btn-primary" @click=${
-             this.volver_y_guardar
-           }>Guardar</button>
-         </div>
-       </div>
-     </div>
-   </div>
-   
-
-    
       <!-- Modal Principal -->
       <div
         class="modal fade"
@@ -246,6 +274,41 @@ export class InsumoCrud extends LitElement {
             </div>
             <div class="modal-body">
               <vaadin-form-layout .responsiveSteps="${this.responsiveSteps}">
+                <!-- Stretch the username field over 2 columns -->
+                <vaadin-combo-box
+                  label="Tipo"
+                  .selectedItem=${typeof this.insumo.tipo === "string"
+                    ? old_tipo_2_new(<string>(this.insumo.tipo as unknown))
+                    : this.insumo.tipo}
+                  .itemLabelPath=${"nombre"}
+                  .items=${tipos_insumos}
+                  @selected-item-changed=${(e: any) => {
+                    //this.insumo.datos_generales.direccion = e.target.value;
+                    this.insumo = { ...this.insumo, tipo: e.detail.value };
+                  }}
+                ></vaadin-combo-box>
+
+                ${this.insumo.tipo?.key === "semillas"
+                  ? html`
+                      <vaadin-combo-box
+                        .label=${get("cultivo")}
+                        .items=${cultivos}
+                        .itemLabelPath=${"nombre"}
+                        @selected-item-changed=${(e) => {
+                          this.insumo.cultivo = e.detail.value;
+                        }}
+                      ></vaadin-combo-box>
+                    `
+                  : null}
+                <vaadin-text-field
+                  label="Subtipo"
+                  .value=${this.insumo.subtipo}
+                  @change=${(e: any) => {
+                    //this.insumo.datos_generales.telefono = e.target.value;
+                    this.insumo = { ...this.insumo, subtipo: e.target.value };
+                  }}
+                ></vaadin-text-field>
+
                 <vaadin-text-field
                   label="Marca Comercial"
                   .value=${this.insumo.marca_comercial}
@@ -268,24 +331,6 @@ export class InsumoCrud extends LitElement {
                     };
                   }}
                 ></vaadin-text-field>
-                <!-- Stretch the username field over 2 columns -->
-                <vaadin-text-field
-                  label="Tipo"
-                  .value=${this.insumo.tipo}
-                  @change=${(e: any) => {
-                    //this.insumo.datos_generales.direccion = e.target.value;
-                    this.insumo = { ...this.insumo, tipo: e.target.value };
-                  }}
-                ></vaadin-text-field>
-
-                <vaadin-text-field
-                  label="Subtipo"
-                  .value=${this.insumo.subtipo}
-                  @change=${(e: any) => {
-                    //this.insumo.datos_generales.telefono = e.target.value;
-                    this.insumo = { ...this.insumo, subtipo: e.target.value };
-                  }}
-                ></vaadin-text-field>
 
                 <vaadin-text-field
                   label="Unidad"
@@ -301,7 +346,7 @@ export class InsumoCrud extends LitElement {
                 <vaadin-number-field
                   label="Precio de Lista"
                   name="precio"
-                  .value=${this.insumo.precio}
+                  .value=${(<unknown>this.insumo.precio) as string}
                   @change=${(e: any) => {
                     //this.insumo.datos_generales.email = e.target.value;
                     this.insumo = { ...this.insumo, precio: e.target.value };
@@ -311,68 +356,56 @@ export class InsumoCrud extends LitElement {
                   theme="align-right"
                   autoselect
                 >
-                  <div slot='prefix'>USD</div>
-              </vaadin-number-field>
+                  <div slot="prefix">USD</div>
+                </vaadin-number-field>
 
+                <vaadin-horizontal-layout theme='spacing'>
+                  <vaadin-number-field label="Dosis min." 
+                  .value=${this.insumo.dosis_min ?? 0}
+                  @input=${(e)=>{
+                    this.insumo.dosis_min = e.target.value
+                  }}></vaadin-number-field>
+                  <vaadin-number-field
+                    label="Dosis sugerida"
+                    .value=${this.insumo.dosis_sugerida ?? 0}
+
+                    @input=${(e)=>{
+                    this.insumo.dosis_sugerida = e.target.value
+                  }}
+                  ></vaadin-number-field>
+                  <vaadin-number-field label="Dosis max."
+                  .value=${this.insumo.dosis_max ?? 0}
+
+                  @input=${(e)=>{
+                    this.insumo.dosis_max = e.target.value
+                  }}></vaadin-number-field>
+                </vaadin-horizontal-layout>
               </vaadin-form-layout>
+            </div>
+            <!-- End Modal Body -->
 
-              <!-- Grid detalles cultivos de insumo -->
-              <div>
-              <vaadin-button
-                    @click=${this.agregar_cultivo}
-                    theme="primary"
-                    tabindex="0"
-                    role="button"
-                    >Agregar Cultivo</vaadin-button
-                  >
-
-                <vaadin-grid
-                  .items="${
-                    this.insumo.se_aplica_a.length === 0
-                      ? []
-                      : this.insumo.se_aplica_a
-                  }"
-                  all-rows-visible
-                >
-                  <vaadin-grid-column
-                    header="Cultivo"
-                    path="cultivo"
-                    auto-width
-                  ></vaadin-grid-column>
-                  <vaadin-grid-column
-                    header="Estadio Desde"
-                    path="estadio_desde"
-                    auto-width
-                  ></vaadin-grid-column>
-                  <vaadin-grid-column
-                    header=""
-                    .renderer="${this.actionsRenderer}"
-                  ></vaadin-grid-column>
-                </vaadin-grid>
-              </div>
-             
-            </div> <!-- End Modal Body -->
-            
             <div class="modal-footer">
-              ${
-                this._editing
-                  ? html`<button type="button" class="btn btn-danger">
-                      Eliminar
-                    </button>`
-                  : null
-              }
+              ${this._editing
+                ? html`<button type="button" class="btn btn-danger">
+                    Eliminar
+                  </button>`
+                : null}
 
               <button
                 type="button"
                 class="btn btn-secondary"
                 data-bs-dismiss="modal"
-                @click=${
-                       ()=>{ if(this._editing){
-                          this.dispatchEvent(new CustomEvent("edicion_insumo_cerrado",{bubbles:true,composed:true}));
-                          this._modal.hide()
-                        }
-                      }
-                }
+                @click=${() => {
+                  if (this._editing) {
+                    this.dispatchEvent(
+                      new CustomEvent("edicion_insumo_cerrado", {
+                        bubbles: true,
+                        composed: true,
+                      })
+                    );
+                    this._modal.hide();
+                  }
+                }}
               >
                 Cerrar
               </button>
@@ -397,3 +430,40 @@ declare global {
     "insumo-crud": InsumoCrud;
   }
 }
+
+// <!-- ${!this._es_semilla
+//   ? html`
+//       <!-- Grid detalles cultivos de insumo -->
+//       <div>
+//         <vaadin-button
+//           @click=${this.agregar_cultivo}
+//           theme="primary"
+//           tabindex="0"
+//           role="button"
+//           >Agregar Cultivo</vaadin-button
+//         >
+
+//         <vaadin-grid
+//           .items="${this.insumo.se_aplica_a.length === 0
+//             ? []
+//             : this.insumo.se_aplica_a}"
+//           all-rows-visible
+//         >
+//           <vaadin-grid-column
+//             header="Cultivo"
+//             path="cultivo"
+//             auto-width
+//           ></vaadin-grid-column>
+//           <vaadin-grid-column
+//             header="Estadio Desde"
+//             path="estadio_desde"
+//             auto-width
+//           ></vaadin-grid-column>
+//           <vaadin-grid-column
+//             header=""
+//             .renderer="${this.actionsRenderer}"
+//           ></vaadin-grid-column>
+//         </vaadin-grid>
+//       </div>
+//     `
+//   : null} -->

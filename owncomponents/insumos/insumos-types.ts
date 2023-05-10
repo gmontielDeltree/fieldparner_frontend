@@ -1,7 +1,24 @@
 import uuid4 from 'uuid4'
 
+export interface Cultivo{
+  uuid: string,
+  nombre:string,
+  key:string,
+}
+
+export interface TipoInsumo{
+  uuid: string,
+  nombre:string,
+  key:string,
+}
+
+interface Subtipo{
+  uuid: string,
+  nombre:string,
+}
+
 interface CultivoAplicacion {
-  cultivo : any;
+  cultivo : Cultivo;
   uuid: string;
   estadio_desde: string;
   estadio_hasta: string;
@@ -10,18 +27,22 @@ interface CultivoAplicacion {
   dosis_sugerida: number;
 }
 
+
 interface Insumo {
   _id: string,
   _rev?:string,
   uuid: string;
   marca_comercial: string;
   principio_activo: string;
-  tipo: string;
+  tipo: TipoInsumo;
   subtipo: string;
   unidad: string;
   precio: number;
+  dosis_min?:number;
+  dosis_sugerida?:number;
+  dosis_max?:number;
   se_aplica_a: CultivoAplicacion[];
-  
+  cultivo ?:Cultivo; // Si se trata de una semilla
 }
 
 const get_empty_insumo = () => {
@@ -31,7 +52,7 @@ const get_empty_insumo = () => {
     uuid: uuid,
     marca_comercial: "",
     principio_activo: "",
-    tipo: "",
+    tipo: null,
     subtipo: "",
     unidad: "",
     precio: 0.0,
@@ -45,7 +66,7 @@ const get_empty_cultivo = ()=>{
   let uuid = uuid4()
 
   const empty_cultivo : CultivoAplicacion = {
-    cultivo : "",
+    cultivo : null,
     uuid : uuid,
     estadio_desde : "",
     estadio_hasta : "",

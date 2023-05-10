@@ -14,24 +14,31 @@ import Offcanvas from "bootstrap/js/dist/offcanvas";
 import PouchDB from "pouchdb";
 import "../contratistas/contratista-crud";
 import "@vaadin/icons";
-import { Map} from "mapbox-gl";
+import { Map } from "mapbox-gl";
 import { Devices, extract_tele } from "./sensores";
 import { touchEvent } from "../helpers";
 import devices_modelos from "./devices_modelos.ts";
 import { format, formatDistance, formatRelative, subDays } from "date-fns";
 import format from "date-fns/format";
-import ApexCharts from "apexcharts";
+let ApexCharts;
+import("apexcharts").then(({ default: a }) => {
+  ApexCharts = a;
+});
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
 import { DailyTelemetryCard } from "./sensores-types";
 import "./mediciones-cards/temperatura";
 import "./mediciones-cards/presion";
 import "./mediciones-cards/humedad";
 import "./mediciones-cards/radiacion";
-import "./mediciones-cards/viento_velocidad"
-import "./mediciones-cards/viento_direccion"
-import "./rosad3"
+import "./mediciones-cards/viento_velocidad";
+import "./mediciones-cards/viento_direccion";
+import "./mediciones-cards/sensacion_termica";
+import "./mediciones-cards/punto_de_rocio";
+import "./mediciones-cards/inversion_termica_chacabuco_baja";
+import "./mediciones-cards/stress_termico";
+import "./rosad3";
 
-import "./mediciones-cards/pluviometro"
+import "./mediciones-cards/pluviometro";
 import { Router } from "@vaadin/router";
 
 // background-position-y: -60px;
@@ -42,6 +49,16 @@ export class SensoresClass extends LitElement {
     unsafeCSS(bootstrap),
     unsafeCSS(apex_css),
     css`
+      @media only screen and (max-width: 600px) {
+        .mioffcanvas {
+          width: 100%;
+        }
+      }
+
+      .mioffcanvas {
+        width : 50%;
+      }
+
       .humedad-body {
         background-image: url("/sensor-humedad/suelo.webp");
         background-repeat: no-repeat;
@@ -62,7 +79,7 @@ export class SensoresClass extends LitElement {
       }
 
       .offcanvas-sensores-body {
-        background-image: url("/fondodewindows.jpeg");
+        background-image: url("/sky-1441936_1280.jpg");
         background-size: 100% 100%;
         background-repeat: no-repeat;
       }
@@ -143,7 +160,7 @@ export class SensoresClass extends LitElement {
   map: Map;
 
   @property()
-  uuid:string
+  uuid: string;
 
   @state({
     hasChanged(newVal: Offcanvas, oldVal: Offcanvas) {
@@ -151,7 +168,6 @@ export class SensoresClass extends LitElement {
     },
   })
   _offcanvas: Offcanvas;
-
 
   @property()
   _selected_device_card: DailyTelemetryCard = undefined;
@@ -178,13 +194,13 @@ export class SensoresClass extends LitElement {
   override async firstUpdated() {
     // this.shadowRoot
     //   .getElementById("offcanvas")
-      // .addEventListener("hidden.bs.offcanvas", (e) => {
-      //   // Se elimina del parent
-      //   let parent = this.parentElement;
-      //   while (parent.firstChild) {
-      //     parent.firstChild.remove();
-      //   }
-      // });
+    // .addEventListener("hidden.bs.offcanvas", (e) => {
+    //   // Se elimina del parent
+    //   let parent = this.parentElement;
+    //   while (parent.firstChild) {
+    //     parent.firstChild.remove();
+    //   }
+    // });
 
     this._offcanvas = new Offcanvas(
       this.shadowRoot.getElementById("offcanvas")
@@ -196,9 +212,11 @@ export class SensoresClass extends LitElement {
   }
 
   override async willUpdate(props) {
-    console.log('sensores-offcanvas-WillUpdate',props)
-    if(props.has('uuid')){
-      this._selected_details = await this._devices.get_details(this._selected_device_card.device_id);
+    console.log("sensores-offcanvas-WillUpdate", props);
+    if (props.has("uuid")) {
+      this._selected_details = await this._devices.get_details(
+        this._selected_device_card.device_id
+      );
       this.load_data_points();
       this._offcanvas.show();
     }
@@ -213,7 +231,7 @@ export class SensoresClass extends LitElement {
   async show(card: DailyTelemetryCard) {
     if (card) {
       // Ya tengo algo que mostrar
-      console.log("MOSTRAR", card)
+      console.log("MOSTRAR", card);
       await this.updateComplete;
       this._offcanvas.show();
       this._selected_device_card = card;
@@ -243,8 +261,6 @@ export class SensoresClass extends LitElement {
       ? extract_tele(key, this._selected_device_card).value || "N/A"
       : "N/A";
   }
-
-
 
   simulated_historical_data(s) {
     let tes = [11, 32, 45, 32, 34, 52, 41];
@@ -575,32 +591,31 @@ export class SensoresClass extends LitElement {
     // Hay algo seleccionado
     return html`
       <div
-        class="offcanvas offcanvas-start show"
+        class="offcanvas offcanvas-start show mioffcanvas"
         tabindex="-1"
-        style="width: 100%;"
         id="offcanvas"
         aria-labelledby="offcanvasLabel"
+        data-bs-scroll="true"
+        data-bs-backdrop="false"
       >
         <div class="offcanvas-header header-blue">
-          <h5 class="offcanvas-title" id="offcanvasLabel">
+          <div class="offcanvas-title" id="offcanvasLabel" style="color:white">
             ${this._selected_device_card ? this._selected_details.nombre : null}
-          </h5>
-          <h6 class="offcanvas-title" id="offcanvasLabel">
+          </div>
+          <div class="offcanvas-title" id="offcanvasLabel" style="color:white">
             ${this._selected_device_card ? this._selected_details.tipo : null}
-          </h6>
+          </div>
 
           <button
             type="button"
             class="btn-close text-reset"
             data-bs-dismiss="offcanvas"
             aria-label="Close"
+            style="color:white"
             @click=${() => {
-
-                this._offcanvas.hide()
-                Router.go('/')
-              }
-
-              }
+              this._offcanvas.hide();
+              Router.go("/");
+            }}
           ></button>
         </div>
         <div
@@ -651,8 +666,8 @@ export class SensoresClass extends LitElement {
               : null}
             <!--/presion-->
 
-             <!-- Radiación -->
-             ${ifLoadedShow("radiacion_solar")
+            <!-- Radiación -->
+            ${ifLoadedShow("radiacion_solar")
               ? html`<radiacion-card
                   .card=${this._selected_device_card}
                   .data=${this._datapoints}
@@ -661,7 +676,7 @@ export class SensoresClass extends LitElement {
             <!--/presion-->
 
             <!-- Vel Viento -->
-              ${ifLoadedShow("viento_velocidad")
+            ${ifLoadedShow("viento_velocidad")
               ? html`<viento-velocidad-card
                   .card=${this._selected_device_card}
                   .data=${this._datapoints}
@@ -670,24 +685,58 @@ export class SensoresClass extends LitElement {
             <!--/vel viento-->
 
             <!-- Dir Viento -->
-              ${ifLoadedShow("viento_direccion")
+            ${ifLoadedShow("viento_direccion")
               ? html`<viento-direccion-card
                   .card=${this._selected_device_card}
                   .data=${this._datapoints}
-                /> 
-                `
+                /> `
               : null}
             <!--/Dir viento-->
             <!--/viento-->
-            
+
             <!-- Pluviometro -->
-              ${ifLoadedShow("pluviometro")
+            ${ifLoadedShow("pluviometro")
               ? html`<pluviometro-card
                   .deveui=${this._selected_device_card.device_id}
-                /> 
-                `
+                /> `
               : null}
             <!--/Dir pluviometro-->
+
+            <!-- S. Termica  -->
+            ${ifLoadedShow("sensacion_termica")
+              ? html`<sensacion-termica-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!-- /S. Termica -->
+
+            <!-- P. Rocio  -->
+            ${ifLoadedShow("punto_de_rocio")
+              ? html`<punto-de-rocio-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!-- /P. Rocio -->
+
+            <!-- Inv Térmica -->
+            ${ifLoadedShow("inversion_termica_chacabuco_baja")
+              ? html`<inversion-termica-chacabuco-baja-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!-- /Inv Térmica -->
+
+            <!-- Stress Térmico -->
+            ${ifLoadedShow("stress_termico")
+              ? html`<stress-termico-card
+                  .card=${this._selected_device_card}
+                  .data=${this._datapoints}
+                />`
+              : null}
+            <!-- /Stress Térmico -->
 
             <!-- Humedad Suelo-->
             ${devices_modelos[this._selected_details?.tipo]?.sensores.includes(

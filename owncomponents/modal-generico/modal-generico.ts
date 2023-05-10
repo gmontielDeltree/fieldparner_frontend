@@ -155,12 +155,12 @@ export class ModalGenerico extends LitElement {
 
           <vaadin-scroller
             scroll-direction="vertical"
-            style="border-bottom: 1px solid var(--lumo-contrast-20pct); padding: var(--lumo-space-m);"
+            style="border-bottom: 1px solid var(--lumo-contrast-20pct); padding: var(--lumo-space-m); flex:1;"
           >
             <slot name="body"></slot>
           </vaadin-scroller>
 
-          <footer>
+          <footer style="margin-top:auto;">
             <slot name="footer"></slot>
           </footer>
         </vaadin-vertical-layout>

@@ -1,4 +1,4 @@
-import { borrar_deposito, cargar_depo } from './../depositos/depositos_funciones';
+import { borrar_deposito, cargar_depo } from '../depositos/depositos-funciones';
 import { LitElement, html, unsafeCSS, render, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
 import "@vaadin/form-layout";
@@ -22,10 +22,18 @@ import "../contratistas/contratista-crud";
 import "@vaadin/icons";
 import "@vaadin/upload";
 import "@vaadin/dialog";
-import { read, writeFile, utils } from "xlsx";
+
 import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
 import '@vaadin/menu-bar';
+//import { read, writeFile, utils } from "xlsx";
+
+let read, writeFile, utils;
+ import('xlsx').then((mod)=>{
+  read = mod.read
+  writeFile = mod.writeFile
+  utils = mod.utils
+ })
 
 export class ContratistasLista extends LitElement {
   @state()
@@ -174,7 +182,7 @@ export class ContratistasLista extends LitElement {
               >`;
             } else {
               return html`<vaadin-button theme="primary contrast small"
-                >${labor.labor}</vaadin-button
+                >${labor?.labor ?? null}</vaadin-button
               >`;
             }
           })}

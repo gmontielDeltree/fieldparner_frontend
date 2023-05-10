@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS } from "lit";
+import { LitElement, html, unsafeCSS, css } from "lit";
 import { map } from "lit/directives/map.js";
 import { Router } from "@vaadin/router";
 import { StateController } from "@lit-app/state";
@@ -56,11 +56,14 @@ import {
 import { init } from "xstate/lib/actionTypes";
 import "@vaadin/tooltip";
 import { informe_diferencias_definition } from "./informe_comparacion_pdf.js";
-import { translate } from "lit-translate";
+import { get, translate } from "lit-translate";
+import { listar_analisis_suelo_by_lote_uuid } from "../analisis-suelo/analisis-suelo-funciones";
+import { AnalisisSuelo } from "../tipos/analisis-suelo";
 import {
   gbl_docs_starting,
   only_docs,
   actividades_y_ejecuciones,
+  createMenuDots,
 } from "../helpers";
 
 const capitalize = (mySentence) => {
@@ -98,7 +101,7 @@ const motivos_2_str = (motivos) => {
 };
 
 export class LoteOffcanvasSide extends LitElement {
-  static override styles = unsafeCSS(bootstrap);
+  static override styles = [unsafeCSS(bootstrap)];
 
   bindState = new StateController(this, gbl_state);
 
@@ -135,6 +138,9 @@ export class LoteOffcanvasSide extends LitElement {
 
   @state()
   _actividades_ejecuciones_docs: any;
+
+  @state()
+  analisis_de_suelo: AnalisisSuelo[];
 
   @state({
     hasChanged(newVal, oldVal) {
@@ -217,7 +223,7 @@ export class LoteOffcanvasSide extends LitElement {
 
       gbl_state.map.flyTo({
         center: posicion,
-        padding: { left:500, bottom: 200 },
+        padding: { left: 500, bottom: 200 },
         zoom: 15,
       });
     });
@@ -532,6 +538,12 @@ export class LoteOffcanvasSide extends LitElement {
       this._actividades_ejecuciones_docs = res;
       console.log("RESSSS", res);
     });
+
+    listar_analisis_suelo_by_lote_uuid(this._lote_doc.properties.uuid).then(
+      (as) => {
+        this.analisis_de_suelo = as;
+      }
+    );
     // gbl_docs_starting("actividad",true,true,true).then(only_docs)
     // .then((acts : Actividad[]) => {
     //     let s = acts.filter(
@@ -571,6 +583,8 @@ export class LoteOffcanvasSide extends LitElement {
       this.evento_show_ndvi();
     } else if (valor === "notas") {
       this.notas();
+    } else if (valor === "analisissuelo") {
+      Router.go("/analisissuelo/add?lote_uuid=" + this._lote_doc.id);
     }
   }
 
@@ -584,7 +598,7 @@ export class LoteOffcanvasSide extends LitElement {
         aria-labelledby="offcanvasBottomLabel"
         data-bs-scroll="true"
         data-bs-backdrop="false"
-        style="--bs-offcanvas-width: 800px;"
+        style="--bs-offcanvas-width: 800px;--bs-offcanvas-zindex: 500;"
       >
         <div class="offcanvas-header py-2">
           <button
@@ -610,12 +624,12 @@ export class LoteOffcanvasSide extends LitElement {
             <span class="d-none d-md-inline">Localizar</span>
           </button>
 
-          <h6 class="offcanvas-title fw-bold">
+          <div class="offcanvas-title fw-bold">
             Lote "${this.lote_nombre}"
             <small class="text-muted"
               >${this.ultima_siembra().toUpperCase()}</small
             >
-          </h6>
+          </div>
 
           <button
             type="button"
@@ -647,6 +661,7 @@ export class LoteOffcanvasSide extends LitElement {
                     { text: "Planificar Siembra", value: "siembra" },
                     { text: "Planificar Aplicación", value: "aplicacion" },
                     { text: "Planificar Cosecha", value: "cosecha" },
+                    { text: get("analisis_de_suelo"), value: "analisissuelo" },
                     { text: "NDVI", value: "ndvi" },
                     { text: "Eliminar Lote", value: "eliminar" },
                   ],
@@ -700,7 +715,11 @@ export class LoteOffcanvasSide extends LitElement {
                   title="Notas"
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/iconodenotas_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
-                  @click=${this.notas}
+                  @click=${() =>
+                    Router.go(
+                      gbl_state.router.location.getUrl() +
+                        "/nota/add"
+                    )}
                 ></div>
 
                 <div
@@ -709,6 +728,18 @@ export class LoteOffcanvasSide extends LitElement {
                   style="cursor: pointer;background-image: url('/iconosatelite.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${this.evento_show_ndvi}
                 ></div>
+
+                <vaadin-menu-bar
+                  theme="small"
+                  class="col col-2"
+                  .items="${[
+                    {
+                      text: get("analisis_de_suelo"),
+                      value: "analisissuelo",
+                    },
+                  ]}"
+                  @item-selected=${this.menu_click}
+                ></vaadin-menu-bar>
               </div>
             </div>
           </div>
@@ -718,23 +749,42 @@ export class LoteOffcanvasSide extends LitElement {
             scroll-direction="vertical"
             style="height: 90%;"
           >
-            <lit-timeline-side
-              .db=${gbl_state.db}
-              .a=${this._actividades_ejecuciones_docs}
-              id="actividades-timeline"
-              @gallery-open=${() => this._lotesOffcanvas.hide()}
-              @gallery-closed=${() => this._lotesOffcanvas.show()}
-            ></lit-timeline-side>
+            ${this._actividades_ejecuciones_docs?.length > 0 ||
+            this.analisis_de_suelo?.length > 0
+              ? html`
+                  <lit-timeline-side
+                    .db=${gbl_state.db}
+                    .a=${this._actividades_ejecuciones_docs}
+                    .analisis_suelo=${this.analisis_de_suelo}
+                    id="actividades-timeline"
+                    @gallery-open=${() => this._lotesOffcanvas.hide()}
+                    @gallery-closed=${() => this._lotesOffcanvas.show()}
+                  ></lit-timeline-side>
+                `
+              : html` <div>
+                  <div
+                    style="display:flex;justify-content:center;font-weight:bold"
+                  >
+                    ${translate("no_hay_actividades")}
+                  </div>
+                  <div
+                    style="display:flex;justify-content:center;font-weight:bold"
+                  >
+                    ${translate(
+                      "agregue_alguna_utilizando_los_botones_superiores"
+                    )}
+                  </div>
+                </div>`}
           </vaadin-scroller>
         </div>
       </div>
 
-      <notas-oc
+      <!-- <notas-oc
         id="notas-oc"
         .map=${gbl_state.map}
         .db=${gbl_state.db}
         .lote_doc=${this._lote_doc}
-      ></notas-oc>
+      ></notas-oc> -->
     `;
   }
 }

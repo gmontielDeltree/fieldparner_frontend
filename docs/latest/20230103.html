@@ -1,295 +1,403 @@
 <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Reporte de Cambios 2022-01-08 &lpar;Version 0&period;1&period;62&rpar;</title>
-        <style>
-/* From extension vscode.github */
+<html>
+<head>
+<title>20230103.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.vscode-dark img[src$=\#gh-light-mode-only],
-.vscode-light img[src$=\#gh-dark-mode-only] {
-	display: none;
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
 }
 
 </style>
-        
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+
 <style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
-                font-size: 14px;
-                line-height: 1.6;
-            }
-        </style>
-        <style>
-.task-list-item {
-    list-style-type: none;
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
 }
 
-.task-list-item-checkbox {
-    margin-left: -20px;
-    vertical-align: middle;
-    pointer-events: none;
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
 }
 </style>
-        
-    </head>
-    <body class="vscode-body vscode-light">
-        <h1 id="reporte-de-cambios-2022-01-08-version-0162">Reporte de Cambios 2022-01-08 (Version 0.1.62)</h1>
-<h3 id="detalles-de-insumos-en-los-items-del-combobox">Detalles de insumos en los items del ComboBox.</h3>
-<p>Cada item de la lista de insumos muestra (segun se encuentren completados para cada insumo):</p>
-<ul>
-<li>Nombre Comercial</li>
-<li>Principio Activo</li>
-<li>Pildora coloreada con &quot;tipo-subtipo&quot;</li>
-<li>Pildora coloreada con cada cultivo de la lista &quot;Se aplica a&quot;</li>
-</ul>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/pills-agroq.png" alt="drawing" width="350"/>
-</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/pill-cultivo.png" alt="drawing" width="350"/>
-</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/combustible.png" alt="drawing" width="350"/>
-</p>
-<h3 id="filtrado-de-insumos-en-pantallas-de-añadireditar-actividades">Filtrado de insumos en pantallas de Añadir/Editar Actividades</h3>
-<h4 id="filtro-1-botón-de-filtrado-de-categorias"><strong>Filtro 1:</strong> Botón de filtrado de categorias.</h4>
-<ul>
-<li>Para filtrar y limitar los insumos visibles se añadio un botón con el ícono de filtro en el ComboBox selector de insumo en donde se listan las distintas categorias de los mismos.</li>
-</ul>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/filtro_categorias.png" alt="drawing" width="400"/>
-</p>
-<ul>
-<li>Por defecto se seleccionan algunas categorias de acuerdo al tipo de actividad en cuestion:
-<ul>
-<li>Siembra -&gt; &quot;Semillas&quot;, &quot;Combustibles&quot;</li>
-<li>Aplicacion -&gt; &quot;Agroquimicos&quot;, &quot;Fertilizantes&quot;, &quot;Combustible&quot;</li>
-<li>Cosecha -&gt; &quot;Otros&quot;, &quot;Combustible&quot;</li>
-</ul>
-</li>
-</ul>
-<p>Independientemente de las categorias seleccionadas por defecto el usuario puede seleccionar/deseleccionar categorias a discrecion.</p>
-<h4 id="filtro-2-string-ingresado-por-el-usuario"><strong>Filtro 2:</strong> String ingresado por el usuario.</h4>
-<ul>
-<li>El fitro 2 opera sobre los insumos que pasan el filtro 1 (categorias seleccionadas).</li>
-<li>El filtro reduce la lista de insumos que cumplen alguna de las siguientes condiciones:
-<ul>
-<li>El string forma parte del nombre comercial.</li>
-<li>El string forma parte del principio activo.</li>
-<li>El string forma parte del alguno de los nombres de los cultivos especificados en la lista de &quot;se aplica a&quot; que corresponde a ese insumo.</li>
-</ul>
-</li>
-</ul>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/principio_activo.png" title="drawing" width="200"/>
-<p align="center">Ej. de busqueda por principio Activo</p>
-</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/filtro_cultivo.png" alt="drawing" width="200"/>
-<p align="center">Ej. de busqueda por cultivo</p>
-</p>
-<h3 id="chequeos-al-crear-o-editar-planificaciones">Chequeos al crear o editar planificaciones.</h3>
-<p>Se realizan los siguientes chequeos antes de guardar la <strong>planificación</strong> de una actividad:</p>
-<ul>
-<li>Para todos los tipos:
-<ul>
-<li>Fecha tentativa de ejecución dentro de la campaña.</li>
-<li>Debe seleccionar un contratista.</li>
-<li>Debe seleccionar un al menos insumo.</li>
-</ul>
-</li>
-<li>Siembra:
-<ul>
-<li>Debe seleccionar al menos un insumo de semilla</li>
-<li>Debe ingresar una labor de 'Siembra'</li>
-</ul>
-</li>
-<li>Cosecha:
-<ul>
-<li>Debe ingresar una labor de 'Cosecha'</li>
-</ul>
-</li>
-</ul>
-<h3 id="chequeos-al-crear-o-editar-ejecuciones">Chequeos al crear o editar ejecuciones.</h3>
-<p>Se realizan los siguientes chequeos antes de guardar la <em>ejecución</em> de una actividad:</p>
-<ul>
-<li>Para todos los tipos:
-<ul>
-<li>Fecha de ejecución posterior o igual a la planificación y dentro de la campaña.</li>
-<li>Debe seleccionar un al menos insumo.</li>
-</ul>
-</li>
-<li>Siembra:
-<ul>
-<li>Debe seleccionar al menos un insumo de semilla</li>
-<li>Debe ingresar una labor de 'Siembra'</li>
-</ul>
-</li>
-<li>Cosecha:
-<ul>
-<li>Debe ingresar una labor de 'Cosecha'</li>
-</ul>
-</li>
-</ul>
-<h2 id="campañas">Campañas</h2>
-<p>Se añadio el concepto de &quot;Campañas&quot;. Mediante un menu en la barra se puede crear, seleccionar y editar.</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/campana_selector.png" alt="drawing" width="200"/>
-<p align="center">Selector de Campaña</p>
-</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/nueva_campana.png" alt="drawing" width="400"/>
-<p align="center">Nueva Campaña</p>
-</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/editar_campana.png" alt="drawing" width="400"/>
-<p align="center">Editar Campaña, con el botón de "Borrar Campaña"</p>
-</p>
-<p>Seleccionar la campaña permite filtrar los datos y limitarlos al periodo de tiempo de la misma.
-Los items mostrados en la linea de tiempo son filtrado por el periodo y los selectores de fechas de las actividades limitan el rango de acuerdo a la campaña seleccionada.
-Va a ser utilizado especialmente a la hora de hacer informes.</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/error_fecha_camp.png" alt="drawing" width="400"/>
-<p align="center">Error mostrado al ingresar una fecha invalida con el teclado</p>
-</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/1weekcamp.png" alt="drawing" width="300"/>
-<p align="center">Ejemplo de campaña de una semana y como se ve en los selectores</p>
-</p>
-<ul>
-<li><strong>Importante</strong> En la implementación actual las campañas no <em><strong>contienen</strong></em> a los datos solo son un mecanismo de filtrado de los mismos por un intervalo de fechas. Esto implica que al borrar una campaña no se eliminan los datos (actividades, notas, etc.). Una actividad (o cualquier otro dato fechado) pertenece a una campaña en virtud de su fecha solamente no existiendo una relación explicita.</li>
-</ul>
-<h3 id="chequeos-al-crear-una-campaña">Chequeos al crear una campaña</h3>
-<ul>
-<li>
-<p>Nombre no vacio</p>
-</li>
-<li>
-<p>Fechas deben ser asignadas</p>
-</li>
-<li>
-<p>Fecha fin &gt; Fecha inicio</p>
-</li>
-<li>
-<p>Fechas que no solapen con campañas ya definidas.</p>
-<p>Al no cumplirse alguna de estas reglas se muestra un alert notificando.</p>
-</li>
-</ul>
-<h2 id="lista-de-insumos---filtro-de-busqueda-rapida-y-otros">Lista de insumos - Filtro de busqueda rapida y otros.</h2>
-<p>En la lista de insumos se realizaron los siguienes cambios:</p>
-<ul>
-<li>
-<p>Caja de busqueda para filtrado rapido. El filtro devuelve los insumos en donde:
--- El string forma parte del nombre comercial.
--- El string forma parte del principio activo.
--- El string forma parte del alguno de los nombres de los cultivos especificados en la lista de &quot;se aplica a&quot; que corresponde a ese insumo.</p>
-</li>
-<li>
-<p>Columnas con botones de reordenamiento ascendente/descendente.</p>
-</li>
-</ul>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/busqueda.png" alt="drawing" width="500"/>
-<p align="center"></p>
-</p>
-<h2 id="cambio-de-posición-botón-de-lenguaje-y-log-out">Cambio de posición botón de lenguaje y &quot;Log Out&quot;.</h2>
-<ul>
-<li>De acuerdo a lo señalado el 20220104, se añadió un botón selector de lenguaje en la esquina sup. derecha, en la barra de navegación y se eliminó el ComboBox en el cajon izquierdo.</li>
-<li>El botón de &quot;LogOut&quot; se desplazo hacia abajo del cajón.</li>
-</ul>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/logout.jpeg" alt="drawing" width="400"/>
-<p align="center"></p>
-</p>
-<h2 id="indicador-de-versión">Indicador de Versión</h2>
-<ul>
-<li>El indicador de versión se elimino de cajón izquierdo para que no ocupe lugar.</li>
-<li>Se puede visualizar la version actual pasando el puntero del mouse sobre el la imagen del logo en la barra de navegación.</li>
-</ul>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/version.png" alt="drawing" width="200"/>
-<p align="center"></p>
-</p>
-<h3 id="codigo-y-estadisticas">Codigo y Estadisticas</h3>
-<p>Zip con todo el codigo de la app (frontend):
-<a href="https://drive.google.com/file/d/1ZXMjRBfSu522cosYLbrcTvZPjLvPRGyZ/view?usp=sharing">https://drive.google.com/file/d/1ZXMjRBfSu522cosYLbrcTvZPjLvPRGyZ/view?usp=sharing</a></p>
-<h4 id="estadisticas-de-código">Estadisticas de código</h4>
-<p>Archivos (main code): 120
-Lineas de código: 27606</p>
-<hr>
-<h3 id="sigo-trabajando-en">Sigo trabajando en:</h3>
-<ul>
-<li>Incluir &quot;Motivos&quot; en las notas.</li>
-<li>Facilitar la creación de una aplicación partiendo de una nota autocompletando los &quot;Motivos&quot;.</li>
-<li>Adjuntar cualquier archivo a las notas y a las actividades en gral.</li>
-<li>Extraccion de condiciones en ejecución.</li>
-<li>Depositos.</li>
-<li>Transferencias entre depositos/contratistas.</li>
-</ul>
-<hr>
-<hr>
-<h3 id="cambios-anteriores">Cambios Anteriores</h3>
-<h4 id="notas---ubicación-por-defecto-a-mapa">Notas - Ubicación por Defecto a Mapa</h4>
-<ul>
-<li>Cuando se abre una nueva nota, la ubicacion por defecto se cambio por el mapa en vez del dispositivo para evitar desplazamientos si el usuario no esta en el lote en cuestion.</li>
-</ul>
-<h4 id="orden-de-trabajo-interpuesta-entre-planificacion-y-ejecución">Orden de Trabajo 'Interpuesta' entre &quot;Planificacion&quot; y &quot;Ejecución&quot;</h4>
-<ul>
-<li>Para &quot;Ejecutar&quot; es necesario generar al menos una vez la orden de trabajo.</li>
-</ul>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/orden.png" alt="drawing" width="400"/>
-</p>
-<h4 id="informe-pdf-de-comparación-entre-planificación-y-ejecución">Informe PDF de comparación entre Planificación y Ejecución</h4>
-<ul>
-<li>En el menú de item de linea de tiempo (tarjeta de actividad, esquina superior derecha) se añadio un botón &quot;Ejecución vs Planificación PDF&quot; que abre un PDF mostrando las tablas de insumos de planificación/ejecución.</li>
-</ul>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/pdf.png" alt="drawing" width="400"/>
-</p>
-<h4 id="cambio-de-agrotools---fieldpartner">Cambio de &quot;Agrotools&quot; -&gt; &quot;FieldPartner&quot;</h4>
-<ul>
-<li>Se cambiaron todas las referencias al string &quot;Agrotools&quot; por &quot;FieldPartner&quot;</li>
-<li>No deberia quedar ninguna referencia a Agrotools.</li>
-</ul>
-<h4 id="cambios-en-barramenú-de-navegación">Cambios en Barra/Menú de Navegación</h4>
-<ul>
-<li>Se modifico el layout de navegación principal dejando solo el logo y los botones principales en la barra de navegación y moviendo el resto a un cajon accessible via el boton arriba a la izquierda.</li>
-</ul>
-<h4 id="iconos-eliminado-tras-reunión-2023-01-04---posición-de-iconos-y-selector-de-idioma">Iconos (<strong>Eliminado tras reunión 2023-01-04 -&gt; Posición de Iconos y selector de idioma</strong>)</h4>
-<ul>
-<li>Se modificaron los iconos provistos quitandoles los fondos blancos y pasandolos a transparentes.</li>
-<li>Se unificaron la dimensiones de los mismos.</li>
-</ul>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/iconos_fondos_mal_hechos.png" alt="drawing" width="200"/>
-</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/iconos.png" alt="drawing" width="200"/>
-</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/nubar.png" alt="drawing" width="400"/>
-</p>
-<h4 id="detección-iplocalización-eliminado-tras-reunión-2023-01-04---dejarlo-para-despues">Detección IP/Localización (<strong>Eliminado tras reunión 2023-01-04 -&gt; &quot;Dejarlo para despues&quot;</strong>)</h4>
-<ul>
-<li>Partiendo de los comentarios del reporte [<a href="https://staging--agrotools.netlify.app/reportes/rgallardo/20221229.pdf">https://staging--agrotools.netlify.app/reportes/rgallardo/20221229.pdf</a>] y a modo de prueba, en el menú se añadio un item llamado &quot;Test Localización&quot; realiza un request a un endpoint creado especialmente en el sitio (ej <a href="https://dev--agrotools.netlify.app/geolocation">https://dev--agrotools.netlify.app/geolocation</a>) que devuelve la localización basado en la IP de origen del request.
-En la app se imprime un alert con la respuesta de este endpoint.</li>
-</ul>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/loca.png" alt="drawing" width="200"/>
-</p>
-<p align="center">
-<img src="file:////home/escualo/playground/fieldpartner_frontend/docs/latest/res.png" alt="drawing" width="400"/>
-</p>
 
-        
-        
-    </body>
-    </html>
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="reporte-de-cambios-2023-02-13-version-0164">Reporte de Cambios 2023-02-13 (Version 0.1.64)</h1>
+<h2 id="analisis-de-suelo">Analisis de Suelo</h2>
+<p>El el offcanvas del lote, en la barra de herramientas se  agregó un menu que contiene la opcion &quot;Analisis de Suelo&quot;</p>
+<p align="center">
+<img src="boton.png" alt="drawing" width="200"/>
+</p>
+<p>Se accede a una ventana que tiene 4 pestañas:</p>
+<ul>
+<li><em><strong>Laboratorio</strong></em> - Con los datos de laboratorio y resposable</li>
+<li><em><strong>Caracterizacion</strong></em> - Con la caracteristicas del suelo</li>
+<li><em><strong>Variables</strong></em> - Con todas la variables listadas en en .doc</li>
+<li><em><strong>Adjuntos</strong></em></li>
+</ul>
+<p align="center">
+<img src="ana.png" alt="drawing" width="400"/>
+</p>
+<p align="center">
+<img src="ana2.png" alt="drawing" width="400"/>
+</p>
+<p>El el botón sup derecho se puede acceder a la importacion de todos los campos mediante un archivo excel:</p>
+<p align="center">
+<img src="impo.png" alt="drawing" width="300"/>
+</p>
+<p align="center">
+<img src="importer.png" alt="drawing" width="400"/>
+</p>
+<p>Desde el mismo, tambien se puede descargar el template para la importación:</p>
+<p align="center">
+<img src="template.png" alt="drawing" width="400"/>
+</p>
+<p><strong>Trabajando en rangos de variables</strong></p>
+<h2 id="autoseleccion-de-central">Autoseleccion de central</h2>
+<p>Al seleccionar la fecha/hora de finalizacion al ejecutar una tarea, se autoselecciona la central mas cercana.</p>
+
+</body>
+</html>

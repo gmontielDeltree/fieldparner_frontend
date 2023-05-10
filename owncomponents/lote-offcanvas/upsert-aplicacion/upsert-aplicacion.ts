@@ -67,6 +67,12 @@ import { motivos_items } from "../../jsons/motivos_items";
 import "./grid_insumos";
 import "./grid_labores";
 import { otros_datos_siembra_template } from "./otros_datos_siembra_template";
+import { listar_ingenieros } from "../../ingenieros/ingenieros-funciones";
+import { thumbnailsSettings } from "lightgallery/plugins/thumbnail/lg-thumbnail-settings";
+import { Ingeniero } from "../../tipos/ingenieros";
+import { showNotification } from "../../helpers/notificaciones";
+import { listar_vehiculos } from '../../vehiculos/vehiculos-funciones';
+import { tipo_insumo_conv_si_necesario } from "../../jsons/tipos_insumos";
 
 @customElement("upsert-aplicacion")
 export class UpsertAplicacion extends LitElement {
@@ -96,6 +102,10 @@ export class UpsertAplicacion extends LitElement {
   private lote_doc: any;
   private linea_de_labor: LineaLabor;
   private motivos_sugeridos_iniciales;
+  private vehiculos;
+
+  @state()
+  ingenieros: Ingeniero[];
 
   private titulo: string = "Actividad";
 
@@ -144,9 +154,9 @@ export class UpsertAplicacion extends LitElement {
   };
 
   tipo_2_categorias_iniciales = {
-    siembra: ["Semillas", "Combustible"],
-    cosecha: ["Otros", "Combustible"],
-    aplicacion: ["Agroquímicos", "Fertilizantes", "Combustible"],
+    siembra: ["semillas", "combustible"],
+    cosecha: ["Otros", "combustible"],
+    aplicacion: ["agroquímicos", "fertilizantes", "combustible"],
   };
 
   full_title() {
@@ -166,6 +176,8 @@ export class UpsertAplicacion extends LitElement {
     this.inicializar_lineas();
     this.populateContratistas();
     this.populateInsumos();
+    this.populateIngenieros();
+    this.populateVehiculos();
 
     this.actividad = get_empty_aplicacion();
     this.actividad.tipo = this.tipo;
@@ -213,7 +225,8 @@ export class UpsertAplicacion extends LitElement {
 
     this.inicializar_lineas();
     this.populateInsumos();
-
+    this.populateIngenieros();
+    this.populateVehiculos();
     this.actividad = get_empty_aplicacion();
 
     let lote_nombre = decodeURIComponent(
@@ -273,6 +286,16 @@ export class UpsertAplicacion extends LitElement {
     });
   }
 
+  populateIngenieros() {
+    listar_ingenieros().then((is) => {
+      this.ingenieros = is;
+    });
+  }
+
+  populateVehiculos(){
+      listar_vehiculos().then((d) => (this.vehiculos = d));
+  }
+
   getLote(campo_nombre, lote_nombre) {
     get_lote_by_names(gbl_state.db, campo_nombre, lote_nombre).then(
       (result) => {
@@ -307,12 +330,6 @@ export class UpsertAplicacion extends LitElement {
     this.inicializar_lineas();
 
     this.requestUpdate();
-
-    // Usar document porque estan en un modal que salta
-    // (document.querySelector("#insumo1") as ComboBox).clear();
-    // (document.querySelector("#insumo2") as TextField).clear();
-    // (document.querySelector("#insumo3") as TextField).clear();
-    // (document.querySelector("#insumo4") as MultiSelectComboBox).clear();
   }
 
   guardar() {
@@ -342,7 +359,7 @@ export class UpsertAplicacion extends LitElement {
     /* DEBE TENER UNA SEMILLA */
     if (this.tipo === "siembra") {
       let x = this.actividad.detalles.dosis.find(
-        (i) => i.insumo.tipo === "Semillas"
+        (i) => tipo_insumo_conv_si_necesario(i.insumo.tipo).key === "semillas"
       );
       if (x === undefined) {
         errors.push("Debe Agregar una 'Semilla' pues esto es una Siembra");
@@ -372,6 +389,10 @@ export class UpsertAplicacion extends LitElement {
     }
 
     if (errors.length > 0) {
+      showNotification(
+        "Atención - Errores!!!\n\n" + errors.join("\n"),
+        "error"
+      );
       alert("Atención - Errores!!!\n\n" + errors.join("\n"));
       return;
     }
@@ -397,7 +418,7 @@ export class UpsertAplicacion extends LitElement {
     this.actividad._id = nuevoid;
 
     gbl_state.db.put(this.actividad).then(() => {
-      alert("Actividad Guardada");
+      showNotification(get("actividad_guardada"), "success");
 
       let lote_nombre = this.location.params.uuid_lote as string;
 
@@ -460,7 +481,7 @@ export class UpsertAplicacion extends LitElement {
                 }}
               >
                 <vaadin-tabs slot="tabs">
-                  <vaadin-tab id="contratista-tab">Contratista</vaadin-tab>
+                  <vaadin-tab id="contratista-tab">Personal</vaadin-tab>
                   <vaadin-tab id="insumos-tab">Insumos</vaadin-tab>
                   ${this.tipo === "siembra"
                     ? html`<vaadin-tab id="otros-datos-tab"
@@ -475,6 +496,35 @@ export class UpsertAplicacion extends LitElement {
                 <!-- Contratista -->
                 <div tab="contratista-tab">
                   <vaadin-form-layout>
+                    ${this.tipo !== "aplicacion"
+                      ? null
+                      : html`
+                          <vaadin-combo-box
+                            label="${translate("ingeniero")}"
+                            item-label-path="nombre"
+                            item-value-path="uuid"
+                            required
+                            error-message=${translate("campo_requerido")}
+                            colspan="2"
+                            .selectedItem=${this.actividad.ingeniero}
+                            .items="${this.ingenieros}"
+                            @selected-item-changed=${(e) => {
+                              this.actividad.ingeniero = e.detail.value;
+                            }}
+                          >
+                            <div slot="helper">
+                              ${this.ingenieros?.length === 0
+                                ? html`${translate("no_hay_ingenieros")}
+                                    <a
+                                      href=${"/personal/add?from=" +
+                                      this.location.pathname}
+                                      >Agrega uno</a
+                                    >`
+                                : ""}
+                            </div>
+                          </vaadin-combo-box>
+                        `}
+
                     <vaadin-combo-box
                       label="Contratista"
                       item-label-path="nombre"
@@ -532,8 +582,8 @@ export class UpsertAplicacion extends LitElement {
                     Puede ingresar tanto la dosis por hectarea como el total por
                     lote y los valores se ajustaran automaticamente
                   </vaadin-horizontal-layout>
-                  ATENCIóN!!!!! EN CONSTRUCCION!!!! EN CONSTRUCCION!!!! TIENE
-                  BUGS!!! NO ESTA TERMINADO!!!!!!
+                  <!-- ATENCIóN!!!!! EN CONSTRUCCION!!!! EN CONSTRUCCION!!!! TIENE
+                  BUGS!!! NO ESTA TERMINADO!!!!!! -->
 
                   <grid-insumos
                     .actividad=${this.actividad}

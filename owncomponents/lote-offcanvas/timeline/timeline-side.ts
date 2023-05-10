@@ -1,15 +1,9 @@
 import { LitElement, html, css, unsafeCSS, CSSResultGroup } from "lit";
-import { map } from "lit/directives/map.js";
-import moment from "moment";
 import "moment/dist/locale/es";
-import { stock_suficiente } from "../../helpers/stock.ts";
-import { parse, compareDesc, format, parseISO } from "date-fns";
+import {  parseISO, isBefore } from "date-fns";
 import { property, state } from "lit/decorators.js";
 import {
   Actividad,
-  DetallesAplicacion,
-  DetallesSiembra,
-  LineaDosis,
 } from "../../depositos/depositos-types";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import isFuture from "date-fns/isFuture";
@@ -23,8 +17,9 @@ import gbl_state from "../../state";
 import "./actividad-item";
 import "@vaadin/scroller";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
-import { GridItemModel } from '@vaadin/grid';
-import './nota-item'
+import "./nota-item";
+import { AnalisisSuelo } from "../../tipos/analisis-suelo";
+import "./analisis-item";
 
 const url_repeticion = (actividad_uuid) => {
   let location = gbl_state.router.location.pathname;
@@ -33,43 +28,6 @@ const url_repeticion = (actividad_uuid) => {
   return url;
 };
 
-const estados = [
-  {
-    nombre: "Pendiente",
-    value: "pendiente",
-  },
-  {
-    nombre: "Orden Entregada",
-    value: "orden_entregada",
-  },
-  {
-    nombre: "Realizada",
-    value: "realizada",
-  },
-  {
-    nombre: "Pagada",
-    value: "pagada",
-  },
-  {
-    nombre: "Cancelada",
-    value: "cancelada",
-  },
-];
-
-const estados_ = ["pendiente", "realizada"];
-
-const p_from_insumo = (i: LineaDosis) => {
-  const motivos_2_str = (motivos: string[]) => {
-    let motivos_array = Object.keys(motivos);
-    let solo_verdaderos = motivos_array.filter((m) => motivos[m]);
-    return solo_verdaderos.join(", ");
-  };
-
-  return html`<p class="small">
-    <strong>${i.insumo.marca_comercial.toUpperCase()}</strong> - Dosis:
-    ${i.dosis} ${i.insumo.unidad} - Motivo: ${motivos_2_str(i.motivos)}
-  </p>`;
-};
 
 const timeline_css = css`
   .cbp_tmtimeline {
@@ -319,26 +277,32 @@ const timeline_css = css`
     background-size: cover !important;
     background-position: center !important;
   }
-`;
-
-const extraer_fecha = (actividad) => {
-  let fecha_objeto;
-  // Extraer fecha de b
-  if ("doc" in actividad) {
-    // Nota
-    fecha_objeto = parse(actividad.doc.fecha, "yyyy-MM-dd", new Date());
-  } else {
-    // Aplicacion antigua
-    fecha_objeto = parse(actividad.detalles.fecha, "yyyy-MM-dd", new Date());
+  .icono-suelo {
+    background-image: url("/suelo_act.webp") !important;
+    background-color: #ffc323 !important;
+    background-size: cover !important;
+    background-position: center !important;
   }
-  return fecha_objeto;
-};
+
+  .background-suelo {
+    background-color: #ffc323 !important;
+    background-size: cover !important;
+    background-position: center !important;
+  }
+`;
 
 export class TimelineSideElement extends LitElement {
   @property()
   a: Actividad[];
 
-  static override styles: CSSResultGroup = [unsafeCSS(bootstrap), timeline_css, badge];
+  @property()
+  analisis_suelo: AnalisisSuelo[];
+
+  static override styles: CSSResultGroup = [
+    unsafeCSS(bootstrap),
+    timeline_css,
+    badge,
+  ];
 
   evento_download_pdf(item) {
     const event = new CustomEvent("generar-ot", {
@@ -394,10 +358,56 @@ export class TimelineSideElement extends LitElement {
     this.dispatchEvent(event);
   }
 
+  listar_items() {
+    let items = [];
+    if (this.a) {
+      items = [...this.a];
+    }
+
+    if (this.analisis_suelo) {
+      items = [...items, ...this.analisis_suelo];
+    }
+
+    // Ordenar
+    const extraer_fecha = (a) => {
+      let fecha;
+      if (("ejecucion_id" in a) && a.ejecucion_id ) {
+        fecha = a.ejecucion_id.split(":")[1];
+      } else if ("actividad" in a) {
+        if (a.actividad.tipo === "nota") {
+          fecha = a.actividad.fecha;
+        } else {
+          fecha = a.actividad.detalles.fecha_ejecucion_tentativa;
+        }
+      } else {
+        fecha = a.fecha;
+      }
+      return fecha;
+    };
+
+    let items_ordenados = items.sort((a, b) => {
+      let fecha_1 = extraer_fecha(a);
+      let fecha_2 = extraer_fecha(b);
+
+      return isBefore(parseISO(fecha_1), parseISO(fecha_2)) ? 1 : -1;
+    });
+    return items_ordenados;
+  }
+
   render() {
-   
-    const time_item = ({actividad, ejecucion_id}:{actividad:Actividad, ejecucion_id:string}) => {
-      let item = actividad
+    const time_item = (
+      evento_de_timeline:
+        | { actividad: Actividad; ejecucion_id: string }
+        | AnalisisSuelo
+    ) => {
+      let item;
+
+      if ("actividad" in evento_de_timeline) {
+        item = evento_de_timeline.actividad;
+      } else {
+        item = evento_de_timeline;
+      }
+
       if (item.tipo === "nota") {
         // Es un documento
         //console.log("OOOOOOOOOOO NOTA", item)
@@ -406,7 +416,7 @@ export class TimelineSideElement extends LitElement {
           <div class="icono-nota cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
-          <div class="cbp_tmlabel bg-nota">
+          <div class="cbp_tmlabel bg-nota" style="background:blanchedalmond" >
             <nota-item .item=${item}></nota-item>
           </div>
         </li>`;
@@ -417,7 +427,7 @@ export class TimelineSideElement extends LitElement {
           <div class="icono-aplicacion cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
-          <div class="cbp_tmlabel bg-aplicacion">
+          <div class="cbp_tmlabel bg-aplicacion" style="background:#f3ded7;">
             <actividad-item .item=${item}></actividad-item>
           </div>
         </li>`;
@@ -428,7 +438,7 @@ export class TimelineSideElement extends LitElement {
           <div class="icono-siembra cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
-          <div class="cbp_tmlabel bg-aplicacion">
+          <div class="cbp_tmlabel bg-aplicacion"  style="background:#a8e7eb;">
             <actividad-item .item=${item}></actividad-item>
           </div>
         </li>`;
@@ -439,12 +449,22 @@ export class TimelineSideElement extends LitElement {
           <div class="icono-cosecha cbp_tmicon bg-blush">
             <i class="zmdi zmdi-label"></i>
           </div>
-          <div class="cbp_tmlabel bg-aplicacion">
+          <div class="cbp_tmlabel bg-aplicacion" style="background:#a1e34d">
             <actividad-item .item=${item}></actividad-item>
           </div>
         </li>`;
       }
 
+      if (item.tipo === "analisis-suelo") {
+        return html` <li>
+          <div class="icono-suelo cbp_tmicon bg-blush">
+            <i class="zmdi zmdi-label"></i>
+          </div>
+          <div class="background-suelo cbp_tmlabel bg-aplicacion">
+            <analisis-suelo-item .ana=${item}></analisis-suelo-item>
+          </div>
+        </li>`;
+      }
     };
 
     return html`
@@ -452,7 +472,7 @@ export class TimelineSideElement extends LitElement {
         <div class="row">
           <div class="col-md-12 px-1">
             <ul class="cbp_tmtimeline">
-              ${this.a?.map(time_item) || null}
+              ${this.listar_items().map(time_item) || null}
             </ul>
           </div>
         </div>

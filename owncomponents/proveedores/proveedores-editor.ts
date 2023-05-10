@@ -1,5 +1,5 @@
 import { Router } from "@vaadin/router";
-import { guardar_proveedor } from "./../depositos/proveedores_funciones";
+import { guardar_proveedor } from "./proveedores-funciones";
 import { RouterLocation } from "@vaadin/router";
 import { Proveedor } from "./../tipos/proveedores";
 import { css, html, LitElement, PropertyValueMap } from "lit";
@@ -14,14 +14,14 @@ import type { DialogOpenedChangedEvent } from "@vaadin/dialog";
 import {
   nuevo_deposito,
   guardar_deposito,
-} from "../depositos/depositos_funciones";
+} from "../depositos/depositos-funciones";
 import { Deposito } from "../depositos/depositos-types";
 import { get, translate } from "lit-translate";
 import { showNotification } from "../helpers/notificaciones";
 import {
   cargar_proveedor,
   nuevo_proveedor,
-} from "../depositos/proveedores_funciones";
+} from "./proveedores-funciones";
 import { Route, RouteWithRedirect } from "@vaadin/router";
 import "../map-picker/map-picker"
 

@@ -1,4 +1,5 @@
-import { LngLatLike } from 'mapbox-gl';
+import { Attachment } from "./../tipos/attachments";
+import { LngLatLike } from "mapbox-gl";
 import { PartType } from "lit-html/directive";
 import uuid4 from "uuid4";
 import {
@@ -8,41 +9,41 @@ import {
 } from "../contratistas/contratista-types";
 import { deepcopy } from "../helpers";
 import { Insumo } from "../insumos/insumos-types";
-import { tipos_siembra } from '../jsons/tipos_siembra';
-import { Proveedor } from '../tipos/proveedores';
-
-interface Ingeniero {
-  nombre: string
-
-}
+import { tipos_siembra } from "../jsons/tipos_siembra";
+import { Proveedor } from "../tipos/proveedores";
+import { Ingeniero } from "../tipos/ingenieros";
+import { DeviceDetalles } from "../sensores/sensores-types";
+import { Vehiculo } from '../tipos/vehiculos';
 
 interface IHash<T> {
   [index: string]: T;
 }
 export interface LastUpdateTag {
-  last_updated: string, last_updated_by: Object
+  last_updated: string;
+  last_updated_by: Object;
 }
 
-export interface CreatedTag{
-  created: string, created_by: Object
+export interface CreatedTag {
+  created: string;
+  created_by: Object;
 }
 
 interface Deposito {
   _id: string;
-  _rev ?: string;
+  _rev?: string;
   uuid: string;
   nombre: string;
-  contratista_asociado ?: Contratista,
-  proveedor_asociado ? : Proveedor,
-  posicion ?: LngLatLike; //Lng Lat
-  direccion ?: string;
+  contratista_asociado?: Contratista;
+  proveedor_asociado?: Proveedor;
+  posicion?: LngLatLike; //Lng Lat
+  direccion?: string;
   tipo: "virtual" | "fisico";
-  car ?: string;
+  car?: string;
   /** iso dates zulu */
-  last_updated : LastUpdateTag
-  created : CreatedTag
-  pais ?: string;
-  archivado: boolean
+  last_updated: LastUpdateTag;
+  created: CreatedTag;
+  pais?: string;
+  archivado: boolean;
 }
 
 interface LineaInsumo {
@@ -107,10 +108,10 @@ type LineaDosis = {
 
 type LineaLabor = {
   uuid: string;
-  labor : Labor;
-  costo : number;
+  labor: Labor;
+  costo: number;
   observacion: string;
-}
+};
 
 type LineaDosisEjecucion = {
   uuid: string;
@@ -118,19 +119,16 @@ type LineaDosisEjecucion = {
   motivos: string[];
   dosis: number;
   total: number;
-  precio_estimado:number;
+  precio_estimado: number;
   precio_real: number;
   deposito_origen: Deposito;
 };
 
-
 type DetallesAplicacion = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
-  ingeniero: Ingeniero
   dosis: LineaDosis[];
 };
-
 
 type DetallesCosecha = {
   fecha_ejecucion_tentativa: string;
@@ -162,10 +160,14 @@ interface Condiciones {
   velocidad_max: number;
 }
 interface CondicionesEjecucion {
+  "temperatura":{device: DeviceDetalles,value:number,planificado:{min:number,max:number},distancia:number}
+  "humedad":{device: DeviceDetalles,value:number,planificado:{min:number,max:number},distancia:number}
+  "velocidad":{device: DeviceDetalles,value:number,planificado:{min:number,max:number},distancia:number}
+  "humedad_suelo":{device: DeviceDetalles,value:number,planificado:{min:number,max:number},distancia:number}
   temperatura_min: number;
-  temperatura_promedio:number,
-  humedad_promedio:number,
-  velocidad_promedio:number,
+  temperatura_promedio: number;
+  humedad_promedio: number;
+  velocidad_promedio: number;
   temperatura_max: number;
   humedad_min: number;
   humedad_max: number;
@@ -175,7 +177,6 @@ interface CondicionesEjecucion {
 
 interface Detalles {
   fecha_ejecucion_tentativa: string;
-  ingeniero: Ingeniero;
   hectareas: number;
   dosis: LineaDosis[];
   costo_labor: LineaLabor[];
@@ -187,14 +188,14 @@ interface Detalles {
   densidad_objetivo?: number;
   semillas_totales?: number;
   distancia?: number;
-  tipo_siembra?: string
+  tipo_siembra?: string;
+  vehiculos?:Vehiculo[];
 }
 
 interface DetallesEjecucion {
-  ingeniero: Ingeniero;
   fecha_ejecucion: string;
   fecha_hora_inicio: string;
-  fecha_hora_fin: string; 
+  fecha_hora_fin: string;
   hectareas: number;
   dosis: LineaDosisEjecucion[];
   costo_labor: LineaLabor[];
@@ -207,7 +208,7 @@ interface DetallesEjecucion {
   semillas_totales?: number;
   distancia?: number;
   tipo_siembra?: string;
-
+  vehiculos?:Vehiculo[];
 }
 
 interface Actividad {
@@ -218,8 +219,8 @@ interface Actividad {
   tipo: string;
   lote_uuid: string;
   contratista: Contratista;
+  ingeniero: Ingeniero;
   comentario: string;
-  adjuntos: string[];
   estado: number;
   detalles: Detalles;
   fecha?: string;
@@ -227,16 +228,16 @@ interface Actividad {
   texto?: string;
   posicion?: number[];
   condiciones?: Condiciones;
-  _attachments?: any;
-  motivos_nota?: any
+  attachments?: Attachment[];
+  motivos_nota?: any;
 }
-
 
 interface Ejecucion {
   _id: string;
   _rev?: string;
   uuid: string;
-  contratista: Contratista,
+  contratista: Contratista;
+  ingeniero: Ingeniero;
   ts_generacion: string;
   tipo: string;
   lote_uuid: string;
@@ -244,7 +245,8 @@ interface Ejecucion {
   estado: string;
   detalles: DetallesEjecucion;
   condiciones?: CondicionesEjecucion;
-  deposito_origen ?: Deposito,
+  deposito_origen?: Deposito;
+  attachments?: Attachment[];
 }
 
 const get_empty_aplicacion = () => {
@@ -255,25 +257,24 @@ const get_empty_aplicacion = () => {
     tipo: "aplicacion",
     lote_uuid: "",
     contratista: { ...empty_contratista },
+    ingeniero: null,
     comentario: "",
-    adjuntos: [],
     estado: 0,
     detalles: {
       fecha_ejecucion_tentativa: "",
-      ingeniero : null,
       hectareas: 0,
       motivos: "",
       dosis: [],
-      costo_labor: []
+      costo_labor: [],
     } as Detalles,
-    condiciones:{
-      temperatura_max:25,
-      temperatura_min:0,
-      humedad_min:45,
-      humedad_max:65,
-      velocidad_min:5,
-      velocidad_max:15,
-    }
+    condiciones: {
+      temperatura_max: 25,
+      temperatura_min: 0,
+      humedad_min: 45,
+      humedad_max: 65,
+      velocidad_min: 5,
+      velocidad_max: 15,
+    },
   };
 
   return { ...a };
@@ -287,27 +288,33 @@ const get_empty_ejecucion = () => {
     tipo: "aplicacion",
     lote_uuid: "",
     comentario: "",
+    contratista:null,
+    ingeniero: null,
     estado: "pendiente",
     detalles: {
-      ingeniero:null,
       fecha_ejecucion: "",
       fecha_hora_fin: "",
-      fecha_hora_inicio:"",
+      fecha_hora_inicio: "",
       hectareas: 0,
       dosis: [],
-      costo_labor:[]
+      costo_labor: [],
     },
-    condiciones:{
-      temperatura_max:25,
-      temperatura_promedio:0,
-      temperatura_min:0,
-      humedad_min:45,
-      humedad_promedio:0,
-      humedad_max:65,
-      velocidad_min:5,
-      velocidad_promedio:0,
-      velocidad_max:15,
-    }
+    condiciones: {
+      "temperatura":{device: null,value:0,planificado:{min:25,max:0}},
+      "humedad":{device: null,value:0,planificado:{min:45,max:65}},
+      "velocidad":{device: null,value:0,planificado:{min:5,max:15}},
+      "humedad_suelo":{device: null,value:0,planificado:{min:10,max:45}},
+      
+      temperatura_max: 25,
+      temperatura_promedio: 0,
+      temperatura_min: 0,
+      humedad_min: 45,
+      humedad_promedio: 0,
+      humedad_max: 65,
+      velocidad_min: 5,
+      velocidad_promedio: 0,
+      velocidad_max: 15,
+    },
   };
 
   return deepcopy(a);
@@ -331,27 +338,6 @@ const sumar_entradas = (entradas: Entrada[]) => {
   return tabla;
 };
 
-const sumar_salida = (actividades: Actividad[]) => {
-  let tabla: IHash<TablaStockLinea>;
-
-  /* Itero Entrada */
-  actividades.forEach((actividad) => {
-    if (actividad.tipo === "siembra") {
-      let insumo: Insumo = actividad.detalles.insumo;
-      tabla[insumo.uuid].uuid_insumo = insumo.uuid;
-      tabla[insumo.uuid].salidas = tabla[insumo.uuid].salidas + 1;
-    }
-
-    if (actividad.tipo === "cosecha") {
-    }
-
-    if (actividad.tipo === "aplicacion") {
-    }
-  });
-
-  return tabla;
-};
-
 export {
   Deposito,
   Entrada,
@@ -368,5 +354,5 @@ export {
   Ejecucion,
   DetallesEjecucion,
   LineaDosisEjecucion,
-  get_empty_ejecucion
+  get_empty_ejecucion,
 };

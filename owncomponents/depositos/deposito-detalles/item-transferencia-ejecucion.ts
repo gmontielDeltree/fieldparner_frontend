@@ -1,6 +1,6 @@
 import { showNotification } from "./../../helpers/notificaciones";
-import { borrar_transfer } from "./../transferencias_funciones";
-import { listar_ejecuciones_por_depo } from "./../depositos_funciones";
+import { borrar_transfer } from "../transferencias-funciones";
+import { listar_ejecuciones_por_depo } from "../depositos-funciones";
 import { gbl_state } from "./../../state";
 import { customElement, property, state } from "lit/decorators.js";
 import "../../modal-generico/modal-generico";
@@ -18,7 +18,7 @@ import { Router, RouterLocation } from "@vaadin/router";
 import { get, translate } from "lit-translate";
 
 import { badge } from "@vaadin/vaadin-lumo-styles/badge.js";
-import "../../lote-offcanvas/aux/span-pill";
+import "../../lote-offcanvas/auxiliar/span-pill";
 import "@vaadin/avatar";
 import "@vaadin/button";
 import "@vaadin/item";
@@ -42,7 +42,7 @@ import {
   listar_depositos,
   nuevo_deposito,
   cargar_depo,
-} from "../depositos_funciones";
+} from "../depositos-funciones";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { createMenuDots, get_lote_detalles_by_uuid } from "../../helpers";
 import {
@@ -50,8 +50,8 @@ import {
   LineaStock,
   Stock,
 } from "../../tipos/depositos-transferencias";
-import { listar_transferencias } from "../transferencias_funciones";
-import { calcular_stock } from "../stock_funciones";
+import { listar_transferencias } from "../transferencias-funciones";
+import { calcular_stock } from "../stock-funciones";
 import { map } from "lit/directives/map.js";
 import { confirmar_eliminar } from "../../helpers/confirmar-eliminar";
 import { Lote } from "../../tipos/lotes";

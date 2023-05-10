@@ -6,7 +6,7 @@ import { get, translate, use, registerTranslateConfig } from "lit-translate";
 
 import createAuth0Client from "@auth0/auth0-spa-js";
 import uuid4 from "uuid4";
-import { Lenguage } from "./tipos/tipos-varios";
+import { Lenguaje } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
 // import './depositos/depositos-lista/depositos-listado';
 import './depositos/deposito-transferencias/deposito-nuevo-transferencias';
@@ -291,7 +291,7 @@ export class DevelAppLoader extends LitElement {
       .then((result) => {
         if (result.rows.length > 0) {
           // Existe
-          let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
+          let lang_doc: Lenguaje = result.rows[0].doc as Lenguaje;
           gbl_state.lenguaje_seleccionado = lang_doc;
           console.log("Idioma seleccionado", lang_doc);
           return lang_doc;

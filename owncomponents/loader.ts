@@ -3,19 +3,22 @@ import { LitElement, PropertyValueMap, html, css } from "lit";
 import { base_url, gbl_docs_starting, only_docs } from "./helpers";
 import { gbl_state } from "./state";
 import { get, translate, use, registerTranslateConfig } from "lit-translate";
-import "@vaadin/button"
+import "@vaadin/button";
 import createAuth0Client from "@auth0/auth0-spa-js";
 import uuid4 from "uuid4";
-import { Lenguage } from "./tipos/tipos-varios";
+import { Lenguaje } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
+
+// idiomas como imports para que se regeneren cada build
 import es_json from "./i18n/es.json?url";
 import en_json from "./i18n/en.json?url";
 import pr_json from "./i18n/pr.json?url";
+import { showNotification } from "./helpers/notificaciones";
 
 import("./field-partner/field-partner-child");
 
 /**
- * La mision de este componente es login, cargar/sinc las dbs.
+ * La mision de este componente es login, cargar/sync las dbs.
  * y renderizar fieldpartner una vez que todo esta listo
  */
 @customElement("app-loader")
@@ -34,7 +37,7 @@ export class AppLoader extends LitElement {
   private online: boolean = false;
 
   createRenderRoot() {
-    return this;
+    return this; // Por hacer esto, los css hay que cargarlos en main.js
   }
 
   protected firstUpdated(
@@ -56,10 +59,22 @@ export class AppLoader extends LitElement {
     this.init_the_whole_thing();
   }
 
+  protected willUpdate(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ): void {
+    if (_changedProperties.has("ready")) {
+      if (this.ready) {
+        console.timeEnd("Readiness");
+      } else {
+        console.time("Readiness");
+      }
+    }
+  }
   render() {
     // if (!this.ready && !gbl_state.online) {
     //   return html`Not Ready...Offline...Loading Local DBs`;
     // }
+
     return html`
       ${!this.ready || !this.map_ready
         ? html`<div class="bg">
@@ -67,8 +82,11 @@ export class AppLoader extends LitElement {
               <h1>FieldPartner</h1>
               <p>by QTS Agro</p>
             </div>
-            ${(window.location.hostname === "agrotools.netlify.app")
-              ? html`<vaadin-button class='login-button' theme='primary success' @click=${this.loginet}
+            ${window.location.hostname === "agrotools.netlify.app"
+              ? html`<vaadin-button
+                  class="login-button"
+                  theme="primary success"
+                  @click=${this.loginet}
                   >Login</vaadin-button
                 >`
               : null}
@@ -87,6 +105,7 @@ export class AppLoader extends LitElement {
     // Check si estoy on/offline
     gbl_state.online = window.navigator.onLine;
 
+    console.info("User is " + (gbl_state.online ? "ONLINE" : "OFFLINE"));
     // Handlers para registrar on/offline
     window.addEventListener("online", handleConnectionChange);
     window.addEventListener("offline", handleConnectionChange);
@@ -195,6 +214,11 @@ export class AppLoader extends LitElement {
 
     let username = user.name.replaceAll(" ", "_").toLowerCase();
 
+    // Device Databases
+    gbl_state.db_sensores_pro = new PouchDB(
+      base_url + "processed_device_telemetry"
+    );
+    gbl_state.db_sensores_raw = new PouchDB(base_url + "telemetry_raw");
     // Nombres validos solo en minusculas
     this.db = new PouchDB("campos_" + username + "v7");
 
@@ -202,7 +226,13 @@ export class AppLoader extends LitElement {
     gbl_state.user_db = new PouchDB(user.sub);
     gbl_state.user = this.user;
 
+    if (import.meta.env.DEV) {
+      this.dev_fast_start();
+      return;
+    }
+
     try {
+      console.time("DBCheck");
       let campos_db_uri = base_url + "campos_" + username + "v7";
       console.log("CrearDBS - campos_db_uri", campos_db_uri);
       this.remote_db = new PouchDB(campos_db_uri);
@@ -215,6 +245,8 @@ export class AppLoader extends LitElement {
 
       console.log("Local Exists?", !local_is_empty);
       console.log("Remote Exists?", !remote_is_empty);
+
+      console.timeEnd("DBCheck");
 
       /* Caso 1
 	  0-0 Nuevo Local - Nuevo Remoto
@@ -296,19 +328,27 @@ export class AppLoader extends LitElement {
     // https://pouchdb.com/api.html#sync
     // do one way, one-off sync from the server until completion
     var opts = { live: true, retry: true };
+    console.time("Replication");
 
     this.db.replicate
       .from(this.remote_db)
       .on("complete", (info) => {
         console.log("Replication Completed");
-
+        showNotification('Replicacion Completada','success');
+        console.timeEnd("Replication");
         // Cargar el Idioma
         this.cargar_idioma()
           .then(this.set_idioma)
-          .then(this.cargar_campana_seleccionada)
           .then((r) => {
-            this.ready = true;
-            console.log("Ready...Estado Inicial", gbl_state, r);
+            gbl_state.user_db.replicate
+              .from(base_url + gbl_state.user.sub)
+              .on("complete", () => {
+                this.cargar_campana_seleccionada("").then(() => {
+                  this.ready = true;
+                  showNotification('Ready','success');
+                  console.log("Ready...Estado Inicial", gbl_state, r);
+                });
+              });
           });
 
         // then two-way, continuous, retriable sync
@@ -320,10 +360,23 @@ export class AppLoader extends LitElement {
         // Puede llegar aca si la app se abre offline
         console.error(e);
         if (gbl_state.online) {
-          //Recargo si estoy online
+          //Posible Error, Recargo si estoy online
           console.log("Restarting......");
           window.location.reload();
         }
+      });
+  }
+
+  dev_fast_start() {
+    // Cargar el Idioma y darle Ready
+    console.log("DEV FAST START");
+    this.cargar_idioma()
+      .then(this.set_idioma)
+      .then(this.cargar_campana_seleccionada)
+      .then((r) => {
+        this.ready = true;
+        showNotification('Fast Start Ready','success');
+        console.log("Ready...Estado Inicial", gbl_state, r);
       });
   }
 
@@ -362,7 +415,7 @@ export class AppLoader extends LitElement {
       .then((result) => {
         if (result.rows.length > 0) {
           // Existe
-          let lang_doc: Lenguage = result.rows[0].doc as Lenguage;
+          let lang_doc: Lenguaje = result.rows[0].doc as Lenguaje;
           gbl_state.lenguaje_seleccionado = lang_doc;
           console.log("Idioma seleccionado", lang_doc);
           return lang_doc;

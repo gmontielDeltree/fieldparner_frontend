@@ -1,3 +1,7 @@
+import { campo_guardar, deepcopy } from "./../helpers";
+import { uuidv7 } from "uuidv7";
+import { Lote } from "./../tipos/lotes";
+import { Campo } from "./../tipos/campos";
 import { LitElement, html, unsafeCSS, PropertyValueMap } from "lit";
 import area from "@turf/area";
 import uuid4 from "uuid4";
@@ -9,7 +13,9 @@ import gbl_state, { gblStateLoaded } from "../state";
 import { property, state } from "lit/decorators.js";
 import { State, StateController } from "@lit-app/state";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
-import { Router, RouterLocation } from '@vaadin/router';
+import { Router, RouterLocation } from "@vaadin/router";
+import { get } from "lit-translate";
+import { showNotification } from "../helpers/notificaciones";
 //import bootstrap from "./bootstrap.min.css?inline";
 
 export class CampoOffcanvas extends LitElement {
@@ -18,7 +24,7 @@ export class CampoOffcanvas extends LitElement {
   static override styles = unsafeCSS(bootstrap);
 
   @state()
-  campo_doc: Object;
+  campo_doc: Campo;
 
   @state({
     hasChanged: (newVal, oldVal) => {
@@ -35,7 +41,7 @@ export class CampoOffcanvas extends LitElement {
   _detallesOffcanvas: Offcanvas;
 
   @property()
-  location : RouterLocation
+  location: RouterLocation;
 
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -56,7 +62,7 @@ export class CampoOffcanvas extends LitElement {
     console.log("Campo Doc ID", campo_doc_id, gbl_state.db);
     this.data_loaded = true;
     gbl_state.db.get(campo_doc_id).then((campo_doc) => {
-      this.campo_doc = campo_doc;
+      this.campo_doc = <Campo>campo_doc;
       this.mapShowOnlyThisCampo();
     });
   }
@@ -163,7 +169,7 @@ export class CampoOffcanvas extends LitElement {
   nuevo_lote_click() {
     // Mostrar Nueva Geometria - Lote
     this.shadowRoot.getElementById("nuevo-lote-ui").show = true;
-    alert("Development!!!! En construccion");
+    //alert("Development!!!! En construccion");
     this.hide();
   }
 
@@ -193,6 +199,27 @@ export class CampoOffcanvas extends LitElement {
     });
   }
 
+  crear_lote_unico() {
+    let id = uuidv7();
+    let lote: Lote = {
+      id: id,
+      type: "Feature",
+      properties: {
+        nombre: this.campo_doc.nombre,
+        campo_parent_id: this.campo_doc._id,
+        hectareas: this.campo_doc.campo_geojson.properties.hectareas,
+        uuid: id,
+      },
+      geometry: this.campo_doc.campo_geojson.geometry,
+    };
+    this.campo_doc.lotes.push(lote);
+    // Forzar redraw
+    this.campo_doc = deepcopy(this.campo_doc);
+    campo_guardar(this.campo_doc)
+      .then(() => showNotification(get("lote_creado"), "success", "top-center"))
+      .catch(() => showNotification(get("error"), "error", "top-center"));
+  }
+
   render() {
     return html`
       <div
@@ -202,7 +229,7 @@ export class CampoOffcanvas extends LitElement {
         aria-labelledby="offcanvas-campo-header"
         data-bs-backdrop="false"
       >
-        <div class="offcanvas-header">
+        <div class="offcanvas-header" title="locate">
           <button
             type="button"
             class="btn btn-primary btn-sm"
@@ -223,12 +250,11 @@ export class CampoOffcanvas extends LitElement {
                 d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"
               />
             </svg>
-            <span class="d-none d-md-inline">Localizar</span>
           </button>
 
-          <h5 class="offcanvas-title" id="offcanvas-campo-header">
-            Campo ${this.campo_doc?.nombre}
-          </h5>
+          <div class="offcanvas-title" id="offcanvas-campo-header">
+            ${this.campo_doc?.nombre}
+          </div>
 
           <button
             type="button"
@@ -239,7 +265,28 @@ export class CampoOffcanvas extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body small col pt-0">
-          <p>Toque en un lote del mapa para ver detalles</p>
+          <p style="font-weight: bold">
+            ${this.campo_doc?.campo_geojson.properties.hectareas} has.
+          </p>
+
+          <p style="font-weight: bold">
+            ${this.campo_doc?.lotes.length > 0
+              ? this.campo_doc?.lotes.length + " lotes"
+              : null}
+          </p>
+
+          <p>
+            ${this.campo_doc?.lotes.length > 0
+              ? "Toque en un lote del mapa para ver detalles"
+              : "Sin Lotes - Agregue uno!!!"}
+          </p>
+
+          <!-- <p>Toque en un lote del mapa para ver detalles</p> -->
+          ${this.campo_doc?.lotes.length > 0
+            ? null
+            : html`<vaadin-button @click=${() => this.crear_lote_unico()}
+                >${get("crear_lote_unico")}</vaadin-button
+              >`}
 
           <button
             type="button"

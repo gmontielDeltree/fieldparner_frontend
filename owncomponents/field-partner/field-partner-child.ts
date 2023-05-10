@@ -1,40 +1,19 @@
-import { routes } from './../routes';
-import { LitElement, html, PropertyValueMap, css, unsafeCSS } from "lit";
+import { routes } from "./../routes";
+import "../mapa-principal/mapa-principal";
+import { LitElement, html, PropertyValueMap} from "lit";
 import { property, state } from "lit/decorators.js";
 import { Router } from "@vaadin/router";
-
-import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
-import("../loading-modal/loading-modal.js");
-import("../color-cultivo/color-cultivo");
-import cultivos_default from "../jsons/cultivos.json";
-import("../notas-offcanvas/notas-offcanvas");
-import("../ndvi-offcanvas/ndvi-offcanvas");
-//import "../variedades-loader/variedades-loader.js";
-import("../depositos/deposito-upsert/deposito-upsert.js");
-import("../depositos/depositos-lista/depositos-listado");
 import("../contratistas/contratista-crud");
 import("../contratistas/contratistas-lista");
 import("../sensores/sensores-offcanvas");
-import("../campo-offcanvas/campo-offcanvas");
-import("../lote-offcanvas/lote-offcanvas-side");
-import("../nueva-geometria/nueva-geometria");
-import("../nuevo-campo/nuevo-campo.js");
-import("../lista-de-campos/lista-de-campos");
-import "../mapa-principal/mapa-principal";
-import "../login-modal/login-modal";
+import "../nueva-geometria/nueva-geometria";
+import "../nuevo-campo/nuevo-campo";
 import("../notas-offcanvas/nota-target");
-import("../insumos/insumos-lista");
-import "../lista-centrales-cercanas/lista-centrales-cercanas";
-import "../sensores/lista-de-sensores";
-import "../navbar-element/workspace-rigths";
+import("../lista-centrales-cercanas/lista-centrales-cercanas");
+import("../sensores/lista-de-sensores");
 import "../navbar-element/new-app-layout";
-import "../null-component";
 import("../invite/invite");
 import("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
-import("../lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
-import("../lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
-import "../navbar-element/navbar-element";
-
 import("../sensores/devices-route");
 
 import centroid from "@turf/centroid";
@@ -48,30 +27,12 @@ import { Devices } from "../sensores/sensores";
 
 import gbl_state from "../state.js";
 
-import("../depositos/deposito-detalles/deposito-detalles");
-
-var wentOffline, wentOnline;
-
-function handleConnectionChange(event) {
-  if (event.type == "offline") {
-    console.log("You lost connection.");
-    wentOffline = new Date(event.timeStamp);
-    gbl_state.online = false;
-  }
-  if (event.type == "online") {
-    console.log("You are now back online.");
-    wentOnline = new Date(event.timeStamp);
-    gbl_state.online = true;
-    console.log(
-      "You were offline for " + (wentOnline - wentOffline) / 1000 + "seconds."
-    );
-  }
-}
 
 export class FieldPartnerChild extends LitElement {
-  static override styles = [unsafeCSS(bootstrap)];
+  // NO estamos usando el shadow dom (createRenderRoot=>this)
+  //static override styles = [unsafeCSS(bootstrap)];
 
-  @property({ hasChanged: (v, ov) => false })
+  @property()
   map: Map;
 
   @property({ hasChanged: (v, ov) => false })
@@ -92,9 +53,6 @@ export class FieldPartnerChild extends LitElement {
   @property({ hasChanged: (v, ov) => false })
   logged_in: boolean = false;
 
-  @state()
-  loading: boolean = true;
-
   @property({ hasChanged: (v, ov) => false })
   settings: any;
 
@@ -104,7 +62,7 @@ export class FieldPartnerChild extends LitElement {
     super();
 
     window.addEventListener("DOMContentLoaded", () => {
-      const parsedUrl = new URL(window.location);
+      const parsedUrl = new URL(window.location as unknown as string);
       // searchParams.get() will properly handle decoding the values.
       console.log("Title shared: " + parsedUrl.searchParams.get("title"));
       console.log("Text shared: " + parsedUrl.searchParams.get("text"));
@@ -127,10 +85,6 @@ export class FieldPartnerChild extends LitElement {
       document.getElementById("nuevo-campo-oc").show = true;
     });
 
-    this.addEventListener("nuevo-deposito-click", () => {
-      document.getElementById("deposito-upsert").show();
-    });
-
     this.addEventListener("lote-seleccionado", (e: CustomEvent) => {
       document.getElementById("nota-share-target").seleccion(e.detail);
     });
@@ -138,20 +92,16 @@ export class FieldPartnerChild extends LitElement {
     /* Izar map y draw a este componente para que los otros puedan usarlo */
     this.addEventListener("map-loaded", (e: CustomEvent) => {
       this.map = e.detail.map;
+      console.log("MAP LOADED EVT HANDLER")
 
       gbl_state.map = e.detail.map;
       this.draw = e.detail.draw;
       gbl_state.draw = e.detail.draw;
-      // Cuando se carga el mapa considero que terminó la carga
-      this.loading = false;
 
       let devices = new Devices();
       devices.add_markers_to_map(this.map);
-    });
 
-    /* Click en ver lista de depositios */
-    this.addEventListener("ver-depositos-click", (e) => {
-      document.getElementById("depositos-lista").show();
+      //devices.get_timeseries_by_name('1111111111111111','radiacion',0,10000000000)
     });
 
     /* Click en ver lista de contratistas */
@@ -164,18 +114,8 @@ export class FieldPartnerChild extends LitElement {
       document.getElementById("insumos-lista").show();
     });
 
-    /* Click en ver lista de campos */
-    this.addEventListener("ver-colores-cultivos", (e) => {
-      document.getElementById("colores-cultivos").show();
-    });
-
     this.addEventListener("save-settings", (e) => {
       this.db.put(this.settings);
-    });
-
-    // Login
-    this.addEventListener("login-click", () => {
-      this.loginet();
     });
 
     this.addEventListener("logout-click", () => {
@@ -257,31 +197,15 @@ export class FieldPartnerChild extends LitElement {
     let sitio = window.location.hostname;
     console.log("Init the whole thing");
     this.load_campos_y_settings();
-  }
-
-  sincronizar_cuando_online() {
-    var opts = { live: true, retry: true };
-    // then two-way, continuous, retriable sync
     this.db
-      .sync(this.remote_campos_db, opts)
-      .on("change", function (change) {
-        // yo, something changed!
-        console.info("Change...Sync");
-      })
-      .on("error", (e) => {
-        console.error("SyncError", e);
-      });
-
-    // /* Redraw on cambios en campos_db */
-    this.db
-      .changes({
-        since: "now",
-        live: true,
-      })
-      .on("change", () => {
-        this.load_campos_y_settings();
-        console.log("CHANGES!!");
-      });
+    .changes({
+      since: "now",
+      live: true,
+    })
+    .on("change", () => {
+      this.load_campos_y_settings();
+      console.log("CHANGES!!");
+    });
   }
 
   /** Crea el objeto settings y lo graba en la db
@@ -296,7 +220,7 @@ export class FieldPartnerChild extends LitElement {
       user_cultivos: {},
     };
 
-    settings_doc.user_cultivos = cultivos_default;
+    //settings_doc.user_cultivos = cultivos_default;
 
     this.db.put(settings_doc).then(() => console.log("Settings Grabadas"));
 
@@ -377,16 +301,8 @@ export class FieldPartnerChild extends LitElement {
         .db=${this.db}
       ></nota-share-target>
 
-      <insumos-lista id="insumos-lista" .db=${this.db}></insumos-lista>
 
-      <!-- <login-modal id="login-modal" .show=${!this
-        .logged_in}></login-modal> -->
-
-      <div id="container-multiproposito">
-        <!-- <loading-modal .show=${this.loading}></loading-modal> -->
-      </div>
-
-      <!-- <div id="router-container"></div> -->
+      <div id="container-multiproposito"></div>
     `;
   }
 }

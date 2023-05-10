@@ -1,11 +1,14 @@
-import { gbl_state } from './../state';
-import { depositos_update, depositos_layer_init } from './depositos-layer';
+import { ndvi_layers_init } from './ndvi-layers';
+import { gbl_state } from "./../state";
+import { depositos_update, depositos_layer_init } from "./depositos-layer";
 import { LitElement, html, unsafeCSS, css } from "lit";
 import { property } from "lit/decorators.js";
 import {
   touchEvent,
   layer_visibility,
   actividades_y_ejecuciones,
+  buscar_ultima_siembra,
+  tabla_de_colores,
 } from "../helpers";
 import { CircleLayer, GeoJSONSource, Layer, Map, SymbolLayer } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
@@ -21,7 +24,7 @@ import "@spectrum-web-components/theme/src/themes";
 import centroid from "@turf/centroid";
 import { isToday, parseISO } from "date-fns";
 import { get, translate } from "lit-translate";
-import { listar_proveedores } from "../depositos/proveedores_funciones";
+import { listar_proveedores } from "../proveedores/proveedores-funciones";
 import { map } from "lit/directives/map.js";
 import { Feature, FeatureCollection } from "@turf/helpers";
 import { Router } from "@vaadin/router";
@@ -38,8 +41,8 @@ const mapStyle = {
       type: "raster",
       tiles: [
         //"http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga"
-        "https://ecn.t1.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=587&mkt=en-gb&n=z",
-        //,"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        //"https://ecn.t1.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=587&mkt=en-gb&n=z",
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
       ],
       tileSize: 256,
     },
@@ -59,38 +62,31 @@ const mapStyle = {
 /** Modifica 'features' agregado color y cultivo a las 'properties'
  *  basado en las actividades
  */
-const colorear_lotes = (features, cultivos) => {
+const colorear_lotes = async (features) => {
   // features[].properties.actividades
+  let tabla = await tabla_de_colores()
+  console.log("TAbla DE cOLORES",tabla)
   // Para cada lote
-  features.map(({ properties }) => {
-    if ("actividades" in properties) {
-      let cultivo = tiene_cultivo_este_lote(properties.actividades);
-      let color = cultivo_to_color(cultivo, cultivos);
-      properties.cultivo = cultivo;
-      properties.color = color;
-    } else {
-      properties.cultivo = "Cultivo Desconocido";
-      properties.color = "grey";
-    }
-  });
+  await Promise.all(
+    features.map(async ({ properties }) => {
+      let uuid = properties.uuid;
+      let cultivo = await buscar_ultima_siembra(uuid);
+
+      if (cultivo) {
+        let color = tabla[cultivo.key];
+        properties.cultivo = cultivo.nombre;
+        properties.color = color;
+      } else {
+        properties.cultivo = "Sin Cultivo";
+        properties.color = "grey";
+      }
+      console.log("COLORSET");
+      return;
+    })
+  );
 };
 
-const cultivo_to_color = (cultivo, cultivos) => {
-  if (cultivo === "Barbecho") {
-    return "grey";
-  } else if (cultivo === "Cultivo Desconocido") {
-    return "green";
-  }
-
-  for (const cultivo_map in cultivos) {
-    if (Object.hasOwnProperty.call(cultivos, cultivo_map)) {
-      const element = cultivos[cultivo_map];
-      if (element.nombre === cultivo) {
-        return element.color;
-      }
-    }
-  }
-
+const cultivo_to_color = (cultivo) => {
   // Custom Colors
 
   return "blue";
@@ -164,21 +160,29 @@ export class MapaPrincipal extends LitElement {
       }
     `,
     css`
+      /* Pantalla 'Pequeña' */
       #map {
         position: absolute;
-        top: 43px;
-        bottom: 0;
-        width: 100%;
-        height: calc(100vh - 86px) !important;
+        top: var(--_vaadin-app-layout-navbar-offset-size);
+        /*bottom: 3;*/
+        width: 100vw;
+        z-index: 0;
+        height: calc(
+          100vh - var(--_vaadin-app-layout-navbar-offset-size)
+        ) !important;
       }
 
       @media only screen and (min-width: 800px) {
+        /* Pantalla 'Grande' */
         #map {
           position: absolute;
-          top: 43px;
-          bottom: 0;
-          width: 100%;
-          height: calc(100vh - 43px) !important;
+          top: var(--_vaadin-app-layout-navbar-offset-size);
+          /*bottom: 3;*/
+          width: 100vw;
+          z-index: 0;
+          height: calc(
+            100vh - var(--_vaadin-app-layout-navbar-offset-size)
+          ) !important;
         }
       }
 
@@ -199,17 +203,19 @@ export class MapaPrincipal extends LitElement {
   }
 
   firstUpdated() {
-
     this.map = new Map({
       container: this.shadowRoot.getElementById("map"),
       //style: "mapbox://styles/mapbox/outdoors-v11",
-      //style: mapStyle,
-      style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
+      style: mapStyle,
+      //style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
       center: gbl_state.ultima_posicion,
       zoom: 14,
       attributionControl: true,
       preserveDrawingBuffer: false,
     });
+
+
+    this.map.addControl(new mapboxgl.NavigationControl());
 
     this.draw = new MapboxDraw({
       displayControlsDefault: false,
@@ -305,8 +311,8 @@ export class MapaPrincipal extends LitElement {
           visibility: "none",
         },
         paint: {
-          "fill-color": "red",
-          "fill-opacity": 0.4,
+          "fill-color": ["get", "color"],
+          "fill-opacity": 0.9,
           "fill-outline-color": "red",
         },
       });
@@ -373,7 +379,7 @@ export class MapaPrincipal extends LitElement {
           visibility: "none",
         },
         paint: {
-          "fill-color": "rgba(255, 127, 0, 1)",
+          "fill-color": ["get", "color"],
           "fill-opacity": 0.4,
           "fill-outline-color": "red",
         },
@@ -440,12 +446,17 @@ export class MapaPrincipal extends LitElement {
           "seleccion_lotes"
         ) as GeoJSONSource;
         //Pintar
-
+        
         let data_lotes = {
           type: "FeatureCollection",
           features: lotes,
         };
-        lotes_source.setData(data_lotes);
+
+        colorear_lotes(data_lotes.features).then(()=>
+        
+        lotes_source.setData(data_lotes)
+        )
+        
       };
 
       this.map.showAllCampos = () => {
@@ -461,12 +472,16 @@ export class MapaPrincipal extends LitElement {
       };
 
       this.proveedores_layer_init();
-      depositos_layer_init(this.map)
+      depositos_layer_init(this.map);
+
+      ndvi_layers_init(this.map);
       this.cargar_marcadores();
+
+      this._redraw_map();
+      this.map.resize();
 
       // console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
-      this._redraw_map();
     });
 
     // Create a popup, but don't add it to the map yet.
@@ -555,9 +570,9 @@ export class MapaPrincipal extends LitElement {
       this.map.getCanvas().style.cursor = "";
     });
 
-    this.map.on('move',(e)=>{
-      gbl_state.ultima_posicion = this.map.getCenter()
-    })
+    this.map.on("move", (e) => {
+      gbl_state.ultima_posicion = this.map.getCenter();
+    });
   }
 
   sendEvent = (name, details) => {
@@ -641,7 +656,9 @@ export class MapaPrincipal extends LitElement {
           properties: {
             item: d,
             url: "/proveedores/" + d.uuid,
-            description: `<strong style='font-size:16px'>${d.nombre}</strong><br><div>${get("proveedor")}</div>`,
+            description: `<strong style='font-size:16px'>${
+              d.nombre
+            }</strong><br><div>${get("proveedor")}</div>`,
           },
           geometry: {
             type: "Point",
@@ -656,10 +673,11 @@ export class MapaPrincipal extends LitElement {
       });
     });
 
-    depositos_update(this.map)
+    depositos_update(this.map);
   }
 
   _redraw_map = () => {
+    console.log("Redrawing Map")
     let campos_source = this.map.getSource("campos");
     // console.log("CS", campos_source);
     let campos_collection = {
@@ -697,11 +715,22 @@ export class MapaPrincipal extends LitElement {
       }) || [];
     lotes_collection.features = lotes_collection.features.flat();
 
-    colorear_lotes(lotes_collection.features, this.settings?.user_cultivos);
+    colorear_lotes(lotes_collection.features).then(() => {
+      //console.log("LOTES", lotes_collection);
+      // console.log("Set lotes internos DS", lotes_collection.features);
+      lotes_source?.setData(lotes_collection);
 
-    // console.log("Set lotes internos DS", lotes_collection.features);
-    lotes_source?.setData(lotes_collection);
-    // console.log("Redraw Campos", this.campos);
+
+      // Colorear lotes seleccionados
+      let a = this.map.getSource('seleccion_lotes')._data
+      colorear_lotes(a.features).then(()=>
+        this.map.getSource('seleccion_lotes').setData(a)
+      )
+      
+
+      // console.log("Redraw Campos", this.campos);
+      this.map.resize();
+    });
   };
 
   willUpdate(props) {
@@ -731,13 +760,6 @@ export class MapaPrincipal extends LitElement {
             }}
           >
             Agregar un Contratista
-          </sp-menu-item>
-          <sp-menu-item
-            @click=${() => {
-              this.sendEvent("nuevo-deposito-click"), null;
-            }}
-          >
-            Agregar un Deposito
           </sp-menu-item>
         </sp-action-menu>
       </sp-theme>

@@ -3,7 +3,10 @@ import { property, state } from "lit/decorators.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
-import ApexCharts from "apexcharts";
+let ApexCharts;
+import("apexcharts").then(({ default: a }) => {
+  ApexCharts = a;
+});
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
 import "../rosad3";
 import { add_download_xls_button } from "../excel_boton";
@@ -92,7 +95,6 @@ const matriz_de_vientos = (ts, dir: number[], vel: number[]) => {
   result.columns = columns;
   return result;
 };
-
 
 export class VientoDireccionCard extends LitElement {
   static override styles: CSSResultGroup = [
@@ -218,18 +220,28 @@ export class VientoDireccionCard extends LitElement {
 
     const this_opts = JSON.parse(JSON.stringify(options));
     this_opts.xaxis.categories = [...nt.ts];
-    this_opts.series[0].data = [...nt.direccion];
+    let matriz;
+    if ("direccion" in nt) {
+      this_opts.series[0].data = [...nt.direccion];
+      matriz = matriz_de_vientos(nt.ts, nt.direccion, nt.velocidad);
+    } else if ("viento_direccion" in nt) {
+      this_opts.series[0].data = [...nt.viento_direccion];
+      matriz = matriz_de_vientos(
+        nt.ts,
+        nt.viento_direccion,
+        nt.viento_velocidad
+      );
+    }
     this_opts.series[0].name = "Viento - Dirección";
     this_opts.title.text = "Viento - Dirección";
     this_opts.yaxis[0].title = "Viento - Dirección";
-    
+
     // const chart_1 = new ApexCharts(
     //   this.shadowRoot.getElementById("chart"),
     //   this_opts
     // );
     //chart_1.render();
 
-    let matriz = matriz_de_vientos(nt.ts, nt.direccion, nt.velocidad);
     console.log("MATRIX", matriz);
     this._matriz_de_vientos = matriz;
 
@@ -249,22 +261,19 @@ export class VientoDireccionCard extends LitElement {
     return html`
       <div class="container-fluid row border-primary border-top p-1 mx-auto">
         <div
-          class="row btn btn-primary d-block d-sm-none mx-auto my-1"
-          @click=${this.toggle}
-        >
-          ${!this._show_chart_only ? "Gráfico" : "Datos"}
-        </div>
-        <div
           class="${this._show_chart_only
-            ? "d-none d-sm-block"
-            : ""} col-12 col-sm-4 my-auto"
+            ? "d-none"
+            : "col-11 col-sm-11 my-auto"} "
           id="datadiv"
         >
           <div class="row">
             <h5>
               <img src="/windrose-svgrepo-com.svg" width="50" height="50" />
               <span class="fw-bolder"
-                >${valor(this.card, "direccion")} º</span
+                >${valor(this.card, "direccion") === "N/A"
+                  ? valor(this.card, "viento_direccion")
+                  : valor(this.card, "direccion")}
+                º</span
               >
             </h5>
           </div>
@@ -296,8 +305,8 @@ export class VientoDireccionCard extends LitElement {
           ? ""
           : html`<div
               class="${this._show_chart_only
-                ? ""
-                : "d-none d-sm-block"} col-12 col-sm-8 d-flex align-items-center"
+                ? "col-11 col-sm-11 d-flex align-items-center"
+                : "d-none"} "
             >
               <strong>Cargando Datos...</strong>
               <div
@@ -310,17 +319,27 @@ export class VientoDireccionCard extends LitElement {
         <!--Chart-->
         <div
           class="${this._show_chart_only
-          ? ""
-          : "d-none d-sm-block"} col-12 col-sm-8 chart"
+            ? "col-11 col-sm-11"
+            : "d-none"}  chart"
           id="chart"
         >
-        ${this._matriz_de_vientos
-            ? html`<rosa-de-vientos class='mx-auto' .data=${this._matriz_de_vientos} />`
+          ${this._matriz_de_vientos
+            ? html`<rosa-de-vientos
+                class="mx-auto"
+                .data=${this._matriz_de_vientos}
+              />`
             : null}
-      </div>
+        </div>
 
-
-
+        <div
+          class="col-1 my-1"
+          style="display:flex; align-items: center;"
+          @click=${this.toggle}
+        >
+          <span class="btn btn-warning mx-auto">
+            ${!this._show_chart_only ? ">" : "<"}
+          </span>
+        </div>
       </div>
     `;
   }
