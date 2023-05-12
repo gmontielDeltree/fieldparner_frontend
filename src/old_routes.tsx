@@ -12,6 +12,11 @@ declare global {
   }
 }
 
+// Con estas configs simplemente hacemos que react-router renderize el wrapper de
+// la app "vieja" en las rutas que la app "vieja" usa.
+// Por ahora ruteo "interno" de la parte existente de la app lo sigue haciendo Vaadin Router.
+// Por esa la razon usamos los '*' para matchear las subrutas.
+
 export const old_routes = [
   {
     path: "/",
