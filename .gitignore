@@ -1,3 +1,4 @@
 dist/
 node_modules/
 fieldpartner_frontend-notebook.code-workspace
+.vscode
