@@ -1,33 +1,45 @@
 {
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "useDefineForClassFields":false,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-   // "lib": ["WebWorker"], // Para poder usar ServiceWorker
-    // "paths": {
-    //   "plotly.js": ["../node_modules/plotly.js/lib/core.js"]
-    // },
-    "plugins": [{ "name": "typescript-plugin-css-modules" }],
-
     "target": "ESNext",
-    "lib": ["WebWorker", "DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "WebWorker",
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
-
+    "experimentalDecorators": true,
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
+    "useDefineForClassFields": false,
+    "allowSyntheticDefaultImports": true,
+    // "lib": ["WebWorker"], // Para poder usar ServiceWorker
+    // "paths": {
+    //   "plotly.js": ["../node_modules/plotly.js/lib/core.js"]
+    // },
+    "plugins": [
+      {
+        "name": "typescript-plugin-css-modules"
+      }
+    ],
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

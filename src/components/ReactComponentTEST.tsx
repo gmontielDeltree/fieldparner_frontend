@@ -1,5 +1,11 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import "./test.css"
+
+export const fcReact: React.FC = () => {
+  return (
+    <> FC REACT</>
+  )
+}
 
 function ReactComponentTEST() {
   const [count, setCount] = useState(3)
