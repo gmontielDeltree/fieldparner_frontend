@@ -160,10 +160,10 @@ class Devices {
         let latitud = extract_tele("latitud", telemetria).value;
         let longitud = extract_tele("longitud", telemetria).value;
 
-        if (telemetria.device_id === "f008d1ffffd30a6c") {
-          latitud = -35.1579821;
-          longitud = -59.09232;
-        }
+        // if (telemetria.device_id === "f008d1ffffd30a6c") {
+        //   latitud = -35.1579821;
+        //   longitud = -59.09232;
+        // }
 
         let temperatura = extract_tele("temperatura", telemetria).value;
         let humedad = extract_tele("humedad", telemetria).value;

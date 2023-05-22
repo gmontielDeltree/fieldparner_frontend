@@ -107,7 +107,7 @@ export class ListaSensoresClass extends LitElement {
       return html`<a
         href="#"
         @click=${() => {
-          this.map.flyTo({ center: posicion(id, this._devices_cards), zoom:20 });
+          this.map.flyTo({ center: posicion(id, this._devices_cards), zoom:17 });
 		  this._offcanvas.hide()
         }}
         class="list-group-item list-group-item-action"
