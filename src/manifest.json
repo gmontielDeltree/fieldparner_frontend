@@ -6,7 +6,7 @@
   "background_color": "#FFFFFF",
   "display": "standalone",
   "scope": "./",
-  "start_url": "index.html",
+  "start_url": "",
   "id":"index.html",
   "share_target": {
     "action": "index.html?shared-audio",
