@@ -23,3 +23,8 @@ export interface Presupuestos {
     moneda: string;
     totalPresupuesto: string;
 }
+
+export interface ColumnProps {
+    text: string;
+    align: 'inherit' | 'left' | 'center' | 'right' | 'justify';
+}

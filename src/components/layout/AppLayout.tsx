@@ -1,6 +1,6 @@
 
 import { Box, Toolbar } from '@mui/material';
-import { NavBar, SideBar } from '../../components';
+import { NavBar, SideBar } from '..';
 import { useCallback, useState } from 'react';
 
 const drawerWidth = 240; //Ancho del sidebar en px;

@@ -1,54 +1,10 @@
 
-import React from 'react';
-import { AppLayout } from '../components';
-import {
-    Chip,
-    IconButton,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Tooltip,
-    styled,
-    tableCellClasses
-} from '@mui/material';
-import { Presupuestos } from '../types';
-import {
-    ContentCopy as ContentCopyIcon,
-    Delete as DeleteIcon,
-    Edit as EditIcon
-} from '@mui/icons-material';
+import React, { useState } from 'react';
+import { AppLayout, DataTable } from '../components';
+import { Presupuestos, ColumnProps } from '../types';
+import { Box, Button, Fab, FormControl, Grid, InputLabel, MenuItem, Pagination, Select, SelectChangeEvent, Stack, TextField, Typography } from '@mui/material';
+import { Add as AddIcon, Search as SearchIcon, Download as DownloadIcon } from '@mui/icons-material';
 
-
-
-const TableCellStyled = styled(TableCell)(() => ({
-    [`&.${tableCellClasses.head}`]: {
-        color: '#000000c7',
-        fontSize: 14,
-        fontWeight: 'bold'
-    },
-    [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
-    }
-}));
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-        backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-        border: 0,
-    },
-}));
-
-export interface ColumnProps {
-    text: string;
-    align: 'inherit' | 'left' | 'center' | 'right' | 'justify';
-}
 
 const columns: ColumnProps[] = [
     { text: 'Nro', align: 'left' },
@@ -66,57 +22,127 @@ const data: Presupuestos[] = [
 ];
 
 export const OverviewPage: React.FC = () => {
+
+    const [estado, setEstado] = useState('');
+    const [periodo, setPeriodo] = useState('');
+
+    const handleChangeEstado = (event: SelectChangeEvent): void => {
+        setEstado(event.target.value as string);
+    };
+
+    const handleChangePeriodo = (event: SelectChangeEvent): void => {
+        setPeriodo(event.target.value as string);
+    };
+
+
     return (
         <AppLayout>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 500 }} aria-label="customized table">
-                    <TableHead>
-                        <TableRow sx={{ backgroundColor: 'rgb(0 0 0 / 25%)' }}>
-                            {columns.map(({ text, align }) => (
-                                <TableCellStyled key={text} align={align}>
-                                    {text}
-                                </TableCellStyled>
-                            ))}
-                            <TableCell />
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {data.map((row) => (
-                            <StyledTableRow key={row.nro}>
-                                <TableCellStyled component="th" scope="row">
-                                    {row.nro}
-                                </TableCellStyled>
-                                <TableCellStyled align="center">{row.proveedor}</TableCellStyled>
-                                <TableCellStyled align="center">
-                                    <Chip
-                                        label="Activo"
-                                        variant='outlined'
-                                        color='success' />
-                                </TableCellStyled>
-                                <TableCellStyled align="center">{row.moneda}</TableCellStyled>
-                                <TableCellStyled align="center">{row.totalPresupuesto}</TableCellStyled>
-                                <TableCellStyled align="center">
-                                    <Tooltip title="Editar">
-                                        <IconButton>
-                                            <EditIcon />
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Copiar">
-                                        <IconButton>
-                                            <ContentCopyIcon />
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Eliminar">
-                                        <IconButton>
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </Tooltip>
-                                </TableCellStyled>
-                            </StyledTableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <Grid
+                container
+                spacing={2}
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ p: 2, mt: { sm: 2 } }}
+            >
+                <Grid item xs={2}>
+                    <FormControl fullWidth>
+                        <InputLabel id="label-estado-equipo">Estado</InputLabel>
+                        <Select
+                            labelId="label-estado-equipo"
+                            id="select-estado"
+                            value={estado}
+                            label="Estado"
+                            onChange={handleChangeEstado}
+                        >
+                            <MenuItem value={"Activo"}>Activo</MenuItem>
+                            <MenuItem value={"Fuera de servicio"}>Fuera de servicio</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={4}>
+                    <TextField
+                        label="Número de Cliente"
+                        variant="outlined"
+                        type='text'
+                        placeholder='Ingrese el número de Cliente'
+                        fullWidth />
+                </Grid>
+                <Grid item xs={4}>
+                    <TextField
+                        label="Proveedor"
+                        variant="outlined"
+                        type='text'
+                        placeholder='Nombre del Proveedor'
+                        fullWidth />
+                </Grid>
+                <Grid item xs={2}>
+                    <FormControl fullWidth>
+                        <InputLabel id="label-periodo">Periodo</InputLabel>
+                        <Select
+                            labelId="label-periodo"
+                            id="select-periodo"
+                            value={periodo}
+                            label="Periodo"
+                            onChange={handleChangePeriodo}
+                        >
+                            <MenuItem value={"Ultimos 30 dias"}>Últimos 30 días</MenuItem>
+                            <MenuItem value={"3 meses"}>3 meses</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+            </Grid>
+            <Box
+                component="div"
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ p: { sm: 2 } }} >
+                <Grid
+                    container
+                    spacing={2}
+                    alignItems="center"
+                >
+                    <Grid item >
+                        <Button
+                            variant="contained"
+                            color="inherit"
+                            startIcon={<SearchIcon />}>
+                            Buscar
+                        </Button>
+                    </Grid>
+                    <Grid item >
+                        <Button
+                            variant="contained"
+                            color="success"
+                            startIcon={<AddIcon />}>
+                            Nuevo Equipo
+                        </Button>
+                    </Grid>
+                    <Grid item>
+                        <Fab color="inherit" size='small' aria-label="edit">
+                            <DownloadIcon />
+                        </Fab>
+                    </Grid>
+                </Grid>
+                <Grid
+                    container
+                    display="flex"
+                    justifyContent="flex-end"
+                    alignItems="center">
+                    <Typography>Mostrando: {5}</Typography>
+                    <Pagination
+                        count={5}
+                        page={1}
+                        onChange={() => console.log('onChangePagination')} />
+                </Grid>
+            </Box>
+            <Box component="div" sx={{ p: 1 }}>
+                <DataTable
+                    key="datatable-equipo"
+                    columns={columns}
+                    data={data} />
+            </Box>
         </AppLayout>
     )
 }
