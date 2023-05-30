@@ -18,6 +18,7 @@ import {
     Edit as EditIcon
 } from '@mui/icons-material';
 import { DataTableProps } from './type';
+import { Equipo } from '../../types';
 
 
 const TableCellStyled = styled(TableCell)(() => ({
@@ -31,10 +32,10 @@ const TableCellStyled = styled(TableCell)(() => ({
     }
 }));
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-        backgroundColor: theme.palette.action.hover,
-    },
+const StyledTableRow = styled(TableRow)(() => ({
+    // '&:nth-of-type(odd)': {
+    //     backgroundColor: theme.palette.action.hover,
+    // },
     // hide last border
     '&:last-child td, &:last-child th': {
         border: 0,
@@ -42,7 +43,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 
-const DataTable = <T extends object>({ columns, data }: DataTableProps<T>) => {
+export const DataTable: React.FC<DataTableProps> = ({ columns, data }) => {
     return (
         <TableContainer component={Paper}>
             <Table sx={{ minWidth: 500 }} aria-label="customized table">
@@ -57,20 +58,15 @@ const DataTable = <T extends object>({ columns, data }: DataTableProps<T>) => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {data.map((row: any) => (
-                        <StyledTableRow key={row.nro}>
+                    {data.map((row) => (
+                        <StyledTableRow key={row.nro} hover >
                             <TableCellStyled component="th" scope="row">
-                                {row.nro}
+                                {row.patente}
                             </TableCellStyled>
-                            <TableCellStyled align="center">{row.proveedor}</TableCellStyled>
-                            <TableCellStyled align="center">
-                                <Chip
-                                    label="Activo"
-                                    variant='outlined'
-                                    color='success' />
-                            </TableCellStyled>
-                            <TableCellStyled align="center">{row.moneda}</TableCellStyled>
-                            <TableCellStyled align="center">{row.totalPresupuesto}</TableCellStyled>
+                            <TableCellStyled align="center">{row.tipoVehiculo}</TableCellStyled>
+                            <TableCellStyled align="center">{row.marca} </TableCellStyled>
+                            <TableCellStyled align="center">{row.modelo}</TableCellStyled>
+                            <TableCellStyled align="center">{row.año}</TableCellStyled>
                             <TableCellStyled align="center">
                                 <Tooltip title="Editar">
                                     <IconButton>

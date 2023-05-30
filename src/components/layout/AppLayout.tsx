@@ -39,6 +39,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 component="main"
                 sx={{
                     flexGrow: 1,
+                    backgroundColor: '#f4f4f4',
                     p: 3,
                     ml: `-${drawerWidth}px`,
                     ...(open && { ml: 0 })

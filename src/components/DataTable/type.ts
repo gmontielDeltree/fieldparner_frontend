@@ -1,6 +1,6 @@
-import { ColumnProps } from "../../types";
+import { ColumnProps, Equipo } from "../../types";
 
-export interface DataTableProps<T> {
+export interface DataTableProps {
     columns: ColumnProps[];
-    data: T[];
+    data: Equipo[];
 }
