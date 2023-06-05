@@ -222,8 +222,10 @@ export class AppLoader extends LitElement {
     // Nombres validos solo en minusculas
     this.db = new PouchDB("campos_" + username + "v7");
 
+    let user_db_name = user.sub.replaceAll("|", "_").toLowerCase();
+
     gbl_state.db = this.db;
-    gbl_state.user_db = new PouchDB(user.sub);
+    gbl_state.user_db = new PouchDB(user_db_name);
     gbl_state.user = this.user;
 
     if (import.meta.env.DEV) {
@@ -340,14 +342,18 @@ export class AppLoader extends LitElement {
         this.cargar_idioma()
           .then(this.set_idioma)
           .then((r) => {
+            let user_db_name = gbl_state.user.sub.replaceAll("|", "_").toLowerCase();
             gbl_state.user_db.replicate
-              .from(base_url + gbl_state.user.sub)
+              .from(base_url + user_db_name)
               .on("complete", () => {
                 this.cargar_campana_seleccionada("").then(() => {
                   this.ready = true;
                   showNotification('Ready','success');
                   console.log("Ready...Estado Inicial", gbl_state, r);
                 });
+              })
+              .on("error",(e)=>{
+                console.log("error",e)
               });
           });
 

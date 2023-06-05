@@ -8,7 +8,7 @@ import react from "@vitejs/plugin-react";
 export default {
   server: {
     watch: {
-      ignored: ["**/docs/**", "**/dist/**", "**/public/**","**/node_modules/**","**/.git/**"],
+      ignored: ["**/docs/**", "**/dist/**", "**/public/**"],
     },
   },
 
