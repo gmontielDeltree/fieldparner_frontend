@@ -1,1 +1,250 @@
-{"1": {"color": "#f7e7ce", "nombre": "Algod\u00f3n"}, "2": {"color": "#0000ff", "nombre": "Arroz"}, "3": {"color": "#3cb371", "nombre": "Arveja"}, "4": {"color": "#009966", "nombre": "Avena"}, "5": {"color": "#8fbc8f", "nombre": "Ca\u00f1a de az\u00facar"}, "6": {"color": "#c39953", "nombre": "Cebada"}, "7": {"color": "#c39953", "nombre": "Centeno"}, "8": {"color": "#eee600", "nombre": "Colza"}, "9": {"color": "#c39953", "nombre": "Garbanzo"}, "10": {"color": "#eee600", "nombre": "Girasol"}, "11": {"color": "#cd5b45", "nombre": "Lenteja"}, "12": {"color": "#cd5b45", "nombre": "Lino"}, "13": {"color": "#ff0000", "nombre": "Ma\u00edz"}, "14": {"color": "#cd5b45", "nombre": "Man\u00ed"}, "15": {"color": "#8fbc8f", "nombre": "Mijo"}, "16": {"color": "#c39953", "nombre": "Papa"}, "17": {"color": "#009966", "nombre": "Pastura"}, "18": {"color": "#8fbc8f", "nombre": "Raigr\u00e1s"}, "19": {"color": "#00b140", "nombre": "Soja"}, "20": {"color": "#c21e56", "nombre": "Sorgo"}, "21": {"color": "#ed9121", "nombre": "Trigo"}, "22": {"color": "#009966", "nombre": "Vicia"}, "23": {"color": "#cc338b", "nombre": "Vid"}, "24": {"color": null, "nombre": "Otro"}, "953": {"color": "#3cb371", "nombre": "P\u00ed\u00f1a"}, "954": {"color": "#eee600", "nombre": "Pl\u00e1tano"}, "955": {"color": "#cd5b45", "nombre": "Caf\u00e9"}, "956": {"color": "#cd5b45", "nombre": "Cacao"}, "957": {"color": "#00b140", "nombre": "Aguacate"}, "958": {"color": "#013220", "nombre": "Olivar"}, "959": {"color": "#cc338b", "nombre": "Ar\u00e1ndano"}, "960": {"color": "#009966", "nombre": "Mel\u00f3n"}, "961": {"color": "#cd5b45", "nombre": "Almendro"}, "962": {"color": "#ed9121", "nombre": "C\u00edtricos"}, "963": {"color": "#ff0000", "nombre": "Tomate industria"}, "964": {"color": "#ed9121", "nombre": "Pistacho"}, "965": {"color": "#cd5b45", "nombre": "Nogal"}, "966": {"color": "#9400d3", "nombre": "Ajo"}, "967": {"color": "#c39953", "nombre": "Papa"}, "968": {"color": "#ff0000", "nombre": "Tomate"}, "969": {"color": "#c21e56", "nombre": "Remolacha"}, "970": {"color": "#ed9121", "nombre": "Naranjo"}, "971": {"color": "#c21e56", "nombre": "Cerezo"}, "972": {"color": "#dc143c", "nombre": "Manzano"}, "973": {"color": "#ff0000", "nombre": "Pimiento"}, "974": {"color": "#dc143c", "nombre": "Frutilla"}, "975": {"color": "#f7e7ce", "nombre": "Poroto"}, "976": {"color": "#c39953", "nombre": "Garbanzo"}, "977": {"color": "#cd5b45", "nombre": "Avellano"}, "978": {"color": "#c39953", "nombre": "Damasco"}, "979": {"color": "#c39953", "nombre": "Durazno"}, "980": {"color": "#f7e7ce", "nombre": "Peral"}, "981": {"color": "#dc143c", "nombre": "Pomelo"}, "982": {"color": "#808080", "nombre": "Cebolla"}, "983": {"color": "#3cb371", "nombre": "Esparrago"}, "984": {"color": "#cd5b45", "nombre": "Mango"}, "985": {"color": "#eee600", "nombre": "Carinata"}, "1337": {"color": "#55c97f", "nombre": "Soja 2\u00b0"}, "1339": {"color": "#d57676", "nombre": "Ma\u00edz 2\u00b0"}, "1340": {"color": "#cfc819", "nombre": "Girasol 2\u00b0"}, "1341": {"color": "#e5b57b", "nombre": "Trigo candeal"}, "1338": {"color": "#c66a89", "nombre": "Sorgo 2\u00b0"}}
+{
+    "1": {
+        "color": "#f7e7ce",
+        "nombre": "Algod\u00f3n"
+    },
+    "2": {
+        "color": "#0000ff",
+        "nombre": "Arroz"
+    },
+    "3": {
+        "color": "#3cb371",
+        "nombre": "Arveja"
+    },
+    "4": {
+        "color": "#009966",
+        "nombre": "Avena"
+    },
+    "5": {
+        "color": "#8fbc8f",
+        "nombre": "Ca\u00f1a de az\u00facar"
+    },
+    "6": {
+        "color": "#c39953",
+        "nombre": "Cebada"
+    },
+    "7": {
+        "color": "#c39953",
+        "nombre": "Centeno"
+    },
+    "8": {
+        "color": "#eee600",
+        "nombre": "Colza"
+    },
+    "9": {
+        "color": "#c39953",
+        "nombre": "Garbanzo"
+    },
+    "10": {
+        "color": "#eee600",
+        "nombre": "Girasol"
+    },
+    "11": {
+        "color": "#cd5b45",
+        "nombre": "Lenteja"
+    },
+    "12": {
+        "color": "#cd5b45",
+        "nombre": "Lino"
+    },
+    "13": {
+        "color": "#ff0000",
+        "nombre": "Ma\u00edz"
+    },
+    "14": {
+        "color": "#cd5b45",
+        "nombre": "Man\u00ed"
+    },
+    "15": {
+        "color": "#8fbc8f",
+        "nombre": "Mijo"
+    },
+    "16": {
+        "color": "#c39953",
+        "nombre": "Papa"
+    },
+    "17": {
+        "color": "#009966",
+        "nombre": "Pastura"
+    },
+    "18": {
+        "color": "#8fbc8f",
+        "nombre": "Raigr\u00e1s"
+    },
+    "19": {
+        "color": "#00b140",
+        "nombre": "Soja"
+    },
+    "20": {
+        "color": "#c21e56",
+        "nombre": "Sorgo"
+    },
+    "21": {
+        "color": "#ed9121",
+        "nombre": "Trigo"
+    },
+    "22": {
+        "color": "#009966",
+        "nombre": "Vicia"
+    },
+    "23": {
+        "color": "#cc338b",
+        "nombre": "Vid"
+    },
+    "24": {
+        "color": null,
+        "nombre": "Otro"
+    },
+    "953": {
+        "color": "#3cb371",
+        "nombre": "P\u00ed\u00f1a"
+    },
+    "954": {
+        "color": "#eee600",
+        "nombre": "Pl\u00e1tano"
+    },
+    "955": {
+        "color": "#cd5b45",
+        "nombre": "Caf\u00e9"
+    },
+    "956": {
+        "color": "#cd5b45",
+        "nombre": "Cacao"
+    },
+    "957": {
+        "color": "#00b140",
+        "nombre": "Aguacate"
+    },
+    "958": {
+        "color": "#013220",
+        "nombre": "Olivar"
+    },
+    "959": {
+        "color": "#cc338b",
+        "nombre": "Ar\u00e1ndano"
+    },
+    "960": {
+        "color": "#009966",
+        "nombre": "Mel\u00f3n"
+    },
+    "961": {
+        "color": "#cd5b45",
+        "nombre": "Almendro"
+    },
+    "962": {
+        "color": "#ed9121",
+        "nombre": "C\u00edtricos"
+    },
+    "963": {
+        "color": "#ff0000",
+        "nombre": "Tomate industria"
+    },
+    "964": {
+        "color": "#ed9121",
+        "nombre": "Pistacho"
+    },
+    "965": {
+        "color": "#cd5b45",
+        "nombre": "Nogal"
+    },
+    "966": {
+        "color": "#9400d3",
+        "nombre": "Ajo"
+    },
+    "967": {
+        "color": "#c39953",
+        "nombre": "Papa"
+    },
+    "968": {
+        "color": "#ff0000",
+        "nombre": "Tomate"
+    },
+    "969": {
+        "color": "#c21e56",
+        "nombre": "Remolacha"
+    },
+    "970": {
+        "color": "#ed9121",
+        "nombre": "Naranjo"
+    },
+    "971": {
+        "color": "#c21e56",
+        "nombre": "Cerezo"
+    },
+    "972": {
+        "color": "#dc143c",
+        "nombre": "Manzano"
+    },
+    "973": {
+        "color": "#ff0000",
+        "nombre": "Pimiento"
+    },
+    "974": {
+        "color": "#dc143c",
+        "nombre": "Frutilla"
+    },
+    "975": {
+        "color": "#f7e7ce",
+        "nombre": "Poroto"
+    },
+    "976": {
+        "color": "#c39953",
+        "nombre": "Garbanzo"
+    },
+    "977": {
+        "color": "#cd5b45",
+        "nombre": "Avellano"
+    },
+    "978": {
+        "color": "#c39953",
+        "nombre": "Damasco"
+    },
+    "979": {
+        "color": "#c39953",
+        "nombre": "Durazno"
+    },
+    "980": {
+        "color": "#f7e7ce",
+        "nombre": "Peral"
+    },
+    "981": {
+        "color": "#dc143c",
+        "nombre": "Pomelo"
+    },
+    "982": {
+        "color": "#808080",
+        "nombre": "Cebolla"
+    },
+    "983": {
+        "color": "#3cb371",
+        "nombre": "Esparrago"
+    },
+    "984": {
+        "color": "#cd5b45",
+        "nombre": "Mango"
+    },
+    "985": {
+        "color": "#eee600",
+        "nombre": "Carinata"
+    },
+    "1337": {
+        "color": "#55c97f",
+        "nombre": "Soja 2\u00b0"
+    },
+    "1339": {
+        "color": "#d57676",
+        "nombre": "Ma\u00edz 2\u00b0"
+    },
+    "1340": {
+        "color": "#cfc819",
+        "nombre": "Girasol 2\u00b0"
+    },
+    "1341": {
+        "color": "#e5b57b",
+        "nombre": "Trigo candeal"
+    },
+    "1338": {
+        "color": "#c66a89",
+        "nombre": "Sorgo 2\u00b0"
+    }
+}

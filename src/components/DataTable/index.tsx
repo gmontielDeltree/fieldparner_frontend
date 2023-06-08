@@ -1,7 +1,10 @@
 import {
+    Box,
     Chip,
+    CircularProgress,
     IconButton,
     Paper,
+    Skeleton,
     Table,
     TableBody,
     TableCell,
@@ -18,7 +21,7 @@ import {
     Edit as EditIcon
 } from '@mui/icons-material';
 import { DataTableProps } from './type';
-import { Equipo } from '../../types';
+import { Vehiculo } from '../../types';
 
 
 const TableCellStyled = styled(TableCell)(() => ({
@@ -43,51 +46,62 @@ const StyledTableRow = styled(TableRow)(() => ({
 }));
 
 
-export const DataTable: React.FC<DataTableProps> = ({ columns, data }) => {
+export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }) => {
     return (
         <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 500 }} aria-label="customized table">
-                <TableHead>
-                    <TableRow sx={{ backgroundColor: 'rgb(0 0 0 / 25%)' }}>
-                        {columns.map(({ text, align }) => (
-                            <TableCellStyled key={text} align={align}>
-                                {text}
-                            </TableCellStyled>
-                        ))}
-                        <TableCell />
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {data.map((row) => (
-                        <StyledTableRow key={row.nro} hover >
-                            <TableCellStyled component="th" scope="row">
-                                {row.patente}
-                            </TableCellStyled>
-                            <TableCellStyled align="center">{row.tipoVehiculo}</TableCellStyled>
-                            <TableCellStyled align="center">{row.marca} </TableCellStyled>
-                            <TableCellStyled align="center">{row.modelo}</TableCellStyled>
-                            <TableCellStyled align="center">{row.año}</TableCellStyled>
-                            <TableCellStyled align="center">
-                                <Tooltip title="Editar">
-                                    <IconButton>
-                                        <EditIcon />
-                                    </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Copiar">
+            {
+                isLoading ? (
+                    <Box sx={{ p: 1 }}>
+                        <Skeleton variant="rounded" sx={{ width: '100%', height: 60 }} />
+                        <Skeleton variant="text" sx={{ width: '100%', height: 30 }} />
+                        <Skeleton variant="text" sx={{ width: '100%', height: 30 }} />
+                        <Skeleton variant="text" sx={{ width: '100%', height: 30 }} />
+                    </Box>
+                ) : (
+                    <Table sx={{ minWidth: 500 }} aria-label="customized table">
+                        <TableHead>
+                            <TableRow sx={{ backgroundColor: 'rgb(0 0 0 / 25%)' }}>
+                                {columns.map(({ text, align }) => (
+                                    <TableCellStyled key={text} align={align}>
+                                        {text}
+                                    </TableCellStyled>
+                                ))}
+                                <TableCell />
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {data.map((row) => (
+                                <StyledTableRow key={row.nro} hover >
+                                    <TableCellStyled component="th" scope="row">
+                                        {row.patente}
+                                    </TableCellStyled>
+                                    <TableCellStyled align="center">{row.tipoVehiculo}</TableCellStyled>
+                                    <TableCellStyled align="center">{row.marca} </TableCellStyled>
+                                    <TableCellStyled align="center">{row.modelo}</TableCellStyled>
+                                    <TableCellStyled align="center">{row.año}</TableCellStyled>
+                                    <TableCellStyled align="center">
+                                        <Tooltip title="Editar">
+                                            <IconButton>
+                                                <EditIcon />
+                                            </IconButton>
+                                        </Tooltip>
+                                        {/* <Tooltip title="Copiar">
                                     <IconButton>
                                         <ContentCopyIcon />
                                     </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Eliminar">
+                                </Tooltip> */}
+                                        {/* <Tooltip title="Eliminar">
                                     <IconButton>
                                         <DeleteIcon />
                                     </IconButton>
-                                </Tooltip>
-                            </TableCellStyled>
-                        </StyledTableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                                </Tooltip> */}
+                                    </TableCellStyled>
+                                </StyledTableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                )
+            }
         </TableContainer>
     )
 }

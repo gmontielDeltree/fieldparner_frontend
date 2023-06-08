@@ -1,6 +1,6 @@
-import { Equipo, TipoCombustible, TipoVehiculo } from "../types";
+import { Vehiculo, TipoCombustible, TipoVehiculo } from "../types";
 
-export const Equipos: Equipo[] = [
+export const Vehiculos: Vehiculo[] = [
     {
         "nro": "0123",
         "tipoVehiculo": TipoVehiculo.Camioneta,

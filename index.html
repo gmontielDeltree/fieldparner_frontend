@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <script type="text/javascript">
-      window.smartlook ||
-        (function (d) {
-          var o = (smartlook = function () {
-              o.api.push(arguments);
-            }),
-            h = d.getElementsByTagName("head")[0];
-          var c = d.createElement("script");
-          o.api = new Array();
-          c.async = true;
-          c.type = "text/javascript";
-          c.charset = "utf-8";
-          c.src = "https://web-sdk.smartlook.com/recorder.js";
-          h.appendChild(c);
-        })(document);
-      smartlook("init", "ebe5c626b32fb046a0be7907349213b63fb52c32", {
-        region: "eu",
-      });
-    </script>
 
-    <!-- Google tag (gtag.js) -->
-    <!-- <script
+<head>
+  <script type="text/javascript">
+    window.smartlook ||
+      (function (d) {
+        var o = (smartlook = function () {
+          o.api.push(arguments);
+        }),
+          h = d.getElementsByTagName("head")[0];
+        var c = d.createElement("script");
+        o.api = new Array();
+        c.async = true;
+        c.type = "text/javascript";
+        c.charset = "utf-8";
+        c.src = "https://web-sdk.smartlook.com/recorder.js";
+        h.appendChild(c);
+      })(document);
+    smartlook("init", "ebe5c626b32fb046a0be7907349213b63fb52c32", {
+      region: "eu",
+    });
+  </script>
+
+  <!-- Google tag (gtag.js) -->
+  <!-- <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-N2LJGN300K"
     ></script>
@@ -36,64 +37,40 @@
       gtag("config", "G-N2LJGN300K");
     </script> -->
 
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <title>FieldPartner</title>
-    <meta name="description" content="FieldPartner" />
+  <title>FieldPartner</title>
+  <meta name="description" content="FieldPartner" />
 
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-    <!-- Disable tap highlight on IE -->
-    <meta name="msapplication-tap-highlight" content="no" />
+  <!-- Disable tap highlight on IE -->
+  <meta name="msapplication-tap-highlight" content="no" />
 
-    <!-- Progressive Web App -->
-    <meta name="theme-color" content="#f5f8fa" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+  <!-- Progressive Web App -->
+  <meta name="theme-color" content="#f5f8fa" />
+  <link rel="manifest" href="/manifest.webmanifest" />
 
-    <!-- Add to homescreen for Chrome on Android -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <link
-      rel="icon"
-      sizes="192x192"
-      href="/images/icons/desktop/android-chrome-192x192.png"
-    />
-    <link
-      rel="icon"
-      sizes="512x512"
-      href="/images/icons/desktop/android-chrome-512x512.png"
-    />
+  <!-- Add to homescreen for Chrome on Android -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="icon" sizes="192x192" href="/images/icons/desktop/android-chrome-192x192.png" />
+  <link rel="icon" sizes="512x512" href="/images/icons/desktop/android-chrome-512x512.png" />
 
-    <!-- Add to homescreen for Safari on iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta name="apple-mobile-web-app-title" content="Fieldpartner" />
-    <link
-      rel="apple-touch-icon-precomposed"
-      href="/images/icons/desktop/apple-touch-icon.png"
-    />
+  <!-- Add to homescreen for Safari on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Fieldpartner" />
+  <link rel="apple-touch-icon-precomposed" href="/images/icons/desktop/apple-touch-icon.png" />
 
-    <!-- Place favicon.ico in the root directory -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/images/icons/desktop/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/images/icons/desktop/favicon-16x16.png"
-    />
+  <!-- Place favicon.ico in the root directory -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/desktop/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/desktop/favicon-16x16.png" />
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v<YOUR_MAPBOX_VERSION>/mapbox-gl.css' rel='stylesheet' />
+  <script type="module" src="/main.js"></script>
 
-    <script type="module" src="/main.js"></script>
-
-    <!-- <link
+  <!-- <link
       rel="preload"
       href="https://unpkg.com/intro.js/minified/introjs.min.css"
       as="style"
@@ -105,76 +82,77 @@
         href="https://unpkg.com/intro.js/minified/introjs.min.css"
     /></noscript> -->
 
-    <style>
-      /*mapbox gl css custom settings*/
-      #map {
-        position: absolute;
-        top: 56px;
-        bottom: 0;
-        width: 100%;
-        height: calc(100vh - 100px) !important;
-      }
+  <style>
+    /*mapbox gl css custom settings*/
+    #map {
+      position: absolute;
+      top: 56px;
+      bottom: 0;
+      width: 100%;
+      height: calc(100vh - 100px) !important;
+    }
 
-      .mapboxgl-ctrl-group button + button {
-        border-top: none;
-      }
+    .mapboxgl-ctrl-group button+button {
+      border-top: none;
+    }
 
-      .mapboxgl-ctrl-top-right {
-        z-index: 0 !important;
-      }
+    .mapboxgl-ctrl-top-right {
+      z-index: 0 !important;
+    }
 
-      vaadin-date-picker-overlay {
-        z-index: 9999;
-      }
-      
-      vaadin-time-picker-overlay {
-        z-index: 9999;
-      }
+    vaadin-date-picker-overlay {
+      z-index: 9999;
+    }
 
-      vaadin-combo-box-overlay {
-        z-index: 9999;
-      }
-      vaadin-context-menu-overlay {
-        z-index: 9999;
-      }
+    vaadin-time-picker-overlay {
+      z-index: 9999;
+    }
 
-      vaadin-dialog-overlay {
-        z-index: 9999;
-      }
+    vaadin-combo-box-overlay {
+      z-index: 9999;
+    }
 
-      vaadin-multi-select-combo-box-overlay {
-        z-index: 9999;
-      }
+    vaadin-context-menu-overlay {
+      z-index: 9999;
+    }
 
-      .marker {
-        background-image: url("/centralmeteorologica.webp");
-        background-size: cover;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        cursor: pointer;
-      }
+    vaadin-dialog-overlay {
+      z-index: 9999;
+    }
 
-      vaadin-tabs {
-        z-index: 9999;
-      }
+    vaadin-multi-select-combo-box-overlay {
+      z-index: 9999;
+    }
 
-      :root {
-        --bs-offcanvas-zindex: 500;
-      }
-    </style>
+    .marker {
+      background-image: url("/centralmeteorologica.webp");
+      background-size: cover;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
 
-    <!-- shims global para -->
-    <script>
-      window.process = window.process || {};
-      window.global = window;
-      // https://github.com/pouchdb/pouchdb/issues/8051#issuecomment-686332652
-      window.process = {
-        browser: true,
-      };
-    </script>
+    vaadin-tabs {
+      z-index: 9999;
+    }
 
-    <script>
+    :root {
+      --bs-offcanvas-zindex: 500;
+    }
+  </style>
+
+  <!-- shims global para -->
+  <script>
+    window.process = window.process || {};
+    window.global = window;
+    // https://github.com/pouchdb/pouchdb/issues/8051#issuecomment-686332652
+    window.process = {
+      browser: true,
+    };
+  </script>
+
+  <script>
             // Register Service Worker
             // if ("serviceWorker" in navigator) {
             //   const p = navigator.serviceWorker
@@ -186,60 +164,61 @@
             // }
             // const version = "0004";
 
-  
-    </script>
 
-    <style>
-      body,
-      html {
-        height: 100%;
-        margin: 0;
-      }
+  </script>
 
-      .bg {
-        /* The image used */
-        background-image: url("/assets/images/load-bg.jpg");
+  <style>
+    body,
+    html {
+      height: 100%;
+      margin: 0;
+    }
 
-        /* Full height */
-        height: 100%;
-        /* Center and scale the image nicely */
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-      }
+    .bg {
+      /* The image used */
+      background-image: url("/assets/images/load-bg.jpg");
 
-      .hero-text {
-        text-align: center;
-        position: absolute;
-        top: 70%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-      }
-      .login-button {
-        text-align: center;
-        position: absolute;
-        top: 85%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-      }
-    </style>
-  </head>
-  <!-- load the 'header_auto_hide' on the body -->
+      /* Full height */
+      height: 100%;
+      /* Center and scale the image nicely */
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
 
-  <body>
-    <!--Main App Element-->
+    .hero-text {
+      text-align: center;
+      position: absolute;
+      top: 70%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+    }
 
-    <div style="margin:0px;padding:0px;height: 100%;
-    width: 100%;" id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- <app-loader></app-loader> -->
-    <!-- <script
+    .login-button {
+      text-align: center;
+      position: absolute;
+      top: 85%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<!-- load the 'header_auto_hide' on the body -->
+
+<body>
+  <!--Main App Element-->
+
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+
+  <!-- <app-loader></app-loader> -->
+  <!-- <script
       src="https://unpkg.com/intro.js/minified/intro.min.js"
       async
     ></script> -->
 
-    <noscript> Turn on JavaScript to access this site content. </noscript>
-  </body>
+  <noscript> Turn on JavaScript to access this site content. </noscript>
+</body>
+
 </html>

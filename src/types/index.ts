@@ -24,9 +24,9 @@ export enum TipoVehiculo {
     Tolva = "Tolva"
 }
 
-export enum TipoCombustible { "Diesel", "Nafta" }
+export enum TipoCombustible { Diesel = "Diesel", Nafta = "Nafta" }
 
-export interface Equipo {
+export interface Vehiculo {
     nro: string;
     tipoVehiculo: TipoVehiculo;
     marca: string;

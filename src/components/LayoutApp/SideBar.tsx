@@ -27,7 +27,7 @@ const sideBarMenu: MenuOptions[] = [
   { text: 'Recargar', icon: <CachedIcon /> },
   { text: 'Lista de Dispositivos', icon: <ListIcon /> },
   { text: 'Personal', icon: <GroupIcon /> },
-  { text: 'Equipos', icon: <LocalShippingIcon /> },
+  { text: 'Vehiculos', icon: <LocalShippingIcon /> },
   { text: 'Precios', icon: <AttachMoneyIcon /> },
   { text: 'Ajustes', icon: <SettingsIcon /> }];
 

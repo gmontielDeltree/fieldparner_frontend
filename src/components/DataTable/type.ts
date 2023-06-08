@@ -1,6 +1,7 @@
-import { ColumnProps, Equipo } from "../../types";
+import { ColumnProps, Vehiculo } from "../../types";
 
 export interface DataTableProps {
     columns: ColumnProps[];
-    data: Equipo[];
+    data: Vehiculo[];
+    isLoading: boolean;
 }
