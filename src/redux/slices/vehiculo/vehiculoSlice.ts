@@ -24,7 +24,7 @@ export const vehiculoSlice = createSlice({
         removerVehiculoActivo: (state) => {
             state.vehiculoActivo = null;
         },
-        nuevoVehiculo: (state, action: PayloadAction<Vehiculo>) => {
+        agregarNuevoVehiculo: (state, action: PayloadAction<Vehiculo>) => {
             state.vehiculos = [...state.vehiculos, action.payload];
         },
         actualizarVehiculo: (state, action: PayloadAction<Vehiculo>) => {
@@ -39,6 +39,6 @@ export const {
     cargarVehiculos,
     setVehiculoActivo,
     removerVehiculoActivo,
-    nuevoVehiculo,
+    agregarNuevoVehiculo,
     actualizarVehiculo
 } = vehiculoSlice.actions

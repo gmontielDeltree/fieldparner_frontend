@@ -3,7 +3,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, Loading } from '../../components';
 import { ColumnProps, TipoVehiculo } from '../../types';
-import { Box, Button, Fab, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Box, Button, Fab, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import {
     Add as AddIcon,
     Search as SearchIcon,
@@ -11,7 +11,7 @@ import {
     LocalShipping as LocalShippingIcon,
 } from '@mui/icons-material';
 import { useForm, useAppDispatch, useAppSelector } from '../../hooks';
-import { getVehiculos } from '../../redux/slices/vehiculo';
+import { cargarVehiculos, getVehiculos } from '../../redux/slices/vehiculo';
 
 
 
@@ -38,7 +38,6 @@ export const VehiculosPage: React.FC = () => {
     const dispatch = useAppDispatch();
     const { isLoading } = useAppSelector(state => state.ui);
     const { vehiculos } = useAppSelector(state => state.vehiculo);
-
     const {
         tipoVehiculo,
         patente,
@@ -47,18 +46,39 @@ export const VehiculosPage: React.FC = () => {
         año,
         handleInputChange,
         handleSelectChange } = useForm(filtros);
-
     const listaTipoVehiculos = useMemo(() => ["Todos", ...tipoVehiculos], []);
 
-    const onClickBuscar = (): void => {
-        // setData(prevState => prevState.filter(
-        //     (equipo) =>
-        //         (equipo.tipoVehiculo === tipoVehiculo) ||
-        //         (marca && equipo.marca === marca) ||
-        //         (patente && equipo.patente === patente) ||
-        //         (modelo && equipo.modelo === modelo)
-        // ));
-    }
+    const filteredVehiculos = vehiculos.filter(
+        item =>
+            (item.patente && item.patente.toLowerCase().includes(patente.toLowerCase())) ||
+            (marca && item.marca.toLowerCase().includes(marca.toLowerCase())) ||
+            (modelo && item.modelo.toLowerCase().includes(modelo.toLowerCase())) ||
+            ((tipoVehiculo.toLowerCase() !== 'todos') && item.tipoVehiculo.toLowerCase().includes(tipoVehiculo.toLowerCase()))
+    );
+    console.log(filteredVehiculos);
+
+    // const onClickBuscar = (): void => {
+    //     let filtered = [...vehiculos];
+    //     if (patente !== '') {
+    //         filtered = filtered.filter(
+    //             item =>
+    //                 (item.patente && item.patente.toLowerCase().includes(patente.toLowerCase())),
+    //         );
+    //     }
+    //     if (marca !== '') {
+    //         filtered = filtered.filter(
+    //             item =>
+    //                 (item.marca && item.marca.toLowerCase().includes(marca.toLowerCase())),
+    //         );
+    //     }
+    //     if (modelo !== '') {
+    //         filtered = filtered.filter(
+    //             item =>
+    //                 (item.modelo && item.modelo.toLowerCase().includes(modelo.toLowerCase())),
+    //         );
+    //     }
+    //     dispatch(cargarVehiculos(filtered));
+    // }
 
     const onClickNuevoVehiculo = () => navigate('/overview/vehiculo/nuevo');
 
@@ -103,7 +123,9 @@ export const VehiculosPage: React.FC = () => {
                             name="patente"
                             value={patente}
                             onChange={handleInputChange}
-                            placeholder='Patente'
+                            inputProps={{
+                                startAdornment: <InputAdornment position="start" />,
+                            }}
                             fullWidth />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -116,6 +138,9 @@ export const VehiculosPage: React.FC = () => {
                                 value={tipoVehiculo}
                                 label="Tipo de Vehiculo"
                                 onChange={handleSelectChange}
+                                inputProps={{
+                                    startAdornment: <InputAdornment position="start" />,
+                                }}
                             >
                                 {
                                     listaTipoVehiculos.map((value) =>
@@ -126,42 +151,30 @@ export const VehiculosPage: React.FC = () => {
                         </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={4}>
-                        <FormControl fullWidth>
-                            <InputLabel id="marca">Marca</InputLabel>
-                            <Select
-                                labelId="marca"
-                                id="select-estado"
-                                name="marca"
-                                value={marca}
-                                label="Marca"
-                                onChange={handleSelectChange}
-                            >
-                                {
-                                    listaTipoVehiculos.map((value) =>
-                                        (<MenuItem key={value} value={value}>{value.toString()}</MenuItem>)
-                                    )
-                                }
-                            </Select>
-                        </FormControl>
+                        <TextField
+                            label="Marca"
+                            variant="outlined"
+                            type='text'
+                            name="marca"
+                            value={marca}
+                            onChange={handleInputChange}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start" />,
+                            }}
+                            fullWidth />
                     </Grid>
                     <Grid item xs={12} sm={4}>
-                        <FormControl fullWidth>
-                            <InputLabel id="modelo">Modelo</InputLabel>
-                            <Select
-                                labelId="modelo"
-                                id="select-estado"
-                                name="modelo"
-                                value={modelo}
-                                label="Modelo"
-                                onChange={handleSelectChange}
-                            >
-                                {
-                                    listaTipoVehiculos.map((value) =>
-                                        (<MenuItem key={value} value={value}>{value.toString()}</MenuItem>)
-                                    )
-                                }
-                            </Select>
-                        </FormControl>
+                        <TextField
+                            label="Modelo"
+                            variant="outlined"
+                            type='text'
+                            name="modelo"
+                            value={modelo}
+                            onChange={handleInputChange}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start" />,
+                            }}
+                            fullWidth />
                     </Grid>
                     <Grid item xs={12} sm={4}>
                         <FormControl fullWidth>
@@ -188,13 +201,14 @@ export const VehiculosPage: React.FC = () => {
                     display="flex"
                     justifyContent="space-between"
                     alignItems="center"
-                    sx={{ p: { sm: 2 } }} >
+                    sx={{ p: { sm: 2 }, my: 1 }} >
                     <Grid
                         container
                         spacing={2}
+                        justifyContent="flex-end"
                         alignItems="center"
                     >
-                        <Grid item>
+                        {/* <Grid item>
                             <Button
                                 variant="contained"
                                 color="inherit"
@@ -202,7 +216,7 @@ export const VehiculosPage: React.FC = () => {
                                 startIcon={<SearchIcon />}>
                                 Buscar
                             </Button>
-                        </Grid>
+                        </Grid> */}
                         <Grid item >
                             <Button
                                 variant="contained"
@@ -241,7 +255,7 @@ export const VehiculosPage: React.FC = () => {
                         key="datatable-equipo"
                         isLoading={isLoading}
                         columns={columns}
-                        data={vehiculos} />
+                        data={filteredVehiculos} />
                 </Box>
             </Box>
         </>
