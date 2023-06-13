@@ -19,8 +19,8 @@ import mapbox_draw_style from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css?in
 
 import "@spectrum-web-components/action-menu/sp-action-menu.js";
 import "@spectrum-web-components/menu/sp-menu-item.js";
-import "@spectrum-web-components/theme/sp-theme";
-import "@spectrum-web-components/theme/src/themes";
+import "@spectrum-web-components/theme/sp-theme.js";
+import "@spectrum-web-components/theme/src/themes.js";
 import centroid from "@turf/centroid";
 import { isToday, parseISO } from "date-fns";
 import { get, translate } from "lit-translate";
@@ -743,7 +743,7 @@ export class MapaPrincipal extends LitElement {
     return html`
       <div id="map"></div>
 
-      <sp-theme scale="medium" color="light">
+      <sp-theme scale="medium" color="dark">
         <!-- End content requiring theme application. -->
         <sp-action-menu size="m" class="add-button">
           <span slot="label" style="color:white;">Agregar</span>
