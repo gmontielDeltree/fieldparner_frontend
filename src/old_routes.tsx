@@ -50,4 +50,6 @@ export const old_routes = [
   { path: "/contratistas/*", element: <app-loader></app-loader> },
   { path: "/indices/*", element: <app-loader></app-loader> },
   { path: "/settings/*", element: <app-loader></app-loader> },
+  { path: "/integraciones/*", element: <app-loader></app-loader> },
+  
 ];
