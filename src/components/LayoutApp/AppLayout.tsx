@@ -1,5 +1,5 @@
 
-import { Box, Toolbar } from '@mui/material';
+import { Box, Container, Toolbar } from '@mui/material';
 import { NavBar, SideBar } from '..';
 import { useCallback, useState } from 'react';
 import Map from 'react-map-gl';
@@ -68,6 +68,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 sx={{
                     width: '100%',
                     height: '100vh',
+                    backgroundColor: '#f4f4f4',
                     flexGrow: 1,
                     ml: `-${drawerWidth}px`,
                     pt: '64px',
@@ -75,19 +76,18 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 }}>
                 {/* <Toolbar className='pepe' /> */}
                 <Box
-                    component="div"
-                    display="inline-block"
+                    // component="div"
+                    // display="inline-block"
                     sx={{
-                        width: '40%',
+                        width: '100%',
                         height: '100%',
-                        maxWidth: 700,
-                        backgroundColor: '#f4f4f4',
+                        // maxWidth: 800,
                         p: 1,
                     }}>
                     {children}
                 </Box>
 
-                <Box
+                {/* <Box
                     component="div"
                     display="inline-block"
                     sx={{
@@ -111,10 +111,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                             bottom: 0,
                         }}
                         mapStyle={mapStyle}
-                    >
-                        test mapbox
-                    </Map>
-                </Box>
+                    />
+                </Box> */}
             </Box>
 
         </Box>

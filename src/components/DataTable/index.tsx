@@ -20,8 +20,7 @@ import {
     Delete as DeleteIcon,
     Edit as EditIcon
 } from '@mui/icons-material';
-import { DataTableProps } from './type';
-import { Vehiculo } from '../../types';
+import { ColumnProps, Vehiculo } from '../../types';
 
 
 const TableCellStyled = styled(TableCell)(() => ({
@@ -45,6 +44,11 @@ const StyledTableRow = styled(TableRow)(() => ({
     },
 }));
 
+export interface DataTableProps {
+    columns: ColumnProps[];
+    data: Vehiculo[];
+    isLoading: boolean;
+}
 
 export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }) => {
     return (
@@ -72,12 +76,10 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }
                         <TableBody>
                             {data.map((row) => (
                                 <StyledTableRow key={row.nro} hover >
-                                    <TableCellStyled component="th" scope="row">
-                                        {row.patente}
-                                    </TableCellStyled>
                                     <TableCellStyled align="center">{row.tipoVehiculo}</TableCellStyled>
                                     <TableCellStyled align="center">{row.marca} </TableCellStyled>
                                     <TableCellStyled align="center">{row.modelo}</TableCellStyled>
+                                    <TableCellStyled>{row.patente}</TableCellStyled>
                                     <TableCellStyled align="center">{row.año}</TableCellStyled>
                                     <TableCellStyled align="center">
                                         <Tooltip title="Editar">
@@ -91,10 +93,10 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }
                                     </IconButton>
                                 </Tooltip> */}
                                         {/* <Tooltip title="Eliminar">
-                                    <IconButton>
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </Tooltip> */}
+                                            <IconButton>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </Tooltip> */}
                                     </TableCellStyled>
                                 </StyledTableRow>
                             ))}

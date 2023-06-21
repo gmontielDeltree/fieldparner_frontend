@@ -21,21 +21,41 @@ export enum TipoVehiculo {
     Pulverizadora = "Pulverizadora",
     Tractor = "Tractor",
     Camioneta = "Camioneta",
-    Tolva = "Tolva"
+    Tolva = "Tolva",
+    Otros = "Otros",
 }
 
 export enum TipoCombustible { Diesel = "Diesel", Nafta = "Nafta" }
 
+export interface Mantenimiento {
+    id: string;
+    fecha: string;
+    kilometros: number;
+    descripcion: string;
+    observacion: string | null;
+    proximo: string;
+};
+
+export interface RowMantenimiento extends Mantenimiento {
+    disabled: boolean;
+}
+
+export interface EspecificacionTecnica {
+    especificacion: string;
+    descripcion: string;
+}
+
 export interface Vehiculo {
     nro: string;
-    tipoVehiculo: TipoVehiculo;
+    tipoVehiculo: string;
     marca: string;
     modelo: string;
     año: string;
     patente: string;
     tara: number;
     neto: number;
-    tipoCombustible: TipoCombustible;
+    bruto: number;
+    tipoCombustible: string;
     capacidadCombustible: number;
     unidadMedida: string;
     conectividad?: string;
@@ -46,6 +66,9 @@ export interface Vehiculo {
     nroPoliza: string;
     seguroFechaInicio: string;
     seguroFechaVencimiento: string;
+    otroTipoVehiculo?: string;
+    mantenimientos: Mantenimiento[];
+    especificacionesTecnicas: RowData[];
 }
 
 export interface ColumnProps {
@@ -58,3 +81,8 @@ export enum Estado {
     Activo = 'Activo',
     Inactivo = 'Inactivo'
 };
+
+export interface RowData {
+    name: string;
+    description: string;
+}

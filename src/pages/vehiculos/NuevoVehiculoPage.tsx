@@ -1,27 +1,35 @@
-import React, { useCallback } from 'react';
-import { Box, Button, Divider, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { TipoCombustible, TipoVehiculo, Vehiculo } from '../../types';
+import { Mantenimiento, TipoCombustible, TipoVehiculo, Vehiculo } from '../../types';
 import { useAppDispatch, useForm } from '../../hooks';
 import uuid4 from 'uuid4';
 import { agregarNuevoVehiculo } from '../../redux/slices/vehiculo';
-import { FolderOpen as FolderOpenIcon, Security as SecurityIcon } from '@mui/icons-material';
-import FormatItalicIcon from '@mui/icons-material/FormatItalic';
-// import SecurityIcon from '@mui/icons-material/Security';
+import { DatosGenerales, Especificaciones, Mantenimientos } from '../../components/NuevoVehiculo';
 
-const tipoVehiculos: string[] = Object.keys(TipoVehiculo);
-const tipoCombustibles: string[] = Object.keys(TipoCombustible);
+// const tipoVehiculos: string[] = Object.keys(TipoVehiculo);
+// const tipoCombustibles: string[] = Object.keys(TipoCombustible);
 const listaAños: string[] = ["1999", "2000", "2010"];
+const dataMant: Mantenimiento[] = [
+    {
+        id: (new Date().getTime() - 100).toString(),
+        fecha: new Date().toLocaleDateString(),
+        kilometros: 900000,
+        descripcion: 'Aceite, Filtros, Pastillas de Freno',
+        observacion: 'Ajustar direcciones',
+        proximo: new Date().toLocaleDateString()
+    },
+];
 
 const initialState: Vehiculo = {
-    tipoVehiculo: TipoVehiculo.Camioneta,
+    tipoVehiculo: '',
     patente: '',
     marca: '',
     modelo: '',
     año: listaAños[0],
     tara: 0,
     neto: 0,
-    tipoCombustible: TipoCombustible.Diesel,
+    tipoCombustible: '',
     capacidadCombustible: 0,
     unidadMedida: '',
     conectividad: '',
@@ -33,34 +41,43 @@ const initialState: Vehiculo = {
     ultimoMantenimiento: '',
     seguroFechaInicio: '',
     seguroFechaVencimiento: '',
+    bruto: 0,
+    otroTipoVehiculo: '',
+    especificacionesTecnicas: [],
+    mantenimientos: dataMant,
 }
 
 
+const steps = ['Datos Generales', 'Especificaciones Tecnicas', 'Mantenimientos'];
+
 export const NuevoVehiculoPage: React.FC = () => {
+
     const dispatch = useAppDispatch();
-    const {
-        tipoVehiculo,
-        patente,
-        marca,
-        modelo,
-        año,
-        tara,
-        neto,
-        tipoCombustible,
-        capacidadCombustible,
-        nroPoliza,
-        seguro,
-        seguroFechaInicio,
-        seguroFechaVencimiento,
-        tipoCobertura,
-        unidadMedida,
-        conectividad,
-        propietario,
-        ultimoMantenimiento,
-        formulario,
-        handleInputChange,
-        handleSelectChange } = useForm(initialState);
+    const [activeStep, setActiveStep] = useState(0);
     const navigate = useNavigate();
+    const { formulario, setFormulario, handleInputChange, handleSelectChange } = useForm(initialState);
+
+    const getStepContent = useMemo(() => (step: number) => {
+        switch (step) {
+            case 0:
+                return (<DatosGenerales
+                    vehiculo={formulario}
+                    handleInputChange={handleInputChange}
+                    handleSelectChange={handleSelectChange} />);
+            case 1:
+                return (<Especificaciones
+                    vehiculo={formulario}
+                    setVehiculo={setFormulario}
+                    handleInputChange={handleInputChange}
+                    handleSelectChange={handleSelectChange} />);
+            case 2:
+                return (<Mantenimientos
+                    vehiculo={formulario}
+                    setVehiculo={setFormulario} />);
+            default:
+                throw new Error('Step no encontrado.');
+        }
+    }, [formulario, handleInputChange, handleSelectChange]);
 
     const onClickCancelar = useCallback(() => navigate('/overview/vehiculo'), []);
 
@@ -74,333 +91,82 @@ export const NuevoVehiculoPage: React.FC = () => {
         navigate('/overview/vehiculo');
     }, [formulario, dispatch]);
 
+    const handleNext = () => {
+        setActiveStep(activeStep + 1);
+    };
+
+    const handleBack = () => {
+        setActiveStep(activeStep - 1);
+    };
+
     return (
-        <>
-            <Box
-                component="div"
-                bgcolor="#ffff"
-                sx={{
-                    mt: 5,
-                    height: '95%',
-                    borderRadius: 2
-                }}>
-                <Box
-                    component="div"
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    sx={{ ml: { sm: 2 }, pt: 3 }}>
-                    <Typography component="h2" variant='h4' sx={{ ml: { sm: 2 } }} >
-                        Nuevo Vehiculo
-                    </Typography>
-                </Box>
-                <Divider variant='middle' />
-                <Grid
-                    container
-                    spacing={2}
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{ p: 2, mt: { sm: 2 } }}
-                >
-                    <Grid item xs={12} display="flex" alignItems="center">
-                        <FolderOpenIcon sx={{ mx: 1 }} />
-                        <Typography variant='h5'>
-                            Datos Generales
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <FormControl fullWidth>
-                            <InputLabel id="tipo-vehiculo">Tipo de Vehichulo</InputLabel>
-                            <Select
-                                labelId="tipo-vehiculo"
-                                name="tipoVehiculo"
-                                value={tipoVehiculo}
-                                label="Tipo de Vehiculo"
-                                onChange={handleSelectChange}
-                            >
-                                {
-                                    tipoVehiculos.map((value) =>
-                                        (<MenuItem key={value} value={value}>{value.toString()}</MenuItem>)
-                                    )
-                                }
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <TextField
-                            label="Marca"
-                            required
-                            variant="outlined"
-                            type='text'
-                            name="marca"
-                            value={marca}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }}
-                            fullWidth />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <TextField
-                            label="Modelo"
-                            required
-                            variant="outlined"
-                            type='text'
-                            name="modelo"
-                            value={modelo}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }}
-                            fullWidth />
-                    </Grid>
-                    <Grid item xs={12} sm={4} >
-                        <TextField
-                            label="Patente"
-                            required
-                            variant="outlined"
-                            type='text'
-                            name="patente"
-                            value={patente}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }}
-                            fullWidth />
-                    </Grid>
-                    <Grid item xs={12} sm={2}>
-                        <FormControl fullWidth>
-                            <InputLabel id="año-equipo">Año</InputLabel>
-                            <Select
-                                labelId="año-equipo"
-                                id="select-periodo"
-                                name="año"
-                                value={año}
-                                label="Año"
-                                onChange={handleSelectChange}
-                            >
-                                {
-                                    listaAños.map((value) =>
-                                        (<MenuItem key={value} value={value}>{value.toString()}</MenuItem>)
-                                    )
-                                }
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={12} sm={3} >
-                        <TextField
-                            label="Tara"
-                            variant="outlined"
-                            type='number'
-                            name="tara"
-                            value={tara}
-                            InputProps={{
-                                endAdornment: <InputAdornment position="end">kg</InputAdornment>
-                            }}
-                            onChange={handleInputChange}
-                            fullWidth />
-                    </Grid>
-                    <Grid item xs={12} sm={3} >
-                        <TextField
-                            label="Neto"
-                            variant="outlined"
-                            type='number'
-                            name="neto"
-                            value={neto}
-                            InputProps={{
-                                endAdornment: <InputAdornment position="end">kg</InputAdornment>
-                            }}
-                            onChange={handleInputChange}
-                            fullWidth />
-                    </Grid>
-                    {/* <Grid item xs={12}> <Divider variant='fullWidth' /> </Grid> */}
-                    <Grid item xs={12} display="flex" alignItems="center">
-                        <FolderOpenIcon sx={{ mx: 1 }} />
-                        <Typography variant='h5'>
-                            Caracteristicas
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <FormControl fullWidth>
-                            <InputLabel id="tipo-combustible">Tipo Combustible</InputLabel>
-                            <Select
-                                labelId="tipo-combustible"
-                                id="select-combustible"
-                                name="tipoCombustible"
-                                value={tipoCombustible}
-                                label="Tipo Combustible"
-                                onChange={handleSelectChange}
-                            >
-                                {
-                                    tipoCombustibles.map((value) =>
-                                        (<MenuItem key={value} value={value}>{value.toString()}</MenuItem>)
-                                    )
-                                }
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={12} sm={4} >
-                        <TextField
-                            label="Capacidad Combustible"
-                            variant="outlined"
-                            type='number'
-                            name="capacidadCombustible"
-                            value={capacidadCombustible}
-                            InputProps={{
-                                endAdornment: <InputAdornment position="end">L</InputAdornment>
-                            }}
-                            onChange={handleInputChange}
-                            fullWidth />
-                    </Grid>
-                    <Grid item xs={12} sm={4} >
-                        <TextField
-                            label="Unidad de Medida"
-                            variant="outlined"
-                            type='text'
-                            name="unidadMedida"
-                            value={unidadMedida}
-                            onChange={handleInputChange}
-                            fullWidth />
-                    </Grid>
-                    {/* <Grid item xs={12}> <Divider variant='fullWidth' /> </Grid> */}
-                    <Grid item xs={12} sm={4} >
-                        <TextField
-                            label="Conectividad"
-                            variant="outlined"
-                            type='text'
-                            name="conectividad"
-                            value={conectividad}
-                            onChange={handleInputChange}
-                            fullWidth />
-                    </Grid>
-                    <Grid item xs={12} sm={4} >
-                        <TextField
-                            label="Propietario"
-                            variant="outlined"
-                            type='text'
-                            name="propietario"
-                            value={propietario}
-                            onChange={handleInputChange} />
-                    </Grid>
-                    <Grid item xs={12} sm={4} >
-                        <TextField
-                            id='ultimoMantenimiento'
-                            variant="outlined"
-                            type='date'
-                            label="Ultimo mantenimiento"
-                            name="ultimoMantenimiento"
-                            value={ultimoMantenimiento}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }}
-                            fullWidth />
-                    </Grid>
-                    {/* <Grid item xs={12}> <Divider variant='fullWidth' /> </Grid> */}
-                    <Grid item xs={12} display="flex" alignItems="center">
-                        <SecurityIcon sx={{ mx: 1 }} />
-                        <Typography variant='h5'>
-                            Seguro
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={4} >
-                        <TextField
-                            label="Compañía de seguro"
-                            variant="outlined"
-                            type='text'
-                            name="seguro"
-                            value={seguro}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }} />
-                    </Grid>
-                    <Grid item xs={12} sm={4} >
-                        <TextField
-                            label="Tipo de Cobertura"
-                            variant="outlined"
-                            type='text'
-                            name="tipoCobertura"
-                            value={tipoCobertura}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }} />
-                    </Grid>
-                    <Grid item xs={12} sm={4} >
-                        <TextField
-                            label="Numero de Póliza"
-                            variant="outlined"
-                            type='text'
-                            name="nroPoliza"
-                            value={nroPoliza}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }} />
-                    </Grid>
-                    <Grid item xs={12} sm={6} >
-                        <TextField
-                            variant="outlined"
-                            type='date'
-                            label="Fecha de Inicio del Seguro"
-                            name="seguroFechaInicio"
-                            value={seguroFechaInicio}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }}
-                            fullWidth />
-                    </Grid>
-                    <Grid item xs={12} sm={6} >
-                        <TextField
-                            variant="outlined"
-                            type='date'
-                            label="Fecha Vencimiento del Seguro"
-                            name="seguroFechaVencimiento"
-                            value={seguroFechaVencimiento}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }}
-                            fullWidth />
-                    </Grid>
-                </Grid>
-                <Box >
+        <Container
+            maxWidth="lg"
+            sx={{
+                margin: 0,
+                ml: 2,
+                mb: 1,
+            }}>
+            <Paper variant="outlined" sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 2 } }}>
+                <Typography
+                    component="h2"
+                    align='center'
+                    variant='h4'
+                    sx={{ ml: { sm: 2 } }} >
+                    Vehiculo
+                </Typography>
+                <Stepper activeStep={activeStep} sx={{ pt: 5, pb: 5 }}>
+                    {steps.map((label) => (
+                        <Step key={label}>
+                            <StepLabel>{label}</StepLabel>
+                        </Step>
+                    ))}
+                </Stepper>
+                <>
+                    {getStepContent(activeStep)}
                     <Grid
                         container
                         spacing={2}
                         direction="row"
                         alignItems="center"
-                        justifyContent="center"
-                        sx={{ mt: { sm: 3 } }}>
-                        <Grid item xs={12} sm={5}>
+                        justifyContent="space-between"
+                        sx={{ mt: { sm: 5 } }}>
+                        <Grid item xs={12} sm={2}>
                             <Button
                                 variant="contained"
                                 color='inherit'
-                                onClick={onClickCancelar}
+                                onClick={(activeStep !== 0) ? handleBack : onClickCancelar}
                                 sx={{ ml: 1 }}
                                 fullWidth
                             >
-                                Cancelar
+                                {(activeStep !== 0) ? 'Volver' : 'Cancelar'}
                             </Button>
                         </Grid>
-                        <Grid item xs={12} sm={5}>
+                        <Grid item xs={12} sm={3}>
                             <Button
                                 type='submit'
                                 variant="contained"
                                 color='primary'
-                                onClick={onClickAgregar}
-                                sx={{ ml: 1 }}
+                                onClick={handleNext}
                                 fullWidth
                             >
-                                Agregar
+                                {activeStep === steps.length - 1 ? 'Agregar' : 'Siguiente'}
+                            </Button>
+                        </Grid>
+                        <Grid item xs={12} sm={2}>
+                            <Button
+                                type='submit'
+                                variant="contained"
+                                color='success'
+                                onClick={handleNext}
+                                fullWidth
+                            >
+                                Guardar
                             </Button>
                         </Grid>
                     </Grid>
-                </Box>
-            </Box>
-        </>
+                </>
+            </Paper>
+        </Container>
     )
 }

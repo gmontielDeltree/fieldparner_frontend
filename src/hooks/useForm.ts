@@ -23,10 +23,16 @@ export const useForm = <T extends Object>(initialState: T) => {
         });
     };
 
+    const reset = () => {
+        setFormulario(initialState);
+    }
+
     return {
         formulario,
         handleInputChange,
         handleSelectChange,
+        setFormulario,
+        reset,
         ...formulario
     }
 };

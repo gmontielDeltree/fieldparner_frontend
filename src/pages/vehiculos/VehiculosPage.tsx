@@ -17,10 +17,10 @@ import { cargarVehiculos, getVehiculos } from '../../redux/slices/vehiculo';
 
 
 const columns: ColumnProps[] = [
-    { text: 'Patente', align: 'left' },
     { text: 'Tipo Vehiculo', align: 'center' },
     { text: 'Marca', align: 'center' },
     { text: 'Modelo', align: 'center' },
+    { text: 'Patente', align: 'left' },
     { text: 'Año', align: 'center' }];
 const tipoVehiculos: string[] = Object.keys(TipoVehiculo);
 const listaAños: string[] = ["1999", "2000", "2010"];
@@ -43,42 +43,24 @@ export const VehiculosPage: React.FC = () => {
         patente,
         marca,
         modelo,
-        año,
+        // año,
         handleInputChange,
-        handleSelectChange } = useForm(filtros);
-    const listaTipoVehiculos = useMemo(() => ["Todos", ...tipoVehiculos], []);
+        // handleSelectChange
+    } = useForm(filtros);
+    // const listaTipoVehiculos = useMemo(() => ["Todos", ...tipoVehiculos], []);
 
-    const filteredVehiculos = vehiculos.filter(
-        item =>
-            (item.patente && item.patente.toLowerCase().includes(patente.toLowerCase())) ||
-            (marca && item.marca.toLowerCase().includes(marca.toLowerCase())) ||
-            (modelo && item.modelo.toLowerCase().includes(modelo.toLowerCase())) ||
-            ((tipoVehiculo.toLowerCase() !== 'todos') && item.tipoVehiculo.toLowerCase().includes(tipoVehiculo.toLowerCase()))
-    );
-    console.log(filteredVehiculos);
 
-    // const onClickBuscar = (): void => {
-    //     let filtered = [...vehiculos];
-    //     if (patente !== '') {
-    //         filtered = filtered.filter(
-    //             item =>
-    //                 (item.patente && item.patente.toLowerCase().includes(patente.toLowerCase())),
-    //         );
-    //     }
-    //     if (marca !== '') {
-    //         filtered = filtered.filter(
-    //             item =>
-    //                 (item.marca && item.marca.toLowerCase().includes(marca.toLowerCase())),
-    //         );
-    //     }
-    //     if (modelo !== '') {
-    //         filtered = filtered.filter(
-    //             item =>
-    //                 (item.modelo && item.modelo.toLowerCase().includes(modelo.toLowerCase())),
-    //         );
-    //     }
-    //     dispatch(cargarVehiculos(filtered));
-    // }
+
+    const onClickBuscar = (): void => {
+        const filteredVehiculos = vehiculos.filter(
+            item =>
+                (item.patente && item.patente.toLowerCase().includes(patente.toLowerCase())) ||
+                (marca && item.marca.toLowerCase().includes(marca.toLowerCase())) ||
+                (modelo && item.modelo.toLowerCase().includes(modelo.toLowerCase())) ||
+                ((tipoVehiculo.toLowerCase() !== 'todos') && item.tipoVehiculo.toLowerCase().includes(tipoVehiculo.toLowerCase()))
+        );
+        dispatch(cargarVehiculos(filteredVehiculos));
+    }
 
     const onClickNuevoVehiculo = () => navigate('/overview/vehiculo/nuevo');
 
@@ -101,34 +83,119 @@ export const VehiculosPage: React.FC = () => {
                     Vehiculos
                 </Typography>
             </Box>
-            <Box
-                component="div"
-                bgcolor="#ffff"
-                sx={{
-                    borderRadius: 2
-                }}>
+            <Box component="div" sx={{ mt: 7 }}>
+                {/* <Box
+                    component="div"
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ p: { sm: 2 }, my: 1 }} >
+                    <Grid
+                        container
+                        spacing={2}
+                        justifyContent="flex-end"
+                        alignItems="center"
+                    >
+                        <Grid item >
+                            <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<AddIcon />}
+                                onClick={onClickNuevoVehiculo}
+                            >
+                                Nuevo Vehiculo
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            <Fab color="inherit" size='small' aria-label="edit">
+                                <DownloadIcon />
+                            </Fab>
+                        </Grid>
+                    </Grid>
+                </Box> */}
                 <Grid
                     container
-                    spacing={2}
+                    spacing={0}
                     direction="row"
                     alignItems="center"
                     justifyContent="space-between"
                     sx={{ p: 2, mt: { sm: 2 } }}
                 >
-                    <Grid item xs={12} sm={6} >
-                        <TextField
-                            label="Patente"
-                            variant="outlined"
-                            type='text'
-                            name="patente"
-                            value={patente}
-                            onChange={handleInputChange}
-                            inputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }}
-                            fullWidth />
+                    <Grid item xs={6} sm={2}>
+                        <Button
+                            variant="contained"
+                            color="success"
+                            startIcon={<AddIcon />}
+                            onClick={onClickNuevoVehiculo}
+                        >
+                            Nuevo
+                        </Button>
                     </Grid>
-                    <Grid item xs={12} sm={6}>
+                    <Grid container xs={12} sm={10} justifyContent="flex-end" >
+                        <Grid item xs={8} sm={7} >
+                            <TextField
+                                // label="Filtrar por"
+                                variant="outlined"
+                                type='text'
+                                size='small'
+                                placeholder='Vehiculo/Marca/Modelo'
+                                name="patente"
+                                value={patente}
+                                onChange={handleInputChange}
+                                InputProps={{
+                                    startAdornment: <InputAdornment position="start" />,
+                                }}
+                                fullWidth />
+                        </Grid>
+                        <Grid item xs={4} sm={3}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                size="medium"
+                                fullWidth
+                                sx={{
+                                    height: '98%',
+                                    margin: 'auto',
+                                    borderTopLeftRadius: 0,
+                                    borderBottomLeftRadius: 0
+                                }}
+                                onClick={() => onClickBuscar()}
+                                startIcon={<SearchIcon />}>
+                                Buscar
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Grid>
+                {/* <Box
+                    component="div"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="flex-end"
+                    sx={{ p: { sm: 2 } }}>
+                    <Typography display="inline" >Pages: {5}</Typography>
+                    <Pagination
+                        className='d-inline-block'
+                        count={5}
+                        page={1}
+                        onChange={() => console.log('onChangePagination')} />
+                </Box> */}
+
+                <Box
+                    component="div"
+                    sx={{ p: 1 }}>
+                    <DataTable
+                        key="datatable-equipo"
+                        isLoading={isLoading}
+                        columns={columns}
+                        data={vehiculos} />
+                </Box>
+            </Box>
+        </>
+    )
+}
+
+/*
+  {/* <Grid item xs={12} sm={6}>
                         <FormControl fullWidth>
                             <InputLabel id="tipo-vehiculo">Tipo de Vehichulo</InputLabel>
                             <Select
@@ -194,70 +261,4 @@ export const VehiculosPage: React.FC = () => {
                                 }
                             </Select>
                         </FormControl>
-                    </Grid>
-                </Grid>
-                <Box
-                    component="div"
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ p: { sm: 2 }, my: 1 }} >
-                    <Grid
-                        container
-                        spacing={2}
-                        justifyContent="flex-end"
-                        alignItems="center"
-                    >
-                        {/* <Grid item>
-                            <Button
-                                variant="contained"
-                                color="inherit"
-                                onClick={() => onClickBuscar()}
-                                startIcon={<SearchIcon />}>
-                                Buscar
-                            </Button>
-                        </Grid> */}
-                        <Grid item >
-                            <Button
-                                variant="contained"
-                                color="success"
-                                startIcon={<AddIcon />}
-                                onClick={onClickNuevoVehiculo}
-                            >
-                                Nuevo Vehiculo
-                            </Button>
-                        </Grid>
-                        {/* <Grid item>
-                            <Fab color="inherit" size='small' aria-label="edit">
-                                <DownloadIcon />
-                            </Fab>
-                        </Grid> */}
-                    </Grid>
-                </Box>
-                {/* <Box
-                    component="div"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="flex-end"
-                    sx={{ p: { sm: 2 } }}>
-                    <Typography display="inline" >Pages: {5}</Typography>
-                    <Pagination
-                        className='d-inline-block'
-                        count={5}
-                        page={1}
-                        onChange={() => console.log('onChangePagination')} />
-                </Box> */}
-
-                <Box
-                    component="div"
-                    sx={{ p: 1 }}>
-                    <DataTable
-                        key="datatable-equipo"
-                        isLoading={isLoading}
-                        columns={columns}
-                        data={filteredVehiculos} />
-                </Box>
-            </Box>
-        </>
-    )
-}
+                    </Grid> */
