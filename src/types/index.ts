@@ -46,7 +46,7 @@ export interface EspecificacionTecnica {
 }
 
 export interface Vehiculo {
-    nro: string;
+    id: string;
     tipoVehiculo: string;
     marca: string;
     modelo: string;

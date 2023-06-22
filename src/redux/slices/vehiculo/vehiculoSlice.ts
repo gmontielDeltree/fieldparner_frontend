@@ -29,7 +29,7 @@ export const vehiculoSlice = createSlice({
         },
         actualizarVehiculo: (state, action: PayloadAction<Vehiculo>) => {
             state.vehiculos = state.vehiculos.map(
-                v => (v.nro === action.payload.nro) ? action.payload : v
+                v => (v.id === action.payload.id) ? action.payload : v
             )
         }
     },

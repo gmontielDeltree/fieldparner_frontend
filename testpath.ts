@@ -1,0 +1,1 @@
+// import second from './src/types/index.ts'

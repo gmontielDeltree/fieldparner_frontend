@@ -19,7 +19,7 @@ const initialState: Vehiculo = {
     capacidadCombustible: 0,
     unidadMedida: '',
     conectividad: '',
-    nro: '',
+    id: '',
     nroPoliza: '',
     seguro: '',
     tipoCobertura: '',

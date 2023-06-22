@@ -20,9 +20,11 @@
     "useDefineForClassFields": false,
     "allowSyntheticDefaultImports": true,
     // "lib": ["WebWorker"], // Para poder usar ServiceWorker
-    // "paths": {
-    //   "plotly.js": ["../node_modules/plotly.js/lib/core.js"]
-    // },
+    "paths": {
+      // "plotly.js": ["../node_modules/plotly.js/lib/core.js"]
+      "@types":["./src/types/index.ts"],
+      // "@services": ["./src/services/index.ts"],
+    },
     "plugins": [
       {
         "name": "typescript-plugin-css-modules"

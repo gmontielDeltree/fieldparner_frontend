@@ -17,15 +17,15 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
         color: theme.palette.common.white,
     },
     [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
         padding: '5px',
+        fontSize: 14,
     },
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-        backgroundColor: theme.palette.action.hover,
-    },
+    // '&:nth-of-type(odd)': {
+    //     backgroundColor: theme.palette.action.hover,
+    // },
     // hide last border
     '&:last-child td, &:last-child th': {
         border: 0,
@@ -33,14 +33,14 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 
-export interface BasicTableProps {
+export interface EspecificationTableProps {
     columns: string[];
     rows: RowData[];
     handleAddRow: (value: RowData) => void;
     deleteRow: (row: RowData) => void;
 }
 
-const BasicTable: React.FC<BasicTableProps> = ({
+const EspecificationTable: React.FC<EspecificationTableProps> = ({
     columns,
     rows,
     deleteRow,
@@ -52,13 +52,16 @@ const BasicTable: React.FC<BasicTableProps> = ({
         reset,
         handleInputChange } = useForm<RowData>({ name: '', description: '' });
 
-    const handleAddEspecificacion = () => {
+    const handleAddEspecificacion = (): void => {
+        if (!name) return;
         handleAddRow(formulario);
         reset();
     }
 
     return (
-        <TableContainer component={Paper}>
+        <TableContainer
+            key="table-especificaciones"
+            component={Paper}>
             <Table sx={{ minWidth: 400 }} aria-label="customized table">
                 <TableHead>
                     <TableRow>
@@ -67,7 +70,7 @@ const BasicTable: React.FC<BasicTableProps> = ({
                                 <StyledTableCell key={column}>{column}</StyledTableCell>
                             ))
                         }
-                        <StyledTableCell key="actions">
+                        <StyledTableCell key="actions" align='center'>
                             <Fab
                                 color="success"
                                 aria-label="add"
@@ -81,25 +84,27 @@ const BasicTable: React.FC<BasicTableProps> = ({
                 </TableHead>
                 <TableBody>
                     <StyledTableRow key="new-especificacion">
-                        <StyledTableCell sx={{ minWidth: 200, maxWidth: 250 }}>
+                        <StyledTableCell sx={{ minWidth: 150, maxWidth: 200 }}>
                             <TextField
                                 variant="outlined"
+                                size='small'
                                 type='text'
                                 name="name"
                                 value={name}
                                 onChange={handleInputChange}
                                 fullWidth />
                         </StyledTableCell>
-                        <StyledTableCell sx={{ p: '5px' }}>
+                        <StyledTableCell sx={{ minWidth: 350, maxWidth: 400 }}>
                             <TextField
                                 variant="outlined"
+                                size='small'
                                 type='text'
                                 name="description"
                                 value={description}
                                 onChange={handleInputChange}
                                 fullWidth />
                         </StyledTableCell>
-                        <StyledTableCell align='right'>
+                        <StyledTableCell align='center' sx={{ minWidth: 100, maxWidth: 110 }}>
                             <Tooltip title="Reset">
                                 <IconButton
                                     onClick={() => reset()}
@@ -111,13 +116,13 @@ const BasicTable: React.FC<BasicTableProps> = ({
                     </StyledTableRow>
                     {rows.map((row) => (
                         <StyledTableRow key={row.name}>
-                            <TableCell key={row.name} component="th" scope="row" sx={{ p: '5px' }}>
+                            <TableCell align='center' sx={{ p: '5px', minWidth: 200, maxWidth: 250 }}>
                                 {row.name}
                             </TableCell>
-                            <TableCell key={row.description} component="th" scope="row" sx={{ p: '5px' }}>
+                            <TableCell sx={{ p: '5px', minWidth: 350, maxWidth: 450 }}>
                                 {row.description}
                             </TableCell>
-                            <TableCell align='right'>
+                            <TableCell align='center' sx={{ p: '5px' }}>
                                 <Tooltip title="Eliminar">
                                     <IconButton
                                         onClick={() => deleteRow(row)}
@@ -134,4 +139,4 @@ const BasicTable: React.FC<BasicTableProps> = ({
     );
 }
 
-export default BasicTable;
+export default EspecificationTable;

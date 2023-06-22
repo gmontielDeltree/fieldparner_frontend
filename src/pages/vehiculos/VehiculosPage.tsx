@@ -2,8 +2,8 @@
 import React, { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, Loading } from '../../components';
-import { ColumnProps, TipoVehiculo } from '../../types';
-import { Box, Button, Fab, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { ColumnProps, Vehiculo } from '@types';
+import { Box, Button, Grid, InputAdornment, TextField, Typography } from '@mui/material';
 import {
     Add as AddIcon,
     Search as SearchIcon,
@@ -14,23 +14,12 @@ import { useForm, useAppDispatch, useAppSelector } from '../../hooks';
 import { cargarVehiculos, getVehiculos } from '../../redux/slices/vehiculo';
 
 
-
-
 const columns: ColumnProps[] = [
     { text: 'Tipo Vehiculo', align: 'center' },
     { text: 'Marca', align: 'center' },
     { text: 'Modelo', align: 'center' },
     { text: 'Patente', align: 'left' },
     { text: 'Año', align: 'center' }];
-const tipoVehiculos: string[] = Object.keys(TipoVehiculo);
-const listaAños: string[] = ["1999", "2000", "2010"];
-const filtros = {
-    tipoVehiculo: 'Todos',
-    patente: '',
-    marca: '',
-    modelo: '',
-    año: listaAños[0],
-}
 
 export const VehiculosPage: React.FC = () => {
 
@@ -39,25 +28,17 @@ export const VehiculosPage: React.FC = () => {
     const { isLoading } = useAppSelector(state => state.ui);
     const { vehiculos } = useAppSelector(state => state.vehiculo);
     const {
-        tipoVehiculo,
-        patente,
-        marca,
-        modelo,
-        // año,
+        filterText,
         handleInputChange,
-        // handleSelectChange
-    } = useForm(filtros);
-    // const listaTipoVehiculos = useMemo(() => ["Todos", ...tipoVehiculos], []);
-
-
+    } = useForm({ filterText: '' });
 
     const onClickBuscar = (): void => {
         const filteredVehiculos = vehiculos.filter(
-            item =>
-                (item.patente && item.patente.toLowerCase().includes(patente.toLowerCase())) ||
-                (marca && item.marca.toLowerCase().includes(marca.toLowerCase())) ||
-                (modelo && item.modelo.toLowerCase().includes(modelo.toLowerCase())) ||
-                ((tipoVehiculo.toLowerCase() !== 'todos') && item.tipoVehiculo.toLowerCase().includes(tipoVehiculo.toLowerCase()))
+            ({ tipoVehiculo, marca, modelo, patente }) =>
+                (patente && patente.toLowerCase().includes(filterText.toLowerCase())) ||
+                (marca && marca.toLowerCase().includes(filterText.toLowerCase())) ||
+                (modelo && modelo.toLowerCase().includes(filterText.toLowerCase())) ||
+                (tipoVehiculo && tipoVehiculo.toLowerCase().includes(filterText.toLowerCase()))
         );
         dispatch(cargarVehiculos(filteredVehiculos));
     }
@@ -134,13 +115,13 @@ export const VehiculosPage: React.FC = () => {
                     <Grid container xs={12} sm={10} justifyContent="flex-end" >
                         <Grid item xs={8} sm={7} >
                             <TextField
-                                // label="Filtrar por"
                                 variant="outlined"
                                 type='text'
                                 size='small'
                                 placeholder='Vehiculo/Marca/Modelo'
-                                name="patente"
-                                value={patente}
+                                autoComplete='off'
+                                name="filterText"
+                                value={filterText}
                                 onChange={handleInputChange}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start" />,
@@ -193,72 +174,3 @@ export const VehiculosPage: React.FC = () => {
         </>
     )
 }
-
-/*
-  {/* <Grid item xs={12} sm={6}>
-                        <FormControl fullWidth>
-                            <InputLabel id="tipo-vehiculo">Tipo de Vehichulo</InputLabel>
-                            <Select
-                                labelId="tipo-vehiculo"
-                                id="select-estado"
-                                name="tipoVehiculo"
-                                value={tipoVehiculo}
-                                label="Tipo de Vehiculo"
-                                onChange={handleSelectChange}
-                                inputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                            >
-                                {
-                                    listaTipoVehiculos.map((value) =>
-                                        (<MenuItem key={value} value={value}>{value.toString()}</MenuItem>)
-                                    )
-                                }
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <TextField
-                            label="Marca"
-                            variant="outlined"
-                            type='text'
-                            name="marca"
-                            value={marca}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }}
-                            fullWidth />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <TextField
-                            label="Modelo"
-                            variant="outlined"
-                            type='text'
-                            name="modelo"
-                            value={modelo}
-                            onChange={handleInputChange}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" />,
-                            }}
-                            fullWidth />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <FormControl fullWidth>
-                            <InputLabel id="año-equipo">Año</InputLabel>
-                            <Select
-                                labelId="año-equipo"
-                                id="select-periodo"
-                                name="año"
-                                value={año}
-                                label="Año"
-                                onChange={handleSelectChange}
-                            >
-                                {
-                                    listaAños.map((value) =>
-                                        (<MenuItem key={value} value={value}>{value.toString()}</MenuItem>)
-                                    )
-                                }
-                            </Select>
-                        </FormControl>
-                    </Grid> */

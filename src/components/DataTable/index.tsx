@@ -16,11 +16,12 @@ import {
     tableCellClasses
 } from '@mui/material';
 import {
-    ContentCopy as ContentCopyIcon,
-    Delete as DeleteIcon,
     Edit as EditIcon
 } from '@mui/icons-material';
 import { ColumnProps, Vehiculo } from '../../types';
+import { useAppDispatch } from '../../hooks';
+import { setVehiculoActivo } from '../../redux/slices/vehiculo';
+import { useNavigate } from 'react-router-dom';
 
 
 const TableCellStyled = styled(TableCell)(() => ({
@@ -51,6 +52,15 @@ export interface DataTableProps {
 }
 
 export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }) => {
+
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+
+    const onClickEditarVehiculo = (item: Vehiculo): void => {
+        dispatch(setVehiculoActivo(item));
+        navigate(`/overview/vehiculo/${item.id}`);
+    }
+
     return (
         <TableContainer component={Paper}>
             {
@@ -75,7 +85,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }
                         </TableHead>
                         <TableBody>
                             {data.map((row) => (
-                                <StyledTableRow key={row.nro} hover >
+                                <StyledTableRow key={row.id} hover >
                                     <TableCellStyled align="center">{row.tipoVehiculo}</TableCellStyled>
                                     <TableCellStyled align="center">{row.marca} </TableCellStyled>
                                     <TableCellStyled align="center">{row.modelo}</TableCellStyled>
@@ -83,7 +93,9 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }
                                     <TableCellStyled align="center">{row.año}</TableCellStyled>
                                     <TableCellStyled align="center">
                                         <Tooltip title="Editar">
-                                            <IconButton>
+                                            <IconButton
+                                                aria-label='Editar'
+                                                onClick={() => onClickEditarVehiculo(row)} >
                                                 <EditIcon />
                                             </IconButton>
                                         </Tooltip>

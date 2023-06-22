@@ -1,6 +1,6 @@
 import { agregarNuevoVehiculo, cargarVehiculos } from ".";
 import { getVehiculoService } from "../../../services";
-import { Vehiculo } from "../../../types";
+import { Vehiculo } from "@types";
 import { AppDispatch, RootState } from "../../store";
 import { uiFinishLoading, uiStartLoading } from "../ui";
 

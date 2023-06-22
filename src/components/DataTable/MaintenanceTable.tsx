@@ -9,8 +9,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { Fab, Grid, IconButton, InputAdornment, TextField, Tooltip } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Refresh as RefreshIcon } from '@mui/icons-material';
-import { Mantenimiento, RowData } from '../../types';
-import { ChangeEvent } from 'react';
+import { Mantenimiento, RowData } from '@types';
 import { useForm } from '../../hooks';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({

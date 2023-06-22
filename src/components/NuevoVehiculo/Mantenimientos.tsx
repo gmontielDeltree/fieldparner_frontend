@@ -28,14 +28,9 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
             ...prevState,
             mantenimientos: [maintenance, ...prevState.mantenimientos]
         }))
-        // setMantenimientos(prevState =>
-        //     [maintenance, ...prevState]);
     };
 
     const handleDeleteMaintenance = (id: string) => {
-        // setMantenimientos(mantenimientos.filter(
-        //     x => x.id !== id
-        // ));
         setVehiculo(prevState => ({
             ...prevState,
             mantenimientos: prevState.mantenimientos.filter(

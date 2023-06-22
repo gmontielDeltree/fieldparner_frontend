@@ -1,14 +1,13 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Mantenimiento, TipoCombustible, TipoVehiculo, Vehiculo } from '../../types';
-import { useAppDispatch, useForm } from '../../hooks';
+import { Mantenimiento, RowData, Vehiculo } from '@types';
+import { useAppDispatch, useAppSelector, useForm } from '../../hooks';
 import uuid4 from 'uuid4';
-import { agregarNuevoVehiculo } from '../../redux/slices/vehiculo';
+import { actualizarVehiculo, agregarNuevoVehiculo } from '../../redux/slices/vehiculo';
 import { DatosGenerales, Especificaciones, Mantenimientos } from '../../components/NuevoVehiculo';
 
-// const tipoVehiculos: string[] = Object.keys(TipoVehiculo);
-// const tipoCombustibles: string[] = Object.keys(TipoCombustible);
+
 const listaAños: string[] = ["1999", "2000", "2010"];
 const dataMant: Mantenimiento[] = [
     {
@@ -20,6 +19,7 @@ const dataMant: Mantenimiento[] = [
         proximo: new Date().toLocaleDateString()
     },
 ];
+const dataEspecificaciones: RowData[] = [{ name: 'Accesorios', description: 'Kit de Seguridad y Llantas' }];
 
 const initialState: Vehiculo = {
     tipoVehiculo: '',
@@ -33,7 +33,7 @@ const initialState: Vehiculo = {
     capacidadCombustible: 0,
     unidadMedida: '',
     conectividad: '',
-    nro: '',
+    id: '',
     nroPoliza: '',
     seguro: '',
     tipoCobertura: '',
@@ -43,7 +43,7 @@ const initialState: Vehiculo = {
     seguroFechaVencimiento: '',
     bruto: 0,
     otroTipoVehiculo: '',
-    especificacionesTecnicas: [],
+    especificacionesTecnicas: dataEspecificaciones,
     mantenimientos: dataMant,
 }
 
@@ -53,8 +53,9 @@ const steps = ['Datos Generales', 'Especificaciones Tecnicas', 'Mantenimientos']
 export const NuevoVehiculoPage: React.FC = () => {
 
     const dispatch = useAppDispatch();
-    const [activeStep, setActiveStep] = useState(0);
     const navigate = useNavigate();
+    const { vehiculoActivo } = useAppSelector(state => state.vehiculo);
+    const [activeStep, setActiveStep] = useState(0);
     const { formulario, setFormulario, handleInputChange, handleSelectChange } = useForm(initialState);
 
     const getStepContent = useMemo(() => (step: number) => {
@@ -77,17 +78,20 @@ export const NuevoVehiculoPage: React.FC = () => {
             default:
                 throw new Error('Step no encontrado.');
         }
-    }, [formulario, handleInputChange, handleSelectChange]);
+    }, [formulario, setFormulario, handleInputChange, handleSelectChange]);
 
     const onClickCancelar = useCallback(() => navigate('/overview/vehiculo'), []);
 
-    const onClickAgregar = useCallback((e: any) => {
+    const onClickGuardarVehiculo = useCallback((e: any) => {
         e.preventDefault();
         const nuevoVehiculo = {
             ...formulario,
-            nro: uuid4()
+            id: uuid4()
         };
-        dispatch(agregarNuevoVehiculo(nuevoVehiculo));
+        
+        if (vehiculoActivo) dispatch(actualizarVehiculo(formulario));
+        else dispatch(agregarNuevoVehiculo(nuevoVehiculo));
+
         navigate('/overview/vehiculo');
     }, [formulario, dispatch]);
 
@@ -98,6 +102,13 @@ export const NuevoVehiculoPage: React.FC = () => {
     const handleBack = () => {
         setActiveStep(activeStep - 1);
     };
+
+    useEffect(() => {
+        if (vehiculoActivo)
+            setFormulario(vehiculoActivo);
+        else
+            setFormulario(initialState);
+    }, [vehiculoActivo, setFormulario]);
 
     return (
         <Container
@@ -113,7 +124,7 @@ export const NuevoVehiculoPage: React.FC = () => {
                     align='center'
                     variant='h4'
                     sx={{ ml: { sm: 2 } }} >
-                    Vehiculo
+                    {!(vehiculoActivo) ? 'Alta Vehiculo' : 'Editar Vehiculo'}
                 </Typography>
                 <Stepper activeStep={activeStep} sx={{ pt: 5, pb: 5 }}>
                     {steps.map((label) => (
@@ -143,22 +154,26 @@ export const NuevoVehiculoPage: React.FC = () => {
                             </Button>
                         </Grid>
                         <Grid item xs={12} sm={3}>
-                            <Button
-                                type='submit'
-                                variant="contained"
-                                color='primary'
-                                onClick={handleNext}
-                                fullWidth
-                            >
-                                {activeStep === steps.length - 1 ? 'Agregar' : 'Siguiente'}
-                            </Button>
+                            {
+                                !(activeStep === steps.length - 1) && (
+                                    <Button
+                                        type='button'
+                                        variant="contained"
+                                        color='primary'
+                                        onClick={handleNext}
+                                        fullWidth
+                                    >
+                                        Siguiente
+                                    </Button>
+                                )
+                            }
                         </Grid>
                         <Grid item xs={12} sm={2}>
                             <Button
                                 type='submit'
                                 variant="contained"
                                 color='success'
-                                onClick={handleNext}
+                                onClick={onClickGuardarVehiculo}
                                 fullWidth
                             >
                                 Guardar

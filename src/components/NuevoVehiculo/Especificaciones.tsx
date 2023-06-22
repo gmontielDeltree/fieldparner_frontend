@@ -1,10 +1,8 @@
 import React, { ChangeEvent, useState } from 'react';
 import { Box, Button, Fab, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { RowData, TipoCombustible, TipoVehiculo, Vehiculo } from '../../types';
-import { useForm } from '../../hooks';
 import { Add as AddIcon, FolderOpen as FolderOpenIcon } from '@mui/icons-material';
-import BasicTable from '../DataTable/BasicTable';
-// import SecurityIcon from '@mui/icons-material/Security';
+import EspecificationTable from '../DataTable/EspecificationTable';
 
 const tipoCombustibles: string[] = Object.keys(TipoCombustible);
 
@@ -21,13 +19,13 @@ export interface EspecificacionesProps {
 export const Especificaciones: React.FC<EspecificacionesProps> = ({
     vehiculo,
     handleInputChange,
-    handleSelectChange
+    handleSelectChange,
+    setVehiculo
 }) => {
 
     // const [especificaciones, setEspecificaciones] = useState<RowData[]>([
     //     { name: 'Servicio', description: 'Cambio de aceite cada 10.000km' }
     // ]);
-
 
     const {
         tipoCombustible,
@@ -40,16 +38,20 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
         especificacionesTecnicas } = vehiculo;
 
     const handleAgregarEspecificacion = (row: RowData) => {
-        // setEspecificaciones(prevState =>
-        //     [...prevState, { name: especificacion, description: descripcion }]);
-        // setFormulario(prevState =>
-        //     ({ ...prevState, especificacion: '', descripcion: '' }));
+        setVehiculo(prevState => ({
+            ...prevState,
+            especificacionesTecnicas: [row, ...prevState.especificacionesTecnicas]
+        }));
+
     };
 
     const handleEliminarEspecificacion = (row: RowData) => {
-        // setEspecificaciones(especificaciones.filter(
-        //     x => x.name !== row.name
-        // ));
+        setVehiculo(prevState => ({
+            ...prevState,
+            especificacionesTecnicas: prevState.especificacionesTecnicas.filter(
+                x => x.name !== row.name
+            )
+        }));
     }
 
     return (
@@ -147,16 +149,6 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
                         onChange={handleInputChange}
                         fullWidth />
                 </Grid>
-                {/* <Grid item xs={12} sm={6} >
-                    <TextField
-                        label="Descripcion"
-                        variant="outlined"
-                        type='text'
-                        name="descripcion"
-                        value={descripcion}
-                        onChange={handleInputChange}
-                        fullWidth />
-                </Grid> */}
                 <Grid item xs={12} sm={6} >
                     <TextField
                         label="Conectividad"
@@ -167,12 +159,6 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
                         onChange={handleInputChange}
                         fullWidth />
                 </Grid>
-                {/* <Grid item xs={12} sm={3} >
-                   
-                </Grid>
-                <Grid item xs={12} sm={8} >
-                  
-                </Grid> */}
                 {/* <Grid item xs={12} sm={1} justifyContent="flex-start">
                     <Fab
                         color="success"
@@ -185,7 +171,7 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
                 </Grid> */}
             </Grid>
             <Box component="div" sx={{ mt: 3 }}>
-                <BasicTable
+                <EspecificationTable
                     key="tabla-especificaciones-tecnicas"
                     columns={columns}
                     rows={especificacionesTecnicas}
