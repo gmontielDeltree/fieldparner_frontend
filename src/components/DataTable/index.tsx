@@ -58,7 +58,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }
 
     const onClickEditarVehiculo = (item: Vehiculo): void => {
         dispatch(setVehiculoActivo(item));
-        navigate(`/overview/vehiculo/${item.id}`);
+        navigate(`/overview/vehiculo/${item._id}`);
     }
 
     return (
@@ -85,7 +85,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }
                         </TableHead>
                         <TableBody>
                             {data.map((row) => (
-                                <StyledTableRow key={row.id} hover >
+                                <StyledTableRow key={row._id} hover >
                                     <TableCellStyled align="center">{row.tipoVehiculo}</TableCellStyled>
                                     <TableCellStyled align="center">{row.marca} </TableCellStyled>
                                     <TableCellStyled align="center">{row.modelo}</TableCellStyled>

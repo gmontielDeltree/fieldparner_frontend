@@ -1,4 +1,3 @@
-
 export interface NavBarProps {
     drawerWidth: number;
     open: boolean;
@@ -46,7 +45,7 @@ export interface EspecificacionTecnica {
 }
 
 export interface Vehiculo {
-    id: string;
+    _id: string;
     tipoVehiculo: string;
     marca: string;
     modelo: string;
@@ -86,3 +85,9 @@ export interface RowData {
     name: string;
     description: string;
 }
+
+// export interface Document<T> {
+//     _id: string;
+//     title: string;
+//     content: T;
+// }

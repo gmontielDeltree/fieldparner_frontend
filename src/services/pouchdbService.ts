@@ -1,16 +1,17 @@
 import PouchDB from 'pouchdb';
+import { Vehiculo } from '../types';
 
-const db = new PouchDB('mydb');
+const db: PouchDB.Database = new PouchDB('test_pouchdb');
 
 // Función para crear un nuevo documento
-export const createDocument = async (title: string, content: string) => {
+export const createDocument = async (content: Vehiculo) => {
     try {
-        const doc = {
-            _id: new Date().toISOString(),
-            title,
-            content,
-        };
-        const response = await db.put(doc);
+        // const doc = {
+        //     _id: new Date().toISOString(),
+        //     title,
+        //     content,
+        // };
+        const response = await db.put(content);
         console.log('Document created:', response);
         return response;
     } catch (error) {
@@ -32,7 +33,7 @@ export const getDocumentById = async (id: string) => {
 };
 
 // Función para actualizar un documento
-export const updateDocument = async (doc: any) => {
+export const updateDocument = async (doc: Vehiculo) => {
     try {
         const response = await db.put(doc);
         console.log('Document updated:', response);

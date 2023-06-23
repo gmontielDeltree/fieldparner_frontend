@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, Loading } from '../../components';
-import { ColumnProps, Vehiculo } from '@types';
+import { ColumnProps, Vehiculo } from '../../types';
 import { Box, Button, Grid, InputAdornment, TextField, Typography } from '@mui/material';
 import {
     Add as AddIcon,
@@ -65,35 +65,6 @@ export const VehiculosPage: React.FC = () => {
                 </Typography>
             </Box>
             <Box component="div" sx={{ mt: 7 }}>
-                {/* <Box
-                    component="div"
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ p: { sm: 2 }, my: 1 }} >
-                    <Grid
-                        container
-                        spacing={2}
-                        justifyContent="flex-end"
-                        alignItems="center"
-                    >
-                        <Grid item >
-                            <Button
-                                variant="contained"
-                                color="success"
-                                startIcon={<AddIcon />}
-                                onClick={onClickNuevoVehiculo}
-                            >
-                                Nuevo Vehiculo
-                            </Button>
-                        </Grid>
-                        <Grid item>
-                            <Fab color="inherit" size='small' aria-label="edit">
-                                <DownloadIcon />
-                            </Fab>
-                        </Grid>
-                    </Grid>
-                </Box> */}
                 <Grid
                     container
                     spacing={0}
@@ -112,55 +83,43 @@ export const VehiculosPage: React.FC = () => {
                             Nuevo
                         </Button>
                     </Grid>
-                    <Grid container xs={12} sm={10} justifyContent="flex-end" >
-                        <Grid item xs={8} sm={7} >
-                            <TextField
-                                variant="outlined"
-                                type='text'
-                                size='small'
-                                placeholder='Vehiculo/Marca/Modelo'
-                                autoComplete='off'
-                                name="filterText"
-                                value={filterText}
-                                onChange={handleInputChange}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth />
-                        </Grid>
-                        <Grid item xs={4} sm={3}>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                size="medium"
-                                fullWidth
-                                sx={{
-                                    height: '98%',
-                                    margin: 'auto',
-                                    borderTopLeftRadius: 0,
-                                    borderBottomLeftRadius: 0
-                                }}
-                                onClick={() => onClickBuscar()}
-                                startIcon={<SearchIcon />}>
-                                Buscar
-                            </Button>
+                    <Grid item xs={12} sm={10}>
+                        <Grid container justifyContent="flex-end" >
+                            <Grid item xs={8} sm={7} >
+                                <TextField
+                                    variant="outlined"
+                                    type='text'
+                                    size='small'
+                                    placeholder='Vehiculo/Marca/Modelo'
+                                    autoComplete='off'
+                                    name="filterText"
+                                    value={filterText}
+                                    onChange={handleInputChange}
+                                    InputProps={{
+                                        startAdornment: <InputAdornment position="start" />,
+                                    }}
+                                    fullWidth />
+                            </Grid>
+                            <Grid item xs={4} sm={3}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    size="medium"
+                                    fullWidth
+                                    sx={{
+                                        height: '98%',
+                                        margin: 'auto',
+                                        borderTopLeftRadius: 0,
+                                        borderBottomLeftRadius: 0
+                                    }}
+                                    onClick={() => onClickBuscar()}
+                                    startIcon={<SearchIcon />}>
+                                    Buscar
+                                </Button>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>
-                {/* <Box
-                    component="div"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="flex-end"
-                    sx={{ p: { sm: 2 } }}>
-                    <Typography display="inline" >Pages: {5}</Typography>
-                    <Pagination
-                        className='d-inline-block'
-                        count={5}
-                        page={1}
-                        onChange={() => console.log('onChangePagination')} />
-                </Box> */}
-
                 <Box
                     component="div"
                     sx={{ p: 1 }}>

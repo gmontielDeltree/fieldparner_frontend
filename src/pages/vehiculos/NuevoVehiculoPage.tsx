@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Mantenimiento, RowData, Vehiculo } from '@types';
 import { useAppDispatch, useAppSelector, useForm } from '../../hooks';
 import uuid4 from 'uuid4';
-import { actualizarVehiculo, agregarNuevoVehiculo } from '../../redux/slices/vehiculo';
+import { startAddVehiculo, startUpdateVehiculo } from '../../redux/slices/vehiculo';
 import { DatosGenerales, Especificaciones, Mantenimientos } from '../../components/NuevoVehiculo';
+import { createDocument } from '../../services';
 
 
 const listaAños: string[] = ["1999", "2000", "2010"];
@@ -33,7 +34,7 @@ const initialState: Vehiculo = {
     capacidadCombustible: 0,
     unidadMedida: '',
     conectividad: '',
-    id: '',
+    _id: new Date().toISOString(),
     nroPoliza: '',
     seguro: '',
     tipoCobertura: '',
@@ -84,13 +85,9 @@ export const NuevoVehiculoPage: React.FC = () => {
 
     const onClickGuardarVehiculo = useCallback((e: any) => {
         e.preventDefault();
-        const nuevoVehiculo = {
-            ...formulario,
-            id: uuid4()
-        };
-        
-        if (vehiculoActivo) dispatch(actualizarVehiculo(formulario));
-        else dispatch(agregarNuevoVehiculo(nuevoVehiculo));
+
+        if (vehiculoActivo) dispatch(startUpdateVehiculo(formulario));
+        else dispatch(startAddVehiculo(formulario));
 
         navigate('/overview/vehiculo');
     }, [formulario, dispatch]);
@@ -113,9 +110,11 @@ export const NuevoVehiculoPage: React.FC = () => {
     return (
         <Container
             maxWidth="lg"
+            className='pepe'
             sx={{
                 margin: 0,
-                ml: 2,
+                // ml: 1,
+                p: { sm: 0, md: 0 },
                 mb: 1,
             }}>
             <Paper variant="outlined" sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 2 } }}>
@@ -124,7 +123,7 @@ export const NuevoVehiculoPage: React.FC = () => {
                     align='center'
                     variant='h4'
                     sx={{ ml: { sm: 2 } }} >
-                    {!(vehiculoActivo) ? 'Alta Vehiculo' : 'Editar Vehiculo'}
+                    {!(vehiculoActivo) ? 'Nuevo Vehiculo' : 'Actualizar Vehiculo'}
                 </Typography>
                 <Stepper activeStep={activeStep} sx={{ pt: 5, pb: 5 }}>
                     {steps.map((label) => (
@@ -142,13 +141,13 @@ export const NuevoVehiculoPage: React.FC = () => {
                         alignItems="center"
                         justifyContent="space-between"
                         sx={{ mt: { sm: 5 } }}>
-                        <Grid item xs={12} sm={2}>
+                        <Grid item xs={12} sm={3}>
                             <Button
                                 variant="contained"
                                 color='inherit'
                                 onClick={(activeStep !== 0) ? handleBack : onClickCancelar}
                                 sx={{ ml: 1 }}
-                                fullWidth
+                            // fullWidth
                             >
                                 {(activeStep !== 0) ? 'Volver' : 'Cancelar'}
                             </Button>
@@ -168,7 +167,7 @@ export const NuevoVehiculoPage: React.FC = () => {
                                 )
                             }
                         </Grid>
-                        <Grid item xs={12} sm={2}>
+                        <Grid item xs={12} sm={3}>
                             <Button
                                 type='submit'
                                 variant="contained"
@@ -176,7 +175,7 @@ export const NuevoVehiculoPage: React.FC = () => {
                                 onClick={onClickGuardarVehiculo}
                                 fullWidth
                             >
-                                Guardar
+                                {!(vehiculoActivo) ? 'Guardar' : 'Actualizar'}
                             </Button>
                         </Grid>
                     </Grid>

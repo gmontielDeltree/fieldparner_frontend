@@ -19,7 +19,7 @@ const PouchDBComponent: React.FC<PouchDBComponentProps> = ({ children }) => {
     const [data, setData] = useState<any>([]);
 
     useEffect(() => {
-        const db = new PouchDB('mydb');
+        const db = new PouchDB('Vehiculos-test');
         console.log('Conectando POUCH DB');
 
         // Función para obtener todos los documentos de la base de datos

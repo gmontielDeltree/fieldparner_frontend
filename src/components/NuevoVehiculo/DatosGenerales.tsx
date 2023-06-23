@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from 'react';
 import { FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { TipoCombustible, TipoVehiculo, Vehiculo } from '../../types';
-import { useForm } from '../../hooks';
+import { useAppSelector, useForm } from '../../hooks';
 import { FolderOpen as FolderOpenIcon, Security as SecurityIcon } from '@mui/icons-material';
 
 const tipoVehiculos: string[] = Object.keys(TipoVehiculo);
@@ -19,7 +19,7 @@ const initialState: Vehiculo = {
     capacidadCombustible: 0,
     unidadMedida: '',
     conectividad: '',
-    id: '',
+    _id: '',
     nroPoliza: '',
     seguro: '',
     tipoCobertura: '',
@@ -40,6 +40,9 @@ export interface DatosGeneralesProps {
 }
 
 export const DatosGenerales: React.FC<DatosGeneralesProps> = ({ vehiculo, handleInputChange, handleSelectChange }) => {
+
+    const { vehiculoActivo } = useAppSelector(state => state.vehiculo);
+    const disabledFields = !!(vehiculoActivo);
 
     const {
         tipoVehiculo,
@@ -77,6 +80,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({ vehiculo, handle
                         <Select
                             labelId="tipo-vehiculo"
                             name="tipoVehiculo"
+                            disabled={disabledFields}
                             value={tipoVehiculo}
                             label="Tipo de Vehiculo"
                             onChange={handleSelectChange}
@@ -108,6 +112,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({ vehiculo, handle
                         label="Marca"
                         required
                         variant="outlined"
+                        disabled={disabledFields}
                         type='text'
                         name="marca"
                         value={marca}
@@ -121,6 +126,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({ vehiculo, handle
                     <TextField
                         label="Modelo"
                         required
+                        disabled={disabledFields}
                         variant="outlined"
                         type='text'
                         name="modelo"

@@ -2,7 +2,7 @@ import { Vehiculo } from "@types";
 
 export const Vehiculos: Vehiculo[] = [
     {
-        "id": "0123",
+        "_id": "0123",
         "tipoVehiculo": "Automovil",
         "marca": "Toyota",
         "modelo": "Etios",
@@ -40,7 +40,7 @@ export const Vehiculos: Vehiculo[] = [
         ]
     },
     {
-        "id": "0100",
+        "_id": "0100",
         "tipoVehiculo": "Camioneta",
         "marca": "Ford",
         "modelo": "Ranger",

@@ -76,10 +76,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 }}>
                 {/* <Toolbar className='pepe' /> */}
                 <Box
-                    // component="div"
+                    component="div"
                     // display="inline-block"
                     sx={{
-                        width: '100%',
+                        width: '45%',
                         height: '100%',
                         // maxWidth: 800,
                         p: 1,
@@ -87,12 +87,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     {children}
                 </Box>
 
-                {/* <Box
+                <Box
                     component="div"
                     display="inline-block"
                     sx={{
                         position: 'relative',
-                        width: `calc(60% + ${open ? '0px' : '240px'})`,
+                        width: `calc(55% + ${open ? '0px' : '240px'})`,
                         height: '100%',
                     }}>
                     <Map
@@ -112,7 +112,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                         }}
                         mapStyle={mapStyle}
                     />
-                </Box> */}
+                </Box>
             </Box>
 
         </Box>
