@@ -2,7 +2,7 @@ import { SelectChangeEvent } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
 
 // export function useForm<T>( initialState: T) {}
-
+// const currentYear = new Date().getFullYear();
 export const useForm = <T extends Object>(initialState: T) => {
 
     const [formulario, setFormulario] = useState(initialState);
@@ -23,6 +23,17 @@ export const useForm = <T extends Object>(initialState: T) => {
         });
     };
 
+    const handleYearChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = target;
+
+        if (/^\d*$/.test(value) && value.length <= 4) {
+            setFormulario({
+                ...formulario,
+                [name]: value
+            });
+        }
+    };
+
     const reset = () => {
         setFormulario(initialState);
     }
@@ -33,6 +44,7 @@ export const useForm = <T extends Object>(initialState: T) => {
         handleSelectChange,
         setFormulario,
         reset,
+        handleYearChange,
         ...formulario
     }
 };

@@ -10,24 +10,24 @@ import { createDocument } from '../../services';
 
 
 const listaAños: string[] = ["1999", "2000", "2010"];
-const dataMant: Mantenimiento[] = [
-    {
-        id: (new Date().getTime() - 100).toString(),
-        fecha: new Date().toLocaleDateString(),
-        kilometros: 900000,
-        descripcion: 'Aceite, Filtros, Pastillas de Freno',
-        observacion: 'Ajustar direcciones',
-        proximo: new Date().toLocaleDateString()
-    },
-];
-const dataEspecificaciones: RowData[] = [{ name: 'Accesorios', description: 'Kit de Seguridad y Llantas' }];
+// const dataMant: Mantenimiento[] = [
+//     {
+//         id: (new Date().getTime() - 100).toString(),
+//         fecha: new Date().toLocaleDateString(),
+//         kilometros: 900000,
+//         descripcion: 'Aceite, Filtros, Pastillas de Freno',
+//         observacion: 'Ajustar direcciones',
+//         proximo: new Date().toLocaleDateString()
+//     },
+// ];
+// const dataEspecificaciones: RowData[] = [{ name: 'Accesorios', description: 'Kit de Seguridad y Llantas' }];
 
 const initialState: Vehiculo = {
     tipoVehiculo: '',
     patente: '',
     marca: '',
     modelo: '',
-    año: listaAños[0],
+    año: '',
     tara: 0,
     neto: 0,
     tipoCombustible: '',
@@ -44,8 +44,8 @@ const initialState: Vehiculo = {
     seguroFechaVencimiento: '',
     bruto: 0,
     otroTipoVehiculo: '',
-    especificacionesTecnicas: dataEspecificaciones,
-    mantenimientos: dataMant,
+    especificacionesTecnicas: [],
+    mantenimientos: [],
 }
 
 
@@ -57,7 +57,11 @@ export const NuevoVehiculoPage: React.FC = () => {
     const navigate = useNavigate();
     const { vehiculoActivo } = useAppSelector(state => state.vehiculo);
     const [activeStep, setActiveStep] = useState(0);
-    const { formulario, setFormulario, handleInputChange, handleSelectChange } = useForm(initialState);
+    const { formulario,
+        setFormulario,
+        handleInputChange,
+        handleSelectChange,
+        handleYearChange } = useForm(initialState);
 
     const getStepContent = useMemo(() => (step: number) => {
         switch (step) {
@@ -65,7 +69,8 @@ export const NuevoVehiculoPage: React.FC = () => {
                 return (<DatosGenerales
                     vehiculo={formulario}
                     handleInputChange={handleInputChange}
-                    handleSelectChange={handleSelectChange} />);
+                    handleSelectChange={handleSelectChange}
+                    handleYearChange={handleYearChange} />);
             case 1:
                 return (<Especificaciones
                     vehiculo={formulario}
@@ -79,7 +84,7 @@ export const NuevoVehiculoPage: React.FC = () => {
             default:
                 throw new Error('Step no encontrado.');
         }
-    }, [formulario, setFormulario, handleInputChange, handleSelectChange]);
+    }, [formulario, setFormulario, handleInputChange, handleSelectChange, handleYearChange]);
 
     const onClickCancelar = useCallback(() => navigate('/overview/vehiculo'), []);
 
@@ -117,7 +122,7 @@ export const NuevoVehiculoPage: React.FC = () => {
                 p: { sm: 0, md: 0 },
                 mb: 1,
             }}>
-            <Paper variant="outlined" sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 2 } }}>
+            <Paper variant="outlined" sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 1 } }}>
                 <Typography
                     component="h2"
                     align='center'

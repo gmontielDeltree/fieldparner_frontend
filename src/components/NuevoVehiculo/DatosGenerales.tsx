@@ -1,18 +1,28 @@
 import React, { ChangeEvent } from 'react';
-import { FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import {
+    FormControl,
+    Grid,
+    InputAdornment,
+    InputLabel,
+    MenuItem,
+    Select,
+    SelectChangeEvent,
+    TextField,
+    Typography
+} from '@mui/material';
 import { TipoCombustible, TipoVehiculo, Vehiculo } from '../../types';
 import { useAppSelector, useForm } from '../../hooks';
 import { FolderOpen as FolderOpenIcon, Security as SecurityIcon } from '@mui/icons-material';
 
+
 const tipoVehiculos: string[] = Object.keys(TipoVehiculo);
-const listaAños: string[] = ["1999", "2000", "2010"];
 
 const initialState: Vehiculo = {
     tipoVehiculo: '',
     patente: '',
     marca: '',
     modelo: '',
-    año: listaAños[0],
+    año: "",
     tara: 0,
     neto: 0,
     tipoCombustible: '',
@@ -37,9 +47,14 @@ export interface DatosGeneralesProps {
     vehiculo: Vehiculo;
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
+    handleYearChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
 }
 
-export const DatosGenerales: React.FC<DatosGeneralesProps> = ({ vehiculo, handleInputChange, handleSelectChange }) => {
+export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
+    vehiculo,
+    handleInputChange,
+    handleSelectChange,
+    handleYearChange }) => {
 
     const { vehiculoActivo } = useAppSelector(state => state.vehiculo);
     const disabledFields = !!(vehiculoActivo);
@@ -138,7 +153,32 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({ vehiculo, handle
                         fullWidth />
                 </Grid>
                 <Grid item xs={12} sm={2}>
-                    <FormControl fullWidth>
+                    {/* <DatePicker
+                        label={"Año"}
+                        value={año}
+                        minDate={new Dayjs().year(1900)}
+                        maxDate={new Dayjs(new Date())}
+                        views={["year"]}
+                        onChange={(newValue) => {
+                            if (newValue && newValue.year()) console.log(newValue.year().toString());
+                            // setValue(newValue);
+                        }}
+                    /> */}
+                    <TextField
+                        type="text"
+                        label="Año"
+                        name="año"
+                        value={año}
+                        onChange={handleYearChange}
+                        inputProps={{
+                            maxLength: 4,
+                            pattern: '[0-9]*',
+                        }}
+                        InputProps={{
+                            startAdornment: <InputAdornment position="start" />,
+                        }}
+                    />
+                    {/* <FormControl fullWidth>
                         <InputLabel id="año-equipo">Año</InputLabel>
                         <Select
                             labelId="año-equipo"
@@ -154,7 +194,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({ vehiculo, handle
                                 )
                             }
                         </Select>
-                    </FormControl>
+                    </FormControl> */}
                 </Grid>
                 <Grid item xs={12} sm={6} >
                     <TextField

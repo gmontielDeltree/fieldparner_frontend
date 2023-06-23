@@ -4,6 +4,8 @@ import { NavBar, SideBar } from '..';
 import { useCallback, useState } from 'react';
 import Map from 'react-map-gl';
 import mapboxgl from 'mapbox-gl';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 const drawerWidth = 240; //Ancho del sidebar en px;
 
@@ -84,7 +86,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                         // maxWidth: 800,
                         p: 1,
                     }}>
-                    {children}
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        {children}
+                    </LocalizationProvider>
                 </Box>
 
                 <Box
