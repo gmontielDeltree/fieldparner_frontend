@@ -8,7 +8,7 @@ export class FPSidebar extends LitElement {
         top: 0;
         left: 0;
         bottom: 0;
-        width: 200px;
+        width: 25%;
         background-color: #f5f5f5;
         border-radius: 10px;
         z-index: 1;
