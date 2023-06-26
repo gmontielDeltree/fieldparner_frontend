@@ -1,5 +1,5 @@
 import { visualizer } from "rollup-plugin-visualizer";
-import { splitVendorChunkPlugin } from "vite";
+import { defineConfig } from "vite";
 import Compression from "vite-compression-plugin";
 import { VitePWA } from "vite-plugin-pwa";
 import manifest_json from "./src/manifest.json";
