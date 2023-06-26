@@ -24,6 +24,11 @@ export enum TipoVehiculo {
     Otros = "Otros",
 }
 
+export interface TypeVehicle {
+    _id: string;
+    name: string;
+}
+
 export enum TipoCombustible { Diesel = "Diesel", Nafta = "Nafta" }
 
 export interface Mantenimiento {
@@ -65,7 +70,7 @@ export interface Vehiculo {
     nroPoliza: string;
     seguroFechaInicio: string;
     seguroFechaVencimiento: string;
-    otroTipoVehiculo?: string;
+    ubicacion: string;
     mantenimientos: Mantenimiento[];
     especificacionesTecnicas: RowData[];
 }

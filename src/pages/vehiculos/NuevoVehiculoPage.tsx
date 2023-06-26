@@ -1,26 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
+import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Mantenimiento, RowData, Vehiculo } from '@types';
+import { Vehiculo } from '@types';
 import { useAppDispatch, useAppSelector, useForm } from '../../hooks';
-import uuid4 from 'uuid4';
-import { startAddVehiculo, startUpdateVehiculo } from '../../redux/slices/vehiculo';
+import { removerVehiculoActivo, startAddVehiculo, startUpdateVehiculo } from '../../redux/slices/vehiculo';
 import { DatosGenerales, Especificaciones, Mantenimientos } from '../../components/NuevoVehiculo';
-import { createDocument } from '../../services';
 
-
-const listaAños: string[] = ["1999", "2000", "2010"];
-// const dataMant: Mantenimiento[] = [
-//     {
-//         id: (new Date().getTime() - 100).toString(),
-//         fecha: new Date().toLocaleDateString(),
-//         kilometros: 900000,
-//         descripcion: 'Aceite, Filtros, Pastillas de Freno',
-//         observacion: 'Ajustar direcciones',
-//         proximo: new Date().toLocaleDateString()
-//     },
-// ];
-// const dataEspecificaciones: RowData[] = [{ name: 'Accesorios', description: 'Kit de Seguridad y Llantas' }];
 
 const initialState: Vehiculo = {
     tipoVehiculo: '',
@@ -43,7 +28,7 @@ const initialState: Vehiculo = {
     seguroFechaInicio: '',
     seguroFechaVencimiento: '',
     bruto: 0,
-    otroTipoVehiculo: '',
+    ubicacion: '',
     especificacionesTecnicas: [],
     mantenimientos: [],
 }
@@ -61,7 +46,8 @@ export const NuevoVehiculoPage: React.FC = () => {
         setFormulario,
         handleInputChange,
         handleSelectChange,
-        handleYearChange } = useForm(initialState);
+        handleYearChange,
+        handleFormValueChange } = useForm(initialState);
 
     const getStepContent = useMemo(() => (step: number) => {
         switch (step) {
@@ -69,7 +55,7 @@ export const NuevoVehiculoPage: React.FC = () => {
                 return (<DatosGenerales
                     vehiculo={formulario}
                     handleInputChange={handleInputChange}
-                    handleSelectChange={handleSelectChange}
+                    handleFormValueChange={handleFormValueChange}
                     handleYearChange={handleYearChange} />);
             case 1:
                 return (<Especificaciones
@@ -84,9 +70,18 @@ export const NuevoVehiculoPage: React.FC = () => {
             default:
                 throw new Error('Step no encontrado.');
         }
-    }, [formulario, setFormulario, handleInputChange, handleSelectChange, handleYearChange]);
+    }, [
+        formulario,
+        setFormulario,
+        handleInputChange,
+        handleSelectChange,
+        handleYearChange,
+        handleFormValueChange]);
 
-    const onClickCancelar = useCallback(() => navigate('/overview/vehiculo'), []);
+    const onClickCancelar = useCallback(() => {
+        dispatch(removerVehiculoActivo());
+        navigate('/overview/vehiculo');
+    }, []);
 
     const onClickGuardarVehiculo = useCallback((e: any) => {
         e.preventDefault();
@@ -94,6 +89,7 @@ export const NuevoVehiculoPage: React.FC = () => {
         if (vehiculoActivo) dispatch(startUpdateVehiculo(formulario));
         else dispatch(startAddVehiculo(formulario));
 
+        dispatch(removerVehiculoActivo());
         navigate('/overview/vehiculo');
     }, [formulario, dispatch]);
 
@@ -118,7 +114,6 @@ export const NuevoVehiculoPage: React.FC = () => {
             className='pepe'
             sx={{
                 margin: 0,
-                // ml: 1,
                 p: { sm: 0, md: 0 },
                 mb: 1,
             }}>
@@ -152,7 +147,6 @@ export const NuevoVehiculoPage: React.FC = () => {
                                 color='inherit'
                                 onClick={(activeStep !== 0) ? handleBack : onClickCancelar}
                                 sx={{ ml: 1 }}
-                            // fullWidth
                             >
                                 {(activeStep !== 0) ? 'Volver' : 'Cancelar'}
                             </Button>

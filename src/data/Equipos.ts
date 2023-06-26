@@ -22,6 +22,7 @@ export const Vehiculos: Vehiculo[] = [
         "nroPoliza": "",
         "seguroFechaInicio": "22/04/2020",
         "seguroFechaVencimiento": "22/04/2020",
+        "ubicacion": "",
         "especificacionesTecnicas": [
             {
                 "name": "Seguridad",
@@ -52,6 +53,7 @@ export const Vehiculos: Vehiculo[] = [
         "tipoCombustible": "Nafta",
         "capacidadCombustible": 80,
         "unidadMedida": "mm",
+        "ubicacion": "",
         "conectividad": "",
         "propietario": "",
         "ultimoMantenimiento": "",

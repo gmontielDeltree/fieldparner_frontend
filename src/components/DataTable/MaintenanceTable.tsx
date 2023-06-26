@@ -81,16 +81,7 @@ const MaintenanceTable: React.FC<MaintenanceTableProps> = ({
                                 <StyledTableCell key={column}>{column}</StyledTableCell>
                             ))
                         }
-                        <StyledTableCell key="actions">
-                            <Fab
-                                color="success"
-                                aria-label="add"
-                                size='small'
-                                onClick={handleAddMantenimiento}
-                            >
-                                <AddIcon />
-                            </Fab>
-                        </StyledTableCell>
+                        <StyledTableCell />
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -111,7 +102,8 @@ const MaintenanceTable: React.FC<MaintenanceTableProps> = ({
                                 size='small'
                                 type='number'
                                 name="kilometros"
-                                value={kilometros}
+                                inputProps={{ min: '0' }}
+                                value={(kilometros === 0) ? '' : kilometros}
                                 onChange={handleInputChange}
                             />
                         </StyledTableCell>
@@ -145,14 +137,15 @@ const MaintenanceTable: React.FC<MaintenanceTableProps> = ({
                                 onChange={handleInputChange}
                                 fullWidth />
                         </StyledTableCell>
-                        <StyledTableCell align='center'>
-                            <Tooltip title="Reset">
-                                <IconButton
-                                    onClick={() => reset()}
-                                    color='default'>
-                                    <RefreshIcon />
-                                </IconButton>
-                            </Tooltip>
+                        <StyledTableCell key="actions" align='center'>
+                            <Fab
+                                color="success"
+                                aria-label="add"
+                                size='small'
+                                onClick={handleAddMantenimiento}
+                            >
+                                <AddIcon />
+                            </Fab>
                         </StyledTableCell>
                     </StyledTableRow>
                     {rows.map((row) => (

@@ -1,7 +1,43 @@
 import PouchDB from 'pouchdb';
-import { Vehiculo } from '../types';
+import { Vehiculo, TypeVehicle } from '@types';
+import uuid4 from 'uuid4';
 
 const db: PouchDB.Database = new PouchDB('test_pouchdb');
+// const dbTipoVehiculo = new PouchDB('tipoVehiculo_db');
+
+const mydb = {
+    vehiculos: new PouchDB('test_pouchdb'),
+    tipoVehiculos: new PouchDB('tipoVehiculos'),
+};
+
+// Función para obtener todos los documentos de la base de datos
+export const getTypeVehicles = async () => {
+    try {
+        const result = await mydb.tipoVehiculos.allDocs({ include_docs: true });
+        const documents: any = result.rows.map(row => row.doc);
+
+        return documents;
+
+    } catch (error) {
+        console.error('Error al conectar con DB:', error);
+    }
+};
+
+export const createTypeVehicles = async (type: string) => {
+    try {
+        const newTypeVehicle = {
+            _id: uuid4(),
+            name: type
+        }
+        const response = await mydb.tipoVehiculos.put(newTypeVehicle);
+        console.log('document type of vehicle created:', response);
+        return response;
+
+    } catch (error) {
+        console.error('Error creating document type of vehicle:', error);
+        throw error;
+    }
+}
 
 // Función para crear un nuevo documento
 export const createDocument = async (content: Vehiculo) => {

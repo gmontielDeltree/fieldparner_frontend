@@ -70,16 +70,7 @@ const EspecificationTable: React.FC<EspecificationTableProps> = ({
                                 <StyledTableCell key={column}>{column}</StyledTableCell>
                             ))
                         }
-                        <StyledTableCell key="actions" align='center'>
-                            <Fab
-                                color="success"
-                                aria-label="add"
-                                size='small'
-                                onClick={handleAddEspecificacion}
-                            >
-                                <AddIcon />
-                            </Fab>
-                        </StyledTableCell>
+                        <StyledTableCell />
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -104,14 +95,15 @@ const EspecificationTable: React.FC<EspecificationTableProps> = ({
                                 onChange={handleInputChange}
                                 fullWidth />
                         </StyledTableCell>
-                        <StyledTableCell align='center' sx={{ minWidth: 100, maxWidth: 110 }}>
-                            <Tooltip title="Reset">
-                                <IconButton
-                                    onClick={() => reset()}
-                                    color='default'>
-                                    <RefreshIcon />
-                                </IconButton>
-                            </Tooltip>
+                        <StyledTableCell key="head-actions" align='center'>
+                            <Fab
+                                color="success"
+                                aria-label="add"
+                                size='small'
+                                onClick={handleAddEspecificacion}
+                            >
+                                <AddIcon />
+                            </Fab>
                         </StyledTableCell>
                     </StyledTableRow>
                     {rows.map((row) => (

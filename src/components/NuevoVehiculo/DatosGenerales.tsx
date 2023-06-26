@@ -1,64 +1,34 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import {
-    FormControl,
+    Autocomplete,
     Grid,
     InputAdornment,
-    InputLabel,
-    MenuItem,
-    Select,
-    SelectChangeEvent,
     TextField,
     Typography
 } from '@mui/material';
-import { TipoCombustible, TipoVehiculo, Vehiculo } from '../../types';
-import { useAppSelector, useForm } from '../../hooks';
+import { Vehiculo } from '@types';
+import { useAppSelector } from '../../hooks';
 import { FolderOpen as FolderOpenIcon, Security as SecurityIcon } from '@mui/icons-material';
+import { createTypeVehicles, getTypeVehicles as getTypeVehiclesService } from '../../services';
 
 
-const tipoVehiculos: string[] = Object.keys(TipoVehiculo);
-
-const initialState: Vehiculo = {
-    tipoVehiculo: '',
-    patente: '',
-    marca: '',
-    modelo: '',
-    año: "",
-    tara: 0,
-    neto: 0,
-    tipoCombustible: '',
-    capacidadCombustible: 0,
-    unidadMedida: '',
-    conectividad: '',
-    _id: '',
-    nroPoliza: '',
-    seguro: '',
-    tipoCobertura: '',
-    propietario: '',
-    ultimoMantenimiento: '',
-    seguroFechaInicio: '',
-    seguroFechaVencimiento: '',
-    bruto: 0,
-    otroTipoVehiculo: '',
-    especificacionesTecnicas: [],
-    mantenimientos: [],
-}
 
 export interface DatosGeneralesProps {
     vehiculo: Vehiculo;
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
-    handleSelectChange: ({ target }: SelectChangeEvent) => void;
+    handleFormValueChange: (key: string, value: string) => void;
     handleYearChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
 }
+
 
 export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
     vehiculo,
     handleInputChange,
-    handleSelectChange,
+    handleFormValueChange,
     handleYearChange }) => {
 
     const { vehiculoActivo } = useAppSelector(state => state.vehiculo);
     const disabledFields = !!(vehiculoActivo);
-
     const {
         tipoVehiculo,
         patente,
@@ -71,8 +41,31 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         seguroFechaInicio,
         seguroFechaVencimiento,
         tipoCobertura,
-        otroTipoVehiculo,
+        ubicacion,
     } = vehiculo;
+    const [typeVehicles, setTypeVehicles] = useState<string[]>([]);
+
+
+    const handleOnBlurTipoVehiculo = async () => {
+        const checkTipoVehiculo = (tV: string) => tV.toLowerCase().trim() === tipoVehiculo.toString().toLowerCase().trim();
+
+        if (tipoVehiculo !== '' && !typeVehicles.some(checkTipoVehiculo)) {
+            await createTypeVehicles(tipoVehiculo);
+        }
+    };
+
+    useEffect(() => {
+        const getTypeVehicles = async (): Promise<string[]> => {
+            const response = await getTypeVehiclesService();
+            const types: string[] = response.map((v: any) => v.name);
+
+            setTypeVehicles(types);
+            return types;
+        }
+
+        getTypeVehicles();
+    }, [])
+
 
     return (
         <>
@@ -90,39 +83,31 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth>
-                        <InputLabel id="tipo-vehiculo">Tipo de Vehichulo</InputLabel>
-                        <Select
-                            labelId="tipo-vehiculo"
-                            name="tipoVehiculo"
-                            disabled={disabledFields}
-                            value={tipoVehiculo}
-                            label="Tipo de Vehiculo"
-                            onChange={handleSelectChange}
-                        >
-                            {
-                                tipoVehiculos.map((value) =>
-                                    (<MenuItem key={value} value={value}>{value.toString()}</MenuItem>)
-                                )
-                            }
-                        </Select>
-                    </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        label="Otro"
-                        variant="outlined"
-                        type='text'
-                        name="otroTipoVehiculo"
-                        placeholder='Tipo de Vehiculo'
-                        value={otroTipoVehiculo}
-                        onChange={handleInputChange}
-                        InputProps={{
-                            startAdornment: <InputAdornment position="start" />,
+                    <Autocomplete
+                        id="tipoVehiculo"
+                        value={tipoVehiculo}
+                        freeSolo
+                        options={typeVehicles}
+                        disabled={disabledFields}
+                        onBlur={() => handleOnBlurTipoVehiculo()}
+                        onChange={(_event: any, newValue: string | null) => {
+                            newValue && handleFormValueChange('tipoVehiculo', newValue);
                         }}
-                        fullWidth />
+                        inputValue={tipoVehiculo}
+                        onInputChange={(_event, newInputValue) => {
+                            handleFormValueChange('tipoVehiculo', newInputValue);
+                        }}
+                        renderInput={(params) =>
+                            <TextField
+                                {...params}
+                                label="Tipo de Vehiculo"
+                                required
+                            />
+                        }
+                    />
                 </Grid>
-                <Grid item xs={12} sm={5}>
+
+                <Grid item xs={12} sm={6}>
                     <TextField
                         label="Marca"
                         required
@@ -137,7 +122,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
                         }}
                         fullWidth />
                 </Grid>
-                <Grid item xs={12} sm={5}>
+                <Grid item xs={12} sm={6}>
                     <TextField
                         label="Modelo"
                         required
@@ -153,17 +138,6 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
                         fullWidth />
                 </Grid>
                 <Grid item xs={12} sm={2}>
-                    {/* <DatePicker
-                        label={"Año"}
-                        value={año}
-                        minDate={new Dayjs().year(1900)}
-                        maxDate={new Dayjs(new Date())}
-                        views={["year"]}
-                        onChange={(newValue) => {
-                            if (newValue && newValue.year()) console.log(newValue.year().toString());
-                            // setValue(newValue);
-                        }}
-                    /> */}
                     <TextField
                         type="text"
                         label="Año"
@@ -178,25 +152,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
                             startAdornment: <InputAdornment position="start" />,
                         }}
                     />
-                    {/* <FormControl fullWidth>
-                        <InputLabel id="año-equipo">Año</InputLabel>
-                        <Select
-                            labelId="año-equipo"
-                            id="select-periodo"
-                            name="año"
-                            value={año}
-                            label="Año"
-                            onChange={handleSelectChange}
-                        >
-                            {
-                                listaAños.map((value) =>
-                                    (<MenuItem key={value} value={value}>{value.toString()}</MenuItem>)
-                                )
-                            }
-                        </Select>
-                    </FormControl> */}
                 </Grid>
-                <Grid item xs={12} sm={6} >
+                <Grid item xs={12} sm={4} >
                     <TextField
                         label="Patente"
                         variant="outlined"
@@ -221,6 +178,20 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
                         value={propietario}
                         fullWidth
                         onChange={handleInputChange} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="Ubicacion"
+                        variant="outlined"
+                        type='text'
+                        name="ubicacion"
+                        placeholder='Ubicacion'
+                        value={ubicacion}
+                        onChange={handleInputChange}
+                        InputProps={{
+                            startAdornment: <InputAdornment position="start" />,
+                        }}
+                        fullWidth />
                 </Grid>
                 <Grid item xs={12} display="flex" alignItems="center" >
                     <SecurityIcon sx={{ mx: 1 }} />

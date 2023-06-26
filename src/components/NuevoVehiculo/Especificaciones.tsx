@@ -74,7 +74,8 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
                         variant="outlined"
                         type='number'
                         name="tara"
-                        value={tara}
+                        inputProps={{ min: '0' }}
+                        value={(tara === 0) ? '' : tara}
                         InputProps={{
                             endAdornment: <InputAdornment position="end">kg</InputAdornment>
                         }}
@@ -87,7 +88,8 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
                         variant="outlined"
                         type='number'
                         name="bruto"
-                        value={bruto}
+                        inputProps={{ min: '0' }}
+                        value={(bruto === 0) ? '' : bruto}
                         InputProps={{
                             endAdornment: <InputAdornment position="end">kg</InputAdornment>
                         }}
@@ -100,7 +102,8 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
                         variant="outlined"
                         type='number'
                         name="neto"
-                        value={neto}
+                        inputProps={{ min: '0' }}
+                        value={(neto === 0) ? '' : neto}
                         InputProps={{
                             endAdornment: <InputAdornment position="end">kg</InputAdornment>
                         }}
@@ -132,7 +135,8 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
                         variant="outlined"
                         type='number'
                         name="capacidadCombustible"
-                        value={capacidadCombustible}
+                        inputProps={{ min: '0' }}
+                        value={(capacidadCombustible === 0) ? '' : capacidadCombustible}
                         InputProps={{
                             endAdornment: <InputAdornment position="end">L</InputAdornment>
                         }}
