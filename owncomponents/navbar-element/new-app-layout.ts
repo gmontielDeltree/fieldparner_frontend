@@ -349,7 +349,7 @@ export class Example extends LitElement {
               <a
                 tabindex="-1"
                 @click=${() => {
-                  Router.go("/equipos");
+                  Router.go("/overview/vehiculo");
                 }}
               >
                 <vaadin-icon icon="vaadin:truck"></vaadin-icon>
