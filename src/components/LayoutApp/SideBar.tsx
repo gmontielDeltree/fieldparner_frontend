@@ -1,3 +1,4 @@
+// import { Link as RouterLink, Navigate, useNavigate } from 'react-router-dom';
 import {
   Box,
   Divider,
@@ -32,6 +33,11 @@ import { SideBarProps } from '../../types';
 //   { text: 'Ajustes', icon: <SettingsIcon /> }];
 
 export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideBarClose }) => {
+
+  const navigateTo = (path: string) => {
+    window.location.replace(path);
+  }
+
   return (
     <Box
       component="nav"
@@ -59,7 +65,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
         <Divider />
         <List>
           <ListItem key='campos' disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigateTo('/campos')}>
               <ListItemIcon>
                 <CabinIcon />
               </ListItemIcon>
@@ -67,7 +73,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
             </ListItemButton>
           </ListItem>
           <ListItem key='recargar' disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigateTo('/')}>
               <ListItemIcon>
                 <CachedIcon />
               </ListItemIcon>
@@ -75,7 +81,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
             </ListItemButton>
           </ListItem>
           <ListItem key='dispositivos' disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigateTo('/device')}>
               <ListItemIcon>
                 <ListIcon />
               </ListItemIcon>
@@ -83,7 +89,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
             </ListItemButton>
           </ListItem>
           <ListItem key='personal' disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigateTo('/personal')}>
               <ListItemIcon>
                 <GroupIcon />
               </ListItemIcon>
@@ -99,7 +105,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
             </ListItemButton>
           </ListItem>
           <ListItem key='precios' disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigateTo('/prices')}>
               <ListItemIcon>
                 <AttachMoneyIcon />
               </ListItemIcon>
@@ -107,7 +113,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
             </ListItemButton>
           </ListItem>
           <ListItem key='ajustes' disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigateTo('/settings')}>
               <ListItemIcon>
                 <SettingsIcon />
               </ListItemIcon>
