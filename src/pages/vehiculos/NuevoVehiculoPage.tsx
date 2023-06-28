@@ -83,12 +83,20 @@ export const NuevoVehiculoPage: React.FC = () => {
         navigate('/overview/vehiculo');
     }, []);
 
-    const onClickGuardarVehiculo = useCallback((e: any) => {
+    const onClickAddVehiculo = useCallback((e: any) => {
         e.preventDefault();
 
-        if (vehiculoActivo) dispatch(startUpdateVehiculo(formulario));
-        else dispatch(startAddVehiculo(formulario));
+        const { tipoVehiculo, marca, modelo } = formulario;
+        if (!tipoVehiculo || !marca || !modelo) return;
 
+        dispatch(startAddVehiculo(formulario));
+
+        navigate('/overview/vehiculo');
+    }, [formulario, dispatch]);
+
+    const onClickUpdateVehicle = useCallback((e: any) => {
+        e.preventDefault();
+        dispatch(startUpdateVehiculo(formulario));
         dispatch(removerVehiculoActivo());
         navigate('/overview/vehiculo');
     }, [formulario, dispatch]);
@@ -171,7 +179,7 @@ export const NuevoVehiculoPage: React.FC = () => {
                                 type='submit'
                                 variant="contained"
                                 color='success'
-                                onClick={onClickGuardarVehiculo}
+                                onClick={(vehiculoActivo) ? onClickUpdateVehicle : onClickAddVehiculo}
                                 fullWidth
                             >
                                 {!(vehiculoActivo) ? 'Guardar' : 'Actualizar'}
