@@ -5,6 +5,11 @@ import { NavBarProps } from '../../types';
 
 
 export const NavBar: React.FC<NavBarProps> = ({ drawerWidth = 240, open, handleSideBarOpen }) => {
+
+    const navigateTo = (path: string) => {
+        window.location.replace(path);
+    }
+
     return (
         <AppBar
             position='fixed'
@@ -30,7 +35,7 @@ export const NavBar: React.FC<NavBarProps> = ({ drawerWidth = 240, open, handleS
                     justifyContent="space-between"
                     alignItems="center">
                     <Typography variant='h6' noWrap component="h2">FieldPartner</Typography>
-                    <IconButton color='inherit'>
+                    <IconButton color='inherit' onClick={() => navigateTo('https://www.qtsagro.net/')}>
                         <LogoutOutlined />
                     </IconButton>
                 </Grid>
