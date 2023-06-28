@@ -35,7 +35,7 @@ export const NavBar: React.FC<NavBarProps> = ({ drawerWidth = 240, open, handleS
                     justifyContent="space-between"
                     alignItems="center">
                     <Typography variant='h6' noWrap component="h2">FieldPartner</Typography>
-                    <IconButton color='inherit' onClick={() => navigateTo('https://www.qtsagro.net/')}>
+                    <IconButton color='inherit' onClick={() => navigateTo('/')}>
                         <LogoutOutlined />
                     </IconButton>
                 </Grid>
