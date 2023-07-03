@@ -338,6 +338,17 @@ export class Example extends LitElement {
               <a
                 tabindex="-1"
                 @click=${() => {
+                  Router.go("/magris");
+                }}
+              >
+                <vaadin-icon icon="vaadin:scale-unbalance"></vaadin-icon>
+                <span>Magris</span>
+              </a>
+            </vaadin-tab>
+            <!-- <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
                   Router.go("/personal");
                 }}
               >
@@ -367,7 +378,7 @@ export class Example extends LitElement {
                 <vaadin-icon icon="vaadin:dollar"></vaadin-icon>
                 <span>${translate("precios")}</span>
               </a>
-            </vaadin-tab>
+            </vaadin-tab> -->
 
             <vaadin-tab>
               <a

@@ -31,6 +31,10 @@ export const old_routes = [
     element: <app-loader></app-loader>,
   },
   {
+    path: "/magris/*",
+    element: <app-loader></app-loader>,
+  },
+  {
     path: "/campo/*",
     element: <app-loader></app-loader>,
   },
