@@ -16,6 +16,9 @@ import { MagrisRecord, MagrisReporte } from "./magris-types";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { base_url } from "../helpers.js";
 import PouchDB from "pouchdb";
+import { format } from "date-fns";
+import { NumberFieldEventMap } from "@vaadin/number-field";
+import { Estado } from "../../src/types/index";
 
 export class MagrisReporteOC extends LitElement {
   // @property()
@@ -23,6 +26,30 @@ export class MagrisReporteOC extends LitElement {
 
   //@property()
   //campos: any;
+  static override styles = [
+    unsafeCSS(bootstrap),
+    css`
+      table {
+        font-family: arial, sans-serif;
+        font-size: 0.7rem;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      td,
+      th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        word-wrap: break-word;
+      }
+
+      tr:nth-child(even) {
+        background-color: #dddddd;
+      }
+    `,
+  ];
+
   @property()
   location: RouterLocation;
 
@@ -47,8 +74,6 @@ export class MagrisReporteOC extends LitElement {
 
   private _detallesOffcanvas: Offcanvas;
 
-  static styles = unsafeCSS(bootstrap);
-
   bindState = new StateController(this, gbl_state);
 
   dibujarElMapa(repo: MagrisReporte) {
@@ -66,52 +91,98 @@ export class MagrisReporteOC extends LitElement {
       ],
     };
 
+    let puntos: number[] = [];
     repo.data.forEach((r) => {
       let punto = [r.posicion[0] / 1000000, r.posicion[1] / 1000000];
       if (punto[0] !== 0) {
-        geojson.features[0].geometry.coordinates.push(punto);
+        puntos.push(punto);
+        if (r.estado !== 0) {
+          let e = {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              coordinates: [],
+              type: "Point",
+            },
+          };
+          e.properties.estado = e.estado;
+          e.properties.nombre = "OP";
+          e.geometry.coordinates = punto;
+          geojson.features.push(e);
+        }
       }
     });
 
-    let source : GeoJSONSource = gbl_state.map.getSource("tolva_track") as GeoJSONSource
-    if(!source){
+    geojson.features[0].geometry.coordinates = puntos.reverse();
+
+    let source: GeoJSONSource = gbl_state.map.getSource(
+      "tolva_track"
+    ) as GeoJSONSource;
+    if (!source) {
       gbl_state.map.addSource("tolva_track", {
         type: "geojson",
         data: geojson,
       });
-    }else{
-       source = gbl_state.map.getSource("tolva_track") as GeoJSONSource
-       source.setData(geojson)
+    } else {
+      source = gbl_state.map.getSource("tolva_track") as GeoJSONSource;
+      source.setData(geojson);
     }
 
+    try {
+      gbl_state.map.addLayer({
+        id: "points",
+        type: "symbol",
+        source: "tolva_track",
+        layout: {
+          "icon-image": "custom-marker",
+          // get the title name from the source's "title" property
+          "text-field": ["get", "title"],
+          "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+          "text-offset": [0, 1.25],
+          "text-anchor": "top",
+        },
+        filter: ["==", "$type", "Point"],
+      });
+      // add a line layer without line-dasharray defined to fill the gaps in the dashed line
+      gbl_state.map.addLayer({
+        type: "circle",
+        source: "tolva_track",
+        id: "carga",
+        paint: {
+          "circle-radius": 6,
+          "circle-color": "#B42222",
+        },
+        filter: ["==", "$type", "Point"],
+      });
 
-    try{
-    // add a line layer without line-dasharray defined to fill the gaps in the dashed line
-    gbl_state.map.addLayer({
-      type: "line",
-      source: "tolva_track",
-      id: "line-background",
-      paint: {
-        "line-color": "yellow",
-        "line-width": 6,
-        "line-opacity": 0.4,
-      },
-    });
+      // add a line layer without line-dasharray defined to fill the gaps in the dashed line
+      gbl_state.map.addLayer({
+        type: "line",
+        source: "tolva_track",
+        id: "line-background",
+        paint: {
+          "line-color": "yellow",
+          "line-width": 6,
+          "line-opacity": 0.4,
+        },
+        filter: ["==", "$type", "LineString"],
+      });
 
-    // add a line layer with line-dasharray set to the first value in dashArraySequence
-    gbl_state.map.addLayer({
-      type: "line",
-      source: "tolva_track",
-      id: "line-dashed",
-      paint: {
-        "line-color": "yellow",
-        "line-width": 6,
-        "line-dasharray": [0, 4, 3],
-      },
-    });
-  }catch(e){
-    console.log("Error layer")
-  }
+      // add a line layer with line-dasharray set to the first value in dashArraySequence
+      gbl_state.map.addLayer({
+        type: "line",
+        source: "tolva_track",
+        id: "line-dashed",
+        paint: {
+          "line-color": "yellow",
+          "line-width": 6,
+          "line-dasharray": [0, 4, 3],
+        },
+        filter: ["==", "$type", "LineString"],
+      });
+    } catch (e) {
+      console.log("Error layer");
+    }
     // technique based on https://jsfiddle.net/2mws8y3q/
     // an array of valid line-dasharray values, specifying the lengths of the alternating dashes and gaps that form the dash pattern
     const dashArraySequence = [
@@ -174,13 +245,22 @@ export class MagrisReporteOC extends LitElement {
   }
 
   render() {
-    let id_tolva = (this.location.params.id as string).split(':')[1]
+    let id_tolva = (this.location.params.id as string).split(":")[1];
 
     const item = (record: MagrisRecord) => {
-
       // let start_ts = (+record.id.split(":")[2])*1000
-
-      return html`<div>${record.ts} ${record.posicion}</div>`;
+      let e2s = ["Idle", "Cargando", "Descargando"];
+      let ts = format(new Date(+record.ts * 1000), "dd-MM-yy hh:mm:ss");
+      return html`
+        <tr>
+          <td>${ts}</td>
+          <td>${e2s[record.estado]}</td>
+          <td>${record.peso}</td>
+          <td>${record.peso_inicio}</td>
+          <td>${record.peso_objetivo}</td>
+          <td>${record.patente_o_lote}</td>
+        </tr>
+      `;
     };
 
     let offcanvas_html = html`<div
@@ -206,11 +286,22 @@ export class MagrisReporteOC extends LitElement {
         ></button>
       </div>
       <div class="offcanvas-body">
+        <div>Filtro</div>
         <div class="list-group">
-          ${this._loadTask.render({
-            pending: () => html`${translate("cargando")}`,
-            complete: (_) => html` ${this.reporte.data.map(item)} `,
-          })}
+          <table>
+            <tr>
+              <th>Tiempo</th>
+              <th>Estado</th>
+              <th>Peso</th>
+              <th>Peso Inicial</th>
+              <th>Peso Objetivo</th>
+              <th>Patente/Lote</th>
+            </tr>
+            ${this._loadTask.render({
+              pending: () => html`${translate("cargando")}`,
+              complete: (_) => html` ${this.reporte.data.map(item)} `,
+            })}
+          </table>
         </div>
       </div>
     </div>`;
