@@ -16,6 +16,7 @@ import { MagrisReporte } from "./magris-types";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { base_url } from "../helpers.js";
 import PouchDB from "pouchdb";
+import { format, isBefore, parseISO } from "date-fns";
 
 export class MagrisExtension extends LitElement {
   // @property()
@@ -33,7 +34,9 @@ export class MagrisExtension extends LitElement {
     this,
     async () => {
       let docs = await this.db.allDocs();
-      this.reportes = docs.rows as unknown as MagrisReporte[];
+      let repos = docs.rows as unknown as MagrisReporte[];
+      repos.sort((a, b) => (isBefore(parseISO(a.ts), parseISO(b.ts)) ? -1 : 1));
+      this.reportes = repos;
       console.log(this.reportes);
     },
     () => []
@@ -41,7 +44,25 @@ export class MagrisExtension extends LitElement {
 
   private _detallesOffcanvas: Offcanvas;
 
-  static styles = unsafeCSS(bootstrap);
+  static styles = [
+    unsafeCSS(bootstrap),
+    css`
+      .list-group > div:nth-of-type(1) {
+        border: 1px solid;
+        border-color: red;
+        position: relative;
+      }
+
+      label {
+        position: absolute;
+        top: -6px;
+        z-index: 1;
+        left: 2em;
+        background-color: #da1717;
+        padding: 0 5px;
+      }
+    `,
+  ];
 
   bindState = new StateController(this, gbl_state);
 
@@ -64,17 +85,20 @@ export class MagrisExtension extends LitElement {
   }
 
   render() {
-    
+    const item = (reporte: MagrisReporte, i: number) => {
+      let id_equipo = +reporte.id.split(":")[1];
+      let start_ts = +reporte.id.split(":")[2] * 1000;
+      let end_ts = +reporte.id.split(":")[3] * 1000;
 
-    const item = (reporte: MagrisReporte) => {
-      let id_equipo = +reporte.id.split(':')[1]
-      let start_ts = (+reporte.id.split(":")[2])*1000 
-      let end_ts = (+reporte.id.split(":")[3]) * 1000
-
-      return html`<div class='btn btn-secondary' @click=${()=>Router.go("/magris/" + reporte.id)} 
-      style='margin:1rem; padding:1rem'>
-       Equipo ${id_equipo} - ${new Date(start_ts)} - ${new Date(end_ts)}
-        </div>`;
+      return html`<div
+        class="btn btn-secondary"
+        @click=${() => Router.go("/magris/" + reporte.id)}
+        style="margin:1rem; padding:1rem"
+      >
+        ${i === 0 ? html`<label>Último Subido</label>` : null} Equipo
+        ${id_equipo} - Desde ${format(new Date(start_ts), "dd-MM-yy HH:mm:ss")}
+        - Hasta ${format(new Date(end_ts), "dd-MM-yy HH:mm:ss")}
+      </div>`;
     };
 
     let offcanvas_html = html`<div
@@ -84,13 +108,12 @@ export class MagrisExtension extends LitElement {
       aria-labelledby="offcanvasLabel"
     >
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasLabel">
-          Logs 
-        </h5>
+        <h5 class="offcanvas-title" id="offcanvasLabel">Logs</h5>
         <button
           type="button"
           @click=${() => {
             this._detallesOffcanvas.hide();
+            Router.go("/");
           }}
           class="btn-close text-reset"
           data-bs-dismiss="offcanvas"
@@ -101,7 +124,7 @@ export class MagrisExtension extends LitElement {
         <div class="list-group">
           ${this._loadTask.render({
             pending: () => html`${translate("cargando")}`,
-            complete: (_) => html` ${this.reportes.map(item)} `,
+            complete: (_) => html`${this.reportes.map(item)} `,
           })}
         </div>
       </div>

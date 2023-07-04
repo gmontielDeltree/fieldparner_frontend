@@ -34,6 +34,10 @@ export class MagrisReporteOC extends LitElement {
   static override styles = [
     unsafeCSS(bootstrap),
     css`
+      :host {
+      }
+    `,
+    css`
       table {
         font-family: arial, sans-serif;
         font-size: 0.7rem;
@@ -51,6 +55,17 @@ export class MagrisReporteOC extends LitElement {
 
       tr:nth-child(even) {
         background-color: #dddddd;
+      }
+
+      .back-button {
+        background: transparent
+          url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z'/%3e%3c/svg%3e")
+          center center / 1em no-repeat;
+      }
+
+      .filtro {
+        border: 2px solid red;
+        padding: 1rem;
       }
     `,
   ];
@@ -143,7 +158,16 @@ export class MagrisReporteOC extends LitElement {
             type: "Point",
           },
         };
-        e.properties.estado = "<strong>Fin de " + e2s[r.estado] + "</strong><p>"+ format(new Date(+r.ts * 1000), "dd-MM-yy HH:mm") +"</p>";
+        e.properties.estado =
+          "<strong>Fin de " +
+          e2s[r.estado] +
+          "</strong><p>" +
+          format(new Date(+r.ts * 1000), "dd-MM-yy HH:mm:ss") +
+          `</p>
+          <p>Patente/Lote:&nbsp;<strong>${r.patente_o_lote}</strong></p>
+          <p>Peso:&nbsp;<strong>${r.peso}</strong></p>
+          <p>Peso Objetivo:&nbsp;<strong>${r.peso_objetivo}</strong></p>
+          <p>Peso Inicial:&nbsp;<strong>${r.peso_inicio}</strong></p>`;
         e.properties.tiempo = format(new Date(+r.ts * 1000), "dd-MM-yy HH:mm");
         e.geometry.coordinates = [
           +r.posicion[0] / 1000000,
@@ -169,8 +193,9 @@ export class MagrisReporteOC extends LitElement {
       source.setData(geojson);
     }
 
-    try {
+    gbl_state.map.fitBounds(bbox(geojson),{padding:{top:45,left:400,bottom:45}})
 
+    try {
       // add a line layer without line-dasharray defined to fill the gaps in the dashed line
       gbl_state.map.addLayer({
         type: "line",
@@ -209,38 +234,35 @@ export class MagrisReporteOC extends LitElement {
         filter: ["==", "$type", "Point"],
       });
 
-
       const popup = new Popup({
         closeButton: false,
         closeOnClick: false,
       });
-  
-      
+
       gbl_state.map.on("mouseenter", "carga", (e) => {
         // Change the cursor style as a UI indicator.
         gbl_state.map.getCanvas().style.cursor = "pointer";
-  
+
         // Copy coordinates array.
         const coordinates = e.features[0].geometry.coordinates.slice();
         const description = e.features[0].properties.estado;
-  
+
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
         // over the copy being pointed to.
         while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
         }
-  
+
         // Populate the popup and set its coordinates
         // based on the feature found.
         popup.setLngLat(coordinates).setHTML(description).addTo(gbl_state.map);
       });
-  
+
       gbl_state.map.on("mouseleave", "carga", () => {
         gbl_state.map.getCanvas().style.cursor = "";
         popup.remove();
       });
-
     } catch (e) {
       console.log("Error layer");
     }
@@ -349,20 +371,23 @@ export class MagrisReporteOC extends LitElement {
           type="button"
           @click=${() => {
             this._detallesOffcanvas.hide();
+            Router.go("/magris");
           }}
-          class="btn-close text-reset"
+          class="btn-close text-reset back-button"
           data-bs-dismiss="offcanvas"
           aria-label="Close"
         ></button>
       </div>
       <div class="offcanvas-body">
-        <div>
+        <label>Filtro</label>
+        <div class="filtro">
           <vaadin-date-time-picker
             label="Inicio"
             .i18n=${base_i18n}
             .value=${this.inicio_date}
             .min=${this.min_date}
             .max=${this.fin_date}
+            .step="${60 * 30}"
             @change=${(e: DatePickerChangeEvent) => {
               this.inicio_date = e.target.value;
               this.dibujarElMapa(
@@ -376,6 +401,7 @@ export class MagrisReporteOC extends LitElement {
             .value=${this.fin_date}
             .min=${this.inicio_date}
             .max=${this.max_date}
+            .step="${60 * 30}"
             @change=${(e: DatePickerChangeEvent) => {
               this.fin_date = e.target.value;
               this.dibujarElMapa(
