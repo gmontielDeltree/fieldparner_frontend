@@ -16,9 +16,12 @@ import { MagrisRecord, MagrisReporte } from "./magris-types";
 import { Task, TaskStatus } from "@lit-labs/task";
 import { base_url } from "../helpers.js";
 import PouchDB from "pouchdb";
-import { format } from "date-fns";
+import { format, isWithinInterval, parse } from "date-fns";
 import { NumberFieldEventMap } from "@vaadin/number-field";
 import { Estado } from "../../src/types/index";
+import { DatePicker, DatePickerChangeEvent } from "@vaadin/date-picker";
+import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n.js";
+import "@vaadin/date-time-picker";
 
 export class MagrisReporteOC extends LitElement {
   // @property()
@@ -67,16 +70,18 @@ export class MagrisReporteOC extends LitElement {
       });
       this.reporte = docs.rows[0].doc as unknown as MagrisReporte;
       console.log(this.reporte);
-      this.dibujarElMapa(this.reporte);
+      this.dibujarElMapa(this.reporte.data);
     },
     () => []
   );
 
   private _detallesOffcanvas: Offcanvas;
+  private inicio_date;
+  private fin_date;
 
   bindState = new StateController(this, gbl_state);
 
-  dibujarElMapa(repo: MagrisReporte) {
+  dibujarElMapa(repo: MagrisRecord[]) {
     const geojson = {
       type: "FeatureCollection",
       features: [
@@ -91,9 +96,9 @@ export class MagrisReporteOC extends LitElement {
       ],
     };
 
-    let puntos: number[] = [];
-    repo.data.forEach((r) => {
-      let punto = [r.posicion[0] / 1000000, r.posicion[1] / 1000000];
+    let puntos: number[][] = [];
+    repo.forEach((r) => {
+      let punto : number[]= [r.posicion[0] / 1000000, r.posicion[1] / 1000000];
       if (punto[0] !== 0) {
         puntos.push(punto);
         if (r.estado !== 0) {
@@ -129,31 +134,20 @@ export class MagrisReporteOC extends LitElement {
     }
 
     try {
-      gbl_state.map.addLayer({
-        id: "points",
-        type: "symbol",
-        source: "tolva_track",
-        layout: {
-          "icon-image": "custom-marker",
-          // get the title name from the source's "title" property
-          "text-field": ["get", "title"],
-          "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-          "text-offset": [0, 1.25],
-          "text-anchor": "top",
-        },
-        filter: ["==", "$type", "Point"],
-      });
-      // add a line layer without line-dasharray defined to fill the gaps in the dashed line
-      gbl_state.map.addLayer({
-        type: "circle",
-        source: "tolva_track",
-        id: "carga",
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#B42222",
-        },
-        filter: ["==", "$type", "Point"],
-      });
+      // gbl_state.map.addLayer({
+      //   id: "points",
+      //   type: "symbol",
+      //   source: "tolva_track",
+      //   layout: {
+      //     "icon-image": "custom-marker",
+      //     // get the title name from the source's "title" property
+      //     "text-field": ["get", "title"],
+      //     "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+      //     "text-offset": [0, 1.25],
+      //     "text-anchor": "top",
+      //   },
+      //   filter: ["==", "$type", "Point"],
+      // });
 
       // add a line layer without line-dasharray defined to fill the gaps in the dashed line
       gbl_state.map.addLayer({
@@ -179,6 +173,18 @@ export class MagrisReporteOC extends LitElement {
           "line-dasharray": [0, 4, 3],
         },
         filter: ["==", "$type", "LineString"],
+      });
+
+      // add a line layer without line-dasharray defined to fill the gaps in the dashed line
+      gbl_state.map.addLayer({
+        type: "circle",
+        source: "tolva_track",
+        id: "carga",
+        paint: {
+          "circle-radius": 6,
+          "circle-color": "#B42222",
+        },
+        filter: ["==", "$type", "Point"],
       });
     } catch (e) {
       console.log("Error layer");
@@ -240,6 +246,16 @@ export class MagrisReporteOC extends LitElement {
     this._detallesOffcanvas.show();
   }
 
+  filterReport(report: MagrisReporte, inicio_str, fin_str) {
+    let inicio = parse(inicio_str, "yyyy-MM-dd'T'HH:mm", new Date());
+    let fin = parse(fin_str, "yyyy-MM-dd'T'HH:mm", new Date());
+    console.log("i f", inicio, fin, inicio_str, fin_str);
+    return report.data.filter((r) => {
+      let ts = new Date(+r.ts * 1000);
+      return isWithinInterval(ts, { start: inicio, end: fin });
+    });
+  }
+
   show() {
     this._detallesOffcanvas.show();
   }
@@ -286,7 +302,28 @@ export class MagrisReporteOC extends LitElement {
         ></button>
       </div>
       <div class="offcanvas-body">
-        <div>Filtro</div>
+        <div>
+          <vaadin-date-time-picker
+            label="Inicio"
+            .i18n=${base_i18n}
+            @change=${(e: DatePickerChangeEvent) => {
+              this.inicio_date = e.target.value;
+              this.dibujarElMapa(
+                this.filterReport(this.reporte, this.inicio_date, this.fin_date)
+              );
+            }}
+          ></vaadin-date-time-picker>
+          <vaadin-date-time-picker
+            label="Fin"
+            .i18n=${base_i18n}
+            @change=${(e: DatePickerChangeEvent) => {
+              this.fin_date = e.target.value;
+              this.dibujarElMapa(
+                this.filterReport(this.reporte, this.inicio_date, this.fin_date)
+              );
+            }}
+          ></vaadin-date-time-picker>
+        </div>
         <div class="list-group">
           <table>
             <tr>
