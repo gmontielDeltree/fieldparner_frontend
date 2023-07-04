@@ -5,7 +5,7 @@ import area from "@turf/area";
 import uuid4 from "uuid4";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import centroid from "@turf/centroid";
-import { GeoJSONSource, LngLatLike, Map } from "mapbox-gl";
+import { GeoJSONSource, LngLatLike, Map, Popup } from "mapbox-gl";
 import { Router, RouterLocation } from "@vaadin/router";
 import { StateController } from "@lit-app/state";
 import gbl_state from "../state.js";
@@ -22,6 +22,8 @@ import { Estado } from "../../src/types/index";
 import { DatePicker, DatePickerChangeEvent } from "@vaadin/date-picker";
 import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n.js";
 import "@vaadin/date-time-picker";
+
+let e2s = ["Idle", "CARGA", "DESCARGA"];
 
 export class MagrisReporteOC extends LitElement {
   // @property()
@@ -70,12 +72,25 @@ export class MagrisReporteOC extends LitElement {
       });
       this.reporte = docs.rows[0].doc as unknown as MagrisReporte;
       console.log(this.reporte);
+      this.inicio_date = format(
+        new Date(1000 * +this.reporte.data[this.reporte.data.length - 1].ts),
+        "yyyy-MM-dd'T'HH:mm"
+      );
+      this.fin_date = format(
+        new Date(1000 * +this.reporte.data[0].ts),
+        "yyyy-MM-dd'T'HH:mm"
+      );
+      this.min_date = this.inicio_date;
+      this.max_date = this.fin_date;
+      console.log("LOG INICIIO", this.inicio_date);
       this.dibujarElMapa(this.reporte.data);
     },
     () => []
   );
 
   private _detallesOffcanvas: Offcanvas;
+  private min_date;
+  private max_date;
   private inicio_date;
   private fin_date;
 
@@ -97,27 +112,48 @@ export class MagrisReporteOC extends LitElement {
     };
 
     let puntos: number[][] = [];
+
+    // Filtrar solo las primeras ocurrencias del los estados
+    // https://stackoverflow.com/questions/30716829/how-to-remove-repeated-entries-from-an-array-while-preserving-non-consecutive-du
+    let b = repo.filter((item, pos, arr) => {
+      // Always keep the 0th element as there is nothing before it
+      // Then check if each element is different than the one before it
+      return (
+        pos === 0 ||
+        (item.estado !== 0 &&
+          item.estado !== arr[pos - 1].estado &&
+          item.posicion[0] !== 0)
+      );
+    });
+
     repo.forEach((r) => {
-      let punto : number[]= [r.posicion[0] / 1000000, r.posicion[1] / 1000000];
+      let punto: number[] = [r.posicion[0] / 1000000, r.posicion[1] / 1000000];
       if (punto[0] !== 0) {
         puntos.push(punto);
-        if (r.estado !== 0) {
-          let e = {
-            type: "Feature",
-            properties: {},
-            geometry: {
-              coordinates: [],
-              type: "Point",
-            },
-          };
-          e.properties.estado = e.estado;
-          e.properties.nombre = "OP";
-          e.geometry.coordinates = punto;
-          geojson.features.push(e);
-        }
       }
     });
 
+    b.forEach((r) => {
+      if (r.estado !== 0) {
+        let e = {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            coordinates: [],
+            type: "Point",
+          },
+        };
+        e.properties.estado = "<strong>Fin de " + e2s[r.estado] + "</strong><p>"+ format(new Date(+r.ts * 1000), "dd-MM-yy HH:mm") +"</p>";
+        e.properties.tiempo = format(new Date(+r.ts * 1000), "dd-MM-yy HH:mm");
+        e.geometry.coordinates = [
+          +r.posicion[0] / 1000000,
+          +r.posicion[1] / 1000000,
+        ];
+        geojson.features.push(e);
+      }
+    });
+
+    // Create a popup, but don't add it to the map yet.
     geojson.features[0].geometry.coordinates = puntos.reverse();
 
     let source: GeoJSONSource = gbl_state.map.getSource(
@@ -134,20 +170,6 @@ export class MagrisReporteOC extends LitElement {
     }
 
     try {
-      // gbl_state.map.addLayer({
-      //   id: "points",
-      //   type: "symbol",
-      //   source: "tolva_track",
-      //   layout: {
-      //     "icon-image": "custom-marker",
-      //     // get the title name from the source's "title" property
-      //     "text-field": ["get", "title"],
-      //     "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-      //     "text-offset": [0, 1.25],
-      //     "text-anchor": "top",
-      //   },
-      //   filter: ["==", "$type", "Point"],
-      // });
 
       // add a line layer without line-dasharray defined to fill the gaps in the dashed line
       gbl_state.map.addLayer({
@@ -186,6 +208,39 @@ export class MagrisReporteOC extends LitElement {
         },
         filter: ["==", "$type", "Point"],
       });
+
+
+      const popup = new Popup({
+        closeButton: false,
+        closeOnClick: false,
+      });
+  
+      
+      gbl_state.map.on("mouseenter", "carga", (e) => {
+        // Change the cursor style as a UI indicator.
+        gbl_state.map.getCanvas().style.cursor = "pointer";
+  
+        // Copy coordinates array.
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const description = e.features[0].properties.estado;
+  
+        // Ensure that if the map is zoomed out such that multiple
+        // copies of the feature are visible, the popup appears
+        // over the copy being pointed to.
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+  
+        // Populate the popup and set its coordinates
+        // based on the feature found.
+        popup.setLngLat(coordinates).setHTML(description).addTo(gbl_state.map);
+      });
+  
+      gbl_state.map.on("mouseleave", "carga", () => {
+        gbl_state.map.getCanvas().style.cursor = "";
+        popup.remove();
+      });
+
     } catch (e) {
       console.log("Error layer");
     }
@@ -265,7 +320,6 @@ export class MagrisReporteOC extends LitElement {
 
     const item = (record: MagrisRecord) => {
       // let start_ts = (+record.id.split(":")[2])*1000
-      let e2s = ["Idle", "Cargando", "Descargando"];
       let ts = format(new Date(+record.ts * 1000), "dd-MM-yy hh:mm:ss");
       return html`
         <tr>
@@ -306,6 +360,9 @@ export class MagrisReporteOC extends LitElement {
           <vaadin-date-time-picker
             label="Inicio"
             .i18n=${base_i18n}
+            .value=${this.inicio_date}
+            .min=${this.min_date}
+            .max=${this.fin_date}
             @change=${(e: DatePickerChangeEvent) => {
               this.inicio_date = e.target.value;
               this.dibujarElMapa(
@@ -316,6 +373,9 @@ export class MagrisReporteOC extends LitElement {
           <vaadin-date-time-picker
             label="Fin"
             .i18n=${base_i18n}
+            .value=${this.fin_date}
+            .min=${this.inicio_date}
+            .max=${this.max_date}
             @change=${(e: DatePickerChangeEvent) => {
               this.fin_date = e.target.value;
               this.dibujarElMapa(
