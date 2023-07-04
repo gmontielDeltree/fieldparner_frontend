@@ -35,7 +35,7 @@ export class MagrisExtension extends LitElement {
     async () => {
       let docs = await this.db.allDocs();
       let repos = docs.rows as unknown as MagrisReporte[];
-      repos.sort((a, b) => (isBefore(parseISO(a.ts), parseISO(b.ts)) ? -1 : 1));
+      repos.sort((a, b) => (isBefore(parseISO(a.ts), parseISO(b.ts)) ? 1 : -1));
       this.reportes = repos;
       console.log(this.reportes);
     },
@@ -87,8 +87,8 @@ export class MagrisExtension extends LitElement {
   render() {
     const item = (reporte: MagrisReporte, i: number) => {
       let id_equipo = +reporte.id.split(":")[1];
-      let start_ts = +reporte.id.split(":")[2] * 1000;
-      let end_ts = +reporte.id.split(":")[3] * 1000;
+      let start_ts = +reporte.id.split(":")[3] * 1000;
+      let end_ts = +reporte.id.split(":")[2] * 1000;
 
       return html`<div
         class="btn btn-secondary"

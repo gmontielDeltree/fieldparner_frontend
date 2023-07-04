@@ -239,7 +239,7 @@ export class MagrisReporteOC extends LitElement {
         closeOnClick: false,
       });
 
-      gbl_state.map.on("mouseenter", "carga", (e) => {
+      gbl_state.map.on("click", "carga", (e) => {
         // Change the cursor style as a UI indicator.
         gbl_state.map.getCanvas().style.cursor = "pointer";
 
