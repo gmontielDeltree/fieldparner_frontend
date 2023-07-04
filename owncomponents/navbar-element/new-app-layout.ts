@@ -379,7 +379,7 @@ export class Example extends LitElement {
                 <span>${translate("precios")}</span>
               </a>
             </vaadin-tab> -->
-
+<!-- 
             <vaadin-tab>
               <a
                 tabindex="-1"
@@ -390,7 +390,7 @@ export class Example extends LitElement {
                 <vaadin-icon icon="vaadin:cogs"></vaadin-icon>
                 <span>${translate("ajustes")}</span>
               </a>
-            </vaadin-tab>
+            </vaadin-tab> -->
 
             <!-- <vaadin-tab>
             <a tabindex="-1" href="/cultivos">
