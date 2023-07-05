@@ -67,6 +67,10 @@ export class MagrisReporteOC extends LitElement {
         border: 2px solid red;
         padding: 1rem;
       }
+
+      vaadin-date-time-picker {
+        width:100%;
+      }
     `,
   ];
 
