@@ -25,11 +25,12 @@ import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import mapboxgl, { Map } from "mapbox-gl";
 import { gblStateLoaded, gbl_state } from "../state";
 import { StateController } from "@lit-app/state";
-import { ref, createRef } from "lit/directives/ref.js";
+import { ref, createRef, Ref } from "lit/directives/ref.js";
 import "@vaadin/tabsheet";
 import { Lenguaje } from "../tipos/tipos-varios";
 import "../campana/menu-campana/menu-campana";
 import "../campana-notificacion/campana-notificacion";
+import { AppLayout } from "@vaadin/app-layout";
 
 @customElement("app-layout-navbar-placement")
 export class Example extends LitElement {
@@ -67,7 +68,14 @@ export class Example extends LitElement {
 
   geocoderRef = createRef<HTMLElement>();
 
+  inputRef: Ref<AppLayout> = createRef();
+
   firstUpdated() {
+     window.addEventListener('vaadin-router-location-changed',() => {
+      console.log("EEEEEEEEEEEE")
+      const layout = this.inputRef.value!;
+      layout.drawerOpened = false;
+    })
     // this.shadowRoot.querySelector("vaadin-select").shadowRoot.querySelector('[part="toggle-button"]').style.display = 'none'
   }
 
@@ -140,7 +148,7 @@ export class Example extends LitElement {
 
   render() {
     return html`
-      <vaadin-app-layout .drawerOpened=${false} .overlay=${true}>
+      <vaadin-app-layout .drawerOpened=${false} .overlay=${true} ${ref(this.inputRef)} >
         <vaadin-drawer-toggle
           slot="navbar [touch-optimized]"
         ></vaadin-drawer-toggle>
