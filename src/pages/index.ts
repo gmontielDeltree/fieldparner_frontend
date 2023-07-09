@@ -1,2 +1,3 @@
-export * from './vehiculos/VehiculosPage';
-export * from './vehiculos/NuevoVehiculoPage';
+export * from './ListaVehiculoPage';
+export * from './VehiculoPage';
+export * from './LoginPage';

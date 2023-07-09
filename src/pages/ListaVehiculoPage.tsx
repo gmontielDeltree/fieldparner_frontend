@@ -1,8 +1,8 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataTable, Loading } from '../../components';
-import { ColumnProps, Vehiculo } from '../../types';
+import { DataTable, Loading } from '../components';
+import { ColumnProps, Vehiculo } from '../types';
 import { Box, Button, Grid, InputAdornment, TextField, Typography } from '@mui/material';
 import {
     Add as AddIcon,
@@ -10,8 +10,8 @@ import {
     // Download as DownloadIcon,
     LocalShipping as LocalShippingIcon,
 } from '@mui/icons-material';
-import { useForm, useAppDispatch, useAppSelector } from '../../hooks';
-import { cargarVehiculos, getVehiculos } from '../../redux/slices/vehiculo';
+import { useForm, useAppDispatch, useAppSelector } from '../hooks';
+import { cargarVehiculos, getVehiculos } from '../redux/slices/vehiculo';
 
 
 const columns: ColumnProps[] = [
@@ -21,7 +21,7 @@ const columns: ColumnProps[] = [
     { text: 'Patente', align: 'left' },
     { text: 'Año', align: 'center' }];
 
-export const VehiculosPage: React.FC = () => {
+export const ListaVehiculoPage: React.FC = () => {
 
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
