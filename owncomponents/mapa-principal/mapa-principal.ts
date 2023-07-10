@@ -210,6 +210,7 @@ export class MapaPrincipal extends LitElement {
       //style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
       center: gbl_state.ultima_posicion,
       zoom: 14,
+      maxZoom:17,
       attributionControl: true,
       preserveDrawingBuffer: false,
     });
