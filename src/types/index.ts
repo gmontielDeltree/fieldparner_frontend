@@ -91,6 +91,11 @@ export interface RowData {
     description: string;
 }
 
+export interface UserLogin {
+    email: string;
+    password: string;
+}
+
 // export interface Document<T> {
 //     _id: string;
 //     title: string;

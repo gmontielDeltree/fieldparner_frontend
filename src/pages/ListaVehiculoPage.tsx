@@ -11,7 +11,7 @@ import {
     LocalShipping as LocalShippingIcon,
 } from '@mui/icons-material';
 import { useForm, useAppDispatch, useAppSelector } from '../hooks';
-import { cargarVehiculos, getVehiculos } from '../redux/slices/vehiculo';
+import { cargarVehiculos, getVehiculos } from '../redux/vehiculo';
 
 
 const columns: ColumnProps[] = [

@@ -1,8 +1,8 @@
 import PouchDB from 'pouchdb';
 import { agregarNuevoVehiculo, cargarVehiculos, actualizarVehiculo, removerVehiculoActivo } from ".";
-import { createDocument, getDocumentById, getVehiculoService, updateDocument } from "../../../services";
+import { createDocument, getDocumentById, getVehiculoService, updateDocument } from "../../services";
 import { Vehiculo } from "@types";
-import { AppDispatch, RootState } from "../../store";
+import { AppDispatch, RootState } from "../store";
 import { uiFinishLoading, uiStartLoading } from "../ui";
 import uuid4 from 'uuid4';
 

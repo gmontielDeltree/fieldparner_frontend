@@ -3,7 +3,7 @@ import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } 
 import { useNavigate } from 'react-router-dom';
 import { Vehiculo } from '@types';
 import { useAppDispatch, useAppSelector, useForm } from '../hooks';
-import { removerVehiculoActivo, startAddVehiculo, startUpdateVehiculo } from '../redux/slices/vehiculo';
+import { removerVehiculoActivo, startAddVehiculo, startUpdateVehiculo } from '../redux/vehiculo';
 import { DatosGenerales, Especificaciones, Mantenimientos } from '../components/NuevoVehiculo';
 
 

@@ -1,24 +1,30 @@
-import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
+import React, { useState } from 'react';
+// import CssBaseline from '@mui/material/CssBaseline';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import {  useForm, useAuthStore } from '../hooks';
+import {
+    Avatar,
+    Button,
+    TextField,
+    FormControlLabel,
+    Checkbox,
+    Link,
+    Paper,
+    Box,
+    Grid,
+    IconButton,
+    InputAdornment
+} from '@mui/material';
+import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 
 function Copyright(props: any) {
     return (
         <Typography variant="body2" color="text.secondary" align="center" {...props}>
             {'Copyright © '}
             <Link color="inherit" href="https://mui.com/">
-                Your Website
+                FieldPartner
             </Link>{' '}
             {new Date().getFullYear()}
             {'.'}
@@ -30,19 +36,25 @@ function Copyright(props: any) {
 const defaultTheme = createTheme();
 
 export const LoginPage = () => {
+
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const { startLogin } = useAuthStore();
+    const { email, password, handleInputChange } = useForm({
+        email: '',
+        password: ''
+    });
+
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        console.log({
-            email: data.get('email'),
-            password: data.get('password'),
-        });
+        //TODO: VALIDAR CAMPOS VACIOS
+        // dispatch(startLogin(email, password));
+        startLogin({ email, password });
     };
 
     return (
-        <ThemeProvider theme={defaultTheme}>
+        <>
             <Grid container component="main" sx={{ height: '100vh' }}>
-                <CssBaseline />
+                {/* <CssBaseline /> */}
                 <Grid
                     item
                     xs={false}
@@ -76,10 +88,13 @@ export const LoginPage = () => {
                         <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
                             <TextField
                                 margin="normal"
+                                type='email'
                                 required
                                 fullWidth
                                 id="email"
-                                label="Email Address"
+                                label="Email"
+                                onChange={handleInputChange}
+                                value={email}
                                 name="email"
                                 autoComplete="email"
                                 autoFocus
@@ -89,10 +104,22 @@ export const LoginPage = () => {
                                 required
                                 fullWidth
                                 name="password"
-                                label="Password"
-                                type="password"
+                                label="Contraseña"
+                                onChange={handleInputChange}
+                                value={password}
+                                type={showPassword ? 'text' : 'password'}
                                 id="password"
                                 autoComplete="current-password"
+                                InputProps={{
+                                    endAdornment: (<InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                        </IconButton>
+                                    </InputAdornment>)
+                                }}
                             />
                             <FormControlLabel
                                 control={<Checkbox value="remember" color="primary" />}
@@ -123,6 +150,6 @@ export const LoginPage = () => {
                     </Box>
                 </Grid>
             </Grid>
-        </ThemeProvider>
+        </>
     );
 }

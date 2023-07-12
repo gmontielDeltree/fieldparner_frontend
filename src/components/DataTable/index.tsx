@@ -1,7 +1,5 @@
 import {
     Box,
-    Chip,
-    CircularProgress,
     IconButton,
     Paper,
     Skeleton,
@@ -20,7 +18,7 @@ import {
 } from '@mui/icons-material';
 import { ColumnProps, Vehiculo } from '../../types';
 import { useAppDispatch } from '../../hooks';
-import { setVehiculoActivo } from '../../redux/slices/vehiculo';
+import { setVehiculoActivo } from '../../redux/vehiculo';
 import { useNavigate } from 'react-router-dom';
 
 

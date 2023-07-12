@@ -9,14 +9,13 @@ import { AppLayout } from '../components';
 
 export const OverviewRoutes: React.FC = () => {
     return (
-        <AppLayout key="app-layout-main">
+        <AppLayout key="app-layout">
             <Routes>
-                <Route path='/vehiculo' element={<ListaVehiculoPage />} />
-                <Route path='/vehiculo/nuevo' element={<VehiculoPage />} />
-                <Route path='/vehiculo/:vehiculo' element={<VehiculoPage />} />
-                {/* <Route path='/' /> */}
+                <Route path='/overview/vehiculo' element={<ListaVehiculoPage />} />
+                <Route path='/overview/vehiculo/nuevo' element={<VehiculoPage />} />
+                <Route path='/overview/vehiculo/:vehiculo' element={<VehiculoPage />} />
 
-                <Route path='/*' element={<Navigate to="/overview" />} />
+                <Route path='/*' element={<Navigate to="/init/overview/vehiculo" />} />
             </Routes>
         </AppLayout>
     )
