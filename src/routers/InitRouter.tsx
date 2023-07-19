@@ -13,11 +13,11 @@ export const InitRouter = () => {
     }, [])
 
 
-    if (status === 'checking') {
-        return (
-            <h3>Cargando...</h3>
-        )
-    }
+    // if (status === 'checking') {
+    //     return (
+    //         <Loading key="loading-auth" loading={true} />
+    //     )
+    // }
 
     return (
         <>

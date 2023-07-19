@@ -9,14 +9,10 @@ export const useForm = <T extends Object>(initialState: T) => {
 
     const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = target;
-        let filteredValue = value;
-
-        // Filtrar caracteres no numéricos
-        // if (type === typeof Number()) filteredValue = value.replace(/[^0-9]/g, '');
 
         setFormulario({
             ...formulario,
-            [name]: filteredValue
+            [name]: value
         });
     };
 

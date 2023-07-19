@@ -9,12 +9,14 @@ export interface AuthState {
     status: 'checking' | 'authenticated' | 'not-authenticated';
     user: User | null;
     errorMessage: string;
+    isLoading: boolean;
 }
 
 const initialState: AuthState = {
     status: 'not-authenticated', // 'authenticated','not-authenticated',
     user: null,
     errorMessage: '',
+    isLoading: false,
 }
 
 export const authSlice = createSlice({
@@ -38,10 +40,23 @@ export const authSlice = createSlice({
         },
         clearErrorMessage: (state) => {
             state.errorMessage = '';
+        },
+        startLoading: (state) => {
+            state.isLoading = true;
+        },
+        finishLoading: (state) => {
+            state.isLoading = false;
         }
     }
 });
 
 
 // Action creators are generated for each case reducer function
-export const { onChecking, onLogin, onLogout, clearErrorMessage } = authSlice.actions;
+export const {
+    onChecking,
+    onLogin,
+    onLogout,
+    clearErrorMessage,
+    startLoading,
+    finishLoading,
+} = authSlice.actions;
