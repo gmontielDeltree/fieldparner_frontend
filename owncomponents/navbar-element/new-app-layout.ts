@@ -373,6 +373,18 @@ export class Example extends LitElement {
               <a
                 tabindex="-1"
                 @click=${() => {
+                  Router.go("/integraciones");
+                }}
+              >
+                <vaadin-icon icon="vaadin:cluster"></vaadin-icon>
+                <span>${"Integraciones"}</span>
+              </a>
+            </vaadin-tab>
+
+            <vaadin-tab>
+              <a
+                tabindex="-1"
+                @click=${() => {
                   Router.go("/settings");
                 }}
               >
