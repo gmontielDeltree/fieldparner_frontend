@@ -17,12 +17,12 @@ export class FPSidebar extends LitElement {
       .title {
         font-size: 24px;
         font-weight: bold;
-        margin-bottom: 16px;
+        /* margin-bottom: 16px; */
         padding: 16px;
       }
 
       .content {
-        margin-top: 16px;
+        /* margin-top: 16px; */
         padding: 16px;
       }
 

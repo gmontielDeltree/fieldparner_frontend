@@ -5,6 +5,7 @@ import {
   jd_get_farms_boundaries,
   jd_get_file,
   jd_get_files,
+  jd_get_machine_position,
   jd_get_machines,
   jd_get_organizations,
   john_deere_login,
@@ -14,6 +15,7 @@ import { gbl_state } from "../state";
 import {
   FileResponse,
   JDMachine,
+  LocationHistoryResponse,
   OrganizationsResponse,
   Value,
 } from "./john-deere-types";
@@ -68,12 +70,19 @@ export class JohnDeereIntegracion extends LitElement {
 
     li {
       margin-bottom: 10px;
+      border-style:groove;
     }
 
     .machines {
       display: flex;
       flex-direction: column;
+      border:5px;
     }
+
+    .combo {
+      width:80%;
+    }
+    
   `;
 
   private _loadTask = new Task(
@@ -152,6 +161,7 @@ export class JohnDeereIntegracion extends LitElement {
             : html`
                 <div>
                   <vaadin-combo-box
+                    class='combo'
                     label="Organización"
                     item-label-path="name"
                     item-value-path="id"
@@ -172,7 +182,7 @@ export class JohnDeereIntegracion extends LitElement {
                             gbl_state.jd_integracion.access_token,
                             orgid
                           )
-                        ).values;
+                        ).values as unknown as JDMachine[];
                       }
                     }}
                   ></vaadin-combo-box>
@@ -211,21 +221,18 @@ export class JohnDeereIntegracion extends LitElement {
     `;
   }
 
-  display_in_map(machine) {
-    const marker = new Marker({
-      lat: machine.latitude,
-      lng: machine.longitude,
-    });
+  display_in_map = async (machine : JDMachine) => {
+    let position_machine : LocationHistoryResponse = await jd_get_machine_position(gbl_state.jd_integracion.access_token, machine)
+    
+    let punto = position_machine.values[0].point
+    const marker = new Marker().setLngLat([punto.lon,punto.lat])
 
     marker.setPopup(
-      new Popup({
-        closeButton: false,
-        content: `
+      new Popup().setHTML(`
         <h3>${machine.name}</h3>
         <h4>Model: ${machine.model}</h4>
-        <p>Engine Hours: ${machine.engineHours}</p>
-      `,
-      })
+        <p>Engine Hours: ${machine.telematicsState}</p>
+      `)
     );
 
     marker.addTo(gbl_state.map);

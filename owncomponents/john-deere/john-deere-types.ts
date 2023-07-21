@@ -136,3 +136,30 @@ export interface EquipmentModel {
   classification: string
   id: string
 }
+
+export interface LocationHistoryResponse {
+  links: Array<{
+    rel: string
+    uri: string
+  }>
+  total: number
+  values: Array<{
+    point: {
+      lat: number
+      lon: number
+      altitude: {
+        "@type": string
+        valueAsDouble: number
+        links: any
+        unit: string
+      }
+      links: any
+    }
+    eventTimestamp: string
+    gpsFixTimestamp: string
+    links: Array<{
+      rel: string
+      uri: string
+    }>
+  }>
+}
