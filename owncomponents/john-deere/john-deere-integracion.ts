@@ -11,14 +11,19 @@ import {
 } from "./john-deere-functions";
 import { RouterLocation } from "@vaadin/router";
 import { gbl_state } from "../state";
-import { FileResponse, OrganizationsResponse, Value } from "./john-deere-types";
+import {
+  FileResponse,
+  JDMachine,
+  OrganizationsResponse,
+  Value,
+} from "./john-deere-types";
 import "@vaadin/combo-box";
 import "./john-deere-boundaries-list";
 import { Task, TaskStatus } from "@lit-labs/task";
-import { jd_get_organizations } from './john-deere-functions';
+import { jd_get_organizations } from "./john-deere-functions";
 import jwt_decode, { JwtPayload } from "jwt-decode";
 import { ComboBoxSelectedItemChangedEvent } from "@vaadin/combo-box";
-
+import { Marker, Popup } from "mapbox-gl";
 
 const base_url = import.meta.env.VITE_INTEGRACIONES_SERVER_URL;
 
@@ -39,12 +44,37 @@ export class JohnDeereIntegracion extends LitElement {
   boundaries: any[] = [];
 
   @state()
-  equipment: any[] = []
+  equipment: JDMachine[] = [];
 
   login_to_john_deere() {
     john_deere_login();
   }
 
+  static styles = css`
+    .boundaries-and-machines {
+      margin: 0 auto;
+      width: 800px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .machines {
+      display: flex;
+      flex-direction: column;
+    }
+  `;
 
   private _loadTask = new Task(
     this,
@@ -52,13 +82,14 @@ export class JohnDeereIntegracion extends LitElement {
     () => [this.location]
   );
 
-  async load_orgs(){
-    if(this.is_logged_in()){
-      console.log("user is logged in to JD")
-      this.orgResp = await jd_get_organizations(gbl_state.jd_integracion.access_token)
-    }else{
-      console.log("user is NOT logged in to JD")
-
+  async load_orgs() {
+    if (this.is_logged_in()) {
+      console.log("user is logged in to JD");
+      this.orgResp = await jd_get_organizations(
+        gbl_state.jd_integracion.access_token
+      );
+    } else {
+      console.log("user is NOT logged in to JD");
     }
   }
 
@@ -89,15 +120,15 @@ export class JohnDeereIntegracion extends LitElement {
   }
 
   is_logged_in() {
-    let dt  = jwt_decode<JwtPayload>(gbl_state.jd_integracion.access_token)
+    let dt = jwt_decode<JwtPayload>(gbl_state.jd_integracion.access_token);
 
-    if(dt.exp === undefined){
-      return false
+    if (dt.exp === undefined) {
+      return false;
     }
-    if( (dt.exp < (Date.now() / 1000)) ){
+    if (dt.exp < Date.now() / 1000) {
       //Expiro o no existe
       return false;
-    }else{
+    } else {
       return true;
     }
   }
@@ -125,22 +156,79 @@ export class JohnDeereIntegracion extends LitElement {
                     item-label-path="name"
                     item-value-path="id"
                     .items=${this.orgResp?.values ?? []}
-                    @selected-item-changed=${async (e: ComboBoxSelectedItemChangedEvent<Value>)=>{
-                      if(e.detail.value){
-                        let orgid = +e.detail.value.id
-                        this.boundaries = (await jd_get_farms_boundaries(gbl_state.jd_integracion.access_token,orgid)).values
-                        this.equipment = (await jd_get_machines(gbl_state.jd_integracion.access_token,orgid)).values
-                      }      
+                    @selected-item-changed=${async (
+                      e: ComboBoxSelectedItemChangedEvent<Value>
+                    ) => {
+                      if (e.detail.value) {
+                        let orgid = +e.detail.value.id;
+                        this.boundaries = (
+                          await jd_get_farms_boundaries(
+                            gbl_state.jd_integracion.access_token,
+                            orgid
+                          )
+                        ).values;
+                        this.equipment = (
+                          await jd_get_machines(
+                            gbl_state.jd_integracion.access_token,
+                            orgid
+                          )
+                        ).values;
+                      }
                     }}
                   ></vaadin-combo-box>
-                  <john-deere-boundaries-list
-                    .boundaries=${this.boundaries}
-                  ></john-deere-boundaries-list>
+                  <h4>Bordes</h4>
+                  <ul>
+                    ${this.boundaries.map(
+                      (boundary) => html` <li>${boundary.name}</li> `
+                    )}
+                  </ul>
+                  <h4>Equipos</h4>
+                  <ul class="machines">
+                    ${this.equipment.map(
+                      (machine) => html`
+                        <li
+                          @click=${() => {
+                            console.log("Clicked on ", machine);
+                            this.display_in_map(machine);
+                          }}
+                        >
+                          ${machine.name}
+                          <ul>
+                            <li>
+                              ${machine.equipmentType.name} -
+                              ${machine.equipmentMake.name}
+                              ${machine.equipmentModel.name}
+                            </li>
+                          </ul>
+                        </li>
+                      `
+                    )}
+                  </ul>
                 </div>
               `}
         </div>
       </fp-sidebar>
     `;
+  }
+
+  display_in_map(machine) {
+    const marker = new Marker({
+      lat: machine.latitude,
+      lng: machine.longitude,
+    });
+
+    marker.setPopup(
+      new Popup({
+        closeButton: false,
+        content: `
+        <h3>${machine.name}</h3>
+        <h4>Model: ${machine.model}</h4>
+        <p>Engine Hours: ${machine.engineHours}</p>
+      `,
+      })
+    );
+
+    marker.addTo(gbl_state.map);
   }
 }
 

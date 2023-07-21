@@ -60,3 +60,79 @@ export interface RecordMetadata {
   lastModifiedBySourceSystemUri: any;
   lastModifiedBySourceNode: any;
 }
+
+export interface JDMachine {
+  "@type": string
+  visualizationCategory: string
+  machineCategories: MachineCategories
+  telematicsState: string
+  capabilities: any[]
+  terminals: Terminals
+  displays: Displays
+  GUID: string
+  contributionDefinitionID: string
+  id: string
+  name: string
+  equipmentMake: EquipmentMake
+  equipmentType: EquipmentType
+  equipmentApexType: EquipmentApexType
+  equipmentModel: EquipmentModel
+  isSerialNumberCertified: string
+  links: Link[]
+}
+
+export interface MachineCategories {
+  "@type": string
+  otherAttributes: OtherAttributes
+}
+
+export interface OtherAttributes {}
+
+export interface Terminals {
+  "@type": string
+  otherAttributes: OtherAttributes2
+}
+
+export interface OtherAttributes2 {}
+
+export interface Displays {
+  "@type": string
+  otherAttributes: OtherAttributes3
+}
+
+export interface OtherAttributes3 {}
+
+export interface EquipmentMake {
+  "@type": string
+  name: string
+  ERID: string
+  certified: boolean
+  id: string
+}
+
+export interface EquipmentType {
+  "@type": string
+  name: string
+  GUID: string
+  category: string
+  certified: boolean
+  marketSegment: string
+  id: string
+}
+
+export interface EquipmentApexType {
+  "@type": string
+  name: string
+  GUID: string
+  category: string
+  id: string
+}
+
+export interface EquipmentModel {
+  "@type": string
+  name: string
+  GUID: string
+  certified: boolean
+  classification: string
+  id: string
+}
