@@ -12,6 +12,9 @@ class MyState extends State {
  @storage({key: 'ultima_posicion_key'})
  @property({value: {lng:-59.2965, lat:-35.1923},type:Object}) ultima_posicion : LngLat
 
+ @storage({key: 'jd_integracion'})
+ @property({value:{access_token:"",expires_in:0},type:Object}) jd_integracion : {access_token: string, expires_in:number}
+
  @property() map : Map
  @property() draw : MapboxDraw
  @property() db : PouchDB.Database

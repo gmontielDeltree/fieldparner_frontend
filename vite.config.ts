@@ -10,6 +10,9 @@ export default {
     watch: {
       ignored: ["**/docs/**", "**/dist/**", "**/public/**"],
     },
+    proxy:{
+      '/api': 'http://localhost:9090',
+    }
   },
 
   // config options para pouch

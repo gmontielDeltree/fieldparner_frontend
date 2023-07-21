@@ -13,13 +13,17 @@ import "./null-component";
 // import("./ndvi-offcanvas/ndvi-offcanvas");
 import("./campo-offcanvas/campo-offcanvas");
 // import("./lote-offcanvas/lote-offcanvas-side");
-//import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
-//import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
+// import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
+// import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
 import("./lista-de-campos/lista-de-campos");
+import("./john-deere/john-deere-integracion")
+import("./integraciones/integraciones")
 
 export const routes = [
   { path: "/", component: "null-component" },
   { path: "/gf", redirect: "/" },
+  { path: "/integraciones", component:"menu-integraciones"},
+  { path: "/integraciones/john-deere", component:"john-deere-integracion"},
   { path: "/campos", component: "lista-de-campos" },
   {
     path: "/indices/:uuid",
