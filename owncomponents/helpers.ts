@@ -34,7 +34,8 @@ const layer_visibility = (map, layer_id, status) => {
 };
 
 const base_url = "https://fieldpartner:B6kvciF0k2^#DP99@agrotools.qts-ar.com.ar/couchdb/" 
-  // "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/";
+
+export const base_url_tele = "https://apikey-v2-213njg3v1nihlky5l9jvum36ihirjsgu3dpddva8lfd0:7e233eca960bdea27bdc2a6db0251d89@ab6ed2ec-b5b6-4976-995e-39b79e891d70-bluemix.cloudantnosqldb.appdomain.cloud/";
 
 const deepcopy = (obj) => {
   return JSON.parse(JSON.stringify(obj));

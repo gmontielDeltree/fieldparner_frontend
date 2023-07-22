@@ -1,6 +1,6 @@
 import { customElement, state } from "lit/decorators.js";
 import { LitElement, PropertyValueMap, html, css } from "lit";
-import { base_url, gbl_docs_starting, only_docs } from "./helpers";
+import { base_url, base_url_tele, gbl_docs_starting, only_docs } from "./helpers";
 import { gbl_state } from "./state";
 import { get, translate, use, registerTranslateConfig } from "lit-translate";
 import "@vaadin/button";
@@ -218,7 +218,7 @@ export class AppLoader extends LitElement {
     gbl_state.db_sensores_pro = new PouchDB(
       base_url + "processed_device_telemetry"
     );
-    gbl_state.db_sensores_raw = new PouchDB(base_url + "telemetry_raw");
+    gbl_state.db_sensores_raw = new PouchDB(base_url_tele + "telemetry_raw");
     // Nombres validos solo en minusculas
     this.db = new PouchDB("campos_" + username + "v7");
 

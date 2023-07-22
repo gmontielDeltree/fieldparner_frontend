@@ -1,7 +1,7 @@
 import { format_iso_c } from "./../helpers";
 import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
-import { base_url, touchEvent } from "../helpers";
+import { base_url_tele, touchEvent } from "../helpers";
 import format from "date-fns/format";
 import {
   DataPoints,
@@ -35,8 +35,8 @@ const valor = (card, key) => {
 };
 
 class Devices {
-  db = new PouchDB(base_url + "processed_device_telemetry");
-  db_raw = new PouchDB(base_url + "telemetry_raw");
+  db = new PouchDB(base_url_tele + "processed_device_telemetry");
+  db_raw = new PouchDB(base_url_tele + "telemetry_raw");
 
   private _devices_names: string[] = [];
 
