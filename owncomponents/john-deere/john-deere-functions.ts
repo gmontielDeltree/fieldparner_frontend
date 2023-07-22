@@ -1,17 +1,15 @@
-import { env } from "process";
 import {
   FileResponse,
   JDMachine,
-  LocationHistory,
   LocationHistoryResponse,
   OrganizationsResponse,
 } from "./john-deere-types";
 
-const base_url = import.meta.env.VITE_INTEGRACIONES_SERVER_URL;
-console.log("INTEGRACIONES_BASE_URL = ", base_url);
+const fieldpartner_services_url = import.meta.env.VITE_INTEGRACIONES_SERVER_URL;
+console.log("INTEGRACIONES_BASE_URL = ", fieldpartner_services_url);
 
 export const john_deere_login = async () => {
-  fetch(base_url + "/api/john-deere-login", {
+  fetch(fieldpartner_services_url + "/api/john-deere-login", {
     method: "POST", // *GET, POST, PUT, DELETE, etc.
     mode: "cors", // no-cors, *cors, same-origin
     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -25,13 +23,13 @@ export const john_deere_login = async () => {
       }
     })
     .catch(function (err) {
-      console.info(err + " url: " + url);
+      console.info(err);
     });
 };
 
 async function postData(data = {}) {
   // Default options are marked with *
-  let url = base_url + "/api/call-api";
+  let url = fieldpartner_services_url + "/api/call-api";
   const response = await fetch(url, {
     method: "POST", // *GET, POST, PUT, DELETE, etc.
     mode: "cors", // no-cors, *cors, same-origin
@@ -50,7 +48,7 @@ async function postData(data = {}) {
 
 async function postDataDownload(data = {}) {
   // Default options are marked with *
-  let url = base_url + "/api/call-api-download";
+  let url = fieldpartner_services_url + "/api/call-api-download";
   const response = await fetch(url, {
     method: "POST", // *GET, POST, PUT, DELETE, etc.
     mode: "cors", // no-cors, *cors, same-origin
