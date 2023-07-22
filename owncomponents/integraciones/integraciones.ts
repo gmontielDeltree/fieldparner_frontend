@@ -22,15 +22,14 @@ export class MenuIntegraciones extends LitElement {
   render() {
     return html`
       <fp-sidebar>
-        <div slot="title">Integraciónes</div>
+        <div slot="title">Integraciones</div>
         <div slot="content">
           <div
             class="deere"
             @click=${() => {
               Router.go("/integraciones/john-deere");
             }}
-          >
-          </div>
+          ></div>
         </div>
       </fp-sidebar>
     `;

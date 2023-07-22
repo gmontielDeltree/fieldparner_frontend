@@ -3,8 +3,6 @@ import "./fp-sidebar";
 import { property, state } from "lit/decorators.js";
 import {
   jd_get_farms_boundaries,
-  jd_get_file,
-  jd_get_files,
   jd_get_machine_position,
   jd_get_machines,
   jd_get_organizations,
@@ -21,8 +19,7 @@ import {
 } from "./john-deere-types";
 import "@vaadin/combo-box";
 import "./john-deere-boundaries-list";
-import { Task, TaskStatus } from "@lit-labs/task";
-import { jd_get_organizations } from "./john-deere-functions";
+import { Task} from "@lit-labs/task";
 import jwt_decode, { JwtPayload } from "jwt-decode";
 import { ComboBoxSelectedItemChangedEvent } from "@vaadin/combo-box";
 import { Marker, Popup } from "mapbox-gl";
@@ -30,8 +27,6 @@ import { Marker, Popup } from "mapbox-gl";
 const base_url = import.meta.env.VITE_INTEGRACIONES_SERVER_URL;
 
 export class JohnDeereIntegracion extends LitElement {
-  @state()
-  logged_in_to_johndeere: boolean = false;
 
   @property({ attribute: false })
   location: RouterLocation;
@@ -134,7 +129,7 @@ export class JohnDeereIntegracion extends LitElement {
     if (dt.exp === undefined) {
       return false;
     }
-    if (dt.exp < Date.now() / 1000) {
+    if (dt.exp < (Date.now() / 1000)) {
       //Expiro o no existe
       return false;
     } else {
@@ -230,7 +225,7 @@ export class JohnDeereIntegracion extends LitElement {
     marker.setPopup(
       new Popup().setHTML(`
         <h3>${machine.name}</h3>
-        <h4>Model: ${machine.model}</h4>
+        <h4>Model: ${machine.equipmentModel.name}</h4>
         <p>Engine Hours: ${machine.telematicsState}</p>
       `)
     );

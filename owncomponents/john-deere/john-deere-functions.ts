@@ -104,7 +104,7 @@ export const jd_get_machine_position = async (
   token: string,
   machine: JDMachine
 ) => {
-  let self_url = machine.links.find((e) => e.rel === "self")?.uri;
+  // let self_url = machine.links.find((e) => e.rel === "self")?.uri;
   let location_url = machine.links.find(
     (e) => e.rel === "locationHistory"
   )?.uri;
