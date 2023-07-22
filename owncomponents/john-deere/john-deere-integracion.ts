@@ -19,7 +19,7 @@ import {
 } from "./john-deere-types";
 import "@vaadin/combo-box";
 import "./john-deere-boundaries-list";
-import { Task} from "@lit-labs/task";
+import { Task } from "@lit-labs/task";
 import jwt_decode, { JwtPayload } from "jwt-decode";
 import { ComboBoxSelectedItemChangedEvent } from "@vaadin/combo-box";
 import { Marker, Popup } from "mapbox-gl";
@@ -27,7 +27,6 @@ import { Marker, Popup } from "mapbox-gl";
 const base_url = import.meta.env.VITE_INTEGRACIONES_SERVER_URL;
 
 export class JohnDeereIntegracion extends LitElement {
-
   @property({ attribute: false })
   location: RouterLocation;
 
@@ -65,19 +64,18 @@ export class JohnDeereIntegracion extends LitElement {
 
     li {
       margin-bottom: 10px;
-      border-style:groove;
+      border-style: groove;
     }
 
     .machines {
       display: flex;
       flex-direction: column;
-      border:5px;
+      border: 5px;
     }
 
     .combo {
-      width:80%;
+      width: 80%;
     }
-    
   `;
 
   private _loadTask = new Task(
@@ -124,16 +122,20 @@ export class JohnDeereIntegracion extends LitElement {
   }
 
   is_logged_in() {
-    let dt = jwt_decode<JwtPayload>(gbl_state.jd_integracion.access_token);
+    try {
+      let dt = jwt_decode<JwtPayload>(gbl_state.jd_integracion.access_token);
 
-    if (dt.exp === undefined) {
+      if (dt.exp === undefined) {
+        return false;
+      }
+      if (dt.exp < Date.now() / 1000) {
+        //Expiro o no existe
+        return false;
+      } else {
+        return true;
+      }
+    } catch (e) {
       return false;
-    }
-    if (dt.exp < (Date.now() / 1000)) {
-      //Expiro o no existe
-      return false;
-    } else {
-      return true;
     }
   }
 
@@ -156,7 +158,7 @@ export class JohnDeereIntegracion extends LitElement {
             : html`
                 <div>
                   <vaadin-combo-box
-                    class='combo'
+                    class="combo"
                     label="Organización"
                     item-label-path="name"
                     item-value-path="id"
@@ -216,11 +218,15 @@ export class JohnDeereIntegracion extends LitElement {
     `;
   }
 
-  display_in_map = async (machine : JDMachine) => {
-    let position_machine : LocationHistoryResponse = await jd_get_machine_position(gbl_state.jd_integracion.access_token, machine)
-    
-    let punto = position_machine.values[0].point
-    const marker = new Marker().setLngLat([punto.lon,punto.lat])
+  display_in_map = async (machine: JDMachine) => {
+    let position_machine: LocationHistoryResponse =
+      await jd_get_machine_position(
+        gbl_state.jd_integracion.access_token,
+        machine
+      );
+
+    let punto = position_machine.values[0].point;
+    const marker = new Marker().setLngLat([punto.lon, punto.lat]);
 
     marker.setPopup(
       new Popup().setHTML(`
@@ -231,7 +237,7 @@ export class JohnDeereIntegracion extends LitElement {
     );
 
     marker.addTo(gbl_state.map);
-  }
+  };
 }
 
 customElements.define("john-deere-integracion", JohnDeereIntegracion);
