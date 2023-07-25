@@ -1,16 +1,13 @@
 import { customElement, state } from "lit/decorators.js";
-import { LitElement, PropertyValueMap, html, css } from "lit";
+import { LitElement, PropertyValueMap, html } from "lit";
 import {
   base_url,
   base_url_tele,
-  gbl_docs_starting,
-  only_docs,
 } from "./helpers";
 import { gbl_state } from "./state";
 import { get, translate, use, registerTranslateConfig } from "lit-translate";
 import "@vaadin/button";
 import createAuth0Client from "@auth0/auth0-spa-js";
-import uuid4 from "uuid4";
 import { Lenguaje } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
 import "@pwabuilder/pwaupdate";
@@ -95,8 +92,7 @@ export class AppLoader extends LitElement {
                   class="login-button"
                   theme="primary success"
                   @click=${this.loginet}
-                  >Login</vaadin-button
-                >`
+                  >Login</vaadin-button>`
               : null}
           </div>`
         : null}
@@ -107,9 +103,9 @@ export class AppLoader extends LitElement {
               @map-loaded=${() => (this.map_ready = true)}
               .db=${this.db}
             ></field-partner-child>
-          `
-        : null}
+          `: null}
     `;
+      
   }
 
   async init_the_whole_thing() {
