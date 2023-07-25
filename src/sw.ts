@@ -35,6 +35,7 @@ let adjuntos_db = new PouchDB("adjuntos");
 declare let self: ServiceWorkerGlobalScope;
 declare type ExtendableEvent = any;
 
+console.log("SW Version ", import.meta.env.VITE_VERSION)
 // self.__WB_MANIFEST is default injection point
 precacheAndRoute(self.__WB_MANIFEST);
 //precacheAndRoute([]);
