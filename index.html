@@ -3,7 +3,8 @@
 
 <head>
   <script type="text/javascript">
-    window.smartlook ||
+    if(window.location.hostname !== "localhost"){
+          window.smartlook ||
       (function (d) {
         var o = (smartlook = function () {
           o.api.push(arguments);
@@ -20,6 +21,8 @@
     smartlook("init", "ebe5c626b32fb046a0be7907349213b63fb52c32", {
       region: "eu",
     });
+    }
+
   </script>
 
   <!-- Google tag (gtag.js) -->

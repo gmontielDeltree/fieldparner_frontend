@@ -78,9 +78,11 @@ export class AppLoader extends LitElement {
     //   return html`Not Ready...Offline...Loading Local DBs`;
     // }
 
-    let sw_path = import.meta.env.MODE === 'production' ? '/sw.js' : '/dev-sw.js?dev-sw';
+    let sw_path = import.meta.env.MODE === 'production' ? 'sw.js' : 'dev-sw.js?dev-sw';
 
     return html`
+                <pwa-update .swpath=${sw_path} .showStorageEstimate=${true} .offlineToastDuration=${60000}></pwa-update>
+
       ${!this.ready || !this.map_ready
         ? html`<div class="bg">
             <div class="hero-text">
@@ -98,12 +100,13 @@ export class AppLoader extends LitElement {
         : null}
       ${this.ready
         ? html`
-            <pwa-update .swpath=${sw_path}></pwa-update>
             <field-partner-child
               @map-loaded=${() => (this.map_ready = true)}
               .db=${this.db}
             ></field-partner-child>
           `: null}
+
+
     `;
       
   }
