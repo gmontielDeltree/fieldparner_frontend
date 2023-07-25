@@ -16,4 +16,4 @@ if ('serviceWorker' in navigator) {
         )
       }
       
-console.log("Main.js");
+console.log("main.js loaded");

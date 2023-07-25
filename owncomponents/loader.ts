@@ -1,6 +1,11 @@
 import { customElement, state } from "lit/decorators.js";
 import { LitElement, PropertyValueMap, html, css } from "lit";
-import { base_url, base_url_tele, gbl_docs_starting, only_docs } from "./helpers";
+import {
+  base_url,
+  base_url_tele,
+  gbl_docs_starting,
+  only_docs,
+} from "./helpers";
 import { gbl_state } from "./state";
 import { get, translate, use, registerTranslateConfig } from "lit-translate";
 import "@vaadin/button";
@@ -8,6 +13,7 @@ import createAuth0Client from "@auth0/auth0-spa-js";
 import uuid4 from "uuid4";
 import { Lenguaje } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
+import "@pwabuilder/pwaupdate";
 
 // idiomas como imports para que se regeneren cada build
 import es_json from "./i18n/es.json?url";
@@ -75,6 +81,8 @@ export class AppLoader extends LitElement {
     //   return html`Not Ready...Offline...Loading Local DBs`;
     // }
 
+    let sw_path = import.meta.env.MODE === 'production' ? '/sw.js' : '/dev-sw.js?dev-sw';
+
     return html`
       ${!this.ready || !this.map_ready
         ? html`<div class="bg">
@@ -93,10 +101,13 @@ export class AppLoader extends LitElement {
           </div>`
         : null}
       ${this.ready
-        ? html`<field-partner-child
-            @map-loaded=${() => (this.map_ready = true)}
-            .db=${this.db}
-          />`
+        ? html`
+            <pwa-update .swpath=${sw_path}></pwa-update>
+            <field-partner-child
+              @map-loaded=${() => (this.map_ready = true)}
+              .db=${this.db}
+            ></field-partner-child>
+          `
         : null}
     `;
   }
@@ -336,24 +347,26 @@ export class AppLoader extends LitElement {
       .from(this.remote_db)
       .on("complete", (info) => {
         console.log("Replication Completed");
-        showNotification('Replicacion Completada','success');
+        showNotification("Replicacion Completada", "success");
         console.timeEnd("Replication");
         // Cargar el Idioma
         this.cargar_idioma()
           .then(this.set_idioma)
           .then((r) => {
-            let user_db_name = gbl_state.user.sub.replaceAll("|", "_").toLowerCase();
+            let user_db_name = gbl_state.user.sub
+              .replaceAll("|", "_")
+              .toLowerCase();
             gbl_state.user_db.replicate
               .from(base_url + user_db_name)
               .on("complete", () => {
                 this.cargar_campana_seleccionada("").then(() => {
                   this.ready = true;
-                  showNotification('Ready','success');
+                  showNotification("Ready", "success");
                   console.log("Ready...Estado Inicial", gbl_state, r);
                 });
               })
-              .on("error",(e)=>{
-                console.log("error",e)
+              .on("error", (e) => {
+                console.log("error", e);
               });
           });
 
@@ -381,7 +394,7 @@ export class AppLoader extends LitElement {
       .then(this.cargar_campana_seleccionada)
       .then((r) => {
         this.ready = true;
-        showNotification('Fast Start Ready','success');
+        showNotification("Fast Start Ready", "success");
         console.log("Ready...Estado Inicial", gbl_state, r);
       });
   }
