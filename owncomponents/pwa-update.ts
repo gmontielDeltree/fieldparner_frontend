@@ -142,7 +142,7 @@ export class pwaupdate extends LitElement {
 
         reg.onupdatefound = async () => {
           let newWorker = reg.installing;
-
+          console.log("UPDATE FOUND")
           if (newWorker) {
             newWorker.onstatechange = () => {
               if (newWorker?.state === "installed") {
