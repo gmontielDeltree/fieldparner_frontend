@@ -28,6 +28,7 @@ export class pwaupdate extends LitElement {
 
       #updateToast {
         position: fixed;
+        z-index:1;
         bottom: 16px;
         right: 16px;
         background: var(--toast-background);
@@ -58,6 +59,7 @@ export class pwaupdate extends LitElement {
         flex-direction: column;
         align-items: flex-end;
 
+        z-index:1;
         font-weight: 600;
       }
 
@@ -69,6 +71,7 @@ export class pwaupdate extends LitElement {
       #updateToast button {
         color: white;
         border: none;
+        z-index:1;
         background: var(--button-background);
         padding: 8px;
         border-radius: 24px;
