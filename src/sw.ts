@@ -317,13 +317,16 @@ self.addEventListener("fetch", (event) => {
 
 //setDefaultHandler(new NetworkOnly());
 
+// Este evento se usa solo en caso de usar la notificacion de update
 self.addEventListener("message", (event) => {
   console.log(event);
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
+    clientsClaim();
   }
 });
-// this is necessary, since the new service worker will keep on skipWaiting state
+
+// this is necessary, since the new service worker will keep on Waiting state
 // and then, caches will not be cleared since it is not activated
-// self.skipWaiting();
-// clientsClaim();
+self.skipWaiting();
+clientsClaim();

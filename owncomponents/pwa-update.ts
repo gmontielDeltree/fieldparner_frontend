@@ -1,9 +1,12 @@
 import { LitElement, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { showNotification, showNotificationTimed } from './helpers/notificaciones';
+import { VitePWA } from 'vite-plugin-pwa';
 
 @customElement("pwa-update")
 export class pwaupdate extends LitElement {
-  @property({ type: String }) swpath: string = import.meta.env.MODE === "production" ? "/sw.js" : "/dev-sw.js?dev-sw";
+  @property({ type: String }) swpath: string =
+    import.meta.env.MODE === "production" ? "/sw.js" : "/dev-sw.js?dev-sw";
   @property({ type: String }) updateevent: string = "SKIP_WAITING";
   @property({ type: String }) updatemessage =
     "An update for this app is available";
@@ -17,6 +20,11 @@ export class pwaupdate extends LitElement {
 
   swreg: ServiceWorkerRegistration | undefined;
 
+  private swupdated = false;
+  private swactivated = false;
+
+  
+
   static get styles() {
     return css`
       :host {
@@ -28,7 +36,7 @@ export class pwaupdate extends LitElement {
 
       #updateToast {
         position: fixed;
-        z-index:1;
+        z-index: 1;
         bottom: 16px;
         right: 16px;
         background: var(--toast-background);
@@ -59,7 +67,7 @@ export class pwaupdate extends LitElement {
         flex-direction: column;
         align-items: flex-end;
 
-        z-index:1;
+        z-index: 1;
         font-weight: 600;
       }
 
@@ -71,7 +79,7 @@ export class pwaupdate extends LitElement {
       #updateToast button {
         color: white;
         border: none;
-        z-index:1;
+        z-index: 1;
         background: var(--button-background);
         padding: 8px;
         border-radius: 24px;
@@ -96,6 +104,16 @@ export class pwaupdate extends LitElement {
   async firstUpdated() {
     if (this.swpath) {
       if ("serviceWorker" in navigator) {
+        // Check the flag to know if we should display the notification
+        const lr = localStorage.getItem("updated_flg");
+        console.log("LOCALSTORAGE R",lr)
+
+        if(lr === 'true'){
+          localStorage.setItem("updated_flg","false")
+          showNotificationTimed("Actualizado a v"+ import.meta.env.VITE_VERSION,"contrast",'bottom-start', 30000)
+        }
+
+
         const reg = await navigator.serviceWorker.register(this.swpath, {
           type: import.meta.env.MODE === "production" ? "classic" : "module",
         });
@@ -103,6 +121,11 @@ export class pwaupdate extends LitElement {
         let worker = reg.installing;
 
         if (worker) {
+
+          worker.addEventListener("statechange", () => {
+ 
+          });
+
           if (navigator.storage) {
             const storageData = await navigator.storage.estimate();
 
@@ -145,12 +168,23 @@ export class pwaupdate extends LitElement {
 
         reg.onupdatefound = async () => {
           let newWorker = reg.installing;
-          console.log("UPDATE FOUND")
+          console.log("UPDATE FOUND");
           if (newWorker) {
             newWorker.onstatechange = () => {
+
+              console.log({ state: newWorker?.state });
+
               if (newWorker?.state === "installed") {
                 this.dispatchEvent(new Event("pwaUpdate"));
               }
+
+              if (newWorker?.state === "activated") {
+                // Here is when the activated state was triggered from the lifecycle of the service worker.
+                // This will trigger on the first install and any updates.
+                this.swactivated = true;
+                this.checkUpdate();
+              }
+
             };
           }
         };
@@ -170,11 +204,18 @@ export class pwaupdate extends LitElement {
         }
       }
     });
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      // This will be triggered when the service worker is replaced with a new one.
+      // We do not just reload the page right away, we want to make sure we are fully activated using the checkUpdate function.
+      console.log({ state: "updated" });
+      this.swupdated = true;
+      this.checkUpdate();
+    });
   }
 
   doUpdate() {
     this.swreg?.waiting?.postMessage({ type: this.updateevent });
-
     window.location.reload();
   }
 
@@ -190,16 +231,25 @@ export class pwaupdate extends LitElement {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
   }
 
+  checkUpdate() {
+    if (this.swactivated && this.swupdated) {
+      console.log("Application was updated refreshing the page...");
+      showNotification("Actualizando a v"+ import.meta.env.VITE_VERSION,"contrast")
+      localStorage.setItem("updated_flg","true");
+      window.location.reload();
+    }
+  }
+
   render() {
     return html`
       <div>
         ${this.readyToAsk
           ? html`
-              <div id="updateToast" part="updateToast">
+              <!-- <div id="updateToast" part="updateToast">
                 <span>${this.updatemessage}</span>
 
                 <button @click="${() => this.doUpdate()}">Update</button>
-              </div>
+              </div> -->
             `
           : null}
         ${this.showOfflineToast
