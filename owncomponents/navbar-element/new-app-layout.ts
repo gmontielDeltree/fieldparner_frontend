@@ -369,7 +369,7 @@ export class Example extends LitElement {
               </a>
             </vaadin-tab>
 
-            <vaadin-tab>
+            <!-- <vaadin-tab>
               <a
                 tabindex="-1"
                 @click=${() => {
@@ -379,7 +379,7 @@ export class Example extends LitElement {
                 <vaadin-icon icon="vaadin:cluster"></vaadin-icon>
                 <span>${"Integraciones"}</span>
               </a>
-            </vaadin-tab>
+            </vaadin-tab> -->
 
             <vaadin-tab>
               <a
