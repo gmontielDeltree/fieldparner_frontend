@@ -317,6 +317,12 @@ self.addEventListener("fetch", (event) => {
 
 //setDefaultHandler(new NetworkOnly());
 
+self.addEventListener("message", (event) => {
+  console.log(event);
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
 // this is necessary, since the new service worker will keep on skipWaiting state
 // and then, caches will not be cleared since it is not activated
 // self.skipWaiting();
