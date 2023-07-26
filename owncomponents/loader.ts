@@ -8,7 +8,6 @@ import createAuth0Client from "@auth0/auth0-spa-js";
 import { Lenguaje } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
 
-
 // idiomas como imports para que se regeneren cada build
 import es_json from "./i18n/es.json?url";
 import en_json from "./i18n/en.json?url";
@@ -75,12 +74,7 @@ export class AppLoader extends LitElement {
     //   return html`Not Ready...Offline...Loading Local DBs`;
     // }
 
-    let sw_path =
-      import.meta.env.MODE === "production" ? "/sw.js" : "/dev-sw.js?dev-sw";
-
     return html`
- 
-
       ${!this.ready || !this.map_ready
         ? html`<div class="bg">
             <div class="hero-text">
