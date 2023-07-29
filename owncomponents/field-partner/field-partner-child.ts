@@ -1,6 +1,6 @@
 import { routes } from "./../routes";
 import "../mapa-principal/mapa-principal";
-import { LitElement, html, PropertyValueMap} from "lit";
+import { LitElement, html, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
 import { Router } from "@vaadin/router";
 import("../contratistas/contratista-crud");
@@ -15,7 +15,7 @@ import "../navbar-element/new-app-layout";
 import("../invite/invite");
 import("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
 import("../sensores/devices-route");
-
+import "../news-bar/news-bar";
 import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -26,7 +26,6 @@ import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { Devices } from "../sensores/sensores";
 
 import gbl_state from "../state.js";
-
 
 export class FieldPartnerChild extends LitElement {
   // NO estamos usando el shadow dom (createRenderRoot=>this)
@@ -92,7 +91,7 @@ export class FieldPartnerChild extends LitElement {
     /* Izar map y draw a este componente para que los otros puedan usarlo */
     this.addEventListener("map-loaded", (e: CustomEvent) => {
       this.map = e.detail.map;
-      console.log("MAP LOADED EVT HANDLER")
+      console.log("MAP LOADED EVT HANDLER");
 
       gbl_state.map = e.detail.map;
       this.draw = e.detail.draw;
@@ -198,14 +197,14 @@ export class FieldPartnerChild extends LitElement {
     console.log("Init the whole thing");
     this.load_campos_y_settings();
     this.db
-    .changes({
-      since: "now",
-      live: true,
-    })
-    .on("change", () => {
-      this.load_campos_y_settings();
-      console.log("CHANGES!!");
-    });
+      .changes({
+        since: "now",
+        live: true,
+      })
+      .on("change", () => {
+        this.load_campos_y_settings();
+        console.log("CHANGES!!");
+      });
   }
 
   /** Crea el objeto settings y lo graba en la db
@@ -275,10 +274,13 @@ export class FieldPartnerChild extends LitElement {
     return html`
       <app-layout-navbar-placement>
         <div id="router-container"></div>
-        <mapa-principal
-          .campos=${this.campos}
-          .settings=${this.settings}
-        ></mapa-principal>
+        <div style="display:flex">
+          <mapa-principal
+            .campos=${this.campos}
+            .settings=${this.settings}
+          ></mapa-principal>
+
+        </div>
       </app-layout-navbar-placement>
 
       <nuevo-campo
@@ -301,10 +303,21 @@ export class FieldPartnerChild extends LitElement {
         .db=${this.db}
       ></nota-share-target>
 
-
       <div id="container-multiproposito"></div>
     `;
   }
 }
 
 customElements.define("field-partner-child", FieldPartnerChild);
+
+
+// <!-- <news-bar
+// .news=${[
+//   { title: "This is the first news item" },
+//   { title: "This is the second news item" },
+//   {
+//     title: "This is the third news item",
+//     link: "https://www.example.com/",
+//   },
+// ]}
+// ></news-bar> -->

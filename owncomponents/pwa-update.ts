@@ -236,7 +236,9 @@ export class pwaupdate extends LitElement {
       console.log("Application was updated refreshing the page...");
       showNotification("Actualizando a v"+ import.meta.env.VITE_VERSION,"contrast")
       localStorage.setItem("updated_flg","true");
-      window.location.reload();
+      if(import.meta.env.PROD){
+        window.location.reload();
+      }
     }
   }
 
