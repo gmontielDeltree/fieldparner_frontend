@@ -275,6 +275,7 @@ export class FieldPartnerChild extends LitElement {
       <app-layout-navbar-placement>
         <div id="router-container"></div>
         <div
+          id="map-container"
           style="display:flex; flex-flow: column; height: calc(100vh - var(--_vaadin-app-layout-navbar-offset-size));"
         >
           <mapa-principal

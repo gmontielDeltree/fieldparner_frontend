@@ -176,6 +176,13 @@ export class MapaPrincipal extends LitElement {
     `,
     css`
       /* Pantalla 'Pequeña' */
+
+      .map_box_container {
+          position: relative;
+          height: 100% !important;
+          width: 100% !important;
+        }
+        
       #map {
         /* position: absolute; */
         /* top: var(--_vaadin-app-layout-navbar-offset-size); */
@@ -183,7 +190,9 @@ export class MapaPrincipal extends LitElement {
         /* width: 100vw; */
         z-index: 0;
         height: 100%;
-
+        width:100%;
+        background-color: red;
+        position: relative;
         /* height: calc(
           100vh - var(--_vaadin-app-layout-navbar-offset-size)
         ) !important; */
