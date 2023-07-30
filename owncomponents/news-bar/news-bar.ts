@@ -1,129 +1,80 @@
-import { LitElement, html, css } from "lit";
+/**
+ * Basado en https://ryanmulligan.dev/blog/css-marquee/
+ */
+
+import { LitElement, html, css, PropertyValueMap } from "lit";
 import { property } from "lit/decorators.js";
+import { interpret } from "xstate";
+import { news_bar_machine } from "./news-bar.machine";
+import { news_bar_css } from "./news-bar-style";
+import { SelectorController } from "xstate-lit/dist/select-controller";
 
 class Newsbar extends LitElement {
-  @property()
-  news;
+  private machine = interpret(news_bar_machine).start();
 
-  static styles = css`
-    :host {
-      --color-text: #e0e0ec;
-      --color-bg: #4bd857;
-      --color-bg-accent: #ecdcc0;
-      --size: clamp(10rem, 1rem + 40vmin, 30rem);
-      --gap: calc(var(--size) / 14);
-      --duration: 60s;
-      --scroll-start: 0;
-      --scroll-end: calc(-100% - var(--gap));
-    }
+  static styles = [news_bar_css];
 
-    .marquee {
-      display: flex;
-      overflow: hidden;
-      user-select: none;
-      
-      gap: var(--gap);
-      mask-image: linear-gradient(
-        var(--mask-direction, to right),
-        hsl(0 0% 0% / 0),
-        hsl(0 0% 0% / 1) 20%,
-        hsl(0 0% 0% / 1) 80%,
-        hsl(0 0% 0% / 0)
-      );
-    }
+  news = new SelectorController(
+    this,
+    this.machine,
+    (state) => state.context.news
+  );
 
-    .marquee__group {
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      background-color:var(--color-bg);
-      margin:0px;
-      color:var(--color-text);
-      gap: var(--gap);
-      min-width: 100%;
-      animation: scroll-x var(--duration) linear infinite;
-    }
+  is_hidden = new SelectorController(
+    this,
+    this.machine,
+    (state) => state.value === "hidden"
+  );
 
-    @media (prefers-reduced-motion: reduce) {
-      .marquee__group {
-        animation-play-state: paused;
-      }
-    }
+  subscription = this.machine.subscribe((state) => {
+    console.log(state);
+  });
 
-    @keyframes scroll-x {
-      from {
-        transform: translateX(var(--scroll-start));
-      }
-      to {
-        transform: translateX(var(--scroll-end));
-      }
-    }
 
-    @keyframes scroll-y {
-      from {
-        transform: translateY(var(--scroll-start));
-      }
-      to {
-        transform: translateY(var(--scroll-end));
-      }
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if(this.is_hidden.value){
+      this.dispatchEvent(new CustomEvent("hidden"))
     }
+  }
 
-    /* Element styles */
-    .marquee svg {
-      display: grid;
-      place-items: center;
-      width: var(--size);
-      fill: var(--color-text);
-      background: var(--color-bg-accent);
-      aspect-ratio: 16/9;
-      padding: calc(var(--size) / 10);
-      border-radius: 0.5rem;
-    }
-
-    /* Parent wrapper */
-    .wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: var(--gap);
-      margin: auto;
-      max-width: 100vw;
-    }
-
-    @keyframes fade {
-      to {
-        opacity: 0;
-        visibility: hidden;
-      }
-    }
-  `;
 
   render() {
-    return html`
-      <div class="wrapper">
-        <div class="marquee">
-          <ul class="marquee__group">
-            ${this.news.map((news) => {
-              return html`
-                <li class="marquee__item">
-                  <a href="${news.link}" target="_blank">${news.title}</a>
-                </li>
-              `;
-            })}
-          </ul>
+    return !this.is_hidden.value
+      ? html`
+          <div class="total_wrapper">
+            <div class="wrapper">
+              <div class="marquee">
+                <ul class="marquee__group">
+                  ${this.news.value.map((news) => {
+                    return html`
+                      <li class="marquee__item">
+                        <a href="${news.link}" target="_blank">${news.title}</a>
+                      </li>
+                    `;
+                  })}
+                </ul>
 
-          <ul class="marquee__group" aria-hidden="true">
-            ${this.news.map((news) => {
-              return html`
-                <li class="marquee__item">
-                  <a href="${news.link}" target="_blank">${news.title}</a>
-                </li>
-              `;
-            })}
-          </ul>
-        </div>
-      </div>
-    `;
+                <ul class="marquee__group" aria-hidden="true">
+                  ${this.news.value.map((news) => {
+                    return html`
+                      <li class="marquee__item">
+                        <a href="${news.link}" target="_blank">${news.title}</a>
+                      </li>
+                    `;
+                  })}
+                </ul>
+              </div>
+            </div>
+            <button
+              @click=${(e) => {
+                this.machine.send("HIDE");
+              }}
+            >
+              X
+            </button>
+          </div>
+        `
+      : null;
   }
 }
 

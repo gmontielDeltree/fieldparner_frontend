@@ -285,14 +285,9 @@ export class FieldPartnerChild extends LitElement {
           ></mapa-principal>
           <news-bar
             style="flex: 0 1 auto;"
-            .news=${[
-              { title: "This is the first news item" },
-              { title: "This is the second news item" },
-              {
-                title: "This is the third news item",
-                link: "https://www.example.com/",
-              },
-            ]}
+            @hidden=${()=>{gbl_state.map.resize()
+              console.log("RESIZE")
+            }}
           ></news-bar>
         </div>
       </app-layout-navbar-placement>
