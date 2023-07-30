@@ -253,8 +253,11 @@ export class MapaPrincipal extends LitElement {
       // style: "mapbox://styles/mapbox/outdoors-v11",
       //style: mapStyle,
       style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
-      center: gbl_state.ultima_posicion,
-      zoom: 14,
+      center: gbl_state.ultima_posicion ?? {
+        "lng": -61.19468066139592,
+        "lat": -31.295018658148038
+      },
+      zoom: gbl_state.ultimo_zoom ?? 3.4,
       maxZoom: 17,
       attributionControl: true,
       preserveDrawingBuffer: false,
@@ -614,8 +617,12 @@ export class MapaPrincipal extends LitElement {
       this.map.getCanvas().style.cursor = "";
     });
 
-    this.map.on("move", (e) => {
+    this.map.on("moveend", (e) => {
       gbl_state.ultima_posicion = this.map.getCenter();
+    });
+
+    this.map.on("zoomend", (e) => {
+      gbl_state.ultimo_zoom = this.map.getZoom();
     });
   }
 
