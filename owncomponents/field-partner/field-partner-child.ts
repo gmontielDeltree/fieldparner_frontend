@@ -274,12 +274,25 @@ export class FieldPartnerChild extends LitElement {
     return html`
       <app-layout-navbar-placement>
         <div id="router-container"></div>
-        <div style="display:flex">
+        <div
+          style="display:flex; flex-flow: column; height: calc(100vh - var(--_vaadin-app-layout-navbar-offset-size));"
+        >
           <mapa-principal
             .campos=${this.campos}
             .settings=${this.settings}
+            style="flex:1 1 auto;"
           ></mapa-principal>
-
+          <news-bar
+            style="flex: 0 1 auto;"
+            .news=${[
+              { title: "This is the first news item" },
+              { title: "This is the second news item" },
+              {
+                title: "This is the third news item",
+                link: "https://www.example.com/",
+              },
+            ]}
+          ></news-bar>
         </div>
       </app-layout-navbar-placement>
 
@@ -309,15 +322,3 @@ export class FieldPartnerChild extends LitElement {
 }
 
 customElements.define("field-partner-child", FieldPartnerChild);
-
-
-// <!-- <news-bar
-// .news=${[
-//   { title: "This is the first news item" },
-//   { title: "This is the second news item" },
-//   {
-//     title: "This is the third news item",
-//     link: "https://www.example.com/",
-//   },
-// ]}
-// ></news-bar> -->

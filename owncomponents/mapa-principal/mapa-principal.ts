@@ -1,8 +1,8 @@
-import { ndvi_layers_init } from './ndvi-layers';
+import { ndvi_layers_init } from "./ndvi-layers";
 import { gbl_state } from "./../state";
 import { depositos_update, depositos_layer_init } from "./depositos-layer";
-import { LitElement, html, unsafeCSS, css } from "lit";
-import { property } from "lit/decorators.js";
+import { LitElement, html, unsafeCSS, css, PropertyValueMap } from "lit";
+import { property, query } from "lit/decorators.js";
 import {
   touchEvent,
   layer_visibility,
@@ -42,7 +42,7 @@ const mapStyle = {
       tiles: [
         //"http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga"
         //"https://ecn.t1.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=587&mkt=en-gb&n=z",
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       ],
       tileSize: 256,
     },
@@ -64,8 +64,8 @@ const mapStyle = {
  */
 const colorear_lotes = async (features) => {
   // features[].properties.actividades
-  let tabla = await tabla_de_colores()
-  console.log("TAbla DE cOLORES",tabla)
+  let tabla = await tabla_de_colores();
+  console.log("TAbla DE cOLORES", tabla);
   // Para cada lote
   await Promise.all(
     features.map(async ({ properties }) => {
@@ -135,11 +135,26 @@ export class MapaPrincipal extends LitElement {
   })
   draw: MapboxDraw;
 
-  @property()
+  @property(
+    // {
+    //   hasChanged(newVal: any, oldVal: any) {
+    //     return false;
+    //   },
+    // }
+  )
   campos: any; //es el allDocs desde campos
 
-  @property()
+  @property(
+    {
+      hasChanged(newVal: any, oldVal: any) {
+        return false;
+      },
+    }
+  )
   settings: any;
+
+  @query("#map")
+  _map;
 
   private layers: Layer[];
 
@@ -162,27 +177,39 @@ export class MapaPrincipal extends LitElement {
     css`
       /* Pantalla 'Pequeña' */
       #map {
-        position: absolute;
-        top: var(--_vaadin-app-layout-navbar-offset-size);
+        /* position: absolute; */
+        /* top: var(--_vaadin-app-layout-navbar-offset-size); */
         /*bottom: 3;*/
-        width: 100vw;
+        /* width: 100vw; */
         z-index: 0;
-        height: calc(
+        height: 100%;
+
+        /* height: calc(
           100vh - var(--_vaadin-app-layout-navbar-offset-size)
-        ) !important;
+        ) !important; */
       }
 
       @media only screen and (min-width: 800px) {
         /* Pantalla 'Grande' */
+        .map_box_container {
+          position: relative;
+          height: 100% !important;
+          width: 100% !important;
+        }
         #map {
-          position: absolute;
-          top: var(--_vaadin-app-layout-navbar-offset-size);
+          /* position: absolute; */
+          /* top: var(--_vaadin-app-layout-navbar-offset-size); */
           /*bottom: 3;*/
-          width: 100vw;
+          /* width: 100vw; */
           z-index: 0;
-          height: calc(
+          height: 100%;
+          width:100%;
+          background-color: green;
+          position: relative;
+    
+          /* height: calc(
             100vh - var(--_vaadin-app-layout-navbar-offset-size)
-          ) !important;
+          ) !important; */
         }
       }
 
@@ -202,19 +229,27 @@ export class MapaPrincipal extends LitElement {
       "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
   }
 
+
   firstUpdated() {
+    this.mapa_init()
+  }
+
+  async mapa_init() {
+    /* Para evitar empezar a renderizar el mapa antes de que height sea completamente definida */
+    /* Esperar hasta que el update finalice */
+    await this.getUpdateComplete()
+    console.log("map height", this._map.offsetHeight)
     this.map = new Map({
-      container: this.shadowRoot.getElementById("map"),
-      style: "mapbox://styles/mapbox/outdoors-v11",
+      container: this._map, //this.shadowRoot.getElementById("map"),
+      // style: "mapbox://styles/mapbox/outdoors-v11",
       //style: mapStyle,
       style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
       center: gbl_state.ultima_posicion,
       zoom: 14,
-      maxZoom:17,
+      maxZoom: 17,
       attributionControl: true,
       preserveDrawingBuffer: false,
     });
-
 
     this.map.addControl(new mapboxgl.NavigationControl());
 
@@ -236,6 +271,7 @@ export class MapaPrincipal extends LitElement {
     //this.map.resize();
 
     this.map.on("load", () => {
+
       // const geocoder = new MapboxGeocoder({
       //   accessToken: mapboxgl.accessToken,
       //   mapboxgl: mapboxgl,
@@ -447,17 +483,15 @@ export class MapaPrincipal extends LitElement {
           "seleccion_lotes"
         ) as GeoJSONSource;
         //Pintar
-        
+
         let data_lotes = {
           type: "FeatureCollection",
           features: lotes,
         };
 
-        colorear_lotes(data_lotes.features).then(()=>
-        
-        lotes_source.setData(data_lotes)
-        )
-        
+        colorear_lotes(data_lotes.features).then(() =>
+          lotes_source.setData(data_lotes)
+        );
       };
 
       this.map.showAllCampos = () => {
@@ -479,7 +513,7 @@ export class MapaPrincipal extends LitElement {
       this.cargar_marcadores();
 
       this._redraw_map();
-      this.map.resize();
+      // this.map.resize();
 
       // console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
@@ -678,7 +712,7 @@ export class MapaPrincipal extends LitElement {
   }
 
   _redraw_map = () => {
-    console.log("Redrawing Map")
+    console.log("Redrawing Map");
     let campos_source = this.map.getSource("campos");
     // console.log("CS", campos_source);
     let campos_collection = {
@@ -721,29 +755,29 @@ export class MapaPrincipal extends LitElement {
       // console.log("Set lotes internos DS", lotes_collection.features);
       lotes_source?.setData(lotes_collection);
 
-
       // Colorear lotes seleccionados
-      let a = this.map.getSource('seleccion_lotes')._data
-      colorear_lotes(a.features).then(()=>
-        this.map.getSource('seleccion_lotes').setData(a)
-      )
-      
+      let a = this.map.getSource("seleccion_lotes")._data;
+      colorear_lotes(a.features).then(() =>
+        this.map.getSource("seleccion_lotes").setData(a)
+      );
 
       // console.log("Redraw Campos", this.campos);
-      this.map.resize();
+      // this.map.resize();
     });
   };
 
   willUpdate(props) {
-    if (props.has("campos")) {
-      this._redraw_map();
-    }
+    // if (props.has("campos")) {
+    //   this._redraw_map();
+    // }
   }
 
   render() {
+    console.count("mapa-principal render")
     return html`
-      <div id="map"></div>
-
+      <div class="map_box_container">
+        <div id="map"></div>
+      </div>
       <sp-theme scale="medium" color="dark">
         <!-- End content requiring theme application. -->
         <sp-action-menu size="m" class="add-button">

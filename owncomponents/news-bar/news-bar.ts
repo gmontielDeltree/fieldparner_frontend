@@ -38,6 +38,7 @@ class Newsbar extends LitElement {
       align-items: center;
       justify-content: space-around;
       background-color:var(--color-bg);
+      margin:0px;
       color:var(--color-text);
       gap: var(--gap);
       min-width: 100%;
