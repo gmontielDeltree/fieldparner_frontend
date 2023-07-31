@@ -7,7 +7,7 @@ export const news_bar_css = css`
       --color-bg-accent: #ecdcc0;
       --size: clamp(10rem, 1rem + 40vmin, 30rem);
       --gap: calc(var(--size) / 14);
-      --duration: 60s;
+      --duration: 240s;
       --scroll-start: 0;
       --scroll-end: calc(-100% - var(--gap));
     }
@@ -83,7 +83,7 @@ export const news_bar_css = css`
       flex-grow:1;
       gap: var(--gap);
       margin: auto;
-      max-width: 100%;
+      max-width: 95%;
     }
 
         /* Parent wrapper */
@@ -91,7 +91,8 @@ export const news_bar_css = css`
       display: flex;
       flex-direction: row;
       margin: auto;
-      max-width: 100vw;
+      width: 100vw;
+      background-color: var(--color-bg);
     }
 
     @keyframes fade {

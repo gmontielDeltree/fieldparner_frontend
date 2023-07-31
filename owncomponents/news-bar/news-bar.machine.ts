@@ -6,14 +6,9 @@ interface NewsBarContext {
 }
 
 const fetch_news_feed = async (ctx, evt) => {
-  return [
-    { title: "This is the first news item" },
-    { title: "This is the second news item" },
-    {
-      title: "This is the third news item",
-      link: "https://www.example.com/",
-    },
-  ];
+  let a = await fetch(import.meta.env.VITE_COGS_SERVER_URL + "/newsfeed")
+  let b = await a.json()
+  return b
 };
 
 export const news_bar_machine = createMachine<NewsBarContext>(
@@ -53,7 +48,7 @@ export const news_bar_machine = createMachine<NewsBarContext>(
       },
 
       showing: {
-        after: { 3000: { target: "fetching" } },
+        after: { 60000: { target: "fetching" } },
 
       },
     },
