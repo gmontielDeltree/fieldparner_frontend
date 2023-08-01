@@ -48,7 +48,7 @@ class Newsbar extends LitElement {
                   ${this.news.value.map((news) => {
                     return html`
                       <li class="marquee__item">
-                        <a href="${news.link ?? ""}" target="_blank">${news.title}</a>
+                        <a href="${news.link}" target="_blank">${news.title}</a>
                       </li>
                     `;
                   })}

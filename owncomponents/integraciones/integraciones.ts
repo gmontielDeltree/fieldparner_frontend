@@ -17,17 +17,41 @@ export class MenuIntegraciones extends LitElement {
       background-size: cover;
       background-position: center;
     }
+
+    .magris {
+      background-image: url("/images/magris.png");
+      cursor: pointer;
+      background-repeat: no-repeat;
+      width: 100%;
+      height: 50px;
+      background-size: contain;
+      background-position: center;
+    }
+
+    .container {
+      gap: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+ 
   `;
 
   render() {
     return html`
       <fp-sidebar>
         <div slot="title">Integraciones</div>
-        <div slot="content">
+        <div class="container" slot="content">
           <div
             class="deere"
             @click=${() => {
               Router.go("/integraciones/john-deere");
+            }}
+          ></div>
+          <div
+            class="magris"
+            @click=${() => {
+              Router.go("/integraciones/magris");
             }}
           ></div>
         </div>

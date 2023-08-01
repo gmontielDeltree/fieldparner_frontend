@@ -369,17 +369,23 @@ export class Example extends LitElement {
               </a>
             </vaadin-tab>
 
-            <!-- <vaadin-tab>
-              <a
-                tabindex="-1"
-                @click=${() => {
-                  Router.go("/integraciones");
-                }}
-              >
-                <vaadin-icon icon="vaadin:cluster"></vaadin-icon>
-                <span>${"Integraciones"}</span>
-              </a>
-            </vaadin-tab> -->
+            ${
+              import.meta.env.VITE_INTEGRACIONES_ONLY === "YES"
+                ? html`
+                    <vaadin-tab>
+                      <a
+                        tabindex="-1"
+                        @click=${() => {
+                          Router.go("/integraciones");
+                        }}
+                      >
+                        <vaadin-icon icon="vaadin:cluster"></vaadin-icon>
+                        <span>${"Integraciones"}</span>
+                      </a>
+                    </vaadin-tab>
+                  `
+                : null
+            }
 
             <vaadin-tab>
               <a

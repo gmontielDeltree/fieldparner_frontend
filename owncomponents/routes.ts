@@ -24,6 +24,8 @@ export const routes = [
   { path: "/gf", redirect: "/" },
   { path: "/integraciones", component:"menu-integraciones"},
   { path: "/integraciones/john-deere", component:"john-deere-integracion"},
+  { path: "/integraciones/magris", component:"magris"},
+
   { path: "/campos", component: "lista-de-campos" },
   {
     path: "/indices/:uuid",
