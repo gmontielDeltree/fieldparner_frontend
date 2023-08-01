@@ -2,8 +2,8 @@
  * Basado en https://ryanmulligan.dev/blog/css-marquee/
  */
 
-import { LitElement, html, css, PropertyValueMap } from "lit";
-import { property } from "lit/decorators.js";
+import { LitElement, html, PropertyValueMap } from "lit";
+// import { property } from "lit/decorators.js";
 import { interpret } from "xstate";
 import { news_bar_machine } from "./news-bar.machine";
 import { news_bar_css } from "./news-bar-style";
@@ -48,7 +48,7 @@ class Newsbar extends LitElement {
                   ${this.news.value.map((news) => {
                     return html`
                       <li class="marquee__item">
-                        <a href="${news.link}" target="_blank">${news.title}</a>
+                        <a href="${news.link ?? ""}" target="_blank">${news.title}</a>
                       </li>
                     `;
                   })}
