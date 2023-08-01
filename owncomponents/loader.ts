@@ -113,13 +113,13 @@ export class AppLoader extends LitElement {
 
     let sitio = window.location.hostname;
 
-    if (sitio === "agrotools.netlify.app") {
+    if (import.meta.env.PROD) {
       // 'Production' - Normal flow
 
       await this.buildAuth0Client();
       console.log("Normal Flow - AUTH Flow");
       await this.handleRedirectCallback();
-    } else if (sitio === "dev--agrotools.netlify.app") {
+    } else if (import.meta.env.DEV && import.meta.env.VITE_LOCAL_DB === undefined) {
       // Development - Especial flow
       console.log("Especial Development Flow - Demo User");
       this.user.sub = "demo-userdb";
