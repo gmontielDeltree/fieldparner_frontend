@@ -237,4 +237,18 @@ export const routes = [
       },
     ],
   },
+  {
+    path: "/magris",
+    action: async () => {
+      await import("./magris/magris");
+    },
+    component: "magris-extension",
+  },
+  {
+    path: "/magris/:id",
+    action: async () => {
+      await import("./magris/reporte")
+    },
+    component: "magris-reporte",
+  },
 ];
