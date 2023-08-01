@@ -113,7 +113,7 @@ export class AppLoader extends LitElement {
 
     let sitio = window.location.hostname;
 
-    if (import.meta.env.PROD) {
+    if (import.meta.env.VITE_PRODUCTION_BRANCH === "YES") {
       // 'Production' - Normal flow
 
       await this.buildAuth0Client();
