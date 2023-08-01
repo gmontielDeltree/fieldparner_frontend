@@ -51,7 +51,7 @@ export class MenuIntegraciones extends LitElement {
           <div
             class="magris"
             @click=${() => {
-              Router.go("/integraciones/magris");
+              Router.go("/magris");
             }}
           ></div>
         </div>

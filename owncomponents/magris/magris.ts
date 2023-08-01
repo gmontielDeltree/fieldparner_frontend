@@ -14,7 +14,7 @@ import { translate } from "lit-translate";
 import bbox from "@turf/bbox";
 import { MagrisReporte } from "./magris-types";
 import { Task, TaskStatus } from "@lit-labs/task";
-import { base_url } from "../helpers.js";
+import { base_url_tele } from "../helpers.js";
 import PouchDB from "pouchdb";
 import { format, isBefore, parseISO } from "date-fns";
 
@@ -28,7 +28,7 @@ export class MagrisExtension extends LitElement {
   @state()
   reportes: MagrisReporte[];
 
-  db: PouchDB.Database = new PouchDB(base_url + "tolva");
+  db: PouchDB.Database = new PouchDB(base_url_tele + "tolva");
 
   private _loadTask = new Task(
     this,

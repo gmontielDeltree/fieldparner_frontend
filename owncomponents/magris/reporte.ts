@@ -14,7 +14,7 @@ import { translate } from "lit-translate";
 import bbox from "@turf/bbox";
 import { MagrisRecord, MagrisReporte } from "./magris-types";
 import { Task, TaskStatus } from "@lit-labs/task";
-import { base_url } from "../helpers.js";
+import { base_url_tele } from "../helpers.js";
 import PouchDB from "pouchdb";
 import { format, isWithinInterval, parse } from "date-fns";
 import { NumberFieldEventMap } from "@vaadin/number-field";
@@ -80,7 +80,7 @@ export class MagrisReporteOC extends LitElement {
   @state()
   reporte: MagrisReporte;
 
-  db: PouchDB.Database = new PouchDB(base_url + "tolva");
+  db: PouchDB.Database = new PouchDB(base_url_tele + "tolva");
 
   private _loadTask = new Task(
     this,
