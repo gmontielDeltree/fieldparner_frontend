@@ -119,7 +119,7 @@ export class AppLoader extends LitElement {
       await this.buildAuth0Client();
       console.log("Normal Flow - AUTH Flow");
       await this.handleRedirectCallback();
-    } else if (import.meta.env.DEV && import.meta.env.VITE_LOCAL_DB === undefined) {
+    } else if (import.meta.env.VITE_DEV_BRANCH === "YES") {
       // Development - Especial flow
       console.log("Especial Development Flow - Demo User");
       this.user.sub = "demo-userdb";
