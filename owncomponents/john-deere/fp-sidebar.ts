@@ -12,6 +12,8 @@ export class FPSidebar extends LitElement {
         background-color: #f5f5f5;
         border-radius: 10px;
         z-index: 1;
+        display: flex;
+        flex-direction: column;
       }
 
       .title {
