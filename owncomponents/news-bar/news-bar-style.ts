@@ -91,7 +91,7 @@ export const news_bar_css = css`
       display: flex;
       flex-direction: row;
       margin: auto;
-      width: 100vw;
+      /* width: 100vw; */
       background-color: var(--color-bg);
     }
 
