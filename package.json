@@ -58,6 +58,7 @@
     "@pwabuilder/pwaauth": "^0.9.7",
     "@pwabuilder/pwaupdate": "^0.2.1",
     "@reduxjs/toolkit": "^1.9.5",
+    "@shoelace-style/shoelace": "^2.6.0",
     "@spectrum-web-components/action-menu": "^0.33.0",
     "@spectrum-web-components/button": "^0.33.0",
     "@spectrum-web-components/menu": "^0.33.0",

@@ -345,6 +345,21 @@ export const upload_file = async (fileblob: File) => {
   });
 };
 
+
+export const empty_feature_collection = () => {return {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "coordinates": [],
+        "type": "Polygon"
+      }
+    }
+  ]
+}}
+
 export {
   emptyGJ,
   base_url,

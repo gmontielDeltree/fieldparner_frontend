@@ -22,7 +22,16 @@ import "./john-deere-boundaries-list";
 import { Task } from "@lit-labs/task";
 import jwt_decode, { JwtPayload } from "jwt-decode";
 import { ComboBoxSelectedItemChangedEvent } from "@vaadin/combo-box";
-import { Marker, Popup } from "mapbox-gl";
+import "@vaadin/button";
+import { GeoJSONSource, Marker, Popup } from "mapbox-gl";
+import "@shoelace-style/shoelace/dist/components/tree/tree.js";
+import "@shoelace-style/shoelace/dist/components/tree-item/tree-item.js";
+import { campo_guardar, empty_feature_collection } from "../helpers";
+import { FeatureCollection } from "@turf/helpers";
+import bbox from "@turf/bbox";
+import { Campo } from "../tipos/campos";
+import { uuidv7 } from "uuidv7";
+import { showNotification } from "../helpers/notificaciones";
 
 const base_url = import.meta.env.VITE_INTEGRACIONES_SERVER_URL;
 
@@ -163,32 +172,28 @@ export class JohnDeereIntegracion extends LitElement {
                     item-label-path="name"
                     item-value-path="id"
                     .items=${this.orgResp?.values ?? []}
-                    @selected-item-changed=${async (
+                    @selected-item-changed="${async (
                       e: ComboBoxSelectedItemChangedEvent<Value>
-                    ) => {
-                      if (e.detail.value) {
-                        let orgid = +e.detail.value.id;
-                        this.boundaries = (
-                          await jd_get_farms_boundaries(
-                            gbl_state.jd_integracion.access_token,
-                            orgid
-                          )
-                        ).values;
-                        this.equipment = (
-                          await jd_get_machines(
-                            gbl_state.jd_integracion.access_token,
-                            orgid
-                          )
-                        ).values as unknown as JDMachine[];
-                      }
-                    }}
+                    ) => this.selectedOrgChanged(e)}"
                   ></vaadin-combo-box>
                   <h4>Bordes</h4>
-                  <ul>
+                  <sl-tree>
                     ${this.boundaries.map(
-                      (boundary) => html` <li>${boundary.name}</li> `
+                      (boundary) => html`
+                        <sl-tree-item>
+                          <vaadin-button theme="primary"
+                            >${boundary.name}</vaadin-button
+                          >
+                          <sl-tree-item
+                            @click=${() =>
+                              this.display_boundary_in_map(boundary)}
+                            >Ver en mapa</sl-tree-item
+                          >
+                          <sl-tree-item @click=${()=>this.importar_como_campo(boundary)}>Importar como Campo</sl-tree-item>
+                        </sl-tree-item>
+                      `
                     )}
-                  </ul>
+                  </sl-tree>
                   <h4>Equipos</h4>
                   <ul class="machines">
                     ${this.equipment.map(
@@ -217,6 +222,83 @@ export class JohnDeereIntegracion extends LitElement {
       </fp-sidebar>
     `;
   }
+
+  selectedOrgChanged = async (e) => {
+    if (e.detail.value) {
+      let orgid = +e.detail.value.id;
+      this.boundaries = (
+        await jd_get_farms_boundaries(
+          gbl_state.jd_integracion.access_token,
+          orgid
+        )
+      ).values;
+      this.equipment = (
+        await jd_get_machines(gbl_state.jd_integracion.access_token, orgid)
+      ).values as unknown as JDMachine[];
+    }
+  };
+
+  jd_boundary_a_geojson = (boundary) => {
+    let e = empty_feature_collection() as FeatureCollection;
+    let points_array = boundary.multipolygons[0].rings[0].points as {
+      lat: number;
+      lon: number;
+    }[];
+
+    e.features[0].geometry.coordinates.push(
+      points_array.map((p) => [p.lon, p.lat]) as [number, number][]
+    );
+
+    e.features[0].properties["name"] = boundary.name;
+    e.features[0].properties["hectareas"] = 3;
+    return e;
+  };
+
+  display_boundary_in_map = (boundary) => {
+    let e = this.jd_boundary_a_geojson(boundary);
+
+    console.log("display b t m", e);
+
+    try {
+      gbl_state.map.addSource("temp_geojson", { type: "geojson", data: e });
+    } catch (_) {
+      console.log("addSource already added temp_geojson");
+      let sos = gbl_state.map.getSource("temp_geojson") as GeoJSONSource;
+      sos.setData(e);
+    }
+
+    try {
+      gbl_state.map.addLayer({
+        id: "temp_geojson",
+        type: "fill",
+        source: "temp_geojson",
+        paint: {
+          "fill-color": "rgba(255, 0, 0, 1)",
+        },
+      });
+
+      gbl_state.map.fitBounds(bbox(e));
+    } catch {
+      console.log("addLayer already added temp_geojson");
+      gbl_state.map.fitBounds(bbox(e));
+    }
+  };
+
+  importar_como_campo = async (boundary) => {
+    let gj = this.jd_boundary_a_geojson(boundary);
+    let nc: Campo = {
+      _id: "campos_" + boundary.names,
+      uuid: uuidv7(),
+      nombre: boundary.name,
+      campo_geojson: gj,
+      lotes: [],
+
+    };
+    
+    await campo_guardar(nc);
+    showNotification("Campo agregado",undefined,'top-center')
+
+  };
 
   display_in_map = async (machine: JDMachine) => {
     let position_machine: LocationHistoryResponse =

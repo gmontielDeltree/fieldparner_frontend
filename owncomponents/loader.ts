@@ -23,7 +23,7 @@ import("./field-partner/field-partner-child");
 @customElement("app-loader")
 export class AppLoader extends LitElement {
   @state()
-  ready: boolean = false;
+  data_ready: boolean = false;
 
   @state()
   map_ready: boolean = false;
@@ -62,7 +62,7 @@ export class AppLoader extends LitElement {
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
     if (_changedProperties.has("ready")) {
-      if (this.ready) {
+      if (this.data_ready) {
         console.timeEnd("Readiness");
       } else {
         console.time("Readiness");
@@ -75,30 +75,31 @@ export class AppLoader extends LitElement {
     // }
 
     return html`
-      ${!this.ready || !this.map_ready
-        ? html`<div class="bg">
-            <div class="hero-text">
-              <h1>FieldPartner</h1>
-              <p>by QTS Agro</p>
-            </div>
-            ${window.location.hostname === "agrotools.netlify.app"
-              ? html`<vaadin-button
-                  class="login-button"
-                  theme="primary success"
-                  @click=${this.loginet}
-                  >Login</vaadin-button
-                >`
-              : null}
-          </div>`
-        : null}
-      ${this.ready
+      ${this.data_ready
         ? html`
             <field-partner-child
               @map-loaded=${() => (this.map_ready = true)}
               .db=${this.db}
             ></field-partner-child>
           `
-        : null}
+        : html`<div
+            class="background"
+            style="
+          height: 100vh;
+          background-color: green;
+          display: flex;
+          width: 100%;
+          align-items: center;
+          justify-content: center;
+      "
+          >
+            <div
+              class="hero-title"
+              style="font-size: 10rem;font-family: monospace;color: thistle;"
+            >
+              FieldPartner
+            </div>
+          </div>`}
     `;
   }
 
@@ -322,7 +323,7 @@ export class AppLoader extends LitElement {
       .then(this.set_idioma)
       .then(this.cargar_campana_seleccionada)
       .then((r) => {
-        this.ready = true;
+        this.data_ready = true;
         console.log("Ready...Estado Inicial", gbl_state, r);
       });
   }
@@ -350,7 +351,7 @@ export class AppLoader extends LitElement {
               .from(base_url + user_db_name)
               .on("complete", () => {
                 this.cargar_campana_seleccionada("").then(() => {
-                  this.ready = true;
+                  this.data_ready = true;
                   showNotification("Ready", "success");
                   console.log("Ready...Estado Inicial", gbl_state, r);
                 });
@@ -383,7 +384,7 @@ export class AppLoader extends LitElement {
       .then(this.set_idioma)
       .then(this.cargar_campana_seleccionada)
       .then((r) => {
-        this.ready = true;
+        this.data_ready = true;
         showNotification("Fast Start Ready", "success");
         console.log("Ready...Estado Inicial", gbl_state, r);
       });
