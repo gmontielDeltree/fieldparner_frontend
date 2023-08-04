@@ -805,13 +805,7 @@ export class MapaPrincipal extends LitElement {
           >
             Agregar un Campo
           </sp-menu-item>
-          <sp-menu-item
-            @click=${() => {
-              this.sendEvent("nuevo-contratista-click"), null;
-            }}
-          >
-            Agregar un Contratista
-          </sp-menu-item>
+        
         </sp-action-menu>
       </sp-theme>
     `;

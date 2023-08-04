@@ -3,8 +3,6 @@ import "../mapa-principal/mapa-principal";
 import { LitElement, html, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
 import { Router } from "@vaadin/router";
-import("../contratistas/contratista-crud");
-import("../contratistas/contratistas-lista");
 import("../sensores/sensores-offcanvas");
 import "../nueva-geometria/nueva-geometria";
 import "../nuevo-campo/nuevo-campo";
@@ -60,13 +58,15 @@ export class FieldPartnerChild extends LitElement {
   constructor() {
     super();
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const parsedUrl = new URL(window.location as unknown as string);
-      // searchParams.get() will properly handle decoding the values.
-      console.log("Title shared: " + parsedUrl.searchParams.get("title"));
-      console.log("Text shared: " + parsedUrl.searchParams.get("text"));
-      console.log("URL shared: " + parsedUrl.searchParams.get("url"));
-    });
+    window.addEventListener('vaadin-router-location-changed', e => this.onLocationChanged(e));
+
+    // window.addEventListener("DOMContentLoaded", () => {
+    //   const parsedUrl = new URL(window.location as unknown as string);
+    //   // searchParams.get() will properly handle decoding the values.
+    //   console.log("Title shared: " + parsedUrl.searchParams.get("title"));
+    //   console.log("Text shared: " + parsedUrl.searchParams.get("text"));
+    //   console.log("URL shared: " + parsedUrl.searchParams.get("url"));
+    // });
 
     /* Clicks en varios botones */
     this.addEventListener("ver-campo-detalles", (e: any) => {
@@ -103,15 +103,6 @@ export class FieldPartnerChild extends LitElement {
       //devices.get_timeseries_by_name('1111111111111111','radiacion',0,10000000000)
     });
 
-    /* Click en ver lista de contratistas */
-    this.addEventListener("ver-contratistas-click", (e) => {
-      document.getElementById("contratistas-lista").show();
-    });
-
-    /* Click en ver lista de insumos */
-    this.addEventListener("ver-insumos-click", (e) => {
-      document.getElementById("insumos-lista").show();
-    });
 
     this.addEventListener("save-settings", (e) => {
       this.db.put(this.settings);
@@ -121,9 +112,6 @@ export class FieldPartnerChild extends LitElement {
       this.logout();
     });
 
-    this.addEventListener("nuevo-contratista-click", () => {
-      document.getElementById("contratista-crud").nuevo();
-    });
 
     this.addEventListener("ver-lista-de-sensores", (e) => {
       const el = document.createElement("lista-de-sensores");
@@ -175,6 +163,10 @@ export class FieldPartnerChild extends LitElement {
         this.load_campos_y_settings();
       });
     });
+  }
+
+  onLocationChanged(e){
+    gbl_state.location_history.push(e.detail.location.pathname);
   }
 
   createRenderRoot() {
@@ -298,13 +290,6 @@ export class FieldPartnerChild extends LitElement {
         .draw=${this.draw}
         .campos_db=${this.db}
       ></nuevo-campo>
-
-      <contratista-crud id="contratista-crud" .db=${this.db}></contratista-crud>
-
-      <contratistas-lista
-        id="contratistas-lista"
-        .db=${this.db}
-      ></contratistas-lista>
 
       <nota-share-target
         id="nota-share-target"

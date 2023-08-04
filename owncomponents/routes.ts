@@ -10,21 +10,22 @@ import "./analisis-suelo/analisis-suelo-import-export";
 import "./vehiculos/vehiculos-detalles";
 import "./vehiculos/vehiculos-lista";
 import "./null-component";
+import { actions } from "xstate";
 // import("./ndvi-offcanvas/ndvi-offcanvas");
 import("./campo-offcanvas/campo-offcanvas");
 // import("./lote-offcanvas/lote-offcanvas-side");
 // import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
 // import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
 import("./lista-de-campos/lista-de-campos");
-import("./john-deere/john-deere-integracion")
-import("./integraciones/integraciones")
+import("./john-deere/john-deere-integracion");
+import("./integraciones/integraciones");
 
 export const routes = [
   { path: "/", component: "null-component" },
   { path: "/gf", redirect: "/" },
-  { path: "/integraciones", component:"menu-integraciones"},
-  { path: "/integraciones/john-deere", component:"john-deere-integracion"},
-  { path: "/integraciones/magris", component:"magris"},
+  { path: "/integraciones", component: "menu-integraciones" },
+  { path: "/integraciones/john-deere", component: "john-deere-integracion" },
+  { path: "/integraciones/magris", component: "magris" },
 
   { path: "/campos", component: "lista-de-campos" },
   {
@@ -90,8 +91,32 @@ export const routes = [
   },
   { path: "/campo/add", component: "nuevo-campo" },
   { path: "/campo/:uuid", component: "campo-offcanvas" },
-  { path: "/contratistas", component: "contratistas-lista" },
-  { path: "/contratistas/add", component: "contratistas-crud" },
+  {
+    path: "/contratistas",
+    children: [
+      {
+        path: "/",
+        component: "contratistas-lista",
+        action: async () => {
+          await import("./contratistas/contratistas-lista");
+        },
+      },
+      {
+        path: "/add",
+        component: "contratista-crud",
+        action: async () => {
+          await import("./contratistas/contratista-crud");
+        },
+      },
+      {
+        path: "/:id/edit",
+        component: "contratista-crud",
+        action: async () => {
+          await import("./contratistas/contratista-crud");
+        },
+      },
+    ],
+  },
   {
     path: "/depositos",
     action: async () => {
@@ -247,7 +272,7 @@ export const routes = [
   {
     path: "/magris/:id",
     action: async () => {
-      await import("./magris/reporte")
+      await import("./magris/reporte");
     },
     component: "magris-reporte",
   },

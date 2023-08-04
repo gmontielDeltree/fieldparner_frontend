@@ -40,7 +40,8 @@ class MyState extends State {
   @property({ value: false }) online: boolean;
   @property() campana_seleccionada: Campana;
   @property() lenguaje_seleccionado: Lenguaje;
-  @property({ value: false }) puedo_renderizar: boolean;
+  @property({value:[]}) location_history: string[];
+
 }
 
 const state = new MyState();
@@ -56,5 +57,15 @@ export const gblStateLoaded = () => {
 export const gblCampanaSeleccionadaLoaded = () => {
   return state.campana_seleccionada !== undefined;
 };
+
+
+export const nav_back = ()=> {
+  // discard the current location
+  state.location_history.pop();
+  
+  // take the previous one (and remove it from the list)
+  const prev = state.location_history.pop();
+  Router.go(prev ? prev : '/');
+}
 
 export default state;

@@ -176,7 +176,8 @@ export class Example extends LitElement {
                 title="Contratistas"
                 style="cursor: pointer;background-image: url('${icono_contratistas}');width: 32px;height: 32px;background-size: cover;background-position: center;"
                 @click=${() => {
-                  this.sendEvent("ver-contratistas-click", null);
+                  Router.go("/contratistas")
+                  // this.sendEvent("ver-contratistas-click", null);
                 }}
               ></div>
             </vaadin-tab>
