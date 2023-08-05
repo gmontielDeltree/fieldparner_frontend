@@ -35,25 +35,14 @@ export class FieldPartnerChild extends LitElement {
   @property()
   map: Map;
 
-  @property({ hasChanged: (v, ov) => false })
   draw: MapboxDraw;
 
   @state()
   campos: any;
 
-  @property({ hasChanged: (v, ov) => false })
-  db: PouchDB.Database;
-
-  @property({ hasChanged: (v, ov) => false })
   remote_campos_db: PouchDB.Database;
-
-  @property({ hasChanged: (v, ov) => false })
   user: any;
-
-  @property({ hasChanged: (v, ov) => false })
   logged_in: boolean = false;
-
-  @property({ hasChanged: (v, ov) => false })
   settings: any;
 
   private initialized: boolean = false;
