@@ -10,7 +10,6 @@ import "./analisis-suelo/analisis-suelo-import-export";
 import "./vehiculos/vehiculos-detalles";
 import "./vehiculos/vehiculos-lista";
 import "./null-component";
-import { actions } from "xstate";
 // import("./ndvi-offcanvas/ndvi-offcanvas");
 import("./campo-offcanvas/campo-offcanvas");
 // import("./lote-offcanvas/lote-offcanvas-side");
@@ -19,6 +18,7 @@ import("./campo-offcanvas/campo-offcanvas");
 import("./lista-de-campos/lista-de-campos");
 import("./john-deere/john-deere-integracion");
 import("./integraciones/integraciones");
+
 
 export const routes = [
   { path: "/", component: "null-component" },
@@ -97,9 +97,9 @@ export const routes = [
       {
         path: "/",
         component: "contratistas-lista",
-        action: async () => {
-          await import("./contratistas/contratistas-lista");
-        },
+        action: async () => 
+          await import("./contratistas/contratistas-lista")
+        ,
       },
       {
         path: "/add",
@@ -187,6 +187,9 @@ export const routes = [
   { path: "/invite/:base64_invitation", component: "link-invitacion" },
   {
     path: "/device/:uuid/dashboard/:date",
+    action: async () =>{
+      await import("./sensores/devices-route");
+    },
     component: "device-route-handler",
   },
   {

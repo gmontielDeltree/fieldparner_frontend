@@ -1,29 +1,32 @@
 import { routes } from "./../routes";
-import "../mapa-principal/mapa-principal";
 import { LitElement, html, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
 import { Router } from "@vaadin/router";
-import("../sensores/sensores-offcanvas");
-import "../nueva-geometria/nueva-geometria";
-import "../nuevo-campo/nuevo-campo";
-import("../notas-offcanvas/nota-target");
-import("../lista-centrales-cercanas/lista-centrales-cercanas");
-import("../sensores/lista-de-sensores");
-import "../navbar-element/new-app-layout";
-import("../invite/invite");
-import("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
-import("../sensores/devices-route");
-import "../news-bar/news-bar";
 import centroid from "@turf/centroid";
 import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
-
 import uuid4 from "uuid4";
 import { Actividad } from "../depositos/depositos-types";
 import { DailyTelemetryCard } from "../sensores/sensores-types";
 import { Devices } from "../sensores/sensores";
 
 import gbl_state from "../state.js";
+
+import "../navbar-element/new-app-layout";
+import "../mapa-principal/mapa-principal";
+import "../news-bar/news-bar";
+import("../contratistas/contratista-crud");
+import("../contratistas/contratistas-lista");
+import("../sensores/sensores-offcanvas");
+import "../nueva-geometria/nueva-geometria";
+import "../nuevo-campo/nuevo-campo";
+import("../notas-offcanvas/nota-target");
+import("../lista-centrales-cercanas/lista-centrales-cercanas");
+import("../sensores/lista-de-sensores");
+import("../invite/invite");
+import("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
+import("../sensores/devices-route");
+
 
 export class FieldPartnerChild extends LitElement {
   // NO estamos usando el shadow dom (createRenderRoot=>this)
