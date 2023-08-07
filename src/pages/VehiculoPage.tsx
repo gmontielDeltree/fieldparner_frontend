@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Vehiculo } from '@types';
-import { useAppDispatch, useAppSelector, useForm } from '../../hooks';
-import { removerVehiculoActivo, startAddVehiculo, startUpdateVehiculo } from '../../redux/slices/vehiculo';
-import { DatosGenerales, Especificaciones, Mantenimientos } from '../../components/NuevoVehiculo';
+import { useAppDispatch, useAppSelector, useForm } from '../hooks';
+import { removerVehiculoActivo, startAddVehiculo, startUpdateVehiculo } from '../redux/vehiculo';
+import { DatosGenerales, Especificaciones, Mantenimientos } from '../components/NuevoVehiculo';
 
 
 const initialState: Vehiculo = {
@@ -36,7 +36,7 @@ const initialState: Vehiculo = {
 
 const steps = ['Datos Generales', 'Especificaciones Tecnicas', 'Mantenimientos'];
 
-export const NuevoVehiculoPage: React.FC = () => {
+export const VehiculoPage: React.FC = () => {
 
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -119,7 +119,6 @@ export const NuevoVehiculoPage: React.FC = () => {
     return (
         <Container
             maxWidth="lg"
-            className='pepe'
             sx={{
                 margin: 0,
                 p: { sm: 0, md: 0 },

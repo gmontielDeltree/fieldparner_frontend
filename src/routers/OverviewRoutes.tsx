@@ -1,21 +1,21 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import {
-    VehiculosPage,
-    NuevoVehiculoPage
+    ListaVehiculoPage,
+    VehiculoPage
 } from '../pages';
 import { AppLayout } from '../components';
 
 
 export const OverviewRoutes: React.FC = () => {
     return (
-        <AppLayout key="app-layout-main">
+        <AppLayout key="app-layout">
             <Routes>
-                <Route path='/vehiculo' element={<VehiculosPage />} />
-                <Route path='/vehiculo/nuevo' element={<NuevoVehiculoPage />} />
-                <Route path='/vehiculo/:vehiculo' element={<NuevoVehiculoPage />} />
+                <Route path='/overview/vehiculo' element={<ListaVehiculoPage />} />
+                <Route path='/overview/vehiculo/nuevo' element={<VehiculoPage />} />
+                <Route path='/overview/vehiculo/:vehiculo' element={<VehiculoPage />} />
 
-                <Route path='/*' element={<Navigate to="/overview" />} />
+                <Route path='/*' element={<Navigate to="/init/overview/vehiculo" />} />
             </Routes>
         </AppLayout>
     )

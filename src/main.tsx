@@ -11,8 +11,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   // <PouchDBComponent>
   // </PouchDBComponent>
     <Provider store={store}>
-      <React.StrictMode>
+      {/* <React.StrictMode> */}
         <AppRouter />
-      </React.StrictMode>
+      {/* </React.StrictMode> */}
     </Provider>
 );

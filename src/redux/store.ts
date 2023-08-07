@@ -1,12 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 
-import { vehiculoSlice } from '../slices/vehiculo';
-import { uiSlice } from '../slices/ui';
+import { vehiculoSlice } from './vehiculo';
+import { uiSlice } from './ui';
+import { authSlice } from './auth'
 
 const store = configureStore({
     reducer: {
         ui: uiSlice.reducer,
         vehiculo: vehiculoSlice.reducer,
+        auth: authSlice.reducer,
     },
 });
 
