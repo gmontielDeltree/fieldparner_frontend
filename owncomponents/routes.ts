@@ -17,15 +17,24 @@ import("./campo-offcanvas/campo-offcanvas");
 // import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
 import("./lista-de-campos/lista-de-campos");
 import("./john-deere/john-deere-integracion");
+import("./john-deere/jd-machine-details");
 import("./integraciones/integraciones");
-
 
 export const routes = [
   { path: "/", component: "null-component" },
   { path: "/gf", redirect: "/" },
-  { path: "/integraciones", component: "menu-integraciones" },
-  { path: "/integraciones/john-deere", component: "john-deere-integracion" },
-  { path: "/integraciones/magris", component: "magris" },
+  {
+    path: "/integraciones",
+    children: [
+      { path: "/", component: "menu-integraciones" },
+    ],
+  },
+
+  {
+    path: "/integraciones/john-deere",
+    component: "john-deere-integracion",
+    children: [{ path: "/machine/:id", component: "jd-machine-details" }],
+  },
 
   { path: "/campos", component: "lista-de-campos" },
   {
@@ -97,9 +106,7 @@ export const routes = [
       {
         path: "/",
         component: "contratistas-lista",
-        action: async () => 
-          await import("./contratistas/contratistas-lista")
-        ,
+        action: async () => await import("./contratistas/contratistas-lista"),
       },
       {
         path: "/add",
@@ -187,7 +194,7 @@ export const routes = [
   { path: "/invite/:base64_invitation", component: "link-invitacion" },
   {
     path: "/device/:uuid/dashboard/:date",
-    action: async () =>{
+    action: async () => {
       await import("./sensores/devices-route");
     },
     component: "device-route-handler",

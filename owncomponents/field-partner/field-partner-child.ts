@@ -33,6 +33,9 @@ export class FieldPartnerChild extends LitElement {
   //static override styles = [unsafeCSS(bootstrap)];
 
   @property()
+  db : PouchDB.Database
+
+  @property()
   map: Map;
 
   draw: MapboxDraw;
