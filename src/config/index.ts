@@ -1,8 +1,19 @@
 import axios from 'axios';
 import { getEnvVariables } from '../helpers/getEnvVariables';
 
-const baseUrlAuth = getEnvVariables().VITE_AUTH_API;
+const baseURL = getEnvVariables().VITE_AUTH_API;
 
-export const authApi = axios.create({
-    baseURL: `${baseUrlAuth}/auth`,
+export const fieldpartnerAPI = axios.create({
+    baseURL: baseURL,
+});
+
+fieldpartnerAPI.interceptors.request.use((config) => {
+
+    // config.headers = {
+    //     ...config.headers,
+    //     'x-token': localStorage.getItem('token')
+    // }
+    config.headers.set('channel', 'fieldpartner_front', false);
+
+    return config;
 });

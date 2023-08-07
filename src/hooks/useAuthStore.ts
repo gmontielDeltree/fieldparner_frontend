@@ -1,27 +1,12 @@
 import { useDispatch } from 'react-redux';
-import { authApi } from '../config';
+import { fieldpartnerAPI } from '../config';
 import { clearErrorMessage, finishLoading, onChecking, onLogin, onLogout, startLoading } from '../redux/auth';
 import { useAppSelector } from './useRedux';
-import { UserLogin } from '@types';
+import { ErrorResponseAuth, ResponseAuthLogin, ResponseAuthRenew, UserLogin, UserRegister } from '@types';
 import { AxiosError, HttpStatusCode } from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-
-export interface ResponseAuthLogin {
-    accessToken: string;
-    refreshToken: string;
-}
-
-export interface UserRegister {
-    email: string;
-    password: string;
-    name: string;
-}
-
-export interface ErrorResponseAuth {
-    code: "UserNotConfirmedException" | "NotAuthorizedException" | "UsernameExistsException";
-    message: string;
-}
+const controller = '/auth';
 
 export const useAuthStore = () => {
 
@@ -37,13 +22,14 @@ export const useAuthStore = () => {
         // dispatch(onChecking());
         dispatch(startLoading());
         try {
-            const response = await authApi.post<ResponseAuthLogin>('/login', {
+            const response = await fieldpartnerAPI.post<ResponseAuthLogin>(`${controller}/login`, {
                 email, password
             });
             if (response.data) {
                 const { accessToken, refreshToken } = response.data;
-                localStorage.setItem('accessToken', accessToken)
+                localStorage.setItem('accessToken', accessToken);
                 localStorage.setItem('refreshToken', refreshToken);
+                localStorage.setItem('token_init_date', new Date().getTime().toString());
                 dispatch(onLogin({ email, id: new Date().getTime().toString() }));
             }
             dispatch(finishLoading());
@@ -71,7 +57,7 @@ export const useAuthStore = () => {
         // dispatch(onChecking());
         dispatch(startLoading());
         try {
-            const response = await authApi.post('/register', {
+            const response = await fieldpartnerAPI.post(`${controller}/register`, {
                 email, password, name
             });
             if (response.status === HttpStatusCode.Created) {
@@ -104,7 +90,7 @@ export const useAuthStore = () => {
             const email = localStorage.getItem('username_temp');
             if (!email) return dispatch(onLogout(""));
 
-            const response = await authApi.post('/confirm', {
+            const response = await fieldpartnerAPI.post(`${controller}/confirm`, {
                 email, confirmationCode
             });
 
@@ -125,12 +111,18 @@ export const useAuthStore = () => {
 
     const checkAuthToken = async () => {
         const token = localStorage.getItem('accessToken');
-        if (!token) return dispatch(onLogout(""));
-
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!token || !refreshToken) return dispatch(onLogout(""));
+        dispatch(onChecking())
         try {
             // const { data } = await authApi.get('auth/renew');
-            localStorage.setItem('accessToken', new Date().getDate().toString());
-            localStorage.setItem('token-init-date', new Date().getTime().toString());
+            const response = await fieldpartnerAPI.post<ResponseAuthRenew>(`${controller}/renew`, { refreshToken });
+
+            if (response.status === HttpStatusCode.Ok) {
+                localStorage.setItem('accessToken', response.data.accessToken);
+                localStorage.setItem('token-init-date', new Date().getTime().toString());
+            }
+            //TODO: obtener el usuario.
             dispatch(onLogin({ email: 'german_montiel@sadasd', id: new Date().getTime().toString() }));
         } catch (error) {
             localStorage.clear();

@@ -119,7 +119,6 @@ export const VehiculoPage: React.FC = () => {
     return (
         <Container
             maxWidth="lg"
-            className='pepe'
             sx={{
                 margin: 0,
                 p: { sm: 0, md: 0 },

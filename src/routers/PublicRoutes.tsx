@@ -1,6 +1,10 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { ConfirmAuthPage, LoginPage, RegisterPage } from '../pages';
+import {
+    ConfirmAuthPage,
+    LoginPage,
+    // RegisterPage
+} from '../pages';
 import { Grid, Paper } from '@mui/material';
 
 export const PublicRoutes: React.FC = () => {
@@ -11,7 +15,7 @@ export const PublicRoutes: React.FC = () => {
             <Grid item xs={12} sm={8} md={4} component={Paper} elevation={6} square>
                 <Routes>
                     <Route path='/auth/login' element={<LoginPage />} />
-                    <Route path='/auth/register' element={<RegisterPage />} />
+                    {/* <Route path='/auth/register' element={<RegisterPage />} /> */}
                     <Route path='/auth/confirm' element={<ConfirmAuthPage />} />
 
                     <Route path="/*" element={<Navigate to="/init/auth/login" />} />
@@ -34,11 +38,3 @@ export const PublicRoutes: React.FC = () => {
         </Grid>
     )
 }
-/*
- <Routes>
-            <Route path='/auth/login' element={<LoginPage />} />
-            <Route path='/auth/register' element={<RegisterPage />} />
-
-            <Route path="/*" element={<Navigate to="/init/auth/login" />} />
-        </Routes>
-*/

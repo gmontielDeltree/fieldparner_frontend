@@ -101,3 +101,27 @@ export interface UserLogin {
 //     title: string;
 //     content: T;
 // }
+
+export interface ResponseAuthLogin {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+    tokenType: string;
+    idToken: string;
+}
+
+export interface ResponseAuthRenew {
+    accessToken: string;
+    refreshToken: string;
+}
+
+export interface UserRegister {
+    email: string;
+    password: string;
+    name: string;
+}
+
+export interface ErrorResponseAuth {
+    code: "UserNotConfirmedException" | "NotAuthorizedException" | "UsernameExistsException";
+    message: string;
+}

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useAuthStore } from '../hooks';
 import { PublicRoutes } from './PublicRoutes';
 import { OverviewRoutes } from './OverviewRoutes';
+import { Loading } from '../components';
 
 export const InitRouter = () => {
 
@@ -13,11 +14,11 @@ export const InitRouter = () => {
     }, [])
 
 
-    // if (status === 'checking') {
-    //     return (
-    //         <Loading key="loading-auth" loading={true} />
-    //     )
-    // }
+    if (status === 'checking') {
+        return (
+            <Loading key="loading-auth" loading />
+        )
+    }
 
     return (
         <>
