@@ -27,13 +27,12 @@ import("../invite/invite");
 import("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
 import("../sensores/devices-route");
 
-
 export class FieldPartnerChild extends LitElement {
   // NO estamos usando el shadow dom (createRenderRoot=>this)
   //static override styles = [unsafeCSS(bootstrap)];
 
   @property()
-  db : PouchDB.Database
+  db: PouchDB.Database;
 
   @property()
   map: Map;
@@ -53,7 +52,9 @@ export class FieldPartnerChild extends LitElement {
   constructor() {
     super();
 
-    window.addEventListener('vaadin-router-location-changed', e => this.onLocationChanged(e));
+    window.addEventListener("vaadin-router-location-changed", (e) =>
+      this.onLocationChanged(e)
+    );
 
     // window.addEventListener("DOMContentLoaded", () => {
     //   const parsedUrl = new URL(window.location as unknown as string);
@@ -98,7 +99,6 @@ export class FieldPartnerChild extends LitElement {
       //devices.get_timeseries_by_name('1111111111111111','radiacion',0,10000000000)
     });
 
-
     this.addEventListener("save-settings", (e) => {
       this.db.put(this.settings);
     });
@@ -106,7 +106,6 @@ export class FieldPartnerChild extends LitElement {
     this.addEventListener("logout-click", () => {
       this.logout();
     });
-
 
     this.addEventListener("ver-lista-de-sensores", (e) => {
       const el = document.createElement("lista-de-sensores");
@@ -160,7 +159,7 @@ export class FieldPartnerChild extends LitElement {
     });
   }
 
-  onLocationChanged(e){
+  onLocationChanged(e) {
     gbl_state.location_history.push(e.detail.location.pathname);
   }
 
@@ -260,22 +259,28 @@ export class FieldPartnerChild extends LitElement {
 
     return html`
       <app-layout-navbar-placement>
-        <div id="router-container"></div>
-        <div
-          id="map-container"
-          style="display:flex; flex-flow: column; height: calc(100vh - var(--_vaadin-app-layout-navbar-offset-size));"
-        >
-          <mapa-principal
-            .campos=${this.campos}
-            .settings=${this.settings}
-            style="flex:1 1 auto;"
-          ></mapa-principal>
-          <news-bar
-            style="flex: 0 1 auto;"
-            @hidden=${()=>{gbl_state.map.resize()
-              console.log("RESIZE")
-            }}
-          ></news-bar>
+        <div style="display:flex;width:100%;">
+          <div
+            id="router-container"
+            style="height:calc(100vh - var(--_vaadin-app-layout-navbar-offset-size));background-color:red; "
+          ></div>
+
+          <div
+            id="map-container"
+            style="display:flex; flex-flow: column; height: calc(100vh - var(--_vaadin-app-layout-navbar-offset-size));flex-grow:1;min-width:0; "
+          >
+            <mapa-principal
+              .campos=${this.campos}
+              .settings=${this.settings}
+              style="flex:1 1 auto;"
+            ></mapa-principal>
+            <news-bar
+              @hidden=${() => {
+                gbl_state.map.resize();
+                console.log("RESIZE");
+              }}
+            ></news-bar>
+          </div>
         </div>
       </app-layout-navbar-placement>
 

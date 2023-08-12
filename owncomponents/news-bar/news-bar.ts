@@ -1,5 +1,6 @@
 /**
  * Basado en https://ryanmulligan.dev/blog/css-marquee/
+ * Precios parseados desde http://www.matba.com.ar/Home/AgroStats
  */
 
 import { LitElement, html, PropertyValueMap } from "lit";
@@ -48,7 +49,7 @@ class Newsbar extends LitElement {
                   ${this.news.value.map((news) => {
                     return html`
                       <li class="marquee__item">
-                        <a href="${news.link}" target="_blank">${news.title}</a>
+                        <a >${news.title}</a>
                       </li>
                     `;
                   })}
@@ -58,7 +59,7 @@ class Newsbar extends LitElement {
                   ${this.news.value.map((news) => {
                     return html`
                       <li class="marquee__item">
-                        <a href="${news.link}" target="_blank">${news.title}</a>
+                        <a >${news.title}</a>
                       </li>
                     `;
                   })}

@@ -13,7 +13,7 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 export class JohnDeereMachineDetails extends LitElement {
   private _loadTask = new Task(
     this,
-    () => this.load_details(),
+    () => this.load_details(this.location.params.id),
     () => [this.location]
   );
 
@@ -49,7 +49,9 @@ export class JohnDeereMachineDetails extends LitElement {
     `;
   }
 
-  load_details() {}
+  load_details(id) {
+    
+  }
 }
 
 customElements.define("jd-machine-details", JohnDeereMachineDetails);
