@@ -1,3 +1,4 @@
+import { location_sample } from './samples_response';
 import {
   FileResponse,
   JDMachine,
@@ -109,8 +110,29 @@ export const jd_get_machine_position = async (
     (e) => e.rel === "locationHistory"
   )?.uri;
 
+  console.log("Location URL",location_url)
+
+  if(machine.id === "1596177"){
+    return Promise.resolve(location_sample)
+  }
+
+  
   let data = { url: location_url, token: token };
   return postData(data) as unknown as LocationHistoryResponse;
 };
+
+
+
+export const jd_get_machine_details = async (token:string, machine_id: string) => {
+  let url2 = api_ep + `machines/${machine_id}`
+  let data2 = {url:url2, token:token}
+  let machine =  postData(data2);
+
+  let url = api_ep + `machines/${machine_id}/engineHours?lastKnown=false`
+  let data1 = {url:url, token:token}
+  let engine_hours_data =  postData(data1);
+
+  return Promise.all([machine,engine_hours_data]) 
+}
 
 const api_ep = "https://sandboxapi.deere.com/platform/";
