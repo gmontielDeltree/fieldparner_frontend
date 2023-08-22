@@ -129,6 +129,13 @@ export class MapaPrincipal extends LitElement {
   map: Map;
 
   @property({
+    hasChanged(newVal: Map, oldVal: Map) {
+      return false;
+    },
+  })
+  map2: Map;
+
+  @property({
     hasChanged(newVal: MapboxDraw, oldVal: MapboxDraw) {
       return false;
     },
@@ -152,6 +159,9 @@ export class MapaPrincipal extends LitElement {
     }
   )
   settings: any;
+
+  @query("#map2")
+  _map2;
 
   @query("#map")
   _map;
@@ -248,6 +258,20 @@ export class MapaPrincipal extends LitElement {
     /* Esperar hasta que el update finalice */
     await this.getUpdateComplete()
     console.log("map height", this._map.offsetHeight)
+
+    this.map2 = new Map({
+      container : this._map2,
+      style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
+      center: gbl_state.ultima_posicion ?? {
+        "lng": -61.19468066139592,
+        "lat": -31.295018658148038
+      },
+      zoom: gbl_state.ultimo_zoom ?? 3.4,
+      maxZoom: 17,
+      attributionControl: true,
+      preserveDrawingBuffer: false,
+    })
+
     this.map = new Map({
       container: this._map, //this.shadowRoot.getElementById("map"),
       // style: "mapbox://styles/mapbox/outdoors-v11",
@@ -793,6 +817,7 @@ export class MapaPrincipal extends LitElement {
     return html`
       <div class="map_box_container">
         <div id="map"></div>
+        <div id="map2"></div>
       </div>
       <sp-theme scale="medium" color="dark">
         <!-- End content requiring theme application. -->

@@ -28,6 +28,7 @@ class MyState extends State {
   jd_integracion: { access_token: string; expires_in: number };
 
   @property() map: Map;
+  @property() map2: Map;
   @property() draw: MapboxDraw;
   @property() db: PouchDB.Database;
   @property() db_sensores_raw: PouchDB.Database;
