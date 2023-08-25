@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { Feature, FeatureCollection, featureCollection } from "@turf/helpers";
 import { IndiceEspectral, list_of_indexes } from "./indices-types";
 
@@ -19,7 +19,7 @@ export class IndiceSelector extends LitElement {
   selectFeatureEvent(f: Feature) {
     this.dispatchEvent(
       new CustomEvent("selectedFeatureChange", {
-        detail: f,
+        detail: {feature:f,indice:this.selectedIndice},
         bubbles: true,
         composed: true,
       })
@@ -37,7 +37,7 @@ export class IndiceSelector extends LitElement {
   }
 
   render() {
-    html`
+   return html`
       <vaadin-combo-box
         label="Indice"
         .items=${this.indices_list}
@@ -45,7 +45,7 @@ export class IndiceSelector extends LitElement {
       ></vaadin-combo-box>
       <vaadin-button id="prev"><</vaadin-button>
       <div style="display:flex; flex-direction:row;">
-        ${this.featureCollection.features.map((f) => {
+        ${this.featureCollection.features.map((f:Feature) => {
           return html`
             <vaadin-button
               @click=${() => {

@@ -38,12 +38,20 @@ export const routes = [
 
   { path: "/campos", component: "lista-de-campos" },
   {
+    path:"/indices/new/:uuid",
+    action: async ()=>{
+      await import("./ndvi-offcanvas/indices-page")
+    },
+    component:"indices-page"
+  },
+  {
     path: "/indices/:uuid",
     action: async () => {
       await import("./ndvi-offcanvas/ndvi-offcanvas");
     },
     component: "ndvi-offcanvas",
   },
+
   { path: "/settings", component: "settings-modal" },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add",
