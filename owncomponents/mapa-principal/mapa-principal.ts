@@ -1,7 +1,7 @@
 import { ndvi_layers_init } from "./ndvi-layers";
 import { gbl_state } from "./../state";
 import { depositos_update, depositos_layer_init } from "./depositos-layer";
-import { LitElement, html, unsafeCSS, css, PropertyValueMap } from "lit";
+import { LitElement, html, unsafeCSS, css } from "lit";
 import { property, query } from "lit/decorators.js";
 import {
   touchEvent,
@@ -10,9 +10,11 @@ import {
   buscar_ultima_siembra,
   tabla_de_colores,
 } from "../helpers";
-import { CircleLayer, GeoJSONSource, Layer, Map, SymbolLayer } from "mapbox-gl";
+import { GeoJSONSource, Layer, Map } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import syncMaps from "@mapbox/mapbox-gl-sync-move"
+
 import mapbox_geocoder_style from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import mapbox_style from "mapbox-gl/dist/mapbox-gl.css?inline";
 import mapbox_draw_style from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css?inline";
@@ -23,10 +25,9 @@ import "@spectrum-web-components/theme/sp-theme.js";
 import "@spectrum-web-components/theme/src/themes.js";
 import centroid from "@turf/centroid";
 import { isToday, parseISO } from "date-fns";
-import { get, translate } from "lit-translate";
+import { get } from "lit-translate";
 import { listar_proveedores } from "../proveedores/proveedores-funciones";
-import { map } from "lit/directives/map.js";
-import { Feature, FeatureCollection } from "@turf/helpers";
+import { Feature } from "@turf/helpers";
 import { Router } from "@vaadin/router";
 
 // https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
@@ -191,8 +192,14 @@ export class MapaPrincipal extends LitElement {
           position: relative;
           height: 100% !important;
           width: 100% !important;
+          display:flex;
+          flex-direction:row;
         }
         
+      #map2{
+        width:50%;
+      }
+
       #map {
         /* position: absolute; */
         /* top: var(--_vaadin-app-layout-navbar-offset-size); */
@@ -200,7 +207,7 @@ export class MapaPrincipal extends LitElement {
         /* width: 100vw; */
         z-index: 0;
         height: 100%;
-        width:100%;
+        width:50%;
         background-color: red;
         position: relative;
         /* height: calc(
@@ -222,7 +229,7 @@ export class MapaPrincipal extends LitElement {
           /* width: 100vw; */
           z-index: 0;
           height: 100%;
-          width:100%;
+          width:50%;
           background-color: green;
           position: relative;
     
@@ -261,7 +268,7 @@ export class MapaPrincipal extends LitElement {
 
     this.map2 = new Map({
       container : this._map2,
-      style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
+      style: "mapbox://styles/mapbox/outdoors-v12?optimize=true",
       center: gbl_state.ultima_posicion ?? {
         "lng": -61.19468066139592,
         "lat": -31.295018658148038
@@ -274,9 +281,9 @@ export class MapaPrincipal extends LitElement {
 
     this.map = new Map({
       container: this._map, //this.shadowRoot.getElementById("map"),
-      // style: "mapbox://styles/mapbox/outdoors-v11",
+      style: "mapbox://styles/mapbox/outdoors-v12",
       //style: mapStyle,
-      style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
+      // style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
       center: gbl_state.ultima_posicion ?? {
         "lng": -61.19468066139592,
         "lat": -31.295018658148038
@@ -286,6 +293,8 @@ export class MapaPrincipal extends LitElement {
       attributionControl: true,
       preserveDrawingBuffer: false,
     });
+
+    syncMaps(this.map,this.map2);
 
     this.map.addControl(new mapboxgl.NavigationControl());
 
