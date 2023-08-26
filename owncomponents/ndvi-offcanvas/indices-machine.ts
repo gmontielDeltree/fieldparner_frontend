@@ -26,219 +26,241 @@ interface IndicesMachineContext {
 // 	}
 // })
 
-export const machine = createMachine({
-  "id": "IndexStudio",
-  "context": {
-    "geojson": {},
-    "lote_id": "",
-    "selectedIndice1": {},
-    "selectedIndice2": {},
-    "selectedFeature1": {},
-    "selectedFeature2": {},
-    "featureCollection": {}
-  },
-  "initial": "empty",
-  "states": {
-    "empty": {
-      "invoke": {
-        "src": "getGeojson",
-        "id": "invoke-jx7rw",
-        "onDone": [
-          {
-            "target": "withGeojson",
-            "actions": {
-              "type": "assignGeojson",
-              "params": {}
-            }
-          }
-        ]
-      }
+export const machine = createMachine(
+  {
+    id: "IndexStudio",
+    context: {
+      geojson: {},
+      lote_id: "",
+      selectedIndice1: {},
+      selectedIndice2: {},
+      selectedFeature1: {},
+      selectedFeature2: {},
+      featureCollection: {},
     },
-    "withGeojson": {
-      "entry": {
-        "type": "limpiarMap1y2",
-        "params": {}
+    initial: "empty",
+    states: {
+      empty: {
+        entry: {
+          type: "assignLoteId",
+          params: {},
+        },
+        invoke: {
+          src: "getGeojson",
+          id: "invoke-jx7rw",
+          onDone: [
+            {
+              target: "withGeojson",
+              actions: {
+                type: "assignGeojson",
+                params: {},
+              },
+            },
+          ],
+        },
       },
-      "invoke": {
-        "src": "getFeatures",
-        "id": "invoke-nt3gq",
-        "onDone": [
-          {
-            "target": "Loaded",
-            "actions": {
-              "type": "assignFeatures",
-              "params": {}
-            }
-          }
-        ],
-        "onError": [
-          {
-            "target": "failed",
-            "actions": {
-              "type": "notificarError",
-              "params": {}
-            }
-          }
-        ]
-      }
-    },
-    "Loaded": {
-      "initial": "PantallaEntera",
-      "states": {
-        "PantallaEntera": {
-          "on": {
-            "TOGGLE": {
-              "target": "PantallaDividida"
-            }
-          }
+      withGeojson: {
+        entry: {
+          type: "limpiarMap1y2",
+          params: {},
         },
-        "PantallaDividida": {
-          "on": {
-            "TOGGLE": {
-              "target": "PantallaEntera"
-            }
-          }
+        invoke: {
+          src: "getFeatures",
+          id: "invoke-nt3gq",
+          onDone: [
+            {
+              target: "Loaded",
+              actions: {
+                type: "assignFeatures",
+                params: {},
+              },
+            },
+          ],
+          onError: [
+            {
+              target: "failed",
+              actions: {
+                type: "notificarError",
+                params: {},
+              },
+            },
+          ],
         },
-        "hist": {
-          "history": "shallow",
-          "type": "history"
-        }
       },
-      "on": {
-        "DOWNLOAD_PNG": {
-          "actions": {
-            "type": "downloadPNG",
-            "params": {}
+      Loaded: {
+        initial: "PantallaEntera",
+        states: {
+          PantallaEntera: {
+            on: {
+              TOGGLE: {
+                target: "PantallaDividida",
+              },
+            },
           },
-          "internal": true
-        },
-        "DOWNLOAD_XLS": {
-          "actions": {
-            "type": "downloadXLS",
-            "params": {}
+          PantallaDividida: {
+            on: {
+              TOGGLE: {
+                target: "PantallaEntera",
+              },
+            },
           },
-          "internal": true
+          hist: {
+            history: "shallow",
+            type: "history",
+          },
         },
-        "SELECTED_INDICE_1_CHANGED": {
-          "target": "loadNuevaImagen1",
-          "actions": {
-            "type": "updateIndex1",
-            "params": {}
-          }
+        on: {
+          DOWNLOAD_PNG: {
+            actions: {
+              type: "downloadPNG",
+              params: {},
+            },
+            internal: true,
+          },
+          DOWNLOAD_XLS: {
+            actions: {
+              type: "downloadXLS",
+              params: {},
+            },
+            internal: true,
+          },
+          SELECTED_INDICE_1_CHANGED: {
+            target: "loadNuevaImagen1",
+            actions: {
+              type: "updateIndex1",
+              params: {},
+            },
+          },
+          SELECTED_FEATURE_1: {
+            target: "loadNuevaImagen1",
+            actions: {
+              type: "updateFeature1",
+              params: {},
+            },
+          },
+          SELECTED_FEATURE_2: {
+            target: "loadNuevaImagen2",
+            actions: {
+              type: "updateFeature2",
+              params: {},
+            },
+          },
+          SELECTED_INDICE_2_CHANGED: {
+            target: "loadNuevaImagen2",
+            actions: {
+              type: "updateIndex2",
+              params: {},
+            },
+          },
         },
-        "SELECTED_FEATURE_1": {
-          "target": "loadNuevaImagen1",
-          "actions": {
-            "type": "updateFeature1",
-            "params": {}
-          }
+      },
+      failed: {
+        on: {
+          RETRY: {
+            target: "withGeojson",
+          },
         },
-        "SELECTED_FEATURE_2": {
-          "target": "loadNuevaImagen2",
-          "actions": {
-            "type": "updateFeature2",
-            "params": {}
-          }
+      },
+      loadNuevaImagen1: {
+        invoke: {
+          src: "fetchImagen",
+          id: "invoke-kr9hc",
+          onDone: [
+            {
+              target: "#IndexStudio.Loaded.hist",
+              actions: {
+                type: "updateMap1",
+                params: {},
+              },
+            },
+          ],
+          onError: [
+            {
+              target: "#IndexStudio.Loaded.hist",
+              actions: {
+                type: "notificarError",
+                params: {},
+              },
+            },
+          ],
         },
-        "SELECTED_INDICE_2_CHANGED": {
-          "target": "loadNuevaImagen2",
-          "actions": {
-            "type": "updateIndex2",
-            "params": {}
-          }
-        }
-      }
+      },
+      loadNuevaImagen2: {
+        invoke: {
+          src: "fetchImagen",
+          id: "invoke-kr9hc",
+          onDone: [
+            {
+              target: "#IndexStudio.Loaded.hist",
+              actions: {
+                type: "updateMap2",
+                params: {},
+              },
+            },
+          ],
+          onError: [
+            {
+              target: "#IndexStudio.Loaded.hist",
+              actions: {
+                type: "notificarError",
+                params: {},
+              },
+            },
+          ],
+        },
+      },
     },
-    "failed": {
-      "on": {
-        "RETRY": {
-          "target": "withGeojson"
-        }
-      }
+    schema: {
+      events: {} as
+        | { type: "TOGGLE" }
+        | { type: "DOWNLOAD_PNG" }
+        | { type: "DOWNLOAD_XLS" }
+        | { type: "SELECTED_INDICE_1_CHANGED" }
+        | { type: "SELECTED_FEATURE_1" }
+        | { type: "SELECTED_FEATURE_2" }
+        | { type: "RETRY" }
+        | { type: "SELECTED_INDICE_2_CHANGED" },
     },
-    "loadNuevaImagen1": {
-      "invoke": {
-        "src": "fetchImagen",
-        "id": "invoke-kr9hc",
-        "onDone": [
-          {
-            "target": "#IndexStudio.Loaded.hist",
-            "actions": {
-              "type": "updateMap1",
-              "params": {}
-            }
-          }
-        ],
-        "onError": [
-          {
-            "target": "#IndexStudio.Loaded.hist",
-            "actions": {
-              "type": "notificarError",
-              "params": {}
-            }
-          }
-        ]
-      }
-    },
-    "loadNuevaImagen2": {
-      "invoke": {
-        "src": "fetchImagen",
-        "id": "invoke-kr9hc",
-        "onDone": [
-          {
-            "target": "#IndexStudio.Loaded.hist",
-            "actions": {
-              "type": "updateMap2",
-              "params": {}
-            }
-          }
-        ],
-        "onError": [
-          {
-            "target": "#IndexStudio.Loaded.hist",
-            "actions": {
-              "type": "notificarError",
-              "params": {}
-            }
-          }
-        ]
-      }
-    }
+    predictableActionArguments: true,
+    preserveActionOrder: true,
+    tsTypes: {} as import("./indices-machine.typegen").Typegen0
   },
-  "schema": {events: {} as {type: 'TOGGLE'} | {type: 'DOWNLOAD_PNG'} | {type: 'DOWNLOAD_XLS'} | {type: 'SELECTED_INDICE_1_CHANGED'} | {type: 'SELECTED_FEATURE_1'} | {type: 'SELECTED_FEATURE_2'} | {type: 'RETRY'} | {type: 'SELECTED_INDICE_2_CHANGED'}},
-  "predictableActionArguments": true,
-  "preserveActionOrder": true,
-  "tsTypes": {} as import("./indices-machine.typegen").Typegen0
-}, {
-          actions: {"limpiarMap1y2": (context, event) => {},
+  {
+    actions: {
+      limpiarMap1y2: (context, event) => {},
 
-"downloadPNG": (context, event) => {},
+      downloadPNG: (context, event) => {},
 
-"downloadXLS": (context, event) => {},
+      downloadXLS: (context, event) => {},
 
-"updateIndex1": (context, event) => {},
+      updateIndex1: (context, event) => {},
 
-"updateFeature1": (context, event) => {},
+      updateFeature1: (context, event) => {},
 
-"updateFeature2": (context, event) => {},
+      updateFeature2: (context, event) => {},
 
-"assignFeatures": (context, event) => {},
+      assignFeatures: (context, event) => {},
 
-"notificarError": (context, event) => {},
+      notificarError: (context, event) => {},
 
-"updateMap2": (context, event) => {},
+      updateMap2: (context, event) => {},
 
-"updateMap1": (context, event) => {},
+      updateMap1: (context, event) => {},
 
-"updateIndex2": (context, event) => {},
+      updateIndex2: (context, event) => {},
 
-"assignGeojson": (context, event) => {}},
-          services: {"getFeatures": (context, event) => {},
+      assignGeojson: (context, event) => {},
 
-"fetchImagen": (context, event) => {},
+      assignLoteId: (context, event) => {},
+    },
+    services: {
+      getFeatures: (context, event) => {},
 
-"getGeojson": (context, event) => {}},
-          guards: {},
-          delays: {},
-        })
-        
+      fetchImagen: (context, event) => {},
+
+      getGeojson: (context, event) => {},
+    },
+    guards: {},
+    delays: {},
+  },
+);

@@ -1,5 +1,5 @@
-import { LitElement, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { LitElement, PropertyValueMap, html, css } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import "./indice-selector";
 import { machine } from "./indices-machine";
 import { interpret, actions, createMachine, assign } from "xstate";
@@ -8,10 +8,13 @@ import { gbl_state } from "../state";
 import axios from "axios";
 import bbox from "@turf/bbox";
 import {coordAll} from "@turf/meta"
-import { RouterLocation } from "@vaadin/router";
+import { Router, RouterLocation } from "@vaadin/router";
 import { get_lote_doc } from "../helpers";
 import { format } from "date-fns";
 import { list_of_indexes } from "./indices-types";
+import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
+
+
 
 function arrayToBase64(array : [number,number][]) {
   // Convert the array of arrays to a byte array.
@@ -37,10 +40,22 @@ export class IndicesPage extends LitElement {
   @property()
   location: RouterLocation = gbl_state.router.location;
 
+  static override styles = css`
+      .drawer-contained::part(header) {
+        color: tomato;
+        display: none;
+      }
+      .drawer-contained::part(body) {
+        background-color: darkkhaki;
+        padding: 1rem;
+      }
+  `
+
+  @state()
   actor = interpret(
     machine
       .withContext({
-        lote_id: "018a22db-f30d-7b4a-9769-940ecb88086b",
+        lote_id: "",
         geojson: {},
         selectedFeature1: {},
         selectedFeature2: {},
@@ -50,6 +65,7 @@ export class IndicesPage extends LitElement {
       })
       .withConfig({
         actions: {
+          assignLoteId: assign({lote_id:(ctx,evt)=>(()=>this.location.params.uuid)()}),
           assignFeatures: assign({ featureCollection: (ctx, evt) => evt.data.data }),
           assignGeojson:assign({geojson:(ctx,evt)=>evt.data}),
           limpiarMap1y2: () => {},
@@ -60,9 +76,9 @@ export class IndicesPage extends LitElement {
         },
         services: {
           getGeojson: async (ctx,evt)=>{
+            console.log("Lote", ctx.lote_id)
             console.log("ctx",ctx)
             let lote = await get_lote_doc(gbl_state.db,ctx.lote_id)
-    
             return lote
           },
           getFeatures: async (ctx, evt) => {
@@ -91,18 +107,25 @@ export class IndicesPage extends LitElement {
           
         },
       })
-  ).start();
+  );
+    
 
   ctx = new SelectorController(this, this.actor, (state) => state.context);
   state = new SelectorController(this, this.actor, (state) => state.value);
 
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+      this.actor.start()
+  }
+  
   render() {
 
     return html`
       ${this.state.value === "Empty"
         ? "loading"
         : html`
-            <indice-selector
+        <div>
+          <sl-drawer label="" contained class="drawer-contained" open placement="bottom" style="--size: 23%;">
+          <indice-selector
               .featureCollection=${this.ctx.value.featureCollection}
               .featureSelected=${this.ctx.value.selectedFeature1}
               .selectedIndice=${this.ctx.value.selectedIndice1}
@@ -112,6 +135,9 @@ export class IndicesPage extends LitElement {
               }}
               @selectedIndexChange=${() => console.log("selectedIndexChanged")}
             ></indice-selector>
+          </sl-drawer>
+        </div>
+            
           `}
     `;
   }

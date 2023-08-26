@@ -19,7 +19,7 @@ export class IndiceSelector extends LitElement {
   selectFeatureEvent(f: Feature) {
     this.dispatchEvent(
       new CustomEvent("selectedFeatureChange", {
-        detail: {feature:f,indice:this.selectedIndice},
+        detail: { feature: f, indice: this.selectedIndice },
         bubbles: true,
         composed: true,
       })
@@ -37,28 +37,32 @@ export class IndiceSelector extends LitElement {
   }
 
   render() {
-   return html`
+    return html`
       <vaadin-combo-box
         label="Indice"
         .items=${this.indices_list}
         .selectedItem=${this.selectedIndice}
+        .itemLabelPath=${"name"}
       ></vaadin-combo-box>
-      <vaadin-button id="prev"><</vaadin-button>
+
       <div style="display:flex; flex-direction:row;">
-        ${this.featureCollection.features.map((f:Feature) => {
-          return html`
-            <vaadin-button
-              @click=${() => {
-                console.log("Feature Selected", f);
-                this.selectFeatureEvent(f);
-                this.featureSelected = f;
-              }}
-              >${f.properties?.date ?? ""}</vaadin-button
-            >
-          `;
-        })}
+        <vaadin-button id="prev"><</vaadin-button>
+        <div >
+          ${this.featureCollection.features.map((f: Feature) => {
+            return html`
+              <vaadin-button
+                @click=${() => {
+                  console.log("Feature Selected", f);
+                  this.selectFeatureEvent(f);
+                  this.featureSelected = f;
+                }}
+                >${f.properties?.date ?? ""}</vaadin-button
+              >
+            `;
+          })}
+        </div>
+        <vaadin-button id="next">></vaadin-button>
       </div>
-      <vaadin-button id="next">></vaadin-button>
     `;
   }
 }
