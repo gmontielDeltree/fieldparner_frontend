@@ -268,7 +268,7 @@ export class MapaPrincipal extends LitElement {
 
     this.map2 = new Map({
       container : this._map2,
-      style: "mapbox://styles/mapbox/outdoors-v12?optimize=true",
+      style: "mapbox://styles/mapbox/satellite-streets-v12?optimize=true",
       center: gbl_state.ultima_posicion ?? {
         "lng": -61.19468066139592,
         "lat": -31.295018658148038
