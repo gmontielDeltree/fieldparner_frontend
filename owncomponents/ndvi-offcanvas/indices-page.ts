@@ -1,4 +1,11 @@
-import { ImageSource, Map, RasterSource } from "mapbox-gl";
+import {
+  CanvasSource,
+  ImageSource,
+  Map,
+  Popup,
+  RasterSource,
+  VectorSource,
+} from "mapbox-gl";
 import { DataTable } from "./../../src/components/DataTable/index";
 import { LitElement, PropertyValueMap, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
@@ -11,32 +18,133 @@ import axios from "axios";
 import bbox from "@turf/bbox";
 import { coordAll } from "@turf/meta";
 import { Router, RouterLocation } from "@vaadin/router";
-import { get_lote_doc } from "../helpers";
+import { get_lote_doc, layer_visibility } from "../helpers";
 import { format } from "date-fns";
 import { IndicesResponse, list_of_indexes } from "./indices-types";
 import "@shoelace-style/shoelace/dist/components/drawer/drawer.js";
-import bboxPolygon from "@turf/bbox-polygon"
+import bboxPolygon from "@turf/bbox-polygon";
+import { fromUrl } from "geotiff";
+import { plot as Pplot } from "plotty";
 
-const mostrarPNGEnMapa = (url: string, bounds: number[][], map: Map) => {
-  console.log("bounds",bounds)
+const hideMapLayers = async (map) => {
+  // Reestablecer Mapa
+  layer_visibility(map, "campos", false);
+  layer_visibility(map, "campos_border", false);
+  layer_visibility(map, "lotes", false);
+  layer_visibility(map, "lotes_border", false);
+  layer_visibility(map, "nombres_campos", false);
+  //layer_visibility(gbl_state.map, "seleccion_lotes", false);
+  layer_visibility(map, "seleccion_lotes_fill", false);
+
+  /* Hide NDVI */
+  //layer_visibility(gbl_state.map, "ndvi-layer", false);
+  layer_visibility(map, "borde_de_este_lote", false);
+  layer_visibility(map, "radar-layer", false);
+  layer_visibility(map, "frontera_de_este_lote", false);
+};
+
+const mostrarTIFEnMapa = async (url: string, map: Map) => {
+  const tiff = await fromUrl(url);
+  const image = await tiff.getImage();
+  const data = await image.readRasters();
+  console.log("DATA TIFF", data);
+
+  const canvas = document.createElement("canvas");
+
+  const plot = new Pplot({
+    canvas,
+    data: data[0],
+    width: image.getWidth(),
+    height: image.getHeight(),
+    domain: [-1, 1],
+    colorScale: "viridis",
+  });
+  plot.render();
+
+  const [gx1, gy1, gx2, gy2] = image.getBoundingBox();
+  let coor = [
+    [gx1, gy1],
+    [gx2, gy1],
+    [gx2, gy2],
+    [gx1, gy2],
+  ].reverse();
+  // console.log("COORDINATES",coor)
+
   try {
     map.addSource("indice-espectral", {
-      type: "image",
-      url: import.meta.env.VITE_COGS_SERVER_URL + url,
-      coordinates: bounds,
+      type: "canvas",
+      canvas: canvas,
+      coordinates: coor,
     });
   } catch (e) {
-    let source = map.getSource("indice-espectral") as ImageSource;
-    source.updateImage({url:url});
+    let source = map.getSource("indice-espectral") as CanvasSource;
+    source.canvas = canvas;
+    source.setCoordinates(coor);
+  }
+
+  try {
+    map.addLayer({
+      id: "indice-espectral",
+      type: "raster",
+      source: "indice-espectral",
+      paint: {
+        "raster-fade-duration": 0,
+      },
+    });
+  } catch (e) {
+    console.log(e);
+  }
+
+  map.on("click", function (e) {
+    var features = map.queryRenderedFeatures(e.point, {
+      layers: ["indice-espectral"],
+    });
+
+    console.log("cliciicici", features);
+    if (!features.length) {
+      return;
+    }
+
+    var feature = features[0];
+    var pixelValue = feature.properties.pixelValue;
+
+    new Popup()
+      .setLngLat(e.lngLat)
+      .setHTML("Pixel value: " + pixelValue)
+      .addTo(map);
+  });
+};
+
+const mostrarPNGEnMapa = (url: string, bounds: number[][], map: Map) => {
+  console.log("bounds", bounds, url);
+  try {
+    map.addSource("indice-espectral", {
+      type: "vector",
+      tiles: [
+        import.meta.env.VITE_COGS_SERVER_URL +
+          url.replace("png", "mvt").replace("http", "https"),
+      ],
+      minzoom: 6,
+      maxzoom: 14,
+    });
+  } catch (e) {
+    let source = map.getSource("indice-espectral") as VectorSource;
+    source.setUrl(url.replace("png", "mvt").replace("http", "https"));
   }
 
   try {
     map.addLayer({
       id: "indice-espectral-layer",
-      type: "raster",
+      type: "line",
       source: "indice-espectral",
+      "source-layer": "default",
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
       paint: {
-        "raster-fade-duration": 0,
+        "line-color": "#ff69b4",
+        "line-width": 1,
       },
     });
   } catch (e) {
@@ -99,12 +207,17 @@ export class IndicesPage extends LitElement {
             featureCollection: (ctx, evt) => evt.data.data,
           }),
           assignGeojson: assign({ geojson: (ctx, evt) => evt.data }),
-          limpiarMap1y2: () => {},
+          limpiarMap1y2: () => {
+            hideMapLayers(gbl_state.map);
+          },
           updateIndex1: assign({ selectedIndice1: (_, evt) => evt.data }),
           updateFeature1: assign({ selectedFeature1: (_, evt) => evt.data }),
           updateMap1: (ctx, evt) => {
             let response: IndicesResponse = evt.data.data;
-            mostrarPNGEnMapa(response.png_url, coordAll((bboxPolygon(bbox(ctx.geojson)))).slice(1,5), gbl_state.map);
+            mostrarTIFEnMapa(
+              import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
+              gbl_state.map
+            );
           },
           notificarError: (ctx, evt) => {
             console.log("error", evt.data);
