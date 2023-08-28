@@ -25,8 +25,14 @@ import "@shoelace-style/shoelace/dist/components/drawer/drawer.js";
 import bboxPolygon from "@turf/bbox-polygon";
 import { fromUrl } from "geotiff";
 import { plot as Pplot } from "plotty";
+import {
+  showCanvasOnMap,
+  showPopupOnMove,
+  tif_identify,
+} from "./geotiff-helpers";
+import "../loading-modal/loading-modal";
 
-const hideMapLayers = async (map) => {
+const hideMapLayers = async (map: Map) => {
   // Reestablecer Mapa
   layer_visibility(map, "campos", false);
   layer_visibility(map, "campos_border", false);
@@ -38,12 +44,12 @@ const hideMapLayers = async (map) => {
 
   /* Hide NDVI */
   //layer_visibility(gbl_state.map, "ndvi-layer", false);
-  layer_visibility(map, "borde_de_este_lote", false);
+  layer_visibility(map, "borde_de_este_lote", true);
   layer_visibility(map, "radar-layer", false);
   layer_visibility(map, "frontera_de_este_lote", false);
 };
 
-const mostrarTIFEnMapa = async (url: string, map: Map) => {
+const mostrarTIFEnMapa = async (url: string, map: Map, colormap: string) => {
   const tiff = await fromUrl(url);
   const image = await tiff.getImage();
   const data = await image.readRasters();
@@ -57,7 +63,7 @@ const mostrarTIFEnMapa = async (url: string, map: Map) => {
     width: image.getWidth(),
     height: image.getHeight(),
     domain: [-1, 1],
-    colorScale: "viridis",
+    colorScale: colormap,
   });
   plot.render();
 
@@ -70,105 +76,10 @@ const mostrarTIFEnMapa = async (url: string, map: Map) => {
   ].reverse();
   // console.log("COORDINATES",coor)
 
-  try {
-    map.addSource("indice-espectral", {
-      type: "canvas",
-      canvas: canvas,
-      coordinates: coor,
-    });
-  } catch (e) {
-    let source = map.getSource("indice-espectral") as CanvasSource;
-    source.canvas = canvas;
-    source.setCoordinates(coor);
-  }
+  showCanvasOnMap(map, canvas, coor, "indice-espectral");
 
-  try {
-    map.addLayer({
-      id: "indice-espectral",
-      type: "raster",
-      source: "indice-espectral",
-      paint: {
-        "raster-fade-duration": 0,
-      },
-    });
-  } catch (e) {
-    console.log(e);
-  }
-
-  map.on("click", function (e) {
-    var features = map.queryRenderedFeatures(e.point, {
-      layers: ["indice-espectral"],
-    });
-
-    console.log("cliciicici", features);
-    if (!features.length) {
-      return;
-    }
-
-    var feature = features[0];
-    var pixelValue = feature.properties.pixelValue;
-
-    new Popup()
-      .setLngLat(e.lngLat)
-      .setHTML("Pixel value: " + pixelValue)
-      .addTo(map);
-  });
+  showPopupOnMove(map, (lng, lat) => tif_identify(lng, lat, image, data));
 };
-
-const mostrarPNGEnMapa = (url: string, bounds: number[][], map: Map) => {
-  console.log("bounds", bounds, url);
-  try {
-    map.addSource("indice-espectral", {
-      type: "vector",
-      tiles: [
-        import.meta.env.VITE_COGS_SERVER_URL +
-          url.replace("png", "mvt").replace("http", "https"),
-      ],
-      minzoom: 6,
-      maxzoom: 14,
-    });
-  } catch (e) {
-    let source = map.getSource("indice-espectral") as VectorSource;
-    source.setUrl(url.replace("png", "mvt").replace("http", "https"));
-  }
-
-  try {
-    map.addLayer({
-      id: "indice-espectral-layer",
-      type: "line",
-      source: "indice-espectral",
-      "source-layer": "default",
-      layout: {
-        "line-join": "round",
-        "line-cap": "round",
-      },
-      paint: {
-        "line-color": "#ff69b4",
-        "line-width": 1,
-      },
-    });
-  } catch (e) {
-    console.log(e);
-  }
-};
-
-function arrayToBase64(array: [number, number][]) {
-  // Convert the array of arrays to a byte array.
-  let byteArray = new Float64Array(array.length * 2);
-
-  for (let i = 0; i < array.length; i++) {
-    byteArray[i * 2] = array[i][0];
-    byteArray[i * 2 + 1] = array[i][1];
-  }
-
-  // Encode the byte array to base64.
-  let base64String = btoa(byteArray);
-
-  // Remove any padding characters.
-  base64String = base64String.replace(/=+$/, "");
-
-  return base64String;
-}
 
 @customElement("indices-page")
 export class IndicesPage extends LitElement {
@@ -212,11 +123,22 @@ export class IndicesPage extends LitElement {
           },
           updateIndex1: assign({ selectedIndice1: (_, evt) => evt.data }),
           updateFeature1: assign({ selectedFeature1: (_, evt) => evt.data }),
+          updateIndex2: assign({ selectedIndice1: (_, evt) => evt.data }),
+          updateFeature2: assign({ selectedFeature1: (_, evt) => evt.data }),
           updateMap1: (ctx, evt) => {
             let response: IndicesResponse = evt.data.data;
             mostrarTIFEnMapa(
               import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
-              gbl_state.map
+              gbl_state.map,
+              "winter"
+            );
+          },
+          updateMap2: (ctx, evt) => {
+            let response: IndicesResponse = evt.data.data;
+            mostrarTIFEnMapa(
+              import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
+              gbl_state.map2,
+              "winter"
             );
           },
           notificarError: (ctx, evt) => {
@@ -225,8 +147,8 @@ export class IndicesPage extends LitElement {
         },
         services: {
           getGeojson: async (ctx, evt) => {
-            console.log("Lote", ctx.lote_id);
-            console.log("ctx", ctx);
+            // console.log("Lote", ctx.lote_id);
+            // console.log("ctx", ctx);
             let lote = await get_lote_doc(gbl_state.db, ctx.lote_id);
             return lote;
           },
@@ -241,9 +163,9 @@ export class IndicesPage extends LitElement {
             return await axios.get(url);
           },
           fetchImagen: async (ctx, evt) => {
-            console.log("fetchImage", evt);
+            // console.log("fetchImage", evt);
             let date = evt.data.feature.properties.date;
-            console.log("COOR", coordAll(ctx.geojson));
+            // console.log("COOR", coordAll(ctx.geojson));
             let geometry = coordAll(ctx.geojson);
             let resource_id = ctx.lote_id;
             let indice = evt.data.indice.value;
@@ -253,7 +175,7 @@ export class IndicesPage extends LitElement {
               `/indices/${indice}?resource_id=${resource_id}&geometry=${encodeURIComponent(
                 JSON.stringify(geometry)
               )}&date=${date}`;
-            console.log("fetchImageURL", url);
+            // console.log("fetchImageURL", url);
             return await axios.get(url);
           },
         },
@@ -261,6 +183,7 @@ export class IndicesPage extends LitElement {
   );
 
   ctx = new SelectorController(this, this.actor, (state) => state.context);
+  
   state = new SelectorController(this, this.actor, (state) => state.value);
 
   protected firstUpdated(
@@ -283,6 +206,7 @@ export class IndicesPage extends LitElement {
                 placement="bottom"
                 style="--size: 23%;"
               >
+                <vaadin-button @click=${()=>this.actor.send({type:"TOGGLE"})}>TOGGLE</vaadin-button>
                 <indice-selector
                   .featureCollection=${this.ctx.value.featureCollection}
                   .featureSelected=${this.ctx.value.selectedFeature1}
@@ -297,9 +221,37 @@ export class IndicesPage extends LitElement {
                   @selectedIndexChange=${() =>
                     console.log("selectedIndexChanged")}
                 ></indice-selector>
+
+                ${this.state.value["Loaded"] === "PantallaDividida"
+                  ? html`
+                      <indice-selector
+                        .featureCollection=${this.ctx.value.featureCollection}
+                        .featureSelected=${this.ctx.value.selectedFeature2}
+                        .selectedIndice=${this.ctx.value.selectedIndice2}
+                        @selectedFeatureChange=${(e: CustomEvent) => {
+                          console.log("Selected Feature 2 evt");
+                          this.actor.send({
+                            type: "SELECTED_FEATURE_2",
+                            data: e.detail,
+                          });
+                        }}
+                        @selectedIndexChange=${() =>
+                          console.log("selectedIndexChanged")}
+                      ></indice-selector>
+                    `
+                  : null}
               </sl-drawer>
             </div>
           `}
+      ${this.state.value === "loadNuevaImagen1" ||
+      this.state.value === "loadNuevaImagen2"
+        ? html` <div
+            class="d-flex justify-content-center align-items-center"
+            style="width: 100%;height: 100%;position: absolute;background:#fffc;z-index: 9;"
+          >
+            <span>Loading</span>
+          </div>`
+        : null}
     `;
   }
 }

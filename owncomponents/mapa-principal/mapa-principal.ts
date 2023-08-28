@@ -279,6 +279,10 @@ export class MapaPrincipal extends LitElement {
       preserveDrawingBuffer: false,
     })
 
+    this.map2.on("load",() => {
+      gbl_state.map2 = this.map2
+    })
+
     this.map = new Map({
       container: this._map, //this.shadowRoot.getElementById("map"),
       style: "mapbox://styles/mapbox/outdoors-v12",
