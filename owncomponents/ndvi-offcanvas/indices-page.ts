@@ -30,7 +30,7 @@ import {
   showPopupOnMove,
   tif_identify,
 } from "./geotiff-helpers";
-import "../loading-modal/loading-modal";
+import "./indices-charts";
 
 const hideMapLayers = async (map: Map) => {
   // Reestablecer Mapa
@@ -183,7 +183,7 @@ export class IndicesPage extends LitElement {
   );
 
   ctx = new SelectorController(this, this.actor, (state) => state.context);
-  
+
   state = new SelectorController(this, this.actor, (state) => state.value);
 
   protected firstUpdated(
@@ -206,7 +206,10 @@ export class IndicesPage extends LitElement {
                 placement="bottom"
                 style="--size: 23%;"
               >
-                <vaadin-button @click=${()=>this.actor.send({type:"TOGGLE"})}>TOGGLE</vaadin-button>
+                <vaadin-button
+                  @click=${() => this.actor.send({ type: "TOGGLE" })}
+                  >TOGGLE</vaadin-button
+                >
                 <indice-selector
                   .featureCollection=${this.ctx.value.featureCollection}
                   .featureSelected=${this.ctx.value.selectedFeature1}
@@ -241,6 +244,9 @@ export class IndicesPage extends LitElement {
                     `
                   : null}
               </sl-drawer>
+            </div>
+            <div class="overlay-charts" style="position:absolute;z-index:999;">
+              <indices-charts style="top:10rem;left:40rem;"></indices-charts>
             </div>
           `}
       ${this.state.value === "loadNuevaImagen1" ||
