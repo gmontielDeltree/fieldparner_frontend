@@ -1,3 +1,4 @@
+import { DualMap } from "./dual-map-control";
 import {
   CanvasSource,
   ImageSource,
@@ -87,6 +88,11 @@ export class IndicesPage extends LitElement {
   location: RouterLocation = gbl_state.router.location;
 
   static override styles = css`
+    :host {
+      display: flex;
+      flex-grow: 1;
+    }
+
     .drawer-contained::part(header) {
       color: tomato;
       display: none;
@@ -120,6 +126,9 @@ export class IndicesPage extends LitElement {
           assignGeojson: assign({ geojson: (ctx, evt) => evt.data }),
           limpiarMap1y2: () => {
             hideMapLayers(gbl_state.map);
+            gbl_state.map.addControl(
+              new DualMap({ onClick: () => console.log("BUUUU") })
+            );
           },
           updateIndex1: assign({ selectedIndice1: (_, evt) => evt.data }),
           updateFeature1: assign({ selectedFeature1: (_, evt) => evt.data }),
@@ -197,56 +206,51 @@ export class IndicesPage extends LitElement {
       ${this.state.value === "Empty"
         ? "loading"
         : html`
-            <div>
-              <sl-drawer
-                label=""
-                contained
-                class="drawer-contained"
-                open
-                placement="bottom"
-                style="--size: 23%;"
-              >
-                <vaadin-button
-                  @click=${() => this.actor.send({ type: "TOGGLE" })}
-                  >TOGGLE</vaadin-button
-                >
-                <indice-selector
-                  .featureCollection=${this.ctx.value.featureCollection}
-                  .featureSelected=${this.ctx.value.selectedFeature1}
-                  .selectedIndice=${this.ctx.value.selectedIndice1}
-                  @selectedFeatureChange=${(e: CustomEvent) => {
-                    console.log("Selected Feature 1 evt");
-                    this.actor.send({
-                      type: "SELECTED_FEATURE_1",
-                      data: e.detail,
-                    });
-                  }}
-                  @selectedIndexChange=${() =>
-                    console.log("selectedIndexChanged")}
-                ></indice-selector>
-
-                ${this.state.value["Loaded"] === "PantallaDividida"
-                  ? html`
-                      <indice-selector
-                        .featureCollection=${this.ctx.value.featureCollection}
-                        .featureSelected=${this.ctx.value.selectedFeature2}
-                        .selectedIndice=${this.ctx.value.selectedIndice2}
-                        @selectedFeatureChange=${(e: CustomEvent) => {
-                          console.log("Selected Feature 2 evt");
-                          this.actor.send({
-                            type: "SELECTED_FEATURE_2",
-                            data: e.detail,
-                          });
-                        }}
-                        @selectedIndexChange=${() =>
-                          console.log("selectedIndexChanged")}
-                      ></indice-selector>
-                    `
-                  : null}
-              </sl-drawer>
+            <div
+              class="overlay-charts"
+              style="position:absolute;display: flex;width:50%;justify-content: space-between;"
+            >
+              <indices-charts style="top:4rem;left:4rem;"></indices-charts>
+              <indices-charts style="top:4rem;right:-4rem;"></indices-charts>
             </div>
-            <div class="overlay-charts" style="position:absolute;z-index:999;">
-              <indices-charts style="top:10rem;left:40rem;"></indices-charts>
+
+            <div
+              id="footer"
+              style="position:absolute;width:100%;bottom:0;left:0;z-index:999;background-color:red"
+            >
+              <indice-selector
+                .featureCollection=${this.ctx.value.featureCollection}
+                .featureSelected=${this.ctx.value.selectedFeature1}
+                .selectedIndice=${this.ctx.value.selectedIndice1}
+                @selectedFeatureChange=${(e: CustomEvent) => {
+                  console.log("Selected Feature 1 evt");
+                  this.actor.send({
+                    type: "SELECTED_FEATURE_1",
+                    data: e.detail,
+                  });
+                }}
+                @selectedIndexChange=${() =>
+                  console.log("selectedIndexChanged")}
+              ></indice-selector>
+
+              ${this.state.value["Loaded"] === "PantallaDividida"
+                ? html`
+                    <indice-selector
+                      .featureCollection=${this.ctx.value.featureCollection}
+                      .featureSelected=${this.ctx.value.selectedFeature2}
+                      .selectedIndice=${this.ctx.value.selectedIndice2}
+                      @selectedFeatureChange=${(e: CustomEvent) => {
+                        console.log("Selected Feature 2 evt");
+                        this.actor.send({
+                          type: "SELECTED_FEATURE_2",
+                          data: e.detail,
+                        });
+                      }}
+                      @selectedIndexChange=${() =>
+                        console.log("selectedIndexChanged")}
+                    ></indice-selector>
+                  `
+                : null}
             </div>
           `}
       ${this.state.value === "loadNuevaImagen1" ||
