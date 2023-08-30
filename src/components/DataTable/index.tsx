@@ -56,7 +56,7 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }
 
     const onClickEditarVehiculo = (item: Vehiculo): void => {
         dispatch(setVehiculoActivo(item));
-        navigate(`/overview/vehiculo/${item._id}`);
+        navigate(`/init/overview/vehiculo/${item._id}`);
     }
 
     return (
