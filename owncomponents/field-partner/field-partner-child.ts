@@ -259,7 +259,7 @@ export class FieldPartnerChild extends LitElement {
 
     return html`
       <app-layout-navbar-placement>
-        <div style="display:flex;width:100%;">
+        <div id="body" style="display:flex;width:100%;position:relative;">
           <div
             id="router-container"
             style="height:calc(100vh - var(--_vaadin-app-layout-navbar-offset-size));background-color:red; "

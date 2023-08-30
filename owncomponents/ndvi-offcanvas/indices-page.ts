@@ -1,3 +1,4 @@
+import { featureCollection } from "@turf/helpers";
 import { DualMap } from "./dual-map-control";
 import {
   CanvasSource,
@@ -32,6 +33,7 @@ import {
   tif_identify,
 } from "./geotiff-helpers";
 import "./indices-charts";
+import { features } from "process";
 
 const hideMapLayers = async (map: Map) => {
   // Reestablecer Mapa
@@ -101,6 +103,15 @@ export class IndicesPage extends LitElement {
       background-color: darkkhaki;
       padding: 1rem;
     }
+    #footer{
+      display:flex;
+      position:absolute;
+      width:100%;
+      bottom:0;
+      left:0;
+      z-index:100;
+      /* background-color:red; */
+    }
   `;
 
   @state()
@@ -113,7 +124,7 @@ export class IndicesPage extends LitElement {
         selectedFeature2: {},
         selectedIndice1: list_of_indexes[0],
         selectedIndice2: list_of_indexes[0],
-        featureCollection: {},
+        featureCollection: featureCollection([]),
       })
       .withConfig({
         actions: {
@@ -127,7 +138,12 @@ export class IndicesPage extends LitElement {
           limpiarMap1y2: () => {
             hideMapLayers(gbl_state.map);
             gbl_state.map.addControl(
-              new DualMap({ onClick: () => console.log("BUUUU") })
+              new DualMap({
+                onClick: () => {
+                  console.log("BUUUU");
+                  this.actor.send({ type: "TOGGLE" });
+                },
+              })
             );
           },
           updateIndex1: assign({ selectedIndice1: (_, evt) => evt.data }),
@@ -202,26 +218,33 @@ export class IndicesPage extends LitElement {
   }
 
   render() {
+    const inDualMode = ()=>{
+      return (this.state.value["Loaded"] === "PantallaDividida")
+    }
+    
+    // https://css-irl.info/finding-an-elements-nearest-relative-positioned-ancestor/#:~:text=By%20typing%20%24_%20into%20the%20console%20we%20can,the%20element.%20Then%3A%20getComputedStyle%28%24_%29.position%20retrieves%20its%20position%20value
+
     return html`
       ${this.state.value === "Empty"
         ? "loading"
         : html`
+
             <div
               class="overlay-charts"
-              style="position:absolute;display: flex;width:50%;justify-content: space-between;"
+              style="position:absolute;display: flex;width:100%;justify-content: space-between;"
             >
-              <indices-charts style="top:4rem;left:4rem;"></indices-charts>
-              <indices-charts style="top:4rem;right:-4rem;"></indices-charts>
+              <indices-charts style="top:4rem;left:3rem;"></indices-charts>
+              <indices-charts style="top:4rem;right:3rem;"></indices-charts>
             </div>
 
             <div
               id="footer"
-              style="position:absolute;width:100%;bottom:0;left:0;z-index:999;background-color:red"
             >
               <indice-selector
                 .featureCollection=${this.ctx.value.featureCollection}
                 .featureSelected=${this.ctx.value.selectedFeature1}
                 .selectedIndice=${this.ctx.value.selectedIndice1}
+                style="${inDualMode() ? "width:50%":"width:100%"}"
                 @selectedFeatureChange=${(e: CustomEvent) => {
                   console.log("Selected Feature 1 evt");
                   this.actor.send({
@@ -233,9 +256,10 @@ export class IndicesPage extends LitElement {
                   console.log("selectedIndexChanged")}
               ></indice-selector>
 
-              ${this.state.value["Loaded"] === "PantallaDividida"
+              ${inDualMode()
                 ? html`
                     <indice-selector
+                      style="width:50%"
                       .featureCollection=${this.ctx.value.featureCollection}
                       .featureSelected=${this.ctx.value.selectedFeature2}
                       .selectedIndice=${this.ctx.value.selectedIndice2}

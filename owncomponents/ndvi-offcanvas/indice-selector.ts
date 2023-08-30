@@ -1,20 +1,24 @@
-import { LitElement, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { LitElement, html, css } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 import { Feature, FeatureCollection, featureCollection } from "@turf/helpers";
 import { IndiceEspectral, list_of_indexes } from "./indices-types";
+import { deepcopy } from "../helpers";
 
 @customElement("indice-selector")
 export class IndiceSelector extends LitElement {
   private indices_list: IndiceEspectral[] = list_of_indexes;
 
-  @property()
-  public selectedIndice: IndiceEspectral = this.indices_list[0];
+  @property({ type: Object })
+  selectedIndice: IndiceEspectral = this.indices_list[0];
 
   @property()
   featureCollection: FeatureCollection = featureCollection([]);
 
   @property()
   featureSelected: Feature | undefined;
+
+  @query("#dates")
+  private dates_div: HTMLElement;
 
   selectFeatureEvent(f: Feature) {
     this.dispatchEvent(
@@ -36,32 +40,123 @@ export class IndiceSelector extends LitElement {
     );
   }
 
-  render() {
-    return html`
-      <vaadin-combo-box
-        label="Indice"
-        .items=${this.indices_list}
-        .selectedItem=${this.selectedIndice}
-        .itemLabelPath=${"name"}
-      ></vaadin-combo-box>
+  deduplicateDates(ofc: FeatureCollection) {
+    let fc: FeatureCollection = deepcopy(ofc);
 
-      <div style="display:flex; flex-direction:row;">
-        <vaadin-button id="prev"><</vaadin-button>
-        <div >
-          ${this.featureCollection.features.map((f: Feature) => {
+    const filtro = (f: Feature, i: number) => {
+      if (i === 0) {
+        return true;
+      } else {
+        let fv =
+          f.properties.date !== fc.features[i - 1].properties.date
+            ? true
+            : false;
+        console.log(fv);
+        return fv;
+      }
+    };
+
+    let filtradas = fc.features.filter(filtro);
+    fc.features = filtradas;
+    return fc;
+  }
+
+  scrollToLeft() {
+    this.dates_div.scrollBy({
+      top: 0,
+      left: -100,
+      behavior: "smooth",
+    });
+  }
+
+  scrollToRight() {
+    this.dates_div.scrollBy({
+      top: 0,
+      left: 100,
+      behavior: "smooth",
+    });
+  }
+
+  static override styles = css`
+    /* :host {
+      display: block;
+    } */
+    .container {
+      background-color: chartreuse;
+      border-radius: 1rem;
+      padding: 10px;
+    }
+
+    .dates {
+      white-space: nowrap;
+      overflow: hidden;
+      direction: rtl;
+      border-color: #26cfcf;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      border-style: groove;
+    }
+
+    .selected-feature {
+      border-style: inset;
+    }
+  `;
+  render() {
+    let dedu = this.deduplicateDates(this.featureCollection);
+
+    const conNube = (f: Feature) => f.properties.cloudCoverPercentage > 30;
+
+    let indice_para_select = this.indices_list.map((i) => {
+      return { label: i.name, value: i.value };
+    });
+
+    const isFeatureSelected = (f: Feature) => {
+      let id_feature_selected = this.featureSelected?.properties?.id;
+      let id = f.properties.id;
+      return id_feature_selected !== undefined
+        ? id === id_feature_selected
+        : false;
+    };
+
+    return html`
+      <div class="container" style="display:flex; flex-direction:row;">
+        <vaadin-select
+          .items=${indice_para_select}
+          .value=${indice_para_select[0].value}
+          .itemLabelPath=${"name"}
+        ></vaadin-select>
+
+        <vaadin-button id="prev" @click=${this.scrollToLeft} theme="secondary"
+          ><</vaadin-button
+        >
+        <div id="dates" class="dates">
+          ${dedu.features.map((f: Feature) => {
             return html`
               <vaadin-button
+                style="direction:ltr;"
+                .class=${isFeatureSelected(f) ? "selected-feature" : ""}
+                theme="primary"
                 @click=${() => {
                   console.log("Feature Selected", f);
                   this.selectFeatureEvent(f);
                   this.featureSelected = f;
                 }}
-                >${f.properties?.date ?? ""}</vaadin-button
+                >${conNube(f)
+                  ? html`
+                      <vaadin-icon
+                        icon="vaadin:cloud"
+                        slot="prefix"
+                      ></vaadin-icon>
+                    `
+                  : null}
+                ${f.properties?.date ?? ""}</vaadin-button
               >
             `;
           })}
         </div>
-        <vaadin-button id="next">></vaadin-button>
+        <vaadin-button id="next" @click=${this.scrollToRight} theme="secondary"
+          >></vaadin-button
+        >
       </div>
     `;
   }
