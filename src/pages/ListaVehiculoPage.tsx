@@ -43,7 +43,7 @@ export const ListaVehiculoPage: React.FC = () => {
         dispatch(cargarVehiculos(filteredVehiculos));
     }
 
-    const onClickNuevoVehiculo = () => navigate('/overview/vehiculo/nuevo');
+    const onClickNuevoVehiculo = () => navigate('/init/overview/vehiculo/nuevo');
 
     useEffect(() => {
         dispatch(getVehiculos());
