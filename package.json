@@ -29,7 +29,6 @@
     "typescript": "^5.0.2",
     "typescript-plugin-css-modules": "^4.1.1",
     "vite": "^4.3.2",
-    "vite-compression-plugin": "^0.0.4",
     "vite-plugin-pwa": "^0.14.1",
     "workbox-build": "^6.5.4",
     "workbox-core": "^6.5.4",
