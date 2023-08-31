@@ -29,6 +29,7 @@ import { get } from "lit-translate";
 import { listar_proveedores } from "../proveedores/proveedores-funciones";
 import { Feature } from "@turf/helpers";
 import { Router } from "@vaadin/router";
+import { StateController } from "@lit-app/state";
 
 // https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
 // https://github.com/kepta/idly/wiki/examples#using-bing-satellite-map
@@ -197,7 +198,8 @@ export class MapaPrincipal extends LitElement {
         }
         
       #map2{
-        width:50%;
+        width:100%;
+        height: 100%;
       }
 
       #map {
@@ -207,7 +209,7 @@ export class MapaPrincipal extends LitElement {
         /* width: 100vw; */
         z-index: 0;
         height: 100%;
-        width:50%;
+        width:100%;
         background-color: red;
         position: relative;
         /* height: calc(
@@ -825,12 +827,14 @@ export class MapaPrincipal extends LitElement {
     // }
   }
 
+  binding = new StateController(this,gbl_state)
+
   render() {
     console.count("mapa-principal render")
     return html`
       <div class="map_box_container">
-        <div id="map"></div>
-        <div id="map2"></div>
+        <div id="map" style=${gbl_state.dualmap ? "width:50%":"width:100%;"}></div>
+        <div id="map2" style=${gbl_state.dualmap ? "width:50%":"display:none;"}></div>
       </div>
       <sp-theme scale="medium" color="dark">
         <!-- End content requiring theme application. -->

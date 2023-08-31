@@ -28,7 +28,7 @@ class Newsbar extends LitElement {
   );
 
   subscription = this.machine.subscribe((state) => {
-    console.log(state);
+    //console.log(state);
   });
 
 

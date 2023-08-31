@@ -34,6 +34,7 @@ import {
 } from "./geotiff-helpers";
 import "./indices-charts";
 import { features } from "process";
+import area from "@turf/area";
 
 const hideMapLayers = async (map: Map) => {
   // Reestablecer Mapa
@@ -128,6 +129,7 @@ export class IndicesPage extends LitElement {
       })
       .withConfig({
         actions: {
+          showDualMap: ()=>gbl_state.dualmap = true,
           assignLoteId: assign({
             lote_id: (ctx, evt) => (() => this.location.params.uuid)(),
           }),
@@ -140,7 +142,9 @@ export class IndicesPage extends LitElement {
             gbl_state.map.addControl(
               new DualMap({
                 onClick: () => {
-                  console.log("BUUUU");
+                  gbl_state.dualmap = true;
+                  gbl_state.map2.resize()
+                  console.log("BUUU",gbl_state.dualmap)
                   this.actor.send({ type: "TOGGLE" });
                 },
               })
@@ -225,15 +229,26 @@ export class IndicesPage extends LitElement {
     this.actor.start();
   }
 
+  disconnectedCallback() {
+  super.disconnectedCallback();
+  console.log("DISCONENECCCC AWAY")
+  gbl_state.dualmap = false;
+  }
+
   render() {
+
+    // Aliases
+    let estado = this.state.value
+    let ctx = this.ctx.value
+
     const inDualMode = ()=>{
-      return (this.state.value["Loaded"] === "PantallaDividida")
+      return (estado["Loaded"] === "PantallaDividida")
     }
     
     // https://css-irl.info/finding-an-elements-nearest-relative-positioned-ancestor/#:~:text=By%20typing%20%24_%20into%20the%20console%20we%20can,the%20element.%20Then%3A%20getComputedStyle%28%24_%29.position%20retrieves%20its%20position%20value
 
     return html`
-      ${this.state.value === "Empty"
+      ${(estado === "empty") || (estado === "withGeojson")
         ? "loading"
         : html`
 
@@ -241,17 +256,17 @@ export class IndicesPage extends LitElement {
               class="overlay-charts"
               style="position:absolute;display: flex;width:100%;justify-content: space-between;"
             >
-              <indices-charts style="top:4rem;left:3rem;" .data=${this.ctx.value.data1} .indice=${this.ctx.value.selectedIndice1}></indices-charts>
-              <indices-charts style="top:4rem;right:3rem;" .data=${this.ctx.value.data2} .indice=${this.ctx.value.selectedIndice2} ></indices-charts>
+              <indices-charts style="top:4rem;right:calc(50% + 4rem);" .data=${ctx.data1} .indice=${ctx.selectedIndice1} .hectareas_del_lote=${area(ctx.geojson)}></indices-charts>
+              <indices-charts style="top:4rem;right:4rem;${inDualMode() ? "":"display:none;"}" .data=${ctx.data2} .indice=${ctx.selectedIndice2} .hectareas_del_lote=${area(ctx.geojson)}></indices-charts>
             </div>
 
             <div
               id="footer"
             >
               <indice-selector
-                .featureCollection=${this.ctx.value.featureCollection}
-                .featureSelected=${this.ctx.value.selectedFeature1}
-                .selectedIndice=${this.ctx.value.selectedIndice1}
+                .featureCollection=${ctx.featureCollection}
+                .featureSelected=${ctx.selectedFeature1}
+                .selectedIndice=${ctx.selectedIndice1}
                 style="${inDualMode() ? "width:50%":"width:100%"}"
                 @selectedFeatureChange=${(e: CustomEvent) => {
                   console.log("Selected Feature 1 evt");
@@ -268,9 +283,9 @@ export class IndicesPage extends LitElement {
                 ? html`
                     <indice-selector
                       style="width:50%"
-                      .featureCollection=${this.ctx.value.featureCollection}
-                      .featureSelected=${this.ctx.value.selectedFeature2}
-                      .selectedIndice=${this.ctx.value.selectedIndice2}
+                      .featureCollection=${ctx.featureCollection}
+                      .featureSelected=${ctx.selectedFeature2}
+                      .selectedIndice=${ctx.selectedIndice2}
                       @selectedFeatureChange=${(e: CustomEvent) => {
                         console.log("Selected Feature 2 evt");
                         this.actor.send({
@@ -285,8 +300,8 @@ export class IndicesPage extends LitElement {
                 : null}
             </div>
           `}
-      ${this.state.value === "loadNuevaImagen1" ||
-      this.state.value === "loadNuevaImagen2"
+      ${estado === "loadNuevaImagen1" ||
+      estado === "loadNuevaImagen2"
         ? html` <div
             class="d-flex justify-content-center align-items-center"
             style="width: 100%;height: 100%;position: absolute;background:#fffc;z-index: 9;"

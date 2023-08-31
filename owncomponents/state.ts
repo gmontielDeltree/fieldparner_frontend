@@ -29,6 +29,7 @@ class MyState extends State {
 
   @property() map: Map;
   @property() map2: Map;
+  @property({value:false}) dualmap: boolean;
   @property() draw: MapboxDraw;
   @property() db: PouchDB.Database;
   @property() db_sensores_raw: PouchDB.Database;

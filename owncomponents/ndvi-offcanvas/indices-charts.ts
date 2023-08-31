@@ -15,6 +15,24 @@ const ranges_to_bin_names = (ranges : number[])=>{
   return bin_names
 }
 
+
+const make_data_from_range = (data : IndicesResponse, indice:IndiceEspectral, rango_n:number, hectareas : number)=>{
+
+// [Pixeles del bin, resto]
+let d = [data.stats.histogram[0][rango_n], data.stats.valid_pixels-data.stats.histogram[0][rango_n]]
+
+if((hectareas) && (hectareas !==0)){
+  d = d.map((p)=>p/data.stats.valid_pixels * hectareas)
+}
+
+return {
+            label: "has",
+            data: d,
+            backgroundColor: ["rgb(255, 99, 132)", "rgb(255, 205, 86)"],
+            hoverOffset: 4,
+          }
+}
+
 @customElement("indices-charts")
 export class IndicesCharts extends LitElement {
   @property()
@@ -22,6 +40,9 @@ export class IndicesCharts extends LitElement {
 
   @property()
   indice: IndiceEspectral;
+
+  @property()
+  hectareas_del_lote: number;
 
   private thr1: Chart;
   private thr2: Chart;
@@ -31,18 +52,14 @@ export class IndicesCharts extends LitElement {
   @state()
   initialized: boolean = false;
 
-  makeGaugeChart(id) {
+  /* Muestra rango y resto */
+  makeGaugeChart(id:string,title : string,data:any) {
     const chart = new Chart(this.shadowRoot.getElementById(id), {
       type: "doughnut",
       data: {
-        labels: ["Red", "Yellow"],
+        labels: [title, "Resto"],
         datasets: [
-          {
-            label: "My First Dataset",
-            data: [300, 50],
-            backgroundColor: ["rgb(255, 99, 132)", "rgb(255, 205, 86)"],
-            hoverOffset: 4,
-          },
+         data
         ],
       },
       options: {
@@ -54,7 +71,7 @@ export class IndicesCharts extends LitElement {
           },
           title: {
             display: true,
-            text: "Custom Chart Title",
+            text: title,
           },
         },
       },
@@ -90,7 +107,7 @@ export class IndicesCharts extends LitElement {
           },
           title: {
             display: true,
-            text: "Custom Chart Title",
+            text: "Total",
           },
         },
       },
@@ -101,16 +118,20 @@ export class IndicesCharts extends LitElement {
   willUpdate(prop) {
     if (prop.has("data")) {
       if (!this.initialized) {
-        this.thr1 = this.makeGaugeChart("thr1");
-        this.thr2 = this.makeGaugeChart("thr2");
-        this.thr3 = this.makeGaugeChart("thr3");
+        this.thr1 = this.makeGaugeChart("thr1",this.indice.thresholds_labels[0],make_data_from_range(this.data,this.indice,0,this.hectareas_del_lote));
+        this.thr2 = this.makeGaugeChart("thr2",this.indice.thresholds_labels[1],make_data_from_range(this.data,this.indice,1,this.hectareas_del_lote));
+        this.thr3 = this.makeGaugeChart("thr3",this.indice.thresholds_labels[2],make_data_from_range(this.data,this.indice,2,this.hectareas_del_lote));
         this.full = this.makeFullChart("full");
         this.initialized = true
       }
 
+
       this.full.data.datasets[0].data = this.data.stats.histogram[0];
-      
       this.full.update();
+
+
+      this.thr1.data.datasets[0] = make_data_from_range(this.data,this.indice,0,this.hectareas_del_lote);
+      this.thr1.update();
     }
   }
 
