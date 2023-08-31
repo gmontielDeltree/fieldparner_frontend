@@ -22,7 +22,7 @@ const make_data_from_range = (data : IndicesResponse, indice:IndiceEspectral, ra
 let d = [data.stats.histogram[0][rango_n], data.stats.valid_pixels-data.stats.histogram[0][rango_n]]
 
 if((hectareas) && (hectareas !==0)){
-  d = d.map((p)=>p/data.stats.valid_pixels * hectareas)
+  d = d.map((p)=> parseFloat( (p/data.stats.valid_pixels * hectareas/10000).toFixed(2) ))
 }
 
 return {
@@ -81,14 +81,15 @@ export class IndicesCharts extends LitElement {
   }
 
   makeFullChart(id) {
+
     const chart = new Chart(this.shadowRoot.getElementById(id), {
       type: "doughnut",
       data: {
         labels: this.indice.thresholds_labels,
         datasets: [
           {
-            label: "Proporcion",
-            data: this.data.stats.histogram[0] ,
+            label: "Has.:",
+            data: this.data.stats.histogram[0].map(this.to_hectareas) ,
             backgroundColor: [
               "rgb(255, 99, 132)",
               "rgb(54, 162, 235)",
@@ -115,6 +116,10 @@ export class IndicesCharts extends LitElement {
     return chart;
   }
 
+
+ to_hectareas = (g : number) => parseFloat( (g / this.data.stats.valid_pixels * this.hectareas_del_lote / 10000).toFixed(2) )
+
+
   willUpdate(prop) {
     if (prop.has("data")) {
       if (!this.initialized) {
@@ -126,7 +131,8 @@ export class IndicesCharts extends LitElement {
       }
 
 
-      this.full.data.datasets[0].data = this.data.stats.histogram[0];
+
+      this.full.data.datasets[0].data = this.data.stats.histogram[0].map(this.to_hectareas);
       this.full.update();
 
 
@@ -143,7 +149,7 @@ export class IndicesCharts extends LitElement {
     :host {
       position: absolute;
       width: 10rem;
-      background-color: white;
+      background-color: lightseagreen;
       border-radius: 1rem;
       padding: 1rem;
       z-index: 12;

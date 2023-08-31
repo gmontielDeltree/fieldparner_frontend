@@ -1,5 +1,5 @@
 import { ndvi_layers_init } from "./ndvi-layers";
-import { gbl_state } from "./../state";
+import { gbl_dualmap, gbl_state } from "./../state";
 import { depositos_update, depositos_layer_init } from "./depositos-layer";
 import { LitElement, html, unsafeCSS, css } from "lit";
 import { property, query } from "lit/decorators.js";
@@ -171,7 +171,7 @@ export class MapaPrincipal extends LitElement {
   private layers: Layer[];
 
   static override styles = [
-    unsafeCSS(mapbox_geocoder_style),
+    //unsafeCSS(mapbox_geocoder_style),
     unsafeCSS(mapbox_draw_style),
     unsafeCSS(mapbox_style),
     css`
@@ -283,6 +283,7 @@ export class MapaPrincipal extends LitElement {
 
     this.map2.on("load",() => {
       gbl_state.map2 = this.map2
+
     })
 
     this.map = new Map({
@@ -300,7 +301,6 @@ export class MapaPrincipal extends LitElement {
       preserveDrawingBuffer: false,
     });
 
-    syncMaps(this.map,this.map2);
 
     this.map.addControl(new mapboxgl.NavigationControl());
 
@@ -322,6 +322,8 @@ export class MapaPrincipal extends LitElement {
     //this.map.resize();
 
     this.map.on("load", () => {
+
+      syncMaps(this.map,this.map2);
 
       // const geocoder = new MapboxGeocoder({
       //   accessToken: mapboxgl.accessToken,
@@ -821,20 +823,30 @@ export class MapaPrincipal extends LitElement {
     });
   };
 
-  willUpdate(props) {
-    // if (props.has("campos")) {
-    //   this._redraw_map();
-    // }
+
+  binding = new StateController(this,gbl_dualmap)
+
+  update(props){
+    // Se actualizo, pero no es por cambio de props? -> controller
+    // console.log("MAPSIZe",props)
+    super.update(props);
+
+    if(this._map !== null && props.size===0){
+      console.log("MAPSIZe",props)
+      this.map2?.resize()
+      this.map?.resize()
+      //
+
+    }
   }
 
-  binding = new StateController(this,gbl_state)
 
   render() {
     console.count("mapa-principal render")
     return html`
       <div class="map_box_container">
-        <div id="map" style=${gbl_state.dualmap ? "width:50%":"width:100%;"}></div>
-        <div id="map2" style=${gbl_state.dualmap ? "width:50%":"display:none;"}></div>
+        <div id="map" style=${gbl_dualmap.dualmap ? "width:50%":"width:100%;"}></div>
+        <div id="map2" style=${gbl_dualmap.dualmap ? "width:50%":"width:0%;"}></div>
       </div>
       <sp-theme scale="medium" color="dark">
         <!-- End content requiring theme application. -->

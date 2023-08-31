@@ -27,18 +27,20 @@ interface IndicesMachineContext {
 
 // 	}
 // })
+
 export const machine = createMachine(
   {
     context: {
+      data1: {},
+      data2: {},
       geojson: {},
       lote_id: "",
+      dualmapControl: {},
       selectedIndice1: {},
       selectedIndice2: {},
       selectedFeature1: {},
       selectedFeature2: {},
       featureCollection: {},
-      data1: {},
-      data2: {},
     },
     id: "IndexStudio",
     initial: "empty",
@@ -63,20 +65,40 @@ export const machine = createMachine(
         },
       },
       withGeojson: {
-        entry: {
-          type: "limpiarMap1y2",
-          params: {},
-        },
+        entry: [
+          {
+            type: "limpiarMap1y2",
+            params: {},
+          },
+          {
+            type: "assignDualMapControl",
+            params: {},
+          },
+          {
+            type: "addDualMapControl",
+            params: {},
+          },
+        ],
         invoke: {
           src: "getFeatures",
           id: "invoke-nt3gq",
           onDone: [
             {
-              target: "Loaded",
-              actions: {
-                type: "assignFeatures",
-                params: {},
-              },
+              target: "fetchImagenInicial",
+              actions: [
+                {
+                  type: "assignFeatures",
+                  params: {},
+                },
+                {
+                  type: "selectLastFeature1",
+                  params: {},
+                },
+                {
+                  type: "centerMapOnFeature1",
+                  params: {},
+                },
+              ],
             },
           ],
           onError: [
@@ -90,20 +112,65 @@ export const machine = createMachine(
           ],
         },
       },
-      Loaded: {
-        initial: "PantallaEntera",
+      fetchImagenInicial: {
+        invoke: {
+          src: "fetchImagenInicial",
+          id: "invoke-o16z2",
+          onDone: [
+            {
+              target: "loaded",
+              actions: [
+                {
+                  type: "updateMap1",
+                  params: {},
+                },
+                {
+                  type: "assignData1",
+                  params: {},
+                },
+              ],
+            },
+          ],
+          onError: [
+            {
+              target: "loaded",
+              actions: {
+                type: "notificarError",
+                params: {},
+              },
+            },
+          ],
+        },
+      },
+      failed: {
+        on: {
+          RETRY: {
+            target: "withGeojson",
+          },
+        },
+      },
+      loaded: {
+        initial: "pantallaEntera",
         states: {
-          PantallaEntera: {
+          pantallaEntera: {
             on: {
               TOGGLE: {
-                target: "PantallaDividida",
+                target: "pantallaDividida",
+                actions: {
+                  type: "showDualMap",
+                  params: {},
+                },
               },
             },
           },
-          PantallaDividida: {
+          pantallaDividida: {
             on: {
               TOGGLE: {
-                target: "PantallaEntera",
+                target: "pantallaEntera",
+                actions: {
+                  type: "showSingleMap",
+                  params: {},
+                },
               },
             },
           },
@@ -157,20 +224,13 @@ export const machine = createMachine(
           },
         },
       },
-      failed: {
-        on: {
-          RETRY: {
-            target: "withGeojson",
-          },
-        },
-      },
       loadNuevaImagen1: {
         invoke: {
           src: "fetchImagen",
           id: "invoke-kr9hc",
           onDone: [
             {
-              target: "#IndexStudio.Loaded.hist",
+              target: "#IndexStudio.loaded.hist",
               actions: [
                 {
                   type: "updateMap1",
@@ -185,7 +245,7 @@ export const machine = createMachine(
           ],
           onError: [
             {
-              target: "#IndexStudio.Loaded.hist",
+              target: "#IndexStudio.loaded.hist",
               actions: {
                 type: "notificarError",
                 params: {},
@@ -200,7 +260,7 @@ export const machine = createMachine(
           id: "invoke-kr9hc",
           onDone: [
             {
-              target: "#IndexStudio.Loaded.hist",
+              target: "#IndexStudio.loaded.hist",
               actions: [
                 {
                   type: "updateMap2",
@@ -215,7 +275,7 @@ export const machine = createMachine(
           ],
           onError: [
             {
-              target: "#IndexStudio.Loaded.hist",
+              target: "#IndexStudio.loaded.hist",
               actions: {
                 type: "notificarError",
                 params: {},
@@ -223,6 +283,33 @@ export const machine = createMachine(
             },
           ],
         },
+      },
+      done: {
+        entry: [
+          {
+            type: "removeDualMapControl",
+            params: {},
+          },
+          {
+            type: "showSingleMap",
+            params: {},
+          },
+          {
+            type: "deleteMapSourcesLayers",
+            params: {},
+          },
+          {
+            type: "removeHandlers",
+            params: {},
+          },
+        ],
+        type: "final",
+      },
+    },
+    on: {
+      CERRAR: {
+        target: ".done",
+        internal: true,
       },
     },
     schema: {
@@ -234,17 +321,31 @@ export const machine = createMachine(
         | { type: "SELECTED_FEATURE_1" }
         | { type: "SELECTED_FEATURE_2" }
         | { type: "RETRY" }
-        | { type: "SELECTED_INDICE_2_CHANGED" },
+        | { type: "SELECTED_INDICE_2_CHANGED" }
+        | { type: "CERRAR" },
     },
     predictableActionArguments: true,
     preserveActionOrder: true,
-    tsTypes: {} as import("./indices-machine.typegen").Typegen0,
   },
   {
     actions: {
       limpiarMap1y2: (context, event) => {},
 
+      assignDualMapControl: (context, event) => {},
+
+      addDualMapControl: (context, event) => {},
+
       assignLoteId: (context, event) => {},
+
+      removeDualMapControl: (context, event) => {},
+
+      showSingleMap: (context, event) => {},
+
+      deleteMapSourcesLayers: (context, event) => {},
+
+      removeHandlers: (context, event) => {},
+
+      showDualMap: (context, event) => {},
 
       downloadPNG: (context, event) => {},
 
@@ -258,19 +359,23 @@ export const machine = createMachine(
 
       assignFeatures: (context, event) => {},
 
+      selectLastFeature1: (context, event) => {},
+
+      centerMapOnFeature1: (context, event) => {},
+
       notificarError: (context, event) => {},
 
       updateMap2: (context, event) => {},
 
+      assignData2: (context, event) => {},
+
       updateMap1: (context, event) => {},
+
+      assignData1: (context, event) => {},
 
       updateIndex2: (context, event) => {},
 
       assignGeojson: (context, event) => {},
-
-      assignData1: (context, event) => {},
-
-      assignData2: (context, event) => {},
     },
     services: {
       getFeatures: (context, event) => {},
@@ -278,8 +383,10 @@ export const machine = createMachine(
       fetchImagen: (context, event) => {},
 
       getGeojson: (context, event) => {},
+
+      fetchImagenInicial: (context, event) => {},
     },
     guards: {},
     delays: {},
-  }
+  },
 );

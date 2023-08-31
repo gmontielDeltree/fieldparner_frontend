@@ -70,4 +70,16 @@ export const nav_back = ()=> {
   Router.go(prev ? prev : '/');
 }
 
+
+
+// declate a state
+class DualMapState extends State {
+
+  @property({value:false}) dualmap: boolean;
+
+}
+
+export const gbl_dualmap = new DualMapState()
+
+
 export default state;

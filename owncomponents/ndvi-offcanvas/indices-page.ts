@@ -15,7 +15,7 @@ import "./indice-selector";
 import { machine } from "./indices-machine";
 import { interpret, actions, createMachine, assign } from "xstate";
 import { SelectorController } from "xstate-lit/dist/select-controller";
-import { gbl_state } from "../state";
+import { gbl_dualmap, gbl_state } from "../state";
 import axios from "axios";
 import bbox from "@turf/bbox";
 import { coordAll } from "@turf/meta";
@@ -104,13 +104,13 @@ export class IndicesPage extends LitElement {
       background-color: darkkhaki;
       padding: 1rem;
     }
-    #footer{
-      display:flex;
-      position:absolute;
-      width:100%;
-      bottom:0;
-      left:0;
-      z-index:100;
+    #footer {
+      display: flex;
+      position: absolute;
+      width: 100%;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
       /* background-color:red; */
     }
   `;
@@ -126,10 +126,31 @@ export class IndicesPage extends LitElement {
         selectedIndice1: list_of_indexes[0],
         selectedIndice2: list_of_indexes[0],
         featureCollection: featureCollection([]),
+        dualmapControl: {},
       })
       .withConfig({
         actions: {
-          showDualMap: ()=>gbl_state.dualmap = true,
+          showSingleMap: () => (gbl_dualmap.dualmap = false),
+          showDualMap: () => (gbl_dualmap.dualmap = true),
+          selectLastFeature1: assign({
+            selectedFeature1: (ctx, evt) => ctx.featureCollection.features[0],
+          }),
+          centerMapOnFeature1: (ctx) => gbl_state.map.fitBounds(bbox(ctx.geojson),{padding:{top:50,bottom:100}}),
+          addDualMapControl: (ctx) => {
+            gbl_state.map.addControl(ctx.dualmapControl);
+          },
+          assignDualMapControl: assign({
+            dualmapControl: () =>
+              new DualMap({
+                onClick: () => {
+                  console.log("BUUU", gbl_dualmap.dualmap);
+                  this.actor.send({ type: "TOGGLE" });
+                },
+              }),
+          }),
+          removeDualMapControl: (ctx) =>
+            gbl_state.map.removeControl(ctx.dualmapControl),
+
           assignLoteId: assign({
             lote_id: (ctx, evt) => (() => this.location.params.uuid)(),
           }),
@@ -139,16 +160,6 @@ export class IndicesPage extends LitElement {
           assignGeojson: assign({ geojson: (ctx, evt) => evt.data }),
           limpiarMap1y2: () => {
             hideMapLayers(gbl_state.map);
-            gbl_state.map.addControl(
-              new DualMap({
-                onClick: () => {
-                  gbl_state.dualmap = true;
-                  gbl_state.map2.resize()
-                  console.log("BUUU",gbl_state.dualmap)
-                  this.actor.send({ type: "TOGGLE" });
-                },
-              })
-            );
           },
           updateIndex1: assign({ selectedIndice1: (_, evt) => evt.data }),
           updateFeature1: assign({ selectedFeature1: (_, evt) => evt.data }),
@@ -159,7 +170,7 @@ export class IndicesPage extends LitElement {
             mostrarTIFEnMapa(
               import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
               gbl_state.map,
-              "winter"
+              "winter",
             );
           },
           updateMap2: (ctx, evt) => {
@@ -167,19 +178,22 @@ export class IndicesPage extends LitElement {
             mostrarTIFEnMapa(
               import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
               gbl_state.map2,
-              "winter"
+              "winter",
             );
           },
           notificarError: (ctx, evt) => {
             console.log("error", evt.data);
           },
-          assignData1: assign({data1:(ctx,evt)=>{
-            return evt.data.data
-          }}),
-          assignData2: assign({data2:(ctx,evt)=>{
-            return evt.data.data
-          }})
-
+          assignData1: assign({
+            data1: (ctx, evt) => {
+              return evt.data.data;
+            },
+          }),
+          assignData2: assign({
+            data2: (ctx, evt) => {
+              return evt.data.data;
+            },
+          }),
         },
         services: {
           getGeojson: async (ctx, evt) => {
@@ -198,6 +212,25 @@ export class IndicesPage extends LitElement {
             console.log("url ", url);
             return await axios.get(url);
           },
+          fetchImagenInicial: async (ctx, evt) => {
+            // console.log("fetchImage", evt);
+            let date = ctx.selectedFeature1.properties.date;
+            // console.log("COOR", coordAll(ctx.geojson));
+            let geometry = coordAll(ctx.geojson);
+            let resource_id = ctx.lote_id;
+            let indice = ctx.selectedIndice1.value;
+
+            let hist_options = JSON.stringify({
+              bins: ctx.selectedIndice1.thresholds,
+            });
+            let url =
+              import.meta.env.VITE_COGS_SERVER_URL +
+              `/indices/${indice}?resource_id=${resource_id}&geometry=${encodeURIComponent(
+                JSON.stringify(geometry),
+              )}&date=${date}&hist_options=${hist_options}`;
+            // console.log("fetchImageURL", url);
+            return await axios.get(url);
+          },
           fetchImagen: async (ctx, evt) => {
             // console.log("fetchImage", evt);
             let date = evt.data.feature.properties.date;
@@ -206,17 +239,19 @@ export class IndicesPage extends LitElement {
             let resource_id = ctx.lote_id;
             let indice = evt.data.indice.value;
 
-            let hist_options = JSON.stringify({bins:ctx.selectedIndice1.thresholds})
+            let hist_options = JSON.stringify({
+              bins: evt.data.indice.thresholds,
+            });
             let url =
               import.meta.env.VITE_COGS_SERVER_URL +
               `/indices/${indice}?resource_id=${resource_id}&geometry=${encodeURIComponent(
-                JSON.stringify(geometry)
+                JSON.stringify(geometry),
               )}&date=${date}&hist_options=${hist_options}`;
             // console.log("fetchImageURL", url);
             return await axios.get(url);
           },
         },
-      })
+      }),
   );
 
   ctx = new SelectorController(this, this.actor, (state) => state.context);
@@ -224,50 +259,68 @@ export class IndicesPage extends LitElement {
   state = new SelectorController(this, this.actor, (state) => state.value);
 
   protected firstUpdated(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
   ): void {
     this.actor.start();
   }
 
   disconnectedCallback() {
-  super.disconnectedCallback();
-  console.log("DISCONENECCCC AWAY")
-  gbl_state.dualmap = false;
+    super.disconnectedCallback();
+    console.log("DISCONENECCCC AWAY");
+    this.actor.send({type:"CERRAR"})
+    //gbl_dualmap.dualmap = false;
   }
 
   render() {
-
     // Aliases
-    let estado = this.state.value
-    let ctx = this.ctx.value
+    let estado = this.state.value;
+    let ctx = this.ctx.value;
 
-    const inDualMode = ()=>{
-      return (estado["Loaded"] === "PantallaDividida")
+    const inDualMode = () => {
+      return estado["loaded"] === "pantallaDividida";
+    };
+
+
+    const loading = ()=>{
+      return html `<div
+            class="d-flex justify-content-center align-items-center"
+            style="width: 100%;height: 100%;position: absolute;background:#fffc;z-index: 9;"
+          >
+            <span>Loading</span>
+          </div>`
     }
-    
     // https://css-irl.info/finding-an-elements-nearest-relative-positioned-ancestor/#:~:text=By%20typing%20%24_%20into%20the%20console%20we%20can,the%20element.%20Then%3A%20getComputedStyle%28%24_%29.position%20retrieves%20its%20position%20value
 
     return html`
-      ${(estado === "empty") || (estado === "withGeojson")
-        ? "loading"
+      ${estado === "empty" || estado === "withGeojson"
+        ? loading
         : html`
-
             <div
               class="overlay-charts"
               style="position:absolute;display: flex;width:100%;justify-content: space-between;"
             >
-              <indices-charts style="top:4rem;right:calc(50% + 4rem);" .data=${ctx.data1} .indice=${ctx.selectedIndice1} .hectareas_del_lote=${area(ctx.geojson)}></indices-charts>
-              <indices-charts style="top:4rem;right:4rem;${inDualMode() ? "":"display:none;"}" .data=${ctx.data2} .indice=${ctx.selectedIndice2} .hectareas_del_lote=${area(ctx.geojson)}></indices-charts>
+              <indices-charts
+                style="top:4rem;right:${inDualMode() ? "calc(50% + 4rem);": "4rem;"}"
+                .data=${ctx.data1}
+                .indice=${ctx.selectedIndice1}
+                .hectareas_del_lote=${area(ctx.geojson)}
+              ></indices-charts>
+              <indices-charts
+                style="top:4rem;right:4rem;${inDualMode()
+                  ? ""
+                  : "display:none;"}"
+                .data=${ctx.data2}
+                .indice=${ctx.selectedIndice2}
+                .hectareas_del_lote=${area(ctx.geojson)}
+              ></indices-charts>
             </div>
 
-            <div
-              id="footer"
-            >
+            <div id="footer">
               <indice-selector
                 .featureCollection=${ctx.featureCollection}
                 .featureSelected=${ctx.selectedFeature1}
                 .selectedIndice=${ctx.selectedIndice1}
-                style="${inDualMode() ? "width:50%":"width:100%"}"
+                style="${inDualMode() ? "width:50%" : "width:100%"}"
                 @selectedFeatureChange=${(e: CustomEvent) => {
                   console.log("Selected Feature 1 evt");
                   this.actor.send({
@@ -300,14 +353,8 @@ export class IndicesPage extends LitElement {
                 : null}
             </div>
           `}
-      ${estado === "loadNuevaImagen1" ||
-      estado === "loadNuevaImagen2"
-        ? html` <div
-            class="d-flex justify-content-center align-items-center"
-            style="width: 100%;height: 100%;position: absolute;background:#fffc;z-index: 9;"
-          >
-            <span>Loading</span>
-          </div>`
+      ${estado === "loadNuevaImagen1" || estado === "loadNuevaImagen2"
+        ? loading()
         : null}
     `;
   }

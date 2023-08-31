@@ -51,7 +51,7 @@ export class IndiceSelector extends LitElement {
           f.properties.date !== fc.features[i - 1].properties.date
             ? true
             : false;
-        console.log(fv);
+        // console.log(fv);
         return fv;
       }
     };
@@ -82,7 +82,7 @@ export class IndiceSelector extends LitElement {
       display: block;
     } */
     .container {
-      background-color: chartreuse;
+      background-color: lightseagreen;
       border-radius: 1rem;
       padding: 10px;
     }
@@ -107,19 +107,25 @@ export class IndiceSelector extends LitElement {
     const conNube = (f: Feature) => f.properties.cloudCoverPercentage > 30;
 
     let indice_para_select = this.indices_list.map((i) => {
-      return { label: i.name, value: i.value };
+      return { label: i.name, value: i.value, indice:i };
     });
 
     const isFeatureSelected = (f: Feature) => {
-      let id_feature_selected = this.featureSelected?.properties?.id;
+      let id_feature_selected = this.featureSelected?.feature?.properties?.id;
       let id = f.properties.id;
-      return id_feature_selected !== undefined
+         //   console.log("FEATURE SELECTED",this.featureSelected,id_feature_selected,id)
+
+      let res =  id_feature_selected !== undefined
         ? id === id_feature_selected
         : false;
+      
+      // console.log("FEATURE SELECTED",this.featureSelected,id_feature_selected,id, res)
+      
+      return res
     };
 
     return html`
-      <div class="container" style="display:flex; flex-direction:row;">
+      <div class="container" style="display:flex; flex-direction:row; align-items:center;">
         <vaadin-select
           .items=${indice_para_select}
           .value=${indice_para_select[0].value}
@@ -134,12 +140,12 @@ export class IndiceSelector extends LitElement {
             return html`
               <vaadin-button
                 style="direction:ltr;"
-                .class=${isFeatureSelected(f) ? "selected-feature" : ""}
+                class=${isFeatureSelected(f) ? "selected-feature" : ""}
                 theme="primary"
                 @click=${() => {
                   console.log("Feature Selected", f);
                   this.selectFeatureEvent(f);
-                  this.featureSelected = f;
+                  // this.featureSelected = f;
                 }}
                 >${conNube(f)
                   ? html`
