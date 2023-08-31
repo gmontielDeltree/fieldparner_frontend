@@ -9,6 +9,8 @@ import {
 import { IndiceEspectral, list_of_indexes } from "./indices-types";
 
 interface IndicesMachineContext {
+  data1: any,
+  data2: any,
   featureCollection: FeatureCollection;
   selectedFeature1: Feature | undefined;
   selectedFeature2: Feature | undefined;
@@ -25,10 +27,8 @@ interface IndicesMachineContext {
 
 // 	}
 // })
-
 export const machine = createMachine(
   {
-    id: "IndexStudio",
     context: {
       geojson: {},
       lote_id: "",
@@ -37,7 +37,10 @@ export const machine = createMachine(
       selectedFeature1: {},
       selectedFeature2: {},
       featureCollection: {},
+      data1: {},
+      data2: {},
     },
+    id: "IndexStudio",
     initial: "empty",
     states: {
       empty: {
@@ -168,10 +171,16 @@ export const machine = createMachine(
           onDone: [
             {
               target: "#IndexStudio.Loaded.hist",
-              actions: {
-                type: "updateMap1",
-                params: {},
-              },
+              actions: [
+                {
+                  type: "updateMap1",
+                  params: {},
+                },
+                {
+                  type: "assignData1",
+                  params: {},
+                },
+              ],
             },
           ],
           onError: [
@@ -192,10 +201,16 @@ export const machine = createMachine(
           onDone: [
             {
               target: "#IndexStudio.Loaded.hist",
-              actions: {
-                type: "updateMap2",
-                params: {},
-              },
+              actions: [
+                {
+                  type: "updateMap2",
+                  params: {},
+                },
+                {
+                  type: "assignData2",
+                  params: {},
+                },
+              ],
             },
           ],
           onError: [
@@ -223,11 +238,13 @@ export const machine = createMachine(
     },
     predictableActionArguments: true,
     preserveActionOrder: true,
-    tsTypes: {} as import("./indices-machine.typegen").Typegen0
+    tsTypes: {} as import("./indices-machine.typegen").Typegen0,
   },
   {
     actions: {
       limpiarMap1y2: (context, event) => {},
+
+      assignLoteId: (context, event) => {},
 
       downloadPNG: (context, event) => {},
 
@@ -251,7 +268,9 @@ export const machine = createMachine(
 
       assignGeojson: (context, event) => {},
 
-      assignLoteId: (context, event) => {},
+      assignData1: (context, event) => {},
+
+      assignData2: (context, event) => {},
     },
     services: {
       getFeatures: (context, event) => {},
@@ -262,5 +281,5 @@ export const machine = createMachine(
     },
     guards: {},
     delays: {},
-  },
+  }
 );

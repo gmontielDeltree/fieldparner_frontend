@@ -1,10 +1,12 @@
 
 export interface IndiceEspectral {
      name: string
-     value: string 
+     value: string
+     thresholds: number[]
+     thresholds_labels: string[]  
 }
 
-export const list_of_indexes : IndiceEspectral[] = [{ name: "NDVI", value: "ndvi" }]
+export const list_of_indexes : IndiceEspectral[] = [{ name: "NDVI", value: "ndvi", thresholds:[0,0.5,0.7,1], thresholds_labels:["arido","ok","okaise"] }]
 
 
 export type IndicesResponse = {

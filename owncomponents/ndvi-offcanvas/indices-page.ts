@@ -169,6 +169,13 @@ export class IndicesPage extends LitElement {
           notificarError: (ctx, evt) => {
             console.log("error", evt.data);
           },
+          assignData1: assign({data1:(ctx,evt)=>{
+            return evt.data.data
+          }}),
+          assignData2: assign({data2:(ctx,evt)=>{
+            return evt.data.data
+          }})
+
         },
         services: {
           getGeojson: async (ctx, evt) => {
@@ -195,11 +202,12 @@ export class IndicesPage extends LitElement {
             let resource_id = ctx.lote_id;
             let indice = evt.data.indice.value;
 
+            let hist_options = JSON.stringify({bins:ctx.selectedIndice1.thresholds})
             let url =
               import.meta.env.VITE_COGS_SERVER_URL +
               `/indices/${indice}?resource_id=${resource_id}&geometry=${encodeURIComponent(
                 JSON.stringify(geometry)
-              )}&date=${date}`;
+              )}&date=${date}&hist_options=${hist_options}`;
             // console.log("fetchImageURL", url);
             return await axios.get(url);
           },
@@ -233,8 +241,8 @@ export class IndicesPage extends LitElement {
               class="overlay-charts"
               style="position:absolute;display: flex;width:100%;justify-content: space-between;"
             >
-              <indices-charts style="top:4rem;left:3rem;"></indices-charts>
-              <indices-charts style="top:4rem;right:3rem;"></indices-charts>
+              <indices-charts style="top:4rem;left:3rem;" .data=${this.ctx.value.data1} .indice=${this.ctx.value.selectedIndice1}></indices-charts>
+              <indices-charts style="top:4rem;right:3rem;" .data=${this.ctx.value.data2} .indice=${this.ctx.value.selectedIndice2} ></indices-charts>
             </div>
 
             <div

@@ -1,19 +1,35 @@
-import { LitElement, PropertyValueMap, html, css } from "lit";
+import { LitElement, PropertyValueMap, css, html } from "lit";
 
-import { property, customElement, query } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 // import { Chart } from "chart.js";
 import { Chart, registerables } from "chart.js";
+import { IndiceEspectral, IndicesResponse } from "./indices-types";
 Chart.register(...registerables);
+
+const ranges_to_bin_names = (ranges : number[])=>{
+ 
+  let a = ranges.slice(0,-1)
+  let b = ranges.slice(1);
+
+  let bin_names = a.map((v,i)=>"" + v + "-" + b[i] )
+  return bin_names
+}
 
 @customElement("indices-charts")
 export class IndicesCharts extends LitElement {
   @property()
-  data: any;
+  data: IndicesResponse;
 
-  private thr1;
-  private thr2;
-  private thr3;
-  private full;
+  @property()
+  indice: IndiceEspectral;
+
+  private thr1: Chart;
+  private thr2: Chart;
+  private thr3: Chart;
+  private full: Chart;
+
+  @state()
+  initialized: boolean = false;
 
   makeGaugeChart(id) {
     const chart = new Chart(this.shadowRoot.getElementById(id), {
@@ -24,23 +40,24 @@ export class IndicesCharts extends LitElement {
           {
             label: "My First Dataset",
             data: [300, 50],
-            backgroundColor: [
-              "rgb(255, 99, 132)",
-              "rgb(255, 205, 86)",
-            ],
+            backgroundColor: ["rgb(255, 99, 132)", "rgb(255, 205, 86)"],
             hoverOffset: 4,
           },
         ],
       },
-      options: { rotation: -90, circumference: 180, plugins: {
-	legend: {
-		maxHeight:30
-	},
-	title: {
-	  display: true,
-	  text: "Custom Chart Title",
-	},
-      }, },
+      options: {
+        rotation: -90,
+        circumference: 180,
+        plugins: {
+          legend: {
+            maxHeight: 30,
+          },
+          title: {
+            display: true,
+            text: "Custom Chart Title",
+          },
+        },
+      },
     });
 
     return chart;
@@ -50,11 +67,11 @@ export class IndicesCharts extends LitElement {
     const chart = new Chart(this.shadowRoot.getElementById(id), {
       type: "doughnut",
       data: {
-        labels: ["Red", "Blue", "Yellow"],
+        labels: this.indice.thresholds_labels,
         datasets: [
           {
-            label: "My First Dataset",
-            data: [300, 50, 100],
+            label: "Proporcion",
+            data: this.data.stats.histogram[0] ,
             backgroundColor: [
               "rgb(255, 99, 132)",
               "rgb(54, 162, 235)",
@@ -69,7 +86,7 @@ export class IndicesCharts extends LitElement {
         title: "full",
         plugins: {
           legend: {
-		display:false
+            display: false,
           },
           title: {
             display: true,
@@ -78,16 +95,28 @@ export class IndicesCharts extends LitElement {
         },
       },
     });
+    return chart;
+  }
+
+  willUpdate(prop) {
+    if (prop.has("data")) {
+      if (!this.initialized) {
+        this.thr1 = this.makeGaugeChart("thr1");
+        this.thr2 = this.makeGaugeChart("thr2");
+        this.thr3 = this.makeGaugeChart("thr3");
+        this.full = this.makeFullChart("full");
+        this.initialized = true
+      }
+
+      this.full.data.datasets[0].data = this.data.stats.histogram[0];
+      
+      this.full.update();
+    }
   }
 
   protected firstUpdated(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-  ): void {
-    this.thr1 = this.makeGaugeChart("thr1");
-    this.thr2 = this.makeGaugeChart("thr2");
-    this.thr3 = this.makeGaugeChart("thr3");
-    this.full = this.makeFullChart("full");
-  }
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {}
 
   static override styles = css`
     :host {
@@ -99,6 +128,7 @@ export class IndicesCharts extends LitElement {
       z-index: 12;
     }
   `;
+
   render() {
     return html`
       <div class="container">
