@@ -1,4 +1,4 @@
-// import { Link as RouterLink, Navigate, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import {
   Box,
   Divider,
@@ -23,16 +23,11 @@ import {
 import { SideBarProps } from '../../types';
 
 
-// const sideBarMenu: MenuOptions[] = [
-//   { text: 'Campos', icon: <CabinIcon /> },
-//   { text: 'Recargar', icon: <CachedIcon /> },
-//   { text: 'Lista de Dispositivos', icon: <ListIcon /> },
-//   { text: 'Personal', icon: <GroupIcon /> },
-//   { text: 'Vehiculos', icon: <LocalShippingIcon /> },
-//   { text: 'Precios', icon: <AttachMoneyIcon /> },
-//   { text: 'Ajustes', icon: <SettingsIcon /> }];
 
 export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideBarClose }) => {
+
+  const { pathname } = useLocation();
+
 
   const navigateTo = (path: string) => {
     window.location.replace(path);
@@ -89,15 +84,22 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
             </ListItemButton>
           </ListItem>
           <ListItem key='personal' disablePadding>
-            <ListItemButton onClick={() => navigateTo('/personal')}>
+            <ListItemButton
+              component={RouterLink}
+              to="/init/overview/business"
+              selected={pathname.includes("/init/overview/business")}
+            >
               <ListItemIcon>
                 <GroupIcon />
               </ListItemIcon>
-              <ListItemText primary="Personal" />
+              <ListItemText primary="Empresas/Personas" />
             </ListItemButton>
           </ListItem>
           <ListItem key='vehiculos' disablePadding>
-            <ListItemButton selected >
+            <ListItemButton
+              component={RouterLink}
+              to="/init/overview/vehiculo"
+              selected={pathname.includes("/init/overview/vehiculo")} >
               <ListItemIcon>
                 <LocalShippingIcon />
               </ListItemIcon>
