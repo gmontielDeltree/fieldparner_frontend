@@ -36,7 +36,7 @@ const initialState: Vehiculo = {
 
 const steps = ['Datos Generales', 'Especificaciones Tecnicas', 'Mantenimientos'];
 
-export const VehiculoPage: React.FC = () => {
+export const VehiclePage: React.FC = () => {
 
     const dispatch = useAppDispatch();
     const navigate = useNavigate();

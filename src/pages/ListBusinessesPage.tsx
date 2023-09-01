@@ -1,8 +1,8 @@
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, Loading } from '../components';
-import { ColumnProps, Vehiculo } from '../types';
+import { ColumnProps } from '../types';
 import { Box, Button, Grid, InputAdornment, TextField, Typography } from '@mui/material';
 import {
     Add as AddIcon,
@@ -21,7 +21,7 @@ const columns: ColumnProps[] = [
     { text: 'Patente', align: 'left' },
     { text: 'Año', align: 'center' }];
 
-export const ListaVehiculoPage: React.FC = () => {
+export const ListBusinessesPage: React.FC = () => {
 
     const navigate = useNavigate();
     const dispatch = useAppDispatch();

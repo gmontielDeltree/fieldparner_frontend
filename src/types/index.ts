@@ -102,14 +102,22 @@ export interface UserLogin {
 //     content: T;
 // }
 
-export interface ResponseAuthLogin {
+export interface Authenticate {
     accessToken: string;
     refreshToken: string;
-    expiresIn: number;
-    tokenType: string;
-    idToken: string;
+    expiration: number;
 }
 
+export interface User {
+    username: string;
+    isAdmin: boolean;
+}
+
+export interface ResponseAuthLogin {
+    username: string;
+    isAdmin: boolean;
+    auth: Authenticate;
+}
 export interface ResponseAuthRenew {
     accessToken: string;
     refreshToken: string;
@@ -124,4 +132,11 @@ export interface UserRegister {
 export interface ErrorResponseAuth {
     code: "UserNotConfirmedException" | "NotAuthorizedException" | "UsernameExistsException";
     message: string;
+}
+
+export interface AuthState {
+    status: 'checking' | 'authenticated' | 'not-authenticated';
+    user: User | null;
+    errorMessage: string;
+    isLoading: boolean;
 }
