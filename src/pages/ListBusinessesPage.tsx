@@ -1,135 +1,113 @@
-
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { DataTable, Loading } from '../components';
-import { ColumnProps } from '../types';
-import { Box, Button, Grid, InputAdornment, TextField, Typography } from '@mui/material';
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-    Add as AddIcon,
-    Search as SearchIcon,
-    // Download as DownloadIcon,
-    LocalShipping as LocalShippingIcon,
-} from '@mui/icons-material';
-import { useForm, useAppDispatch, useAppSelector } from '../hooks';
-import { cargarVehiculos, getVehiculos } from '../redux/vehiculo';
-
+  BusinessTable,
+  Loading,
+  SearchButton,
+  SearchInput,
+} from "../components";
+import { Business, ColumnProps } from "../types";
+import { Box, Button, Grid, Typography } from "@mui/material";
+import { Add as AddIcon, Business as BusinessIcon } from "@mui/icons-material";
+import { useForm, useAppDispatch, useAppSelector, useBusiness } from "../hooks";
+import { setBusinessActive } from "../redux/business";
 
 const columns: ColumnProps[] = [
-    { text: 'Tipo Vehiculo', align: 'center' },
-    { text: 'Marca', align: 'center' },
-    { text: 'Modelo', align: 'center' },
-    { text: 'Patente', align: 'left' },
-    { text: 'Año', align: 'center' }];
+  { text: "Tipo Entidad", align: "left" },
+  { text: "Nombre/Razon social", align: "center" },
+  { text: "Email", align: "center" },
+  { text: "Telefono", align: "left" },
+  { text: "Pais", align: "center" },
+];
 
 export const ListBusinessesPage: React.FC = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { isLoading } = useAppSelector((state) => state.ui);
+  const { businesses, getBusinesses } = useBusiness();
+  const { filterText, handleInputChange } = useForm({ filterText: "" });
 
-    const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-    const { isLoading } = useAppSelector(state => state.ui);
-    const { vehiculos } = useAppSelector(state => state.vehiculo);
-    const {
-        filterText,
-        handleInputChange,
-    } = useForm({ filterText: '' });
+  const onClickSearch = (): void => {
+    // const filteredBusinesses = businesses.filter(
+    //   ({ tipoVehiculo, marca, modelo, patente }) =>
+    //     (patente && patente.toLowerCase().includes(filterText.toLowerCase())) ||
+    //     (marca && marca.toLowerCase().includes(filterText.toLowerCase())) ||
+    //     (modelo && modelo.toLowerCase().includes(filterText.toLowerCase())) ||
+    //     (tipoVehiculo &&
+    //       tipoVehiculo.toLowerCase().includes(filterText.toLowerCase()))
+    // );
+    // dispatch(cargarVehiculos(filteredVehiculos));
+  };
 
-    const onClickBuscar = (): void => {
-        const filteredVehiculos = vehiculos.filter(
-            ({ tipoVehiculo, marca, modelo, patente }) =>
-                (patente && patente.toLowerCase().includes(filterText.toLowerCase())) ||
-                (marca && marca.toLowerCase().includes(filterText.toLowerCase())) ||
-                (modelo && modelo.toLowerCase().includes(filterText.toLowerCase())) ||
-                (tipoVehiculo && tipoVehiculo.toLowerCase().includes(filterText.toLowerCase()))
-        );
-        dispatch(cargarVehiculos(filteredVehiculos));
-    }
+  const onClickAddBusiness = () => navigate("/init/overview/business/new");
 
-    const onClickNuevoVehiculo = () => navigate('/init/overview/vehiculo/nuevo');
+  const onClickUpdateBusiness = (item: Business) => {
+    dispatch(setBusinessActive(item));
+    navigate(`/init/overview/business/${item.id}`);
+  };
 
-    useEffect(() => {
-        dispatch(getVehiculos());
-    }, [dispatch]);
+  useEffect(() => {
+    getBusinesses();
+  }, []);
 
-    return (
-        <>
-            {
-                isLoading && (<Loading loading={true} />)
-            }
-            <Box
-                component="div"
-                display="flex"
-                alignItems="center"
-                sx={{ ml: { sm: 2 }, pt: 2 }}>
-                <LocalShippingIcon />
-                <Typography component="h2" variant='h4' sx={{ ml: { sm: 2 } }} >
-                    Vehiculos
-                </Typography>
-            </Box>
-            <Box component="div" sx={{ mt: 7 }}>
-                <Grid
-                    container
-                    spacing={0}
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{ p: 2, mt: { sm: 2 } }}
-                >
-                    <Grid item xs={6} sm={2}>
-                        <Button
-                            variant="contained"
-                            color="success"
-                            startIcon={<AddIcon />}
-                            onClick={onClickNuevoVehiculo}
-                        >
-                            Nuevo
-                        </Button>
-                    </Grid>
-                    <Grid item xs={12} sm={10}>
-                        <Grid container justifyContent="flex-end" >
-                            <Grid item xs={8} sm={7} >
-                                <TextField
-                                    variant="outlined"
-                                    type='text'
-                                    size='small'
-                                    placeholder='Vehiculo/Marca/Modelo'
-                                    autoComplete='off'
-                                    name="filterText"
-                                    value={filterText}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" />,
-                                    }}
-                                    fullWidth />
-                            </Grid>
-                            <Grid item xs={4} sm={3}>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    size="medium"
-                                    fullWidth
-                                    sx={{
-                                        height: '98%',
-                                        margin: 'auto',
-                                        borderTopLeftRadius: 0,
-                                        borderBottomLeftRadius: 0
-                                    }}
-                                    onClick={() => onClickBuscar()}
-                                    startIcon={<SearchIcon />}>
-                                    Buscar
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                </Grid>
-                <Box
-                    component="div"
-                    sx={{ p: 1 }}>
-                    <DataTable
-                        key="datatable-equipo"
-                        isLoading={isLoading}
-                        columns={columns}
-                        data={vehiculos} />
-                </Box>
-            </Box>
-        </>
-    )
-}
+  return (
+    <>
+      {isLoading && <Loading loading={true} />}
+      <Box
+        component="div"
+        display="flex"
+        alignItems="center"
+        sx={{ ml: { sm: 2 }, pt: 2 }}
+      >
+        <BusinessIcon />
+        <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
+          Empresas/Personas
+        </Typography>
+      </Box>
+      <Box component="div" sx={{ mt: 7 }}>
+        <Grid
+          container
+          spacing={0}
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ p: 2, mt: { sm: 2 } }}
+        >
+          <Grid item xs={6} sm={2}>
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<AddIcon />}
+              onClick={onClickAddBusiness}
+            >
+              Nuevo
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={10}>
+            <Grid container justifyContent="flex-end">
+              <Grid item xs={8} sm={7}>
+                <SearchInput
+                  value={filterText}
+                  placeholder="Razon social / Nombre"
+                  handleInputChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={4} sm={3}>
+                <SearchButton text="Buscar" onClick={() => onClickSearch()} />
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Box component="div" sx={{ p: 1 }}>
+          <BusinessTable
+            key="datatable-businesses"
+            isLoading={isLoading}
+            columns={columns}
+            data={businesses}
+            onClickEdit={onClickUpdateBusiness}
+          />
+        </Box>
+      </Box>
+    </>
+  );
+};

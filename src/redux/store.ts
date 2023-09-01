@@ -2,13 +2,15 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import { vehiculoSlice } from './vehiculo';
 import { uiSlice } from './ui';
-import { authSlice } from './auth'
+import { authSlice } from './auth';
+import { businessSlice } from './business';
 
 const store = configureStore({
     reducer: {
         ui: uiSlice.reducer,
         vehiculo: vehiculoSlice.reducer,
         auth: authSlice.reducer,
+        business: businessSlice.reducer,
     },
 });
 
