@@ -77,9 +77,9 @@ export const BusinessTable: React.FC<BusinessTableProps> = ({
                 <TableCellStyled align="center">
                   {row.razonSocial || row.nombreCompleto}
                 </TableCellStyled>
-                <TableCellStyled align="center">{row.cuit}</TableCellStyled>
-                <TableCellStyled>{row.pais}</TableCellStyled>
-                <TableCellStyled align="center">{row.telefono}</TableCellStyled>
+                <TableCellStyled align="center">{row.cuit || row.documento}</TableCellStyled>
+                <TableCellStyled>{row.email}</TableCellStyled>
+                <TableCellStyled align="center">{row.pais}</TableCellStyled>
                 <TableCellStyled align="center">
                   <Tooltip title="Editar">
                     <IconButton

@@ -4,6 +4,7 @@ import { Business, BusinessState } from '@types';
 
 const initialState: BusinessState = {
     businessActive: null,
+    businesses: []
 }
 
 export const businessSlice = createSlice({
@@ -15,6 +16,12 @@ export const businessSlice = createSlice({
         },
         removeBusinessActive: (state) => {
             state.businessActive = null
+        },
+        loadBusinesses: (state, action: PayloadAction<Business[]>) => {
+            state.businesses = action.payload;
+        },
+        removeBusinesses: (state) => {
+            state.businesses = [];
         }
     }
 });
@@ -22,5 +29,7 @@ export const businessSlice = createSlice({
 
 export const {
     setBusinessActive,
-    removeBusinessActive
+    removeBusinessActive,
+    loadBusinesses,
+    removeBusinesses
 } = businessSlice.actions;

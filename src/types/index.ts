@@ -163,8 +163,10 @@ export interface Business {
     cp: string;
     provincia: string;
     pais: string;
+    estado?: boolean;
  }
 
 export interface BusinessState {
     businessActive: Business | null;
+    businesses: Business[];
 }

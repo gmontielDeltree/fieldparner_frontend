@@ -15,8 +15,8 @@ import { setBusinessActive } from "../redux/business";
 const columns: ColumnProps[] = [
   { text: "Tipo Entidad", align: "left" },
   { text: "Nombre/Razon social", align: "center" },
-  { text: "Email", align: "center" },
-  { text: "Telefono", align: "left" },
+  { text: "Cuit/Dni", align: "center" },
+  { text: "Email", align: "left" },
   { text: "Pais", align: "center" },
 ];
 
@@ -24,19 +24,22 @@ export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.ui);
-  const { businesses, getBusinesses } = useBusiness();
+  const { businesses, getBusinesses, setBusinesses } = useBusiness();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const onClickSearch = (): void => {
-    // const filteredBusinesses = businesses.filter(
-    //   ({ tipoVehiculo, marca, modelo, patente }) =>
-    //     (patente && patente.toLowerCase().includes(filterText.toLowerCase())) ||
-    //     (marca && marca.toLowerCase().includes(filterText.toLowerCase())) ||
-    //     (modelo && modelo.toLowerCase().includes(filterText.toLowerCase())) ||
-    //     (tipoVehiculo &&
-    //       tipoVehiculo.toLowerCase().includes(filterText.toLowerCase()))
-    // );
-    // dispatch(cargarVehiculos(filteredVehiculos));
+    if (filterText === "") {
+      getBusinesses();
+      return;
+    }
+    const filteredBusinesses = businesses.filter(
+      ({ razonSocial, nombreCompleto }) =>
+        (razonSocial &&
+          razonSocial.toLowerCase().includes(filterText.toLowerCase())) ||
+        (nombreCompleto &&
+          nombreCompleto.toLowerCase().includes(filterText.toLowerCase()))
+    );
+    setBusinesses(filteredBusinesses);
   };
 
   const onClickAddBusiness = () => navigate("/init/overview/business/new");

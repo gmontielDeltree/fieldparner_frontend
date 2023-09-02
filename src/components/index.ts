@@ -8,3 +8,5 @@ export * from './SearchButton';
 export * from './DataTable/EspecificationTable';
 export * from './DataTable/MaintenanceTable';
 export * from './DataTable/BusinessTable';
+export * from './BusinessForm';
+export * from './AddressForm';
