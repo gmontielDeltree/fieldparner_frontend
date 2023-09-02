@@ -121,7 +121,7 @@ export class IndicesPage extends LitElement {
             gbl_state.map2.addControl(ctx.mapStuff[2]);
             gbl_state.map.addControl(ctx.mapStuff[3]);
             gbl_state.map2.addControl(ctx.mapStuff[4]);
-            gbl_state.map.addControl(ctx.mapStuff[5]);
+            gbl_state.map.addControl(ctx.mapStuff[5],"top-left");
           },
           removeMapStuff: (ctx) => {
             gbl_state.map.removeControl(ctx.mapStuff[0]);
@@ -173,6 +173,7 @@ export class IndicesPage extends LitElement {
               return evt.data.data;
             },
           }),
+          
           downloadPNG: (ctx, evt) => {
             let map = (evt.data === 1) ? gbl_state.map : gbl_state.map2;
             let canvas_src = (map.getSource("indice-espectral") as CanvasSource)

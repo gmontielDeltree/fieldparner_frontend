@@ -1,11 +1,11 @@
-import { GeoTIFFImage, ReadRasterResult } from "geotiff";
-import { CanvasSource, Map, Popup } from "mapbox-gl";
+import { GeoTIFFImage, ReadRasterResult, TypedArray } from "geotiff";
+import { CanvasSource, Map, MapDataEvent, MapMouseEvent, Popup } from "mapbox-gl";
 import { fromUrl } from "geotiff";
 import { plot as Pplot } from "plotty";
 import { layer_visibility } from "../helpers";
-import { XLSX$Utils } from "xlsx";
+import { WorkBook, WritingOptions, XLSX$Utils } from "xlsx";
 
-let read, writeFile, utils: XLSX$Utils;
+let read, writeFile: (data: WorkBook, filename: string, opts?: WritingOptions | undefined) => any, utils: XLSX$Utils;
 import("xlsx").then((mod) => {
   read = mod.read;
   writeFile = mod.writeFile;
@@ -48,8 +48,8 @@ export const tif_identify = (
 
   // Finally, retrieve the elevation associated with this pixel's geographic area:
   //   const rasters = await image.readRasters();
-  const { width, [0]: raster } = rasters;
-  const elevation: number | undefined = raster[x + y * width];
+  const { width, [0]: raster} = rasters;
+  const elevation: number | undefined = (raster as TypedArray)[x + y * width];
   //   console.log(
   //     `The elevation at (${lat.toFixed(6)},${long.toFixed(6)}) is ${elevation}m`
   //   );
@@ -63,7 +63,7 @@ export const showPopupOnMove = (
   let popup = new Popup();
   let timer: any;
 
-  const show_popup = (e) => {
+  const show_popup = (e: MapMouseEvent) => {
     let value = valfn(e.lngLat.lng, e.lngLat.lat);
 
     if (value === undefined || isNaN(value)) {
@@ -79,7 +79,7 @@ export const showPopupOnMove = (
       .addTo(map);
   };
 
-  const mousemove_handler = (e) => {
+  const mousemove_handler = (e : MapMouseEvent) => {
     popup.setLngLat(e.lngLat);
     clearTimeout(timer);
     timer = setTimeout(() => show_popup(e), 20);
