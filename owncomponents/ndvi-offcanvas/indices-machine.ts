@@ -28,6 +28,7 @@ interface IndicesMachineContext {
 // 	}
 // })
 
+
 export const machine = createMachine(
   {
     context: {
@@ -35,7 +36,7 @@ export const machine = createMachine(
       data2: {},
       geojson: {},
       lote_id: "",
-      dualmapControl: {},
+      mapStuff: {},
       selectedIndice1: {},
       selectedIndice2: {},
       selectedFeature1: {},
@@ -71,11 +72,11 @@ export const machine = createMachine(
             params: {},
           },
           {
-            type: "assignDualMapControl",
+            type: "assignMapStuff",
             params: {},
           },
           {
-            type: "addDualMapControl",
+            type: "addMapStuff",
             params: {},
           },
         ],
@@ -183,14 +184,18 @@ export const machine = createMachine(
           DOWNLOAD_PNG: {
             actions: {
               type: "downloadPNG",
-              params: {},
+              params: {
+                data: 0,
+              },
             },
             internal: true,
           },
           DOWNLOAD_XLS: {
             actions: {
               type: "downloadXLS",
-              params: {},
+              params: {
+                data: 0,
+              },
             },
             internal: true,
           },
@@ -287,7 +292,7 @@ export const machine = createMachine(
       done: {
         entry: [
           {
-            type: "removeDualMapControl",
+            type: "removeMapStuff",
             params: {},
           },
           {
@@ -331,13 +336,13 @@ export const machine = createMachine(
     actions: {
       limpiarMap1y2: (context, event) => {},
 
-      assignDualMapControl: (context, event) => {},
+      assignMapStuff: (context, event) => {},
 
-      addDualMapControl: (context, event) => {},
+      addMapStuff: (context, event) => {},
 
       assignLoteId: (context, event) => {},
 
-      removeDualMapControl: (context, event) => {},
+      removeMapStuff: (context, event) => {},
 
       showSingleMap: (context, event) => {},
 

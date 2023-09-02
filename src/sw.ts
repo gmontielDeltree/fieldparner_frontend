@@ -82,6 +82,7 @@ registerRoute(
 
 // Geotiffs
 registerRoute(/.*\/satimages\/cog.*$/, new CacheFirst({ cacheName: "geotiff" }));
+registerRoute(/.*.tif*$/, new CacheFirst({ cacheName: "geotiff2" }));
 
 // Fechas de generacion
 registerRoute(

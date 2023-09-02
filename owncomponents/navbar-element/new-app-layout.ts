@@ -145,7 +145,8 @@ export class Example extends LitElement {
           slot="navbar [touch-optimized]"
         ></vaadin-drawer-toggle>
 
-        <h1 slot="navbar" title="Version ${this.version()}">
+        <h1 slot="navbar" title="Version ${this.version()}" @click=${()=>Router.go("/")}
+>
           <img
             src="/images/icons/desktop/agrootolss_logo_sol.png"
             alt="${this.version()}"

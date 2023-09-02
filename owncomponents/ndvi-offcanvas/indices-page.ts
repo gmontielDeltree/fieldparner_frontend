@@ -1,89 +1,31 @@
+import { LeyendaControl } from './leyenda_control';
+import { DownloadPngControl } from "./download-png-control";
+import { DownloadExcelControl } from "./download-excel-control";
+import {
+  geotiff_to_excel,
+  hideMapLayers,
+  mostrarTIFEnMapa,
+} from "./geotiff-helpers";
 import { featureCollection } from "@turf/helpers";
 import { DualMap } from "./dual-map-control";
-import {
-  CanvasSource,
-  ImageSource,
-  Map,
-  Popup,
-  RasterSource,
-  VectorSource,
-} from "mapbox-gl";
-import { DataTable } from "./../../src/components/DataTable/index";
+import { CanvasSource, Map } from "mapbox-gl";
 import { LitElement, PropertyValueMap, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import "./indice-selector";
 import { machine } from "./indices-machine";
-import { interpret, actions, createMachine, assign } from "xstate";
+import { interpret, assign, send } from "xstate";
 import { SelectorController } from "xstate-lit/dist/select-controller";
 import { gbl_dualmap, gbl_state } from "../state";
 import axios from "axios";
 import bbox from "@turf/bbox";
 import { coordAll } from "@turf/meta";
-import { Router, RouterLocation } from "@vaadin/router";
-import { get_lote_doc, layer_visibility } from "../helpers";
+import { RouterLocation } from "@vaadin/router";
+import { get_lote_doc } from "../helpers";
 import { format } from "date-fns";
 import { IndicesResponse, list_of_indexes } from "./indices-types";
 import "@shoelace-style/shoelace/dist/components/drawer/drawer.js";
-import bboxPolygon from "@turf/bbox-polygon";
-import { fromUrl } from "geotiff";
-import { plot as Pplot } from "plotty";
-import {
-  showCanvasOnMap,
-  showPopupOnMove,
-  tif_identify,
-} from "./geotiff-helpers";
 import "./indices-charts";
-import { features } from "process";
 import area from "@turf/area";
-
-const hideMapLayers = async (map: Map) => {
-  // Reestablecer Mapa
-  layer_visibility(map, "campos", false);
-  layer_visibility(map, "campos_border", false);
-  layer_visibility(map, "lotes", false);
-  layer_visibility(map, "lotes_border", false);
-  layer_visibility(map, "nombres_campos", false);
-  //layer_visibility(gbl_state.map, "seleccion_lotes", false);
-  layer_visibility(map, "seleccion_lotes_fill", false);
-
-  /* Hide NDVI */
-  //layer_visibility(gbl_state.map, "ndvi-layer", false);
-  layer_visibility(map, "borde_de_este_lote", true);
-  layer_visibility(map, "radar-layer", false);
-  layer_visibility(map, "frontera_de_este_lote", false);
-};
-
-const mostrarTIFEnMapa = async (url: string, map: Map, colormap: string) => {
-  const tiff = await fromUrl(url);
-  const image = await tiff.getImage();
-  const data = await image.readRasters();
-  console.log("DATA TIFF", data);
-
-  const canvas = document.createElement("canvas");
-
-  const plot = new Pplot({
-    canvas,
-    data: data[0],
-    width: image.getWidth(),
-    height: image.getHeight(),
-    domain: [-1, 1],
-    colorScale: colormap,
-  });
-  plot.render();
-
-  const [gx1, gy1, gx2, gy2] = image.getBoundingBox();
-  let coor = [
-    [gx1, gy1],
-    [gx2, gy1],
-    [gx2, gy2],
-    [gx1, gy2],
-  ].reverse();
-  // console.log("COORDINATES",coor)
-
-  showCanvasOnMap(map, canvas, coor, "indice-espectral");
-
-  showPopupOnMove(map, (lng, lat) => tif_identify(lng, lat, image, data));
-};
 
 @customElement("indices-page")
 export class IndicesPage extends LitElement {
@@ -126,7 +68,6 @@ export class IndicesPage extends LitElement {
         selectedIndice1: list_of_indexes[0],
         selectedIndice2: list_of_indexes[0],
         featureCollection: featureCollection([]),
-        dualmapControl: {},
       })
       .withConfig({
         actions: {
@@ -135,24 +76,62 @@ export class IndicesPage extends LitElement {
           selectLastFeature1: assign({
             selectedFeature1: (ctx, evt) => ctx.featureCollection.features[0],
           }),
-          centerMapOnFeature1: (ctx) => gbl_state.map.fitBounds(bbox(ctx.geojson),{padding:{top:50,bottom:100}}),
-          addDualMapControl: (ctx) => {
-            gbl_state.map.addControl(ctx.dualmapControl);
-          },
-          assignDualMapControl: assign({
-            dualmapControl: () =>
+          centerMapOnFeature1: (ctx) =>
+            gbl_state.map.fitBounds(bbox(ctx.geojson), {
+              padding: { top: 50, bottom: 100 },
+            }),
+          assignMapStuff: assign({
+            mapStuff: () => [
+              /* Dual Map */
               new DualMap({
                 onClick: () => {
-                  console.log("BUUU", gbl_dualmap.dualmap);
                   this.actor.send({ type: "TOGGLE" });
                 },
               }),
+              /* Excel map 1 - OJO USANDO this.ctx*/
+              new DownloadExcelControl({
+                onClick: () => {
+                  this.actor.send({ type: "DOWNLOAD_XLS", data: 1 });
+                },
+              }),
+              /* Excel map 2*/
+              new DownloadExcelControl({
+                onClick: () => {
+                  this.actor.send({ type: "DOWNLOAD_XLS", data: 2 });
+                },
+              }),
+              /* PNG map 1*/
+              new DownloadPngControl({
+                onClick: () => {
+                  this.actor.send({ type: "DOWNLOAD_PNG", data: 1 });
+                },
+              }),
+              /* PNG map 2*/
+              new DownloadPngControl({
+                onClick: () => {
+                  this.actor.send({ type: "DOWNLOAD_PNG", data: 2 });
+                },
+              }),
+              new LeyendaControl()
+            ],
           }),
-          removeDualMapControl: (ctx) =>
-            gbl_state.map.removeControl(ctx.dualmapControl),
-
+          addMapStuff: (ctx) => {
+            gbl_state.map.addControl(ctx.mapStuff[0]);
+            gbl_state.map.addControl(ctx.mapStuff[1]);
+            gbl_state.map2.addControl(ctx.mapStuff[2]);
+            gbl_state.map.addControl(ctx.mapStuff[3]);
+            gbl_state.map2.addControl(ctx.mapStuff[4]);
+            gbl_state.map.addControl(ctx.mapStuff[5]);
+          },
+          removeMapStuff: (ctx) => {
+            gbl_state.map.removeControl(ctx.mapStuff[0]);
+            gbl_state.map.removeControl(ctx.mapStuff[1]);
+            gbl_state.map2.removeControl(ctx.mapStuff[2]);
+            gbl_state.map.removeControl(ctx.mapStuff[3]);
+            gbl_state.map2.removeControl(ctx.mapStuff[4]);
+          },
           assignLoteId: assign({
-            lote_id: (ctx, evt) => (() => this.location.params.uuid)(),
+            lote_id: (ctx, evt) => this.location.params.uuid,
           }),
           assignFeatures: assign({
             featureCollection: (ctx, evt) => evt.data.data,
@@ -170,7 +149,7 @@ export class IndicesPage extends LitElement {
             mostrarTIFEnMapa(
               import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
               gbl_state.map,
-              "winter",
+              ctx.selectedIndice1.colormap
             );
           },
           updateMap2: (ctx, evt) => {
@@ -178,8 +157,8 @@ export class IndicesPage extends LitElement {
             mostrarTIFEnMapa(
               import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
               gbl_state.map2,
-              "winter",
-            );
+              ctx.selectedIndice1.colormap
+              );
           },
           notificarError: (ctx, evt) => {
             console.log("error", evt.data);
@@ -194,6 +173,29 @@ export class IndicesPage extends LitElement {
               return evt.data.data;
             },
           }),
+          downloadPNG: (ctx, evt) => {
+            let map = (evt.data === 1) ? gbl_state.map : gbl_state.map2;
+            let canvas_src = (map.getSource("indice-espectral") as CanvasSource)
+            var img = canvas_src.getCanvas().toDataURL('image/png')
+            let link = document.createElement('a');
+            link.download = 'map.png';
+            link.href = img
+            link.click();
+            URL.revokeObjectURL(link.href);
+          },
+          downloadXLS: (ctx, evt) => {
+            let mapa_index = evt.data;
+            let tiff_url =
+              import.meta.env.VITE_COGS_SERVER_URL + ctx.data1.tiff_url;
+            let indice_name = ctx.selectedIndice1.value;
+
+            if (mapa_index === 2) {
+              tiff_url =
+                import.meta.env.VITE_COGS_SERVER_URL + ctx.data2.tiff_url;
+              indice_name = ctx.selectedIndice2.value;
+            }
+            geotiff_to_excel(tiff_url,indice_name);
+          },
         },
         services: {
           getGeojson: async (ctx, evt) => {
@@ -226,7 +228,7 @@ export class IndicesPage extends LitElement {
             let url =
               import.meta.env.VITE_COGS_SERVER_URL +
               `/indices/${indice}?resource_id=${resource_id}&geometry=${encodeURIComponent(
-                JSON.stringify(geometry),
+                JSON.stringify(geometry)
               )}&date=${date}&hist_options=${hist_options}`;
             // console.log("fetchImageURL", url);
             return await axios.get(url);
@@ -245,30 +247,28 @@ export class IndicesPage extends LitElement {
             let url =
               import.meta.env.VITE_COGS_SERVER_URL +
               `/indices/${indice}?resource_id=${resource_id}&geometry=${encodeURIComponent(
-                JSON.stringify(geometry),
+                JSON.stringify(geometry)
               )}&date=${date}&hist_options=${hist_options}`;
             // console.log("fetchImageURL", url);
             return await axios.get(url);
           },
         },
-      }),
+      })
   );
 
   ctx = new SelectorController(this, this.actor, (state) => state.context);
-
   state = new SelectorController(this, this.actor, (state) => state.value);
 
   protected firstUpdated(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
     this.actor.start();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    console.log("DISCONENECCCC AWAY");
-    this.actor.send({type:"CERRAR"})
-    //gbl_dualmap.dualmap = false;
+    console.log("Cerrando Indices...");
+    this.actor.send({ type: "CERRAR" });
   }
 
   render() {
@@ -277,30 +277,30 @@ export class IndicesPage extends LitElement {
     let ctx = this.ctx.value;
 
     const inDualMode = () => {
-      return estado["loaded"] === "pantallaDividida";
+      return estado.loaded === "pantallaDividida";
     };
 
-
-    const loading = ()=>{
-      return html `<div
-            class="d-flex justify-content-center align-items-center"
-            style="width: 100%;height: 100%;position: absolute;background:#fffc;z-index: 9;"
-          >
-            <span>Loading</span>
-          </div>`
-    }
+    const loading = () => {
+      return html`<div
+        style="display:flex; justify-content:center; align-items:center; width: 100%;height: 100%;position: absolute;background:#fffc;z-index: 9;"
+      >
+        <span>Loading</span>
+      </div>`;
+    };
     // https://css-irl.info/finding-an-elements-nearest-relative-positioned-ancestor/#:~:text=By%20typing%20%24_%20into%20the%20console%20we%20can,the%20element.%20Then%3A%20getComputedStyle%28%24_%29.position%20retrieves%20its%20position%20value
 
     return html`
       ${estado === "empty" || estado === "withGeojson"
-        ? loading
+        ? loading()
         : html`
             <div
               class="overlay-charts"
               style="position:absolute;display: flex;width:100%;justify-content: space-between;"
             >
               <indices-charts
-                style="top:4rem;right:${inDualMode() ? "calc(50% + 4rem);": "4rem;"}"
+                style="top:4rem;right:${inDualMode()
+                  ? "calc(50% + 4rem);"
+                  : "4rem;"}"
                 .data=${ctx.data1}
                 .indice=${ctx.selectedIndice1}
                 .hectareas_del_lote=${area(ctx.geojson)}

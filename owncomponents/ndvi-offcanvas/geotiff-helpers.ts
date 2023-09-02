@@ -1,5 +1,16 @@
 import { GeoTIFFImage, ReadRasterResult } from "geotiff";
 import { CanvasSource, Map, Popup } from "mapbox-gl";
+import { fromUrl } from "geotiff";
+import { plot as Pplot } from "plotty";
+import { layer_visibility } from "../helpers";
+import { XLSX$Utils } from "xlsx";
+
+let read, writeFile, utils: XLSX$Utils;
+import("xlsx").then((mod) => {
+  read = mod.read;
+  writeFile = mod.writeFile;
+  utils = mod.utils;
+});
 
 function transform(a: number, b: number, M: number[], roundToInt = false) {
   const round = (v: number) => (roundToInt ? v | 0 : v);
@@ -105,7 +116,96 @@ export const showCanvasOnMap = (
       source: layer_id,
       paint: {
         "raster-fade-duration": 0,
+        "raster-resampling": "nearest",
       },
     });
   }
+};
+
+export const hideMapLayers = async (map: Map) => {
+  // Reestablecer Mapa
+  layer_visibility(map, "campos", false);
+  layer_visibility(map, "campos_border", false);
+  layer_visibility(map, "lotes", false);
+  layer_visibility(map, "lotes_border", false);
+  layer_visibility(map, "nombres_campos", false);
+  //layer_visibility(gbl_state.map, "seleccion_lotes", false);
+  layer_visibility(map, "seleccion_lotes_fill", false);
+
+  /* Hide NDVI */
+  //layer_visibility(gbl_state.map, "ndvi-layer", false);
+  layer_visibility(map, "borde_de_este_lote", true);
+  layer_visibility(map, "radar-layer", false);
+  layer_visibility(map, "frontera_de_este_lote", false);
+};
+
+export const mostrarTIFEnMapa = async (
+  url: string,
+  map: Map,
+  colormap: string
+) => {
+  const tiff = await fromUrl(url);
+  const image = await tiff.getImage();
+  const data = await image.readRasters();
+  console.log("DATA TIFF", data);
+
+  const canvas = document.createElement("canvas");
+
+  const plot = new Pplot({
+    canvas,
+    data: data[0],
+    width: image.getWidth(),
+    height: image.getHeight(),
+    domain: [-1, 1],
+    colorScale: colormap,
+  });
+  plot.render();
+
+  const [gx1, gy1, gx2, gy2] = image.getBoundingBox();
+  let coor = [
+    [gx1, gy1],
+    [gx2, gy1],
+    [gx2, gy2],
+    [gx1, gy2],
+  ].reverse();
+  // console.log("COORDINATES",coor)
+
+  showCanvasOnMap(map, canvas, coor, "indice-espectral");
+
+  showPopupOnMove(map, (lng, lat) => tif_identify(lng, lat, image, data));
+};
+
+export const geotiff_to_excel = async (url: string, indice_name: string) => {
+  const tiff = await fromUrl(url);
+  const image = await tiff.getImage();
+  const data = await image.readRasters();
+
+  let height = data.height;
+  let width = data.width;
+  let array: number[] = data[0] as unknown as number[];
+
+  let array_resultado: any[] = [["lat", "lon", indice_name]];
+
+  const { ModelPixelScale: s, ModelTiepoint: t } = image.fileDirectory;
+  let [sx, sy, sz] = s;
+  let [px, py, k, gx, gy, gz] = t;
+  sy = -sy; // WGS-84 tiles have a "flipped" y component
+
+  const pixelToGPS = [gx, sx, 0, gy, 0, sy];
+
+  for (let i = 0; i < width; i++) {
+    for (let vs = 0; vs < height; vs++) {
+      const value: number = array[i + vs * width];
+      if (!Number.isNaN(value)) {
+        const [long, lat] = transform(i, vs, pixelToGPS, false);
+        array_resultado.push([lat, long, value]);
+      }
+    }
+  }
+
+  /* Guardar Libro */
+  const worksheet = utils.aoa_to_sheet(array_resultado);
+  const workbook = utils.book_new();
+  utils.book_append_sheet(workbook, worksheet, indice_name);
+  writeFile(workbook, `${indice_name}.xls`);
 };
