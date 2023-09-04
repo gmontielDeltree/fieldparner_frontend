@@ -34,22 +34,18 @@ const TableCellStyled = styled(TableCell)(() => ({
 }));
 
 const StyledTableRow = styled(TableRow)(() => ({
-    // '&:nth-of-type(odd)': {
-    //     backgroundColor: theme.palette.action.hover,
-    // },
-    // hide last border
     '&:last-child td, &:last-child th': {
         border: 0,
     },
 }));
 
-export interface DataTableProps {
+export interface VehicleTableProps {
     columns: ColumnProps[];
     data: Vehiculo[];
     isLoading: boolean;
 }
 
-export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }) => {
+export const VehicleTable: React.FC<VehicleTableProps> = ({ columns, data, isLoading }) => {
 
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -97,16 +93,6 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }
                                                 <EditIcon />
                                             </IconButton>
                                         </Tooltip>
-                                        {/* <Tooltip title="Copiar">
-                                    <IconButton>
-                                        <ContentCopyIcon />
-                                    </IconButton>
-                                </Tooltip> */}
-                                        {/* <Tooltip title="Eliminar">
-                                            <IconButton>
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </Tooltip> */}
                                     </TableCellStyled>
                                 </StyledTableRow>
                             ))}
@@ -117,5 +103,3 @@ export const DataTable: React.FC<DataTableProps> = ({ columns, data, isLoading }
         </TableContainer>
     )
 }
-
-export default DataTable;

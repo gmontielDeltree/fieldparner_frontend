@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataTable, Loading } from '../components';
+import { VehicleTable, Loading } from '../components';
 import { ColumnProps } from '../types';
 import { Box, Button, Grid, InputAdornment, TextField, Typography } from '@mui/material';
 import {
@@ -123,7 +123,7 @@ export const ListVehiclesPage: React.FC = () => {
                 <Box
                     component="div"
                     sx={{ p: 1 }}>
-                    <DataTable
+                    <VehicleTable
                         key="datatable-equipo"
                         isLoading={isLoading}
                         columns={columns}

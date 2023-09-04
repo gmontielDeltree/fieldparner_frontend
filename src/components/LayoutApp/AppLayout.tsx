@@ -81,7 +81,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     component="div"
                     // display="inline-block"
                     sx={{
-                        width: '45%',
+                        width: '60%',
                         height: '100%',
                         // maxWidth: 800,
                         p: 1,
@@ -96,7 +96,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     display="inline-block"
                     sx={{
                         position: 'relative',
-                        width: `calc(55% + ${open ? '0px' : '240px'})`,
+                        width: `calc(40% + ${open ? '0px' : '240px'})`,
                         height: '100%',
                     }}>
                     <Map

@@ -140,3 +140,33 @@ export interface AuthState {
     errorMessage: string;
     isLoading: boolean;
 }
+
+export enum TipoEntidad {
+    FISICA = 'fisica',
+    JURIDICA = 'juridica',
+}
+
+export interface Business {
+    id?: string;
+    nombreCompleto?: string;
+    documento?: string;
+    telefono: string;
+    email: string;
+    tipoEntidad: string;
+    razonSocial?: string;
+    cuit?: string;
+    contactoPrincipal?: string;
+    contactoSecundario?: string;
+    sitioWeb?: string;
+    domicilio: string;
+    localidad: string;
+    cp: string;
+    provincia: string;
+    pais: string;
+    estado?: boolean;
+ }
+
+export interface BusinessState {
+    businessActive: Business | null;
+    businesses: Business[];
+}
