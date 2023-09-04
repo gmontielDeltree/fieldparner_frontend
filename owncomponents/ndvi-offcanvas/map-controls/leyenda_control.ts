@@ -13,6 +13,9 @@ class LeyendaElement extends LitElement {
   colormap: string | any = "viridis";
 
   @property()
+  colormap_fn: (n : number)=>string;
+
+  @property()
   domain: number[] = [-1,1]
 
   @property()
@@ -25,6 +28,10 @@ class LeyendaElement extends LitElement {
 
 
   string_to_d3_interpolate = (colormap : string)=>{
+    if(this.colormap_fn){
+      return this.colormap_fn
+    }
+
     let c = {viridis:d3.interpolateViridis,winter:d3.interpolateWinter}
     return c[colormap]
   }
@@ -68,8 +75,8 @@ export class LeyendaControl implements IControl {
     this._btn.domain = d
   }
   
-  setColormap(cm:string){
-    this._btn.colormap = cm
+  setColormap(cm:(c:number)=>string){
+    this._btn.colormap_fn = cm
   }
 
   onAdd(map: Map): HTMLElement {

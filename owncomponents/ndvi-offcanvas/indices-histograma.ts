@@ -111,7 +111,7 @@ export class IndicesHistograma extends LitElement {
           <sl-details class="details" style="z-index:3;" summary="Histograma">
             ${data.stats.histogram[0].map((r, i) => {
               console.log("punto", r);
-              let color = d3.interpolateViridis(
+              let color =  this.indice.colormap_fn(
                 (data.stats.histogram[1][i + 1] - min_d) / k_color
               );
 

@@ -38,7 +38,7 @@ const make_data_from_range = (
   return {
     label: "has",
     data: d,
-    backgroundColor: [d3.interpolateViridis(data.stats.histogram[1][rango_n+1]), "#e0e0d100"],
+    backgroundColor: [indice.colormap_fn(data.stats.histogram[1][rango_n+1]), "#e0e0d100"],
     hoverOffset: 4,
   };
 };

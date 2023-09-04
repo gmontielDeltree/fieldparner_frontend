@@ -158,9 +158,9 @@ export class IndicesPage extends LitElement {
           limpiarMap1y2: () => {
             hideMapLayers(gbl_state.map);
           },
-          updateIndex1: assign({ selectedIndice1: (_, evt) => evt.data }),
+          updateIndex1: assign({ selectedIndice1: (_, evt) => evt.data.indice }),
           updateFeature1: assign({ selectedFeature1: (_, evt) => evt.data }),
-          updateIndex2: assign({ selectedIndice2: (_, evt) => evt.data }),
+          updateIndex2: assign({ selectedIndice2: (_, evt) => evt.data.indice }),
           updateFeature2: assign({ selectedFeature2: (_, evt) => evt.data }),
           updateMap1: (ctx, evt) => {
             let response: IndicesResponse = evt.data.data;
@@ -256,7 +256,7 @@ export class IndicesPage extends LitElement {
             return await axios.get(url);
           },
           fetchImagen: async (ctx, evt) => {
-            // console.log("fetchImage", evt);
+             console.log("fetchImage", evt);
             let date = evt.data.feature.properties.date;
             // console.log("COOR", coordAll(ctx.geojson));
             let geometry = coordAll(ctx.geojson);
@@ -370,8 +370,14 @@ export class IndicesPage extends LitElement {
                     data: e.detail,
                   });
                 }}
-                @selectedIndexChange=${() =>
-                  console.log("selectedIndexChanged")}
+                @selectedIndexChange=${(e) =>{
+                                    console.log("selectedIndexChanged",e)
+                                    this.actor.send({
+                                        type:"SELECTED_INDICE_1_CHANGED",
+                                        data:{feature:ctx.selectedFeature1.feature, indice:e.detail}                                      
+                                      })
+                                  }
+                }
               ></indice-selector>
 
               ${inDualMode()
@@ -388,8 +394,14 @@ export class IndicesPage extends LitElement {
                           data: e.detail,
                         });
                       }}
-                      @selectedIndexChange=${() =>
-                        console.log("selectedIndexChanged")}
+                      @selectedIndexChange=${(e) =>{
+                        console.log("selectedIndexChanged",e)
+                        this.actor.send({
+                          type:"SELECTED_INDICE_2_CHANGED",
+                          data:{feature:ctx.selectedFeature1.feature, indice:e.detail}                                      
+                        })
+                        
+                      }}
                     ></indice-selector>
                   `
                 : null}

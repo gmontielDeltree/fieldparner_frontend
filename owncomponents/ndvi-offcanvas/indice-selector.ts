@@ -30,10 +30,13 @@ export class IndiceSelector extends LitElement {
     );
   }
 
-  selectIndexEvent(f: Feature) {
+  selectIndexEvent(e) {
+    let index_value = e.target.value
+    let index = this.indices_list.find((i)=>i.value === index_value)
+    
     this.dispatchEvent(
       new CustomEvent("selectedIndexChange", {
-        detail: f,
+        detail: index,
         bubbles: true,
         composed: true,
       })
@@ -129,6 +132,7 @@ export class IndiceSelector extends LitElement {
         <vaadin-select
           .items=${indice_para_select}
           .value=${indice_para_select[0].value}
+          @change=${(e)=> this.selectIndexEvent(e)}
           .itemLabelPath=${"name"}
         ></vaadin-select>
 
