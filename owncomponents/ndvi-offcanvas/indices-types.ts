@@ -52,7 +52,7 @@ export const list_of_indexes: IndiceEspectral[] = [
     value: "ndmi",
     domain: [-1, 1],
     thresholds: [-1, -0.5, 0.5, 1],
-    thresholds_labels: ["estres","anegamiento"],
+    thresholds_labels: ["estres","normal","anegamiento"],
     colormap: "viridis",
     colormap_fn: d3.interpolateBlues,
     descripcion: "El Índice de humedad de diferencia normalizada (NDMI) detecta los niveles de humedad en la vegetación mediante una combinación de bandas espectrales de infrarrojo cercano (NIR) e infrarrojo de onda corta (SWIR). El NDMI solo puede tener valores entre -1 y 1, lo que lo hace muy fácil. interpretar. El estrés hídrico estaría señalado por los valores negativos que se aproximan a -1, mientras que el +1 puede indicar anegamiento."

@@ -62,7 +62,10 @@ export class IndicesCharts extends LitElement {
 
   /* Muestra rango y resto */
   makeGaugeChart(id: string, title: string, data: any) {
-    const chart = new Chart(this.shadowRoot.getElementById(id), {
+
+    let html_el = this.shadowRoot.getElementById(id)
+
+    const chart = new Chart(html_el, {
       type: "doughnut",
       data: {
         labels: [title, "Resto"],
@@ -130,8 +133,15 @@ export class IndicesCharts extends LitElement {
     );
 
   willUpdate(prop) {
+    if(prop.has("indice")){
+      this.initialized = false
+    }
     if (prop.has("data")) {
       if (!this.initialized) {
+
+        this.thr.forEach((c)=>c.destroy())
+        this.thr = []
+
         this.indice.thresholds_labels.forEach((label, i) => {
           this.thr.push(
             this.makeGaugeChart(
@@ -146,6 +156,10 @@ export class IndicesCharts extends LitElement {
             )
           );
         });
+
+        if(this.full !== undefined){
+          this.full.destroy()
+        }
         this.full = this.makeFullChart("full");
         this.initialized = true;
       }

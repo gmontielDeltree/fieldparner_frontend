@@ -28,7 +28,7 @@ class LeyendaElement extends LitElement {
 
 
   string_to_d3_interpolate = (colormap : string)=>{
-    if(this.colormap_fn){
+    if(this.colormap_fn !== undefined){
       return this.colormap_fn
     }
 

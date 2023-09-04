@@ -170,7 +170,7 @@ export class IndicesPage extends LitElement {
               ctx.selectedIndice1.colormap
             );
             ctx.mapStuff[5].setDomain(ctx.selectedIndice1.domain);
-            ctx.mapStuff[5].setColormap(ctx.selectedIndice1.colormap);
+            ctx.mapStuff[5].setColormap(ctx.selectedIndice1.colormap_fn);
           },
           updateMap2: (ctx, evt) => {
             let response: IndicesResponse = evt.data.data;
@@ -180,7 +180,7 @@ export class IndicesPage extends LitElement {
               ctx.selectedIndice2.colormap
             );
             ctx.mapStuff[6].setDomain(ctx.selectedIndice2.domain);
-            ctx.mapStuff[6].setColormap(ctx.selectedIndice2.colormap);
+            ctx.mapStuff[6].setColormap(ctx.selectedIndice2.colormap_fn);
           },
           notificarError: (ctx, evt) => {
             showNotification("Error", "error");
