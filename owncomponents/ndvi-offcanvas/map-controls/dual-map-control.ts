@@ -1,4 +1,3 @@
-import { className } from "./../navbar-element/workspace-menu";
 import { IControl, Map } from "mapbox-gl";
 
 export class DualMap implements IControl {

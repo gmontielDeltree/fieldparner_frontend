@@ -1,13 +1,13 @@
-import { LeyendaControl } from './leyenda_control';
-import { DownloadPngControl } from "./download-png-control";
-import { DownloadExcelControl } from "./download-excel-control";
+import { LeyendaControl } from "./map-controls/leyenda_control";
+import { DownloadPngControl } from "./map-controls/download-png-control";
+import { DownloadExcelControl } from "./map-controls/download-excel-control";
 import {
   geotiff_to_excel,
   hideMapLayers,
   mostrarTIFEnMapa,
 } from "./geotiff-helpers";
 import { featureCollection } from "@turf/helpers";
-import { DualMap } from "./dual-map-control";
+import { DualMap } from "./map-controls/dual-map-control";
 import { CanvasSource, Map } from "mapbox-gl";
 import { LitElement, PropertyValueMap, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
@@ -26,13 +26,16 @@ import { IndicesResponse, list_of_indexes } from "./indices-types";
 import "@shoelace-style/shoelace/dist/components/drawer/drawer.js";
 import "./indices-charts";
 import area from "@turf/area";
+import { showNotification } from "../helpers/notificaciones";
+import "./indices-histograma";
+import geoblaze from "geoblaze";
 
 @customElement("indices-page")
 export class IndicesPage extends LitElement {
   @property()
   location: RouterLocation = gbl_state.router.location;
 
-  static override styles = css`
+  static styles = css`
     :host {
       display: flex;
       flex-grow: 1;
@@ -74,7 +77,18 @@ export class IndicesPage extends LitElement {
           showSingleMap: () => (gbl_dualmap.dualmap = false),
           showDualMap: () => (gbl_dualmap.dualmap = true),
           selectLastFeature1: assign({
-            selectedFeature1: (ctx, evt) => ctx.featureCollection.features[0],
+            selectedFeature1: (ctx, evt) => {
+              return {
+                feature: ctx.featureCollection.features[0],
+                indice: ctx.selectedIndice1,
+              };
+            },
+            selectedFeature2: (ctx, evt) => {
+              return {
+                feature: ctx.featureCollection.features[0],
+                indice: ctx.selectedIndice2,
+              };
+            },
           }),
           centerMapOnFeature1: (ctx) =>
             gbl_state.map.fitBounds(bbox(ctx.geojson), {
@@ -112,7 +126,8 @@ export class IndicesPage extends LitElement {
                   this.actor.send({ type: "DOWNLOAD_PNG", data: 2 });
                 },
               }),
-              new LeyendaControl()
+              new LeyendaControl(),
+              new LeyendaControl(),
             ],
           }),
           addMapStuff: (ctx) => {
@@ -121,7 +136,8 @@ export class IndicesPage extends LitElement {
             gbl_state.map2.addControl(ctx.mapStuff[2]);
             gbl_state.map.addControl(ctx.mapStuff[3]);
             gbl_state.map2.addControl(ctx.mapStuff[4]);
-            gbl_state.map.addControl(ctx.mapStuff[5],"top-left");
+            gbl_state.map.addControl(ctx.mapStuff[5], "top-left");
+            gbl_state.map2.addControl(ctx.mapStuff[6], "top-left");
           },
           removeMapStuff: (ctx) => {
             gbl_state.map.removeControl(ctx.mapStuff[0]);
@@ -129,6 +145,8 @@ export class IndicesPage extends LitElement {
             gbl_state.map2.removeControl(ctx.mapStuff[2]);
             gbl_state.map.removeControl(ctx.mapStuff[3]);
             gbl_state.map2.removeControl(ctx.mapStuff[4]);
+            gbl_state.map.removeControl(ctx.mapStuff[5]);
+            gbl_state.map2.removeControl(ctx.mapStuff[6]);
           },
           assignLoteId: assign({
             lote_id: (ctx, evt) => this.location.params.uuid,
@@ -142,8 +160,8 @@ export class IndicesPage extends LitElement {
           },
           updateIndex1: assign({ selectedIndice1: (_, evt) => evt.data }),
           updateFeature1: assign({ selectedFeature1: (_, evt) => evt.data }),
-          updateIndex2: assign({ selectedIndice1: (_, evt) => evt.data }),
-          updateFeature2: assign({ selectedFeature1: (_, evt) => evt.data }),
+          updateIndex2: assign({ selectedIndice2: (_, evt) => evt.data }),
+          updateFeature2: assign({ selectedFeature2: (_, evt) => evt.data }),
           updateMap1: (ctx, evt) => {
             let response: IndicesResponse = evt.data.data;
             mostrarTIFEnMapa(
@@ -151,16 +169,21 @@ export class IndicesPage extends LitElement {
               gbl_state.map,
               ctx.selectedIndice1.colormap
             );
+            ctx.mapStuff[5].setDomain(ctx.selectedIndice1.domain);
+            ctx.mapStuff[5].setColormap(ctx.selectedIndice1.colormap);
           },
           updateMap2: (ctx, evt) => {
             let response: IndicesResponse = evt.data.data;
             mostrarTIFEnMapa(
               import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
               gbl_state.map2,
-              ctx.selectedIndice1.colormap
-              );
+              ctx.selectedIndice2.colormap
+            );
+            ctx.mapStuff[6].setDomain(ctx.selectedIndice2.domain);
+            ctx.mapStuff[6].setColormap(ctx.selectedIndice2.colormap);
           },
           notificarError: (ctx, evt) => {
+            showNotification("Error", "error");
             console.log("error", evt.data);
           },
           assignData1: assign({
@@ -173,29 +196,27 @@ export class IndicesPage extends LitElement {
               return evt.data.data;
             },
           }),
-          
           downloadPNG: (ctx, evt) => {
-            let map = (evt.data === 1) ? gbl_state.map : gbl_state.map2;
-            let canvas_src = (map.getSource("indice-espectral") as CanvasSource)
-            var img = canvas_src.getCanvas().toDataURL('image/png')
-            let link = document.createElement('a');
-            link.download = 'map.png';
-            link.href = img
+            let map = evt.data === 1 ? gbl_state.map : gbl_state.map2;
+            let canvas_src = map.getSource("indice-espectral") as CanvasSource;
+            var img = canvas_src.getCanvas().toDataURL("image/png");
+            let link = document.createElement("a");
+            link.download = "map.png";
+            link.href = img;
             link.click();
             URL.revokeObjectURL(link.href);
           },
           downloadXLS: (ctx, evt) => {
             let mapa_index = evt.data;
+            let tiff_partial_url =
+              mapa_index === 1 ? ctx.data1.tiff_url : ctx.data2.tiff_url;
             let tiff_url =
-              import.meta.env.VITE_COGS_SERVER_URL + ctx.data1.tiff_url;
-            let indice_name = ctx.selectedIndice1.value;
-
-            if (mapa_index === 2) {
-              tiff_url =
-                import.meta.env.VITE_COGS_SERVER_URL + ctx.data2.tiff_url;
-              indice_name = ctx.selectedIndice2.value;
-            }
-            geotiff_to_excel(tiff_url,indice_name);
+              import.meta.env.VITE_COGS_SERVER_URL + tiff_partial_url;
+            let indice_name =
+              mapa_index === 1
+                ? ctx.selectedIndice1.value
+                : ctx.selectedIndice2.value;
+            geotiff_to_excel(tiff_url, indice_name);
           },
         },
         services: {
@@ -217,7 +238,7 @@ export class IndicesPage extends LitElement {
           },
           fetchImagenInicial: async (ctx, evt) => {
             // console.log("fetchImage", evt);
-            let date = ctx.selectedFeature1.properties.date;
+            let date = ctx.selectedFeature1.feature.properties.date;
             // console.log("COOR", coordAll(ctx.geojson));
             let geometry = coordAll(ctx.geojson);
             let resource_id = ctx.lote_id;
@@ -299,21 +320,41 @@ export class IndicesPage extends LitElement {
               style="position:absolute;display: flex;width:100%;justify-content: space-between;"
             >
               <indices-charts
-                style="top:4rem;right:${inDualMode()
+                style="top:1rem;right:${inDualMode()
                   ? "calc(50% + 4rem);"
                   : "4rem;"}"
                 .data=${ctx.data1}
                 .indice=${ctx.selectedIndice1}
                 .hectareas_del_lote=${area(ctx.geojson)}
               ></indices-charts>
+              
               <indices-charts
-                style="top:4rem;right:4rem;${inDualMode()
+                style="top:1rem;right:4rem;${inDualMode()
                   ? ""
                   : "display:none;"}"
                 .data=${ctx.data2}
                 .indice=${ctx.selectedIndice2}
                 .hectareas_del_lote=${area(ctx.geojson)}
               ></indices-charts>
+
+              <indices-histograma
+                style="top: 20rem;position: absolute;left: 1rem;"
+                .lote_id=${ctx.lote_id}
+                .indice=${ctx.selectedIndice1}
+                .feature=${ctx.selectedFeature1.feature}
+                .geojson=${ctx.geojson}
+              ></indices-histograma>
+
+              <indices-histograma
+                style="top: 20rem;position: absolute;left:calc(50% + 1rem); ${inDualMode()
+                  ? ""
+                  : "display:none;"}"
+                .lote_id=${ctx.lote_id}
+                .indice=${ctx.selectedIndice2}
+                .feature=${ctx.selectedFeature2.feature}
+                .geojson=${ctx.geojson}
+              ></indices-histograma>
+
             </div>
 
             <div id="footer">

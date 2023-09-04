@@ -360,7 +360,9 @@ export const empty_feature_collection = () => {return {
   ]
 }}
 
-
+export const r2 = (d : number) =>{
+  return parseFloat(d.toFixed(2))
+}
 
 
 export {
