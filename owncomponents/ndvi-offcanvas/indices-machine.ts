@@ -28,7 +28,6 @@ interface IndicesMachineContext {
 // 	}
 // })
 
-
 export const machine = createMachine(
   {
     context: {
@@ -127,6 +126,14 @@ export const machine = createMachine(
                 },
                 {
                   type: "assignData1",
+                  params: {},
+                },
+                {
+                  type: "updateMap2",
+                  params: {},
+                },
+                {
+                  type: "assignData2",
                   params: {},
                 },
               ],
@@ -296,15 +303,15 @@ export const machine = createMachine(
             params: {},
           },
           {
-            type: "showSingleMap",
-            params: {},
-          },
-          {
             type: "deleteMapSourcesLayers",
             params: {},
           },
           {
             type: "removeHandlers",
+            params: {},
+          },
+          {
+            type: "showSingleMap",
             params: {},
           },
         ],
@@ -344,13 +351,13 @@ export const machine = createMachine(
 
       removeMapStuff: (context, event) => {},
 
-      showSingleMap: (context, event) => {},
-
       deleteMapSourcesLayers: (context, event) => {},
 
       removeHandlers: (context, event) => {},
 
       showDualMap: (context, event) => {},
+
+      showSingleMap: (context, event) => {},
 
       downloadPNG: (context, event) => {},
 
@@ -395,3 +402,4 @@ export const machine = createMachine(
     delays: {},
   },
 );
+

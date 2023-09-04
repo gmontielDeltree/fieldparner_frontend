@@ -5,6 +5,8 @@ import {
   geotiff_to_excel,
   hideMapLayers,
   mostrarTIFEnMapa,
+  removeEventHandlers,
+  removeIndicesLayersSources,
 } from "./geotiff-helpers";
 import { featureCollection } from "@turf/helpers";
 import { DualMap } from "./map-controls/dual-map-control";
@@ -167,7 +169,7 @@ export class IndicesPage extends LitElement {
             mostrarTIFEnMapa(
               import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
               gbl_state.map,
-              ctx.selectedIndice1.colormap
+              ctx.selectedIndice1.colormap,
             );
             ctx.mapStuff[5].setDomain(ctx.selectedIndice1.domain);
             ctx.mapStuff[5].setColormap(ctx.selectedIndice1.colormap_fn);
@@ -218,6 +220,14 @@ export class IndicesPage extends LitElement {
                 : ctx.selectedIndice2.value;
             geotiff_to_excel(tiff_url, indice_name);
           },
+          removeHandlers:(ctx,evt)=>{
+            removeEventHandlers(gbl_state.map)
+            removeEventHandlers(gbl_state.map2)
+          },
+          deleteMapSourcesLayers: (ctx,evt)=>{
+            removeIndicesLayersSources(gbl_state.map2)
+            removeIndicesLayersSources(gbl_state.map)
+          }
         },
         services: {
           getGeojson: async (ctx, evt) => {
