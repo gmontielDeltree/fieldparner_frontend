@@ -338,6 +338,7 @@ export const machine = createMachine(
     },
     predictableActionArguments: true,
     preserveActionOrder: true,
+    tsTypes: {} as import("./indices-machine.typegen").Typegen0
   },
   {
     actions: {
