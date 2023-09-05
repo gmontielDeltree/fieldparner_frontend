@@ -80,12 +80,18 @@ export class IndicesCharts extends LitElement {
         plugins: {
           legend: {
             maxHeight: 30,
+            labels: {
+              boxWidth: 10
+            }
           },
           title: {
-            display: true,
+            display: false,
             text: title,
           },
         },
+        layout: {
+          padding: 0
+        }
       },
     });
 
@@ -122,6 +128,9 @@ export class IndicesCharts extends LitElement {
             text: "Total",
           },
         },
+        layout: {
+          padding: 0
+        }
       },
     });
     return chart;
@@ -204,11 +213,10 @@ export class IndicesCharts extends LitElement {
 
   render() {
     return html`
-      <div class="container">
-        <div>${this.date}</div>
+      <div class="container" style="padding:5px">
+        <div style="text-align:center;font-weight:bold">${this.indice.label} - ${this.date}</div>
         ${this.indice.thresholds_labels.map((label)=>{
           return html`<canvas id="thr-${label}"></canvas>`
-        
         })}
         <canvas id="full"></canvas>
       </div>
