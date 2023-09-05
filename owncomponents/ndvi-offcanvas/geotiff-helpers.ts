@@ -4,6 +4,7 @@ import { fromUrl } from "geotiff";
 import { plot as Pplot } from "plotty";
 import { layer_visibility } from "../helpers";
 import { WorkBook, WritingOptions, XLSX$Utils } from "xlsx";
+import { MouseEventHandler } from "react";
 
 let read, writeFile: (data: WorkBook, filename: string, opts?: WritingOptions | undefined) => any, utils: XLSX$Utils;
 import("xlsx").then((mod) => {
@@ -56,14 +57,18 @@ export const tif_identify = (
   return elevation;
 };
 
+
 export const showPopupOnMove = (
   map: Map,
-  valfn: (lng: number, lat: number) => number
+  valfn: (lng: number, lat: number) => number,
+  prev_handler: MouseEventHandler
 ) => {
-  let popup = new Popup();
   let timer: any;
 
+  let popup = new Popup();
+
   const show_popup = (e: MapMouseEvent) => {
+
     let value = valfn(e.lngLat.lng, e.lngLat.lat);
 
     if (value === undefined || isNaN(value)) {
@@ -79,15 +84,17 @@ export const showPopupOnMove = (
       .addTo(map);
   };
 
+  // map._mis_handlers = {"popup", }
   const mousemove_handler = (e : MapMouseEvent) => {
     popup.setLngLat(e.lngLat);
     clearTimeout(timer);
     timer = setTimeout(() => show_popup(e), 20);
   };
 
+  map.off("mousemove",prev_handler );
   console.log("listeners added");
-  map.off("mousemove", mousemove_handler);
   map.on("mousemove", mousemove_handler);
+  return mousemove_handler
 };
 
 export const showCanvasOnMap = (
@@ -142,7 +149,8 @@ export const hideMapLayers = async (map: Map) => {
 export const mostrarTIFEnMapa = async (
   url: string,
   map: Map,
-  colormap: string
+  colormap: string,
+  // prev_handlers: MouseEventHandler[]
 ) => {
   const tiff = await fromUrl(url);
   const image = await tiff.getImage();
@@ -172,7 +180,7 @@ export const mostrarTIFEnMapa = async (
 
   showCanvasOnMap(map, canvas, coor, "indice-espectral");
 
-  showPopupOnMove(map, (lng, lat) => tif_identify(lng, lat, image, data));
+  map._myMouseHandler = showPopupOnMove(map, (lng, lat) => tif_identify(lng, lat, image, data),  map._myMouseHandler);
 };
 
 export const geotiff_to_excel = async (url: string, indice_name: string) => {
@@ -209,3 +217,12 @@ export const geotiff_to_excel = async (url: string, indice_name: string) => {
   utils.book_append_sheet(workbook, worksheet, indice_name);
   writeFile(workbook, `${indice_name}.xls`);
 };
+
+export const removeIndicesLayersSources = (map : Map) =>{ 
+  map.removeLayer("indice-espectral")
+  map.removeSource("indice-espectral")
+}
+
+export const removeEventHandlers = (map : Map) =>{
+  map._myMouseHandler ? map.off("mousemove",map._myMouseHandler) : null
+}

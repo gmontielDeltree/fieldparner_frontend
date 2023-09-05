@@ -5,6 +5,8 @@ import {
   geotiff_to_excel,
   hideMapLayers,
   mostrarTIFEnMapa,
+  removeEventHandlers,
+  removeIndicesLayersSources,
 } from "./geotiff-helpers";
 import { featureCollection } from "@turf/helpers";
 import { DualMap } from "./map-controls/dual-map-control";
@@ -167,10 +169,10 @@ export class IndicesPage extends LitElement {
             mostrarTIFEnMapa(
               import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
               gbl_state.map,
-              ctx.selectedIndice1.colormap
+              ctx.selectedIndice1.colormap,
             );
             ctx.mapStuff[5].setDomain(ctx.selectedIndice1.domain);
-            ctx.mapStuff[5].setColormap(ctx.selectedIndice1.colormap);
+            ctx.mapStuff[5].setColormap(ctx.selectedIndice1.colormap_fn);
           },
           updateMap2: (ctx, evt) => {
             let response: IndicesResponse = evt.data.data;
@@ -180,7 +182,7 @@ export class IndicesPage extends LitElement {
               ctx.selectedIndice2.colormap
             );
             ctx.mapStuff[6].setDomain(ctx.selectedIndice2.domain);
-            ctx.mapStuff[6].setColormap(ctx.selectedIndice2.colormap);
+            ctx.mapStuff[6].setColormap(ctx.selectedIndice2.colormap_fn);
           },
           notificarError: (ctx, evt) => {
             showNotification("Error", "error");
@@ -218,6 +220,14 @@ export class IndicesPage extends LitElement {
                 : ctx.selectedIndice2.value;
             geotiff_to_excel(tiff_url, indice_name);
           },
+          removeHandlers:(ctx,evt)=>{
+            removeEventHandlers(gbl_state.map)
+            removeEventHandlers(gbl_state.map2)
+          },
+          deleteMapSourcesLayers: (ctx,evt)=>{
+            removeIndicesLayersSources(gbl_state.map2)
+            removeIndicesLayersSources(gbl_state.map)
+          }
         },
         services: {
           getGeojson: async (ctx, evt) => {
@@ -325,6 +335,7 @@ export class IndicesPage extends LitElement {
                   : "4rem;"}"
                 .data=${ctx.data1}
                 .indice=${ctx.selectedIndice1}
+                .date=${ctx.selectedFeature1.feature.properties.date}
                 .hectareas_del_lote=${area(ctx.geojson)}
               ></indices-charts>
               
@@ -334,6 +345,7 @@ export class IndicesPage extends LitElement {
                   : "display:none;"}"
                 .data=${ctx.data2}
                 .indice=${ctx.selectedIndice2}
+                .date=${ctx.selectedFeature2.feature.properties.date}
                 .hectareas_del_lote=${area(ctx.geojson)}
               ></indices-charts>
 

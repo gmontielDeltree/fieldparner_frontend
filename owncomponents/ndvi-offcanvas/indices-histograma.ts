@@ -93,7 +93,7 @@ export class IndicesHistograma extends LitElement {
 
       return await axios.get(url);
     },
-    () => [this.feature]
+    () => [this.feature,this.indice]
   );
 
   render() {
