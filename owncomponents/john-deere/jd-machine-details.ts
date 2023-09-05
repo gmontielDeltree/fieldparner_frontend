@@ -9,11 +9,12 @@ import { JDMachine } from "./john-deere-types";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.component.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
+import { jd_get_machine_details } from "./john-deere-functions";
 
 export class JohnDeereMachineDetails extends LitElement {
   private _loadTask = new Task(
     this,
-    () => this.load_details(),
+    () => this.load_details(this.location.params.id),
     () => [this.location]
   );
 
@@ -33,23 +34,31 @@ export class JohnDeereMachineDetails extends LitElement {
     return html`
       <sl-dialog
         @sl-hide=${() => nav_back()}
-        label="Dialog"
+        label="Detalles"
         id="dialog"
         class="dialog-overview"
       >
         ${this._loadTask.render({
           initial: () => html`Initial`,
           error: () => html`Error`,
-          complete: () => html`Detalles`,
+          complete: (data) => html`
+                    <div>${data[0].name}</div>
+                    <div>${data[0].equipmentType.name} ${data[0].equipmentModel.name}</div>
+                    ${data[1].total > 0 ? html`<div>Horas de Motor: ${data[1].values[0].reading.valueAsDouble} Horas</div>`:null}
+                    
+          `,
         })}
-        Horas de Motor: 3.54 Horas
 
         <sl-button slot="footer" variant="primary">Close</sl-button>
       </sl-dialog>
     `;
   }
 
-  load_details() {}
+  async load_details(id_machine: string) {
+    let r = await jd_get_machine_details(gbl_state.jd_integracion.access_token,id_machine)
+    console.log("Detalles",r)
+    return r
+  }
 }
 
 customElements.define("jd-machine-details", JohnDeereMachineDetails);

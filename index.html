@@ -73,6 +73,11 @@
   <!-- <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v<YOUR_MAPBOX_VERSION>/mapbox-gl.css' rel='stylesheet' /> -->
   <script type="module" src="/main.js"></script>
 
+  <link
+  rel="stylesheet"
+  media="(prefers-color-scheme:light)"
+  href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.7.0/cdn/themes/light.css"
+/>
   <!-- <link
       rel="preload"
       href="https://unpkg.com/intro.js/minified/introjs.min.css"
@@ -120,6 +125,10 @@
     }
 
     vaadin-dialog-overlay {
+      z-index: 9999;
+    }
+
+    vaadin-select-overlay {
       z-index: 9999;
     }
 

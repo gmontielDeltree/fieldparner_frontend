@@ -1,5 +1,6 @@
 import React from "react";
 import "../owncomponents/loader";
+import { ListaVehiculoPage } from "./pages";
 
 declare global {
   namespace JSX {
@@ -55,5 +56,6 @@ export const old_routes = [
   { path: "/indices/*", element: <app-loader></app-loader> },
   { path: "/settings/*", element: <app-loader></app-loader> },
   { path: "/integraciones/*", element: <app-loader></app-loader> },
+  { path: "/vehiculos/*", element: <app-loader></app-loader>  },
   
 ];

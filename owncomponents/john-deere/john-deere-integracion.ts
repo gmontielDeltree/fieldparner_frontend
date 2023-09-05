@@ -32,6 +32,8 @@ import bbox from "@turf/bbox";
 import { Campo } from "../tipos/campos";
 import { uuidv7 } from "uuidv7";
 import { showNotification } from "../helpers/notificaciones";
+import { Vehiculo } from "@types";
+import area from '@turf/area';
 
 const base_url = import.meta.env.VITE_INTEGRACIONES_SERVER_URL;
 
@@ -50,6 +52,8 @@ export class JohnDeereIntegracion extends LitElement {
 
   @state()
   equipment: JDMachine[] = [];
+
+  private markers: Marker[] = [];
 
   login_to_john_deere() {
     john_deere_login();
@@ -152,94 +156,121 @@ export class JohnDeereIntegracion extends LitElement {
   // http://localhost:5173/integraciones/john-deere?token_type=Bearer&expires_in=43200&access_token=eyJraWQiOiJNYy1mX1BROElHSFpVeHRKc3pKd0lUeHRHVjlLS081Q1J1Zm5ZbDZyN0xzIiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULktqWmQ3RE5ZQ1RIZ01pZmluOUI4cmdXeUZnTTUzZDl1ak5uY085TnJaQUUub2FyMTR5cmd2cVFTcVZsZlA1ZDciLCJpc3MiOiJodHRwczovL3NpZ25pbi5qb2huZGVlcmUuY29tL29hdXRoMi9hdXM3OHRubGF5c01yYUZoQzF0NyIsImF1ZCI6ImNvbS5kZWVyZS5pc2cuYXhpb20iLCJpYXQiOjE2ODc1NTAzNzksImV4cCI6MTY4NzU5MzU3OSwiY2lkIjoiMG9hOXFzM2lydUdVTk9lS001ZDciLCJ1aWQiOiIwMHU5cG0ydG91VjRhMXdrVzVkNyIsInNjcCI6WyJhZzEiLCJvZmZsaW5lX2FjY2VzcyIsImZpbGVzIiwicHJvZmlsZSIsIm9wZW5pZCIsImVxMSJdLCJhdXRoX3RpbWUiOjE2ODc1NDk3NjYsInN1YiI6IkxhemxvUGFuYWZsZXgiLCJpc2NzYyI6dHJ1ZSwidGllciI6IlNBTkRCT1giLCJjbmFtZSI6IkZpZWxkUGFydG5lciIsInVzZXJUeXBlIjoiQ3VzdG9tZXIifQ.n0w_W7DqHK_noVRzaKadk1gLa4Rfj2js72U0IQmsqiiIu2LXgWQemupIhB66YA74o03Nfkn_zHG8MKOpGAkkAAs2G5K4gJdXad1sfSH46iwZwdKdfAsFiiEat2dc65M6Xm5I_j_ELza4aQQfOlGNUKCce8VCV3eTl8zcu9fl6VbnuUAMBh2VKJzCF7coIyuf-G7baeVQ7lXo0mTVUFgiWofHR7E-qvCWA6Sj9ttwlPdy3AVvlv3jS-CJTOIL8KjFMs-wNQzdklfGCvzJ_I89-h43ZTQ-eHgzOv3HwES45_L-0nxkdt4NIZSyfH_kkpnZz4mT-Yp-Cocf5nSW89e0zw&scope=ag1%20offline_access%20files%20profile%20openid%20eq1&refresh_token=f3GHtfFh67pWNyordjItZOqkuNjXX1mS3eZB55KCwaU&id_token=eyJraWQiOiJNYy1mX1BROElHSFpVeHRKc3pKd0lUeHRHVjlLS081Q1J1Zm5ZbDZyN0xzIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIwMHU5cG0ydG91VjRhMXdrVzVkNyIsIm5hbWUiOiJMYXpsbyBQYW5hZmxleCIsInZlciI6MSwiaXNzIjoiaHR0cHM6Ly9zaWduaW4uam9obmRlZXJlLmNvbS9vYXV0aDIvYXVzNzh0bmxheXNNcmFGaEMxdDciLCJhdWQiOiIwb2E5cXMzaXJ1R1VOT2VLTTVkNyIsImlhdCI6MTY4NzU1MDM3OSwiZXhwIjoxNjg3NTUzOTc5LCJqdGkiOiJJRC5aSFJNV2Nra194ZU9LQnd5ZmV2djdwblNzVkFpbmxoWU4yYmJlWGdTdHkwIiwiYW1yIjpbInB3ZCJdLCJpZHAiOiIwb2EyeXBpNG82N3dvN1BqQTF0NyIsInByZWZlcnJlZF91c2VybmFtZSI6IkxhemxvUGFuYWZsZXgiLCJhdXRoX3RpbWUiOjE2ODc1NDk3NjYsImF0X2hhc2giOiJTOTE4QXZsU0F1SjZsb1hCUzYxX1dRIiwiamRNZW1iZXIiOltdLCJ1c2VyVHlwZSI6IkN1c3RvbWVyIiwidXNlcklEIjoiTGF6bG9QYW5hZmxleCJ9.rW2krRfxMtc_R3WmSO0nLu2d3W9KIWe6QclsXHTVsYYmojHrZQjlyemV0R3Xwkg040qnNYWU-WFlr_visdRL_RDAOw_bUqAV6Hm83h-alVuSjl_BRPwXV6DGcvq6EbhPV99hDNtcpvmgEK2Sfmav51kN2qYRR6N57QsuOMzEykayulwllP46XLI7hrscfATeYOz6H4R_yRfS1Zof49qRvSH2-ezdYhMGjui6wVh3rhKRDcUdnSO9v5e6T4W89Dcj5cHMLeylE4ejeW9g3SOtRWQ7v-Arrh3j6mAKNEUzgi-34eDtn-lw1mWf1CUSoYSp2VEl2Q7hx9uG_hbIUcFZXQ
 
   render() {
-      return html`
-        <fp-sidebar>
-          <div slot="title">JD Operations Center</div>
-          <div slot="content">
-            <slot></slot>
-            ${!this.is_logged_in()
-              ? html`<form
-                  method="post"
-                  action=${base_url + "/api/john-deere-login"}
-                  style="display:flex; justify-content:center;"
-                >
-                  <button type="submit">Acceder a JD Operations Center</button>
-                </form>`
-              : html`
-                  <div>
-                    <vaadin-combo-box
-                      class="combo"
-                      label="Organización"
-                      item-label-path="name"
-                      item-value-path="id"
-                      .items=${this.orgResp?.values ?? []}
-                      @selected-item-changed="${async (
-                        e: ComboBoxSelectedItemChangedEvent<Value>
-                      ) => this.selectedOrgChanged(e)}"
-                    ></vaadin-combo-box>
-                    <h4>Bordes</h4>
-                    <sl-tree>
-                      ${this.boundaries.map(
-                        (boundary) => html`
-                          <sl-tree-item>
-                            <vaadin-button theme="primary"
-                              >${boundary.name}</vaadin-button
-                            >
-                            <sl-tree-item
-                              @click=${() =>
-                                this.display_boundary_in_map(boundary)}
-                              >Ver en mapa</sl-tree-item
-                            >
-                            <sl-tree-item
-                              @click=${() => this.importar_como_campo(boundary)}
-                              >Importar como Campo</sl-tree-item
-                            >
+    return html`
+      <fp-sidebar>
+        <div slot="title">JD Operations Center</div>
+        <div slot="content">
+          <slot></slot>
+          ${!this.is_logged_in()
+            ? html`<form
+                method="post"
+                action=${base_url + "/api/john-deere-login"}
+                style="display:flex; justify-content:center;"
+              >
+                <button type="submit">Acceder a JD Operations Center</button>
+              </form>`
+            : html`
+                <div>
+                  <vaadin-combo-box
+                    class="combo"
+                    label="Organización"
+                    item-label-path="name"
+                    item-value-path="id"
+                    .items=${this.orgResp?.values ?? []}
+                    @selected-item-changed="${async (
+                      e: ComboBoxSelectedItemChangedEvent<Value>
+                    ) => this.selectedOrgChanged(e)}"
+                  ></vaadin-combo-box>
+                  <h4>Bordes</h4>
+                  <sl-tree>
+                    ${this.boundaries.map(
+                      (boundary) => html`
+                        <sl-tree-item>
+                          <vaadin-button theme="primary"
+                            >${boundary.name}</vaadin-button
+                          >
+                          <sl-tree-item
+                            @click=${() =>
+                              this.display_boundary_in_map(boundary)}
+                            >Ver en mapa</sl-tree-item
+                          >
+                          <sl-tree-item
+                            @click=${() => this.importar_como_campo(boundary)}
+                            >Importar como Campo</sl-tree-item
+                          >
+                        </sl-tree-item>
+                      `
+                    )}
+                  </sl-tree>
+                  <h4>Equipos</h4>
+                  <sl-tree>
+                    ${this.equipment.map(
+                      (machine) => html`
+                        <sl-tree-item>
+                          <vaadin-button>
+                            ${machine.name} - ${machine.equipmentModel.name}
+                          </vaadin-button>
+                          <sl-tree-item
+                            @click=${() => this.mostrar_detalles(machine)}
+                          >
+                            Detalles
                           </sl-tree-item>
-                        `
-                      )}
-                    </sl-tree>
-                    <h4>Equipos</h4>
-                    <sl-tree>
-                      ${this.equipment.map(
-                        (machine) => html`
-                          <sl-tree-item>
-                            <vaadin-button>
-                              ${machine.name} - ${machine.equipmentModel.name}
-                            </vaadin-button>
-                            <sl-tree-item
-                              @click=${() => this.mostrar_detalles(machine)}
-                            >
-                              Detalles
-                            </sl-tree-item>
-                            <sl-tree-item
-                              @click=${() => {
-                                console.log("Clicked on ", machine);
-                                this.display_in_map(machine);
-                              }}
-                            >
-                              Ver en Mapa
-                            </sl-tree-item>
-                            <sl-tree-item
-                              @click=${() => this.copiar_equipo_a_fp(machine)}
-                            >
-                              Copiar a FieldPartner
-                            </sl-tree-item>
+                          <sl-tree-item
+                            @click=${() => {
+                              console.log("Clicked on ", machine);
+                              this.display_in_map(machine);
+                            }}
+                          >
+                            Ver en Mapa
                           </sl-tree-item>
-                        `
-                      )}
-                    </sl-tree>
-                  </div>
-                `}
-          </div>
-        </fp-sidebar>
-      `;
-    
+                          <sl-tree-item
+                            @click=${() => this.copiar_equipo_a_fp(machine)}
+                          >
+                            Copiar a FieldPartner
+                          </sl-tree-item>
+                        </sl-tree-item>
+                      `
+                    )}
+                  </sl-tree>
+                </div>
+              `}
+        </div>
+      </fp-sidebar>
+    `;
   }
 
-  copiar_equipo_a_fp = (machine: JDMachine) => {};
+  copiar_equipo_a_fp = (machine: JDMachine) => {
+    let new_vehiculo: Vehiculo = {
+      _id: "vehiculo:" + uuidv7(),
+      tipoVehiculo: machine.equipmentType.name,
+      marca: machine.equipmentMake.name,
+      modelo: machine.equipmentModel.name,
+      año: machine.modelYear ?? "",
+      patente: "",
+      tara: 0,
+      neto: 0,
+      bruto: 0,
+      tipoCombustible: "Diesel",
+      capacidadCombustible: 0,
+      unidadMedida: "",
+      seguro: "",
+      tipoCobertura: "",
+      nroPoliza: "",
+      seguroFechaInicio: "",
+      seguroFechaVencimiento: "",
+      ubicacion: "",
+      mantenimientos: [],
+      especificacionesTecnicas: [],
+    };
+
+  
+    gbl_state.db.put(new_vehiculo).then(()=>{
+      alert("Vehiculo Agregado")
+    })
+  };
 
   mostrar_detalles = (machine: JDMachine) => {
-    Router.go('/integraciones/john-deere/machine/'+machine.id)
+    Router.go("/integraciones/john-deere/machine/" + machine.id);
   };
 
   selectedOrgChanged = async (e) => {
@@ -269,7 +300,7 @@ export class JohnDeereIntegracion extends LitElement {
     );
 
     e.features[0].properties["name"] = boundary.name;
-    e.features[0].properties["hectareas"] = 3;
+    e.features[0].properties["hectareas"] = Math.round((area(e.features[0]) / 10000) * 100) / 100;;
     return e;
   };
 
@@ -306,10 +337,10 @@ export class JohnDeereIntegracion extends LitElement {
   importar_como_campo = async (boundary) => {
     let gj = this.jd_boundary_a_geojson(boundary);
     let nc: Campo = {
-      _id: "campos_" + boundary.names,
+      _id: "campos_" + boundary.name,
       uuid: uuidv7(),
       nombre: boundary.name,
-      campo_geojson: gj,
+      campo_geojson: gj.features[0],
       lotes: [],
     };
 
@@ -324,7 +355,12 @@ export class JohnDeereIntegracion extends LitElement {
         machine
       );
 
-    let punto = position_machine.values[0].point;
+    let punto = position_machine.values[0]?.point;
+    if (punto === undefined) {
+      alert("No hay posicion registrada para la maquina");
+      return;
+    }
+
     const marker = new Marker().setLngLat([punto.lon, punto.lat]);
 
     marker.setPopup(
@@ -336,6 +372,8 @@ export class JohnDeereIntegracion extends LitElement {
     );
 
     marker.addTo(gbl_state.map);
+    this.markers.push(marker);
+    gbl_state.map.flyTo({ center: marker.getLngLat(), essential: true });
   };
 }
 

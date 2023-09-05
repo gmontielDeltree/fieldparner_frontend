@@ -28,6 +28,8 @@ class MyState extends State {
   jd_integracion: { access_token: string; expires_in: number };
 
   @property() map: Map;
+  @property() map2: Map;
+  @property({value:false}) dualmap: boolean;
   @property() draw: MapboxDraw;
   @property() db: PouchDB.Database;
   @property() db_sensores_raw: PouchDB.Database;
@@ -67,5 +69,17 @@ export const nav_back = ()=> {
   const prev = state.location_history.pop();
   Router.go(prev ? prev : '/');
 }
+
+
+
+// declate a state
+class DualMapState extends State {
+
+  @property({value:false}) dualmap: boolean;
+
+}
+
+export const gbl_dualmap = new DualMapState()
+
 
 export default state;

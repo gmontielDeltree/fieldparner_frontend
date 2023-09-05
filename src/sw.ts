@@ -82,6 +82,7 @@ registerRoute(
 
 // Geotiffs
 registerRoute(/.*\/satimages\/cog.*$/, new CacheFirst({ cacheName: "geotiff" }));
+registerRoute(/.*.tiff*$/, new CacheFirst({ cacheName: "geotiff2" }));
 
 // Fechas de generacion
 registerRoute(
@@ -100,6 +101,11 @@ registerRoute(
   async ({ url, request, event, params }) => {
     console.log("ATT GET", url, event, params);
     let filename = url.searchParams.get("file"); //esta URL encoded,pero se decode solo.
+    
+    if(filename === null){
+      return Promise.reject("Filename can't be null");
+    }
+    
     let file_doc: SWFileAttachment = (await sw_get_file_doc(
       adjuntos_db,
       filename
@@ -196,7 +202,7 @@ self.addEventListener("fetch", (event) => {
         const file = data.get("file");
 
         console.log("Excel file", file);
-        client.postMessage({ file, action: "load-excel" });
+        client?.postMessage({ file, action: "load-excel" });
       })()
     );
   }
@@ -236,7 +242,7 @@ self.addEventListener("fetch", (event) => {
       const file = data.get("file");
 
       console.log("Excel file", file);
-      client.postMessage({ file, action: "load-excel-insumos" });
+      client?.postMessage({ file, action: "load-excel-insumos" });
     })()
   );
 });
@@ -261,7 +267,7 @@ self.addEventListener("fetch", (event) => {
       const file = data.get("file");
 
       console.log("Audio file", file);
-      client.postMessage({ file, action: "load-audio" });
+      client?.postMessage({ file, action: "load-audio" });
     })()
   );
 });

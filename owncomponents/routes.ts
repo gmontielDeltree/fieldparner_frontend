@@ -25,9 +25,7 @@ export const routes = [
   { path: "/gf", redirect: "/" },
   {
     path: "/integraciones",
-    children: [
-      { path: "/", component: "menu-integraciones" },
-    ],
+    children: [{ path: "/", component: "menu-integraciones" }],
   },
 
   {
@@ -40,10 +38,18 @@ export const routes = [
   {
     path: "/indices/:uuid",
     action: async () => {
-      await import("./ndvi-offcanvas/ndvi-offcanvas");
+      return await import("./ndvi-offcanvas/indices-page");
     },
-    component: "ndvi-offcanvas",
+    component: "indices-page",
   },
+  // {
+  //   path: "/indices/:uuid",
+  //   action: async () => {
+  //     await import("./ndvi-offcanvas/ndvi-offcanvas");
+  //   },
+  //   component: "ndvi-offcanvas",
+  // },
+
   { path: "/settings", component: "settings-modal" },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add",

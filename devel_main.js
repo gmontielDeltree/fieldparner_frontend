@@ -1,0 +1,1 @@
+import "./owncomponents/ndvi-offcanvas/indices-charts.ts"
