@@ -11,9 +11,10 @@ export class DualMap implements IControl {
 
   onAdd(map: Map): HTMLElement {
     this._btn = document.createElement("button");
-    this._btn.className = "mapboxgl-ctrl-icon";
+    this._btn.className = "mapboxgl-ctrl-icon icon-dual";
     this._btn.type="button"
-    this._btn.textContent="C"
+    this._btn.textContent=""
+    this._btn.title = "Dual Map"
     this._btn.onclick = this._evt;
     this._container = document.createElement("div");
     this._container.className = "mapboxgl-ctrl-group mapboxgl-ctrl";

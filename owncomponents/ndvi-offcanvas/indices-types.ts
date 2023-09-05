@@ -1,4 +1,5 @@
 import * as d3 from "d3"
+import {addColorScale} from 'plotty'
 
 export interface IndiceEspectral {
   name: string;
@@ -11,6 +12,11 @@ export interface IndiceEspectral {
   colormap_fn: any;
   descripcion: string;
 }
+
+
+addColorScale("RdYlGn",[d3.interpolateRdYlGn(0), d3.interpolateRdYlGn(0.5),d3.interpolateRdYlGn(1)], [0, 0.5, 1])
+addColorScale("Blues",[d3.interpolateBlues(0), d3.interpolateBlues(0.5),d3.interpolateBlues(1)], [0, 0.5, 1])
+
 
 export const list_of_indexes: IndiceEspectral[] = [
   {
@@ -31,7 +37,7 @@ export const list_of_indexes: IndiceEspectral[] = [
     domain: [-1, 1],
     thresholds: [-1, 0.2, 0.6, 1],
     thresholds_labels: ["desnudo", "creciendo", "saludable"],
-    colormap: "winter",
+    colormap: "RdYlGn",
     colormap_fn: d3.interpolateRdYlGn,
     descripcion:"NDRE define valores de -1.0 a 1.0, donde de -1 a 0,2 indican suelo desnudo o un cultivo en desarrollo; 0,2 a 0,6 puede interpretarse como una planta enferma o un cultivo que aún no está maduro; 0,6 a 1 son buenos valores que indican cultivos sanos, maduros y maduros."
   },
@@ -42,7 +48,7 @@ export const list_of_indexes: IndiceEspectral[] = [
     domain: [-1, 1],
     thresholds: [-1, 0.2, 0.4, 0.6],
     thresholds_labels: ["desnudo", "germinacíon", "saludable"],
-    colormap: "viridis",
+    colormap: "RdYlGn",
     colormap_fn: d3.interpolateRdYlGn,
     descripcion: "Los valores de MSAVI van de -1 a 1, donde: -1 a 0.2 indican suelo desnudo; 0.2 a 0.4 es la etapa de germinación de la semilla; 0.4 a 0.6 es la etapa de desarrollo de la hoja. Cuando los valores superan 0,6, ya es hora de aplicar NDVI en su lugar. En otras palabras, la vegetación es lo suficientemente densa como para cubrir el suelo."
   },
@@ -53,7 +59,7 @@ export const list_of_indexes: IndiceEspectral[] = [
     domain: [-1, 1],
     thresholds: [-1, -0.5, 0.5, 1],
     thresholds_labels: ["estres","normal","anegamiento"],
-    colormap: "viridis",
+    colormap: "Blues",
     colormap_fn: d3.interpolateBlues,
     descripcion: "El Índice de humedad de diferencia normalizada (NDMI) detecta los niveles de humedad en la vegetación mediante una combinación de bandas espectrales de infrarrojo cercano (NIR) e infrarrojo de onda corta (SWIR). El NDMI solo puede tener valores entre -1 y 1, lo que lo hace muy fácil. interpretar. El estrés hídrico estaría señalado por los valores negativos que se aproximan a -1, mientras que el +1 puede indicar anegamiento."
   },

@@ -213,7 +213,7 @@ export class IndicesCharts extends LitElement {
 
   render() {
     return html`
-      <div class="container" style="padding:5px">
+      <div class="container" style="padding:5px;max-height:90%">
         <div style="text-align:center;font-weight:bold">${this.indice.label} - ${this.date}</div>
         ${this.indice.thresholds_labels.map((label)=>{
           return html`<canvas id="thr-${label}"></canvas>`

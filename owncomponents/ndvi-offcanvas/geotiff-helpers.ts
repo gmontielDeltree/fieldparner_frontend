@@ -1,5 +1,5 @@
 import { GeoTIFFImage, ReadRasterResult, TypedArray } from "geotiff";
-import { CanvasSource, Map, MapDataEvent, MapMouseEvent, Popup } from "mapbox-gl";
+import { CanvasSource, Map, MapMouseEvent, Popup } from "mapbox-gl";
 import { fromUrl } from "geotiff";
 import { plot as Pplot } from "plotty";
 import { layer_visibility } from "../helpers";
@@ -37,7 +37,10 @@ export const tif_identify = (
   //   console.log(`GPS to pixel transform matrix:`, gpsToPixel);
 
   // Convert a GPS coordinate to a pixel coordinate in our tile:
-  //   const [gx1, gy1, gx2, gy2] = image.getBoundingBox();
+  const [gx1, gy1, gx2, gy2] = image.getBoundingBox();
+  if(long<gx1 || long>gx2){
+    return NaN
+  }
   //   const lat = lerp(gy1, gy2, Math.random());
   //   const long = lerp(gx1, gx2, Math.random());
   //   console.log(

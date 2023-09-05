@@ -108,7 +108,7 @@ export class IndicesHistograma extends LitElement {
 
         let range_names = ranges_to_bin_names(data.stats.histogram[1]);
         return html`
-          <sl-details class="details" style="z-index:3;" summary="Histograma">
+          <sl-details class="details" style="z-index:3;" summary="Resumen">
             ${data.stats.histogram[0].map((r, i) => {
               console.log("punto", r);
               let color =  this.indice.colormap_fn(

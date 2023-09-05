@@ -16,6 +16,7 @@ import { IControl, Map } from "mapbox-gl";
       onAdd(map: Map): HTMLElement {
         this._btn = document.createElement("button");
         this._btn.className = "mapboxgl-ctrl-icon";
+        this._btn.title = "Download PNG"
         this._btn.type="button"
         this._btn.textContent="PNG"
         this._btn.onclick = this._evt;

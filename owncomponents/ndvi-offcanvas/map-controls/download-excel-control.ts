@@ -18,6 +18,7 @@ import { IControl, Map } from "mapbox-gl";
         this._btn.className = "mapboxgl-ctrl-icon";
         this._btn.type="button"
         this._btn.textContent="XLS"
+        this._btn.title = "Download Excel"
         this._btn.onclick = this._evt;
         this._container = document.createElement("div");
         this._container.className = "mapboxgl-ctrl-group mapboxgl-ctrl";
