@@ -335,6 +335,7 @@ export class IndicesPage extends LitElement {
                   : "4rem;"}"
                 .data=${ctx.data1}
                 .indice=${ctx.selectedIndice1}
+                .date=${ctx.selectedFeature1.feature.properties.date}
                 .hectareas_del_lote=${area(ctx.geojson)}
               ></indices-charts>
               
@@ -344,6 +345,7 @@ export class IndicesPage extends LitElement {
                   : "display:none;"}"
                 .data=${ctx.data2}
                 .indice=${ctx.selectedIndice2}
+                .date=${ctx.selectedFeature2.feature.properties.date}
                 .hectareas_del_lote=${area(ctx.geojson)}
               ></indices-charts>
 

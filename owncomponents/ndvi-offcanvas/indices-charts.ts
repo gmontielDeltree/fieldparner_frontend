@@ -54,6 +54,9 @@ export class IndicesCharts extends LitElement {
   @property()
   hectareas_del_lote: number;
 
+  @property()
+  date: string;
+
   private thr: Chart[] = [];
   private full: Chart;
 
@@ -202,6 +205,7 @@ export class IndicesCharts extends LitElement {
   render() {
     return html`
       <div class="container">
+        <div>${this.date}</div>
         ${this.indice.thresholds_labels.map((label)=>{
           return html`<canvas id="thr-${label}"></canvas>`
         
