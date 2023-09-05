@@ -13,7 +13,7 @@ import { Devices } from "../sensores/sensores";
 import gbl_state from "../state.js";
 
 import "../navbar-element/new-app-layout";
-import "../mapa-principal/mapa-principal";
+import "../mapa-principal/mapa-principal-new";
 import "../news-bar/news-bar";
 import("../contratistas/contratista-crud");
 import("../contratistas/contratistas-lista");

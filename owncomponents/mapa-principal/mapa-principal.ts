@@ -836,7 +836,7 @@ export class MapaPrincipal extends LitElement {
     super.update(props);
 
     if(this._map !== null && props.size===0){
-      console.log("MAPSIZe",props)
+      console.log("Redraw por Dual Map",props)
       this.map2?.resize()
       this.map?.resize()
       //
