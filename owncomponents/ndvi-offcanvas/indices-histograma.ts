@@ -1,11 +1,10 @@
-import { LitElement, html, render, css } from "lit";
-import { property, state, customElement } from "lit/decorators.js";
+import { LitElement, html, css } from "lit";
+import { property, customElement } from "lit/decorators.js";
 import { IndiceEspectral, IndicesResponse } from "./indices-types";
 import { Feature } from "@turf/helpers";
 import { Task } from "@lit-labs/task";
 import axios from "axios";
 import { coordAll } from "@turf/meta";
-import * as d3 from "d3";
 import area from "@turf/area";
 import "@shoelace-style/shoelace/dist/components/details/details.js";
 import { r2 } from "../helpers";

@@ -15,7 +15,7 @@ import { LitElement, PropertyValueMap, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import "./indice-selector";
 import { machine } from "./indices-machine";
-import { interpret, assign, send } from "xstate";
+import { interpret, assign } from "xstate";
 import { SelectorController } from "xstate-lit/dist/select-controller";
 import { gbl_dualmap, gbl_state } from "../state";
 import axios from "axios";
@@ -30,7 +30,6 @@ import "./indices-charts";
 import area from "@turf/area";
 import { showNotification } from "../helpers/notificaciones";
 import "./indices-histograma";
-import geoblaze from "geoblaze";
 
 @customElement("indices-page")
 export class IndicesPage extends LitElement {

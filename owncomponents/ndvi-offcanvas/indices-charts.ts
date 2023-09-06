@@ -4,7 +4,6 @@ import { customElement, property, state } from "lit/decorators.js";
 // import { Chart } from "chart.js";
 import { Chart, registerables } from "chart.js";
 import { IndiceEspectral, IndicesResponse } from "./indices-types";
-import * as d3 from 'd3';
 Chart.register(...registerables);
 
 const ranges_to_bin_names = (ranges: number[]) => {
