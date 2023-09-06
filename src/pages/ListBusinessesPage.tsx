@@ -1,13 +1,14 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  TemplateLayout,
   BusinessTable,
   Loading,
   SearchButton,
   SearchInput,
 } from "../components";
 import { Business, ColumnProps } from "../types";
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Box, Button, Container, Grid, Typography } from "@mui/material";
 import { Add as AddIcon, Business as BusinessIcon } from "@mui/icons-material";
 import { useForm, useAppDispatch, useAppSelector, useBusiness } from "../hooks";
 import { setBusinessActive } from "../redux/business";
@@ -54,63 +55,65 @@ export const ListBusinessesPage: React.FC = () => {
   }, []);
 
   return (
-    <>
+    <TemplateLayout key="overview-business" viewMap={false}>
       {isLoading && <Loading loading={true} />}
-      <Box
-        component="div"
-        display="flex"
-        alignItems="center"
-        sx={{ ml: { sm: 2 }, pt: 2 }}
-      >
-        <BusinessIcon />
-        <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
-          Empresas/Personas
-        </Typography>
-      </Box>
-      <Box component="div" sx={{ mt: 7 }}>
-        <Grid
-          container
-          spacing={0}
-          direction="row"
+      <Container maxWidth="lg">
+        <Box
+          component="div"
+          display="flex"
           alignItems="center"
-          justifyContent="space-between"
-          sx={{ p: 2, mt: { sm: 2 } }}
+          sx={{ ml: { sm: 2 }, pt: 2 }}
         >
-          <Grid item xs={6} sm={2}>
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<AddIcon />}
-              onClick={onClickAddBusiness}
-            >
-              Nuevo
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm={10}>
-            <Grid container justifyContent="flex-end">
-              <Grid item xs={8} sm={7}>
-                <SearchInput
-                  value={filterText}
-                  placeholder="Razon social / Nombre"
-                  handleInputChange={handleInputChange}
-                />
-              </Grid>
-              <Grid item xs={4} sm={3}>
-                <SearchButton text="Buscar" onClick={() => onClickSearch()} />
+          <BusinessIcon />
+          <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
+            Empresas/Personas
+          </Typography>
+        </Box>
+        <Box component="div" sx={{ mt: 7 }}>
+          <Grid
+            container
+            spacing={0}
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ p: 2, mt: { sm: 2 } }}
+          >
+            <Grid item xs={6} sm={2}>
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<AddIcon />}
+                onClick={onClickAddBusiness}
+              >
+                Nuevo
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={10}>
+              <Grid container justifyContent="flex-end">
+                <Grid item xs={8} sm={7}>
+                  <SearchInput
+                    value={filterText}
+                    placeholder="Razon social / Nombre"
+                    handleInputChange={handleInputChange}
+                  />
+                </Grid>
+                <Grid item xs={4} sm={3}>
+                  <SearchButton text="Buscar" onClick={() => onClickSearch()} />
+                </Grid>
               </Grid>
             </Grid>
           </Grid>
-        </Grid>
-        <Box component="div" sx={{ p: 1 }}>
-          <BusinessTable
-            key="datatable-businesses"
-            isLoading={isLoading}
-            columns={columns}
-            data={businesses}
-            onClickEdit={onClickUpdateBusiness}
-          />
+          <Box component="div" sx={{ p: 1 }}>
+            <BusinessTable
+              key="datatable-businesses"
+              isLoading={isLoading}
+              columns={columns}
+              data={businesses}
+              onClickEdit={onClickUpdateBusiness}
+            />
+          </Box>
         </Box>
-      </Box>
-    </>
+      </Container>
+    </TemplateLayout>
   );
 };

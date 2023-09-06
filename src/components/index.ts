@@ -10,3 +10,4 @@ export * from './DataTable/MaintenanceTable';
 export * from './DataTable/BusinessTable';
 export * from './BusinessForm';
 export * from './AddressForm';
+export * from './TemplateLayout';
