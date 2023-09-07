@@ -41,7 +41,7 @@ import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 //import PouchDB from "pouchdb";
 import uuid4 from "uuid4";
 import moment from "moment";
-import "../notas-offcanvas/notas-offcanvas.ts";
+import "../recorridas/notas-offcanvas.ts";
 import "./cosecha-add-ui.ts";
 import "./siembra-add-ui.ts";
 import { google_maps_link_go_to } from "./google_maps.js";

@@ -364,7 +364,6 @@ export const r2 = (d : number) =>{
   return parseFloat(d.toFixed(2))
 }
 
-
 export {
   emptyGJ,
   base_url,

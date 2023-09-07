@@ -259,21 +259,21 @@ export const routes = [
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/nota",
     action: async () => {
-      await import("./notas-offcanvas/notas-offcanvas");
+      await import("./recorridas/recorrida-page");
     },
     children: [
       {
         path: "/:uuid/edit",
         action: async () => {
-          await import("./notas-offcanvas/notas-offcanvas");
+          await import("./recorridas/recorrida-page");
         },
-        component: "notas-oc",
+        component: "recorrida-page",
       },
       {
         path: "/add",
-        component: "notas-oc",
+        component: "recorrida-page",
         action: async () => {
-          await import("./notas-offcanvas/notas-offcanvas");
+          await import("./recorridas/recorrida-page");
         },
       },
     ],

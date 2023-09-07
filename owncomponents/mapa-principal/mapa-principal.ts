@@ -13,7 +13,7 @@ import {
 import { GeoJSONSource, Layer, Map } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import syncMaps from "@mapbox/mapbox-gl-sync-move"
+import syncMaps from "@mapbox/mapbox-gl-sync-move";
 
 import mapbox_geocoder_style from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import mapbox_style from "mapbox-gl/dist/mapbox-gl.css?inline";
@@ -144,22 +144,19 @@ export class MapaPrincipal extends LitElement {
   })
   draw: MapboxDraw;
 
-  @property(
-    // {
-    //   hasChanged(newVal: any, oldVal: any) {
-    //     return false;
-    //   },
-    // }
-  )
+  @property()
+  // {
+  //   hasChanged(newVal: any, oldVal: any) {
+  //     return false;
+  //   },
+  // }
   campos: any; //es el allDocs desde campos
 
-  @property(
-    {
-      hasChanged(newVal: any, oldVal: any) {
-        return false;
-      },
-    }
-  )
+  @property({
+    hasChanged(newVal: any, oldVal: any) {
+      return false;
+    },
+  })
   settings: any;
 
   @query("#map2")
@@ -190,15 +187,15 @@ export class MapaPrincipal extends LitElement {
       /* Pantalla 'Pequeña' */
 
       .map_box_container {
-          position: relative;
-          height: 100% !important;
-          width: 100% !important;
-          display:flex;
-          flex-direction:row;
-        }
-        
-      #map2{
-        width:100%;
+        position: relative;
+        height: 100% !important;
+        width: 100% !important;
+        display: flex;
+        flex-direction: row;
+      }
+
+      #map2 {
+        width: 100%;
         height: 100%;
       }
 
@@ -209,7 +206,7 @@ export class MapaPrincipal extends LitElement {
         /* width: 100vw; */
         z-index: 0;
         height: 100%;
-        width:100%;
+        width: 100%;
         background-color: red;
         position: relative;
         /* height: calc(
@@ -231,10 +228,10 @@ export class MapaPrincipal extends LitElement {
           /* width: 100vw; */
           z-index: 0;
           height: 100%;
-          width:50%;
+          width: 50%;
           background-color: green;
           position: relative;
-    
+
           /* height: calc(
             100vh - var(--_vaadin-app-layout-navbar-offset-size)
           ) !important; */
@@ -261,43 +258,22 @@ export class MapaPrincipal extends LitElement {
       "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
   }
 
-
   firstUpdated() {
-    this.mapa_init()
+    this.mapa_init();
   }
 
   async mapa_init() {
     /* Para evitar empezar a renderizar el mapa antes de que height sea completamente definida */
     /* Esperar hasta que el update finalice */
-    await this.getUpdateComplete()
-    console.log("map height", this._map.offsetHeight)
+    await this.getUpdateComplete();
+    console.log("map height", this._map.offsetHeight);
 
     this.map2 = new Map({
-      container : this._map2,
+      container: this._map2,
       style: "mapbox://styles/mapbox/satellite-streets-v12?optimize=true",
       center: gbl_state.ultima_posicion ?? {
-        "lng": -61.19468066139592,
-        "lat": -31.295018658148038
-      },
-      zoom: gbl_state.ultimo_zoom ?? 3.4,
-      maxZoom: 17,
-      attributionControl: true,
-      preserveDrawingBuffer: false,
-    })
-
-    this.map2.on("load",() => {
-      gbl_state.map2 = this.map2
-
-    })
-
-    this.map = new Map({
-      container: this._map, //this.shadowRoot.getElementById("map"),
-      //style: "mapbox://styles/mapbox/outdoors-v12",
-      //style: mapStyle,
-      style: "mapbox://styles/mapbox/satellite-streets-v12?optimize=true",
-      center: gbl_state.ultima_posicion ?? {
-        "lng": -61.19468066139592,
-        "lat": -31.295018658148038
+        lng: -61.19468066139592,
+        lat: -31.295018658148038,
       },
       zoom: gbl_state.ultimo_zoom ?? 3.4,
       maxZoom: 17,
@@ -305,6 +281,24 @@ export class MapaPrincipal extends LitElement {
       preserveDrawingBuffer: false,
     });
 
+    this.map2.on("load", () => {
+      gbl_state.map2 = this.map2;
+    });
+
+    this.map = new Map({
+      container: this._map, //this.shadowRoot.getElementById("map"),
+      //style: "mapbox://styles/mapbox/outdoors-v12",
+      //style: mapStyle,
+      style: "mapbox://styles/mapbox/satellite-streets-v12?optimize=true",
+      center: gbl_state.ultima_posicion ?? {
+        lng: -61.19468066139592,
+        lat: -31.295018658148038,
+      },
+      zoom: gbl_state.ultimo_zoom ?? 3.4,
+      maxZoom: 17,
+      attributionControl: true,
+      preserveDrawingBuffer: false,
+    });
 
     this.map.addControl(new mapboxgl.NavigationControl());
 
@@ -326,8 +320,7 @@ export class MapaPrincipal extends LitElement {
     //this.map.resize();
 
     this.map.on("load", () => {
-
-      syncMaps(this.map,this.map2);
+      syncMaps(this.map, this.map2);
 
       // const geocoder = new MapboxGeocoder({
       //   accessToken: mapboxgl.accessToken,
@@ -344,6 +337,18 @@ export class MapaPrincipal extends LitElement {
       // this.map.addControl(geocoder);
       this.map.addControl(this.draw); // Sin controles
       //tour();
+
+      this.map.addControl(
+        new mapboxgl.GeolocateControl({
+          positionOptions: {
+            enableHighAccuracy: true,
+          },
+          // When active the map will receive updates to the device's location as it changes.
+          trackUserLocation: true,
+          // Draw an arrow next to the location dot to indicate which direction the device is heading.
+          showUserHeading: true,
+        })
+      );
 
       let layers_names = [];
       this.map.addSource("campos", {
@@ -827,30 +832,33 @@ export class MapaPrincipal extends LitElement {
     });
   };
 
+  binding = new StateController(this, gbl_dualmap);
 
-  binding = new StateController(this,gbl_dualmap)
-
-  update(props){
+  update(props) {
     // Se actualizo, pero no es por cambio de props? -> controller
     // console.log("MAPSIZe",props)
     super.update(props);
 
-    if(this._map !== null && props.size===0){
-      console.log("Redraw por Dual Map",props)
-      this.map2?.resize()
-      this.map?.resize()
+    if (this._map !== null && props.size === 0) {
+      console.log("Redraw por Dual Map", props);
+      this.map2?.resize();
+      this.map?.resize();
       //
-
     }
   }
 
-
   render() {
-    console.count("mapa-principal render")
+    console.count("mapa-principal render");
     return html`
       <div class="map_box_container">
-        <div id="map" style=${gbl_dualmap.dualmap ? "width:50%":"width:100%;"}></div>
-        <div id="map2" style=${gbl_dualmap.dualmap ? "width:50%":"width:0%;"}></div>
+        <div
+          id="map"
+          style=${gbl_dualmap.dualmap ? "width:50%" : "width:100%;"}
+        ></div>
+        <div
+          id="map2"
+          style=${gbl_dualmap.dualmap ? "width:50%" : "width:0%;"}
+        ></div>
       </div>
       <sp-theme scale="medium" color="dark">
         <!-- End content requiring theme application. -->
@@ -863,7 +871,6 @@ export class MapaPrincipal extends LitElement {
           >
             Agregar un Campo
           </sp-menu-item>
-        
         </sp-action-menu>
       </sp-theme>
     `;

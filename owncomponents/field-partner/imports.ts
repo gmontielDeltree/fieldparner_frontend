@@ -4,7 +4,7 @@ import "../news-bar/news-bar";
 import("../sensores/sensores-offcanvas");
 import("../nueva-geometria/nueva-geometria");
 import "../nuevo-campo/nuevo-campo";
-import("../notas-offcanvas/nota-target");
+import("../recorridas/nota-target");
 import("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
 import("../lista-centrales-cercanas/lista-centrales-cercanas");
 import("../sensores/lista-de-sensores");
