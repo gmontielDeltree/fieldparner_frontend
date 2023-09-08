@@ -15,6 +15,7 @@ interface PropertiesPunto {
 }
 
 export interface PuntoRecorrida extends Feature {
+  _id: string,
   type: "Feature";
   geometry: {
     type: "Point";
@@ -35,6 +36,7 @@ export interface Recorrida extends PouchDB.Core.Document<FeatureCollection> {
   created: CreatedTag;
 }
 
+/* Inicializadores */
 const empty_punto_properties = () => {
   let props: PropertiesPunto = {
     last_updated: { last_updated: "", last_updated_by: "" },
@@ -46,6 +48,7 @@ const empty_punto_properties = () => {
 export const empty_punto = (coord: LngLatLike) => {
   let empty_props = empty_punto_properties();
   let punto: PuntoRecorrida = {
+    _id: uuidv7(),
     type: "Feature",
     geometry: {
       type: "Point",

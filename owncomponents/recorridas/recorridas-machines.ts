@@ -1,12 +1,12 @@
 import { createMachine } from "xstate";
 import { PuntoRecorrida, Recorrida } from './recorrida-types';
-import { Map } from "mapbox-gl";
+import { Map, Marker } from "mapbox-gl";
 
 export interface RecorridaMachineCtx {
 	recorrida : Recorrida
 	map : Map
   punto_editando: PuntoRecorrida 
-  
+  marker: Marker 
 }
 
 export const machine = createMachine(
@@ -110,10 +110,16 @@ export const machine = createMachine(
               },
               PUNTO_GUARDADO: {
                 target: "mostrandoRecorrida",
-                actions: {
-                  type: "guardarPunto",
-                  params: {},
-                },
+                actions: [
+                  {
+                    type: "guardarPunto",
+                    params: {},
+                  },
+                  {
+                    type: "guardarRecorrida",
+                    params: {},
+                  },
+                ],
               },
               EDIT_POSICION: {
                 actions: {
@@ -124,10 +130,16 @@ export const machine = createMachine(
               },
               BORRAR_PUNTO: {
                 target: "mostrandoRecorrida",
-                actions: {
-                  type: "borrarPunto",
-                  params: {},
-                },
+                actions: [
+                  {
+                    type: "borrarPunto",
+                    params: {},
+                  },
+                  {
+                    type: "guardarRecorrida",
+                    params: {},
+                  },
+                ],
               },
               SELECCIONAR_PUNTO: {
                 actions: {
@@ -174,19 +186,21 @@ export const machine = createMachine(
       failedFetch: {
         type: "final",
       },
+      CERRADO: {
+        entry: {
+          type: "limpiarMapa",
+          params: {},
+        },
+        type: "final",
+      },
     },
-    schema: {
-      events: {} as
-        | { type: "GUARDAR" }
-        | { type: "GENERAR_REPORTE" }
-        | { type: "SELECCIONAR_PUNTO" }
-        | { type: "NUEVO_PUNTO" }
-        | { type: "EDIT_RECORRIDA_DATA" }
-        | { type: "NUEVA_FOTO" }
-        | { type: "PUNTO_GUARDADO" }
-        | { type: "EDIT_POSICION" }
-        | { type: "BORRAR_PUNTO" },
+    on: {
+      CERRAR: {
+        target: ".CERRADO",
+        internal: true,
+      },
     },
+    schema: { events: {} as {} },
     predictableActionArguments: true,
     preserveActionOrder: true,
   },
@@ -201,6 +215,8 @@ export const machine = createMachine(
       initEditMapMode: (context, event) => {},
 
       salirEditMapMode: (context, event) => {},
+
+      emptyRecorrida: (context, event) => {},
 
       guardarRecorrida: (context, event) => {},
 
@@ -222,7 +238,7 @@ export const machine = createMachine(
 
       assignMap: (context, event) => {},
 
-      emptyRecorrida: (context, event) => {},
+      limpiarMapa: (context, event) => {},
     },
     services: { fetchRecorrida: (context, event) => {} },
     guards: { editarRecorrida: (context, event) => false },

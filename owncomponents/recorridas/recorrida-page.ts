@@ -5,14 +5,19 @@ import { interpret, assign } from "xstate";
 import { gbl_state } from "../state";
 import { SelectorController } from "xstate-lit/dist/select-controller";
 import { getRecorrida } from "./recorrida-functions";
-import { showFeatureCollectionOnMap } from "../mapa-principal/mapa-helpers";
+import { showRecorridaFeatureCollectionOnMap } from "../mapa-principal/mapa-helpers";
 import { TextFieldChangeEvent } from "@vaadin/text-field";
-import { PuntoRecorrida, Recorrida, empty_punto, empty_recorrida } from "./recorrida-types";
+import {
+  PuntoRecorrida,
+  Recorrida,
+  empty_punto,
+  empty_recorrida,
+} from "./recorrida-types";
 import { RouterLocation } from "@vaadin/router";
 import "@vaadin/text-field";
 import { Marker, LngLat } from "mapbox-gl";
 import { MarkEmailReadTwoTone, ThumbUpSharp } from "@mui/icons-material";
-import { waitForCondition } from "../helpers";
+import { deepcopy, waitForCondition } from "../helpers";
 
 @customElement("recorrida-page")
 export class RecorridaPage extends LitElement {
@@ -25,13 +30,14 @@ export class RecorridaPage extends LitElement {
         map: "MOGO",
         recorrida: {} as Recorrida,
         punto_editando: {} as PuntoRecorrida,
+        marker: new Marker(),
       })
       .withConfig({
         guards: {
           editarRecorrida: () => !window.location.pathname.includes("add"),
         },
         actions: {
-          emptyRecorrida: assign({recorrida: empty_recorrida()}),
+          emptyRecorrida: assign({ recorrida: empty_recorrida() }),
           assignMap: assign({ map: () => gbl_state.map }),
           initCtx: assign({
             recorrida: ({ recorrida }) => {
@@ -41,12 +47,25 @@ export class RecorridaPage extends LitElement {
           }),
           guardarPunto: assign({
             recorrida: (ctx: RecorridaMachineCtx) => {
-              console.log("CTXXXX",ctx)
+              console.log("CTXXXX", ctx);
               let nr = ctx.recorrida;
+              nr.features = nr.features.filter(
+                (f) => f._id !== ctx.punto_editando._id
+              );
               nr.features.push(ctx.punto_editando);
+              // Ordenar?
               return nr;
             },
             punto_editando: {},
+          }),
+          borrarPunto: assign({
+            recorrida: (ctx) => {
+              let nr = ctx.recorrida;
+              nr.features = nr.features.filter(
+                (f) => f._id !== ctx.punto_editando._id
+              );
+              return nr;
+            },
           }),
           seleccionarPunto: assign({ punto_editando: (_, { data }) => data }),
           initPuntoNuevo: assign({
@@ -56,19 +75,25 @@ export class RecorridaPage extends LitElement {
           initEditMapMode: (ctx: RecorridaMachineCtx) => {
             // Agrega un marcador en el centro del mapa
             // Agrega un handler onMoveEnd que desplaza al marcador
-            let marker = new Marker();
-            marker.setDraggable(true);
-            marker.setLngLat(ctx.map.getCenter());
-            marker.on("dragend", (e) => {
-              // console.log("DFSDFSDFSD",e)
-              this.actor.send({
-                type: "EDIT_POSICION",
-                data: e.target._lngLat,
+
+            if (!ctx.marker.isDraggable()) {
+              // Utilizo esto como trampa de inicializacion del Marker
+              // asi no duplico el listener "dragend"
+              ctx.marker.setDraggable(true);
+              ctx.marker.on("dragend", (e) => {
+                // console.log("DFSDFSDFSD",e)
+                this.actor.send({
+                  type: "EDIT_POSICION",
+                  data: e.target._lngLat,
+                });
               });
-            });
-            marker.addTo(ctx.map);
+            }
+            ctx.marker.setLngLat(ctx.map.getCenter());
+            ctx.marker.addTo(ctx.map);
           },
-          salirEditMapMode: () => {},
+          salirEditMapMode: (ctx: RecorridaMachineCtx) => {
+            ctx.marker.remove();
+          },
           assignPosicion: assign({
             punto_editando: (ctx: RecorridaMachineCtx, { data }) => {
               console.log("ASSIGNPOSICION", data, ctx);
@@ -87,9 +112,30 @@ export class RecorridaPage extends LitElement {
               center: ctx.punto_editando.geometry.coordinates,
             });
           },
-          limpiarMapa: (ctx, evt) => {},
+          limpiarMapa: (ctx: RecorridaMachineCtx, evt) => {
+            ctx.map.removeLayer("recorrida");
+            ctx.map.removeSource("recorrida");
+            ctx.marker.remove();
+          },
           refreshMapa: (ctx: RecorridaMachineCtx) =>
-            showFeatureCollectionOnMap(ctx.map, ctx.recorrida),
+            showRecorridaFeatureCollectionOnMap(
+              ctx.map,
+              ctx.recorrida,
+              "recorrida"
+            ),
+          guardarRecorrida: (ctx: RecorridaMachineCtx) => {
+            console.warn("GUARDAR RECORRIDA");
+          },
+          generarReporteEnNuevaVentana: (ctx: RecorridaMachineCtx) => {
+            console.warn("GENERAR REPORTE");
+          },
+          editRecorridaData: assign({
+            recorrida: (ctx: RecorridaMachineCtx, { data }) => {
+              let { field, value } = data;
+              ctx.recorrida[field] = value;
+              return deepcopy(ctx.recorrida) as Recorrida;
+            },
+          }),
         },
         services: {
           fetchRecorrida: async (ctx: RecorridaMachineCtx) =>
@@ -123,11 +169,22 @@ export class RecorridaPage extends LitElement {
     switch (JSON.stringify(state)) {
       case "empty":
         console.log("EMPTY");
-        return html` <div>empty</div> `;
+        return html` <div>Aún no hay puntos</div> `;
       case '{"loaded":"empty"}':
+        return html`
+          <div>Aún no hay puntos</div>
+
+          <vaadin-button
+            @click=${() => this.actor.send({ type: "NUEVO_PUNTO" })}
+          >
+            NUEVO PUNTO
+          </vaadin-button>
+        `;
+
       case '{"loaded":"mostrandoRecorrida"}':
         return html`
           <div>
+            <h4>${recorrida.nombre}</h4>
             <vaadin-text-field
               .value=${recorrida.nombre}
               @change=${(e: TextFieldChangeEvent) =>
@@ -136,19 +193,24 @@ export class RecorridaPage extends LitElement {
                   data: { field: "nombre", value: e.target.value },
                 })}
             ></vaadin-text-field>
-
             <vaadin-button
               @click=${() => this.actor.send({ type: "NUEVO_PUNTO" })}
             >
               NUEVO PUNTO
             </vaadin-button>
+            ${ctx.recorrida.features.map((f) => {
+              return html`
+                <div>${JSON.stringify(f.geometry.coordinates)}</div>
+              `;
+            })}
           </div>
         `;
       case '{"loaded":"editandoPunto"}':
         return html`<div>${ctx.punto_editando.geometry.coordinates[0]}</div>
           <vaadin-button
             @click=${() => this.actor.send({ type: "PUNTO_GUARDADO" })}
-            >GUARDAR</vaadin-button> `;
+            >GUARDAR</vaadin-button
+          > `;
       default:
         console.log("DEFAULT", state, ctx, this.state);
         return html`<div>${state}</div>`;
