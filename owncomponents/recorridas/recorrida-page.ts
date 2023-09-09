@@ -1,5 +1,5 @@
 import { LitElement, PropertyValueMap, html } from "lit";
-import { customElement, state, property } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { RecorridaMachineCtx, machine } from "./recorridas-machines";
 import { interpret, assign } from "xstate";
 import { gbl_state } from "../state";
@@ -15,9 +15,9 @@ import {
 } from "./recorrida-types";
 import { RouterLocation } from "@vaadin/router";
 import "@vaadin/text-field";
-import { Marker, LngLat } from "mapbox-gl";
-import { MarkEmailReadTwoTone, ThumbUpSharp } from "@mui/icons-material";
-import { deepcopy, waitForCondition } from "../helpers";
+import { GeolocateControl, Marker } from "mapbox-gl";
+import { deepcopy } from "../helpers";
+import { getActionFunction } from "xstate/lib/actions";
 
 @customElement("recorrida-page")
 export class RecorridaPage extends LitElement {
@@ -28,7 +28,7 @@ export class RecorridaPage extends LitElement {
     machine
       .withContext({
         map: "MOGO",
-        recorrida: {} as Recorrida,
+        recorrida: empty_recorrida() as Recorrida,
         punto_editando: {} as PuntoRecorrida,
         marker: new Marker(),
       })
@@ -87,8 +87,21 @@ export class RecorridaPage extends LitElement {
                   data: e.target._lngLat,
                 });
               });
+
+              // Add geolocate control event
+              let geolocate_control: GeolocateControl =
+                ctx.map._controls.geolocate;
+              geolocate_control.on("geolocate", (e) => {
+                let pos = { lng: e.coords.longitude, lat: e.coords.latitude };
+                ctx.marker.setLngLat(pos);
+                console.log("GEOLOCATED", e);
+                this.actor.send({
+                  type: "EDIT_POSICION",
+                  data: pos,
+                });
+              });
             }
-            ctx.marker.setLngLat(ctx.map.getCenter());
+            ctx.marker.setLngLat(ctx.punto_editando.geometry.coordinates);
             ctx.marker.addTo(ctx.map);
           },
           salirEditMapMode: (ctx: RecorridaMachineCtx) => {
@@ -117,12 +130,47 @@ export class RecorridaPage extends LitElement {
             ctx.map.removeSource("recorrida");
             ctx.marker.remove();
           },
-          refreshMapa: (ctx: RecorridaMachineCtx) =>
+          refreshMapa: (ctx: RecorridaMachineCtx) => {
+            console.log("REFRESH MAPA")
+           
+
+            /* Borrar el handler si existe */
+            if(ctx.map._events && ctx.map._events.recorrida_click){
+              console.log("BORRAR HANDLER",ctx.map._events.recorrida_click)
+              ctx.map.off("click","recorrida",ctx.map._events.recorrida_click)
+            }
+
+            /* Crear handler click */
+
+            const click_handler = (e) => {
+              let id_del_punto = e.features[0].properties._id
+
+              let punto = ctx.recorrida.features.find(
+                (f) => f._id === id_del_punto
+              );
+
+              this.actor.send({ type: "SELECCIONAR_PUNTO", data: punto });
+
+              console.log(
+                "CLICK",
+                e.features[0],
+              );
+            }
+
+            ctx.map._events = {
+              recorrida_click: click_handler
+            };
+
             showRecorridaFeatureCollectionOnMap(
               ctx.map,
               ctx.recorrida,
               "recorrida"
-            ),
+            );
+            
+            /* Add al mapa */
+            ctx.map.on("click", "recorrida", ctx.map._events.recorrida_click);
+
+          },
           guardarRecorrida: (ctx: RecorridaMachineCtx) => {
             console.warn("GUARDAR RECORRIDA");
           },
@@ -185,6 +233,7 @@ export class RecorridaPage extends LitElement {
         return html`
           <div>
             <h4>${recorrida.nombre}</h4>
+            <h5>${recorrida._id}</h5>
             <vaadin-text-field
               .value=${recorrida.nombre}
               @change=${(e: TextFieldChangeEvent) =>
@@ -200,7 +249,12 @@ export class RecorridaPage extends LitElement {
             </vaadin-button>
             ${ctx.recorrida.features.map((f) => {
               return html`
-                <div>${JSON.stringify(f.geometry.coordinates)}</div>
+                <div
+                  @click=${() =>
+                    this.actor.send({ type: "SELECCIONAR_PUNTO", data: f })}
+                >
+                  ${JSON.stringify(f.geometry.coordinates)}
+                </div>
               `;
             })}
           </div>

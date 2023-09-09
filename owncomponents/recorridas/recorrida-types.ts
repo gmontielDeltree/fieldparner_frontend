@@ -5,6 +5,7 @@ import { property } from "lit/decorators.js";
 import { uuidv7 } from "uuidv7";
 
 interface PropertiesPunto {
+  _id:string,
   fotos?: string[];
   notas?: string[];
   audio?: string[];
@@ -24,6 +25,9 @@ export interface PuntoRecorrida extends Feature {
   properties: PropertiesPunto;
 }
 
+/**
+ * La recorrida es un FeatureCollection y tambien un Doc
+ */
 export interface Recorrida extends PouchDB.Core.Document<FeatureCollection> {
   _id: string;
   _rev?: string;
@@ -37,8 +41,9 @@ export interface Recorrida extends PouchDB.Core.Document<FeatureCollection> {
 }
 
 /* Inicializadores */
-const empty_punto_properties = () => {
+const empty_punto_properties = (id:string) => {
   let props: PropertiesPunto = {
+    _id:id,
     last_updated: { last_updated: "", last_updated_by: "" },
     created: { created: "", created_by: "" },
   };
@@ -46,9 +51,10 @@ const empty_punto_properties = () => {
 };
 
 export const empty_punto = (coord: LngLatLike) => {
-  let empty_props = empty_punto_properties();
+  let un_id = uuidv7()
+  let empty_props = empty_punto_properties(un_id);
   let punto: PuntoRecorrida = {
-    _id: uuidv7(),
+    _id: un_id,
     type: "Feature",
     geometry: {
       type: "Point",
