@@ -28,6 +28,7 @@ import { DateTimePickerI18n } from "@vaadin/date-time-picker";
 import "@vaadin/date-time-picker";
 import "@vaadin/accordion";
 import { PuntoRecorrida } from './recorrida-types';
+import "../common_components/image_uploader/fp-image-uploader"
 
 @customElement("recorrida-page")
 export class RecorridaPage extends LitElement {
@@ -485,7 +486,8 @@ export class RecorridaPage extends LitElement {
           >
 
 
-          <vaadin-upload
+          <fp-image-uploader .images=${ctx.punto_editando.properties.fotos ?? []}></fp-image-uploader>
+          <!-- <vaadin-upload
             target="/attachments"
             accept="image/*"
             .files=${
@@ -494,7 +496,7 @@ export class RecorridaPage extends LitElement {
             @upload-success=${(e) => {
               console.log("successevent", e);
             }}
-          ></vaadin-upload>
+          ></vaadin-upload> -->
 
           <audio-recorder
             id="audio-recorder"

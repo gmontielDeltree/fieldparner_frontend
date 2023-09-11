@@ -1,1 +1,1 @@
-import "./owncomponents/ndvi-offcanvas/indices-charts.ts"
+import "./owncomponents/common_components/image_uploader/fp-image-uploader"
