@@ -353,7 +353,7 @@ export class MapaPrincipal extends LitElement {
       );
 
       // Dirty way de pasar los controles al resto de la app
-      this.map._controls = {geolocate: gl_control}
+      this.map._custom_controls = {geolocate: gl_control}
 
       let layers_names = [];
       this.map.addSource("campos", {

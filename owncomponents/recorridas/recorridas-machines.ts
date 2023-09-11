@@ -9,6 +9,7 @@ export interface RecorridaMachineCtx {
   marker: Marker 
 }
 
+
 export const machine = createMachine(
   {
     id: "recorrida",
@@ -83,6 +84,20 @@ export const machine = createMachine(
                 },
                 internal: true,
               },
+              BORRAR_PUNTO: {
+                actions: {
+                  type: "borrarPunto",
+                  params: {},
+                },
+                internal: true,
+              },
+              GUARDAR: {
+                actions: {
+                  type: "guardarRecorrida",
+                  params: {},
+                },
+                internal: true,
+              },
             },
           },
           editandoPunto: {
@@ -100,6 +115,30 @@ export const machine = createMachine(
               type: "salirEditMapMode",
               params: {},
             },
+            initial: "idle",
+            states: {
+              idle: {
+                on: {
+                  ADD_PUNTO_FIELD: {
+                    target: "mostrarFields",
+                  },
+                },
+              },
+              mostrarFields: {
+                on: {
+                  CERRAR_FIELDS: {
+                    target: "idle",
+                  },
+                  SELECCIONAR_FIELD: {
+                    target: "idle",
+                    actions: {
+                      type: "assignAddField",
+                      params: {},
+                    },
+                  },
+                },
+              },
+            },
             on: {
               NUEVA_FOTO: {
                 actions: {
@@ -110,16 +149,10 @@ export const machine = createMachine(
               },
               PUNTO_GUARDADO: {
                 target: "mostrandoRecorrida",
-                actions: [
-                  {
-                    type: "guardarPunto",
-                    params: {},
-                  },
-                  {
-                    type: "guardarRecorrida",
-                    params: {},
-                  },
-                ],
+                actions: {
+                  type: "guardarPunto",
+                  params: {},
+                },
               },
               EDIT_POSICION: {
                 actions: {
@@ -128,25 +161,22 @@ export const machine = createMachine(
                 },
                 internal: true,
               },
-              BORRAR_PUNTO: {
-                target: "mostrandoRecorrida",
-                actions: [
-                  {
-                    type: "borrarPunto",
-                    params: {},
-                  },
-                  {
-                    type: "guardarRecorrida",
-                    params: {},
-                  },
-                ],
-              },
               SELECCIONAR_PUNTO: {
                 actions: {
                   type: "seleccionarPunto",
                   params: {},
                 },
                 internal: true,
+              },
+              EDIT_PUNTO_DATA: {
+                actions: {
+                  type: "assignPuntoData",
+                  params: {},
+                },
+                internal: true,
+              },
+              VOLVER: {
+                target: "mostrandoRecorrida",
               },
             },
           },
@@ -167,13 +197,6 @@ export const machine = createMachine(
           },
         },
         on: {
-          GUARDAR: {
-            actions: {
-              type: "guardarRecorrida",
-              params: {},
-            },
-            internal: true,
-          },
           GENERAR_REPORTE: {
             actions: {
               type: "generarReporteEnNuevaPestana",
@@ -200,7 +223,24 @@ export const machine = createMachine(
         internal: true,
       },
     },
-    schema: { events: {} as {} },
+    schema: {
+      events: {} as
+        | { type: "CERRAR" }
+        | { type: "NUEVA_FOTO" }
+        | { type: "NUEVO_PUNTO" }
+        | { type: "BORRAR_PUNTO" }
+        | { type: "CERRAR_FIELDS" }
+        | { type: "EDIT_POSICION" }
+        | { type: "PUNTO_GUARDADO" }
+        | { type: "ADD_PUNTO_FIELD" }
+        | { type: "EDIT_PUNTO_DATA" }
+        | { type: "GENERAR_REPORTE" }
+        | { type: "SELECCIONAR_FIELD" }
+        | { type: "SELECCIONAR_PUNTO" }
+        | { type: "EDIT_RECORRIDA_DATA" }
+        | { type: "GUARDAR" }
+        | { type: "VOLVER" },
+    },
     predictableActionArguments: true,
     preserveActionOrder: true,
   },
@@ -218,7 +258,7 @@ export const machine = createMachine(
 
       emptyRecorrida: (context, event) => {},
 
-      guardarRecorrida: (context, event) => {},
+      limpiarMapa: (context, event) => {},
 
       generarReporteEnNuevaPestana: (context, event) => {},
 
@@ -238,7 +278,11 @@ export const machine = createMachine(
 
       assignMap: (context, event) => {},
 
-      limpiarMapa: (context, event) => {},
+      assignPuntoData: (context, event) => {},
+
+      assignAddField: (context, event) => {},
+
+      guardarRecorrida: (context, event) => {},
     },
     services: { fetchRecorrida: (context, event) => {} },
     guards: { editarRecorrida: (context, event) => false },
