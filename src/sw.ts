@@ -27,6 +27,7 @@ import {
   sw_post_file_doc,
 } from "./sw-helpers";
 import { process_analisis_suelo } from "./sw-importers";
+import { uuidv7 } from "uuidv7";
 
 let adjuntos_db = new PouchDB("adjuntos");
 //adjuntos_db.put({_id:'esbolonio',bolonio:3})
@@ -156,14 +157,15 @@ registerRoute(
 
     // Get the data from the named element 'file'
     const file: File = data.get("file") as File;
-    console.log("FILE UPLOAD", file, file.name, file.type);
+    console.log("FILE UPLOAD", file);//, file.name, file.type);
 
-    postData(file);
+    let assigned_filename = uuidv7()
+    // postData(file,assigned_filename);
 
-    // La _id es el nombre del archivo URIencodedeado
-    sw_post_file_doc(adjuntos_db, file, false);
+    // La _id s el nombre del archivo URIencodedeeado
+    sw_post_file_doc(adjuntos_db, file, false, assigned_filename);
 
-    return new Response(`{"status":"ok"}`, {
+    return new Response(JSON.stringify({status:"ok",filename:assigned_filename}), {
       headers: { ...request.headers },
     });
   },

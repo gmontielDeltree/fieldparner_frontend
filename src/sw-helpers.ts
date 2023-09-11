@@ -1,4 +1,5 @@
 import PouchDB from "pouchdb";
+import { uuidv7 } from "uuidv7";
 export const sw_docs_starting = async (
   db: PouchDB.Database,
   key: string,
@@ -54,11 +55,12 @@ export const sw_get_file_doc = async (
 export const sw_post_file_doc = async (
   db: PouchDB.Database,
   file: File,
-  uploaded: boolean
+  uploaded: boolean,
+  assigned_filename: string,
 ) => {
   let new_doc: SWFileAttachment = {
-    _id: ASCIItoHex(file.name),
-    filename: file.name,
+    _id: assigned_filename,//ASCIItoHex(file.name),
+    filename: file.name ?? assigned_filename,
     uploaded: uploaded,
     _attachments: { file_0: { type: file.type, data: file } },
   };
@@ -74,7 +76,7 @@ export interface SWFileAttachment {
   _attachments: { file_0: { data: File; type: string } };
 }
 
-export async function postData(file: File) {
+export async function postData(file: File, assigned_file_name?:string) {
   // Opciones por defecto estan marcadas con un *
   console.log("POST AL SERVER",file);
 
@@ -84,7 +86,7 @@ export async function postData(file: File) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      fileName: file.name,
+      fileName: assigned_file_name ?? uuidv7(),//file.name,
       fileType: file.type,
     }),
   })
@@ -102,7 +104,7 @@ export async function postData(file: File) {
       console.log(e)
       console.log(
         "UPLOADED to https://adjuntos-fieldpartner.s3.us-south.cloud-object-storage.appdomain.cloud/" +
-          file.name
+          assigned_file_name
       );
     });
 }
