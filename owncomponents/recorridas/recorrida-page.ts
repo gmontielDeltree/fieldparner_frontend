@@ -421,12 +421,28 @@ export class RecorridaPage extends LitElement {
       case '{"loaded":{"editandoPunto":"idle"}}':
         return html`
         
-        <div>${t("punto")}</div>
+        <header>
+            <a
+              @click=${() => this.actor.send({ type: "VOLVER" })}
+              aria-label="Go back"
+            >
+              <vaadin-icon
+                icon="vaadin:arrow-left"
+                aria-hidden="true"
+              ></vaadin-icon>
+            </a>
+            <h5>${t("punto")}</h5>
 
-        <vaadin-button
+            <slot name="menu" class='push'></slot>
+            <vaadin-button @click=${() => this.actor.send({ type: "PUNTO_GUARDADO" })}
+              >GUARDAR</vaadin-button
+            >
+          </header>
+
+        <!-- <vaadin-button
             @click=${() => this.actor.send({ type: "PUNTO_GUARDADO" })}
             >GUARDAR</vaadin-button
-          >
+          > -->
 
         
         <div>${ctx.punto_editando.geometry.coordinates[0]}</div>
