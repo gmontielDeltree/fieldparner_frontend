@@ -1,7 +1,7 @@
 import { map } from "lit/directives/map.js";
 import { when } from "lit/directives/when.js";
-import {ifDefined} from 'lit/directives/if-defined.js';
-import { LitElement, PropertyValueMap, html,css } from "lit";
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { LitElement, PropertyValueMap, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { RecorridaMachineCtx, machine } from "./recorridas-machines";
 import { interpret, assign } from "xstate";
@@ -20,9 +20,9 @@ import {
 import { RouterLocation } from "@vaadin/router";
 import "@vaadin/text-field";
 import { GeolocateControl, Marker } from "mapbox-gl";
-import { deepcopy, upload_file } from "../helpers";
+import { createMenuDots, deepcopy, upload_file } from "../helpers";
 import { uuidv7 } from "uuidv7";
-import { translate as t } from "lit-translate";
+import { get, translate as t } from "lit-translate";
 import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n";
 import { DateTimePickerI18n } from "@vaadin/date-time-picker";
 import "@vaadin/date-time-picker";
@@ -72,9 +72,9 @@ export class RecorridaPage extends LitElement {
             punto_editando: {},
           }),
           borrarPunto: assign({
-            recorrida: (ctx,{data}) => {
+            recorrida: (ctx, { data }) => {
               let nr = ctx.recorrida;
-              let punto : PuntoRecorrida = data
+              let punto: PuntoRecorrida = data
               nr.features = nr.features.filter(
                 (f) => f._id !== punto._id
               );
@@ -84,7 +84,7 @@ export class RecorridaPage extends LitElement {
           seleccionarPunto: assign({ punto_editando: (_, { data }) => data }),
           initPuntoNuevo: assign({
             punto_editando: (ctx: RecorridaMachineCtx) =>
-              empty_punto(ctx.map.getCenter(),ctx.recorrida.features.length+1),
+              empty_punto(ctx.map.getCenter(), ctx.recorrida.features.length + 1),
           }),
           initEditMapMode: (ctx: RecorridaMachineCtx) => {
             // Agrega un marcador en el centro del mapa
@@ -240,11 +240,11 @@ export class RecorridaPage extends LitElement {
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ) {
-    if(gbl_state.map === undefined){
+    if (gbl_state.map === undefined) {
       setTimeout(() => {
         this.actor.start();
       }, 10000);
-    }else{
+    } else {
       this.actor.start();
     }
 
@@ -281,8 +281,9 @@ export class RecorridaPage extends LitElement {
         width: var(--lumo-icon-size-m);
       }
   `
-  
-  
+
+  //summary="${ifDefined(f.properties.nombre)}"
+
   render(): unknown {
     let ctx: RecorridaMachineCtx = this.ctx.value as RecorridaMachineCtx;
     let recorrida = ctx.recorrida;
@@ -306,7 +307,7 @@ export class RecorridaPage extends LitElement {
       case '{"loaded":"empty"}':
       case '{"loaded":"mostrandoRecorrida"}':
         return html`
-          <div style="background-color:#4bd71e">
+          <div style="background-color:#ffffff">
 
           <header>
             <a
@@ -321,42 +322,30 @@ export class RecorridaPage extends LitElement {
             </a>
             <h5>${t("nueva_recorrida")}</h5>
 
-            <slot name="menu" class='push'></slot>
-            <vaadin-button @click=${() => this.actor.send({ type: "GUARDAR" })}
+            <vaadin-button theme="primary success small" @click=${() => this.actor.send({ type: "GUARDAR" })}
               >GUARDAR</vaadin-button
             >
           </header>
 
-            <h5>${recorrida._id}</h5>
+          <div id="body" style="padding:1rem;display: flex;flex-direction: column;">
+            <!-- <h5>${recorrida._id}</h5> -->
 
             <vaadin-text-field
               .label=${t("nombre")}
               .value=${recorrida.nombre}
-              @change=${
-                (e: TextFieldChangeEvent) =>
-                  recorrida_update_field("nombre", e.target.value)
-                // this.actor.send({
-                //   type: "EDIT_RECORRIDA_DATA",
-                //   data: { field: "nombre", value: e.target.value },
-                // })
-              }
+              @change=${(e: TextFieldChangeEvent) =>
+            recorrida_update_field("nombre", e.target.value)
+          }
             ></vaadin-text-field>
 
             <vaadin-date-time-picker
               .label=${t("fecha_hora")}
-              .value=${recorrida.date}
+              .value=${recorrida.fecha}
               .i18n=${base_i18n as DateTimePickerI18n}
-              @change=${
-                (e) => {
-                  recorrida_update_field("date", e.target.value);
-                }
-                // this.ejecucion.detalles.fecha_hora_inicio = e.target.value;
-                // this.ejecucion.detalles.fecha_ejecucion = format(
-                //   parseISO(e.target.value),
-                //   "yyyy-MM-dd"
-                // );
-                // this.requestUpdate();
-              }
+              @change=${(e) => {
+            recorrida_update_field("fecha", e.target.value);
+          }
+          }
             ></vaadin-date-time-picker>
 
             <vaadin-date-picker
@@ -366,14 +355,14 @@ export class RecorridaPage extends LitElement {
               .i18n=${base_i18n}
               allowed-char-pattern="[]"
               @change=${(e) =>
-                recorrida_update_field("proxima_visita", e.target.value)}
+            recorrida_update_field("proxima_visita", e.target.value)}
             ></vaadin-date-picker>
 
             <vaadin-vertical-layout style="align-items: center">
               ${when(
-                state_string === '{"loaded":"empty"}',
-                () => html`<span>${t("aun_no_hay_puntos")}</span>`
-              )}
+              state_string === '{"loaded":"empty"}',
+              () => html`<span>${t("aun_no_hay_puntos")}</span>`
+            )}
 
               <vaadin-button
                 @click=${() => this.actor.send({ type: "NUEVO_PUNTO" })}
@@ -384,45 +373,72 @@ export class RecorridaPage extends LitElement {
 
             <vaadin-accordion .opened=${null}>
               ${map(ctx.recorrida.features, (f) => {
-                return html`
-                  <vaadin-accordion-panel summary="${ifDefined(f.properties.nombre)}">
-                    <vaadin-vertical-layout>
-                      <span>
-                        <vaadin-button
-                          @click=${() =>
-                            this.actor.send({
-                              type: "SELECCIONAR_PUNTO",
-                              data: f,
-                            })}
-                          >${t("editar")}</vaadin-button
-                        >
-                        <vaadin-button
-                          @click=${() =>
-                            this.actor.send({
-                              type: "BORRAR_PUNTO",
-                              data: f,
-                            })}
-                          >${t("borrar")}</vaadin-button
-                        ></span
-                      >
+              return html`
+                  <vaadin-accordion-panel>
+                    <vaadin-accordion-heading slot="summary">
+                      
+                    <div style="display:flex;justify-content:space-between;width: 100%;align-items: center;">
+                      <div>
+                        ${ifDefined(f.properties.nombre)}
+                      </div>
 
+
+                      <vaadin-menu-bar @item-selected=${(e)=>e.detail.value.click()} .items=${[
+                  {
+                    component: createMenuDots("ellipsis-dots-v"),
+                    tooltip: get("mas"),
+                    children: [
+                      { text: get("edit"), click: () =>
+                      this.actor.send({
+                        type: "SELECCIONAR_PUNTO",
+                        data: f,
+                      })},
+                      { text: get("borrar"),
+                    click: () =>
+                    this.actor.send({
+                      type: "BORRAR_PUNTO",
+                      data: f,
+                    })
+                    },
+                    ]
+                  }
+                ]}>
+                          
+                      </vaadin-menu-bar>
+
+                      </div>
+
+                    </vaadin-accordion-heading>
+
+                    <vaadin-vertical-layout>
+                    
                       <span>${f.properties.orden}</span>
                       <span>${f.properties.notas}</span>
-                      <span>${f.properties.fotos?.[0]}</span>
-                      <span>${f.properties.audio}</span>
+
+                      <fp-image-uploader .sologallery=${true} .images=${f.properties.fotos ?? []}></fp-image-uploader>
+
+                    
+
+                      ${when(f.properties.audio !== undefined, () => html`
+                        <audio controls>
+                          <source .src=${"/attachments?file=" + f.properties.audio}></source>
+                        </audio>
+                      `)}
+
                       <span>${JSON.stringify(f.geometry.coordinates)}</span>
                     </vaadin-vertical-layout>
                   </vaadin-accordion-panel>
                 `;
-              })}
+            })}
             </vaadin-accordion>
+            </div> <!--Body-->
           </div>
         `;
 
       case '{"loaded":{"editandoPunto":"idle"}}':
         return html`
-        
-        <header>
+        <div style="background-color:white;min-width:25vw;">
+          <header>
             <a
               @click=${() => this.actor.send({ type: "VOLVER" })}
               aria-label="Go back"
@@ -435,7 +451,7 @@ export class RecorridaPage extends LitElement {
             <h5>${t("punto")}</h5>
 
             <slot name="menu" class='push'></slot>
-            <vaadin-button @click=${() => this.actor.send({ type: "PUNTO_GUARDADO" })}
+            <vaadin-button theme="primary success small" @click=${() => this.actor.send({ type: "PUNTO_GUARDADO" })}
               >GUARDAR</vaadin-button
             >
           </header>
@@ -445,73 +461,86 @@ export class RecorridaPage extends LitElement {
             >GUARDAR</vaadin-button
           > -->
 
-        
-        <div>${ctx.punto_editando.geometry.coordinates[0]}</div>
+        <div id="body" style="padding:1rem;display:flex;flex-direction: column;">
+          <!-- <div>${ctx.punto_editando.geometry.coordinates[0]}</div> -->
 
-          <vaadin-text-area
+          <vaadin-text-field
             .label=${t("nombre")}
             .value=${ctx.punto_editando.properties.nombre}
             @change=${(e: TextFieldChangeEvent) =>
-              this.actor.send({
-                type: "EDIT_PUNTO_DATA",
-                data: { field: "nombre", value: e.target.value },
-              })}
-          ></vaadin-text-area>
+            this.actor.send({
+              type: "EDIT_PUNTO_DATA",
+              data: { field: "nombre", value: e.target.value },
+            })}
+          ></vaadin-text-field>
 
           <vaadin-text-area
             .label=${t("notas")}
             .value=${ctx.punto_editando.properties.notas}
             @change=${(e: TextFieldChangeEvent) =>
-              this.actor.send({
-                type: "EDIT_PUNTO_DATA",
-                data: { field: "notas", value: e.target.value },
-              })}
+            this.actor.send({
+              type: "EDIT_PUNTO_DATA",
+              data: { field: "notas", value: e.target.value },
+            })}
           ></vaadin-text-area>
 
           ${ctx.punto_editando.properties.detalles?.map((d) => {
-            return html`<vaadin-text-field
+              return html`<vaadin-text-field
               .label=${d.name}
               .value=${d.value}
               @change=${(e) =>
-                this.actor.send({
-                  type: "EDIT_PUNTO_DATA",
-                  data: { detalles_name: d.name, value: e.target.value },
-                })}
+                  this.actor.send({
+                    type: "EDIT_PUNTO_DATA",
+                    data: { detalles_name: d.name, value: e.target.value },
+                  })}
             ></vaadin-text-field>`;
-          })}
+            })}
 
           <vaadin-button
             @click=${() => this.actor.send({ type: "ADD_PUNTO_FIELD" })}
             >ADD FIELD</vaadin-button
           >
-
-
-          <fp-image-uploader .images=${ctx.punto_editando.properties.fotos ?? []}></fp-image-uploader>
-          <!-- <vaadin-upload
-            target="/attachments"
-            accept="image/*"
-            .files=${
-              [] /* Previene que se agregen los archivos debajo del control*/
-            }
-            @upload-success=${(e) => {
-              console.log("successevent", e);
-            }}
-          ></vaadin-upload> -->
-
+       
           <audio-recorder
-            id="audio-recorder"
-            @recordingCompleted=${(e) => {
-              console.log("RECORDING COMPLETED", e);
-              let audio = e.detail as File;
-              audio.name = uuidv7();
-              upload_file(audio).then(() => {
-                let audio_url = audio.name;
-                console.log("audio_url", audio_url);
-              });
-            }}
-          ></audio-recorder>
+              id="audio-recorder"
+              @recordingCompleted=${(e) => {
+            console.log("RECORDING COMPLETED", e);
+            let audio = e.detail as File;
+            audio.name = uuidv7();
+            upload_file(audio).then((r) => {
+              console.log("AUDIO", r)
+              let audio_url = audio.name;
+              console.log("audio_url", audio_url);
+              this.actor.send({ type: "EDIT_PUNTO_DATA", data: { field: "audio", value: audio_url } })
+            });
+          }}
+            ></audio-recorder>
 
-          <div>${JSON.stringify(ctx.punto_editando, null, 2)}</div> `;
+            ${when(ctx.punto_editando.properties.audio !== undefined, () => html`
+              <audio controls>
+                <source .src=${"/attachments?file=" + ctx.punto_editando.properties.audio}></source>
+              </audio>
+            `)}
+            
+            <fp-image-uploader @upload-done=${(e) => {
+            console.log("UPLOAD DONE", e),
+              this.actor.send({ type: "EDIT_PUNTO_DATA", data: { field: "fotos", value: [...ctx.punto_editando.properties.fotos ?? [], e.detail] } })
+          }} 
+                @uploader-remove=${(e) => {
+            this.actor.send({ type: "EDIT_PUNTO_DATA", data: { field: "fotos", value: ctx.punto_editando.properties.fotos?.filter((f) => f !== e.detail) } })
+          }}
+              .images=${ctx.punto_editando.properties.fotos ?? []}
+              
+              ></fp-image-uploader>
+            
+
+
+  
+
+          <!-- <div>${JSON.stringify(ctx.punto_editando, null, 2)}</div>  -->
+            </div>
+          </div>
+          `;
 
       case '{"loaded":{"editandoPunto":"mostrarFields"}}':
         return html`
@@ -520,15 +549,15 @@ export class RecorridaPage extends LitElement {
               x
             </button>
             ${get_posibles_detalles().map((d) => {
-              return html` <vaadin-button
+          return html` <vaadin-button
                 @click=${() =>
-                  this.actor.send({
-                    type: "SELECCIONAR_FIELD",
-                    data: { name: d.name },
-                  })}
+              this.actor.send({
+                type: "SELECCIONAR_FIELD",
+                data: { name: d.name },
+              })}
                 >${d.name}</vaadin-button
               >`;
-            })}
+        })}
           </div>
         `;
       default:

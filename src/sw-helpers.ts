@@ -41,7 +41,7 @@ export const sw_get_file_doc = async (
   filename_or_id: string //uriEncoded
 ) => {
   console.log("FILENAME REQUESTED", filename_or_id);
-  return sw_docs_starting(db, ASCIItoHex(filename_or_id), true, true, true)
+  return sw_docs_starting(db, filename_or_id, true, true, true)
     .then(sw_only_docs)
     .then((docs) => {
       if (docs.length === 0) {
@@ -65,7 +65,7 @@ export const sw_post_file_doc = async (
     _attachments: { file_0: { type: file.type, data: file } },
   };
 
-  db.put(new_doc);
+  return db.put(new_doc);
 };
 
 export interface SWFileAttachment {

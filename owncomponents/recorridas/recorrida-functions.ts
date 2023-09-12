@@ -11,14 +11,14 @@ export const saveRecorrida = async (r : Recorrida) => {
 	// Get el documento existente
 	if(r._rev){
 		let doc : Recorrida = await gbl_state.db.get(r)
-		if(doc.date !== r.date){
+		if(doc.fecha !== r.fecha){
 			// Las fechas son diferentes, borrar el doc existe
 			await gbl_state.db.remove(doc)
 		} 
 	}
 
 	let nota_uuid = r.uuid
-	let fecha = format(parseISO(r.date),"yyyyMMdd")
+	let fecha = format(parseISO(r.fecha),"yyyyMMdd")
 
 	r._id = "actividad:" + fecha + ":" + nota_uuid;
 

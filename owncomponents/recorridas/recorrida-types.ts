@@ -54,7 +54,7 @@ export interface Recorrida extends PouchDB.Core.Document<FeatureCollection> {
   tipo:"nota";
   type: "FeatureCollection";
   features: PuntoRecorrida[];
-  date: string;
+  fecha: string;
   nombre: string;
   proxima_visita?: string;
   last_updated: LastUpdateTag;
@@ -98,7 +98,7 @@ export const empty_recorrida = (lote_uuid : string) => {
     lote_uuid : lote_uuid,
     type: "FeatureCollection",
     tipo:"nota",
-    date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+    fecha: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
     nombre: get("recorrida") + " " + format(new Date(), "yyyy-MM-dd"),
     proxima_visita: "",
     last_updated: { last_updated: "", last_updated_by: "" },

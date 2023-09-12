@@ -111,6 +111,7 @@ registerRoute(
       adjuntos_db,
       filename
     )) as SWFileAttachment;
+    
     if (file_doc !== null) {
       //existe
       console.log("El archivo existe en la db");
@@ -157,13 +158,13 @@ registerRoute(
 
     // Get the data from the named element 'file'
     const file: File = data.get("file") as File;
-    console.log("FILE UPLOAD", file);//, file.name, file.type);
+    console.log("FILE UPLOAD", file, file.name, file.type);
 
     let assigned_filename = uuidv7()
     // postData(file,assigned_filename);
 
     // La _id s el nombre del archivo URIencodedeeado
-    sw_post_file_doc(adjuntos_db, file, false, assigned_filename);
+    await sw_post_file_doc(adjuntos_db, file, false, assigned_filename);
 
     return new Response(JSON.stringify({status:"ok",filename:assigned_filename}), {
       headers: { ...request.headers },

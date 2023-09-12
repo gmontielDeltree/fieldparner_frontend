@@ -1,6 +1,6 @@
 import { LitElement, html, unsafeCSS, css } from "lit";
 import { map } from "lit/directives/map.js";
-import { Router } from "@vaadin/router";
+import { Router, RouterLocation } from "@vaadin/router";
 import { StateController } from "@lit-app/state";
 import gbl_state from "../state.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
@@ -168,6 +168,10 @@ export class LoteOffcanvasSide extends LitElement {
 
   @state()
   data_loaded: boolean = false;
+
+
+  @property()
+  location: RouterLocation
 
   constructor() {
     super();
@@ -716,10 +720,16 @@ export class LoteOffcanvasSide extends LitElement {
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/iconodenotas_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${() =>
-                    Router.go(
-                      gbl_state.router.location.getUrl() +
-                        "/nota/add"
-                    )}
+                    {
+                      let campo_id = this.location.params.uuid_campo
+                      let lote_id = this._lote_doc.id
+                      let b : string  = "/campo/"+campo_id+"/lote/"+lote_id
+                      
+                      Router.go(
+                      //gbl_state.router.location.getUrl() +
+                        b + "/nota/add"
+                    )
+                    }}
                 ></div>
 
                 <div

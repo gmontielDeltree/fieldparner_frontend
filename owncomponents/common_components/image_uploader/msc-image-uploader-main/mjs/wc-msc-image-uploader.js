@@ -2,6 +2,7 @@ import { _wcl } from './common-lib.js';
 import { _wccss } from './common-css.js';
 import Mustache from './mustache.js';
 import './wc-msc-circle-progress.js';
+import { idText } from 'typescript';
 
 /*
  reference:
@@ -38,7 +39,8 @@ const custumEvents = {
   pick: 'msc-image-uploader-pick',
   error: 'msc-image-uploader-error',
   remove: 'msc-image-uploader-remove',
-  done: 'msc-image-uploader-upload-done'
+  done: 'msc-image-uploader-upload-done',
+  image_click: 'msc-image-uploader-click'
 };
 
 const { down:evtDown, move:evtMove, up:evtUp } = _wcl.pursuer();
@@ -58,7 +60,7 @@ ${_wccss}
 :host{position:relative;display:block;}
 .main {
   --gap: var(--msc-image-uploader-gap, 12px);
-  --column-count: var(--msc-image-uploader-column-count, 4);
+  --column-count: var(--msc-image-uploader-column-count, 3);
   --main-padding: .25em;
   --decoy-opacity: var(--msc-image-uploader-dragging-opacity, .5);
   --border-radius: var(--msc-image-uploader-unit-border-radius, 8px);
@@ -93,7 +95,7 @@ ${_wccss}
   --label-bgc: var(--msc-image-uploader-label-bgc, rgba(232 234 237/.04));
   --label-color: var(--msc-image-uploader-label-color, #606367);
   --label-mask: path('M9 42q-1.25 0-2.125-.875T6 39V9q0-1.25.875-2.125T9 6h20.45v3H9v30h30V18.6h3V39q0 1.25-.875 2.125T39 42Zm26-24.9v-4.05h-4.05v-3H35V6h3v4.05h4.05v3H38v4.05ZM12 33.9h24l-7.2-9.6-6.35 8.35-4.7-6.2ZM9 9v30V9Z');
-  --label-hint-text: var(--msc-image-uploader-label-hint-text, 'pick images');
+  --label-hint-text: var(--msc-image-uploader-label-hint-text, '+ images');
 
   /* warn */
   --warn-bar-size: .75em;
@@ -159,7 +161,7 @@ ${_wccss}
 .msc-image-uploader__circle-progress{position:absolute;inset-inline-end:var(--main-padding);inset-block-end:var(--main-padding);inline-size:var(--progress-size);block-size:var(--progress-size);border-radius:var(--progress-size);background-color:var(--bgc-progress);box-shadow:0 0 0 2px var(--bgc-progress);pointer-events:none;transition:transform 200ms ease-in-out;transform:scale(var(--progress-scale));}
 
 /* button */
-.msc-image-uploader__unit__button{position:absolute;inset-inline-end:var(--main-padding);inset-block-start:var(--main-padding);inline-size:var(--button-size);aspect-ratio:1/1;border-radius:var(--button-size);color:transparent;appearance:none;border:0 none;overflow:hidden;display:block;outline:0 none;background-color:var(--button-bgc);will-change:background-color,transform;transition:background-color 200ms ease,transform 200ms ease-in-out;transform:scale(var(--button-scale));pointer-events:var(--button-pointer-events);z-index:2;}
+.msc-image-uploader__unit__button{position:absolute;inset-inline-end:var(--main-padding);inset-block-start:var(--main-padding);inline-size:var(--button-size);aspect-ratio:1/1;border-radius:var(--button-size);color:transparent;appearance:none;border:0 none;overflow:hidden;  display: var(--remove-button-display,block);outline:0 none;background-color:var(--button-bgc);will-change:background-color,transform;transition:background-color 200ms ease,transform 200ms ease-in-out;transform:scale(var(--button-scale));pointer-events:var(--button-pointer-events);z-index:2;}
 .msc-image-uploader__unit__button::before{position:absolute;inset-inline:0;inset-block:0;margin:auto;inline-size:1.5em;block-size:1.5em;content:'';background-color:rgba(255 255 255);clip-path:var(--button-mask);}
 .msc-image-uploader__unit__button:focus-visible{--button-bgc-opacity:var(--button-bgc-opacity-active);}
 .msc-image-uploader__unit__button:active{transform:scale(.9);transition:unset;}
@@ -335,7 +337,7 @@ if (CSS?.registerProperty) {
       name: '--msc-image-uploader-column-count',
       syntax: '<number>',
       inherits: true,
-      initialValue: '4'
+      initialValue: '3'
     });
 
     CSS.registerProperty({
@@ -869,7 +871,7 @@ export class MscImageUploader extends HTMLElement {
     negative.src = dataURL;
     canvas.width = size;
     canvas.height = size;
-
+    
     if (naturalWidth >= naturalHeight) {
       sX = Math.floor((naturalWidth - naturalHeight) / 2);
       sY = 0;
@@ -881,7 +883,7 @@ export class MscImageUploader extends HTMLElement {
     }
 
     ctx.drawImage(negative, sX, sY, sSize, sSize, 0, 0, size, size);
-
+    console.log("THUMBNAIL",canvas.toDataURL('image/jpeg', 0.75))
     return canvas.toDataURL('image/jpeg', 0.75);
   }
 
@@ -1104,8 +1106,19 @@ export class MscImageUploader extends HTMLElement {
   }
 
   _onClick(evt) {
+
     const button = evt.target.closest('button');
     const target = evt.target.closest('.msc-image-uploader__unit:not(label)');
+
+
+    if(target && !button){
+   
+      let index = [...target.parentElement.children].map((c)=>c.id).slice(1).indexOf(target.id)
+      // console.log("CLICK ON IMAGE",target, index,this.uploadInfo[index])
+
+      this.#fireEvent(custumEvents.image_click,this.uploadInfo[index])
+
+    }
 
     if (button && target) {
       evt.preventDefault();
