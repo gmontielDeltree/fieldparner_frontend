@@ -1,7 +1,7 @@
 import { ndvi_layers_init } from "./ndvi-layers";
 import { gbl_dualmap, gbl_state } from "./../state";
 import { depositos_update, depositos_layer_init } from "./depositos-layer";
-import { LitElement, html, unsafeCSS, css } from "lit";
+import { LitElement, html, unsafeCSS, css, PropertyValueMap } from "lit";
 import { property, query } from "lit/decorators.js";
 import {
   touchEvent,
@@ -145,11 +145,6 @@ export class MapaPrincipal extends LitElement {
   draw: MapboxDraw;
 
   @property()
-  // {
-  //   hasChanged(newVal: any, oldVal: any) {
-  //     return false;
-  //   },
-  // }
   campos: any; //es el allDocs desde campos
 
   @property({
@@ -838,6 +833,14 @@ export class MapaPrincipal extends LitElement {
   };
 
   binding = new StateController(this, gbl_dualmap);
+
+
+
+  protected willUpdate(_changedProperties: PropertyValueMap<any> | globalThis.Map<PropertyKey, unknown>): void {
+    if(_changedProperties.has("campos")){
+      this._redraw_map()
+    }
+  }
 
   update(props) {
     // Se actualizo, pero no es por cambio de props? -> controller

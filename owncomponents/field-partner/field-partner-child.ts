@@ -189,6 +189,7 @@ export class FieldPartnerChild extends LitElement {
       })
       .on("change", () => {
         this.load_campos_y_settings();
+        
         console.log("CHANGES!!");
       });
   }
@@ -226,6 +227,7 @@ export class FieldPartnerChild extends LitElement {
       .then((result) => {
         this.campos = result;
         gbl_state.campos = this.campos;
+        
       });
 
     // Get Settings
