@@ -2,7 +2,6 @@ import { _wcl } from './common-lib.js';
 import { _wccss } from './common-css.js';
 import Mustache from './mustache.js';
 import './wc-msc-circle-progress.js';
-import { idText } from 'typescript';
 
 /*
  reference:
