@@ -1,23 +1,35 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { VehicleTable, Loading, TemplateLayout } from "../components";
-import { ColumnProps } from "../types";
+import {
+  Loading,
+  TemplateLayout,
+  DataTable,
+  ItemRow,
+  TableCellStyled,
+} from "../components";
+import { ColumnProps, Vehiculo } from "../types";
 import {
   Box,
   Button,
   Grid,
+  IconButton,
   InputAdornment,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import {
   Add as AddIcon,
   Search as SearchIcon,
-  // Download as DownloadIcon,
+  Edit as EditIcon,
   LocalShipping as LocalShippingIcon,
 } from "@mui/icons-material";
 import { useForm, useAppDispatch, useAppSelector } from "../hooks";
-import { cargarVehiculos, getVehiculos } from "../redux/vehiculo";
+import {
+  cargarVehiculos,
+  getVehiculos,
+  setVehiculoActivo,
+} from "../redux/vehiculo";
 
 const columns: ColumnProps[] = [
   { text: "Tipo Vehiculo", align: "center" },
@@ -46,7 +58,12 @@ export const ListVehiclesPage: React.FC = () => {
     dispatch(cargarVehiculos(filteredVehiculos));
   };
 
-  const onClickNuevoVehiculo = () => navigate("/init/overview/vehiculo/nuevo");
+  const onClickAddVehicle = () => navigate("/init/overview/vehiculo/nuevo");
+
+  const onClickUpdateVehicle = (item: Vehiculo): void => {
+    dispatch(setVehiculoActivo(item));
+    navigate(`/init/overview/vehiculo/${item._id}`);
+  };
 
   useEffect(() => {
     dispatch(getVehiculos());
@@ -80,7 +97,7 @@ export const ListVehiclesPage: React.FC = () => {
               variant="contained"
               color="success"
               startIcon={<AddIcon />}
-              onClick={onClickNuevoVehiculo}
+              onClick={onClickAddVehicle}
             >
               Nuevo
             </Button>
@@ -125,12 +142,33 @@ export const ListVehiclesPage: React.FC = () => {
           </Grid>
         </Grid>
         <Box component="div" sx={{ p: 1 }}>
-          <VehicleTable
-            key="datatable-equipo"
-            isLoading={isLoading}
+          <DataTable
+            key="datatable-vehicles"
             columns={columns}
-            data={vehiculos}
-          />
+            isLoading={isLoading}
+          >
+            {vehiculos.map((row) => (
+              <ItemRow>
+                <TableCellStyled align="center">
+                  {row.tipoVehiculo}
+                </TableCellStyled>
+                <TableCellStyled align="center">{row.marca} </TableCellStyled>
+                <TableCellStyled align="center">{row.modelo}</TableCellStyled>
+                <TableCellStyled>{row.patente}</TableCellStyled>
+                <TableCellStyled align="center">{row.año}</TableCellStyled>
+                <TableCellStyled align="center">
+                  <Tooltip title="Editar">
+                    <IconButton
+                      aria-label="Editar"
+                      onClick={() => onClickUpdateVehicle(row)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                </TableCellStyled>
+              </ItemRow>
+            ))}
+          </DataTable>
         </Box>
       </Box>
     </TemplateLayout>

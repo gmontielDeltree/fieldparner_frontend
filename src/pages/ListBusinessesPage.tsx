@@ -2,15 +2,29 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TemplateLayout,
-  BusinessTable,
   Loading,
   SearchButton,
   SearchInput,
+  DataTable,
+  ItemRow,
+  TableCellStyled,
 } from "../components";
 import { Business, ColumnProps } from "../types";
-import { Box, Button, Container, Grid, Typography } from "@mui/material";
-import { Add as AddIcon, Business as BusinessIcon } from "@mui/icons-material";
-import { useForm, useAppDispatch, useAppSelector, useBusiness } from "../hooks";
+import {
+  Box,
+  Button,
+  Container,
+  Grid,
+  IconButton,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import {
+  Add as AddIcon,
+  Business as BusinessIcon,
+  Edit as EditIcon,
+} from "@mui/icons-material";
+import { useForm, useAppDispatch, useBusiness } from "../hooks";
 import { setBusinessActive } from "../redux/business";
 
 const columns: ColumnProps[] = [
@@ -24,8 +38,8 @@ const columns: ColumnProps[] = [
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isLoading } = useAppSelector((state) => state.ui);
-  const { businesses, getBusinesses, setBusinesses } = useBusiness();
+  // const { isLoading } = useAppSelector((state) => state.ui);
+  const { isLoading, businesses, getBusinesses, setBusinesses } = useBusiness();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const onClickSearch = (): void => {
@@ -104,13 +118,37 @@ export const ListBusinessesPage: React.FC = () => {
             </Grid>
           </Grid>
           <Box component="div" sx={{ p: 1 }}>
-            <BusinessTable
-              key="datatable-businesses"
-              isLoading={isLoading}
+            <DataTable
+              key="datatable-business"
               columns={columns}
-              data={businesses}
-              onClickEdit={onClickUpdateBusiness}
-            />
+              isLoading={isLoading}
+            >
+              {businesses.map((row) => (
+                <ItemRow key={row.id} hover>
+                  <TableCellStyled align="center">
+                    {row.tipoEntidad}
+                  </TableCellStyled>
+                  <TableCellStyled align="center">
+                    {row.razonSocial || row.nombreCompleto}
+                  </TableCellStyled>
+                  <TableCellStyled align="center">
+                    {row.cuit || row.documento}
+                  </TableCellStyled>
+                  <TableCellStyled>{row.email}</TableCellStyled>
+                  <TableCellStyled align="center">{row.pais}</TableCellStyled>
+                  <TableCellStyled align="center">
+                    <Tooltip title="Editar">
+                      <IconButton
+                        aria-label="Editar"
+                        onClick={() => onClickUpdateBusiness(row)}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCellStyled>
+                </ItemRow>
+              ))}
+            </DataTable>
           </Box>
         </Box>
       </Container>

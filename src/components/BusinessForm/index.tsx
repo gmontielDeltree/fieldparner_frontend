@@ -1,11 +1,13 @@
 import {
   FormControl,
+  FormControlLabel,
   Grid,
   InputAdornment,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
+  Switch,
   TextField,
 } from "@mui/material";
 import { Business, TipoEntidad } from "../../types";
@@ -14,16 +16,21 @@ import { Phone as PhoneIcon } from "@mui/icons-material";
 
 export interface BusinessFormProps {
   values: Business;
+  // setFormValues: React.Dispatch<React.SetStateAction<Business>>;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
+  handleCheckboxChange: (
+    { target }: ChangeEvent<HTMLInputElement>,
+    checked: boolean
+  ) => void;
 }
 
 export const BusinessForm: React.FC<BusinessFormProps> = ({
   values,
   handleInputChange,
   handleSelectChange,
+  handleCheckboxChange,
 }) => {
-
   const {
     tipoEntidad,
     documento,
@@ -33,11 +40,15 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
     email,
     telefono,
     contactoPrincipal,
+    contactoSecundario,
+    esEmpleado,
+    matricula,
+    legajo,
   } = values;
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={12} sm={3}>
         <FormControl fullWidth>
           <InputLabel id="label-tipo-entidad">Tipo entidad</InputLabel>
           <Select
@@ -56,7 +67,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
       </Grid>
       {tipoEntidad.toLowerCase() === TipoEntidad.FISICA.toLowerCase() ? (
         <>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={4}>
             <TextField
               variant="outlined"
               type="text"
@@ -70,7 +81,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               fullWidth
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={5}>
             <TextField
               variant="outlined"
               type="text"
@@ -84,10 +95,55 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               fullWidth
             />
           </Grid>
+          <Grid item xs={12} sm={3}>
+            <FormControlLabel
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+              }}
+              control={
+                <Switch
+                  name="esEmpleado"
+                  checked={esEmpleado}
+                  onChange={handleCheckboxChange}
+                  defaultChecked
+                />
+              }
+              label="Empleado"
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              variant="outlined"
+              type="text"
+              label="Legajo"
+              name="legajo"
+              value={legajo}
+              onChange={handleInputChange}
+              InputProps={{
+                startAdornment: <InputAdornment position="start" />,
+              }}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={5}>
+            <TextField
+              variant="outlined"
+              type="text"
+              label="Matricula Profesional"
+              name="matricula"
+              value={matricula}
+              onChange={handleInputChange}
+              InputProps={{
+                startAdornment: <InputAdornment position="start" />,
+              }}
+              fullWidth
+            />
+          </Grid>
         </>
       ) : (
         <>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={4}>
             <TextField
               label="Cuit"
               variant="outlined"
@@ -102,7 +158,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               fullWidth
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={5}>
             <TextField
               label="Razon Social"
               variant="outlined"
@@ -163,6 +219,21 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           type="text"
           name="contactoPrincipal"
           value={contactoPrincipal}
+          onChange={handleInputChange}
+          InputProps={{
+            startAdornment: <InputAdornment position="start" />,
+          }}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Contacto secundario"
+          variant="outlined"
+          // disabled={disabledFields}
+          type="text"
+          name="contactoSecundario"
+          value={contactoSecundario}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
