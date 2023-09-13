@@ -1386,7 +1386,7 @@ export class MscImageUploader extends HTMLElement {
 
 // define web component
 const S = _wcl.supports();
-const T = _wcl.classToTagName(MscImageUploader.name);
+const T = "msc-image-uploader";//_wcl.classToTagName(MscImageUploader.name);
 if (S.customElements && S.shadowDOM && S.template && !window.customElements.get(T)) {
   window.customElements.define(T, MscImageUploader);
 
