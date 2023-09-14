@@ -9,7 +9,6 @@ export interface RecorridaMachineCtx {
   marker: Marker 
 }
 
-
 export const machine = createMachine(
   {
     id: "recorrida",
@@ -72,10 +71,16 @@ export const machine = createMachine(
               },
               NUEVO_PUNTO: {
                 target: "editandoPunto",
-                actions: {
-                  type: "initPuntoNuevo",
-                  params: {},
-                },
+                actions: [
+                  {
+                    type: "initPuntoNuevo",
+                    params: {},
+                  },
+                  {
+                    type: "notificarPuntoNuevo",
+                    params: {},
+                  },
+                ],
               },
               EDIT_RECORRIDA_DATA: {
                 actions: {
@@ -92,11 +97,17 @@ export const machine = createMachine(
                 internal: true,
               },
               GUARDAR: {
-                actions: {
-                  type: "guardarRecorrida",
-                  params: {},
-                },
-                internal: true,
+                target: "final",
+                actions: [
+                  {
+                    type: "guardarRecorrida",
+                    params: {},
+                  },
+                  {
+                    type: "notificarRecorridaGuardada",
+                    params: {},
+                  },
+                ],
               },
             },
           },
@@ -149,10 +160,16 @@ export const machine = createMachine(
               },
               PUNTO_GUARDADO: {
                 target: "mostrandoRecorrida",
-                actions: {
-                  type: "guardarPunto",
-                  params: {},
-                },
+                actions: [
+                  {
+                    type: "guardarPunto",
+                    params: {},
+                  },
+                  {
+                    type: "notificarPuntoGuardado",
+                    params: {},
+                  },
+                ],
               },
               EDIT_POSICION: {
                 actions: {
@@ -178,7 +195,27 @@ export const machine = createMachine(
               VOLVER: {
                 target: "mostrandoRecorrida",
               },
+              NOTIFICAR_POSICION_MANUAL: {
+                actions: {
+                  type: "notificarPosicion",
+                  params: {},
+                },
+                internal: true,
+              },
             },
+          },
+          final: {
+            entry: [
+              {
+                type: "limpiarMapa",
+                params: {},
+              },
+              {
+                type: "goBack",
+                params: {},
+              },
+            ],
+            type: "final",
           },
           empty: {
             entry: {
@@ -188,10 +225,16 @@ export const machine = createMachine(
             on: {
               NUEVO_PUNTO: {
                 target: "editandoPunto",
-                actions: {
-                  type: "initPuntoNuevo",
-                  params: {},
-                },
+                actions: [
+                  {
+                    type: "initPuntoNuevo",
+                    params: {},
+                  },
+                  {
+                    type: "notificarPuntoNuevo",
+                    params: {},
+                  },
+                ],
               },
             },
           },
@@ -226,6 +269,8 @@ export const machine = createMachine(
     schema: {
       events: {} as
         | { type: "CERRAR" }
+        | { type: "VOLVER" }
+        | { type: "GUARDAR" }
         | { type: "NUEVA_FOTO" }
         | { type: "NUEVO_PUNTO" }
         | { type: "BORRAR_PUNTO" }
@@ -238,8 +283,7 @@ export const machine = createMachine(
         | { type: "SELECCIONAR_FIELD" }
         | { type: "SELECCIONAR_PUNTO" }
         | { type: "EDIT_RECORRIDA_DATA" }
-        | { type: "GUARDAR" }
-        | { type: "VOLVER" },
+        | { type: "NOTIFICAR_POSICION_MANUAL" },
     },
     predictableActionArguments: true,
     preserveActionOrder: true,
@@ -283,6 +327,16 @@ export const machine = createMachine(
       assignAddField: (context, event) => {},
 
       guardarRecorrida: (context, event) => {},
+
+      notificarPuntoNuevo: (context, event) => {},
+
+      notificarPosicion: (context, event) => {},
+
+      notificarRecorridaGuardada: (context, event) => {},
+
+      notificarPuntoGuardado: (context, event) => {},
+
+      goBack: (context, event) => {},
     },
     services: { fetchRecorrida: (context, event) => {} },
     guards: { editarRecorrida: (context, event) => false },

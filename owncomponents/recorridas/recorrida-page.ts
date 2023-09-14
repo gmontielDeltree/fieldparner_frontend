@@ -5,7 +5,7 @@ import { LitElement, PropertyValueMap, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { RecorridaMachineCtx, machine } from "./recorridas-machines";
 import { interpret, assign } from "xstate";
-import { gbl_state } from "../state";
+import { gbl_state, nav_back } from "../state";
 import { SelectorController } from "xstate-lit/dist/select-controller";
 import { getRecorrida, saveRecorrida } from "./recorrida-functions";
 import { showRecorridaFeatureCollectionOnMap } from "../mapa-principal/mapa-helpers";
@@ -29,6 +29,7 @@ import "@vaadin/date-time-picker";
 import "@vaadin/accordion";
 import { PuntoRecorrida } from './recorrida-types';
 import "../common_components/image_uploader/fp-image-uploader"
+import { showNotificationTimed } from "../helpers/notificaciones";
 
 @customElement("recorrida-page")
 export class RecorridaPage extends LitElement {
@@ -105,6 +106,17 @@ export class RecorridaPage extends LitElement {
               // Add geolocate control event
               let geolocate_control: GeolocateControl =
                 ctx.map._custom_controls.geolocate;
+
+              geolocate_control.on("trackuserlocationstart",(e)=>{
+                console.log("TRACK START")
+                this.actor.send({type:"NOTIFICAR_POSICION_MANUAL",data:"auto"})
+              })
+
+              geolocate_control.on("trackuserlocationend",(e)=>{
+                console.log("TRACK END")
+                this.actor.send({type:"NOTIFICAR_POSICION_MANUAL",data:"manual"})
+              })
+
               geolocate_control.on("geolocate", (e) => {
                 let pos = { lng: e.coords.longitude, lat: e.coords.latitude };
                 ctx.marker.setLngLat(pos);
@@ -129,11 +141,6 @@ export class RecorridaPage extends LitElement {
               return p;
             },
           }),
-          // assignRecorridaId: assign({
-          //   recorrida: ({ recorrida }) => {
-          //     return { ...recorrida, _id: this.location.params.uuid };
-          //   },
-          // }),
           centrarMapaEnAccion: (ctx: RecorridaMachineCtx) => {
             ctx.map.flyTo({
               center: ctx.punto_editando.geometry.coordinates,
@@ -167,7 +174,7 @@ export class RecorridaPage extends LitElement {
               );
 
               this.actor.send({ type: "SELECCIONAR_PUNTO", data: punto });
-
+              
               console.log("CLICK", e.features[0]);
             };
 
@@ -228,6 +235,27 @@ export class RecorridaPage extends LitElement {
             },
           }),
 
+          notificarPuntoNuevo: () => {
+            console.log("PUNTO NUEVO NOTIFICACION")
+            showNotificationTimed("Clickea en para usar la posicion del dispositivo","success","top-center")
+          },
+          notificarPuntoGuardado: () => {
+            console.log("PUNTO NOTIFICACION")
+            showNotificationTimed("Punto Guardado","success","top-center")
+          },
+          notificarPosicion: (_, {data}) => {
+            if(data === "manual"){
+              showNotificationTimed("Usando posición manual","primary","top-center")
+            }else{
+              showNotificationTimed("Usando posición automática","primary","top-center")
+            }
+          },
+          notificarRecorridaGuardada: () => {
+            showNotificationTimed("Recorrida Guardada","success","top-center")
+          },
+          goBack:()=>{
+            nav_back()
+          }
           /** FIN ACTIONS */
         },
         services: {
@@ -322,7 +350,8 @@ export class RecorridaPage extends LitElement {
             </a>
             <h5>${t("nueva_recorrida")}</h5>
 
-            <vaadin-button theme="primary success small" @click=${() => this.actor.send({ type: "GUARDAR" })}
+
+            <vaadin-button theme="primary success small" ?disabled=${state_string === '{"loaded":"empty"}'} @click=${() => this.actor.send({ type: "GUARDAR" })}
               >GUARDAR</vaadin-button
             >
           </header>
@@ -334,8 +363,8 @@ export class RecorridaPage extends LitElement {
               .label=${t("nombre")}
               .value=${recorrida.nombre}
               @change=${(e: TextFieldChangeEvent) =>
-            recorrida_update_field("nombre", e.target.value)
-          }
+                  recorrida_update_field("nombre", e.target.value)
+              }
             ></vaadin-text-field>
 
             <vaadin-date-time-picker
@@ -343,9 +372,9 @@ export class RecorridaPage extends LitElement {
               .value=${recorrida.fecha}
               .i18n=${base_i18n as DateTimePickerI18n}
               @change=${(e) => {
-            recorrida_update_field("fecha", e.target.value);
-          }
-          }
+                recorrida_update_field("fecha", e.target.value);
+              }
+            }
             ></vaadin-date-time-picker>
 
             <vaadin-date-picker
@@ -415,10 +444,10 @@ export class RecorridaPage extends LitElement {
                       <span>${f.properties.orden}</span>
                       <span>${f.properties.notas}</span>
 
-                      <fp-image-uploader .sologallery=${true} .images=${f.properties.fotos ?? []}></fp-image-uploader>
-
-                    
-
+                      ${
+                        when(f.properties.fotos?.length ?? 0 > 0, ()=> html`<fp-image-uploader .sologallery=${true} .images=${f.properties.fotos ?? []}></fp-image-uploader>`)
+                      }
+                      
                       ${when(f.properties.audio !== undefined, () => html`
                         <audio controls>
                           <source .src=${"/attachments?file=" + f.properties.audio}></source>
