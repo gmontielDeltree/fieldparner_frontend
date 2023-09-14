@@ -5,6 +5,7 @@ import { useAppSelector } from './useRedux';
 import { ErrorResponseAuth, ResponseAuthLogin, ResponseAuthRenew, User, UserLogin, UserRegister } from '@types';
 import { AxiosError, HttpStatusCode } from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { convertTimestampToDate } from '../helpers/dates';
 
 const controller = '/auth';
 
@@ -26,11 +27,11 @@ export const useAuthStore = () => {
                 email, password
             });
             if (response.data) {
-                const { accessToken, refreshToken } = response.data.auth;
+                const { accessToken, refreshToken, expiration } = response.data.auth;
+                const { username, isAdmin } = response.data;
                 localStorage.setItem('accessToken', accessToken);
                 localStorage.setItem('refreshToken', refreshToken);
-                localStorage.setItem('token_init_date', new Date().getTime().toString());
-                const { username, isAdmin } = response.data;
+                localStorage.setItem('token_expiration', convertTimestampToDate(expiration).getTime().toString());
                 localStorage.setItem("user_session", JSON.stringify({ username, isAdmin }));
                 dispatch(onLogin({ username, isAdmin }));
             }
@@ -120,12 +121,19 @@ export const useAuthStore = () => {
 
         dispatch(onChecking())
         try {
-            // const { data } = await authApi.get('auth/renew');
+            const expiration = localStorage.getItem("token_expiration");
+
+            if ((new Date().getTime() > Number(expiration))) {
+                dispatch(onLogout(""));
+                return;
+            }
+
             const response = await fieldpartnerAPI.post<ResponseAuthRenew>(`${controller}/renew`, { refreshToken });
 
             if (response.status === HttpStatusCode.Created) {
-                localStorage.setItem('accessToken', response.data.accessToken);
-                localStorage.setItem('token-init-date', new Date().getTime().toString());
+                const expiresIn = new Date().getTime() + (response.data.ExpiresIn * 1000);
+                localStorage.setItem('accessToken', response.data.AccessToken);
+                localStorage.setItem('token_expiration', expiresIn.toString());
                 const userLogin = JSON.parse(userSession || '') as User;
                 dispatch(onLogin(userLogin));
             }

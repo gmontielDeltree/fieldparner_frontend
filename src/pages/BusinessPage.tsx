@@ -4,7 +4,6 @@ import { useAppDispatch, useAppSelector, useBusiness, useForm } from "../hooks";
 import { Business, TipoEntidad } from "../types";
 import { AddressForm, Loading } from "../components";
 import {
-  Box,
   Button,
   Container,
   Grid,
@@ -33,6 +32,9 @@ const initialForm: Business = {
   cp: "",
   provincia: "",
   pais: "",
+  esEmpleado: false,
+  legajo: "",
+  matricula: "",
 };
 
 export const BusinessPage: React.FC = () => {
@@ -41,8 +43,14 @@ export const BusinessPage: React.FC = () => {
   const { businessActive } = useAppSelector((state) => state.business);
   const [activeStep, setActiveStep] = useState(0);
   const [steps, setSteps] = useState<string[]>(["Informacion", "Ubicacion"]);
-  const { formulario, setFormulario, handleInputChange, handleSelectChange, reset } =
-    useForm<Business>(initialForm);
+  const {
+    formulario,
+    setFormulario,
+    handleInputChange,
+    handleSelectChange,
+    handleCheckboxChange,
+    reset,
+  } = useForm<Business>(initialForm);
   const { isLoading, createBusiness, updateBusiness } = useBusiness();
 
   const getStepContent = useMemo(
@@ -55,6 +63,7 @@ export const BusinessPage: React.FC = () => {
               values={formulario}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
+              handleCheckboxChange={handleCheckboxChange}
             />
           );
         case 1:
@@ -69,7 +78,7 @@ export const BusinessPage: React.FC = () => {
           throw new Error("Unknown step");
       }
     },
-    [formulario, setFormulario, handleInputChange, handleSelectChange]
+    [formulario, handleInputChange, handleSelectChange, handleCheckboxChange]
   );
 
   const handleNext = () => {
@@ -92,7 +101,6 @@ export const BusinessPage: React.FC = () => {
   };
 
   const handleUpdateBusiness = () => {
-    console.log("formulario", formulario);
     if (formulario.id) updateBusiness(formulario.id, formulario);
   };
 
@@ -115,8 +123,8 @@ export const BusinessPage: React.FC = () => {
           variant="outlined"
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
         >
-          <Typography component="h1" variant="h4" align="center">
-            {businessActive ? "Editar" : "Nuevo"} Empresa/Persona
+          <Typography component="h1" variant="h4" align="center" gutterBottom>
+            {businessActive ? "Editar" : "Nueva"} Empresa/Persona
           </Typography>
           <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 3, mb: 2 }}>
             {steps.map((label) => (

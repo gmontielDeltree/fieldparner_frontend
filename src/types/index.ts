@@ -119,8 +119,8 @@ export interface ResponseAuthLogin {
     auth: Authenticate;
 }
 export interface ResponseAuthRenew {
-    accessToken: string;
-    refreshToken: string;
+    AccessToken: string;
+    ExpiresIn: number;
 }
 
 export interface UserRegister {
@@ -164,7 +164,10 @@ export interface Business {
     provincia: string;
     pais: string;
     estado?: boolean;
- }
+    esEmpleado?: boolean;
+    legajo?: string;
+    matricula?: string;
+}
 
 export interface BusinessState {
     businessActive: Business | null;

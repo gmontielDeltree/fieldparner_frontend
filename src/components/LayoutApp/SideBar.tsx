@@ -92,7 +92,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
               <ListItemIcon>
                 <GroupIcon />
               </ListItemIcon>
-              <ListItemText primary="Empresas/Personas" />
+              <ListItemText primary="Mi Empresa" />
             </ListItemButton>
           </ListItem>
           <ListItem key='vehiculos' disablePadding>
