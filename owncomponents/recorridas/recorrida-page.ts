@@ -50,11 +50,19 @@ export class RecorridaPage extends LitElement {
         },
         actions: {
           emptyRecorrida: assign({
-            recorrida: () => empty_recorrida(this.location.params.uuid_lote),
+            recorrida: () => {
+              console.log("this.location.params.uuid_lote",this.location.params.uuid_lote)
+              return empty_recorrida(this.location.params.uuid_lote)
+            },
           }),
+          assignRecorrida: assign({ recorrida: (_,e)=>{
+            // console.log("assignRecorrida", e)
+            return e.data
+          }}),
           assignMap: assign({ map: () => gbl_state.map }),
           initCtx: assign({
             recorrida: ({ recorrida }) => {
+              console.log("INIT this.location.params.uuid",this.location)
               return { ...recorrida, _id: this.location.params.uuid };
             },
             punto_editando: {},
@@ -192,6 +200,7 @@ export class RecorridaPage extends LitElement {
             ctx.map.on("click", "recorrida", ctx.map._events.recorrida_click);
           },
           guardarRecorrida: (ctx: RecorridaMachineCtx) => {
+              console.log("guardarRecorrida",ctx.recorrida)
             saveRecorrida(ctx.recorrida).then(() =>
               console.log("recorrida_saved")
             );
@@ -260,7 +269,10 @@ export class RecorridaPage extends LitElement {
         },
         services: {
           fetchRecorrida: async (ctx: RecorridaMachineCtx) =>
-            await getRecorrida(ctx.recorrida._id),
+           { 
+            console.log("fetchRecorrida",ctx)
+            return await getRecorrida(ctx.recorrida._id)
+           }
         },
       })
   );
@@ -268,12 +280,15 @@ export class RecorridaPage extends LitElement {
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ) {
+    console.count("FirstUpdate Recorida")
     if (gbl_state.map === undefined) {
       setTimeout(() => {
         this.actor.start();
-      }, 10000);
+        this.actor.send({type:"START"})
+      }, 5000);
     } else {
       this.actor.start();
+      this.actor.send({type:"START"})
     }
 
   }

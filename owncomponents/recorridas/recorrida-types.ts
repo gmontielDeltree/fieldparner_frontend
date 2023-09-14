@@ -90,8 +90,8 @@ export const empty_punto = (coord: LngLatLike, orden? : number) => {
   return punto;
 };
 
-export const empty_recorrida = (lote_uuid : string) => {
-  let un_id = uuidv7()
+export const empty_recorrida = (lote_uuid : string, uuid ?: string ) => {
+  let un_id = uuid ?? uuidv7()
   let er : Recorrida = {
     _id: un_id,
     uuid: un_id,

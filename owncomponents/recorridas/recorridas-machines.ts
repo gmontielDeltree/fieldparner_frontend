@@ -9,33 +9,36 @@ export interface RecorridaMachineCtx {
   marker: Marker 
 }
 
+
 export const machine = createMachine(
   {
     id: "recorrida",
     initial: "inicial",
     states: {
       inicial: {
-        always: [
-          {
-            target: "loadRecorrida",
-            cond: "editarRecorrida",
-            actions: {
-              type: "assignMap",
-              params: {},
+        on: {
+          START: [
+            {
+              target: "loadRecorrida",
+              cond: "editarRecorrida",
+              actions: {
+                type: "assignMap",
+                params: {},
+              },
             },
-          },
-          {
-            target: "#recorrida.loaded.empty",
-            actions: {
-              type: "assignMap",
-              params: {},
+            {
+              target: "#recorrida.loaded.empty",
+              actions: {
+                type: "assignMap",
+                params: {},
+              },
             },
-          },
-        ],
+          ],
+        },
       },
       loadRecorrida: {
         entry: {
-          type: "initiCtx",
+          type: "initCtx",
           params: {},
         },
         invoke: {
@@ -44,6 +47,10 @@ export const machine = createMachine(
           onDone: [
             {
               target: "loaded",
+              actions: {
+                type: "assignRecorrida",
+                params: {},
+              },
             },
           ],
           onError: [
@@ -283,14 +290,15 @@ export const machine = createMachine(
         | { type: "SELECCIONAR_FIELD" }
         | { type: "SELECCIONAR_PUNTO" }
         | { type: "EDIT_RECORRIDA_DATA" }
-        | { type: "NOTIFICAR_POSICION_MANUAL" },
+        | { type: "NOTIFICAR_POSICION_MANUAL" }
+        | { type: "START" },
     },
     predictableActionArguments: true,
     preserveActionOrder: true,
   },
   {
     actions: {
-      initiCtx: (context, event) => {},
+      initCtx: (context, event) => {},
 
       refreshMapa: (context, event) => {},
 
@@ -304,17 +312,23 @@ export const machine = createMachine(
 
       limpiarMapa: (context, event) => {},
 
+      goBack: (context, event) => {},
+
       generarReporteEnNuevaPestana: (context, event) => {},
 
       seleccionarPunto: (context, event) => {},
 
       initPuntoNuevo: (context, event) => {},
 
+      notificarPuntoNuevo: (context, event) => {},
+
       editRecorridaData: (context, event) => {},
 
       addFoto: (context, event) => {},
 
       guardarPunto: (context, event) => {},
+
+      notificarPuntoGuardado: (context, event) => {},
 
       assignPosicion: (context, event) => {},
 
@@ -328,15 +342,11 @@ export const machine = createMachine(
 
       guardarRecorrida: (context, event) => {},
 
-      notificarPuntoNuevo: (context, event) => {},
+      notificarRecorridaGuardada: (context, event) => {},
 
       notificarPosicion: (context, event) => {},
 
-      notificarRecorridaGuardada: (context, event) => {},
-
-      notificarPuntoGuardado: (context, event) => {},
-
-      goBack: (context, event) => {},
+      assignRecorrida: (context, event) => {},
     },
     services: { fetchRecorrida: (context, event) => {} },
     guards: { editarRecorrida: (context, event) => false },
