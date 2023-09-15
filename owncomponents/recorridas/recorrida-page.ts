@@ -303,17 +303,26 @@ export class RecorridaPage extends LitElement {
   state = new SelectorController(this, this.actor, (state) => state.value);
 
   static override styles = css`
-         header {
+
+    :host{
+      --header-bg-color : #146C94;
+      --body-bg-color : #F6F1F1;
+      --detail-bg-color : #AFD3E2;
+      --accent-color : #19A7CE;
+    }
+
+    header {
         align-items: center;
         display: flex;
         justify-content: space-between;
+        color: var(--body-bg-color);
         border-bottom: 1px solid var(--lumo-contrast-90pct);
-        background-color: var(--lumo-primary-color-10pct);
+        background-color: var(--header-bg-color);
         padding: var(--lumo-space-s);
-      }
+    }
 
       header h2 {
-        margin: 0;
+          margin: 0;
       }
 
       header vaadin-icon {
@@ -322,8 +331,20 @@ export class RecorridaPage extends LitElement {
         margin-right: var(--lumo-space-m);
         padding: calc(var(--lumo-space-xs) / 2);
         width: var(--lumo-icon-size-m);
+        color: var(--body-bg-color);
+      }
+
+      .punto-detail {
+        background-color:var(--detail-bg-color);
+        border-radius: 0.5rem;
+        padding: 5px;
+      }
+
+      .body{
+        background-color:var(--body-bg-color);
       }
   `
+
 
   //summary="${ifDefined(f.properties.nombre)}"
 
@@ -350,20 +371,23 @@ export class RecorridaPage extends LitElement {
       case '{"loaded":"empty"}':
       case '{"loaded":"mostrandoRecorrida"}':
         return html`
-          <div style="background-color:#ffffff">
+          <div style="background-color:var(--body-bg-color); min-width:20vw;height:100%;">
 
           <header>
             <a
-              href="${this.backurl || "/"}"
-              @click=${() => this.actor.send({ type: "CERRAR" })}
+              @click=${() => {
+                this.actor.send({ type: "CERRAR" })
+                nav_back()
+                }}
               aria-label="Go back"
+              
             >
               <vaadin-icon
                 icon="vaadin:arrow-left"
                 aria-hidden="true"
               ></vaadin-icon>
             </a>
-            <h5>${t("nueva_recorrida")}</h5>
+            <div>${t("nueva_recorrida")}</div>
 
 
             <vaadin-button theme="primary success small" ?disabled=${state_string === '{"loaded":"empty"}'} @click=${() => this.actor.send({ type: "GUARDAR" })}
@@ -371,7 +395,7 @@ export class RecorridaPage extends LitElement {
             >
           </header>
 
-          <div id="body" style="padding:1rem;display: flex;flex-direction: column;">
+          <div class="body" style="padding:1rem;display: flex;flex-direction: column;">
             <!-- <h5>${recorrida._id}</h5> -->
 
             <vaadin-text-field
@@ -409,6 +433,7 @@ export class RecorridaPage extends LitElement {
             )}
 
               <vaadin-button
+                theme="primary small"
                 @click=${() => this.actor.send({ type: "NUEVO_PUNTO" })}
               >
                 NUEVO PUNTO
@@ -418,11 +443,11 @@ export class RecorridaPage extends LitElement {
             <vaadin-accordion .opened=${null}>
               ${map(ctx.recorrida.features, (f) => {
               return html`
-                  <vaadin-accordion-panel>
+                  <vaadin-accordion-panel class="punto-detail">
                     <vaadin-accordion-heading slot="summary">
                       
                     <div style="display:flex;justify-content:space-between;width: 100%;align-items: center;">
-                      <div>
+                      <div style="font-weight:bold;">
                         ${ifDefined(f.properties.nombre)}
                       </div>
 
@@ -456,8 +481,8 @@ export class RecorridaPage extends LitElement {
 
                     <vaadin-vertical-layout>
                     
-                      <span>${f.properties.orden}</span>
-                      <span>${f.properties.notas}</span>
+                      
+                      <span>${t("notas")}: ${f.properties.notas}</span>
 
                       ${
                         when(f.properties.fotos?.length ?? 0 > 0, ()=> html`<fp-image-uploader .sologallery=${true} .images=${f.properties.fotos ?? []}></fp-image-uploader>`)
@@ -469,7 +494,9 @@ export class RecorridaPage extends LitElement {
                         </audio>
                       `)}
 
-                      <span>${JSON.stringify(f.geometry.coordinates)}</span>
+                      ${map(f.properties.detalles,(d)=>html`
+                      <div><span style="font-weight:bold">${t(d.name)}:</span> ${d.value}</div>
+                      `)}
                     </vaadin-vertical-layout>
                   </vaadin-accordion-panel>
                 `;
@@ -481,7 +508,7 @@ export class RecorridaPage extends LitElement {
 
       case '{"loaded":{"editandoPunto":"idle"}}':
         return html`
-        <div style="background-color:white;min-width:25vw;">
+        <div style="background-color:var(--body-bg-color);min-width:20vw;height:100%;">
           <header>
             <a
               @click=${() => this.actor.send({ type: "VOLVER" })}
@@ -492,7 +519,7 @@ export class RecorridaPage extends LitElement {
                 aria-hidden="true"
               ></vaadin-icon>
             </a>
-            <h5>${t("punto")}</h5>
+            <div>${t("punto")}</div>
 
             <slot name="menu" class='push'></slot>
             <vaadin-button theme="primary success small" @click=${() => this.actor.send({ type: "PUNTO_GUARDADO" })}
@@ -505,7 +532,7 @@ export class RecorridaPage extends LitElement {
             >GUARDAR</vaadin-button
           > -->
 
-        <div id="body" style="padding:1rem;display:flex;flex-direction: column;">
+        <div class="body" style="padding:1rem;display:flex;flex-direction: column;">
           <!-- <div>${ctx.punto_editando.geometry.coordinates[0]}</div> -->
 
           <vaadin-text-field

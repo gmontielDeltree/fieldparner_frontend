@@ -229,6 +229,7 @@ export const format_min = (date) => format(date, "yyyy-MM-dd'T'HH:mm");
 
 export const createMenuDots = (iconName: string) => {
   const item = document.createElement("vaadin-context-menu-item");
+  item.setAttribute("style", "padding:0px;")
   const icon = document.createElement("vaadin-icon");
   icon.setAttribute("icon", `vaadin:${iconName}`);
   item.appendChild(icon);
