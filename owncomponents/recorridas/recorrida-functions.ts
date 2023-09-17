@@ -27,3 +27,7 @@ export const saveRecorrida = async (r : Recorrida) => {
 
 	return gbl_state.db.put(r)
 }
+
+export const deleteRecorrida = (r:Recorrida)=>{
+	return gbl_state.db.remove((<unknown>r) as PouchDB.Core.RemoveDocument);
+}

@@ -1,6 +1,6 @@
-import { LitElement, html, PropertyValueMap } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { Actividad, Ejecucion } from "../../depositos/depositos-types";
+import { LitElement, html } from "lit";
+import { customElement, property } from "lit/decorators.js";
+import { Actividad } from "../../depositos/depositos-types";
 import "@vaadin/tabs";
 import "@vaadin/tabsheet";
 import { Router } from "@vaadin/router";
@@ -14,28 +14,27 @@ import "@vaadin/vertical-layout";
 import "@vaadin/upload";
 import "@vaadin/menu-bar";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
-import { format, isBefore, parse, parseISO } from "date-fns";
-import { map } from "lit/directives/map.js";
-import { translate } from "lit-translate";
-import { actividad_detalles } from "./detalles-actividad/detalles-actividad";
-import { ejecucion_detalles } from "./detalles-actividad/detalles-ejecucion";
+import { get, translate as t } from "lit-translate";
 import "../../image-gallery/images-gallery";
 import {
-  Nota,
-  nota_adjuntar_archivo,
-  nota_remover_adjunto,
+  Nota
 } from "../../recorridas/notas-fuciones";
+import { createMenuDots } from "../../helpers";
+import { PuntoRecorrida, Recorrida } from "../../recorridas/recorrida-types";
+import {map} from "lit/directives/map.js"
+import { deleteRecorrida } from "../../recorridas/recorrida-functions";
 
 @customElement("recorrida-item")
 export class NotaItem extends LitElement {
   static override styles = [badge];
+  
   @property()
-  item: Nota;
+  item: Recorrida;
 
   private menu_items = [
     {
-      component: this.createItem("ellipsis-dots-v"),
-      tooltip: "Mas",
+      component: createMenuDots("ellipsis-dots-v"),
+      tooltip: get("mas"),
       children: [
         {
           text: "Editar Nota",
@@ -43,6 +42,13 @@ export class NotaItem extends LitElement {
           value: "editar",
           callback: () => 
             Router.go(gbl_state.router.location.getUrl() + "/nota/"+ this.item._id+"/edit"),
+        },
+        {
+          text: get("reporte_de_recorrida"),
+          tooltip: "Edit",
+          value: "reporte_recorrida",
+          callback: () => 
+            Router.go(gbl_state.router.location.getUrl() + "/nota/"+ this.item._id+"/reporte"),
         },
         {
           text: "Generar Planificación",
@@ -80,18 +86,13 @@ export class NotaItem extends LitElement {
     }
   }
 
-  createItem(iconName: string) {
-    const item = document.createElement("vaadin-context-menu-item");
-    const icon = document.createElement("vaadin-icon");
-    icon.setAttribute("icon", `vaadin:${iconName}`);
-    item.appendChild(icon);
-    return item;
-  }
-
   borrar_nota() {
     console.log("Borrar Nota");
-    gbl_state.db.remove((<unknown>this.item) as PouchDB.Core.RemoveDocument);
-    this.solicitar_refresco();
+    deleteRecorrida(this.item).then(()=>{
+      console.log("Borrada")
+      this.solicitar_refresco()
+
+    })
   }
 
   solicitar_refresco() {
@@ -181,6 +182,7 @@ export class NotaItem extends LitElement {
       color_badge = html`<span theme="badge success">Todo Bien</span>`;
     }
 
+    /* Mostrar todos los datos de la recorrida de alguna forma en el item */
     return html`
       <vaadin-horizontal-layout
         theme=""
@@ -189,7 +191,7 @@ export class NotaItem extends LitElement {
         <div>
           <span theme="badge">${this.item.fecha}</span>
           ${color_badge}
-          <a> RECORRIDA</a>
+          <a> ${t("recorrida")}</a>
         </div>
         <vaadin-menu-bar
           .items="${this.menu_items}"
@@ -202,11 +204,12 @@ export class NotaItem extends LitElement {
 
       <vaadin-tabsheet>
         <vaadin-tabs slot="tabs">
-          <vaadin-tab id="nota-tab">Recorrida</vaadin-tab>
+          <vaadin-tab id="nota-tab">${t("recorrida")}</vaadin-tab>
+          <vaadin-tab id="puntos-tab">${t("puntos")}</vaadin-tab>
         </vaadin-tabs>
 
         <div tab="nota-tab">
-          ${this.item.texto}
+          ${this.item}
 
           <p class="small"></p>
 
@@ -226,8 +229,26 @@ export class NotaItem extends LitElement {
               this.localizar(this.item);
             }}
           >
-            Localizar
+            ${t("ver")}
           </vaadin-button>
+        </div>
+
+        <div tab="puntos-tab">
+          ${map(this.item.features,(f:PuntoRecorrida)=>{
+            
+            let props = f.properties
+            return html`
+
+          
+
+          <div class="row my-1">
+            ${props.audio
+              ? html`<audio controls><source .src=${"/attachments?file="+props.audio}></source></audio>`
+              : null}
+          </div>
+          
+          `})}
+    
         </div>
 
         
