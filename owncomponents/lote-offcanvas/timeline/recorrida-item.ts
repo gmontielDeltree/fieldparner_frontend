@@ -21,13 +21,16 @@ import {
 } from "../../recorridas/notas-fuciones";
 import { createMenuDots } from "../../helpers";
 import { PuntoRecorrida, Recorrida } from "../../recorridas/recorrida-types";
-import {map} from "lit/directives/map.js"
+import { map } from "lit/directives/map.js"
 import { deleteRecorrida } from "../../recorridas/recorrida-functions";
+import { features } from "process";
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { when } from 'lit/directives/when.js';
 
 @customElement("recorrida-item")
 export class NotaItem extends LitElement {
   static override styles = [badge];
-  
+
   @property()
   item: Recorrida;
 
@@ -40,15 +43,15 @@ export class NotaItem extends LitElement {
           text: "Editar Nota",
           tooltip: "Edit",
           value: "editar",
-          callback: () => 
-            Router.go(gbl_state.router.location.getUrl() + "/nota/"+ this.item._id+"/edit"),
+          callback: () =>
+            Router.go(gbl_state.router.location.getUrl() + "/nota/" + this.item._id + "/edit"),
         },
         {
           text: get("reporte_de_recorrida"),
           tooltip: "Edit",
           value: "reporte_recorrida",
-          callback: () => 
-            Router.go(gbl_state.router.location.getUrl() + "/nota/"+ this.item._id+"/reporte"),
+          callback: () =>
+            Router.go(gbl_state.router.location.getUrl() + "/nota/" + this.item._id + "/reporte"),
         },
         {
           text: "Generar Planificación",
@@ -88,7 +91,7 @@ export class NotaItem extends LitElement {
 
   borrar_nota() {
     console.log("Borrar Nota");
-    deleteRecorrida(this.item).then(()=>{
+    deleteRecorrida(this.item).then(() => {
       console.log("Borrada")
       this.solicitar_refresco()
 
@@ -182,6 +185,50 @@ export class NotaItem extends LitElement {
       color_badge = html`<span theme="badge success">Todo Bien</span>`;
     }
 
+
+
+    let puntos_template = (features: PuntoRecorrida[]) => html`
+    <vaadin-accordion .opened=${null}>
+  ${map(features, (f) => {
+      return html`
+      <vaadin-accordion-panel class="punto-detail">
+        <vaadin-accordion-heading slot="summary">
+          
+        <div style="display:flex;justify-content:space-between;width: 100%;align-items: center;">
+          <div style="font-weight:bold;">
+            ${ifDefined(f.properties.nombre)}
+          </div>
+
+
+          </div>
+
+        </vaadin-accordion-heading>
+
+        <vaadin-vertical-layout>
+        
+          
+          <span>${t("notas")}: ${f.properties.notas}</span>
+
+          ${when(f.properties.fotos?.length ?? 0 > 0, () => html`<fp-image-uploader .sologallery=${true} .images=${f.properties.fotos ?? []}></fp-image-uploader>`)
+        }
+          
+          ${when(f.properties.audio !== undefined, () => html`
+            <audio controls>
+              <source .src=${"/attachments?file=" + f.properties.audio}></source>
+            </audio>
+          `)}
+
+          ${map(f.properties.detalles, (d) => html`
+          <div><span style="font-weight:bold">${t(d.name)}:</span> ${d.value}</div>
+          `)}
+        </vaadin-vertical-layout>
+      </vaadin-accordion-panel>
+    `;
+    })}
+</vaadin-accordion>
+  `
+
+
     /* Mostrar todos los datos de la recorrida de alguna forma en el item */
     return html`
       <vaadin-horizontal-layout
@@ -206,54 +253,62 @@ export class NotaItem extends LitElement {
         <vaadin-tabs slot="tabs">
           <vaadin-tab id="nota-tab">${t("recorrida")}</vaadin-tab>
           <vaadin-tab id="puntos-tab">${t("puntos")}</vaadin-tab>
+          <vaadin-tab id="clima-tab">${t("meteorologia")}</vaadin-tab>
         </vaadin-tabs>
 
         <div tab="nota-tab">
-          ${this.item}
-
+          <div>${this.item.nombre}</div>
+          <div>${t("puntos")}: ${this.item.features.length}</div>
+          <div>${this.item.proxima_visita}</div>
+         
           <p class="small"></p>
 
           <div class="row mx-1">
            
           </div>
 
-          <!-- <div class="row my-1">
-            ${this.item
-              ? html`<audio controls><source .src=${"/attachments?file="+this.item.audio_url}></source></audio>`
-              : null}
-          </div> -->
-
           <vaadin-button
             class="btn btn-danger"
             @click=${() => {
-              this.localizar(this.item);
-            }}
+        this.localizar(this.item);
+      }}
           >
             ${t("ver")}
           </vaadin-button>
         </div>
 
         <div tab="puntos-tab">
-          ${map(this.item.features,(f:PuntoRecorrida)=>{
-            
+
+
+          ${puntos_template(this.item.features)}
+          <!-- ${map(this.item.features, (f: PuntoRecorrida) => {
+
             let props = f.properties
             return html`
 
-          
-
-          <div class="row my-1">
-            ${props.audio
-              ? html`<audio controls><source .src=${"/attachments?file="+props.audio}></source></audio>`
-              : null}
-          </div>
-          
-          `})}
+              <div class="row my-1">
+                ${props.audio
+                ? html`<audio controls><source .src=${"/attachments?file=" + props.audio}></source></audio>`
+                : null}
+              </div>
+              
+              `})} -->
     
+        </div>
+
+        <div tab="clima-tab">
+                  
         </div>
 
         
       </vaadin-tabsheet>
     `;
+
+
+
+
+
+
   }
 }
 
@@ -273,7 +328,7 @@ const url_planificacion = (item_nota: Nota) => {
   return url;
 };
 
-const imagen_objeto_gallery_url = (url : string) => {
+const imagen_objeto_gallery_url = (url: string) => {
   let full_url = "/attachments?file=" + url
   let objeto = {
     id: "3",
