@@ -255,6 +255,9 @@ export class MapaPrincipal extends LitElement {
         border-right-color: #053B50;
       }
 
+      .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+        border-top-color: #053b50
+      }
     `,
   ];
 
