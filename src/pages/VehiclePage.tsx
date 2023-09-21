@@ -17,7 +17,7 @@ import {
   removerVehiculoActivo,
   startAddVehiculo,
   startUpdateVehiculo,
-} from "../redux/vehiculo";
+} from "../redux/vehicle";
 import {
   DatosGenerales,
   Especificaciones,

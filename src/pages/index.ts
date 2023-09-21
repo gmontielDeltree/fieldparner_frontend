@@ -5,6 +5,10 @@ export * from './BusinessPage';
 export * from './ListBusinessesPage';
 export * from './ListDepositsPage';
 export * from './DepositPage';
+export * from './SupplyPage';
+export * from './ListSuppliesPage';
+
+
 
 //Paginas publicas
 export * from './LoginPage';

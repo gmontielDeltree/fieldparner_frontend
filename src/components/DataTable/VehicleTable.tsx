@@ -18,7 +18,7 @@ import {
 } from '@mui/icons-material';
 import { ColumnProps, Vehiculo } from '../../types';
 import { useAppDispatch } from '../../hooks';
-import { setVehiculoActivo } from '../../redux/vehiculo';
+import { setVehiculoActivo } from '../../redux/vehicle';
 import { useNavigate } from 'react-router-dom';
 
 
