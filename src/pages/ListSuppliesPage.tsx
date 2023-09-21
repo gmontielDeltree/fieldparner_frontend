@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ColumnProps } from "../types";
+import { ColumnProps, Supply } from "../types";
 import React, { useEffect } from "react";
 import { useAppDispatch, useForm, useSupply } from "../hooks";
 import {
@@ -25,6 +25,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
+import { setSupplyActive } from "../redux/supply";
 
 const columns: ColumnProps[] = [
   { text: "Tipo", align: "left" },
@@ -43,6 +44,10 @@ export const ListSuppliesPage: React.FC = () => {
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const onClickSearch = () => {};
+  const onClickUpdateSupply = (item: Supply) => {
+    navigate(`/init/overview/supply/${item._id}`);
+    dispatch(setSupplyActive(item));
+  };
 
   useEffect(() => {
     getSupplies();
@@ -110,7 +115,9 @@ export const ListSuppliesPage: React.FC = () => {
                   <TableCellStyled align="center">
                     {row.unidadMedida}
                   </TableCellStyled>
-                  <TableCellStyled>{row.stockActual}</TableCellStyled>
+                  <TableCellStyled align="center">
+                    {row.stockActual}
+                  </TableCellStyled>
                   <TableCellStyled align="center">
                     {row.stockReservado}
                   </TableCellStyled>
@@ -121,7 +128,7 @@ export const ListSuppliesPage: React.FC = () => {
                     <Tooltip title="Editar">
                       <IconButton
                         aria-label="Editar"
-                        onClick={() => console.log("editar insumo")}
+                        onClick={() => onClickUpdateSupply(row)}
                       >
                         <EditIcon />
                       </IconButton>

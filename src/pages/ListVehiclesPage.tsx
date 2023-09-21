@@ -29,7 +29,7 @@ import {
   cargarVehiculos,
   getVehiculos,
   setVehiculoActivo,
-} from "../redux/vehiculo";
+} from "../redux/vehicle";
 
 const columns: ColumnProps[] = [
   { text: "Tipo Vehiculo", align: "center" },

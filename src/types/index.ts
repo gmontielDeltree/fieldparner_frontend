@@ -96,11 +96,10 @@ export interface UserLogin {
     password: string;
 }
 
-// export interface Document<T> {
-//     _id: string;
-//     title: string;
-//     content: T;
-// }
+export interface Document {
+    _id?: string;
+    _rev?: string;
+}
 
 export interface Authenticate {
     accessToken: string;
@@ -173,3 +172,68 @@ export interface BusinessState {
     businessActive: Business | null;
     businesses: Business[];
 }
+
+export interface SupplyState {
+    supplyActive: Supply | null;
+    supplies: Supply[];
+}
+
+export interface Supply extends Document {
+    codigoBarra?: string;
+    tipo: string;
+    insumo: string;
+    descripcion?: string;
+    unidadMedida: string;
+    stockActual: number;
+    stockReservado: number;
+    stockDisponible: number;
+    tieneLotes: boolean;
+    numeroLote: string;
+    principioActivo: string;
+    mermaVolatil: string;
+    dosisMinima: string;
+    dosisMaxima: string;
+    dosisRecomendada: string;
+    puntoReposicion: string;
+    labores: string[];
+}
+
+export enum TipoInsumo {
+    CULTIVO = "CuLtivo",
+}
+
+export const LaboresItems = [
+    "Preparado",
+    "Siembra",
+    "Aplicacion",
+    "Arrancado",
+    "Cosecha",
+];
+
+export const UnidadesDeMedida = [
+    "KILOGRAMO",
+    "METROS",
+    "METRO CUADRADO",
+    "METRO CUBICO",
+    "LITROS",
+    "UNIDAD",
+    "PAR",
+    "DOCENA",
+    "GRAMO",
+    "MILIMETRO",
+    "MMCUBICO",
+    "KILOMETRO",
+    "HECTOLITRO",
+    "CENTIMETRO",
+    "JGO.PQT.MAZO NAIPES",
+    "CMCUBICO",
+    "TONELADA",
+    "HMCUBICO",
+    "KMCUBICO",
+    "MICROGRAMO",
+    "NANOGRAMO",
+    "MILIGRAMO",
+    "MILILITRO",
+    "GRUESA",
+    "KG.BRUTO",
+];

@@ -11,3 +11,6 @@ export * from './BusinessForm';
 export * from './AddressForm';
 export * from './TemplateLayout';
 export * from './DataTable';
+export * from './Supplies/LaborsForm';
+export * from './Supplies/DoseForm';
+export * from './Supplies/StockForm';
