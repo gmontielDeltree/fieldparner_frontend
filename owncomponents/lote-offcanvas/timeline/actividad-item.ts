@@ -24,6 +24,7 @@ import { translate } from "lit-translate";
 import { actividad_detalles } from "./detalles-actividad/detalles-actividad";
 import { ejecucion_detalles } from "./detalles-actividad/detalles-ejecucion";
 import { Cultivo } from '../../insumos/insumos-types';
+import { openReportOrdenTrabajo } from './actividad-functions';
 
 @customElement("actividad-item")
 export class ActividadItem extends LitElement {
@@ -54,7 +55,7 @@ export class ActividadItem extends LitElement {
           text: "Orden de Trabajo PDF",
           tooltip: "Orden de Trabajo",
           value: "ver_orden_de_trabajo",
-          callback: () => this.evento_download_pdf(),
+          callback: () =>  openReportOrdenTrabajo(this.item) //this.evento_download_pdf(),
         },
         {
           text: "Compartir Orden de Trabajo",
@@ -326,6 +327,8 @@ export class ActividadItem extends LitElement {
             ${this.item.detalles.fecha_ejecucion_tentativa}
           </div>
           ${actividad_detalles(this.item)}
+
+          
         </div>
         <!-- Fin planificacion -->
 

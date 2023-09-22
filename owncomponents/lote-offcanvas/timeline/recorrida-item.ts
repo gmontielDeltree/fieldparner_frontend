@@ -22,7 +22,7 @@ import {
 import { createMenuDots } from "../../helpers";
 import { PuntoRecorrida, Recorrida } from "../../recorridas/recorrida-types";
 import { map } from "lit/directives/map.js"
-import { deleteRecorrida } from "../../recorridas/recorrida-functions";
+import { deleteRecorrida, openReportRecorrida } from "../../recorridas/recorrida-functions";
 import { features } from "process";
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { when } from 'lit/directives/when.js';
@@ -51,7 +51,7 @@ export class NotaItem extends LitElement {
           tooltip: "Edit",
           value: "reporte_recorrida",
           callback: () =>
-            Router.go(gbl_state.router.location.getUrl() + "/nota/" + this.item._id + "/reporte"),
+            openReportRecorrida(this.item)
         },
         {
           text: "Generar Planificación",
