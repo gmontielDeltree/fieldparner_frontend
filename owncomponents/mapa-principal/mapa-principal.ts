@@ -265,6 +265,8 @@ export class MapaPrincipal extends LitElement {
     super();
     mapboxgl.accessToken =
       "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
+    
+    mapboxgl.prewarm();
   }
 
   firstUpdated() {

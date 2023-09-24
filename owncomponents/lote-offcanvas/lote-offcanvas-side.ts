@@ -210,28 +210,6 @@ export class LoteOffcanvasSide extends LitElement {
       this._lotesOffcanvas.show();
     });
 
-    this.addEventListener("localizar-nota", (e: CustomEvent) => {
-      let posicion = e.detail.item.posicion;
-      let texto = e.detail.item.texto;
-      let color = e.detail.item.color;
-      //console.log("loacalizar nota", e);
-      if (this._nota_marker !== undefined) {
-        this._nota_marker.remove();
-      }
-      this._nota_marker = new Marker({
-        color: color,
-      })
-        .setPopup(new Popup().setHTML(`<h4>${texto}</h4>`))
-        .setLngLat(posicion)
-        .addTo(gbl_state.map);
-
-      gbl_state.map.flyTo({
-        center: posicion,
-        padding: { left: 500, bottom: 200 },
-        zoom: 15,
-      });
-    });
-    //this._actividades = []
   }
 
   firstUpdated() {
@@ -560,7 +538,8 @@ export class LoteOffcanvasSide extends LitElement {
   localizar_lote() {
     console.log("LOCALIZAR", this._lote_doc);
     gbl_state.map.fitBounds(bbox(this._lote_doc), {
-      padding: { top: 50, bottom: window.innerHeight / 2, left: 800 },
+      padding: { top: 50, bottom: 50, left: 950, right:50 },
+      pitch:50,
     });
   }
 

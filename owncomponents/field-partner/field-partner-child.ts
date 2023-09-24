@@ -49,20 +49,28 @@ export class FieldPartnerChild extends LitElement {
 
   private initialized: boolean = false;
 
-  constructor() {
-    super();
+  _handle_router_location_changed  = (e : any) => gbl_state.location_history.push(e.detail.location.pathname)
 
-    window.addEventListener("vaadin-router-location-changed", (e) =>
-      this.onLocationChanged(e)
-    );
-
-    // window.addEventListener("DOMContentLoaded", () => {
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener("vaadin-router-location-changed", this._handle_router_location_changed);
+        // window.addEventListener("DOMContentLoaded", () => {
     //   const parsedUrl = new URL(window.location as unknown as string);
     //   // searchParams.get() will properly handle decoding the values.
     //   console.log("Title shared: " + parsedUrl.searchParams.get("title"));
     //   console.log("Text shared: " + parsedUrl.searchParams.get("text"));
     //   console.log("URL shared: " + parsedUrl.searchParams.get("url"));
     // });
+
+  }
+  
+  disconnectedCallback() {
+    window.addEventListener("vaadin-router-location-changed", this._handle_router_location_changed);
+    super.disconnectedCallback();
+  }
+
+  constructor() {
+    super();
 
     /* Clicks en varios botones */
     this.addEventListener("ver-campo-detalles", (e: any) => {
@@ -157,10 +165,6 @@ export class FieldPartnerChild extends LitElement {
         this.load_campos_y_settings();
       });
     });
-  }
-
-  onLocationChanged(e) {
-    gbl_state.location_history.push(e.detail.location.pathname);
   }
 
   createRenderRoot() {
