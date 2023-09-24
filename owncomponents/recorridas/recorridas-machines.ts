@@ -7,8 +7,8 @@ export interface RecorridaMachineCtx {
 	map : Map
   punto_editando: PuntoRecorrida 
   marker: Marker 
+  fields: Object []
 }
-
 
 export const machine = createMachine(
   {
@@ -23,15 +23,21 @@ export const machine = createMachine(
               cond: "editarRecorrida",
               actions: {
                 type: "assignMap",
-                params: {},
               },
             },
             {
-              target: "#recorrida.loaded.empty",
-              actions: {
-                type: "assignMap",
-                params: {},
-              },
+              target: "loaded",
+              actions: [
+                {
+                  type: "assignMap",
+                },
+                {
+                  type: "empyRecorrida",
+                },
+                {
+                  type: "notificarSinPuntos",
+                },
+              ],
             },
           ],
         },
@@ -39,7 +45,6 @@ export const machine = createMachine(
       loadRecorrida: {
         entry: {
           type: "initCtx",
-          params: {},
         },
         invoke: {
           src: "fetchRecorrida",
@@ -49,7 +54,6 @@ export const machine = createMachine(
               target: "loaded",
               actions: {
                 type: "assignRecorrida",
-                params: {},
               },
             },
           ],
@@ -66,14 +70,12 @@ export const machine = createMachine(
           mostrandoRecorrida: {
             entry: {
               type: "refreshMapa",
-              params: {},
             },
             on: {
               SELECCIONAR_PUNTO: {
                 target: "editandoPunto",
                 actions: {
                   type: "seleccionarPunto",
-                  params: {},
                 },
               },
               NUEVO_PUNTO: {
@@ -81,25 +83,21 @@ export const machine = createMachine(
                 actions: [
                   {
                     type: "initPuntoNuevo",
-                    params: {},
                   },
                   {
                     type: "notificarPuntoNuevo",
-                    params: {},
                   },
                 ],
               },
               EDIT_RECORRIDA_DATA: {
                 actions: {
                   type: "editRecorridaData",
-                  params: {},
                 },
                 internal: true,
               },
               BORRAR_PUNTO: {
                 actions: {
                   type: "borrarPunto",
-                  params: {},
                 },
                 internal: true,
               },
@@ -108,11 +106,9 @@ export const machine = createMachine(
                 actions: [
                   {
                     type: "guardarRecorrida",
-                    params: {},
                   },
                   {
                     type: "notificarRecorridaGuardada",
-                    params: {},
                   },
                 ],
               },
@@ -122,24 +118,41 @@ export const machine = createMachine(
             entry: [
               {
                 type: "centrarMapaEnAccion",
-                params: {},
               },
               {
                 type: "initEditMapMode",
-                params: {},
               },
             ],
             exit: {
               type: "salirEditMapMode",
-              params: {},
             },
             initial: "idle",
             states: {
               idle: {
                 on: {
-                  ADD_PUNTO_FIELD: {
-                    target: "mostrarFields",
-                  },
+                  ADD_PUNTO_FIELD: [
+                    {
+                      target: "fetchingFields",
+                      cond: "fieldsEmpty",
+                    },
+                    {
+                      target: "mostrarFields",
+                    },
+                  ],
+                },
+              },
+              fetchingFields: {
+                invoke: {
+                  src: "fetchFields",
+                  id: "invoke-6snbw",
+                  onDone: [
+                    {
+                      target: "mostrarFields",
+                      actions: {
+                        type: "assignFields",
+                      },
+                    },
+                  ],
                 },
               },
               mostrarFields: {
@@ -151,7 +164,6 @@ export const machine = createMachine(
                     target: "idle",
                     actions: {
                       type: "assignAddField",
-                      params: {},
                     },
                   },
                 },
@@ -161,7 +173,6 @@ export const machine = createMachine(
               NUEVA_FOTO: {
                 actions: {
                   type: "addFoto",
-                  params: {},
                 },
                 internal: true,
               },
@@ -170,32 +181,27 @@ export const machine = createMachine(
                 actions: [
                   {
                     type: "guardarPunto",
-                    params: {},
                   },
                   {
                     type: "notificarPuntoGuardado",
-                    params: {},
                   },
                 ],
               },
               EDIT_POSICION: {
                 actions: {
                   type: "assignPosicion",
-                  params: {},
                 },
                 internal: true,
               },
               SELECCIONAR_PUNTO: {
                 actions: {
                   type: "seleccionarPunto",
-                  params: {},
                 },
                 internal: true,
               },
               EDIT_PUNTO_DATA: {
                 actions: {
                   type: "assignPuntoData",
-                  params: {},
                 },
                 internal: true,
               },
@@ -205,7 +211,6 @@ export const machine = createMachine(
               NOTIFICAR_POSICION_MANUAL: {
                 actions: {
                   type: "notificarPosicion",
-                  params: {},
                 },
                 internal: true,
               },
@@ -215,42 +220,18 @@ export const machine = createMachine(
             entry: [
               {
                 type: "limpiarMapa",
-                params: {},
               },
               {
                 type: "goBack",
-                params: {},
               },
             ],
             type: "final",
-          },
-          empty: {
-            entry: {
-              type: "emptyRecorrida",
-              params: {},
-            },
-            on: {
-              NUEVO_PUNTO: {
-                target: "editandoPunto",
-                actions: [
-                  {
-                    type: "initPuntoNuevo",
-                    params: {},
-                  },
-                  {
-                    type: "notificarPuntoNuevo",
-                    params: {},
-                  },
-                ],
-              },
-            },
           },
         },
         on: {
           GENERAR_REPORTE: {
             actions: {
               type: "generarReporteEnNuevaPestana",
-              params: {},
             },
             internal: true,
           },
@@ -262,7 +243,6 @@ export const machine = createMachine(
       CERRADO: {
         entry: {
           type: "limpiarMapa",
-          params: {},
         },
         type: "final",
       },
@@ -275,6 +255,7 @@ export const machine = createMachine(
     },
     schema: {
       events: {} as
+        | { type: "START" }
         | { type: "CERRAR" }
         | { type: "VOLVER" }
         | { type: "GUARDAR" }
@@ -290,8 +271,7 @@ export const machine = createMachine(
         | { type: "SELECCIONAR_FIELD" }
         | { type: "SELECCIONAR_PUNTO" }
         | { type: "EDIT_RECORRIDA_DATA" }
-        | { type: "NOTIFICAR_POSICION_MANUAL" }
-        | { type: "START" },
+        | { type: "NOTIFICAR_POSICION_MANUAL" },
     },
     predictableActionArguments: true,
     preserveActionOrder: true,
@@ -308,11 +288,11 @@ export const machine = createMachine(
 
       salirEditMapMode: (context, event) => {},
 
-      emptyRecorrida: (context, event) => {},
-
       limpiarMapa: (context, event) => {},
 
       goBack: (context, event) => {},
+
+      assignRecorrida: (context, event) => {},
 
       generarReporteEnNuevaPestana: (context, event) => {},
 
@@ -346,10 +326,23 @@ export const machine = createMachine(
 
       notificarPosicion: (context, event) => {},
 
-      assignRecorrida: (context, event) => {},
+      assignFields: (context, event) => {},
+
+      empyRecorrida: (context, event) => {},
+
+      notificarSinPuntos: (context, event) => {},
     },
-    services: { fetchRecorrida: (context, event) => {} },
-    guards: { editarRecorrida: (context, event) => false },
+    services: {
+      fetchRecorrida: (context, event) => {},
+
+      fetchFields: (context, event) => {},
+    },
+    guards: {
+      editarRecorrida: (context, event) => false,
+
+      fieldsEmpty: (context, event) => false,
+    },
     delays: {},
   },
 );
+

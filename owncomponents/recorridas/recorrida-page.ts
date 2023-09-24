@@ -15,7 +15,7 @@ import {
   Recorrida,
   empty_punto,
   empty_recorrida,
-  get_posibles_detalles,
+  get_posibles_detalles_fields,
 } from "./recorrida-types";
 import { RouterLocation } from "@vaadin/router";
 import "@vaadin/text-field";
@@ -27,9 +27,11 @@ import { base_i18n } from "../lote-offcanvas/repetir-aplicacion/date-picker-i18n
 import { DateTimePickerI18n } from "@vaadin/date-time-picker";
 import "@vaadin/date-time-picker";
 import "@vaadin/accordion";
-import { PuntoRecorrida } from './recorrida-types';
+import "@vaadin/dialog";
+import { dialogRenderer } from '@vaadin/dialog/lit.js';
 import "../common_components/image_uploader/fp-image-uploader"
 import { showNotificationTimed } from "../helpers/notificaciones";
+import { GridActiveItemChangedEvent } from "@vaadin/grid";
 
 @customElement("recorrida-page")
 export class RecorridaPage extends LitElement {
@@ -43,26 +45,30 @@ export class RecorridaPage extends LitElement {
         recorrida: empty_recorrida("") as Recorrida,
         punto_editando: {} as PuntoRecorrida,
         marker: new Marker(),
+        fields: [],
       })
       .withConfig({
         guards: {
           editarRecorrida: () => !window.location.pathname.includes("add"),
+          fieldsEmpty: (ctx: RecorridaMachineCtx) => (ctx.fields.length === 0)
         },
         actions: {
           emptyRecorrida: assign({
             recorrida: () => {
-              console.log("this.location.params.uuid_lote",this.location.params.uuid_lote)
-              return empty_recorrida(this.location.params.uuid_lote)
+              console.log("this.location.params.uuid_lote", this.location.params.uuid_lote)
+              return empty_recorrida(this.location.params.uuid_lote as unknown as string)
             },
           }),
-          assignRecorrida: assign({ recorrida: (_,e)=>{
-            // console.log("assignRecorrida", e)
-            return e.data
-          }}),
+          assignRecorrida: assign({
+            recorrida: (_, e) => {
+              // console.log("assignRecorrida", e)
+              return e.data
+            }
+          }),
           assignMap: assign({ map: () => gbl_state.map }),
           initCtx: assign({
             recorrida: ({ recorrida }) => {
-              console.log("INIT this.location.params.uuid",this.location)
+              console.log("INIT this.location.params.uuid", this.location)
               return { ...recorrida, _id: this.location.params.uuid };
             },
             punto_editando: {},
@@ -115,14 +121,14 @@ export class RecorridaPage extends LitElement {
               let geolocate_control: GeolocateControl =
                 ctx.map._custom_controls.geolocate;
 
-              geolocate_control.on("trackuserlocationstart",(e)=>{
+              geolocate_control.on("trackuserlocationstart", (e) => {
                 console.log("TRACK START")
-                this.actor.send({type:"NOTIFICAR_POSICION_MANUAL",data:"auto"})
+                this.actor.send({ type: "NOTIFICAR_POSICION_MANUAL", data: "auto" })
               })
 
-              geolocate_control.on("trackuserlocationend",(e)=>{
+              geolocate_control.on("trackuserlocationend", (e) => {
                 console.log("TRACK END")
-                this.actor.send({type:"NOTIFICAR_POSICION_MANUAL",data:"manual"})
+                this.actor.send({ type: "NOTIFICAR_POSICION_MANUAL", data: "manual" })
               })
 
               geolocate_control.on("geolocate", (e) => {
@@ -134,7 +140,21 @@ export class RecorridaPage extends LitElement {
                   data: pos,
                 });
               });
+
+
+              // ctx.map.on("move",()=>{
+              //   let center = ctx.map.getCenter()
+              //   this.actor.send({
+              //     type: "EDIT_POSICION",
+              //     data: center,
+              //   });
+              //   ctx.marker.setLngLat(center);
+              // })
+
             }
+
+
+
             ctx.marker.setLngLat(ctx.punto_editando.geometry.coordinates);
             ctx.marker.addTo(ctx.map);
           },
@@ -182,7 +202,7 @@ export class RecorridaPage extends LitElement {
               );
 
               this.actor.send({ type: "SELECCIONAR_PUNTO", data: punto });
-              
+
               console.log("CLICK", e.features[0]);
             };
 
@@ -200,7 +220,7 @@ export class RecorridaPage extends LitElement {
             ctx.map.on("click", "recorrida", ctx.map._events.recorrida_click);
           },
           guardarRecorrida: (ctx: RecorridaMachineCtx) => {
-              console.log("guardarRecorrida",ctx.recorrida)
+            console.log("guardarRecorrida", ctx.recorrida)
             saveRecorrida(ctx.recorrida).then(() =>
               console.log("recorrida_saved")
             );
@@ -246,33 +266,39 @@ export class RecorridaPage extends LitElement {
 
           notificarPuntoNuevo: () => {
             console.log("PUNTO NUEVO NOTIFICACION")
-            showNotificationTimed("Clickea en para usar la posicion del dispositivo","success","top-center")
+            showNotificationTimed("Arrastra el marcador o clickea en para usar la posición del dispositivo", "success", "top-center")
           },
           notificarPuntoGuardado: () => {
             console.log("PUNTO NOTIFICACION")
-            showNotificationTimed("Punto Guardado","success","top-center")
+            showNotificationTimed("Punto Guardado", "success", "top-center")
           },
-          notificarPosicion: (_, {data}) => {
-            if(data === "manual"){
-              showNotificationTimed("Usando posición manual","primary","top-center")
-            }else{
-              showNotificationTimed("Usando posición automática","primary","top-center")
+          notificarPosicion: (_, { data }) => {
+            if (data === "manual") {
+              showNotificationTimed("Usando posición manual. Arrastra el marcador para cambiar la ubicación", "primary", "top-center")
+            } else {
+              showNotificationTimed("Usando posición automática", "primary", "top-center")
             }
           },
           notificarRecorridaGuardada: () => {
-            showNotificationTimed("Recorrida Guardada","success","top-center")
+            showNotificationTimed("Recorrida Guardada", "success", "top-center")
           },
-          goBack:()=>{
+          notificarSinPuntos:()=>{
+            showNotificationTimed("Agrega un nuevo punto a tu recorrida: Clickea en 'Nuevo Punto'", "success", "top-center")
+          },
+          goBack: () => {
             nav_back()
-          }
+          },
+          assignFields: assign({
+            fields: (ctx, evt) => evt.data
+          })
           /** FIN ACTIONS */
         },
         services: {
-          fetchRecorrida: async (ctx: RecorridaMachineCtx) =>
-           { 
-            console.log("fetchRecorrida",ctx)
+          fetchFields: get_posibles_detalles_fields,
+          fetchRecorrida: async (ctx: RecorridaMachineCtx) => {
+            console.log("fetchRecorrida", ctx)
             return await getRecorrida(ctx.recorrida._id)
-           }
+          }
         },
       })
   );
@@ -284,11 +310,11 @@ export class RecorridaPage extends LitElement {
     if (gbl_state.map === undefined) {
       setTimeout(() => {
         this.actor.start();
-        this.actor.send({type:"START"})
+        this.actor.send({ type: "START" })
       }, 5000);
     } else {
       this.actor.start();
-      this.actor.send({type:"START"})
+      this.actor.send({ type: "START" })
     }
 
   }
@@ -376,9 +402,9 @@ export class RecorridaPage extends LitElement {
           <header>
             <a
               @click=${() => {
-                this.actor.send({ type: "CERRAR" })
-                nav_back()
-                }}
+            this.actor.send({ type: "CERRAR" })
+            nav_back()
+          }}
               aria-label="Go back"
               
             >
@@ -402,8 +428,8 @@ export class RecorridaPage extends LitElement {
               .label=${t("nombre")}
               .value=${recorrida.nombre}
               @change=${(e: TextFieldChangeEvent) =>
-                  recorrida_update_field("nombre", e.target.value)
-              }
+            recorrida_update_field("nombre", e.target.value)
+          }
             ></vaadin-text-field>
 
             <vaadin-date-time-picker
@@ -411,9 +437,9 @@ export class RecorridaPage extends LitElement {
               .value=${recorrida.fecha}
               .i18n=${base_i18n as DateTimePickerI18n}
               @change=${(e) => {
-                recorrida_update_field("fecha", e.target.value);
-              }
-            }
+            recorrida_update_field("fecha", e.target.value);
+          }
+          }
             ></vaadin-date-time-picker>
 
             <vaadin-date-picker
@@ -452,23 +478,26 @@ export class RecorridaPage extends LitElement {
                       </div>
 
 
-                      <vaadin-menu-bar @item-selected=${(e)=>e.detail.value.click()} .items=${[
+                      <vaadin-menu-bar @item-selected=${(e) => e.detail.value.click()} .items=${[
                   {
                     component: createMenuDots("ellipsis-dots-v"),
                     tooltip: get("mas"),
                     children: [
-                      { text: get("edit"), click: () =>
-                      this.actor.send({
-                        type: "SELECCIONAR_PUNTO",
-                        data: f,
-                      })},
-                      { text: get("borrar"),
-                    click: () =>
-                    this.actor.send({
-                      type: "BORRAR_PUNTO",
-                      data: f,
-                    })
-                    },
+                      {
+                        text: get("edit"), click: () =>
+                          this.actor.send({
+                            type: "SELECCIONAR_PUNTO",
+                            data: f,
+                          })
+                      },
+                      {
+                        text: get("borrar"),
+                        click: () =>
+                          this.actor.send({
+                            type: "BORRAR_PUNTO",
+                            data: f,
+                          })
+                      },
                     ]
                   }
                 ]}>
@@ -484,9 +513,8 @@ export class RecorridaPage extends LitElement {
                       
                       <span>${t("notas")}: ${f.properties.notas}</span>
 
-                      ${
-                        when(f.properties.fotos?.length ?? 0 > 0, ()=> html`<fp-image-uploader .sologallery=${true} .images=${f.properties.fotos ?? []}></fp-image-uploader>`)
-                      }
+                      ${when(f.properties.fotos?.length ?? 0 > 0, () => html`<fp-image-uploader .sologallery=${true} .images=${f.properties.fotos ?? []}></fp-image-uploader>`)
+                }
                       
                       ${when(f.properties.audio !== undefined, () => html`
                         <audio controls>
@@ -494,7 +522,7 @@ export class RecorridaPage extends LitElement {
                         </audio>
                       `)}
 
-                      ${map(f.properties.detalles,(d)=>html`
+                      ${map(f.properties.detalles, (d) => html`
                       <div><span style="font-weight:bold">${t(d.name)}:</span> ${d.value}</div>
                       `)}
                     </vaadin-vertical-layout>
@@ -615,21 +643,43 @@ export class RecorridaPage extends LitElement {
 
       case '{"loaded":{"editandoPunto":"mostrarFields"}}':
         return html`
-          <div style="position:fixed; top:50%; left:50%; z-index:12">
-            <button @click=${() => this.actor.send({ type: "CERRAR_FIELDS" })}>
-              x
-            </button>
-            ${get_posibles_detalles().map((d) => {
-          return html` <vaadin-button
-                @click=${() =>
-              this.actor.send({
-                type: "SELECCIONAR_FIELD",
-                data: { name: d.name },
-              })}
-                >${d.name}</vaadin-button
-              >`;
-        })}
-          </div>
+
+
+<vaadin-dialog
+        header-title=${t("campos_disponibles")}
+        resizable
+        draggable
+        .opened=${true}
+        @opened-changed=${(e) => {
+            if (e.detail.value === false) {
+              this.actor.send({ type: "CERRAR_FIELDS" })
+            }
+          }}
+        ${dialogRenderer(
+            () => html`
+            <vaadin-vertical-layout
+              theme="spacing"
+              style="max-width: 100%; min-width: 300px; height: 100%; align-items: stretch;"
+            >
+              <vaadin-grid .items="${ctx.fields}"
+              @active-item-changed=${(e: GridActiveItemChangedEvent<any>) => {
+                const item = e.detail.value;
+                e.target.selectedItems = item ? [item] : [];
+                if (item) {
+                  this.actor.send({
+                    type: "SELECCIONAR_FIELD",
+                    data: { name: e.detail.value.name },
+                  })
+                }
+
+              }}
+              >
+                <vaadin-grid-column path="name" title="Nombre"></vaadin-grid-column>
+              </vaadin-grid>
+            </vaadin-vertical-layout>
+          `
+          )}
+      ></vaadin-dialog>
         `;
       default:
         console.log("DEFAULT", state, ctx, this.state);

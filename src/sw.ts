@@ -41,6 +41,11 @@ console.log("SW Version ", import.meta.env.VITE_VERSION)
 precacheAndRoute(self.__WB_MANIFEST);
 //precacheAndRoute([]);
 
+
+precacheAndRoute([
+  {url: 'https://agrotools.qts-ar.com.ar/couchdb/fieldpartner-platform/recorrida-fields', revision: null},
+])
+
 registerRoute(/.*index.html*$/, new NetworkFirst({ cacheName: "html" }));
 
 registerRoute(/.*.css*$/, new NetworkFirst({ cacheName: "css" }));

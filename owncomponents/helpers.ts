@@ -9,6 +9,7 @@ import { RouterLocation } from "@vaadin/router";
 import { Campana } from "./tipos/tipos-varios";
 import { Cultivo, CultivoAplicacion } from "./insumos/insumos-types";
 import cultivos from "./jsons/cultivos";
+import axios from "axios";
 var img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
 
@@ -364,6 +365,19 @@ export const empty_feature_collection = () => {return {
 
 export const r2 = (d : number) =>{
   return parseFloat(d.toFixed(2))
+}
+
+export const fp_platform_files = async (doc : string) => {
+  let url = "https://agrotools.qts-ar.com.ar/couchdb/"+"fieldpartner-platform/" + doc;
+
+  console.log("URL",url)
+  let r = await axios.get(url,{
+    auth: {
+      username: 'appreader',
+      password: 'fieldpartner'
+    },
+  })
+  return r.data;
 }
 
 export {

@@ -4,19 +4,24 @@ import { Feature, FeatureCollection } from "@turf/helpers";
 import { uuidv7 } from "uuidv7";
 import { format } from "date-fns";
 import { get } from "lit-translate";
+import { es_esta_campana, fp_platform_files } from '../helpers';
 
-export const get_posibles_detalles = () => {
-  return [
-    {
-      name: "Plaga",
-      type: "string",
-    },
-    {
-      name: "Enfermedad",
-      type: "string",
-    },
-    { name: "Muestra", type: "string" },
-  ];
+export const get_posibles_detalles_fields = async () => {
+
+  let data = await fp_platform_files("recorridas-fields")
+  return data.fields;
+
+  // return [
+  //   {
+  //     name: "Plaga",
+  //     type: "string",
+  //   },
+  //   {
+  //     name: "Enfermedad",
+  //     type: "string",
+  //   },
+  //   { name: "Muestra", type: "string" },
+  // ];
 };
 
 interface PropertiesPunto {
@@ -24,7 +29,7 @@ interface PropertiesPunto {
   nombre?: string;
   orden:number;
   fotos?: string[];
-  notas?: string[];
+  notas?: string;
   audio?: string;
   last_updated: LastUpdateTag;
   created: CreatedTag;
