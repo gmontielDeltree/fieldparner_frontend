@@ -237,3 +237,21 @@ export const UnidadesDeMedida = [
     "GRUESA",
     "KG.BRUTO",
 ];
+
+export interface DepositState {
+    depositActive: Deposit | null;
+    deposits: Deposit[];
+}
+
+export interface Deposit extends Document {
+    descripcion: string;
+    propietario: string;
+    virtual: boolean;
+    geolocalizacion: string;
+    negativo: boolean;
+    domicilio: string;
+    codigoPostal: string;
+    localidad: string;
+    provincia: string;
+    pais: string;
+}

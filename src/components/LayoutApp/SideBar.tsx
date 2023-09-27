@@ -20,6 +20,7 @@ import {
   Cached as CachedIcon,
   List as ListIcon,
   Inventory as InventoryIcon,
+  Warehouse as WarehouseIcon,
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
 
@@ -108,6 +109,18 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <InventoryIcon />
               </ListItemIcon>
               <ListItemText primary="Insumos" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="deposits" disablePadding>
+            <ListItemButton
+              component={RouterLink}
+              to="/init/overview/deposit"
+              selected={pathname.includes("/init/overview/deposit")}
+            >
+              <ListItemIcon>
+                <WarehouseIcon />
+              </ListItemIcon>
+              <ListItemText primary="Depositos" />
             </ListItemButton>
           </ListItem>
           <ListItem key="vehiculos" disablePadding>
