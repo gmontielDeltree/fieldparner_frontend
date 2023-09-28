@@ -58,7 +58,7 @@ export const DepositPage: React.FC = () => {
     esVirtual,
   } = formulario;
 
-  const onClickCancel = () => navigate("/init/overview/supply");
+  const onClickCancel = () => navigate("/init/overview/deposit");
 
   const handleUpdateDeposit = () => {
     if (formulario._id) {
