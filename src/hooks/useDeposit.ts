@@ -1,24 +1,25 @@
 import PouchDB from 'pouchdb';
 import Swal from 'sweetalert2';
-import { Supply } from "../types";
+import { Deposit } from "../types";
 import { useState } from "react";
 
-const DBSupplies: PouchDB.Database<Supply> = new PouchDB('supplies');
+const DbDeposits: PouchDB.Database<Deposit> = new PouchDB('deposits');
 
-export const useSupply = () => {
+export const useDeposit = () => {
 
-    const [supplies, setSupplies] = useState<Supply[]>([]);
+    // const dispatch = useAppDispatch();
+    const [deposits, setDeposits] = useState<Deposit[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const getSupplies = async () => {
+    const getDeposits = async () => {
         setIsLoading(true);
         try {
-            const result = await DBSupplies.allDocs({ include_docs: true });
+            const result = await DbDeposits.allDocs({ include_docs: true });
 
             setIsLoading(false);
             if (result.rows.length) {
-                const documents: Supply[] = result.rows.map(row => row.doc as Supply);
-                setSupplies(documents);
+                const documents: Deposit[] = result.rows.map(row => row.doc as Deposit);
+                setDeposits(documents);
             }
         } catch (error) {
             setIsLoading(false);
@@ -26,14 +27,14 @@ export const useSupply = () => {
         }
     }
 
-    const createSupply = async (newSupply: Supply) => {
+    const createDeposit = async (newDeposit: Deposit) => {
         setIsLoading(true);
         try {
-            const response = await DBSupplies.post(newSupply);
+            const response = await DbDeposits.post(newDeposit);
             setIsLoading(false);
 
             if (response.ok) {
-                Swal.fire('Insumo', 'Agregado con exito.', 'success');
+                Swal.fire('Deposito', 'Agregado con exito.', 'success');
             }
 
         } catch (error) {
@@ -43,14 +44,14 @@ export const useSupply = () => {
         }
     }
 
-    const updateSupply = async (updateSupply: Supply) => {
+    const updateDeposit = async (updateDeposit: Deposit) => {
         setIsLoading(true);
         try {
-            const response = await DBSupplies.put(updateSupply);
+            const response = await DbDeposits.put(updateDeposit);
             setIsLoading(false);
 
             if (response.ok) {
-                Swal.fire('Insumo', 'Actualizado con exito.', 'success');
+                Swal.fire('Deposito', 'Actualizado con exito.', 'success');
             }
 
         } catch (error) {
@@ -65,13 +66,13 @@ export const useSupply = () => {
     }
 
     return {
-        supplies,
+        deposits,
         isLoading,
 
-        setSupplies,
-        getSupplies,
-        createSupply,
-        updateSupply,
+        setDeposits,
+        getDeposits,
+        createDeposit,
+        updateDeposit,
         removeSupply,
     }
 

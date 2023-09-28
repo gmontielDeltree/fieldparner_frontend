@@ -5,6 +5,7 @@ import { uiSlice } from './ui';
 import { authSlice } from './auth';
 import { businessSlice } from './business';
 import { supplySlice } from './supply';
+import { depositSlice } from './deposit';
 
 const store = configureStore({
     reducer: {
@@ -13,6 +14,7 @@ const store = configureStore({
         auth: authSlice.reducer,
         business: businessSlice.reducer,
         supply: supplySlice.reducer,
+        deposit: depositSlice.reducer,
     },
 });
 
