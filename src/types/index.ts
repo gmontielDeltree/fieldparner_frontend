@@ -246,9 +246,9 @@ export interface DepositState {
 export interface Deposit extends Document {
     descripcion: string;
     propietario: string;
-    virtual: boolean;
+    esVirtual: boolean;
     geolocalizacion: string;
-    negativo: boolean;
+    esNegativo: boolean;
     domicilio: string;
     codigoPostal: string;
     localidad: string;

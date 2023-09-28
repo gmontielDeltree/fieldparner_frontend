@@ -40,10 +40,22 @@ export const ListDepositsPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const { isLoading, deposits, getDeposits } = useDeposit();
+  const { isLoading, deposits, getDeposits, setDeposits } = useDeposit();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
-  const onClickSearch = () => {};
+  const onClickSearch = () => {
+    if (filterText === "") {
+      getDeposits();
+      return;
+    }
+    const filteredDeposits = deposits.filter(({ descripcion, propietario }) => {
+      (descripcion &&
+        descripcion.toLowerCase().includes(filterText.toLowerCase())) ||
+        (propietario &&
+          propietario.toLowerCase().includes(filterText.toLowerCase()));
+    });
+    setDeposits(filteredDeposits);
+  };
 
   const onClickUpdateDeposit = (item: Deposit) => {
     navigate(`/init/overview/deposit/${item._id}`);
@@ -118,7 +130,7 @@ export const ListDepositsPage: React.FC = () => {
                     {row.propietario}
                   </TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.virtual}
+                    {row.esVirtual}
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     {row.domicilio}

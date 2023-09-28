@@ -40,10 +40,21 @@ export const ListSuppliesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const { isLoading, supplies, getSupplies } = useSupply();
+  const { isLoading, supplies, getSupplies, setSupplies } = useSupply();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
-  const onClickSearch = () => {};
+  const onClickSearch = () => {
+    if (filterText === "") {
+      getSupplies();
+      return;
+    }
+    const filteredSupplies = supplies.filter(({ insumo, descripcion }) => {
+      (insumo && insumo.toLowerCase().includes(filterText.toLowerCase())) ||
+        (descripcion &&
+          descripcion.toLowerCase().includes(filterText.toLowerCase()));
+    });
+    setSupplies(filteredSupplies);
+  };
   const onClickUpdateSupply = (item: Supply) => {
     navigate(`/init/overview/supply/${item._id}`);
     dispatch(setSupplyActive(item));

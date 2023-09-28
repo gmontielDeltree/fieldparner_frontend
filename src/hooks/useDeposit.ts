@@ -69,6 +69,7 @@ export const useDeposit = () => {
         deposits,
         isLoading,
 
+        setDeposits,
         getDeposits,
         createDeposit,
         updateDeposit,

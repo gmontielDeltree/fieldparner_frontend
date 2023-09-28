@@ -2,16 +2,11 @@ import PouchDB from 'pouchdb';
 import Swal from 'sweetalert2';
 import { Supply } from "../types";
 import { useState } from "react";
-import { fieldpartnerAPI } from '../config';
-import { HttpStatusCode } from 'axios';
-import { useAppDispatch } from '.';
-import { loadSupplies } from '../redux/supply';
 
 const DBSupplies: PouchDB.Database<Supply> = new PouchDB('supplies');
 
 export const useSupply = () => {
 
-    const dispatch = useAppDispatch();
     const [supplies, setSupplies] = useState<Supply[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -73,7 +68,7 @@ export const useSupply = () => {
         supplies,
         isLoading,
 
-
+        setSupplies,
         getSupplies,
         createSupply,
         updateSupply,
