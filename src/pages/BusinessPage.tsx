@@ -97,7 +97,6 @@ export const BusinessPage: React.FC = () => {
   const addNewBusiness = () => {
     createBusiness(formulario);
     reset();
-    navigate("/init/overview/business");
   };
 
   const handleUpdateBusiness = () => {
