@@ -1,21 +1,31 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Loading, TemplateLayout } from "../components";
 import {
+  Autocomplete,
   Box,
   Button,
-  Container,
+  FormControl,
   FormControlLabel,
   Grid,
   InputAdornment,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Switch,
   TextField,
   Typography,
 } from "@mui/material";
 import { Warehouse as WarehouseIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector, useDeposit, useForm } from "../hooks";
-import { Deposit } from "@types";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useBusiness,
+  useDeposit,
+  useForm,
+} from "../hooks";
+import { Deposit, TipoEntidad } from "../types";
 import { removeDepositActive } from "../redux/deposit";
 
 const initialForm: Deposit = {
@@ -27,9 +37,11 @@ const initialForm: Deposit = {
   esNegativo: false,
   esVirtual: false,
   pais: "",
-  propietario: "",
+  propietario: "Propio",
   provincia: "",
 };
+
+const optionsCountry = ["Argentina", "Brasil", "Chile"];
 
 export const DepositPage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,11 +51,17 @@ export const DepositPage: React.FC = () => {
     formulario,
     setFormulario,
     handleInputChange,
-    // handleSelectChange,
+    handleFormValueChange,
     handleCheckboxChange,
+    handleSelectChange,
     reset,
   } = useForm(initialForm);
   const { isLoading, createDeposit, updateDeposit } = useDeposit();
+  const {
+    getBusinesses,
+    businesses,
+    isLoading: loadingBusiness,
+  } = useBusiness();
 
   const {
     descripcion,
@@ -58,19 +76,23 @@ export const DepositPage: React.FC = () => {
     esVirtual,
   } = formulario;
 
+  const optionsPropietario = useMemo(() => {
+    return businesses
+      .filter((business) => business.tipoEntidad == TipoEntidad.JURIDICA)
+      .map((business) => business.razonSocial || "");
+  }, [businesses]);
+
   const onClickCancel = () => navigate("/init/overview/deposit");
 
   const handleUpdateDeposit = () => {
     if (formulario._id) {
       updateDeposit(formulario);
       dispatch(removeDepositActive());
-      navigate("/init/overview/deposit");
     }
   };
 
   const handleAddDeposit = () => {
     createDeposit(formulario);
-    navigate("/init/overview/deposit");
     reset();
   };
 
@@ -85,6 +107,10 @@ export const DepositPage: React.FC = () => {
     };
   }, [dispatch]);
 
+  useEffect(() => {
+    getBusinesses();
+  }, []);
+
   return (
     <TemplateLayout key="overview-deposit" viewMap={true}>
       <Loading key="loading-deposit" loading={isLoading} />
@@ -95,7 +121,12 @@ export const DepositPage: React.FC = () => {
         <Box className="text-center">
           <WarehouseIcon />
         </Box>
-        <Typography component="h1" variant="h4" align="center" sx={{ my: 3 }}>
+        <Typography
+          component="h1"
+          variant="h4"
+          align="center"
+          sx={{ mt: 1, mb: 7 }}
+        >
           {depositActive ? "Editar" : "Agregar Nuevo"} Deposito
         </Typography>
         <Grid container spacing={2} alignItems="center" justifyContent="center">
@@ -114,36 +145,42 @@ export const DepositPage: React.FC = () => {
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label="Propietario"
-              name="propietario"
+            <Autocomplete
+              id="propietario"
+              freeSolo
+              loading={loadingBusiness}
               value={propietario}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
+              onChange={(_event: any, newValue: string | null) => {
+                newValue && handleFormValueChange("propietario", newValue);
               }}
+              inputValue={propietario}
+              onInputChange={(_event, newInputValue) => {
+                handleFormValueChange("propietario", newInputValue);
+              }}
+              options={["Propio", ...optionsPropietario]}
               fullWidth
+              renderInput={(params) => (
+                <TextField {...params} name="propietario" label="Propietario" />
+              )}
             />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <FormControlLabel
-              // className="d-flex justify-content-center"
-              control={
-                <Switch
-                  name="esVirtual"
-                  checked={esVirtual}
-                  onChange={handleCheckboxChange}
-                />
-              }
-              label="Fisico / Virtual"
-              labelPlacement="start"
-            />
+            <Box display="flex" justifyContent="center" alignItems="center">
+              <Typography variant="body1" display="inline-block">
+                Fisico
+              </Typography>
+              <Switch
+                name="esVirtual"
+                checked={esVirtual}
+                onChange={handleCheckboxChange}
+              />
+              <Typography variant="body1" display="inline-block">
+                Virtual
+              </Typography>
+            </Box>
           </Grid>
           <Grid item xs={12} sm={4}>
             <FormControlLabel
-              // className="d-flex justify-content-end"
               control={
                 <Switch
                   name="esNegativo"
@@ -170,12 +207,30 @@ export const DepositPage: React.FC = () => {
             />
           </Grid>
           <Grid item xs={6} sm={4}>
+            <FormControl fullWidth>
+              <InputLabel id="label-pais">Pais</InputLabel>
+              <Select
+                labelId="label-pais"
+                name="pais"
+                value={pais}
+                label="Pais"
+                onChange={handleSelectChange}
+              >
+                {optionsCountry.map((country) => (
+                  <MenuItem key={country} value={country}>
+                    {country}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={6} sm={4}>
             <TextField
               variant="outlined"
-              type="text"
-              label="Pais"
-              name="pais"
-              value={pais}
+              type="number"
+              label="CP"
+              name="codigoPostal"
+              value={codigoPostal}
               onChange={handleInputChange}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
@@ -211,7 +266,7 @@ export const DepositPage: React.FC = () => {
               fullWidth
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={8}>
             <TextField
               variant="outlined"
               type="text"
@@ -225,21 +280,6 @@ export const DepositPage: React.FC = () => {
               fullWidth
             />
           </Grid>
-          <Grid item xs={6} sm={3}>
-            <TextField
-              variant="outlined"
-              type="number"
-              label="CP"
-              name="codigoPostal"
-              value={codigoPostal}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={6} sm={3}></Grid>
         </Grid>
         <Grid
           container

@@ -14,6 +14,7 @@ import {
 import {
   Box,
   Button,
+  Chip,
   Container,
   Grid,
   IconButton,
@@ -30,7 +31,7 @@ import { setDepositActive } from "../redux/deposit";
 const columns: ColumnProps[] = [
   { text: "Descripcion", align: "left" },
   { text: "Propietario", align: "center" },
-  { text: "Virtual", align: "left" },
+  { text: "Fisico/Virtual", align: "left" },
   { text: "Domicilio", align: "center" },
   { text: "Localidad", align: "center" },
   { text: "Pais", align: "center" },
@@ -130,7 +131,10 @@ export const ListDepositsPage: React.FC = () => {
                     {row.propietario}
                   </TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.esVirtual}
+                    <Chip
+                      variant={row.esVirtual ? "filled" : "outlined"}
+                      label={row.esVirtual ? "Virtual" : "Fisico"}
+                    />
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     {row.domicilio}

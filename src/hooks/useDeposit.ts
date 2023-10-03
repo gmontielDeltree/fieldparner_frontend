@@ -2,12 +2,13 @@ import PouchDB from 'pouchdb';
 import Swal from 'sweetalert2';
 import { Deposit } from "../types";
 import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 const DbDeposits: PouchDB.Database<Deposit> = new PouchDB('deposits');
 
 export const useDeposit = () => {
 
-    // const dispatch = useAppDispatch();
+    const navigate = useNavigate();
     const [deposits, setDeposits] = useState<Deposit[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -36,6 +37,7 @@ export const useDeposit = () => {
             if (response.ok) {
                 Swal.fire('Deposito', 'Agregado con exito.', 'success');
             }
+            navigate("/init/overview/deposit");
 
         } catch (error) {
             console.log('Error al crear el documento: ', error);
@@ -53,6 +55,8 @@ export const useDeposit = () => {
             if (response.ok) {
                 Swal.fire('Deposito', 'Actualizado con exito.', 'success');
             }
+
+            navigate("/init/overview/deposit");
 
         } catch (error) {
             console.log('Error al actualizar el documento: ', error);
