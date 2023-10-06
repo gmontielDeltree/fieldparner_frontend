@@ -236,6 +236,9 @@ export const UnidadesDeMedida = [
     "MILILITRO",
     "GRUESA",
     "KG.BRUTO",
+    "SEMILLAS",
+    "BOLSAS",
+    "QUINTAL",
 ];
 
 export interface DepositState {
