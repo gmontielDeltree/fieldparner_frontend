@@ -1,1 +1,1 @@
-import "./owncomponents/common_components/image_uploader/fp-image-uploader"
+import "./owncomponents/common_components/weather-forecast/weather-forecast.ts"

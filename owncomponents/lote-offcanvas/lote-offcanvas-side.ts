@@ -161,9 +161,6 @@ export class LoteOffcanvasSide extends LitElement {
   _nota_marker: any;
 
   @state()
-  fsm: any;
-
-  @state()
   _current_dosis: LineaDosis;
 
   @state()
@@ -536,8 +533,9 @@ export class LoteOffcanvasSide extends LitElement {
   }
 
   localizar_lote() {
-    console.log("LOCALIZAR", this._lote_doc);
-    gbl_state.map.fitBounds(bbox(this._lote_doc), {
+    let bounds = bbox(this._lote_doc)
+    console.log("LOCALIZAR", this._lote_doc, "BOUNDS", bounds);
+    gbl_state.map.fitBounds(bounds, {
       padding: { top: 50, bottom: 50, left: 950, right:50 },
       pitch:50,
     });

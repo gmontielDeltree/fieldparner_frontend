@@ -32,7 +32,7 @@ export const machine = createMachine(
                   type: "assignMap",
                 },
                 {
-                  type: "empyRecorrida",
+                  type: "emptyRecorrida",
                 },
                 {
                   type: "notificarSinPuntos",
@@ -316,6 +316,10 @@ export const machine = createMachine(
 
       assignMap: (context, event) => {},
 
+      emptyRecorrida: (context, event) => {},
+
+      notificarSinPuntos: (context, event) => {},
+
       assignPuntoData: (context, event) => {},
 
       assignAddField: (context, event) => {},
@@ -327,15 +331,15 @@ export const machine = createMachine(
       notificarPosicion: (context, event) => {},
 
       assignFields: (context, event) => {},
-
-      empyRecorrida: (context, event) => {},
-
-      notificarSinPuntos: (context, event) => {},
     },
     services: {
-      fetchRecorrida: (context, event) => {},
+      fetchRecorrida: createMachine({
+        /* ... */
+      }),
 
-      fetchFields: (context, event) => {},
+      fetchFields: createMachine({
+        /* ... */
+      }),
     },
     guards: {
       editarRecorrida: (context, event) => false,
@@ -345,4 +349,3 @@ export const machine = createMachine(
     delays: {},
   },
 );
-

@@ -175,9 +175,13 @@ export class RecorridaPage extends LitElement {
             });
           },
           limpiarMapa: (ctx: RecorridaMachineCtx, evt) => {
-            ctx.map.removeLayer("recorrida");
-            ctx.map.removeSource("recorrida");
-            ctx.marker.remove();
+            try {
+              ctx.map.removeLayer("recorrida");
+              ctx.map.removeSource("recorrida");
+              ctx.marker.remove();
+            } catch (_) {
+              console.log("Layers/Source ya borradas")
+            }
           },
           refreshMapa: (ctx: RecorridaMachineCtx) => {
             console.log("REFRESH MAPA");
@@ -282,7 +286,7 @@ export class RecorridaPage extends LitElement {
           notificarRecorridaGuardada: () => {
             showNotificationTimed("Recorrida Guardada", "success", "top-center")
           },
-          notificarSinPuntos:()=>{
+          notificarSinPuntos: () => {
             showNotificationTimed("Agrega un nuevo punto a tu recorrida: Clickea en 'Nuevo Punto'", "success", "top-center")
           },
           goBack: () => {

@@ -1,4 +1,4 @@
-import { LngLat } from "mapbox-gl"
+import { LngLat, LngLatLike } from "mapbox-gl"
 import axios from 'axios';
 
 export interface OpenMeteoResponse {
@@ -20,6 +20,8 @@ export interface OpenMeteoDaily {
     precipitation_sum:             number[];
     precipitation_hours:           number[];
     precipitation_probability_max: number[];
+    weathercode:number[];
+
 }
 
 interface DailyUnits {
@@ -31,7 +33,8 @@ interface DailyUnits {
     precipitation_probability_max: string;
 }
 
-export const forecastWeather =  async (pos : LngLat) => {
-    let res = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${pos.lat}&longitude=${pos.lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,precipitation_probability_max&timezone=auto`)
+export const forecastWeather =  async (posicion : LngLatLike) => {
+    let pos = LngLat.convert(posicion);
+    let res = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${pos.lat}&longitude=${pos.lng}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,precipitation_probability_max&timezone=auto`)
     return res.data as OpenMeteoResponse
 }
