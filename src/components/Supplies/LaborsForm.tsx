@@ -13,7 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { LaboresItems, Supply, TipoInsumo } from "../../types";
+import {  Supply, TipoInsumo } from "../../types";
 import React, { ChangeEvent } from "react";
 
 export interface LaborsFormProps {
@@ -40,7 +40,6 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
     descripcion,
     codigoBarra,
     tieneLotes,
-    numeroLote,
     labores,
   } = formValues;
 
@@ -127,7 +126,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
           fullWidth
         />
       </Grid>
-      <Grid item xs={12} sm={4}>
+      <Grid item xs={12} sm={6}>
         <FormControlLabel
           control={
             <Switch
@@ -139,19 +138,6 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
           }
           label="Aplica Stock por Lotes?"
         />
-      </Grid>
-      <Grid item xs={12} sm={2}>
-        {tieneLotes && (
-          <TextField
-            key="numero-lote"
-            variant="outlined"
-            type="number"
-            name="numeroLote"
-            value={numeroLote}
-            onChange={handleInputChange}
-            fullWidth
-          />
-        )}
       </Grid>
       <Grid item xs={12} sm={12} sx={{ my: 3 }}>
         {tipo.toLowerCase() === TipoInsumo.CULTIVO.toLowerCase() && (

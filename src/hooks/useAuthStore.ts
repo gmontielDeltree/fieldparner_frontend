@@ -2,7 +2,7 @@ import { useDispatch } from 'react-redux';
 import { fieldpartnerAPI } from '../config';
 import { clearErrorMessage, finishLoading, onChecking, onLogin, onLogout, startLoading } from '../redux/auth';
 import { useAppSelector } from './useRedux';
-import { ErrorResponseAuth, ResponseAuthLogin, ResponseAuthRenew, User, UserLogin, UserRegister } from '@types';
+import { ErrorResponseAuth, ResponseAuthLogin, ResponseAuthRenew, User, UserLogin, UserRegister } from '../types';
 import { AxiosError, HttpStatusCode } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { convertTimestampToDate } from '../helpers/dates';
@@ -144,16 +144,16 @@ export const useAuthStore = () => {
         }
     }
     // const checkAuthToken = async () => {
-       
+
     //     dispatch(onChecking())
     //     try {
-            
+
 
     //         localStorage.setItem('accessToken',"" );
     //         localStorage.setItem('token_expiration',"" );
-           
+
     //         dispatch(onLogin({isAdmin:true,username:"Rodrigo"}));
-            
+
     //     } catch (error) {
     //         localStorage.clear();
     //         dispatch(onLogout(""));
