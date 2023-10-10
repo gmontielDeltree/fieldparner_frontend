@@ -1,19 +1,52 @@
 import PouchDB from 'pouchdb';
-import { Vehiculo, TypeVehicle } from '@types';
+import PouchDBFind from 'pouchdb-find'
+import { getEnvVariables } from '../helpers/getEnvVariables';
+import { CountryCode, ItemZipCode, Vehiculo } from '../types';
 import uuid4 from 'uuid4';
 
-const db: PouchDB.Database = new PouchDB('test_pouchdb');
-// const dbTipoVehiculo = new PouchDB('tipoVehiculo_db');
+PouchDB.plugin(PouchDBFind);
 
-const mydb = {
-    vehiculos: new PouchDB('test_pouchdb'),
-    tipoVehiculos: new PouchDB('tipoVehiculos'),
+const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
+
+// const db: PouchDB.Database = new PouchDB('test_pouchdb');
+const dbNames = Object.freeze({
+    deposits: "deposits",
+    typeVehicles: "type-vehicles",
+    zipCodeArg: "zip-code-arg"
+});
+
+export const dbContext = {
+    typeVehicles: new PouchDB(dbNames.typeVehicles),
+    deposits: new PouchDB(dbNames.deposits),
+    zipCodeArg: new PouchDB<ItemZipCode>(dbNames.zipCodeArg),
 };
+
+// const dbZipCodeArg = new PouchDB(dbNames.zipCodeArg);
+
+dbContext.deposits.sync(`${remoteCouchDBUrl}/${dbNames.deposits}`, { live: true, retry: true, });
+dbContext.zipCodeArg.sync(`${remoteCouchDBUrl}/${dbNames.zipCodeArg}`, { live: true, retry: true, });
+
+export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
+    try {
+
+        if (country === CountryCode.ARGENTINA) {
+
+            const result = await dbContext.zipCodeArg.find({
+                selector: { "CP": zipCode },
+            });
+
+            console.log("result", result);
+            return result.docs;
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 // Función para obtener todos los documentos de la base de datos
 export const getTypeVehicles = async () => {
     try {
-        const result = await mydb.tipoVehiculos.allDocs({ include_docs: true });
+        const result = await dbContext.typeVehicles.allDocs({ include_docs: true });
         const documents: any = result.rows.map(row => row.doc);
 
         return documents;
@@ -29,7 +62,7 @@ export const createTypeVehicles = async (type: string) => {
             _id: uuid4(),
             name: type
         }
-        const response = await mydb.tipoVehiculos.put(newTypeVehicle);
+        const response = await dbContext.typeVehicles.put(newTypeVehicle);
         console.log('document type of vehicle created:', response);
         return response;
 
@@ -40,54 +73,28 @@ export const createTypeVehicles = async (type: string) => {
 }
 
 // Función para crear un nuevo documento
-export const createDocument = async (content: Vehiculo) => {
-    try {
-        // const doc = {
-        //     _id: new Date().toISOString(),
-        //     title,
-        //     content,
-        // };
-        const response = await db.put(content);
-        console.log('Document created:', response);
-        return response;
-    } catch (error) {
-        console.error('Error creating document:', error);
-        throw error;
-    }
+export const createDocument = async (_content: Vehiculo) => {
+
 };
 
 // Función para obtener un documento por su ID
-export const getDocumentById = async (id: string) => {
-    try {
-        const doc = await db.get(id);
-        console.log('Document retrieved:', doc);
-        return doc;
-    } catch (error) {
-        console.error('Error retrieving document:', error);
-        throw error;
-    }
+export const getDocumentById = async (_id: string) => {
+
 };
 
 // Función para actualizar un documento
-export const updateDocument = async (doc: Vehiculo) => {
-    try {
-        const response = await db.put(doc);
-        console.log('Document updated:', response);
-        return response;
-    } catch (error) {
-        console.error('Error updating document:', error);
-        throw error;
-    }
+export const updateDocument = async (_doc: Vehiculo) => {
+
 };
 
 // Función para eliminar un documento
-export const deleteDocument = async (doc: any) => {
-    try {
-        const response = await db.remove(doc);
-        console.log('Document deleted:', response);
-        return response;
-    } catch (error) {
-        console.error('Error deleting document:', error);
-        throw error;
-    }
+export const deleteDocument = async (_doc: any) => {
+    // try {
+    //     const response = await db.remove(doc);
+    //     console.log('Document deleted:', response);
+    //     return response;
+    // } catch (error) {
+    //     console.error('Error deleting document:', error);
+    //     throw error;
+    // }
 };

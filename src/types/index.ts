@@ -255,3 +255,15 @@ export interface Deposit extends Document {
     provincia: string;
     pais: string;
 }
+
+export interface ItemZipCode extends Document {
+    CP: string;
+    locality: string;
+    state: string;
+}
+
+export enum CountryCode {
+    ARGENTINA = 'ARG',
+    BRASIL = "BRA",
+    CHILE = "CHL",
+}
