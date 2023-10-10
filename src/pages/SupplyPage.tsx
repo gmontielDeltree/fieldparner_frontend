@@ -40,7 +40,7 @@ export const SupplyPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { supplyActive } = useAppSelector((state) => state.supply);
   const [activeStep, setActiveStep] = useState(0);
-  const [steps, setSteps] = useState<string[]>(["Labores", "Dosis", "Stock"]);
+  const [steps, setSteps] = useState<string[]>(["Insumos", "Dosis", "Stock"]);
   const {
     formulario,
     setFormulario,
