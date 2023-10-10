@@ -32,7 +32,6 @@ const initialForm: Supply = {
   mermaVolatil: "",
   principioActivo: "",
   puntoReposicion: "",
-  numeroLote: "",
 };
 
 export const SupplyPage: React.FC = () => {

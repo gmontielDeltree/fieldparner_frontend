@@ -188,7 +188,7 @@ export interface Supply extends Document {
     stockReservado: number;
     stockDisponible: number;
     tieneLotes: boolean;
-    numeroLote: string;
+    // numeroLote: string;
     principioActivo: string;
     mermaVolatil: string;
     dosisMinima: string;
