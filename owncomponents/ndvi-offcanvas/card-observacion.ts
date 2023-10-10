@@ -59,9 +59,6 @@ const fetch_georaster = async (fecha_obj, uuid, lote_doc) => {
   let fecha = format(fecha_obj, "yyyy-MM-dd");
   let url_tentativa = img_bucket_url + uuid + "_" + fecha + ".geotiff";
 
-  let url = import.meta.env.VITE_COGS_SERVER_URL + "/cog?date=" + fecha +
-  "&bbox=[" +
-  bboxs+"]"
   // // Buscar En DB
   // let t = await isOnDB(url_tentativa);
   // if (t) {
@@ -73,24 +70,23 @@ const fetch_georaster = async (fecha_obj, uuid, lote_doc) => {
   //url_tentativa = "/aaaaa_20220418.geotiff";
   // parse array buffer
   try {
-    const response = await fetch(url);
-    console.log("RESPONSE",response)
+    const response = await fetch(url_tentativa);
     //https://towardsdev.com/how-to-handle-404-500-and-more-using-fetch-api-in-javascript-f4e301925a51
-    // if (!response.ok) {
-    //   if (response.status === 200) {
-    //     console.log("404 -> Generando...");
-    //     let response_gen = await call_generator(fecha, uuid, bboxs);
-    //     if (!response_gen.ok) {
-    //       throw Error(response_gen.statusText);
-    //     }
-    //     const arrayBuffer = await response_gen.arrayBuffer();
-    //     const georaster = await geoblaze.parse(arrayBuffer);
+    if (!response.ok) {
+      if (response.status == 404) {
+        console.log("404 -> Generando...");
+        let response_gen = await call_generator(fecha, uuid, bboxs);
+        if (!response_gen.ok) {
+          throw Error(response_gen.statusText);
+        }
+        const arrayBuffer = await response_gen.arrayBuffer();
+        const georaster = await geoblaze.parse(arrayBuffer);
 
-    //     clip_raster(georaster, lote_doc);
-    //     // Georaster is clipped
-    //     return georaster;
-    //   }
-    // }
+        clip_raster(georaster, lote_doc);
+        // Georaster is clipped
+        return georaster;
+      }
+    }
     const arrayBuffer = await response.arrayBuffer();
     const georaster = await geoblaze.parse(arrayBuffer);
     clip_raster(georaster, lote_doc);

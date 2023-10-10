@@ -236,9 +236,6 @@ export const UnidadesDeMedida = [
     "MILILITRO",
     "GRUESA",
     "KG.BRUTO",
-    "SEMILLAS",
-    "BOLSAS",
-    "QUINTAL",
 ];
 
 export interface DepositState {
@@ -257,4 +254,16 @@ export interface Deposit extends Document {
     localidad: string;
     provincia: string;
     pais: string;
+}
+
+export interface ItemZipCode extends Document {
+    CP: string;
+    locality: string;
+    state: string;
+}
+
+export enum CountryCode {
+    ARGENTINA = 'ARG',
+    BRASIL = "BRA",
+    CHILE = "CHL",
 }

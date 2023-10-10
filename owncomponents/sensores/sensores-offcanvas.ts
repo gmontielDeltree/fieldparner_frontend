@@ -12,12 +12,13 @@ import "@vaadin/grid";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import PouchDB from "pouchdb";
+import "../contratistas/contratista-crud";
 import "@vaadin/icons";
 import { Map } from "mapbox-gl";
 import { Devices, extract_tele } from "./sensores";
 import { touchEvent } from "../helpers";
 import devices_modelos from "./devices_modelos.ts";
-import {  formatDistance } from "date-fns";
+import { format, formatDistance, formatRelative, subDays } from "date-fns";
 import format from "date-fns/format";
 let ApexCharts;
 import("apexcharts").then(({ default: a }) => {

@@ -14,6 +14,7 @@ import Offcanvas from "bootstrap/js/dist/offcanvas";
 import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
 import { GridItemModel } from "@vaadin/grid";
+import "../contratistas/contratista-crud";
 import "@vaadin/icons";
 import { Map, Marker } from "mapbox-gl";
 import { Devices, extract_tele } from "./sensores";
@@ -106,7 +107,7 @@ export class ListaSensoresClass extends LitElement {
       return html`<a
         href="#"
         @click=${() => {
-          this.map.flyTo({ center: posicion(id, this._devices_cards), zoom:17 });
+          this.map.flyTo({ center: posicion(id, this._devices_cards), zoom:20 });
 		  this._offcanvas.hide()
         }}
         class="list-group-item list-group-item-action"

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Loading, TemplateLayout } from "../components";
 import {
   Autocomplete,
@@ -25,8 +25,9 @@ import {
   useDeposit,
   useForm,
 } from "../hooks";
-import { Deposit, TipoEntidad } from "../types";
+import { CountryCode, Deposit, TipoEntidad } from "../types";
 import { removeDepositActive } from "../redux/deposit";
+import { getLocalityAndStateByZipCode } from "../services";
 
 const initialForm: Deposit = {
   descripcion: "",
@@ -46,6 +47,8 @@ const optionsCountry = ["Argentina", "Brasil", "Chile"];
 export const DepositPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [loadingZipCode, setLoadingZipCode] = useState(false);
+  const [localities, setLocalities] = useState<string[]>([]);
   const { depositActive } = useAppSelector((state) => state.deposit);
   const {
     formulario,
@@ -96,6 +99,33 @@ export const DepositPage: React.FC = () => {
     reset();
   };
 
+  const getLocalityAndState = async () => {
+    setLoadingZipCode(true);
+    try {
+      const localityAndStates = await getLocalityAndStateByZipCode(
+        CountryCode.ARGENTINA,
+        codigoPostal
+      );
+
+      if (localityAndStates?.length) {
+        setLocalities(localityAndStates.map((x) => x.locality));
+        setFormulario((prevState) => ({
+          ...prevState,
+          provincia: localityAndStates[0].state,
+        }));
+      }
+
+      setLoadingZipCode(false);
+    } catch (error) {
+      setLoadingZipCode(false);
+      console.log(error);
+    }
+  };
+
+  const onBlurZipCode = () => {
+    if (codigoPostal !== "") getLocalityAndState();
+  };
+
   useEffect(() => {
     if (depositActive) setFormulario(depositActive);
     else setFormulario(initialForm);
@@ -113,7 +143,7 @@ export const DepositPage: React.FC = () => {
 
   return (
     <TemplateLayout key="overview-deposit" viewMap={true}>
-      <Loading key="loading-deposit" loading={isLoading} />
+      <Loading key="loading-deposit" loading={isLoading || loadingZipCode} />
       <Paper
         variant="outlined"
         sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}
@@ -231,6 +261,7 @@ export const DepositPage: React.FC = () => {
               label="CP"
               name="codigoPostal"
               value={codigoPostal}
+              onBlur={() => onBlurZipCode()}
               onChange={handleInputChange}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
@@ -253,17 +284,23 @@ export const DepositPage: React.FC = () => {
             />
           </Grid>
           <Grid item xs={6} sm={4}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label="Localidad"
-              name="localidad"
+            <Autocomplete
+              id="localidad"
+              freeSolo
+              loading={loadingZipCode}
               value={localidad}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
+              onChange={(_event: any, newValue: string | null) => {
+                newValue && handleFormValueChange("localidad", newValue);
               }}
+              inputValue={localidad}
+              onInputChange={(_event, newInputValue) => {
+                handleFormValueChange("localidad", newInputValue);
+              }}
+              options={localities}
               fullWidth
+              renderInput={(params) => (
+                <TextField {...params} name="localidad" label="Localidad" />
+              )}
             />
           </Grid>
           <Grid item xs={12} sm={8}>

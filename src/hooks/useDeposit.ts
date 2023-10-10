@@ -1,10 +1,18 @@
-import PouchDB from 'pouchdb';
 import Swal from 'sweetalert2';
 import { Deposit } from "../types";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { dbContext } from '../services';
 
-const DbDeposits: PouchDB.Database<Deposit> = new PouchDB('deposits');
+// const remoteCouchDBUrl = getEnvVariables().VITE_COUCHDB_URL;
+// const myDBs = {
+//     deposits: "deposits",
+// };
+
+// const DbDeposits = new PouchDB(myDBs.deposits);
+// DbDeposits.sync(`${remoteCouchDBUrl}/${myDBs.deposits}`, { live: true, retry: true, });
+// const syncDb = async () => await DbDeposits.sync(`${remoteCouchDBUrl}/${myDBs.deposits}`, { live: true, retry: true, });
+
 
 export const useDeposit = () => {
 
@@ -15,7 +23,7 @@ export const useDeposit = () => {
     const getDeposits = async () => {
         setIsLoading(true);
         try {
-            const result = await DbDeposits.allDocs({ include_docs: true });
+            const result = await dbContext.deposits.allDocs({ include_docs: true });
 
             setIsLoading(false);
             if (result.rows.length) {
@@ -31,7 +39,7 @@ export const useDeposit = () => {
     const createDeposit = async (newDeposit: Deposit) => {
         setIsLoading(true);
         try {
-            const response = await DbDeposits.post(newDeposit);
+            const response = await dbContext.deposits.post(newDeposit);
             setIsLoading(false);
 
             if (response.ok) {
@@ -49,7 +57,7 @@ export const useDeposit = () => {
     const updateDeposit = async (updateDeposit: Deposit) => {
         setIsLoading(true);
         try {
-            const response = await DbDeposits.put(updateDeposit);
+            const response = await dbContext.deposits.put(updateDeposit);
             setIsLoading(false);
 
             if (response.ok) {
