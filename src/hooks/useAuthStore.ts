@@ -19,6 +19,7 @@ export const useAuthStore = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+
     const startLogin = async ({ email, password }: UserLogin) => {
         // dispatch(onChecking());
         dispatch(startLoading());
@@ -142,6 +143,23 @@ export const useAuthStore = () => {
             dispatch(onLogout(""));
         }
     }
+    // const checkAuthToken = async () => {
+       
+    //     dispatch(onChecking())
+    //     try {
+            
+
+    //         localStorage.setItem('accessToken',"" );
+    //         localStorage.setItem('token_expiration',"" );
+           
+    //         dispatch(onLogin({isAdmin:true,username:"Rodrigo"}));
+            
+    //     } catch (error) {
+    //         localStorage.clear();
+    //         dispatch(onLogout(""));
+    //     }
+    // }
+
 
     const startLogout = () => {
         localStorage.clear();
