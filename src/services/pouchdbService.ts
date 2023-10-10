@@ -8,7 +8,6 @@ PouchDB.plugin(PouchDBFind);
 
 const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
 
-// const db: PouchDB.Database = new PouchDB('test_pouchdb');
 const dbNames = Object.freeze({
     deposits: "deposits",
     typeVehicles: "type-vehicles",
@@ -21,10 +20,8 @@ export const dbContext = {
     zipCodeArg: new PouchDB<ItemZipCode>(dbNames.zipCodeArg),
 };
 
-// const dbZipCodeArg = new PouchDB(dbNames.zipCodeArg);
-
-dbContext.deposits.sync(`${remoteCouchDBUrl}/${dbNames.deposits}`, { live: true, retry: true, });
-dbContext.zipCodeArg.sync(`${remoteCouchDBUrl}/${dbNames.zipCodeArg}`, { live: true, retry: true, });
+dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, { live: true, retry: true, });
+dbContext.zipCodeArg.sync(`${remoteCouchDBUrl}${dbNames.zipCodeArg}`, { live: true, retry: true, });
 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
     try {
