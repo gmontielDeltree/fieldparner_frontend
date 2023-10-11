@@ -1,9 +1,9 @@
-import PouchDB from 'pouchdb';
 import Swal from 'sweetalert2';
 import { Supply } from "../types";
 import { useState } from "react";
+import { dbContext } from '../services';
+// const DBSupplies: PouchDB.Database<Supply> = new PouchDB('supplies');
 
-const DBSupplies: PouchDB.Database<Supply> = new PouchDB('supplies');
 
 export const useSupply = () => {
 
@@ -13,7 +13,7 @@ export const useSupply = () => {
     const getSupplies = async () => {
         setIsLoading(true);
         try {
-            const result = await DBSupplies.allDocs({ include_docs: true });
+            const result = await dbContext.supplies.allDocs({ include_docs: true });
 
             setIsLoading(false);
             if (result.rows.length) {
@@ -29,7 +29,7 @@ export const useSupply = () => {
     const createSupply = async (newSupply: Supply) => {
         setIsLoading(true);
         try {
-            const response = await DBSupplies.post(newSupply);
+            const response = await dbContext.supplies.post(newSupply);
             setIsLoading(false);
 
             if (response.ok) {
@@ -46,7 +46,7 @@ export const useSupply = () => {
     const updateSupply = async (updateSupply: Supply) => {
         setIsLoading(true);
         try {
-            const response = await DBSupplies.put(updateSupply);
+            const response = await dbContext.supplies.put(updateSupply);
             setIsLoading(false);
 
             if (response.ok) {

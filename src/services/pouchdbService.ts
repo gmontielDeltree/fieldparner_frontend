@@ -1,7 +1,7 @@
 import PouchDB from 'pouchdb';
 import PouchDBFind from 'pouchdb-find'
 import { getEnvVariables } from '../helpers/getEnvVariables';
-import { CountryCode, ItemZipCode, Vehiculo } from '../types';
+import { CountryCode, Deposit, ItemZipCode, Supply, Vehiculo } from '../types';
 import uuid4 from 'uuid4';
 
 PouchDB.plugin(PouchDBFind);
@@ -11,28 +11,30 @@ const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
 const dbNames = Object.freeze({
     deposits: "deposits",
     typeVehicles: "type-vehicles",
-    zipCodeArg: "zip-code-arg"
+    zipCodeArg: "zip-code-arg",
+    supplies: "supplies",
 });
 
 export const dbContext = {
     typeVehicles: new PouchDB(dbNames.typeVehicles),
-    deposits: new PouchDB(dbNames.deposits),
+    deposits: new PouchDB<Deposit>(dbNames.deposits),
     zipCodeArg: new PouchDB<ItemZipCode>(dbNames.zipCodeArg),
+    supplies: new PouchDB<Supply>(dbNames.supplies),
 };
 
 dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, { live: true, retry: true, });
 dbContext.zipCodeArg.sync(`${remoteCouchDBUrl}${dbNames.zipCodeArg}`, { live: true, retry: true, });
+dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, { live: true, retry: true, });
+dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, { live: true, retry: true, });
+
 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
     try {
 
         if (country === CountryCode.ARGENTINA) {
-
             const result = await dbContext.zipCodeArg.find({
                 selector: { "CP": zipCode },
             });
-
-            console.log("result", result);
             return result.docs;
         }
     } catch (error) {
@@ -40,6 +42,7 @@ export const getLocalityAndStateByZipCode = async (country: string, zipCode: str
     }
 }
 
+//TODO: remover esta funcion
 // Función para obtener todos los documentos de la base de datos
 export const getTypeVehicles = async () => {
     try {
@@ -53,6 +56,7 @@ export const getTypeVehicles = async () => {
     }
 };
 
+//TODO: remover esta funcion
 export const createTypeVehicles = async (type: string) => {
     try {
         const newTypeVehicle = {
