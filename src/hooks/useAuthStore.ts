@@ -144,7 +144,6 @@ export const useAuthStore = () => {
         }
     }
     // const checkAuthToken = async () => {
-       
     //     dispatch(onChecking())
     //     try {
             
