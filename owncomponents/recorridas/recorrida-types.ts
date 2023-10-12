@@ -66,6 +66,17 @@ export interface Recorrida extends PouchDB.Core.Document<FeatureCollection> {
   created: CreatedTag;
 }
 
+export interface RecorridaInforme extends PouchDB.Core.Document<any>{
+  _id:string;
+  _rev?: string;
+  uuid: string;
+  recorrida: Recorrida;
+  recorrida_map_url: string;
+  logo_compania: string;
+  indices : {name:string,url:string}[],
+  meteorologia: [];
+}
+
 /* Inicializadores */
 const empty_punto_properties = (id: string, orden ?: number) => {
   let props: PropertiesPunto = {

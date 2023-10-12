@@ -10,6 +10,7 @@ import "./analisis-suelo/analisis-suelo-import-export";
 import "./vehiculos/vehiculos-detalles";
 import "./vehiculos/vehiculos-lista";
 import "./null-component";
+import { Component } from "react";
 // import("./ndvi-offcanvas/ndvi-offcanvas");
 import("./campo-offcanvas/campo-offcanvas");
 // import("./lote-offcanvas/lote-offcanvas-side");
@@ -82,6 +83,11 @@ export const routes = [
       await import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
     },
     component: "upsert-aplicacion",
+    children:[
+      {
+      path:"/inline/add_personal",
+      component: "ingenieros-editor"}
+    ]
   },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/actividad/editar/:uuid",
@@ -89,6 +95,7 @@ export const routes = [
       await import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
     },
     component: "upsert-aplicacion",
+
   },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/ejecucion/:uuid/nueva",

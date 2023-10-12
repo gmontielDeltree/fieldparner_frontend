@@ -14,6 +14,9 @@ import { weather_icons } from "./weather-icons";
 export class WeatherForecast extends LitElement {
 
     @property()
+    fecha: string;
+
+    @property()
     posicion: LngLatLike = [-59.0979, -35.1854];
 
     @state()
@@ -23,6 +26,10 @@ export class WeatherForecast extends LitElement {
         
         .day-card {
             margin: 5px;
+            background-color: blue;
+            color: aquamarine;
+        border-radius: 5px;
+        padding:5px;
         }
         
         .temperaturas{
@@ -32,7 +39,7 @@ export class WeatherForecast extends LitElement {
         }
 
     `
-    
+
 
     private actor;
     private ctx;
@@ -40,7 +47,7 @@ export class WeatherForecast extends LitElement {
 
     constructor() {
         super()
-        console.log(this.posicion)
+        console.log(this.posicion, this.fecha)
 
         this.actor = interpret(
             machine
@@ -85,7 +92,7 @@ export class WeatherForecast extends LitElement {
         <div class="day-card">
             <div class="fecha">${pd.daily.time[index]}</div>
             <div style="background: url(${weather_icons[wmo_code]});height: 4rem;background-size: contain;background-repeat: no-repeat;"></div>
-            <div class="temperaturas"><span>${pd.daily.temperature_2m_min[index]}ºC</span>  <span>${pd.daily.temperature_2m_max[index]}ºC</span></div>
+            <div class="temperaturas"><span>${pd.daily.temperature_2m_min[index].toFixed(0)}ºC</span>  <span>${pd.daily.temperature_2m_max[index].toFixed(0)}ºC</span></div>
         </div>
         
     `}

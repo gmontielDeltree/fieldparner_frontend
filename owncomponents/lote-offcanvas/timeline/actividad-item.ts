@@ -18,13 +18,13 @@ import "@vaadin/vertical-layout";
 import "@vaadin/upload";
 import "@vaadin/menu-bar";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
-import { format, isBefore, parse, parseISO } from "date-fns";
-import { map } from "lit/directives/map.js";
+import { isBefore, parseISO } from "date-fns";
 import { translate } from "lit-translate";
 import { actividad_detalles } from "./detalles-actividad/detalles-actividad";
 import { ejecucion_detalles } from "./detalles-actividad/detalles-ejecucion";
 import { Cultivo } from '../../insumos/insumos-types';
 import { openReportOrdenTrabajo } from './actividad-functions';
+import "../../common_components/weather-forecast/weather-forecast";
 
 @customElement("actividad-item")
 export class ActividadItem extends LitElement {
@@ -328,7 +328,8 @@ export class ActividadItem extends LitElement {
           </div>
           ${actividad_detalles(this.item)}
 
-          
+          <h5>Pronostico</h5>
+         <weather-forecast .posicion=${<[number,number]>[-59,-36]} .fecha=${this.item.detalles.fecha_ejecucion_tentativa}></weather-forecast> 
         </div>
         <!-- Fin planificacion -->
 
