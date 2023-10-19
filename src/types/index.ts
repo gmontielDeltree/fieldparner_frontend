@@ -145,8 +145,8 @@ export enum TipoEntidad {
     JURIDICA = 'juridica',
 }
 
-export interface Business {
-    id?: string;
+export interface Business extends Document {
+    // id?: string;
     nombreCompleto?: string;
     documento?: string;
     telefono: string;
@@ -166,6 +166,7 @@ export interface Business {
     esEmpleado?: boolean;
     legajo?: string;
     matricula?: string;
+    categorias: string[];
 }
 
 export interface BusinessState {
@@ -263,6 +264,11 @@ export interface ItemZipCode extends Document {
     CP: string;
     locality: string;
     state: string;
+}
+
+export interface Category extends Document {
+    name: string;
+    description: string;
 }
 
 export enum CountryCode {

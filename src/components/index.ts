@@ -7,6 +7,7 @@ export * from './SearchInput';
 export * from './SearchButton';
 export * from './DataTable/EspecificationTable';
 export * from './DataTable/MaintenanceTable';
+export * from './DataTable/CategoryTable';
 export * from './BusinessForm';
 export * from './AddressForm';
 export * from './TemplateLayout';

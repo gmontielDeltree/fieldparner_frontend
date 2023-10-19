@@ -5,3 +5,4 @@ export * from './useFormValid';
 export * from './useBusiness';
 export * from './useSupply';
 export * from './useDeposit';
+export * from './useCategory';

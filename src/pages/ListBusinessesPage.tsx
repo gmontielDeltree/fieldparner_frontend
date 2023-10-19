@@ -61,7 +61,7 @@ export const ListBusinessesPage: React.FC = () => {
 
   const onClickUpdateBusiness = (item: Business) => {
     dispatch(setBusinessActive(item));
-    navigate(`/init/overview/business/${item.id}`);
+    navigate(`/init/overview/business/${item._id}`);
   };
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export const ListBusinessesPage: React.FC = () => {
         >
           <BusinessIcon />
           <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
-            Empresas/Personas
+            Entidades Sociales
           </Typography>
         </Box>
         <Box component="div" sx={{ mt: 7 }}>
@@ -124,7 +124,7 @@ export const ListBusinessesPage: React.FC = () => {
               isLoading={isLoading}
             >
               {businesses.map((row) => (
-                <ItemRow key={row.id} hover>
+                <ItemRow key={row._id} hover>
                   <TableCellStyled align="center">
                     {row.tipoEntidad}
                   </TableCellStyled>
