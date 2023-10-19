@@ -96,7 +96,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <GroupIcon />
               </ListItemIcon>
-              <ListItemText primary="Mi Empresa" />
+              <ListItemText primary="Entidades Sociales" />
             </ListItemButton>
           </ListItem>
           <ListItem key="supplies" disablePadding>

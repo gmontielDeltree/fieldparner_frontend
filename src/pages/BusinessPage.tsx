@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector, useBusiness, useForm } from "../hooks";
 import { Business, TipoEntidad } from "../types";
-import { AddressForm, Loading } from "../components";
+import { AddressForm, CategoryTable, Loading } from "../components";
 import {
   Button,
   Container,
@@ -35,6 +35,7 @@ const initialForm: Business = {
   esEmpleado: false,
   legajo: "",
   matricula: "",
+  categorias: [],
 };
 
 export const BusinessPage: React.FC = () => {
@@ -42,7 +43,11 @@ export const BusinessPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { businessActive } = useAppSelector((state) => state.business);
   const [activeStep, setActiveStep] = useState(0);
-  const [steps, setSteps] = useState<string[]>(["Informacion", "Ubicacion"]);
+  const [steps, setSteps] = useState<string[]>([
+    "Informacion",
+    "Categoría",
+    "Ubicacion",
+  ]);
   const {
     formulario,
     setFormulario,
@@ -52,6 +57,21 @@ export const BusinessPage: React.FC = () => {
     reset,
   } = useForm<Business>(initialForm);
   const { isLoading, createBusiness, updateBusiness } = useBusiness();
+
+  const handleDeleteCategory = (category: string) => {
+    setFormulario((prevState) => ({
+      ...prevState,
+      categorias: prevState.categorias.filter(
+        (c) => c.toLowerCase() !== category.trim().toLowerCase()
+      ),
+    }));
+  };
+  const handleAddCategory = (category: string) => {
+    setFormulario((prevState) => ({
+      ...prevState,
+      categorias: [category.trim(), ...prevState.categorias],
+    }));
+  };
 
   const getStepContent = useMemo(
     () => (step: number) => {
@@ -68,6 +88,15 @@ export const BusinessPage: React.FC = () => {
           );
         case 1:
           return (
+            <CategoryTable
+              key="categories"
+              categories={formulario.categorias}
+              handleDeleteCategory={handleDeleteCategory}
+              handleAddCategory={handleAddCategory}
+            />
+          );
+        case 2:
+          return (
             <AddressForm
               key="address-customer"
               values={formulario}
@@ -78,7 +107,14 @@ export const BusinessPage: React.FC = () => {
           throw new Error("Unknown step");
       }
     },
-    [formulario, handleInputChange, handleSelectChange, handleCheckboxChange]
+    [
+      formulario,
+      handleInputChange,
+      handleSelectChange,
+      handleCheckboxChange,
+      handleAddCategory,
+      handleDeleteCategory,
+    ]
   );
 
   const handleNext = () => {
@@ -100,7 +136,7 @@ export const BusinessPage: React.FC = () => {
   };
 
   const handleUpdateBusiness = () => {
-    if (formulario.id) updateBusiness(formulario.id, formulario);
+    if (formulario._id) updateBusiness(formulario);
   };
 
   useEffect(() => {
@@ -123,7 +159,7 @@ export const BusinessPage: React.FC = () => {
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
         >
           <Typography component="h1" variant="h4" align="center" gutterBottom>
-            {businessActive ? "Editar" : "Nueva"} Empresa/Persona
+            {businessActive ? "Editar" : "Nueva"} Entidad Social
           </Typography>
           <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 3, mb: 2 }}>
             {steps.map((label) => (
