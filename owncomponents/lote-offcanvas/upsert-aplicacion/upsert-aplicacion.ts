@@ -85,9 +85,7 @@ export class UpsertAplicacion extends LitElement {
   selected_step: number = 0;
 
   @state()
-  loading: bootstrap = false;
-
-  private modal: Modal;
+  loading: boolean = false;
 
   @state()
   dialogOpened: boolean = false;
@@ -109,10 +107,6 @@ export class UpsertAplicacion extends LitElement {
 
   private titulo: string = "Actividad";
 
-  override firstUpdated() {
-    this.modal = new Modal(this.shadowRoot.getElementById("modal"));
-    this.modal.show();
-  }
 
   protected willUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -429,7 +423,6 @@ export class UpsertAplicacion extends LitElement {
         { uuid_campo: campo_nombre, uuid_lote: lote_nombre }
       );
       Router.go(lote_url);
-      this.modal.hide();
     });
   }
 
@@ -449,31 +442,10 @@ export class UpsertAplicacion extends LitElement {
     console.count("UpsertAplicacion-Render");
 
     return html`
-      <div
-        id="modal"
-        class="modal"
-        tabindex="-1"
-        @cerrar-modal=${() => this.modal.hide()}
-        @abrir-modal=${() => this.modal.show()}
-        @nueva-linea-insumo=${(e: CustomEvent) => {
-          this.agregarLineaInsumo();
-        }}
-      >
-        <!-- Full screen modal -->
-        <div class="modal-dialog modal-fullscreen">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">${this.titulo}</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                @click=${() => Router.go("/")}
-              ></button>
-            </div>
-            <div class="modal-body">
-              <vaadin-tabsheet
+    <slot></slot>
+    <modal-generico .modalOpened=${true} backurl="/">
+    <div slot="body">
+    <vaadin-tabsheet
                 id="actividad-tabsheet"
                 .selected=${this.selected_step}
                 @selected-changed=${(e) => {
@@ -516,8 +488,8 @@ export class UpsertAplicacion extends LitElement {
                               ${this.ingenieros?.length === 0
                                 ? html`${translate("no_hay_ingenieros")}
                                     <a
-                                      href=${"/personal/add?from=" +
-                                      this.location.pathname}
+                                      href=${window.location.href + "/inline/add_personal" //"/personal/add?from=" +
+                                      /*this.location.pathname*/}
                                       >Agrega uno</a
                                     >`
                                 : ""}
@@ -713,10 +685,10 @@ export class UpsertAplicacion extends LitElement {
                 </div>
                 <!-- Fin Condiciones -->
               </vaadin-tabsheet>
-            </div>
-            <!-- Fin Body modal -->
-            <div class="modal-footer">
-              <button
+    </div>
+
+    <div slot="footer">
+    <button
                 type="button"
                 tabindex="-1"
                 class="btn btn-secondary"
@@ -729,18 +701,7 @@ export class UpsertAplicacion extends LitElement {
                 Atras
               </button>
 
-              ${(document.querySelector("#actividad-tabsheet") as TabSheet)
-                ?.items.length -
-                1 ===
-              this.selected_step
-                ? html`<button
-                    type="button"
-                    class="btn btn-primary"
-                    @click=${this.guardar}
-                  >
-                    Guardar
-                  </button>`
-                : html` <button
+             <button
                     type="button"
                     class="btn btn-primary"
                     @click=${() =>
@@ -755,15 +716,22 @@ export class UpsertAplicacion extends LitElement {
                           : this.selected_step + 1)}
                   >
                     Siguiente
-                  </button>`}
-            </div>
-          </div>
-        </div>
-      </div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-success"
+                    @click=${this.guardar}
+                  >
+                    Guardar
+                  </button>
+    </div>
+    </modal-generico>
+    
     `;
   }
 }
 
-function truncar(x) {
+function truncar(x: number) {
   return +x.toPrecision(4);
 }

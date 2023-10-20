@@ -1,8 +1,8 @@
 import { ndvi_layers_init } from './ndvi-layers';
 import { gbl_state } from "./../state";
 import { depositos_update, depositos_layer_init } from "./depositos-layer";
-import { LitElement, html, unsafeCSS, css } from "lit";
-import { property } from "lit/decorators.js";
+import { LitElement, html, unsafeCSS, css, PropertyValueMap } from "lit";
+import { property, query } from "lit/decorators.js";
 import {
   touchEvent,
   layer_visibility,
@@ -13,6 +13,8 @@ import {
 import { CircleLayer, GeoJSONSource, Layer, Map, SymbolLayer } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import syncMaps from "@mapbox/mapbox-gl-sync-move";
+
 import mapbox_geocoder_style from "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import mapbox_style from "mapbox-gl/dist/mapbox-gl.css?inline";
 import mapbox_draw_style from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css?inline";
@@ -28,6 +30,8 @@ import { listar_proveedores } from "../proveedores/proveedores-funciones";
 import { map } from "lit/directives/map.js";
 import { Feature, FeatureCollection } from "@turf/helpers";
 import { Router } from "@vaadin/router";
+import { StateController } from "@lit-app/state";
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 
 // https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
 // https://github.com/kepta/idly/wiki/examples#using-bing-satellite-map
@@ -138,7 +142,11 @@ export class MapaPrincipal extends LitElement {
   @property()
   campos: any; //es el allDocs desde campos
 
-  @property()
+  @property({
+    hasChanged(newVal: any, oldVal: any) {
+      return false;
+    },
+  })
   settings: any;
 
   private layers: Layer[];
@@ -161,13 +169,31 @@ export class MapaPrincipal extends LitElement {
     `,
     css`
       /* Pantalla 'Pequeña' */
+
+      .map_box_container {
+        position: relative;
+        height: 100% !important;
+        width: 100% !important;
+        display: flex;
+        flex-direction: row;
+      }
+
+      #map2 {
+        width: 100%;
+        height: 100%;
+      }
+
       #map {
         position: absolute;
         top: var(--_vaadin-app-layout-navbar-offset-size);
         /*bottom: 3;*/
         width: 100vw;
         z-index: 0;
-        height: calc(
+        height: 100%;
+        width: 100%;
+        background-color: red;
+        position: relative;
+        /* height: calc(
           100vh - var(--_vaadin-app-layout-navbar-offset-size)
         ) !important;
       }
@@ -180,7 +206,12 @@ export class MapaPrincipal extends LitElement {
           /*bottom: 3;*/
           width: 100vw;
           z-index: 0;
-          height: calc(
+          height: 100%;
+          width: 50%;
+          background-color: green;
+          position: relative;
+
+          /* height: calc(
             100vh - var(--_vaadin-app-layout-navbar-offset-size)
           ) !important;
         }
@@ -193,6 +224,24 @@ export class MapaPrincipal extends LitElement {
       .mapboxgl-ctrl-top-right {
         z-index: 0 !important;
       }
+
+      .icon-dual {
+        background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools --%3E%3Csvg width='29px' height='29px' viewBox='0 0 15 15' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.49991 0.876892C3.84222 0.876892 0.877075 3.84204 0.877075 7.49972C0.877075 11.1574 3.84222 14.1226 7.49991 14.1226C11.1576 14.1226 14.1227 11.1574 14.1227 7.49972C14.1227 3.84204 11.1576 0.876892 7.49991 0.876892ZM7.49988 1.82689C4.36688 1.8269 1.82707 4.36672 1.82707 7.49972C1.82707 10.6327 4.36688 13.1725 7.49988 13.1726V1.82689Z' fill='%23000000' /%3E%3C/svg%3E");
+      }
+      
+      .mapboxgl-popup-content {
+        background-color: #053B50;
+        color: #EEEEEE;
+        
+      }
+
+      .mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+        border-right-color: #053B50;
+      }
+
+      .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+        border-top-color: #053b50
+      }
     `,
   ];
 
@@ -200,22 +249,52 @@ export class MapaPrincipal extends LitElement {
     super();
     mapboxgl.accessToken =
       "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
+    
+    mapboxgl.prewarm();
   }
 
   firstUpdated() {
-    this.map = new Map({
-      container: this.shadowRoot.getElementById("map"),
-      //style: "mapbox://styles/mapbox/outdoors-v11",
-      style: mapStyle,
-      //style: "mapbox://styles/mapbox/satellite-streets-v11?optimize=true",
-      center: gbl_state.ultima_posicion,
-      zoom: 14,
+    this.mapa_init();
+  }
+
+  async mapa_init() {
+    /* Para evitar empezar a renderizar el mapa antes de que height sea completamente definida */
+    /* Esperar hasta que el update finalice */
+    await this.getUpdateComplete();
+    console.log("map height", this._map.offsetHeight);
+
+    this.map2 = new Map({
+      container: this._map2,
+      style: "mapbox://styles/mapbox/satellite-streets-v12?optimize=true",
+      center: gbl_state.ultima_posicion ?? {
+        lng: -61.19468066139592,
+        lat: -31.295018658148038,
+      },
+      zoom: gbl_state.ultimo_zoom ?? 3.4,
+      maxZoom: 17,
       attributionControl: true,
       preserveDrawingBuffer: false,
     });
 
+    this.map2.on("load", () => {
+      gbl_state.map2 = this.map2;
+    });
 
-    this.map.addControl(new mapboxgl.NavigationControl());
+    this.map = new Map({
+      container: this._map, //this.shadowRoot.getElementById("map"),
+      //style: "mapbox://styles/mapbox/outdoors-v12",
+      //style: mapStyle,
+      style: "mapbox://styles/mapbox/satellite-streets-v12?optimize=true",
+      center: gbl_state.ultima_posicion ?? {
+        lng: -61.19468066139592,
+        lat: -31.295018658148038,
+      },
+      zoom: gbl_state.ultimo_zoom ?? 3.4,
+      maxZoom: 17,
+      attributionControl: true,
+      preserveDrawingBuffer: false,
+    });
+
 
     this.draw = new MapboxDraw({
       displayControlsDefault: false,
@@ -235,10 +314,15 @@ export class MapaPrincipal extends LitElement {
     //this.map.resize();
 
     this.map.on("load", () => {
-      // const geocoder = new MapboxGeocoder({
-      //   accessToken: mapboxgl.accessToken,
-      //   mapboxgl: mapboxgl,
-      // });
+      syncMaps(this.map, this.map2);
+
+      const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        mapboxgl: mapboxgl,
+        countries:"ar,br,py",
+        marker:false,
+        placeholder: "Localidad, Calle, etc."
+      });
 
       // night fog styling
       this.map.setFog({
@@ -247,9 +331,28 @@ export class MapaPrincipal extends LitElement {
         color: "#242B4B",
       });
 
-      // this.map.addControl(geocoder);
+
+      this.map.addControl(geocoder);
+      this.map.addControl(new mapboxgl.NavigationControl());
       this.map.addControl(this.draw); // Sin controles
       //tour();
+
+      const gl_control = new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        // When active the map will receive updates to the device's location as it changes.
+        trackUserLocation: true,
+        // Draw an arrow next to the location dot to indicate which direction the device is heading.
+        showUserHeading: true,
+      })
+
+      this.map.addControl(
+        gl_control
+      );
+
+      // Dirty way de pasar los controles al resto de la app
+      this.map._custom_controls = {geolocate: gl_control}
 
       let layers_names = [];
       this.map.addSource("campos", {
@@ -733,17 +836,43 @@ export class MapaPrincipal extends LitElement {
     });
   };
 
-  willUpdate(props) {
-    if (props.has("campos")) {
-      this._redraw_map();
+  binding = new StateController(this, gbl_dualmap);
+
+
+
+  protected willUpdate(_changedProperties: PropertyValueMap<any> | globalThis.Map<PropertyKey, unknown>): void {
+    if(_changedProperties.has("campos")){
+      this._redraw_map()
+    }
+  }
+
+  update(props) {
+    // Se actualizo, pero no es por cambio de props? -> controller
+    // console.log("MAPSIZe",props)
+    super.update(props);
+
+    if (this._map !== null && props.size === 0) {
+      console.log("Redraw por Dual Map", props);
+      this.map2?.resize();
+      this.map?.resize();
+      //
     }
   }
 
   render() {
+    console.count("mapa-principal render");
     return html`
-      <div id="map"></div>
-
-      <sp-theme scale="medium" color="light">
+      <div class="map_box_container">
+        <div
+          id="map"
+          style=${gbl_dualmap.dualmap ? "width:50%" : "width:100%;"}
+        ></div>
+        <div
+          id="map2"
+          style=${gbl_dualmap.dualmap ? "width:50%" : "width:0%;"}
+        ></div>
+      </div>
+      <sp-theme scale="medium" color="dark">
         <!-- End content requiring theme application. -->
         <sp-action-menu size="m" class="add-button">
           <span slot="label" style="color:white;">Agregar</span>
@@ -753,13 +882,6 @@ export class MapaPrincipal extends LitElement {
             }}
           >
             Agregar un Campo
-          </sp-menu-item>
-          <sp-menu-item
-            @click=${() => {
-              this.sendEvent("nuevo-contratista-click"), null;
-            }}
-          >
-            Agregar un Contratista
           </sp-menu-item>
         </sp-action-menu>
       </sp-theme>

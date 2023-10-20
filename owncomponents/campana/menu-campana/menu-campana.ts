@@ -167,7 +167,8 @@ export class MenuCampanaButton extends LitElement {
           .items="${this.items}"
           @item-selected="${this.itemSelected}"
         >
-          <upsert-campana-dialog
+        </vaadin-menu-bar>
+        <upsert-campana-dialog
             .dialogOpened=${this.dialogOpened}
             .campanas=${this.campanas}
             .campana_to_edit=${this.campana_2_edit}
@@ -184,7 +185,6 @@ export class MenuCampanaButton extends LitElement {
             }}
             .edit=${this.edit_campana}
           ></upsert-campana-dialog>
-        </vaadin-menu-bar>
       `;
     } else {
       return null;

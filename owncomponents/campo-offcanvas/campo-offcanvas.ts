@@ -75,7 +75,7 @@ export class CampoOffcanvas extends LitElement {
       this.campo_doc.lotes
     );
     gbl_state.map.showSelectedCampo();
-    gbl_state.map.fitBounds(bbox(this.campo_doc.campo_geojson));
+    gbl_state.map.fitBounds(bbox(this.campo_doc.campo_geojson),{padding:{top:30,bottom:30}});
     // Hide all layers
     // Show seleccion border
     // Show lotes fill

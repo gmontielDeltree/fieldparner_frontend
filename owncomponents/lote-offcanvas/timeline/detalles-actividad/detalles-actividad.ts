@@ -1,11 +1,12 @@
 import { html } from "lit";
 import { Actividad } from "../../../depositos/depositos-types";
 import { map } from "lit/directives/map.js";
+import "@vaadin/details"
 
 const actividad_detalles = (actividad : Actividad) => html`
 
-<vaadin-details opened theme="small">
-            <div slot="summary">Insumos</div>
+<vaadin-details summary="Insumos" opened theme="small">
+            <!-- <div slot="summary">Insumos</div> -->
 
             <ul>
               ${map(
@@ -18,15 +19,13 @@ const actividad_detalles = (actividad : Actividad) => html`
               )}
             </ul>
           </vaadin-details>
-          <vaadin-details theme="small">
-            <div slot="summary">Contratista</div>
+          <vaadin-details summary="Contratista" theme="small">
 
             <ul>
               <li>${actividad.contratista?.nombre || "Sin Contratista"}</li>
             </ul>
           </vaadin-details>
-          <vaadin-details theme="small">
-            <div slot="summary">Condiciones Esperadas de Trabajo</div>
+          <vaadin-details summary="Condiciones Esperadas de Trabajo" theme="small">
             <ul>
               <li>
                 Temperatura min...max:
@@ -45,8 +44,8 @@ const actividad_detalles = (actividad : Actividad) => html`
               </li>
             </ul>
           </vaadin-details>
-          <vaadin-details theme="small">
-            <div slot="summary">Observaciones</div>
+          <vaadin-details summary="Observaciones" theme="small">
+          
             <ul>
               <li>${actividad.comentario}</li>
             </ul>

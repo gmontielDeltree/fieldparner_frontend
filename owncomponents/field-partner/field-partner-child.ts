@@ -8,7 +8,7 @@ import("../contratistas/contratistas-lista");
 import("../sensores/sensores-offcanvas");
 import "../nueva-geometria/nueva-geometria";
 import "../nuevo-campo/nuevo-campo";
-import("../notas-offcanvas/nota-target");
+import("../recorridas/nota-target");
 import("../lista-centrales-cercanas/lista-centrales-cercanas");
 import("../sensores/lista-de-sensores");
 import "../navbar-element/new-app-layout";
@@ -58,16 +58,28 @@ export class FieldPartnerChild extends LitElement {
 
   private initialized: boolean = false;
 
+  _handle_router_location_changed  = (e : any) => gbl_state.location_history.push(e.detail.location.pathname)
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener("vaadin-router-location-changed", this._handle_router_location_changed);
+        // window.addEventListener("DOMContentLoaded", () => {
+    //   const parsedUrl = new URL(window.location as unknown as string);
+    //   // searchParams.get() will properly handle decoding the values.
+    //   console.log("Title shared: " + parsedUrl.searchParams.get("title"));
+    //   console.log("Text shared: " + parsedUrl.searchParams.get("text"));
+    //   console.log("URL shared: " + parsedUrl.searchParams.get("url"));
+    // });
+
+  }
+  
+  disconnectedCallback() {
+    window.addEventListener("vaadin-router-location-changed", this._handle_router_location_changed);
+    super.disconnectedCallback();
+  }
+
   constructor() {
     super();
-
-    window.addEventListener("DOMContentLoaded", () => {
-      const parsedUrl = new URL(window.location as unknown as string);
-      // searchParams.get() will properly handle decoding the values.
-      console.log("Title shared: " + parsedUrl.searchParams.get("title"));
-      console.log("Text shared: " + parsedUrl.searchParams.get("text"));
-      console.log("URL shared: " + parsedUrl.searchParams.get("url"));
-    });
 
     /* Clicks en varios botones */
     this.addEventListener("ver-campo-detalles", (e: any) => {
@@ -198,14 +210,15 @@ export class FieldPartnerChild extends LitElement {
     console.log("Init the whole thing");
     this.load_campos_y_settings();
     this.db
-    .changes({
-      since: "now",
-      live: true,
-    })
-    .on("change", () => {
-      this.load_campos_y_settings();
-      console.log("CHANGES!!");
-    });
+      .changes({
+        since: "now",
+        live: true,
+      })
+      .on("change", () => {
+        this.load_campos_y_settings();
+        
+        console.log("CHANGES!!");
+      });
   }
 
   /** Crea el objeto settings y lo graba en la db
@@ -241,6 +254,7 @@ export class FieldPartnerChild extends LitElement {
       .then((result) => {
         this.campos = result;
         gbl_state.campos = this.campos;
+        
       });
 
     // Get Settings
@@ -274,11 +288,30 @@ export class FieldPartnerChild extends LitElement {
 
     return html`
       <app-layout-navbar-placement>
-        <div id="router-container"></div>
-        <mapa-principal
-          .campos=${this.campos}
-          .settings=${this.settings}
-        ></mapa-principal>
+        <div id="body" style="display:flex;width:100%;position:relative;">
+           <!-- Router Outlet -->
+          <div
+            id="router-container"
+            style="height:calc(100vh - var(--_vaadin-app-layout-navbar-offset-size));background-color:red; "
+          ></div>
+
+          <div
+            id="map-container"
+            style="display:flex; flex-flow: column; height: calc(100vh - var(--_vaadin-app-layout-navbar-offset-size));flex-grow:1;min-width:0; "
+          >
+            <mapa-principal
+              .campos=${this.campos}
+              .settings=${this.settings}
+              style="flex:1 1 auto;"
+            ></mapa-principal>
+            <news-bar
+              @hidden=${() => {
+                gbl_state.map.resize();
+                console.log("RESIZE");
+              }}
+            ></news-bar>
+          </div>
+        </div>
       </app-layout-navbar-placement>
 
       <nuevo-campo
