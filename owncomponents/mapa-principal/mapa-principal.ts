@@ -30,6 +30,7 @@ import { listar_proveedores } from "../proveedores/proveedores-funciones";
 import { Feature } from "@turf/helpers";
 import { Router } from "@vaadin/router";
 import { StateController } from "@lit-app/state";
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 
 // https://observablehq.com/@bryik/esri-world-imagery-in-mapbox-gl-js
 // https://github.com/kepta/idly/wiki/examples#using-bing-satellite-map
@@ -163,7 +164,7 @@ export class MapaPrincipal extends LitElement {
   private layers: Layer[];
 
   static override styles = [
-    //unsafeCSS(mapbox_geocoder_style),
+    unsafeCSS(mapbox_geocoder_style),
     unsafeCSS(mapbox_draw_style),
     unsafeCSS(mapbox_style),
     css`
@@ -311,7 +312,6 @@ export class MapaPrincipal extends LitElement {
       preserveDrawingBuffer: false,
     });
 
-    this.map.addControl(new mapboxgl.NavigationControl());
 
     this.draw = new MapboxDraw({
       displayControlsDefault: false,
@@ -333,10 +333,13 @@ export class MapaPrincipal extends LitElement {
     this.map.on("load", () => {
       syncMaps(this.map, this.map2);
 
-      // const geocoder = new MapboxGeocoder({
-      //   accessToken: mapboxgl.accessToken,
-      //   mapboxgl: mapboxgl,
-      // });
+      const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        mapboxgl: mapboxgl,
+        countries:"ar,br,py",
+        marker:false,
+        placeholder: "Localidad, Calle, etc."
+      });
 
       // night fog styling
       this.map.setFog({
@@ -345,7 +348,9 @@ export class MapaPrincipal extends LitElement {
         color: "#242B4B",
       });
 
-      // this.map.addControl(geocoder);
+
+      this.map.addControl(geocoder);
+      this.map.addControl(new mapboxgl.NavigationControl());
       this.map.addControl(this.draw); // Sin controles
       //tour();
 
