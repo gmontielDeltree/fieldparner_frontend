@@ -63,7 +63,52 @@ export const list_of_indexes: IndiceEspectral[] = [
     colormap_fn: d3.interpolateBlues,
     descripcion: "El Índice de humedad de diferencia normalizada (NDMI) detecta los niveles de humedad en la vegetación mediante una combinación de bandas espectrales de infrarrojo cercano (NIR) e infrarrojo de onda corta (SWIR). El NDMI solo puede tener valores entre -1 y 1, lo que lo hace muy fácil. interpretar. El estrés hídrico estaría señalado por los valores negativos que se aproximan a -1, mientras que el +1 puede indicar anegamiento."
   },
+  {
+    name: "EVI",
+    label: "EVI",
+    value: "evi",
+    domain: [-1, 1],
+    thresholds: [-1, 0.2, 0.8],
+    thresholds_labels: ["NO Sano","Sano"],
+    colormap: "Blues",
+    colormap_fn: d3.interpolateBlues,
+    descripcion: "Liu y Huete introdujeron el índice de vegetación EVI para ajustar los resultados del NDVI a los ruidos atmosféricos y del suelo, especialmente en las zonas de vegetación densa, así como para mitigar la saturación en la mayoría de los casos. El rango de valores del EVI es de -1 a +1, y para la vegetación sana, varía entre 0,2 y 0,8."
+  },
+  {
+    name: "ARVI",
+    label: "arvi",
+    value: "arvi",
+    domain: [-1, 1],
+    thresholds: [-1, 0.2, 0.3, 1],
+    thresholds_labels: ["no-vegetacion", "pradera", "denso"],
+    colormap: "viridis",
+    colormap_fn: d3.interpolateViridis,
+    descripcion: "Se trata del primer índice de vegetación relativamente insensible a los factores atmosféricos (por ejemplo, aerosoles). Como muestra la fórmula, Kaufman y Tanré corrigieron el NDVI para mitigar los efectos de la dispersión atmosférica duplicando las mediciones del espectro rojo y añadiendo longitudes de onda azules."
+  },
 
+  {
+    name: "GCI",
+    label: "GCI",
+    value: "gci",
+    domain: [-1, 1],
+    thresholds: [-1, 0.2, 0.3, 1],
+    thresholds_labels: ["no-vegetacion", "pradera", "denso"],
+    colormap: "viridis",
+    colormap_fn: d3.interpolateViridis,
+    descripcion: "El índice de vegetación GCI se utiliza para estimar el contenido de clorofila de las hojas en diversas especies de plantas. El contenido de clorofila refleja el estado fisiológico de la vegetación; disminuye en las plantas estresadas y, por tanto, puede utilizarse como medida de la salud de la vegetación."
+  },
+
+  {
+    name: "SIPI",
+    label: "SIPI",
+    value: "sipi",
+    domain: [-1, 1],
+    thresholds: [-1, -0.5, 0.5, 1],
+    thresholds_labels: ["estres","normal","anegamiento"],
+    colormap: "inferno",
+    colormap_fn: d3.interpolateInferno,
+    descripcion: "El índice de vegetación SIPI es bueno para el análisis de la vegetación con una estructura del dosel variable. Estima la relación entre los carotenoides y la clorofila: un aumento del valor señala el estrés de la vegetación."
+  },
 ];
 
 export type IndicesResponse = {
