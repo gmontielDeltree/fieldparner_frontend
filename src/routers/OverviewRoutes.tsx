@@ -8,7 +8,8 @@ import {
   ListDepositsPage,
   DepositPage,
   SupplyPage,
-  ListSuppliesPage,
+  FieldsPage,
+  ListSuppliesPage
 } from "../pages";
 import { AppLayout } from "../components";
 
@@ -16,6 +17,7 @@ export const OverviewRoutes: React.FC = () => {
   return (
     <AppLayout key="app-layout">
       <Routes>
+        <Route path="/overview/fields" element={<FieldsPage />} />
         <Route path="/overview/vehiculo" element={<ListVehiclesPage />} />
         <Route path="/overview/vehiculo/nuevo" element={<VehiclePage />} />
         <Route path="/overview/vehiculo/:vehiculo" element={<VehiclePage />} />
