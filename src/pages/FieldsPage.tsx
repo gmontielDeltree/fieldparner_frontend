@@ -54,7 +54,7 @@ export const FieldsPage: React.FC = () => {
           console.log("Add field called");
         }}
       >
-        Add Field
+        Agregar campo
       </Button>
     </>
   );
