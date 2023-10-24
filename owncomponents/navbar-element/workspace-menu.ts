@@ -6,8 +6,8 @@ import "@spectrum-web-components/action-menu/sp-action-menu.js";
 import "@spectrum-web-components/menu/sp-menu-item.js";
 import "@spectrum-web-components/menu/sp-menu-divider.js";
 
-import "@spectrum-web-components/theme/sp-theme";
-import "@spectrum-web-components/theme/src/themes";
+import "@spectrum-web-components/theme/sp-theme.js";
+import "@spectrum-web-components/theme/src/themes.js";
 
 import { StateController } from "@lit-app/state";
 

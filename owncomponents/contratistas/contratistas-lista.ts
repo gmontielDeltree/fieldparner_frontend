@@ -16,9 +16,7 @@ import lista_de_labores from "../jsons/labores";
 import { uuid4 } from "uuid4";
 import PouchDB from "pouchdb";
 import { Contratista, empty_contratista, getContratistas, Labor } from "./contratista-types";
-import { ContratistaCrud } from "./contratista-crud";
 import { GridItemModel } from "@vaadin/grid";
-import "../contratistas/contratista-crud";
 import "@vaadin/icons";
 import "@vaadin/upload";
 import "@vaadin/dialog";
@@ -26,6 +24,8 @@ import "@vaadin/dialog";
 import { i18n_upload } from "../i18n/vaadin";
 import { Upload } from "@vaadin/upload";
 import '@vaadin/menu-bar';
+import { gbl_state, nav_back } from '../state';
+import { Router } from '@vaadin/router';
 //import { read, writeFile, utils } from "xlsx";
 
 let read, writeFile, utils;
@@ -46,8 +46,8 @@ export class ContratistasLista extends LitElement {
   })
   _modal: Modal;
 
-  @property()
-  db: PouchDB.Database;
+ 
+  db: PouchDB.Database = gbl_state.db;
 
   @state({
     hasChanged(newVal: Modal, oldVal: Modal) {
@@ -93,6 +93,9 @@ export class ContratistasLista extends LitElement {
         console.log(rowObject);
       });
     });
+
+    this.db = gbl_state.db
+    this.show();
   }
 
   show() {
@@ -113,7 +116,7 @@ export class ContratistasLista extends LitElement {
 
   edit_contratista(c: Contratista) {
     this._modal.hide();
-    ((this.shadowRoot.getElementById("contratista-crud")) as ContratistaCrud).edit(c);
+    Router.go("/contratistas/"+ c._id+"/edit")
   }
 
   borrar_contratista(c: Contratista) {
@@ -344,6 +347,8 @@ export class ContratistasLista extends LitElement {
       utils.book_append_sheet(workbook, worksheet, "Contratistas");
       writeFile(workbook, "Contratistas.xlsx");
       console.log(this._contratistas)
+    }else if(valor === 'nuevo'){
+      this.abrir_nuevo_contratista()
     }
   }
 
@@ -434,7 +439,7 @@ export class ContratistasLista extends LitElement {
 
               <vaadin-menu-bar
                 theme="small"
-                .items="${[{ text: 'Importar/Exportar', children: [{ text: 'Importar Excel',value : "importar_excel" }, { text: 'Exportar Excel', value: 'exportar_excel' }] }]}"
+                .items="${[{text:"Nuevo",value:"nuevo"},{ text: 'Importar/Exportar', children: [{ text: 'Importar Excel',value : "importar_excel" }, { text: 'Exportar Excel', value: 'exportar_excel' }] }]}"
                 @item-selected=${this.menu_click}
                 class='ms-1'
               ></vaadin-menu-bar>
@@ -466,6 +471,7 @@ export class ContratistasLista extends LitElement {
                 type="button"
                 class="btn btn-secondary"
                 data-bs-dismiss="modal"
+                @click=${()=>this.cerrar_modal_contratistas()}
               >
                 Cerrar
               </button>
@@ -473,15 +479,20 @@ export class ContratistasLista extends LitElement {
           </div>
         </div>
       </div>
+  `;
+  }
 
-    
+  abrir_nuevo_contratista = () => {
+    this._modal.hide();
+    Router.go("contratistas/add");
+  }
 
-      <contratista-crud
-        id="contratista-crud"
-        .db=${this.db}
-      ></contratista-crud> `;
+  cerrar_modal_contratistas = ()=>{
+    this._modal.hide()
+    nav_back()
   }
 }
+
 
 customElements.define("contratistas-lista", ContratistasLista);
 

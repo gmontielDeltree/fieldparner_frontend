@@ -14,7 +14,6 @@ fieldpartnerAPI.interceptors.request.use((config) => {
     //     'x-token': localStorage.getItem('token')
     // }
     config.headers.set('channel', 'fieldpartner_front', false);
-    config.headers.set("authorization", localStorage.getItem("accessToken"));
 
     return config;
 });
