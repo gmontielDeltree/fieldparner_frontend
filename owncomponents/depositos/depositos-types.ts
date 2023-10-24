@@ -190,9 +190,6 @@ interface Detalles {
   distancia?: number;
   tipo_siembra?: string;
   vehiculos?:Vehiculo[];
-  profundidad_siembra?: number;
-  inoculado?:{marca:string,formulacion:string};
-  
 }
 
 interface DetallesEjecucion {

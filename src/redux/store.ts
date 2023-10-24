@@ -1,14 +1,20 @@
 import { configureStore } from '@reduxjs/toolkit';
 
-import { vehiculoSlice } from './vehiculo';
+import { vehiculoSlice } from './vehicle';
 import { uiSlice } from './ui';
-import { authSlice } from './auth'
+import { authSlice } from './auth';
+import { businessSlice } from './business';
+import { supplySlice } from './supply';
+import { depositSlice } from './deposit';
 
 const store = configureStore({
     reducer: {
         ui: uiSlice.reducer,
         vehiculo: vehiculoSlice.reducer,
         auth: authSlice.reducer,
+        business: businessSlice.reducer,
+        supply: supplySlice.reducer,
+        deposit: depositSlice.reducer,
     },
 });
 

@@ -58,7 +58,7 @@ export class ListaDeCampos extends LitElement {
   }
 
   ir_a(nombre,feature) {
-    // gbl_state.map.fitBounds(bbox(feature),{padding: {top: 66, bottom:5, left: 0, right: 0}});
+    gbl_state.map.fitBounds(bbox(feature),{padding: {top: 66, bottom:5, left: 0, right: 0}});
     // gbl_state.map.flyTo({
     //   center: centroid(feature).geometry.coordinates as LngLatLike,
     //   zoom: 15,

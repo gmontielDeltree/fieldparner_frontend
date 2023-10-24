@@ -7,11 +7,8 @@ import react from "@vitejs/plugin-react";
 export default {
   server: {
     watch: {
-      ignored: ["**/docs/**", "**/dist/**", "**/public/**"],
+      ignored: ["**/docs/**", "**/dist/**", "**/public/**","**/node_modules/**","**/.git/**"],
     },
-    proxy:{
-      '/api': 'http://localhost:9090',
-    }
   },
 
   // config options para pouch

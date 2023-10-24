@@ -1,7 +1,7 @@
 import { format_iso_c } from "./../helpers";
 import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
-import { base_url_tele, touchEvent } from "../helpers";
+import { base_url, touchEvent } from "../helpers";
 import format from "date-fns/format";
 import {
   DataPoints,
@@ -35,8 +35,8 @@ const valor = (card, key) => {
 };
 
 class Devices {
-  db = new PouchDB(base_url_tele + "processed_device_telemetry");
-  db_raw = new PouchDB(base_url_tele + "telemetry_raw");
+  db = new PouchDB(base_url + "processed_device_telemetry");
+  db_raw = new PouchDB(base_url + "telemetry_raw");
 
   private _devices_names: string[] = [];
 
@@ -160,10 +160,10 @@ class Devices {
         let latitud = extract_tele("latitud", telemetria).value;
         let longitud = extract_tele("longitud", telemetria).value;
 
-        // if (telemetria.device_id === "f008d1ffffd30a6c") {
-        //   latitud = -35.1579821;
-        //   longitud = -59.09232;
-        // }
+        if (telemetria.device_id === "f008d1ffffd30a6c") {
+          latitud = -35.1579821;
+          longitud = -59.09232;
+        }
 
         let temperatura = extract_tele("temperatura", telemetria).value;
         let humedad = extract_tele("humedad", telemetria).value;

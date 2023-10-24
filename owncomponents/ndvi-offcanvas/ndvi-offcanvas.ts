@@ -142,10 +142,9 @@ export class NdviOffcanvas extends LitElement {
     let bboxs = encodeURIComponent(JSON.stringify(bbox(this.lote_doc)));
     //https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/indicesdates?dates=2022-04-01%2F2022-11-01&bbox=%5B-59.08562672796121%2C-35.20733062337166%2C-59.07974430745857%2C-35.20304176165523%5D
     let fechas = encodeURIComponent("2022-04-01/2040-01-01");
-    let start_date =  encodeURIComponent("2022-04-01");
-    let end_date =  encodeURIComponent("2040-04-01");
     let r = await fetch(
-      import.meta.env.VITE_COGS_SERVER_URL + "/dates?start_date=" + start_date + "&end_date=" + end_date +
+      "https://us-south.functions.appdomain.cloud/api/v1/web/2659fadf-b282-4e49-b323-bf8cd87cd5e6/default/indicesdates?dates=" +
+        fechas +
         "&bbox=" +
         bboxs
     );

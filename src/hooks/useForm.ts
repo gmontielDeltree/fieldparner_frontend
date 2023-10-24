@@ -46,6 +46,14 @@ export const useForm = <T extends Object>(initialState: T) => {
         })
     }
 
+    const handleCheckboxChange = ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => {
+        const { name } = target;
+        setFormulario({
+            ...formulario,
+            [name]: checked
+        });
+    }
+
     return {
         formulario,
         handleInputChange,
@@ -54,6 +62,7 @@ export const useForm = <T extends Object>(initialState: T) => {
         reset,
         handleYearChange,
         handleFormValueChange,
+        handleCheckboxChange,
         ...formulario
     }
 };

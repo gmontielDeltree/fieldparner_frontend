@@ -156,7 +156,7 @@ export class AnalisisPrecios extends LitElement {
     ]);
     this.chart.zoomX(
       new Date("3 Dec 2022").getTime(),
-      new Date().getTime()
+      new Date("6 Mar 2023").getTime()
     );
 
     add_download_xls_button(

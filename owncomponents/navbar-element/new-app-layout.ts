@@ -145,8 +145,7 @@ export class Example extends LitElement {
           slot="navbar [touch-optimized]"
         ></vaadin-drawer-toggle>
 
-        <h1 slot="navbar" title="Version ${this.version()}" @click=${()=>Router.go("/")}
->
+        <h1 slot="navbar" title="Version ${this.version()}">
           <img
             src="/images/icons/desktop/agrootolss_logo_sol.png"
             alt="${this.version()}"
@@ -177,8 +176,7 @@ export class Example extends LitElement {
                 title="Contratistas"
                 style="cursor: pointer;background-image: url('${icono_contratistas}');width: 32px;height: 32px;background-size: cover;background-position: center;"
                 @click=${() => {
-                  Router.go("/contratistas")
-                  // this.sendEvent("ver-contratistas-click", null);
+                  this.sendEvent("ver-contratistas-click", null);
                 }}
               ></div>
             </vaadin-tab>
@@ -351,7 +349,7 @@ export class Example extends LitElement {
               <a
                 tabindex="-1"
                 @click=${() => {
-                  Router.go("/init/overview/vehiculo");
+                  Router.go("/equipos");
                 }}
               >
                 <vaadin-icon icon="vaadin:truck"></vaadin-icon>
@@ -370,24 +368,6 @@ export class Example extends LitElement {
                 <span>${translate("precios")}</span>
               </a>
             </vaadin-tab>
-
-            ${
-              import.meta.env.VITE_INTEGRACIONES_ONLY === "YES"
-                ? html`
-                    <vaadin-tab>
-                      <a
-                        tabindex="-1"
-                        @click=${() => {
-                          Router.go("/integraciones");
-                        }}
-                      >
-                        <vaadin-icon icon="vaadin:cluster"></vaadin-icon>
-                        <span>${"Integraciones"}</span>
-                      </a>
-                    </vaadin-tab>
-                  `
-                : null
-            }
 
             <vaadin-tab>
               <a

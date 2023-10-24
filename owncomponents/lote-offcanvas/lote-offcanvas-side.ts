@@ -1,6 +1,6 @@
 import { LitElement, html, unsafeCSS, css } from "lit";
 import { map } from "lit/directives/map.js";
-import { Router, RouterLocation } from "@vaadin/router";
+import { Router } from "@vaadin/router";
 import { StateController } from "@lit-app/state";
 import gbl_state from "../state.js";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
@@ -41,7 +41,7 @@ import Offcanvas from "bootstrap/js/dist/offcanvas.js";
 //import PouchDB from "pouchdb";
 import uuid4 from "uuid4";
 import moment from "moment";
-import "../recorridas/notas-offcanvas.ts";
+import "../notas-offcanvas/notas-offcanvas.ts";
 import "./cosecha-add-ui.ts";
 import "./siembra-add-ui.ts";
 import { google_maps_link_go_to } from "./google_maps.js";
@@ -161,14 +161,13 @@ export class LoteOffcanvasSide extends LitElement {
   _nota_marker: any;
 
   @state()
+  fsm: any;
+
+  @state()
   _current_dosis: LineaDosis;
 
   @state()
   data_loaded: boolean = false;
-
-
-  @property()
-  location: RouterLocation
 
   constructor() {
     super();
@@ -207,6 +206,28 @@ export class LoteOffcanvasSide extends LitElement {
       this._lotesOffcanvas.show();
     });
 
+    this.addEventListener("localizar-nota", (e: CustomEvent) => {
+      let posicion = e.detail.item.posicion;
+      let texto = e.detail.item.texto;
+      let color = e.detail.item.color;
+      //console.log("loacalizar nota", e);
+      if (this._nota_marker !== undefined) {
+        this._nota_marker.remove();
+      }
+      this._nota_marker = new Marker({
+        color: color,
+      })
+        .setPopup(new Popup().setHTML(`<h4>${texto}</h4>`))
+        .setLngLat(posicion)
+        .addTo(gbl_state.map);
+
+      gbl_state.map.flyTo({
+        center: posicion,
+        padding: { left: 500, bottom: 200 },
+        zoom: 15,
+      });
+    });
+    //this._actividades = []
   }
 
   firstUpdated() {
@@ -533,11 +554,9 @@ export class LoteOffcanvasSide extends LitElement {
   }
 
   localizar_lote() {
-    let bounds = bbox(this._lote_doc)
-    console.log("LOCALIZAR", this._lote_doc, "BOUNDS", bounds);
-    gbl_state.map.fitBounds(bounds, {
-      padding: { top: 50, bottom: 50, left: 950, right:50 },
-      pitch:50,
+    console.log("LOCALIZAR", this._lote_doc);
+    gbl_state.map.fitBounds(bbox(this._lote_doc), {
+      padding: { top: 50, bottom: window.innerHeight / 2, left: 800 },
     });
   }
 
@@ -697,16 +716,10 @@ export class LoteOffcanvasSide extends LitElement {
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/iconodenotas_act.webp');background-size: contain; background-repeat: no-repeat;background-position: center;"
                   @click=${() =>
-                    {
-                      let campo_id = this.location.params.uuid_campo
-                      let lote_id = this._lote_doc.id
-                      let b : string  = "/campo/"+campo_id+"/lote/"+lote_id
-                      
-                      Router.go(
-                      //gbl_state.router.location.getUrl() +
-                        b + "/nota/add"
-                    )
-                    }}
+                    Router.go(
+                      gbl_state.router.location.getUrl() +
+                        "/nota/add"
+                    )}
                 ></div>
 
                 <div

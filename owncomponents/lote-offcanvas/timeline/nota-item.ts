@@ -24,7 +24,7 @@ import {
   Nota,
   nota_adjuntar_archivo,
   nota_remover_adjunto,
-} from "../../recorridas/notas-fuciones";
+} from "../../notas-offcanvas/notas-fuciones";
 
 @customElement("nota-item")
 export class NotaItem extends LitElement {

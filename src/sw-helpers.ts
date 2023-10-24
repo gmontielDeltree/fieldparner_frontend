@@ -1,5 +1,4 @@
 import PouchDB from "pouchdb";
-import { uuidv7 } from "uuidv7";
 export const sw_docs_starting = async (
   db: PouchDB.Database,
   key: string,
@@ -41,7 +40,7 @@ export const sw_get_file_doc = async (
   filename_or_id: string //uriEncoded
 ) => {
   console.log("FILENAME REQUESTED", filename_or_id);
-  return sw_docs_starting(db, filename_or_id, true, true, true)
+  return sw_docs_starting(db, ASCIItoHex(filename_or_id), true, true, true)
     .then(sw_only_docs)
     .then((docs) => {
       if (docs.length === 0) {
@@ -55,17 +54,16 @@ export const sw_get_file_doc = async (
 export const sw_post_file_doc = async (
   db: PouchDB.Database,
   file: File,
-  uploaded: boolean,
-  assigned_filename: string,
+  uploaded: boolean
 ) => {
   let new_doc: SWFileAttachment = {
-    _id: assigned_filename,//ASCIItoHex(file.name),
-    filename: file.name ?? assigned_filename,
+    _id: ASCIItoHex(file.name),
+    filename: file.name,
     uploaded: uploaded,
     _attachments: { file_0: { type: file.type, data: file } },
   };
 
-  return db.put(new_doc);
+  db.put(new_doc);
 };
 
 export interface SWFileAttachment {
@@ -76,7 +74,7 @@ export interface SWFileAttachment {
   _attachments: { file_0: { data: File; type: string } };
 }
 
-export async function postData(file: File, assigned_file_name?:string) {
+export async function postData(file: File) {
   // Opciones por defecto estan marcadas con un *
   console.log("POST AL SERVER",file);
 
@@ -86,7 +84,7 @@ export async function postData(file: File, assigned_file_name?:string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      fileName: assigned_file_name ?? uuidv7(),//file.name,
+      fileName: file.name,
       fileType: file.type,
     }),
   })
@@ -104,7 +102,7 @@ export async function postData(file: File, assigned_file_name?:string) {
       console.log(e)
       console.log(
         "UPLOADED to https://adjuntos-fieldpartner.s3.us-south.cloud-object-storage.appdomain.cloud/" +
-          assigned_file_name
+          file.name
       );
     });
 }

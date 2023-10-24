@@ -4,7 +4,7 @@ import { base_url, gbl_docs_starting, only_docs } from "./helpers";
 import { gbl_state } from "./state";
 import { get, translate, use, registerTranslateConfig } from "lit-translate";
 
-import createAuth0Client, { Auth0Client } from "@auth0/auth0-spa-js";
+import createAuth0Client from "@auth0/auth0-spa-js";
 import uuid4 from "uuid4";
 import { Lenguaje } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
@@ -21,7 +21,7 @@ export class DevelAppLoader extends LitElement {
   @state()
   ready: boolean = false;
 
-  private auth0Client: Auth0Client;
+  private auth0Client: any;
   private db: PouchDB.Database;
   private remote_db: PouchDB.Database;
   private user: any = { name: "", sub: "" };

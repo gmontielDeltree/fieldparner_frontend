@@ -1,21 +1,23 @@
 import { LitElement, html, css, unsafeCSS, CSSResultGroup } from "lit";
 import "moment/dist/locale/es";
-import { parseISO, isBefore } from "date-fns";
-import { property } from "lit/decorators.js";
+import {  parseISO, isBefore } from "date-fns";
+import { property, state } from "lit/decorators.js";
 import {
   Actividad,
 } from "../../depositos/depositos-types";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
+import isFuture from "date-fns/isFuture";
 
 import "@vaadin/combo-box";
 import "@vaadin/horizontal-layout";
 import "@vaadin/icon";
 import "@vaadin/icons";
+import { Router } from "@vaadin/router";
 import gbl_state from "../../state";
 import "./actividad-item";
 import "@vaadin/scroller";
 import { badge } from "@vaadin/vaadin-lumo-styles/badge";
-import "./recorrida-item";
+import "./nota-item";
 import { AnalisisSuelo } from "../../tipos/analisis-suelo";
 import "./analisis-item";
 
@@ -415,7 +417,7 @@ export class TimelineSideElement extends LitElement {
             <i class="zmdi zmdi-label"></i>
           </div>
           <div class="cbp_tmlabel bg-nota" style="background:blanchedalmond" >
-            <recorrida-item .item=${item}></recorrida-item>
+            <nota-item .item=${item}></nota-item>
           </div>
         </li>`;
       }

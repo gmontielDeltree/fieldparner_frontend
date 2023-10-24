@@ -3,8 +3,7 @@
 
 <head>
   <script type="text/javascript">
-    if(window.location.hostname !== "localhost"){
-          window.smartlook ||
+    window.smartlook ||
       (function (d) {
         var o = (smartlook = function () {
           o.api.push(arguments);
@@ -21,8 +20,6 @@
     smartlook("init", "ebe5c626b32fb046a0be7907349213b63fb52c32", {
       region: "eu",
     });
-    }
-
   </script>
 
   <!-- Google tag (gtag.js) -->
@@ -70,14 +67,9 @@
   <!-- Place favicon.ico in the root directory -->
   <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/desktop/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/desktop/favicon-16x16.png" />
-  <!-- <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v<YOUR_MAPBOX_VERSION>/mapbox-gl.css' rel='stylesheet' /> -->
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v<YOUR_MAPBOX_VERSION>/mapbox-gl.css' rel='stylesheet' />
   <script type="module" src="/main.js"></script>
 
-  <link
-  rel="stylesheet"
-  media="(prefers-color-scheme:light)"
-  href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.7.0/cdn/themes/light.css"
-/>
   <!-- <link
       rel="preload"
       href="https://unpkg.com/intro.js/minified/introjs.min.css"
@@ -122,18 +114,9 @@
 
     vaadin-context-menu-overlay {
       z-index: 9999;
-    }    
-    
-    vaadin-menu-bar-overlay {
-
-      z-index: 9999;
     }
 
     vaadin-dialog-overlay {
-      z-index: 9999;
-    }
-
-    vaadin-select-overlay {
       z-index: 9999;
     }
 
@@ -220,14 +203,11 @@
       transform: translate(-50%, -50%);
     }
   </style>
-
 </head>
 <!-- load the 'header_auto_hide' on the body -->
 
 <body>
   <!--Main App Element-->
-  <pwa-update
-  ></pwa-update>
 
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>

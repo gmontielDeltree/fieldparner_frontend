@@ -51,7 +51,7 @@ export class MenuCampanaButton extends LitElement {
     this,
     gbl_state,
     () => {
-      //console.log("State Changed",gbl_state)
+      console.log("State Changed",gbl_state)
       if(!this.loaded && gblCampanaSeleccionadaLoaded()){
         this.load_campanas();
       }
@@ -167,8 +167,7 @@ export class MenuCampanaButton extends LitElement {
           .items="${this.items}"
           @item-selected="${this.itemSelected}"
         >
-        </vaadin-menu-bar>
-        <upsert-campana-dialog
+          <upsert-campana-dialog
             .dialogOpened=${this.dialogOpened}
             .campanas=${this.campanas}
             .campana_to_edit=${this.campana_2_edit}
@@ -185,6 +184,7 @@ export class MenuCampanaButton extends LitElement {
             }}
             .edit=${this.edit_campana}
           ></upsert-campana-dialog>
+        </vaadin-menu-bar>
       `;
     } else {
       return null;
