@@ -111,7 +111,7 @@ export const VehiclePage: React.FC = () => {
 
   const onClickCancelar = useCallback(() => {
     dispatch(removerVehiculoActivo());
-    navigate("/init/overview/vehiculo");
+    navigate("/init/overview/vehicle");
   }, []);
 
   const onClickAddVehiculo = useCallback(
@@ -123,7 +123,7 @@ export const VehiclePage: React.FC = () => {
 
       dispatch(startAddVehiculo(formulario));
 
-      navigate("/init/overview/vehiculo");
+      navigate("/init/overview/vehicle");
     },
     [formulario, dispatch]
   );
@@ -133,7 +133,7 @@ export const VehiclePage: React.FC = () => {
       e.preventDefault();
       dispatch(startUpdateVehiculo(formulario));
       dispatch(removerVehiculoActivo());
-      navigate("/init/overview/vehiculo");
+      navigate("/init/overview/vehicle");
     },
     [formulario, dispatch]
   );

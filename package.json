@@ -147,6 +147,7 @@
     "react-router-dom": "^6.15.0",
     "redux": "^4.2.1",
     "shepherd.js": "^11.2.0",
+    "sweetalert2": "^11.7.27",
     "uuid4": "^2.0.2",
     "uuidv7": "^0.6.2",
     "xlsx": "^0.18.5",

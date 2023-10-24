@@ -3,6 +3,7 @@ import { Box } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import React from "react";
+import { useAppSelector } from "../../hooks";
 
 const mapStyle: mapboxgl.Style = {
   version: 8,
@@ -35,10 +36,13 @@ export interface TemplateLayoutProps {
 }
 
 const open = true; //TODO: agregar en uiSlice el estado open
+const drawerWidth = "245px"; //Ancho del sidebar en px;
 export const TemplateLayout: React.FC<TemplateLayoutProps> = ({
   viewMap,
   children,
 }) => {
+  const { openSideBar } = useAppSelector((state) => state.ui);
+
   return (
     <>
       <Box
@@ -57,6 +61,7 @@ export const TemplateLayout: React.FC<TemplateLayoutProps> = ({
       </Box>
       {viewMap && (
         <Box
+          key="box-map-container"
           component="div"
           display="inline-block"
           sx={{
