@@ -51,7 +51,7 @@ export class MenuCampanaButton extends LitElement {
     this,
     gbl_state,
     () => {
-      console.log("State Changed",gbl_state)
+      //console.log("State Changed",gbl_state)
       if(!this.loaded && gblCampanaSeleccionadaLoaded()){
         this.load_campanas();
       }

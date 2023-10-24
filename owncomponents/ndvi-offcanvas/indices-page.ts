@@ -11,7 +11,7 @@ import {
 import { featureCollection } from "@turf/helpers";
 import { DualMap } from "./map-controls/dual-map-control";
 import { CanvasSource, Map } from "mapbox-gl";
-import { LitElement, PropertyValueMap, html, css } from "lit";
+import { LitElement, PropertyValueMap, html, css, unsafeCSS } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import "./indice-selector";
 import { machine } from "./indices-machine";
@@ -30,36 +30,46 @@ import "./indices-charts";
 import area from "@turf/area";
 import { showNotification } from "../helpers/notificaciones";
 import "./indices-histograma";
-
+import "./weather-historico";
+import centroid from "@turf/centroid";
+// import grid from "../common_components/css/simplegrid.css?inline"
+import grid from "flexboxgrid2/flexboxgrid2.css";
 @customElement("indices-page")
 export class IndicesPage extends LitElement {
   @property()
   location: RouterLocation = gbl_state.router.location;
 
-  static styles = css`
-    :host {
-      display: flex;
-      flex-grow: 1;
-    }
+  static styles = [
+    unsafeCSS(grid),
+    css`
+      :host {
+        display: flex;
+        flex-grow: 1;
+      }
 
-    .drawer-contained::part(header) {
-      color: tomato;
-      display: none;
-    }
-    .drawer-contained::part(body) {
-      background-color: darkkhaki;
-      padding: 1rem;
-    }
-    #footer {
-      display: flex;
-      position: absolute;
-      width: 100%;
-      bottom: 0;
-      left: 0;
-      z-index: 100;
-      /* background-color:red; */
-    }
-  `;
+      .dont-show {
+        display: none;
+      }
+
+      .drawer-contained::part(header) {
+        color: tomato;
+        display: none;
+      }
+      .drawer-contained::part(body) {
+        background-color: darkkhaki;
+        padding: 1rem;
+      }
+      #footer {
+        display: flex;
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        z-index: 100;
+        /* background-color:red; */
+      }
+    `,
+  ];
 
   @state()
   actor = interpret(
@@ -159,16 +169,20 @@ export class IndicesPage extends LitElement {
           limpiarMap1y2: () => {
             hideMapLayers(gbl_state.map);
           },
-          updateIndex1: assign({ selectedIndice1: (_, evt) => evt.data.indice }),
+          updateIndex1: assign({
+            selectedIndice1: (_, evt) => evt.data.indice,
+          }),
           updateFeature1: assign({ selectedFeature1: (_, evt) => evt.data }),
-          updateIndex2: assign({ selectedIndice2: (_, evt) => evt.data.indice }),
+          updateIndex2: assign({
+            selectedIndice2: (_, evt) => evt.data.indice,
+          }),
           updateFeature2: assign({ selectedFeature2: (_, evt) => evt.data }),
           updateMap1: (ctx, evt) => {
             let response: IndicesResponse = evt.data.data;
             mostrarTIFEnMapa(
               import.meta.env.VITE_COGS_SERVER_URL + response.tiff_url,
               gbl_state.map,
-              ctx.selectedIndice1.colormap,
+              ctx.selectedIndice1.colormap
             );
             ctx.mapStuff[5].setDomain(ctx.selectedIndice1.domain);
             ctx.mapStuff[5].setColormap(ctx.selectedIndice1.colormap_fn);
@@ -219,14 +233,14 @@ export class IndicesPage extends LitElement {
                 : ctx.selectedIndice2.value;
             geotiff_to_excel(tiff_url, indice_name);
           },
-          removeHandlers:(ctx,evt)=>{
-            removeEventHandlers(gbl_state.map)
-            removeEventHandlers(gbl_state.map2)
+          removeHandlers: (ctx, evt) => {
+            removeEventHandlers(gbl_state.map);
+            removeEventHandlers(gbl_state.map2);
           },
-          deleteMapSourcesLayers: (ctx,evt)=>{
-            removeIndicesLayersSources(gbl_state.map2)
-            removeIndicesLayersSources(gbl_state.map)
-          }
+          deleteMapSourcesLayers: (ctx, evt) => {
+            removeIndicesLayersSources(gbl_state.map2);
+            removeIndicesLayersSources(gbl_state.map);
+          },
         },
         services: {
           getGeojson: async (ctx, evt) => {
@@ -265,7 +279,7 @@ export class IndicesPage extends LitElement {
             return await axios.get(url);
           },
           fetchImagen: async (ctx, evt) => {
-             console.log("fetchImage", evt);
+            console.log("fetchImage", evt);
             let date = evt.data.feature.properties.date;
             // console.log("COOR", coordAll(ctx.geojson));
             let geometry = coordAll(ctx.geojson);
@@ -320,104 +334,159 @@ export class IndicesPage extends LitElement {
     };
     // https://css-irl.info/finding-an-elements-nearest-relative-positioned-ancestor/#:~:text=By%20typing%20%24_%20into%20the%20console%20we%20can,the%20element.%20Then%3A%20getComputedStyle%28%24_%29.position%20retrieves%20its%20position%20value
 
+    if (estado === "empty" || estado === "withGeojson") {
+      return loading();
+    }
+
     return html`
-      ${estado === "empty" || estado === "withGeojson"
-        ? loading()
-        : html`
+      <div
+        class="container overlay-charts"
+        style="position:absolute; max-width:100vw; width:100%;"
+      >
+        <div class="row around-xs">
+          <div class="${inDualMode() ? "row col-xs-6" : "row col-xs-12"}">
+            <div class="col-xs-4 hide-on-mobile" style="display: flex;">
+              <div class="row middle-xs">
+                <div class="col-xs-12" style="display:flex;">
+                  <indices-histograma
+                    style="z-index:1;"
+                    .lote_id=${ctx.lote_id}
+                    .indice=${ctx.selectedIndice1}
+                    .feature=${ctx.selectedFeature1.feature}
+                    .geojson=${ctx.geojson}
+                  ></indices-histograma>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xs-4 end-xs hide-on-mobile" style="display: flex;">
+              BBBBB
+              <div class="row bottom-xs">
+                <weather-historico
+                  .date=${ctx.selectedFeature1.feature.properties.date}
+                  .centro=${centroid(ctx.geojson)}
+                  style="z-index:1;"
+                ></weather-historico>
+              </div>
+            </div>
+
             <div
-              class="overlay-charts"
-              style="position:absolute;display: flex;width:100%;justify-content: space-between;"
+              class="col-xs-4 hide-on-mobile"
+              style="display: flex;
+              flex-direction: column;
+              align-items: center;"
             >
+              CCCC
               <indices-charts
-                style="top:1rem;right:${inDualMode()
-                  ? "calc(50% + 4rem);"
-                  : "4rem;"}"
+                style="z-index:1;"
                 .data=${ctx.data1}
                 .indice=${ctx.selectedIndice1}
                 .date=${ctx.selectedFeature1.feature.properties.date}
                 .hectareas_del_lote=${area(ctx.geojson)}
               ></indices-charts>
-              
+            </div>
+          </div>
+
+          <div class="${inDualMode() ? "row col-xs-6" : "dont-show"}">
+            <div class="col-xs-4 hide-on-mobile" style="display: flex;">
+              <div class="row middle-xs">
+                <div class="col-xs-12" style="display:flex;">
+                  <indices-histograma
+                  style="z-index:1;"
+                    .lote_id=${ctx.lote_id}
+                    .indice=${ctx.selectedIndice2}
+                    .feature=${ctx.selectedFeature2.feature}
+                    .geojson=${ctx.geojson}
+                  ></indices-histograma>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xs-4 end-xs hide-on-mobile" style="display: flex;">
+              BBBBB
+              <div class="row bottom-xs">
+                <weather-historico
+                  .date=${ctx.selectedFeature2.feature.properties.date}
+                  .centro=${centroid(ctx.geojson)}
+                  style="z-index:1;"
+                ></weather-historico>
+              </div>
+            </div>
+
+            <div
+              class="col-xs-4 hide-on-mobile"
+              style="display: flex;
+              flex-direction: column;
+              align-items: center;"
+            >
+              CCCC
               <indices-charts
-                style="top:1rem;right:4rem;${inDualMode()
-                  ? ""
-                  : "display:none;"}"
+              style="z-index:1;"
                 .data=${ctx.data2}
                 .indice=${ctx.selectedIndice2}
                 .date=${ctx.selectedFeature2.feature.properties.date}
                 .hectareas_del_lote=${area(ctx.geojson)}
               ></indices-charts>
-
-              <indices-histograma
-                style="top: 20rem;position: absolute;left: 1rem;"
-                .lote_id=${ctx.lote_id}
-                .indice=${ctx.selectedIndice1}
-                .feature=${ctx.selectedFeature1.feature}
-                .geojson=${ctx.geojson}
-              ></indices-histograma>
-
-              <indices-histograma
-                style="top: 20rem;position: absolute;left:calc(50% + 1rem); ${inDualMode()
-                  ? ""
-                  : "display:none;"}"
-                .lote_id=${ctx.lote_id}
-                .indice=${ctx.selectedIndice2}
-                .feature=${ctx.selectedFeature2.feature}
-                .geojson=${ctx.geojson}
-              ></indices-histograma>
-
             </div>
+          </div>
+        </div>
+      </div>
 
-            <div id="footer">
-              <indice-selector
-                .featureCollection=${ctx.featureCollection}
-                .featureSelected=${ctx.selectedFeature1}
-                .selectedIndice=${ctx.selectedIndice1}
-                style="${inDualMode() ? "width:50%" : "width:100%"}"
-                @selectedFeatureChange=${(e: CustomEvent) => {
-                  console.log("Selected Feature 1 evt");
-                  this.actor.send({
-                    type: "SELECTED_FEATURE_1",
-                    data: e.detail,
-                  });
-                }}
-                @selectedIndexChange=${(e) =>{
-                                    console.log("selectedIndexChanged",e)
-                                    this.actor.send({
-                                        type:"SELECTED_INDICE_1_CHANGED",
-                                        data:{feature:ctx.selectedFeature1.feature, indice:e.detail}                                      
-                                      })
-                                  }
-                }
-              ></indice-selector>
+      <div class="container" id="footer">
+        <div class="row" style="max-width: 100vw;">
+          <div class="${inDualMode() ? "col-xs-6" : "col-xs-12"}">
+            <indice-selector
+              style="z-index:1;"
+              .featureCollection=${ctx.featureCollection}
+              .featureSelected=${ctx.selectedFeature1}
+              .selectedIndice=${ctx.selectedIndice1}
+              @selectedFeatureChange=${(e: CustomEvent) => {
+                console.log("Selected Feature 1 evt");
+                this.actor.send({
+                  type: "SELECTED_FEATURE_1",
+                  data: e.detail,
+                });
+              }}
+              @selectedIndexChange=${(e) => {
+                console.log("selectedIndexChanged", e);
+                this.actor.send({
+                  type: "SELECTED_INDICE_1_CHANGED",
+                  data: {
+                    feature: ctx.selectedFeature1.feature,
+                    indice: e.detail,
+                  },
+                });
+              }}
+            ></indice-selector>
+          </div>
 
-              ${inDualMode()
-                ? html`
-                    <indice-selector
-                      style="width:50%"
-                      .featureCollection=${ctx.featureCollection}
-                      .featureSelected=${ctx.selectedFeature2}
-                      .selectedIndice=${ctx.selectedIndice2}
-                      @selectedFeatureChange=${(e: CustomEvent) => {
-                        console.log("Selected Feature 2 evt");
-                        this.actor.send({
-                          type: "SELECTED_FEATURE_2",
-                          data: e.detail,
-                        });
-                      }}
-                      @selectedIndexChange=${(e) =>{
-                        console.log("selectedIndexChanged",e)
-                        this.actor.send({
-                          type:"SELECTED_INDICE_2_CHANGED",
-                          data:{feature:ctx.selectedFeature1.feature, indice:e.detail}                                      
-                        })
-                        
-                      }}
-                    ></indice-selector>
-                  `
-                : null}
-            </div>
-          `}
+          <div class="${inDualMode() ? "col-xs-6" : "dont-show"}">
+            <indice-selector
+              .featureCollection=${ctx.featureCollection}
+              .featureSelected=${ctx.selectedFeature2}
+              .selectedIndice=${ctx.selectedIndice2}
+              @selectedFeatureChange=${(e: CustomEvent) => {
+                console.log("Selected Feature 2 evt");
+                this.actor.send({
+                  type: "SELECTED_FEATURE_2",
+                  data: e.detail,
+                });
+              }}
+              @selectedIndexChange=${(e) => {
+                console.log("selectedIndexChanged", e);
+                this.actor.send({
+                  type: "SELECTED_INDICE_2_CHANGED",
+                  data: {
+                    feature: ctx.selectedFeature1.feature,
+                    indice: e.detail,
+                  },
+                });
+              }}
+            ></indice-selector>
+          </div>
+        </div>
+      </div>
+
       ${estado === "loadNuevaImagen1" || estado === "loadNuevaImagen2"
         ? loading()
         : null}

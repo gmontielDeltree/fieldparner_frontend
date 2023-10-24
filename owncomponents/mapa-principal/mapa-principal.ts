@@ -1,5 +1,5 @@
-import { ndvi_layers_init } from './ndvi-layers';
-import { gbl_state } from "./../state";
+import { ndvi_layers_init } from "./ndvi-layers";
+import { gbl_dualmap, gbl_state } from "./../state";
 import { depositos_update, depositos_layer_init } from "./depositos-layer";
 import { LitElement, html, unsafeCSS, css, PropertyValueMap } from "lit";
 import { property, query } from "lit/decorators.js";
@@ -10,7 +10,7 @@ import {
   buscar_ultima_siembra,
   tabla_de_colores,
 } from "../helpers";
-import { CircleLayer, GeoJSONSource, Layer, Map, SymbolLayer } from "mapbox-gl";
+import { GeoJSONSource, Layer, Map } from "mapbox-gl";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import syncMaps from "@mapbox/mapbox-gl-sync-move";
@@ -21,14 +21,13 @@ import mapbox_draw_style from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css?in
 
 import "@spectrum-web-components/action-menu/sp-action-menu.js";
 import "@spectrum-web-components/menu/sp-menu-item.js";
-import "@spectrum-web-components/theme/sp-theme";
-import "@spectrum-web-components/theme/src/themes";
+import "@spectrum-web-components/theme/sp-theme.js";
+import "@spectrum-web-components/theme/src/themes.js";
 import centroid from "@turf/centroid";
 import { isToday, parseISO } from "date-fns";
-import { get, translate } from "lit-translate";
+import { get } from "lit-translate";
 import { listar_proveedores } from "../proveedores/proveedores-funciones";
-import { map } from "lit/directives/map.js";
-import { Feature, FeatureCollection } from "@turf/helpers";
+import { Feature } from "@turf/helpers";
 import { Router } from "@vaadin/router";
 import { StateController } from "@lit-app/state";
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -46,7 +45,7 @@ const mapStyle = {
       tiles: [
         //"http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga"
         //"https://ecn.t1.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=587&mkt=en-gb&n=z",
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       ],
       tileSize: 256,
     },
@@ -68,8 +67,8 @@ const mapStyle = {
  */
 const colorear_lotes = async (features) => {
   // features[].properties.actividades
-  let tabla = await tabla_de_colores()
-  console.log("TAbla DE cOLORES",tabla)
+  let tabla = await tabla_de_colores();
+  console.log("TAbla DE cOLORES", tabla);
   // Para cada lote
   await Promise.all(
     features.map(async ({ properties }) => {
@@ -133,6 +132,13 @@ export class MapaPrincipal extends LitElement {
   map: Map;
 
   @property({
+    hasChanged(newVal: Map, oldVal: Map) {
+      return false;
+    },
+  })
+  map2: Map;
+
+  @property({
     hasChanged(newVal: MapboxDraw, oldVal: MapboxDraw) {
       return false;
     },
@@ -148,6 +154,12 @@ export class MapaPrincipal extends LitElement {
     },
   })
   settings: any;
+
+  @query("#map2")
+  _map2;
+
+  @query("#map")
+  _map;
 
   private layers: Layer[];
 
@@ -184,10 +196,10 @@ export class MapaPrincipal extends LitElement {
       }
 
       #map {
-        position: absolute;
-        top: var(--_vaadin-app-layout-navbar-offset-size);
+        /* position: absolute; */
+        /* top: var(--_vaadin-app-layout-navbar-offset-size); */
         /*bottom: 3;*/
-        width: 100vw;
+        /* width: 100vw; */
         z-index: 0;
         height: 100%;
         width: 100%;
@@ -195,16 +207,21 @@ export class MapaPrincipal extends LitElement {
         position: relative;
         /* height: calc(
           100vh - var(--_vaadin-app-layout-navbar-offset-size)
-        ) !important;
+        ) !important; */
       }
 
       @media only screen and (min-width: 800px) {
         /* Pantalla 'Grande' */
+        .map_box_container {
+          position: relative;
+          height: 100% !important;
+          width: 100% !important;
+        }
         #map {
-          position: absolute;
-          top: var(--_vaadin-app-layout-navbar-offset-size);
+          /* position: absolute; */
+          /* top: var(--_vaadin-app-layout-navbar-offset-size); */
           /*bottom: 3;*/
-          width: 100vw;
+          /* width: 100vw; */
           z-index: 0;
           height: 100%;
           width: 50%;
@@ -213,7 +230,7 @@ export class MapaPrincipal extends LitElement {
 
           /* height: calc(
             100vh - var(--_vaadin-app-layout-navbar-offset-size)
-          ) !important;
+          ) !important; */
         }
       }
 
@@ -549,17 +566,15 @@ export class MapaPrincipal extends LitElement {
           "seleccion_lotes"
         ) as GeoJSONSource;
         //Pintar
-        
+
         let data_lotes = {
           type: "FeatureCollection",
           features: lotes,
         };
 
-        colorear_lotes(data_lotes.features).then(()=>
-        
-        lotes_source.setData(data_lotes)
-        )
-        
+        colorear_lotes(data_lotes.features).then(() =>
+          lotes_source.setData(data_lotes)
+        );
       };
 
       this.map.showAllCampos = () => {
@@ -581,7 +596,7 @@ export class MapaPrincipal extends LitElement {
       this.cargar_marcadores();
 
       this._redraw_map();
-      this.map.resize();
+      // this.map.resize();
 
       // console.info("Mapa Cargado");
       this.sendEvent("map-loaded", { map: this.map, draw: this.draw });
@@ -673,8 +688,12 @@ export class MapaPrincipal extends LitElement {
       this.map.getCanvas().style.cursor = "";
     });
 
-    this.map.on("move", (e) => {
+    this.map.on("moveend", (e) => {
       gbl_state.ultima_posicion = this.map.getCenter();
+    });
+
+    this.map.on("zoomend", (e) => {
+      gbl_state.ultimo_zoom = this.map.getZoom();
     });
   }
 
@@ -780,7 +799,7 @@ export class MapaPrincipal extends LitElement {
   }
 
   _redraw_map = () => {
-    console.log("Redrawing Map")
+    console.log("Redrawing Map");
     let campos_source = this.map.getSource("campos");
     // console.log("CS", campos_source);
     let campos_collection = {
@@ -823,16 +842,14 @@ export class MapaPrincipal extends LitElement {
       // console.log("Set lotes internos DS", lotes_collection.features);
       lotes_source?.setData(lotes_collection);
 
-
       // Colorear lotes seleccionados
-      let a = this.map.getSource('seleccion_lotes')._data
-      colorear_lotes(a.features).then(()=>
-        this.map.getSource('seleccion_lotes').setData(a)
-      )
-      
+      let a = this.map.getSource("seleccion_lotes")._data;
+      colorear_lotes(a.features).then(() =>
+        this.map.getSource("seleccion_lotes").setData(a)
+      );
 
       // console.log("Redraw Campos", this.campos);
-      this.map.resize();
+      // this.map.resize();
     });
   };
 

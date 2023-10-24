@@ -147,8 +147,6 @@ export const useAuthStore = () => {
 
     //     dispatch(onChecking())
     //     try {
-
-
     //         localStorage.setItem('accessToken',"" );
     //         localStorage.setItem('token_expiration',"" );
 
@@ -160,12 +158,10 @@ export const useAuthStore = () => {
     //     }
     // }
 
-
     const startLogout = () => {
         localStorage.clear();
         dispatch(onLogout(""));
     }
-
 
     return {
         //* Propiedades

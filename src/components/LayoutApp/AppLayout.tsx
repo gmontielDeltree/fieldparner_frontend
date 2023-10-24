@@ -7,7 +7,7 @@ import { uiOpenSideBard } from "../../redux/ui";
 const drawerWidth = 245; //Ancho del sidebar en px;
 
 export interface AppLayoutProps {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {

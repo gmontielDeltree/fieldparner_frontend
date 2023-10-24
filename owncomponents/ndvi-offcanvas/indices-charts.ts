@@ -37,7 +37,7 @@ const make_data_from_range = (
   return {
     label: "has",
     data: d,
-    backgroundColor: [indice.colormap_fn(data.stats.histogram[1][rango_n+1]), "#e0e0d100"],
+    backgroundColor: [indice.colormap_fn(data.stats.histogram[1][rango_n + 1]), "#e0e0d100"],
     hoverOffset: 4,
   };
 };
@@ -144,13 +144,13 @@ export class IndicesCharts extends LitElement {
     );
 
   willUpdate(prop) {
-    if(prop.has("indice")){
+    if (prop.has("indice")) {
       this.initialized = false
     }
     if (prop.has("data")) {
       if (!this.initialized) {
 
-        this.thr.forEach((c)=>c.destroy())
+        this.thr.forEach((c) => c.destroy())
         this.thr = []
 
         this.indice.thresholds_labels.forEach((label, i) => {
@@ -168,7 +168,7 @@ export class IndicesCharts extends LitElement {
           );
         });
 
-        if(this.full !== undefined){
+        if (this.full !== undefined) {
           this.full.destroy()
         }
         this.full = this.makeFullChart("full");
@@ -197,26 +197,26 @@ export class IndicesCharts extends LitElement {
 
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-  ): void {}
+  ): void { }
 
   static override styles = css`
-    :host {
-      position: absolute;
-      width: 10rem;
+    .container {
+      /* position: absolute; */
+      /* width: 10rem; */
       background-color: lightseagreen;
       border-radius: 1rem;
       padding: 1rem;
-      z-index: 12;
+      /* z-index: 12; */
     }
   `;
 
   render() {
     return html`
-      <div class="container" style="padding:5px;max-height:90%">
+      <div class="container" style="padding:5px;max-width:10vw;">
         <div style="text-align:center;font-weight:bold">${this.indice.label} - ${this.date}</div>
-        ${this.indice.thresholds_labels.map((label)=>{
-          return html`<canvas id="thr-${label}"></canvas>`
-        })}
+        ${this.indice.thresholds_labels.map((label) => {
+      return html`<canvas id="thr-${label}"></canvas>`
+    })}
         <canvas id="full"></canvas>
       </div>
     `;
