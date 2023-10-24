@@ -36,6 +36,7 @@ let adjuntos_db = new PouchDB("adjuntos");
 declare let self: ServiceWorkerGlobalScope;
 declare type ExtendableEvent = any;
 
+console.log("SW Version ", import.meta.env.VITE_VERSION)
 // self.__WB_MANIFEST is default injection point
 precacheAndRoute(self.__WB_MANIFEST);
 //precacheAndRoute([]);
@@ -86,7 +87,8 @@ registerRoute(
 );
 
 // Geotiffs
-registerRoute(/.*\.geotiff$/, new CacheFirst({ cacheName: "geotiff" }));
+registerRoute(/.*\/satimages\/cog.*$/, new CacheFirst({ cacheName: "geotiff" }));
+registerRoute(/.*.tiff*$/, new CacheFirst({ cacheName: "geotiff2" }));
 
 // Fechas de generacion
 registerRoute(
@@ -105,6 +107,11 @@ registerRoute(
   async ({ url, request, event, params }) => {
     console.log("ATT GET", url, event, params);
     let filename = url.searchParams.get("file"); //esta URL encoded,pero se decode solo.
+    
+    if(filename === null){
+      return Promise.reject("Filename can't be null");
+    }
+    
     let file_doc: SWFileAttachment = (await sw_get_file_doc(
       adjuntos_db,
       filename
@@ -203,7 +210,7 @@ self.addEventListener("fetch", (event) => {
         const file = data.get("file");
 
         console.log("Excel file", file);
-        client.postMessage({ file, action: "load-excel" });
+        client?.postMessage({ file, action: "load-excel" });
       })()
     );
   }
@@ -243,7 +250,7 @@ self.addEventListener("fetch", (event) => {
       const file = data.get("file");
 
       console.log("Excel file", file);
-      client.postMessage({ file, action: "load-excel-insumos" });
+      client?.postMessage({ file, action: "load-excel-insumos" });
     })()
   );
 });
@@ -268,7 +275,7 @@ self.addEventListener("fetch", (event) => {
       const file = data.get("file");
 
       console.log("Audio file", file);
-      client.postMessage({ file, action: "load-audio" });
+      client?.postMessage({ file, action: "load-audio" });
     })()
   );
 });
@@ -324,7 +331,16 @@ self.addEventListener("fetch", (event) => {
 
 //setDefaultHandler(new NetworkOnly());
 
-// this is necessary, since the new service worker will keep on skipWaiting state
+// Este evento se usa solo en caso de usar la notificacion de update
+self.addEventListener("message", (event) => {
+  console.log(event);
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+    clientsClaim();
+  }
+});
+
+// this is necessary, since the new service worker will keep on Waiting state
 // and then, caches will not be cleared since it is not activated
 self.skipWaiting();
 clientsClaim();

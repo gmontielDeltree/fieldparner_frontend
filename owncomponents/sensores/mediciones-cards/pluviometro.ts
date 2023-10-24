@@ -11,7 +11,6 @@ import("apexcharts").then(({ default: a }) => {
   ApexCharts = a;
 });
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
-import { base_url } from "../../helpers";
 import { add_download_xls_button } from "../excel_boton";
 
 import PouchDB from "pouchdb";

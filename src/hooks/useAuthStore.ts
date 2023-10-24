@@ -2,10 +2,9 @@ import { useDispatch } from 'react-redux';
 import { fieldpartnerAPI } from '../config';
 import { clearErrorMessage, finishLoading, onChecking, onLogin, onLogout, startLoading } from '../redux/auth';
 import { useAppSelector } from './useRedux';
-import { ErrorResponseAuth, ResponseAuthLogin, ResponseAuthRenew, User, UserLogin, UserRegister } from '../types';
+import { ErrorResponseAuth, ResponseAuthLogin, ResponseAuthRenew, UserLogin, UserRegister } from '@types';
 import { AxiosError, HttpStatusCode } from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { convertTimestampToDate } from '../helpers/dates';
 
 const controller = '/auth';
 
@@ -19,7 +18,6 @@ export const useAuthStore = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-
     const startLogin = async ({ email, password }: UserLogin) => {
         // dispatch(onChecking());
         dispatch(startLoading());
@@ -28,13 +26,11 @@ export const useAuthStore = () => {
                 email, password
             });
             if (response.data) {
-                const { accessToken, refreshToken, expiration } = response.data.auth;
-                const { username, isAdmin } = response.data;
+                const { accessToken, refreshToken } = response.data;
                 localStorage.setItem('accessToken', accessToken);
                 localStorage.setItem('refreshToken', refreshToken);
-                localStorage.setItem('token_expiration', convertTimestampToDate(expiration).getTime().toString());
-                localStorage.setItem("user_session", JSON.stringify({ username, isAdmin }));
-                dispatch(onLogin({ username, isAdmin }));
+                localStorage.setItem('token_init_date', new Date().getTime().toString());
+                dispatch(onLogin({ email, id: new Date().getTime().toString() }));
             }
             dispatch(finishLoading());
             dispatch(clearErrorMessage());
@@ -116,53 +112,23 @@ export const useAuthStore = () => {
     const checkAuthToken = async () => {
         const token = localStorage.getItem('accessToken');
         const refreshToken = localStorage.getItem('refreshToken');
-        const userSession = localStorage.getItem("user_session");
-
-        if (!token || !refreshToken || !userSession) return dispatch(onLogout(""));
-
+        if (!token || !refreshToken) return dispatch(onLogout(""));
         dispatch(onChecking())
         try {
-            const expiration = localStorage.getItem("token_expiration");
-
-            if ((new Date().getTime() > Number(expiration))) {
-                dispatch(onLogout(""));
-                return;
-            }
-
+            // const { data } = await authApi.get('auth/renew');
             const response = await fieldpartnerAPI.post<ResponseAuthRenew>(`${controller}/renew`, { refreshToken });
 
-            if (response.status === HttpStatusCode.Created) {
-                const expiresIn = new Date().getTime() + (response.data.ExpiresIn * 1000);
-                localStorage.setItem('accessToken', response.data.AccessToken);
-                localStorage.setItem('token_expiration', expiresIn.toString());
-                const userLogin = JSON.parse(userSession || '') as User;
-                dispatch(onLogin(userLogin));
+            if (response.status === HttpStatusCode.Ok) {
+                localStorage.setItem('accessToken', response.data.accessToken);
+                localStorage.setItem('token-init-date', new Date().getTime().toString());
             }
+            //TODO: obtener el usuario.
+            dispatch(onLogin({ email: 'german_montiel@sadasd', id: new Date().getTime().toString() }));
         } catch (error) {
             localStorage.clear();
             dispatch(onLogout(""));
         }
     }
-    // const checkAuthToken = async () => {
-// <<<<<<< HEAD
-// =======
-
-// >>>>>>> 98ea2078d5930328bbbb535b3d52d68b4283fb6f
-    //     dispatch(onChecking())
-    //     try {
-
-
-    //         localStorage.setItem('accessToken',"" );
-    //         localStorage.setItem('token_expiration',"" );
-
-    //         dispatch(onLogin({isAdmin:true,username:"Rodrigo"}));
-
-    //     } catch (error) {
-    //         localStorage.clear();
-    //         dispatch(onLogout(""));
-    //     }
-    // }
-
 
     const startLogout = () => {
         localStorage.clear();
