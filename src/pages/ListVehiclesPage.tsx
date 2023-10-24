@@ -58,11 +58,11 @@ export const ListVehiclesPage: React.FC = () => {
     dispatch(cargarVehiculos(filteredVehiculos));
   };
 
-  const onClickAddVehicle = () => navigate("/init/overview/vehiculo/nuevo");
+  const onClickAddVehicle = () => navigate("/init/overview/vehicle/new");
 
   const onClickUpdateVehicle = (item: Vehiculo): void => {
     dispatch(setVehiculoActivo(item));
-    navigate(`/init/overview/vehiculo/${item._id}`);
+    navigate(`/init/overview/vehicle/${item._id}`);
   };
 
   useEffect(() => {

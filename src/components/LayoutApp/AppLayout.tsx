@@ -1,22 +1,28 @@
 import { Box } from "@mui/material";
 import { NavBar, SideBar } from "..";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { uiOpenSideBard } from "../../redux/ui";
 
-const drawerWidth = 240; //Ancho del sidebar en px;
+const drawerWidth = 245; //Ancho del sidebar en px;
 
 export interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const [open, setOpen] = useState<boolean>(false);
+  // const [open, setOpen] = useState<boolean>(false);
+  const dispatch = useAppDispatch();
+  const { openSideBar } = useAppSelector((state) => state.ui);
 
   const handleSideBarOpen = useCallback(() => {
-    setOpen(true);
+    // setOpen(true);
+    dispatch(uiOpenSideBard(true));
   }, []);
 
   const handleSideBarClose = useCallback(() => {
-    setOpen(false);
+    // setOpen(false);
+    dispatch(uiOpenSideBard(false));
   }, []);
 
   return (
@@ -24,13 +30,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* <CssBaseline /> */}
       <NavBar
         drawerWidth={drawerWidth}
-        open={open}
+        open={openSideBar}
         handleSideBarOpen={handleSideBarOpen}
       />
 
       <SideBar
         drawerWidth={drawerWidth}
-        open={open}
+        open={openSideBar}
         handleSideBarClose={handleSideBarClose}
       />
 
@@ -44,7 +50,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           flexGrow: 1,
           ml: `-${drawerWidth}px`,
           pt: "64px",
-          ...(open && { ml: 0 }),
+          ...(openSideBar && { ml: 0 }),
         }}
       >
         {children}

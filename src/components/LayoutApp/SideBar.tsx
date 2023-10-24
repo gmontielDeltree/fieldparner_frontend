@@ -21,6 +21,7 @@ import {
   List as ListIcon,
   Inventory as InventoryIcon,
   Warehouse as WarehouseIcon,
+  SyncAlt as SyncAltIcon,
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
 
@@ -64,7 +65,11 @@ export const SideBar: React.FC<SideBarProps> = ({
         <Divider />
         <List>
           <ListItem key="campos" disablePadding>
-            <ListItemButton onClick={() => navigateTo("/campos")}>
+            <ListItemButton
+              component={RouterLink}
+              to="/init/overview/fields"
+              selected={pathname.includes("/init/overview/fields")}
+            >
               <ListItemIcon>
                 <CabinIcon />
               </ListItemIcon>
@@ -123,16 +128,28 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemText primary="Depositos" />
             </ListItemButton>
           </ListItem>
-          <ListItem key="vehiculos" disablePadding>
+          <ListItem key="vehicles" disablePadding>
             <ListItemButton
               component={RouterLink}
-              to="/init/overview/vehiculo"
-              selected={pathname.includes("/init/overview/vehiculo")}
+              to="/init/overview/vehicle"
+              selected={pathname.includes("/init/overview/vehicle")}
             >
               <ListItemIcon>
                 <LocalShippingIcon />
               </ListItemIcon>
               <ListItemText primary="Vehiculos" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="stock-movement" disablePadding>
+            <ListItemButton
+              component={RouterLink}
+              to="/init/overview/stock-movements"
+              selected={pathname.includes("/init/overview/stock-movements")}
+            >
+              <ListItemIcon>
+                <SyncAltIcon />
+              </ListItemIcon>
+              <ListItemText primary="Movimiento de Stock" />
             </ListItemButton>
           </ListItem>
           <ListItem key="precios" disablePadding>
