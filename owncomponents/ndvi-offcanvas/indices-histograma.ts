@@ -61,9 +61,9 @@ export class IndicesHistograma extends LitElement {
 
   static styles = css`
     :host {
-      z-index: 3;
+      /* z-index: 3; */
       --colorcito: #20b2aa;
-      width:15%;
+      /* width:15%; */
     }
 
     .details::part(header) {
