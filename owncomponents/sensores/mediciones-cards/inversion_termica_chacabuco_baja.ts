@@ -89,8 +89,8 @@ export class InversionTermicaChacabucoBajaCard extends LitElement {
         </div>
         <div
           class="${this._show_chart_only
-            ? "d-none d-sm-block"
-            : ""} col-12 col-sm-4 my-auto"
+            ? "d-none"
+            : "col-11 col-sm-11 my-auto"}"
           id="datadiv"
         >
           <div class="row">
@@ -120,8 +120,8 @@ export class InversionTermicaChacabucoBajaCard extends LitElement {
         </div>
         <div
           class="${this._show_chart_only
-            ? ""
-            : "d-none d-sm-block"} col-12 col-sm-8 chart"
+            ? "col-1 col-sm-11"
+            : "d-none"} chart"
         >
           <chart-component
             .variable_name=${variable}
@@ -129,6 +129,18 @@ export class InversionTermicaChacabucoBajaCard extends LitElement {
             .show_chart_only=${this._show_chart_only}
           ></chart-component>
         </div>
+
+
+        <div
+          class="col-1 my-1"
+          style="display:flex; align-items: center;"
+          @click=${this.toggle}
+        >
+          <span class="btn btn-warning mx-auto">
+            ${!this._show_chart_only ? ">" : "<"}
+          </span>
+        </div>
+        
       </div>
     `;
   }

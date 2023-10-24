@@ -1,57 +1,65 @@
-import React, { useEffect, useState } from "react";
-import PouchDB from "pouchdb";
-import { getEnvVariables } from "../../helpers/getEnvVariables";
+import React, { useEffect, useState } from 'react';
+import PouchDB from 'pouchdb';
+// import pouchdbFind from 'pouchdb-find';
+// import pouchdbAuthentication from 'pouchdb-authentication';
 
-import { Loading } from "../";
-import { Deposit } from "../../types";
 
-const remoteCouchDBUrl = getEnvVariables().VITE_COUCHDB_URL;
-const myDBs = {
-  deposits: "deposits",
-  zipCodeArg: "zip-code-arg"
-};
+// PouchDB.plugin(pouchdbFind);
+// PouchDB.plugin(pouchdbAuthentication);
 
-// const db = new PouchDB("Vehiculos-test");
+// //Connect DB
+// const db = new PouchDB('http://localhost:5984/nombre_de_la_base_de_datos');
 
 export interface PouchDBComponentProps {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }
 
+
 const PouchDBComponent: React.FC<PouchDBComponentProps> = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(false);
+    const [data, setData] = useState<any>([]);
 
-  useEffect(() => {
-    console.log("Iniciando SYNC");
-    const syncDB = new PouchDB(myDBs.deposits)
-      .sync(`${remoteCouchDBUrl}/${myDBs.deposits}`, {
-        live: true,
-        retry: true,
-      })
-      .on("complete", (complete: any) => {
-        console.log("sync completa: ", complete);
-      })
-      .on("change", (change: any) => {
-        console.log(
-          "Cambios detectados en la base de datos remota deposits",
-          change
-        );
-      })
-      .on("error", (error: any) => {
-        console.error("Error en la sincronización con CouchDB deposits", error);
-      });
+    useEffect(() => {
+        const db = new PouchDB('Vehiculos-test');
+        console.log('Conectando POUCH DB');
 
-    // Limpia la sincronización cuando el componente se desmonta
-    return () => {
-      syncDB.cancel();
-    };
-  }, []);
+        // Función para obtener todos los documentos de la base de datos
+        const getAllDocuments = async () => {
+            try {
+                const result = await db.allDocs({ include_docs: true });
+                const documents = result.rows.map(row => row.doc);
 
-  return (
-    <>
-      {/* <Loading loading={isLoading} /> */}
-      {children}
-    </>
-  );
+                console.log('documents', documents);
+                if (documents) setData(documents);
+
+            } catch (error) {
+                console.error('Error al conectar con DB:', error);
+            }
+        };
+
+        // Llamada a la función para obtener los documentos al montar el componente
+        getAllDocuments();
+
+        return () => {
+            // Cierre de la conexión con la base de datos al desmontar el componente
+            db.close();
+        };
+    }, []);
+
+    return (
+        <>
+            <div>
+                <h2>PouchDBComponent</h2>
+                <ul>
+                    {data.map((doc: any) => (
+                        <li key={doc._id}>{doc.title}</li>
+                    ))}
+                </ul>
+            </div>
+            {
+                children
+            }
+        </>
+    );
 };
 
 export default PouchDBComponent;

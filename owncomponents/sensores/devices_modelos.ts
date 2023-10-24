@@ -13,8 +13,8 @@ const devices_modelos : any = {
     },
     // Santiago
     "LSMH01-1" : {
-        sensores : ["temperatura","humedad","presion","humedad_suelo","rssi"],
-        sensores_reales : ["temperatura","humedad","presion","humedad_suelo"],
+        sensores : ["temperatura","humedad","humedad_suelo"],
+        sensores_reales : ["temperatura","humedad","humedad_suelo"],
     }, // GW santiago
     "GWMM05" : {
         sensores : ['temperatura', "humedad", "presion", "viento_velocidad", "viento_direccion", "pluviometro", "radiacion_solar", "sensacion_termica","punto_de_rocio", "stress_termico"],

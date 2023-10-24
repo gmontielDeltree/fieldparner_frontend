@@ -2,7 +2,6 @@ import { LitElement, html, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
-import booleanIcons from "bootstrap-icons/font/bootstrap-icons.css?inline";
 import gbl_state from "../../state";
 import cultivos from "../../jsons/cultivos";
 import { Cultivo } from "../../insumos/insumos-types";
@@ -43,7 +42,7 @@ interface CultivoColor {
 }
 
 export class ColorCultivo extends LitElement {
-  static styles = [unsafeCSS(bootstrap), unsafeCSS(booleanIcons)];
+  static styles = [unsafeCSS(bootstrap) ];
 
   @state()
   cultivo_color_tabla: CultivoColor = {};
