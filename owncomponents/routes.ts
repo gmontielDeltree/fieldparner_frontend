@@ -14,43 +14,21 @@ import { Component } from "react";
 // import("./ndvi-offcanvas/ndvi-offcanvas");
 import("./campo-offcanvas/campo-offcanvas");
 // import("./lote-offcanvas/lote-offcanvas-side");
-// import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
-// import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
+//import("./lote-offcanvas/upsert-ejecucion/upsert-ejecucion");
+//import("./lote-offcanvas/upsert-aplicacion/upsert-aplicacion");
 import("./lista-de-campos/lista-de-campos");
-import("./john-deere/john-deere-integracion");
-import("./john-deere/jd-machine-details");
-import("./integraciones/integraciones");
 
 export const routes = [
   { path: "/", component: "null-component" },
   { path: "/gf", redirect: "/" },
-  {
-    path: "/integraciones",
-    children: [{ path: "/", component: "menu-integraciones" }],
-  },
-
-  {
-    path: "/integraciones/john-deere",
-    component: "john-deere-integracion",
-    children: [{ path: "/machine/:id", component: "jd-machine-details" }],
-  },
-
   { path: "/campos", component: "lista-de-campos" },
   {
     path: "/indices/:uuid",
     action: async () => {
-      return await import("./ndvi-offcanvas/indices-page");
+      await import("./ndvi-offcanvas/ndvi-offcanvas");
     },
-    component: "indices-page",
+    component: "ndvi-offcanvas",
   },
-  // {
-  //   path: "/indices/:uuid",
-  //   action: async () => {
-  //     await import("./ndvi-offcanvas/ndvi-offcanvas");
-  //   },
-  //   component: "ndvi-offcanvas",
-  // },
-
   { path: "/settings", component: "settings-modal" },
   {
     path: "/campo/:uuid_campo/lote/:uuid_lote/siembra/add",
@@ -113,30 +91,8 @@ export const routes = [
   },
   { path: "/campo/add", component: "nuevo-campo" },
   { path: "/campo/:uuid", component: "campo-offcanvas" },
-  {
-    path: "/contratistas",
-    children: [
-      {
-        path: "/",
-        component: "contratistas-lista",
-        action: async () => await import("./contratistas/contratistas-lista"),
-      },
-      {
-        path: "/add",
-        component: "contratista-crud",
-        action: async () => {
-          await import("./contratistas/contratista-crud");
-        },
-      },
-      {
-        path: "/:id/edit",
-        component: "contratista-crud",
-        action: async () => {
-          await import("./contratistas/contratista-crud");
-        },
-      },
-    ],
-  },
+  { path: "/contratistas", component: "contratistas-lista" },
+  { path: "/contratistas/add", component: "contratistas-crud" },
   {
     path: "/depositos",
     action: async () => {
@@ -207,9 +163,6 @@ export const routes = [
   { path: "/invite/:base64_invitation", component: "link-invitacion" },
   {
     path: "/device/:uuid/dashboard/:date",
-    action: async () => {
-      await import("./sensores/devices-route");
-    },
     component: "device-route-handler",
   },
   {
@@ -284,19 +237,5 @@ export const routes = [
         },
       },
     ],
-  },
-  {
-    path: "/magris",
-    action: async () => {
-      await import("./magris/magris");
-    },
-    component: "magris-extension",
-  },
-  {
-    path: "/magris/:id",
-    action: async () => {
-      await import("./magris/reporte");
-    },
-    component: "magris-reporte",
   },
 ];

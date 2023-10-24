@@ -1,20 +1,8 @@
 import { routes } from "./../routes";
-import { LitElement, html, PropertyValueMap } from "lit";
+import "../mapa-principal/mapa-principal";
+import { LitElement, html, PropertyValueMap} from "lit";
 import { property, state } from "lit/decorators.js";
 import { Router } from "@vaadin/router";
-import centroid from "@turf/centroid";
-import { Map } from "mapbox-gl";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import uuid4 from "uuid4";
-import { Actividad } from "../depositos/depositos-types";
-import { DailyTelemetryCard } from "../sensores/sensores-types";
-import { Devices } from "../sensores/sensores";
-
-import gbl_state from "../state.js";
-
-import "../navbar-element/new-app-layout";
-import "../mapa-principal/mapa-principal";
-import "../news-bar/news-bar";
 import("../contratistas/contratista-crud");
 import("../contratistas/contratistas-lista");
 import("../sensores/sensores-offcanvas");
@@ -23,28 +11,49 @@ import "../nuevo-campo/nuevo-campo";
 import("../recorridas/nota-target");
 import("../lista-centrales-cercanas/lista-centrales-cercanas");
 import("../sensores/lista-de-sensores");
+import "../navbar-element/new-app-layout";
 import("../invite/invite");
 import("../lote-offcanvas/repetir-aplicacion/repetir-aplicacion");
 import("../sensores/devices-route");
+
+import centroid from "@turf/centroid";
+import { Map } from "mapbox-gl";
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
+
+import uuid4 from "uuid4";
+import { Actividad } from "../depositos/depositos-types";
+import { DailyTelemetryCard } from "../sensores/sensores-types";
+import { Devices } from "../sensores/sensores";
+
+import gbl_state from "../state.js";
+
 
 export class FieldPartnerChild extends LitElement {
   // NO estamos usando el shadow dom (createRenderRoot=>this)
   //static override styles = [unsafeCSS(bootstrap)];
 
   @property()
-  db: PouchDB.Database;
-
-  @property()
   map: Map;
 
+  @property({ hasChanged: (v, ov) => false })
   draw: MapboxDraw;
 
   @state()
   campos: any;
 
+  @property({ hasChanged: (v, ov) => false })
+  db: PouchDB.Database;
+
+  @property({ hasChanged: (v, ov) => false })
   remote_campos_db: PouchDB.Database;
+
+  @property({ hasChanged: (v, ov) => false })
   user: any;
+
+  @property({ hasChanged: (v, ov) => false })
   logged_in: boolean = false;
+
+  @property({ hasChanged: (v, ov) => false })
   settings: any;
 
   private initialized: boolean = false;
@@ -95,7 +104,7 @@ export class FieldPartnerChild extends LitElement {
     /* Izar map y draw a este componente para que los otros puedan usarlo */
     this.addEventListener("map-loaded", (e: CustomEvent) => {
       this.map = e.detail.map;
-      console.log("MAP LOADED EVT HANDLER");
+      console.log("MAP LOADED EVT HANDLER")
 
       gbl_state.map = e.detail.map;
       this.draw = e.detail.draw;
@@ -107,12 +116,26 @@ export class FieldPartnerChild extends LitElement {
       //devices.get_timeseries_by_name('1111111111111111','radiacion',0,10000000000)
     });
 
+    /* Click en ver lista de contratistas */
+    this.addEventListener("ver-contratistas-click", (e) => {
+      document.getElementById("contratistas-lista").show();
+    });
+
+    /* Click en ver lista de insumos */
+    this.addEventListener("ver-insumos-click", (e) => {
+      document.getElementById("insumos-lista").show();
+    });
+
     this.addEventListener("save-settings", (e) => {
       this.db.put(this.settings);
     });
 
     this.addEventListener("logout-click", () => {
       this.logout();
+    });
+
+    this.addEventListener("nuevo-contratista-click", () => {
+      document.getElementById("contratista-crud").nuevo();
     });
 
     this.addEventListener("ver-lista-de-sensores", (e) => {
@@ -298,11 +321,19 @@ export class FieldPartnerChild extends LitElement {
         .campos_db=${this.db}
       ></nuevo-campo>
 
+      <contratista-crud id="contratista-crud" .db=${this.db}></contratista-crud>
+
+      <contratistas-lista
+        id="contratistas-lista"
+        .db=${this.db}
+      ></contratistas-lista>
+
       <nota-share-target
         id="nota-share-target"
         .map=${this.map}
         .db=${this.db}
       ></nota-share-target>
+
 
       <div id="container-multiproposito"></div>
     `;

@@ -21,8 +21,6 @@ import PouchDB from "pouchdb";
 import { Labor, Contratista } from "./contratista-types";
 import { isThisSecond } from "date-fns";
 import { Deposito } from "../depositos/depositos-types";
-import { RouterLocation } from "@vaadin/router";
-import { gbl_state, nav_back } from "../state";
 
 const empty_contratista: Contratista = {
   labores: [],
@@ -33,12 +31,17 @@ const empty_contratista: Contratista = {
 };
 
 export class ContratistaCrud extends LitElement {
+  @property()
+  db: PouchDB.Database;
 
-  db: PouchDB.Database = gbl_state.db;
-
+  @state({
+    hasChanged(newVal: Modal, oldVal: Modal) {
+      return false;
+    },
+  })
   _modal: Modal;
 
-  @state()
+  @property()
   contratista: Contratista = empty_contratista;
 
   @state()
@@ -53,23 +56,10 @@ export class ContratistaCrud extends LitElement {
   @state()
   _editing: boolean = false;
 
-  @property()
-  location: RouterLocation;
-
   static override styles = unsafeCSS(bootstrap);
 
   override firstUpdated() {
     this._modal = new Modal(this.shadowRoot.getElementById("modal"));
-
-    if (this.location.params.id) {
-      this._editing = true;
-      this.cargar_contratista(this.location.params.id).then(
-        (c) => (this.contratista = c)
-      );
-      this.show();
-    } else {
-      this.show();
-    }
   }
 
   labores_empty: Labor[] = [{ labor: "Sin Labores", uuid: uuid4() }];
@@ -135,10 +125,6 @@ export class ContratistaCrud extends LitElement {
     { minWidth: "500px", columns: 2 },
   ];
 
-  cargar_contratista = (id: string) => {
-    return this.db.get(id).then((d) => d as Contratista);
-  };
-
   private guardar_contratista = () => {
     if (this._editing === false) {
       let uuid = uuid4();
@@ -151,7 +137,7 @@ export class ContratistaCrud extends LitElement {
           depo.contratista_asociado = this.contratista;
           depo._id = "deposito:" + this.contratista.uuid;
           depo.uuid = this.contratista.uuid;
-          depo.nombre = this.contratista.nombre;
+          depo.nombre =  this.contratista.nombre;
           depo.direccion = this.contratista.datos_generales.direccion;
 
           guardar_deposito(depo);
@@ -226,7 +212,6 @@ export class ContratistaCrud extends LitElement {
                 class="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-                @click=${() => nav_back()}
               ></button>
             </div>
             <div class="modal-body">
@@ -339,7 +324,6 @@ export class ContratistaCrud extends LitElement {
                 type="button"
                 class="btn btn-secondary"
                 data-bs-dismiss="modal"
-                @click=${() => nav_back()}
               >
                 Cerrar
               </button>
@@ -349,7 +333,6 @@ export class ContratistaCrud extends LitElement {
                 @click=${() => {
                   this.guardar_contratista();
                   this._modal.hide();
-                  nav_back();
                 }}
               >
                 Guardar

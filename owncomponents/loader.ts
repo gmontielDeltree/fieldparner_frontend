@@ -1,10 +1,11 @@
 import { customElement, state } from "lit/decorators.js";
-import { LitElement, PropertyValueMap, html } from "lit";
-import { base_url, base_url_tele } from "./helpers";
+import { LitElement, PropertyValueMap, html, css } from "lit";
+import { base_url, gbl_docs_starting, only_docs } from "./helpers";
 import { gbl_state } from "./state";
 import { get, translate, use, registerTranslateConfig } from "lit-translate";
 import "@vaadin/button";
 import createAuth0Client from "@auth0/auth0-spa-js";
+import uuid4 from "uuid4";
 import { Lenguaje } from "./tipos/tipos-varios";
 import PouchDB from "pouchdb";
 
@@ -16,7 +17,6 @@ import { showNotification } from "./helpers/notificaciones";
 
 import("./field-partner/field-partner-child");
 
-
 /**
  * La mision de este componente es login, cargar/sync las dbs.
  * y renderizar fieldpartner una vez que todo esta listo
@@ -24,7 +24,7 @@ import("./field-partner/field-partner-child");
 @customElement("app-loader")
 export class AppLoader extends LitElement {
   @state()
-  data_ready: boolean = false;
+  ready: boolean = false;
 
   @state()
   map_ready: boolean = false;
@@ -63,7 +63,7 @@ export class AppLoader extends LitElement {
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
     if (_changedProperties.has("ready")) {
-      if (this.data_ready) {
+      if (this.ready) {
         console.timeEnd("Readiness");
       } else {
         console.time("Readiness");
@@ -76,31 +76,28 @@ export class AppLoader extends LitElement {
     // }
 
     return html`
-      ${this.data_ready
-        ? html`
-            <field-partner-child
-              @map-loaded=${() => (this.map_ready = true)}
-              .db=${this.db}
-            ></field-partner-child>
-          `
-        : html`<div
-            class="background"
-            style="
-          height: 100vh;
-          background-color: green;
-          display: flex;
-          width: 100%;
-          align-items: center;
-          justify-content: center;
-      "
-          >
-            <div
-              class="hero-title"
-              style="font-size: 10rem;font-family: monospace;color: thistle;"
-            >
-              FieldPartner
+      ${!this.ready || !this.map_ready
+        ? html`<div class="bg">
+            <div class="hero-text">
+              <h1>FieldPartner</h1>
+              <p>by QTS Agro</p>
             </div>
-          </div>`}
+            ${window.location.hostname === "agrotools.netlify.app"
+              ? html`<vaadin-button
+                  class="login-button"
+                  theme="primary success"
+                  @click=${this.loginet}
+                  >Login</vaadin-button
+                >`
+              : null}
+          </div>`
+        : null}
+      ${this.ready
+        ? html`<field-partner-child
+            @map-loaded=${() => (this.map_ready = true)}
+            .db=${this.db}
+          />`
+        : null}
     `;
   }
 
@@ -115,13 +112,13 @@ export class AppLoader extends LitElement {
 
     let sitio = window.location.hostname;
 
-    if (import.meta.env.VITE_PRODUCTION_BRANCH === "YES") {
+    if (sitio === "agrotools.netlify.app") {
       // 'Production' - Normal flow
 
       await this.buildAuth0Client();
       console.log("Normal Flow - AUTH Flow");
       await this.handleRedirectCallback();
-    } else if (import.meta.env.VITE_DEV_BRANCH === "YES") {
+    } else if (sitio === "dev--agrotools.netlify.app") {
       // Development - Especial flow
       console.log("Especial Development Flow - Demo User");
       this.user.sub = "demo-userdb";
@@ -221,14 +218,12 @@ export class AppLoader extends LitElement {
     gbl_state.db_sensores_pro = new PouchDB(
       base_url + "processed_device_telemetry"
     );
-    gbl_state.db_sensores_raw = new PouchDB(base_url_tele + "telemetry_raw");
+    gbl_state.db_sensores_raw = new PouchDB(base_url + "telemetry_raw");
     // Nombres validos solo en minusculas
     this.db = new PouchDB("campos_" + username + "v7");
 
-    let user_db_name = user.sub.replaceAll("|", "_").toLowerCase();
-
     gbl_state.db = this.db;
-    gbl_state.user_db = new PouchDB(user_db_name);
+    gbl_state.user_db = new PouchDB(user.sub);
     gbl_state.user = this.user;
 
     if (import.meta.env.DEV) {
@@ -324,7 +319,7 @@ export class AppLoader extends LitElement {
       .then(this.set_idioma)
       .then(this.cargar_campana_seleccionada)
       .then((r) => {
-        this.data_ready = true;
+        this.ready = true;
         console.log("Ready...Estado Inicial", gbl_state, r);
       });
   }
@@ -339,26 +334,20 @@ export class AppLoader extends LitElement {
       .from(this.remote_db)
       .on("complete", (info) => {
         console.log("Replication Completed");
-        showNotification("Replicacion Completada", "success");
+        showNotification('Replicacion Completada','success');
         console.timeEnd("Replication");
         // Cargar el Idioma
         this.cargar_idioma()
           .then(this.set_idioma)
           .then((r) => {
-            let user_db_name = gbl_state.user.sub
-              .replaceAll("|", "_")
-              .toLowerCase();
             gbl_state.user_db.replicate
-              .from(base_url + user_db_name)
+              .from(base_url + gbl_state.user.sub)
               .on("complete", () => {
                 this.cargar_campana_seleccionada("").then(() => {
-                  this.data_ready = true;
-                  showNotification("Ready", "success");
+                  this.ready = true;
+                  showNotification('Ready','success');
                   console.log("Ready...Estado Inicial", gbl_state, r);
                 });
-              })
-              .on("error", (e) => {
-                console.log("error", e);
               });
           });
 
@@ -385,8 +374,8 @@ export class AppLoader extends LitElement {
       .then(this.set_idioma)
       .then(this.cargar_campana_seleccionada)
       .then((r) => {
-        this.data_ready = true;
-        showNotification("Fast Start Ready", "success");
+        this.ready = true;
+        showNotification('Fast Start Ready','success');
         console.log("Ready...Estado Inicial", gbl_state, r);
       });
   }

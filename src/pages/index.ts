@@ -1,6 +1,14 @@
 //Paginas privadas
-export * from './ListaVehiculoPage';
-export * from './VehiculoPage';
+export * from './ListVehiclesPage';
+export * from './VehiclePage';
+export * from './BusinessPage';
+export * from './ListBusinessesPage';
+export * from './ListDepositsPage';
+export * from './DepositPage';
+export * from './SupplyPage';
+export * from './ListSuppliesPage';
+
+
 
 //Paginas publicas
 export * from './LoginPage';
