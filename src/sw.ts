@@ -27,6 +27,7 @@ import {
   sw_post_file_doc,
 } from "./sw-helpers";
 import { process_analisis_suelo } from "./sw-importers";
+import { uuidv7 } from "uuidv7";
 
 let adjuntos_db = new PouchDB("adjuntos");
 //adjuntos_db.put({_id:'esbolonio',bolonio:3})
@@ -35,9 +36,15 @@ let adjuntos_db = new PouchDB("adjuntos");
 declare let self: ServiceWorkerGlobalScope;
 declare type ExtendableEvent = any;
 
+console.log("SW Version ", import.meta.env.VITE_VERSION)
 // self.__WB_MANIFEST is default injection point
 precacheAndRoute(self.__WB_MANIFEST);
 //precacheAndRoute([]);
+
+
+// precacheAndRoute([
+//   {url: 'https://agrotools.qts-ar.com.ar/couchdb/fieldpartner-platform/recorrida-fields', revision: null},
+// ])
 
 registerRoute(/.*index.html*$/, new NetworkFirst({ cacheName: "html" }));
 
@@ -80,7 +87,8 @@ registerRoute(
 );
 
 // Geotiffs
-registerRoute(/.*\.geotiff$/, new CacheFirst({ cacheName: "geotiff" }));
+registerRoute(/.*\/satimages\/cog.*$/, new CacheFirst({ cacheName: "geotiff" }));
+registerRoute(/.*.tiff*$/, new CacheFirst({ cacheName: "geotiff2" }));
 
 // Fechas de generacion
 registerRoute(
@@ -99,10 +107,16 @@ registerRoute(
   async ({ url, request, event, params }) => {
     console.log("ATT GET", url, event, params);
     let filename = url.searchParams.get("file"); //esta URL encoded,pero se decode solo.
+    
+    if(filename === null){
+      return Promise.reject("Filename can't be null");
+    }
+    
     let file_doc: SWFileAttachment = (await sw_get_file_doc(
       adjuntos_db,
       filename
     )) as SWFileAttachment;
+    
     if (file_doc !== null) {
       //existe
       console.log("El archivo existe en la db");
@@ -151,12 +165,13 @@ registerRoute(
     const file: File = data.get("file") as File;
     console.log("FILE UPLOAD", file, file.name, file.type);
 
-    postData(file);
+    let assigned_filename = uuidv7()
+    // postData(file,assigned_filename);
 
-    // La _id es el nombre del archivo URIencodedeado
-    sw_post_file_doc(adjuntos_db, file, false);
+    // La _id s el nombre del archivo URIencodedeeado
+    await sw_post_file_doc(adjuntos_db, file, false, assigned_filename);
 
-    return new Response(`{"status":"ok"}`, {
+    return new Response(JSON.stringify({status:"ok",filename:assigned_filename}), {
       headers: { ...request.headers },
     });
   },
@@ -195,7 +210,7 @@ self.addEventListener("fetch", (event) => {
         const file = data.get("file");
 
         console.log("Excel file", file);
-        client.postMessage({ file, action: "load-excel" });
+        client?.postMessage({ file, action: "load-excel" });
       })()
     );
   }
@@ -235,7 +250,7 @@ self.addEventListener("fetch", (event) => {
       const file = data.get("file");
 
       console.log("Excel file", file);
-      client.postMessage({ file, action: "load-excel-insumos" });
+      client?.postMessage({ file, action: "load-excel-insumos" });
     })()
   );
 });
@@ -260,7 +275,7 @@ self.addEventListener("fetch", (event) => {
       const file = data.get("file");
 
       console.log("Audio file", file);
-      client.postMessage({ file, action: "load-audio" });
+      client?.postMessage({ file, action: "load-audio" });
     })()
   );
 });
@@ -316,7 +331,16 @@ self.addEventListener("fetch", (event) => {
 
 //setDefaultHandler(new NetworkOnly());
 
-// this is necessary, since the new service worker will keep on skipWaiting state
+// Este evento se usa solo en caso de usar la notificacion de update
+self.addEventListener("message", (event) => {
+  console.log(event);
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+    clientsClaim();
+  }
+});
+
+// this is necessary, since the new service worker will keep on Waiting state
 // and then, caches will not be cleared since it is not activated
 self.skipWaiting();
 clientsClaim();

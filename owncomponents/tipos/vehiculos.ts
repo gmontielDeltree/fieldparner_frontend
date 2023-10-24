@@ -45,4 +45,8 @@ export interface Vehiculo{
     seguro_fecha_de_vencimiento?:string,
     distancia_entre_picos?:number,
     ancho?:number,
+    piloto?:boolean,
+    sistema_dosificacion_variable?:boolean,
+    sistema_precision?: string,
+    fertilizacion?: "en_linea" | "al_costado"
 }
