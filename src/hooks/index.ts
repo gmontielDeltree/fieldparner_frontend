@@ -6,3 +6,4 @@ export * from './useBusiness';
 export * from './useSupply';
 export * from './useDeposit';
 export * from './useCategory';
+export * from './useStockMovement';

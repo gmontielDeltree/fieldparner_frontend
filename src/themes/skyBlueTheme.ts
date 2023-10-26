@@ -9,7 +9,7 @@ export const skyBlueTheme: Theme = createTheme({
             main: '#543884',
         },
         error: {
-            main: 'ef5350',
+            main: '#ef5350',
         },
     },
 });
