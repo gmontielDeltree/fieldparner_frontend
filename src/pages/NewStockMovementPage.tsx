@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Loading } from "../components";
 import {
   Box,
@@ -11,21 +11,19 @@ import {
   MenuItem,
   Paper,
   Select,
+  SelectChangeEvent,
+  Switch,
   TextField,
   Typography,
 } from "@mui/material";
 import { SyncAlt as SyncAltIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import {
-  useAppDispatch,
-  useDeposit,
-  useForm,
-  useStockMovement,
-  useSupply,
-} from "../hooks";
+import { useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
 import {
   CurrencyCode,
   StockMovement,
+  Supply,
+  TypeMovement,
   TypeMovements,
   TypeSupplies,
   UnidadesDeMedida,
@@ -42,7 +40,7 @@ const initialForm: StockMovement = {
   detail: "",
   dueDate: "",
   hours: "",
-  movement: "",
+  movement: "Manual",
   operationDate: getShortDate(),
   supply: "",
   typeSupply: "",
@@ -50,37 +48,66 @@ const initialForm: StockMovement = {
   unitMeasurement: "",
   totalValue: 0,
   voucher: "",
+  isIncome: false,
+  depositDestination: "",
 };
 
 export const NewStockMovementPage: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-
   const {
     formulario,
     setFormulario,
     handleInputChange,
-    handleFormValueChange,
     handleCheckboxChange,
     handleSelectChange,
     reset,
   } = useForm(initialForm);
-
+  const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
+  const [showSwitch, setShowSwitch] = useState(true);
   const { isLoading, addNewStockMovement } = useStockMovement();
   const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
   const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
+  const { typeMovement } = formulario;
 
   const onClickCancel = () => navigate("/init/overview/stock-movements");
 
   const onClickSave = () => {
+    // console.log("formulario", formulario);
     addNewStockMovement(formulario);
     reset();
+  };
+
+  const onChangeSupply = ({ target }: SelectChangeEvent) => {
+    const { value } = target;
+    const supplySelected = JSON.parse(value) as Supply;
+    setFormulario((prevState) => ({
+      ...prevState,
+      supply: supplySelected.insumo,
+    }));
+    setSupplySelected(supplySelected);
   };
 
   useEffect(() => {
     getSupplies();
     getDeposits();
   }, []);
+
+  useEffect(() => {
+    const movementsShowSwitch = [
+      TypeMovement.Ajustes.toString(),
+      TypeMovement.Prestamos.toString(),
+      TypeMovement.TransferenciaDeposito.toString(),
+    ];
+    if (typeMovement !== "" && movementsShowSwitch.includes(typeMovement))
+      setShowSwitch(true);
+    else {
+      setFormulario((prevState) => ({
+        ...prevState,
+        isIncome: !typeMovement.includes(TypeMovement.Compra.toString()),
+      }));
+      setShowSwitch(false);
+    }
+  }, [typeMovement]);
 
   return (
     <Container maxWidth="lg">
@@ -103,7 +130,12 @@ export const NewStockMovementPage: React.FC = () => {
         >
           Nuevo Movimiento de Stock
         </Typography>
-        <Grid container spacing={2} alignItems="center" justifyContent="center">
+        <Grid
+          container
+          spacing={2}
+          alignItems="center"
+          justifyContent="flex-start"
+        >
           <Grid item xs={12} sm={3}>
             <FormControl fullWidth>
               <InputLabel id="typeMovement">Tipo de Movimiento</InputLabel>
@@ -150,9 +182,32 @@ export const NewStockMovementPage: React.FC = () => {
               fullWidth
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth>
-              <InputLabel id="tipo-insumo">Tipo de Insumo</InputLabel>
+          {typeMovement.includes(TypeMovement.TransferenciaDeposito) ? (
+            <>
+              <Grid item xs={6} sm={3}>
+                <FormControl fullWidth>
+                  <InputLabel id="supply">Insumo</InputLabel>
+                  <Select
+                    labelId="supply"
+                    name="supply"
+                    value={formulario.supply}
+                    label="Insumo"
+                    onChange={onChangeSupply}
+                  >
+                    {supplies.map((supply) => (
+                      <MenuItem key={supply._id} value={JSON.stringify(supply)}>
+                        {supply.insumo}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <Typography variant="body1" align="left">
+                  <b>Tipo de insumo:</b> {supplySelected?.tipo}
+                </Typography>
+                {/* <FormControl fullWidth>
+              <InputLabel id="tipo-insumo">Tipo de Insumo: {TypeSupplies[1]}</InputLabel>
               <Select
                 labelId="tipo-insumo"
                 name="typeSupply"
@@ -166,164 +221,332 @@ export const NewStockMovementPage: React.FC = () => {
                   </MenuItem>
                 ))}
               </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={6} sm={4}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label="Insumo"
-              name="supply"
-              value={formulario.supply}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={6} sm={4}>
-            <FormControl fullWidth>
-              <InputLabel id="deposit">Deposito</InputLabel>
+            </FormControl> */}
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1" align="left">
+                  <b>Descripcion:</b> {supplySelected?.descripcion}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={12}>
+                <Typography variant="h5" align="left">
+                  Origen
+                </Typography>
+              </Grid>
+              <Grid key="deposit-origin" item xs={6} sm={4}>
+                <FormControl fullWidth>
+                  <InputLabel id="deposit">Deposito</InputLabel>
+                  <Select
+                    labelId="deposit"
+                    name="deposit"
+                    value={formulario.deposit}
+                    label="Deposito"
+                    onChange={handleSelectChange}
+                  >
+                    {deposits.map((deposit) => (
+                      <MenuItem key={deposit._id} value={deposit.descripcion}>
+                        {deposit.descripcion}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} sm={6}>
+                <TextField
+                  variant="outlined"
+                  type="text"
+                  label="Ubicacion"
+                  name="ubication"
+                  value={formulario.ubication}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={6} sm={2}>
+                <TextField
+                  variant="outlined"
+                  type="text"
+                  label="Lote"
+                  name="batch"
+                  value={formulario.batch}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth>
+                  <InputLabel id="unidadMedida">Unidad de medida</InputLabel>
+                  <Select
+                    labelId="unidadMedida"
+                    name="unitMeasurement"
+                    value={formulario.unitMeasurement}
+                    label="Unidad de medida"
+                    onChange={handleSelectChange}
+                  >
+                    {UnidadesDeMedida.map((um) => (
+                      <MenuItem key={um} value={um}>
+                        {um}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <TextField
+                  variant="outlined"
+                  type="number"
+                  label="Cantidad"
+                  name="amount"
+                  value={formulario.amount}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={12}>
+                <Typography variant="h5" align="left">
+                  Destino
+                </Typography>
+              </Grid>
+              <Grid key="deposit-destination" item xs={6} sm={4}>
+                <FormControl fullWidth>
+                  <InputLabel id="deposit">Deposito</InputLabel>
+                  <Select
+                    labelId="deposit"
+                    name="depositDestination"
+                    value={formulario.depositDestination}
+                    label="Deposito"
+                    onChange={handleSelectChange}
+                  >
+                    {deposits.map((deposit) => (
+                      <MenuItem key={deposit._id} value={deposit.descripcion}>
+                        {deposit.descripcion}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </>
+          ) : (
+            <>
+              <Grid item xs={12} sm={3}>
+                {showSwitch && (
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Typography variant="body1" display="inline-block">
+                      Entrada
+                    </Typography>
+                    <Switch
+                      name="isIncome"
+                      checked={formulario.isIncome}
+                      onChange={handleCheckboxChange}
+                    />
+                    <Typography variant="body1" display="inline-block">
+                      Salida
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <FormControl fullWidth>
+                  <InputLabel id="supply">Insumo</InputLabel>
+                  <Select
+                    labelId="supply"
+                    name="supply"
+                    value={formulario.supply}
+                    label="Insumo"
+                    onChange={onChangeSupply}
+                  >
+                    {supplies.map((supply) => (
+                      <MenuItem key={supply._id} value={JSON.stringify(supply)}>
+                        {supply.insumo}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <Typography variant="body1" align="center">
+                  Tipo de insumo: <b>{TypeSupplies[1]}</b>
+                </Typography>
+                {/* <FormControl fullWidth>
+              <InputLabel id="tipo-insumo">Tipo de Insumo: {TypeSupplies[1]}</InputLabel>
               <Select
-                labelId="deposit"
-                name="deposit"
-                value={formulario.deposit}
-                label="Deposito"
+                labelId="tipo-insumo"
+                name="typeSupply"
+                value={formulario.typeSupply}
+                label="Tipo de Insumo"
                 onChange={handleSelectChange}
               >
-                {deposits.map((deposit) => (
-                  <MenuItem key={deposit._id} value={deposit.descripcion}>
-                    {deposit.descripcion}
+                {TypeSupplies.map((supply) => (
+                  <MenuItem key={supply} value={supply}>
+                    {supply}
                   </MenuItem>
                 ))}
               </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={6} sm={4}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label="Ubicacion"
-              name="ubication"
-              value={formulario.ubication}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={6} sm={4}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label="Lote"
-              name="batch"
-              value={formulario.batch}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth>
-              <InputLabel id="unidadMedida">Unidad de medida</InputLabel>
-              <Select
-                labelId="unidadMedida"
-                name="unitMeasurement"
-                value={formulario.unitMeasurement}
-                label="Unidad de medida"
-                onChange={handleSelectChange}
-              >
-                {UnidadesDeMedida.map((um) => (
-                  <MenuItem key={um} value={um}>
-                    {um}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <TextField
-              variant="outlined"
-              type="number"
-              label="Cantidad"
-              name="amount"
-              value={formulario.amount}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label="Comprobante"
-              name="voucher"
-              value={formulario.voucher}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth>
-              <InputLabel id="currency">Moneda</InputLabel>
-              <Select
-                labelId="currency"
-                name="currency"
-                value={formulario.currency}
-                label="Moneda"
-                onChange={handleSelectChange}
-              >
-                <MenuItem key={CurrencyCode.ARG} value={CurrencyCode.ARG}>
-                  {CurrencyCode.ARG.toString()}
-                </MenuItem>
-                <MenuItem key={CurrencyCode.BRA} value={CurrencyCode.BRA}>
-                  {CurrencyCode.BRA.toString()}
-                </MenuItem>
-                <MenuItem key={CurrencyCode.CHL} value={CurrencyCode.CHL}>
-                  {CurrencyCode.CHL.toString()}
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <TextField
-              variant="outlined"
-              type="number"
-              label="Valor Total"
-              name="totalValue"
-              value={formulario.totalValue}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <TextField
-              variant="outlined"
-              type="number"
-              label="Campaña"
-              name="campaign"
-              value={formulario.campaign}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
-          </Grid>
+            </FormControl> */}
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <FormControl fullWidth>
+                  <InputLabel id="deposit">Deposito</InputLabel>
+                  <Select
+                    labelId="deposit"
+                    name="deposit"
+                    value={formulario.deposit}
+                    label="Deposito"
+                    onChange={handleSelectChange}
+                  >
+                    {deposits.map((deposit) => (
+                      <MenuItem key={deposit._id} value={deposit.descripcion}>
+                        {deposit.descripcion}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} sm={4}>
+                <TextField
+                  variant="outlined"
+                  type="text"
+                  label="Ubicacion"
+                  name="ubication"
+                  value={formulario.ubication}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={6} sm={2}>
+                <TextField
+                  variant="outlined"
+                  type="text"
+                  label="Lote"
+                  name="batch"
+                  value={formulario.batch}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth>
+                  <InputLabel id="unidadMedida">Unidad de medida</InputLabel>
+                  <Select
+                    labelId="unidadMedida"
+                    name="unitMeasurement"
+                    value={formulario.unitMeasurement}
+                    label="Unidad de medida"
+                    onChange={handleSelectChange}
+                  >
+                    {UnidadesDeMedida.map((um) => (
+                      <MenuItem key={um} value={um}>
+                        {um}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} sm={2}>
+                <TextField
+                  variant="outlined"
+                  type="number"
+                  label="Cantidad"
+                  name="amount"
+                  value={formulario.amount}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={6} sm={4}>
+                <TextField
+                  variant="outlined"
+                  type="text"
+                  label="Comprobante"
+                  name="voucher"
+                  value={formulario.voucher}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <FormControl fullWidth>
+                  <InputLabel id="currency">Moneda</InputLabel>
+                  <Select
+                    labelId="currency"
+                    name="currency"
+                    value={formulario.currency}
+                    label="Moneda"
+                    onChange={handleSelectChange}
+                  >
+                    <MenuItem key={CurrencyCode.ARG} value={CurrencyCode.ARG}>
+                      {CurrencyCode.ARG.toString()}
+                    </MenuItem>
+                    <MenuItem key={CurrencyCode.BRA} value={CurrencyCode.BRA}>
+                      {CurrencyCode.BRA.toString()}
+                    </MenuItem>
+                    <MenuItem key={CurrencyCode.CHL} value={CurrencyCode.CHL}>
+                      {CurrencyCode.CHL.toString()}
+                    </MenuItem>
+                    <MenuItem key={CurrencyCode.USA} value={CurrencyCode.USA}>
+                      {CurrencyCode.USA.toString()}
+                    </MenuItem>
+                    <MenuItem key={CurrencyCode.EURO} value={CurrencyCode.EURO}>
+                      {CurrencyCode.EURO.toString()}
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} sm={2}>
+                <TextField
+                  variant="outlined"
+                  type="number"
+                  label="Valor Total"
+                  name="totalValue"
+                  value={formulario.totalValue}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={6} sm={4}>
+                <TextField
+                  variant="outlined"
+                  type="number"
+                  label="Campaña"
+                  name="campaign"
+                  value={formulario.campaign}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
+            </>
+          )}
         </Grid>
         <Grid
           container

@@ -259,7 +259,7 @@ export const TypeMovements = [
     "Ventas Varias",
     "Transferencia entre depositos",
     "Prestamos",
-  ];
+];
 
 export interface DepositState {
     depositActive: Deposit | null;
@@ -305,7 +305,7 @@ export interface StockMovement extends Document {
     batch: string;
     dueDate: string;
     typeMovement: string;
-    // isIncome: boolean;
+    isIncome: boolean;
     detail: string;
     operationDate: string;
     unitMeasurement: string;
@@ -315,10 +315,21 @@ export interface StockMovement extends Document {
     totalValue: number;
     hours: string;
     campaign: number;
+    depositDestination?: string
 }
 
 export enum CurrencyCode {
     ARG = 'ARS',
     BRA = 'BRL',
     CHL = 'CLP',
+    USA = 'USD',
+    EURO = 'EUR',
+}
+
+export enum TypeMovement {
+    Ajustes = "Ajustes",
+    Compra = "Compra",
+    VentasVarias = "Ventas Varias",
+    TransferenciaDeposito = "Transferencia entre depositos",
+    Prestamos = "Prestamos",
 }
