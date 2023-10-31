@@ -242,6 +242,25 @@ export const UnidadesDeMedida = [
     "QUINTAL",
 ];
 
+export const TypeSupplies = [
+    "Varios",
+    "Semillas",
+    "Cultivo",
+    "Fertilizantes",
+    "Fitosanitarios",
+    "Repuestos",
+    "Materiales",
+    "Combustible"
+];
+
+export const TypeMovements = [
+    "Ajustes",
+    "Compra",
+    "Ventas Varias",
+    "Transferencia entre depositos",
+    "Prestamos",
+];
+
 export interface DepositState {
     depositActive: Deposit | null;
     deposits: Deposit[];
@@ -275,4 +294,42 @@ export enum CountryCode {
     ARGENTINA = 'ARG',
     BRASIL = "BRA",
     CHILE = "CHL",
+}
+
+export interface StockMovement extends Document {
+    movement: string;
+    supply: string;
+    typeSupply: string;
+    deposit: string;
+    ubication: string;
+    batch: string;
+    dueDate: string;
+    typeMovement: string;
+    isIncome: boolean;
+    detail: string;
+    operationDate: string;
+    unitMeasurement: string;
+    amount: number;
+    voucher: string;
+    currency: string;
+    totalValue: number;
+    hours: string;
+    campaign: number;
+    depositDestination?: string
+}
+
+export enum CurrencyCode {
+    ARG = 'ARS',
+    BRA = 'BRL',
+    CHL = 'CLP',
+    USA = 'USD',
+    EURO = 'EUR',
+}
+
+export enum TypeMovement {
+    Ajustes = "Ajustes",
+    Compra = "Compra",
+    VentasVarias = "Ventas Varias",
+    TransferenciaDeposito = "Transferencia entre depositos",
+    Prestamos = "Prestamos",
 }

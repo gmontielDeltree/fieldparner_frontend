@@ -13,7 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import {  Supply, TipoInsumo } from "../../types";
+import { Supply, TipoInsumo, TypeSupplies } from "../../types";
 import React, { ChangeEvent } from "react";
 
 export interface LaborsFormProps {
@@ -34,14 +34,8 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
   handleCheckboxChange,
   setFormValues,
 }) => {
-  const {
-    tipo,
-    insumo,
-    descripcion,
-    codigoBarra,
-    tieneLotes,
-    labores,
-  } = formValues;
+  const { tipo, insumo, descripcion, codigoBarra, tieneLotes, labores } =
+    formValues;
 
   const handleChangeLabors = (
     { target }: ChangeEvent<HTMLInputElement>,
@@ -73,14 +67,11 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
             label="Tipo"
             onChange={handleSelectChange}
           >
-            <MenuItem value={"Varios"}>Varios</MenuItem>
-            <MenuItem value={"Semillas"}>Semillas</MenuItem>
-            <MenuItem value={"Cultivo"}>Cultivo</MenuItem>
-            <MenuItem value={"Fertilizantes"}>Fertilizantes</MenuItem>
-            <MenuItem value={"Fitosanitarios"}>Fitosanitarios</MenuItem>
-            <MenuItem value={"Repuestos"}>Repuestos</MenuItem>
-            <MenuItem value={"Materiales"}>Materiales</MenuItem>
-            <MenuItem value={"Combustible"}>Combustible</MenuItem>
+            {TypeSupplies.map((supply) => (
+              <MenuItem key={supply} value={supply}>
+                {supply}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       </Grid>
