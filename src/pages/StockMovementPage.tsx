@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Loading,
@@ -8,7 +8,7 @@ import {
   ItemRow,
   TableCellStyled,
 } from "../components";
-import { ColumnProps } from "../types";
+import { ColumnProps, StockMovement } from "../types";
 import {
   Box,
   Button,
@@ -38,7 +38,7 @@ const columns: ColumnProps[] = [
   { text: "Deposito", align: "center" },
   // { text: "Ubicacion", align: "left" },
   // { text: "Lote", align: "center" },
-  { text: "Vencimiento", align: "center" },
+  // { text: "Vencimiento", align: "center" },
   { text: "Tipo Movimiento", align: "center" },
   { text: "Ing/Egre", align: "center" },
   // { text: "Detalle", align: "center" },
@@ -56,7 +56,8 @@ export const StockMovementPage: React.FC = () => {
   const navigate = useNavigate();
   const { isLoading, stockMovements, getStockMovements } = useStockMovement();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
-  const [open, setOpen] = React.useState(false);
+  const [movementSelected, setMovementSelected] =
+    useState<StockMovement | null>(null);
 
   const onClickSearch = (): void => {
     if (filterText === "") {
@@ -75,6 +76,11 @@ export const StockMovementPage: React.FC = () => {
 
   const onClickAddMovement = () =>
     navigate("/init/overview/stock-movements/new");
+
+  const onClickOpenDetail = (rowSelected: StockMovement) => {
+    if (rowSelected === movementSelected) setMovementSelected(null);
+    else setMovementSelected(rowSelected);
+  };
 
   useEffect(() => {
     getStockMovements();
@@ -141,9 +147,9 @@ export const StockMovementPage: React.FC = () => {
                     <IconButton
                       aria-label="expand row"
                       size="small"
-                      onClick={() => setOpen(!open)}
+                      onClick={() => onClickOpenDetail(row)}
                     >
-                      {open ? (
+                      {movementSelected?._id === row._id ? (
                         <KeyboardArrowUpIcon />
                       ) : (
                         <KeyboardArrowDownIcon />
@@ -151,7 +157,7 @@ export const StockMovementPage: React.FC = () => {
                     </IconButton>
                   </TableCellStyled>
                   <TableCellStyled align="left">{row.movement}</TableCellStyled>
-                  <TableCellStyled align="center">{row.supply}</TableCellStyled>
+                  <TableCellStyled align="center">{`${row.typeSupply}/${row.supply}`}</TableCellStyled>
                   <TableCellStyled align="center">
                     {row.deposit}
                   </TableCellStyled>
@@ -159,9 +165,9 @@ export const StockMovementPage: React.FC = () => {
                     {row.ubication}
                   </TableCellStyled> */}
                   {/* <TableCellStyled align="center">{row.batch}</TableCellStyled> */}
-                  <TableCellStyled align="center">
+                  {/* <TableCellStyled align="center">
                     {row.dueDate}
-                  </TableCellStyled>
+                  </TableCellStyled> */}
                   <TableCellStyled align="center">
                     {row.typeMovement}
                   </TableCellStyled>
@@ -186,7 +192,11 @@ export const StockMovementPage: React.FC = () => {
                     style={{ paddingBottom: 0, paddingTop: 0 }}
                     colSpan={12}
                   >
-                    <Collapse in={open} timeout="auto" unmountOnExit>
+                    <Collapse
+                      in={movementSelected?._id === row._id}
+                      timeout="auto"
+                      unmountOnExit
+                    >
                       <Box sx={{ margin: 1 }}>
                         <Typography variant="h6" gutterBottom component="div">
                           Detalles
@@ -203,11 +213,23 @@ export const StockMovementPage: React.FC = () => {
                               >
                                 Ubicacion
                               </TableCellStyled>
-                              <TableCellStyled align="left" sx={{ width: "60px" }}>
+                              <TableCellStyled
+                                align="left"
+                                sx={{ width: "60px" }}
+                              >
                                 Lote
                               </TableCellStyled>
-                              <TableCellStyled align="right" sx={{ width: "60px" }}>
+                              <TableCellStyled
+                                align="right"
+                                sx={{ width: "60px" }}
+                              >
                                 Horas
+                              </TableCellStyled>
+                              <TableCellStyled
+                                align="center"
+                                sx={{ width: "80px" }}
+                              >
+                                Vencimiento
                               </TableCellStyled>
                               <TableCellStyled
                                 align="center"
@@ -215,7 +237,7 @@ export const StockMovementPage: React.FC = () => {
                               >
                                 Detalle
                               </TableCellStyled>
-                              <TableCellStyled align="right">
+                              <TableCellStyled align="center">
                                 Campaña
                               </TableCellStyled>
                             </ItemRow>
@@ -227,16 +249,19 @@ export const StockMovementPage: React.FC = () => {
                             <TableCellStyled align="center">
                               {row.ubication}
                             </TableCellStyled>
-                            <TableCellStyled align="left">
+                            <TableCellStyled align="center">
                               {row.batch}
                             </TableCellStyled>
                             <TableCellStyled align="right">
                               {row.hours}
                             </TableCellStyled>
                             <TableCellStyled align="center">
+                              {row.dueDate}
+                            </TableCellStyled>
+                            <TableCellStyled align="center">
                               {row.detail}
                             </TableCellStyled>
-                            <TableCellStyled align="left">
+                            <TableCellStyled align="center">
                               {row.campaign}
                             </TableCellStyled>
                           </TableBody>
