@@ -25,7 +25,7 @@ import {
   Supply,
   TypeMovement,
   TypeMovements,
-  TypeSupplies,
+  // TypeSupplies,
   UnidadesDeMedida,
 } from "../types";
 import { getShortDate } from "../helpers/dates";
@@ -79,12 +79,16 @@ export const NewStockMovementPage: React.FC = () => {
 
   const onChangeSupply = ({ target }: SelectChangeEvent) => {
     const { value } = target;
-    const supplySelected = JSON.parse(value) as Supply;
-    setFormulario((prevState) => ({
-      ...prevState,
-      supply: supplySelected.insumo,
-    }));
-    setSupplySelected(supplySelected);
+    // const supplySelected = JSON.parse(value) as Supply;
+    const supplySelected = supplies.find((supply) => supply.insumo === value);
+    if (supplySelected) {
+      setFormulario((prevState) => ({
+        ...prevState,
+        supply: supplySelected?.insumo,
+        typeSupply: supplySelected.tipo,
+      }));
+      setSupplySelected(supplySelected);
+    }
   };
 
   useEffect(() => {
@@ -181,21 +185,27 @@ export const NewStockMovementPage: React.FC = () => {
               }}
               fullWidth
             />
+            {/* <DatePicker
+              label="Fecha"
+              value={formulario.operationDate}
+              onChange={(newValue) => console.log(newValue)}
+            /> */}
           </Grid>
           {typeMovement.includes(TypeMovement.TransferenciaDeposito) ? (
             <>
-              <Grid item xs={6} sm={3}>
+              <Grid key="supply-transfer-deposit" item xs={6} sm={3}>
                 <FormControl fullWidth>
                   <InputLabel id="supply">Insumo</InputLabel>
                   <Select
+                    key="select-supply-tranferencia"
                     labelId="supply"
-                    name="supply"
+                    // name="supply"
                     value={formulario.supply}
                     label="Insumo"
                     onChange={onChangeSupply}
                   >
                     {supplies.map((supply) => (
-                      <MenuItem key={supply._id} value={JSON.stringify(supply)}>
+                      <MenuItem key={supply._id} value={supply.insumo}>
                         {supply.insumo}
                       </MenuItem>
                     ))}
@@ -358,18 +368,19 @@ export const NewStockMovementPage: React.FC = () => {
                   </Box>
                 )}
               </Grid>
-              <Grid item xs={6} sm={3}>
+              <Grid key="supply-movement" item xs={6} sm={3}>
                 <FormControl fullWidth>
                   <InputLabel id="supply">Insumo</InputLabel>
                   <Select
+                    key="select-supply-movement"
                     labelId="supply"
-                    name="supply"
+                    // name="supply"
                     value={formulario.supply}
                     label="Insumo"
                     onChange={onChangeSupply}
                   >
                     {supplies.map((supply) => (
-                      <MenuItem key={supply._id} value={JSON.stringify(supply)}>
+                      <MenuItem key={supply._id} value={supply.insumo}>
                         {supply.insumo}
                       </MenuItem>
                     ))}
@@ -378,7 +389,7 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={3}>
                 <Typography variant="body1" align="center">
-                  Tipo de insumo: <b>{TypeSupplies[1]}</b>
+                  Tipo de insumo: <b>{supplySelected?.tipo}</b>
                 </Typography>
                 {/* <FormControl fullWidth>
               <InputLabel id="tipo-insumo">Tipo de Insumo: {TypeSupplies[1]}</InputLabel>
