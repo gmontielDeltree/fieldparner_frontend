@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Loading } from "../components";
 import {
   Box,
@@ -29,6 +29,8 @@ import {
   UnidadesDeMedida,
 } from "../types";
 import { getShortDate } from "../helpers/dates";
+// import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+// import dayjs from "dayjs";
 
 const initialForm: StockMovement = {
   typeMovement: "",
@@ -67,7 +69,13 @@ export const NewStockMovementPage: React.FC = () => {
   const { isLoading, addNewStockMovement } = useStockMovement();
   const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
   const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
-  const { typeMovement } = formulario;
+  const { typeMovement, deposit: depositOrigin } = formulario;
+
+  const depositsToBeAllocated = useMemo(() => {
+    return deposits.filter(
+      (d) => d.descripcion.toLowerCase() !== depositOrigin.toLowerCase()
+    );
+  }, [deposits, depositOrigin]);
 
   const onClickCancel = () => navigate("/init/overview/stock-movements");
 
@@ -183,13 +191,11 @@ export const NewStockMovementPage: React.FC = () => {
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
+              inputProps={{
+                max: getShortDate() // Establece la fecha mínima permitida como la fecha actual
+              }}
               fullWidth
             />
-            {/* <DatePicker
-              label="Fecha"
-              value={formulario.operationDate}
-              onChange={(newValue) => console.log(newValue)}
-            /> */}
           </Grid>
           {typeMovement.includes(TypeMovement.TransferenciaDeposito) ? (
             <>
@@ -336,7 +342,7 @@ export const NewStockMovementPage: React.FC = () => {
                     label="Deposito"
                     onChange={handleSelectChange}
                   >
-                    {deposits.map((deposit) => (
+                    {depositsToBeAllocated.map((deposit) => (
                       <MenuItem key={deposit._id} value={deposit.descripcion}>
                         {deposit.descripcion}
                       </MenuItem>

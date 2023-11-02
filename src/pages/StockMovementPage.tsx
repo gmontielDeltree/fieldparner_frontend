@@ -187,7 +187,7 @@ export const StockMovementPage: React.FC = () => {
                     {row.totalValue}
                   </TableCellStyled>
                 </ItemRow>
-                <ItemRow>
+                <ItemRow key={row._id + "-detail"}>
                   <TableCellStyled
                     style={{ paddingBottom: 0, paddingTop: 0 }}
                     colSpan={12}
