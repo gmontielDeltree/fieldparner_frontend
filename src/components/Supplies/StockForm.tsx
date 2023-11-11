@@ -22,7 +22,7 @@ export const StockForm: React.FC<StockFormProps> = ({
   handleInputChange,
   handleSelectChange,
 }) => {
-  const { tipo, insumo, unidadMedida, puntoReposicion } = formValues;
+  const { type, name, unitMeasurement, replenishmentPoint } = formValues;
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
@@ -31,15 +31,14 @@ export const StockForm: React.FC<StockFormProps> = ({
           variant="outlined"
           type="text"
           label="Tipo"
-          name="tipo"
-          value={tipo}
+          value={type}
           disabled
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
             style: {
-              backgroundColor: '#f5f5f5',
-              fontWeight: 600
-            }
+              backgroundColor: "#f5f5f5",
+              fontWeight: 600,
+            },
           }}
           fullWidth
         />
@@ -49,15 +48,14 @@ export const StockForm: React.FC<StockFormProps> = ({
           variant="outlined"
           type="text"
           label="Insumo"
-          name="insumo"
-          value={insumo}
+          value={name}
           disabled
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
             style: {
-              backgroundColor: '#f5f5f5',
-              fontWeight: 600
-            }
+              backgroundColor: "#f5f5f5",
+              fontWeight: 600,
+            },
           }}
           fullWidth
         />
@@ -67,8 +65,8 @@ export const StockForm: React.FC<StockFormProps> = ({
           <InputLabel id="unidadMedida">Unidad de medida</InputLabel>
           <Select
             labelId="unidadMedida"
-            name="unidadMedida"
-            value={unidadMedida}
+            name="unitMeasurement"
+            value={unitMeasurement}
             // autoWidth
             label="Unidad de medida"
             onChange={handleSelectChange}
@@ -86,8 +84,8 @@ export const StockForm: React.FC<StockFormProps> = ({
           variant="outlined"
           type="text"
           label="Punto Reposición"
-          name="puntoReposicion"
-          value={puntoReposicion}
+          name="replenishmentPoint"
+          value={replenishmentPoint}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,

@@ -1,24 +1,41 @@
 import Swal from 'sweetalert2';
-import { StockMovement } from "../types";
+import { StockMovement, StockMovementItem } from "../types";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
+import { useAppSelector } from './useRedux';
 
 
 export const useStockMovement = () => {
     const navigate = useNavigate();
-    const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
+    const { user } = useAppSelector(state => state.auth);
+    const [stockMovements, setStockMovements] = useState<StockMovementItem[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
     const getStockMovements = async () => {
         setIsLoading(true);
         try {
-            const result = await dbContext.stockMovements.allDocs({ include_docs: true });
+            const result = await dbContext.stockMovements.find({
+                selector: { "accountId": user?.accountId }
+            });
+            const promisesResult = await Promise.all([
+                dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.supplies.find({ selector: { "accountId": user?.accountId } })
+            ]);
+            const deposits = promisesResult[0].docs;
+            const supplies = promisesResult[1].docs;
+
             setIsLoading(false);
 
-            if (result.rows.length) {
-                const documents: StockMovement[] = result.rows.map(row => row.doc as StockMovement);
+            if (result.docs.length) {
+                const documents: StockMovementItem[] = result.docs.map((sm) => {
+                    return {
+                        ...sm,
+                        deposit: deposits.find(d => d._id === sm.depositId),
+                        supply: supplies.find(s => s._id === sm.supplyId)
+                    } as StockMovementItem;
+                });
                 setStockMovements(documents);
             }
             else
@@ -34,7 +51,8 @@ export const useStockMovement = () => {
     const addNewStockMovement = async (newStockMovement: StockMovement) => {
         setIsLoading(true);
         try {
-            const response = await dbContext.stockMovements.post(newStockMovement);
+            if (!user) throw new Error();
+            const response = await dbContext.stockMovements.post({ ...newStockMovement, accountId: user?.accountId });
             setIsLoading(false);
 
             if (response.ok)

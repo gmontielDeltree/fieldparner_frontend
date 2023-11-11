@@ -23,33 +23,24 @@ import {
 } from "@mui/material";
 import {
   Add as AddIcon,
-  // Edit as EditIcon,
   SyncAlt as SyncAltIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
 } from "@mui/icons-material";
 import { useForm, useStockMovement } from "../hooks";
-// import { TableCellStyled } from "../components/DataTable/index";
 
 const columns: ColumnProps[] = [
   { text: "", align: "left" },
   { text: "Mov.", align: "left" },
   { text: "Tipo/Insumo", align: "center" },
   { text: "Deposito", align: "center" },
-  // { text: "Ubicacion", align: "left" },
-  // { text: "Lote", align: "center" },
-  // { text: "Vencimiento", align: "center" },
   { text: "Tipo Movimiento", align: "center" },
   { text: "Ing/Egre", align: "center" },
-  // { text: "Detalle", align: "center" },
-  // { text: "Fecha", align: "center" },
   { text: "UM", align: "center" },
   { text: "Cantidad", align: "center" },
   { text: "Comprobante", align: "center" },
   { text: "Moneda", align: "center" },
   { text: "Valor", align: "center" },
-  // { text: "Horas", align: "center" },
-  // { text: "Campaña", align: "center" },
 ];
 
 export const StockMovementPage: React.FC = () => {
@@ -157,9 +148,9 @@ export const StockMovementPage: React.FC = () => {
                     </IconButton>
                   </TableCellStyled>
                   <TableCellStyled align="left">{row.movement}</TableCellStyled>
-                  <TableCellStyled align="center">{`${row.typeSupply}/${row.supply}`}</TableCellStyled>
+                  <TableCellStyled align="center">{`${row.supply?.type}/${row.supply?.name}`}</TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.deposit}
+                    {row.deposit?.description}
                   </TableCellStyled>
                   {/* <TableCellStyled align="center">
                     {row.ubication}
@@ -203,7 +194,7 @@ export const StockMovementPage: React.FC = () => {
                         </Typography>
                         <Table size="small" aria-label="purchases">
                           <TableHead>
-                            <ItemRow>
+                            <ItemRow key={'detail-'+ row._id}>
                               <TableCellStyled sx={{ width: "120px" }}>
                                 Fecha
                               </TableCellStyled>
@@ -247,7 +238,7 @@ export const StockMovementPage: React.FC = () => {
                               {row.operationDate}
                             </TableCellStyled>
                             <TableCellStyled align="center">
-                              {row.ubication}
+                              {row.deposit?.address}
                             </TableCellStyled>
                             <TableCellStyled align="center">
                               {row.batch}

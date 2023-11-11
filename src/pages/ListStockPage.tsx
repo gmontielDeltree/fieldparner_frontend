@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Loading,
-  SearchButton,
-  SearchInput,
-  DataTable,
-  ItemRow,
-  TableCellStyled,
-} from "../components";
+import { Loading, DataTable, ItemRow, TableCellStyled } from "../components";
 import { ColumnProps, StockMovement } from "../types";
 import {
   Box,
@@ -33,7 +25,6 @@ import {
   Warehouse as WarehouseIcon,
 } from "@mui/icons-material";
 import { useStockMovement } from "../hooks";
-import { className } from "../../owncomponents/navbar-element/workspace-menu";
 
 const columns: ColumnProps[] = [
   { text: "", align: "left" },
@@ -78,14 +69,16 @@ function a11yProps(index: number) {
   };
 }
 
+const reservedStock = 400;
+
 export const ListStockPage: React.FC = () => {
-  const navigate = useNavigate();
+  //   const navigate = useNavigate();
   const { isLoading, stockMovements, getStockMovements } = useStockMovement();
   const [movementSelected, setMovementSelected] =
     useState<StockMovement | null>(null);
   const [value, setValue] = React.useState(0);
 
-  const onChangeTab = (event: React.SyntheticEvent, newValue: number) => {
+  const onChangeTab = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
@@ -176,20 +169,20 @@ export const ListStockPage: React.FC = () => {
                         </IconButton>
                       </TableCellStyled>
                       <TableCellStyled align="left">
-                        {row.typeSupply}
+                        {row.supply?.type}
                       </TableCellStyled>
-                      <TableCellStyled align="center">{`${row.supply}/${row.detail}`}</TableCellStyled>
+                      <TableCellStyled align="center">{`${row.supply?.name}/${row.supply?.description}`}</TableCellStyled>
                       <TableCellStyled align="center">
                         {row.unitMeasurement}
-                      </TableCellStyled>
-                      <TableCellStyled align="center">
-                        {row.dueDate}
                       </TableCellStyled>
                       <TableCellStyled align="center">
                         {row.amount}
                       </TableCellStyled>
                       <TableCellStyled align="center">
-                        {row.batch}
+                        {reservedStock}
+                      </TableCellStyled>
+                      <TableCellStyled align="center">
+                        {row.amount - reservedStock}
                       </TableCellStyled>
                     </ItemRow>
                     <ItemRow key={row._id + "-detail"}>
@@ -256,7 +249,7 @@ export const ListStockPage: React.FC = () => {
                                   {row.operationDate}
                                 </TableCellStyled>
                                 <TableCellStyled align="center">
-                                  {row.ubication}
+                                  {row.deposit?.address}
                                 </TableCellStyled>
                                 <TableCellStyled align="center">
                                   {row.batch}

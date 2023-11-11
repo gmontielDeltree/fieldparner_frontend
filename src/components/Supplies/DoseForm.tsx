@@ -12,13 +12,13 @@ export const DoseForm: React.FC<DoseFormProps> = ({
   handleInputChange,
 }) => {
   const {
-    tipo,
-    insumo,
-    dosisMinima,
-    dosisMaxima,
-    dosisRecomendada,
-    principioActivo,
-    mermaVolatil,
+    type,
+    name,
+    minimumDose,
+    maximumDose,
+    recommendedDose,
+    activePrincipal,
+    mermaVolatile,
   } = formValues;
 
   return (
@@ -28,8 +28,8 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           variant="outlined"
           type="text"
           label="Tipo"
-          name="tipo"
-          value={tipo}
+          name="type"
+          value={type}
           disabled
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -46,8 +46,8 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           variant="outlined"
           type="text"
           label="Insumo"
-          name="insumo"
-          value={insumo}
+          name="name"
+          value={name}
           disabled
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -64,9 +64,9 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           variant="outlined"
           type="text"
           label="Principio Activo"
-          name="principioActivo"
+          name="activePrincipal"
           onChange={handleInputChange}
-          value={principioActivo}
+          value={activePrincipal}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
@@ -78,8 +78,8 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           variant="outlined"
           type="text"
           label="Merma Volatil"
-          name="mermaVolatil"
-          value={mermaVolatil}
+          name="mermaVolatile"
+          value={mermaVolatile}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -92,8 +92,8 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           variant="outlined"
           type="text"
           label="Dosis Min."
-          name="dosisMinima"
-          value={dosisMinima}
+          name="minimumDose"
+          value={minimumDose}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -106,8 +106,8 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           variant="outlined"
           type="text"
           label="Dosis Max."
-          name="dosisMaxima"
-          value={dosisMaxima}
+          name="maximumDose"
+          value={maximumDose}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -120,8 +120,8 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           variant="outlined"
           type="text"
           label="Dosis Recomendada"
-          name="dosisRecomendada"
-          value={dosisRecomendada}
+          name="recommendedDose"
+          value={recommendedDose}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,

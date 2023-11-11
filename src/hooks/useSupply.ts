@@ -2,22 +2,26 @@ import Swal from 'sweetalert2';
 import { Supply } from "../types";
 import { useState } from "react";
 import { dbContext } from '../services';
+import { useAppSelector } from '.';
 // const DBSupplies: PouchDB.Database<Supply> = new PouchDB('supplies');
 
 
 export const useSupply = () => {
 
+    const { user } = useAppSelector(state => state.auth);
     const [supplies, setSupplies] = useState<Supply[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
     const getSupplies = async () => {
         setIsLoading(true);
         try {
-            const result = await dbContext.supplies.allDocs({ include_docs: true });
+            const result = await dbContext.supplies.find({
+                selector: { "accountId": user?.accountId },
+            },);
 
             setIsLoading(false);
-            if (result.rows.length) {
-                const documents: Supply[] = result.rows.map(row => row.doc as Supply);
+            if (result.docs.length) {
+                const documents: Supply[] = result.docs.map(row => row as Supply);
                 setSupplies(documents);
             }
         } catch (error) {
@@ -29,7 +33,8 @@ export const useSupply = () => {
     const createSupply = async (newSupply: Supply) => {
         setIsLoading(true);
         try {
-            const response = await dbContext.supplies.post(newSupply);
+            if (!user) throw new Error();
+            const response = await dbContext.supplies.post({ ...newSupply, accountId: user.accountId });
             setIsLoading(false);
 
             if (response.ok) {

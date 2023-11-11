@@ -30,7 +30,7 @@ export const useDeposit = () => {
                     selector: { "accountId": user?.accountId },
                 },
             );
-            console.log('result', result);
+            
             setIsLoading(false);
             if (result.docs) {
                 const documents: Deposit[] = result.docs.map(row => row as Deposit);

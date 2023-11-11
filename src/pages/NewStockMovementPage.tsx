@@ -21,16 +21,14 @@ import { useNavigate } from "react-router-dom";
 import { useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
 import {
   CurrencyCode,
+  Deposit,
   StockMovement,
   Supply,
   TypeMovement,
   TypeMovements,
-  // TypeSupplies,
   UnidadesDeMedida,
 } from "../types";
 import { getShortDate } from "../helpers/dates";
-// import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-// import dayjs from "dayjs";
 
 const initialForm: StockMovement = {
   typeMovement: "",
@@ -38,20 +36,21 @@ const initialForm: StockMovement = {
   batch: "",
   campaign: 0,
   currency: "",
-  deposit: "",
+  depositId: "",
   detail: "",
   dueDate: "",
   hours: "",
   movement: "Manual",
   operationDate: getShortDate(),
-  supply: "",
-  typeSupply: "",
-  ubication: "",
+  supplyId: "",
+  // typeSupply: "",
+  // ubication: "",
   unitMeasurement: "",
   totalValue: 0,
   voucher: "",
   isIncome: false,
-  depositDestination: "",
+  depositIdDestination: "",
+  accountId: "",
 };
 
 export const NewStockMovementPage: React.FC = () => {
@@ -66,10 +65,11 @@ export const NewStockMovementPage: React.FC = () => {
   } = useForm(initialForm);
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
   const [showSwitch, setShowSwitch] = useState(true);
+  const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
   const { isLoading, addNewStockMovement } = useStockMovement();
   const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
   const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
-  const { typeMovement, deposit: depositOrigin } = formulario;
+  const { typeMovement, depositId: depositOrigin } = formulario;
 
   const depositsToBeAllocated = useMemo(() => {
     return deposits.filter(
@@ -88,14 +88,23 @@ export const NewStockMovementPage: React.FC = () => {
   const onChangeSupply = ({ target }: SelectChangeEvent) => {
     const { value } = target;
     // const supplySelected = JSON.parse(value) as Supply;
-    const supplySelected = supplies.find((supply) => supply.insumo === value);
-    if (supplySelected) {
+    const supplySelected = supplies.find((supply) => supply._id === value);
+    if (supplySelected && supplySelected._id) {
       setFormulario((prevState) => ({
         ...prevState,
-        supply: supplySelected?.insumo,
-        typeSupply: supplySelected.tipo,
+        supplyId: value,
       }));
       setSupplySelected(supplySelected);
+    }
+  };
+
+  const onChangeDeposit = ({ target }: SelectChangeEvent) => {
+    const value = target.value;
+    const depositSelected = deposits.find((deposit) => deposit._id === value);
+
+    if (depositSelected) {
+      setFormulario((prevState) => ({ ...prevState, depositId: value }));
+      setDepositSelected(depositSelected);
     }
   };
 
@@ -192,7 +201,7 @@ export const NewStockMovementPage: React.FC = () => {
                 startAdornment: <InputAdornment position="start" />,
               }}
               inputProps={{
-                max: getShortDate() // Establece la fecha mínima permitida como la fecha actual
+                max: getShortDate(), // Establece la fecha mínima permitida como la fecha actual
               }}
               fullWidth
             />
@@ -206,13 +215,13 @@ export const NewStockMovementPage: React.FC = () => {
                     key="select-supply-tranferencia"
                     labelId="supply"
                     // name="supply"
-                    value={formulario.supply}
+                    value={formulario.supplyId}
                     label="Insumo"
                     onChange={onChangeSupply}
                   >
                     {supplies.map((supply) => (
-                      <MenuItem key={supply._id} value={supply.insumo}>
-                        {supply.insumo}
+                      <MenuItem key={supply._id} value={supply._id}>
+                        {supply.name}
                       </MenuItem>
                     ))}
                   </Select>
@@ -220,7 +229,7 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={3}>
                 <Typography variant="body1" align="left">
-                  <b>Tipo de insumo:</b> {supplySelected?.tipo}
+                  <b>Tipo de insumo:</b> {supplySelected?.type}
                 </Typography>
                 {/* <FormControl fullWidth>
               <InputLabel id="tipo-insumo">Tipo de Insumo: {TypeSupplies[1]}</InputLabel>
@@ -241,7 +250,7 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="body1" align="left">
-                  <b>Descripcion:</b> {supplySelected?.descripcion}
+                  <b>Descripcion:</b> {supplySelected?.description}
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={12}>
@@ -255,12 +264,12 @@ export const NewStockMovementPage: React.FC = () => {
                   <Select
                     labelId="deposit"
                     name="deposit"
-                    value={formulario.deposit}
+                    value={formulario.depositId}
                     label="Deposito"
-                    onChange={handleSelectChange}
+                    onChange={onChangeDeposit}
                   >
                     {deposits.map((deposit) => (
-                      <MenuItem key={deposit._id} value={deposit.description}>
+                      <MenuItem key={deposit._id} value={deposit._id}>
                         {deposit.description}
                       </MenuItem>
                     ))}
@@ -273,7 +282,7 @@ export const NewStockMovementPage: React.FC = () => {
                   type="text"
                   label="Ubicacion"
                   name="ubication"
-                  value={formulario.ubication}
+                  value={depositSelected?.address}
                   onChange={handleInputChange}
                   InputProps={{
                     startAdornment: <InputAdornment position="start" />,
@@ -338,7 +347,7 @@ export const NewStockMovementPage: React.FC = () => {
                   <Select
                     labelId="deposit"
                     name="depositDestination"
-                    value={formulario.depositDestination}
+                    value={formulario.depositIdDestination}
                     label="Deposito"
                     onChange={handleSelectChange}
                   >
@@ -381,13 +390,13 @@ export const NewStockMovementPage: React.FC = () => {
                     key="select-supply-movement"
                     labelId="supply"
                     // name="supply"
-                    value={formulario.supply}
+                    value={formulario.supplyId}
                     label="Insumo"
                     onChange={onChangeSupply}
                   >
                     {supplies.map((supply) => (
-                      <MenuItem key={supply._id} value={supply.insumo}>
-                        {supply.insumo}
+                      <MenuItem key={supply._id} value={supply._id}>
+                        {supply.name}
                       </MenuItem>
                     ))}
                   </Select>
@@ -395,37 +404,21 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={3}>
                 <Typography variant="body1" align="center">
-                  Tipo de insumo: <b>{supplySelected?.tipo}</b>
+                  Tipo de insumo: <b>{supplySelected?.type}</b>
                 </Typography>
-                {/* <FormControl fullWidth>
-              <InputLabel id="tipo-insumo">Tipo de Insumo: {TypeSupplies[1]}</InputLabel>
-              <Select
-                labelId="tipo-insumo"
-                name="typeSupply"
-                value={formulario.typeSupply}
-                label="Tipo de Insumo"
-                onChange={handleSelectChange}
-              >
-                {TypeSupplies.map((supply) => (
-                  <MenuItem key={supply} value={supply}>
-                    {supply}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl> */}
               </Grid>
               <Grid item xs={6} sm={3}>
                 <FormControl fullWidth>
                   <InputLabel id="deposit">Deposito</InputLabel>
                   <Select
                     labelId="deposit"
-                    name="deposit"
-                    value={formulario.deposit}
+                    // name="deposit"
+                    value={formulario.depositId}
                     label="Deposito"
-                    onChange={handleSelectChange}
+                    onChange={onChangeDeposit}
                   >
                     {deposits.map((deposit) => (
-                      <MenuItem key={deposit._id} value={deposit.description}>
+                      <MenuItem key={deposit._id} value={deposit._id}>
                         {deposit.description}
                       </MenuItem>
                     ))}
@@ -438,7 +431,7 @@ export const NewStockMovementPage: React.FC = () => {
                   type="text"
                   label="Ubicacion"
                   name="ubication"
-                  value={formulario.ubication}
+                  value={depositSelected?.address}
                   onChange={handleInputChange}
                   InputProps={{
                     startAdornment: <InputAdornment position="start" />,

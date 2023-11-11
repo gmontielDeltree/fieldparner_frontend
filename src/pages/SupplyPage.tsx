@@ -16,22 +16,20 @@ import { Supply } from "../types";
 import { removeSupplyActive } from "../redux/supply";
 
 const initialForm: Supply = {
-  tipo: "",
-  labores: [],
-  insumo: "",
-  descripcion: "",
-  codigoBarra: "",
-  stockActual: 0,
-  stockReservado: 0,
-  stockDisponible: 0,
-  unidadMedida: "",
-  tieneLotes: false,
-  dosisMaxima: "",
-  dosisMinima: "",
-  dosisRecomendada: "",
-  mermaVolatil: "",
-  principioActivo: "",
-  puntoReposicion: "",
+  accountId: "",
+  type: "",
+  labors: [],
+  name: "",
+  description: "",
+  barCode: "",
+  unitMeasurement: "",
+  hasBatch: false,
+  maximumDose: "",
+  minimumDose: "",
+  recommendedDose: "",
+  mermaVolatile: "",
+  activePrincipal: "",
+  replenishmentPoint: "",
 };
 
 export const SupplyPage: React.FC = () => {

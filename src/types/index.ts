@@ -182,23 +182,24 @@ export interface SupplyState {
 }
 
 export interface Supply extends Document {
-    codigoBarra?: string;
-    tipo: string;
-    insumo: string;
-    descripcion?: string;
-    unidadMedida: string;
-    stockActual: number;
-    stockReservado: number;
-    stockDisponible: number;
-    tieneLotes: boolean;
+    accountId: string;
+    barCode?: string;
+    type: string;
+    name: string;
+    description?: string;
+    unitMeasurement: string;
+    // stockActual: number;
+    // stockReservado: number;
+    // stockDisponible: number;
+    hasBatch: boolean;
     // numeroLote: string;
-    principioActivo: string;
-    mermaVolatil: string;
-    dosisMinima: string;
-    dosisMaxima: string;
-    dosisRecomendada: string;
-    puntoReposicion: string;
-    labores: string[];
+    activePrincipal: string;
+    mermaVolatile: string;
+    minimumDose: string;
+    maximumDose: string;
+    recommendedDose: string;
+    replenishmentPoint: string;
+    labors: string[];
 }
 
 export enum TipoInsumo {
@@ -300,11 +301,13 @@ export enum CountryCode {
 }
 
 export interface StockMovement extends Document {
+    accountId: string;
     movement: string;
-    supply: string;
-    typeSupply: string;
-    deposit: string;
-    ubication: string;
+    supplyId: string;
+    // supply: string;
+    // typeSupply: string;
+    depositId: string;
+    // ubication: string;
     batch: string;
     dueDate: string;
     typeMovement: string;
@@ -318,7 +321,12 @@ export interface StockMovement extends Document {
     totalValue: number;
     hours: string;
     campaign: number;
-    depositDestination?: string
+    depositIdDestination?: string
+}
+
+export interface StockMovementItem extends StockMovement {
+    supply?: Supply;
+    deposit?: Deposit;
 }
 
 export enum CurrencyCode {
