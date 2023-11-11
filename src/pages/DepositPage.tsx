@@ -30,16 +30,17 @@ import { removeDepositActive } from "../redux/deposit";
 import { getLocalityAndStateByZipCode } from "../services";
 
 const initialForm: Deposit = {
-  descripcion: "",
-  codigoPostal: "",
-  domicilio: "",
-  geolocalizacion: "",
-  localidad: "",
-  esNegativo: false,
-  esVirtual: false,
-  pais: "",
-  propietario: "Propio",
-  provincia: "",
+  description: "",
+  zipCode: "",
+  address: "",
+  geolocation: "",
+  locality: "",
+  isNegative: false,
+  isVirtual: false,
+  country: "",
+  owner: "Propio",
+  province: "",
+  accountId: ""
 };
 
 const optionsCountry = ["Argentina", "Brasil", "Chile"];
@@ -67,16 +68,16 @@ export const DepositPage: React.FC = () => {
   } = useBusiness();
 
   const {
-    descripcion,
-    propietario,
-    codigoPostal,
-    domicilio,
-    geolocalizacion,
-    localidad,
-    provincia,
-    pais,
-    esNegativo,
-    esVirtual,
+    description,
+    owner,
+    zipCode,
+    address,
+    geolocation,
+    locality,
+    province,
+    country,
+    isNegative,
+    isVirtual,
   } = formulario;
 
   const optionsPropietario = useMemo(() => {
@@ -104,14 +105,14 @@ export const DepositPage: React.FC = () => {
     try {
       const localityAndStates = await getLocalityAndStateByZipCode(
         CountryCode.ARGENTINA,
-        codigoPostal
+        zipCode
       );
 
       if (localityAndStates?.length) {
         setLocalities(localityAndStates.map((x) => x.locality));
         setFormulario((prevState) => ({
           ...prevState,
-          provincia: localityAndStates[0].state,
+          province: localityAndStates[0].state,
         }));
       }
 
@@ -123,7 +124,7 @@ export const DepositPage: React.FC = () => {
   };
 
   const onBlurZipCode = () => {
-    if (codigoPostal !== "") getLocalityAndState();
+    if (zipCode !== "") getLocalityAndState();
   };
 
   useEffect(() => {
@@ -165,8 +166,8 @@ export const DepositPage: React.FC = () => {
               variant="outlined"
               type="text"
               label="Descripcion"
-              name="descripcion"
-              value={descripcion}
+              name="description"
+              value={description}
               onChange={handleInputChange}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
@@ -176,21 +177,21 @@ export const DepositPage: React.FC = () => {
           </Grid>
           <Grid item xs={12} sm={6}>
             <Autocomplete
-              id="propietario"
+              id="owner"
               freeSolo
               loading={loadingBusiness}
-              value={propietario}
+              value={owner}
               onChange={(_event: any, newValue: string | null) => {
-                newValue && handleFormValueChange("propietario", newValue);
+                newValue && handleFormValueChange("owner", newValue);
               }}
-              inputValue={propietario}
+              inputValue={owner}
               onInputChange={(_event, newInputValue) => {
-                handleFormValueChange("propietario", newInputValue);
+                handleFormValueChange("owner", newInputValue);
               }}
               options={["Propio", ...optionsPropietario]}
               fullWidth
               renderInput={(params) => (
-                <TextField {...params} name="propietario" label="Propietario" />
+                <TextField {...params} name="owner" label="Propietario" />
               )}
             />
           </Grid>
@@ -200,8 +201,8 @@ export const DepositPage: React.FC = () => {
                 Fisico
               </Typography>
               <Switch
-                name="esVirtual"
-                checked={esVirtual}
+                name="isVirtual"
+                checked={isVirtual}
                 onChange={handleCheckboxChange}
               />
               <Typography variant="body1" display="inline-block">
@@ -213,8 +214,8 @@ export const DepositPage: React.FC = () => {
             <FormControlLabel
               control={
                 <Switch
-                  name="esNegativo"
-                  checked={esNegativo}
+                  name="isNegative"
+                  checked={isNegative}
                   onChange={handleCheckboxChange}
                 />
               }
@@ -227,8 +228,8 @@ export const DepositPage: React.FC = () => {
               variant="outlined"
               type="text"
               label="Geolocalizacion"
-              name="geolocalizacion"
-              value={geolocalizacion}
+              name="geolocation"
+              value={geolocation}
               onChange={handleInputChange}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
@@ -241,8 +242,8 @@ export const DepositPage: React.FC = () => {
               <InputLabel id="label-pais">Pais</InputLabel>
               <Select
                 labelId="label-pais"
-                name="pais"
-                value={pais}
+                name="country"
+                value={country}
                 label="Pais"
                 onChange={handleSelectChange}
               >
@@ -259,8 +260,8 @@ export const DepositPage: React.FC = () => {
               variant="outlined"
               type="number"
               label="CP"
-              name="codigoPostal"
-              value={codigoPostal}
+              name="zipCode"
+              value={zipCode}
               onBlur={() => onBlurZipCode()}
               onChange={handleInputChange}
               InputProps={{
@@ -274,8 +275,8 @@ export const DepositPage: React.FC = () => {
               variant="outlined"
               type="text"
               label="Provincia"
-              name="provincia"
-              value={provincia}
+              name="province"
+              value={province}
               onChange={handleInputChange}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
@@ -288,18 +289,18 @@ export const DepositPage: React.FC = () => {
               id="localidad"
               freeSolo
               loading={loadingZipCode}
-              value={localidad}
+              value={locality}
               onChange={(_event: any, newValue: string | null) => {
-                newValue && handleFormValueChange("localidad", newValue);
+                newValue && handleFormValueChange("locality", newValue);
               }}
-              inputValue={localidad}
+              inputValue={locality}
               onInputChange={(_event, newInputValue) => {
-                handleFormValueChange("localidad", newInputValue);
+                handleFormValueChange("locality", newInputValue);
               }}
               options={localities}
               fullWidth
               renderInput={(params) => (
-                <TextField {...params} name="localidad" label="Localidad" />
+                <TextField {...params} name="locality" label="Localidad" />
               )}
             />
           </Grid>
@@ -308,8 +309,8 @@ export const DepositPage: React.FC = () => {
               variant="outlined"
               type="text"
               label="Domicilio"
-              name="domicilio"
-              value={domicilio}
+              name="address"
+              value={address}
               onChange={handleInputChange}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,

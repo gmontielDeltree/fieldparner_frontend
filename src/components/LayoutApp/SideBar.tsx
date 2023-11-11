@@ -22,8 +22,10 @@ import {
   Inventory as InventoryIcon,
   Warehouse as WarehouseIcon,
   SyncAlt as SyncAltIcon,
+  QueryStats as QueryStatsIcon,
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
+// import QueryStatsIcon from '@mui/icons-material/QueryStats';
 
 export const SideBar: React.FC<SideBarProps> = ({
   drawerWidth,
@@ -150,6 +152,18 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <SyncAltIcon />
               </ListItemIcon>
               <ListItemText primary="Movimiento de Stock" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="list-stock" disablePadding>
+            <ListItemButton
+              component={RouterLink}
+              to="/init/overview/list-stock"
+              selected={pathname.includes("/init/overview/list-stock")}
+            >
+              <ListItemIcon>
+                <QueryStatsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Consulta De Stock" />
             </ListItemButton>
           </ListItem>
           <ListItem key="precios" disablePadding>

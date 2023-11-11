@@ -1,5 +1,5 @@
-import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import React from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import {
   ListVehiclesPage,
   VehiclePage,
@@ -12,6 +12,7 @@ import {
   ListSuppliesPage,
   StockMovementPage,
   NewStockMovementPage,
+  ListStockPage,
 } from "../pages";
 import { AppLayout } from "../components";
 
@@ -36,8 +37,15 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/supply/new" element={<SupplyPage />} />
         <Route path="/overview/supply/:id" element={<SupplyPage />} />
 
-        <Route path="/overview/stock-movements" element={<StockMovementPage />} />
-        <Route path="/overview/stock-movements/new" element={<NewStockMovementPage />} />
+        <Route
+          path="/overview/stock-movements"
+          element={<StockMovementPage />}
+        />
+        <Route
+          path="/overview/stock-movements/new"
+          element={<NewStockMovementPage />}
+        />
+        <Route path="/overview/list-stock" element={<ListStockPage />} />
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

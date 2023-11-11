@@ -108,13 +108,15 @@ export interface Authenticate {
 }
 
 export interface User {
-    username: string;
+    id: string;
+    firstName: string;
+    lastName: string;
+    accountId: string;
     isAdmin: boolean;
 }
 
 export interface ResponseAuthLogin {
-    username: string;
-    isAdmin: boolean;
+    user: User;
     auth: Authenticate;
 }
 export interface ResponseAuthRenew {
@@ -267,16 +269,17 @@ export interface DepositState {
 }
 
 export interface Deposit extends Document {
-    descripcion: string;
-    propietario: string;
-    esVirtual: boolean;
-    geolocalizacion: string;
-    esNegativo: boolean;
-    domicilio: string;
-    codigoPostal: string;
-    localidad: string;
-    provincia: string;
-    pais: string;
+    accountId: string;
+    description: string;
+    owner: string;
+    isVirtual: boolean;
+    geolocation: string;
+    isNegative: boolean;
+    address: string;
+    zipCode: string;
+    locality: string;
+    province: string;
+    country: string;
 }
 
 export interface ItemZipCode extends Document {
@@ -333,3 +336,4 @@ export enum TypeMovement {
     TransferenciaDeposito = "Transferencia entre depositos",
     Prestamos = "Prestamos",
 }
+

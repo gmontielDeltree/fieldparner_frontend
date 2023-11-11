@@ -73,7 +73,7 @@ export const NewStockMovementPage: React.FC = () => {
 
   const depositsToBeAllocated = useMemo(() => {
     return deposits.filter(
-      (d) => d.descripcion.toLowerCase() !== depositOrigin.toLowerCase()
+      (d) => d.description.toLowerCase() !== depositOrigin.toLowerCase()
     );
   }, [deposits, depositOrigin]);
 
@@ -260,8 +260,8 @@ export const NewStockMovementPage: React.FC = () => {
                     onChange={handleSelectChange}
                   >
                     {deposits.map((deposit) => (
-                      <MenuItem key={deposit._id} value={deposit.descripcion}>
-                        {deposit.descripcion}
+                      <MenuItem key={deposit._id} value={deposit.description}>
+                        {deposit.description}
                       </MenuItem>
                     ))}
                   </Select>
@@ -343,8 +343,8 @@ export const NewStockMovementPage: React.FC = () => {
                     onChange={handleSelectChange}
                   >
                     {depositsToBeAllocated.map((deposit) => (
-                      <MenuItem key={deposit._id} value={deposit.descripcion}>
-                        {deposit.descripcion}
+                      <MenuItem key={deposit._id} value={deposit.description}>
+                        {deposit.description}
                       </MenuItem>
                     ))}
                   </Select>
@@ -425,8 +425,8 @@ export const NewStockMovementPage: React.FC = () => {
                     onChange={handleSelectChange}
                   >
                     {deposits.map((deposit) => (
-                      <MenuItem key={deposit._id} value={deposit.descripcion}>
-                        {deposit.descripcion}
+                      <MenuItem key={deposit._id} value={deposit.description}>
+                        {deposit.description}
                       </MenuItem>
                     ))}
                   </Select>
