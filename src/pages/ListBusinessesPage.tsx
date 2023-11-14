@@ -33,6 +33,7 @@ const columns: ColumnProps[] = [
   { text: "Cuit/Dni", align: "center" },
   { text: "Email", align: "left" },
   { text: "Pais", align: "center" },
+  { text: "", align: "center" },
 ];
 
 export const ListBusinessesPage: React.FC = () => {

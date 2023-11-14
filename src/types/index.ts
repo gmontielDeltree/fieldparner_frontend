@@ -108,13 +108,15 @@ export interface Authenticate {
 }
 
 export interface User {
-    username: string;
+    id: string;
+    firstName: string;
+    lastName: string;
+    accountId: string;
     isAdmin: boolean;
 }
 
 export interface ResponseAuthLogin {
-    username: string;
-    isAdmin: boolean;
+    user: User;
     auth: Authenticate;
 }
 export interface ResponseAuthRenew {
@@ -180,23 +182,23 @@ export interface SupplyState {
 }
 
 export interface Supply extends Document {
-    codigoBarra?: string;
-    tipo: string;
-    insumo: string;
-    descripcion?: string;
-    unidadMedida: string;
-    stockActual: number;
-    stockReservado: number;
-    stockDisponible: number;
-    tieneLotes: boolean;
-    // numeroLote: string;
-    principioActivo: string;
-    mermaVolatil: string;
-    dosisMinima: string;
-    dosisMaxima: string;
-    dosisRecomendada: string;
-    puntoReposicion: string;
-    labores: string[];
+    accountId: string;
+    barCode?: string;
+    type: string;
+    name: string;
+    description?: string;
+    unitMeasurement: string;
+    currentStock: number;
+    reservedStock: number;
+    // stockDisponible: number;
+    hasBatch: boolean;
+    activePrincipal: string;
+    mermaVolatile: string;
+    minimumDose: string;
+    maximumDose: string;
+    recommendedDose: string;
+    replenishmentPoint: string;
+    labors: string[];
 }
 
 export enum TipoInsumo {
@@ -267,16 +269,17 @@ export interface DepositState {
 }
 
 export interface Deposit extends Document {
-    descripcion: string;
-    propietario: string;
-    esVirtual: boolean;
-    geolocalizacion: string;
-    esNegativo: boolean;
-    domicilio: string;
-    codigoPostal: string;
-    localidad: string;
-    provincia: string;
-    pais: string;
+    accountId: string;
+    description: string;
+    owner: string;
+    isVirtual: boolean;
+    geolocation: string;
+    isNegative: boolean;
+    address: string;
+    zipCode: string;
+    locality: string;
+    province: string;
+    country: string;
 }
 
 export interface ItemZipCode extends Document {
@@ -297,26 +300,43 @@ export enum CountryCode {
 }
 
 export interface StockMovement extends Document {
+    accountId: string;
     movement: string;
-    supply: string;
-    typeSupply: string;
-    deposit: string;
-    ubication: string;
+    supplyId: string;
+    // supply: string;
+    // typeSupply: string;
+    depositId: string;
+    // ubication: string;
     batch: string;
     dueDate: string;
-    typeMovement: string;
+    typeMovement: TypeMovement;
     isIncome: boolean;
     detail: string;
     operationDate: string;
-    unitMeasurement: string;
+    // unitMeasurement: string;
     amount: number;
     voucher: string;
     currency: string;
     totalValue: number;
     hours: string;
     campaign: number;
-    depositDestination?: string
+    // depositIdDestination?: string
 }
+
+export interface StockMovementItem extends StockMovement {
+    supply?: Supply;
+    deposit?: Deposit;
+}
+
+export interface SupplyByDeposits {
+    deposit: Deposit;
+    movements: StockMovement[];
+    unitMeasurement: string;
+    batch: string;
+    currentStock: number;
+    reservedStock: number;
+  }
+  
 
 export enum CurrencyCode {
     ARG = 'ARS',
@@ -332,4 +352,8 @@ export enum TypeMovement {
     VentasVarias = "Ventas Varias",
     TransferenciaDeposito = "Transferencia entre depositos",
     Prestamos = "Prestamos",
+}
+
+export enum DisplayModals {
+    DetailDeposits = "DetailOfDeposits",
 }

@@ -19,6 +19,7 @@ import {
       color: "#000000c7",
       fontSize: 14,
       fontWeight: "bold",
+      padding: "16px 10px",
     },
     [`&.${tableCellClasses.body}`]: {
       fontSize: 14,
@@ -60,7 +61,6 @@ import {
                     {text}
                   </TableCellStyled>
                 ))}
-                <TableCell />
               </TableRow>
             </TableHead>
             <TableBody>{children}</TableBody>

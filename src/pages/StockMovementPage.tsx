@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Loading,
@@ -8,7 +8,7 @@ import {
   ItemRow,
   TableCellStyled,
 } from "../components";
-import { ColumnProps, StockMovement } from "../types";
+import { ColumnProps, StockMovementItem } from "../types";
 import {
   Box,
   Button,
@@ -18,69 +18,140 @@ import {
   IconButton,
   Table,
   TableBody,
+  TableCell,
   TableHead,
+  TableRow,
   Typography,
 } from "@mui/material";
 import {
   Add as AddIcon,
-  // Edit as EditIcon,
   SyncAlt as SyncAltIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
 } from "@mui/icons-material";
 import { useForm, useStockMovement } from "../hooks";
-// import { TableCellStyled } from "../components/DataTable/index";
 
 const columns: ColumnProps[] = [
   { text: "", align: "left" },
   { text: "Mov.", align: "left" },
   { text: "Tipo/Insumo", align: "center" },
   { text: "Deposito", align: "center" },
-  // { text: "Ubicacion", align: "left" },
-  // { text: "Lote", align: "center" },
-  // { text: "Vencimiento", align: "center" },
   { text: "Tipo Movimiento", align: "center" },
   { text: "Ing/Egre", align: "center" },
-  // { text: "Detalle", align: "center" },
-  // { text: "Fecha", align: "center" },
   { text: "UM", align: "center" },
   { text: "Cantidad", align: "center" },
   { text: "Comprobante", align: "center" },
   { text: "Moneda", align: "center" },
   { text: "Valor", align: "center" },
-  // { text: "Horas", align: "center" },
-  // { text: "Campaña", align: "center" },
 ];
+
+type RowProps = {
+  row: StockMovementItem;
+};
+
+const Row: React.FC<RowProps> = ({ row }) => {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <>
+      <ItemRow
+        sx={{ backgroundColor: row.isIncome ? "#81c784" : "#e57373" }}
+        // hover
+      >
+        <TableCellStyled>
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+          </IconButton>
+        </TableCellStyled>
+        <TableCellStyled align="left">{row.movement}</TableCellStyled>
+        <TableCellStyled align="center">{`${row.supply?.type}/${row.supply?.name}`}</TableCellStyled>
+        <TableCellStyled align="center">
+          {row.deposit?.description}
+        </TableCellStyled>
+        <TableCellStyled align="center">{row.typeMovement}</TableCellStyled>
+        <TableCellStyled align="center">
+          {row.isIncome ? "Ingreso" : "Egreso"}
+        </TableCellStyled>
+        <TableCellStyled align="left">
+          {row.supply?.unitMeasurement}
+        </TableCellStyled>
+        <TableCellStyled align="left">{row.amount}</TableCellStyled>
+        <TableCellStyled align="left">{row.voucher}</TableCellStyled>
+        <TableCellStyled align="left">{row.currency}</TableCellStyled>
+        <TableCellStyled align="left">{row.totalValue}</TableCellStyled>
+      </ItemRow>
+      <ItemRow sx={{ backgroundColor: row.isIncome ? "#81c784" : "#e57373" }}>
+        <TableCellStyled
+          style={{ paddingBottom: 0, paddingTop: 0 }}
+          colSpan={12}
+        >
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ margin: 1 }}>
+              <Typography variant="h6" gutterBottom component="div">
+                Detalles
+              </Typography>
+              <Table size="small" aria-label="purchases">
+                <TableHead>
+                  <ItemRow>
+                    <TableCellStyled sx={{ width: "120px" }}>
+                      Fecha
+                    </TableCellStyled>
+                    <TableCellStyled align="center" sx={{ width: "220px" }}>
+                      Ubicacion
+                    </TableCellStyled>
+                    <TableCellStyled align="left" sx={{ width: "60px" }}>
+                      Lote
+                    </TableCellStyled>
+                    <TableCellStyled align="right" sx={{ width: "60px" }}>
+                      Horas
+                    </TableCellStyled>
+                    <TableCellStyled align="center" sx={{ width: "80px" }}>
+                      Vencimiento
+                    </TableCellStyled>
+                    <TableCellStyled align="center" sx={{ width: "320px" }}>
+                      Detalle
+                    </TableCellStyled>
+                    <TableCellStyled align="center">Campaña</TableCellStyled>
+                  </ItemRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow key={row.operationDate}>
+                    <TableCell align="center">{row.operationDate}</TableCell>
+                    <TableCell align="center">{row.deposit?.address}</TableCell>
+                    <TableCell align="center">{row.batch}</TableCell>
+                    <TableCell align="right">{row.hours}</TableCell>
+                    <TableCell align="center">{row.dueDate}</TableCell>
+                    <TableCell align="center">{row.detail}</TableCell>
+                    <TableCell align="center">{row.campaign}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </Box>
+          </Collapse>
+        </TableCellStyled>
+      </ItemRow>
+    </>
+  );
+};
 
 export const StockMovementPage: React.FC = () => {
   const navigate = useNavigate();
   const { isLoading, stockMovements, getStockMovements } = useStockMovement();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
-  const [movementSelected, setMovementSelected] =
-    useState<StockMovement | null>(null);
 
   const onClickSearch = (): void => {
     if (filterText === "") {
       getStockMovements();
       return;
     }
-    // const filteredBusinesses = businesses.filter(
-    //   ({ razonSocial, nombreCompleto }) =>
-    //     (razonSocial &&
-    //       razonSocial.toLowerCase().includes(filterText.toLowerCase())) ||
-    //     (nombreCompleto &&
-    //       nombreCompleto.toLowerCase().includes(filterText.toLowerCase()))
-    // );
-    // setBusinesses(filteredBusinesses);
   };
 
   const onClickAddMovement = () =>
     navigate("/init/overview/stock-movements/new");
-
-  const onClickOpenDetail = (rowSelected: StockMovement) => {
-    if (rowSelected === movementSelected) setMovementSelected(null);
-    else setMovementSelected(rowSelected);
-  };
 
   useEffect(() => {
     getStockMovements();
@@ -140,137 +211,8 @@ export const StockMovementPage: React.FC = () => {
             columns={columns}
             isLoading={isLoading}
           >
-            {stockMovements.map((row) => (
-              <>
-                <ItemRow key={row._id} hover>
-                  <TableCellStyled>
-                    <IconButton
-                      aria-label="expand row"
-                      size="small"
-                      onClick={() => onClickOpenDetail(row)}
-                    >
-                      {movementSelected?._id === row._id ? (
-                        <KeyboardArrowUpIcon />
-                      ) : (
-                        <KeyboardArrowDownIcon />
-                      )}
-                    </IconButton>
-                  </TableCellStyled>
-                  <TableCellStyled align="left">{row.movement}</TableCellStyled>
-                  <TableCellStyled align="center">{`${row.typeSupply}/${row.supply}`}</TableCellStyled>
-                  <TableCellStyled align="center">
-                    {row.deposit}
-                  </TableCellStyled>
-                  {/* <TableCellStyled align="center">
-                    {row.ubication}
-                  </TableCellStyled> */}
-                  {/* <TableCellStyled align="center">{row.batch}</TableCellStyled> */}
-                  {/* <TableCellStyled align="center">
-                    {row.dueDate}
-                  </TableCellStyled> */}
-                  <TableCellStyled align="center">
-                    {row.typeMovement}
-                  </TableCellStyled>
-                  <TableCellStyled align="center">
-                    {row.isIncome ? "Ingreso" : "Egreso"}
-                  </TableCellStyled>
-                  {/* <TableCellStyled align="center">
-                    {row.operationDate}
-                  </TableCellStyled> */}
-                  <TableCellStyled align="center">
-                    {row.unitMeasurement}
-                  </TableCellStyled>
-                  <TableCellStyled align="left">{row.amount}</TableCellStyled>
-                  <TableCellStyled align="left">{row.voucher}</TableCellStyled>
-                  <TableCellStyled align="left">{row.currency}</TableCellStyled>
-                  <TableCellStyled align="left">
-                    {row.totalValue}
-                  </TableCellStyled>
-                </ItemRow>
-                <ItemRow key={row._id + "-detail"}>
-                  <TableCellStyled
-                    style={{ paddingBottom: 0, paddingTop: 0 }}
-                    colSpan={12}
-                  >
-                    <Collapse
-                      in={movementSelected?._id === row._id}
-                      timeout="auto"
-                      unmountOnExit
-                    >
-                      <Box sx={{ margin: 1 }}>
-                        <Typography variant="h6" gutterBottom component="div">
-                          Detalles
-                        </Typography>
-                        <Table size="small" aria-label="purchases">
-                          <TableHead>
-                            <ItemRow>
-                              <TableCellStyled sx={{ width: "120px" }}>
-                                Fecha
-                              </TableCellStyled>
-                              <TableCellStyled
-                                align="center"
-                                sx={{ width: "220px" }}
-                              >
-                                Ubicacion
-                              </TableCellStyled>
-                              <TableCellStyled
-                                align="left"
-                                sx={{ width: "60px" }}
-                              >
-                                Lote
-                              </TableCellStyled>
-                              <TableCellStyled
-                                align="right"
-                                sx={{ width: "60px" }}
-                              >
-                                Horas
-                              </TableCellStyled>
-                              <TableCellStyled
-                                align="center"
-                                sx={{ width: "80px" }}
-                              >
-                                Vencimiento
-                              </TableCellStyled>
-                              <TableCellStyled
-                                align="center"
-                                sx={{ width: "320px" }}
-                              >
-                                Detalle
-                              </TableCellStyled>
-                              <TableCellStyled align="center">
-                                Campaña
-                              </TableCellStyled>
-                            </ItemRow>
-                          </TableHead>
-                          <TableBody>
-                            <TableCellStyled align="center">
-                              {row.operationDate}
-                            </TableCellStyled>
-                            <TableCellStyled align="center">
-                              {row.ubication}
-                            </TableCellStyled>
-                            <TableCellStyled align="center">
-                              {row.batch}
-                            </TableCellStyled>
-                            <TableCellStyled align="right">
-                              {row.hours}
-                            </TableCellStyled>
-                            <TableCellStyled align="center">
-                              {row.dueDate}
-                            </TableCellStyled>
-                            <TableCellStyled align="center">
-                              {row.detail}
-                            </TableCellStyled>
-                            <TableCellStyled align="center">
-                              {row.campaign}
-                            </TableCellStyled>
-                          </TableBody>
-                        </Table>
-                      </Box>
-                    </Collapse>
-                  </TableCellStyled>
-                </ItemRow>
-              </>
+            {stockMovements.map((movement) => (
+              <Row key={movement._id} row={movement} />
             ))}
           </DataTable>
         </Box>

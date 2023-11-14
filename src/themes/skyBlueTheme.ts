@@ -6,7 +6,7 @@ export const skyBlueTheme: Theme = createTheme({
             main: '#1976d2',
         },
         secondary: {
-            main: '#2293ee',
+            main: '#15466f',
         },
         error: {
             main: '#ef5350',
