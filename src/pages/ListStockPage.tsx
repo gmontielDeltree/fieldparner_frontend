@@ -71,6 +71,7 @@ export const ListStockPage: React.FC = () => {
   //   const navigate = useNavigate();
   const { isLoading, supplies, getSupplies } = useSupply();
   const [value, setValue] = React.useState(0);
+  const [showStockValueZero, setShowStockValueZero] = React.useState(false);
 
   const onChangeTab = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -131,8 +132,10 @@ export const ListStockPage: React.FC = () => {
               control={
                 <Switch
                   name="stockWithZero"
-                  checked={false}
-                  onChange={(e) => console.log(e)}
+                  checked={showStockValueZero}
+                  onChange={(_e, checked: boolean) =>
+                    setShowStockValueZero(checked)
+                  }
                 />
               }
               label="Mostrar Stock en 0"
@@ -167,7 +170,7 @@ export const ListStockPage: React.FC = () => {
                     <TableCellStyled align="center">
                       <Chip
                         label={row.currentStock - row.reservedStock}
-                        color="warning"
+                        color="success"
                       />
                     </TableCellStyled>
                   </ItemRow>

@@ -313,7 +313,7 @@ export interface StockMovement extends Document {
     isIncome: boolean;
     detail: string;
     operationDate: string;
-    unitMeasurement: string;
+    // unitMeasurement: string;
     amount: number;
     voucher: string;
     currency: string;

@@ -48,15 +48,6 @@ export const useStockMovement = () => {
         }
     }
 
-    //TODO:
-    // Si el movimiento es de tipo Compra, sumar la cantidad al stock actual del insumo
-    // Si el movimiento es de tipo Venta, restar ||
-    // Dependiendo si es ingreso o salida, hacer el calculo del mismo
-    // validar si el tipo de movimiento es transferencia, generar 2 movimientos:
-    // -1 egreso de stock del deposito
-    // -2 ingreso de stock al deposito destino 
-    // -3 actualizar el stock actual corrspondiente al insumo
-
     const addNewStockMovement = async (newMovement: StockMovement, supplyDto: Supply, depositIdDestination?: string) => {
         setIsLoading(true);
         let responseAll = null;

@@ -26,7 +26,6 @@ import {
   Supply,
   TypeMovement,
   TypeMovements,
-  UnidadesDeMedida,
 } from "../types";
 import { getShortDate } from "../helpers/dates";
 
@@ -43,13 +42,9 @@ const initialForm: StockMovement = {
   movement: "Manual",
   operationDate: getShortDate(),
   supplyId: "",
-  // typeSupply: "",
-  // ubication: "",
-  unitMeasurement: "",
   totalValue: 0,
   voucher: "",
   isIncome: false,
-  // depositIdDestination: "",
   accountId: "",
 };
 
@@ -300,22 +295,9 @@ export const NewStockMovementPage: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
-                <FormControl fullWidth>
-                  <InputLabel id="unidadMedida">Unidad de medida</InputLabel>
-                  <Select
-                    labelId="unidadMedida"
-                    name="unitMeasurement"
-                    value={formulario.unitMeasurement}
-                    label="Unidad de medida"
-                    onChange={handleSelectChange}
-                  >
-                    {UnidadesDeMedida.map((um) => (
-                      <MenuItem key={um} value={um}>
-                        {um}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Typography variant="body1" align="left">
+                  Unidad de Medida: <b>{supplySelected?.unitMeasurement}</b>
+                </Typography>
               </Grid>
               <Grid item xs={6} sm={3}>
                 <TextField
@@ -398,7 +380,7 @@ export const NewStockMovementPage: React.FC = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={3}>
-                <Typography variant="body1" align="center">
+                <Typography variant="body1" align="left">
                   Tipo de insumo: <b>{supplySelected?.type}</b>
                 </Typography>
               </Grid>
@@ -449,22 +431,9 @@ export const NewStockMovementPage: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
-                <FormControl fullWidth>
-                  <InputLabel id="unidadMedida">Unidad de medida</InputLabel>
-                  <Select
-                    labelId="unidadMedida"
-                    name="unitMeasurement"
-                    value={formulario.unitMeasurement}
-                    label="Unidad de medida"
-                    onChange={handleSelectChange}
-                  >
-                    {UnidadesDeMedida.map((um) => (
-                      <MenuItem key={um} value={um}>
-                        {um}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Typography variant="body1" align="left">
+                  Unidad de Medida: <b>{supplySelected?.unitMeasurement}</b>
+                </Typography>
               </Grid>
               <Grid item xs={6} sm={2}>
                 <TextField
