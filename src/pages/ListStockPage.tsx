@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Loading, DataTable, ItemRow, TableCellStyled } from "../components";
 import { ColumnProps, DisplayModals, Supply } from "../types";
 import {
@@ -21,6 +21,7 @@ import {
 import { useAppDispatch, useSupply } from "../hooks";
 import { uiOpenModal } from "../redux/ui";
 import { DetailDepositsModal } from "../components/DetailDepositsModal/index";
+import { setSupplyActive } from "../redux/supply";
 
 const columns: ColumnProps[] = [
   //   { text: "", align: "left" },
@@ -69,16 +70,14 @@ export const ListStockPage: React.FC = () => {
   const dispatch = useAppDispatch();
   //   const navigate = useNavigate();
   const { isLoading, supplies, getSupplies } = useSupply();
-  const [supplySelected, setSupplySelected] = useState<Supply[]>([]);
   const [value, setValue] = React.useState(0);
 
   const onChangeTab = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
-  const onClickOpenDetail = (rowSelected: Supply) => {
-    console.log("rowSelected", rowSelected);
-    setSupplySelected([rowSelected]);
+  const onClickOpenDetail = (supplySelected: Supply) => {
+    dispatch(setSupplyActive(supplySelected));
     dispatch(uiOpenModal(DisplayModals.DetailDeposits));
   };
 
@@ -175,7 +174,7 @@ export const ListStockPage: React.FC = () => {
                 ))}
               </DataTable>
             </Box>
-            <DetailDepositsModal key="detail-deposits-modal" movements={[]} />
+            <DetailDepositsModal key="detail-deposits-modal" />
           </CustomTabPanel>
           <CustomTabPanel value={value} index={1}>
             Item Two

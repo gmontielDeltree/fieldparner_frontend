@@ -328,6 +328,16 @@ export interface StockMovementItem extends StockMovement {
     deposit?: Deposit;
 }
 
+export interface SupplyByDeposits {
+    deposit: Deposit;
+    movements: StockMovement[];
+    unitMeasurement: string;
+    batch: string;
+    currentStock: number;
+    reservedStock: number;
+  }
+  
+
 export enum CurrencyCode {
     ARG = 'ARS',
     BRA = 'BRL',
