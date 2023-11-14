@@ -1,33 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { Loading, DataTable, ItemRow, TableCellStyled } from "../components";
-import { ColumnProps, StockMovement } from "../types";
+import { ColumnProps, DisplayModals, Supply } from "../types";
 import {
   Box,
-  Collapse,
+  Chip,
   Container,
   FormControlLabel,
-  IconButton,
   Paper,
   Switch,
   Tab,
-  Table,
-  TableBody,
-  TableHead,
   Tabs,
   Typography,
 } from "@mui/material";
 // import second from "@mui/material";
 import {
   QueryStats as QueryStatsIcon,
-  KeyboardArrowUp as KeyboardArrowUpIcon,
-  KeyboardArrowDown as KeyboardArrowDownIcon,
   Inventory as InventoryIcon,
   Warehouse as WarehouseIcon,
 } from "@mui/icons-material";
-import { useStockMovement } from "../hooks";
+import { useAppDispatch, useSupply } from "../hooks";
+import { uiOpenModal } from "../redux/ui";
+import { DetailDepositsModal } from "../components/DetailDepositsModal/index";
 
 const columns: ColumnProps[] = [
-  { text: "", align: "left" },
+  //   { text: "", align: "left" },
   { text: "Tipo", align: "left" },
   { text: "Insumo/Descripcion", align: "center" },
   { text: "UM", align: "center" },
@@ -69,26 +65,25 @@ function a11yProps(index: number) {
   };
 }
 
-const reservedStock = 400;
-
 export const ListStockPage: React.FC = () => {
+  const dispatch = useAppDispatch();
   //   const navigate = useNavigate();
-  const { isLoading, stockMovements, getStockMovements } = useStockMovement();
-  const [movementSelected, setMovementSelected] =
-    useState<StockMovement | null>(null);
+  const { isLoading, supplies, getSupplies } = useSupply();
+  const [supplySelected, setSupplySelected] = useState<Supply[]>([]);
   const [value, setValue] = React.useState(0);
 
   const onChangeTab = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
-  const onClickOpenDetail = (rowSelected: StockMovement) => {
-    if (rowSelected === movementSelected) setMovementSelected(null);
-    else setMovementSelected(rowSelected);
+  const onClickOpenDetail = (rowSelected: Supply) => {
+    console.log("rowSelected", rowSelected);
+    setSupplySelected([rowSelected]);
+    dispatch(uiOpenModal(DisplayModals.DetailDeposits));
   };
 
   useEffect(() => {
-    getStockMovements();
+    getSupplies();
   }, []);
 
   return (
@@ -148,134 +143,39 @@ export const ListStockPage: React.FC = () => {
           <CustomTabPanel value={value} index={0}>
             <Box component="div">
               <DataTable
-                key="datatable-stockMovements"
+                key="datatable-supply"
                 columns={columns}
                 isLoading={isLoading}
               >
-                {stockMovements.map((row) => (
-                  <>
-                    <ItemRow key={row._id} hover>
-                      <TableCellStyled>
-                        <IconButton
-                          aria-label="expand row"
-                          size="small"
-                          onClick={() => onClickOpenDetail(row)}
-                        >
-                          {movementSelected?._id === row._id ? (
-                            <KeyboardArrowUpIcon />
-                          ) : (
-                            <KeyboardArrowDownIcon />
-                          )}
-                        </IconButton>
-                      </TableCellStyled>
-                      <TableCellStyled align="left">
-                        {row.supply?.type}
-                      </TableCellStyled>
-                      <TableCellStyled align="center">{`${row.supply?.name}/${row.supply?.description}`}</TableCellStyled>
-                      <TableCellStyled align="center">
-                        {row.unitMeasurement}
-                      </TableCellStyled>
-                      <TableCellStyled align="center">
-                        {row.amount}
-                      </TableCellStyled>
-                      <TableCellStyled align="center">
-                        {reservedStock}
-                      </TableCellStyled>
-                      <TableCellStyled align="center">
-                        {row.amount - reservedStock}
-                      </TableCellStyled>
-                    </ItemRow>
-                    <ItemRow key={row._id + "-detail"}>
-                      <TableCellStyled
-                        style={{ paddingBottom: 0, paddingTop: 0 }}
-                        colSpan={12}
-                      >
-                        <Collapse
-                          in={movementSelected?._id === row._id}
-                          timeout="auto"
-                          unmountOnExit
-                        >
-                          <Box sx={{ margin: 1 }}>
-                            <Typography
-                              variant="h6"
-                              gutterBottom
-                              component="div"
-                            >
-                              Detalles
-                            </Typography>
-                            <Table size="small" aria-label="purchases">
-                              <TableHead>
-                                <ItemRow>
-                                  <TableCellStyled sx={{ width: "120px" }}>
-                                    Fecha
-                                  </TableCellStyled>
-                                  <TableCellStyled
-                                    align="center"
-                                    sx={{ width: "220px" }}
-                                  >
-                                    Ubicacion
-                                  </TableCellStyled>
-                                  <TableCellStyled
-                                    align="left"
-                                    sx={{ width: "60px" }}
-                                  >
-                                    Lote
-                                  </TableCellStyled>
-                                  <TableCellStyled
-                                    align="right"
-                                    sx={{ width: "60px" }}
-                                  >
-                                    Horas
-                                  </TableCellStyled>
-                                  <TableCellStyled
-                                    align="center"
-                                    sx={{ width: "80px" }}
-                                  >
-                                    Vencimiento
-                                  </TableCellStyled>
-                                  <TableCellStyled
-                                    align="center"
-                                    sx={{ width: "320px" }}
-                                  >
-                                    Detalle
-                                  </TableCellStyled>
-                                  <TableCellStyled align="center">
-                                    Campaña
-                                  </TableCellStyled>
-                                </ItemRow>
-                              </TableHead>
-                              <TableBody>
-                                <TableCellStyled align="center">
-                                  {row.operationDate}
-                                </TableCellStyled>
-                                <TableCellStyled align="center">
-                                  {row.deposit?.address}
-                                </TableCellStyled>
-                                <TableCellStyled align="center">
-                                  {row.batch}
-                                </TableCellStyled>
-                                <TableCellStyled align="right">
-                                  {row.hours}
-                                </TableCellStyled>
-                                <TableCellStyled align="center">
-                                  {row.dueDate}
-                                </TableCellStyled>
-                                <TableCellStyled align="center">
-                                  {row.detail}
-                                </TableCellStyled>
-                                <TableCellStyled align="center">
-                                  {row.campaign}
-                                </TableCellStyled>
-                              </TableBody>
-                            </Table>
-                          </Box>
-                        </Collapse>
-                      </TableCellStyled>
-                    </ItemRow>
-                  </>
+                {supplies.map((row) => (
+                  <ItemRow key={row._id} hover>
+                    <TableCellStyled align="left">{row.type}</TableCellStyled>
+                    <TableCellStyled align="center">{`${row.name}/${row.description}`}</TableCellStyled>
+                    <TableCellStyled align="center">
+                      {row.unitMeasurement}
+                    </TableCellStyled>
+                    <TableCellStyled align="center">
+                      <Chip
+                        label={row.currentStock}
+                        variant="filled"
+                        color="primary"
+                        onClick={() => onClickOpenDetail(row)}
+                      />
+                    </TableCellStyled>
+                    <TableCellStyled align="center">
+                      <Chip label={row.reservedStock} variant="outlined" />
+                    </TableCellStyled>
+                    <TableCellStyled align="center">
+                      <Chip
+                        label={row.currentStock - row.reservedStock}
+                        color="warning"
+                      />
+                    </TableCellStyled>
+                  </ItemRow>
                 ))}
               </DataTable>
             </Box>
+            <DetailDepositsModal key="detail-deposits-modal" movements={[]} />
           </CustomTabPanel>
           <CustomTabPanel value={value} index={1}>
             Item Two

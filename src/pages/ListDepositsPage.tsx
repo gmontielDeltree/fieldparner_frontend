@@ -35,6 +35,7 @@ const columns: ColumnProps[] = [
   { text: "Domicilio", align: "center" },
   { text: "Localidad", align: "center" },
   { text: "Pais", align: "center" },
+  { text: "", align: "center" },
 ];
 
 export const ListDepositsPage: React.FC = () => {

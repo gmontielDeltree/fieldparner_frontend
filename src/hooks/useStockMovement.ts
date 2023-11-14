@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import { StockMovement, StockMovementItem } from "../types";
+import { StockMovement, StockMovementItem, Supply, TypeMovement } from "../types";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
@@ -48,19 +48,69 @@ export const useStockMovement = () => {
         }
     }
 
-    const addNewStockMovement = async (newStockMovement: StockMovement) => {
+    //TODO:
+    // Si el movimiento es de tipo Compra, sumar la cantidad al stock actual del insumo
+    // Si el movimiento es de tipo Venta, restar ||
+    // Dependiendo si es ingreso o salida, hacer el calculo del mismo
+    // validar si el tipo de movimiento es transferencia, generar 2 movimientos:
+    // -1 egreso de stock del deposito
+    // -2 ingreso de stock al deposito destino 
+    // -3 actualizar el stock actual corrspondiente al insumo
+
+    const addNewStockMovement = async (newMovement: StockMovement, supplyDto: Supply, depositIdDestination?: string) => {
         setIsLoading(true);
+        let responseAll = null;
         try {
             if (!user) throw new Error();
-            const response = await dbContext.stockMovements.post({ ...newStockMovement, accountId: user?.accountId });
+
+            const { typeMovement, isIncome, amount } = newMovement;
+            const accountId = user.accountId;
+            const amountValue = Number(amount);
+
+            if (!(typeMovement === TypeMovement.TransferenciaDeposito.toString())) {
+                switch (typeMovement) {
+                    case TypeMovement.Compra:
+                        supplyDto.currentStock += amountValue;
+                        break;
+                    case TypeMovement.VentasVarias:
+                        supplyDto.currentStock -= amountValue;
+                        break;
+                    case (TypeMovement.Ajustes || TypeMovement.Prestamos):
+                        if (isIncome) supplyDto.currentStock += amountValue;
+                        else supplyDto.currentStock -= amountValue;
+                        break;
+                    default:
+                        if (isIncome) supplyDto.currentStock += amountValue;
+                        else supplyDto.currentStock -= amountValue;
+                        break;
+                }
+                responseAll = await Promise.all([
+                    dbContext.supplies.put(supplyDto),
+                    dbContext.stockMovements.post({ ...newMovement, accountId })
+                ]);
+            }
+            else {
+                if (!depositIdDestination) throw new Error();
+                responseAll = await Promise.all([
+                    dbContext.stockMovements.post({ ...newMovement, isIncome: false, accountId }),
+                    dbContext.stockMovements.post({
+                        ...newMovement,
+                        depositId: depositIdDestination,
+                        isIncome: true,
+                        accountId
+                    })
+                ]);
+            }
+            // const response = await dbContext.stockMovements.post({ ...newMovement, accountId: user?.accountId });
             setIsLoading(false);
 
-            if (response.ok)
+            if (responseAll)
                 Swal.fire('Nuevo Movimiento de Stock', 'Agregado.', 'success');
             else
                 Swal.fire('Nuevo Movimiento de Stock', 'Verifica los datos ingresados.', 'error');
 
             navigate('/init/overview/stock-movements');
+
         } catch (error) {
             console.log(error)
             Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');

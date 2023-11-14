@@ -30,6 +30,8 @@ const initialForm: Supply = {
   mermaVolatile: "",
   activePrincipal: "",
   replenishmentPoint: "",
+  currentStock: 0,
+  reservedStock: 0,
 };
 
 export const SupplyPage: React.FC = () => {

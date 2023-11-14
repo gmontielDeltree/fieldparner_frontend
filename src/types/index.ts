@@ -188,11 +188,10 @@ export interface Supply extends Document {
     name: string;
     description?: string;
     unitMeasurement: string;
-    // stockActual: number;
-    // stockReservado: number;
+    currentStock: number;
+    reservedStock: number;
     // stockDisponible: number;
     hasBatch: boolean;
-    // numeroLote: string;
     activePrincipal: string;
     mermaVolatile: string;
     minimumDose: string;
@@ -310,7 +309,7 @@ export interface StockMovement extends Document {
     // ubication: string;
     batch: string;
     dueDate: string;
-    typeMovement: string;
+    typeMovement: TypeMovement;
     isIncome: boolean;
     detail: string;
     operationDate: string;
@@ -321,7 +320,7 @@ export interface StockMovement extends Document {
     totalValue: number;
     hours: string;
     campaign: number;
-    depositIdDestination?: string
+    // depositIdDestination?: string
 }
 
 export interface StockMovementItem extends StockMovement {
@@ -345,3 +344,6 @@ export enum TypeMovement {
     Prestamos = "Prestamos",
 }
 
+export enum DisplayModals {
+    DetailDeposits = "DetailOfDeposits",
+}

@@ -31,7 +31,7 @@ const columns: ColumnProps[] = [
   { text: "Tipo", align: "left" },
   { text: "Insumo", align: "center" },
   { text: "Un. Medida", align: "center" },
-  // { text: "Stock Actual", align: "left" },
+  { text: "", align: "center" },
   // { text: "Stock Reservado", align: "center" },
   // { text: "Stock Disponible", align: "center" },
 ];
