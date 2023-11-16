@@ -12,7 +12,6 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-// import second from "@mui/material";
 import {
   QueryStats as QueryStatsIcon,
   Inventory as InventoryIcon,
@@ -83,8 +82,8 @@ export const ListStockPage: React.FC = () => {
   };
 
   useEffect(() => {
-    getSupplies();
-  }, []);
+    getSupplies(showStockValueZero);
+  }, [showStockValueZero]);
 
   return (
     <Container sx={{ marginLeft: { xs: 0, sm: 3 } }} maxWidth="md">
