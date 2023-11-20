@@ -37,7 +37,7 @@ const initialForm: StockMovement = {
   currency: "",
   depositId: "",
   detail: "",
-  dueDate: "",
+  dueDate: getShortDate(),
   hours: "",
   movement: "Manual",
   operationDate: getShortDate(),
@@ -266,6 +266,20 @@ export const NewStockMovementPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
+              <Grid item xs={6} sm={2}>
+                <TextField
+                  variant="outlined"
+                  type="text"
+                  label="Lote"
+                  name="batch"
+                  value={formulario.batch}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
               <Grid item xs={6} sm={6}>
                 <TextField
                   variant="outlined"
@@ -283,10 +297,10 @@ export const NewStockMovementPage: React.FC = () => {
               <Grid item xs={6} sm={2}>
                 <TextField
                   variant="outlined"
-                  type="text"
-                  label="Lote"
-                  name="batch"
-                  value={formulario.batch}
+                  type="number"
+                  label="Cantidad"
+                  name="amount"
+                  value={formulario.amount}
                   onChange={handleInputChange}
                   InputProps={{
                     startAdornment: <InputAdornment position="start" />,
@@ -298,20 +312,6 @@ export const NewStockMovementPage: React.FC = () => {
                 <Typography variant="body1" align="left">
                   Unidad de Medida: <b>{supplySelected?.unitMeasurement}</b>
                 </Typography>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <TextField
-                  variant="outlined"
-                  type="number"
-                  label="Cantidad"
-                  name="amount"
-                  value={formulario.amount}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                />
               </Grid>
               <Grid item xs={12} sm={12}>
                 <Typography variant="h5" align="left">
@@ -366,7 +366,6 @@ export const NewStockMovementPage: React.FC = () => {
                   <Select
                     key="select-supply-movement"
                     labelId="supply"
-                    // name="supply"
                     value={formulario.supplyId}
                     label="Insumo"
                     onChange={onChangeSupply}
@@ -402,6 +401,37 @@ export const NewStockMovementPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
+              <Grid item xs={6} sm={1}>
+                <TextField
+                  variant="outlined"
+                  type="text"
+                  label="Lote"
+                  name="batch"
+                  value={formulario.batch}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <TextField
+                  variant="outlined"
+                  type="date"
+                  label="Fecha vencimiento"
+                  name="dueDate"
+                  value={formulario.dueDate}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                  // inputProps={{
+                  //   max: getShortDate(), // Establece la fecha mínima permitida como la fecha actual
+                  // }}
+                  fullWidth
+                />
+              </Grid>
               <Grid item xs={6} sm={4}>
                 <TextField
                   variant="outlined"
@@ -419,25 +449,6 @@ export const NewStockMovementPage: React.FC = () => {
               <Grid item xs={6} sm={2}>
                 <TextField
                   variant="outlined"
-                  type="text"
-                  label="Lote"
-                  name="batch"
-                  value={formulario.batch}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography variant="body1" align="left">
-                  Unidad de Medida: <b>{supplySelected?.unitMeasurement}</b>
-                </Typography>
-              </Grid>
-              <Grid item xs={6} sm={2}>
-                <TextField
-                  variant="outlined"
                   type="number"
                   label="Cantidad"
                   name="amount"
@@ -448,6 +459,11 @@ export const NewStockMovementPage: React.FC = () => {
                   }}
                   fullWidth
                 />
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <Typography variant="body1" align="left">
+                  UM: <b>{supplySelected?.unitMeasurement}</b>
+                </Typography>
               </Grid>
               <Grid item xs={6} sm={4}>
                 <TextField

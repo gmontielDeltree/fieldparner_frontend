@@ -16,6 +16,7 @@ import {
   Container,
   Grid,
   IconButton,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -28,11 +29,13 @@ import {
   SyncAlt as SyncAltIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
+  CloudOff as CloudOffIcon,
 } from "@mui/icons-material";
 import { useForm, useStockMovement } from "../hooks";
 
 const columns: ColumnProps[] = [
   { text: "", align: "left" },
+  { text: "Fecha", align: "left" },
   { text: "Mov.", align: "left" },
   { text: "Tipo/Insumo", align: "center" },
   { text: "Deposito", align: "center" },
@@ -40,9 +43,9 @@ const columns: ColumnProps[] = [
   { text: "Ing/Egre", align: "center" },
   { text: "UM", align: "center" },
   { text: "Cantidad", align: "center" },
-  { text: "Comprobante", align: "center" },
-  { text: "Moneda", align: "center" },
-  { text: "Valor", align: "center" },
+  // { text: "Comprobante", align: "center" },
+  // { text: "Moneda", align: "center" },
+  // { text: "Valor", align: "center" },
 ];
 
 type RowProps = {
@@ -54,10 +57,7 @@ const Row: React.FC<RowProps> = ({ row }) => {
 
   return (
     <>
-      <ItemRow
-        sx={{ backgroundColor: row.isIncome ? "#81c784" : "#e57373" }}
-        // hover
-      >
+      <ItemRow sx={{ backgroundColor: row.isIncome ? "#81c784" : "#e57373" }}>
         <TableCellStyled>
           <IconButton
             aria-label="expand row"
@@ -67,6 +67,7 @@ const Row: React.FC<RowProps> = ({ row }) => {
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCellStyled>
+        <TableCellStyled align="left">{row.operationDate}</TableCellStyled>
         <TableCellStyled align="left">{row.movement}</TableCellStyled>
         <TableCellStyled align="center">{`${row.supply?.type}/${row.supply?.name}`}</TableCellStyled>
         <TableCellStyled align="center">
@@ -80,11 +81,11 @@ const Row: React.FC<RowProps> = ({ row }) => {
           {row.supply?.unitMeasurement}
         </TableCellStyled>
         <TableCellStyled align="left">{row.amount}</TableCellStyled>
-        <TableCellStyled align="left">{row.voucher}</TableCellStyled>
-        <TableCellStyled align="left">{row.currency}</TableCellStyled>
-        <TableCellStyled align="left">{row.totalValue}</TableCellStyled>
       </ItemRow>
-      <ItemRow sx={{ backgroundColor: row.isIncome ? "#81c784" : "#e57373" }}>
+      <ItemRow
+        key={`detail-${row.operationDate}`}
+        // sx={{ backgroundColor: row.isIncome ? "#beeac0" : "#e57373" }}
+      >
         <TableCellStyled
           style={{ paddingBottom: 0, paddingTop: 0 }}
           colSpan={12}
@@ -97,9 +98,9 @@ const Row: React.FC<RowProps> = ({ row }) => {
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <ItemRow>
-                    <TableCellStyled sx={{ width: "120px" }}>
-                      Fecha
-                    </TableCellStyled>
+                    <TableCellStyled>Comprobante</TableCellStyled>
+                    <TableCellStyled>Moneda</TableCellStyled>
+                    <TableCellStyled align="center">Valor</TableCellStyled>
                     <TableCellStyled align="center" sx={{ width: "220px" }}>
                       Ubicacion
                     </TableCellStyled>
@@ -120,7 +121,15 @@ const Row: React.FC<RowProps> = ({ row }) => {
                 </TableHead>
                 <TableBody>
                   <TableRow key={row.operationDate}>
-                    <TableCell align="center">{row.operationDate}</TableCell>
+                    <TableCellStyled align="center">
+                      {row.voucher}
+                    </TableCellStyled>
+                    <TableCellStyled align="center">
+                      {row.currency}
+                    </TableCellStyled>
+                    <TableCellStyled align="center">
+                      {row.totalValue}
+                    </TableCellStyled>
                     <TableCell align="center">{row.deposit?.address}</TableCell>
                     <TableCell align="center">{row.batch}</TableCell>
                     <TableCell align="right">{row.hours}</TableCell>
