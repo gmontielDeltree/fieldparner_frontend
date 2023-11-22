@@ -23,7 +23,7 @@ const initialForm: Supply = {
   description: "",
   barCode: "",
   unitMeasurement: "",
-  hasBatch: false,
+  stockByLot: false,
   maximumDose: "",
   minimumDose: "",
   recommendedDose: "",
@@ -39,7 +39,7 @@ export const SupplyPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { supplyActive } = useAppSelector((state) => state.supply);
   const [activeStep, setActiveStep] = useState(0);
-  const [steps, setSteps] = useState<string[]>(["Insumos", "Dosis", "Stock"]);
+  const [steps] = useState<string[]>(["Insumos", "Dosis", "Stock"]);
   const {
     formulario,
     setFormulario,

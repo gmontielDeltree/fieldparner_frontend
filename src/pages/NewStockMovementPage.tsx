@@ -266,34 +266,38 @@ export const NewStockMovementPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6} sm={2}>
-                <TextField
-                  variant="outlined"
-                  type="text"
-                  label="Lote"
-                  name="batch"
-                  value={formulario.batch}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item xs={6} sm={6}>
-                <TextField
-                  variant="outlined"
-                  type="text"
-                  label="Ubicacion"
-                  name="ubication"
-                  value={depositSelected?.address}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                />
-              </Grid>
+              {supplySelected?.stockByLot && (
+                <>
+                  <Grid item xs={6} sm={2}>
+                    <TextField
+                      variant="outlined"
+                      type="text"
+                      label="Lote"
+                      name="batch"
+                      value={formulario.batch}
+                      onChange={handleInputChange}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start" />,
+                      }}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={6}>
+                    <TextField
+                      variant="outlined"
+                      type="text"
+                      label="Ubicacion"
+                      name="ubication"
+                      value={depositSelected?.address}
+                      onChange={handleInputChange}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start" />,
+                      }}
+                      fullWidth
+                    />
+                  </Grid>
+                </>
+              )}
               <Grid item xs={6} sm={2}>
                 <TextField
                   variant="outlined"
@@ -401,20 +405,22 @@ export const NewStockMovementPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6} sm={1}>
-                <TextField
-                  variant="outlined"
-                  type="text"
-                  label="Lote"
-                  name="batch"
-                  value={formulario.batch}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                />
-              </Grid>
+              {supplySelected?.stockByLot && (
+                <Grid item xs={6} sm={1}>
+                  <TextField
+                    variant="outlined"
+                    type="text"
+                    label="Lote"
+                    name="batch"
+                    value={formulario.batch}
+                    onChange={handleInputChange}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start" />,
+                    }}
+                    fullWidth
+                  />
+                </Grid>
+              )}
               <Grid item xs={12} sm={2}>
                 <TextField
                   variant="outlined"
@@ -426,26 +432,25 @@ export const NewStockMovementPage: React.FC = () => {
                   InputProps={{
                     startAdornment: <InputAdornment position="start" />,
                   }}
-                  // inputProps={{
-                  //   max: getShortDate(), // Establece la fecha mínima permitida como la fecha actual
-                  // }}
                   fullWidth
                 />
               </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  variant="outlined"
-                  type="text"
-                  label="Ubicacion"
-                  name="ubication"
-                  value={depositSelected?.address}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                />
-              </Grid>
+              {supplySelected?.stockByLot && (
+                <Grid item xs={6} sm={4}>
+                  <TextField
+                    variant="outlined"
+                    type="text"
+                    label="Ubicacion"
+                    name="ubication"
+                    value={depositSelected?.address}
+                    onChange={handleInputChange}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start" />,
+                    }}
+                    fullWidth
+                  />
+                </Grid>
+              )}
               <Grid item xs={6} sm={2}>
                 <TextField
                   variant="outlined"

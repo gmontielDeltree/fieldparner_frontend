@@ -34,7 +34,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
   handleCheckboxChange,
   setFormValues,
 }) => {
-  const { type, name, description, barCode, hasBatch, labors } = formValues;
+  const { type, name, description, barCode, stockByLot, labors } = formValues;
 
   const handleChangeLabors = (
     { target }: ChangeEvent<HTMLInputElement>,
@@ -120,8 +120,8 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         <FormControlLabel
           control={
             <Switch
-              name="hasBatch"
-              checked={hasBatch}
+              name="stockByLot"
+              checked={stockByLot}
               onChange={handleCheckboxChange}
               // defaultChecked
             />

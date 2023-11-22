@@ -191,7 +191,7 @@ export interface Supply extends Document {
     currentStock: number;
     reservedStock: number;
     // stockDisponible: number;
-    hasBatch: boolean;
+    stockByLot: boolean;
     activePrincipal: string;
     mermaVolatile: string;
     minimumDose: string;
@@ -263,6 +263,11 @@ export const TypeMovements = [
     "Prestamos",
 ];
 
+export interface Lot {
+    nro: string;
+    location: string;
+}
+
 export interface DepositState {
     depositActive: Deposit | null;
     deposits: Deposit[];
@@ -280,6 +285,7 @@ export interface Deposit extends Document {
     locality: string;
     province: string;
     country: string;
+    lots: Lot[];
 }
 
 export interface ItemZipCode extends Document {
@@ -335,8 +341,8 @@ export interface SupplyByDeposits {
     batch: string;
     currentStock: number;
     reservedStock: number;
-  }
-  
+}
+
 
 export enum CurrencyCode {
     ARG = 'ARS',
