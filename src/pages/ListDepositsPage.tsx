@@ -35,6 +35,7 @@ const columns: ColumnProps[] = [
   { text: "Domicilio", align: "center" },
   { text: "Localidad", align: "center" },
   { text: "Pais", align: "center" },
+  { text: "", align: "center" },
 ];
 
 export const ListDepositsPage: React.FC = () => {
@@ -49,7 +50,7 @@ export const ListDepositsPage: React.FC = () => {
       getDeposits();
       return;
     }
-    const filteredDeposits = deposits.filter(({ descripcion, propietario }) => {
+    const filteredDeposits = deposits.filter(({ description: descripcion, owner: propietario }) => {
       (descripcion &&
         descripcion.toLowerCase().includes(filterText.toLowerCase())) ||
         (propietario &&
@@ -125,24 +126,24 @@ export const ListDepositsPage: React.FC = () => {
               {deposits.map((row) => (
                 <ItemRow key={row._id} hover>
                   <TableCellStyled align="center">
-                    {row.descripcion}
+                    {row.description}
                   </TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.propietario}
+                    {row.owner}
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     <Chip
-                      variant={row.esVirtual ? "filled" : "outlined"}
-                      label={row.esVirtual ? "Virtual" : "Fisico"}
+                      variant={row.isVirtual ? "filled" : "outlined"}
+                      label={row.isVirtual ? "Virtual" : "Fisico"}
                     />
                   </TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.domicilio}
+                    {row.address}
                   </TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.localidad}
+                    {row.locality}
                   </TableCellStyled>
-                  <TableCellStyled align="center">{row.pais}</TableCellStyled>
+                  <TableCellStyled align="center">{row.country}</TableCellStyled>
                   <TableCellStyled align="center">
                     <Tooltip title="Editar">
                       <IconButton

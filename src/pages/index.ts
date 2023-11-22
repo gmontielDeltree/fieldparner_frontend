@@ -10,6 +10,8 @@ export * from "./SupplyPage";
 export * from "./ListSuppliesPage";
 export * from './StockMovementPage';
 export * from './NewStockMovementPage';
+export * from './ListStockPage';
+
 
 //Paginas publicas
 export * from "./LoginPage";

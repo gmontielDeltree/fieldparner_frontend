@@ -31,9 +31,9 @@ const columns: ColumnProps[] = [
   { text: "Tipo", align: "left" },
   { text: "Insumo", align: "center" },
   { text: "Un. Medida", align: "center" },
-  { text: "Stock Actual", align: "left" },
-  { text: "Stock Reservado", align: "center" },
-  { text: "Stock Disponible", align: "center" },
+  { text: "", align: "center" },
+  // { text: "Stock Reservado", align: "center" },
+  // { text: "Stock Disponible", align: "center" },
 ];
 
 export const ListSuppliesPage: React.FC = () => {
@@ -48,7 +48,7 @@ export const ListSuppliesPage: React.FC = () => {
       getSupplies();
       return;
     }
-    const filteredSupplies = supplies.filter(({ insumo, descripcion }) => {
+    const filteredSupplies = supplies.filter(({ name: insumo, description: descripcion }) => {
       (insumo && insumo.toLowerCase().includes(filterText.toLowerCase())) ||
         (descripcion &&
           descripcion.toLowerCase().includes(filterText.toLowerCase()));
@@ -121,12 +121,12 @@ export const ListSuppliesPage: React.FC = () => {
             >
               {supplies.map((row) => (
                 <ItemRow key={row._id} hover>
-                  <TableCellStyled align="center">{row.tipo}</TableCellStyled>
-                  <TableCellStyled align="center">{row.insumo}</TableCellStyled>
+                  <TableCellStyled align="left">{row.type}</TableCellStyled>
+                  <TableCellStyled align="center">{row.name}</TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.unidadMedida}
+                    {row.unitMeasurement}
                   </TableCellStyled>
-                  <TableCellStyled align="center">
+                  {/* <TableCellStyled align="center">
                     {row.stockActual}
                   </TableCellStyled>
                   <TableCellStyled align="center">
@@ -134,7 +134,7 @@ export const ListSuppliesPage: React.FC = () => {
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     {row.stockDisponible}
-                  </TableCellStyled>
+                  </TableCellStyled> */}
                   <TableCellStyled align="center">
                     <Tooltip title="Editar">
                       <IconButton

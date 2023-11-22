@@ -3,13 +3,13 @@ import { Theme, createTheme } from '@mui/material';
 export const skyBlueTheme: Theme = createTheme({
     palette: {
         primary: {
-            main: '#42a5f5',
+            main: '#1976d2',
         },
         secondary: {
-            main: '#543884',
+            main: '#15466f',
         },
         error: {
-            main: 'ef5350',
+            main: '#ef5350',
         },
     },
 });

@@ -1,12 +1,22 @@
 import PouchDB from 'pouchdb';
 import PouchDBFind from 'pouchdb-find'
 import { getEnvVariables } from '../helpers/getEnvVariables';
-import { Business, Category, CountryCode, Deposit, ItemZipCode, Supply, Vehiculo } from '../types';
+import {
+    Business,
+    Category,
+    CountryCode,
+    Deposit,
+    ItemZipCode,
+    Supply,
+    Vehiculo,
+    StockMovement
+} from '../types';
 import uuid4 from 'uuid4';
 
 PouchDB.plugin(PouchDBFind);
 
 const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
+const opts: PouchDB.Replication.SyncOptions = { live: true, retry: true };
 
 const dbNames = Object.freeze({
     deposits: "deposits",
@@ -15,6 +25,7 @@ const dbNames = Object.freeze({
     supplies: "supplies",
     socialEntities: "social-entities",
     categories: "categories",
+    stockMovements: "stock-movements"
 });
 
 export const dbContext = Object.freeze({
@@ -24,15 +35,18 @@ export const dbContext = Object.freeze({
     supplies: new PouchDB<Supply>(dbNames.supplies),
     socialEntities: new PouchDB<Business>(dbNames.socialEntities),
     categories: new PouchDB<Category>(dbNames.categories),
+    stockMovements: new PouchDB<StockMovement>(dbNames.stockMovements),
 });
 
-dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, { live: true, retry: true, });
-dbContext.zipCodeArg.sync(`${remoteCouchDBUrl}${dbNames.zipCodeArg}`, { live: true, retry: true, });
-dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, { live: true, retry: true, });
-dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, { live: true, retry: true, });
-dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, { live: true, retry: true, });
-dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, { live: true, retry: true, });
+dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
+// dbContext.zipCodeArg.sync(`${remoteCouchDBUrl}${dbNames.zipCodeArg}`, opts);
+dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, opts);
+dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, opts);
+dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, opts);
+dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, opts);
+dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, opts);
 
+//TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
     try {
 

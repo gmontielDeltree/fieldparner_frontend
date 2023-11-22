@@ -1,61 +1,9 @@
 import Swal from 'sweetalert2';
 import { Business } from "../types";
 import { useState } from "react";
-// import { fieldpartnerAPI } from "../config";
-// import { HttpStatusCode } from "axios";
 import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
 
-
-// const controller = "/business";
-
-// const businessesData: Business[] = [
-//     {
-//         "id": "ec3590d5c24e5bec5a21299d3000cf77",
-//         "tipoEntidad": "persona",
-//         "cuit": "",
-//         "documento": "35424827",
-//         "razonSocial": "",
-//         "nombreCompleto": "German Montiel",
-//         "cp": "CP",
-//         "domicilio": "Domicilio",
-//         "localidad": "localidad",
-//         "pais": "Argentina",
-//         "provincia": "Bs As",
-//         "email": "german_montiel96@hotmail.com",
-//         "telefono": "",
-//         "sitioWeb": "",
-//         "contactoPrincipal": "",
-//         "contactoSecundario": ""
-//     },
-//     {
-//         "id": "ec3590d5c24e5bec5a21299d30018305",
-//         "tipoEntidad": "juridica",
-//         "cuit": "51047067/00112",
-//         "documento": "",
-//         "razonSocial": "QTSAgro Brasil",
-//         "nombreCompleto": "",
-//         "cp": "80240-110",
-//         "domicilio": "Rua Bento Viana 553",
-//         "localidad": "Curitiba",
-//         "pais": "Brasil",
-//         "provincia": "Parana",
-//         "email": "juan.dambra@qtsagro.net",
-//         "telefono": "+5541992590099",
-//         "sitioWeb": "www.qtsagro.net",
-//         "contactoPrincipal": "Juan",
-//         "contactoSecundario": "Juan"
-//     }
-// ]
-
-// const loadBusinesses = () => new Promise<Business[]>((resolve, reject) => {
-//     setTimeout(() => {
-//         if (businessesData.length)
-//             resolve(businessesData);
-//         else
-//             reject("Businesses not found.");
-//     }, 1000);
-// });
 
 export const useBusiness = () => {
     const navigate = useNavigate();

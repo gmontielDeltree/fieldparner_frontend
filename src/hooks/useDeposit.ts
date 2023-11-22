@@ -3,6 +3,7 @@ import { Deposit } from "../types";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
+import { useAppSelector } from '.';
 
 // const remoteCouchDBUrl = getEnvVariables().VITE_COUCHDB_URL;
 // const myDBs = {
@@ -17,17 +18,22 @@ import { dbContext } from '../services';
 export const useDeposit = () => {
 
     const navigate = useNavigate();
+    const { user } = useAppSelector(state => state.auth);
     const [deposits, setDeposits] = useState<Deposit[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
     const getDeposits = async () => {
         setIsLoading(true);
         try {
-            const result = await dbContext.deposits.allDocs({ include_docs: true });
-
+            const result = await dbContext.deposits.find(
+                {
+                    selector: { "accountId": user?.accountId },
+                },
+            );
+            
             setIsLoading(false);
-            if (result.rows.length) {
-                const documents: Deposit[] = result.rows.map(row => row.doc as Deposit);
+            if (result.docs) {
+                const documents: Deposit[] = result.docs.map(row => row as Deposit);
                 setDeposits(documents);
             }
         } catch (error) {
@@ -39,7 +45,10 @@ export const useDeposit = () => {
     const createDeposit = async (newDeposit: Deposit) => {
         setIsLoading(true);
         try {
-            const response = await dbContext.deposits.post(newDeposit);
+
+            if (!user) throw new Error();
+
+            const response = await dbContext.deposits.post({ ...newDeposit, accountId: user.accountId });
             setIsLoading(false);
 
             if (response.ok) {

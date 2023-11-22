@@ -13,7 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import {  Supply, TipoInsumo } from "../../types";
+import { Supply, TipoInsumo, TypeSupplies } from "../../types";
 import React, { ChangeEvent } from "react";
 
 export interface LaborsFormProps {
@@ -34,14 +34,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
   handleCheckboxChange,
   setFormValues,
 }) => {
-  const {
-    tipo,
-    insumo,
-    descripcion,
-    codigoBarra,
-    tieneLotes,
-    labores,
-  } = formValues;
+  const { type, name, description, barCode, hasBatch, labors } = formValues;
 
   const handleChangeLabors = (
     { target }: ChangeEvent<HTMLInputElement>,
@@ -51,13 +44,13 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
     if (checked)
       setFormValues((prevState) => ({
         ...prevState,
-        labores: [...prevState.labores, newLabor],
+        labors: [...prevState.labors, newLabor],
       }));
     else {
-      let laborsFiltered = formValues.labores.filter(
+      let laborsFiltered = formValues.labors.filter(
         (labor) => labor !== newLabor
       );
-      setFormValues((prevState) => ({ ...prevState, labores: laborsFiltered }));
+      setFormValues((prevState) => ({ ...prevState, labors: laborsFiltered }));
     }
   };
 
@@ -68,19 +61,16 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
           <InputLabel id="tipo-insumo">Tipo</InputLabel>
           <Select
             labelId="tipo-insumo"
-            name="tipo"
-            value={tipo}
+            name="type"
+            value={type}
             label="Tipo"
             onChange={handleSelectChange}
           >
-            <MenuItem value={"Varios"}>Varios</MenuItem>
-            <MenuItem value={"Semillas"}>Semillas</MenuItem>
-            <MenuItem value={"Cultivo"}>Cultivo</MenuItem>
-            <MenuItem value={"Fertilizantes"}>Fertilizantes</MenuItem>
-            <MenuItem value={"Fitosanitarios"}>Fitosanitarios</MenuItem>
-            <MenuItem value={"Repuestos"}>Repuestos</MenuItem>
-            <MenuItem value={"Materiales"}>Materiales</MenuItem>
-            <MenuItem value={"Combustible"}>Combustible</MenuItem>
+            {TypeSupplies.map((supply) => (
+              <MenuItem key={supply} value={supply}>
+                {supply}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       </Grid>
@@ -89,8 +79,8 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
           variant="outlined"
           type="text"
           label="Insumo"
-          name="insumo"
-          value={insumo}
+          name="name"
+          value={name}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -103,8 +93,8 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
           variant="outlined"
           type="text"
           label="Descripcion"
-          name="descripcion"
-          value={descripcion}
+          name="description"
+          value={description}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -117,8 +107,8 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
           variant="outlined"
           type="text"
           label="Codigo de Barra"
-          name="codigoBarra"
-          value={codigoBarra}
+          name="barCode"
+          value={barCode}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -130,8 +120,8 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         <FormControlLabel
           control={
             <Switch
-              name="tieneLotes"
-              checked={tieneLotes}
+              name="hasBatch"
+              checked={hasBatch}
               onChange={handleCheckboxChange}
               // defaultChecked
             />
@@ -140,7 +130,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         />
       </Grid>
       <Grid item xs={12} sm={12} sx={{ my: 3 }}>
-        {tipo.toLowerCase() === TipoInsumo.CULTIVO.toLowerCase() && (
+        {type.toLowerCase() === TipoInsumo.CULTIVO.toLowerCase() && (
           <>
             <Typography variant="h5" sx={{ pl: 2, mb: 2 }}>
               Labores que aplica
@@ -150,7 +140,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                 control={
                   <Checkbox
                     name="Preparado"
-                    checked={labores.includes("Preparado")}
+                    checked={labors.includes("Preparado")}
                     onChange={handleChangeLabors}
                   />
                 }
@@ -160,7 +150,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                 control={
                   <Checkbox
                     name="Siembra"
-                    checked={labores.includes("Siembra")}
+                    checked={labors.includes("Siembra")}
                     onChange={handleChangeLabors}
                   />
                 }
@@ -170,7 +160,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                 control={
                   <Checkbox
                     name="Aplicacion"
-                    checked={labores.includes("Aplicacion")}
+                    checked={labors.includes("Aplicacion")}
                     onChange={handleChangeLabors}
                   />
                 }
@@ -180,7 +170,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                 control={
                   <Checkbox
                     name="Arrancado"
-                    checked={labores.includes("Arrancado")}
+                    checked={labors.includes("Arrancado")}
                     onChange={handleChangeLabors}
                   />
                 }
@@ -190,7 +180,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                 control={
                   <Checkbox
                     name="Cosecha"
-                    checked={labores.includes("Cosecha")}
+                    checked={labors.includes("Cosecha")}
                     onChange={handleChangeLabors}
                   />
                 }
