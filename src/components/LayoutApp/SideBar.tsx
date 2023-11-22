@@ -8,7 +8,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText,
+  ListItemText
 } from "@mui/material";
 import {
   Cabin as CabinIcon,
@@ -21,17 +21,18 @@ import {
   List as ListIcon,
   Inventory as InventoryIcon,
   Warehouse as WarehouseIcon,
-  SyncAlt as SyncAltIcon,
+  SyncAlt as SyncAltIcon
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
+import { Typography } from "@mui/material";
 
 export const SideBar: React.FC<SideBarProps> = ({
   drawerWidth,
   open,
-  handleSideBarClose,
+  handleSideBarClose
 }) => {
   const { pathname } = useLocation();
-
+  const version = "2.23.1";
   const navigateTo = (path: string) => {
     window.location.replace(path);
   };
@@ -45,7 +46,7 @@ export const SideBar: React.FC<SideBarProps> = ({
         sx={{
           width: drawerWidth,
           display: { xs: "block" },
-          "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" },
+          "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" }
         }}
         variant="persistent"
         anchor="left"
@@ -179,6 +180,19 @@ export const SideBar: React.FC<SideBarProps> = ({
             </ListItem>
           ))} */}
         </List>
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            p: 2,
+            textAlign: "right"
+          }}
+        >
+          <Typography variant="body" color="gray">
+            v{version}
+          </Typography>
+        </Box>
       </Drawer>
     </Box>
   );

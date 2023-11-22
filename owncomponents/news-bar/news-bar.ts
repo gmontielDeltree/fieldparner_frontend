@@ -31,13 +31,13 @@ class Newsbar extends LitElement {
     //console.log(state);
   });
 
-
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if(this.is_hidden.value){
-      this.dispatchEvent(new CustomEvent("hidden"))
+  protected updated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ): void {
+    if (this.is_hidden.value) {
+      this.dispatchEvent(new CustomEvent("hidden"));
     }
   }
-
 
   render() {
     return !this.is_hidden.value
@@ -59,7 +59,7 @@ class Newsbar extends LitElement {
                   ${this.news.value.map((news) => {
                     return html`
                       <li class="marquee__item">
-                        <a >${news.title}</a>
+                        <a >${news.title} sarasa</a>
                       </li>
                     `;
                   })}
@@ -68,6 +68,7 @@ class Newsbar extends LitElement {
             </div>
             <button
               @click=${(e) => {
+                console.log("CLICKEADO BOTON X");
                 this.machine.send("HIDE");
               }}
             >

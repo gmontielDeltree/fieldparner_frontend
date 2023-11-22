@@ -1,0 +1,28 @@
+.modalDrawer-enter {
+    left: -100%;
+}
+
+.modalDrawer-enter-active {
+    left: 0;
+    transition: left 1s ease-in-out;
+}
+
+.modalDrawer-exit {
+    left: 0;
+}
+
+.modalDrawer-exit-active {
+    left: -100%;
+    transition: left 1s ease-in-out;
+}
+
+.modalDrawer {
+    position: fixed;
+    top: 64px;
+    height: calc(100vh - 64px);
+    width: 50vw;
+    overflow-y: auto;
+    background-color: #fff;
+    padding: 1rem;
+    z-index: 1050;
+}

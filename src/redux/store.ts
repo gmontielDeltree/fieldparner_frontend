@@ -1,21 +1,23 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore } from "@reduxjs/toolkit";
 
-import { vehiculoSlice } from './vehicle';
-import { uiSlice } from './ui';
-import { authSlice } from './auth';
-import { businessSlice } from './business';
-import { supplySlice } from './supply';
-import { depositSlice } from './deposit';
+import { vehiculoSlice } from "./vehicle";
+import { uiSlice } from "./ui";
+import { authSlice } from "./auth";
+import { businessSlice } from "./business";
+import { supplySlice } from "./supply";
+import { depositSlice } from "./deposit";
+import { mapSlice } from "./map";
 
 const store = configureStore({
-    reducer: {
-        ui: uiSlice.reducer,
-        vehiculo: vehiculoSlice.reducer,
-        auth: authSlice.reducer,
-        business: businessSlice.reducer,
-        supply: supplySlice.reducer,
-        deposit: depositSlice.reducer,
-    },
+  reducer: {
+    ui: uiSlice.reducer,
+    vehiculo: vehiculoSlice.reducer,
+    auth: authSlice.reducer,
+    business: businessSlice.reducer,
+    supply: supplySlice.reducer,
+    deposit: depositSlice.reducer,
+    map: mapSlice.reducer
+  }
 });
 
 export type RootState = ReturnType<typeof store.getState>;
