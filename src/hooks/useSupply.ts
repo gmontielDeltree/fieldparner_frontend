@@ -13,16 +13,19 @@ export const useSupply = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [supplyByDeposits, setSupplyByDeposits] = useState<SupplyByDeposits[]>([]);
 
-    const getSupplies = async () => {
+    const getSupplies = async (showStockWithZeroValues: boolean = false) => {
         setIsLoading(true);
         try {
+            if (!user) throw new Error("Usuario no encontrado.");
+
             const result = await dbContext.supplies.find({
-                selector: { "accountId": user?.accountId },
+                selector: { "accountId": user.accountId, },
             },);
 
             setIsLoading(false);
             if (result.docs.length) {
-                const documents: Supply[] = result.docs.map(row => row as Supply);
+                let documents: Supply[] = result.docs.map(row => row as Supply);
+                if (showStockWithZeroValues) documents = documents.filter(supply => supply.currentStock === 0);
                 setSupplies(documents);
             }
         } catch (error) {
