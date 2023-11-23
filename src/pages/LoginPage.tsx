@@ -113,6 +113,7 @@ export const LoginPage = () => {
           <TextField
             margin="normal"
             type="email"
+            placeholder='correo@gmail.com'
             required
             fullWidth
             error={!!error["email"]}
@@ -136,6 +137,7 @@ export const LoginPage = () => {
             onChange={handleInputChange}
             value={password}
             type={showPassword ? "text" : "password"}
+            placeholder='Contraseña'
             id="password"
             autoComplete="current-password"
             InputProps={{
