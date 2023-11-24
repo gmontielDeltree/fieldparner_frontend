@@ -11,7 +11,7 @@ import EditField from "../components/EditField";
 import NewsBar from "../components/NewsBar";
 import NewLot from "../components/NewLot";
 import MapComponent from "../components/Map";
-import LotDetailsModal from "../components/NewLot/LotDetailsModal";
+import LotsMenu from "../components/LotsMenu";
 interface Lot {
   id: string;
   type: string;
@@ -315,7 +315,7 @@ export const FieldsPage: React.FC = () => {
       ) : null}
 
       {selectedLot && (
-        <LotDetailsModal
+        <LotsMenu
           lot={selectedLot}
           isOpen={!!selectedLot}
           toggle={toggleLotDetailsModal}
