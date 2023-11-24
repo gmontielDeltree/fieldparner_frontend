@@ -3,8 +3,6 @@ import LotDetailsModal from "./LotDetailsModal";
 import { Avatar, ButtonBase, Paper } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-
-// Import icons for categories
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
 import categoryIcon2 from "../../images/icons/pulverizadora_act.webp";
 import categoryIcon3 from "../../images/icons/cosechadora_act.webp";
@@ -44,12 +42,10 @@ const LotsMenu = ({ lot, isOpen, toggle }) => {
     }
   });
 
-  // Function to render the selected form component
   const renderFormContent = () => {
     switch (selectedCategory) {
       case "Lot Details":
         return <LotDetailsModal lot={lot} />;
-      // Add cases for other categories here
       default:
         return <div>Select a category to view its forms</div>;
     }
@@ -69,7 +65,6 @@ const LotsMenu = ({ lot, isOpen, toggle }) => {
         backgroundColor: "#fff",
         padding: "20px",
         zIndex: 1050,
-        // borderRadius: "10px",
         boxShadow: "0 6px 15px rgba(0,0,0,0.2)"
       }}
     >
