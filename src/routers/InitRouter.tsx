@@ -6,6 +6,7 @@ import { Loading } from "../components";
 
 export const InitRouter = () => {
   const { status, checkAuthToken } = useAuthStore();
+  // const authStatus = 'not-authenticated'; // 'authenticated'; // 'not-authenticated';
 
   useEffect(() => {
     checkAuthToken();
@@ -16,8 +17,13 @@ export const InitRouter = () => {
   }
 
   return (
-    <>
-      {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
-    </>
+    <OverviewRoutes />
+    // <>
+    //     {
+    //         (status === 'not-authenticated')
+    //             ? (<PublicRoutes />)
+    //             : (<OverviewRoutes />)
+    //     }
+    // </>
   );
 };
