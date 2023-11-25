@@ -15,11 +15,11 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect } from "react";
-import { useAppDispatch, useAppSelector, useSupply } from "../../hooks";
-import { ColumnProps, DisplayModals, SupplyByDeposits } from "../../types";
-import { uiCloseModal } from "../../redux/ui";
-import { DataTable, ItemRow, TableCellStyled } from "..";
-import { removeSupplyActive } from "../../redux/supply";
+import { useAppDispatch, useAppSelector, useSupply } from "../../../hooks";
+import { ColumnProps, DisplayModals, SupplyByDeposits } from "../../../types";
+import { uiCloseModal } from "../../../redux/ui";
+import { DataTable, ItemRow, TableCellStyled } from "../..";
+import { removeSupplyActive } from "../../../redux/supply";
 import {
   KeyboardArrowUp as KeyboardArrowUpIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
@@ -59,8 +59,8 @@ const Row: React.FC<RowProps> = ({ row }) => {
         <TableCellStyled align="left">
           {row.deposit?.description}
         </TableCellStyled>
-        <TableCellStyled align="center">{row.deposit?.address}</TableCellStyled>
-        <TableCellStyled align="center">{"20"}</TableCellStyled>
+        <TableCellStyled align="center">{row.lot?.location}</TableCellStyled>
+        <TableCellStyled align="center">{row.lot?.nro}</TableCellStyled>
         <TableCellStyled align="center">{"20/10/203"}</TableCellStyled>
         <TableCellStyled align="center">{row.unitMeasurement}</TableCellStyled>
         <TableCellStyled align="center">{row.currentStock}</TableCellStyled>
@@ -95,7 +95,7 @@ const Row: React.FC<RowProps> = ({ row }) => {
                   </ItemRow>
                 </TableHead>
                 <TableBody>
-                  {row.movements.map((movement) => (
+                  {row.movements?.map((movement) => (
                     <TableRow key={movement._id}>
                       <TableCell>
                         {movement.isIncome ? "Ingreso" : "Egreso"}
@@ -119,11 +119,11 @@ const Row: React.FC<RowProps> = ({ row }) => {
   );
 };
 
-export const DetailDepositsModal: React.FC = () => {
+export const SupplyByDepositsModal: React.FC = () => {
   const dispatch = useAppDispatch();
   const { showModal } = useAppSelector((state) => state.ui);
   const { supplyActive } = useAppSelector((state) => state.supply);
-  const { isLoading, supplyByDeposits, getStockByDeposits } = useSupply();
+  const { isLoading, supplyByDeposits, getStockByDepositsAndLot } = useSupply();
 
   const onCloseModal = () => {
     dispatch(removeSupplyActive());
@@ -131,12 +131,12 @@ export const DetailDepositsModal: React.FC = () => {
   };
 
   useEffect(() => {
-    if (supplyActive) getStockByDeposits();
+    if (supplyActive) getStockByDepositsAndLot();
   }, [supplyActive]);
 
   return (
     <Dialog
-      open={showModal === DisplayModals.DetailDeposits}
+      open={showModal === DisplayModals.SupplyByDeposits}
       maxWidth="lg"
       scroll="paper"
       onClose={onCloseModal}
@@ -148,12 +148,14 @@ export const DetailDepositsModal: React.FC = () => {
           columns={columns}
           isLoading={isLoading}
         >
-          {supplyByDeposits.map((supplyByDeposit) => (
-            <Row
-              key={`${supplyActive?._id}-${supplyByDeposit.deposit._id}`}
-              row={supplyByDeposit}
-            />
-          ))}
+          {supplyByDeposits
+            .filter((s) => s.movements?.length)
+            .map((supplyByDeposit) => (
+              <Row
+                key={`${supplyActive?._id}-${supplyByDeposit.deposit._id}`}
+                row={supplyByDeposit}
+              />
+            ))}
         </DataTable>
       </DialogContent>
       <DialogActions>

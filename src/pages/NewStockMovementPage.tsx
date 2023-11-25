@@ -22,6 +22,7 @@ import { useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
 import {
   CurrencyCode,
   Deposit,
+  Lot,
   StockMovement,
   Supply,
   TypeMovement,
@@ -32,12 +33,13 @@ import { getShortDate } from "../helpers/dates";
 const initialForm: StockMovement = {
   typeMovement: TypeMovement.Ajustes,
   amount: 0,
-  batch: "",
+  nroLot: "",
+  creationDate: new Date().toLocaleString(),
   campaign: 0,
   currency: "",
   depositId: "",
   detail: "",
-  dueDate: "",
+  dueDate: getShortDate(),
   hours: "",
   movement: "Manual",
   operationDate: getShortDate(),
@@ -68,6 +70,7 @@ export const NewStockMovementPage: React.FC = () => {
   const [showSwitch, setShowSwitch] = useState(true);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
   const [depositIdDestination, setDepositIdDestination] = useState("");
+  const [lotSelected, setLotSelected] = useState<Lot | null>(null);
   const { isLoading, addNewStockMovement } = useStockMovement();
   const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
   const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
@@ -110,10 +113,20 @@ export const NewStockMovementPage: React.FC = () => {
       setFormulario((prevState) => ({ ...prevState, depositId: value }));
       setDepositSelected(depositSelected);
     }
-
     if (depositSelected && name === "destination") {
       setDepositIdDestination(value);
     }
+  };
+
+  const onChangeLot = ({ target }: SelectChangeEvent) => {
+    const { value } = target;
+    if (!depositSelected) return;
+    const lotSelected = depositSelected.lots.find(
+      (lot) => lot.nro.toLowerCase() === value.toLowerCase()
+    );
+    if (!lotSelected) return;
+    setFormulario((prevState) => ({ ...prevState, nroLot: value }));
+    setLotSelected(lotSelected);
   };
 
   useEffect(() => {
@@ -266,40 +279,41 @@ export const NewStockMovementPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6} sm={6}>
-                <TextField
-                  variant="outlined"
-                  type="text"
-                  label="Ubicacion"
-                  name="ubication"
-                  value={depositSelected?.address}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                />
-              </Grid>
+              {supplySelected?.stockByLot && (
+                <>
+                  <Grid item xs={6} sm={2}>
+                    <FormControl fullWidth>
+                      <InputLabel id="lot">Lote</InputLabel>
+                      <Select
+                        labelId="lot"
+                        name="nroLot"
+                        value={formulario.nroLot}
+                        label="Lote"
+                        onChange={onChangeLot}
+                      >
+                        {depositSelected?.lots.map((lot) => (
+                          <MenuItem key={lot.nro} value={lot.nro}>
+                            {lot.nro}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={6} sm={6}>
+                    <TextField
+                      variant="outlined"
+                      type="text"
+                      label="Ubicacion"
+                      value={lotSelected?.location}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start" />,
+                      }}
+                      fullWidth
+                    />
+                  </Grid>
+                </>
+              )}
               <Grid item xs={6} sm={2}>
-                <TextField
-                  variant="outlined"
-                  type="text"
-                  label="Lote"
-                  name="batch"
-                  value={formulario.batch}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography variant="body1" align="left">
-                  Unidad de Medida: <b>{supplySelected?.unitMeasurement}</b>
-                </Typography>
-              </Grid>
-              <Grid item xs={6} sm={3}>
                 <TextField
                   variant="outlined"
                   type="number"
@@ -312,6 +326,11 @@ export const NewStockMovementPage: React.FC = () => {
                   }}
                   fullWidth
                 />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body1" align="left">
+                  Unidad de Medida: <b>{supplySelected?.unitMeasurement}</b>
+                </Typography>
               </Grid>
               <Grid item xs={12} sm={12}>
                 <Typography variant="h5" align="left">
@@ -366,7 +385,6 @@ export const NewStockMovementPage: React.FC = () => {
                   <Select
                     key="select-supply-movement"
                     labelId="supply"
-                    // name="supply"
                     value={formulario.supplyId}
                     label="Insumo"
                     onChange={onChangeSupply}
@@ -402,13 +420,33 @@ export const NewStockMovementPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6} sm={4}>
+              {supplySelected?.stockByLot && (
+                <Grid item xs={6} sm={2}>
+                  <FormControl fullWidth>
+                    <InputLabel id="lot">Lote</InputLabel>
+                    <Select
+                      labelId="lot"
+                      name="nroLot"
+                      value={formulario.nroLot}
+                      label="Lote"
+                      onChange={onChangeLot}
+                    >
+                      {depositSelected?.lots.map((lot) => (
+                        <MenuItem key={lot.nro} value={lot.nro}>
+                          {lot.nro}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              )}
+              <Grid item xs={12} sm={2}>
                 <TextField
                   variant="outlined"
-                  type="text"
-                  label="Ubicacion"
-                  name="ubication"
-                  value={depositSelected?.address}
+                  type="date"
+                  label="Fecha vencimiento"
+                  name="dueDate"
+                  value={formulario.dueDate}
                   onChange={handleInputChange}
                   InputProps={{
                     startAdornment: <InputAdornment position="start" />,
@@ -416,25 +454,20 @@ export const NewStockMovementPage: React.FC = () => {
                   fullWidth
                 />
               </Grid>
-              <Grid item xs={6} sm={2}>
-                <TextField
-                  variant="outlined"
-                  type="text"
-                  label="Lote"
-                  name="batch"
-                  value={formulario.batch}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography variant="body1" align="left">
-                  Unidad de Medida: <b>{supplySelected?.unitMeasurement}</b>
-                </Typography>
-              </Grid>
+              {supplySelected?.stockByLot && (
+                <Grid item xs={6} sm={4}>
+                  <TextField
+                    variant="outlined"
+                    type="text"
+                    label="Ubicacion"
+                    value={lotSelected?.location}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start" />,
+                    }}
+                    fullWidth
+                  />
+                </Grid>
+              )}
               <Grid item xs={6} sm={2}>
                 <TextField
                   variant="outlined"
@@ -448,6 +481,11 @@ export const NewStockMovementPage: React.FC = () => {
                   }}
                   fullWidth
                 />
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <Typography variant="body1" align="left">
+                  UM: <b>{supplySelected?.unitMeasurement}</b>
+                </Typography>
               </Grid>
               <Grid item xs={6} sm={4}>
                 <TextField

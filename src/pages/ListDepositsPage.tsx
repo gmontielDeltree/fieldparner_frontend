@@ -60,8 +60,8 @@ export const ListDepositsPage: React.FC = () => {
   };
 
   const onClickUpdateDeposit = (item: Deposit) => {
-    navigate(`/init/overview/deposit/${item._id}`);
     dispatch(setDepositActive(item));
+    navigate(`/init/overview/deposit/${item._id}`);
   };
 
   useEffect(() => {

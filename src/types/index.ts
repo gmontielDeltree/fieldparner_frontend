@@ -191,7 +191,7 @@ export interface Supply extends Document {
     currentStock: number;
     reservedStock: number;
     // stockDisponible: number;
-    hasBatch: boolean;
+    stockByLot: boolean;
     activePrincipal: string;
     mermaVolatile: string;
     minimumDose: string;
@@ -263,6 +263,11 @@ export const TypeMovements = [
     "Prestamos",
 ];
 
+export interface Lot {
+    nro: string;
+    location: string;
+}
+
 export interface DepositState {
     depositActive: Deposit | null;
     deposits: Deposit[];
@@ -280,6 +285,7 @@ export interface Deposit extends Document {
     locality: string;
     province: string;
     country: string;
+    lots: Lot[];
 }
 
 export interface ItemZipCode extends Document {
@@ -307,7 +313,8 @@ export interface StockMovement extends Document {
     // typeSupply: string;
     depositId: string;
     // ubication: string;
-    batch: string;
+    nroLot: string;
+    creationDate: string;
     dueDate: string;
     typeMovement: TypeMovement;
     isIncome: boolean;
@@ -328,15 +335,24 @@ export interface StockMovementItem extends StockMovement {
     deposit?: Deposit;
 }
 
-export interface SupplyByDeposits {
-    deposit: Deposit;
-    movements: StockMovement[];
-    unitMeasurement: string;
-    batch: string;
+export interface SupplyByLot {
+    lot: Lot;
     currentStock: number;
     reservedStock: number;
-  }
-  
+}
+
+export interface SupplyByDeposits {
+    deposit: Deposit;
+    supply?: Supply;
+    movements?: StockMovement[];
+    unitMeasurement: string;
+    lot?: Lot;
+    dueDate: string;
+    currentStock: number;
+    reservedStock: number;
+    lotsStock?: SupplyByLot[];
+}
+
 
 export enum CurrencyCode {
     ARG = 'ARS',
@@ -355,5 +371,6 @@ export enum TypeMovement {
 }
 
 export enum DisplayModals {
-    DetailDeposits = "DetailOfDeposits",
+    SupplyByDeposits = "SupplyByDeposits",
+    SupplyByLots = "SupplyByLots"
 }

@@ -15,8 +15,23 @@ import {
   Switch,
   TextField,
   Typography,
+  TableContainer,
+  TableCell,
+  Table,
+  TableHead,
+  TableRow,
+  tableCellClasses,
+  styled,
+  TableBody,
+  Fab,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
-import { Warehouse as WarehouseIcon } from "@mui/icons-material";
+import {
+  Warehouse as WarehouseIcon,
+  Add as AddIcon,
+  Delete as DeleteIcon,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import {
   useAppDispatch,
@@ -25,9 +40,20 @@ import {
   useDeposit,
   useForm,
 } from "../hooks";
-import { CountryCode, Deposit, TipoEntidad } from "../types";
+import { CountryCode, Deposit, Lot, TipoEntidad } from "../types";
 import { removeDepositActive } from "../redux/deposit";
 import { getLocalityAndStateByZipCode } from "../services";
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: theme.palette.common.black,
+    color: theme.palette.common.white,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    padding: "5px",
+    fontSize: 14,
+  },
+}));
 
 const initialForm: Deposit = {
   description: "",
@@ -40,7 +66,13 @@ const initialForm: Deposit = {
   country: "",
   owner: "Propio",
   province: "",
-  accountId: ""
+  accountId: "",
+  lots: [],
+};
+
+const initialFormLot: Lot = {
+  nro: "",
+  location: "",
 };
 
 const optionsCountry = ["Argentina", "Brasil", "Chile"];
@@ -66,6 +98,13 @@ export const DepositPage: React.FC = () => {
     businesses,
     isLoading: loadingBusiness,
   } = useBusiness();
+  const {
+    formulario: formLot,
+    nro,
+    location,
+    handleInputChange: inputChange,
+    reset: resetFormLot,
+  } = useForm(initialFormLot);
 
   const {
     description,
@@ -78,6 +117,7 @@ export const DepositPage: React.FC = () => {
     country,
     isNegative,
     isVirtual,
+    lots,
   } = formulario;
 
   const optionsPropietario = useMemo(() => {
@@ -125,6 +165,23 @@ export const DepositPage: React.FC = () => {
 
   const onBlurZipCode = () => {
     if (zipCode !== "") getLocalityAndState();
+  };
+
+  const handleAddLot = () => {
+    setFormulario((prevState) => ({
+      ...prevState,
+      lots: [formLot, ...prevState.lots],
+    }));
+    resetFormLot();
+  };
+
+  const handleDeleteLot = (item: Lot) => {
+    setFormulario((prevState) => ({
+      ...prevState,
+      lots: prevState.lots.filter(
+        ({ nro }) => nro.toLowerCase().trim() !== item.nro.toLowerCase().trim()
+      ),
+    }));
   };
 
   useEffect(() => {
@@ -319,6 +376,78 @@ export const DepositPage: React.FC = () => {
             />
           </Grid>
         </Grid>
+        <Box>
+          <TableContainer key="table-lots" sx={{ mt: 2 }} component={Paper}>
+            <Table sx={{ minWidth: 400 }} aria-label="customized table">
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell>Nro</StyledTableCell>
+                  <StyledTableCell>Ubicacion</StyledTableCell>
+                  <StyledTableCell />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow key="new-especificacion">
+                  <StyledTableCell sx={{ minWidth: 150, maxWidth: 200 }}>
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      type="text"
+                      name="nro"
+                      value={nro}
+                      onChange={inputChange}
+                      fullWidth
+                    />
+                  </StyledTableCell>
+                  <StyledTableCell sx={{ minWidth: 350, maxWidth: 400 }}>
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      type="text"
+                      name="location"
+                      value={location}
+                      onChange={inputChange}
+                      fullWidth
+                    />
+                  </StyledTableCell>
+                  <StyledTableCell key="head-actions" align="center">
+                    <Fab
+                      color="success"
+                      aria-label="add"
+                      size="small"
+                      onClick={() => handleAddLot()}
+                    >
+                      <AddIcon />
+                    </Fab>
+                  </StyledTableCell>
+                </TableRow>
+                {lots.map((lot) => (
+                  <TableRow key={lot.nro}>
+                    <TableCell
+                      align="center"
+                      // sx={{ p: "5px", minWidth: 200, maxWidth: 250 }}
+                    >
+                      {lot.nro}
+                    </TableCell>
+                    <TableCell sx={{ p: "5px", minWidth: 350, maxWidth: 450 }}>
+                      {lot.location}
+                    </TableCell>
+                    <TableCell align="center" sx={{ p: "5px" }}>
+                      <Tooltip title="Eliminar">
+                        <IconButton
+                          onClick={() => handleDeleteLot(lot)}
+                          color="error"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
         <Grid
           container
           spacing={1}

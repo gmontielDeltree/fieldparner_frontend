@@ -15,4 +15,5 @@ export * from './DataTable';
 export * from './Supplies/LaborsForm';
 export * from './Supplies/DoseForm';
 export * from './Supplies/StockForm';
-export * from './DetailDepositsModal';
+export * from './Modals/SupplyByDeposits';
+export * from './Modals/SupplyByLots';
