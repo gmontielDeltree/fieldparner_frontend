@@ -1,39 +1,10 @@
 import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  DataGrid,
-  GridColDef,
-  GridToolbar,
-} from "@mui/x-data-grid";
-import {
-  Box,
-  Button,
-  Container,
-  Grid,
-  Typography,
-} from "@mui/material";
-import {
-  Add as AddIcon,
-  SyncAlt as SyncAltIcon,
-} from "@mui/icons-material";
-import {
-  Loading,
-  SearchButton,
-  SearchInput,
-} from "../components";
-import { useForm, useStockMovement } from "../hooks";
-
-// const columns: ColumnProps[] = [
-//   { text: "", align: "left" },
-//   { text: "Fecha", align: "left" },
-//   { text: "Mov.", align: "left" },
-//   { text: "Tipo/Insumo", align: "center" },
-//   { text: "Deposito", align: "center" },
-//   { text: "Tipo Movimiento", align: "center" },
-//   { text: "Ing/Egre", align: "center" },
-//   { text: "UM", align: "center" },
-//   { text: "Cantidad", align: "center" },
-// ];
+import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
+import { Box, Button, Container, Grid, Typography } from "@mui/material";
+import { Add as AddIcon, SyncAlt as SyncAltIcon } from "@mui/icons-material";
+import { Loading } from "../components";
+import { useStockMovement } from "../hooks";
 
 const columns: GridColDef[] = [
   // { field: "id", hide: true },
@@ -62,7 +33,6 @@ interface RowStockMovementItem {
 export const StockMovementPage: React.FC = () => {
   const navigate = useNavigate();
   const { isLoading, stockMovements, getStockMovements } = useStockMovement();
-  const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const rows = useMemo(() => {
     return stockMovements.map((sm) => {
@@ -80,12 +50,12 @@ export const StockMovementPage: React.FC = () => {
     });
   }, [stockMovements]);
 
-  const onClickSearch = (): void => {
-    if (filterText === "") {
-      getStockMovements();
-      return;
-    }
-  };
+  // const onClickSearch = (): void => {
+  //   if (filterText === "") {
+  //     getStockMovements();
+  //     return;
+  //   }
+  // };
 
   const onClickAddMovement = () =>
     navigate("/init/overview/stock-movements/new");
@@ -101,14 +71,14 @@ export const StockMovementPage: React.FC = () => {
         component="div"
         display="flex"
         alignItems="center"
-        sx={{ ml: { sm: 2 }, pt: 2 }}
+        sx={{ ml: { sm: 2 }, pt: 5 }}
       >
         <SyncAltIcon />
         <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
           Movimiento de Stock
         </Typography>
       </Box>
-      <Box component="div" sx={{ mt: 7 }}>
+      <Box component="div" sx={{ mt: 3 }}>
         <Grid
           container
           spacing={0}
@@ -127,20 +97,6 @@ export const StockMovementPage: React.FC = () => {
               Nuevo
             </Button>
           </Grid>
-          <Grid item xs={12} sm={10}>
-            <Grid container justifyContent="flex-end">
-              <Grid item xs={8} sm={5}>
-                <SearchInput
-                  value={filterText}
-                  placeholder=""
-                  handleInputChange={handleInputChange}
-                />
-              </Grid>
-              <Grid item xs={4} sm={2}>
-                <SearchButton text="Buscar" onClick={() => onClickSearch()} />
-              </Grid>
-            </Grid>
-          </Grid>
         </Grid>
         <Box component="div" sx={{ p: 1 }}>
           <DataGrid
@@ -148,6 +104,11 @@ export const StockMovementPage: React.FC = () => {
             rowSelection={false}
             loading={isLoading}
             slots={{ toolbar: GridToolbar }}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+              },
+            }}
             rows={rows}
             columns={columns}
           />
