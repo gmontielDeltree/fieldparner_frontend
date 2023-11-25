@@ -1,55 +1,163 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Loading,
-  SearchButton,
-  SearchInput,
-  DataTable,
-  ItemRow,
-  TableCellStyled,
-} from "../components";
-import { ColumnProps, StockMovementItem } from "../types";
+  DataGrid,
+  GridColDef,
+  GridToolbar,
+} from "@mui/x-data-grid";
 import {
   Box,
   Button,
-  Collapse,
   Container,
   Grid,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Typography,
 } from "@mui/material";
 import {
   Add as AddIcon,
   SyncAlt as SyncAltIcon,
-  KeyboardArrowUp as KeyboardArrowUpIcon,
-  KeyboardArrowDown as KeyboardArrowDownIcon,
 } from "@mui/icons-material";
+import {
+  Loading,
+  SearchButton,
+  SearchInput,
+} from "../components";
 import { useForm, useStockMovement } from "../hooks";
 
-const columns: ColumnProps[] = [
-  { text: "", align: "left" },
-  { text: "Fecha", align: "left" },
-  { text: "Mov.", align: "left" },
-  { text: "Tipo/Insumo", align: "center" },
-  { text: "Deposito", align: "center" },
-  { text: "Tipo Movimiento", align: "center" },
-  { text: "Ing/Egre", align: "center" },
-  { text: "UM", align: "center" },
-  { text: "Cantidad", align: "center" },
-  // { text: "Comprobante", align: "center" },
-  // { text: "Moneda", align: "center" },
-  // { text: "Valor", align: "center" },
+// const columns: ColumnProps[] = [
+//   { text: "", align: "left" },
+//   { text: "Fecha", align: "left" },
+//   { text: "Mov.", align: "left" },
+//   { text: "Tipo/Insumo", align: "center" },
+//   { text: "Deposito", align: "center" },
+//   { text: "Tipo Movimiento", align: "center" },
+//   { text: "Ing/Egre", align: "center" },
+//   { text: "UM", align: "center" },
+//   { text: "Cantidad", align: "center" },
+// ];
+
+const columns: GridColDef[] = [
+  // { field: "id", hide: true },
+  { field: "date", headerName: "Fecha", width: 200 },
+  { field: "movement", headerName: "Movimiento", width: 150 },
+  { field: "supply", headerName: "Tipo/Insumo", width: 200 },
+  { field: "deposit", headerName: "Deposito", width: 200 },
+  { field: "movementType", headerName: "Tipo movimiento", width: 150 },
+  { field: "isIncome", headerName: "Ingreso/Egreso", width: 150 },
+  { field: "um", headerName: "UM", width: 100 },
+  { field: "amount", headerName: "Cantidad", width: 150 },
 ];
 
-type RowProps = {
-  row: StockMovementItem;
+interface RowStockMovementItem {
+  id: string;
+  date: string;
+  movement: string;
+  supply: string;
+  deposit: string;
+  movementType: string;
+  isIncome: string;
+  um: string;
+  amount: number;
+}
+
+export const StockMovementPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { isLoading, stockMovements, getStockMovements } = useStockMovement();
+  const { filterText, handleInputChange } = useForm({ filterText: "" });
+
+  const rows = useMemo(() => {
+    return stockMovements.map((sm) => {
+      return {
+        id: sm._id,
+        date: sm.creationDate,
+        movement: sm.movement,
+        supply: `${sm.supply?.type}/${sm.supply?.name}`,
+        deposit: sm.deposit?.description,
+        movementType: sm.typeMovement,
+        isIncome: sm.isIncome ? "Ingreso" : "Egreso",
+        um: sm.supply?.unitMeasurement,
+        amount: sm.amount,
+      } as RowStockMovementItem;
+    });
+  }, [stockMovements]);
+
+  const onClickSearch = (): void => {
+    if (filterText === "") {
+      getStockMovements();
+      return;
+    }
+  };
+
+  const onClickAddMovement = () =>
+    navigate("/init/overview/stock-movements/new");
+
+  useEffect(() => {
+    getStockMovements();
+  }, []);
+
+  return (
+    <Container sx={{ paddingLeft: "0px !important" }} maxWidth="lg">
+      {isLoading && <Loading loading={true} />}
+      <Box
+        component="div"
+        display="flex"
+        alignItems="center"
+        sx={{ ml: { sm: 2 }, pt: 2 }}
+      >
+        <SyncAltIcon />
+        <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
+          Movimiento de Stock
+        </Typography>
+      </Box>
+      <Box component="div" sx={{ mt: 7 }}>
+        <Grid
+          container
+          spacing={0}
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ p: 2, mt: { sm: 2 } }}
+        >
+          <Grid item xs={6} sm={2}>
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<AddIcon />}
+              onClick={onClickAddMovement}
+            >
+              Nuevo
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={10}>
+            <Grid container justifyContent="flex-end">
+              <Grid item xs={8} sm={5}>
+                <SearchInput
+                  value={filterText}
+                  placeholder=""
+                  handleInputChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={4} sm={2}>
+                <SearchButton text="Buscar" onClick={() => onClickSearch()} />
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Box component="div" sx={{ p: 1 }}>
+          <DataGrid
+            autoHeight
+            rowSelection={false}
+            loading={isLoading}
+            slots={{ toolbar: GridToolbar }}
+            rows={rows}
+            columns={columns}
+          />
+        </Box>
+      </Box>
+    </Container>
+  );
 };
 
+/*
 const Row: React.FC<RowProps> = ({ row }) => {
   const [open, setOpen] = React.useState(false);
 
@@ -152,85 +260,4 @@ const Row: React.FC<RowProps> = ({ row }) => {
   );
 };
 
-export const StockMovementPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { isLoading, stockMovements, getStockMovements } = useStockMovement();
-  const { filterText, handleInputChange } = useForm({ filterText: "" });
-
-  const onClickSearch = (): void => {
-    if (filterText === "") {
-      getStockMovements();
-      return;
-    }
-  };
-
-  const onClickAddMovement = () =>
-    navigate("/init/overview/stock-movements/new");
-
-  useEffect(() => {
-    getStockMovements();
-  }, []);
-
-  return (
-    <Container sx={{ paddingLeft: "0px !important" }} maxWidth="lg">
-      {isLoading && <Loading loading={true} />}
-      <Box
-        component="div"
-        display="flex"
-        alignItems="center"
-        sx={{ ml: { sm: 2 }, pt: 2 }}
-      >
-        <SyncAltIcon />
-        <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
-          Movimiento de Stock
-        </Typography>
-      </Box>
-      <Box component="div" sx={{ mt: 7 }}>
-        <Grid
-          container
-          spacing={0}
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ p: 2, mt: { sm: 2 } }}
-        >
-          <Grid item xs={6} sm={2}>
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<AddIcon />}
-              onClick={onClickAddMovement}
-            >
-              Nuevo
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm={10}>
-            <Grid container justifyContent="flex-end">
-              <Grid item xs={8} sm={5}>
-                <SearchInput
-                  value={filterText}
-                  placeholder=""
-                  handleInputChange={handleInputChange}
-                />
-              </Grid>
-              <Grid item xs={4} sm={2}>
-                <SearchButton text="Buscar" onClick={() => onClickSearch()} />
-              </Grid>
-            </Grid>
-          </Grid>
-        </Grid>
-        <Box component="div" sx={{ p: 1 }}>
-          <DataTable
-            key="datatable-stockMovements"
-            columns={columns}
-            isLoading={isLoading}
-          >
-            {stockMovements.map((movement) => (
-              <Row key={movement._id} row={movement} />
-            ))}
-          </DataTable>
-        </Box>
-      </Box>
-    </Container>
-  );
-};
+*/
