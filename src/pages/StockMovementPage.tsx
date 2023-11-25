@@ -16,7 +16,6 @@ import {
   Container,
   Grid,
   IconButton,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -29,7 +28,6 @@ import {
   SyncAlt as SyncAltIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
-  CloudOff as CloudOffIcon,
 } from "@mui/icons-material";
 import { useForm, useStockMovement } from "../hooks";
 
@@ -101,11 +99,11 @@ const Row: React.FC<RowProps> = ({ row }) => {
                     <TableCellStyled>Comprobante</TableCellStyled>
                     <TableCellStyled>Moneda</TableCellStyled>
                     <TableCellStyled align="center">Valor</TableCellStyled>
-                    <TableCellStyled align="center" sx={{ width: "220px" }}>
-                      Ubicacion
-                    </TableCellStyled>
                     <TableCellStyled align="left" sx={{ width: "60px" }}>
                       Lote
+                    </TableCellStyled>
+                    <TableCellStyled align="center" sx={{ width: "220px" }}>
+                      Ubicacion
                     </TableCellStyled>
                     <TableCellStyled align="right" sx={{ width: "60px" }}>
                       Horas
@@ -130,8 +128,15 @@ const Row: React.FC<RowProps> = ({ row }) => {
                     <TableCellStyled align="center">
                       {row.totalValue}
                     </TableCellStyled>
-                    <TableCell align="center">{row.deposit?.address}</TableCell>
-                    <TableCell align="center">{row.batch}</TableCell>
+                    <TableCell align="center">{row.nroLot}</TableCell>
+                    <TableCell align="center">
+                      {
+                        row.deposit?.lots.find(
+                          (lot) =>
+                            lot.nro.toLowerCase() === row.nroLot.toLowerCase()
+                        )?.location
+                      }
+                    </TableCell>
                     <TableCell align="right">{row.hours}</TableCell>
                     <TableCell align="center">{row.dueDate}</TableCell>
                     <TableCell align="center">{row.detail}</TableCell>

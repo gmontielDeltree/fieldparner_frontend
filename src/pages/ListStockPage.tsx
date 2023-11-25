@@ -1,6 +1,12 @@
-import React, { useEffect } from "react";
-import { Loading, DataTable, ItemRow, TableCellStyled } from "../components";
-import { ColumnProps, DisplayModals, Supply } from "../types";
+import React, { useEffect, useState } from "react";
+import {
+  Loading,
+  DataTable,
+  ItemRow,
+  TableCellStyled,
+  SupplyByLotsModal,
+} from "../components";
+import { ColumnProps, DisplayModals, Supply, SupplyByDeposits } from "../types";
 import {
   Box,
   Chip,
@@ -19,11 +25,21 @@ import {
 } from "@mui/icons-material";
 import { useAppDispatch, useSupply } from "../hooks";
 import { uiOpenModal } from "../redux/ui";
-import { DetailDepositsModal } from "../components/DetailDepositsModal/index";
+import { SupplyByDepositsModal } from "../components/Modals/SupplyByDeposits/index";
 import { setSupplyActive } from "../redux/supply";
 
-const columns: ColumnProps[] = [
+const columnsBySupply: ColumnProps[] = [
   //   { text: "", align: "left" },
+  { text: "Tipo", align: "left" },
+  { text: "Insumo/Descripcion", align: "center" },
+  { text: "UM", align: "center" },
+  { text: "Stock Actual", align: "center" },
+  { text: "Stock Reservado", align: "center" },
+  { text: "Stock Disponible", align: "center" },
+];
+
+const columnsByDeposit: ColumnProps[] = [
+  { text: "Deposito", align: "left" },
   { text: "Tipo", align: "left" },
   { text: "Insumo/Descripcion", align: "center" },
   { text: "UM", align: "center" },
@@ -67,26 +83,40 @@ function a11yProps(index: number) {
 
 export const ListStockPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  //   const navigate = useNavigate();
-  const { isLoading, supplies, getSupplies } = useSupply();
-  const [value, setValue] = React.useState(0);
+  const {
+    isLoading,
+    supplies,
+    supplyByDeposits,
+    getSupplies,
+    getStockByDeposits,
+  } = useSupply();
+  const [tabValue, setTabValue] = React.useState(0);
   const [showStockValueZero, setShowStockValueZero] = React.useState(false);
 
+  const [selectedSupplyDeposit, setSelectedSupplyDeposit] =
+    useState<SupplyByDeposits | null>(null);
+
   const onChangeTab = (_event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    setTabValue(newValue);
   };
 
-  const onClickOpenDetail = (supplySelected: Supply) => {
+  const onClickSupply = (supplySelected: Supply) => {
     dispatch(setSupplyActive(supplySelected));
-    dispatch(uiOpenModal(DisplayModals.DetailDeposits));
+    dispatch(uiOpenModal(DisplayModals.SupplyByDeposits));
+  };
+
+  const onClickDeposit = (item: SupplyByDeposits) => {
+    setSelectedSupplyDeposit(item);
+    dispatch(uiOpenModal(DisplayModals.SupplyByLots));
   };
 
   useEffect(() => {
-    getSupplies(showStockValueZero);
-  }, [showStockValueZero]);
+    if (tabValue === 0) getSupplies();
+    else getStockByDeposits();
+  }, [tabValue]);
 
   return (
-    <Container sx={{ marginLeft: { xs: 0, sm: 3 } }} maxWidth="md">
+    <Container sx={{ marginLeft: { xs: 0, sm: 3 } }} maxWidth="lg">
       {isLoading && <Loading loading={true} />}
       <Box
         component="div"
@@ -109,7 +139,11 @@ export const ListStockPage: React.FC = () => {
               borderColor: "divider",
             }}
           >
-            <Tabs value={value} onChange={onChangeTab} aria-label="tabs-stock">
+            <Tabs
+              value={tabValue}
+              onChange={onChangeTab}
+              aria-label="tabs-stock"
+            >
               <Tab
                 label={
                   <Box>
@@ -141,45 +175,97 @@ export const ListStockPage: React.FC = () => {
               labelPlacement="start"
             />
           </Box>
-          <CustomTabPanel value={value} index={0}>
+          <CustomTabPanel value={tabValue} index={0}>
             <Box component="div">
               <DataTable
-                key="datatable-supply"
-                columns={columns}
+                key="bySupply"
+                columns={columnsBySupply}
                 isLoading={isLoading}
               >
-                {supplies.map((row) => (
-                  <ItemRow key={row._id} hover>
-                    <TableCellStyled align="left">{row.type}</TableCellStyled>
-                    <TableCellStyled align="center">{`${row.name}/${row.description}`}</TableCellStyled>
-                    <TableCellStyled align="center">
-                      {row.unitMeasurement}
-                    </TableCellStyled>
-                    <TableCellStyled align="center">
-                      <Chip
-                        label={row.currentStock}
-                        variant="filled"
-                        color="primary"
-                        onClick={() => onClickOpenDetail(row)}
-                      />
-                    </TableCellStyled>
-                    <TableCellStyled align="center">
-                      <Chip label={row.reservedStock} variant="outlined" />
-                    </TableCellStyled>
-                    <TableCellStyled align="center">
-                      <Chip
-                        label={row.currentStock - row.reservedStock}
-                        color="success"
-                      />
-                    </TableCellStyled>
-                  </ItemRow>
-                ))}
+                {supplies
+                  .filter((s) => (showStockValueZero ? s : s.currentStock > 0))
+                  .map((row) => (
+                    <ItemRow key={row._id} hover>
+                      <TableCellStyled align="left">{row.type}</TableCellStyled>
+                      <TableCellStyled align="center">{`${row.name}/${row.description}`}</TableCellStyled>
+                      <TableCellStyled align="center">
+                        {row.unitMeasurement}
+                      </TableCellStyled>
+                      <TableCellStyled align="center">
+                        <Chip
+                          label={row.currentStock}
+                          variant="filled"
+                          color="primary"
+                          onClick={() => onClickSupply(row)}
+                        />
+                      </TableCellStyled>
+                      <TableCellStyled align="center">
+                        <Chip label={row.reservedStock} variant="outlined" />
+                      </TableCellStyled>
+                      <TableCellStyled align="center">
+                        <Chip
+                          label={row.currentStock - row.reservedStock}
+                          color="success"
+                        />
+                      </TableCellStyled>
+                    </ItemRow>
+                  ))}
               </DataTable>
             </Box>
-            <DetailDepositsModal key="detail-deposits-modal" />
+            <SupplyByDepositsModal key="supply-deposits-modal" />
           </CustomTabPanel>
-          <CustomTabPanel value={value} index={1}>
-            Item Two
+          <CustomTabPanel value={tabValue} index={1}>
+            <Box component="div">
+              {selectedSupplyDeposit && (
+                <SupplyByLotsModal
+                  key="supply-lot-modal"
+                  supplyByDeposit={selectedSupplyDeposit}
+                />
+              )}
+              <DataTable
+                key="byDeposit"
+                columns={columnsByDeposit}
+                isLoading={isLoading}
+              >
+                {supplyByDeposits
+                  .filter((s) => {
+                    if (showStockValueZero) return s;
+                    else return s.currentStock > 0;
+                  })
+                  .map((row) => (
+                    <ItemRow
+                      key={`${row.deposit._id}-${row.supply?._id}`}
+                      hover
+                    >
+                      <TableCellStyled align="left">
+                        {row.deposit.description.trim()}
+                      </TableCellStyled>
+                      <TableCellStyled>{row.supply?.type}</TableCellStyled>
+                      <TableCellStyled align="center">{`${row.supply?.name}/${row.supply?.description}`}</TableCellStyled>
+                      <TableCellStyled align="center">
+                        {row.unitMeasurement}
+                      </TableCellStyled>
+                      <TableCellStyled align="center">
+                        <Chip
+                          label={row.currentStock}
+                          variant="filled"
+                          color="primary"
+                          onClick={() => onClickDeposit(row)}
+                        />
+                      </TableCellStyled>
+                      <TableCellStyled align="center">
+                        <Chip label={row.reservedStock} variant="outlined" />
+                      </TableCellStyled>
+                      <TableCellStyled align="center">
+                        <Chip
+                          label={row.currentStock - row.reservedStock}
+                          color="success"
+                        />
+                      </TableCellStyled>
+                    </ItemRow>
+                  ))}
+              </DataTable>
+            </Box>
           </CustomTabPanel>
         </Box>
       </Paper>

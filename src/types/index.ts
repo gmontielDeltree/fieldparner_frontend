@@ -313,7 +313,8 @@ export interface StockMovement extends Document {
     // typeSupply: string;
     depositId: string;
     // ubication: string;
-    batch: string;
+    nroLot: string;
+    creationDate: string;
     dueDate: string;
     typeMovement: TypeMovement;
     isIncome: boolean;
@@ -334,13 +335,22 @@ export interface StockMovementItem extends StockMovement {
     deposit?: Deposit;
 }
 
-export interface SupplyByDeposits {
-    deposit: Deposit;
-    movements: StockMovement[];
-    unitMeasurement: string;
-    batch: string;
+export interface SupplyByLot {
+    lot: Lot;
     currentStock: number;
     reservedStock: number;
+}
+
+export interface SupplyByDeposits {
+    deposit: Deposit;
+    supply?: Supply;
+    movements?: StockMovement[];
+    unitMeasurement: string;
+    lot?: Lot;
+    dueDate: string;
+    currentStock: number;
+    reservedStock: number;
+    lotsStock?: SupplyByLot[];
 }
 
 
@@ -361,5 +371,6 @@ export enum TypeMovement {
 }
 
 export enum DisplayModals {
-    DetailDeposits = "DetailOfDeposits",
+    SupplyByDeposits = "SupplyByDeposits",
+    SupplyByLots = "SupplyByLots"
 }
