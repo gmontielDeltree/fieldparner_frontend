@@ -4,6 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Button } from "@mui/material";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import center from "@turf/center";
+import area from "@turf/area";
 import PouchDB from "pouchdb";
 import NewField from "../components/NewField";
 import { addFieldsToMap } from "../helpers/mapHelpers";
@@ -12,6 +13,8 @@ import NewsBar from "../components/NewsBar";
 import NewLot from "../components/NewLot";
 import MapComponent from "../components/Map";
 import LotsMenu from "../components/LotsMenu";
+import uuid4 from "uuid4";
+
 interface Lot {
   id: string;
   type: string;
@@ -78,8 +81,59 @@ export const FieldsPage: React.FC = () => {
     setSelectedLot(null);
   };
 
+  const handleSaveGeometryLot = (data: any) => {
+    console.log("Event: add_lot_to_field triggered");
+    console.log("add_lot_to_field", data);
+
+    const lotGeometry = data.geometry[0].features[0].geometry;
+    const lotName = data.field_name;
+    const fieldId = "campos_" + selectedField?.nombre;
+
+    db.get(fieldId, (err: any, field: any) => {
+      if (err) {
+        console.log("Error retrieving field:", err);
+        return;
+      }
+
+      const lotUuid = uuid4();
+
+      const lotAreaHectares =
+        Math.round((area(lotGeometry) / 10000) * 100) / 100;
+
+      const newLot = {
+        id: lotUuid,
+        type: "Feature",
+        properties: {
+          nombre: lotName,
+          campo_parent_id: fieldId,
+          uuid: lotUuid,
+          hectareas: lotAreaHectares
+        },
+        geometry: lotGeometry
+      };
+
+      field.lotes = [...field.lotes, newLot];
+      db.put(
+        {
+          ...field,
+          _id: fieldId,
+          lotes: field.lotes
+        },
+        (error: any, result: any) => {
+          if (!error) {
+            console.log("Successfully added a new Lot to Campo!");
+
+            handleCloseNewLot();
+          } else {
+            console.log(error);
+          }
+        }
+      );
+    });
+  };
+
   const handleMapClick = useCallback(
-    async (event) => {
+    async (event: any) => {
       if (selectedField) {
         return;
       }
@@ -290,9 +344,7 @@ export const FieldsPage: React.FC = () => {
         <NewLot
           map={map}
           draw={draw}
-          db_fields={db}
-          onClose={handleCloseNewLot}
-          original_field_name={selectedField?.nombre}
+          handleSaveGeometryLot={handleSaveGeometryLot}
         />
       ) : null}
 
