@@ -1,5 +1,10 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
-import Map from "react-map-gl";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo
+} from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Button } from "@mui/material";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -13,9 +18,9 @@ import NewsBar from "../components/NewsBar";
 import NewLot from "../components/NewLot";
 import MapComponent from "../components/Map";
 import convex from "@turf/convex";
-import bbox from "@turf/bbox";
+import LotsMenu from "../components/LotsMenu";
 import uuid4 from "uuid4";
-import { Feature, GeoJsonObject } from "geojson";
+import { Feature } from "geojson";
 
 interface Lot {
   id: string;
@@ -45,12 +50,12 @@ export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
   const [showNewLot, setShowNewLot] = useState(false);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
-  const [draw, setDraw] = useState<MapboxDraw>(new MapboxDraw({}));
   const [fields, setFields] = useState<Field[]>([]);
   const db = new PouchDB("campos_randyv7");
   const [selectedField, setSelectedField] = useState<any | null>(null);
   const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
   const selectedFieldRef = useRef<Field | null>(null);
+  const draw = useMemo(() => new MapboxDraw({}), []);
 
   useEffect(() => {
     selectedFieldRef.current = selectedField;
@@ -165,6 +170,7 @@ export const FieldsPage: React.FC = () => {
       }
     );
   };
+
   const toggleLotDetailsModal = () => {
     if (selectedLot && map) {
       map.flyTo({ pitch: 0 });
@@ -217,6 +223,8 @@ export const FieldsPage: React.FC = () => {
           if (!error) {
             console.log("Successfully added a new Lot to Campo!");
 
+            setSelectedField({ ...field, lotes: field.lotes });
+            addLotsToMap(map, field.lotes);
             handleCloseNewLot();
           } else {
             console.log(error);
@@ -259,6 +267,7 @@ export const FieldsPage: React.FC = () => {
   );
 
   const addLotsToMap = (map: any, lots: any) => {
+    console.log("addLotsToMap called: ", lots);
     lots.forEach((lot: any) => {
       const lotId = lot.id;
 
@@ -366,6 +375,7 @@ export const FieldsPage: React.FC = () => {
   const handleCloseNewLot = () => {
     console.log("handleCloseNewLot");
     setShowNewLot(false);
+    fetchData();
   };
 
   const handleCreateLot = () => {
@@ -374,23 +384,22 @@ export const FieldsPage: React.FC = () => {
 
     setShowNewLot(true);
   };
+  const fetchData = async () => {
+    try {
+      const allDocs = await db.allDocs({ include_docs: true });
+      const fetchedFields = allDocs.rows
+        .map((row) => row.doc)
+        .filter((doc): doc is Field => doc !== undefined && isField(doc));
+      console.log("fetchedFields from PouchDB...", fetchedFields);
+      setFields(fetchedFields);
+    } catch (err) {
+      console.error("Error fetching data from PouchDB", err);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const allDocs = await db.allDocs({ include_docs: true });
-        const fetchedFields = allDocs.rows
-          .map((row) => row.doc)
-          .filter((doc): doc is Field => doc !== undefined && isField(doc));
-
-        setFields(fetchedFields);
-      } catch (err) {
-        console.error("Error fetching data from PouchDB", err);
-      }
-    };
-
     fetchData();
-  }, [db]);
+  }, []);
 
   function isField(doc: any): doc is Field {
     return (

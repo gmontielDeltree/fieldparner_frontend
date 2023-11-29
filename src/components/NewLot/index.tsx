@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
-import area from "@turf/area";
-import convex from "@turf/convex";
-import bbox from "@turf/bbox";
+
 import NewGeometry from "../NewGeometry/index.js";
-import { Feature, GeoJsonObject } from "geojson";
 
 import { Alert } from "reactstrap";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
