@@ -12,6 +12,12 @@ import NewsBar from "../components/NewsBar";
 import NewLot from "../components/NewLot";
 import MapComponent from "../components/Map";
 import LotsMenu from "../components/LotsMenu";
+import area from "@turf/area";
+import convex from "@turf/convex";
+import bbox from "@turf/bbox";
+import uuid4 from "uuid4";
+import { Feature, GeoJsonObject } from "geojson";
+
 interface Lot {
   id: string;
   type: string;
@@ -41,6 +47,7 @@ export const FieldsPage: React.FC = () => {
   const [showNewLot, setShowNewLot] = useState(false);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [draw, setDraw] = useState<MapboxDraw>(new MapboxDraw({}));
+  const [fields, setFields] = useState<Field[]>([]);
   const db = new PouchDB("campos_randyv7");
   const [selectedField, setSelectedField] = useState<any | null>(null);
   const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
@@ -67,7 +74,98 @@ export const FieldsPage: React.FC = () => {
       map.setPaintProperty(lotId + "-fill", "fill-color", "#808080");
     }
   };
+  let geometryData;
 
+  const handleSaveGeometry = (data: any) => {
+    console.log("Event: guardar_nueva_geometria triggered");
+    console.log("guardar_nueva_geometria", data);
+    if (data.geometry) {
+      geometryData = data.geometry[0];
+    } else {
+      geometryData = data;
+    }
+
+    let campo_geojson: Feature | null = null;
+    if (geometryData.features.length > 1) {
+      campo_geojson = convex(geometryData.features);
+    } else {
+      campo_geojson = geometryData.features[0];
+    }
+
+    let nombre =
+      data.field_name || geometryData.features[0]?.properties?.name || "";
+    let uuid = uuid4();
+    if (campo_geojson && campo_geojson.properties) {
+      campo_geojson.properties.hectareas =
+        Math.round((area(campo_geojson) / 10000) * 100) / 100;
+    }
+
+    let lotes: any[] = [];
+    if (geometryData.features.length > 1) {
+      lotes = geometryData.features.features;
+      lotes.forEach((lote: any) => {
+        lote.properties.nombre = lote.properties?.name;
+        lote.properties.uuid = uuid4();
+        lote.id = lote.properties.uuid;
+        lote.properties.campo_parent_id = "campos_" + nombre;
+        lote.properties.hectareas =
+          Math.round((area(lote) / 10000) * 100) / 100;
+        lote.properties.actividades = [];
+      });
+    }
+
+    db.put(
+      {
+        _id: "campos_" + nombre,
+        nombre: nombre,
+        campo_geojson: campo_geojson,
+        uuid: uuid,
+        lotes: lotes
+      },
+      (err: any, result: any) => {
+        if (!err) {
+          console.log("Successfully posted a Campo!");
+
+          if (map?.getLayer("newGeometryLayerFill")) {
+            map?.removeLayer("newGeometryLayerFill");
+          }
+          if (map?.getLayer("newGeometryLayerLine")) {
+            map?.removeLayer("newGeometryLayerLine");
+          }
+          if (map?.getLayer("newGeometryLayerName")) {
+            map?.removeLayer("newGeometryLayerName");
+          }
+          if (map?.getSource("newGeometry")) {
+            map?.removeSource("newGeometry");
+          }
+
+          if (map?.getSource("newGeometry")) {
+            map?.getSource("newGeometry").setData(campo_geojson);
+          } else {
+            map?.addSource("newGeometry", {
+              type: "geojson",
+              data: campo_geojson
+            });
+          }
+
+          draw.deleteAll();
+          setFields((prevFields) => [
+            ...prevFields,
+            {
+              _id: "campos_" + nombre,
+              nombre: nombre,
+              campo_geojson: campo_geojson,
+              uuid: uuid,
+              lotes: lotes,
+              _rev: result.rev
+            }
+          ]);
+        } else {
+          console.log(err);
+        }
+      }
+    );
+  };
   const toggleLotDetailsModal = () => {
     if (selectedLot && map) {
       map.flyTo({ pitch: 0 });
@@ -79,7 +177,7 @@ export const FieldsPage: React.FC = () => {
   };
 
   const handleMapClick = useCallback(
-    async (event) => {
+    async (event: any) => {
       if (selectedField) {
         return;
       }
@@ -165,21 +263,8 @@ export const FieldsPage: React.FC = () => {
     console.log("handleAddLot", lotGeometry);
   };
 
-  const fetchData = async () => {
-    try {
-      const allDocs = await db.allDocs({ include_docs: true });
-      const fields = allDocs.rows.map((row) => row.doc);
-      console.log("fields", fields);
-      if (map) {
-        addFieldsToMap(map, fields);
-      }
-    } catch (err) {
-      console.error("Error fetching data from PouchDB", err);
-    }
-  };
-
   const onMapLoad = useCallback(
-    (event) => {
+    (event: any) => {
       const map = event.target;
       setMap(map);
       if (!map.hasControl(draw)) {
@@ -241,13 +326,37 @@ export const FieldsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchData();
-    return () => {
-      if (map && map.hasControl(draw)) {
-        map.removeControl(draw);
+    const fetchData = async () => {
+      try {
+        const allDocs = await db.allDocs({ include_docs: true });
+        const fetchedFields = allDocs.rows
+          .map((row) => row.doc)
+          .filter((doc): doc is Field => doc !== undefined && isField(doc));
+
+        setFields(fetchedFields);
+      } catch (err) {
+        console.error("Error fetching data from PouchDB", err);
       }
     };
-  }, [map, draw]);
+
+    fetchData();
+  }, [db]);
+
+  function isField(doc: any): doc is Field {
+    return (
+      doc &&
+      typeof doc === "object" &&
+      "_id" in doc &&
+      "nombre" in doc &&
+      "campo_geojson" in doc
+    );
+  }
+
+  useEffect(() => {
+    if (map) {
+      addFieldsToMap(map, fields);
+    }
+  }, [map, draw, fields]);
 
   useEffect(() => {
     if (map) {
@@ -281,7 +390,7 @@ export const FieldsPage: React.FC = () => {
         <NewField
           map={map}
           draw={draw}
-          db_fields={db}
+          saveGeometry={handleSaveGeometry}
           onClose={handleCloseNewField}
         />
       ) : null}
