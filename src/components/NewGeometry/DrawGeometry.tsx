@@ -39,8 +39,8 @@ function DrawGeometry({
     };
 
     map.on("draw.create", handleDrawComplete);
-    draw.changeMode("draw_polygon");
 
+    draw.changeMode("draw_polygon");
     return () => {
       map.off("draw.create", handleDrawComplete);
     };
@@ -54,7 +54,15 @@ function DrawGeometry({
       };
 
       draw.deleteAll();
-      draw.add(geometryData);
+      console.log("before draw add: ", draw);
+      console.log("before draw add 2: ", geometryData);
+      if (draw && draw.changeMode) {
+        draw.changeMode("draw_polygon");
+      } else {
+        console.error("draw object or changeMode method not available");
+      }
+
+      console.log("after draw add");
       draw.changeMode("simple_select");
 
       handleSaveGeometry?.(formattedData);

@@ -4,6 +4,7 @@ import DrawGeometry from "./DrawGeometry";
 import UploadGeometry from "./UploadGeometry";
 import { Map } from "mapbox-gl";
 import { GeoJsonObject } from "geojson";
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 interface NewGeometryProps {
   map: Map;

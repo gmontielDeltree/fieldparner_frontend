@@ -11,6 +11,7 @@
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "devDependencies": {
+    "@types/mapbox__mapbox-gl-draw": "^1.4.6",
     "@types/mapbox-gl": "^2.7.13",
     "@types/plotly.js": "^2.12.4",
     "@types/pouchdb": "^6.4.0",
