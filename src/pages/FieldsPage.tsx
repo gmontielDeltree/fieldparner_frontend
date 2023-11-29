@@ -12,12 +12,10 @@ import EditField from "../components/EditField";
 import NewsBar from "../components/NewsBar";
 import NewLot from "../components/NewLot";
 import MapComponent from "../components/Map";
-import area from "@turf/area";
 import convex from "@turf/convex";
 import bbox from "@turf/bbox";
 import uuid4 from "uuid4";
 import { Feature, GeoJsonObject } from "geojson";
-
 
 interface Lot {
   id: string;
