@@ -9,9 +9,17 @@ import categoryIcon3 from "../../images/icons/cosechadora_act.webp";
 import categoryIcon4 from "../../images/icons/iconodenotas_act.webp";
 import categoryIcon5 from "../../images/icons/iconosatelite.webp";
 import categoryIcon6 from "../../images/icons/suelo_act.webp";
+import PouchDB from "pouchdb";
 
-const LotsMenu = ({ lot, isOpen, toggle }) => {
-  const [selectedCategory, setSelectedCategory] = useState("Lot Details");
+interface LotsMenuProps {
+  lot: any;
+  isOpen: () => void;
+  toggle: () => void;
+}
+
+const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
+  const db = new PouchDB("campos_randyv7");
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const categories = [
     { id: "Lot Details", icon: categoryIcon1 },
@@ -22,11 +30,11 @@ const LotsMenu = ({ lot, isOpen, toggle }) => {
     { id: "Category 6", icon: categoryIcon6 }
   ];
 
-  const selectCategory = (categoryId) => {
+  const selectCategory = (categoryId: any) => {
     setSelectedCategory(categoryId);
   };
 
-  const avatarStyle = (categoryId) => ({
+  const avatarStyle = (categoryId: any) => ({
     width: 50,
     height: 50,
     transition: "transform 0.3s ease, box-shadow 0.3s ease",
@@ -43,12 +51,39 @@ const LotsMenu = ({ lot, isOpen, toggle }) => {
   });
 
   const renderFormContent = () => {
+    if (!selectedCategory) {
+      return (
+        <div style={{ textAlign: "center" }}>
+          <p>No hay actividades.</p>
+          <p>Agregue alguna utilizando los botones superiores</p>
+        </div>
+      );
+    }
+
     switch (selectedCategory) {
       case "Lot Details":
-        return <LotDetailsModal lot={lot} />;
+        return <LotDetailsModal lot={lot} db={db} />;
+      case "Category 2":
+        return <div>Category 2</div>;
+      case "Category 3":
+        return <div>Category 3</div>;
+      case "Category 4":
+        return <div>Category 4</div>;
+      case "Category 5":
+        return <div>Category 5</div>;
+      case "Category 6":
+        return <div>Category 6</div>;
       default:
         return <div>Select a category to view its forms</div>;
     }
+  };
+
+  const hrStyle = {
+    border: "0",
+    height: "1px",
+    backgroundImage:
+      "linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0))",
+    margin: "20px 0"
   };
 
   if (!isOpen) return null;
@@ -87,6 +122,7 @@ const LotsMenu = ({ lot, isOpen, toggle }) => {
           <CloseIcon />
         </IconButton>
       </div>
+      <hr style={hrStyle} />
       <div>{renderFormContent()}</div>
     </Paper>
   );

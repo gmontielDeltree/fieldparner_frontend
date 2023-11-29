@@ -9,9 +9,10 @@ import ObservationsForm from "./forms/ObservationsForm";
 
 interface LotDetailsModalProps {
   lot: any;
+  db: any;
 }
 
-const LotDetailsModal: React.FC<LotDetailsModalProps> = ({ lot }) => {
+const LotDetailsModal: React.FC<LotDetailsModalProps> = ({ lot, db }) => {
   if (!lot) return null;
 
   const [activeStep, setActiveStep] = useState(0);
@@ -29,7 +30,7 @@ const LotDetailsModal: React.FC<LotDetailsModalProps> = ({ lot }) => {
       case 0:
         return <PersonalForm lot={lot} />;
       case 1:
-        return <SuppliesForm lot={lot} />;
+        return <SuppliesForm lot={lot} db={db} />;
       case 2:
         return <OtherDetailsForm lot={lot} />;
       case 3:
@@ -53,7 +54,7 @@ const LotDetailsModal: React.FC<LotDetailsModalProps> = ({ lot }) => {
     );
   };
 
-  const handleStep = (step) => () => {
+  const handleStep = (step: any) => () => {
     setActiveStep(step);
   };
 
