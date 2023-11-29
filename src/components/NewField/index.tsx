@@ -3,10 +3,11 @@ import React, { useState, useEffect } from "react";
 import NewGeometry from "../NewGeometry/index.js";
 
 import { Alert } from "reactstrap";
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 interface NewFieldProps {
   map: any;
-  draw: any;
+  draw: MapboxDraw;
   saveGeometry: (data: any) => void;
   onClose: () => void;
 }

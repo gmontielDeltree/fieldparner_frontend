@@ -148,47 +148,6 @@ export const FieldsPage: React.FC = () => {
             });
           }
 
-          map?.addLayer({
-            id: "newGeometryLayerFill",
-            type: "fill",
-            source: "newGeometry",
-            paint: {
-              "fill-color": "#FF0000",
-              "fill-opacity": 0.4
-            }
-          });
-
-          map?.addLayer({
-            id: "newGeometryLayerLine",
-            type: "line",
-            source: "newGeometry",
-            paint: {
-              "line-color": "#FF0000",
-              "line-width": 2
-            }
-          });
-
-          map?.addLayer({
-            id: "newGeometryLayerName",
-            type: "symbol",
-            source: "newGeometry",
-            layout: {
-              "text-field": nombre.toUpperCase(),
-              "text-anchor": "center",
-              "text-offset": [0, 0.1],
-              "text-size": 18
-            },
-            paint: {
-              "text-color": "#000000"
-            }
-          });
-
-          const boundingBox = bbox(campo_geojson);
-          map?.fitBounds([
-            [boundingBox[0], boundingBox[1]],
-            [boundingBox[2], boundingBox[3]]
-          ]);
-
           draw.deleteAll();
           setFields((prevFields) => [
             ...prevFields,
@@ -372,7 +331,7 @@ export const FieldsPage: React.FC = () => {
         const allDocs = await db.allDocs({ include_docs: true });
         const fetchedFields = allDocs.rows
           .map((row) => row.doc)
-          .filter((doc): doc is Field => doc !== undefined && isField(doc)); // Filter and type guard
+          .filter((doc): doc is Field => doc !== undefined && isField(doc));
 
         setFields(fetchedFields);
       } catch (err) {
@@ -397,12 +356,6 @@ export const FieldsPage: React.FC = () => {
     if (map) {
       addFieldsToMap(map, fields);
     }
-
-    return () => {
-      if (map && map.hasControl(draw)) {
-        map.removeControl(draw);
-      }
-    };
   }, [map, draw, fields]);
 
   useEffect(() => {

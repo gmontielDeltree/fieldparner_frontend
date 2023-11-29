@@ -40,10 +40,7 @@ function DrawGeometry({
 
     map.on("draw.create", handleDrawComplete);
 
-    console.log("before change mode: ", draw);
     draw.changeMode("draw_polygon");
-    console.log("after change mode: ", draw);
-
     return () => {
       map.off("draw.create", handleDrawComplete);
     };
