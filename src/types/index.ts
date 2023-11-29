@@ -285,7 +285,7 @@ export interface Deposit extends Document {
     locality: string;
     province: string;
     country: string;
-    lots: Lot[];
+    locations: string[];
 }
 
 export interface ItemZipCode extends Document {

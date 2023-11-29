@@ -20,7 +20,7 @@ export const useSupply = () => {
 
             const result = await dbContext.supplies.find({
                 selector: { "accountId": user.accountId, },
-            },);
+            });
 
             setIsLoading(false);
             if (result.docs.length) {
@@ -32,7 +32,7 @@ export const useSupply = () => {
             console.error('Error al cargar documentos:', error);
         }
     }
-
+    //TODO: chequear nro lote del insumo
     const getStockByDepositsAndLot = async () => {
         setIsLoading(true);
         let supplyByDeposits: SupplyByDeposits[] = [];
@@ -60,7 +60,7 @@ export const useSupply = () => {
                 //Movimientos del deposito 
                 const depositMovements = stockMovements.docs.filter(m => m.depositId === depositId);
                 //Calcular el stock por deposito y lote
-                depositDto.lots.forEach(lot => {
+                depositDto.locations.forEach(lot => {
                     let incomeTotal: number = 0, egressTotal: number = 0;
                     depositMovements.forEach(movement => {
                         let amountValue = Number(movement.amount);
@@ -125,7 +125,7 @@ export const useSupply = () => {
                     const currentStockOfDeposit = (incomeTotal - egressTotal);
                     //Calcular stock por cada lote del deposito 
                     let lotsStock: SupplyByLot[] = [];
-                    depositDto.lots.forEach(lot => {
+                    depositDto.locations.forEach(lot => {
                         let incomeTotal: number = 0, egressTotal: number = 0;
                         movementsByDepositAndSupply.forEach(movement => {
                             let amountValue = Number(movement.amount);

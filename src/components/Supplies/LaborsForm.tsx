@@ -9,7 +9,7 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
-  Switch,
+  // Switch,
   TextField,
   Typography,
 } from "@mui/material";
@@ -31,7 +31,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
   formValues,
   handleSelectChange,
   handleInputChange,
-  handleCheckboxChange,
+  // handleCheckboxChange,
   setFormValues,
 }) => {
   const { type, name, description, barCode, stockByLot, labors } = formValues;
@@ -117,7 +117,34 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         />
       </Grid>
       <Grid item xs={12} sm={6}>
-        <FormControlLabel
+        <FormGroup row sx={{ alignItems: "center" }}>
+          <label htmlFor="">Aplica Stock por Lotes?</label>
+          <FormControlLabel
+            key="yes"
+            control={
+              <Checkbox
+                name="yes"
+                checked={stockByLot}
+                onChange={() => setFormValues(prevState=> ({...prevState, stockByLot: true}))}
+              />
+            }
+            label="Si"
+            labelPlacement="start"
+          />
+          <FormControlLabel
+            key="not"
+            control={
+              <Checkbox
+                name="not"
+                checked={!stockByLot}
+                onChange={() => setFormValues(prevState=> ({...prevState, stockByLot: false}))}
+              />
+            }
+            label="No"
+            labelPlacement="start"
+          />
+        </FormGroup>
+        {/* <FormControlLabel
           control={
             <Switch
               name="stockByLot"
@@ -127,7 +154,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
             />
           }
           label="Aplica Stock por Lotes?"
-        />
+        /> */}
       </Grid>
       <Grid item xs={12} sm={12} sx={{ my: 3 }}>
         {type.toLowerCase() === TipoInsumo.CULTIVO.toLowerCase() && (

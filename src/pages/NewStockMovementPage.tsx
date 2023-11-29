@@ -121,7 +121,7 @@ export const NewStockMovementPage: React.FC = () => {
   const onChangeLot = ({ target }: SelectChangeEvent) => {
     const { value } = target;
     if (!depositSelected) return;
-    const lotSelected = depositSelected.lots.find(
+    const lotSelected = depositSelected.locations.find(
       (lot) => lot.nro.toLowerCase() === value.toLowerCase()
     );
     if (!lotSelected) return;
@@ -291,7 +291,7 @@ export const NewStockMovementPage: React.FC = () => {
                         label="Lote"
                         onChange={onChangeLot}
                       >
-                        {depositSelected?.lots.map((lot) => (
+                        {depositSelected?.locations.map((lot) => (
                           <MenuItem key={lot.nro} value={lot.nro}>
                             {lot.nro}
                           </MenuItem>
@@ -431,7 +431,7 @@ export const NewStockMovementPage: React.FC = () => {
                       label="Lote"
                       onChange={onChangeLot}
                     >
-                      {depositSelected?.lots.map((lot) => (
+                      {depositSelected?.locations.map((lot) => (
                         <MenuItem key={lot.nro} value={lot.nro}>
                           {lot.nro}
                         </MenuItem>
