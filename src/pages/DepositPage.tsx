@@ -57,6 +57,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   },
 }));
 
+const locationDefault = "General";
 const initialForm: Deposit = {
   description: "",
   zipCode: "",
@@ -69,7 +70,7 @@ const initialForm: Deposit = {
   owner: "Propio",
   province: "",
   accountId: "",
-  locations: [],
+  locations: [locationDefault],
 };
 
 const optionsCountry = ["Argentina", "Brasil", "Chile"];
@@ -435,7 +436,7 @@ export const DepositPage: React.FC = () => {
               </TableHead>
               <TableBody>
                 <TableRow key="new-especificacion">
-                  <StyledTableCell sx={{ minWidth: 350, maxWidth: 400 }}>
+                  <StyledTableCell sx={{ minWidth: 300, maxWidth: 400 }}>
                     <TextField
                       variant="outlined"
                       size="small"
@@ -459,12 +460,22 @@ export const DepositPage: React.FC = () => {
                 </TableRow>
                 {locations.map((loc) => (
                   <TableRow key={loc}>
-                    <TableCell sx={{ p: "5px", minWidth: 350, maxWidth: 450 }}>
+                    <TableCell
+                      sx={{
+                        p: "5px",
+                        height: "50px",
+                        minWidth: 350,
+                        maxWidth: 450,
+                      }}
+                    >
                       {loc}
                     </TableCell>
                     <TableCell align="center" sx={{ p: "5px" }}>
                       <Tooltip title="Eliminar">
                         <IconButton
+                          hidden={
+                            loc.toLowerCase() === locationDefault.toLowerCase()
+                          }
                           onClick={() => handleDeleteLocation(loc)}
                           color="default"
                         >

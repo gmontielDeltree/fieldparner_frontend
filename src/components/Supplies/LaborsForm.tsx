@@ -144,17 +144,6 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
             labelPlacement="start"
           />
         </FormGroup>
-        {/* <FormControlLabel
-          control={
-            <Switch
-              name="stockByLot"
-              checked={stockByLot}
-              onChange={handleCheckboxChange}
-              // defaultChecked
-            />
-          }
-          label="Aplica Stock por Lotes?"
-        /> */}
       </Grid>
       <Grid item xs={12} sm={12} sx={{ my: 3 }}>
         {type.toLowerCase() === TipoInsumo.CULTIVO.toLowerCase() && (

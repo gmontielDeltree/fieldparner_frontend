@@ -312,7 +312,8 @@ export interface StockMovement extends Document {
     // supply: string;
     // typeSupply: string;
     depositId: string;
-    // ubication: string;
+    location: string;
+    // locationDestination: string;
     nroLot: string;
     creationDate: string;
     dueDate: string;
@@ -335,8 +336,9 @@ export interface StockMovementItem extends StockMovement {
     deposit?: Deposit;
 }
 
-export interface SupplyByLot {
-    lot: Lot;
+export interface StockByNroLot {
+    nroLot: string;
+    location?: string;
     currentStock: number;
     reservedStock: number;
 }
@@ -345,14 +347,20 @@ export interface SupplyByDeposits {
     deposit: Deposit;
     supply?: Supply;
     movements?: StockMovement[];
-    unitMeasurement: string;
-    lot?: Lot;
+    // unitMeasurement: string;
+    location: string;
+    nroLot: string;
     dueDate: string;
     currentStock: number;
     reservedStock: number;
-    lotsStock?: SupplyByLot[];
+    nroLotsStock?: StockByNroLot[];
 }
 
+export interface StockBySupply {
+    supply: Supply;
+    currentStock: number;
+    reservedStock: number;
+}
 
 export enum CurrencyCode {
     ARG = 'ARS',
@@ -373,4 +381,18 @@ export enum TypeMovement {
 export enum DisplayModals {
     SupplyByDeposits = "SupplyByDeposits",
     SupplyByLots = "SupplyByLots"
+}
+
+export interface DepositDestination {
+    depositId: string;
+    location: string;
+}
+
+export interface StockByLot extends Document {
+    accountId: string;
+    depositId: string;
+    location: string;
+    supplyId: string;
+    nroLot: string;
+    currentStock: number;
 }
