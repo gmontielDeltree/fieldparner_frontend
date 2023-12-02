@@ -59,10 +59,10 @@ const Row: React.FC<RowProps> = ({ row }) => {
         <TableCellStyled align="left">
           {row.deposit?.description}
         </TableCellStyled>
-        <TableCellStyled align="center">{row.lot?.location}</TableCellStyled>
-        <TableCellStyled align="center">{row.lot?.nro}</TableCellStyled>
-        <TableCellStyled align="center">{"20/10/203"}</TableCellStyled>
-        <TableCellStyled align="center">{row.unitMeasurement}</TableCellStyled>
+        <TableCellStyled align="center">{row.location}</TableCellStyled>
+        <TableCellStyled align="center">{row.nroLot}</TableCellStyled>
+        <TableCellStyled align="center">{row.dueDate}</TableCellStyled>
+        <TableCellStyled align="center">{row.supply?.unitMeasurement}</TableCellStyled>
         <TableCellStyled align="center">{row.currentStock}</TableCellStyled>
         <TableCellStyled align="center">{row.reservedStock}</TableCellStyled>
         <TableCellStyled align="center">
@@ -123,7 +123,7 @@ export const SupplyByDepositsModal: React.FC = () => {
   const dispatch = useAppDispatch();
   const { showModal } = useAppSelector((state) => state.ui);
   const { supplyActive } = useAppSelector((state) => state.supply);
-  const { isLoading, supplyByDeposits, getStockByDepositsAndLot } = useSupply();
+  const { isLoading, supplyByDeposits, getStockBySupplyAndDeposits } = useSupply();
 
   const onCloseModal = () => {
     dispatch(removeSupplyActive());
@@ -131,7 +131,7 @@ export const SupplyByDepositsModal: React.FC = () => {
   };
 
   useEffect(() => {
-    if (supplyActive) getStockByDepositsAndLot();
+    if (supplyActive) getStockBySupplyAndDeposits();
   }, [supplyActive]);
 
   return (

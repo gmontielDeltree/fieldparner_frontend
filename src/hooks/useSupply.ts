@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import { Supply, SupplyByDeposits, SupplyByLot } from "../types";
+import { Supply, SupplyByDeposits, StockByNroLot, StockBySupply } from "../types";
 import { useState } from "react";
 import { dbContext } from '../services';
 import { useAppSelector } from '.';
@@ -12,6 +12,7 @@ export const useSupply = () => {
     const [supplies, setSupplies] = useState<Supply[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [supplyByDeposits, setSupplyByDeposits] = useState<SupplyByDeposits[]>([]);
+    const [stockBySupplies, setStockBySupplies] = useState<StockBySupply[]>([])
 
     const getSupplies = async () => {
         setIsLoading(true);
@@ -20,7 +21,7 @@ export const useSupply = () => {
 
             const result = await dbContext.supplies.find({
                 selector: { "accountId": user.accountId, },
-            },);
+            });
 
             setIsLoading(false);
             if (result.docs.length) {
@@ -33,13 +34,13 @@ export const useSupply = () => {
         }
     }
 
-    const getStockByDepositsAndLot = async () => {
+    const getStockBySupplyAndDeposits = async () => {
         setIsLoading(true);
         let supplyByDeposits: SupplyByDeposits[] = [];
         try {
             if (!supplyActive) throw new Error("Insumo no encontrado.");
             const promisesResult = await Promise.all([
-                dbContext.stockMovements.find({
+                dbContext.stockByLots.find({
                     selector: {
                         "$and": [
                             { "supplyId": supplyActive._id },
@@ -48,38 +49,44 @@ export const useSupply = () => {
                     }
                 }),
                 dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.stockMovements.find({
+                    selector: {
+                        "$and": [
+                            { "supplyId": supplyActive._id },
+                            { "accountId": user?.accountId }
+                        ],
+                    }
+                })
             ]);
-            const [stockMovements, deposits] = promisesResult;
-            let movementDepositsId = stockMovements.docs.map(m => m.depositId);
+            const [stockBySupplies, deposits, movements] = promisesResult;
+            let depositIds = stockBySupplies.docs.map(m => m.depositId);
             //Agrupar los id de depositos 
-            const groupDepositsId = Array.from(new Set(movementDepositsId));
+            const groupDepositsId = Array.from(new Set(depositIds));
             groupDepositsId.forEach(depositId => {
-                //Obtener deposito
+                // Obtener deposito
                 const depositDto = deposits.docs.find(d => d._id === depositId);
                 if (!depositDto) throw new Error("Deposito no encontrado.");
                 //Movimientos del deposito 
-                const depositMovements = stockMovements.docs.filter(m => m.depositId === depositId);
-                //Calcular el stock por deposito y lote
-                depositDto.lots.forEach(lot => {
-                    let incomeTotal: number = 0, egressTotal: number = 0;
-                    depositMovements.forEach(movement => {
-                        let amountValue = Number(movement.amount);
-                        if (movement.nroLot.toLowerCase() === lot.nro.toLowerCase())
-                            (movement.isIncome) ? incomeTotal += amountValue : egressTotal += amountValue;
-                    });
-                    const currentStock = (incomeTotal - egressTotal);
+                const depositMovements = movements.docs.filter(m => m.depositId === depositId);
 
-                    supplyByDeposits.push({
-                        unitMeasurement: supplyActive.unitMeasurement,
-                        currentStock,
-                        deposit: depositDto,
-                        lot,
-                        dueDate: depositMovements[0].dueDate, // TODO ?
-                        reservedStock: 0,
-                        movements: depositMovements.filter(mov => mov.nroLot.toLowerCase() === lot.nro.toLowerCase())
-                    });
+                //Calcular el stock por deposito, ubicacion y nroLote
+                depositDto.locations.forEach(location => {
+                    const stockByLots = stockBySupplies.docs.filter(stockBySupply =>
+                        (stockBySupply.depositId === depositId && stockBySupply.location === location)
+                    );
+                    stockByLots.forEach(({ currentStock, nroLot }) => {
+                        supplyByDeposits.push({
+                            deposit: depositDto,
+                            supply: supplyActive,
+                            location,
+                            nroLot,
+                            currentStock,
+                            dueDate: depositMovements[0].dueDate, // TODO ?
+                            reservedStock: 0,
+                            movements: depositMovements.filter(mov => mov.nroLot.toLowerCase() === nroLot.toLowerCase())
+                        });
+                    })
                 });
-
             });
             setSupplyByDeposits(supplyByDeposits);
             setIsLoading(false);
@@ -89,66 +96,91 @@ export const useSupply = () => {
         }
     }
 
-    const getStockByDeposits = async () => {
+    const getStockBySupplies = async () => {
         setIsLoading(true);
-        let supplyByDeposits: SupplyByDeposits[] = [];
+        let stockBySupplies: StockBySupply[] = [];
         try {
             if (!user) throw new Error("User not found.");
             const promisesResult = await Promise.all([
-                dbContext.stockMovements.find({ selector: { "accountId": user.accountId } }),
-                dbContext.deposits.find({ selector: { "accountId": user.accountId } }),
+                // dbContext.stockMovements.find({ selector: { "accountId": user.accountId } }),
+                dbContext.stockByLots.find({ selector: { "accountId": user.accountId } }),
                 dbContext.supplies.find({ selector: { "accountId": user.accountId } })
             ]);
-            const [stockMovements, deposits, supplies] = promisesResult;
-            let movementDepositsId = stockMovements.docs.map(m => m.depositId);
-            let movementsSupplyId = stockMovements.docs.map(m => m.supplyId);
-            //Agrupar los id de depositos y insumos 
-            const groupSuppliesId = Array.from(new Set(movementsSupplyId));
-            const groupDepositsId = Array.from(new Set(movementDepositsId));
+            const [stockBySuppplies, supplies] = promisesResult;
+            supplies.docs.forEach(supplyDto => {
+                const stockBySupply = stockBySuppplies.docs.filter(m => (m.supplyId === supplyDto._id));
+                //Calcular el stock del insumo por deposito
+                let currentStockOfSupply = 0;
+                stockBySupply.forEach(stock => { currentStockOfSupply += stock.currentStock; });
+                stockBySupplies.push({
+                    supply: supplyDto,
+                    currentStock: currentStockOfSupply,
+                    reservedStock: supplyDto.reservedStock
+                });
+            });
+            setStockBySupplies(stockBySupplies);
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+            console.error('Error al cargar los documentos:', error);
+        }
+    }
 
-            groupDepositsId.forEach(depositId => {
-                //Obtener deposito y sus lotes
-                const depositDto = deposits.docs.find(d => d._id === depositId);
-                if (!depositDto) throw new Error("Deposito no encontrado.");
-                groupSuppliesId.forEach(supplyId => {
-                    //Obtener insumo
+    const getStockByDepositAndLocation = async () => {
+        setIsLoading(true);
+        try {
+            let supplyByDeposits: SupplyByDeposits[] = [];
+            const promisesResult = await Promise.all([
+                dbContext.stockByLots.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.supplies.find({ selector: { "accountId": user?.accountId } })
+            ]);
+            const [stockBySupplies, deposits, supplies] = promisesResult;
+            //Agrupar los id de insumo 
+            let supplyIds = stockBySupplies.docs.map(m => m.supplyId);
+            const groupSupplyIds = Array.from(new Set(supplyIds));
+            
+            deposits.docs.forEach(depositDto => {
+                //Movimientos del deposito 
+                // const depositMovements = movements.docs.filter(m => m.depositId === depositDto._id);
+                groupSupplyIds.forEach(supplyId => {
+                    //Obtenemos el insumo
                     const supplyDto = supplies.docs.find(s => s._id === supplyId);
-                    if (!supplyDto) throw new Error("Supply not found");
-                    //Movimientos del deposito y insumo
-                    const movementsByDepositAndSupply = stockMovements.docs.filter(m => (m.depositId === depositId && m.supplyId === supplyId));
-                    //Calcular el stock del deposito por insumo
-                    let incomeTotal: number = 0, egressTotal: number = 0;
-                    movementsByDepositAndSupply.forEach(movement => {
-                        let amountValue = Number(movement.amount);
-                        (movement.isIncome) ? incomeTotal += amountValue : egressTotal += amountValue;
+                    if (!supplyDto) throw new Error("Insumo no encontrado.");
+
+                    //Calcular el stock total del deposito por insumo
+                    let currentStockOfDeposit = 0;
+                    stockBySupplies.docs.forEach(stockBySupply => {
+                        if (stockBySupply.supplyId === supplyId && stockBySupply.depositId === depositDto._id) {
+                            currentStockOfDeposit += stockBySupply.currentStock;
+                        }
                     });
-                    const currentStockOfDeposit = (incomeTotal - egressTotal);
-                    //Calcular stock por cada lote del deposito 
-                    let lotsStock: SupplyByLot[] = [];
-                    depositDto.lots.forEach(lot => {
-                        let incomeTotal: number = 0, egressTotal: number = 0;
-                        movementsByDepositAndSupply.forEach(movement => {
-                            let amountValue = Number(movement.amount);
-                            if (movement.nroLot.toLowerCase() === lot.nro.toLowerCase())
-                                (movement.isIncome) ? incomeTotal += amountValue : egressTotal += amountValue;
-                        });
-                        const currentStockOfLot = (incomeTotal - egressTotal);
-                        lotsStock.push({
-                            lot,
-                            currentStock: currentStockOfLot,
-                            reservedStock: 0 //TODO: stock reservado por lote
+                    //Calcular el stock por deposito, ubicacion y nroLote
+                    let nroLotsStock: StockByNroLot[] = [];
+                    depositDto.locations.forEach(l => {
+                        const stockByLots = stockBySupplies.docs.filter(({ supplyId: id, depositId, location }) =>
+                            (supplyId === id && depositId === depositDto._id && location === l)
+                        );
+                        stockByLots.forEach(({ nroLot, currentStock, }) => {
+                            nroLotsStock.push({
+                                nroLot,
+                                location: l,
+                                currentStock,
+                                reservedStock: supplyDto.reservedStock
+                            })
                         });
                     });
                     supplyByDeposits.push({
-                        unitMeasurement: supplyDto.unitMeasurement,
-                        currentStock: currentStockOfDeposit,
                         deposit: depositDto,
-                        lotsStock,
-                        dueDate: "",
-                        reservedStock: 0, //TODO: chequear
-                        supply: supplyDto
+                        supply: supplyDto,
+                        location: "",
+                        nroLot: "",
+                        currentStock: currentStockOfDeposit,
+                        dueDate: "-",
+                        reservedStock: supplyDto.reservedStock,
+                        nroLotsStock,
                     });
-                });
+                })
             });
             setSupplyByDeposits(supplyByDeposits);
             setIsLoading(false);
@@ -157,7 +189,6 @@ export const useSupply = () => {
             console.error('Error al cargar los documentos:', error);
         }
     }
-
     const createSupply = async (newSupply: Supply) => {
         setIsLoading(true);
         try {
@@ -201,6 +232,7 @@ export const useSupply = () => {
         supplies,
         isLoading,
         supplyByDeposits,
+        stockBySupplies,
         // supplies = documents.filter(supply => supply.currentStock === 0);
 
 
@@ -209,8 +241,9 @@ export const useSupply = () => {
         createSupply,
         updateSupply,
         removeSupply,
-        getStockByDepositsAndLot,
-        getStockByDeposits
+        getStockBySupplyAndDeposits,
+        getStockBySupplies,
+        getStockByDepositAndLocation
     }
 
 }
