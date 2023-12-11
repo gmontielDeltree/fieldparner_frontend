@@ -1,15 +1,9 @@
 import {
     Box,
     IconButton,
-    Container,
-    FormControl,
     Grid,
     InputAdornment,
-    InputLabel,
-    MenuItem,
     Paper,
-    Select,
-    SelectChangeEvent,
     Table,
     TableBody,
     TableContainer,
@@ -19,61 +13,71 @@ import {
     Typography,
     TableCell,
     Tooltip,
-    Divider,
     Button
 } from '@mui/material';
 import {
     Transform as TransformIcon,
-    Add as AddIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material'
 import React, { useEffect, useState } from 'react';
 import { useDeposit, useForm, useSupply } from '../hooks';
 import { getShortDate } from '../helpers/dates';
-import { BorderContainer, Loading, TableCellStyled } from '../components'
-import { Deposit, Supply } from '@types';
+import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack } from '../components';
+import { ColumnProps, Deposit, Supply } from '../types';
 
 
 interface TransformSupply {
+    id: string;
     supply: Supply;
     deposit: Deposit,
     location: string;
     nroLot: string;
     dueDate: string;
     amount: number;
-}
-
-interface NewSupply {
-    supplyId: string,
-    depositId: string,
-    location: string,
-    nroLot: string,
-    dueDate: string,
-    // amount: number,
-}
-
-type OriginRowProps = {
-    row: TransformSupply;
+    hours?: string;
+    employee?: string;
 }
 
 const today = getShortDate();
-const originColumns = [
-    "Insumo/cultivo",
-    "Deposito",
-    "Ubicacion",
-    "Nro Lote",
-    "Vencimiento",
-    "UM",
-    "Stock Actual",
-    "Stock Restante",
-    "Stock Disponible",
-    "Cantidad",
+const originColumns: ColumnProps[] = [
+    { text: "Insumo/cultivo", align: "left" },
+    { text: "Deposito", align: "left" },
+    { text: "Ubicacion", align: "left" },
+    { text: "Nro Lote", align: "left" },
+    { text: "Vencimiento", align: "left" },
+    { text: "UM", align: "center" },
+    { text: "Stock Actual", align: "left" },
+    { text: "Stock Restante", align: "left" },
+    { text: "Stock Disponible", align: "left" },
+    { text: "Cantidad a Utilizar", align: "center" },
 ];
 
-const OriginRow: React.FC<OriginRowProps> = ({ row }) => {
+///TODO: revisar columnas
+const destinationColumns: ColumnProps[] = [
+    { text: "Insumo/cultivo", align: "left" },
+    { text: "Deposito", align: "left" },
+    { text: "Ubicacion", align: "left" },
+    { text: "Nro Lote", align: "left" },
+    { text: "Vencimiento", align: "left" },
+    { text: "UM", align: "center" },
+    { text: "Cantidad a Crear", align: "center" },
+    { text: "Horas/Empledo", align: "center" },
+];
+
+
+type SupplyRowProps = {
+    row: TransformSupply;
+    type: "origin" | "destination";
+    deleteRow: (id: string) => void;
+    onBlurAmount: (id: string, amount: number) => void;
+}
+
+const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow, onBlurAmount }) => {
     const { supply, deposit } = row;
+    const { amount, handleInputChange } = useForm({ amount: 0 });
+
     return (
-        <TableRow>
+        <ItemRow>
             <TableCell>
                 {supply.name}
             </TableCell>
@@ -89,35 +93,67 @@ const OriginRow: React.FC<OriginRowProps> = ({ row }) => {
             <TableCell>
                 {row.dueDate || "-"}
             </TableCell>
-            <TableCell>
+            <TableCell align='center'>
                 {supply.unitMeasurement}
             </TableCell>
-            <TableCell>
-                {supply.currentStock}
+            {
+                type === "origin" && (
+                    <>
+                        <TableCell align='center'>
+                            {supply.currentStock}
+                        </TableCell>
+                        <TableCell align='center'>
+                            {supply.reservedStock}
+                        </TableCell>
+                        <TableCell align='center'>
+                            {(supply.currentStock - supply.reservedStock)}
+                        </TableCell>
+                    </>
+                )
+            }
+            <TableCell align='center' width="150px">
+                <TextField
+                    variant="outlined"
+                    size='small'
+                    type="number"
+                    name="amount"
+                    value={amount}
+                    onChange={handleInputChange}
+                    onBlur={() => onBlurAmount(row.id, amount)}
+                    inputProps={{ maxLength: 10 }}
+                    fullWidth
+                />
             </TableCell>
-            <TableCell>
-                {supply.reservedStock}
-            </TableCell>
-            <TableCell>
-                {(supply.currentStock - supply.reservedStock)}
-            </TableCell>
-            <TableCell>
-                {row.amount}
-            </TableCell>
-
+            {
+                type === "destination" && (
+                    <TableCell align='center'>
+                        {`${row.hours || "-"} / ${row.employee || "-"}`}
+                    </TableCell>
+                )
+            }
             <TableCell align="center" sx={{ p: "5px" }}>
                 <Tooltip title="Eliminar">
                     <IconButton
-                        onClick={() => console.log}
+                        onClick={() => deleteRow(row.id)}
                         color="default"
                     >
                         <DeleteIcon />
                     </IconButton>
                 </Tooltip>
             </TableCell>
-        </TableRow>
+        </ItemRow>
     )
 }
+
+const initialStateNewSupply = {
+    operationDate: today,
+    detail: "",
+    supplyId: "",
+    depositId: "",
+    location: "",
+    nroLot: "",
+    dueDate: "",
+};
 
 export const TransformPage: React.FC = () => {
 
@@ -128,72 +164,44 @@ export const TransformPage: React.FC = () => {
     const {
         operationDate,
         detail,
-        supplyId,
-        depositId,
-        location,
-        nroLot,
-        dueDate,
-        amount,
         handleInputChange,
-        reset,
-        setFormulario,
-    } = useForm({
-        operationDate: today,
-        detail: "",
-        supplyId: "",
-        depositId: "",
-        location: "",
-        nroLot: "",
-        dueDate: "",
-        amount: "",
-    });
-    const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
-    const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
+    } = useForm(initialStateNewSupply);
 
-    const onChangeSupply = ({ target }: SelectChangeEvent) => {
-        const { value } = target;
-        // const supplySelected = JSON.parse(value) as Supply;
-        const supplySelected = supplies.find((supply) => supply._id === value);
-        if (supplySelected && supplySelected._id) {
-            setFormulario((prevState) => ({
-                ...prevState,
-                supplyId: value,
-            }));
-            setSupplySelected(supplySelected);
-        }
-    };
-
-    const onChangeDeposit = ({ target }: SelectChangeEvent) => {
-        const { value, name } = target;
-        const depositSelected = deposits.find((deposit) => deposit._id === value);
-
-        if (depositSelected && name === "origin") {
-            setFormulario((prevState) => ({ ...prevState, depositId: value }));
-            setDepositSelected(depositSelected);
-        }
-        // if (depositSelected && name === "destination") {
-        //     setDepositDestinationSelected(depositSelected);
-        // }
-    };
-
-    const onChangeLocation = ({ target }: SelectChangeEvent) => {
-        const { value, name } = target;
-        if (name === "origin") {
-            setFormulario((prevState) => ({ ...prevState, location: value }));
-        }
-        // else {
-        //   if (!depositDestinationSelected) return;
-        //   setLocationDestinationSelected(value);
-        // }
-    };
-
-    const handleAddSupplyOrigin = () => {
-
+    //ORIGIN
+    const handleAddSupplyOrigin = (newSupply: TransformSupply) => {
+        setOriginSupplies(prevState => [...prevState, newSupply]);
     }
 
-    // const handleAddSupplyDestination = () => {
+    const onBlurAmountOrigin = (id: string, newValue: number) => {
+        setOriginSupplies((prevState) => (
+            prevState.map(obj => obj.id === id ? { ...obj, amount: Number(newValue) } : obj)
+        ));
+    }
 
-    // }
+    const deleteRowOrigin = (id: string) => {
+        setOriginSupplies(prevState => [...prevState.filter(o => o.id !== id)]);
+    }
+    //* */
+    //DESTINATION
+    const handleAddSupplyDestination = (newSupply: TransformSupply) => {
+        setDestinationSupplies(prevState => [...prevState, newSupply]);
+    }
+
+    const onBlurAmountDestination = (id: string, newValue: number) => {
+        setDestinationSupplies((prevState) => (
+            prevState.map(obj => obj.id === id ? { ...obj, amount: Number(newValue) } : obj)
+        ));
+    }
+
+    const deleteRowDestination = (id: string) => {
+        setDestinationSupplies(prevState => [...prevState.filter(o => o.id !== id)]);
+    }
+
+    const saveTransformStock = () => {
+        //TODO: crear createTransformStock
+        console.log('originSupplies', originSupplies);
+        console.log('destinationSupplies', destinationSupplies);
+    }
 
     useEffect(() => {
         getSupplies(); getDeposits();
@@ -217,6 +225,7 @@ export const TransformPage: React.FC = () => {
             <Paper variant="outlined"
                 sx={{
                     mt: 3,
+                    minWidth: "1200px",
                     p: { xs: 2, md: 3 },
                     maxHeight: "calc(100vh - 150px)",
                     overflow: "scroll"
@@ -260,146 +269,81 @@ export const TransformPage: React.FC = () => {
                 <BorderContainer key="supplies-origin">
                     <TableContainer
                         key="table-supply-origin"
-                        sx={{ mt: 1, backgroundColor: "#f4f4f4", minHeight: "120px" }}
+                        sx={{ minHeight: "120px", maxHeight: "440", overflow: "scroll" }}
                         component={Paper}
                     >
                         <Table sx={{ minWidth: 350 }} aria-label="customized table">
                             <TableHead>
                                 <TableRow>
                                     {
-                                        originColumns.map(column => (
-                                            <TableCellStyled key={column} >{column}</TableCellStyled>
+                                        originColumns.map(({ text, align }) => (
+                                            <TableCellStyledBlack key={text} align={align} >
+                                                {text}
+                                            </TableCellStyledBlack>
                                         ))
                                     }
-                                    <TableCellStyled />
+                                    <TableCellStyledBlack />
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {originSupplies.map((originSupply) => (
-                                    <OriginRow key={originSupply.supply._id} row={originSupply} />
+                                    <SupplyRow
+                                        key={originSupply.id}
+                                        type='origin'
+                                        onBlurAmount={onBlurAmountOrigin}
+                                        row={originSupply}
+                                        deleteRow={deleteRowOrigin}
+                                    />
                                 ))}
                             </TableBody>
                         </Table>
                     </TableContainer>
-                    <Grid
-                        key="row-new-supply-origin"
-                        container
-                        spacing={1}
-                        mt={5}
-                        wrap="nowrap"
-                    >
-                        <Grid item xs={12} sm={3}>
-                            <FormControl fullWidth>
-                                <InputLabel id="supply">Insumo</InputLabel>
-                                <Select
-                                    key="select-supply-movement"
-                                    labelId="supply"
-                                    value={supplyId}
-                                    label="Insumo"
-                                    onChange={onChangeSupply}
-                                >
-                                    {supplies.map((supply) => (
-                                        <MenuItem key={supply._id} value={supply._id}>
-                                            {supply.name}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={3}>
-                            <FormControl fullWidth>
-                                <InputLabel id="deposit">Deposito</InputLabel>
-                                <Select
-                                    labelId="deposit"
-                                    name="origin"
-                                    value={depositId}
-                                    label="Deposito"
-                                    onChange={onChangeDeposit}
-                                >
-                                    {deposits.map((deposit) => (
-                                        <MenuItem key={deposit._id} value={deposit._id}>
-                                            {deposit.description}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={3}>
-                            <FormControl fullWidth>
-                                <InputLabel id="location">Ubicacion</InputLabel>
-                                <Select
-                                    labelId="location"
-                                    name="origin"
-                                    value={location}
-                                    label="Ubicacion"
-                                    onChange={onChangeLocation}
-                                >
-                                    {depositSelected?.locations.map((loc) => (
-                                        <MenuItem key={loc} value={loc}>
-                                            {loc}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={2}>
-                            {
-                                supplySelected && supplySelected.stockByLot
-                                    ? (
-                                        <TextField
-                                            key="nroLot-input"
-                                            variant="outlined"
-                                            type="text"
-                                            label="Nro Lote"
-                                            name="nroLot"
-                                            value={nroLot}
-                                            onChange={handleInputChange}
-                                            InputProps={{
-                                                startAdornment: <InputAdornment position="start" />,
-                                            }}
-                                            fullWidth
-                                        />
-                                    )
-                                    : "-"
-                            }
-                        </Grid>
-                        <Grid item xs={12} sm={2}>
-                            {
-                                supplySelected && supplySelected.stockByLot
-                                    ? (
-                                        <TextField
-                                            variant="outlined"
-                                            type="date"
-                                            label="Fecha vencimiento"
-                                            name="dueDate"
-                                            value={dueDate}
-                                            onChange={handleInputChange}
-                                            InputProps={{
-                                                startAdornment: <InputAdornment position="start" />,
-                                            }}
-                                            fullWidth
-                                        />
-                                    )
-                                    : "-"
-                            }
-                        </Grid>
-                        <Grid item xs={12} sm={1} display="flex" justifyContent="center">
-                            <IconButton
-                                color="success"
-                                aria-label="add"
-                                size="small"
-                                onClick={() => handleAddSupplyOrigin()}
-                            >
-                                <AddIcon />
-                            </IconButton>
-                        </Grid>
-                    </Grid>
+                    <NewSupplyRow
+                        key="new-supply-to-origin"
+                        supplies={supplies}
+                        deposits={deposits}
+                        addNewSupply={handleAddSupplyOrigin} />
                 </BorderContainer>
                 <Typography variant="h5" sx={{ my: 3 }}>
                     Nuevo Insumo Destino
                 </Typography>
                 <BorderContainer key="supplies-destination">
-                    Insumo Destino
+                    <TableContainer
+                        key="table-supply-destination"
+                        sx={{ minHeight: "120px", maxHeight: "440", overflow: "scroll" }}
+                        component={Paper}
+                    >
+                        <Table sx={{ minWidth: 350 }} aria-label="customized table">
+                            <TableHead>
+                                <TableRow>
+                                    {
+                                        destinationColumns.map(({ text, align }) => (
+                                            <TableCellStyledBlack key={text} align={align} >
+                                                {text}
+                                            </TableCellStyledBlack>
+                                        ))
+                                    }
+                                    <TableCellStyledBlack />
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {destinationSupplies.map((originSupply) => (
+                                    <SupplyRow
+                                        key={originSupply.id}
+                                        type="destination"
+                                        onBlurAmount={onBlurAmountDestination}
+                                        row={originSupply}
+                                        deleteRow={deleteRowDestination}
+                                    />
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <NewSupplyRow
+                        key="new-supply-to-destination"
+                        supplies={supplies}
+                        deposits={deposits}
+                        addNewSupply={handleAddSupplyDestination} />
                 </BorderContainer>
                 <Grid container justifyContent="end" spacing={3} mt={2}>
                     <Grid item xs={12} sm={2}>
@@ -414,6 +358,7 @@ export const TransformPage: React.FC = () => {
                         <Button
                             variant="contained"
                             color="success"
+                            onClick={() => saveTransformStock()}
                             fullWidth>
                             Guardar
                         </Button>
@@ -424,136 +369,3 @@ export const TransformPage: React.FC = () => {
     )
 
 };
-
-
-/*
-type NewSupplyProps = {
-    formValues: NewSupply,
-    onChangeSupply: () => void;
-    onChangeDeposit: () => void;
-    onChangeLocation: () => void;
-}
-
-const NewSupply = ({ formValues }: NewSupplyProps) => {
-
-    const {
-        supplyId, depositId, location, nroLot, dueDate
-    } = formValues;
-
-    return (
-        <Grid
-            key="row-new-supply-origin"
-            container
-            spacing={1}
-            mt={5}
-            wrap="nowrap"
-        >
-            <Grid item xs={12} sm={3}>
-                <FormControl fullWidth>
-                    <InputLabel id="supply">Insumo</InputLabel>
-                    <Select
-                        key="select-supply-movement"
-                        labelId="supply"
-                        value={supplyId}
-                        label="Insumo"
-                        onChange={onChangeSupply}
-                    >
-                        {supplies.map((supply) => (
-                            <MenuItem key={supply._id} value={supply._id}>
-                                {supply.name}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={3}>
-                <FormControl fullWidth>
-                    <InputLabel id="deposit">Deposito</InputLabel>
-                    <Select
-                        labelId="deposit"
-                        name="origin"
-                        value={depositId}
-                        label="Deposito"
-                        onChange={onChangeDeposit}
-                    >
-                        {deposits.map((deposit) => (
-                            <MenuItem key={deposit._id} value={deposit._id}>
-                                {deposit.description}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={3}>
-                <FormControl fullWidth>
-                    <InputLabel id="location">Ubicacion</InputLabel>
-                    <Select
-                        labelId="location"
-                        name="origin"
-                        value={location}
-                        label="Ubicacion"
-                        onChange={onChangeLocation}
-                    >
-                        {depositSelected?.locations.map((loc) => (
-                            <MenuItem key={loc} value={loc}>
-                                {loc}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={2}>
-                {
-                    supplySelected && supplySelected.stockByLot
-                        ? (
-                            <TextField
-                                key="nroLot-input"
-                                variant="outlined"
-                                type="text"
-                                label="Nro Lote"
-                                name="nroLot"
-                                value={nroLot}
-                                onChange={handleInputChange}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
-                        )
-                        : "-"
-                }
-            </Grid>
-            <Grid item xs={12} sm={2}>
-                {
-                    supplySelected && supplySelected.stockByLot
-                        ? (
-                            <TextField
-                                variant="outlined"
-                                type="date"
-                                label="Fecha vencimiento"
-                                name="dueDate"
-                                value={dueDate}
-                                onChange={handleInputChange}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
-                        )
-                        : "-"
-                }
-            </Grid>
-            <Grid item xs={12} sm={1} display="flex" justifyContent="center">
-                <IconButton
-                    color="success"
-                    aria-label="add"
-                    size="small"
-                    onClick={() => handleAddSupplyOrigin()}
-                >
-                    <AddIcon />
-                </IconButton>
-            </Grid>
-        </Grid>
-    )
-}
-*/

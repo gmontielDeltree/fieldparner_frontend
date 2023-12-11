@@ -213,6 +213,27 @@ export const useStockMovement = () => {
         }
     }
 
+    //TODO: continuar de aca
+    const transformStock = async (
+        suppliesToBeDiscounted: StockMovement[],
+        suppliesToAdd: StockMovement[]) => {
+        setIsLoading(true);
+        try {
+            if (!user) throw new Error();
+            const accountId = user.accountId;
+
+            // Descontar el stock en la tabla auxiliar para ese insumo, deposito, ubication y lote:
+
+
+
+            setIsLoading(false);
+        } catch (error) {
+            console.log(error)
+            setIsLoading(false);
+            if (error) setError(error);
+        }
+    }
+
     return {
         //* Props
         stockMovements,

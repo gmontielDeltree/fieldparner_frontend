@@ -14,7 +14,8 @@ export const BorderContainer = ({ children }: BorderContainerProps) => {
             width: "100%",
             p: 1,
             border: "1px solid black",
-            borderRadius: "20px"
+            borderRadius: "20px",
+            overflow: "hidden"
         }}>
             {children}
         </Box>

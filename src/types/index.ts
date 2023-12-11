@@ -396,3 +396,14 @@ export interface StockByLot extends Document {
     nroLot: string;
     currentStock: number;
 }
+
+export interface TransformSupply {
+    id: string;
+    supply: Supply;
+    deposit: Deposit,
+    location: string;
+    nroLot: string;
+    dueDate: string;
+    amount: number;
+  }
+  
