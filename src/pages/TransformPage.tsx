@@ -88,13 +88,13 @@ const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow, onBlurAmoun
                 type === "origin" && (
                     <>
                         <TableCell align='center'>
-                            {supply.currentStock}
+                            {row.currentStock}
                         </TableCell>
                         <TableCell align='center'>
                             {supply.reservedStock}
                         </TableCell>
                         <TableCell align='center'>
-                            {(supply.currentStock - supply.reservedStock)}
+                            {(row.currentStock - supply.reservedStock)}
                         </TableCell>
                     </>
                 )
@@ -133,14 +133,9 @@ const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow, onBlurAmoun
     )
 }
 
-const initialStateNewSupply = {
+const initialStateTransform = {
     operationDate: today,
-    detail: "",
-    supplyId: "",
-    depositId: "",
-    location: "",
-    nroLot: "",
-    dueDate: "",
+    detail: ""
 };
 
 export const TransformPage: React.FC = () => {
@@ -155,7 +150,8 @@ export const TransformPage: React.FC = () => {
         operationDate,
         detail,
         handleInputChange,
-    } = useForm(initialStateNewSupply);
+        reset,
+    } = useForm(initialStateTransform);
     const { isLoading: loadingTransform, transformStock, getStock } = useStockMovement();
 
     const validateSupplyStock = async (newSupply: TransformSupply, type: "origin" | "destination" = "origin") => {
@@ -232,14 +228,14 @@ export const TransformPage: React.FC = () => {
         const { supply, deposit, location, nroLot } = supplyStock;
 
         if (!supply._id || !deposit._id) return;
-        const newCurrentStock = (supplyStock.currentStock - newAmount);
+        const newCurrentStock = (Number(supplyStock.currentStock) - Number(newAmount));
 
         if (newCurrentStock < 0) {
             Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
             return;
         }
 
-        updateCurrentStock(supply._id, deposit._id, location, nroLot, newCurrentStock);
+        updateCurrentStock(supply._id, deposit._id, location, nroLot, Number(newCurrentStock));
         setOriginSupplies((prevState) => (
             prevState.map(obj => obj.id === id ? { ...obj, amount: Number(newAmount) } : obj)
         ));
@@ -259,7 +255,6 @@ export const TransformPage: React.FC = () => {
     //* */
     //DESTINATION
     const handleAddSupplyDestination = (newSupply: TransformSupply) => {
-        // setDestinationSupplies(prevState => [...prevState, newSupply]);
         validateSupplyStock(newSupply, "destination");
     }
 
@@ -270,7 +265,7 @@ export const TransformPage: React.FC = () => {
         const { supply, deposit, location, nroLot } = supplyStock;
 
         if (!supply._id || !deposit._id) return;
-        const newCurrentStock = (supplyStock.currentStock + value);
+        const newCurrentStock = (Number(supplyStock.currentStock) + Number(value));
 
         updateCurrentStock(supply._id, deposit._id, location, nroLot, Number(newCurrentStock));
         setDestinationSupplies((prevState) => (
@@ -288,6 +283,13 @@ export const TransformPage: React.FC = () => {
             s.depositId !== deposit._id &&
             s.location !== location &&
             s.nroLot !== nroLot));
+    }
+
+    const onClickCancel = () => {
+        setOriginSupplies([]);
+        setDestinationSupplies([]);
+        setStockBySupplies([]);
+        reset();
     }
 
     const saveTransformStock = () => {
@@ -456,6 +458,7 @@ export const TransformPage: React.FC = () => {
                         <Button
                             variant='contained'
                             color="inherit"
+                            onClick={() => onClickCancel()}
                             fullWidth>
                             Cancelar
                         </Button>
