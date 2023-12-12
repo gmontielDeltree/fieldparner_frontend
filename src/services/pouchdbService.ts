@@ -50,6 +50,7 @@ dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, opts);
 dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, opts);
 dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
 
+
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
     try {
