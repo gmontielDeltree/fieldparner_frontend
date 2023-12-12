@@ -309,11 +309,9 @@ export interface StockMovement extends Document {
     accountId: string;
     movement: string;
     supplyId: string;
-    // supply: string;
-    // typeSupply: string;
+    userId: string;
     depositId: string;
     location: string;
-    // locationDestination: string;
     nroLot: string;
     creationDate: string;
     dueDate: string;
@@ -321,14 +319,12 @@ export interface StockMovement extends Document {
     isIncome: boolean;
     detail: string;
     operationDate: string;
-    // unitMeasurement: string;
     amount: number;
     voucher: string;
     currency: string;
     totalValue: number;
     hours: string;
     campaign: number;
-    // depositIdDestination?: string
 }
 
 export interface StockMovementItem extends StockMovement {
@@ -376,6 +372,12 @@ export enum TypeMovement {
     VentasVarias = "Ventas Varias",
     TransferenciaDeposito = "Transferencia entre depositos",
     Prestamos = "Prestamos",
+    Transformacion = "Transformacion",
+}
+
+export enum Movement {
+    Manual = "Manual",
+    Automatico = "Automatico"
 }
 
 export enum DisplayModals {
@@ -390,6 +392,7 @@ export interface DepositDestination {
 
 export interface StockByLot extends Document {
     accountId: string;
+    // userId: string;
     depositId: string;
     location: string;
     supplyId: string;
@@ -405,5 +408,7 @@ export interface TransformSupply {
     nroLot: string;
     dueDate: string;
     amount: number;
-  }
-  
+    currentStock: number;
+    hours?: string;
+    employee?: string;
+}

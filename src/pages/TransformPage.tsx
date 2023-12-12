@@ -13,30 +13,20 @@ import {
     Typography,
     TableCell,
     Tooltip,
-    Button
+    Button,
 } from '@mui/material';
+import Swal from 'sweetalert2';
 import {
     Transform as TransformIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material'
 import React, { useEffect, useState } from 'react';
-import { useDeposit, useForm, useSupply } from '../hooks';
+import { useAppSelector, useDeposit, useForm, useStockMovement, useSupply } from '../hooks';
 import { getShortDate } from '../helpers/dates';
 import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack } from '../components';
-import { ColumnProps, Deposit, Supply } from '../types';
+import { ColumnProps, StockByLot, TransformSupply } from '../types';
 
 
-interface TransformSupply {
-    id: string;
-    supply: Supply;
-    deposit: Deposit,
-    location: string;
-    nroLot: string;
-    dueDate: string;
-    amount: number;
-    hours?: string;
-    employee?: string;
-}
 
 const today = getShortDate();
 const originColumns: ColumnProps[] = [
@@ -51,8 +41,6 @@ const originColumns: ColumnProps[] = [
     { text: "Stock Disponible", align: "left" },
     { text: "Cantidad a Utilizar", align: "center" },
 ];
-
-///TODO: revisar columnas
 const destinationColumns: ColumnProps[] = [
     { text: "Insumo/cultivo", align: "left" },
     { text: "Deposito", align: "left" },
@@ -120,7 +108,7 @@ const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow, onBlurAmoun
                     value={amount}
                     onChange={handleInputChange}
                     onBlur={() => onBlurAmount(row.id, amount)}
-                    inputProps={{ maxLength: 10 }}
+                    inputProps={{ maxLength: 15, min: 1 }}
                     fullWidth
                 />
             </TableCell>
@@ -157,8 +145,10 @@ const initialStateNewSupply = {
 
 export const TransformPage: React.FC = () => {
 
+    const { user } = useAppSelector(state => state.auth);
     const [originSupplies, setOriginSupplies] = useState<TransformSupply[]>([]);
     const [destinationSupplies, setDestinationSupplies] = useState<TransformSupply[]>([]);
+    const [stockBySupplies, setStockBySupplies] = useState<StockByLot[]>([]);
     const { isLoading, supplies, getSupplies } = useSupply();
     const { deposits, getDeposits } = useDeposit();
     const {
@@ -166,51 +156,157 @@ export const TransformPage: React.FC = () => {
         detail,
         handleInputChange,
     } = useForm(initialStateNewSupply);
+    const { isLoading: loadingTransform, transformStock, getStock } = useStockMovement();
+
+    const validateSupplyStock = async (newSupply: TransformSupply, type: "origin" | "destination" = "origin") => {
+        try {
+            const { supply, deposit } = newSupply;
+            if (!supply._id || !deposit._id) return false;
+
+            const result = await getStock(supply._id, deposit._id, newSupply.location, newSupply.nroLot);
+
+            if (type === "origin") {
+                if (result && result.currentStock > 0) {
+                    let supplyStock: StockByLot = result;
+                    setStockBySupplies([supplyStock, ...stockBySupplies]);
+                    setOriginSupplies([...originSupplies, { ...newSupply, currentStock: result.currentStock }]);
+                    return true;
+                }
+                else {
+                    Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
+                    return false;
+                }
+            } else {
+                if (result) {
+                    let supplyStock: StockByLot = result;
+                    setStockBySupplies([supplyStock, ...stockBySupplies]);
+                    setDestinationSupplies([...destinationSupplies, { ...newSupply, currentStock: result.currentStock }]);
+                } else {
+                    if (!user) throw new Error("User not found");
+                    const newSupplyStock: StockByLot = {
+                        accountId: user.accountId,
+                        depositId: deposit._id,
+                        supplyId: supply._id,
+                        location: newSupply.location,
+                        nroLot: newSupply.nroLot,
+                        currentStock: 0,
+                    };
+                    setStockBySupplies([...stockBySupplies, newSupplyStock]);
+                    setDestinationSupplies([...destinationSupplies, newSupply]);
+                }
+
+            }
+        } catch (error) {
+            console.log('error', error);
+            return false;
+        }
+    }
 
     //ORIGIN
     const handleAddSupplyOrigin = (newSupply: TransformSupply) => {
-        setOriginSupplies(prevState => [...prevState, newSupply]);
+        validateSupplyStock(newSupply, "origin");
     }
 
-    const onBlurAmountOrigin = (id: string, newValue: number) => {
+    const updateCurrentStock = (
+        supplyId: string,
+        depositId: string,
+        location: string,
+        nroLot: string,
+        newCurrentStock: number) => {
+        if (!user) throw new Error("User not found");
+        setStockBySupplies(
+            (prevState) => (
+                prevState.map(s =>
+                    (s.accountId === user.accountId &&
+                        s.supplyId === supplyId &&
+                        s.depositId === depositId &&
+                        s.location === location &&
+                        s.nroLot === nroLot)
+                        ? { ...s, currentStock: newCurrentStock } : s)
+            ))
+    }
+
+    const onBlurAmountOrigin = (id: string, newAmount: number) => {
+        let supplyStock = originSupplies.find(s => s.id === id);
+        if (!supplyStock) throw new Error("Supply not found.");
+        const { supply, deposit, location, nroLot } = supplyStock;
+
+        if (!supply._id || !deposit._id) return;
+        const newCurrentStock = (supplyStock.currentStock - newAmount);
+
+        if (newCurrentStock < 0) {
+            Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
+            return;
+        }
+
+        updateCurrentStock(supply._id, deposit._id, location, nroLot, newCurrentStock);
         setOriginSupplies((prevState) => (
-            prevState.map(obj => obj.id === id ? { ...obj, amount: Number(newValue) } : obj)
+            prevState.map(obj => obj.id === id ? { ...obj, amount: Number(newAmount) } : obj)
         ));
     }
 
     const deleteRowOrigin = (id: string) => {
-        setOriginSupplies(prevState => [...prevState.filter(o => o.id !== id)]);
+        const supplyToRemove = originSupplies.find(s => s.id === id);
+        if (!supplyToRemove) return;
+        const { supply, deposit, location, nroLot } = supplyToRemove;
+        setOriginSupplies(originSupplies.filter(o => o.id !== id));
+        setStockBySupplies(stockBySupplies.filter(s =>
+            s.supplyId !== supply._id &&
+            s.depositId !== deposit._id &&
+            s.location !== location &&
+            s.nroLot !== nroLot));
     }
     //* */
     //DESTINATION
     const handleAddSupplyDestination = (newSupply: TransformSupply) => {
-        setDestinationSupplies(prevState => [...prevState, newSupply]);
+        // setDestinationSupplies(prevState => [...prevState, newSupply]);
+        validateSupplyStock(newSupply, "destination");
     }
 
-    const onBlurAmountDestination = (id: string, newValue: number) => {
+    const onBlurAmountDestination = (id: string, value: number) => {
+        let supplyStock = destinationSupplies.find(s => s.id === id);
+
+        if (!supplyStock) throw new Error("Supply not found.");
+        const { supply, deposit, location, nroLot } = supplyStock;
+
+        if (!supply._id || !deposit._id) return;
+        const newCurrentStock = (supplyStock.currentStock + value);
+
+        updateCurrentStock(supply._id, deposit._id, location, nroLot, Number(newCurrentStock));
         setDestinationSupplies((prevState) => (
-            prevState.map(obj => obj.id === id ? { ...obj, amount: Number(newValue) } : obj)
+            prevState.map(obj => obj.id === id ? { ...obj, amount: Number(value) } : obj)
         ));
     }
 
     const deleteRowDestination = (id: string) => {
-        setDestinationSupplies(prevState => [...prevState.filter(o => o.id !== id)]);
+        const supplyToRemove = destinationSupplies.find(s => s.id === id);
+        if (!supplyToRemove) return;
+        const { supply, deposit, location, nroLot } = supplyToRemove;
+        setOriginSupplies(destinationSupplies.filter(o => o.id !== id));
+        setStockBySupplies(stockBySupplies.filter(s =>
+            s.supplyId !== supply._id &&
+            s.depositId !== deposit._id &&
+            s.location !== location &&
+            s.nroLot !== nroLot));
     }
 
     const saveTransformStock = () => {
-        //TODO: crear createTransformStock
-        console.log('originSupplies', originSupplies);
-        console.log('destinationSupplies', destinationSupplies);
+        transformStock(
+            originSupplies, //Movimientos de salida
+            destinationSupplies, //Movimientos de entrada
+            stockBySupplies, //Tabla auxiliar de stock
+            detail,
+            operationDate
+        );
     }
 
     useEffect(() => {
         getSupplies(); getDeposits();
     }, [])
 
-
     return (
         <Box ml={2}>
-            {isLoading && <Loading loading={true} />}
+            {(isLoading || loadingTransform) && <Loading loading={true} />}
             <Box
                 component="div"
                 display="flex"
@@ -269,7 +365,12 @@ export const TransformPage: React.FC = () => {
                 <BorderContainer key="supplies-origin">
                     <TableContainer
                         key="table-supply-origin"
-                        sx={{ minHeight: "120px", maxHeight: "440", overflow: "scroll" }}
+                        sx={{
+                            minHeight: "120px",
+                            maxHeight: "440",
+                            overflow: "scroll",
+                            mb: 5
+                        }}
                         component={Paper}
                     >
                         <Table sx={{ minWidth: 350 }} aria-label="customized table">
@@ -310,7 +411,12 @@ export const TransformPage: React.FC = () => {
                 <BorderContainer key="supplies-destination">
                     <TableContainer
                         key="table-supply-destination"
-                        sx={{ minHeight: "120px", maxHeight: "440", overflow: "scroll" }}
+                        sx={{
+                            minHeight: "120px",
+                            maxHeight: "440",
+                            overflow: "scroll",
+                            mb: 5
+                        }}
                         component={Paper}
                     >
                         <Table sx={{ minWidth: 350 }} aria-label="customized table">

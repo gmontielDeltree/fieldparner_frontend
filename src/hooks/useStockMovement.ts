@@ -1,12 +1,14 @@
 import Swal from 'sweetalert2';
 // import PouchDB from 'pouchdb';
-import { DepositDestination, StockMovement, StockMovementItem, StockByLot, Supply, TypeMovement } from "../types";
+import { DepositDestination, StockMovement, StockMovementItem, StockByLot, Supply, TypeMovement, TransformSupply, Movement } from "../types";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
 import { useAppSelector } from './useRedux';
+import { getShortDate } from '../helpers/dates';
 
 
+const today = getShortDate();
 
 export const useStockMovement = () => {
     const navigate = useNavigate();
@@ -52,6 +54,7 @@ export const useStockMovement = () => {
     }
 
     const getStock = async (supplyId: string, depositId: string, location: string, nroLot: string) => {
+        setIsLoading(true);
         try {
             const existingNroLot = await dbContext.stockByLots.find({
                 selector: {
@@ -63,9 +66,10 @@ export const useStockMovement = () => {
                     ],
                 }
             });
-
+            setIsLoading(false);
             return existingNroLot.docs[0];
         } catch (error) {
+            setIsLoading(false);
             console.log(error)
         }
     }
@@ -111,7 +115,7 @@ export const useStockMovement = () => {
                 responseAll = await Promise.all([
                     promiseStockByLot,
                     dbContext.supplies.put(supplyDto),
-                    dbContext.stockMovements.post({ ...newMovement, accountId })
+                    dbContext.stockMovements.post({ ...newMovement, accountId, userId: user.id })
                 ]);
             }
             else {
@@ -121,13 +125,14 @@ export const useStockMovement = () => {
                 let existingLotInDepositDestination = await getStock(supplyDto._id, depositDestination.depositId, depositDestination.location, existingStock.nroLot);
                 let promiseAll: Promise<PouchDB.Core.Response>[] = [
                     dbContext.stockByLots.put({ ...existingStock, currentStock: existingStock.currentStock - amountValue }),
-                    dbContext.stockMovements.post({ ...newMovement, isIncome: false, accountId }),
+                    dbContext.stockMovements.post({ ...newMovement, isIncome: false, accountId, userId: user.id }),
                     dbContext.stockMovements.post({
                         ...newMovement,
                         depositId: depositDestination.depositId,
                         location: depositDestination.location,
                         isIncome: true,
-                        accountId
+                        accountId,
+                        userId: user.id
                     })
                 ];
                 // Si existe le actualizamos el stock actual, caso contrario creamos nuevo registro.
@@ -213,18 +218,81 @@ export const useStockMovement = () => {
         }
     }
 
-    //TODO: continuar de aca
     const transformStock = async (
-        suppliesToBeDiscounted: StockMovement[],
-        suppliesToAdd: StockMovement[]) => {
+        suppliesToBeDiscounted: TransformSupply[],
+        suppliesToAdd: TransformSupply[],
+        stockBySupplies: StockByLot[],
+        detail: string,
+        operationDate: string) => {
         setIsLoading(true);
         try {
+            let newMovements: StockMovement[] = [];
+
             if (!user) throw new Error();
-            const accountId = user.accountId;
+            const { accountId, id: userId } = user;
+            //Recorremos cada insumo/deposito/ubicacion/lote para crear su movimiento.
+            suppliesToBeDiscounted.forEach(ts => {
+                if (!ts.deposit._id || !ts.supply._id) return;
+                let newMovement: StockMovement = {
+                    accountId,
+                    userId,
+                    amount: ts.amount,
+                    creationDate: today,
+                    campaign: 0,
+                    currency: "",
+                    voucher: "",
+                    totalValue: 0,
+                    hours: "", //TODO: ?
+                    depositId: ts.deposit._id,
+                    supplyId: ts.supply._id,
+                    detail,
+                    operationDate,
+                    dueDate: ts.dueDate,
+                    isIncome: false,
+                    location: ts.location,
+                    movement: Movement.Manual,
+                    nroLot: ts.nroLot,
+                    typeMovement: TypeMovement.Transformacion,
+                }
+                newMovements.push(newMovement);
+            });
+            // Creamos los movimientos de insumo/deposito/ubicacion/lote 
+            suppliesToAdd.forEach(sa => {
+                if (!sa.deposit._id || !sa.supply._id) return;
+                newMovements.push({
+                    accountId,
+                    userId,
+                    amount: sa.amount,
+                    creationDate: today,
+                    campaign: 0,
+                    currency: "",
+                    voucher: "",
+                    totalValue: 0,
+                    hours: "", //TODO: ?
+                    depositId: sa.deposit._id,
+                    supplyId: sa.supply._id,
+                    detail,
+                    operationDate,
+                    dueDate: sa.dueDate,
+                    isIncome: true,
+                    location: sa.location,
+                    movement: Movement.Manual,
+                    nroLot: sa.nroLot,
+                    typeMovement: TypeMovement.Transformacion,
+                });
+            });
+            //Previamente validado
+            // Actualizar en la tabla auxiliar para ese insumo/deposito/ubicacion/lote.
+            let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
+                dbContext.stockMovements.bulkDocs(newMovements),
+                dbContext.stockByLots.bulkDocs(stockBySupplies),
+            ];
+            const responseAll = await Promise.all(promisesAll);
 
-            // Descontar el stock en la tabla auxiliar para ese insumo, deposito, ubication y lote:
-
-
+            if (responseAll)
+                Swal.fire('Transformación de Stock', 'Realizado con exito.', 'success');
+            else
+                Swal.fire('Transformación de Stock', 'Verifica los datos ingresados.', 'error');
 
             setIsLoading(false);
         } catch (error) {
@@ -246,7 +314,9 @@ export const useStockMovement = () => {
         getStockMovements,
         addNewStockMovement,
         updateMovement,
-        getNroLotsBySupplyAndDeposit
+        getNroLotsBySupplyAndDeposit,
+        transformStock,
+        getStock,
 
     }
 }

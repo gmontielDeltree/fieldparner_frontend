@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { SyncAlt as SyncAltIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
+import {  useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
 import {
   CurrencyCode,
   Deposit,
@@ -48,6 +48,7 @@ const initialForm: StockMovement = {
   voucher: "",
   isIncome: false,
   accountId: "",
+  userId: ""
 };
 
 const movementsShowSwitch = [
@@ -58,6 +59,10 @@ const movementsShowSwitch = [
 
 export const NewStockMovementPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isLoading, stockByLots, addNewStockMovement, getNroLotsBySupplyAndDeposit } = useStockMovement();
+  const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
+  const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
+
   const {
     formulario,
     setFormulario,
@@ -66,10 +71,6 @@ export const NewStockMovementPage: React.FC = () => {
     handleSelectChange,
     reset,
   } = useForm(initialForm);
-  const { isLoading, stockByLots, addNewStockMovement, getNroLotsBySupplyAndDeposit } = useStockMovement();
-  const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
-  const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
-
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
   const [showSwitch, setShowSwitch] = useState(true);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);

@@ -68,6 +68,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
     setFormulario((prevState) => ({ ...prevState, location: value }));
   };
 
+  //TODO: aca deberia de buscar el registro por insumo/deposito/ubicacion/lote
   const handleAddNewSupply = () => {
     if (!depositSelected || !supplySelected) return;
     addNewSupply({
@@ -78,6 +79,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       nroLot,
       dueDate,
       amount: 0,
+      currentStock: 0
     });
     reset();
   }
@@ -87,9 +89,10 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       key="row-new-supply-origin"
       container
       spacing={1}
-      mt={5}
-      mb={3}
+      borderRadius={5}
+      pb={1}
       wrap="nowrap"
+      bgcolor="#f3f3f3"
     >
       <Grid item xs={12} sm={3}>
         <FormControl fullWidth>
