@@ -37,7 +37,7 @@ const originColumns: ColumnProps[] = [
     { text: "Vencimiento", align: "left" },
     { text: "UM", align: "center" },
     { text: "Stock Actual", align: "left" },
-    { text: "Stock Restante", align: "left" },
+    { text: "Stock Reservado", align: "left" },
     { text: "Stock Disponible", align: "left" },
     { text: "Cantidad a Utilizar", align: "center" },
 ];
@@ -57,12 +57,12 @@ type SupplyRowProps = {
     row: TransformSupply;
     type: "origin" | "destination";
     deleteRow: (id: string) => void;
-    onBlurAmount: (id: string, amount: number) => void;
+    // onBlurAmount: (id: string, amount: number) => void;
 }
 
-const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow, onBlurAmount }) => {
+const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow }) => {
     const { supply, deposit } = row;
-    const { amount, handleInputChange } = useForm({ amount: 0 });
+    // const { amount, handleInputChange } = useForm({ amount: 0 });
 
     return (
         <ItemRow>
@@ -100,17 +100,10 @@ const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow, onBlurAmoun
                 )
             }
             <TableCell align='center' width="150px">
-                <TextField
-                    variant="outlined"
-                    size='small'
-                    type="number"
-                    name="amount"
-                    value={amount}
-                    onChange={handleInputChange}
-                    onBlur={() => onBlurAmount(row.id, amount)}
-                    inputProps={{ maxLength: 15, min: 1 }}
-                    fullWidth
-                />
+                {
+                    row.amount
+                }
+
             </TableCell>
             {
                 type === "destination" && (
@@ -162,21 +155,39 @@ export const TransformPage: React.FC = () => {
             const result = await getStock(supply._id, deposit._id, newSupply.location, newSupply.nroLot);
 
             if (type === "origin") {
+                //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
                 if (result && result.currentStock > 0) {
                     let supplyStock: StockByLot = result;
-                    setStockBySupplies([supplyStock, ...stockBySupplies]);
-                    setOriginSupplies([...originSupplies, { ...newSupply, currentStock: result.currentStock }]);
+                    const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
+                    if (newCurrentStock <= 0) {
+                        Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
+                        return false;
+                    }
+                    setStockBySupplies([{ ...supplyStock, currentStock: newCurrentStock }, ...stockBySupplies]);
+                    setOriginSupplies([...originSupplies,
+                    {
+                        ...newSupply,
+                        amount: newSupply.amount,
+                        currentStock: result.currentStock
+                    }]);
                     return true;
                 }
                 else {
                     Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
                     return false;
                 }
-            } else {
+            }
+            else {
+                if (originSupplies.length === 0) {
+                    Swal.fire('Insumos Origen', 'Debe haber al menos un Insumo.', 'error');
+                    return false;
+                } //Poner un aler
+
                 if (result) {
                     let supplyStock: StockByLot = result;
-                    setStockBySupplies([supplyStock, ...stockBySupplies]);
-                    setDestinationSupplies([...destinationSupplies, { ...newSupply, currentStock: result.currentStock }]);
+                    const newCurrentStock = (Number(supplyStock.currentStock) + Number(newSupply.amount));
+                    setStockBySupplies([{ ...supplyStock, currentStock: newCurrentStock }, ...stockBySupplies]);
+                    setDestinationSupplies([...destinationSupplies, { ...newSupply, amount: newSupply.amount }]);
                 } else {
                     if (!user) throw new Error("User not found");
                     const newSupplyStock: StockByLot = {
@@ -185,7 +196,7 @@ export const TransformPage: React.FC = () => {
                         supplyId: supply._id,
                         location: newSupply.location,
                         nroLot: newSupply.nroLot,
-                        currentStock: 0,
+                        currentStock: Number(newSupply.amount),
                     };
                     setStockBySupplies([...stockBySupplies, newSupplyStock]);
                     setDestinationSupplies([...destinationSupplies, newSupply]);
@@ -203,43 +214,43 @@ export const TransformPage: React.FC = () => {
         validateSupplyStock(newSupply, "origin");
     }
 
-    const updateCurrentStock = (
-        supplyId: string,
-        depositId: string,
-        location: string,
-        nroLot: string,
-        newCurrentStock: number) => {
-        if (!user) throw new Error("User not found");
-        setStockBySupplies(
-            (prevState) => (
-                prevState.map(s =>
-                    (s.accountId === user.accountId &&
-                        s.supplyId === supplyId &&
-                        s.depositId === depositId &&
-                        s.location === location &&
-                        s.nroLot === nroLot)
-                        ? { ...s, currentStock: newCurrentStock } : s)
-            ))
-    }
+    // const updateCurrentStock = (
+    //     supplyId: string,
+    //     depositId: string,
+    //     location: string,
+    //     nroLot: string,
+    //     newCurrentStock: number) => {
+    //     if (!user) throw new Error("User not found");
+    //     setStockBySupplies(
+    //         (prevState) => (
+    //             prevState.map(s =>
+    //                 (s.accountId === user.accountId &&
+    //                     s.supplyId === supplyId &&
+    //                     s.depositId === depositId &&
+    //                     s.location === location &&
+    //                     s.nroLot === nroLot)
+    //                     ? { ...s, currentStock: newCurrentStock } : s)
+    //         ))
+    // }
 
-    const onBlurAmountOrigin = (id: string, newAmount: number) => {
-        let supplyStock = originSupplies.find(s => s.id === id);
-        if (!supplyStock) throw new Error("Supply not found.");
-        const { supply, deposit, location, nroLot } = supplyStock;
+    // const onBlurAmountOrigin = (id: string, newAmount: number) => {
+    //     let supplyStock = originSupplies.find(s => s.id === id);
+    //     if (!supplyStock) throw new Error("Supply not found.");
+    //     const { supply, deposit, location, nroLot } = supplyStock;
 
-        if (!supply._id || !deposit._id) return;
-        const newCurrentStock = (Number(supplyStock.currentStock) - Number(newAmount));
+    //     if (!supply._id || !deposit._id) return;
+    //     const newCurrentStock = (Number(supplyStock.currentStock) - Number(newAmount));
 
-        if (newCurrentStock < 0) {
-            Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
-            return;
-        }
+    //     if (newCurrentStock < 0) {
+    //         Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
+    //         return;
+    //     }
 
-        updateCurrentStock(supply._id, deposit._id, location, nroLot, Number(newCurrentStock));
-        setOriginSupplies((prevState) => (
-            prevState.map(obj => obj.id === id ? { ...obj, amount: Number(newAmount) } : obj)
-        ));
-    }
+    //     updateCurrentStock(supply._id, deposit._id, location, nroLot, Number(newCurrentStock));
+    //     setOriginSupplies((prevState) => (
+    //         prevState.map(obj => obj.id === id ? { ...obj, amount: Number(newAmount) } : obj)
+    //     ));
+    // }
 
     const deleteRowOrigin = (id: string) => {
         const supplyToRemove = originSupplies.find(s => s.id === id);
@@ -258,20 +269,20 @@ export const TransformPage: React.FC = () => {
         validateSupplyStock(newSupply, "destination");
     }
 
-    const onBlurAmountDestination = (id: string, value: number) => {
-        let supplyStock = destinationSupplies.find(s => s.id === id);
+    // const onBlurAmountDestination = (id: string, value: number) => {
+    //     let supplyStock = destinationSupplies.find(s => s.id === id);
 
-        if (!supplyStock) throw new Error("Supply not found.");
-        const { supply, deposit, location, nroLot } = supplyStock;
+    //     if (!supplyStock) throw new Error("Supply not found.");
+    //     const { supply, deposit, location, nroLot } = supplyStock;
 
-        if (!supply._id || !deposit._id) return;
-        const newCurrentStock = (Number(supplyStock.currentStock) + Number(value));
+    //     if (!supply._id || !deposit._id) return;
+    //     const newCurrentStock = (Number(supplyStock.currentStock) + Number(value));
 
-        updateCurrentStock(supply._id, deposit._id, location, nroLot, Number(newCurrentStock));
-        setDestinationSupplies((prevState) => (
-            prevState.map(obj => obj.id === id ? { ...obj, amount: Number(value) } : obj)
-        ));
-    }
+    //     updateCurrentStock(supply._id, deposit._id, location, nroLot, Number(newCurrentStock));
+    //     setDestinationSupplies((prevState) => (
+    //         prevState.map(obj => obj.id === id ? { ...obj, amount: Number(value) } : obj)
+    //     ));
+    // }
 
     const deleteRowDestination = (id: string) => {
         const supplyToRemove = destinationSupplies.find(s => s.id === id);
@@ -393,7 +404,7 @@ export const TransformPage: React.FC = () => {
                                     <SupplyRow
                                         key={originSupply.id}
                                         type='origin'
-                                        onBlurAmount={onBlurAmountOrigin}
+                                        // onBlurAmount={onBlurAmountOrigin}
                                         row={originSupply}
                                         deleteRow={deleteRowOrigin}
                                     />
@@ -439,7 +450,7 @@ export const TransformPage: React.FC = () => {
                                     <SupplyRow
                                         key={originSupply.id}
                                         type="destination"
-                                        onBlurAmount={onBlurAmountDestination}
+                                        // onBlurAmount={onBlurAmountDestination}
                                         row={originSupply}
                                         deleteRow={deleteRowDestination}
                                     />
