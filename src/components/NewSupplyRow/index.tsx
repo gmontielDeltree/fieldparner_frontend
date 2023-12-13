@@ -20,6 +20,7 @@ const initialStateNewSupply = {
   location: "",
   nroLot: "",
   dueDate: today,
+  amount: 0
 };
 
 export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
@@ -34,6 +35,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
     location,
     nroLot,
     dueDate,
+    amount,
     handleInputChange,
     reset,
     setFormulario,
@@ -68,7 +70,6 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
     setFormulario((prevState) => ({ ...prevState, location: value }));
   };
 
-  //TODO: aca deberia de buscar el registro por insumo/deposito/ubicacion/lote
   const handleAddNewSupply = () => {
     if (!depositSelected || !supplySelected) return;
     addNewSupply({
@@ -78,7 +79,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       location,
       nroLot,
       dueDate,
-      amount: 0,
+      amount,
       currentStock: 0
     });
     reset();
@@ -88,6 +89,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
     <Grid
       key="row-new-supply-origin"
       container
+      alignItems="center"
       spacing={1}
       borderRadius={5}
       pb={1}
@@ -113,44 +115,52 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={3}>
-        <FormControl fullWidth>
-          <InputLabel id="deposit">Deposito</InputLabel>
-          <Select
-            labelId="deposit"
-            name="origin"
-            value={depositId}
-            label="Deposito"
-            onChange={onChangeDeposit}
-          >
-            {deposits.map((deposit) => (
-              <MenuItem key={deposit._id} value={deposit._id}>
-                {deposit.description}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {
+          supplySelected && (
+            <FormControl fullWidth>
+              <InputLabel id="deposit">Deposito</InputLabel>
+              <Select
+                labelId="deposit"
+                name="origin"
+                value={depositId}
+                label="Deposito"
+                onChange={onChangeDeposit}
+              >
+                {deposits.map((deposit) => (
+                  <MenuItem key={deposit._id} value={deposit._id}>
+                    {deposit.description}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )
+        }
       </Grid>
       <Grid item xs={12} sm={3}>
-        <FormControl fullWidth>
-          <InputLabel id="location">Ubicacion</InputLabel>
-          <Select
-            labelId="location"
-            name="origin"
-            value={location}
-            label="Ubicacion"
-            onChange={onChangeLocation}
-          >
-            {depositSelected?.locations.map((loc) => (
-              <MenuItem key={loc} value={loc}>
-                {loc}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {
+          supplySelected && (
+            <FormControl fullWidth>
+              <InputLabel id="location">Ubicacion</InputLabel>
+              <Select
+                labelId="location"
+                name="origin"
+                value={location}
+                label="Ubicacion"
+                onChange={onChangeLocation}
+              >
+                {depositSelected?.locations.map((loc) => (
+                  <MenuItem key={loc} value={loc}>
+                    {loc}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )
+        }
       </Grid>
       <Grid item xs={12} sm={2}>
         {
-          supplySelected && supplySelected.stockByLot
+          (supplySelected && supplySelected.stockByLot && depositSelected)
             ? (
               <TextField
                 key="nroLot-input"
@@ -171,7 +181,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       </Grid>
       <Grid item xs={12} sm={2}>
         {
-          supplySelected && supplySelected.stockByLot
+          (supplySelected && supplySelected.stockByLot && depositSelected)
             ? (
               <TextField
                 variant="outlined"
@@ -187,6 +197,22 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
               />
             )
             : "-"
+        }
+      </Grid>
+      <Grid item xs={12} sm={2}>
+        {
+          (supplySelected && depositSelected && location) && (
+            <TextField
+              variant="outlined"
+              type="number"
+              label="Cantidad"
+              name="amount"
+              value={amount}
+              onChange={handleInputChange}
+              inputProps={{ maxLength: 15, min: 1 }}
+              fullWidth
+            />
+          )
         }
       </Grid>
       <Grid item xs={12} sm={1} display="flex" justifyContent="center">
