@@ -15,6 +15,7 @@ import {
 import { Supply } from "../types";
 import { removeSupplyActive } from "../redux/supply";
 
+
 const initialForm: Supply = {
   accountId: "",
   type: "",
@@ -49,7 +50,9 @@ export const SupplyPage: React.FC = () => {
     reset,
   } = useForm(initialForm);
 
-  const { isLoading, createSupply, updateSupply } = useSupply();
+  const {  isLoading, supplyError, createSupply, updateSupply, setSupplyError} = useSupply();
+ 
+
 
   const onClickCancel = () => navigate("/init/overview/supply");
 
@@ -76,6 +79,7 @@ export const SupplyPage: React.FC = () => {
               key="laborsForm"
               formValues={formulario}
               setFormValues={setFormulario}
+              supplyError={supplyError}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
@@ -91,29 +95,39 @@ export const SupplyPage: React.FC = () => {
           );
         case 2:
           return (
-            <StockForm
+              <StockForm
               key="stockForm"
               formValues={formulario}
-              handleSelectChange={handleSelectChange}
               handleInputChange={handleInputChange}
-            />
+              handleSelectChange={handleSelectChange}
+              />
           );
+          
         default:
           throw new Error("Unknown step");
-      }
+      } 
     },
     [
-      formulario,
-      handleInputChange,
-      handleSelectChange,
-      handleCheckboxChange,
-      setFormulario,
+      [formulario,
+       handleInputChange,
+       handleSelectChange,
+       handleCheckboxChange,
+       setFormulario]
     ]
   );
 
   const handleNext = () => {
-    setActiveStep(activeStep + 1);
+    
+    if (!formulario.name.trim()) {
+      setSupplyError(true);
+      
+    } else {
+      setSupplyError(false);
+      setActiveStep(activeStep + 1);
+    }
   };
+ 
+
 
   const handleBack = () => {
     setActiveStep(activeStep - 1);

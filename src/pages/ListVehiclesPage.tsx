@@ -6,6 +6,7 @@ import {
   DataTable,
   ItemRow,
   TableCellStyled,
+  CloseButtonPage,
 } from "../components";
 import { ColumnProps, Vehiculo } from "../types";
 import {
@@ -18,6 +19,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import 'semantic-ui-css/semantic.min.css';
+import {Icon} from "semantic-ui-react";
 import {
   Add as AddIcon,
   Search as SearchIcon,
@@ -75,13 +78,17 @@ export const ListVehiclesPage: React.FC = () => {
       <Box
         component="div"
         display="flex"
+        justifyContent="space-between"
         alignItems="center"
-        sx={{ ml: { sm: 2 }, pt: 2 }}
+        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
       >
-        <LocalShippingIcon />
-        <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-          Vehiculos
-        </Typography>
+        <Box display="flex" alignItems="center">
+          <LocalShippingIcon sx={{ marginRight: '8px' }} />
+          <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
+            Vehiculos
+          </Typography>
+        </Box>
+        <CloseButtonPage />
       </Box>
       <Box component="div" sx={{ mt: 7 }}>
         <Grid
@@ -165,6 +172,14 @@ export const ListVehiclesPage: React.FC = () => {
                       <EditIcon />
                     </IconButton>
                   </Tooltip>
+                  <Tooltip title="Eliminar">
+                      <IconButton
+                        // onClick={() =>  handleDeleteVehicle (row)}
+                        style={{ fontSize: '1rem' }}
+                      >
+                        <Icon name="trash alternate" />
+                      </IconButton>
+                    </Tooltip>
                 </TableCellStyled>
               </ItemRow>
             ))}

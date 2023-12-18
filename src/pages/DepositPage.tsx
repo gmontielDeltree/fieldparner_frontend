@@ -82,6 +82,9 @@ export const DepositPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [localities, setLocalities] = useState<string[]>([]);
+  const [descriptionError, setDescriptionError] = useState(false);
+  const [countryError, setCountryError] = useState(false);
+  const [cpError, setCpError] = useState(false);
   const { depositActive } = useAppSelector((state) => state.deposit);
   const {
     formulario,
@@ -90,8 +93,8 @@ export const DepositPage: React.FC = () => {
     handleFormValueChange,
     handleCheckboxChange,
     handleSelectChange,
-    reset,
-  } = useForm(initialForm);
+} = useForm(initialForm);
+
   const { isLoading, createDeposit, updateDeposit } = useDeposit();
   const {
     getBusinesses,
@@ -129,15 +132,48 @@ export const DepositPage: React.FC = () => {
   const onClickCancel = () => navigate("/init/overview/deposit");
 
   const handleUpdateDeposit = () => {
-    if (formulario._id) {
-      updateDeposit(formulario);
+    if (validateForm()) {
+      if (formulario._id) {
+        updateDeposit(formulario);
+      } else {
+        createDeposit(formulario);
+      }
       dispatch(removeDepositActive());
+      setFormulario(initialForm);
     }
   };
-
   const handleAddDeposit = () => {
-    createDeposit(formulario);
-    reset();
+    if (validateForm()) {
+        createDeposit(formulario);
+        setFormulario(initialForm);
+    }
+};
+
+  const validateForm = () => {
+    let isValid = true;
+  
+    if (description.trim() === "") {
+      setDescriptionError(true);
+      isValid = false;
+    } else {
+      setDescriptionError(false);
+    }
+  
+    if (zipCode.trim() === "") {
+      setCpError(true);
+      isValid = false;
+    } else {
+      setCpError(false);
+    }
+  
+    if (country.trim() === "") {
+      setCountryError(true);
+      isValid = false;
+    } else {
+      setCountryError(false);
+    }
+  
+    return isValid;
   };
 
   const getLocalityAndState = async () => {
@@ -218,7 +254,7 @@ export const DepositPage: React.FC = () => {
           {depositActive ? "Editar" : "Agregar Nuevo"} Deposito
         </Typography>
         <Grid container spacing={2} alignItems="center" justifyContent="center">
-          <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
               type="text"
@@ -230,6 +266,8 @@ export const DepositPage: React.FC = () => {
                 startAdornment: <InputAdornment position="start" />,
               }}
               fullWidth
+              error={descriptionError}
+              helperText={descriptionError ? "Este campo es obligatorio" : ""}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -295,23 +333,28 @@ export const DepositPage: React.FC = () => {
             />
           </Grid>
           <Grid item xs={6} sm={4}>
-            <FormControl fullWidth>
-              <InputLabel id="label-pais">Pais</InputLabel>
-              <Select
-                labelId="label-pais"
-                name="country"
-                value={country}
-                label="Pais"
-                onChange={handleSelectChange}
-              >
-                {optionsCountry.map((country) => (
-                  <MenuItem key={country} value={country}>
-                    {country}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+          <FormControl fullWidth>
+            <InputLabel id="label-pais">Pais</InputLabel>
+            <Select
+              labelId="label-pais"
+              name="country"
+              value={country}
+              label="Pais"
+              onChange={handleSelectChange}
+            >
+              {optionsCountry.map((country) => (
+                <MenuItem key={country} value={country}>
+                  {country}
+                </MenuItem>
+              ))}
+            </Select>
+            {countryError && (
+              <Typography color="error">
+                El país es obligatorio
+              </Typography>
+            )}
+          </FormControl>
+        </Grid>
           <Grid item xs={6} sm={4}>
             <TextField
               variant="outlined"
@@ -321,6 +364,8 @@ export const DepositPage: React.FC = () => {
               value={zipCode}
               onBlur={() => onBlurZipCode()}
               onChange={handleInputChange}
+              error={cpError}
+              helperText={cpError ? "Este campo es obligatorio" : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}

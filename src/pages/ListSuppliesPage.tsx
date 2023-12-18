@@ -10,6 +10,7 @@ import {
   SearchInput,
   TableCellStyled,
   TemplateLayout,
+  CloseButtonPage,
 } from "../components";
 import {
   Box,
@@ -20,6 +21,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import 'semantic-ui-css/semantic.min.css';
+import {Icon} from "semantic-ui-react";
 import {
   Inventory as InventoryIcon,
   Add as AddIcon,
@@ -40,7 +43,7 @@ export const ListSuppliesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const { isLoading, supplies, getSupplies, setSupplies } = useSupply();
+  const { isLoading, supplies, getSupplies, setSupplies, deleteSupply } = useSupply();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const onClickSearch = () => {
@@ -59,6 +62,12 @@ export const ListSuppliesPage: React.FC = () => {
     navigate(`/init/overview/supply/${item._id}`);
     dispatch(setSupplyActive(item));
   };
+  const handleDeleteSupply = (item: Supply) => {
+    if (item._id && item._rev) {
+      deleteSupply(item._id, item._rev);
+      getSupplies();
+    }
+  };
 
   useEffect(() => {
     getSupplies();
@@ -68,17 +77,21 @@ export const ListSuppliesPage: React.FC = () => {
     <TemplateLayout key="overview-supplies" viewMap={false}>
       {isLoading && <Loading loading />}
       <Container maxWidth="md" sx={{ ml: 0 }}>
-        <Box
-          component="div"
-          display="flex"
-          alignItems="center"
-          sx={{ ml: { sm: 2 }, pt: 2 }}
-        >
-          <InventoryIcon />
-          <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
+      <Box
+        component="div"
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
+      >
+        <Box display="flex" alignItems="center">
+          <InventoryIcon sx={{ marginRight: '8px' }} />
+          <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
             Insumos
           </Typography>
         </Box>
+        <CloseButtonPage />
+      </Box>
         <Box component="div" sx={{ mt: 7 }}>
           <Grid
             container
@@ -142,6 +155,14 @@ export const ListSuppliesPage: React.FC = () => {
                         onClick={() => onClickUpdateSupply(row)}
                       >
                         <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Eliminar">
+                      <IconButton
+                        onClick={() =>  handleDeleteSupply (row)}
+                        style={{ fontSize: '1rem' }}
+                      >
+                        <Icon name="trash alternate" />
                       </IconButton>
                     </Tooltip>
                   </TableCellStyled>

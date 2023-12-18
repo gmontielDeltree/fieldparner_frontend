@@ -16,6 +16,12 @@ import { Phone as PhoneIcon } from "@mui/icons-material";
 
 export interface BusinessFormProps {
   values: Business;
+  nameError: boolean;
+  documentError: boolean;
+  legajoError: boolean;
+  cuitError: boolean;
+  razonSocialError: boolean;
+  emailError: boolean;
   // setFormValues: React.Dispatch<React.SetStateAction<Business>>;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
@@ -27,6 +33,12 @@ export interface BusinessFormProps {
 
 export const BusinessForm: React.FC<BusinessFormProps> = ({
   values,
+  nameError,
+  documentError,
+  legajoError,
+  cuitError,
+  emailError,
+  razonSocialError,
   handleInputChange,
   handleSelectChange,
   handleCheckboxChange,
@@ -74,7 +86,9 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               label="Documento"
               name="documento"
               value={documento}
+              error={documentError}
               onChange={handleInputChange}
+              helperText={documentError ? "Este campo es obligatorio" : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -88,7 +102,9 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               label="Nombre completo"
               name="nombreCompleto"
               value={nombreCompleto}
+              error={nameError}
               onChange={handleInputChange}
+              helperText={nameError ? "Este campo es obligatorio" : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -110,6 +126,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
                 />
               }
               label="Empleado"
+
             />
           </Grid>
           <Grid item xs={12} sm={4}>
@@ -119,7 +136,9 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               label="Legajo"
               name="legajo"
               value={legajo}
+              error={legajoError}
               onChange={handleInputChange}
+              helperText={legajoError ? "Este campo es obligatorio" : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -151,7 +170,9 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               type="text"
               name="cuit"
               value={cuit}
+              error={cuitError}
               onChange={handleInputChange}
+              helperText={cuitError ? "Este campo es obligatorio" : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -166,7 +187,9 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               type="text"
               name="razonSocial"
               value={razonSocial}
+              error={razonSocialError}
               onChange={handleInputChange}
+              helperText={razonSocialError ? "Este campo es obligatorio" : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -184,6 +207,8 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           name="email"
           value={email}
           onChange={handleInputChange}
+          error={emailError}
+          helperText={emailError ? "Este campo es obligatorio" : ""}
           InputProps={{
             // startAdornment: <InputAdornment position="start" />,
             endAdornment: <InputAdornment position="end">@</InputAdornment>,
