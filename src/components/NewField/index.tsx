@@ -49,6 +49,7 @@ const NewField: React.FC<NewFieldProps> = ({
           map={map}
           draw={draw}
           handleSaveGeometry={handleSaveGeometry}
+          onClose={onClose}
           type="field"
         />
       }
