@@ -95,7 +95,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemText primary="Lista de Dispositivos" />
             </ListItemButton>
           </ListItem>
-          <ListItem key="personal" disablePadding>
+          <ListItem key="business" disablePadding>
             <ListItemButton
               component={RouterLink}
               to="/init/overview/business"
@@ -105,6 +105,18 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <GroupIcon />
               </ListItemIcon>
               <ListItemText primary="Entidades Sociales" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="out-field" disablePadding>
+            <ListItemButton
+              component={RouterLink}
+              to="/init/overview/out-field"
+              selected={pathname.includes("/init/overview/out-field")}
+            >
+              <ListItemIcon>
+                <GroupIcon />
+              </ListItemIcon>
+              <ListItemText primary="Salida de Campo" />
             </ListItemButton>
           </ListItem>
           <ListItem key="supplies" disablePadding>
