@@ -153,6 +153,8 @@
     "react-transition-group": "^4.4.5",
     "reactstrap": "^9.2.0",
     "redux": "^4.2.1",
+    "semantic-ui-css": "^2.5.0",
+    "semantic-ui-react": "^2.1.4",
     "shepherd.js": "^11.2.0",
     "sweetalert2": "^11.7.27",
     "togeojson": "^0.16.0",

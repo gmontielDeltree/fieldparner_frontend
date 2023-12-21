@@ -1,7 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector, useBusiness, useForm } from "../hooks";
-import { Business, TipoEntidad } from "../types";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useBusiness,
+  useForm,
+} from "../hooks";
+import { Business, TipoEntidad, CountryCode } from "../types";
 import { AddressForm, CategoryTable, Loading } from "../components";
 import {
   Button,
@@ -15,6 +20,7 @@ import {
 } from "@mui/material";
 import { BusinessForm } from "../components";
 import { removeBusinessActive } from "../redux/business";
+import { getLocalityAndStateByZipCode } from "../services";
 
 const initialForm: Business = {
   nombreCompleto: "",
@@ -30,6 +36,7 @@ const initialForm: Business = {
   domicilio: "",
   localidad: "",
   cp: "",
+  zipCode:"",
   provincia: "",
   pais: "",
   esEmpleado: false,
@@ -43,6 +50,15 @@ export const BusinessPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { businessActive } = useAppSelector((state) => state.business);
   const [activeStep, setActiveStep] = useState(0);
+  const [nameError, setNameError] = useState(false);
+  const [documentError, setDocumentError] = useState(false);
+  const [countryError, setCountryError] = useState(false);
+  const [legajoError, setLegajoError] = useState(false);
+  const [cuitError, setCuitError] = useState(false);
+  const [razonSocialError, setRazonSocialError] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [loadingZipCode, setLoadingZipCode] = useState(false);
+  const [localities, setLocalities] = useState<string[]>([]);
   const [steps, setSteps] = useState<string[]>([
     "Informacion",
     "Categoría",
@@ -56,7 +72,15 @@ export const BusinessPage: React.FC = () => {
     handleCheckboxChange,
     reset,
   } = useForm<Business>(initialForm);
-  const { isLoading, createBusiness, updateBusiness } = useBusiness();
+  const {
+    isLoading,
+    createBusiness,
+    updateBusiness,
+    deleteBusiness,
+    getBusinesses,
+  } = useBusiness();
+
+  const { zipCode } = formulario;
 
   const handleDeleteCategory = (category: string) => {
     setFormulario((prevState) => ({
@@ -73,6 +97,29 @@ export const BusinessPage: React.FC = () => {
     }));
   };
 
+  const getLocalityAndState = async () => {
+    setLoadingZipCode(true);
+    try {
+      const localityAndStates = await getLocalityAndStateByZipCode(
+        CountryCode.ARGENTINA,
+        zipCode
+      );
+
+      if (localityAndStates?.length) {
+        setLocalities(localityAndStates.map((x) => x.locality));
+        setFormulario((prevState) => ({
+          ...prevState,
+          province: localityAndStates[0].state,
+        }));
+      }
+
+      setLoadingZipCode(false);
+    } catch (error) {
+      setLoadingZipCode(false);
+      console.log(error);
+    }
+  };
+
   const getStepContent = useMemo(
     () => (step: number) => {
       switch (step) {
@@ -81,6 +128,12 @@ export const BusinessPage: React.FC = () => {
             <BusinessForm
               key="information-business"
               values={formulario}
+              nameError={nameError}
+              documentError={documentError}
+              legajoError={legajoError}
+              cuitError={cuitError}
+              emailError={emailError}
+              razonSocialError={razonSocialError}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
@@ -98,10 +151,14 @@ export const BusinessPage: React.FC = () => {
         case 2:
           return (
             <AddressForm
-              key="address-customer"
-              values={formulario}
-              handleInputChange={handleInputChange}
-            />
+                key="address-customer"
+                values={formulario}
+                countryError={countryError}
+                handleInputChange={handleInputChange}
+                onChangeZipCode={getLocalityAndState}
+                loading={isLoading || loadingZipCode}
+              />
+
           );
         default:
           throw new Error("Unknown step");
@@ -117,7 +174,69 @@ export const BusinessPage: React.FC = () => {
     ]
   );
 
+  const validateForm = () => {
+    if (formulario.tipoEntidad === TipoEntidad.JURIDICA.toString()) {
+      
+      let hasError = false;
+  
+      if (formulario.cuit?.trim() === "") {
+        setCuitError(true);
+        hasError = true;
+      } else {
+        setCuitError(false);
+      }
+  
+      if (formulario.razonSocial?.trim() === "") {
+        setRazonSocialError(true);
+        hasError = true;
+      } else {
+        setRazonSocialError(false);
+      }
+  
+      if (formulario.email?.trim() === "") {
+        setEmailError(true);
+        hasError = true;
+      } else {
+        setEmailError(false);
+      }
+  
+      return !hasError;
+    } else {
+      // Validaciones para otros tipos de entidad
+      let hasError = false;
+  
+      if (formulario.nombreCompleto?.trim() === "") {
+        setNameError(true);
+        hasError = true;
+      } else {
+        setNameError(false);
+      }
+  
+      if (formulario.documento?.trim() === "") {
+        setDocumentError(true);
+        hasError = true;
+      } else {
+        setDocumentError(false);
+      }
+  
+      if (formulario.esEmpleado && formulario.legajo?.trim() === "") {
+        setLegajoError(true);
+        hasError = true;
+      } else {
+        setLegajoError(false);
+      }
+  
+      return !hasError;
+    }
+  };
+
   const handleNext = () => {
+    if (activeStep === 0) {
+      if (!validateForm()) {
+        return;
+      }
+    }
+  
     setActiveStep(activeStep + 1);
   };
 
@@ -130,14 +249,48 @@ export const BusinessPage: React.FC = () => {
     navigate("/init/overview/business");
   };
 
-  const addNewBusiness = () => {
-    createBusiness(formulario);
-    reset();
+  const addNewBusiness = async () => {
+    try {
+
+      if (formulario.zipCode?.trim() !== "") {
+        await getLocalityAndState();
+      }
+
+      if (!validateForm()) {
+        return;
+      }
+      if (formulario.pais?.trim() === "") {
+        setCountryError(true);
+        return;
+      } else {
+        setCountryError(false);
+      }
+      await createBusiness(formulario);
+      reset();
+    } catch (error) {
+      console.error("Error al agregar el negocio:", error);
+    }
   };
 
   const handleUpdateBusiness = () => {
+    
+    if (!validateForm()) {
+      return;
+    }
     if (formulario._id) updateBusiness(formulario);
+
   };
+
+  const handleDelete = () => {
+    if (formulario._id && formulario._rev) {
+      deleteBusiness(formulario._id, formulario._rev);
+      reset();
+    }
+  };
+
+  useEffect(() => {
+    getBusinesses();
+  }, []);
 
   useEffect(() => {
     if (businessActive) setFormulario(businessActive);
@@ -204,6 +357,17 @@ export const BusinessPage: React.FC = () => {
                   {!businessActive ? "Agregar" : "Actualizar"}
                 </Button>
               </Grid>
+              {businessActive && (
+                <Grid item xs={12} sm={3}>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={handleDelete}
+                  >
+                    Eliminar
+                  </Button>
+                </Grid>
+              )}
             </Grid>
           </>
         </Paper>

@@ -22,6 +22,7 @@ export const useDeposit = () => {
     const [deposits, setDeposits] = useState<Deposit[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+
     const getDeposits = async () => {
         setIsLoading(true);
         try {
@@ -82,19 +83,43 @@ export const useDeposit = () => {
         }
     }
 
-    const removeSupply = async () => {
+    const deleteDeposit = async (deleteDepositId: string, revDeposit: string) => {
+        setIsLoading(true);
+        try {
+            // const response = await fieldpartnerAPI.patch(`${controller}/${businessId}`, updateBusiness);
+            const response = await dbContext.deposits.remove(deleteDepositId, revDeposit);
+            setIsLoading(false);
+                
 
+            setIsLoading(false);
+
+            if (response.ok)
+               Swal.fire('Deposito', 'Eliminado.', 'success');
+            navigate("/init/overview/deposit");
+
+        } catch (error) {
+            console.log('Error al actualizar el documento: ', error);
+            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            setIsLoading(false);
+        }
     }
+
+    // const removeSupply = async () => {
+
+    // }
 
     return {
         deposits,
         isLoading,
+      
 
         setDeposits,
         getDeposits,
         createDeposit,
         updateDeposit,
-        removeSupply,
+       
+        // removeSupply,
+        deleteDeposit
     }
 
 }

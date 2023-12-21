@@ -8,6 +8,7 @@ import {
   DataTable,
   ItemRow,
   TableCellStyled,
+  CloseButtonPage,
 } from "../components";
 import { Business, ColumnProps } from "../types";
 import {
@@ -19,6 +20,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import 'semantic-ui-css/semantic.min.css';
+import {Icon} from "semantic-ui-react";
 import {
   Add as AddIcon,
   Business as BusinessIcon,
@@ -40,7 +43,7 @@ export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // const { isLoading } = useAppSelector((state) => state.ui);
-  const { isLoading, businesses, getBusinesses, setBusinesses } = useBusiness();
+  const { isLoading, businesses, getBusinesses, setBusinesses, deleteBusiness} = useBusiness();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const onClickSearch = (): void => {
@@ -65,26 +68,37 @@ export const ListBusinessesPage: React.FC = () => {
     navigate(`/init/overview/business/${item._id}`);
   };
 
+  const handleDeleteBusiness = (item: Business) => {
+    if (item._id && item._rev) {
+      deleteBusiness(item._id, item._rev);
+      getBusinesses();
+    }
+  };
+
   useEffect(() => {
     getBusinesses();
   }, []);
 
   return (
     <TemplateLayout key="overview-business" viewMap={false}>
-      {isLoading && <Loading loading={true} />}
-      <Container maxWidth="lg">
-        <Box
-          component="div"
-          display="flex"
-          alignItems="center"
-          sx={{ ml: { sm: 2 }, pt: 2 }}
-        >
-          <BusinessIcon />
+    {isLoading && <Loading loading={true} />}
+    <Container maxWidth="lg">
+          <Box
+        component="div"
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
+      >
+        <Box display="flex" alignItems="center">
+          <BusinessIcon sx={{ marginRight: '8px' }} />
           <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
             Entidades Sociales
           </Typography>
         </Box>
-        <Box component="div" sx={{ mt: 7 }}>
+        <CloseButtonPage />
+      </Box>
+      <Box component="div" sx={{ mt: 7 }}>
           <Grid
             container
             spacing={0}
@@ -144,6 +158,14 @@ export const ListBusinessesPage: React.FC = () => {
                         onClick={() => onClickUpdateBusiness(row)}
                       >
                         <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Eliminar">
+                      <IconButton
+                        onClick={() => handleDeleteBusiness(row)}
+                        style={{ fontSize: '1rem' }}
+                      >
+                        <Icon name="trash alternate" />
                       </IconButton>
                     </Tooltip>
                   </TableCellStyled>
