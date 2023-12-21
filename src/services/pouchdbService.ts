@@ -9,7 +9,8 @@ import {
     ItemZipCode,
     Supply,
     Vehiculo,
-    StockMovement
+    StockMovement,
+    StockByLot
 } from '../types';
 import uuid4 from 'uuid4';
 
@@ -25,7 +26,8 @@ const dbNames = Object.freeze({
     supplies: "supplies",
     socialEntities: "social-entities",
     categories: "categories",
-    stockMovements: "stock-movements"
+    stockMovements: "stock-movements",
+    stockByLots: "lots-stock",
 });
 
 export const dbContext = Object.freeze({
@@ -36,6 +38,7 @@ export const dbContext = Object.freeze({
     socialEntities: new PouchDB<Business>(dbNames.socialEntities),
     categories: new PouchDB<Category>(dbNames.categories),
     stockMovements: new PouchDB<StockMovement>(dbNames.stockMovements),
+    stockByLots: new PouchDB<StockByLot>(dbNames.stockByLots),
 });
 
 dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
@@ -45,6 +48,8 @@ dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, opts);
 dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, opts);
 dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, opts);
 dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, opts);
+dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
+
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {

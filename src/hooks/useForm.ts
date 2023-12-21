@@ -9,6 +9,9 @@ export const useForm = <T extends Object>(initialState: T) => {
 
     const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = target;
+        // let newValue = value;
+
+        // if (onlyNumeric) newValue = target.value.replace(/[^0-9]/g, '');
 
         setFormulario({
             ...formulario,

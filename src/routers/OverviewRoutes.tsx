@@ -13,6 +13,7 @@ import {
   StockMovementPage,
   NewStockMovementPage,
   ListStockPage,
+  TransformPage,
 } from "../pages";
 import { AppLayout } from "../components";
 
@@ -46,6 +47,7 @@ export const OverviewRoutes: React.FC = () => {
           element={<NewStockMovementPage />}
         />
         <Route path="/overview/list-stock" element={<ListStockPage />} />
+        <Route path="/overview/transform" element={<TransformPage />} />
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

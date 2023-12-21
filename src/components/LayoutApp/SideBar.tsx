@@ -14,7 +14,7 @@ import {
   Cabin as CabinIcon,
   ChevronLeft as ChevronLeftIcon,
   LocalShipping as LocalShippingIcon,
-  AttachMoney as AttachMoneyIcon,
+  // AttachMoney as AttachMoneyIcon,
   Settings as SettingsIcon,
   Group as GroupIcon,
   Cached as CachedIcon,
@@ -22,7 +22,8 @@ import {
   Inventory as InventoryIcon,
   Warehouse as WarehouseIcon,
   SyncAlt as SyncAltIcon,
-  QueryStats as QueryStatsIcon
+  QueryStats as QueryStatsIcon,
+  Transform as TransformIcon
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
 import { Typography } from "@mui/material";
@@ -166,12 +167,15 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemText primary="Consulta De Stock" />
             </ListItemButton>
           </ListItem>
-          <ListItem key="precios" disablePadding>
-            <ListItemButton onClick={() => navigateTo("/prices")}>
+          <ListItem key="transform" disablePadding>
+            <ListItemButton
+              component={RouterLink}
+              to="/init/overview/transform"
+              selected={pathname.includes("/init/overview/transform")}>
               <ListItemIcon>
-                <AttachMoneyIcon />
+                <TransformIcon />
               </ListItemIcon>
-              <ListItemText primary="Precios" />
+              <ListItemText primary="Transformacion" />
             </ListItemButton>
           </ListItem>
           <ListItem key="ajustes" disablePadding>
@@ -202,7 +206,7 @@ export const SideBar: React.FC<SideBarProps> = ({
             textAlign: "right"
           }}
         >
-          <Typography variant="body" color="gray">
+          <Typography variant="body1" color="gray">
             v{version}
           </Typography>
         </Box>

@@ -86,10 +86,10 @@ export const ListStockPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const {
     isLoading,
-    supplies,
+    stockBySupplies,
     supplyByDeposits,
-    getSupplies,
-    getStockByDeposits,
+    getStockByDepositAndLocation,
+    getStockBySupplies,
   } = useSupply();
   const [tabValue, setTabValue] = React.useState(0);
   const [showStockValueZero, setShowStockValueZero] = React.useState(false);
@@ -112,8 +112,8 @@ export const ListStockPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (tabValue === 0) getSupplies();
-    else getStockByDeposits();
+    if (tabValue === 0) getStockBySupplies();
+    else getStockByDepositAndLocation();
   }, [tabValue]);
 
   return (
@@ -187,29 +187,29 @@ export const ListStockPage: React.FC = () => {
                 columns={columnsBySupply}
                 isLoading={isLoading}
               >
-                {supplies
+                {stockBySupplies
                   .filter((s) => (showStockValueZero ? s : s.currentStock > 0))
-                  .map((row) => (
-                    <ItemRow key={row._id} hover>
-                      <TableCellStyled align="left">{row.type}</TableCellStyled>
-                      <TableCellStyled align="center">{`${row.name}/${row.description}`}</TableCellStyled>
+                  .map(({ supply, currentStock }) => (
+                    <ItemRow key={supply._id} hover>
+                      <TableCellStyled align="left">{supply.type}</TableCellStyled>
+                      <TableCellStyled align="center">{`${supply.name}/${supply.description}`}</TableCellStyled>
                       <TableCellStyled align="center">
-                        {row.unitMeasurement}
+                        {supply.unitMeasurement}
                       </TableCellStyled>
                       <TableCellStyled align="center">
                         <Chip
-                          label={row.currentStock}
+                          label={currentStock}
                           variant="filled"
                           color="primary"
-                          onClick={() => onClickSupply(row)}
+                          onClick={() => onClickSupply(supply)}
                         />
                       </TableCellStyled>
                       <TableCellStyled align="center">
-                        <Chip label={row.reservedStock} variant="outlined" />
+                        <Chip label={supply.reservedStock} variant="outlined" />
                       </TableCellStyled>
                       <TableCellStyled align="center">
                         <Chip
-                          label={row.currentStock - row.reservedStock}
+                          label={currentStock - supply.reservedStock}
                           color="success"
                         />
                       </TableCellStyled>
@@ -248,7 +248,7 @@ export const ListStockPage: React.FC = () => {
                       <TableCellStyled>{row.supply?.type}</TableCellStyled>
                       <TableCellStyled align="center">{`${row.supply?.name}/${row.supply?.description}`}</TableCellStyled>
                       <TableCellStyled align="center">
-                        {row.unitMeasurement}
+                        {row.supply?.unitMeasurement}
                       </TableCellStyled>
                       <TableCellStyled align="center">
                         <Chip
