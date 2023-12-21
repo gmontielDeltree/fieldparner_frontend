@@ -276,10 +276,9 @@ export const useSupply = () => {
         updateSupply,
         deleteSupply,
         setSupplyError,
-        // removeSupply,
         getStockBySupplyAndDeposits,
         getStockBySupplies,
-        getStockByDepositAndLocation
+        getStockByDepositAndLocation,
     }
 
 }
