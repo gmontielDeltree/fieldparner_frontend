@@ -412,3 +412,33 @@ export interface TransformSupply {
     hours?: string;
     employee?: string;
 }
+
+export interface ExitField extends Document {
+    creationDate: string;
+    campaign: number;
+    field: string;
+    lot: string;
+    supplyId: string;
+    transportId: string;
+    truckerId: string;
+    has: string;
+    cultivation: string;
+    transportDocument: string;
+    ticket: string;
+    chassisNumber: string;
+    truckTrailer: string;
+    grossWeight: number;
+    tareWeight: number;
+    netWeight: number;
+    depositId: string;
+    location: string;
+    additionalInformation: string;
+    humidityPercentage: number;
+    mermaPercentage: number;
+    volatilePercentage: number;
+    otherPercentage: number;
+    totalMerma: number;
+    kgNet: number;
+    harvester: string;
+    destination: string;
+}

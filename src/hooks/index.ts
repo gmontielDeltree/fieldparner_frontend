@@ -7,3 +7,4 @@ export * from './useSupply';
 export * from './useDeposit';
 export * from './useCategory';
 export * from './useStockMovement';
+export * from './useExitField';

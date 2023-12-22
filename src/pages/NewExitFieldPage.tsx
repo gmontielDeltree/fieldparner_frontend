@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const NewOutFieldPage: React.FC = () => {
+export const NewExitFieldPage: React.FC = () => {
     return (
         <div>NewOutFieldPage</div>
     )

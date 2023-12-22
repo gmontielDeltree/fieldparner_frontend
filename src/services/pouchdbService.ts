@@ -10,7 +10,8 @@ import {
     Supply,
     Vehiculo,
     StockMovement,
-    StockByLot
+    StockByLot,
+    ExitField
 } from '../types';
 import uuid4 from 'uuid4';
 
@@ -28,6 +29,7 @@ const dbNames = Object.freeze({
     categories: "categories",
     stockMovements: "stock-movements",
     stockByLots: "lots-stock",
+    exitFields: "exit-fields",
 });
 
 export const dbContext = Object.freeze({
@@ -39,6 +41,7 @@ export const dbContext = Object.freeze({
     categories: new PouchDB<Category>(dbNames.categories),
     stockMovements: new PouchDB<StockMovement>(dbNames.stockMovements),
     stockByLots: new PouchDB<StockByLot>(dbNames.stockByLots),
+    exitFields: new PouchDB<ExitField>(dbNames.exitFields),
 });
 
 dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
@@ -49,6 +52,7 @@ dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, op
 dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, opts);
 dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, opts);
 dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
+dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
 
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 

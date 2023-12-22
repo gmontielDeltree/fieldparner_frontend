@@ -12,8 +12,8 @@ export * from './StockMovementPage';
 export * from './NewStockMovementPage';
 export * from './ListStockPage';
 export * from './TransformPage';
-export * from './ListOutFIeldPage';
-export * from './NewOutFieldPage';
+export * from './ListExitFieldPage';
+export * from './NewExitFieldPage';
 
 //Paginas publicas
 export * from "./LoginPage";

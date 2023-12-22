@@ -14,8 +14,8 @@ import {
   NewStockMovementPage,
   ListStockPage,
   TransformPage,
-  ListOutFIeldPage,
-  NewOutFieldPage,
+  ListExitFieldPage,
+  NewExitFieldPage,
 } from "../pages";
 import { AppLayout } from "../components";
 
@@ -51,8 +51,8 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/list-stock" element={<ListStockPage />} />
         <Route path="/overview/transform" element={<TransformPage />} />
 
-        <Route path="/overview/out-field" element={<ListOutFIeldPage />} />
-        <Route path="/overview/out-field/new" element={<NewOutFieldPage />} />
+        <Route path="/overview/exit-field" element={<ListExitFieldPage />} />
+        <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>
