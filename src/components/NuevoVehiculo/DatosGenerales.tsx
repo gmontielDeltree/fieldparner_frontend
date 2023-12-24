@@ -6,7 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { TipoEntidad, Vehiculo } from "../../types";
+import { TipoEntidad, Vehicle } from "../../types";
 import { useAppSelector, useBusiness } from "../../hooks";
 import {
   FolderOpen as FolderOpenIcon,
@@ -18,7 +18,7 @@ import {
 } from "../../services";
 
 export interface DatosGeneralesProps {
-  vehiculo: Vehiculo;
+  vehiculo: Vehicle;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleFormValueChange: (key: string, value: string) => void;
   handleYearChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;

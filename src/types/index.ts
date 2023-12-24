@@ -15,11 +15,12 @@ export interface MenuOptions {
     icon: React.ReactNode;
 }
 
-export enum TipoVehiculo {
+export enum VehicleType {
     Cosechadora = "Cosechadora",
     Pulverizadora = "Pulverizadora",
     Tractor = "Tractor",
     Camioneta = "Camioneta",
+    Camion = "Camion",
     Tolva = "Tolva",
     Otros = "Otros",
 }
@@ -49,8 +50,7 @@ export interface EspecificacionTecnica {
     descripcion: string;
 }
 
-export interface Vehiculo {
-    _id: string;
+export interface Vehicle extends Document {
     tipoVehiculo: string;
     marca: string;
     modelo: string;
@@ -422,10 +422,10 @@ export interface ExitField extends Document {
     transportId: string;
     truckerId: string;
     has: string;
-    cultivation: string;
+    cultive: string;
     transportDocument: string;
     ticket: string;
-    chassisNumber: string;
+    chassis: string;
     truckTrailer: string;
     grossWeight: number;
     tareWeight: number;
@@ -441,4 +441,15 @@ export interface ExitField extends Document {
     kgNet: number;
     harvester: string;
     destination: string;
+}
+
+export enum SupplyType {
+    Varios = "Varios",
+    Semillas = "Semillas",
+    Cultivo = "Cultivo",
+    Fertilizantes = "Fertilizantes",
+    Fitosanitarios = "Fitosanitarios",
+    Repuestos = "Repuestos",
+    Materiales = "Materiales",
+    Combustible = "Combustible"
 }

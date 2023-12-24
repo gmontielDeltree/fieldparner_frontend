@@ -7,7 +7,7 @@ import {
   ItemRow,
   TableCellStyled,
 } from "../components";
-import { ColumnProps, Vehiculo } from "../types";
+import { ColumnProps, Vehicle } from "../types";
 import {
   Box,
   Button,
@@ -60,7 +60,7 @@ export const ListVehiclesPage: React.FC = () => {
 
   const onClickAddVehicle = () => navigate("/init/overview/vehicle/new");
 
-  const onClickUpdateVehicle = (item: Vehiculo): void => {
+  const onClickUpdateVehicle = (item: Vehicle): void => {
     dispatch(setVehiculoActivo(item));
     navigate(`/init/overview/vehicle/${item._id}`);
   };

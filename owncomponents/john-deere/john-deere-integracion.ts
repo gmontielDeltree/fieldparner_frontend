@@ -32,7 +32,7 @@ import bbox from "@turf/bbox";
 import { Campo } from "../tipos/campos";
 import { uuidv7 } from "uuidv7";
 import { showNotification } from "../helpers/notificaciones";
-import { Vehiculo } from "@types";
+import { Vehicle } from "@types";
 import area from '@turf/area';
 
 const base_url = import.meta.env.VITE_INTEGRACIONES_SERVER_URL;
@@ -240,7 +240,7 @@ export class JohnDeereIntegracion extends LitElement {
   }
 
   copiar_equipo_a_fp = (machine: JDMachine) => {
-    let new_vehiculo: Vehiculo = {
+    let new_vehiculo: Vehicle = {
       _id: "vehiculo:" + uuidv7(),
       tipoVehiculo: machine.equipmentType.name,
       marca: machine.equipmentMake.name,

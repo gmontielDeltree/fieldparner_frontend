@@ -29,14 +29,14 @@ export const ListExitFieldPage: React.FC = () => {
   const navigate = useNavigate();
   const { isLoading, exitFields, getExitFields } = useExitField();
 
-  const onClickAdd = () => navigate("/overview/exit-field/new");
+  const onClickAdd = () => navigate("/init/overview/exit-field/new");
 
   useEffect(() => {
     getExitFields();
   }, [])
 
   return (
-    <TemplateLayout key="fields-out" viewMap={true}>
+    <TemplateLayout key="list-exit-field" viewMap={true}>
       {isLoading && <Loading loading={true} />}
       <Box
         component="div"

@@ -8,7 +8,7 @@ import {
     Deposit,
     ItemZipCode,
     Supply,
-    Vehiculo,
+    Vehicle,
     StockMovement,
     StockByLot,
     ExitField
@@ -21,6 +21,7 @@ const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
 const opts: PouchDB.Replication.SyncOptions = { live: true, retry: true };
 
 const dbNames = Object.freeze({
+    vehicles: "vehicles",
     deposits: "deposits",
     typeVehicles: "type-vehicles",
     zipCodeArg: "zip-code-arg",
@@ -33,6 +34,7 @@ const dbNames = Object.freeze({
 });
 
 export const dbContext = Object.freeze({
+    vehicles: new PouchDB<Vehicle>(dbNames.vehicles),
     typeVehicles: new PouchDB(dbNames.typeVehicles),
     deposits: new PouchDB<Deposit>(dbNames.deposits),
     zipCodeArg: new PouchDB<ItemZipCode>(dbNames.zipCodeArg),
@@ -44,6 +46,7 @@ export const dbContext = Object.freeze({
     exitFields: new PouchDB<ExitField>(dbNames.exitFields),
 });
 
+dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
 dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
 // dbContext.zipCodeArg.sync(`${remoteCouchDBUrl}${dbNames.zipCodeArg}`, opts);
 dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, opts);
@@ -102,7 +105,7 @@ export const createTypeVehicles = async (type: string) => {
 }
 
 // Función para crear un nuevo documento
-export const createDocument = async (_content: Vehiculo) => {
+export const createDocument = async (_content: Vehicle) => {
 
 };
 
@@ -112,7 +115,7 @@ export const getDocumentById = async (_id: string) => {
 };
 
 // Función para actualizar un documento
-export const updateDocument = async (_doc: Vehiculo) => {
+export const updateDocument = async (_doc: Vehicle) => {
 
 };
 

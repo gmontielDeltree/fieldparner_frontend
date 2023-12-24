@@ -1,14 +1,14 @@
 import React from 'react';
 import { Box, Grid, InputAdornment, TextField } from '@mui/material';
-import { Mantenimiento, Vehiculo } from '../../types';
+import { Mantenimiento, Vehicle } from '../../types';
 import MaintenanceTable from '../DataTable/MaintenanceTable';
 
 
 const columns = ['Fecha', 'Kilometros', 'Descripcion', 'Observaciones', 'Proximo mantenimiento'];
 
 export interface MantenimientosProps {
-    vehiculo: Vehiculo;
-    setVehiculo: React.Dispatch<React.SetStateAction<Vehiculo>>;
+    vehiculo: Vehicle;
+    setVehiculo: React.Dispatch<React.SetStateAction<Vehicle>>;
 }
 
 

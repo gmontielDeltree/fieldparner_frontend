@@ -20,3 +20,5 @@ export * from './Modals/SupplyByLots';
 export * from './BorderContainer';
 
 export * from './NewSupplyRow';
+export * from './ExitField/GeneralData';
+export * from './ExitField/TransportDestination';

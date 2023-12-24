@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { RowData, TipoCombustible, Vehiculo } from "../../types";
+import { RowData, TipoCombustible, Vehicle } from "../../types";
 import { FolderOpen as FolderOpenIcon } from "@mui/icons-material";
 import EspecificationTable from "../DataTable/EspecificationTable";
 
@@ -20,8 +20,8 @@ const tipoCombustibles: string[] = Object.keys(TipoCombustible);
 const columns = ["Especificacion", "Descripcion"];
 
 export interface EspecificacionesProps {
-  vehiculo: Vehiculo;
-  setVehiculo: React.Dispatch<React.SetStateAction<Vehiculo>>;
+  vehiculo: Vehicle;
+  setVehiculo: React.Dispatch<React.SetStateAction<Vehicle>>;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }

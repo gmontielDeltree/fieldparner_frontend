@@ -1,0 +1,85 @@
+import Swal from "sweetalert2";
+// import { useNavigate } from "react-router-dom";
+import { Vehicle } from "@types";
+import { useState } from "react";
+import { dbContext } from "../services";
+
+
+export const useVehicle = () => {
+
+    // const navigate = useNavigate();
+    const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+    const [error, setError] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+
+    const getVehicles = async () => {
+        setIsLoading(true);
+        try {
+            const result = await dbContext.vehicles.allDocs({ include_docs: true });
+            // const vehiculos = response.map((v: any) => v.content);
+            if (result.rows.length) {
+                const documents: Vehicle[] = result.rows.map(row => row.doc as Vehicle);
+                setVehicles(documents);
+            }
+
+            setIsLoading(false);
+        } catch (error) {
+            console.log(error)
+            Swal.fire('Error', 'No hay registro de Vehiculos.', 'error');
+            setIsLoading(false);
+            if (error) setError(error);
+        }
+    }
+
+
+    const createVehicle = async (newVehicle: Vehicle) => {
+        setIsLoading(true);
+        try {
+            const response = await dbContext.vehicles.post(newVehicle);
+            setIsLoading(false);
+
+            if (response.ok)
+                Swal.fire('Vehiculo', 'Vehiculo agregado.', 'success');
+            else
+                Swal.fire('Vehiculo', 'Verificar campos.', 'error');
+
+        } catch (error) {
+            console.log(error)
+            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            setIsLoading(false);
+            if (error) setError(error);
+        }
+    }
+
+    const updateVehicle = async (updateVehicle: Vehicle) => {
+        setIsLoading(true);
+        try {
+            const response = await dbContext.vehicles.put(updateVehicle);
+
+            if (response.ok) {
+                Swal.fire('Vehiculo', 'Actualizado.', 'success');
+            }
+
+            setIsLoading(false);
+        } catch (error) {
+            console.log(error)
+            Swal.fire('Error', 'Ocurrio un error inesperado.', 'error');
+            setIsLoading(false);
+            if (error) setError(error);
+        }
+    }
+
+
+    return {
+        //* Props
+        vehicles,
+        error,
+        isLoading,
+
+        //*Methods
+        getVehicles,
+        createVehicle,
+        updateVehicle
+    }
+
+}

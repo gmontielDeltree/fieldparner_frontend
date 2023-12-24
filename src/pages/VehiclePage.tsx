@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { TemplateLayout } from "../components";
-import { Vehiculo } from "@types";
+import { Vehicle } from "@types";
 import { useAppDispatch, useAppSelector, useForm } from "../hooks";
 import {
   removerVehiculoActivo,
@@ -24,7 +24,7 @@ import {
   Mantenimientos,
 } from "../components/NuevoVehiculo";
 
-const initialState: Vehiculo = {
+const initialState: Vehicle = {
   tipoVehiculo: "",
   patente: "",
   marca: "",
