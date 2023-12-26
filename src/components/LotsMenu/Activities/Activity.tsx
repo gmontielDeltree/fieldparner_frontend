@@ -36,7 +36,6 @@ function Activity({ activity, complementaryColor, icon, isFirst }) {
         );
       case "analisis de suelo":
         return <div>todo</div>;
-      // Add more cases for other activity types
       default:
         return <Typography>Unknown Activity Type</Typography>;
     }
@@ -47,7 +46,7 @@ function Activity({ activity, complementaryColor, icon, isFirst }) {
       style={{
         display: "flex",
         marginBottom: "32px",
-        position: "relative" // Ensure relative positioning for z-index to work correctly
+        position: "relative"
       }}
     >
       <div style={{ marginRight: "8px", position: "relative", zIndex: 2 }}>
