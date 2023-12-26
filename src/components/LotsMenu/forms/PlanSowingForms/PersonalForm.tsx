@@ -14,6 +14,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { styled } from "@mui/material/styles";
+import uuid4 from "uuid4";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -36,11 +37,46 @@ function PersonalForm({ lot, formData, setFormData }) {
     console.log("businesses", businesses);
   }, []);
 
-  const onFieldChange = (fieldName: any, value: any) => {
-    setFormData({
-      ...formData,
-      [fieldName]: value
-    });
+  const onFieldChange = (fieldName, value) => {
+    if (fieldName === "contratista") {
+      const selectedBusiness = businesses.find(
+        (business) =>
+          business.nombreCompleto === value || business.razonSocial === value
+      );
+
+      setFormData({
+        ...formData,
+        contratista: {
+          labores: [],
+          uuid: uuid4(),
+          nombre: selectedBusiness?.nombreCompleto,
+          cuit: selectedBusiness?.cuit,
+          datos_generales: {
+            email: selectedBusiness?.email,
+            direccion: selectedBusiness?.domicilio,
+            telefono: selectedBusiness?.contactoPrincipal
+          },
+          _id: selectedBusiness?._id,
+          _rev: selectedBusiness?._rev
+        }
+      });
+    } else if (fieldName === "fecha") {
+      setFormData({
+        ...formData,
+        detalles: {
+          ...formData.detalles,
+          fecha_ejecucion_tentativa: value
+        }
+      });
+    } else {
+      setFormData({
+        ...formData,
+        detalles: {
+          ...formData.detalles,
+          hectareas: value
+        }
+      });
+    }
   };
 
   return (
@@ -53,7 +89,7 @@ function PersonalForm({ lot, formData, setFormData }) {
             <Select
               labelId="contratista-label"
               id="contratista."
-              value={formData.contratista || ""}
+              value={formData.contratista.nombre || ""}
               label="Contratista"
               fullWidth
               onChange={(e) => onFieldChange("contratista", e.target.value)}
@@ -72,7 +108,9 @@ function PersonalForm({ lot, formData, setFormData }) {
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
                 label="Fecha"
-                value={formData.fecha || new Date()}
+                value={
+                  formData.detalles.fecha_ejecucion_tentativa || new Date()
+                }
                 onChange={(newValue) => onFieldChange("fecha", newValue)}
                 renderInput={(params) => <TextField {...params} fullWidth />}
               />

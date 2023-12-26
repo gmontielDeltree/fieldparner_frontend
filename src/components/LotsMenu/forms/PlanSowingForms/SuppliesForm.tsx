@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FormControl,
   Grid,
@@ -21,6 +21,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import { styled, keyframes } from "@mui/material/styles";
 import useInputs from "../../../../hooks/useInputs";
+import uuid4 from "uuid4";
 
 const flashFadeAnimation = keyframes`
   0% {
@@ -55,7 +56,7 @@ const CustomPaper = styled(Paper)({
   backgroundColor: "#f7f7f7"
 });
 
-function SuppliesForm({ lot, db, formData }) {
+function SuppliesForm({ lot, db, formData, setFormData }) {
   const [selectedOption, setSelectedOption] = useState("");
   const [dosificacion, setDosificacion] = useState("");
   const [total, setTotal] = useState("");
@@ -69,6 +70,50 @@ function SuppliesForm({ lot, db, formData }) {
     total: "",
     precio: ""
   });
+
+  const findInsumoByOption = (option) => {
+    return inputs.find((input) => input.marca_comercial === option);
+  };
+
+  const handleAddRow = () => {
+    const input = findInsumoByOption(selectedOption);
+    const newRow = {
+      dosis: dosificacion,
+      insumo: input,
+      motivos: [],
+      uuid: uuid4(),
+      total: total,
+      precio_estimado: precio 
+    };
+    const newDetalles = [...formData.detalles.dosis, newRow];
+    setFormData({
+      ...formData,
+      detalles: { ...formData.detalles, dosis: newDetalles }
+    });
+    setSelectedOption("");
+    setDosificacion("");
+    setTotal("");
+    setPrecio("");
+  };
+
+  const handleSaveEdit = () => {
+    const input = findInsumoByOption(editData.selectedOption);
+    const updatedRow = {
+      dosis: editData.dosificacion,
+      insumo: input,
+      motivos: [],
+      uuid: rows[editIndex].uuid, 
+      total: editData.total,
+      precio_estimado: editData.precio 
+    };
+    const updatedDetalles = [...formData.detalles.dosis];
+    updatedDetalles[editIndex] = updatedRow;
+    setFormData({
+      ...formData,
+      detalles: { ...formData.detalles, dosis: updatedDetalles }
+    });
+    setEditIndex(-1);
+  };
 
   const handleSelectChange = (event) => {
     setSelectedOption(event.target.value);
@@ -91,13 +136,6 @@ function SuppliesForm({ lot, db, formData }) {
     setEditData({ ...rows[index] });
   };
 
-  const handleSaveEdit = () => {
-    const updatedRows = [...rows];
-    updatedRows[editIndex] = editData;
-    setRows(updatedRows);
-    setEditIndex(-1);
-  };
-
   const handleCancelEdit = () => {
     setEditIndex(-1);
   };
@@ -106,40 +144,39 @@ function SuppliesForm({ lot, db, formData }) {
     setRows(
       rows.map((row, idx) => (idx === index ? { ...row, deleting: true } : row))
     );
+
     setTimeout(() => {
-      setRows(rows.filter((_, idx) => idx !== index));
-    }, 1000); // 1 second for the animation to complete
+      const updatedDetalles = formData.detalles.dosis.filter(
+        (_, idx) => idx !== index
+      );
+      setFormData({
+        ...formData,
+        detalles: { ...formData.detalles, dosis: updatedDetalles }
+      });
+    }, 1000); 
   };
 
   const handleEditChange = (prop) => (event) => {
     setEditData({ ...editData, [prop]: event.target.value });
   };
 
-  const handleSave = () => {
-    const formData = {
-      selectedOption,
-      dosificacion,
-      total,
-      precio
-    };
-    console.log("Form Data to Save:", formData);
-    // send data to db
-  };
+  useEffect(() => {
+    console.log("Inputs:", inputs);
+  }, [inputs]);
 
-  const handleAddRow = () => {
-    const newRow = {
-      selectedOption,
-      dosificacion,
-      total,
-      precio
-    };
-    setRows([...rows, newRow]);
-    // Resetting the inputs
-    setSelectedOption("");
-    setDosificacion("");
-    setTotal("");
-    setPrecio("");
-  };
+  useEffect(() => {
+    if (formData && formData.detalles && formData.detalles.dosis) {
+      setRows(
+        formData.detalles.dosis.map((dosis) => ({
+          selectedOption: dosis.insumo.marca_comercial,
+          dosificacion: dosis.dosis,
+          total: dosis.total,
+          precio: dosis.precio_estimado,
+          uuid: dosis.uuid
+        }))
+      );
+    }
+  }, [formData]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error loading inputs</div>;

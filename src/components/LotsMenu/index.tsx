@@ -39,6 +39,13 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     setSelectedCategory(categoryId);
   };
 
+  const backToActivites = () => {
+    setSelectedCategory(null);
+    if (lot && lot.id) {
+      getActivities(lot.id).then((res) => setActivities(res));
+    }
+  };
+
   const avatarStyle = (categoryId: any) => ({
     width: 50,
     height: 50,
@@ -55,7 +62,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     }
   });
 
-  const actividades_y_ejecuciones = async (uuid_del_lote) => {
+  const getActivities = async (uuid_del_lote) => {
     let acts: Actividad[] = await gbl_docs_starting(
       "actividad",
       true,
@@ -140,14 +147,18 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
   };
   useEffect(() => {
     if (lot && lot.id) {
-      actividades_y_ejecuciones(lot.id).then((res) => setActivities(res));
+      getActivities(lot.id).then((res) => setActivities(res));
+    }
+  }, [lot, selectedCategory]);
+
+  useEffect(() => {
+    if (lot && lot.id) {
+      getActivities(lot.id).then((res) => setActivities(res));
     }
   }, [lot, selectedCategory]);
 
   const renderFormContent = () => {
     if (!selectedCategory) {
-      console.log("ACTIVIDADES RENDERFORMCONTENT:", activities);
-      // Check if activities is not null and has length greater than 0
       return activities && activities.length > 0 ? (
         <Activities activitiesData={activities} />
       ) : (
@@ -160,7 +171,9 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
 
     switch (selectedCategory) {
       case "Planificar Siembra":
-        return <PlanSowing lot={lot} db={db} />;
+        return (
+          <PlanSowing lot={lot} db={db} backToActivites={backToActivites} />
+        );
       case "Category 2":
         return <div>Category 2</div>;
       case "Category 3":

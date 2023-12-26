@@ -16,13 +16,19 @@ import ObservationsForm from "./forms/PlanSowingForms/ObservationsForm";
 import { getEmptyActivity } from "../../interfaces/activity";
 import { format, parse } from "date-fns";
 import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
+import uuid4 from "uuid4";
 
 interface PlanSowingProps {
   lot: any;
   db: any;
+  backToActivites: () => void;
 }
 
-const PlanSowing: React.FC<PlanSowingProps> = ({ lot, db }) => {
+const PlanSowing: React.FC<PlanSowingProps> = ({
+  lot,
+  db,
+  backToActivites
+}) => {
   if (!lot) return null;
   console.log("Lot: ", lot);
   const [formData, setFormData] = useState(getEmptyActivity());
@@ -41,6 +47,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({ lot, db }) => {
       ...prevFormData,
       lote_uuid: lot.id,
       ts_generacion: 0,
+      tipo: "siembra",
       detalles: {
         ...prevFormData.detalles,
         hectareas: lot.properties.hectareas
@@ -59,7 +66,14 @@ const PlanSowing: React.FC<PlanSowingProps> = ({ lot, db }) => {
           />
         );
       case 1:
-        return <SuppliesForm lot={lot} db={db} formData={formData} />;
+        return (
+          <SuppliesForm
+            lot={lot}
+            db={db}
+            formData={formData}
+            setFormData={setFormData}
+          />
+        );
       case 2:
         return (
           <OtherDetailsForm
@@ -108,7 +122,22 @@ const PlanSowing: React.FC<PlanSowingProps> = ({ lot, db }) => {
   };
 
   const handleSave = () => {
-    const actividad = formData;
+    let actividad = formData;
+    try {
+      const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
+      console.log("FECHA EJECUCION: ", fechaEjecucion);
+
+      // Parse the ISO string into a Date object
+      const parsedDate = new Date(fechaEjecucion);
+
+      // Format the Date object into 'yyyy-MM-dd' format
+      const formattedDate = format(parsedDate, "yyyy-MM-dd");
+      actividad._id = "actividad:" + formattedDate + ":" + actividad.uuid;
+    } catch (error) {
+      console.error("Error in handleSave:", error);
+    }
+
+    console.log("ACTIVIDAD ID: ", actividad._id);
     db.get(actividad._id)
       .then((doc) => {
         actividad._rev = doc._rev;
@@ -116,13 +145,17 @@ const PlanSowing: React.FC<PlanSowingProps> = ({ lot, db }) => {
       })
       .then(() => {
         console.log("Actividad guardada", "success");
+        backToActivites();
       })
       .catch((error) => {
         if (error.name === "not_found") {
           console.log("Actividad not found. Creating a new one.");
           delete actividad._rev;
           db.put(actividad)
-            .then(() => console.log("New actividad created", "success"))
+            .then(() => {
+              console.log("New actividad created", "success");
+              backToActivites();
+            })
             .catch((err) =>
               console.error("Error creating new actividad:", err)
             );
