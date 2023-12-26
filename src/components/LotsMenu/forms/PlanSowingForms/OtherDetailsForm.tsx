@@ -1,34 +1,65 @@
 import React, { useState } from "react";
-import { TextField, FormControl, Grid, MenuItem } from "@mui/material";
+import {
+  TextField,
+  FormControl,
+  Grid,
+  MenuItem,
+  Paper,
+  Typography
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+import id from "date-fns/locale/id";
 
-const OtherDetailsForm = () => {
-  const [formData, setFormData] = useState({
-    tipoSiembra: "",
-    densidadObjetivo: "",
-    marcaInoculado: "",
-    profundidad: "",
-    distanciaEntreSurcos: "",
-    pesoMilSemillas: "",
-    formacionInoculado: ""
-  });
+const CustomPaper = styled(Paper)({
+  padding: "20px",
+  margin: "20px 0",
+  backgroundColor: "#f7f7f7"
+});
 
-  const handleFieldChange = (field, value) => {
-    setFormData((prevFormData) => ({ ...prevFormData, [field]: value }));
+const Title = styled(Typography)({
+  fontSize: "1.5em",
+  fontWeight: "bold",
+  color: "#333",
+  marginBottom: "20px"
+});
+
+interface OtherDetailsFormProps {
+  lot: any;
+  formData: any;
+  setFormData: (formData: any) => void;
+}
+
+const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
+  lot,
+  formData,
+  setFormData
+}) => {
+  const handleInputChange = (field) => (event) => {
+    const { value } = event.target;
+    console.log("Field: ", field);
+    setFormData({
+      ...formData,
+      detalles: {
+        ...formData.detalles,
+        [field]: value
+      }
+    });
   };
 
   return (
-    <div>
+    <CustomPaper elevation={3}>
+      <Title>Otros Datos</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
               style={{ width: "100%" }}
               select
+              id="tipo_siembra"
               label="Tipo de Siembra"
-              value={formData.tipoSiembra}
-              onChange={(e) => handleFieldChange("tipoSiembra", e.target.value)}
+              value={formData.detalles.tipo_siembra || ""}
+              onChange={handleInputChange("tipo_siembra")}
             >
-              <MenuItem value="">Sin Especificar</MenuItem>
               <MenuItem value="Siembra Directa">Siembra Directa</MenuItem>
               <MenuItem value="Siembra Tradicional">
                 Siembra Tradicional
@@ -41,13 +72,11 @@ const OtherDetailsForm = () => {
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
-              id="densidad-objetivo"
+              id="densidad_objetivo"
               label="Densidad Objetivo"
               type="number"
-              value={formData.densidadObjetivo}
-              onChange={(e) =>
-                onFieldChange("densidadObjetivo", e.target.value)
-              }
+              value={formData.detalles.densidad_objetivo}
+              onChange={handleInputChange}
               fullWidth
             />
           </Grid>
@@ -55,8 +84,8 @@ const OtherDetailsForm = () => {
             <TextField
               id="marca-inoculado"
               label="Marca Inoculado"
-              value={formData.marcaInoculado}
-              onChange={(e) => onFieldChange("marcaInoculado", e.target.value)}
+              value={formData.marca_inoculado || ""}
+              onChange={handleInputChange}
               fullWidth
             />
           </Grid>
@@ -65,30 +94,28 @@ const OtherDetailsForm = () => {
               id="profundidad"
               label="Profundidad"
               type="number"
-              value={formData.profundidad}
-              onChange={(e) => onFieldChange("profundidad", e.target.value)}
+              value={formData.detalles.profundidad || ""}
+              onChange={handleInputChange}
               fullWidth
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
-              id="distancia-entre-surcos"
+              id="distancia"
               label="Distancia entre surcos"
               type="number"
-              value={formData.distanciaEntreSurcos}
-              onChange={(e) =>
-                onFieldChange("distanciaEntreSurcos", e.target.value)
-              }
+              value={formData.detalles.distancia}
+              onChange={handleInputChange}
               fullWidth
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
-              id="peso-1000-semillas"
+              id="peso_1000"
               label="Peso 1000 semillas"
               type="number"
-              value={formData.pesoMilSemillas}
-              onChange={(e) => onFieldChange("pesoMilSemillas", e.target.value)}
+              value={formData.detalles.peso1000}
+              onChange={handleInputChange}
               fullWidth
             />
           </Grid>
@@ -97,15 +124,13 @@ const OtherDetailsForm = () => {
               id="formacion-inoculado"
               label="Formacion Inoculado"
               value={formData.formacionInoculado}
-              onChange={(e) =>
-                onFieldChange("formacionInoculado", e.target.value)
-              }
+              onChange={handleInputChange}
               fullWidth
             />
           </Grid>
         </Grid>
       </FormControl>
-    </div>
+    </CustomPaper>
   );
 };
 

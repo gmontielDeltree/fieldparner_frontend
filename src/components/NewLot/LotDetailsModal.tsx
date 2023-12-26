@@ -27,7 +27,7 @@ const LotDetailsModal: React.FC<LotDetailsModalProps> = ({
     "Personal",
     "Insumos",
     "Otros Datos",
-    "Laborales",
+    "Labores",
     "Condiciones",
     "Observaciones"
   ];
@@ -134,7 +134,7 @@ const LotDetailsModal: React.FC<LotDetailsModalProps> = ({
           <Button
             color="success"
             onClick={() => {
-              /* Save logic here */
+              /* save code here */
             }}
           >
             Guardar
