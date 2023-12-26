@@ -51,7 +51,7 @@ function Sowing({ activity, complementaryColor }) {
           sx={{
             display: "flex",
             alignItems: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.8)", // Semi-transparent background
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
             borderRadius: "4px",
             padding: "4px 8px",
             flexGrow: 1

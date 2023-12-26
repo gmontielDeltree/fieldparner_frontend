@@ -177,17 +177,17 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
       <Box sx={{ textAlign: "center", mt: 2, mb: 4 }}>
         <LocalFloristIcon sx={{ fontSize: 50, color: "green" }} />
         <Typography
-          variant="h5" // Changed to a smaller variant
+          variant="h5"
           component="h1"
           gutterBottom
           align="center"
           sx={{
             fontWeight: "bold",
             mt: 2,
-            background: "linear-gradient(45deg, #a0a0a0, #626262)", // Subtle gradient
+            background: "linear-gradient(45deg, #a0a0a0, #626262)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            textShadow: "1px 1px 4px rgba(0,0,0,0.15)", // Lighter shadow
+            textShadow: "1px 1px 4px rgba(0,0,0,0.15)",
             animation: "shine 5s linear infinite",
             "@keyframes shine": {
               "0%": { opacity: 0.8 },
