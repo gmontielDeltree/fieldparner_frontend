@@ -1,7 +1,6 @@
 import { FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import {
     FolderOpen as FolderOpenIcon,
-    ArrowRightAlt as ArrowRightAltIcon
 } from '@mui/icons-material';
 import React, { ChangeEvent } from 'react';
 import { ExitField, Supply } from '../../types';
@@ -11,13 +10,13 @@ import { getShortDate } from '../../helpers/dates';
 interface GeneralDataProps {
     formValues: ExitField;
     crops: Supply[];
+    setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
-    handleFormValueChange: (key: string, value: string) => void;
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
 
-const fields = ["Campo 1", "Campo 2", "Campo 3"]; //TODO: ?fields de donde lo obtenemos
-const lots = ["Lote 1", "Lote 2", "Lote 3"];
+const fields = ["Campo 1", "Campo 2", "Campo 3"]; //TODO: tabla campo-lote
+const lots = ["Lote 1", "Lote 2", "Lote 3"]; //TODO: tabla campo-lote
 // const crops = ["Alfalfa", "Soja", "Maiz"];
 
 export const GeneralData: React.FC<GeneralDataProps> = ({
@@ -25,7 +24,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
     crops,
     handleInputChange,
     handleSelectChange,
-    handleFormValueChange
+    setFormValues
 }) => {
 
     const onChangeCrop = ({ target }: SelectChangeEvent) => {
@@ -33,8 +32,11 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
         const cropSelected = crops.find((crop) => crop._id === value);
 
         if (cropSelected) {
-            handleFormValueChange("supplyID", value);
-            handleFormValueChange("cultive", cropSelected.name);
+            setFormValues((prevState) => ({
+                ...prevState,
+                supplyId: value,
+                cultive: cropSelected.name
+            }));
         }
     };
 
@@ -136,8 +138,8 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                     <InputLabel id="lot">Cultivo</InputLabel>
                     <Select
                         labelId="lot"
-                        name="cultive"
-                        value={formValues.cultive}
+                        name="supplyId"
+                        value={formValues.supplyId}
                         label="Cultivo"
                         onChange={onChangeCrop}
                     >

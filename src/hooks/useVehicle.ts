@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 // import { useNavigate } from "react-router-dom";
-import { Vehicle } from "@types";
+import { TypeVehicle, Vehicle } from "@types";
 import { useState } from "react";
 import { dbContext } from "../services";
 
@@ -9,6 +9,7 @@ export const useVehicle = () => {
 
     // const navigate = useNavigate();
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+    const [vehicleTypes, setVehicleTypes] = useState<TypeVehicle[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
@@ -26,6 +27,44 @@ export const useVehicle = () => {
         } catch (error) {
             console.log(error)
             Swal.fire('Error', 'No hay registro de Vehiculos.', 'error');
+            setIsLoading(false);
+            if (error) setError(error);
+        }
+    }
+
+    const getTypeVehicles = async () => {
+        setIsLoading(true);
+        try {
+            const result = await dbContext.typeVehicles.allDocs({ include_docs: true });
+            // const vehiculos = response.map((v: any) => v.content);
+            if (result.rows.length) {
+                const documents: TypeVehicle[] = result.rows.map(row => row.doc as TypeVehicle);
+                setVehicleTypes(documents);
+            }
+
+            setIsLoading(false);
+        } catch (error) {
+            console.log(error)
+            Swal.fire('Error', 'No hay registro de Vehiculos: ' + error, 'error');
+            setIsLoading(false);
+            if (error) setError(error);
+        }
+    }
+
+    const createVehicleType = async (newVehicleType: TypeVehicle) => {
+        setIsLoading(true);
+        try {
+            const response = await dbContext.typeVehicles.post(newVehicleType);
+            setIsLoading(false);
+
+            if (response.ok)
+                Swal.fire('Vehiculo', 'Tipo de Vehiculo agregado.', 'success');
+            else
+                Swal.fire('Tipo de Vehiculo', 'Verificar campos.', 'error');
+
+        } catch (error) {
+            console.log(error)
+            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
             setIsLoading(false);
             if (error) setError(error);
         }
@@ -73,12 +112,15 @@ export const useVehicle = () => {
     return {
         //* Props
         vehicles,
+        vehicleTypes,
         error,
         isLoading,
 
         //*Methods
         getVehicles,
+        getTypeVehicles,
         createVehicle,
+        createVehicleType,
         updateVehicle
     }
 

@@ -25,8 +25,7 @@ export enum VehicleType {
     Otros = "Otros",
 }
 
-export interface TypeVehicle {
-    _id: string;
+export interface TypeVehicle extends Document {
     name: string;
 }
 
@@ -51,28 +50,28 @@ export interface EspecificacionTecnica {
 }
 
 export interface Vehicle extends Document {
-    tipoVehiculo: string;
-    marca: string;
-    modelo: string;
-    año: string;
-    patente: string;
+    vehicleType: string;
+    make: string;
+    model: string;
+    modelYear: string;
+    patent: string;
     tara: number;
-    neto: number;
-    bruto: number;
-    tipoCombustible: string;
-    capacidadCombustible: number;
-    unidadMedida: string;
-    conectividad?: string;
-    propietario?: string;
-    ultimoMantenimiento?: string;
-    seguro: string;
-    tipoCobertura: string;
-    nroPoliza: string;
-    seguroFechaInicio: string;
-    seguroFechaVencimiento: string;
-    ubicacion: string;
-    mantenimientos: Mantenimiento[];
-    especificacionesTecnicas: RowData[];
+    net: number;
+    gross: number;
+    fuelType: string;
+    fuelCapacity: number;
+    unitMeasurement: string;
+    connectivity?: string;
+    owner?: string;
+    lastMaintenance?: string;
+    insurence: string;
+    coverageType: string;
+    policyNumber: string;
+    insurenceStartDate: string;
+    insurenceDueDate: string;
+    location: string;
+    maintenances: Mantenimiento[];
+    technialSpecifications: RowData[];
 }
 
 export interface ColumnProps {

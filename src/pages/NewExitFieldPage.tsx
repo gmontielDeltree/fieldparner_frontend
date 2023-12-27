@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
-import { GeneralData, TemplateLayout, TransportDestination } from '../components';
+import { GeneralData, Loading, TemplateLayout, TransportDestination } from '../components';
 import {
     Agriculture as AgricultureIcon,
     ArrowRightAlt as ArrowRightAltIcon
 } from '@mui/icons-material';
-import { useAppDispatch, useBusiness, useDeposit, useForm, useSupply, useVehicle } from '../hooks';
+import { useAppDispatch, useBusiness, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../hooks';
 import { ExitField, SupplyType, TypeSupplies } from '../types';
 import { getShortDate } from '../helpers/dates';
 
@@ -55,14 +55,15 @@ export const NewExitFieldPage: React.FC = () => {
         formulario: formValues,
         handleInputChange,
         handleSelectChange,
-        handleFormValueChange
-        // setFormulario: setFormValues
+        handleFormValueChange,
+        setFormulario: setFormValues
     } = useForm(initialState);
 
     const { supplies, getSupplies } = useSupply();
     const { businesses: socialEntities, getBusinesses } = useBusiness();
     const { vehicles, getVehicles } = useVehicle();
     const { deposits, getDeposits } = useDeposit();
+    const { isLoading, createExitField } = useExitField();
 
     const getStepContent = useMemo(
         () => (step: number) => {
@@ -75,7 +76,8 @@ export const NewExitFieldPage: React.FC = () => {
                             crops={supplies.filter(s => s.type === SupplyType.Cultivo)}
                             handleInputChange={handleInputChange}
                             handleSelectChange={handleSelectChange}
-                            handleFormValueChange={handleFormValueChange} />
+                            setFormValues={setFormValues}
+                        />
                     );
                 case 1:
                     return (
@@ -87,7 +89,7 @@ export const NewExitFieldPage: React.FC = () => {
                             deposits={deposits}
                             handleInputChange={handleInputChange}
                             handleSelectChange={handleSelectChange}
-                            handleFormValueChange={handleFormValueChange}
+                            setFormValues={setFormValues}
                         />
                     );
                 default:
@@ -96,6 +98,7 @@ export const NewExitFieldPage: React.FC = () => {
         },
         [
             formValues,
+            setFormValues,
             handleInputChange,
             handleSelectChange,
             handleFormValueChange,
@@ -119,7 +122,12 @@ export const NewExitFieldPage: React.FC = () => {
     };
 
     const onClickSaveExitField = () => {
-        console.log('formValues', formValues);
+        const { humidityPercentage, mermaPercentage, volatilePercentage, otherPercentage, grossWeight, tareWeight } = formValues;
+        const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
+        const netWeight = Number(grossWeight - tareWeight);
+        const kgNet = (netWeight - ((netWeight * totalMerma) / 100));
+        console.log('formValues', { ...formValues, totalMerma, netWeight, kgNet });
+        createExitField({ ...formValues, totalMerma, netWeight, kgNet });
     }
 
     useEffect(() => {
@@ -132,6 +140,7 @@ export const NewExitFieldPage: React.FC = () => {
 
     return (
         <TemplateLayout key="new-exit-field-page" viewMap={true}>
+            {isLoading && <Loading loading={true} />}
             <Container
                 maxWidth="lg"
                 sx={{

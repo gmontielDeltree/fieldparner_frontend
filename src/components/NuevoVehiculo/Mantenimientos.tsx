@@ -19,21 +19,22 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
 
     // const [mantenimientos, setMantenimientos] = useState<Mantenimiento[]>(vehiculo.mantenimientos);
     const {
-        tipoVehiculo,
-        marca,
-        modelo } = vehiculo;
+        vehicleType,
+        make,
+        model,
+    } = vehiculo;
 
     const handleAddMaintenance = (maintenance: Mantenimiento) => {
         setVehiculo(prevState => ({
             ...prevState,
-            mantenimientos: [maintenance, ...prevState.mantenimientos]
+            maintenances: [maintenance, ...prevState.maintenances]
         }))
     };
 
     const handleDeleteMaintenance = (id: string) => {
         setVehiculo(prevState => ({
             ...prevState,
-            mantenimientos: prevState.mantenimientos.filter(
+            maintenances: prevState.maintenances.filter(
                 x => x.id !== id
             )
         }));
@@ -55,7 +56,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                         variant="outlined"
                         type='text'
                         disabled
-                        value={tipoVehiculo}
+                        value={vehicleType}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
@@ -67,7 +68,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                         variant="outlined"
                         type='text'
                         disabled
-                        value={marca}
+                        value={make}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
@@ -79,7 +80,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                         variant="outlined"
                         type='text'
                         disabled
-                        value={modelo}
+                        value={model}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
@@ -90,7 +91,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                 <MaintenanceTable
                     key="table-mantenimiento"
                     columns={columns}
-                    rows={vehiculo.mantenimientos}
+                    rows={vehiculo.maintenances}
                     handleAddRow={handleAddMaintenance}
                     deleteRow={handleDeleteMaintenance}
                 />

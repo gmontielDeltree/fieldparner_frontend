@@ -1,3 +1,4 @@
+import React, { ChangeEvent } from 'react';
 import {
     FormControl,
     Grid,
@@ -11,10 +12,8 @@ import {
     Divider,
     Box
 } from '@mui/material';
-import { Business, Deposit, ExitField, Supply, Vehicle, VehicleType } from '../../types';
+import { Business, Deposit, ExitField, Vehicle, VehicleType } from '../../types';
 import { LocalShipping as LocalShippingIcon } from '@mui/icons-material';
-import React, { ChangeEvent, useEffect, useState } from 'react';
-import { useBusiness, useDeposit, useVehicle } from '../../hooks';
 
 
 interface TransportDestinationProps {
@@ -23,7 +22,8 @@ interface TransportDestinationProps {
     socialEntities: Business[];
     vehicles: Vehicle[];
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
-    handleFormValueChange: (key: string, value: string) => void;
+    // handleFormValueChange: (key: string, value: string) => void;
+    setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
 
@@ -35,25 +35,26 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     vehicles,
     handleInputChange,
     handleSelectChange,
-    handleFormValueChange
+    setFormValues
 }) => {
 
-    const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
+    // const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
 
-    const { humidityPercentage, mermaPercentage, volatilePercentage, otherPercentage } = formValues;
-    const totalMerma = Number(humidityPercentage + mermaPercentage + volatilePercentage + otherPercentage);
+    const { humidityPercentage, mermaPercentage, volatilePercentage, otherPercentage, grossWeight, tareWeight } = formValues;
+    const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
+    const netWeight = Number(grossWeight - tareWeight);
+    const kgNet = (netWeight - ((netWeight * totalMerma) / 100));
 
     const onChangeDeposit = ({ target }: SelectChangeEvent) => {
         const { value } = target;
         const depositSelected = deposits.find((deposit) => deposit._id === value);
 
         if (depositSelected) {
-            handleFormValueChange("depositId", value);
-            setDepositSelected(depositSelected);
+            setFormValues(prevState => ({ ...prevState, depositId: value }));
+            // setDepositSelected(depositSelected);
         }
     };
 
-  
     return (
         <Grid
             container
@@ -77,7 +78,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     >
                         {socialEntities?.map((f) => (
                             <MenuItem key={f._id} value={f._id}>
-                                {f.nombreCompleto}
+                                {f.nombreCompleto || f.razonSocial}
                             </MenuItem>
                         ))}
                     </Select>
@@ -95,7 +96,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     >
                         {socialEntities?.map((f) => (
                             <MenuItem key={f._id} value={f._id}>
-                                {f.nombreCompleto}
+                                {f.nombreCompleto || f.razonSocial}
                             </MenuItem>
                         ))}
                     </Select>
@@ -124,9 +125,9 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         label="Chasis"
                         onChange={handleSelectChange}
                     >
-                        {vehicles.filter(v => v.tipoVehiculo === VehicleType.Camion)?.map((vehicle) => (
+                        {vehicles.filter(v => v.vehicleType === VehicleType.Camion)?.map((vehicle) => (
                             <MenuItem key={vehicle._id} value={vehicle._id}>
-                                {`${vehicle.tipoVehiculo} - ${vehicle.marca} - ${vehicle.modelo}`}
+                                {`${vehicle.vehicleType} - ${vehicle.make} - ${vehicle.model}`}
                             </MenuItem>
                         ))}
                     </Select>
@@ -142,9 +143,9 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         label="Acoplado"
                         onChange={handleSelectChange}
                     >
-                        {vehicles.filter(v => v.tipoVehiculo === VehicleType.Camion)?.map((vehicle) => (
+                        {vehicles.filter(v => v.vehicleType === VehicleType.Camion)?.map((vehicle) => (
                             <MenuItem key={vehicle._id} value={vehicle._id}>
-                                {`${vehicle.tipoVehiculo} - ${vehicle.marca} - ${vehicle.modelo}`}
+                                {`${vehicle.vehicleType} - ${vehicle.make} - ${vehicle.model}`}
                             </MenuItem>
                         ))}
                     </Select>
@@ -186,9 +187,10 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     variant="outlined"
                     type="number"
                     label="Peso Neto"
+                    disabled
                     name="netWeight"
-                    value={formValues.netWeight}
-                    onChange={handleInputChange}
+                    value={netWeight}
+                    // onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
                     }}
@@ -287,6 +289,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         variant="outlined"
                         type="number"
                         label="% Total Merma"
+                        disabled
                         // name="totalMerma"
                         value={totalMerma}
                         // onChange={handleInputChange}
@@ -302,7 +305,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         type="number"
                         label="KG Netos"
                         name="kgNet"
-                        value={formValues.kgNet}
+                        value={kgNet}
                         // onChange={handleInputChange}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,

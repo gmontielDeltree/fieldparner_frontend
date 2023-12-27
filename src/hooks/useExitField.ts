@@ -40,14 +40,14 @@ export const useExitField = () => {
             setIsLoading(false);
 
             if (response.ok)
-                Swal.fire('Entidad Social', 'Agregado.', 'success');
+                Swal.fire('Salida de Campo', 'Creado exitosamente.', 'success');
             else
-                Swal.fire('Entidad Social', 'Verificar campos.', 'error');
+                Swal.fire('Salida de Campo', 'Verificar campos.', 'error');
 
-            navigate('/init/overview/business');
+            // navigate('/init/overview/business');
         } catch (error) {
             console.log(error)
-            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            Swal.fire('Ups', 'Ocurrio un error inesperado: ' + error, 'error');
             setIsLoading(false);
             if (error) setError(error);
         }

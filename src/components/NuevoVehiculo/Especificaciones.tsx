@@ -37,27 +37,27 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
   // ]);
 
   const {
-    tipoCombustible,
-    capacidadCombustible,
-    unidadMedida,
-    conectividad,
+    fuelType,
+    fuelCapacity,
+    unitMeasurement,
+    connectivity,
     tara,
-    bruto,
-    neto,
-    especificacionesTecnicas,
+    gross,
+    net,
+    technialSpecifications
   } = vehiculo;
 
   const handleAgregarEspecificacion = (row: RowData) => {
     setVehiculo((prevState) => ({
       ...prevState,
-      especificacionesTecnicas: [row, ...prevState.especificacionesTecnicas],
+      technialSpecifications: [row, ...prevState.technialSpecifications],
     }));
   };
 
   const handleEliminarEspecificacion = (row: RowData) => {
     setVehiculo((prevState) => ({
       ...prevState,
-      especificacionesTecnicas: prevState.especificacionesTecnicas.filter(
+      technialSpecifications: prevState.technialSpecifications.filter(
         (x) => x.name !== row.name
       ),
     }));
@@ -96,9 +96,9 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
             label="Bruto"
             variant="outlined"
             type="number"
-            name="bruto"
+            name="gross"
             inputProps={{ min: "0" }}
-            value={bruto === 0 ? "" : bruto}
+            value={gross === 0 ? "" : gross}
             InputProps={{
               endAdornment: <InputAdornment position="end">kg</InputAdornment>,
             }}
@@ -111,9 +111,9 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
             label="Neto"
             variant="outlined"
             type="number"
-            name="neto"
+            name="net"
             inputProps={{ min: "0" }}
-            value={neto === 0 ? "" : neto}
+            value={net === 0 ? "" : net}
             InputProps={{
               endAdornment: <InputAdornment position="end">kg</InputAdornment>,
             }}
@@ -127,8 +127,8 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
             <Select
               labelId="tipo-combustible"
               id="select-combustible"
-              name="tipoCombustible"
-              value={tipoCombustible}
+              name="fuelType"
+              value={fuelType}
               label="Tipo Combustible"
               onChange={handleSelectChange}
             >
@@ -145,9 +145,9 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
             label="Capacidad de Combustible"
             variant="outlined"
             type="number"
-            name="capacidadCombustible"
+            name="fuelCapacity"
             inputProps={{ min: "0" }}
-            value={capacidadCombustible === 0 ? "" : capacidadCombustible}
+            value={fuelCapacity === 0 ? "" : fuelCapacity}
             InputProps={{
               endAdornment: <InputAdornment position="end">L</InputAdornment>,
             }}
@@ -160,8 +160,8 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
             label="Unidad de Medida"
             variant="outlined"
             type="text"
-            name="unidadMedida"
-            value={unidadMedida}
+            name="unitMeasurement"
+            value={unitMeasurement}
             onChange={handleInputChange}
             fullWidth
           />
@@ -171,8 +171,8 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
             label="Conectividad"
             variant="outlined"
             type="text"
-            name="conectividad"
-            value={conectividad}
+            name="connectivity"
+            value={connectivity}
             onChange={handleInputChange}
             fullWidth
           />
@@ -192,7 +192,7 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
         <EspecificationTable
           key="tabla-especificaciones-tecnicas"
           columns={columns}
-          rows={especificacionesTecnicas}
+          rows={technialSpecifications}
           handleAddRow={handleAgregarEspecificacion}
           deleteRow={handleEliminarEspecificacion}
         />
