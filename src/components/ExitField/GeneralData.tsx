@@ -35,7 +35,8 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
             setFormValues((prevState) => ({
                 ...prevState,
                 supplyId: value,
-                cultive: cropSelected.name
+                cultive: cropSelected.name,
+                supply: cropSelected
             }));
         }
     };

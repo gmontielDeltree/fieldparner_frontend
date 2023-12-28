@@ -1,28 +1,29 @@
 
 import React, { useEffect } from 'react';
-import { Loading, TemplateLayout } from '../components';
-import { Box, Button, Grid, Typography } from '@mui/material';
+import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../components';
+import { Box, Button, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import {
   Add as AddIcon,
   Agriculture as AgricultureIcon,
-  ArrowRightAlt as ArrowRightAltIcon
+  ArrowRightAlt as ArrowRightAltIcon,
+  Edit as EditIcon
 } from "@mui/icons-material";
 import { useExitField } from '../hooks';
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { useNavigate } from 'react-router';
+import { ColumnProps } from '../types';
 
 
-const columns: GridColDef[] = [
-  // { field: "id", hide: true },
-  { field: "creationDate", headerName: "Fecha", width: 200 },
-  { field: "field", headerName: "Campo", width: 150 },
-  { field: "lot", headerName: "Lote", width: 200 },
-  { field: "campaign", headerName: "Campaña", width: 200 },
-  { field: "supplyId", headerName: "Insumo", width: 150 },
-  { field: "transport", headerName: "Transporte", width: 150 },
-  { field: "kgNet", headerName: "Kg Netos", width: 100 },
+
+const columns: ColumnProps[] = [
+  { text: "Fecha", align: "center" },
+  { text: "Campo", align: "center" },
+  { text: "Lote", align: "center" },
+  { text: "Campaña", align: "left" },
+  { text: "Insumo", align: "center" },
+  { text: "Transporte", align: "center" },
+  { text: "Kg Netos", align: "center" },
+  { text: "", align: "center" }
 ];
-
 
 export const ListExitFieldPage: React.FC = () => {
 
@@ -70,21 +71,41 @@ export const ListExitFieldPage: React.FC = () => {
           </Grid>
         </Grid>
         <Box component="div" sx={{ p: 1 }}>
-          <DataGrid
-            autoHeight
-            rowSelection={false}
-            loading={isLoading}
-            slots={{ toolbar: GridToolbar }}
-            slotProps={{
-              toolbar: {
-                showQuickFilter: true,
-              },
-            }}
-            rows={exitFields}
+          <DataTable
+            key="datatable-exit-fields"
             columns={columns}
-          />
+            isLoading={isLoading}
+          >
+            {exitFields.map((row) => (
+              <ItemRow key={row._id}>
+                <TableCellStyled align="center">
+                  {row.creationDate}
+                </TableCellStyled>
+                <TableCellStyled align="center">{row.field} </TableCellStyled>
+                <TableCellStyled align="center">{row.lot}</TableCellStyled>
+                <TableCellStyled>{row.campaign}</TableCellStyled>
+                <TableCellStyled align="center">{row.supply?.name}</TableCellStyled>
+                <TableCellStyled>{row.transport?.nombreCompleto}</TableCellStyled>
+                <TableCellStyled>{row.kgNet}</TableCellStyled>
+                <TableCellStyled align="center">
+                  <Tooltip title="Editar">
+                    <IconButton
+                      aria-label="Editar"
+                      onClick={() => console.log(row)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                </TableCellStyled>
+              </ItemRow>
+            ))}
+          </DataTable>
         </Box>
       </Box>
     </TemplateLayout>
   )
 }
+
+/*
+
+*/

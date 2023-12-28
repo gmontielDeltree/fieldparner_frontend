@@ -6,8 +6,8 @@ import {
     Agriculture as AgricultureIcon,
     ArrowRightAlt as ArrowRightAltIcon
 } from '@mui/icons-material';
-import { useAppDispatch, useBusiness, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../hooks';
-import { ExitField, SupplyType, TypeSupplies } from '../types';
+import { useBusiness, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../hooks';
+import { ExitField, SupplyType } from '../types';
 import { getShortDate } from '../helpers/dates';
 
 
@@ -27,6 +27,7 @@ const initialState: ExitField = {
     transportDocument: "",
     ticket: "",
     additionalInformation: "",
+    vehicleId: "",
     chassis: "",
     depositId: "",
     destination: "",
@@ -34,7 +35,7 @@ const initialState: ExitField = {
     transportId: "",
     truckerId: "",
     truckTrailer: "",
-    harvester: "",
+    harvesterId: "",
     supplyId: "",
     grossWeight: 0,
     humidityPercentage: 0,
@@ -48,7 +49,7 @@ const initialState: ExitField = {
 }
 
 export const NewExitFieldPage: React.FC = () => {
-    const dispatch = useAppDispatch();
+    // const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
     const {

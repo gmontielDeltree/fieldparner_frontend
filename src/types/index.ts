@@ -58,6 +58,8 @@ export interface Vehicle extends Document {
     tara: number;
     net: number;
     gross: number;
+    chassis: string;
+    truckTrailer: string;
     fuelType: string;
     fuelCapacity: number;
     unitMeasurement: string;
@@ -372,6 +374,7 @@ export enum TypeMovement {
     TransferenciaDeposito = "Transferencia entre depositos",
     Prestamos = "Prestamos",
     Transformacion = "Transformacion",
+    SalidaDeCampo = "Salida de Campo",
 }
 
 export enum Movement {
@@ -413,6 +416,7 @@ export interface TransformSupply {
 }
 
 export interface ExitField extends Document {
+    accountId: string;
     creationDate: string;
     campaign: number;
     field: string;
@@ -424,6 +428,7 @@ export interface ExitField extends Document {
     cultive: string;
     transportDocument: string;
     ticket: string;
+    vehicleId: string;
     chassis: string;
     truckTrailer: string;
     grossWeight: number;
@@ -438,8 +443,16 @@ export interface ExitField extends Document {
     otherPercentage: number;
     totalMerma: number;
     kgNet: number;
-    harvester: string;
+    harvesterId: string;
     destination: string;
+}
+
+export interface ExitFieldItem extends ExitField {
+    deposit?: Deposit;
+    supply?: Supply;
+    transport?: Business;
+    // trucker?: Business;
+    // harvester?: Business;
 }
 
 export enum SupplyType {

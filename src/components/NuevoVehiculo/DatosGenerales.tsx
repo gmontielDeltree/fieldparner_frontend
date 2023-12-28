@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
+import React, { ChangeEvent, useEffect, useMemo } from "react";
 import {
   Autocomplete,
   Grid,
@@ -12,10 +12,7 @@ import {
   FolderOpen as FolderOpenIcon,
   Security as SecurityIcon,
 } from "@mui/icons-material";
-// import {
-//   createTypeVehicles,
-//   // getTypeVehicles as getTypeVehiclesService,
-// } from "../../services";
+
 
 export interface DatosGeneralesProps {
   vehiculo: Vehicle;
@@ -48,8 +45,9 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
     insurenceDueDate,
     coverageType,
     location,
+    chassis,
+    truckTrailer,
   } = vehiculo;
-  // const [typeVehicles, setTypeVehicles] = useState<string[]>([]);
   const {
     getBusinesses,
     businesses,
@@ -72,18 +70,6 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
     }
   };
 
-  // useEffect(() => {
-  //   const getTypeVehicles = async (): Promise<string[]> => {
-  //     const response = await getTypeVehiclesService();
-  //     const types: string[] = response.map((v: any) => v.name);
-
-  //     setTypeVehicles(types);
-  //     return types;
-  //   };
-
-  //   getTypeVehicles();
-  // }, []);
-
   useEffect(() => {
     getTypeVehicles();
     getBusinesses();
@@ -93,7 +79,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
     <>
       <Grid
         container
-        spacing={3}
+        spacing={1}
         direction="row"
         alignItems="center"
         justifyContent="space-between"
@@ -178,6 +164,34 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             type="text"
             name="patent"
             value={patent}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Chasis"
+            variant="outlined"
+            type="text"
+            name="chassis"
+            value={chassis}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Acoplado"
+            variant="outlined"
+            type="text"
+            name="truckTrailer"
+            value={truckTrailer}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,

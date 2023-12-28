@@ -15,8 +15,6 @@ import { Vehicle } from "@types";
 import { useAppDispatch, useAppSelector, useForm, useVehicle } from "../hooks";
 import {
   removerVehiculoActivo,
-  // startAddVehiculo,
-  startUpdateVehiculo,
 } from "../redux/vehicle";
 import {
   DatosGenerales,
@@ -47,6 +45,8 @@ const initialState: Vehicle = {
   location: "",
   technialSpecifications: [],
   maintenances: [],
+  chassis: "",
+  truckTrailer: ""
 };
 
 const steps = [
@@ -68,7 +68,7 @@ export const VehiclePage: React.FC = () => {
     handleYearChange,
     handleFormValueChange,
   } = useForm(initialState);
-  const { createVehicle } = useVehicle();
+  const { createVehicle, updateVehicle } = useVehicle();
 
   const getStepContent = useMemo(
     () => (step: number) => {
@@ -131,8 +131,10 @@ export const VehiclePage: React.FC = () => {
   const onClickUpdateVehicle = useCallback(
     (e: any) => {
       e.preventDefault();
-      dispatch(startUpdateVehiculo(formulario));
-      dispatch(removerVehiculoActivo());
+      
+      if (formulario._id)
+        updateVehicle(formulario);
+
       navigate("/init/overview/vehicle");
     },
     [formulario, dispatch]

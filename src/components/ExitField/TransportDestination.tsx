@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useCallback } from 'react';
 import {
     FormControl,
     Grid,
@@ -12,7 +12,7 @@ import {
     Divider,
     Box
 } from '@mui/material';
-import { Business, Deposit, ExitField, Vehicle, VehicleType } from '../../types';
+import { Business, Deposit, ExitField, TipoEntidad, Vehicle, VehicleType } from '../../types';
 import { LocalShipping as LocalShippingIcon } from '@mui/icons-material';
 
 
@@ -27,6 +27,7 @@ interface TransportDestinationProps {
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
 
+//TODO: Camionero y Cosechador tienen q ser de tipo entidad fisica?
 
 export const TransportDestination: React.FC<TransportDestinationProps> = ({
     formValues,
@@ -38,8 +39,6 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     setFormValues
 }) => {
 
-    // const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
-
     const { humidityPercentage, mermaPercentage, volatilePercentage, otherPercentage, grossWeight, tareWeight } = formValues;
     const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
     const netWeight = Number(grossWeight - tareWeight);
@@ -50,10 +49,27 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
         const depositSelected = deposits.find((deposit) => deposit._id === value);
 
         if (depositSelected) {
-            setFormValues(prevState => ({ ...prevState, depositId: value }));
-            // setDepositSelected(depositSelected);
+            setFormValues(prevState => ({
+                ...prevState,
+                depositId: value,
+                deposit: depositSelected
+            }));
         }
     };
+
+    const onChangeChassis = useCallback(({ target }: SelectChangeEvent) => {
+        const value = target.value;
+        const vehicleSelected = vehicles.find(v => v._id === value);
+
+        if (vehicleSelected?._id) {
+            setFormValues(prevState => ({
+                ...prevState,
+                vehicleId: value,
+                chassis: vehicleSelected.chassis,
+                truckTrailer: vehicleSelected.truckTrailer
+            }));
+        }
+    }, []);
 
     return (
         <Grid
@@ -94,7 +110,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         label="Camionero"
                         onChange={handleSelectChange}
                     >
-                        {socialEntities?.map((f) => (
+                        {socialEntities?.filter(s => s.tipoEntidad === TipoEntidad.FISICA).map((f) => (
                             <MenuItem key={f._id} value={f._id}>
                                 {f.nombreCompleto || f.razonSocial}
                             </MenuItem>
@@ -121,20 +137,23 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     <Select
                         labelId="chassis"
                         name="chassis"
-                        value={formValues.chassis}
+                        value={formValues.vehicleId}
                         label="Chasis"
-                        onChange={handleSelectChange}
+                        onChange={onChangeChassis}
                     >
                         {vehicles.filter(v => v.vehicleType === VehicleType.Camion)?.map((vehicle) => (
                             <MenuItem key={vehicle._id} value={vehicle._id}>
-                                {`${vehicle.vehicleType} - ${vehicle.make} - ${vehicle.model}`}
+                                {vehicle.chassis}
                             </MenuItem>
                         ))}
                     </Select>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-                <FormControl key="truckTrailer-select" fullWidth>
+                <Typography variant="body1" align="center" >
+                    Acoplado: <b>{formValues.truckTrailer}</b>
+                </Typography>
+                {/* <FormControl key="truckTrailer-select" fullWidth>
                     <InputLabel id="truckTrailer">Acoplado</InputLabel>
                     <Select
                         labelId="truckTrailer"
@@ -149,7 +168,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                             </MenuItem>
                         ))}
                     </Select>
-                </FormControl>
+                </FormControl> */}
             </Grid>
             <Grid xs={12} sm={12} my={2}>
                 <Divider variant='middle' sx={{ border: "1px solid black" }} />
@@ -318,7 +337,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                 <Divider variant='middle' sx={{ border: "1px solid black" }} />
             </Grid>
             <Grid item xs={6} sm={3}>
-                <TextField
+                {/* <TextField
                     variant="outlined"
                     type="text"
                     label='Cosechador'
@@ -329,7 +348,23 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         startAdornment: <InputAdornment position="start" />,
                     }}
                     fullWidth
-                />
+                /> */}
+                <FormControl key="harvester-select" fullWidth>
+                    <InputLabel id="harvester">Cosechador</InputLabel>
+                    <Select
+                        labelId="harvester"
+                        name="harvesterId"
+                        value={formValues.harvesterId}
+                        label="Cosechador"
+                        onChange={handleSelectChange}
+                    >
+                        {socialEntities?.filter(s => s.tipoEntidad === TipoEntidad.FISICA).map((f) => (
+                            <MenuItem key={f._id} value={f._id}>
+                                {f.nombreCompleto}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
             </Grid>
             <Grid item xs={6} sm={3}>
                 <TextField
