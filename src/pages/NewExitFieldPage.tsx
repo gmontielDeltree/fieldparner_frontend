@@ -46,6 +46,7 @@ const initialState: ExitField = {
     tareWeight: 0,
     totalMerma: 0,
     volatilePercentage: 0,
+    accountId: "",
 }
 
 export const NewExitFieldPage: React.FC = () => {
