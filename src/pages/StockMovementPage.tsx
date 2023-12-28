@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
 import { Box, Button, Container, Grid, Typography } from "@mui/material";
 import { Add as AddIcon, SyncAlt as SyncAltIcon } from "@mui/icons-material";
-import { Loading } from "../components";
+import { Loading, CloseButtonPage } from "../components";
 import { useStockMovement } from "../hooks";
 
 const columns: GridColDef[] = [
@@ -70,13 +70,17 @@ export const StockMovementPage: React.FC = () => {
       <Box
         component="div"
         display="flex"
+        justifyContent="space-between"
         alignItems="center"
-        sx={{ ml: { sm: 2 }, pt: 5 }}
+        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
       >
-        <SyncAltIcon />
-        <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
-          Movimiento de Stock
-        </Typography>
+        <Box display="flex" alignItems="center">
+          <SyncAltIcon sx={{ marginRight: '8px' }} />
+          <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
+            Movimiento de Stock
+          </Typography>
+        </Box>
+        <CloseButtonPage />
       </Box>
       <Box component="div" sx={{ mt: 3 }}>
         <Grid

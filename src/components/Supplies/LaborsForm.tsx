@@ -18,6 +18,7 @@ import React, { ChangeEvent } from "react";
 
 export interface LaborsFormProps {
   formValues: Supply;
+  supplyError: boolean;
   setFormValues: React.Dispatch<React.SetStateAction<Supply>>;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
@@ -29,6 +30,7 @@ export interface LaborsFormProps {
 
 export const LaborsForm: React.FC<LaborsFormProps> = ({
   formValues,
+  supplyError,
   handleSelectChange,
   handleInputChange,
   // handleCheckboxChange,
@@ -80,6 +82,8 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
           type="text"
           label="Insumo"
           name="name"
+          error={supplyError}
+          helperText={supplyError ? "Este campo es obligatorio" : ""}
           value={name}
           onChange={handleInputChange}
           InputProps={{

@@ -10,6 +10,7 @@ interface NewGeometryProps {
   map: Map;
   draw: MapboxDraw;
   handleSaveGeometry?: (detail: any) => void;
+  onClose: () => void;
   type: "field" | "lot";
 }
 
@@ -17,6 +18,7 @@ function NewGeometry({
   map,
   draw,
   handleSaveGeometry,
+  onClose,
   type
 }: NewGeometryProps) {
   const [activeComponent, setActiveComponent] = useState<
@@ -43,6 +45,11 @@ function NewGeometry({
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const handleClose = () => {
+    toggleModal();
+    onClose();
   };
 
   const renderActiveComponent = () => {
@@ -73,7 +80,7 @@ function NewGeometry({
     <div>
       <GeometryPromptModal
         isOpen={isModalOpen}
-        toggle={toggleModal}
+        toggle={handleClose}
         onDraw={handleDraw}
         onUpload={handleUpload}
       />

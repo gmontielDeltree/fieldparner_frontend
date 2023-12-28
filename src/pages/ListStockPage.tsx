@@ -5,6 +5,7 @@ import {
   ItemRow,
   TableCellStyled,
   SupplyByLotsModal,
+  CloseButtonPage,
 } from "../components";
 import { ColumnProps, DisplayModals, Supply, SupplyByDeposits } from "../types";
 import {
@@ -121,13 +122,17 @@ export const ListStockPage: React.FC = () => {
       <Box
         component="div"
         display="flex"
+        justifyContent="space-between"
         alignItems="center"
-        sx={{ ml: { sm: 2 }, mt: 5 }}
+        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
       >
-        <QueryStatsIcon />
-        <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
-          Consulta de Stock
-        </Typography>
+        <Box display="flex" alignItems="center">
+          <QueryStatsIcon sx={{ marginRight: '8px' }} />
+          <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
+            Consulta de Stock
+          </Typography>
+        </Box>
+        <CloseButtonPage />
       </Box>
       <Paper variant="outlined" sx={{ mt: 7, p: { xs: 2, md: 3 } }}>
         <Box sx={{ width: "100%" }}>

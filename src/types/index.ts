@@ -163,6 +163,7 @@ export interface Business extends Document {
     domicilio: string;
     localidad: string;
     cp: string;
+    zipCode: string;
     provincia: string;
     pais: string;
     estado?: boolean;
