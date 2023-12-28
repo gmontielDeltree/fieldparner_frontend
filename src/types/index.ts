@@ -15,17 +15,17 @@ export interface MenuOptions {
     icon: React.ReactNode;
 }
 
-export enum TipoVehiculo {
+export enum VehicleType {
     Cosechadora = "Cosechadora",
     Pulverizadora = "Pulverizadora",
     Tractor = "Tractor",
     Camioneta = "Camioneta",
+    Camion = "Camion",
     Tolva = "Tolva",
     Otros = "Otros",
 }
 
-export interface TypeVehicle {
-    _id: string;
+export interface TypeVehicle extends Document {
     name: string;
 }
 
@@ -49,30 +49,31 @@ export interface EspecificacionTecnica {
     descripcion: string;
 }
 
-export interface Vehiculo {
-    _id: string;
-    tipoVehiculo: string;
-    marca: string;
-    modelo: string;
-    año: string;
-    patente: string;
+export interface Vehicle extends Document {
+    vehicleType: string;
+    make: string;
+    model: string;
+    modelYear: string;
+    patent: string;
     tara: number;
-    neto: number;
-    bruto: number;
-    tipoCombustible: string;
-    capacidadCombustible: number;
-    unidadMedida: string;
-    conectividad?: string;
-    propietario?: string;
-    ultimoMantenimiento?: string;
-    seguro: string;
-    tipoCobertura: string;
-    nroPoliza: string;
-    seguroFechaInicio: string;
-    seguroFechaVencimiento: string;
-    ubicacion: string;
-    mantenimientos: Mantenimiento[];
-    especificacionesTecnicas: RowData[];
+    net: number;
+    gross: number;
+    chassis: string;
+    truckTrailer: string;
+    fuelType: string;
+    fuelCapacity: number;
+    unitMeasurement: string;
+    connectivity?: string;
+    owner?: string;
+    lastMaintenance?: string;
+    insurence: string;
+    coverageType: string;
+    policyNumber: string;
+    insurenceStartDate: string;
+    insurenceDueDate: string;
+    location: string;
+    maintenances: Mantenimiento[];
+    technialSpecifications: RowData[];
 }
 
 export interface ColumnProps {
@@ -374,6 +375,7 @@ export enum TypeMovement {
     TransferenciaDeposito = "Transferencia entre depositos",
     Prestamos = "Prestamos",
     Transformacion = "Transformacion",
+    SalidaDeCampo = "Salida de Campo",
 }
 
 export enum Movement {
@@ -412,4 +414,55 @@ export interface TransformSupply {
     currentStock: number;
     hours?: string;
     employee?: string;
+}
+
+export interface ExitField extends Document {
+    accountId: string;
+    creationDate: string;
+    campaign: number;
+    field: string;
+    lot: string;
+    supplyId: string;
+    transportId: string;
+    truckerId: string;
+    has: string;
+    cultive: string;
+    transportDocument: string;
+    ticket: string;
+    vehicleId: string;
+    chassis: string;
+    truckTrailer: string;
+    grossWeight: number;
+    tareWeight: number;
+    netWeight: number;
+    depositId: string;
+    location: string;
+    additionalInformation: string;
+    humidityPercentage: number;
+    mermaPercentage: number;
+    volatilePercentage: number;
+    otherPercentage: number;
+    totalMerma: number;
+    kgNet: number;
+    harvesterId: string;
+    destination: string;
+}
+
+export interface ExitFieldItem extends ExitField {
+    deposit?: Deposit;
+    supply?: Supply;
+    transport?: Business;
+    // trucker?: Business;
+    // harvester?: Business;
+}
+
+export enum SupplyType {
+    Varios = "Varios",
+    Semillas = "Semillas",
+    Cultivo = "Cultivo",
+    Fertilizantes = "Fertilizantes",
+    Fitosanitarios = "Fitosanitarios",
+    Repuestos = "Repuestos",
+    Materiales = "Materiales",
+    Combustible = "Combustible"
 }

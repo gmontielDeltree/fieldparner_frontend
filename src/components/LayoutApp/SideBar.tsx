@@ -23,7 +23,8 @@ import {
   Warehouse as WarehouseIcon,
   SyncAlt as SyncAltIcon,
   QueryStats as QueryStatsIcon,
-  Transform as TransformIcon
+  Transform as TransformIcon,
+  Agriculture as AgricultureIcon
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
 import { Typography } from "@mui/material";
@@ -95,7 +96,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemText primary="Lista de Dispositivos" />
             </ListItemButton>
           </ListItem>
-          <ListItem key="personal" disablePadding>
+          <ListItem key="business" disablePadding>
             <ListItemButton
               component={RouterLink}
               to="/init/overview/business"
@@ -105,6 +106,18 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <GroupIcon />
               </ListItemIcon>
               <ListItemText primary="Entidades Sociales" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="out-field" disablePadding>
+            <ListItemButton
+              component={RouterLink}
+              to="/init/overview/exit-field"
+              selected={pathname.includes("/init/overview/exit-field")}
+            >
+              <ListItemIcon>
+                <AgricultureIcon />
+              </ListItemIcon>
+              <ListItemText primary="Salida de Campo" />
             </ListItemButton>
           </ListItem>
           <ListItem key="supplies" disablePadding>

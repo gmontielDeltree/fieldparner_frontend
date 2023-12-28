@@ -8,7 +8,7 @@ import {
   TableCellStyled,
   CloseButtonPage,
 } from "../components";
-import { ColumnProps, Vehiculo } from "../types";
+import { ColumnProps, Vehicle } from "../types";
 import {
   Box,
   Button,
@@ -27,10 +27,10 @@ import {
   Edit as EditIcon,
   LocalShipping as LocalShippingIcon,
 } from "@mui/icons-material";
-import { useForm, useAppDispatch, useAppSelector } from "../hooks";
+import { useForm, useAppDispatch, useAppSelector, useVehicle } from "../hooks";
 import {
   cargarVehiculos,
-  getVehiculos,
+  // getVehiculos,
   setVehiculoActivo,
 } from "../redux/vehicle";
 
@@ -40,18 +40,20 @@ const columns: ColumnProps[] = [
   { text: "Modelo", align: "center" },
   { text: "Patente", align: "left" },
   { text: "Año", align: "center" },
+  { text: "", align: "center" }
 ];
 
 export const ListVehiclesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.ui);
-  const { vehiculos } = useAppSelector((state) => state.vehiculo);
+  // const { vehiculos: vehicles } = useAppSelector((state) => state.vehiculo);
+  const { vehicles, getVehicles } = useVehicle();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const onClickBuscar = (): void => {
-    const filteredVehiculos = vehiculos.filter(
-      ({ tipoVehiculo, marca, modelo, patente }) =>
+    const filteredVehiculos = vehicles.filter(
+      ({ vehicleType: tipoVehiculo, make: marca, model: modelo, patent: patente }) =>
         (patente && patente.toLowerCase().includes(filterText.toLowerCase())) ||
         (marca && marca.toLowerCase().includes(filterText.toLowerCase())) ||
         (modelo && modelo.toLowerCase().includes(filterText.toLowerCase())) ||
@@ -63,14 +65,15 @@ export const ListVehiclesPage: React.FC = () => {
 
   const onClickAddVehicle = () => navigate("/init/overview/vehicle/new");
 
-  const onClickUpdateVehicle = (item: Vehiculo): void => {
+  const onClickUpdateVehicle = (item: Vehicle): void => {
     dispatch(setVehiculoActivo(item));
     navigate(`/init/overview/vehicle/${item._id}`);
   };
 
   useEffect(() => {
-    dispatch(getVehiculos());
-  }, [dispatch]);
+    // dispatch(getVehiculos());
+    getVehicles();
+  }, []);
 
   return (
     <TemplateLayout key="overview-vehicles" viewMap={true}>
@@ -154,15 +157,15 @@ export const ListVehiclesPage: React.FC = () => {
             columns={columns}
             isLoading={isLoading}
           >
-            {vehiculos.map((row) => (
+            {vehicles.map((row) => (
               <ItemRow>
                 <TableCellStyled align="center">
-                  {row.tipoVehiculo}
+                  {row.vehicleType}
                 </TableCellStyled>
-                <TableCellStyled align="center">{row.marca} </TableCellStyled>
-                <TableCellStyled align="center">{row.modelo}</TableCellStyled>
-                <TableCellStyled>{row.patente}</TableCellStyled>
-                <TableCellStyled align="center">{row.año}</TableCellStyled>
+                <TableCellStyled align="center">{row.make} </TableCellStyled>
+                <TableCellStyled align="center">{row.model}</TableCellStyled>
+                <TableCellStyled>{row.patent}</TableCellStyled>
+                <TableCellStyled align="center">{row.modelYear}</TableCellStyled>
                 <TableCellStyled align="center">
                   <Tooltip title="Editar">
                     <IconButton

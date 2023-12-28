@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
+import React, { ChangeEvent, useEffect, useMemo } from "react";
 import {
   Autocomplete,
   Grid,
@@ -6,19 +6,16 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { TipoEntidad, Vehiculo } from "../../types";
-import { useAppSelector, useBusiness } from "../../hooks";
+import { TipoEntidad, TypeVehicle, Vehicle } from "../../types";
+import { useAppSelector, useBusiness, useVehicle } from "../../hooks";
 import {
   FolderOpen as FolderOpenIcon,
   Security as SecurityIcon,
 } from "@mui/icons-material";
-import {
-  createTypeVehicles,
-  getTypeVehicles as getTypeVehiclesService,
-} from "../../services";
+
 
 export interface DatosGeneralesProps {
-  vehiculo: Vehiculo;
+  vehiculo: Vehicle;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleFormValueChange: (key: string, value: string) => void;
   handleYearChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
@@ -30,23 +27,27 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   handleFormValueChange,
   handleYearChange,
 }) => {
+
+  const { vehicleTypes, getTypeVehicles, createVehicleType } = useVehicle();
+  const typeVehicles = vehicleTypes.map(t => t.name);
   const { vehiculoActivo } = useAppSelector((state) => state.vehiculo);
   const disabledFields = !!vehiculoActivo;
   const {
-    tipoVehiculo,
-    patente,
-    marca,
-    modelo,
-    año,
-    propietario,
-    nroPoliza,
-    seguro,
-    seguroFechaInicio,
-    seguroFechaVencimiento,
-    tipoCobertura,
-    ubicacion,
+    vehicleType,
+    patent,
+    make,
+    model,
+    modelYear,
+    owner,
+    policyNumber,
+    insurence,
+    insurenceStartDate,
+    insurenceDueDate,
+    coverageType,
+    location,
+    chassis,
+    truckTrailer,
   } = vehiculo;
-  const [typeVehicles, setTypeVehicles] = useState<string[]>([]);
   const {
     getBusinesses,
     businesses,
@@ -61,26 +62,16 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
 
   const handleOnBlurTipoVehiculo = async () => {
     const checkTipoVehiculo = (tV: string) =>
-      tV.toLowerCase().trim() === tipoVehiculo.toString().toLowerCase().trim();
+      tV.toLowerCase().trim() === vehicleType.toString().toLowerCase().trim();
 
-    if (tipoVehiculo !== "" && !typeVehicles.some(checkTipoVehiculo)) {
-      await createTypeVehicles(tipoVehiculo);
+    if (vehicleType !== "" && !typeVehicles.some(checkTipoVehiculo)) {
+      const newVehicleType: TypeVehicle = { name: vehicleType };
+      createVehicleType(newVehicleType);
     }
   };
 
   useEffect(() => {
-    const getTypeVehicles = async (): Promise<string[]> => {
-      const response = await getTypeVehiclesService();
-      const types: string[] = response.map((v: any) => v.name);
-
-      setTypeVehicles(types);
-      return types;
-    };
-
     getTypeVehicles();
-  }, []);
-
-  useEffect(() => {
     getBusinesses();
   }, []);
 
@@ -88,7 +79,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
     <>
       <Grid
         container
-        spacing={3}
+        spacing={1}
         direction="row"
         alignItems="center"
         justifyContent="space-between"
@@ -99,18 +90,18 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         </Grid>
         <Grid item xs={12} sm={6}>
           <Autocomplete
-            id="tipoVehiculo"
-            value={tipoVehiculo}
+            id="vehicleType"
+            value={vehicleType}
             freeSolo
             options={typeVehicles}
             disabled={disabledFields}
             onBlur={() => handleOnBlurTipoVehiculo()}
             onChange={(_event: any, newValue: string | null) => {
-              newValue && handleFormValueChange("tipoVehiculo", newValue);
+              newValue && handleFormValueChange("vehicleType", newValue);
             }}
-            inputValue={tipoVehiculo}
+            inputValue={vehicleType}
             onInputChange={(_event, newInputValue) => {
-              handleFormValueChange("tipoVehiculo", newInputValue);
+              handleFormValueChange("vehicleType", newInputValue);
             }}
             renderInput={(params) => (
               <TextField {...params} label="Tipo de Vehiculo" required />
@@ -125,8 +116,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             variant="outlined"
             disabled={disabledFields}
             type="text"
-            name="marca"
-            value={marca}
+            name="make"
+            value={make}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -141,8 +132,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             disabled={disabledFields}
             variant="outlined"
             type="text"
-            name="modelo"
-            value={modelo}
+            name="model"
+            value={model}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -154,8 +145,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
           <TextField
             type="text"
             label="Año"
-            name="año"
-            value={año}
+            name="modelYear"
+            value={modelYear}
             onChange={handleYearChange}
             inputProps={{
               maxLength: 4,
@@ -171,8 +162,36 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             label="Patente"
             variant="outlined"
             type="text"
-            name="patente"
-            value={patente}
+            name="patent"
+            value={patent}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Chasis"
+            variant="outlined"
+            type="text"
+            name="chassis"
+            value={chassis}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Acoplado"
+            variant="outlined"
+            type="text"
+            name="truckTrailer"
+            value={truckTrailer}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -182,21 +201,21 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         </Grid>
         <Grid item xs={12} sm={6}>
           <Autocomplete
-            id="propietario"
+            id="owner"
             freeSolo
             loading={loadingBusiness}
-            value={propietario}
+            value={owner}
             onChange={(_event: any, newValue: string | null) => {
-              newValue && handleFormValueChange("propietario", newValue);
+              newValue && handleFormValueChange("owner", newValue);
             }}
-            inputValue={propietario}
+            inputValue={owner}
             onInputChange={(_event, newInputValue) => {
-              handleFormValueChange("propietario", newInputValue);
+              handleFormValueChange("owner", newInputValue);
             }}
             options={["Propio", ...optionsPropietario]}
             fullWidth
             renderInput={(params) => (
-              <TextField {...params} name="propietario" label="Propietario" />
+              <TextField {...params} name="owner" label="Propietario" />
             )}
           />
         </Grid>
@@ -205,9 +224,9 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             label="Ubicacion"
             variant="outlined"
             type="text"
-            name="ubicacion"
+            name="location"
             placeholder="Ubicacion"
-            value={ubicacion}
+            value={location}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -224,8 +243,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             label="Compañía de seguro"
             variant="outlined"
             type="text"
-            name="seguro"
-            value={seguro}
+            name="insurence"
+            value={insurence}
             fullWidth
             onChange={handleInputChange}
             InputProps={{
@@ -238,8 +257,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             label="Tipo de Cobertura"
             variant="outlined"
             type="text"
-            name="tipoCobertura"
-            value={tipoCobertura}
+            name="coverageType"
+            value={coverageType}
             fullWidth
             onChange={handleInputChange}
             InputProps={{
@@ -252,8 +271,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             label="Numero de Póliza"
             variant="outlined"
             type="text"
-            name="nroPoliza"
-            value={nroPoliza}
+            name="policyNumber"
+            value={policyNumber}
             fullWidth
             onChange={handleInputChange}
             InputProps={{
@@ -266,8 +285,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             variant="outlined"
             type="date"
             label="Fecha de Inicio del Seguro"
-            name="seguroFechaInicio"
-            value={seguroFechaInicio}
+            name="insurenceStartDate"
+            value={insurenceStartDate}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -280,8 +299,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             variant="outlined"
             type="date"
             label="Fecha Vencimiento del Seguro"
-            name="seguroFechaVencimiento"
-            value={seguroFechaVencimiento}
+            name="insurenceDueDate"
+            value={insurenceDueDate}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,

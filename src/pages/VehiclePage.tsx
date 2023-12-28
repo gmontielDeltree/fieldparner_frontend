@@ -11,12 +11,10 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { TemplateLayout } from "../components";
-import { Vehiculo } from "@types";
-import { useAppDispatch, useAppSelector, useForm } from "../hooks";
+import { Vehicle } from "@types";
+import { useAppDispatch, useAppSelector, useForm, useVehicle } from "../hooks";
 import {
   removerVehiculoActivo,
-  startAddVehiculo,
-  startUpdateVehiculo,
 } from "../redux/vehicle";
 import {
   DatosGenerales,
@@ -24,30 +22,31 @@ import {
   Mantenimientos,
 } from "../components/NuevoVehiculo";
 
-const initialState: Vehiculo = {
-  tipoVehiculo: "",
-  patente: "",
-  marca: "",
-  modelo: "",
-  año: "",
+const initialState: Vehicle = {
+  vehicleType: "",
+  patent: "",
+  make: "",
+  model: "",
+  modelYear: "",
   tara: 0,
-  neto: 0,
-  tipoCombustible: "",
-  capacidadCombustible: 0,
-  unidadMedida: "",
-  conectividad: "",
-  _id: new Date().toISOString(),
-  nroPoliza: "",
-  seguro: "",
-  tipoCobertura: "",
-  propietario: "",
-  ultimoMantenimiento: "",
-  seguroFechaInicio: "",
-  seguroFechaVencimiento: "",
-  bruto: 0,
-  ubicacion: "",
-  especificacionesTecnicas: [],
-  mantenimientos: [],
+  net: 0,
+  fuelType: "",
+  fuelCapacity: 0,
+  unitMeasurement: "",
+  connectivity: "",
+  policyNumber: "",
+  insurence: "",
+  coverageType: "",
+  owner: "",
+  lastMaintenance: "",
+  insurenceStartDate: "",
+  insurenceDueDate: "",
+  gross: 0,
+  location: "",
+  technialSpecifications: [],
+  maintenances: [],
+  chassis: "",
+  truckTrailer: ""
 };
 
 const steps = [
@@ -69,6 +68,7 @@ export const VehiclePage: React.FC = () => {
     handleYearChange,
     handleFormValueChange,
   } = useForm(initialState);
+  const { createVehicle, updateVehicle } = useVehicle();
 
   const getStepContent = useMemo(
     () => (step: number) => {
@@ -118,10 +118,10 @@ export const VehiclePage: React.FC = () => {
     (e: any) => {
       e.preventDefault();
 
-      const { tipoVehiculo, marca, modelo } = formulario;
+      const { vehicleType: tipoVehiculo, make: marca, model: modelo } = formulario;
       if (!tipoVehiculo || !marca || !modelo) return;
 
-      dispatch(startAddVehiculo(formulario));
+      createVehicle(formulario);
 
       navigate("/init/overview/vehicle");
     },
@@ -131,8 +131,10 @@ export const VehiclePage: React.FC = () => {
   const onClickUpdateVehicle = useCallback(
     (e: any) => {
       e.preventDefault();
-      dispatch(startUpdateVehiculo(formulario));
-      dispatch(removerVehiculoActivo());
+      
+      if (formulario._id)
+        updateVehicle(formulario);
+
       navigate("/init/overview/vehicle");
     },
     [formulario, dispatch]
