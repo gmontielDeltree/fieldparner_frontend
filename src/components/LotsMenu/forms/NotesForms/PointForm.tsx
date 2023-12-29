@@ -276,7 +276,7 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
             ))}
           </Grid>
 
-          {/* Interactive Audio Recording */}
+          {/* Audio Recording */}
           <Grid item xs={12}>
             <RecordingButton
               recording={isRecording}
