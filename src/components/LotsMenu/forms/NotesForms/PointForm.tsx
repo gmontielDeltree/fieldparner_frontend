@@ -91,11 +91,10 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
         ...point,
         properties: { ...point.properties, detalles: newDetalles }
       });
-      setSelectedField(""); // Reset the dropdown
+      setSelectedField("");
     }
   };
 
-  // useEffect to consle.log point when point changes
   useEffect(() => {
     console.log("point", point);
   }, [point]);
