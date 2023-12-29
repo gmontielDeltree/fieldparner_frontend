@@ -163,7 +163,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 sx={avatarStyle("avatar1")}
               />
             </ButtonBase>
-            <ButtonBase
+            {/* <ButtonBase
               onClick={() => selectAvatar("avatar2")}
               sx={{ borderRadius: "50%", marginRight: "18px" }}
             >
@@ -178,7 +178,7 @@ export const NavBar: React.FC<NavBarProps> = ({
               sx={{ borderRadius: "50%", marginRight: "25px" }}
             >
               <Avatar alt="Insumos" src={insumos} sx={avatarStyle("avatar3")} />
-            </ButtonBase>
+            </ButtonBase> */}
 
             <Tooltip title="Notifications" enterDelay={500} leaveDelay={200}>
               <IconButton
