@@ -51,12 +51,13 @@ function Note({ activity, complementaryColor }) {
           >
             {activity.actividad.fecha}
           </Typography>
+
           <Typography
             sx={{ fontSize: 16, fontWeight: "bold" }}
             style={{ marginLeft: "10px" }}
-            color="red"
+            color={activity.actividad.color}
           >
-            URGENTE
+            {activity.actividad.color == "red" ? "URGENTE" : "NORMAL"}
           </Typography>
         </Box>
         <Typography

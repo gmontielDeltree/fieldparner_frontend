@@ -264,6 +264,64 @@ interface Ejecucion {
   attachments?: Attachment[];
 }
 
+const getEmptyFeature = () => {
+  return {
+    _id: "",
+    uuid: uuid4(),
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: [0, 0]
+    },
+    properties: {
+      _id: "",
+      orden: 0,
+      nombre: "",
+      detalles: [
+        { name: "", value: "" },
+        { name: "", value: "" },
+        { name: "", value: "" }
+      ],
+      last_updated: {
+        last_updated: "",
+        last_updated_by: ""
+      },
+      created: {
+        created: "",
+        created_by: ""
+      },
+      notas: "",
+      fotos: [],
+      audio: ""
+    }
+  };
+};
+
+const getEmptyNote = () => {
+  const note = {
+    uuid: uuid4(),
+    lote_uuid: "",
+    type: "FeatureCollection",
+    tipo: "nota",
+    fecha: "",
+    nombre: "",
+    proxima_visita: "",
+    last_updated: {
+      last_updated: "",
+      last_updated_by: ""
+    },
+    created: {
+      created: "",
+      created_by: ""
+    },
+    features: [getEmptyFeature()],
+    _id: "",
+    _rev: ""
+  };
+
+  return { ...note };
+};
+
 const getEmptyActivity = () => {
   const a: Actividad = {
     _id: "",
@@ -365,6 +423,7 @@ export {
   get_empty_deposito,
   get_empty_entrada,
   getEmptyActivity,
+  getEmptyNote,
   get_empty_ejecucion
 };
 export type {
