@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../components';
+import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout, CloseButtonPage } from '../components';
 import { Box, Button, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import {
   Add as AddIcon,
@@ -42,13 +42,17 @@ export const ListExitFieldPage: React.FC = () => {
       <Box
         component="div"
         display="flex"
+        justifyContent="space-between"
         alignItems="center"
-        sx={{ ml: { sm: 2 }, pt: 2 }}
+        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
       >
-        <AgricultureIcon fontSize='large' /> <ArrowRightAltIcon fontSize='large' />
-        <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-          Salida de Campo
-        </Typography>
+        <Box display="flex" alignItems="center">
+          <AgricultureIcon fontSize='large' /> <ArrowRightAltIcon fontSize='large' />
+          <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
+            Salida de Campo
+          </Typography>
+        </Box>
+        <CloseButtonPage />
       </Box>
       <Box component="div" sx={{ mt: 7 }}>
         <Grid
