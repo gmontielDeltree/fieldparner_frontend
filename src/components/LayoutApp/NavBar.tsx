@@ -26,6 +26,7 @@ import {
   ExitToApp
 } from "@mui/icons-material";
 import { Badge, Tooltip } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
@@ -42,12 +43,15 @@ export const NavBar: React.FC<NavBarProps> = ({
 
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState(null);
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
+  const { i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const handleLanguageMenu = (event) => {
     setLanguageAnchorEl(event.currentTarget);
   };
 
   const handleLanguageChange = (newLanguage) => {
+    i18n.changeLanguage(newLanguage);
     setLanguage(newLanguage);
     setLanguageAnchorEl(null);
   };
@@ -123,6 +127,7 @@ export const NavBar: React.FC<NavBarProps> = ({
       }}
     >
       <Toolbar>
+        {" "}
         <IconButton
           color="default"
           edge="start"
@@ -131,7 +136,6 @@ export const NavBar: React.FC<NavBarProps> = ({
         >
           <MenuOutlined />
         </IconButton>
-
         <Grid
           container
           direction="row"
@@ -209,7 +213,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 textTransform: "none"
               }}
             >
-              Sin campaña
+              {t("no_campaign")}
             </Button>
 
             <Menu
@@ -229,6 +233,7 @@ export const NavBar: React.FC<NavBarProps> = ({
               <MenuItem onClick={handleClose}> + Nueva Campaña</MenuItem>
             </Menu>
           </Grid>
+
           <Grid item>
             <IconButton
               color="inherit"
@@ -262,21 +267,21 @@ export const NavBar: React.FC<NavBarProps> = ({
               open={isLanguageMenuOpen}
               onClose={handleLanguageMenuClose}
             >
-              <MenuItem onClick={() => handleLanguageChange("spanish")}>
+              <MenuItem onClick={() => handleLanguageChange("es")}>
                 <img
                   src={spanishFlagIcon}
                   alt="Spanish"
                   style={{ width: "24px", height: "24px" }}
                 />
               </MenuItem>
-              <MenuItem onClick={() => handleLanguageChange("english")}>
+              <MenuItem onClick={() => handleLanguageChange("en")}>
                 <img
                   src={englishFlagIcon}
                   alt="English"
                   style={{ width: "24px", height: "24px" }}
                 />
               </MenuItem>
-              <MenuItem onClick={() => handleLanguageChange("brazilian")}>
+              <MenuItem onClick={() => handleLanguageChange("pt")}>
                 <img
                   src={brazilFlagIcon}
                   alt="Brazilian"

@@ -21,6 +21,7 @@ import convex from "@turf/convex";
 import LotsMenu from "../components/LotsMenu";
 import uuid4 from "uuid4";
 import { Feature } from "geojson";
+import { useTranslation } from "react-i18next";
 
 interface Lot {
   id: string;
@@ -56,6 +57,7 @@ export const FieldsPage: React.FC = () => {
   const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
   const selectedFieldRef = useRef<Field | null>(null);
   const draw = useMemo(() => new MapboxDraw({}), []);
+  const { t } = useTranslation();
 
   useEffect(() => {
     selectedFieldRef.current = selectedField;
@@ -442,7 +444,7 @@ export const FieldsPage: React.FC = () => {
         }}
         onClick={() => setShowNewField(true)}
       >
-        Agregar Campo
+        {t("add_field")}
       </Button>
 
       {showNewField ? (

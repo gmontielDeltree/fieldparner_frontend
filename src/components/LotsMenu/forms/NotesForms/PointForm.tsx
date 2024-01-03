@@ -67,6 +67,7 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const audioRef = useRef();
   const [imageUrls, setImageUrls] = useState([]);
+  const { t } = useTranslation();
 
   const fieldOptions = ["Muestra #", "Plaga", "Enfermedad", "Anomalia"];
 
@@ -209,7 +210,7 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
           ))}
           {/* Dropdown for new field */}
           <Grid item xs={12} sm={6}>
-            <InputLabel id="field-selector-label">Agregar Campo</InputLabel>
+            <InputLabel id="field-selector-label">{t("add_field")}</InputLabel>
             <Select
               labelId="field-selector-label"
               value={selectedField}
@@ -299,3 +300,6 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
 }
 
 export default PointForm;
+function useTranslation(): { t: any } {
+  throw new Error("Function not implemented.");
+}
