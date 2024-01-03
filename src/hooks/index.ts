@@ -10,3 +10,4 @@ export * from './useStockMovement';
 export * from './useExitField';
 export * from './useVehicle';
 export * from './useCampaign';
+export * from './useOriginDestinations';

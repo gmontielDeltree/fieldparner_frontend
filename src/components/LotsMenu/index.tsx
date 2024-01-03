@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import PlanSowing from "./PlanSowing";
+import PlanHarvest from "./PlanHarvest";
+import PlanAplication from "./PlanAplication";
+import Tour from "./Tour";
 import { Avatar, ButtonBase, Paper } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
@@ -28,9 +31,9 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
 
   const categories = [
     { id: "Planificar Siembra", icon: categoryIcon1 },
-    { id: "Category 2", icon: categoryIcon2 },
-    { id: "Category 3", icon: categoryIcon3 },
-    { id: "Category 4", icon: categoryIcon4 },
+    { id: "Planificar Aplicacion", icon: categoryIcon2 },
+    { id: "Planificar Cosecha", icon: categoryIcon3 },
+    { id: "Tour", icon: categoryIcon4 },
     { id: "Category 5", icon: categoryIcon5 },
     { id: "Category 6", icon: categoryIcon6 }
   ];
@@ -174,12 +177,16 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
         return (
           <PlanSowing lot={lot} db={db} backToActivites={backToActivites} />
         );
-      case "Category 2":
-        return <div>Category 2</div>;
-      case "Category 3":
-        return <div>Category 3</div>;
-      case "Category 4":
-        return <div>Category 4</div>;
+      case "Planificar Cosecha":
+        return (
+          <PlanHarvest lot={lot} db={db} backToActivites={backToActivites} />
+        );
+      case "Planificar Aplicacion":
+        return (
+          <PlanAplication lot={lot} db={db} backToActivites={backToActivites} />
+        );
+      case "Tour":
+        return <Tour lot={lot} db={db} backToActivites={backToActivites} />;
       case "Category 5":
         return <div>Category 5</div>;
       case "Category 6":

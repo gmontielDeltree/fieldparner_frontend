@@ -7,12 +7,12 @@ import {
   Stepper,
   Typography
 } from "@mui/material";
-import PersonalForm from "./forms/PlanSowingForms/PersonalForm";
-import SuppliesForm from "./forms/PlanSowingForms/SuppliesForm";
-import OtherDetailsForm from "./forms/PlanSowingForms/OtherDetailsForm";
-import TasksForm from "./forms/PlanSowingForms/TasksForm";
-import ConditionsForm from "./forms/PlanSowingForms/ConditionsForm";
-import ObservationsForm from "./forms/PlanSowingForms/ObservationsForm";
+import PersonalForm from "./forms/PlanForms/PersonalForm";
+import SuppliesForm from "./forms/PlanForms/SuppliesForm";
+import OtherDetailsForm from "./forms/PlanForms/OtherDetailsForm";
+import TasksForm from "./forms/PlanForms/TasksForm";
+import ConditionsForm from "./forms/PlanForms/ConditionsForm";
+import ObservationsForm from "./forms/PlanForms/ObservationsForm";
 import { getEmptyActivity } from "../../interfaces/activity";
 import { format, parse } from "date-fns";
 import LocalFloristIcon from "@mui/icons-material/LocalFlorist";

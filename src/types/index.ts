@@ -183,7 +183,17 @@ export interface Supply extends Document {
     labors: string[];
 }
 
+export interface OriginDestinationsState {
+    originsDestinationsActive: OriginDestinations | null;
+    OriginsDestinations: OriginDestinations[];
+}
 
+export interface OriginDestinations extends Document {
+    name: string;
+    description: string;
+    procedencia: boolean;
+    destino: boolean;
+}
 
 export const LaboresItems = [
     "Preparado",
