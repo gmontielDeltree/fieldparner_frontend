@@ -16,6 +16,8 @@ import {
   TransformPage,
   ListExitFieldPage,
   NewExitFieldPage,
+  ListOriginsDestinationsPage,
+  NewOriginsDestinationsPage,
 } from "../pages";
 import { AppLayout } from "../components";
 
@@ -35,6 +37,10 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/deposit" element={<ListDepositsPage />} />
         <Route path="/overview/deposit/new" element={<DepositPage />} />
         <Route path="/overview/deposit/:id" element={<DepositPage />} />
+
+        <Route path="/overview/origins-destinations" element={<ListOriginsDestinationsPage />} />
+        <Route path="/overview/origins-destinations/new" element={<NewOriginsDestinationsPage />} />
+        <Route path="/overview/origins-destinations/:id" element={<NewOriginsDestinationsPage />} />
 
         <Route path="/overview/supply" element={<ListSuppliesPage />} />
         <Route path="/overview/supply/new" element={<SupplyPage />} />

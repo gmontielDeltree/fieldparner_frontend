@@ -9,3 +9,4 @@ export * from './useCategory';
 export * from './useStockMovement';
 export * from './useExitField';
 export * from './useVehicle';
+export * from './useOriginDestinations';

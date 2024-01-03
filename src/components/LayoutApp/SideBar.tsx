@@ -24,7 +24,8 @@ import {
   SyncAlt as SyncAltIcon,
   QueryStats as QueryStatsIcon,
   Transform as TransformIcon,
-  Agriculture as AgricultureIcon
+  Agriculture as AgricultureIcon,
+  AddLocationAlt as AddLocationAltIcon,
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
 import { Typography } from "@mui/material";
@@ -118,6 +119,18 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <AgricultureIcon />
               </ListItemIcon>
               <ListItemText primary="Salida de Campo" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key= "origins-destinations" disablePadding>
+            <ListItemButton
+              component={RouterLink}
+              to="/init/overview/origins-destinations"
+              selected={pathname.includes("/init/overview/origins-destinations")}
+            >
+              <ListItemIcon>
+                <AddLocationAltIcon />
+              </ListItemIcon>
+              <ListItemText primary="Procedencias/destinos" />
             </ListItemButton>
           </ListItem>
           <ListItem key="supplies" disablePadding>
