@@ -22,7 +22,6 @@ interface TransportDestinationProps {
     socialEntities: Business[];
     vehicles: Vehicle[];
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
-    // handleFormValueChange: (key: string, value: string) => void;
     setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
@@ -38,7 +37,6 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     handleSelectChange,
     setFormValues
 }) => {
-
     const { humidityPercentage, mermaPercentage, volatilePercentage, otherPercentage, grossWeight, tareWeight } = formValues;
     const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
     const netWeight = Number(grossWeight - tareWeight);
@@ -57,18 +55,20 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
         }
     };
 
-    const onChangeChassis = useCallback(({ target }: SelectChangeEvent) => {
-        const value = target.value;
+    const onChangeVehicle = useCallback(({ target }: SelectChangeEvent) => {
+        const { value, name } = target;
         const vehicleSelected = vehicles.find(v => v._id === value);
+        if (!vehicleSelected) return;
 
-        if (vehicleSelected?._id) {
+        if (name.toLowerCase() === "vehicle")
             setFormValues(prevState => ({
                 ...prevState,
                 vehicleId: value,
-                chassis: vehicleSelected.chassis,
-                truckTrailer: vehicleSelected.truckTrailer
+                chassis: vehicleSelected.chassisNumber,
             }));
-        }
+        else
+            setFormValues(prevState => ({ ...prevState, truckTrailerId: value }));
+
     }, []);
 
     return (
@@ -132,43 +132,40 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                 />
             </Grid>
             <Grid item xs={12} sm={6}>
-                <FormControl key="chassis-select" fullWidth>
-                    <InputLabel id="chassis">Chasis</InputLabel>
+                <FormControl key="vehicle-select" fullWidth>
+                    <InputLabel id="vehicle">Vehiculo</InputLabel>
                     <Select
-                        labelId="chassis"
-                        name="chassis"
+                        labelId="vehicle"
+                        name="vehicle"
                         value={formValues.vehicleId}
-                        label="Chasis"
-                        onChange={onChangeChassis}
+                        label="Vehiculo"
+                        onChange={onChangeVehicle}
                     >
-                        {vehicles.filter(v => v.vehicleType === VehicleType.Camion)?.map((vehicle) => (
+                        {vehicles?.map((vehicle) => (
                             <MenuItem key={vehicle._id} value={vehicle._id}>
-                                {vehicle.chassis}
+                                {vehicle.chassisNumber}
                             </MenuItem>
                         ))}
                     </Select>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-                <Typography variant="body1" align="center" >
-                    Acoplado: <b>{formValues.truckTrailer}</b>
-                </Typography>
-                {/* <FormControl key="truckTrailer-select" fullWidth>
+                <FormControl key="truck-trailer-select" fullWidth>
                     <InputLabel id="truckTrailer">Acoplado</InputLabel>
                     <Select
                         labelId="truckTrailer"
                         name="truckTrailer"
-                        value={formValues.truckTrailer}
+                        value={formValues.truckTrailerId}
                         label="Acoplado"
-                        onChange={handleSelectChange}
+                        onChange={onChangeVehicle}
                     >
-                        {vehicles.filter(v => v.vehicleType === VehicleType.Camion)?.map((vehicle) => (
+                        {vehicles.filter(v => v.vehicleType === VehicleType.Acoplado)?.map((vehicle) => (
                             <MenuItem key={vehicle._id} value={vehicle._id}>
-                                {`${vehicle.vehicleType} - ${vehicle.make} - ${vehicle.model}`}
+                                {vehicle.chassisNumber}
                             </MenuItem>
                         ))}
                     </Select>
-                </FormControl> */}
+                </FormControl>
             </Grid>
             <Grid xs={12} sm={12} my={2}>
                 <Divider variant='middle' sx={{ border: "1px solid black" }} />

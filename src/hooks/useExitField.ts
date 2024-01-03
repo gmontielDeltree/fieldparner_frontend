@@ -79,7 +79,7 @@ export const useExitField = () => {
                 supplyId: newExitField.supplyId,
                 location: newExitField.deposit.locations[0],
                 creationDate: newExitField.creationDate,
-                campaign: newExitField.campaign,
+                campaignId: newExitField.campaignId,
                 voucher: newExitField.additionalInformation,
                 isIncome: false,
                 currency: "",

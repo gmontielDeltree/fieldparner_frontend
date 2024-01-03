@@ -34,7 +34,7 @@ const initialForm: StockMovement = {
   amount: 0,
   nroLot: "",
   creationDate: new Date().toLocaleString(),
-  campaign: 0,
+  campaignId: 0,
   currency: "",
   depositId: "",
   location: "",
@@ -615,7 +615,7 @@ export const NewStockMovementPage: React.FC = () => {
                   type="number"
                   label="Campaña"
                   name="campaign"
-                  value={formulario.campaign}
+                  value={formulario.campaignId}
                   onChange={handleInputChange}
                   InputProps={{
                     startAdornment: <InputAdornment position="start" />,

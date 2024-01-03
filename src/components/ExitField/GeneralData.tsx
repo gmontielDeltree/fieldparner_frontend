@@ -3,13 +3,14 @@ import {
     FolderOpen as FolderOpenIcon,
 } from '@mui/icons-material';
 import React, { ChangeEvent } from 'react';
-import { ExitField, Supply } from '../../types';
+import { Campaign, ExitField, Supply } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 
 
 interface GeneralDataProps {
     formValues: ExitField;
     crops: Supply[];
+    campaigns: Campaign[];
     setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
@@ -22,6 +23,7 @@ const lots = ["Lote 1", "Lote 2", "Lote 3"]; //TODO: tabla campo-lote
 export const GeneralData: React.FC<GeneralDataProps> = ({
     formValues,
     crops,
+    campaigns,
     handleInputChange,
     handleSelectChange,
     setFormValues
@@ -71,18 +73,22 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
             </Grid>
             {/* TODO: ?? tabla campaña */}
             <Grid item xs={12} sm={6}>
-                <TextField
-                    variant="outlined"
-                    type="number"
-                    label="Campaña"
-                    name="campaign"
-                    value={formValues.campaign}
-                    onChange={handleInputChange}
-                    InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                    }}
-                    fullWidth
-                />
+                <FormControl key="campaign-select" fullWidth>
+                    <InputLabel id="campaign">Campaña</InputLabel>
+                    <Select
+                        labelId="campaign"
+                        name="campaignId"
+                        value={formValues.campaignId}
+                        label="Campaña"
+                        onChange={handleSelectChange}
+                    >
+                        {campaigns?.map((c) => (
+                            <MenuItem key={c.campaignId} value={c.campaignId}>
+                                {c.campaignId}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
                 <FormControl key="field-select" fullWidth>
@@ -103,25 +109,29 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
-                <FormControl key="lot-select" fullWidth>
-                    <InputLabel id="lot">Lote</InputLabel>
-                    <Select
-                        labelId="lot"
-                        name="lot"
-                        value={formValues.lot}
-                        label="Lote"
-                        onChange={handleSelectChange}
-                    >
-                        {lots?.map((l) => (
-                            <MenuItem key={l} value={l}>
-                                {l}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+                {
+                    formValues.field !== "" && (
+                        <FormControl key="lot-select" fullWidth>
+                            <InputLabel id="lot">Lote</InputLabel>
+                            <Select
+                                labelId="lot"
+                                name="lot"
+                                value={formValues.lot}
+                                label="Lote"
+                                onChange={handleSelectChange}
+                            >
+                                {lots?.map((l) => (
+                                    <MenuItem key={l} value={l}>
+                                        {l}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    )
+                }
             </Grid>
             <Grid item xs={6} sm={2}>
-                <TextField
+                {/* <TextField
                     variant="outlined"
                     type="text"
                     placeholder='Hectarea'
@@ -132,7 +142,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                         startAdornment: <InputAdornment position="start" />,
                     }}
                     fullWidth
-                />
+                /> */}
             </Grid>
             <Grid item xs={12} sm={4}>
                 <FormControl key="lot-select" fullWidth>

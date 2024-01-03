@@ -11,7 +11,9 @@ import {
     Vehicle,
     StockMovement,
     StockByLot,
-    ExitField
+    ExitField,
+    Campaign,
+    Field
 } from '../types';
 import uuid4 from 'uuid4';
 
@@ -31,6 +33,8 @@ const dbNames = Object.freeze({
     stockMovements: "stock-movements",
     stockByLots: "lots-stock",
     exitFields: "exit-fields",
+    campaigns: "campaigns",
+    fields: "fields",
 });
 
 export const dbContext = Object.freeze({
@@ -44,6 +48,8 @@ export const dbContext = Object.freeze({
     stockMovements: new PouchDB<StockMovement>(dbNames.stockMovements),
     stockByLots: new PouchDB<StockByLot>(dbNames.stockByLots),
     exitFields: new PouchDB<ExitField>(dbNames.exitFields),
+    campaigns: new PouchDB<Campaign>(dbNames.campaigns),
+    fields: new PouchDB<Field>(dbNames.fields), //TODO: setear tipo
 });
 
 dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
@@ -56,6 +62,7 @@ dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, opts);
 dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, opts);
 dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
 dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
+dbContext.campaigns.sync(`${remoteCouchDBUrl}${dbNames.campaigns}`, opts);
 
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 

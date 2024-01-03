@@ -83,7 +83,7 @@ export const ListExitFieldPage: React.FC = () => {
                 </TableCellStyled>
                 <TableCellStyled align="center">{row.field} </TableCellStyled>
                 <TableCellStyled align="center">{row.lot}</TableCellStyled>
-                <TableCellStyled>{row.campaign}</TableCellStyled>
+                <TableCellStyled>{row.campaignId}</TableCellStyled>
                 <TableCellStyled align="center">{row.supply?.name}</TableCellStyled>
                 <TableCellStyled>{row.transport?.nombreCompleto}</TableCellStyled>
                 <TableCellStyled>{row.kgNet}</TableCellStyled>
