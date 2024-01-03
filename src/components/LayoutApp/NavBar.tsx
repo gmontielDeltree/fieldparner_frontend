@@ -39,7 +39,7 @@ export const NavBar: React.FC<NavBarProps> = ({
 
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
-  const [language, setLanguage] = useState("spanish");
+  const [language, setLanguage] = useState("es");
 
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState(null);
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
@@ -242,9 +242,9 @@ export const NavBar: React.FC<NavBarProps> = ({
             >
               <img
                 src={
-                  language === "spanish"
+                  language === "es"
                     ? spanishFlagIcon
-                    : language === "english"
+                    : language === "en"
                     ? englishFlagIcon
                     : brazilFlagIcon
                 }
