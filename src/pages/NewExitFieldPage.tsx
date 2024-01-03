@@ -6,7 +6,7 @@ import {
     Agriculture as AgricultureIcon,
     ArrowRightAlt as ArrowRightAltIcon
 } from '@mui/icons-material';
-import { useBusiness, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../hooks';
+import { useBusiness, useCampaign, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../hooks';
 import { ExitField, SupplyType } from '../types';
 import { getShortDate } from '../helpers/dates';
 
@@ -19,11 +19,10 @@ const steps = [
 
 const initialState: ExitField = {
     creationDate: getShortDate(),
-    campaign: 0,
+    campaignId: "",
     cultive: "",
-    field: "",
-    has: "",
-    lot: "",
+    fieldId: "",
+    lotId: "",
     transportDocument: "",
     ticket: "",
     additionalInformation: "",
@@ -34,7 +33,7 @@ const initialState: ExitField = {
     location: "",
     transportId: "",
     truckerId: "",
-    truckTrailer: "",
+    truckTrailerId: "",
     harvesterId: "",
     supplyId: "",
     grossWeight: 0,
@@ -66,6 +65,7 @@ export const NewExitFieldPage: React.FC = () => {
     const { vehicles, getVehicles } = useVehicle();
     const { deposits, getDeposits } = useDeposit();
     const { isLoading, createExitField } = useExitField();
+    const { campaigns, getCampaigns } = useCampaign();
 
     const getStepContent = useMemo(
         () => (step: number) => {
@@ -76,6 +76,7 @@ export const NewExitFieldPage: React.FC = () => {
                             key="general-data-exit-field"
                             formValues={formValues}
                             crops={supplies.filter(s => s.type === SupplyType.Cultivo)}
+                            campaigns={campaigns}
                             handleInputChange={handleInputChange}
                             handleSelectChange={handleSelectChange}
                             setFormValues={setFormValues}
@@ -107,7 +108,8 @@ export const NewExitFieldPage: React.FC = () => {
             supplies,
             deposits,
             vehicles,
-            socialEntities
+            socialEntities,
+            campaigns
         ]
     );
 
@@ -137,6 +139,7 @@ export const NewExitFieldPage: React.FC = () => {
         getBusinesses();
         getVehicles();
         getDeposits();
+        getCampaigns();
     }, [])
 
 

@@ -45,8 +45,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
     insurenceDueDate,
     coverageType,
     location,
-    chassis,
-    truckTrailer,
+    chassisNumber,
   } = vehiculo;
   const {
     getBusinesses,
@@ -173,25 +172,11 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField
-            label="Chasis"
+            label="Numero de chasis"
             variant="outlined"
             type="text"
-            name="chassis"
-            value={chassis}
-            onChange={handleInputChange}
-            InputProps={{
-              startAdornment: <InputAdornment position="start" />,
-            }}
-            fullWidth
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Acoplado"
-            variant="outlined"
-            type="text"
-            name="truckTrailer"
-            value={truckTrailer}
+            name="chassisNumber"
+            value={chassisNumber}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -219,7 +204,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             )}
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={12}>
           <TextField
             label="Ubicacion"
             variant="outlined"

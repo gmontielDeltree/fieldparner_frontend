@@ -85,9 +85,9 @@ export const ListExitFieldPage: React.FC = () => {
                 <TableCellStyled align="center">
                   {row.creationDate}
                 </TableCellStyled>
-                <TableCellStyled align="center">{row.field} </TableCellStyled>
-                <TableCellStyled align="center">{row.lot}</TableCellStyled>
-                <TableCellStyled>{row.campaign}</TableCellStyled>
+                <TableCellStyled align="center">{row.field?.nombre} </TableCellStyled>
+                <TableCellStyled align="center">{row.field?.lotes.find(l => l._id === row.lotId)?.properties.nombre}</TableCellStyled>
+                <TableCellStyled>{row.campaignId}</TableCellStyled>
                 <TableCellStyled align="center">{row.supply?.name}</TableCellStyled>
                 <TableCellStyled>{row.transport?.nombreCompleto}</TableCellStyled>
                 <TableCellStyled>{row.kgNet}</TableCellStyled>

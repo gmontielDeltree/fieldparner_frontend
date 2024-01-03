@@ -45,8 +45,7 @@ const initialState: Vehicle = {
   location: "",
   technialSpecifications: [],
   maintenances: [],
-  chassis: "",
-  truckTrailer: ""
+  chassisNumber: "",
 };
 
 const steps = [
