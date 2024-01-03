@@ -49,7 +49,7 @@ export const dbContext = Object.freeze({
     stockByLots: new PouchDB<StockByLot>(dbNames.stockByLots),
     exitFields: new PouchDB<ExitField>(dbNames.exitFields),
     campaigns: new PouchDB<Campaign>(dbNames.campaigns),
-    fields: new PouchDB<Field>(dbNames.fields), //TODO: setear tipo
+    fields: new PouchDB<Field>(dbNames.fields), //TODO: revisar db
 });
 
 dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);

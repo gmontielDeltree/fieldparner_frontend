@@ -128,8 +128,6 @@ export interface AuthState {
     isLoading: boolean;
 }
 
-
-
 export interface Business extends Document {
     // id?: string;
     nombreCompleto?: string;
@@ -245,10 +243,10 @@ export const TypeMovements = [
     "Prestamos",
 ];
 
-export interface Lot {
-    nro: string;
-    location: string;
-}
+// export interface Lot {
+//     nro: string;
+//     location: string;
+// }
 
 export interface DepositState {
     depositActive: Deposit | null;
@@ -335,9 +333,6 @@ export interface StockBySupply {
     reservedStock: number;
 }
 
-
-
-
 export interface DepositDestination {
     depositId: string;
     location: string;
@@ -370,8 +365,8 @@ export interface ExitField extends Document {
     accountId: string;
     creationDate: string;
     campaignId: string;
-    field: string;
-    lot: string;
+    fieldId: string;
+    lotId: string;
     supplyId: string;
     transportId: string;
     truckerId: string;
@@ -402,6 +397,7 @@ export interface ExitFieldItem extends ExitField {
     deposit?: Deposit;
     supply?: Supply;
     transport?: Business;
+    field?: Field;
     // trucker?: Business;
     // harvester?: Business;
 }
@@ -419,11 +415,29 @@ export interface Campaign extends Document {
 
 
 //TODO: cambiar interfaz field
-export interface Field extends Document{
-    id: string;
-    name: string;
-    lots: string[];
-    has: string;
+export interface Lot extends Document {
+    // id: string;
+    type: string;
+    properties: {
+        nombre: string;
+        campo_parent_id: string;
+        uuid: string;
+        hectareas: number;
+    };
+    geometry: {
+        coordinates: number[][][];
+        type: string;
+    };
+}
+
+export interface Field extends Document {
+    accountId: string;
+    nombre: string;
+    campo_geojson: any;
+    uuid: string;
+    lotes: Lot[];
+    // _id: string;
+    // _rev: string;
 }
 
 //#region Enums
