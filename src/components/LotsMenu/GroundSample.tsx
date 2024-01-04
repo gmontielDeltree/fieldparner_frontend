@@ -7,25 +7,21 @@ import {
   Stepper,
   Typography
 } from "@mui/material";
-import PersonalForm from "./forms/PlanForms/PersonalForm";
-import SuppliesForm from "./forms/PlanForms/SuppliesForm";
-import OtherDetailsForm from "./forms/PlanForms/OtherDetailsForm";
-import TasksForm from "./forms/PlanForms/TasksForm";
-import ConditionsForm from "./forms/PlanForms/ConditionsForm";
-import ObservationsForm from "./forms/PlanForms/ObservationsForm";
 import { getEmptyActivity } from "../../interfaces/activity";
 import { format, parse } from "date-fns";
-import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
-import uuid4 from "uuid4";
-import Badge from "@mui/material/Badge";
+import GrassIcon from "@mui/icons-material/Science";
+import LaboratoryForm from "./forms/GroundSampleForms/LaboratoryForm";
+import SoilCharacteristicsForm from "./forms/GroundSampleForms/SoilCharacteristicsForm";
+import VariablesForm from "./forms/GroundSampleForms/VariablesForm";
+import AttachmentsForm from "./forms/GroundSampleForms/AttachmentsForm";
 
-interface PlanSowingProps {
+interface GroundSampleProps {
   lot: any;
   db: any;
   backToActivites: () => void;
 }
 
-const PlanSowing: React.FC<PlanSowingProps> = ({
+const GroundSample: React.FC<GroundSampleProps> = ({
   lot,
   db,
   backToActivites
@@ -35,12 +31,10 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
   const [formData, setFormData] = useState(getEmptyActivity());
   const [activeStep, setActiveStep] = useState(0);
   const steps = [
-    "Personal",
-    "Insumos",
-    "Otros Datos",
-    "Labores",
-    "Condiciones",
-    "Observaciones"
+    "Laboratorio",
+    "Características del Suelo",
+    "Variables",
+    "Adjuntos"
   ];
 
   useEffect(() => {
@@ -48,7 +42,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
       ...prevFormData,
       lote_uuid: lot.id,
       ts_generacion: 0,
-      tipo: "siembra",
+      tipo: "aplicacion",
       detalles: {
         ...prevFormData.detalles,
         hectareas: lot.properties.hectareas
@@ -56,96 +50,11 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
     }));
   }, []);
 
-  const countMissingFields = (formData, step) => {
-    let missingFields = 0;
-
-    switch (step) {
-      case 0: // PersonalForm
-        if (!formData.fecha) {
-          missingFields++;
-        }
-        if (!formData.contratista) {
-          missingFields++;
-        }
-        if (!formData.detalles || !formData.detalles.hectareas) {
-          missingFields++;
-        }
-        break;
-      case 1: // SuppliesForm (Insumos)
-        if (
-          !formData.detalles ||
-          !formData.detalles.dosis ||
-          formData.detalles.dosis.length === 0
-        ) {
-          missingFields++;
-        }
-        break;
-      case 2: // OtherDetailsForm
-        const details = formData.detalles || {};
-        if (!details.densidad_objetivo) {
-          missingFields++;
-        }
-        if (!details.formacion_inoculado) {
-          missingFields++;
-        }
-        if (!details.marca_inoculado) {
-          missingFields++;
-        }
-        if (!details.peso_1000) {
-          missingFields++;
-        }
-        if (!details.profundidad) {
-          missingFields++;
-        }
-        if (!details.tipo_siembra) {
-          missingFields++;
-        }
-        if (!details.distancia) {
-          missingFields++;
-        }
-        break;
-      case 3: // TasksForm (Labores)
-        if (
-          !formData.detalles ||
-          !formData.detalles.dosis ||
-          formData.detalles.costo_labor.length === 0
-        ) {
-          missingFields++;
-        }
-        break;
-      case 4: // ConditionsForm
-        const condiciones = formData.condiciones || {};
-        if (condiciones.humedad_max === undefined) {
-          missingFields++;
-        }
-        if (condiciones.humedad_min === undefined) {
-          missingFields++;
-        }
-        if (condiciones.temperatura_max === undefined) {
-          missingFields++;
-        }
-        if (condiciones.temperatura_min === undefined) {
-          missingFields++;
-        }
-        if (condiciones.velocidad_max === undefined) {
-          missingFields++;
-        }
-        if (condiciones.velocidad_min === undefined) {
-          missingFields++;
-        }
-        break;
-      default:
-        break;
-    }
-
-    return missingFields;
-  };
-
   const getStepContent = (step: number) => {
     switch (step) {
       case 0:
         return (
-          <PersonalForm
+          <LaboratoryForm
             lot={lot}
             formData={formData}
             setFormData={setFormData}
@@ -153,16 +62,15 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
         );
       case 1:
         return (
-          <SuppliesForm
+          <SoilCharacteristicsForm
             lot={lot}
-            db={db}
             formData={formData}
             setFormData={setFormData}
           />
         );
       case 2:
         return (
-          <OtherDetailsForm
+          <VariablesForm
             lot={lot}
             formData={formData}
             setFormData={setFormData}
@@ -170,19 +78,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
         );
       case 3:
         return (
-          <TasksForm lot={lot} formData={formData} setFormData={setFormData} />
-        );
-      case 4:
-        return (
-          <ConditionsForm
-            lot={lot}
-            formData={formData}
-            setFormData={setFormData}
-          />
-        );
-      case 5:
-        return (
-          <ObservationsForm
+          <AttachmentsForm
             lot={lot}
             formData={formData}
             setFormData={setFormData}
@@ -192,17 +88,14 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
         return <div>Unknown Step</div>;
     }
   };
-
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
   const handleBack = () => {
-    if (activeStep === 0) {
-      backToActivites();
-    } else {
-      setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    }
+    setActiveStep((prevActiveStep) =>
+      prevActiveStep > 0 ? prevActiveStep - 1 : 0
+    );
   };
 
   const handleStep = (step: any) => () => {
@@ -215,10 +108,8 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
       const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
       console.log("FECHA EJECUCION: ", fechaEjecucion);
 
-      // Parse the ISO string into a Date object
       const parsedDate = new Date(fechaEjecucion);
 
-      // Format the Date object into 'yyyy-MM-dd' format
       const formattedDate = format(parsedDate, "yyyy-MM-dd");
       actividad._id = "actividad:" + formattedDate + ":" + actividad.uuid;
     } catch (error) {
@@ -263,7 +154,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
   return (
     <div>
       <Box sx={{ textAlign: "center", mt: 2, mb: 4 }}>
-        <LocalFloristIcon sx={{ fontSize: 50, color: "green" }} />
+        <GrassIcon sx={{ fontSize: 50, color: "green" }} />
         <Typography
           variant="h5"
           component="h1"
@@ -284,7 +175,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
             }
           }}
         >
-          Planificar Siembra
+          Muestra de suelo
         </Typography>
       </Box>
       <Stepper
@@ -299,28 +190,11 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
                 "& .MuiStepLabel-label": {
                   fontSize: "1rem",
                   fontWeight: "bold",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  position: "relative"
+                  cursor: "pointer"
                 }
               }}
             >
               {label}
-              <Badge
-                badgeContent={countMissingFields(formData, index)}
-                color="error"
-                anchorOrigin={{
-                  vertical: "top",
-                  horizontal: "right"
-                }}
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  right: -9,
-                  transform: "scale(1) translate(50%, -50%)"
-                }}
-              />
             </StepLabel>
           </Step>
         ))}
@@ -356,4 +230,4 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
   );
 };
 
-export default PlanSowing;
+export default GroundSample;

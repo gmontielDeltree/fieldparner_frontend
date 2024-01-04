@@ -314,7 +314,7 @@ const getEmptyNote = () => {
       created: "",
       created_by: ""
     },
-    features: [getEmptyFeature()],
+    features: [],
     _id: "",
     _rev: ""
   };
