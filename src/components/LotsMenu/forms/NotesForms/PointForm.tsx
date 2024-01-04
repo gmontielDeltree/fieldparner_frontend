@@ -1,61 +1,35 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  TextField,
   FormControl,
-  Grid,
-  Typography,
-  Button,
-  InputLabel,
   Select,
   MenuItem,
-  IconButton,
-  CardActionArea,
-  CardContent,
-  Card,
-  CardMedia
+  CardMedia,
+  Grid,
+  InputLabel,
+  TextField,
+  Button,
+  IconButton
 } from "@mui/material";
 import { PhotoCamera, Mic, Stop, Delete } from "@mui/icons-material";
 import PouchDB from "pouchdb";
 import { v4 as uuidv4 } from "uuid";
-import { keyframes, styled } from "@mui/material/styles";
-
-const Title = styled(Typography)({
-  fontSize: "1.5em",
-  fontWeight: "bold",
-  color: "#333",
-  marginBottom: "20px"
-});
-
-const hoverAnimation = keyframes`
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-`;
-
-const ImageUploadButton = styled(Button)({
-  backgroundColor: "#9c27b0",
-  color: "#fff",
-  "&:hover": {
-    backgroundColor: "#7b1fa2",
-    animation: `${hoverAnimation} 1.5s ease-in-out infinite`
-  },
-  margin: "10px 0",
-  padding: "10px 20px"
-});
-const ImageCard = styled(Card)({
-  maxWidth: 150,
-  margin: "10px",
-  position: "relative"
-});
-
-const RecordingButton = styled(IconButton)({
-  color: (props) => (props.recording ? "#d32f2f" : "#1976d2"),
-  transform: (props) => (props.recording ? "scale(1.2)" : "scale(1)"),
-  transition: "transform 0.2s ease-in-out",
-  "&:hover": {
-    backgroundColor: (props) => (props.recording ? "#ff7961" : "#64b5f6")
-  }
-});
+import {
+  Title,
+  ImageUploadButton,
+  RecordingButton,
+  StyledTextField,
+  StyledGrid,
+  ImageGrid,
+  StyledImageCard,
+  CustomButton,
+  AudioRecordCard,
+  AudioPlaybackCard,
+  RecordingIndicator,
+  RecordingStatusLabel,
+  AudioPlayer,
+  PlaybackTitle,
+  RecordingArea
+} from "./PointFormStyles";
 
 function PointForm({ formData, setFormData, setIsPointMode }) {
   const db = new PouchDB("campos_randyv7");
@@ -65,8 +39,8 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
   const [selectedField, setSelectedField] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
-  const audioRef = useRef();
   const [imageUrls, setImageUrls] = useState([]);
+  const [audioUrl, setAudioUrl] = useState(null);
 
   const fieldOptions = ["Muestra #", "Plaga", "Enfermedad", "Anomalia"];
 
@@ -129,29 +103,78 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
     }
   };
 
+  useEffect(() => {
+    const fetchImages = async () => {
+      const urls = await Promise.all(
+        point.properties.fotos.map(async (imageId) => {
+          return await fetchImageUrl(imageId);
+        })
+      );
+      setImageUrls(urls);
+    };
+
+    if (point.properties.fotos.length > 0) {
+      fetchImages();
+    }
+  }, [point.properties.fotos]);
+
   const fetchImageUrl = async (imageId) => {
     try {
       const blob = await db.getAttachment(imageId, "image");
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Error fetching image:", error);
+      return null;
     }
   };
 
-  useEffect(() => {
-    point.properties.fotos.forEach(async (imageId) => {
-      const imageUrl = await fetchImageUrl(imageId);
-      setImageUrls((prev) => [...prev, imageUrl]);
+  const handleImageRemove = async (imageIndex) => {
+    const updatedFotos = [...point.properties.fotos];
+    const removedImageId = updatedFotos.splice(imageIndex, 1)[0];
+    try {
+      await db.removeAttachment(point._id, removedImageId);
+    } catch (error) {
+      console.error("Error removing image:", error);
+    }
+    setPoint({
+      ...point,
+      properties: {
+        ...point.properties,
+        fotos: updatedFotos
+      }
     });
-  }, [point.properties.fotos]);
 
-  const handleImageRemove = (imageId) => {
-    // todo
+    const updatedImageUrls = [...imageUrls];
+    updatedImageUrls.splice(imageIndex, 1);
+    setImageUrls(updatedImageUrls);
   };
+
+  const handleAudioRemove = async () => {
+    try {
+      const audioId = point.properties.audio;
+      if (audioId) {
+        const doc = await db.get(point._id);
+        await db.removeAttachment(point._id, audioId, doc._rev);
+
+        setPoint((prevPoint) => ({
+          ...prevPoint,
+          properties: {
+            ...prevPoint.properties,
+            audio: ""
+          }
+        }));
+        setAudioUrl(null);
+      }
+    } catch (error) {
+      console.error("Error removing audio:", error);
+    }
+  };
+
   const startRecording = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
+
       recorder.ondataavailable = async (e) => {
         const audioId = uuidv4();
         await db.putAttachment(audioId, "audio", e.data, e.data.type);
@@ -162,7 +185,11 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
             audio: audioId
           }
         });
+
+        const audioBlob = new Blob([e.data], { type: "audio/mp3" });
+        setAudioUrl(URL.createObjectURL(audioBlob));
       };
+
       recorder.start();
       setMediaRecorder(recorder);
       setIsRecording(true);
@@ -172,6 +199,7 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
   const stopRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.stop();
+
       setIsRecording(false);
     }
   };
@@ -180,9 +208,9 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
     <>
       <Title>Nuevo Punto</Title>
       <FormControl fullWidth>
-        <Grid container spacing={2}>
+        <StyledGrid container spacing={2}>
           <Grid item xs={12}>
-            <TextField
+            <StyledTextField
               label="Nombre del Punto"
               fullWidth
               value={point.properties.nombre}
@@ -209,7 +237,7 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
           ))}
           {/* Dropdown for new field */}
           <Grid item xs={12} sm={6}>
-            <InputLabel id="field-selector-label">Agregar Campo</InputLabel>
+            <InputLabel id="field-selector-label"></InputLabel>
             <Select
               labelId="field-selector-label"
               value={selectedField}
@@ -252,47 +280,70 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
               </ImageUploadButton>
             </label>
           </Grid>
-
           {/* Display Uploaded Images */}
-          <Grid container spacing={2}>
+          <ImageGrid container>
             {imageUrls.map((url, index) => (
-              <Grid item key={index}>
-                <ImageCard>
-                  <CardMedia
-                    component="img"
-                    height="140"
-                    image={url}
-                    alt="Uploaded Image"
-                  />
-                  <IconButton
-                    size="small"
-                    onClick={() => handleImageRemove(index)}
-                    style={{ position: "absolute", top: 0, right: 0 }}
-                  >
-                    <Delete />
-                  </IconButton>
-                </ImageCard>
-              </Grid>
+              <StyledImageCard key={index}>
+                <CardMedia
+                  component="img"
+                  height="140"
+                  image={url}
+                  alt="Uploaded Image"
+                />
+                <IconButton
+                  size="small"
+                  onClick={() => handleImageRemove(index)}
+                  style={{
+                    position: "absolute",
+                    top: "8px",
+                    right: "8px",
+                    color: "red"
+                  }}
+                >
+                  <Delete />
+                </IconButton>
+              </StyledImageCard>
             ))}
-          </Grid>
+          </ImageGrid>
 
-          {/* Audio Recording */}
-          <Grid item xs={12}>
-            <RecordingButton
-              recording={isRecording}
-              onClick={isRecording ? stopRecording : startRecording}
-            >
-              {isRecording ? <Stop /> : <Mic />}
-            </RecordingButton>
-          </Grid>
+          {/* Audio Recording Section */}
+          <RecordingArea>
+            <AudioRecordCard>
+              <RecordingIndicator recording={isRecording} />
+              <RecordingStatusLabel>
+                {isRecording ? "Grabando..." : "Listo para grabar"}
+              </RecordingStatusLabel>
+              <RecordingButton
+                recording={isRecording}
+                onClick={isRecording ? stopRecording : startRecording}
+              >
+                {isRecording ? <Stop /> : <Mic />}
+              </RecordingButton>
+            </AudioRecordCard>
+          </RecordingArea>
+
+          {/* Display Recorded Audio */}
+
+          {audioUrl && (
+            <AudioPlaybackCard>
+              <PlaybackTitle>Recorded Audio</PlaybackTitle>
+              <AudioPlayer controls src={audioUrl} />
+              <IconButton
+                onClick={handleAudioRemove}
+                style={{ color: "red", marginTop: "10px" }}
+              >
+                <Delete />
+              </IconButton>
+            </AudioPlaybackCard>
+          )}
 
           {/* Save Button */}
-          <Grid item xs={12}>
-            <Button variant="contained" onClick={handleSavePoint}>
+          <StyledGrid item xs={12}>
+            <CustomButton variant="contained" onClick={handleSavePoint}>
               Guardar Punto
-            </Button>
-          </Grid>
-        </Grid>
+            </CustomButton>
+          </StyledGrid>
+        </StyledGrid>
       </FormControl>
     </>
   );

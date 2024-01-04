@@ -76,16 +76,16 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
               label="Densidad Objetivo"
               type="number"
               value={formData.detalles.densidad_objetivo}
-              onChange={handleInputChange}
+              onChange={handleInputChange("densidad_objetivo")}
               fullWidth
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
-              id="marca-inoculado"
+              id="marca_inoculado"
               label="Marca Inoculado"
-              value={formData.marca_inoculado || ""}
-              onChange={handleInputChange}
+              value={formData.detalles.marca_inoculado || ""}
+              onChange={handleInputChange("marca_inoculado")}
               fullWidth
             />
           </Grid>
@@ -95,7 +95,7 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
               label="Profundidad"
               type="number"
               value={formData.detalles.profundidad || ""}
-              onChange={handleInputChange}
+              onChange={handleInputChange("profundidad")}
               fullWidth
             />
           </Grid>
@@ -105,7 +105,7 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
               label="Distancia entre surcos"
               type="number"
               value={formData.detalles.distancia}
-              onChange={handleInputChange}
+              onChange={handleInputChange("distancia")}
               fullWidth
             />
           </Grid>
@@ -114,8 +114,8 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
               id="peso_1000"
               label="Peso 1000 semillas"
               type="number"
-              value={formData.detalles.peso1000}
-              onChange={handleInputChange}
+              value={formData.detalles.peso_1000}
+              onChange={handleInputChange("peso_1000")}
               fullWidth
             />
           </Grid>
@@ -123,8 +123,8 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
             <TextField
               id="formacion-inoculado"
               label="Formacion Inoculado"
-              value={formData.formacionInoculado}
-              onChange={handleInputChange}
+              value={formData.detalles.formacion_inoculado}
+              onChange={handleInputChange("formacion_inoculado")}
               fullWidth
             />
           </Grid>
