@@ -51,7 +51,7 @@ function PersonalForm({ lot, formData, setFormData }) {
         contratista: {
           labores: [],
           uuid: uuid4(),
-          nombre: nombre, // Use the calculated nombre
+          nombre: nombre,
           cuit: selectedBusiness?.cuit,
           datos_generales: {
             email: selectedBusiness?.email,
