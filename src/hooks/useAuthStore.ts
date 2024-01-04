@@ -161,6 +161,7 @@ export const useAuthStore = () => {
       dispatch(onLogout(""));
     }
   };
+
   // const checkAuthToken = async () => {
 
   //     dispatch(onChecking())
@@ -175,12 +176,24 @@ export const useAuthStore = () => {
   //         dispatch(onLogout(""));
   //     }
   // }
-
   const startLogout = () => {
-    localStorage.clear();
-    dispatch(onLogout(""));
-  };
+    dispatch(startLoading());
+    try {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("token_expiration");
+      localStorage.removeItem("user_session");
 
+      dispatch(onLogout("User logged out successfully."));
+
+      navigate("/init/auth/login");
+    } catch (error) {
+      console.error("Error during logout: ", error);
+      dispatch(onLogout("Error during logout."));
+    } finally {
+      dispatch(finishLoading());
+    }
+  };
   return {
     //* Propiedades
     errorMessage,
@@ -191,8 +204,8 @@ export const useAuthStore = () => {
     //* Métodos
     checkAuthToken,
     startLogin,
-    startLogout,
     startRegister,
-    startConfirm
+    startConfirm,
+    startLogout
   };
 };
