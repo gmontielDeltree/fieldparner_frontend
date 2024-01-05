@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import { uiOpenSideBard } from "../../redux/ui";
 
-const drawerWidth = 245; //Ancho del sidebar en px;
+const drawerWidth = 280; //Ancho del sidebar en px;
 
 export interface AppLayoutProps {
     children: React.ReactNode;
