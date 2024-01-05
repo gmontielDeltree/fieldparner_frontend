@@ -17,6 +17,7 @@ import { Activities } from "./Activities/index";
 import { Actividad } from "../../interfaces/activity";
 import { isBefore, isWithinInterval, parseISO } from "date-fns";
 import activitiesData from "./test.json";
+import GroundSample from "./GroundSample";
 
 interface LotsMenuProps {
   lot: any;
@@ -35,7 +36,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     { id: "Planificar Cosecha", icon: categoryIcon3 },
     { id: "Tour", icon: categoryIcon4 },
     { id: "Category 5", icon: categoryIcon5 },
-    { id: "Category 6", icon: categoryIcon6 }
+    { id: "Muestra de suelo", icon: categoryIcon6 }
   ];
 
   const selectCategory = (categoryId: any) => {
@@ -189,8 +190,10 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
         return <Tour lot={lot} db={db} backToActivites={backToActivites} />;
       case "Category 5":
         return <div>Category 5</div>;
-      case "Category 6":
-        return <Activities activitiesData={activities} />;
+      case "Muestra de suelo":
+        return (
+          <GroundSample lot={lot} db={db} backToActivites={backToActivites} />
+        );
       default:
         return <div>Select a category to view its forms</div>;
     }

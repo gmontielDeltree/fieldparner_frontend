@@ -29,7 +29,7 @@ const Title = styled(Typography)({
   marginBottom: "20px"
 });
 
-function PersonalForm({ lot, formData, setFormData }) {
+function LaboratoryForm({ lot, formData, setFormData }) {
   const { businesses, getBusinesses } = useBusiness();
 
   useEffect(() => {
@@ -44,14 +44,12 @@ function PersonalForm({ lot, formData, setFormData }) {
           business.nombreCompleto === value || business.razonSocial === value
       );
       console.log("selectedBusiness", selectedBusiness);
-      const nombre =
-        selectedBusiness?.razonSocial || selectedBusiness?.nombreCompleto;
       setFormData({
         ...formData,
         contratista: {
           labores: [],
           uuid: uuid4(),
-          nombre: nombre,
+          nombre: selectedBusiness?.razonSocial,
           cuit: selectedBusiness?.cuit,
           datos_generales: {
             email: selectedBusiness?.email,
@@ -83,50 +81,75 @@ function PersonalForm({ lot, formData, setFormData }) {
 
   return (
     <CustomPaper elevation={3}>
-      <Title>Personal</Title>
+      <Title>Laboratorio</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
+          {/* ID Input */}
           <Grid item xs={12} sm={6}>
-            <InputLabel id="contratista-label">Contratista</InputLabel>
-            <Select
-              labelId="contratista-label"
-              id="contratista"
-              value={formData.contratista.nombre || ""}
-              label="Contratista"
+            <TextField
+              id="id"
+              label="ID"
               fullWidth
-              onChange={(e) => onFieldChange("contratista", e.target.value)}
-            >
-              {businesses.map((business) => (
-                <MenuItem
-                  key={business._id}
-                  value={business.razonSocial || business.nombreCompleto}
-                >
-                  {business.razonSocial || business.nombreCompleto}
-                </MenuItem>
-              ))}
-            </Select>
+              value={formData.id || ""}
+              onChange={(e) => onFieldChange("id", e.target.value)}
+            />
           </Grid>
+
+          {/* Fecha Input */}
           <Grid item xs={12} sm={6}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
                 label="Fecha"
-                value={
-                  formData.detalles.fecha_ejecucion_tentativa || new Date()
-                }
+                value={formData.fecha || new Date()}
                 onChange={(newValue) => onFieldChange("fecha", newValue)}
                 renderInput={(params) => <TextField {...params} fullWidth />}
               />
             </LocalizationProvider>
           </Grid>
 
-          <Grid item xs={12}>
+          {/* Laboratorio Input */}
+          <Grid item xs={12} sm={6}>
             <TextField
-              id="hectareas"
-              label="Hectáreas"
+              id="laboratorio"
+              label="Laboratorio"
               fullWidth
-              type="number"
-              value={formData.detalles.hectareas || 0}
-              onChange={(e) => onFieldChange("hectareas", e.target.value)}
+              value={formData.laboratorio || ""}
+              onChange={(e) => onFieldChange("laboratorio", e.target.value)}
+            />
+          </Grid>
+
+          {/* Referencia Doc Laboratorio Input */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              id="refDocLab"
+              label="Referencia Doc Laboratorio"
+              fullWidth
+              value={formData.refDocLab || ""}
+              onChange={(e) => onFieldChange("refDocLab", e.target.value)}
+            />
+          </Grid>
+
+          {/* Responsable Técnico Input */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              id="responsableTecnico"
+              label="Responsable Técnico"
+              fullWidth
+              value={formData.responsableTecnico || ""}
+              onChange={(e) =>
+                onFieldChange("responsableTecnico", e.target.value)
+              }
+            />
+          </Grid>
+
+          {/* Matrícula Input */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              id="matricula"
+              label="Matrícula"
+              fullWidth
+              value={formData.matricula || ""}
+              onChange={(e) => onFieldChange("matricula", e.target.value)}
             />
           </Grid>
         </Grid>
@@ -135,4 +158,4 @@ function PersonalForm({ lot, formData, setFormData }) {
   );
 }
 
-export default PersonalForm;
+export default LaboratoryForm;
