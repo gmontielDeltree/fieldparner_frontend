@@ -643,7 +643,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               </ListItemButton>
             </List>
           </Collapse>
-          <ListItem key="Wiki" disablePadding>
+          {/* <ListItem key="Wiki" disablePadding>
             <ListItemButton
               // component={RouterLink}
               // to="/init/overview/fields"
@@ -664,25 +664,22 @@ export const SideBar: React.FC<SideBarProps> = ({
             <List component="div" disablePadding>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
                 <ListItemText primary="Knoledge Base" />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
                 <ListItemText primary="Tutorial" />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
                 <ListItemText primary="Blog Interno" />
               </ListItemButton>
             </List>
-          </Collapse>
-          <ListItem key="ERP" disablePadding>
+          </Collapse> */}
+          {/* <ListItem key="ERP" disablePadding>
             <ListItemButton
               // component={RouterLink}
               // to="/init/overview/fields"
@@ -703,24 +700,21 @@ export const SideBar: React.FC<SideBarProps> = ({
             <List component="div" disablePadding>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
                 <ListItemText primary="Integracion AR" />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
                 <ListItemText primary="Integracion BR" />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
                 <ListItemText primary="Integracion PY" />
               </ListItemButton>
             </List>
-          </Collapse>
+          </Collapse> */}
 
 
           {/* <ListItem key="campos" disablePadding>
