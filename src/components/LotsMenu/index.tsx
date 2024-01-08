@@ -15,8 +15,7 @@ import categoryIcon6 from "../../images/icons/suelo_act.webp";
 import PouchDB from "pouchdb";
 import { Activities } from "./Activities/index";
 import { Actividad } from "../../interfaces/activity";
-import { isBefore, isWithinInterval, parseISO } from "date-fns";
-import activitiesData from "./test.json";
+import { isBefore, parseISO } from "date-fns";
 import GroundSample from "./GroundSample";
 
 interface LotsMenuProps {
@@ -29,7 +28,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
   const db = new PouchDB("campos_randyv7");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activities, setActivities] = useState(null);
-
+  console.log("Log seleccionado: ", lot);
   const categories = [
     { id: "Planificar Siembra", icon: categoryIcon1 },
     { id: "Planificar Aplicacion", icon: categoryIcon2 },

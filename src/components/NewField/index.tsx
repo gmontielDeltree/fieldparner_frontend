@@ -1,23 +1,13 @@
-import React, { useState, useEffect } from "react";
-
+import React, { useState } from "react";
 import NewGeometry from "../NewGeometry/index.js";
-
 import { Alert } from "reactstrap";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 interface NewFieldProps {
-  map: any;
-  draw: MapboxDraw;
   saveGeometry: (data: any) => void;
   onClose: () => void;
 }
 
-const NewField: React.FC<NewFieldProps> = ({
-  map,
-  draw,
-  onClose,
-  saveGeometry
-}) => {
+const NewField: React.FC<NewFieldProps> = ({ onClose, saveGeometry }) => {
   const [showAlert, setShowAlert] = useState(false);
 
   const handleSaveGeometry = (data: any) => {
@@ -29,7 +19,7 @@ const NewField: React.FC<NewFieldProps> = ({
     }, 5000);
   };
 
-  return map ? (
+  return (
     <>
       {showAlert && (
         <Alert
@@ -46,16 +36,12 @@ const NewField: React.FC<NewFieldProps> = ({
       )}
       {
         <NewGeometry
-          map={map}
-          draw={draw}
           handleSaveGeometry={handleSaveGeometry}
           onClose={onClose}
           type="field"
         />
       }
     </>
-  ) : (
-    <div>No mapa loaded</div>
   );
 };
 

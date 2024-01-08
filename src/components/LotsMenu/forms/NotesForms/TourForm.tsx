@@ -29,9 +29,6 @@ import { styled } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
 import PointForm from "./PointForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { AudioPlayer } from "./PointFormStyles";
 
 const CustomPaper = styled(Paper)({
@@ -73,7 +70,8 @@ const FeatureAccordion = styled(Accordion)({
   backgroundColor: "#f0f0f0",
   margin: "10px 0"
 });
-function TourForm({ formData, setFormData }) {
+
+function TourForm({ lot, formData, setFormData, tourSave }) {
   const db = new PouchDB("campos_randyv7");
   const [isPointMode, setIsPointMode] = useState(false);
   const [point, setPoint] = useState({ properties: { nombre: "", notas: "" } });
@@ -210,9 +208,11 @@ function TourForm({ formData, setFormData }) {
             exit="exit"
           >
             <PointForm
+              lot={lot}
               formData={formData}
               setFormData={setFormData}
               setIsPointMode={setIsPointMode}
+              onTourSave={tourSave}
             />
           </motion.div>
         ) : (
