@@ -16,16 +16,32 @@ import ObservationsForm from "./forms/PlanForms/ObservationsForm";
 import { getEmptyActivity } from "../../interfaces/activity";
 import { format, parse } from "date-fns";
 import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
-import uuid4 from "uuid4";
+import GrassIcon from "@mui/icons-material/Grass"; // Replace with actual import
+import AgricultureIcon from "@mui/icons-material/Agriculture"; // Replace with actual import
+
 import Badge from "@mui/material/Badge";
 
-interface PlanSowingProps {
+const activityTypeTranslations = {
+  sowing: "Siembra",
+  harvesting: "Cosecha",
+  application: "Aplicacion"
+};
+
+const activityIcons = {
+  sowing: <LocalFloristIcon sx={{ fontSize: 50, color: "green" }} />,
+  application: <GrassIcon sx={{ fontSize: 50, color: "green" }} />,
+  harvesting: <AgricultureIcon sx={{ fontSize: 50, color: "green" }} />
+};
+
+interface PlanActivityProps {
+  activityType: string;
   lot: any;
   db: any;
   backToActivites: () => void;
 }
 
-const PlanSowing: React.FC<PlanSowingProps> = ({
+const PlanActivity: React.FC<PlanActivityProps> = ({
+  activityType,
   lot,
   db,
   backToActivites
@@ -34,6 +50,9 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
   console.log("Lot: ", lot);
   const [formData, setFormData] = useState(getEmptyActivity());
   const [activeStep, setActiveStep] = useState(0);
+  const translatedActivityType =
+    activityTypeTranslations[activityType] || activityType;
+  const [maxStepReached, setMaxStepReached] = useState(0);
   const steps = [
     "Personal",
     "Insumos",
@@ -48,7 +67,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
       ...prevFormData,
       lote_uuid: lot.id,
       ts_generacion: 0,
-      tipo: "siembra",
+      tipo: translatedActivityType.toLowerCase(),
       detalles: {
         ...prevFormData.detalles,
         hectareas: lot.properties.hectareas
@@ -61,7 +80,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
 
     switch (step) {
       case 0: // PersonalForm
-        if (!formData.fecha) {
+        if (!formData.detalles.fecha_ejecucion_tentativa) {
           missingFields++;
         }
         if (!formData.contratista) {
@@ -194,7 +213,11 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
   };
 
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setActiveStep((prevActiveStep) => {
+      const nextStep = prevActiveStep + 1;
+      setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, nextStep));
+      return nextStep;
+    });
   };
 
   const handleBack = () => {
@@ -205,10 +228,10 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
     }
   };
 
-  const handleStep = (step: any) => () => {
+  const handleStep = (step: number) => () => {
     setActiveStep(step);
+    setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, step));
   };
-
   const handleSave = () => {
     let actividad = formData;
     try {
@@ -260,10 +283,12 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
     console.log("FORM DATA: ", formData);
   });
 
+  const ActivityIcon = activityIcons[activityType] || LocalFloristIcon; // Default icon if not found
+
   return (
     <div>
       <Box sx={{ textAlign: "center", mt: 2, mb: 4 }}>
-        <LocalFloristIcon sx={{ fontSize: 50, color: "green" }} />
+        {ActivityIcon}{" "}
         <Typography
           variant="h5"
           component="h1"
@@ -284,7 +309,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
             }
           }}
         >
-          Planificar Siembra
+          Planificar {translatedActivityType}
         </Typography>
       </Box>
       <Stepper
@@ -307,20 +332,22 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
               }}
             >
               {label}
-              <Badge
-                badgeContent={countMissingFields(formData, index)}
-                color="error"
-                anchorOrigin={{
-                  vertical: "top",
-                  horizontal: "right"
-                }}
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  right: -9,
-                  transform: "scale(1) translate(50%, -50%)"
-                }}
-              />
+              {index <= maxStepReached && (
+                <Badge
+                  badgeContent={countMissingFields(formData, index)}
+                  color="error"
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "right"
+                  }}
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    right: -9,
+                    transform: "scale(1) translate(50%, -50%)"
+                  }}
+                />
+              )}
             </StepLabel>
           </Step>
         ))}
@@ -356,4 +383,4 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
   );
 };
 
-export default PlanSowing;
+export default PlanActivity;

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import PlanSowing from "./PlanSowing";
-import PlanHarvest from "./PlanHarvest";
-import PlanAplication from "./PlanAplication";
+import PlanActivity from "./PlanActivity";
 import Tour from "./Tour";
 import { Avatar, ButtonBase, Paper } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
@@ -175,15 +173,30 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     switch (selectedCategory) {
       case "Planificar Siembra":
         return (
-          <PlanSowing lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"sowing"}
+            lot={lot}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
       case "Planificar Cosecha":
         return (
-          <PlanHarvest lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"harvesting"}
+            lot={lot}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
       case "Planificar Aplicacion":
         return (
-          <PlanAplication lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"application"}
+            lot={lot}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
       case "Tour":
         return <Tour lot={lot} db={db} backToActivites={backToActivites} />;
