@@ -238,7 +238,7 @@ interface Actividad {
   comentario: string;
   estado: number;
   detalles: Detalles;
-  fecha?: string;
+  fecha?: Date;
   color?: string;
   texto?: string;
   posicion?: number[];
@@ -323,6 +323,7 @@ const getEmptyNote = () => {
 };
 
 const getEmptyActivity = () => {
+  const now = new Date();
   const a: Actividad = {
     _id: "",
     uuid: uuid4(),
@@ -334,7 +335,7 @@ const getEmptyActivity = () => {
     comentario: "",
     estado: 0,
     detalles: {
-      fecha_ejecucion_tentativa: "",
+      fecha_ejecucion_tentativa: now,
       hectareas: 0,
       motivos: "",
       dosis: [],
