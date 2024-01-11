@@ -11,6 +11,10 @@ import MuiAlert from "@mui/material/Alert";
 import "./Activities.css";
 import { styled } from "@mui/material/styles";
 import PlanActivity from "../PlanActivity";
+import { mapboxStaticImg } from "../../../utils/mapboxStaticImg";
+import { googleMapsLinkGoTo } from "../../../utils/googleMapsLink";
+import ordenDefinition from "../../../utils/ordenDefinition";
+import { error } from "xstate/lib/actions";
 
 const Alert = styled(MuiAlert)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -28,7 +32,12 @@ const Alert = styled(MuiAlert)(({ theme }) => ({
   }
 }));
 
-export const Activities = ({ activitiesData, setActivitiesData }) => {
+export const Activities = ({
+  activitiesData,
+  setActivitiesData,
+  fieldDoc,
+  lotDoc
+}) => {
   console.log("ACTIVITIES DATA: ", activitiesData);
   const [userMessage, setUserMessage] = useState("");
   const db = new PouchDB("campos_randyv7");
@@ -70,6 +79,42 @@ export const Activities = ({ activitiesData, setActivitiesData }) => {
 
   const handleEditActivity = (activityId) => {
     console.log("EDIT ACTIVITY: ", activityId);
+  };
+
+  const handleDownloadPDF = (activity) => {
+    let campos_url = mapboxStaticImg(fieldDoc, lotDoc);
+
+    let google_map_link = googleMapsLinkGoTo(lotDoc);
+
+    console.log("GENERANDO PDF", activity);
+    let dd = ordenDefinition(
+      activity,
+      fieldDoc.nombre,
+      lotDoc.properties.nombre,
+      campos_url,
+      google_map_link
+    );
+
+    const pdf_fonts = {
+      Roboto: {
+        normal:
+          "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf",
+        bold: "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf",
+        italics:
+          "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf",
+        bolditalics:
+          "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf"
+      }
+    };
+
+    import("pdfmake/build/pdfmake.min.js")
+      .then(({ default: pdfMake }) => {
+        pdfMake.fonts = pdf_fonts;
+        pdfMake.createPdf(dd).open();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const getIcon = (tipo: string) => {
@@ -144,6 +189,7 @@ export const Activities = ({ activitiesData, setActivitiesData }) => {
               isFirst={isFirst}
               handleDeleteActivity={handleDeleteActivity}
               handleEditActivity={handleEditActivity}
+              handleDownloadPDF={handleDownloadPDF}
             />
           </div>
         );

@@ -13,7 +13,8 @@ function Activity({
   icon,
   isFirst,
   handleDeleteActivity,
-  handleEditActivity
+  handleEditActivity,
+  handleDownloadPDF
 }) {
   const gradientBackground = `linear-gradient(135deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
 
@@ -26,6 +27,7 @@ function Activity({
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
+            handleDownloadPDF={handleDownloadPDF}
           />
         );
       case "cosecha":

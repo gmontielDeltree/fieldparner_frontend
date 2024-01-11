@@ -454,6 +454,7 @@ export const FieldsPage: React.FC = () => {
       {selectedLot && (
         <LotsMenu
           lot={selectedLot}
+          field={selectedField}
           isOpen={() =>
             function () {
               return !!selectedLot;
