@@ -20,6 +20,7 @@ import {
   NewOriginsDestinationsPage,
 } from "../pages";
 import { AppLayout } from "../components";
+import { SatellitePage } from "../pages/SatellitePage";
 
 export const OverviewRoutes: React.FC = () => {
   return (
@@ -59,6 +60,9 @@ export const OverviewRoutes: React.FC = () => {
 
         <Route path="/overview/exit-field" element={<ListExitFieldPage />} />
         <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />
+
+
+        <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

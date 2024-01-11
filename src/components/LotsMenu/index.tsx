@@ -18,6 +18,7 @@ import { Actividad } from "../../interfaces/activity";
 import { isBefore, isWithinInterval, parseISO } from "date-fns";
 import activitiesData from "./test.json";
 import GroundSample from "./GroundSample";
+import { useNavigate } from "react-router-dom";
 
 interface LotsMenuProps {
   lot: any;
@@ -30,12 +31,15 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activities, setActivities] = useState(null);
 
+  const navigate = useNavigate();
+
+
   const categories = [
     { id: "Planificar Siembra", icon: categoryIcon1 },
     { id: "Planificar Aplicacion", icon: categoryIcon2 },
     { id: "Planificar Cosecha", icon: categoryIcon3 },
     { id: "Tour", icon: categoryIcon4 },
-    { id: "Category 5", icon: categoryIcon5 },
+    { id: "Indices", icon: categoryIcon5, link: `/init/overview/satellite/${lot.id}` },
     { id: "Muestra de suelo", icon: categoryIcon6 }
   ];
 
@@ -233,8 +237,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
         }}
       >
         <div>
-          {categories.map(({ id, icon }) => (
-            <ButtonBase key={id} onClick={() => selectCategory(id)}>
+          {categories.map(({ id, icon, link }) => (
+            <ButtonBase key={id} onClick={() => link ? navigate(link) : selectCategory(id)} title={id}>
               <Avatar alt={id} src={icon} sx={avatarStyle(id)} />
             </ButtonBase>
           ))}
