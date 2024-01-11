@@ -30,17 +30,27 @@ import {
   PlaybackTitle,
   RecordingArea
 } from "./PointFormStyles";
+import PlaceMarker from "../../../NewGeometry/PlaceMarker";
+import { set } from "date-fns";
 
-function PointForm({ formData, setFormData, setIsPointMode }) {
+function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   const db = new PouchDB("campos_randyv7");
   const [point, setPoint] = useState({
-    properties: { nombre: "", notas: "", detalles: [], fotos: [], audio: "" }
+    properties: {
+      nombre: "",
+      notas: "",
+      detalles: [],
+      fotos: [],
+      audio: "",
+      posicion: []
+    }
   });
   const [selectedField, setSelectedField] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [imageUrls, setImageUrls] = useState([]);
   const [audioUrl, setAudioUrl] = useState(null);
+  const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
 
   const fieldOptions = ["Muestra #", "Plaga", "Enfermedad", "Anomalia"];
 
@@ -203,148 +213,198 @@ function PointForm({ formData, setFormData, setIsPointMode }) {
       setIsRecording(false);
     }
   };
+  const [markerSaved, setMarkerSaved] = useState(false);
+
+  const handleSaveMarker = () => {
+    console.log(" COORDINATES: ", coordinates);
+    setPoint({
+      ...point,
+      properties: {
+        ...point.properties,
+        posicion: coordinates
+      }
+    });
+    setMarkerSaved(true);
+  };
+
+  const formStyle = {
+    opacity: markerSaved ? 1 : 0.5,
+    filter: markerSaved ? "none" : "blur(3px)"
+  };
+
+  const markerMessageStyle = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    textAlign: "center",
+    zIndex: 2
+  };
 
   return (
     <>
       <Title>Nuevo Punto</Title>
-      <FormControl fullWidth>
-        <StyledGrid container spacing={2}>
-          <Grid item xs={12}>
-            <StyledTextField
-              label="Nombre del Punto"
-              fullWidth
-              value={point.properties.nombre}
-              onChange={(e) => handlePointChange("nombre", e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              label="Nota"
-              fullWidth
-              value={point.properties.notas}
-              onChange={(e) => handlePointChange("notas", e.target.value)}
-            />
-          </Grid>
-          {point.properties.detalles.map((detalle, index) => (
-            <Grid item xs={12} key={index}>
-              <TextField
-                label={detalle.name}
+      {!markerSaved && (
+        <div style={markerMessageStyle}>
+          <h4>Coloca el marcador</h4>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSaveMarker}
+          >
+            Guardar
+          </Button>
+        </div>
+      )}
+      <PlaceMarker
+        selectedLot={lot}
+        setCoordinates={setCoordinates}
+        isDraggable={!markerSaved}
+        onRemoveMarkers={onTourSave}
+      />
+
+      <div style={formStyle}>
+        <FormControl fullWidth>
+          <StyledGrid container spacing={2}>
+            <Grid item xs={12}>
+              <StyledTextField
+                label="Nombre del Punto"
                 fullWidth
-                value={detalle.value}
-                onChange={(e) => handleDetailChange(index, e.target.value)}
+                value={point.properties.nombre}
+                onChange={(e) => handlePointChange("nombre", e.target.value)}
               />
             </Grid>
-          ))}
-          {/* Dropdown for new field */}
-          <Grid item xs={12} sm={6}>
-            <InputLabel id="field-selector-label"></InputLabel>
-            <Select
-              labelId="field-selector-label"
-              value={selectedField}
-              onChange={(e) => setSelectedField(e.target.value)}
-              fullWidth
-            >
-              {fieldOptions.map((option, index) => (
-                <MenuItem key={index} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Button
-              variant="contained"
-              onClick={handleAddField}
-              disabled={!selectedField}
-            >
-              Agregar Campo
-            </Button>
-          </Grid>
-          {/* Animated Image Upload */}
-          <Grid item xs={12}>
-            <input
-              accept="image/*"
-              style={{ display: "none" }}
-              id="raised-button-file"
-              multiple
-              type="file"
-              onChange={handleImageUpload}
-            />
-            <label htmlFor="raised-button-file">
-              <ImageUploadButton
-                variant="contained"
-                component="span"
-                startIcon={<PhotoCamera />}
-              >
-                Subir Imagen
-              </ImageUploadButton>
-            </label>
-          </Grid>
-          {/* Display Uploaded Images */}
-          <ImageGrid container>
-            {imageUrls.map((url, index) => (
-              <StyledImageCard key={index}>
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image={url}
-                  alt="Uploaded Image"
+            <Grid item xs={12}>
+              <TextField
+                label="Nota"
+                fullWidth
+                value={point.properties.notas}
+                onChange={(e) => handlePointChange("notas", e.target.value)}
+              />
+            </Grid>
+            {point.properties.detalles.map((detalle, index) => (
+              <Grid item xs={12} key={index}>
+                <TextField
+                  label={detalle.name}
+                  fullWidth
+                  value={detalle.value}
+                  onChange={(e) => handleDetailChange(index, e.target.value)}
                 />
+              </Grid>
+            ))}
+
+            {/* Dropdown for new field */}
+            <Grid item xs={12} sm={6}>
+              <InputLabel id="field-selector-label"></InputLabel>
+              <Select
+                labelId="field-selector-label"
+                value={selectedField}
+                onChange={(e) => setSelectedField(e.target.value)}
+                fullWidth
+              >
+                {fieldOptions.map((option, index) => (
+                  <MenuItem key={index} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button
+                variant="contained"
+                onClick={handleAddField}
+                disabled={!selectedField}
+              >
+                Agregar Campo
+              </Button>
+            </Grid>
+
+            {/* Animated Image Upload */}
+            <Grid item xs={12}>
+              <input
+                accept="image/*"
+                style={{ display: "none" }}
+                id="raised-button-file"
+                multiple
+                type="file"
+                onChange={handleImageUpload}
+              />
+              <label htmlFor="raised-button-file">
+                <ImageUploadButton
+                  variant="contained"
+                  component="span"
+                  startIcon={<PhotoCamera />}
+                >
+                  Subir Imagen
+                </ImageUploadButton>
+              </label>
+            </Grid>
+
+            {/* Display Uploaded Images */}
+            <ImageGrid container>
+              {imageUrls.map((url, index) => (
+                <StyledImageCard key={index}>
+                  <CardMedia
+                    component="img"
+                    height="140"
+                    image={url}
+                    alt="Uploaded Image"
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => handleImageRemove(index)}
+                    style={{
+                      position: "absolute",
+                      top: "8px",
+                      right: "8px",
+                      color: "red"
+                    }}
+                  >
+                    <Delete />
+                  </IconButton>
+                </StyledImageCard>
+              ))}
+            </ImageGrid>
+
+            {/* Audio Recording Section */}
+            <RecordingArea>
+              <AudioRecordCard>
+                <RecordingIndicator recording={isRecording} />
+                <RecordingStatusLabel>
+                  {isRecording ? "Grabando..." : "Listo para grabar"}
+                </RecordingStatusLabel>
+                <RecordingButton
+                  recording={isRecording}
+                  onClick={isRecording ? stopRecording : startRecording}
+                >
+                  {isRecording ? <Stop /> : <Mic />}
+                </RecordingButton>
+              </AudioRecordCard>
+            </RecordingArea>
+
+            {/* Display Recorded Audio */}
+            {audioUrl && (
+              <AudioPlaybackCard>
+                <PlaybackTitle>Audio Grabado</PlaybackTitle>
+                <AudioPlayer controls src={audioUrl} />
                 <IconButton
-                  size="small"
-                  onClick={() => handleImageRemove(index)}
-                  style={{
-                    position: "absolute",
-                    top: "8px",
-                    right: "8px",
-                    color: "red"
-                  }}
+                  onClick={handleAudioRemove}
+                  style={{ color: "red", marginTop: "10px" }}
                 >
                   <Delete />
                 </IconButton>
-              </StyledImageCard>
-            ))}
-          </ImageGrid>
+              </AudioPlaybackCard>
+            )}
 
-          {/* Audio Recording Section */}
-          <RecordingArea>
-            <AudioRecordCard>
-              <RecordingIndicator recording={isRecording} />
-              <RecordingStatusLabel>
-                {isRecording ? "Grabando..." : "Listo para grabar"}
-              </RecordingStatusLabel>
-              <RecordingButton
-                recording={isRecording}
-                onClick={isRecording ? stopRecording : startRecording}
-              >
-                {isRecording ? <Stop /> : <Mic />}
-              </RecordingButton>
-            </AudioRecordCard>
-          </RecordingArea>
-
-          {/* Display Recorded Audio */}
-
-          {audioUrl && (
-            <AudioPlaybackCard>
-              <PlaybackTitle>Recorded Audio</PlaybackTitle>
-              <AudioPlayer controls src={audioUrl} />
-              <IconButton
-                onClick={handleAudioRemove}
-                style={{ color: "red", marginTop: "10px" }}
-              >
-                <Delete />
-              </IconButton>
-            </AudioPlaybackCard>
-          )}
-
-          {/* Save Button */}
-          <StyledGrid item xs={12}>
-            <CustomButton variant="contained" onClick={handleSavePoint}>
-              Guardar Punto
-            </CustomButton>
+            {/* Save Button */}
+            <StyledGrid item xs={12}>
+              <CustomButton variant="contained" onClick={handleSavePoint}>
+                Guardar Punto
+              </CustomButton>
+            </StyledGrid>
           </StyledGrid>
-        </StyledGrid>
-      </FormControl>
+        </FormControl>
+      </div>
     </>
   );
 }

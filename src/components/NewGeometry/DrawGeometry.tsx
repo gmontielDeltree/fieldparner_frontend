@@ -3,10 +3,11 @@ import { Map } from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
 import { Button, Input, Row, Col, Container } from "reactstrap";
+import { useSelector } from "react-redux";
+import { selectMap } from "../../redux/map/mapSlice";
+import { selectDraw } from "../../redux/draw/drawSlice";
 
 interface DrawGeometryProps {
-  map: Map;
-  draw: MapboxDraw;
   handleSaveGeometry?: (formattedData: FormattedData) => void;
   type: "field" | "lot";
 }
@@ -16,18 +17,15 @@ interface FormattedData {
   geometry: FeatureCollection<Geometry, GeoJsonProperties>[];
 }
 
-function DrawGeometry({
-  map,
-  draw,
-  handleSaveGeometry,
-  type
-}: DrawGeometryProps) {
+function DrawGeometry({ handleSaveGeometry, type }: DrawGeometryProps) {
   const [geometryName, setGeometryName] = useState("");
   const [geometryData, setGeometryData] = useState<FeatureCollection<
     Geometry,
     GeoJsonProperties
   > | null>(null);
 
+  const map = useSelector(selectMap);
+  const draw = useSelector(selectDraw);
   const isSaveDisabled = !geometryName || !geometryData;
 
   const typeName = type === "field" ? "campo" : "lote";

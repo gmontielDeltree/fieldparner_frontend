@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import PlanSowing from "./PlanSowing";
-import PlanHarvest from "./PlanHarvest";
-import PlanAplication from "./PlanAplication";
+import PlanActivity from "./PlanActivity";
 import Tour from "./Tour";
 import { Avatar, ButtonBase, Paper } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
@@ -15,8 +13,7 @@ import categoryIcon6 from "../../images/icons/suelo_act.webp";
 import PouchDB from "pouchdb";
 import { Activities } from "./Activities/index";
 import { Actividad } from "../../interfaces/activity";
-import { isBefore, isWithinInterval, parseISO } from "date-fns";
-import activitiesData from "./test.json";
+import { isBefore, parseISO } from "date-fns";
 import GroundSample from "./GroundSample";
 
 interface LotsMenuProps {
@@ -29,7 +26,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
   const db = new PouchDB("campos_randyv7");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activities, setActivities] = useState(null);
-
+  console.log("Log seleccionado: ", lot);
   const categories = [
     { id: "Planificar Siembra", icon: categoryIcon1 },
     { id: "Planificar Aplicacion", icon: categoryIcon2 },
@@ -88,16 +85,13 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
 
     if (result.rows) {
-      // Iter 1: Actividades
       _actividades_docs.forEach((actividad) => {
         let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid));
         respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
       });
 
       console.log("Respuesta actividades y ejecuciones preorden", respuesta);
-      // Ordenar respuesta teniendo en cuenta la ejecución.
       respuesta.sort((a, b) => {
-        // Si tiene ejecucion usar la fecha de ejecucion
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
           : parseISO(
@@ -164,7 +158,10 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
   const renderFormContent = () => {
     if (!selectedCategory) {
       return activities && activities.length > 0 ? (
-        <Activities activitiesData={activities} />
+        <Activities
+          activitiesData={activities}
+          setActivitiesData={setActivities}
+        />
       ) : (
         <div style={{ textAlign: "center" }}>
           <p>No hay actividades.</p>
@@ -176,15 +173,30 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     switch (selectedCategory) {
       case "Planificar Siembra":
         return (
-          <PlanSowing lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"sowing"}
+            lot={lot}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
       case "Planificar Cosecha":
         return (
-          <PlanHarvest lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"harvesting"}
+            lot={lot}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
       case "Planificar Aplicacion":
         return (
-          <PlanAplication lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"application"}
+            lot={lot}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
       case "Tour":
         return <Tour lot={lot} db={db} backToActivites={backToActivites} />;

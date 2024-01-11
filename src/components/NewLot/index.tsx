@@ -1,21 +1,12 @@
 import React, { useState, useEffect } from "react";
-
 import NewGeometry from "../NewGeometry/index.js";
-
 import { Alert } from "reactstrap";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 interface NewLotProps {
-  map: any;
-  draw: MapboxDraw;
   handleSaveGeometryLot: (data: any) => void;
 }
 
-const NewLot: React.FC<NewLotProps> = ({
-  map,
-  draw,
-  handleSaveGeometryLot
-}) => {
+const NewLot: React.FC<NewLotProps> = ({ handleSaveGeometryLot }) => {
   const [showAlert, setShowAlert] = useState(false);
 
   const handleSaveGeometry = (data: any) => {
@@ -27,7 +18,11 @@ const NewLot: React.FC<NewLotProps> = ({
     }, 5000);
   };
 
-  return map ? (
+  const handleOnClose = () => {
+    setShowAlert(false);
+  };
+
+  return (
     <>
       {showAlert && (
         <Alert
@@ -44,15 +39,12 @@ const NewLot: React.FC<NewLotProps> = ({
       )}
       {
         <NewGeometry
-          map={map}
-          draw={draw}
+          onClose={handleOnClose}
           handleSaveGeometry={handleSaveGeometry}
           type="lot"
         />
       }
     </>
-  ) : (
-    <div>No mapa loaded</div>
   );
 };
 
