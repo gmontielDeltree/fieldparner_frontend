@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Typography from "@mui/material/Typography";
 import { Box, Tabs, Tab, IconButton, Menu, MenuItem } from "@mui/material";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PlanificationContent from "./../TabsContent/Planification";
 import LaborOrderContent from "./../TabsContent/LaborOrder";
 import ExecutionContent from "./../TabsContent/Execution";
@@ -13,7 +12,8 @@ function Sowing({
   activity,
   complementaryColor,
   handleDeleteActivity,
-  handleEditActivity
+  handleEditActivity,
+  handleDownloadPDF
 }) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -75,7 +75,9 @@ function Sowing({
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={handleMenuClose}>Editar</MenuItem>
         <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Orden de Trabajo PDF</MenuItem>
+        <MenuItem onClick={() => handleDownloadPDF(activity.actividad)}>
+          Orden de Trabajo PDF
+        </MenuItem>
         <MenuItem onClick={handleMenuClose}>
           Compartir Orden de Trabajo
         </MenuItem>

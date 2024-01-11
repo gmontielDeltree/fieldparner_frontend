@@ -1,14 +1,6 @@
 // import agrotools_logo_b64 from './agrotools_logo_b64.js'
 
-import {
-  Actividad,
-  DetallesAplicacion,
-  LineaDosis,
-  DetallesSiembra
-} from "../depositos/depositos-types";
-import { Insumo } from "../insumos/insumos-types";
-
-const pdf_line = (linea: LineaDosis, hectareas) => {
+const pdf_line = (linea, hectareas) => {
   return [
     {
       text: linea.insumo.marca_comercial.toUpperCase(),
@@ -44,7 +36,7 @@ const pdf_line = (linea: LineaDosis, hectareas) => {
   ];
 };
 
-const pdf_linea_siembra = (siembra: DetallesSiembra, hectareas) => {
+const pdf_linea_siembra = (siembra, hectareas) => {
   return [
     {
       text: siembra.insumo.marca_comercial.toUpperCase(),
@@ -80,8 +72,8 @@ const pdf_linea_siembra = (siembra: DetallesSiembra, hectareas) => {
   ];
 };
 
-const orden_definition = (
-  aplicacion: Actividad,
+const ordenDefinition = (
+  aplicacion,
   nombre_campo,
   nombre_lote,
   campos_url,
@@ -99,7 +91,7 @@ const orden_definition = (
 
   let insumos;
   let insumos_tabla;
-  insumos = (aplicacion.detalles as DetallesAplicacion).dosis || [];
+  insumos = aplicacion.detalles.dosis || [];
   insumos_tabla = insumos.map((e) => pdf_line(e, hectareas));
 
   return {
@@ -395,4 +387,4 @@ const orden_definition = (
   };
 };
 
-export default orden_definition;
+export default ordenDefinition;

@@ -18,11 +18,12 @@ import GroundSample from "./GroundSample";
 
 interface LotsMenuProps {
   lot: any;
+  field: any;
   isOpen: () => void;
   toggle: () => void;
 }
 
-const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
+const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const db = new PouchDB("campos_randyv7");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activities, setActivities] = useState(null);
@@ -161,6 +162,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
         <Activities
           activitiesData={activities}
           setActivitiesData={setActivities}
+          lotDoc={lot}
+          fieldDoc={field}
         />
       ) : (
         <div style={{ textAlign: "center" }}>
