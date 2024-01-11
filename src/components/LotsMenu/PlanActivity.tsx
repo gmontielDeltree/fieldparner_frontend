@@ -16,8 +16,8 @@ import ObservationsForm from "./forms/PlanForms/ObservationsForm";
 import { getEmptyActivity } from "../../interfaces/activity";
 import { format, parse } from "date-fns";
 import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
-import GrassIcon from "@mui/icons-material/Grass"; // Replace with actual import
-import AgricultureIcon from "@mui/icons-material/Agriculture"; // Replace with actual import
+import GrassIcon from "@mui/icons-material/Grass";
+import AgricultureIcon from "@mui/icons-material/Agriculture";
 
 import Badge from "@mui/material/Badge";
 
@@ -38,17 +38,21 @@ interface PlanActivityProps {
   lot: any;
   db: any;
   backToActivites: () => void;
+  existingActivity: any;
 }
 
 const PlanActivity: React.FC<PlanActivityProps> = ({
   activityType,
   lot,
   db,
-  backToActivites
+  backToActivites,
+  existingActivity
 }) => {
   if (!lot) return null;
   console.log("Lot: ", lot);
-  const [formData, setFormData] = useState(getEmptyActivity());
+  const [formData, setFormData] = useState(
+    existingActivity || getEmptyActivity()
+  );
   const [activeStep, setActiveStep] = useState(0);
   const translatedActivityType =
     activityTypeTranslations[activityType] || activityType;

@@ -1,18 +1,6 @@
 import React, { useState } from "react";
 import Typography from "@mui/material/Typography";
-import {
-  List,
-  ListItem,
-  Box,
-  Tabs,
-  Tab,
-  IconButton,
-  Menu,
-  MenuItem,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails
-} from "@mui/material";
+import { Box, Tabs, Tab, IconButton, Menu, MenuItem } from "@mui/material";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -21,7 +9,12 @@ import LaborOrderContent from "./../TabsContent/LaborOrder";
 import ExecutionContent from "./../TabsContent/Execution";
 import AttachedContent from "./../TabsContent/Attached";
 
-function Sowing({ activity, complementaryColor }) {
+function Sowing({
+  activity,
+  complementaryColor,
+  handleDeleteActivity,
+  handleEditActivity
+}) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -90,7 +83,9 @@ function Sowing({ activity, complementaryColor }) {
           Ejecución vs Planificación PDF
         </MenuItem>
         <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Eliminar</MenuItem>
+        <MenuItem onClick={() => handleDeleteActivity(activity.actividad._id)}>
+          Eliminar
+        </MenuItem>
       </Menu>
 
       <Tabs

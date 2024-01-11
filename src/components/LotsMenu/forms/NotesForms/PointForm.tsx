@@ -234,9 +234,9 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
 
   const markerMessageStyle = {
     position: "absolute",
-    top: "50%", // Center vertically
-    left: "50%", // Center horizontally
-    transform: "translate(-50%, -50%)", // Adjust for exact center
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
     textAlign: "center",
     zIndex: 2
   };
@@ -292,6 +292,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                 />
               </Grid>
             ))}
+
             {/* Dropdown for new field */}
             <Grid item xs={12} sm={6}>
               <InputLabel id="field-selector-label"></InputLabel>
@@ -317,6 +318,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                 Agregar Campo
               </Button>
             </Grid>
+
             {/* Animated Image Upload */}
             <Grid item xs={12}>
               <input
@@ -337,6 +339,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                 </ImageUploadButton>
               </label>
             </Grid>
+
             {/* Display Uploaded Images */}
             <ImageGrid container>
               {imageUrls.map((url, index) => (
@@ -380,10 +383,9 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
             </RecordingArea>
 
             {/* Display Recorded Audio */}
-
             {audioUrl && (
               <AudioPlaybackCard>
-                <PlaybackTitle>Recorded Audio</PlaybackTitle>
+                <PlaybackTitle>Audio Grabado</PlaybackTitle>
                 <AudioPlayer controls src={audioUrl} />
                 <IconButton
                   onClick={handleAudioRemove}

@@ -85,16 +85,13 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
 
     if (result.rows) {
-      // Iter 1: Actividades
       _actividades_docs.forEach((actividad) => {
         let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid));
         respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
       });
 
       console.log("Respuesta actividades y ejecuciones preorden", respuesta);
-      // Ordenar respuesta teniendo en cuenta la ejecución.
       respuesta.sort((a, b) => {
-        // Si tiene ejecucion usar la fecha de ejecucion
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
           : parseISO(
@@ -161,7 +158,10 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
   const renderFormContent = () => {
     if (!selectedCategory) {
       return activities && activities.length > 0 ? (
-        <Activities activitiesData={activities} />
+        <Activities
+          activitiesData={activities}
+          setActivitiesData={setActivities}
+        />
       ) : (
         <div style={{ textAlign: "center" }}>
           <p>No hay actividades.</p>

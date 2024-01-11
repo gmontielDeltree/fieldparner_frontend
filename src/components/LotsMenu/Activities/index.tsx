@@ -5,22 +5,74 @@ import HarvestIcon from "../../../images/icons/cosechadora_act.webp";
 import NoteIcon from "../../../images/icons/iconodenotas_act.webp";
 import SoilAnalysisIcon from "../../../images/icons/suelo_act.webp";
 import ApplicationIcon from "../../../images/icons/pulverizadora_act.webp";
+import PouchDB from "pouchdb";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import "./Activities.css";
+import { styled } from "@mui/material/styles";
+import PlanActivity from "../PlanActivity";
 
-export const Activities = ({ activitiesData }) => {
+const Alert = styled(MuiAlert)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  border: `1px solid ${theme.palette.divider}`,
+  boxShadow: theme.shadows[5],
+  "& .MuiAlert-icon": {
+    fontSize: "1.5em"
+  },
+  "& .MuiAlert-message": {
+    fontSize: "1em",
+    fontWeight: "bold"
+  },
+  "& .MuiAlert-action": {
+    alignItems: "center"
+  }
+}));
+
+export const Activities = ({ activitiesData, setActivitiesData }) => {
   console.log("ACTIVITIES DATA: ", activitiesData);
-  const [activityHeights, setActivityHeights] = useState([]);
-  const activityRefs = useRef([]);
+  const [userMessage, setUserMessage] = useState("");
+  const db = new PouchDB("campos_randyv7");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  const [activity] = useState(activitiesData[0]);
+  const handleSnackbarClose = (event: any, reason: string) => {
+    console.log("Snackbar closing, reason:", reason);
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
 
-  useEffect(() => {
-    setActivityHeights(
-      activityRefs.current.map((ref) => ref?.offsetHeight || 0)
-    );
-  }, []);
+  const handleDeleteActivity = (activityId) => {
+    console.log("DELETE ACTIVITY: ", activityId);
 
-  const getIcon = (tipo) => {
+    db.get(activityId)
+      .then((doc) => {
+        return db.remove(doc);
+      })
+      .then(() => {
+        console.log("Actividad eliminada", "success");
+        setActivitiesData(
+          activitiesData.filter(
+            (activity) => activity.actividad._id !== activityId
+          )
+        );
+        setUserMessage("Actividad eliminada exitosamente.");
+        setOpenSnackbar(true);
+        setSnackbarSeverity("success");
+      })
+      .catch((error) => {
+        console.error("Error deleting actividad:", error);
+        setUserMessage("Error al eliminar la actividad.");
+        setSnackbarSeverity("error");
+      });
+  };
+
+  const handleEditActivity = (activityId) => {
+    console.log("EDIT ACTIVITY: ", activityId);
+  };
+
+  const getIcon = (tipo: string) => {
     switch (tipo) {
       case "siembra":
         return SowingIcon;
@@ -34,23 +86,6 @@ export const Activities = ({ activitiesData }) => {
         return SoilAnalysisIcon;
       default:
         return null;
-    }
-  };
-
-  const getColor = (tipo) => {
-    switch (tipo) {
-      case "siembra":
-        return "#76B947";
-      case "cosecha":
-        return "#F2C94C";
-      case "nota":
-        return "#F2994A";
-      case "aplicacion":
-        return "#56CCF2";
-      case "analisis de suelo":
-        return "#9B51E0";
-      default:
-        return "#333333";
     }
   };
 
@@ -80,6 +115,19 @@ export const Activities = ({ activitiesData }) => {
         position: "relative"
       }}
     >
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {userMessage}
+        </Alert>
+      </Snackbar>
       {activitiesData.map((activityData, index) => {
         const Icon = getIcon(activityData.actividad.tipo);
         const complementaryColor = getComplementaryColor(
@@ -88,12 +136,14 @@ export const Activities = ({ activitiesData }) => {
         const isFirst = index === 0;
 
         return (
-          <div key={index} ref={(el) => (activityRefs.current[index] = el)}>
+          <div key={index}>
             <Activity
               activity={activityData}
               complementaryColor={complementaryColor}
               icon={Icon}
               isFirst={isFirst}
+              handleDeleteActivity={handleDeleteActivity}
+              handleEditActivity={handleEditActivity}
             />
           </div>
         );

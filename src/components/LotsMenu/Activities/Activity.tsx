@@ -7,31 +7,49 @@ import Note from "./ActivityTypes/Note/Note";
 import Harvest from "./ActivityTypes/Harvest/Harvest";
 import Application from "./ActivityTypes/Application/Application";
 
-function Activity({ activity, complementaryColor, icon, isFirst }) {
+function Activity({
+  activity,
+  complementaryColor,
+  icon,
+  isFirst,
+  handleDeleteActivity,
+  handleEditActivity
+}) {
   const gradientBackground = `linear-gradient(135deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
 
   const renderActivityContent = () => {
     switch (activity.actividad.tipo) {
       case "siembra":
         return (
-          <Sowing activity={activity} complementaryColor={complementaryColor} />
+          <Sowing
+            activity={activity}
+            complementaryColor={complementaryColor}
+            handleDeleteActivity={handleDeleteActivity}
+            handleEditActivity={handleEditActivity}
+          />
         );
       case "cosecha":
         return (
           <Harvest
             activity={activity}
             complementaryColor={complementaryColor}
+            handleDeleteActivity={handleDeleteActivity}
           />
         );
       case "nota":
         return (
-          <Note activity={activity} complementaryColor={complementaryColor} />
+          <Note
+            activity={activity}
+            complementaryColor={complementaryColor}
+            handleDeleteActivity={handleDeleteActivity}
+          />
         );
       case "aplicacion":
         return (
           <Application
             activity={activity}
             complementaryColor={complementaryColor}
+            handleDeleteActivity={handleDeleteActivity}
           />
         );
       case "analisis de suelo":
