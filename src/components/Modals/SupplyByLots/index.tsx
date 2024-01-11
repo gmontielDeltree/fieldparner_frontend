@@ -49,19 +49,19 @@ export const SupplyByLotsModal: React.FC<SupplyByLotsModalProps> = ({
           columns={columns}
           isLoading={false}
         >
-          {supplyByDeposit.lotsStock?.map((lotStock) => (
-            <ItemRow key={lotStock.lot.nro} hover>
+          {supplyByDeposit.nroLotsStock?.map((lotStock) => (
+            <ItemRow key={lotStock.nroLot} hover>
               <TableCellStyled align="left">
-                {lotStock.lot.location}
+                {lotStock.location}
               </TableCellStyled>
               <TableCellStyled align="center">
-                {lotStock.lot?.nro}
+                {lotStock.nroLot}
               </TableCellStyled>
               <TableCellStyled align="center">
                 {supplyByDeposit.dueDate || "-"}
               </TableCellStyled>
               <TableCellStyled align="center">
-                {supplyByDeposit.unitMeasurement}
+                {supplyByDeposit.supply?.unitMeasurement || "-"}
               </TableCellStyled>
               <TableCellStyled align="center">
                 {lotStock.currentStock}

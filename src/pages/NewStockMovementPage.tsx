@@ -18,11 +18,10 @@ import {
 } from "@mui/material";
 import { SyncAlt as SyncAltIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
+import {  useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
 import {
   CurrencyCode,
   Deposit,
-  Lot,
   StockMovement,
   Supply,
   TypeMovement,
@@ -35,9 +34,10 @@ const initialForm: StockMovement = {
   amount: 0,
   nroLot: "",
   creationDate: new Date().toLocaleString(),
-  campaign: 0,
+  campaignId: 0,
   currency: "",
   depositId: "",
+  location: "",
   detail: "",
   dueDate: getShortDate(),
   hours: "",
@@ -48,6 +48,7 @@ const initialForm: StockMovement = {
   voucher: "",
   isIncome: false,
   accountId: "",
+  userId: ""
 };
 
 const movementsShowSwitch = [
@@ -58,6 +59,10 @@ const movementsShowSwitch = [
 
 export const NewStockMovementPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isLoading, stockByLots, addNewStockMovement, getNroLotsBySupplyAndDeposit } = useStockMovement();
+  const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
+  const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
+
   const {
     formulario,
     setFormulario,
@@ -69,12 +74,9 @@ export const NewStockMovementPage: React.FC = () => {
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
   const [showSwitch, setShowSwitch] = useState(true);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
-  const [depositIdDestination, setDepositIdDestination] = useState("");
-  const [lotSelected, setLotSelected] = useState<Lot | null>(null);
-  const { isLoading, addNewStockMovement } = useStockMovement();
-  const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
-  const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
-  const { typeMovement, depositId: depositOrigin } = formulario;
+  const [depositDestinationSelected, setDepositDestinationSelected] = useState<Deposit | null>(null);
+  const [locationDestinationSelected, setLocationDestinationSelected] = useState("");
+  const { typeMovement, depositId: depositOrigin, supplyId, location } = formulario;
 
   const depositsToBeAllocated = useMemo(() => {
     return deposits.filter(
@@ -86,8 +88,13 @@ export const NewStockMovementPage: React.FC = () => {
 
   const onClickSave = () => {
     // console.log("formulario", formulario);
+    let destination = depositDestinationSelected?._id ? {
+      depositId: depositDestinationSelected._id,
+      location: locationDestinationSelected
+    } : undefined;
+
     if (supplySelected && depositSelected) {
-      addNewStockMovement(formulario, supplySelected, depositIdDestination);
+      addNewStockMovement(formulario, supplySelected, destination);
       reset();
     }
   };
@@ -114,20 +121,26 @@ export const NewStockMovementPage: React.FC = () => {
       setDepositSelected(depositSelected);
     }
     if (depositSelected && name === "destination") {
-      setDepositIdDestination(value);
+      setDepositDestinationSelected(depositSelected);
     }
   };
 
-  const onChangeLot = ({ target }: SelectChangeEvent) => {
-    const { value } = target;
-    if (!depositSelected) return;
-    const lotSelected = depositSelected.lots.find(
-      (lot) => lot.nro.toLowerCase() === value.toLowerCase()
-    );
-    if (!lotSelected) return;
-    setFormulario((prevState) => ({ ...prevState, nroLot: value }));
-    setLotSelected(lotSelected);
+  const onChangeLocation = ({ target }: SelectChangeEvent) => {
+    const { value, name } = target;
+    if (name === "origin") {
+      if (!depositSelected) return;
+      setFormulario((prevState) => ({ ...prevState, location: value }));
+    }
+    else {
+      if (!depositDestinationSelected) return;
+      setLocationDestinationSelected(value);
+    }
   };
+
+  const onChangeNroLot = ({ target }: SelectChangeEvent) => {
+    const value = target.value;
+    setFormulario(prevState => ({ ...prevState, nroLot: value }));
+  }
 
   useEffect(() => {
     getSupplies();
@@ -148,6 +161,13 @@ export const NewStockMovementPage: React.FC = () => {
       setShowSwitch(false);
     }
   }, [typeMovement]);
+
+  useEffect(() => {
+    if (supplyId !== "" && depositOrigin !== "" && location !== "") {
+      getNroLotsBySupplyAndDeposit(supplyId, depositOrigin, location);
+    }
+  }, [supplyId, depositOrigin, location]);
+
 
   return (
     <Container maxWidth="lg">
@@ -279,41 +299,46 @@ export const NewStockMovementPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              {supplySelected?.stockByLot && (
-                <>
-                  <Grid item xs={6} sm={2}>
-                    <FormControl fullWidth>
-                      <InputLabel id="lot">Lote</InputLabel>
-                      <Select
-                        labelId="lot"
-                        name="nroLot"
-                        value={formulario.nroLot}
-                        label="Lote"
-                        onChange={onChangeLot}
-                      >
-                        {depositSelected?.lots.map((lot) => (
-                          <MenuItem key={lot.nro} value={lot.nro}>
-                            {lot.nro}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={6} sm={6}>
-                    <TextField
-                      variant="outlined"
-                      type="text"
-                      label="Ubicacion"
-                      value={lotSelected?.location}
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
-                      fullWidth
-                    />
-                  </Grid>
-                </>
-              )}
-              <Grid item xs={6} sm={2}>
+              <Grid item xs={6} sm={4}>
+                <FormControl fullWidth>
+                  <InputLabel id="location">Ubicacion</InputLabel>
+                  <Select
+                    labelId="location"
+                    name="origin"
+                    value={formulario.location}
+                    label="Ubicacion"
+                    onChange={onChangeLocation}
+                  >
+                    {depositSelected?.locations.map((l) => (
+                      <MenuItem key={l} value={l}>
+                        {l}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} sm={4}>
+                {supplySelected?.stockByLot && (
+                  <FormControl fullWidth>
+                    {/* Cambiar esto a un mapeo de lots (depositId, supplyId, location) */}
+                    <InputLabel id="lot">Nro Lote</InputLabel>
+                    <Select
+                      labelId="lot"
+                      name="nroLot"
+                      value={formulario.nroLot}
+                      label="Nro Lote"
+                      onChange={onChangeNroLot}
+                    >
+                      {stockByLots.map(({ nroLot }) => (
+                        <MenuItem key={nroLot} value={nroLot}>
+                          {nroLot}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              </Grid>
+              <Grid item xs={6} sm={4}>
                 <TextField
                   variant="outlined"
                   type="number"
@@ -343,13 +368,31 @@ export const NewStockMovementPage: React.FC = () => {
                   <Select
                     labelId="deposit-dest"
                     name="destination"
-                    value={depositIdDestination}
+                    value={depositDestinationSelected?._id}
                     label="Deposito"
                     onChange={onChangeDeposit}
                   >
                     {depositsToBeAllocated.map((deposit) => (
                       <MenuItem key={deposit._id} value={deposit._id}>
                         {deposit.description}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} sm={4}>
+                <FormControl fullWidth>
+                  <InputLabel id="location-dest">Ubicacion</InputLabel>
+                  <Select
+                    labelId="location-dest"
+                    name="destination"
+                    value={locationDestinationSelected}
+                    label="Ubicacion"
+                    onChange={onChangeLocation}
+                  >
+                    {depositDestinationSelected?.locations.map((l) => (
+                      <MenuItem key={l} value={l}>
+                        {l}
                       </MenuItem>
                     ))}
                   </Select>
@@ -420,53 +463,76 @@ export const NewStockMovementPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              {supplySelected?.stockByLot && (
-                <Grid item xs={6} sm={2}>
-                  <FormControl fullWidth>
-                    <InputLabel id="lot">Lote</InputLabel>
-                    <Select
-                      labelId="lot"
-                      name="nroLot"
-                      value={formulario.nroLot}
-                      label="Lote"
-                      onChange={onChangeLot}
-                    >
-                      {depositSelected?.lots.map((lot) => (
-                        <MenuItem key={lot.nro} value={lot.nro}>
-                          {lot.nro}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-              )}
-              <Grid item xs={12} sm={2}>
-                <TextField
-                  variant="outlined"
-                  type="date"
-                  label="Fecha vencimiento"
-                  name="dueDate"
-                  value={formulario.dueDate}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                />
+              <Grid item xs={6} sm={4}>
+                <FormControl fullWidth>
+                  <InputLabel id="location">Ubicacion</InputLabel>
+                  <Select
+                    labelId="location"
+                    name="origin"
+                    value={formulario.location}
+                    label="Ubicacion"
+                    onChange={onChangeLocation}
+                  >
+                    {depositSelected?.locations.map((loc) => (
+                      <MenuItem key={loc} value={loc}>
+                        {loc}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
               {supplySelected?.stockByLot && (
-                <Grid item xs={6} sm={4}>
-                  <TextField
-                    variant="outlined"
-                    type="text"
-                    label="Ubicacion"
-                    value={lotSelected?.location}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start" />,
-                    }}
-                    fullWidth
-                  />
-                </Grid>
+                <>
+                  <Grid item xs={6} sm={4}>
+                    {formulario.isIncome ? (
+                      <TextField
+                        key="nroLot-input"
+                        variant="outlined"
+                        type="text"
+                        label="Nro Lote"
+                        name="nroLot"
+                        value={formulario.nroLot}
+                        onChange={handleInputChange}
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start" />,
+                        }}
+                        fullWidth
+                      />
+                    ) : (
+                      <FormControl key="nroLot-select" fullWidth>
+                        {/* Cambiar esto a un mapeo de lots (depositId, supplyId, location) */}
+                        <InputLabel id="lot">Nro Lote</InputLabel>
+                        <Select
+                          labelId="lot"
+                          name="nroLot"
+                          value={formulario.nroLot}
+                          label="Nro Lote"
+                          onChange={onChangeNroLot}
+                        >
+                          {stockByLots?.map(({ nroLot }) => (
+                            <MenuItem key={nroLot} value={nroLot}>
+                              {nroLot}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    )}
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      variant="outlined"
+                      type="date"
+                      label="Fecha vencimiento"
+                      name="dueDate"
+                      value={formulario.dueDate}
+                      onChange={handleInputChange}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start" />,
+                      }}
+                      fullWidth
+                    />
+                  </Grid>
+                </>
               )}
               <Grid item xs={6} sm={2}>
                 <TextField
@@ -549,7 +615,7 @@ export const NewStockMovementPage: React.FC = () => {
                   type="number"
                   label="Campaña"
                   name="campaign"
-                  value={formulario.campaign}
+                  value={formulario.campaignId}
                   onChange={handleInputChange}
                   InputProps={{
                     startAdornment: <InputAdornment position="start" />,

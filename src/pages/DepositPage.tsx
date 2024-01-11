@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Loading, TemplateLayout } from "../components";
 import {
   Autocomplete,
@@ -12,7 +12,6 @@ import {
   MenuItem,
   Paper,
   Select,
-  Switch,
   TextField,
   Typography,
   TableContainer,
@@ -26,6 +25,9 @@ import {
   Fab,
   Tooltip,
   IconButton,
+  Container,
+  FormGroup,
+  Checkbox,
 } from "@mui/material";
 import {
   Warehouse as WarehouseIcon,
@@ -40,7 +42,7 @@ import {
   useDeposit,
   useForm,
 } from "../hooks";
-import { CountryCode, Deposit, Lot, TipoEntidad } from "../types";
+import { CountryCode, Deposit, TipoEntidad } from "../types";
 import { removeDepositActive } from "../redux/deposit";
 import { getLocalityAndStateByZipCode } from "../services";
 
@@ -55,6 +57,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   },
 }));
 
+const locationDefault = "General";
 const initialForm: Deposit = {
   description: "",
   zipCode: "",
@@ -67,12 +70,7 @@ const initialForm: Deposit = {
   owner: "Propio",
   province: "",
   accountId: "",
-  lots: [],
-};
-
-const initialFormLot: Lot = {
-  nro: "",
-  location: "",
+  locations: [locationDefault],
 };
 
 const optionsCountry = ["Argentina", "Brasil", "Chile"];
@@ -82,16 +80,18 @@ export const DepositPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [localities, setLocalities] = useState<string[]>([]);
+  const [descriptionError, setDescriptionError] = useState(false);
+  const [countryError, setCountryError] = useState(false);
+  const [cpError, setCpError] = useState(false);
   const { depositActive } = useAppSelector((state) => state.deposit);
   const {
     formulario,
     setFormulario,
     handleInputChange,
     handleFormValueChange,
-    handleCheckboxChange,
     handleSelectChange,
-    reset,
-  } = useForm(initialForm);
+} = useForm(initialForm);
+
   const { isLoading, createDeposit, updateDeposit } = useDeposit();
   const {
     getBusinesses,
@@ -99,12 +99,10 @@ export const DepositPage: React.FC = () => {
     isLoading: loadingBusiness,
   } = useBusiness();
   const {
-    formulario: formLot,
-    nro,
     location,
     handleInputChange: inputChange,
     reset: resetFormLot,
-  } = useForm(initialFormLot);
+  } = useForm({ location: "" });
 
   const {
     description,
@@ -117,7 +115,7 @@ export const DepositPage: React.FC = () => {
     country,
     isNegative,
     isVirtual,
-    lots,
+    locations,
   } = formulario;
 
   const optionsPropietario = useMemo(() => {
@@ -129,15 +127,48 @@ export const DepositPage: React.FC = () => {
   const onClickCancel = () => navigate("/init/overview/deposit");
 
   const handleUpdateDeposit = () => {
-    if (formulario._id) {
-      updateDeposit(formulario);
+    if (validateForm()) {
+      if (formulario._id) {
+        updateDeposit(formulario);
+      } else {
+        createDeposit(formulario);
+      }
       dispatch(removeDepositActive());
+      setFormulario(initialForm);
     }
   };
-
   const handleAddDeposit = () => {
-    createDeposit(formulario);
-    reset();
+    if (validateForm()) {
+        createDeposit(formulario);
+        setFormulario(initialForm);
+    }
+};
+
+  const validateForm = () => {
+    let isValid = true;
+  
+    if (description.trim() === "") {
+      setDescriptionError(true);
+      isValid = false;
+    } else {
+      setDescriptionError(false);
+    }
+  
+    if (zipCode.trim() === "") {
+      setCpError(true);
+      isValid = false;
+    } else {
+      setCpError(false);
+    }
+  
+    if (country.trim() === "") {
+      setCountryError(true);
+      isValid = false;
+    } else {
+      setCountryError(false);
+    }
+  
+    return isValid;
   };
 
   const getLocalityAndState = async () => {
@@ -167,20 +198,31 @@ export const DepositPage: React.FC = () => {
     if (zipCode !== "") getLocalityAndState();
   };
 
-  const handleAddLot = () => {
+  const handleAddLocation = () => {
     setFormulario((prevState) => ({
       ...prevState,
-      lots: [formLot, ...prevState.lots],
+      locations: [location, ...prevState.locations],
     }));
     resetFormLot();
   };
 
-  const handleDeleteLot = (item: Lot) => {
+  const handleDeleteLocation = (item: string) => {
     setFormulario((prevState) => ({
       ...prevState,
-      lots: prevState.lots.filter(
-        ({ nro }) => nro.toLowerCase().trim() !== item.nro.toLowerCase().trim()
+      locations: prevState.locations.filter(
+        (l) => l.trim().toLowerCase() !== item.trim().toLowerCase()
       ),
+    }));
+  };
+
+  const handleChangeIsNegative = (
+    e: ChangeEvent<HTMLInputElement>,
+    _checked: boolean
+  ) => {
+    const { name } = e.target;
+    setFormulario((prevState) => ({
+      ...prevState,
+      isNegative: name.toLowerCase() === "yes",
     }));
   };
 
@@ -218,7 +260,7 @@ export const DepositPage: React.FC = () => {
           {depositActive ? "Editar" : "Agregar Nuevo"} Deposito
         </Typography>
         <Grid container spacing={2} alignItems="center" justifyContent="center">
-          <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
               type="text"
@@ -230,6 +272,8 @@ export const DepositPage: React.FC = () => {
                 startAdornment: <InputAdornment position="start" />,
               }}
               fullWidth
+              error={descriptionError}
+              helperText={descriptionError ? "Este campo es obligatorio" : ""}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -253,32 +297,71 @@ export const DepositPage: React.FC = () => {
             />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Box display="flex" justifyContent="center" alignItems="center">
-              <Typography variant="body1" display="inline-block">
-                Fisico
-              </Typography>
-              <Switch
-                name="isVirtual"
-                checked={isVirtual}
-                onChange={handleCheckboxChange}
+            <FormGroup row>
+              <FormControlLabel
+                key="checkbox-true"
+                control={
+                  <Checkbox
+                    name="physical"
+                    checked={!isVirtual}
+                    onChange={() =>
+                      setFormulario((prevState) => ({
+                        ...prevState,
+                        isVirtual: false,
+                      }))
+                    }
+                  />
+                }
+                label="Fisico"
+                labelPlacement="start"
               />
-              <Typography variant="body1" display="inline-block">
-                Virtual
-              </Typography>
-            </Box>
+              <FormControlLabel
+                key="checkbox-false"
+                control={
+                  <Checkbox
+                    name="virtual"
+                    checked={isVirtual}
+                    onChange={() =>
+                      setFormulario((prevState) => ({
+                        ...prevState,
+                        isVirtual: true,
+                      }))
+                    }
+                  />
+                }
+                label="Virtual"
+                labelPlacement="start"
+              />
+            </FormGroup>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControlLabel
-              control={
-                <Switch
-                  name="isNegative"
-                  checked={isNegative}
-                  onChange={handleCheckboxChange}
-                />
-              }
-              label="Admite Negativo"
-              labelPlacement="start"
-            />
+          <Grid item xs={12} sm={4} justifyContent="center">
+            <FormGroup row sx={{ alignItems: "center" }}>
+              <label htmlFor="">Admite Stock Negativo:</label>
+              <FormControlLabel
+                key="checkbox-true"
+                control={
+                  <Checkbox
+                    name="yes"
+                    checked={isNegative}
+                    onChange={handleChangeIsNegative}
+                  />
+                }
+                label="Si"
+                labelPlacement="start"
+              />
+              <FormControlLabel
+                key="checkbox-false"
+                control={
+                  <Checkbox
+                    name="not"
+                    checked={!isNegative}
+                    onChange={handleChangeIsNegative}
+                  />
+                }
+                label="No"
+                labelPlacement="start"
+              />
+            </FormGroup>
           </Grid>
           <Grid item xs={12} sm={4}>
             <TextField
@@ -295,23 +378,28 @@ export const DepositPage: React.FC = () => {
             />
           </Grid>
           <Grid item xs={6} sm={4}>
-            <FormControl fullWidth>
-              <InputLabel id="label-pais">Pais</InputLabel>
-              <Select
-                labelId="label-pais"
-                name="country"
-                value={country}
-                label="Pais"
-                onChange={handleSelectChange}
-              >
-                {optionsCountry.map((country) => (
-                  <MenuItem key={country} value={country}>
-                    {country}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+          <FormControl fullWidth>
+            <InputLabel id="label-pais">Pais</InputLabel>
+            <Select
+              labelId="label-pais"
+              name="country"
+              value={country}
+              label="Pais"
+              onChange={handleSelectChange}
+            >
+              {optionsCountry.map((country) => (
+                <MenuItem key={country} value={country}>
+                  {country}
+                </MenuItem>
+              ))}
+            </Select>
+            {countryError && (
+              <Typography color="error">
+                El país es obligatorio
+              </Typography>
+            )}
+          </FormControl>
+        </Grid>
           <Grid item xs={6} sm={4}>
             <TextField
               variant="outlined"
@@ -321,6 +409,8 @@ export const DepositPage: React.FC = () => {
               value={zipCode}
               onBlur={() => onBlurZipCode()}
               onChange={handleInputChange}
+              error={cpError}
+              helperText={cpError ? "Este campo es obligatorio" : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -376,30 +466,22 @@ export const DepositPage: React.FC = () => {
             />
           </Grid>
         </Grid>
-        <Box>
-          <TableContainer key="table-lots" sx={{ mt: 2 }} component={Paper}>
-            <Table sx={{ minWidth: 400 }} aria-label="customized table">
+        <Container maxWidth="md">
+          <TableContainer
+            key="table-locations"
+            sx={{ mt: 2 }}
+            component={Paper}
+          >
+            <Table sx={{ minWidth: 350 }} aria-label="customized table">
               <TableHead>
                 <TableRow>
-                  <StyledTableCell>Nro</StyledTableCell>
                   <StyledTableCell>Ubicacion</StyledTableCell>
                   <StyledTableCell />
                 </TableRow>
               </TableHead>
               <TableBody>
                 <TableRow key="new-especificacion">
-                  <StyledTableCell sx={{ minWidth: 150, maxWidth: 200 }}>
-                    <TextField
-                      variant="outlined"
-                      size="small"
-                      type="text"
-                      name="nro"
-                      value={nro}
-                      onChange={inputChange}
-                      fullWidth
-                    />
-                  </StyledTableCell>
-                  <StyledTableCell sx={{ minWidth: 350, maxWidth: 400 }}>
+                  <StyledTableCell sx={{ minWidth: 300, maxWidth: 400 }}>
                     <TextField
                       variant="outlined"
                       size="small"
@@ -415,28 +497,32 @@ export const DepositPage: React.FC = () => {
                       color="success"
                       aria-label="add"
                       size="small"
-                      onClick={() => handleAddLot()}
+                      onClick={() => handleAddLocation()}
                     >
                       <AddIcon />
                     </Fab>
                   </StyledTableCell>
                 </TableRow>
-                {lots.map((lot) => (
-                  <TableRow key={lot.nro}>
+                {locations.map((loc) => (
+                  <TableRow key={loc}>
                     <TableCell
-                      align="center"
-                      // sx={{ p: "5px", minWidth: 200, maxWidth: 250 }}
+                      sx={{
+                        p: "5px",
+                        height: "50px",
+                        minWidth: 350,
+                        maxWidth: 450,
+                      }}
                     >
-                      {lot.nro}
-                    </TableCell>
-                    <TableCell sx={{ p: "5px", minWidth: 350, maxWidth: 450 }}>
-                      {lot.location}
+                      {loc}
                     </TableCell>
                     <TableCell align="center" sx={{ p: "5px" }}>
                       <Tooltip title="Eliminar">
                         <IconButton
-                          onClick={() => handleDeleteLot(lot)}
-                          color="error"
+                          hidden={
+                            loc.toLowerCase() === locationDefault.toLowerCase()
+                          }
+                          onClick={() => handleDeleteLocation(loc)}
+                          color="default"
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -447,7 +533,7 @@ export const DepositPage: React.FC = () => {
               </TableBody>
             </Table>
           </TableContainer>
-        </Box>
+        </Container>
         <Grid
           container
           spacing={1}

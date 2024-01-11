@@ -11,7 +11,11 @@ export * from "./ListSuppliesPage";
 export * from './StockMovementPage';
 export * from './NewStockMovementPage';
 export * from './ListStockPage';
-
+export * from './TransformPage';
+export * from './ListExitFieldPage';
+export * from './NewExitFieldPage';
+export * from './ListOriginsDestinationsPage';
+export * from './NewOriginsDestinationsPage';
 
 //Paginas publicas
 export * from "./LoginPage";

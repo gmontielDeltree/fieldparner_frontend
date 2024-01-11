@@ -1,7 +1,7 @@
 import PouchDB from 'pouchdb';
 import { agregarNuevoVehiculo, cargarVehiculos, actualizarVehiculo, removerVehiculoActivo } from ".";
 import { createDocument, getDocumentById, getVehiculoService, updateDocument } from "../../services";
-import { Vehiculo } from "@types";
+import { Vehicle } from "@types";
 import { AppDispatch, RootState } from "../store";
 import { uiFinishLoading, uiStartLoading } from "../ui";
 import uuid4 from 'uuid4';
@@ -41,7 +41,7 @@ export const getVehiculos = () => {
     }
 }
 
-export const startAddVehiculo = (newVehiculo: Vehiculo) => {
+export const startAddVehiculo = (newVehiculo: Vehicle) => {
     return async (dispatch: AppDispatch) => {
         try {
             dispatch(uiStartLoading());
@@ -61,7 +61,7 @@ export const startAddVehiculo = (newVehiculo: Vehiculo) => {
     }
 }
 
-export const startUpdateVehiculo = (oldVehiculo: Vehiculo) => {
+export const startUpdateVehiculo = (oldVehiculo: Vehicle) => {
     return async (dispatch: AppDispatch) => {
         try {
             dispatch(uiStartLoading());

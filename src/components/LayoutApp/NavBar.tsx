@@ -18,6 +18,7 @@ import insumos from "../../images/icons/icono de insumos.webp";
 import spanishFlagIcon from "../../images/icons/spain_flag.png";
 import englishFlagIcon from "../../images/icons/usa_flag.png";
 import brazilFlagIcon from "../../images/icons/brazil_flag.png";
+import { useAuthStore } from "../../hooks";
 
 import {
   Notifications,
@@ -39,6 +40,7 @@ export const NavBar: React.FC<NavBarProps> = ({
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
   const [language, setLanguage] = useState("spanish");
+  const { startLogout } = useAuthStore();
 
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState(null);
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
@@ -78,8 +80,8 @@ export const NavBar: React.FC<NavBarProps> = ({
   const [anchorEl, setAnchorEl] = React.useState(null);
   const openDropdown = Boolean(anchorEl);
   const handleLogout = () => {
-    // Implement your logout logic here, e.g., clearing user data, tokens, and redirecting
     console.log("Logout clicked");
+    startLogout();
   };
   // 3. Handler functions for dropdown menu
   const handleMenu = (event) => {

@@ -15,21 +15,12 @@ export interface MenuOptions {
     icon: React.ReactNode;
 }
 
-export enum TipoVehiculo {
-    Cosechadora = "Cosechadora",
-    Pulverizadora = "Pulverizadora",
-    Tractor = "Tractor",
-    Camioneta = "Camioneta",
-    Tolva = "Tolva",
-    Otros = "Otros",
-}
 
-export interface TypeVehicle {
-    _id: string;
+
+export interface TypeVehicle extends Document {
     name: string;
 }
 
-export enum TipoCombustible { Diesel = "Diesel", Nafta = "Nafta" }
 
 export interface Mantenimiento {
     id: string;
@@ -49,30 +40,30 @@ export interface EspecificacionTecnica {
     descripcion: string;
 }
 
-export interface Vehiculo {
-    _id: string;
-    tipoVehiculo: string;
-    marca: string;
-    modelo: string;
-    año: string;
-    patente: string;
+export interface Vehicle extends Document {
+    vehicleType: string;
+    make: string;
+    model: string;
+    modelYear: string;
+    patent: string;
     tara: number;
-    neto: number;
-    bruto: number;
-    tipoCombustible: string;
-    capacidadCombustible: number;
-    unidadMedida: string;
-    conectividad?: string;
-    propietario?: string;
-    ultimoMantenimiento?: string;
-    seguro: string;
-    tipoCobertura: string;
-    nroPoliza: string;
-    seguroFechaInicio: string;
-    seguroFechaVencimiento: string;
-    ubicacion: string;
-    mantenimientos: Mantenimiento[];
-    especificacionesTecnicas: RowData[];
+    net: number;
+    gross: number;
+    chassisNumber: string;
+    fuelType: string;
+    fuelCapacity: number;
+    unitMeasurement: string;
+    connectivity?: string;
+    owner?: string;
+    lastMaintenance?: string;
+    insurence: string;
+    coverageType: string;
+    policyNumber: string;
+    insurenceStartDate: string;
+    insurenceDueDate: string;
+    location: string;
+    maintenances: Mantenimiento[];
+    technialSpecifications: RowData[];
 }
 
 export interface ColumnProps {
@@ -80,11 +71,6 @@ export interface ColumnProps {
     align: 'inherit' | 'left' | 'center' | 'right' | 'justify';
 }
 
-export enum Estado {
-    Todos = 'Todos',
-    Activo = 'Activo',
-    Inactivo = 'Inactivo'
-};
 
 export interface RowData {
     name: string;
@@ -142,11 +128,6 @@ export interface AuthState {
     isLoading: boolean;
 }
 
-export enum TipoEntidad {
-    FISICA = 'fisica',
-    JURIDICA = 'juridica',
-}
-
 export interface Business extends Document {
     // id?: string;
     nombreCompleto?: string;
@@ -162,6 +143,7 @@ export interface Business extends Document {
     domicilio: string;
     localidad: string;
     cp: string;
+    zipCode: string;
     provincia: string;
     pais: string;
     estado?: boolean;
@@ -201,8 +183,16 @@ export interface Supply extends Document {
     labors: string[];
 }
 
-export enum TipoInsumo {
-    CULTIVO = "CuLtivo",
+export interface OriginDestinationsState {
+    originsDestinationsActive: OriginDestinations | null;
+    OriginsDestinations: OriginDestinations[];
+}
+
+export interface OriginDestinations extends Document {
+    name: string;
+    description: string;
+    procedencia: boolean;
+    destino: boolean;
 }
 
 export const LaboresItems = [
@@ -263,10 +253,10 @@ export const TypeMovements = [
     "Prestamos",
 ];
 
-export interface Lot {
-    nro: string;
-    location: string;
-}
+// export interface Lot {
+//     nro: string;
+//     location: string;
+// }
 
 export interface DepositState {
     depositActive: Deposit | null;
@@ -285,7 +275,7 @@ export interface Deposit extends Document {
     locality: string;
     province: string;
     country: string;
-    lots: Lot[];
+    locations: string[];
 }
 
 export interface ItemZipCode extends Document {
@@ -299,20 +289,14 @@ export interface Category extends Document {
     description: string;
 }
 
-export enum CountryCode {
-    ARGENTINA = 'ARG',
-    BRASIL = "BRA",
-    CHILE = "CHL",
-}
 
 export interface StockMovement extends Document {
     accountId: string;
     movement: string;
     supplyId: string;
-    // supply: string;
-    // typeSupply: string;
+    userId: string;
     depositId: string;
-    // ubication: string;
+    location: string;
     nroLot: string;
     creationDate: string;
     dueDate: string;
@@ -320,14 +304,12 @@ export interface StockMovement extends Document {
     isIncome: boolean;
     detail: string;
     operationDate: string;
-    // unitMeasurement: string;
     amount: number;
     voucher: string;
     currency: string;
     totalValue: number;
     hours: string;
-    campaign: number;
-    // depositIdDestination?: string
+    campaignId: string;
 }
 
 export interface StockMovementItem extends StockMovement {
@@ -335,8 +317,9 @@ export interface StockMovementItem extends StockMovement {
     deposit?: Deposit;
 }
 
-export interface SupplyByLot {
-    lot: Lot;
+export interface StockByNroLot {
+    nroLot: string;
+    location?: string;
     currentStock: number;
     reservedStock: number;
 }
@@ -345,14 +328,152 @@ export interface SupplyByDeposits {
     deposit: Deposit;
     supply?: Supply;
     movements?: StockMovement[];
-    unitMeasurement: string;
-    lot?: Lot;
+    // unitMeasurement: string;
+    location: string;
+    nroLot: string;
     dueDate: string;
     currentStock: number;
     reservedStock: number;
-    lotsStock?: SupplyByLot[];
+    nroLotsStock?: StockByNroLot[];
 }
 
+export interface StockBySupply {
+    supply: Supply;
+    currentStock: number;
+    reservedStock: number;
+}
+
+export interface DepositDestination {
+    depositId: string;
+    location: string;
+}
+
+export interface StockByLot extends Document {
+    accountId: string;
+    // userId: string;
+    depositId: string;
+    location: string;
+    supplyId: string;
+    nroLot: string;
+    currentStock: number;
+}
+
+export interface TransformSupply {
+    id: string;
+    supply: Supply;
+    deposit: Deposit,
+    location: string;
+    nroLot: string;
+    dueDate: string;
+    amount: number;
+    currentStock: number;
+    hours?: string;
+    employee?: string;
+}
+
+export interface ExitField extends Document {
+    accountId: string;
+    creationDate: string;
+    campaignId: string;
+    fieldId: string;
+    lotId: string;
+    supplyId: string;
+    transportId: string;
+    truckerId: string;
+    // has: string;
+    cultive: string;
+    transportDocument: string;
+    ticket: string;
+    vehicleId: string;
+    truckTrailerId: string;
+    chassis: string;
+    grossWeight: number;
+    tareWeight: number;
+    netWeight: number;
+    depositId: string;
+    location: string;
+    additionalInformation: string;
+    humidityPercentage: number;
+    mermaPercentage: number;
+    volatilePercentage: number;
+    otherPercentage: number;
+    totalMerma: number;
+    kgNet: number;
+    harvesterId: string;
+    destination: string;
+}
+
+export interface ExitFieldItem extends ExitField {
+    deposit?: Deposit;
+    supply?: Supply;
+    transport?: Business;
+    field?: Field;
+    // trucker?: Business;
+    // harvester?: Business;
+}
+
+export interface Campaign extends Document {
+    accountId: string;
+    campaignId: string;
+    description: string;
+    zoneId: string;
+    creationDate: string;
+    startDate: string;
+    endDate: string;
+    state: Estado;
+}
+
+
+//TODO: cambiar interfaz field
+export interface Lot extends Document {
+    // id: string;
+    type: string;
+    properties: {
+        nombre: string;
+        campo_parent_id: string;
+        uuid: string;
+        hectareas: number;
+    };
+    geometry: {
+        coordinates: number[][][];
+        type: string;
+    };
+}
+
+export interface Field extends Document {
+    accountId: string;
+    nombre: string;
+    campo_geojson: any;
+    uuid: string;
+    lotes: Lot[];
+    // _id: string;
+    // _rev: string;
+}
+
+//#region Enums
+
+export enum TipoCombustible {
+    Diesel = "Diesel",
+    Nafta = "Nafta"
+}
+
+export enum Estado {
+    Todos = 'Todos',
+    Activo = 'Activo',
+    Inactivo = 'Inactivo'
+};
+
+
+export enum TipoEntidad {
+    FISICA = 'fisica',
+    JURIDICA = 'juridica',
+}
+
+export enum CountryCode {
+    ARGENTINA = 'ARG',
+    BRASIL = "BRA",
+    CHILE = "CHL",
+}
 
 export enum CurrencyCode {
     ARG = 'ARS',
@@ -368,9 +489,44 @@ export enum TypeMovement {
     VentasVarias = "Ventas Varias",
     TransferenciaDeposito = "Transferencia entre depositos",
     Prestamos = "Prestamos",
+    Transformacion = "Transformacion",
+    SalidaDeCampo = "Salida de Campo",
+}
+
+export enum Movement {
+    Manual = "Manual",
+    Automatico = "Automatico"
 }
 
 export enum DisplayModals {
     SupplyByDeposits = "SupplyByDeposits",
     SupplyByLots = "SupplyByLots"
 }
+
+export enum VehicleType {
+    Cosechadora = "Cosechadora",
+    Pulverizadora = "Pulverizadora",
+    Tractor = "Tractor",
+    Camioneta = "Camioneta",
+    Acoplado = "Acoplado",
+    Camion = "Camion",
+    Tolva = "Tolva",
+    Otros = "Otros",
+}
+
+export enum SupplyType {
+    Varios = "Varios",
+    Semillas = "Semillas",
+    Cultivo = "Cultivo",
+    Fertilizantes = "Fertilizantes",
+    Fitosanitarios = "Fitosanitarios",
+    Repuestos = "Repuestos",
+    Materiales = "Materiales",
+    Combustible = "Combustible"
+}
+
+export enum TipoInsumo {
+    CULTIVO = "CuLtivo",
+}
+
+//#endregion

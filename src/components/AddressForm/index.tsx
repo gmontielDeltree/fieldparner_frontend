@@ -1,6 +1,8 @@
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, useState } from "react";
 import { Grid, TextField, InputAdornment } from "@mui/material";
-
+import { getLocalityAndStateByZipCode } from "../../services"; 
+import {Autocomplete} from "@mui/material";
+import { Loading } from "../../components"
 
 export interface Address {
   domicilio: string;
@@ -12,16 +14,71 @@ export interface Address {
 
 export interface AddressFormProps {
   values: Address;
-  handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
+  countryError: boolean;
+  loading: boolean;
+  onChangeZipCode: () => Promise<void>;
+  handleInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
+
 
 export const AddressForm: React.FC<AddressFormProps> = ({
   values,
   handleInputChange,
+  countryError,
+  loading,
+
+
 }) => {
   const { domicilio, localidad, cp, provincia, pais } = values;
+  const [loadingZipCode, setLoadingZipCode] = useState(false);
+  const [localities, setLocalities] = useState<string[]>([]);
+  const [isLoading] = useState(false);
+
+  const onBlurZipCode = async () => {
+    if (cp !== "") {
+      setLoadingZipCode(true);
+      try {
+        const localityAndStates = await getLocalityAndStateByZipCode(
+          "ARG",
+          cp
+        );
+  
+        if (localityAndStates?.length) {
+          const firstLocality = localityAndStates[0].locality;
+          const firstProvince = localityAndStates[0].state;
+  
+          setLocalities(localityAndStates.map((x) => x.locality));
+  
+          
+          handleInputChange({
+            target: {
+              name: "localidad",
+              value: firstLocality,
+            },
+          } as React.ChangeEvent<HTMLInputElement>);
+  
+        
+          handleInputChange({
+            target: {
+              name: "provincia",
+              value: firstProvince,
+            },
+          } as React.ChangeEvent<HTMLInputElement>);
+        }
+  
+        setLoadingZipCode(false);
+      } catch (error) {
+        setLoadingZipCode(false);
+        console.log(error);
+      }
+    }
+  };
+
 
   return (
+  
+    <>
+     <Loading key="loading-business" loading={isLoading || loadingZipCode} />
     <Grid
       container
       margin="auto"
@@ -30,15 +87,17 @@ export const AddressForm: React.FC<AddressFormProps> = ({
       alignItems="center"
       justifyContent="center"
     >
+
       <Grid item xs={12} sm={6}>
         <TextField
           label="Pais"
           variant="outlined"
-          // disabled={disabledFields}
           type="text"
           name="pais"
           value={pais}
+          error={countryError}
           onChange={handleInputChange}
+          helperText={countryError ? "Este campo es obligatorio" : ""}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
@@ -46,13 +105,14 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         />
       </Grid>
       <Grid item xs={12} sm={6}>
-        <TextField
+      <TextField
           variant="outlined"
           type="text"
           label="Codigo postal"
           name="cp"
           value={cp}
-          onChange={handleInputChange}
+          onBlur={onBlurZipCode} 
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
@@ -63,7 +123,6 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         <TextField
           label="Provincia"
           variant="outlined"
-          // disabled={disabledFields}
           type="text"
           name="provincia"
           value={provincia}
@@ -75,19 +134,26 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         />
       </Grid>
       <Grid item xs={12} sm={6}>
-        <TextField
-          label="Localidad"
-          variant="outlined"
-          type="text"
-          name="localidad"
-          value={localidad}
-          onChange={handleInputChange}
-          InputProps={{
-            startAdornment: <InputAdornment position="start" />,
-          }}
-          fullWidth
-        />
-      </Grid>
+          <Autocomplete
+            options={localities}
+            getOptionLabel={(option) => option}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Localidad"
+                variant="outlined"
+                name="localidad"
+                value={localidad}
+                onChange={handleInputChange}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: <InputAdornment position="start" />,
+                }}
+                fullWidth
+              />
+            )}
+          />
+        </Grid>
       <Grid item xs={12} sm={12}>
         <TextField
           label="Domicilio"
@@ -103,5 +169,6 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         />
       </Grid>
     </Grid>
+    </>
   );
 };

@@ -13,6 +13,11 @@ import {
   StockMovementPage,
   NewStockMovementPage,
   ListStockPage,
+  TransformPage,
+  ListExitFieldPage,
+  NewExitFieldPage,
+  ListOriginsDestinationsPage,
+  NewOriginsDestinationsPage,
 } from "../pages";
 import { AppLayout } from "../components";
 
@@ -33,6 +38,10 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/deposit/new" element={<DepositPage />} />
         <Route path="/overview/deposit/:id" element={<DepositPage />} />
 
+        <Route path="/overview/origins-destinations" element={<ListOriginsDestinationsPage />} />
+        <Route path="/overview/origins-destinations/new" element={<NewOriginsDestinationsPage />} />
+        <Route path="/overview/origins-destinations/:id" element={<NewOriginsDestinationsPage />} />
+
         <Route path="/overview/supply" element={<ListSuppliesPage />} />
         <Route path="/overview/supply/new" element={<SupplyPage />} />
         <Route path="/overview/supply/:id" element={<SupplyPage />} />
@@ -46,6 +55,10 @@ export const OverviewRoutes: React.FC = () => {
           element={<NewStockMovementPage />}
         />
         <Route path="/overview/list-stock" element={<ListStockPage />} />
+        <Route path="/overview/transform" element={<TransformPage />} />
+
+        <Route path="/overview/exit-field" element={<ListExitFieldPage />} />
+        <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

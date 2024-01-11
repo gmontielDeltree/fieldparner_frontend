@@ -9,7 +9,7 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
-  Switch,
+  // Switch,
   TextField,
   Typography,
 } from "@mui/material";
@@ -18,6 +18,7 @@ import React, { ChangeEvent } from "react";
 
 export interface LaborsFormProps {
   formValues: Supply;
+  supplyError: boolean;
   setFormValues: React.Dispatch<React.SetStateAction<Supply>>;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
@@ -29,9 +30,10 @@ export interface LaborsFormProps {
 
 export const LaborsForm: React.FC<LaborsFormProps> = ({
   formValues,
+  supplyError,
   handleSelectChange,
   handleInputChange,
-  handleCheckboxChange,
+  // handleCheckboxChange,
   setFormValues,
 }) => {
   const { type, name, description, barCode, stockByLot, labors } = formValues;
@@ -80,6 +82,8 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
           type="text"
           label="Insumo"
           name="name"
+          error={supplyError}
+          helperText={supplyError ? "Este campo es obligatorio" : ""}
           value={name}
           onChange={handleInputChange}
           InputProps={{
@@ -117,17 +121,33 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         />
       </Grid>
       <Grid item xs={12} sm={6}>
-        <FormControlLabel
-          control={
-            <Switch
-              name="stockByLot"
-              checked={stockByLot}
-              onChange={handleCheckboxChange}
-              // defaultChecked
-            />
-          }
-          label="Aplica Stock por Lotes?"
-        />
+        <FormGroup row sx={{ alignItems: "center" }}>
+          <label htmlFor="">Aplica Stock por Lotes?</label>
+          <FormControlLabel
+            key="yes"
+            control={
+              <Checkbox
+                name="yes"
+                checked={stockByLot}
+                onChange={() => setFormValues(prevState=> ({...prevState, stockByLot: true}))}
+              />
+            }
+            label="Si"
+            labelPlacement="start"
+          />
+          <FormControlLabel
+            key="not"
+            control={
+              <Checkbox
+                name="not"
+                checked={!stockByLot}
+                onChange={() => setFormValues(prevState=> ({...prevState, stockByLot: false}))}
+              />
+            }
+            label="No"
+            labelPlacement="start"
+          />
+        </FormGroup>
       </Grid>
       <Grid item xs={12} sm={12} sx={{ my: 3 }}>
         {type.toLowerCase() === TipoInsumo.CULTIVO.toLowerCase() && (

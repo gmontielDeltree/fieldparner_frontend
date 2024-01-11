@@ -10,6 +10,7 @@ import {
   SearchInput,
   TableCellStyled,
   TemplateLayout,
+  CloseButtonPage,
 } from "../components";
 import {
   Box,
@@ -21,6 +22,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import 'semantic-ui-css/semantic.min.css';
+import {Icon} from "semantic-ui-react";
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -42,7 +45,7 @@ export const ListDepositsPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const { isLoading, deposits, getDeposits, setDeposits } = useDeposit();
+  const { isLoading, deposits, getDeposits, setDeposits, deleteDeposit } = useDeposit();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const onClickSearch = () => {
@@ -64,6 +67,13 @@ export const ListDepositsPage: React.FC = () => {
     navigate(`/init/overview/deposit/${item._id}`);
   };
 
+  const handleDeleteDeposit = (item: Deposit) => {
+    if (item._id && item._rev) {
+      deleteDeposit(item._id, item._rev);
+      getDeposits();
+    }
+  };
+
   useEffect(() => {
     getDeposits();
   }, []);
@@ -72,17 +82,21 @@ export const ListDepositsPage: React.FC = () => {
     <TemplateLayout key="overview-deposits" viewMap={false}>
       {isLoading && <Loading loading />}
       <Container maxWidth="md" sx={{ ml: 0 }}>
-        <Box
-          component="div"
-          display="flex"
-          alignItems="center"
-          sx={{ ml: { sm: 2 }, pt: 2 }}
-        >
-          <WarehouseIcon />
-          <Typography component="h4" variant="h4" sx={{ ml: { sm: 2 } }}>
+      <Box
+        component="div"
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
+      >
+        <Box display="flex" alignItems="center">
+          <WarehouseIcon sx={{ marginRight: '8px' }} />
+          <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
             Depositos
           </Typography>
         </Box>
+        <CloseButtonPage />
+      </Box>
         <Box component="div" sx={{ mt: 7 }}>
           <Grid
             container
@@ -151,6 +165,14 @@ export const ListDepositsPage: React.FC = () => {
                         onClick={() => onClickUpdateDeposit(row)}
                       >
                         <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Eliminar">
+                      <IconButton
+                        onClick={() => handleDeleteDeposit(row)}
+                        style={{ fontSize: '1rem' }}
+                        >
+                          <Icon name="trash alternate" />
                       </IconButton>
                     </Tooltip>
                   </TableCellStyled>
