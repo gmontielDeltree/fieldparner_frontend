@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardHeader, CardBody, Button } from "reactstrap";
 
 interface EditFieldProps {
@@ -7,11 +7,7 @@ interface EditFieldProps {
   onClose: () => void;
   onDelete: () => void;
   onLocate: () => void;
-  map: any;
-  draw: any;
-  onSaveLot: (lotGeometry: any) => void;
   handleCreateLot: () => void;
-  handleCloseNewLot: () => void;
 }
 
 const EditField: React.FC<EditFieldProps> = ({
@@ -20,11 +16,7 @@ const EditField: React.FC<EditFieldProps> = ({
   onClose,
   onDelete,
   onLocate,
-  map,
-  draw,
-  onSaveLot,
-  handleCreateLot,
-  handleCloseNewLot
+  handleCreateLot
 }) => {
   const cardStyle: React.CSSProperties = {
     position: "fixed",

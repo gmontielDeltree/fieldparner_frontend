@@ -29,6 +29,10 @@ const Tour: React.FC<TourProps> = ({ lot, db, backToActivites }) => {
     console.log(formData);
   }, [formData]);
 
+  const handleRemoveMarkers = () => {
+    console.log("Removing markers (callback)");
+  };
+
   const handleSave = () => {
     let actividad = formData;
     try {
@@ -53,6 +57,7 @@ const Tour: React.FC<TourProps> = ({ lot, db, backToActivites }) => {
             db.put(actividad)
               .then(() => {
                 console.log("New actividad created", "success");
+                handleRemoveMarkers();
                 backToActivites();
               })
               .catch((err) =>
@@ -95,7 +100,12 @@ const Tour: React.FC<TourProps> = ({ lot, db, backToActivites }) => {
         </Typography>
       </Box>
 
-      <TourForm formData={formData} setFormData={setFormData} />
+      <TourForm
+        lot={lot}
+        formData={formData}
+        setFormData={setFormData}
+        tourSave={handleRemoveMarkers}
+      />
 
       <Button
         color="success"

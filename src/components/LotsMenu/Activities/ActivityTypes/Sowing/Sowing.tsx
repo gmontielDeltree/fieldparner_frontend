@@ -1,27 +1,20 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Typography from "@mui/material/Typography";
-import {
-  List,
-  ListItem,
-  Box,
-  Tabs,
-  Tab,
-  IconButton,
-  Menu,
-  MenuItem,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails
-} from "@mui/material";
+import { Box, Tabs, Tab, IconButton, Menu, MenuItem } from "@mui/material";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PlanificationContent from "./../TabsContent/Planification";
 import LaborOrderContent from "./../TabsContent/LaborOrder";
 import ExecutionContent from "./../TabsContent/Execution";
 import AttachedContent from "./../TabsContent/Attached";
 
-function Sowing({ activity, complementaryColor }) {
+function Sowing({
+  activity,
+  complementaryColor,
+  handleDeleteActivity,
+  handleEditActivity,
+  handleDownloadPDF
+}) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -82,7 +75,9 @@ function Sowing({ activity, complementaryColor }) {
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={handleMenuClose}>Editar</MenuItem>
         <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Orden de Trabajo PDF</MenuItem>
+        <MenuItem onClick={() => handleDownloadPDF(activity.actividad)}>
+          Orden de Trabajo PDF
+        </MenuItem>
         <MenuItem onClick={handleMenuClose}>
           Compartir Orden de Trabajo
         </MenuItem>
@@ -90,7 +85,9 @@ function Sowing({ activity, complementaryColor }) {
           Ejecución vs Planificación PDF
         </MenuItem>
         <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Eliminar</MenuItem>
+        <MenuItem onClick={() => handleDeleteActivity(activity.actividad._id)}>
+          Eliminar
+        </MenuItem>
       </Menu>
 
       <Tabs

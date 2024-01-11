@@ -21,7 +21,7 @@ import LaborOrderContent from "./../TabsContent/LaborOrder";
 import ExecutionContent from "./../TabsContent/Execution";
 import AttachedContent from "./../TabsContent/Attached";
 
-function Harvest({ activity, complementaryColor }) {
+function Harvest({ activity, complementaryColor, handleDeleteActivity }) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -90,7 +90,9 @@ function Harvest({ activity, complementaryColor }) {
           Ejecución vs Planificación PDF
         </MenuItem>
         <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Eliminar</MenuItem>
+        <MenuItem onClick={() => handleDeleteActivity(activity.actividad._id)}>
+          Eliminar
+        </MenuItem>
       </Menu>
 
       <Tabs

@@ -29,8 +29,8 @@ const pdf_fonts = {
     italics:
       "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf",
     bolditalics:
-      "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf",
-  },
+      "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf"
+  }
 };
 
 import orden_definition from "./orden_definition.js";
@@ -49,7 +49,7 @@ import { Insumo } from "../insumos/insumos-types";
 import {
   Actividad,
   DetallesAplicacion,
-  LineaDosis,
+  LineaDosis
 } from "../depositos/depositos-types";
 import { init } from "xstate/lib/actionTypes";
 
@@ -101,7 +101,7 @@ export class LoteOffcanvas extends LitElement {
   @state({
     hasChanged(newVal, oldVal) {
       return false;
-    },
+    }
   })
   _steps_elements: Modal[];
 
@@ -129,7 +129,7 @@ export class LoteOffcanvas extends LitElement {
   @state({
     hasChanged(newVal, oldVal) {
       return false;
-    },
+    }
   })
   _lotesOffcanvas: Offcanvas;
 
@@ -184,6 +184,7 @@ export class LoteOffcanvas extends LitElement {
     this.addEventListener("generar-ot", (e: CustomEvent) =>
       this.download_pdf(e.detail)
     );
+
     this.addEventListener("share-ot", (e: CustomEvent) =>
       this.share_pdf(e.detail)
     );
@@ -226,7 +227,7 @@ export class LoteOffcanvas extends LitElement {
         this._nota_marker.remove();
       }
       this._nota_marker = new Marker({
-        color: color,
+        color: color
       })
         .setPopup(new Popup().setHTML(`<h4>${texto}</h4>`))
         .setLngLat(posicion)
@@ -235,7 +236,7 @@ export class LoteOffcanvas extends LitElement {
       gbl_state.map.flyTo({
         center: posicion,
         padding: { bottom: 200 },
-        zoom: 15,
+        zoom: 15
       });
     });
     //this._actividades = []
@@ -246,7 +247,7 @@ export class LoteOffcanvas extends LitElement {
       .allDocs({
         startkey: "insumo:",
         endkey: "insumo:\ufff0",
-        include_docs: true,
+        include_docs: true
       })
       .then((e) => {
         //this._insumos = Object.values(e.);
@@ -261,7 +262,7 @@ export class LoteOffcanvas extends LitElement {
       this.shadowRoot.getElementById("lote-offcanvas")
     );
     this._steps_elements = [
-      ...this.shadowRoot.querySelectorAll(".aplicacion.step"),
+      ...this.shadowRoot.querySelectorAll(".aplicacion.step")
     ].map((el) => new Modal(el));
   }
 
@@ -393,12 +394,12 @@ export class LoteOffcanvas extends LitElement {
           const pdfDocGenerator = pdfMake.createPdf(dd);
           pdfDocGenerator.getBlob((blob) => {
             const files = [
-              new File([blob], "orden_de_trabajo.pdf", { type: blob.type }),
+              new File([blob], "orden_de_trabajo.pdf", { type: blob.type })
             ];
             navigator.share({
               files: files,
               title: "Orden de Trabajo",
-              text: "Lote " + this._lote_doc.nombre,
+              text: "Lote " + this._lote_doc.nombre
             });
             this._loading_pdf = false;
           });
@@ -768,7 +769,7 @@ export class LoteOffcanvas extends LitElement {
         attachments: true,
         binary: true,
         startkey: "actividad:nota:" + this._lote_doc.id,
-        endkey: "actividad:nota:" + this._lote_doc.id + "\ufff0",
+        endkey: "actividad:nota:" + this._lote_doc.id + "\ufff0"
       })
       .then((result) => {
         let rrows = result.rows;
@@ -783,7 +784,7 @@ export class LoteOffcanvas extends LitElement {
         binary: true,
         //descending:true,
         startkey: "actividad:",
-        endkey: "actividad:\ufff0",
+        endkey: "actividad:\ufff0"
       })
       .then((e) => {
         let acts = e.rows.map((r) => r.doc);
@@ -798,7 +799,7 @@ export class LoteOffcanvas extends LitElement {
   localizar_lote() {
     console.log("LOCALIZAR", this._lote_doc);
     gbl_state.map.fitBounds(bbox(this._lote_doc), {
-      padding: { top: 50, bottom: window.innerHeight / 2 },
+      padding: { top: 50, bottom: window.innerHeight / 2 }
     });
   }
 
@@ -916,15 +917,17 @@ export class LoteOffcanvas extends LitElement {
           ></button>
         </div>
         <div class="offcanvas-body small pt-1">
-          ${this._loading_pdf
-            ? html` <div
+          ${
+            this._loading_pdf
+              ? html` <div
                 class="d-flex justify-content-center align-items-center"
                 style="width: 100%;height: 100%;position: absolute;background:#fffc;z-index: 9;"
               >
                 <paper-spinner active></paper-spinner>
                 <span>Preparando PDF</span>
               </div>`
-            : null}
+              : null
+          }
           <div class="btn-toolbar shadow px-0" role="toolbar">
             <vaadin-menu-bar
               theme="small"
@@ -938,9 +941,9 @@ export class LoteOffcanvas extends LitElement {
                     { text: "Aplicación", value: "aplicacion" },
                     { text: "Cosecha", value: "cosecha" },
                     { text: "NDVI", value: "ndvi" },
-                    { text: "Eliminar", value: "eliminar" },
-                  ],
-                },
+                    { text: "Eliminar", value: "eliminar" }
+                  ]
+                }
               ]}"
               @item-selected=${this.menu_click}
               class="ms-1"
@@ -964,7 +967,7 @@ export class LoteOffcanvas extends LitElement {
                 <div
                   class="col col-2"
                   style="cursor: pointer;background-image: url('/sembradora_act.webp');background-size: contain; background-repeat: no-repeat; background-position: center;"
-                  @click=${()=>Router.go(gbl_state.router.location.getUrl())}
+                  @click=${() => Router.go(gbl_state.router.location.getUrl())}
                 >
                   <vaadin-tooltip>Siembra</vaadin-tooltip>
                 </div>
@@ -1038,7 +1041,7 @@ export class LoteOffcanvas extends LitElement {
                 @change=${(e) => {
                   this.fsm?.send({
                     type: "CHANGE",
-                    value: e.target.fecha,
+                    value: e.target.fecha
                   });
                 }}
               ></date-picker>
@@ -1052,14 +1055,16 @@ export class LoteOffcanvas extends LitElement {
                 item-label-path="nombre"
                 item-value-path="uuid"
                 .selectedItem=${this._ctx.contratista}
-                .items="${this._contratistas
-                  ? Object.values(this._contratistas?.contratistas)
-                  : []}"
+                .items="${
+                  this._contratistas
+                    ? Object.values(this._contratistas?.contratistas)
+                    : []
+                }"
                 @selected-item-changed=${(e) => {
                   console.log("e", e);
                   this.fsm?.send({
                     type: "ASSIGN_CONTRATISTA",
-                    value: e.detail.value,
+                    value: e.detail.value
                   });
                 }}
               ></vaadin-combo-box>
@@ -1189,7 +1194,7 @@ export class LoteOffcanvas extends LitElement {
                       insumo: e.detail.value,
                       dosis: 0,
                       motivos: [],
-                      total: 0,
+                      total: 0
                     };
                   }}
                 ></vaadin-combo-box>
@@ -1334,7 +1339,7 @@ export class LoteOffcanvas extends LitElement {
                     this.fsm?.send({
                       type: "TICK",
                       value: e.target.checked,
-                      name: e.target.name,
+                      name: e.target.name
                     });
                   }}
                 />
@@ -1412,7 +1417,7 @@ export class LoteOffcanvas extends LitElement {
                     this.fsm?.send({
                       type: "TICK",
                       value: e.target.checked,
-                      name: e.target.name,
+                      name: e.target.name
                     });
                   }}
                   name="Enfermedad"
@@ -1431,7 +1436,7 @@ export class LoteOffcanvas extends LitElement {
                     this.fsm?.send({
                       type: "TICK",
                       value: e.target.checked,
-                      name: e.target.name,
+                      name: e.target.name
                     });
                   }}
                 />
@@ -1449,7 +1454,7 @@ export class LoteOffcanvas extends LitElement {
                     this.fsm?.send({
                       type: "TICK",
                       value: e.target.checked,
-                      name: e.target.name,
+                      name: e.target.name
                     });
                   }}
                 />
@@ -1467,7 +1472,7 @@ export class LoteOffcanvas extends LitElement {
                     this.fsm?.send({
                       type: "TICK",
                       value: e.target.checked,
-                      name: e.target.name,
+                      name: e.target.name
                     });
                   }}
                 />
