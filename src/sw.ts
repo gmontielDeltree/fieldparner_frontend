@@ -66,25 +66,25 @@ registerRoute(
 );
 
 // Mapas tiles
-registerRoute(
-  /.*ecn\.t1\.tiles\.virtualearth\.net.*$/,
-  new CacheFirst({ cacheName: "maptiles" })
-);
+// registerRoute(
+//   /.*ecn\.t1\.tiles\.virtualearth\.net.*$/,
+//   new CacheFirst({ cacheName: "maptiles" })
+// );
 
-registerRoute(
-  /.*\.cloudantnosqldb\.appdomain\.cloud.*\/processed_device_telemetry/,
-  new NetworkFirst({cacheName : "processed_device_telemetry"})
-);
+// registerRoute(
+//   /.*\.cloudantnosqldb\.appdomain\.cloud.*\/processed_device_telemetry/,
+//   new NetworkFirst({cacheName : "processed_device_telemetry"})
+// );
 
-registerRoute(
-  /.*(?<!events\.)(?:mapbox)\.com\/(?!map\-sessions).*$/,
-  new CacheFirst()
-);
+// registerRoute(
+//   /.*(?<!events\.)(?:mapbox)\.com\/(?!map\-sessions).*$/,
+//   new CacheFirst()
+// );
 
-registerRoute(
-  /.*server\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery\/MapServer\/tile.*$/,
-  new CacheFirst({ cacheName: "maptiles" })
-);
+// registerRoute(
+//   /.*server\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery\/MapServer\/tile.*$/,
+//   new CacheFirst({ cacheName: "maptiles" })
+// );
 
 // Geotiffs
 registerRoute(/.*\/satimages\/cog.*$/, new CacheFirst({ cacheName: "geotiff" }));
