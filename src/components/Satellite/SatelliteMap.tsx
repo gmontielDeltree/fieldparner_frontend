@@ -10,7 +10,7 @@ import bbox from "@turf/bbox";
 import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox/typed";
 import { useControl } from "react-map-gl";
 import { list_of_indexes } from "../../../owncomponents/ndvi-offcanvas/indices-types";
-import { MenuItem, Select, Button, TextField, Grid, Chip } from "@mui/material";
+import { MenuItem, Select, Button, TextField, Grid, Chip, Paper } from "@mui/material";
 import { PropertyValueMap } from "lit";
 import { DatePicker, MobileDatePicker } from "@mui/x-date-pickers";
 import { features } from "process";
@@ -22,6 +22,8 @@ import { GeoJsonLayer } from "@deck.gl/layers";
 import { MaskExtension } from "@deck.gl/extensions";
 import { readPixelsToArray } from "@luma.gl/core";
 import { IndiceChartsReact } from "../../../owncomponents/ndvi-offcanvas/react-port/indices-charts";
+import { SatelliteCharts } from "./SatelliteCharts";
+import { SatelliteResumen } from "./SatelliteResumen";
 
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN =
@@ -111,7 +113,7 @@ export const SatelliteMap: React.FC = ({
             sourceWidth: 1,
             sourceHeight: 1,
           });
-          console.log("Color at picked pixel:", pixelColor, info);
+          // console.log("Color at picked pixel:", pixelColor, info);
           let indexValue = parseFloat(
             ((pixelColor[0] * 2) / 255 - 1).toFixed(2)
           );
@@ -129,10 +131,10 @@ export const SatelliteMap: React.FC = ({
   };
 
   useEffect(() => {
-    if (selectedDate && indice) {
-      let resourceId = lote?.id;
+    if (selectedDate && indice && lote) {
+      let resourceId = lote.id;
       let date = format(selectedDate, "yyyy-MM-dd");
-      let histogramOptions = indice?.thresholds;
+      let histogramOptions = { bins: indice.thresholds };
 
       console.log(
         "Fetching Observation Card",
@@ -251,7 +253,7 @@ export const SatelliteMap: React.FC = ({
           </Map>
         </Grid>
 
-        <div
+        <Paper
           style={{
             position: "absolute",
             top: "30px",
@@ -293,7 +295,7 @@ export const SatelliteMap: React.FC = ({
               disableFuture
             />
           )}
-        </div>
+        </Paper>
 
         <div
           style={{
@@ -313,22 +315,41 @@ export const SatelliteMap: React.FC = ({
           </Button>
         </div>
 
-        {selectedDate && (
-          <IndiceChartsReact
-            style={{
-              position: "absolute",
-              zIndex: 5,
-              top: "70px",
-              right: "100px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-            }}
-            data={indiceRequestResponse}
-            indice={indice}
-            date={format(selectedDate, "yyyy-MM-dd")}
-            hectareas_del_lote={23}
-          ></IndiceChartsReact>
+        {selectedDate && indiceRequestResponse && (
+          <>
+            <Paper
+              style={{
+                position: "absolute",
+                zIndex: 5,
+                top: "30%",
+                right: "3%",
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+                backgroundColor: "#1976d299"
+              }}
+            >
+              <SatelliteCharts
+               data={indiceRequestResponse}
+               indice={indice}
+               date={indiceRequestResponse.date}
+               hectareas_del_lote={
+                 indiceRequestResponse.area_mts_squared / 10000
+               }
+              ></SatelliteCharts>
+            </Paper>
+            <div style={{
+                position: "absolute",
+                zIndex: 5,
+                top: "35%",
+                left: "3%",
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+              }}>
+              <SatelliteResumen></SatelliteResumen>
+            </div>
+          </>
         )}
 
         {loading && <Splash />}
