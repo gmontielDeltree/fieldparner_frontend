@@ -285,6 +285,22 @@ export const SatelliteMap: React.FC = ({
             value={indice.name}
             label="Indice"
             onChange={handleIndiceChange}
+            sx={{
+              color: 'primary.contrastText',
+              '& .MuiOutlinedInput-root': {
+                borderColor: "white",
+                // Change the border color when the select component is focused
+                '&.Mui-focused fieldset': {
+                  borderColor: "white",
+                },
+              },
+              '& .MuiOutlinedInput-notchedOutline' : {
+                borderColor: "white",
+              },
+              '& .MuiSvgIcon-root':{
+                color:"white",
+              }
+            }}
           >
             {list_of_indexes.map((i) => {
               return (

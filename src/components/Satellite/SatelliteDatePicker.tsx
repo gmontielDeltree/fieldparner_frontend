@@ -23,12 +23,30 @@ export const SatelliteDatePicker: React.FC = ({value, onChange, features}) => {
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DatePicker
           label="Fecha"
+          
           value={value}
           onChange={onChange}
           shouldDisableDate={(e) =>
             isInvalid(e, validDates )
           }
           disableFuture
+          sx={{
+            color: 'primary.contrastText',
+            '& .MuiOutlinedInput-notchedOutline' : {
+              borderColor: "white",
+              color: "white"
+            },
+            '& .MuiInputBase-input' : {
+              color:"white"
+            },
+            '& .MuiSvgIcon-root':{
+              color:"white"
+            },
+            '& .MuiFormLabel-root':{
+              color:"white"
+            }
+
+          }}
         />
       </LocalizationProvider>
     </React.Fragment>
