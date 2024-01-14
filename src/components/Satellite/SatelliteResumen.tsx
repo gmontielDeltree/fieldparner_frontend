@@ -4,6 +4,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export const SatelliteResumen : React.FC = (props) =>{
 
+
+    
     return (
         <Paper>
             <Accordion>

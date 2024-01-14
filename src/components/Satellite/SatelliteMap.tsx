@@ -25,22 +25,15 @@ import { IndiceChartsReact } from "../../../owncomponents/ndvi-offcanvas/react-p
 import { SatelliteCharts } from "./SatelliteCharts";
 import { SatelliteResumen } from "./SatelliteResumen";
 import { SatelliteDatePicker } from "./SatelliteDatePicker";
+import ContrastIcon from '@mui/icons-material/Contrast';
+import ImageIcon from '@mui/icons-material/Image';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN =
   "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
 
-const datesFromFeatures = (featureCol) => {
-  let dates = featureCol.features.map((f) =>
-    parse(f.properties.date, "yyyy-MM-dd", new Date())
-  );
-  return dates;
-};
 
-const isInvalid = (datea: Date, validDates: Date[]) => {
-  let valid = validDates.find((d) => isEqual(d, datea.toDate()));
-  return valid !== undefined ? true : false;
-};
 
 function DeckGLOverlay(
   props: MapboxOverlayProps & {
@@ -309,6 +302,7 @@ export const SatelliteMap: React.FC = ({
               // console.log(newValue.toDate());
               setSelectedDate(newValue);
             }}
+            features={features}
             ></SatelliteDatePicker>
           )}
         </Paper>
@@ -324,11 +318,9 @@ export const SatelliteMap: React.FC = ({
             gap: "10px",
           }}
         >
-          <Button variant="contained">Excel</Button>
-          <Button variant="contained">PNG</Button>
-          <Button variant="contained" onClick={() => onDualToggle()}>
-            Dual
-          </Button>
+          <Button variant="contained" title="Download EXCEL"><CloudDownloadIcon /></Button>
+          <Button variant="contained" title="Download PNG"><ImageIcon /></Button>
+          <Button variant="contained" onClick={() => onDualToggle()} title="Dual Map"><ContrastIcon /></Button>
         </div>
 
         {selectedDate && indiceRequestResponse && (
