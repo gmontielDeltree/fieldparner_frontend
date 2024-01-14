@@ -24,6 +24,7 @@ import { readPixelsToArray } from "@luma.gl/core";
 import { IndiceChartsReact } from "../../../owncomponents/ndvi-offcanvas/react-port/indices-charts";
 import { SatelliteCharts } from "./SatelliteCharts";
 import { SatelliteResumen } from "./SatelliteResumen";
+import { SatelliteDatePicker } from "./SatelliteDatePicker";
 
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN =
@@ -77,7 +78,7 @@ export const SatelliteMap: React.FC = ({
   const [hoverInfo, setHoverInfo] = useState();
   const [loading, setLoading] = useState(true);
 
-  const [layers, setLayers] = useState([]);
+
 
   const [indice, setIndice] = useState(list_of_indexes[0]);
 
@@ -86,6 +87,19 @@ export const SatelliteMap: React.FC = ({
   const [indiceRequestResponse, setIndiceRequestResponse] = useState();
 
   // parse(features.features[0].properties.date, "yyyy-MM-dd", new Date())
+
+  const borderLayer = new GeoJsonLayer({
+    id: "borde",
+    data: lote,
+    stroked: true,
+    filled:false,
+    lineWidthMinPixels: 3,
+    getLineColor:  [254,176,25,255]
+  })
+
+  const [layers, setLayers] = useState([
+    borderLayer
+  ]);
 
   const newBitmapLayer = (
     url: string,
@@ -136,14 +150,14 @@ export const SatelliteMap: React.FC = ({
       let date = format(selectedDate, "yyyy-MM-dd");
       let histogramOptions = { bins: indice.thresholds };
 
-      console.log(
-        "Fetching Observation Card",
-        lote,
-        resourceId,
-        date,
-        histogramOptions,
-        indice
-      );
+      // console.log(
+      //   "Fetching Observation Card",
+      //   lote,
+      //   resourceId,
+      //   date,
+      //   histogramOptions,
+      //   indice
+      // );
 
       let body = { resourceId, date, histogramOptions, lote: lote, indice };
       let baseURL = import.meta.env.VITE_COGS_SERVER_URL + "/indices/request";
@@ -156,9 +170,6 @@ export const SatelliteMap: React.FC = ({
           bbox(lote),
           lote
         );
-        // PNG URL
-
-        // Update layers
       });
     }
   }, [selectedDate, indice]);
@@ -185,22 +196,31 @@ export const SatelliteMap: React.FC = ({
       "value-layer"
     );
 
-    let nl: BitmapLayer = [mask_layer, valueLayer, coloredLayer];
+    let nl: BitmapLayer = [mask_layer, valueLayer, coloredLayer, borderLayer];
     setLayers(nl);
   };
+
+  useEffect((e) => {
+    if(features){
+        // console.log("una prop cambio",e,features)
+        let algoPa = parse(features.features[1].properties.date, "yyyy-MM-dd", new Date())
+        setSelectedDate(algoPa)
+    }
+
+  },[features])
 
   useEffect(() => {
     if (lote) {
       const [minLng, minLat, maxLng, maxLat] = bbox(lote);
-      console.log(
-        "FIT TO BOUNDS ? ",
-        lote,
-        mapRef,
-        minLng,
-        minLat,
-        maxLng,
-        maxLat
-      );
+      // console.log(
+      //   "FIT TO BOUNDS ? ",
+      //   lote,
+      //   mapRef,
+      //   minLng,
+      //   minLat,
+      //   maxLng,
+      //   maxLat
+      // );
 
       mapRef?.current?.fitBounds(
         [
@@ -217,7 +237,7 @@ export const SatelliteMap: React.FC = ({
   }, []);
 
   const handleIndiceChange = (e) => {
-    console.log("HANDLE INDICE", e);
+    // console.log("HANDLE INDICE", e);
     let indice = list_of_indexes.find((i) => i.name === e.target.value);
     setIndice(indice);
   };
@@ -283,17 +303,13 @@ export const SatelliteMap: React.FC = ({
           </Select>
 
           {features && (
-            <MobileDatePicker
-              label="Fecha"
-              value={selectedDate}
-              onChange={(newValue) => {
-                setSelectedDate(newValue.toDate());
-              }}
-              shouldDisableDate={(e) =>
-                isInvalid(e, datesFromFeatures(features))
-              }
-              disableFuture
-            />
+            <SatelliteDatePicker
+            value = {selectedDate}
+            onChange = {(newValue) => {
+              // console.log(newValue.toDate());
+              setSelectedDate(newValue);
+            }}
+            ></SatelliteDatePicker>
           )}
         </Paper>
 
