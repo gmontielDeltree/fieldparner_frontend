@@ -335,7 +335,7 @@ export const SatelliteMap: React.FC = ({
           }}
         >
           <Button variant="contained" title="Download EXCEL"><CloudDownloadIcon /></Button>
-          <Button variant="contained" title="Download PNG"><ImageIcon /></Button>
+          <Button variant="contained" title="Download PNG" target="_blank" href={import.meta.env.VITE_COGS_SERVER_URL + indiceRequestResponse?.png_url}><ImageIcon /></Button>
           <Button variant="contained" onClick={() => onDualToggle()} title="Dual Map"><ContrastIcon /></Button>
         </div>
 
@@ -343,9 +343,7 @@ export const SatelliteMap: React.FC = ({
           <>
             <Paper
               style={{
-                position: "absolute",
-                zIndex: 5,
-                top: "30%",
+                position: "absolute", zIndex: 5, top: "30%",
                 right: "3%",
                 display: "flex",
                 flexDirection: "column",
@@ -371,7 +369,7 @@ export const SatelliteMap: React.FC = ({
                 flexDirection: "column",
                 gap: "10px",
               }}>
-              <SatelliteResumen></SatelliteResumen>
+              <SatelliteResumen date={selectedDate} lote={lote} indice={indice}></SatelliteResumen>
             </div>
           </>
         )}
