@@ -10,7 +10,7 @@ export const SatelliteCircleChart: React.FC = ({ratios, indice, labels}) => {
         },
       },
       chart: {
-        type: "donut",
+        type: "donut"
       },
       labels: labels,
       responsive: [

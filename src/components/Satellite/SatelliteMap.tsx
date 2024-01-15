@@ -36,6 +36,7 @@ import { SatelliteDatePicker } from "./SatelliteDatePicker";
 import ContrastIcon from "@mui/icons-material/Contrast";
 import ImageIcon from "@mui/icons-material/Image";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
+import { geotiff_to_excel } from "../../../owncomponents/ndvi-offcanvas/geotiff-helpers";
 
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN =
@@ -123,7 +124,7 @@ export const SatelliteMap: React.FC = ({
             sourceWidth: 1,
             sourceHeight: 1,
           });
-          // console.log("Color at picked pixel:", pixelColor, info);
+          console.log("Color at picked pixel:", pixelColor, info);
           let indexValue = parseFloat(
             ((pixelColor[0] * 2) / 255 - 1).toFixed(2)
           );
@@ -362,7 +363,9 @@ export const SatelliteMap: React.FC = ({
             gap: "10px",
           }}
         >
-          <Button variant="contained" title="Download EXCEL">
+          <Button variant="contained" onClick={()=>{
+            geotiff_to_excel(import.meta.env.VITE_COGS_SERVER_URL + indiceRequestResponse.tiff_url, indice.name);
+          }} title="Download EXCEL">
             <CloudDownloadIcon />
           </Button>
           <Button
@@ -393,7 +396,7 @@ export const SatelliteMap: React.FC = ({
               style={{
                 position: "absolute",
                 zIndex: 5,
-                top: "30%",
+                top: "25%",
                 right: "3%",
                 display: "flex",
                 flexDirection: "column",

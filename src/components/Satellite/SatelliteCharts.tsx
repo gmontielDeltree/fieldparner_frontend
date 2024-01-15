@@ -4,7 +4,7 @@ import { Button, Typography } from "@mui/material";
 import { SatelliteCircleChart } from "./SatelliteCircleChart";
 
 export const SatelliteCharts: React.FC = (props) => {
-  let count = props.data.stats.count;
+  let count = props.data.stats.valid_pixels;
   let ratios = props.data.stats.histogram[0].map((v, i) => (v / count) * 100);
 
   // palette #1 Apex https://apexcharts.com/docs/options/theme/
