@@ -52,6 +52,7 @@ export const SatelliteGaugeCharts: React.FC = ({ratio, color, title, area_has}) 
       grid: {
         padding: {
           top: -10,
+          left: -10, right: -10,
         },
       },
       fill: {

@@ -67,6 +67,7 @@ export const SatellitePage: React.FC = () => {
             features={features}
             lote={lote}
             onDualToggle={()=>setDualMode(!dualMode)}
+              dualMode={dualMode}
           ></SatelliteMap>
         </Grid>
         {dualMode ? (
@@ -77,6 +78,7 @@ export const SatellitePage: React.FC = () => {
               features={features}
               lote={lote}
               onDualToggle={()=>setDualMode(!dualMode)}
+              dualMode={dualMode}
             ></SatelliteMap> 
           </Grid>
         ) : null}

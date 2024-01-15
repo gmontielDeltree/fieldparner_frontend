@@ -10,7 +10,15 @@ import bbox from "@turf/bbox";
 import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox/typed";
 import { useControl } from "react-map-gl";
 import { list_of_indexes } from "../../../owncomponents/ndvi-offcanvas/indices-types";
-import { MenuItem, Select, Button, TextField, Grid, Chip, Paper } from "@mui/material";
+import {
+  MenuItem,
+  Select,
+  Button,
+  TextField,
+  Grid,
+  Chip,
+  Paper,
+} from "@mui/material";
 import { PropertyValueMap } from "lit";
 import { DatePicker, MobileDatePicker } from "@mui/x-date-pickers";
 import { features } from "process";
@@ -25,15 +33,13 @@ import { IndiceChartsReact } from "../../../owncomponents/ndvi-offcanvas/react-p
 import { SatelliteCharts } from "./SatelliteCharts";
 import { SatelliteResumen } from "./SatelliteResumen";
 import { SatelliteDatePicker } from "./SatelliteDatePicker";
-import ContrastIcon from '@mui/icons-material/Contrast';
-import ImageIcon from '@mui/icons-material/Image';
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import ContrastIcon from "@mui/icons-material/Contrast";
+import ImageIcon from "@mui/icons-material/Image";
+import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN =
   "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
-
-
 
 function DeckGLOverlay(
   props: MapboxOverlayProps & {
@@ -51,6 +57,7 @@ export const SatelliteMap: React.FC = ({
   onDualToggle,
   features,
   lote,
+  dualMode,
 }: any) => {
   const mapRef = useRef<MapRef>();
 
@@ -71,8 +78,6 @@ export const SatelliteMap: React.FC = ({
   const [hoverInfo, setHoverInfo] = useState();
   const [loading, setLoading] = useState(true);
 
-
-
   const [indice, setIndice] = useState(list_of_indexes[0]);
 
   const [selectedDate, setSelectedDate] = useState();
@@ -85,14 +90,12 @@ export const SatelliteMap: React.FC = ({
     id: "borde",
     data: lote,
     stroked: true,
-    filled:false,
+    filled: false,
     lineWidthMinPixels: 3,
-    getLineColor:  [254,176,25,255]
-  })
+    getLineColor: [254, 176, 25, 255],
+  });
 
-  const [layers, setLayers] = useState([
-    borderLayer
-  ]);
+  const [layers, setLayers] = useState([borderLayer]);
 
   const newBitmapLayer = (
     url: string,
@@ -193,14 +196,20 @@ export const SatelliteMap: React.FC = ({
     setLayers(nl);
   };
 
-  useEffect((e) => {
-    if(features){
+  useEffect(
+    (e) => {
+      if (features) {
         // console.log("una prop cambio",e,features)
-        let algoPa = parse(features.features[1].properties.date, "yyyy-MM-dd", new Date())
-        setSelectedDate(algoPa)
-    }
-
-  },[features])
+        let algoPa = parse(
+          features.features[1].properties.date,
+          "yyyy-MM-dd",
+          new Date()
+        );
+        setSelectedDate(algoPa);
+      }
+    },
+    [features]
+  );
 
   useEffect(() => {
     if (lote) {
@@ -249,6 +258,24 @@ export const SatelliteMap: React.FC = ({
     };
   }, []);
 
+  useEffect(() => {
+    mapRef?.current?.resize()
+    if (dualMode) {
+      
+      if (lote) {
+        const [minLng, minLat, maxLng, maxLat] = bbox(lote);
+
+        mapRef?.current?.fitBounds(
+          [
+            [minLng, minLat],
+            [maxLng, maxLat],
+          ],
+          { padding: 40, duration: 1000 }
+        );
+      }
+    }
+  }, [dualMode]);
+
   return (
     <>
       <Grid container style={{ height: "100%", position: "relative" }}>
@@ -260,6 +287,7 @@ export const SatelliteMap: React.FC = ({
             mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
             onLoad={onLoad}
             onMove={onMove}
+   
             onMoveStart={onMoveStart}
           >
             <DeckGLOverlay layers={[layers]} />
@@ -286,20 +314,20 @@ export const SatelliteMap: React.FC = ({
             label="Indice"
             onChange={handleIndiceChange}
             sx={{
-              color: 'primary.contrastText',
-              '& .MuiOutlinedInput-root': {
+              color: "primary.contrastText",
+              "& .MuiOutlinedInput-root": {
                 borderColor: "white",
                 // Change the border color when the select component is focused
-                '&.Mui-focused fieldset': {
+                "&.Mui-focused fieldset": {
                   borderColor: "white",
                 },
               },
-              '& .MuiOutlinedInput-notchedOutline' : {
+              "& .MuiOutlinedInput-notchedOutline": {
                 borderColor: "white",
               },
-              '& .MuiSvgIcon-root':{
-                color:"white",
-              }
+              "& .MuiSvgIcon-root": {
+                color: "white",
+              },
             }}
           >
             {list_of_indexes.map((i) => {
@@ -313,12 +341,12 @@ export const SatelliteMap: React.FC = ({
 
           {features && (
             <SatelliteDatePicker
-            value = {selectedDate}
-            onChange = {(newValue) => {
-              // console.log(newValue.toDate());
-              setSelectedDate(newValue);
-            }}
-            features={features}
+              value={selectedDate}
+              onChange={(newValue) => {
+                // console.log(newValue.toDate());
+                setSelectedDate(newValue);
+              }}
+              features={features}
             ></SatelliteDatePicker>
           )}
         </Paper>
@@ -334,42 +362,71 @@ export const SatelliteMap: React.FC = ({
             gap: "10px",
           }}
         >
-          <Button variant="contained" title="Download EXCEL"><CloudDownloadIcon /></Button>
-          <Button variant="contained" title="Download PNG" target="_blank" href={import.meta.env.VITE_COGS_SERVER_URL + indiceRequestResponse?.png_url}><ImageIcon /></Button>
-          <Button variant="contained" onClick={() => onDualToggle()} title="Dual Map"><ContrastIcon /></Button>
+          <Button variant="contained" title="Download EXCEL">
+            <CloudDownloadIcon />
+          </Button>
+          <Button
+            variant="contained"
+            title="Download PNG"
+            target="_blank"
+            href={
+              import.meta.env.VITE_COGS_SERVER_URL +
+              indiceRequestResponse?.png_url
+            }
+          >
+            <ImageIcon />
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              onDualToggle();
+            }}
+            title="Dual Map"
+          >
+            <ContrastIcon />
+          </Button>
         </div>
 
         {selectedDate && indiceRequestResponse && (
           <>
             <Paper
               style={{
-                position: "absolute", zIndex: 5, top: "30%",
+                position: "absolute",
+                zIndex: 5,
+                top: "30%",
                 right: "3%",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
-                backgroundColor: "#1976d299"
+                maxWidth:"25%",
+                backgroundColor: "#1976d299",
               }}
             >
               <SatelliteCharts
-               data={indiceRequestResponse}
-               indice={indice}
-               date={indiceRequestResponse.date}
-               hectareas_del_lote={
-                 indiceRequestResponse.area_mts_squared / 10000
-               }
+                data={indiceRequestResponse}
+                indice={indice}
+                date={indiceRequestResponse.date}
+                hectareas_del_lote={
+                  indiceRequestResponse.area_mts_squared / 10000
+                }
               ></SatelliteCharts>
             </Paper>
-            <div style={{
+            <div
+              style={{
                 position: "absolute",
                 zIndex: 5,
-                top: "35%",
+                top: "15%",
                 left: "3%",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
-              }}>
-              <SatelliteResumen date={selectedDate} lote={lote} indice={indice}></SatelliteResumen>
+              }}
+            >
+              <SatelliteResumen
+                date={selectedDate}
+                lote={lote}
+                indice={indice}
+              ></SatelliteResumen>
             </div>
           </>
         )}

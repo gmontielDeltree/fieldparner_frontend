@@ -4,6 +4,11 @@ export const SatelliteCircleChart: React.FC = ({ratios, indice, labels}) => {
   let state = {
     series: ratios,
     options: {
+      grid: {
+        padding: {
+          left: -20, right: -10,
+        },
+      },
       chart: {
         type: "donut",
       },

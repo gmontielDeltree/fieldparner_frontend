@@ -84,17 +84,21 @@ export const SatelliteResumen: React.FC = ({ date, lote, indice }) => {
   }, [date]);
 
   return (
-    <Paper sx={{ backgroundColor: "#2f5ad5" }}>
-      <Accordion sx={{ backgroundColor: "#1976d299", color: "white" }}>
+    <Paper sx={{ backgroundColor: "#2f5ad5"}}>
+      <Accordion sx={{ backgroundColor: "#1976d299", color: "white" }} defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           Resumen
         </AccordionSummary>
         <AccordionDetails>
-            
+           Escala de Color
           {response && response.stats.histogram[0]
             .map((r, i) => {
               console.log("punto", r);
-              let color = "blue";
+              let min_d = indice.domain[0];
+              let k_color = indice.domain[1] - indice.domain[0];
+              let color = indice.colormap_fn(
+                (response.stats.histogram[1][i + 1] - min_d) / k_color
+              );
               let area_has =
                 ((r / response.stats.valid_pixels) *
                   response.area_mts_squared) /
@@ -113,7 +117,7 @@ export const SatelliteResumen: React.FC = ({ date, lote, indice }) => {
                   </div>
                 </div>
               );
-            })}
+            }).reverse()}
         </AccordionDetails>
       </Accordion>
       <Accordion
@@ -143,6 +147,19 @@ export const SatelliteResumen: React.FC = ({ date, lote, indice }) => {
           <Typography variant="caption">Powered by OpenMeteo</Typography>
         </AccordionDetails>
       </Accordion>
+        <Accordion
+        sx={{ backgroundColor: "#1976d299", color: "white"}}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          Descripción del índice
+        </AccordionSummary>
+        <AccordionDetails >
+          <div style={{maxHeight:"4rem", overflowY:"auto"}}>
+
+            <p style={{ wordWrap: "break-word", overflow: "auto" , maxWidth:"15rem"}}>{indice.descripcion}</p>
+          </div>
+        </AccordionDetails>
+      </Accordion>  
     </Paper>
   );
 };
