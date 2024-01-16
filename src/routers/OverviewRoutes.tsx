@@ -21,12 +21,16 @@ import {
 } from "../pages";
 import { AppLayout } from "../components";
 import { SatellitePage } from "../pages/SatellitePage";
+import { DevicePage } from "../pages/DevicePage";
 
 export const OverviewRoutes: React.FC = () => {
   return (
     <AppLayout key="app-layout">
       <Routes>
-        <Route path="/overview/fields" element={<FieldsPage />} />
+        <Route path="/overview/fields" element={<FieldsPage />} >
+          <Route path="device/:deviceId/:date" element={<DevicePage/>}></Route>
+        </Route>
+
         <Route path="/overview/vehicle" element={<ListVehiclesPage />} />
         <Route path="/overview/vehicle/new" element={<VehiclePage />} />
         <Route path="/overview/vehicle/:id" element={<VehiclePage />} />

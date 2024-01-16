@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Button } from "@mui/material";
+import { Box, Button, Grid } from "@mui/material";
 
 import centroid from "@turf/centroid";
 
@@ -19,6 +19,8 @@ import { Field, Lot } from "../interfaces/field";
 import { useDispatch, useSelector } from "react-redux";
 import { setMap, selectMap } from "../redux/map/mapSlice";
 import { selectDraw } from "../redux/draw/drawSlice";
+import { Outlet, useNavigate } from "react-router-dom";
+import { Devices } from "../../owncomponents/sensores/sensores";
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
@@ -31,6 +33,7 @@ export const FieldsPage: React.FC = () => {
   const selectedFieldRef = useRef<Field | null>(null);
   const draw = useSelector(selectDraw);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     selectedFieldRef.current = selectedField;
@@ -43,6 +46,13 @@ export const FieldsPage: React.FC = () => {
   useEffect(() => {
     if (map) {
       addFieldsToMap(map, fields);
+
+      let devices = new Devices();
+      devices.add_markers_to_map_react(map, (deviceId: string, date: string) =>
+        navigate(`device/${deviceId}/${date}`)
+      );
+
+      // TODO Deposits Layer
     }
   }, [map, draw, fields]);
 
@@ -118,7 +128,7 @@ export const FieldsPage: React.FC = () => {
           const longitudeAdjustment = 0.005;
           const adjustedCoordinates = [
             centroidCoordinates[0] - longitudeAdjustment,
-            centroidCoordinates[1]
+            centroidCoordinates[1],
           ];
 
           map.flyTo({ center: adjustedCoordinates, zoom: 16, pitch: 45 });
@@ -162,7 +172,7 @@ export const FieldsPage: React.FC = () => {
       nombre: name,
       campo_geojson: campoGeojson,
       uuid,
-      lotes
+      lotes,
     };
 
     dbPut(campoData, (err, result) => {
@@ -188,7 +198,7 @@ export const FieldsPage: React.FC = () => {
         uuid: uuid4(),
         campo_parent_id: "campos_" + name,
         hectareas: roundArea(lote),
-        actividades: []
+        actividades: [],
       };
       lote.id = lote.properties.uuid;
       return lote;
@@ -248,9 +258,9 @@ export const FieldsPage: React.FC = () => {
         nombre: lotName,
         campo_parent_id: fieldId,
         uuid: lotUuid,
-        hectareas: lotAreaHectares
+        hectareas: lotAreaHectares,
       },
-      geometry: lotGeometry
+      geometry: lotGeometry,
     };
   }
 
@@ -280,7 +290,7 @@ export const FieldsPage: React.FC = () => {
       const lotFeature = {
         type: "Feature",
         properties: { ...lot.properties },
-        geometry: lot.geometry
+        geometry: lot.geometry,
       };
 
       map.on("click", lotId + "-fill", (e: any) => {
@@ -293,7 +303,7 @@ export const FieldsPage: React.FC = () => {
       } else {
         map.addSource(lotId, {
           type: "geojson",
-          data: lotFeature
+          data: lotFeature,
         });
       }
 
@@ -305,8 +315,8 @@ export const FieldsPage: React.FC = () => {
           layout: {},
           paint: {
             "fill-color": "#0080ff",
-            "fill-opacity": 0.6
-          }
+            "fill-opacity": 0.6,
+          },
         });
       }
     });
@@ -411,6 +421,8 @@ export const FieldsPage: React.FC = () => {
 
   return (
     <>
+      <Outlet />
+
       <MapComponent onMapLoad={onMapLoad} />
 
       <Button
@@ -419,7 +431,7 @@ export const FieldsPage: React.FC = () => {
         style={{
           position: "absolute",
           bottom: 30,
-          right: 20
+          right: 20,
         }}
         onClick={() => setShowNewField(true)}
       >

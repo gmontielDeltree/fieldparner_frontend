@@ -4,10 +4,10 @@ export class FPSidebar extends LitElement {
   static override styles = css`
 
 .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
+        position: absolute;
+         top: 0;
+         left: 0;
+        /* bottom: 0; */
         width: 25%;
         background-color: #f5f5f5;
         border-radius: 10px;
