@@ -21,6 +21,8 @@ import { setMap, selectMap } from "../redux/map/mapSlice";
 import { selectDraw } from "../redux/draw/drawSlice";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Devices } from "../../owncomponents/sensores/sensores";
+import { addDepositosToMap } from "../../owncomponents/mapa-principal/depositos-layer";
+import { useDeposit } from "../hooks";
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
@@ -35,12 +37,15 @@ export const FieldsPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const { deposits, getDeposits } = useDeposit();
+
   useEffect(() => {
     selectedFieldRef.current = selectedField;
   }, [selectedField]);
 
   useEffect(() => {
     fetchData();
+    getDeposits();
   }, []);
 
   useEffect(() => {
@@ -52,9 +57,14 @@ export const FieldsPage: React.FC = () => {
         navigate(`device/${deviceId}/${date}`)
       );
 
-      // TODO Deposits Layer
+      if(deposits){
+        addDepositosToMap(map, deposits, (e : string)=>navigate(e))
+      }
     }
-  }, [map, draw, fields]);
+  }, [map, draw, fields, deposits]);
+
+
+
 
   const handleMapClick = useCallback(
     async (event: any) => {

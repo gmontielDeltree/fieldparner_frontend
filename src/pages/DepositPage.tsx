@@ -45,6 +45,7 @@ import {
 import { CountryCode, Deposit, TipoEntidad } from "../types";
 import { removeDepositActive } from "../redux/deposit";
 import { getLocalityAndStateByZipCode } from "../services";
+import { MapPickerReact } from '../../owncomponents/map-picker/react-port/MapPicker';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -62,7 +63,7 @@ const initialForm: Deposit = {
   description: "",
   zipCode: "",
   address: "",
-  geolocation: "",
+  geolocation: { lng: -35, lat: -34 },
   locality: "",
   isNegative: false,
   isVirtual: false,
@@ -90,7 +91,8 @@ export const DepositPage: React.FC = () => {
     handleInputChange,
     handleFormValueChange,
     handleSelectChange,
-} = useForm(initialForm);
+    handleGeolocationChange,
+  } = useForm(initialForm);
 
   const { isLoading, createDeposit, updateDeposit } = useDeposit();
   const {
@@ -139,35 +141,35 @@ export const DepositPage: React.FC = () => {
   };
   const handleAddDeposit = () => {
     if (validateForm()) {
-        createDeposit(formulario);
-        setFormulario(initialForm);
+      createDeposit(formulario);
+      setFormulario(initialForm);
     }
-};
+  };
 
   const validateForm = () => {
     let isValid = true;
-  
+
     if (description.trim() === "") {
       setDescriptionError(true);
       isValid = false;
     } else {
       setDescriptionError(false);
     }
-  
+
     if (zipCode.trim() === "") {
       setCpError(true);
       isValid = false;
     } else {
       setCpError(false);
     }
-  
+
     if (country.trim() === "") {
       setCountryError(true);
       isValid = false;
     } else {
       setCountryError(false);
     }
-  
+
     return isValid;
   };
 
@@ -260,7 +262,7 @@ export const DepositPage: React.FC = () => {
           {depositActive ? "Editar" : "Agregar Nuevo"} Deposito
         </Typography>
         <Grid container spacing={2} alignItems="center" justifyContent="center">
-        <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
               type="text"
@@ -364,42 +366,60 @@ export const DepositPage: React.FC = () => {
             </FormGroup>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label="Geolocalizacion"
-              name="geolocation"
-              value={geolocation}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
+            <FormGroup sx={{position: 'flex', flexDirection:"row", gap:"5px"}}>
+              <TextField
+                sx={{width:"35%"}}
+                variant="outlined"
+                type="text"
+                size="small"
+                label="Latitud"
+                name="geolocation"
+                value={geolocation.lat?.toFixed(5) || ""}
+                onChange={(e) => handleGeolocationChange({...geolocation, lat:+e.target.value})}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" />,
+                }}
+                
+              />
+              <TextField
+                variant="outlined"
+                sx={{width:"35%"}}
+                type="text"
+                size="small"
+                label="Longitud"
+                name="geolocation"
+                value={geolocation.lng?.toFixed(5) || ""}
+                onChange={(e)=>handleGeolocationChange({...geolocation, lng:+e.target.value})}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" />,
+                }}
+                
+              />
+              <MapPickerReact posicion={geolocation} onPicked={({detail})=>{handleGeolocationChange(detail)}} />
+              {/* <IconButton title="Pick Position"><EditLocation/></IconButton> */}
+            </FormGroup>
           </Grid>
           <Grid item xs={6} sm={4}>
-          <FormControl fullWidth>
-            <InputLabel id="label-pais">Pais</InputLabel>
-            <Select
-              labelId="label-pais"
-              name="country"
-              value={country}
-              label="Pais"
-              onChange={handleSelectChange}
-            >
-              {optionsCountry.map((country) => (
-                <MenuItem key={country} value={country}>
-                  {country}
-                </MenuItem>
-              ))}
-            </Select>
-            {countryError && (
-              <Typography color="error">
-                El país es obligatorio
-              </Typography>
-            )}
-          </FormControl>
-        </Grid>
+            <FormControl fullWidth>
+              <InputLabel id="label-pais">Pais</InputLabel>
+              <Select
+                labelId="label-pais"
+                name="country"
+                value={country}
+                label="Pais"
+                onChange={handleSelectChange}
+              >
+                {optionsCountry.map((country) => (
+                  <MenuItem key={country} value={country}>
+                    {country}
+                  </MenuItem>
+                ))}
+              </Select>
+              {countryError && (
+                <Typography color="error">El país es obligatorio</Typography>
+              )}
+            </FormControl>
+          </Grid>
           <Grid item xs={6} sm={4}>
             <TextField
               variant="outlined"

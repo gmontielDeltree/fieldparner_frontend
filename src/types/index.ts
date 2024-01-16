@@ -268,7 +268,7 @@ export interface Deposit extends Document {
     description: string;
     owner: string;
     isVirtual: boolean;
-    geolocation: string;
+    geolocation: {lng : number, lat:number};
     isNegative: boolean;
     address: string;
     zipCode: string;
