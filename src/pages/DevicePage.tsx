@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Paper } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { DeviceSidebar } from "../../owncomponents/sensores/react-port/sensores-offcanvas-component";
 import { selectMap } from "../redux/map/mapSlice";

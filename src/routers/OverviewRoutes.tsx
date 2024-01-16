@@ -22,13 +22,18 @@ import {
 import { AppLayout } from "../components";
 import { SatellitePage } from "../pages/SatellitePage";
 import { DevicePage } from "../pages/DevicePage";
+import { PricesPage } from "../pages/PricesPage";
+import { ZoningPage } from "../pages/ZoningPage";
+import { IntegrationsPage } from "../pages/IntegrationsPage";
+import { PlanificationPage } from "../pages/PlanificationPage";
 
 export const OverviewRoutes: React.FC = () => {
   return (
     <AppLayout key="app-layout">
       <Routes>
         <Route path="/overview/fields" element={<FieldsPage />} >
-          <Route path="device/:deviceId/:date" element={<DevicePage/>}></Route>
+          <Route path="integrations" element={<IntegrationsPage />} />
+          <Route path="device/:deviceId/:date" element={<DevicePage/>}/>
         </Route>
 
         <Route path="/overview/vehicle" element={<ListVehiclesPage />} />
@@ -66,7 +71,13 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />
 
 
-        <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
+        <Route path="/overview/satellite/:loteId" element={<SatellitePage />} >
+          <Route path="zoning" element={<ZoningPage />} />
+        </Route>
+        <Route path="/overview/prices" element={<PricesPage />} />
+        <Route path="/overview/planification" element={<PlanificationPage />} />
+
+        
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>
