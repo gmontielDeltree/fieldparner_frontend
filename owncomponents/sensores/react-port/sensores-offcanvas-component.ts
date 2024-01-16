@@ -7,4 +7,7 @@ export const DeviceSidebar = createComponent({
   tagName: 'sensores-oc',
   elementClass: SensoresClass,
   react: React,
+  events:{
+    onClose : 'onClose'
+  }
 });

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Paper } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { DeviceSidebar } from "../../owncomponents/sensores/react-port/sensores-offcanvas-component";
 import { selectMap } from "../redux/map/mapSlice";
 import { Splash } from "../components/Satellite/Splash";
@@ -12,6 +12,7 @@ export const DevicePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [deviceCard, setDeviceCard] = useState<DailyTelemetryCard>();
   const map = useSelector(selectMap);
+  const navigate = useNavigate();
 
   let { deviceId } = useParams();
   let { date } = useParams();
@@ -30,17 +31,18 @@ export const DevicePage: React.FC = () => {
 
   return (
     <>
-      <Paper style={{  width: "10%" }}>
+      <div id="device-sidebar-container" style={{position: "relative", width:"25%"}}>
         {loading ? (
           <Splash />
         ) : (
           <DeviceSidebar
+            onClose={()=>navigate("/init/overview/fields")}
             map={map}
             uuid={deviceId}
             _selected_device_card={deviceCard}
           />
         )}
-      </Paper>
+      </div>
     </>
   );
 };

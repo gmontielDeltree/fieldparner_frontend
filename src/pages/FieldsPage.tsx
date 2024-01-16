@@ -421,9 +421,10 @@ export const FieldsPage: React.FC = () => {
 
   return (
     <>
-      <Outlet />
-
-      <MapComponent onMapLoad={onMapLoad} />
+        <Outlet />
+        <Grid container style={{ position: "relative" }}>
+          <MapComponent onMapLoad={onMapLoad} />
+        </Grid>
 
       <Button
         color="primary"

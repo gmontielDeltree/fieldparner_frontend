@@ -37,7 +37,7 @@ import "./mediciones-cards/punto_de_rocio";
 import "./mediciones-cards/inversion_termica_chacabuco_baja";
 import "./mediciones-cards/stress_termico";
 import "./rosad3";
-import "../john-deere/fp-sidebar.ts"
+import "../john-deere/fp-sidebar.ts";
 
 import "./mediciones-cards/pluviometro";
 import { Router } from "@vaadin/router";
@@ -156,6 +156,9 @@ export class SensoresClass extends LitElement {
       }
     `,
   ];
+
+  @property()
+  onClose: () => any;
 
   @property()
   map: Map;
@@ -589,117 +592,110 @@ export class SensoresClass extends LitElement {
 
     // Hay algo seleccionado
     return html`
-    <fp-sidebar>
-      <h4 slot='title'>Sensores</h4>
-  
-  
-  <div slot="content">
- <!-- Temperatura -->
- ${ifLoadedShow("temperatura")
-      ? html`<temperatura-card
-          .card=${this._selected_device_card}
-          .data=${this._datapoints}
-        ></temperatura-card>`
-      : null}
-    <!--/temperatura-->   
-    
-    
+      <fp-sidebar>
+        <h4 slot="title">Sensores</h4>
 
-    <!-- Humedad -->
-    ${ifLoadedShow("humedad")
-      ? html`<humedad-card
-          .card=${this._selected_device_card}
-          .data=${this._datapoints}
-        />`
-      : null}
-    <!--/humedad-->
+        <div slot="content">
+          <!-- Temperatura -->
+          ${ifLoadedShow("temperatura")
+            ? html`<temperatura-card
+                .card=${this._selected_device_card}
+                .data=${this._datapoints}
+              ></temperatura-card>`
+            : null}
+          <!--/temperatura-->
 
-    <!-- Presion -->
-    ${ifLoadedShow("presion")
-      ? html`<presion-card
-          .card=${this._selected_device_card}
-          .data=${this._datapoints}
-        />`
-      : null}
-    <!--/presion-->
+          <!-- Humedad -->
+          ${ifLoadedShow("humedad")
+            ? html`<humedad-card
+                .card=${this._selected_device_card}
+                .data=${this._datapoints}
+              />`
+            : null}
+          <!--/humedad-->
 
-    <!-- Radiación -->
-    ${ifLoadedShow("radiacion_solar")
-      ? html`<radiacion-card
-          .card=${this._selected_device_card}
-          .data=${this._datapoints}
-        />`
-      : null}
-    <!--/presion-->
+          <!-- Presion -->
+          ${ifLoadedShow("presion")
+            ? html`<presion-card
+                .card=${this._selected_device_card}
+                .data=${this._datapoints}
+              />`
+            : null}
+          <!--/presion-->
 
-    <!-- Vel Viento -->
-    ${ifLoadedShow("viento_velocidad")
-      ? html`<viento-velocidad-card
-          .card=${this._selected_device_card}
-          .data=${this._datapoints}
-        />`
-      : null}
-    <!--/vel viento-->
+          <!-- Radiación -->
+          ${ifLoadedShow("radiacion_solar")
+            ? html`<radiacion-card
+                .card=${this._selected_device_card}
+                .data=${this._datapoints}
+              />`
+            : null}
+          <!--/presion-->
 
-    <!-- Dir Viento -->
-    ${ifLoadedShow("viento_direccion")
-      ? html`<viento-direccion-card
-          .card=${this._selected_device_card}
-          .data=${this._datapoints}
-        /> `
-      : null}
-    <!--/Dir viento-->
-    <!--/viento-->
+          <!-- Vel Viento -->
+          ${ifLoadedShow("viento_velocidad")
+            ? html`<viento-velocidad-card
+                .card=${this._selected_device_card}
+                .data=${this._datapoints}
+              />`
+            : null}
+          <!--/vel viento-->
 
-    <!-- Pluviometro -->
-    ${ifLoadedShow("pluviometro")
-      ? html`<pluviometro-card
-          .deveui=${this._selected_device_card.device_id}
-        /> `
-      : null}
-    <!--/Dir pluviometro-->
+          <!-- Dir Viento -->
+          ${ifLoadedShow("viento_direccion")
+            ? html`<viento-direccion-card
+                .card=${this._selected_device_card}
+                .data=${this._datapoints}
+              /> `
+            : null}
+          <!--/Dir viento-->
+          <!--/viento-->
 
-    <!-- S. Termica  -->
-    ${ifLoadedShow("sensacion_termica")
-      ? html`<sensacion-termica-card
-          .card=${this._selected_device_card}
-          .data=${this._datapoints}
-        />`
-      : null}
-    <!-- /S. Termica -->
+          <!-- Pluviometro -->
+          ${ifLoadedShow("pluviometro")
+            ? html`<pluviometro-card
+                .deveui=${this._selected_device_card.device_id}
+              /> `
+            : null}
+          <!--/Dir pluviometro-->
 
-    <!-- P. Rocio  -->
-    ${ifLoadedShow("punto_de_rocio")
-      ? html`<punto-de-rocio-card
-          .card=${this._selected_device_card}
-          .data=${this._datapoints}
-        />`
-      : null}
-    <!-- /P. Rocio -->
+          <!-- S. Termica  -->
+          ${ifLoadedShow("sensacion_termica")
+            ? html`<sensacion-termica-card
+                .card=${this._selected_device_card}
+                .data=${this._datapoints}
+              />`
+            : null}
+          <!-- /S. Termica -->
 
-    <!-- Inv Térmica -->
-    ${ifLoadedShow("inversion_termica_chacabuco_baja")
-      ? html`<inversion-termica-chacabuco-baja-card
-          .card=${this._selected_device_card}
-          .data=${this._datapoints}
-        />`
-      : null}
-    <!-- /Inv Térmica -->
+          <!-- P. Rocio  -->
+          ${ifLoadedShow("punto_de_rocio")
+            ? html`<punto-de-rocio-card
+                .card=${this._selected_device_card}
+                .data=${this._datapoints}
+              />`
+            : null}
+          <!-- /P. Rocio -->
 
-    <!-- Stress Térmico -->
-    ${ifLoadedShow("stress_termico")
-      ? html`<stress-termico-card
-          .card=${this._selected_device_card}
-          .data=${this._datapoints}
-        />`
-      : null}
-    <!-- /Stress Térmico -->
+          <!-- Inv Térmica -->
+          ${ifLoadedShow("inversion_termica_chacabuco_baja")
+            ? html`<inversion-termica-chacabuco-baja-card
+                .card=${this._selected_device_card}
+                .data=${this._datapoints}
+              />`
+            : null}
+          <!-- /Inv Térmica -->
 
-</div>
-  
-  
-  
-  </fp-sidebar>
+          <!-- Stress Térmico -->
+          ${ifLoadedShow("stress_termico")
+            ? html`<stress-termico-card
+                .card=${this._selected_device_card}
+                .data=${this._datapoints}
+              />`
+            : null}
+          <!-- /Stress Térmico -->
+        </div>
+      </fp-sidebar>
     `;
   }
 }
