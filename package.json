@@ -150,6 +150,7 @@
     "raster-marching-squares": "^0.1.3",
     "react": "^18.2.0",
     "react-apexcharts": "^1.4.1",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "react-map-gl": "^7.1.5",

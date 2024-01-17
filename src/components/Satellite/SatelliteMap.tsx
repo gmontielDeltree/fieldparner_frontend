@@ -37,6 +37,8 @@ import ContrastIcon from "@mui/icons-material/Contrast";
 import ImageIcon from "@mui/icons-material/Image";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import { geotiff_to_excel } from "../../../owncomponents/ndvi-offcanvas/geotiff-helpers";
+import { useNavigate } from "react-router-dom";
+import { GroupWork } from "@mui/icons-material";
 
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN =
@@ -62,6 +64,7 @@ export const SatelliteMap: React.FC = ({
 }: any) => {
   const mapRef = useRef<MapRef>();
 
+  const navigate = useNavigate()
   const [origin, setOrigin] = useState(false);
 
   const onMove = useCallback((evt) => {
@@ -378,6 +381,15 @@ export const SatelliteMap: React.FC = ({
             }
           >
             <ImageIcon />
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              navigate("/init/overview/zoning/"+ indiceRequestResponse?.png_url.split("/")[3].replace(".png","") )
+            }}
+            title="Ambientador"
+          >
+            <GroupWork />
           </Button>
           <Button
             variant="contained"

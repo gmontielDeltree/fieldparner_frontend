@@ -1,9 +1,15 @@
 import React from "react";
+import { ZoningMapComponent } from "../../owncomponents/zoning/ZoningMapComponent";
+import { useParams } from "react-router-dom";
 
-export const ZoningPage : React.FC = ( )=>{
+export const ZoningPage: React.FC = () => {
+  let { baseImageName } = useParams();
 
-    return (<>
-        
-        <div>TODO zooning</div>
-    </>)
-}
+  return (
+    <>
+    <ZoningMapComponent baseImageNameParam={baseImageName} />
+
+
+    </>
+  );
+};
