@@ -39,6 +39,7 @@ import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import { geotiff_to_excel } from "../../../owncomponents/ndvi-offcanvas/geotiff-helpers";
 import { useNavigate } from "react-router-dom";
 import { GroupWork } from "@mui/icons-material";
+import Close from "@mui/icons-material/Close";
 
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN =
@@ -366,6 +367,12 @@ export const SatelliteMap: React.FC = ({
             gap: "10px",
           }}
         >
+           <Button variant="contained" sx={{marginBottom:"3rem"}} color="error" onClick={()=>{
+            navigate(-1)
+          }} title="Close">
+            <Close />
+          </Button>
+
           <Button variant="contained" onClick={()=>{
             geotiff_to_excel(import.meta.env.VITE_COGS_SERVER_URL + indiceRequestResponse.tiff_url, indice.name);
           }} title="Download EXCEL">
