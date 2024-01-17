@@ -84,12 +84,19 @@ export const SatelliteResumen: React.FC = ({ date, lote, indice }) => {
   }, [date]);
 
   return (
-    <Paper sx={{ backgroundColor: "#2f5ad5"}}>
+    <Paper sx={{ backgroundColor: "#2f5ad5", '& .MuiAccordionSummary-root':{
+      minHeight:"1rem"
+    },
+    '& .MuiAccordionSummary-content':{
+      marginTop:"8px",
+      marginBottom:"8px"
+    }
+    }}>
       <Accordion sx={{ backgroundColor: "#1976d299", color: "white" }} defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ minHeight:"1rem"}}>
           Resumen
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails sx={{marginTop:"5px"}}>
            Escala de Color
           {response && response.stats.histogram[0]
             .map((r, i) => {
@@ -107,12 +114,12 @@ export const SatelliteResumen: React.FC = ({ date, lote, indice }) => {
               return (
                 <div style={{display:"flex",justifyContent: "space-between", alignItems:"center"}}>
                   <div style={{display:"flex", alignItems:"center"}}>
-                    <div style={{backgroundColor:color,width:"24px",height:"24px"}}></div>
-                    <div style={{marginLeft:"1rem"}}>
+                    <div style={{backgroundColor:color,width:"16px",height:"16px"}}></div>
+                    <div style={{marginLeft:"0.8rem",fontSize:"0.8rem"}}>
                       {ranges_to_bin_names(response.stats.histogram[1])[i]}
                     </div>
                   </div>
-                  <div style={{marginLeft:"1rem",fontWeight:"bold"}}>
+                  <div style={{marginLeft:"1rem",fontWeight:"bold",fontSize:"0.8rem"}}>
                     {r2(area_has)} has.
                   </div>
                 </div>

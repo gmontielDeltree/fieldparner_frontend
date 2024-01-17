@@ -301,7 +301,7 @@ export const SatelliteMap: React.FC = ({
         <Paper
           style={{
             position: "absolute",
-            top: "30px",
+            top: "1%",
             marginLeft: "10px",
             display: "flex",
             gap: "10px",
@@ -359,7 +359,7 @@ export const SatelliteMap: React.FC = ({
           style={{
             position: "absolute",
             zIndex: 2,
-            top: "30px",
+            top: "3%",
             right: "10px",
             display: "flex",
             flexDirection: "column",
@@ -409,11 +409,11 @@ export const SatelliteMap: React.FC = ({
                 position: "absolute",
                 zIndex: 5,
                 top: "25%",
-                right: "3%",
+                right: "6%",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
-                maxWidth:"25%",
+                maxWidth:"17%",
                 backgroundColor: "#1976d299",
               }}
             >

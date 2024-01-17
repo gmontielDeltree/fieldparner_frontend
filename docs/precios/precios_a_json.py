@@ -5,7 +5,7 @@ import urllib.request
 import pandas as pd
 import json
 
-base_url = "https://www.cac.bcr.com.ar/es/api/prices/987/export?product=%d&type=any&date_start=2010-01-01&date_end=2030-01-01&period=day"
+base_url = "https://www.cac.bcr.com.ar/es/api/prices/987/export?product=%d&type=any&date_start=2017-01-01&date_end=2030-01-01&period=day"
 
 # Soja (product=13) Camara Arbitral de Cereales
 # Trigo (8)
@@ -58,8 +58,9 @@ for x in cultivos:
         # print(response)
         # Serializing json
         json_object = json.dumps(response, indent=4)
-        
+        print(json_object)
+         
         # Writing to sample.json
-        with open("../../public/prices/car/%s/precio.json" % x, "w") as outfile:
-            outfile.write(json_object)
+        # with open("../../public/prices/car/%s/precio.json" % x, "w") as outfile:
+        #    outfile.write(json_object)
             
