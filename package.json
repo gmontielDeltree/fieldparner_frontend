@@ -59,6 +59,7 @@
     "@polymer/paper-spinner": "^3.0.2",
     "@pwabuilder/pwaauth": "^0.9.7",
     "@pwabuilder/pwaupdate": "^0.2.1",
+    "@react-hook/resize-observer": "^1.2.6",
     "@reduxjs/toolkit": "^1.9.5",
     "@shoelace-style/shoelace": "^2.8.0",
     "@spectrum-web-components/action-menu": "^0.38.0",

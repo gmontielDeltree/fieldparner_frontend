@@ -43,8 +43,9 @@ export class JohnDeereIntegracion extends LitElement {
   @property()
   map : Map
 
-  @property({ attribute: false })
-  location: RouterLocation;
+  @property()
+  token : string
+
 
   @state()
   orgResp: OrganizationsResponse | undefined = undefined;
@@ -57,6 +58,9 @@ export class JohnDeereIntegracion extends LitElement {
 
   @state()
   equipment: JDMachine[] = [];
+
+  @state()
+  mostrarDetalles : boolean = false;
 
   private markers: Marker[] = [];
 
@@ -99,49 +103,24 @@ export class JohnDeereIntegracion extends LitElement {
   private _loadTask = new Task(
     this,
     () => this.load_orgs(),
-    () => [this.location]
+    () => [this.token]
   );
 
   async load_orgs() {
     if (this.is_logged_in()) {
       console.log("user is logged in to JD");
       this.orgResp = await jd_get_organizations(
-        gbl_state.jd_integracion.access_token
+        this.token
       );
     } else {
       console.log("user is NOT logged in to JD");
     }
   }
 
-  protected willUpdate(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-  ): void {
-    if (_changedProperties.has("location")) {
-      const query = window.location.search;
-      if (
-        query.includes("token_type=") &&
-        query.includes("expires_in=") &&
-        query.includes("access_token=")
-      ) {
-        // Save token?
-        let qp = new URLSearchParams(query);
-        let ijd = { access_token: "", expires_in: 0 };
-        ijd.access_token = qp.get("access_token") ?? "";
-        ijd.expires_in = +(qp.get("expires_in") ?? 0);
-        gbl_state.jd_integracion = ijd;
-        console.log("State", gbl_state.jd_integracion, qp);
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname
-        );
-      }
-    }
-  }
 
   is_logged_in() {
     try {
-      let dt = jwt_decode<JwtPayload>(gbl_state.jd_integracion.access_token);
+      let dt = jwt_decode<JwtPayload>(this.token);
 
       if (dt.exp === undefined) {
         return false;
@@ -162,6 +141,7 @@ export class JohnDeereIntegracion extends LitElement {
 
   render() {
     return html`
+    ${this.mostrarDetalles && html`fdfdfd`}
       <fp-sidebar>
         <div slot="title">JD Operations Center</div>
         <div slot="content">
@@ -275,7 +255,8 @@ export class JohnDeereIntegracion extends LitElement {
   };
 
   mostrar_detalles = (machine: JDMachine) => {
-    Router.go("/integraciones/john-deere/machine/" + machine.id);
+    this.mostrarDetalles= true;
+    // Router.go("/integraciones/john-deere/machine/" + machine.id);
   };
 
   selectedOrgChanged = async (e) => {
@@ -283,12 +264,12 @@ export class JohnDeereIntegracion extends LitElement {
       let orgid = +e.detail.value.id;
       this.boundaries = (
         await jd_get_farms_boundaries(
-          gbl_state.jd_integracion.access_token,
+          this.token,
           orgid
         )
       ).values;
       this.equipment = (
-        await jd_get_machines(gbl_state.jd_integracion.access_token, orgid)
+        await jd_get_machines(this.token, orgid)
       ).values as unknown as JDMachine[];
     }
   };
@@ -315,15 +296,15 @@ export class JohnDeereIntegracion extends LitElement {
     console.log("display b t m", e);
 
     try {
-      gbl_state.map.addSource("temp_geojson", { type: "geojson", data: e });
+     this.map.addSource("temp_geojson", { type: "geojson", data: e });
     } catch (_) {
       console.log("addSource already added temp_geojson");
-      let sos = gbl_state.map.getSource("temp_geojson") as GeoJSONSource;
+      let sos =this.map.getSource("temp_geojson") as GeoJSONSource;
       sos.setData(e);
     }
 
     try {
-      gbl_state.map.addLayer({
+     this.map.addLayer({
         id: "temp_geojson",
         type: "fill",
         source: "temp_geojson",
@@ -332,10 +313,10 @@ export class JohnDeereIntegracion extends LitElement {
         },
       });
 
-      gbl_state.map.fitBounds(bbox(e));
+     this.map.fitBounds(bbox(e));
     } catch {
       console.log("addLayer already added temp_geojson");
-      gbl_state.map.fitBounds(bbox(e));
+     this.map.fitBounds(bbox(e));
     }
   };
 
@@ -349,14 +330,16 @@ export class JohnDeereIntegracion extends LitElement {
       lotes: [],
     };
 
-    await campo_guardar(nc);
+    // await campo_guardar(nc);
+    alert("TODO CAMPO GUARDAR REACT")
+    this.dispatchEvent(new CustomEvent("importarCampo", {detail:nc, bubbles:true, composed:true}))
     showNotification("Campo agregado", undefined, "top-center");
   };
 
   display_in_map = async (machine: JDMachine) => {
     let position_machine: LocationHistoryResponse =
       await jd_get_machine_position(
-        gbl_state.jd_integracion.access_token,
+        this.token,
         machine
       );
 
@@ -382,4 +365,4 @@ export class JohnDeereIntegracion extends LitElement {
   };
 }
 
-customElements.define("john-deere-integracion", JohnDeereIntegracion);
+customElements.define("john-deere-integracion-base", JohnDeereIntegracion);

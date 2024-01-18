@@ -19,10 +19,11 @@ import { Field, Lot } from "../interfaces/field";
 import { useDispatch, useSelector } from "react-redux";
 import { setMap, selectMap } from "../redux/map/mapSlice";
 import { selectDraw } from "../redux/draw/drawSlice";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Devices } from "../../owncomponents/sensores/sensores";
 import { addDepositosToMap } from "../../owncomponents/mapa-principal/depositos-layer";
 import { useDeposit } from "../hooks";
+import useResizeObserver from '@react-hook/resize-observer'
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
@@ -38,6 +39,27 @@ export const FieldsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const { deposits, getDeposits } = useDeposit();
+
+  /* Es para forzar el resizing del mapa siempre
+    Cuando la pagina de
+  */
+  const target = useRef(null)
+  useResizeObserver(target, (entry) => {
+    if(map){
+      console.count("map resize obs")
+      map.resize()
+    }
+  })
+
+  /* null al map del store cuando se desmonta para evitar bug de reading undefined
+    al regresar
+  */
+  useEffect(()=>{
+    return () => {
+      console.log("UNMOUNT MAP")
+      dispatch(setMap(null));
+    };
+  },[])
 
   useEffect(() => {
     selectedFieldRef.current = selectedField;
@@ -57,14 +79,11 @@ export const FieldsPage: React.FC = () => {
         navigate(`device/${deviceId}/${date}`)
       );
 
-      if(deposits){
-        addDepositosToMap(map, deposits, (e : string)=>navigate(e))
+      if (deposits) {
+        addDepositosToMap(map, deposits, (e: string) => navigate(e));
       }
     }
   }, [map, draw, fields, deposits]);
-
-
-
 
   const handleMapClick = useCallback(
     async (event: any) => {
@@ -431,10 +450,10 @@ export const FieldsPage: React.FC = () => {
 
   return (
     <>
-        <Outlet />
-        <Grid container style={{ position: "relative" }}>
-          <MapComponent onMapLoad={onMapLoad} />
-        </Grid>
+      <Outlet />
+      <Grid container style={{ position: "relative" }} ref={target}>
+        <MapComponent onMapLoad={onMapLoad}  />
+      </Grid>
 
       <Button
         color="primary"
