@@ -26,6 +26,8 @@ import { PricesPage } from "../pages/PricesPage";
 import { ZoningPage } from "../pages/ZoningPage";
 import { IntegrationsPage } from "../pages/IntegrationsPage";
 import { PlanificationPage } from "../pages/PlanificationPage";
+import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
+import { MagrisIntegration } from "../components/Integrations/MagrisIntegration";
 
 export const OverviewRoutes: React.FC = () => {
   return (
@@ -34,6 +36,8 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/fields" element={<FieldsPage />} >
           <Route path="integrations" element={<IntegrationsPage />} />
           <Route path="device/:deviceId/:date" element={<DevicePage/>}/>
+          <Route path="john-deere" element={<JohnDeereIntegration/>}/>
+          <Route path="magris" element={<MagrisIntegration/>}/>
         </Route>
 
         <Route path="/overview/vehicle" element={<ListVehiclesPage />} />

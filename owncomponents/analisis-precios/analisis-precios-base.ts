@@ -74,9 +74,8 @@ export class AnalisisPrecios extends LitElement {
 
   render() {
     return html`
-      <modal-generico .modalOpened=${true} backurl="/">
-        <div slot="title">${translate("precios")}</div>
-        <div slot="body" class="container" style="width: 100%;">
+    
+        <div class="container" style="width: 100%;">
           <vaadin-tabsheet>
             <vaadin-tabs slot="tabs">
               <vaadin-tab id="dashboard-tab"
@@ -163,9 +162,7 @@ export class AnalisisPrecios extends LitElement {
             </div>
           </vaadin-tabsheet>
 
-          <slot></slot>
         </div>
-      </modal-generico>
     `;
   }
 }

@@ -23,7 +23,7 @@ import { Task } from "@lit-labs/task";
 import jwt_decode, { JwtPayload } from "jwt-decode";
 import { ComboBoxSelectedItemChangedEvent } from "@vaadin/combo-box";
 import "@vaadin/button";
-import { GeoJSONSource, Marker, Popup } from "mapbox-gl";
+import { GeoJSONSource, Map, Marker, Popup } from "mapbox-gl";
 import "@shoelace-style/shoelace/dist/components/tree/tree.js";
 import "@shoelace-style/shoelace/dist/components/tree-item/tree-item.js";
 import { campo_guardar, empty_feature_collection } from "../helpers";
@@ -38,6 +38,11 @@ import area from '@turf/area';
 const base_url = import.meta.env.VITE_INTEGRACIONES_SERVER_URL;
 
 export class JohnDeereIntegracion extends LitElement {
+
+
+  @property()
+  map : Map
+
   @property({ attribute: false })
   location: RouterLocation;
 
@@ -373,7 +378,7 @@ export class JohnDeereIntegracion extends LitElement {
 
     marker.addTo(gbl_state.map);
     this.markers.push(marker);
-    gbl_state.map.flyTo({ center: marker.getLngLat(), essential: true });
+    this.map.flyTo({ center: marker.getLngLat(), essential: true });
   };
 }
 

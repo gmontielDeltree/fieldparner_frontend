@@ -1,19 +1,17 @@
 import { LitElement, css, html } from "lit";
-import { property } from "lit-element";
 
 export class FPSidebar extends LitElement {
-
   static override styles = css`
 
 .sidebar {
-        position: absolute;
-         top: 0;
-         left: 0;
-         bottom: 0; 
-        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 25%;
         background-color: #f5f5f5;
         border-radius: 10px;
-        z-index: 3;
+        z-index: 1;
         display: flex;
         flex-direction: column;
       }
@@ -28,7 +26,6 @@ export class FPSidebar extends LitElement {
       .content {
         /* margin-top: 16px; */
         padding: 16px;
-        overflow-y: auto;
       }
 
       .close-button {
@@ -42,8 +39,7 @@ export class FPSidebar extends LitElement {
   `;
 
 hideSidebar() {
-  // this.style.display = 'none';
-  this.dispatchEvent(new CustomEvent("onClose",{bubbles:true,composed:true}))
+  this.style.display = 'none';
 }
   render() {
     return html`
