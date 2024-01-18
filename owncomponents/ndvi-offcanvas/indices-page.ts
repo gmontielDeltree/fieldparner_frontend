@@ -16,7 +16,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import "./indice-selector";
 import { machine } from "./indices-machine";
 import { interpret, assign } from "xstate";
-import { SelectorController } from "xstate-lit/dist/select-controller";
+import { SelectorController } from "xstate-lit";
 import { gbl_dualmap, gbl_state } from "../state";
 import axios from "axios";
 import bbox from "@turf/bbox";

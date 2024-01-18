@@ -6,7 +6,7 @@ import { customElement, property } from "lit/decorators.js";
 import { RecorridaMachineCtx, machine } from "./recorridas-machines";
 import { interpret, assign } from "xstate";
 import { gbl_state, nav_back } from "../state";
-import { SelectorController } from "xstate-lit/dist/select-controller";
+import { SelectorController } from "xstate-lit";
 import { getRecorrida, saveRecorrida } from "./recorrida-functions";
 import { showRecorridaFeatureCollectionOnMap } from "../mapa-principal/mapa-helpers";
 import { TextFieldChangeEvent } from "@vaadin/text-field";

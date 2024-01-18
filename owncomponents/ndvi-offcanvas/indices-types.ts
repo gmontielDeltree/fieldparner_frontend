@@ -17,7 +17,7 @@ export interface IndiceEspectral {
 addColorScale("RdYlGn",[d3.interpolateRdYlGn(0), d3.interpolateRdYlGn(0.5),d3.interpolateRdYlGn(1)], [0, 0.5, 1])
 addColorScale("Blues",[d3.interpolateBlues(0), d3.interpolateBlues(0.5),d3.interpolateBlues(1)], [0, 0.5, 1])
 
-
+// Colormaps deben matchear https://cogeotiff.github.io/rio-tiler/colormap/
 export const list_of_indexes: IndiceEspectral[] = [
   {
     name: "NDVI",
@@ -26,8 +26,8 @@ export const list_of_indexes: IndiceEspectral[] = [
     domain: [-1, 1],
     thresholds: [-1, 0.2, 0.3, 1],
     thresholds_labels: ["no-vegetacion", "pradera", "denso"],
-    colormap: "viridis",
-    colormap_fn: d3.interpolateViridis,
+    colormap: "piyg",
+    colormap_fn: d3.interpolatePiYG,
     descripcion:"NDVI define valores de -1.0 a 1.0, donde los valores negativos se forman principalmente a partir de nubes, agua y nieve, y los valores cercanos a cero se forman principalmente a partir de rocas y suelo desnudo. Valores muy pequeños (0,1 o menos) de la función NDVI corresponden a áreas vacías de rocas, arena o nieve. Los valores moderados (de 0,2 a 0,3) representan arbustos y praderas, mientras que los valores altos (de 0,6 a 0,8) indican bosques templados y tropicales."
   },
     {
@@ -81,8 +81,8 @@ export const list_of_indexes: IndiceEspectral[] = [
     domain: [-1, 1],
     thresholds: [-1, 0.2, 0.3, 1],
     thresholds_labels: ["no-vegetacion", "pradera", "denso"],
-    colormap: "viridis",
-    colormap_fn: d3.interpolateViridis,
+    colormap: "piyg",
+    colormap_fn: d3.interpolatePiYG,
     descripcion: "Se trata del primer índice de vegetación relativamente insensible a los factores atmosféricos (por ejemplo, aerosoles). Como muestra la fórmula, Kaufman y Tanré corrigieron el NDVI para mitigar los efectos de la dispersión atmosférica duplicando las mediciones del espectro rojo y añadiendo longitudes de onda azules."
   },
 
@@ -93,8 +93,8 @@ export const list_of_indexes: IndiceEspectral[] = [
     domain: [-1, 1],
     thresholds: [-1, 0.2, 0.3, 1],
     thresholds_labels: ["no-vegetacion", "pradera", "denso"],
-    colormap: "viridis",
-    colormap_fn: d3.interpolateViridis,
+    colormap: "piyg",
+    colormap_fn: d3.interpolatePiYG,
     descripcion: "El índice de vegetación GCI se utiliza para estimar el contenido de clorofila de las hojas en diversas especies de plantas. El contenido de clorofila refleja el estado fisiológico de la vegetación; disminuye en las plantas estresadas y, por tanto, puede utilizarse como medida de la salud de la vegetación."
   },
 
