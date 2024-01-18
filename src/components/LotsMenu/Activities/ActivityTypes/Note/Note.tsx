@@ -55,7 +55,13 @@ function Note({ activity, complementaryColor, handleDeleteActivity }) {
           <Typography
             sx={{ fontSize: 16, fontWeight: "bold" }}
             style={{ marginLeft: "10px" }}
-            color={activity.actividad.color}
+          >
+            {activity.actividad.nombre}
+          </Typography>
+
+          <Typography
+            sx={{ fontSize: 16, fontWeight: "bold" }}
+            style={{ marginLeft: "10px", color: activity.actividad.color }}
           >
             {activity.actividad.color == "red" ? "URGENTE" : "NORMAL"}
           </Typography>
@@ -73,15 +79,8 @@ function Note({ activity, complementaryColor, handleDeleteActivity }) {
 
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={handleMenuClose}>Editar</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Orden de Trabajo PDF</MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          Compartir Orden de Trabajo
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          Ejecución vs Planificación PDF
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem>
+        <MenuItem onClick={handleMenuClose}>Reporte de Corrida</MenuItem>
+        <MenuItem onClick={handleMenuClose}>Generar Planificacion</MenuItem>
         <MenuItem onClick={() => handleDeleteActivity(activity.actividad._id)}>
           Eliminar
         </MenuItem>

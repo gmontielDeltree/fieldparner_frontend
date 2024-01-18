@@ -8,6 +8,8 @@ import { supplySlice } from "./supply";
 import { depositSlice } from "./deposit";
 import { mapSlice } from "./map";
 import { drawSlice } from "./draw";
+import { fieldListSlice } from "./fieldsList";
+
 import { originsDestinationsSlice } from "./originsdestinatons/originDestiantionsSlice";
 
 const store = configureStore({
@@ -20,7 +22,8 @@ const store = configureStore({
     deposit: depositSlice.reducer,
     map: mapSlice.reducer,
     draw: drawSlice.reducer,
-    ordesti: originsDestinationsSlice.reducer
+    ordesti: originsDestinationsSlice.reducer,
+    fieldList: fieldListSlice.reducer
   }
 });
 

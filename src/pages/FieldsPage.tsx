@@ -19,6 +19,8 @@ import { Field, Lot } from "../interfaces/field";
 import { useDispatch, useSelector } from "react-redux";
 import { setMap, selectMap } from "../redux/map/mapSlice";
 import { selectDraw } from "../redux/draw/drawSlice";
+import { RootState } from "../redux/store";
+import FieldsSideMenu from "../components/FieldsSideMenu";
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
@@ -31,6 +33,9 @@ export const FieldsPage: React.FC = () => {
   const selectedFieldRef = useRef<Field | null>(null);
   const draw = useSelector(selectDraw);
   const dispatch = useDispatch();
+  const isVisible = useSelector(
+    (state: RootState) => state.fieldList.isVisible
+  );
 
   useEffect(() => {
     selectedFieldRef.current = selectedField;
@@ -131,6 +136,11 @@ export const FieldsPage: React.FC = () => {
 
       map.setPaintProperty(lotId + "-fill", "fill-color", "#808080");
     }
+  };
+
+  const handleSelectField = (field) => {
+    console.log("Field selected from menu:", field);
+    setSelectedField(field);
   };
 
   const handleSaveGeometry = (data) => {
@@ -412,7 +422,11 @@ export const FieldsPage: React.FC = () => {
   return (
     <>
       <MapComponent onMapLoad={onMapLoad} />
-
+      <FieldsSideMenu
+        open={isVisible}
+        fields={fields}
+        onSelectField={handleSelectField}
+      />
       <Button
         color="primary"
         variant="contained"

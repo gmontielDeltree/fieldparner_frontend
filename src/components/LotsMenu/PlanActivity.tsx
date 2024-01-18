@@ -287,7 +287,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     console.log("FORM DATA: ", formData);
   });
 
-  const ActivityIcon = activityIcons[activityType] || LocalFloristIcon; // Default icon if not found
+  const ActivityIcon = activityIcons[activityType] || LocalFloristIcon;
 
   return (
     <div>
@@ -313,7 +313,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             }
           }}
         >
-          Planificar {translatedActivityType}
+          Programar {translatedActivityType}
         </Typography>
       </Box>
       <Stepper
