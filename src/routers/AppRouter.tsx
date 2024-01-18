@@ -8,7 +8,7 @@ export const AppRouter: React.FC = () => {
     // Todas las rutas de la app
     const router = createBrowserRouter([
         { path: '/init/*', element: <InitRouter /> },
-        { path: "*", element:<Navigate to="/init/*" replace />}
+        // { path: "*", element:<Navigate to="/init/*" replace />}
     ],);
 
     return <RouterProvider router={router} />
