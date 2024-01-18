@@ -37,6 +37,9 @@ import ContrastIcon from "@mui/icons-material/Contrast";
 import ImageIcon from "@mui/icons-material/Image";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import { geotiff_to_excel } from "../../../owncomponents/ndvi-offcanvas/geotiff-helpers";
+import { useNavigate } from "react-router-dom";
+import { GroupWork } from "@mui/icons-material";
+import Close from "@mui/icons-material/Close";
 
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN =
@@ -62,6 +65,7 @@ export const SatelliteMap: React.FC = ({
 }: any) => {
   const mapRef = useRef<MapRef>();
 
+  const navigate = useNavigate()
   const [origin, setOrigin] = useState(false);
 
   const onMove = useCallback((evt) => {
@@ -298,7 +302,7 @@ export const SatelliteMap: React.FC = ({
         <Paper
           style={{
             position: "absolute",
-            top: "30px",
+            top: "1%",
             marginLeft: "10px",
             display: "flex",
             gap: "10px",
@@ -356,13 +360,19 @@ export const SatelliteMap: React.FC = ({
           style={{
             position: "absolute",
             zIndex: 2,
-            top: "30px",
+            top: "3%",
             right: "10px",
             display: "flex",
             flexDirection: "column",
             gap: "10px",
           }}
         >
+           <Button variant="contained" sx={{marginBottom:"3rem"}} color="error" onClick={()=>{
+            navigate(-1)
+          }} title="Close">
+            <Close />
+          </Button>
+
           <Button variant="contained" onClick={()=>{
             geotiff_to_excel(import.meta.env.VITE_COGS_SERVER_URL + indiceRequestResponse.tiff_url, indice.name);
           }} title="Download EXCEL">
@@ -382,6 +392,15 @@ export const SatelliteMap: React.FC = ({
           <Button
             variant="contained"
             onClick={() => {
+              navigate("/init/overview/zoning/"+ indiceRequestResponse?.png_url.split("/")[3].replace(".png","") )
+            }}
+            title="Ambientador"
+          >
+            <GroupWork />
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
               onDualToggle();
             }}
             title="Dual Map"
@@ -397,11 +416,11 @@ export const SatelliteMap: React.FC = ({
                 position: "absolute",
                 zIndex: 5,
                 top: "25%",
-                right: "3%",
+                right: "6%",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
-                maxWidth:"25%",
+                maxWidth:"17%",
                 backgroundColor: "#1976d299",
               }}
             >

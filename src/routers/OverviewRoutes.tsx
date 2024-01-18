@@ -21,12 +21,26 @@ import {
 } from "../pages";
 import { AppLayout } from "../components";
 import { SatellitePage } from "../pages/SatellitePage";
+import { DevicePage } from "../pages/DevicePage";
+import { PricesPage } from "../pages/PricesPage";
+import { ZoningPage } from "../pages/ZoningPage";
+import { IntegrationsPage } from "../pages/IntegrationsPage";
+import { PlanificationPage } from "../pages/PlanificationPage";
+import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
+import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
 
 export const OverviewRoutes: React.FC = () => {
   return (
     <AppLayout key="app-layout">
       <Routes>
-        <Route path="/overview/fields" element={<FieldsPage />} />
+        <Route path="/overview/fields" element={<FieldsPage />} >
+          <Route path="device/:deviceId/:date" element={<DevicePage/>}/>
+          <Route path="integrations" element={<IntegrationsPage />} />
+          <Route path="john-deere" element={<JohnDeereIntegration/>}/>
+          <Route path="magris/:id" element={<MagrisReportIntegration/>}/>
+          <Route path="magris" element={<MagrisIntegration/>}/>
+        </Route>
+
         <Route path="/overview/vehicle" element={<ListVehiclesPage />} />
         <Route path="/overview/vehicle/new" element={<VehiclePage />} />
         <Route path="/overview/vehicle/:id" element={<VehiclePage />} />
@@ -62,7 +76,12 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />
 
 
-        <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
+        <Route path="/overview/satellite/:loteId" element={<SatellitePage />}  />
+        <Route path="/overview/zoning/:baseImageName" element={<ZoningPage />} />
+        <Route path="/overview/prices" element={<PricesPage />} />
+        <Route path="/overview/planification" element={<PlanificationPage />} />
+
+        
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

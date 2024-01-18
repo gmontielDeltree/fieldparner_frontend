@@ -177,7 +177,11 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary="Zonas/Agrupaciones" />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton sx={{ pl: 4 }}
+                              component={RouterLink}
+                              to="/init/overview/prices"
+                              selected={pathname.includes("/init/overview/prices")}
+              >
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>

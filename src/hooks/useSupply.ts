@@ -21,10 +21,10 @@ export const useSupply = () => {
     const getSupplies = async () => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("Usuario no encontrado.");
+            // if (!user) throw new Error("Usuario no encontrado.");
 
             const result = await dbContext.supplies.find({
-                selector: { "accountId": user.accountId, },
+                selector: { "accountId": user?.accountId, },
             });
 
             setIsLoading(false);
