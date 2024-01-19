@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "../hooks";
 import { PublicRoutes } from "./PublicRoutes";
 import { OverviewRoutes } from "./OverviewRoutes";
@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 export const InitRouter = () => {
   let navigate = useNavigate();
   let location = useLocation();
+  const [from, setFrom] = useState()
 
   const { status, checkAuthToken } = useAuthStore();
 
@@ -17,7 +18,7 @@ export const InitRouter = () => {
 
   useEffect(() => {
     if(status === "authenticated"){
-      navigate(-1);
+      navigate(-2);
     }
   }, [status]);
 
