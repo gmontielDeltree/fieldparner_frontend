@@ -17,17 +17,17 @@ export const InitRouter = () => {
   }, []);
 
   
-  useEffect(() => {
-    if(status === "authenticated"){
-      // Despues de autenticar hay que volver a -2 
-      // para recuperar la url antes del login. Ej.:
-      // 1 - /init/overview/deposits
-      // 2 - /login (por checkAuthToken)
-      // 3 - /init/overview/fields (por el render de mas abajo)
-      // 4 - navigate(-2) vuelve a /init/overview/deposits 
-      navigate(-2);
-    }
-  }, [status]);
+  // useEffect(() => {
+  //   if(status === "authenticated"){
+  //     // Despues de autenticar hay que volver a -2 
+  //     // para recuperar la url antes del login. Ej.:
+  //     // 1 - /init/overview/deposits
+  //     // 2 - /login (por checkAuthToken)
+  //     // 3 - /init/overview/fields (por el render de mas abajo)
+  //     // 4 - navigate(-2) vuelve a /init/overview/deposits 
+  //     navigate(-2);
+  //   }
+  // }, [status]);
 
 
   if (status === "checking") {
