@@ -51,6 +51,9 @@ export const FieldsPage: React.FC = () => {
       db.get(campoId).then((campo)=>{
         const lot = campo.lotes.find((l) => l.id === loteId);
         setSelectedField(campo)
+        if(lot === undefined){
+          return
+        }
         setSelectedLot(lot)
         
         console.log("Lot geometry:", lot.geometry);

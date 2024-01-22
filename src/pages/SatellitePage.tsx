@@ -9,6 +9,7 @@ import bbox from "@turf/bbox";
 import { format } from "date-fns";
 import centroid from "@turf/centroid";
 import { SatelliteMap } from "../components/Satellite/SatelliteMap";
+import { dbContext } from "../services";
 
 export const SatellitePage: React.FC = () => {
   const database_name = "campos_randyv7";

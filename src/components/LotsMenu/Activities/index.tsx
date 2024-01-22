@@ -15,6 +15,7 @@ import { mapboxStaticImg } from "../../../utils/mapboxStaticImg";
 import { googleMapsLinkGoTo } from "../../../utils/googleMapsLink";
 import ordenDefinition from "../../../utils/ordenDefinition";
 import { error } from "xstate/lib/actions";
+import { dbContext } from "../../../services";
 
 const Alert = styled(MuiAlert)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -40,7 +41,7 @@ export const Activities = ({
 }) => {
   console.log("ACTIVITIES DATA: ", activitiesData);
   const [userMessage, setUserMessage] = useState("");
-  const db = new PouchDB("campos_randyv7");
+  const db = dbContext.fields //new PouchDB("campos_randyv7");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
