@@ -162,6 +162,7 @@ export const NavBar: React.FC<NavBarProps> = ({
             <ButtonBase
               onClick={() => selectAvatar("avatar1")}
               sx={{ borderRadius: "50%", marginRight: "18px" }}
+              title="Campos"
             >
               <Avatar
                 alt="Campo"
@@ -171,7 +172,7 @@ export const NavBar: React.FC<NavBarProps> = ({
             </ButtonBase>
             <ButtonBase
               onClick={() => navigate("/init/overview/fields/integrations")}
-              sx={{ borderRadius: "50%", marginRight: "18px" }}
+              sx={{ borderRadius: "50%", marginRight: "18px" }} title="Integraciones"
             >
               <Avatar
                 alt="Integrations"

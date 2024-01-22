@@ -19,18 +19,19 @@ import { Field, Lot } from "../interfaces/field";
 import { useDispatch, useSelector } from "react-redux";
 import { setMap, selectMap } from "../redux/map/mapSlice";
 import { selectDraw } from "../redux/draw/drawSlice";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Devices } from "../../owncomponents/sensores/sensores";
 import { addDepositosToMap } from "../../owncomponents/mapa-principal/depositos-layer";
 import { useDeposit } from "../hooks";
 import useResizeObserver from '@react-hook/resize-observer'
+import { dbContext } from "../services";
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
   const [showNewLot, setShowNewLot] = useState(false);
   const map = useSelector(selectMap);
   const [fields, setFields] = useState<Field[]>([]);
-  const db = new PouchDB("campos_randyv7");
+  const db = dbContext.fields // new PouchDB("campos_randyv7");
   const [selectedField, setSelectedField] = useState<any | null>(null);
   const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
   const selectedFieldRef = useRef<Field | null>(null);
@@ -38,7 +39,64 @@ export const FieldsPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const {loteId, campoId} = useParams();
+
   const { deposits, getDeposits } = useDeposit();
+
+
+
+  useEffect(() => {
+    if(loteId && campoId && map){
+ 
+      db.get(campoId).then((campo)=>{
+        const lot = campo.lotes.find((l) => l.id === loteId);
+        setSelectedField(campo)
+        setSelectedLot(lot)
+        
+        console.log("Lot geometry:", lot.geometry);
+
+        const lotCentroid = centroid(lot.geometry);
+        if (
+          lotCentroid &&
+          lotCentroid.geometry &&
+          lotCentroid.geometry.coordinates
+        ) {
+          const centroidCoordinates = lotCentroid.geometry.coordinates;
+          console.log("Centroid coordinates:", centroidCoordinates);
+  
+          if (
+            Array.isArray(centroidCoordinates) &&
+            centroidCoordinates.length === 2
+          ) {
+            const longitudeAdjustment = 0.005;
+            const adjustedCoordinates = [
+              centroidCoordinates[0] - longitudeAdjustment,
+              centroidCoordinates[1],
+            ];
+  
+            map.flyTo({ center: adjustedCoordinates, zoom: 16, pitch: 45 });
+          } else {
+            console.error("Invalid centroid coordinates:", centroidCoordinates);
+          }
+        } else {
+          console.error("Unable to calculate the centroid of the lot");
+        }
+  
+        map.setPaintProperty(loteId + "-fill", "fill-color", "#808080");
+      })
+    }
+  },[loteId, campoId, map])
+
+  useEffect(() => {
+    if(campoId && map){
+
+      db.get(campoId).then((campo)=>{
+        setSelectedField(campo)
+        addLotsToMap(map, campo.lotes);
+        handleLocateField();
+      })
+    }
+  },[campoId, map])
 
   /* Es para forzar el resizing del mapa siempre
     Cuando la pagina de
@@ -106,6 +164,7 @@ export const FieldsPage: React.FC = () => {
 
             addLotsToMap(map, fieldDoc.lotes);
             handleLocateField();
+            navigate(fieldId)
           } catch (err) {
             console.error("Error fetching field from PouchDB", err);
           }
@@ -138,6 +197,7 @@ export const FieldsPage: React.FC = () => {
     const lot = currentSelectedField.lotes.find((l) => l.id === lotId);
     if (lot && map) {
       setSelectedLot(lot);
+      navigate(lotId)
 
       console.log("Lot geometry:", lot.geometry);
 
@@ -250,6 +310,9 @@ export const FieldsPage: React.FC = () => {
       map.setPaintProperty(selectedLot.id + "-fill", "fill-color", "#0080ff");
     }
 
+    if(campoId){
+      navigate("/init/overview/fields/" + campoId)
+    }
     setSelectedLot(null);
   };
 
@@ -425,6 +488,7 @@ export const FieldsPage: React.FC = () => {
 
     setShowNewLot(true);
   };
+
   const fetchData = async () => {
     try {
       const allDocs = await db.allDocs({ include_docs: true });
@@ -486,6 +550,7 @@ export const FieldsPage: React.FC = () => {
           onClose={() => {
             removeLotsFromMap(map, selectedField.Lotes);
             setSelectedField(null);
+            navigate("/init/overview/fields")
           }}
           onDelete={handleDeleteField}
           onLocate={handleLocateField}

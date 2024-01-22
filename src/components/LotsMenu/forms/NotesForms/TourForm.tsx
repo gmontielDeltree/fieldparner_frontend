@@ -72,7 +72,7 @@ const FeatureAccordion = styled(Accordion)({
 });
 
 function TourForm({ lot, formData, setFormData, tourSave }) {
-  const db = new PouchDB("campos_randyv7");
+  const db = dbContext.fields//new PouchDB("campos_randyv7");
   const [isPointMode, setIsPointMode] = useState(false);
   const [point, setPoint] = useState({ properties: { nombre: "", notas: "" } });
   const [imageUrls, setImageUrls] = useState({});
