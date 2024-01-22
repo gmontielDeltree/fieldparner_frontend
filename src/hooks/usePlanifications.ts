@@ -7,6 +7,7 @@ import { IPlanificacion } from "../interfaces/planification";
 export const usePlanification = () => {
   const { user } = useAppSelector((state) => state.auth);
   const [planifications, setPlanifications] = useState<IPlanificacion[]>([]);
+  const [planificationsByField, setPlanificationsByField] = useState<IPlanificacion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   let db = dbContext.fields as unknown as PouchDB.Database<IPlanificacion>;
@@ -66,17 +67,36 @@ export const usePlanification = () => {
     }
   };
 
+
+  const getPlanificationByField = async (campaingId:string,fieldId:string) =>{
+ 
+    setIsLoading(false);
+
+    let baseId = "plan:"+campaingId+":"+fieldId;
+
+    let result = await db.allDocs({startkey:"", endkey:"",include_docs:true})
+
+    if (result.rows) {
+      const documents: IPlanificacion[] = result.rows.map(
+        (row) => row.doc as IPlanificacion
+      );
+      setPlanificationsByField(documents)
+    }
+  }
+
   // const removeSupply = async () => {
 
   // }
 
   return {
     planifications,
+    planificationsByField,
     isLoading,
 
     setPlanifications,
     getPlanifications,
     putPlanification,
     deletePlanification,
+    getPlanificationByField,
   };
 };

@@ -39,7 +39,7 @@ export const useField = () => {
 
     return {
         //* Props
-        campaigns: fields,
+        fields,
         error,
         isLoading,
 
