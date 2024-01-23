@@ -55,6 +55,7 @@ export const dbContext = Object.freeze({
     originsDestinations: new PouchDB<OriginDestinations>(dbNames.originsDestinations)
 });
 
+dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
 dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
 dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
 // dbContext.zipCodeArg.sync(`${remoteCouchDBUrl}${dbNames.zipCodeArg}`, opts);
