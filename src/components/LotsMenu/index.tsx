@@ -16,6 +16,7 @@ import { Actividad } from "../../interfaces/activity";
 import { isBefore, parseISO } from "date-fns";
 import GroundSample from "./GroundSample";
 import { useNavigate } from "react-router-dom";
+import { dbContext } from "../../services";
 
 interface LotsMenuProps {
   lot: any;
@@ -25,7 +26,7 @@ interface LotsMenuProps {
 }
 
 const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
-  const db = new PouchDB("campos_randyv7");
+  const db = dbContext.fields //new PouchDB("campos_randyv7");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activities, setActivities] = useState(null);
 

@@ -12,13 +12,12 @@ export const AnalisisPreciosReact = createComponent({
   elementClass: AnalisisPrecios,
 
   react: React,
+   events: {
 
-//   events: {
-
-//     onactivate: 'activate',
+     onClose: 'onClose',
 
 //     onchange: 'change',
 
-//   },
+   },
 
 });

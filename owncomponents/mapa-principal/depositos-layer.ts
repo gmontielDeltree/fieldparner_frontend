@@ -119,7 +119,7 @@ export const addDepositosToMap = (map, depos: Deposit[], clickCallback ) => {
         type: "Feature",
         properties: {
           item: d,
-          url: "/init/overview/deposit/" + d._id,
+          url: "/init/overview/list-stock?depositId=" + d._id,
           description: `<strong style='font-size:16px'>${
             d.description
           }</strong><br><div>${"Deposito"}</div>`,

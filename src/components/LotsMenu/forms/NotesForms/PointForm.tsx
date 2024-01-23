@@ -32,9 +32,10 @@ import {
 } from "./PointFormStyles";
 import PlaceMarker from "../../../NewGeometry/PlaceMarker";
 import { set } from "date-fns";
+import { dbContext } from "../../../../services";
 
 function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
-  const db = new PouchDB("campos_randyv7");
+  const db = dbContext.fields //new PouchDB("campos_randyv7");
   const [point, setPoint] = useState({
     properties: {
       nombre: "",

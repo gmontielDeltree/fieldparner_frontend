@@ -9,6 +9,9 @@ import {
 import { uuidv7 } from "uuidv7";
 import { formatISO } from "date-fns";
 import { usePlanification } from "../hooks/usePlanifications";
+import { ActividadCardBase } from "../components/Planification/ActividadCardBase";
+import { PlanificationByField } from "../components/Planification/PlanificationByField";
+import { Grid } from "@mui/material";
 
 export const PlanificationPage: React.FC = () => {
   const { planifications, getPlanifications, putPlanification } =
@@ -17,7 +20,7 @@ export const PlanificationPage: React.FC = () => {
   useEffect(() => {
     getPlanifications();
   }, []);
-  
+
   useEffect(() => {
     console.log("planificaciones", planifications);
   }, [planifications]);
@@ -76,12 +79,21 @@ export const PlanificationPage: React.FC = () => {
       userId: "",
       date: "",
     },
-    _id: "plan:"+uuidv7(),
+    _id: "plan:" + uuidv7(),
   };
 
   return (
     <>
       <div>
+        <Grid container></Grid>
+
+        <PlanificationByField
+          planId="dsdsds"
+          fieldId="dsdsds"
+        ></PlanificationByField>
+
+        <ActividadCardBase actividad={actDoc}></ActividadCardBase>
+
         <ActividadEditorBase
           actividadDoc={plan.ciclos[0].actividades[0]}
           onSave={() => {
