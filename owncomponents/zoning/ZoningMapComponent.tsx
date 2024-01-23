@@ -20,6 +20,9 @@ import Modal from "@mui/material/Modal";
 //const test_base_image 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import styles from "./index.module.css"
+import Icon from '@mui/material/Icon';
+import CancelIcon from '@mui/icons-material/Cancel';
+import { useNavigate } from "react-router-dom";
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
@@ -61,6 +64,8 @@ const modal_style = {
 export const ZoningMapComponent : React.FC = ({ baseImageNameParam }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
+
+  const navigate = useNavigate()
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -150,9 +155,12 @@ export const ZoningMapComponent : React.FC = ({ baseImageNameParam }) => {
 
   return (
       <Grid container spacing={0} sx={{position:"relative", width:"100%"}}>
-        <Grid item xs={3}>
-          <h3 className="main-title">Zone Generator</h3>
-          <h4 className="agrotools-title">by Agrotools</h4>
+        <Grid item xs={3} sx={{textAlign: "center"}}>
+          <div style={{display:"flex", width:"100%", justifyContent:"space-between", padding:"1rem", alignItems: "center"}}>
+            <h3 className="main-title" style={{margin:"0px"}}>Zone Generator</h3>
+            <Button onClick={()=>navigate(-1)} startIcon={<Icon component={CancelIcon} />} color="secondary"></Button>
+          </div>
+          {/* <h4 className="agrotools-title">by Agrotools</h4> */}
 
           {state.matches("settingParameters") && (
             <>
