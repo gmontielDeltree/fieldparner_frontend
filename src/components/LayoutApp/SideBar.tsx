@@ -185,7 +185,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Precios Mercado" />
+                <ListItemText primary="Mercados" />
               </ListItemButton>
 
             </List>
