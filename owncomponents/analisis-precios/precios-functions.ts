@@ -1,9 +1,11 @@
+import axios from "axios";
 
 export const fetch_precios = async (ticker) => {
-   let url = "/prices/car/" + ticker + "/precio.json"
-    let prices = await fetch(url).then((result) => {
-        console.log(result.body);
-        return result.json();
+  //  let url = "/prices/car/" + ticker + "/precio.json"
+   let url = "https://agrotools.qts-ar.com.ar/platform/" + ticker
+    let prices = await axios(url).then((result) => {
+        console.log(result.data);
+        return result.data.data;
       })
     
     return prices as [number,number][]

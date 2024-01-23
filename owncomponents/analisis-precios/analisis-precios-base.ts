@@ -22,6 +22,7 @@ import "./tabla-precios";
 import { nav_back } from "../state";
 import { fetch_precios, price_tickers } from "./precios-functions";
 import "../modal-generico/modal-generico";
+import { css } from "lit-element";
 
 const solo_exchange = (tickers, ex) => {
   return tickers.filter((t) => t.exchange === ex);
@@ -29,9 +30,14 @@ const solo_exchange = (tickers, ex) => {
 
 @customElement("analisis-precios")
 export class AnalisisPrecios extends LitElement {
-  static override styles: CSSResultGroup = [
+  static override styles = [
     unsafeCSS(apex_css),
     unsafeCSS(gridcss),
+    css`
+      vaadin-tabsheet::part(content) {
+       overflow: hidden;
+      }
+    `,
   ];
 
   @state()
@@ -82,7 +88,7 @@ export class AnalisisPrecios extends LitElement {
   render() {
     return html`
       <div class="container" style="width: 100%;">
-        <vaadin-tabsheet>
+        <vaadin-tabsheet style="overflow:unset;">
             <vaadin-tabs slot="tabs">
               <vaadin-tab id="dashboard-tab">Precios</vaadin-tab>
               <vaadin-tab id="payment-tab">Monedas</vaadin-tab>  
