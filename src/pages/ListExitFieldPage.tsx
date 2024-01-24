@@ -11,26 +11,29 @@ import {
 import { useExitField } from '../hooks';
 import { useNavigate } from 'react-router';
 import { ColumnProps } from '../types';
+import { useTranslation } from 'react-i18next';
 
 
 
-const columns: ColumnProps[] = [
-  { text: "Fecha", align: "center" },
-  { text: "Campo", align: "center" },
-  { text: "Lote", align: "center" },
-  { text: "Campaña", align: "left" },
-  { text: "Insumo", align: "center" },
-  { text: "Transporte", align: "center" },
-  { text: "Kg Netos", align: "center" },
-  { text: "", align: "center" }
-];
 
 export const ListExitFieldPage: React.FC = () => {
 
   const navigate = useNavigate();
   const { isLoading, exitFields, getExitFields } = useExitField();
+const {t} = useTranslation();
 
   const onClickAdd = () => navigate("/init/overview/exit-field/new");
+
+  const columns: ColumnProps[] = [
+    { text: t("_date"), align: "center" },
+    { text: t("_field"), align: "center" },
+    { text: t("_batch"), align: "center" },
+    { text: t("_campaign"), align: "left" },
+    { text: t("_supply"), align: "center" },
+    { text: t("_transport"), align: "center" },
+    { text: t("net_kg"), align: "center" },
+    { text: "", align: "center" }
+  ];
 
   useEffect(() => {
     getExitFields();
@@ -49,7 +52,7 @@ export const ListExitFieldPage: React.FC = () => {
         <Box display="flex" alignItems="center">
           <AgricultureIcon fontSize='large' /> <ArrowRightAltIcon fontSize='large' />
           <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-            Salida de Campo
+            {t("field_output")}
           </Typography>
         </Box>
         <CloseButtonPage />
@@ -70,7 +73,7 @@ export const ListExitFieldPage: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={onClickAdd}
             >
-              Nuevo
+              {t("new_masculine")}
             </Button>
           </Grid>
         </Grid>
@@ -85,16 +88,16 @@ export const ListExitFieldPage: React.FC = () => {
                 <TableCellStyled align="center">
                   {row.creationDate}
                 </TableCellStyled>
-                <TableCellStyled align="center">{row.field} </TableCellStyled>
-                <TableCellStyled align="center">{row.lot}</TableCellStyled>
-                <TableCellStyled>{row.campaign}</TableCellStyled>
+                <TableCellStyled align="center">{row.field?.nombre} </TableCellStyled>
+                <TableCellStyled align="center">{row.field?.lotes.find(l => l._id === row.lotId)?.properties.nombre}</TableCellStyled>
+                <TableCellStyled>{row.campaignId}</TableCellStyled>
                 <TableCellStyled align="center">{row.supply?.name}</TableCellStyled>
                 <TableCellStyled>{row.transport?.nombreCompleto}</TableCellStyled>
                 <TableCellStyled>{row.kgNet}</TableCellStyled>
                 <TableCellStyled align="center">
-                  <Tooltip title="Editar">
+                  <Tooltip title={t("icon_edit")}>
                     <IconButton
-                      aria-label="Editar"
+                      aria-label={t("icon_edit")}
                       onClick={() => console.log(row)}
                     >
                       <EditIcon />

@@ -57,6 +57,13 @@ export const useForm = <T extends Object>(initialState: T) => {
         });
     }
 
+    const handleGeolocationChange = ({lng , lat} : {lng:number, lat:number}) => {
+        setFormulario({
+            ...formulario,
+            geolocation: {lng,lat}
+        });
+    }
+
     return {
         formulario,
         handleInputChange,
@@ -66,6 +73,7 @@ export const useForm = <T extends Object>(initialState: T) => {
         handleYearChange,
         handleFormValueChange,
         handleCheckboxChange,
+        handleGeolocationChange,
         ...formulario
     }
 };

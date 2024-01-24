@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+
+
 export interface NavBarProps {
     drawerWidth: number;
     open: boolean;
@@ -15,21 +18,12 @@ export interface MenuOptions {
     icon: React.ReactNode;
 }
 
-export enum VehicleType {
-    Cosechadora = "Cosechadora",
-    Pulverizadora = "Pulverizadora",
-    Tractor = "Tractor",
-    Camioneta = "Camioneta",
-    Camion = "Camion",
-    Tolva = "Tolva",
-    Otros = "Otros",
-}
+
 
 export interface TypeVehicle extends Document {
     name: string;
 }
 
-export enum TipoCombustible { Diesel = "Diesel", Nafta = "Nafta" }
 
 export interface Mantenimiento {
     id: string;
@@ -58,8 +52,7 @@ export interface Vehicle extends Document {
     tara: number;
     net: number;
     gross: number;
-    chassis: string;
-    truckTrailer: string;
+    chassisNumber: string;
     fuelType: string;
     fuelCapacity: number;
     unitMeasurement: string;
@@ -81,11 +74,6 @@ export interface ColumnProps {
     align: 'inherit' | 'left' | 'center' | 'right' | 'justify';
 }
 
-export enum Estado {
-    Todos = 'Todos',
-    Activo = 'Activo',
-    Inactivo = 'Inactivo'
-};
 
 export interface RowData {
     name: string;
@@ -141,11 +129,6 @@ export interface AuthState {
     user: User | null;
     errorMessage: string;
     isLoading: boolean;
-}
-
-export enum TipoEntidad {
-    FISICA = 'fisica',
-    JURIDICA = 'juridica',
 }
 
 export interface Business extends Document {
@@ -207,17 +190,12 @@ export interface OriginDestinationsState {
     originsDestinationsActive: OriginDestinations | null;
     OriginsDestinations: OriginDestinations[];
 }
-export interface OriginDestinations extends Document   {
 
-        name: string;
-        description: string;
-        procedencia: boolean;
-        destino: boolean;
-}
-
-
-export enum TipoInsumo {
-    CULTIVO = "CuLtivo",
+export interface OriginDestinations extends Document {
+    name: string;
+    description: string;
+    procedencia: boolean;
+    destino: boolean;
 }
 
 export const LaboresItems = [
@@ -228,59 +206,74 @@ export const LaboresItems = [
     "Cosecha",
 ];
 
-export const UnidadesDeMedida = [
-    "KILOGRAMO",
-    "METROS",
-    "METRO CUADRADO",
-    "METRO CUBICO",
-    "LITROS",
-    "UNIDAD",
-    "PAR",
-    "DOCENA",
-    "GRAMO",
-    "MILIMETRO",
-    "MMCUBICO",
-    "KILOMETRO",
-    "HECTOLITRO",
-    "CENTIMETRO",
-    "JGO.PQT.MAZO NAIPES",
-    "CMCUBICO",
-    "TONELADA",
-    "HMCUBICO",
-    "KMCUBICO",
-    "MICROGRAMO",
-    "NANOGRAMO",
-    "MILIGRAMO",
-    "MILILITRO",
-    "GRUESA",
-    "KG.BRUTO",
-    "SEMILLAS",
-    "BOLSAS",
-    "QUINTAL",
-];
 
-export const TypeSupplies = [
-    "Varios",
-    "Semillas",
-    "Cultivo",
-    "Fertilizantes",
-    "Fitosanitarios",
-    "Repuestos",
-    "Materiales",
-    "Combustible"
-];
 
-export const TypeMovements = [
-    "Ajustes",
-    "Compra",
-    "Ventas Varias",
-    "Transferencia entre depositos",
-    "Prestamos",
-];
+export const UnidadesDeMedida = () => {
+    const {t} = useTranslation();
+
+    return [
+    t("_kilogram"),
+    t("_meters"),
+    t("square_meter"),
+    t("cubic_meter"),
+    t("_liters"),
+    t("_unit"),
+    t("_pair"),
+    t("_dozen"),
+    t("_gram"),
+    t("_millimeter"),
+    t("cubic_millimeter"),
+    t("_kilometer"),
+    t("_hectoliter"),
+    t("_centimeter"),
+    t("set_pack_deck_of_cards"),
+    t("cubic_centimeter"),
+    t("_ton"),
+    t("hectocubic_meter"),
+    t("kilocubic_meter"),
+    t("_microgram"),
+    t("_nanogram"),
+    t("_milligram"),
+    t("_milliliter"),
+    t("_gross"),
+    t("gross_kilogram"),
+    t("_seeds"),
+    t("_bags"),
+    t("_quintal"),
+    ];
+};
+
+//"JGO.PQT.MAZO NAIPES",
+
+export const TypeSupplies  = () => {
+    const {t} = useTranslation();
+
+    return [
+    t("_various"),
+    t("seeds_min"),
+    t("_cultivation"),
+    t("_fertilizers"),
+    t("_phytosanitary"),
+    t("spare_parts"),
+    t("_materials"),
+    t("_fuel"),
+    ];
+};
+
+export const TypeMovements = () => {
+    const { t } = useTranslation();
+    return [
+      t("_adjustments"),
+      t("_purchase"),
+      t("various_sales"),
+      t("transfer_between_warehouses"),
+      t("_loans"),
+    ];
+};
 
 export interface Lot {
-    nro: string;
-    location: string;
+nro: string;
+location: string;
 }
 
 export interface DepositState {
@@ -293,7 +286,7 @@ export interface Deposit extends Document {
     description: string;
     owner: string;
     isVirtual: boolean;
-    geolocation: string;
+    geolocation: {lng : number, lat:number};
     isNegative: boolean;
     address: string;
     zipCode: string;
@@ -314,11 +307,6 @@ export interface Category extends Document {
     description: string;
 }
 
-export enum CountryCode {
-    ARGENTINA = 'ARG',
-    BRASIL = "BRA",
-    CHILE = "CHL",
-}
 
 export interface StockMovement extends Document {
     accountId: string;
@@ -339,7 +327,7 @@ export interface StockMovement extends Document {
     currency: string;
     totalValue: number;
     hours: string;
-    campaign: number;
+    campaignId: string;
 }
 
 export interface StockMovementItem extends StockMovement {
@@ -373,34 +361,6 @@ export interface StockBySupply {
     reservedStock: number;
 }
 
-export enum CurrencyCode {
-    ARG = 'ARS',
-    BRA = 'BRL',
-    CHL = 'CLP',
-    USA = 'USD',
-    EURO = 'EUR',
-}
-
-export enum TypeMovement {
-    Ajustes = "Ajustes",
-    Compra = "Compra",
-    VentasVarias = "Ventas Varias",
-    TransferenciaDeposito = "Transferencia entre depositos",
-    Prestamos = "Prestamos",
-    Transformacion = "Transformacion",
-    SalidaDeCampo = "Salida de Campo",
-}
-
-export enum Movement {
-    Manual = "Manual",
-    Automatico = "Automatico"
-}
-
-export enum DisplayModals {
-    SupplyByDeposits = "SupplyByDeposits",
-    SupplyByLots = "SupplyByLots"
-}
-
 export interface DepositDestination {
     depositId: string;
     location: string;
@@ -432,19 +392,19 @@ export interface TransformSupply {
 export interface ExitField extends Document {
     accountId: string;
     creationDate: string;
-    campaign: number;
-    field: string;
-    lot: string;
+    campaignId: string;
+    fieldId: string;
+    lotId: string;
     supplyId: string;
     transportId: string;
     truckerId: string;
-    has: string;
+    // has: string;
     cultive: string;
     transportDocument: string;
     ticket: string;
     vehicleId: string;
+    truckTrailerId: string;
     chassis: string;
-    truckTrailer: string;
     grossWeight: number;
     tareWeight: number;
     netWeight: number;
@@ -465,8 +425,111 @@ export interface ExitFieldItem extends ExitField {
     deposit?: Deposit;
     supply?: Supply;
     transport?: Business;
+    field?: Field;
     // trucker?: Business;
     // harvester?: Business;
+}
+
+export interface Campaign extends Document {
+    accountId: string;
+    campaignId: string;
+    description: string;
+    zoneId: string;
+    creationDate: string;
+    startDate: string;
+    endDate: string;
+    state: Estado;
+}
+
+
+//TODO: cambiar interfaz field
+export interface Lot extends Document {
+    // id: string;
+    type: string;
+    properties: {
+        nombre: string;
+        campo_parent_id: string;
+        uuid: string;
+        hectareas: number;
+    };
+    geometry: {
+        coordinates: number[][][];
+        type: string;
+    };
+}
+
+export interface Field extends Document {
+    accountId: string;
+    nombre: string;
+    campo_geojson: any;
+    uuid: string;
+    lotes: Lot[];
+    // _id: string;
+    // _rev: string;
+}
+
+//#region Enums
+
+export enum TipoCombustible {
+    Diesel = "Diesel",
+    Nafta = "Nafta"
+}
+
+export enum Estado {
+    Todos = 'Todos',
+    Activo = 'Activo',
+    Inactivo = 'Inactivo'
+};
+
+
+export enum TipoEntidad {
+    FISICA = 'fisica',
+    JURIDICA = 'juridica',
+}
+
+export enum CountryCode {
+    ARGENTINA = 'ARG',
+    BRASIL = "BRA",
+    CHILE = "CHL",
+}
+
+export enum CurrencyCode {
+    ARG = 'ARS',
+    BRA = 'BRL',
+    CHL = 'CLP',
+    USA = 'USD',
+    EURO = 'EUR',
+}
+
+export enum TypeMovement {
+    Ajustes = "Ajustes",
+    Compra = "Compra",
+    VentasVarias = "Ventas Varias",
+    TransferenciaDeposito = "Transferencia entre depositos",
+    Prestamos = "Prestamos",
+    Transformacion = "Transformacion",
+    SalidaDeCampo = "Salida de Campo",
+}
+
+export enum Movement {
+    Manual = "Manual",
+    Automatico = "Automatico"
+}
+
+export enum DisplayModals {
+    SupplyByDeposits = "SupplyByDeposits",
+    SupplyByLots = "SupplyByLots"
+}
+
+export enum VehicleType {
+    Cosechadora = "Cosechadora",
+    Pulverizadora = "Pulverizadora",
+    Tractor = "Tractor",
+    Camioneta = "Camioneta",
+    Acoplado = "Acoplado",
+    Camion = "Camion",
+    Tolva = "Tolva",
+    Otros = "Otros",
 }
 
 export enum SupplyType {
@@ -479,3 +542,9 @@ export enum SupplyType {
     Materiales = "Materiales",
     Combustible = "Combustible"
 }
+
+export enum TipoInsumo {
+    CULTIVO = "CuLtivo",
+}
+
+//#endregion

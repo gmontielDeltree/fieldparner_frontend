@@ -45,6 +45,8 @@ import {
 import { CountryCode, Deposit, TipoEntidad } from "../types";
 import { removeDepositActive } from "../redux/deposit";
 import { getLocalityAndStateByZipCode } from "../services";
+import { MapPickerReact } from '../../owncomponents/map-picker/react-port/MapPicker';
+import { useTranslation } from "react-i18next";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -57,23 +59,10 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   },
 }));
 
-const locationDefault = "General";
-const initialForm: Deposit = {
-  description: "",
-  zipCode: "",
-  address: "",
-  geolocation: "",
-  locality: "",
-  isNegative: false,
-  isVirtual: false,
-  country: "",
-  owner: "Propio",
-  province: "",
-  accountId: "",
-  locations: [locationDefault],
-};
 
-const optionsCountry = ["Argentina", "Brasil", "Chile"];
+
+
+
 
 export const DepositPage: React.FC = () => {
   const navigate = useNavigate();
@@ -83,6 +72,27 @@ export const DepositPage: React.FC = () => {
   const [descriptionError, setDescriptionError] = useState(false);
   const [countryError, setCountryError] = useState(false);
   const [cpError, setCpError] = useState(false);
+const {t} = useTranslation();
+
+const optionsCountry = ["Argentina", "Brasil", "Chile"];
+
+const locationDefault = t("_general");
+const initialForm: Deposit = {
+  description: "",
+  zipCode: "",
+  address: "",
+  geolocation: "",
+  locality: "",
+  isNegative: false,
+  isVirtual: false,
+  country: "",
+  owner: t("_owner"),
+  province: "",
+  accountId: "",
+  locations: [locationDefault],
+};
+
+
   const { depositActive } = useAppSelector((state) => state.deposit);
   const {
     formulario,
@@ -90,7 +100,8 @@ export const DepositPage: React.FC = () => {
     handleInputChange,
     handleFormValueChange,
     handleSelectChange,
-} = useForm(initialForm);
+    handleGeolocationChange,
+  } = useForm(initialForm);
 
   const { isLoading, createDeposit, updateDeposit } = useDeposit();
   const {
@@ -139,35 +150,35 @@ export const DepositPage: React.FC = () => {
   };
   const handleAddDeposit = () => {
     if (validateForm()) {
-        createDeposit(formulario);
-        setFormulario(initialForm);
+      createDeposit(formulario);
+      setFormulario(initialForm);
     }
-};
+  };
 
   const validateForm = () => {
     let isValid = true;
-  
+
     if (description.trim() === "") {
       setDescriptionError(true);
       isValid = false;
     } else {
       setDescriptionError(false);
     }
-  
+
     if (zipCode.trim() === "") {
       setCpError(true);
       isValid = false;
     } else {
       setCpError(false);
     }
-  
+
     if (country.trim() === "") {
       setCountryError(true);
       isValid = false;
     } else {
       setCountryError(false);
     }
-  
+
     return isValid;
   };
 
@@ -257,14 +268,14 @@ export const DepositPage: React.FC = () => {
           align="center"
           sx={{ mt: 1, mb: 7 }}
         >
-          {depositActive ? "Editar" : "Agregar Nuevo"} Deposito
+          {depositActive ? `${t("icon_edit")} ${t("new_masculine")} ${t("_warehouse")}` : `${t("_add")} ${t("new_masculine")} ${t("_warehouse")}`}
         </Typography>
         <Grid container spacing={2} alignItems="center" justifyContent="center">
-        <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
               type="text"
-              label="Descripcion"
+              label={t("_description")}
               name="description"
               value={description}
               onChange={handleInputChange}
@@ -273,7 +284,7 @@ export const DepositPage: React.FC = () => {
               }}
               fullWidth
               error={descriptionError}
-              helperText={descriptionError ? "Este campo es obligatorio" : ""}
+              helperText={descriptionError ? t("this_field_is_mandatory") : ""}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -292,7 +303,7 @@ export const DepositPage: React.FC = () => {
               options={["Propio", ...optionsPropietario]}
               fullWidth
               renderInput={(params) => (
-                <TextField {...params} name="owner" label="Propietario" />
+                <TextField {...params} name="owner" label={t("_owner")} />
               )}
             />
           </Grid>
@@ -312,7 +323,7 @@ export const DepositPage: React.FC = () => {
                     }
                   />
                 }
-                label="Fisico"
+                label={t("physical_masculine")}
                 labelPlacement="start"
               />
               <FormControlLabel
@@ -329,14 +340,14 @@ export const DepositPage: React.FC = () => {
                     }
                   />
                 }
-                label="Virtual"
+                label={t("_virtual")}
                 labelPlacement="start"
               />
             </FormGroup>
           </Grid>
           <Grid item xs={12} sm={4} justifyContent="center">
             <FormGroup row sx={{ alignItems: "center" }}>
-              <label htmlFor="">Admite Stock Negativo:</label>
+              <label htmlFor="">{t("admits_negative_stock")}</label>
               <FormControlLabel
                 key="checkbox-true"
                 control={
@@ -346,7 +357,7 @@ export const DepositPage: React.FC = () => {
                     onChange={handleChangeIsNegative}
                   />
                 }
-                label="Si"
+                label={t("_yes")}
                 labelPlacement="start"
               />
               <FormControlLabel
@@ -358,59 +369,79 @@ export const DepositPage: React.FC = () => {
                     onChange={handleChangeIsNegative}
                   />
                 }
-                label="No"
+                label={t("_no")}
                 labelPlacement="start"
               />
             </FormGroup>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label="Geolocalizacion"
-              name="geolocation"
-              value={geolocation}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
+            <FormGroup sx={{position: 'flex', flexDirection:"row", gap:"5px"}}>
+              <TextField
+                sx={{width:"35%"}}
+                variant="outlined"
+                type="text"
+                size="small"
+                label="Latitud"
+                name="geolocation"
+                value={geolocation.lat?.toFixed(5) || ""}
+                onChange={(e) => handleGeolocationChange({...geolocation, lat:+e.target.value})}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" />,
+                }}
+                
+              />
+              <TextField
+                variant="outlined"
+                sx={{width:"35%"}}
+                type="text"
+                size="small"
+                label="Longitud"
+                name="geolocation"
+                value={geolocation.lng?.toFixed(5) || ""}
+                onChange={(e)=>handleGeolocationChange({...geolocation, lng:+e.target.value})}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" />,
+                }}
+                
+              />
+              <MapPickerReact posicion={geolocation} onPicked={({detail})=>{handleGeolocationChange(detail)}} />
+              {/* <IconButton title="Pick Position"><EditLocation/></IconButton> */}
+            </FormGroup>
           </Grid>
           <Grid item xs={6} sm={4}>
-          <FormControl fullWidth>
-            <InputLabel id="label-pais">Pais</InputLabel>
-            <Select
-              labelId="label-pais"
-              name="country"
-              value={country}
-              label="Pais"
-              onChange={handleSelectChange}
-            >
-              {optionsCountry.map((country) => (
-                <MenuItem key={country} value={country}>
-                  {country}
-                </MenuItem>
-              ))}
-            </Select>
-            {countryError && (
-              <Typography color="error">
-                El país es obligatorio
+            <FormControl fullWidth>
+              <InputLabel id="label-pais">{t("id_country")}</InputLabel>
+              <Select
+                labelId="label-pais"
+                name="country"
+                value={country}
+                label={t("id_country")}
+                onChange={handleSelectChange}
+              >
+                {optionsCountry.map((country) => (
+                  <MenuItem key={country} value={country}>
+                    {country}
+                  </MenuItem>
+                ))}
+              </Select>
+              {countryError && (
+                <Typography color="error">
+                {t("country_is_mandatory")}
               </Typography>
-            )}
-          </FormControl>
-        </Grid>
+              )}
+            </FormControl>
+          </Grid>
           <Grid item xs={6} sm={4}>
             <TextField
               variant="outlined"
               type="number"
-              label="CP"
+              label={t("_cp")}
               name="zipCode"
               value={zipCode}
               onBlur={() => onBlurZipCode()}
               onChange={handleInputChange}
               error={cpError}
-              helperText={cpError ? "Este campo es obligatorio" : ""}
+              helperText={cpError ? t("this_field_is_mandatory") : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -421,7 +452,7 @@ export const DepositPage: React.FC = () => {
             <TextField
               variant="outlined"
               type="text"
-              label="Provincia"
+              label={t("_state")}
               name="province"
               value={province}
               onChange={handleInputChange}
@@ -447,7 +478,7 @@ export const DepositPage: React.FC = () => {
               options={localities}
               fullWidth
               renderInput={(params) => (
-                <TextField {...params} name="locality" label="Localidad" />
+                <TextField {...params} name="locality" label={t("_locality")} />
               )}
             />
           </Grid>
@@ -455,7 +486,7 @@ export const DepositPage: React.FC = () => {
             <TextField
               variant="outlined"
               type="text"
-              label="Domicilio"
+              label={t("_address")}
               name="address"
               value={address}
               onChange={handleInputChange}
@@ -475,7 +506,7 @@ export const DepositPage: React.FC = () => {
             <Table sx={{ minWidth: 350 }} aria-label="customized table">
               <TableHead>
                 <TableRow>
-                  <StyledTableCell>Ubicacion</StyledTableCell>
+                  <StyledTableCell>{t("id_location")}</StyledTableCell>
                   <StyledTableCell />
                 </TableRow>
               </TableHead>
@@ -516,7 +547,7 @@ export const DepositPage: React.FC = () => {
                       {loc}
                     </TableCell>
                     <TableCell align="center" sx={{ p: "5px" }}>
-                      <Tooltip title="Eliminar">
+                      <Tooltip title={t("icon_delete")}>
                         <IconButton
                           hidden={
                             loc.toLowerCase() === locationDefault.toLowerCase()
@@ -542,7 +573,7 @@ export const DepositPage: React.FC = () => {
           sx={{ mt: 3 }}
         >
           <Grid item xs={12} sm={3}>
-            <Button onClick={onClickCancel}>Cancelar</Button>
+            <Button onClick={onClickCancel}>{t("id_cancel")}</Button>
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button
@@ -550,7 +581,7 @@ export const DepositPage: React.FC = () => {
               color="primary"
               onClick={depositActive ? handleUpdateDeposit : handleAddDeposit}
             >
-              {!depositActive ? "Agregar" : "Actualizar"}
+              {!depositActive ? t("_add") : t("id_update")}
             </Button>
           </Grid>
         </Grid>

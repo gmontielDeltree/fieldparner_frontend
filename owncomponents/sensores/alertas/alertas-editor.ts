@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { SelectorController } from 'xstate-lit/dist/select-controller';
+import { SelectorController } from 'xstate-lit';
 import { Alert, alertas_editor_machine } from './alertas-editor-machine';
 import { AnyActorRef, interpret } from 'xstate';
 import { customElement } from 'lit/decorators';

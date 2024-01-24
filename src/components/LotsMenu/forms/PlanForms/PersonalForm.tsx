@@ -44,12 +44,14 @@ function PersonalForm({ lot, formData, setFormData }) {
           business.nombreCompleto === value || business.razonSocial === value
       );
       console.log("selectedBusiness", selectedBusiness);
+      const nombre =
+        selectedBusiness?.razonSocial || selectedBusiness?.nombreCompleto;
       setFormData({
         ...formData,
         contratista: {
           labores: [],
           uuid: uuid4(),
-          nombre: selectedBusiness?.razonSocial,
+          nombre: nombre,
           cuit: selectedBusiness?.cuit,
           datos_generales: {
             email: selectedBusiness?.email,

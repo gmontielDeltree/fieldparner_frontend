@@ -21,6 +21,7 @@ import {
   Especificaciones,
   Mantenimientos,
 } from "../components/NuevoVehiculo";
+import { useTranslation } from "react-i18next";
 
 const initialState: Vehicle = {
   vehicleType: "",
@@ -45,21 +46,17 @@ const initialState: Vehicle = {
   location: "",
   technialSpecifications: [],
   maintenances: [],
-  chassis: "",
-  truckTrailer: ""
+  chassisNumber: "",
 };
 
-const steps = [
-  "Datos Generales",
-  "Especificaciones Tecnicas",
-  "Mantenimientos",
-];
+
 
 export const VehiclePage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { vehiculoActivo } = useAppSelector((state) => state.vehiculo);
   const [activeStep, setActiveStep] = useState(0);
+const {t} = useTranslation();
   const {
     formulario,
     setFormulario,
@@ -69,6 +66,12 @@ export const VehiclePage: React.FC = () => {
     handleFormValueChange,
   } = useForm(initialState);
   const { createVehicle, updateVehicle } = useVehicle();
+
+  const steps = [
+    t("general_data"),
+    t("technical_specifications"),
+    t("_maintenance"),
+  ];
 
   const getStepContent = useMemo(
     () => (step: number) => {
@@ -173,7 +176,7 @@ export const VehiclePage: React.FC = () => {
             variant="h4"
             sx={{ ml: { sm: 2 } }}
           >
-            {!vehiculoActivo ? "Nuevo Vehiculo" : "Actualizar Vehiculo"}
+            {!vehiculoActivo ? t("new_vehicle") : t("update_vehicle")}
           </Typography>
           <Stepper activeStep={activeStep} sx={{ pt: 5, pb: 5 }}>
             {steps.map((label) => (
@@ -199,7 +202,7 @@ export const VehiclePage: React.FC = () => {
                   onClick={activeStep !== 0 ? handleBack : onClickCancelar}
                   sx={{ ml: 1 }}
                 >
-                  {activeStep !== 0 ? "Volver" : "Cancelar"}
+                  {activeStep !== 0 ? t("id_back") : t("id_cancel")}
                 </Button>
               </Grid>
               <Grid item xs={12} sm={3}>
@@ -211,7 +214,7 @@ export const VehiclePage: React.FC = () => {
                     onClick={handleNext}
                     fullWidth
                   >
-                    Siguiente
+                    {t("id_next")}
                   </Button>
                 )}
               </Grid>
@@ -225,7 +228,7 @@ export const VehiclePage: React.FC = () => {
                   }
                   fullWidth
                 >
-                  {!vehiculoActivo ? "Guardar" : "Actualizar"}
+                  {!vehiculoActivo ? t("_save"): t("id_update")}
                 </Button>
               </Grid>
             </Grid>

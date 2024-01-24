@@ -23,11 +23,13 @@ export const useExitField = () => {
                     selector: { "accountId": user?.accountId }
                 }),
                 dbContext.supplies.find({ selector: { "accountId": user?.accountId } }),
-                dbContext.socialEntities.find({ selector: { "accountId": user?.accountId } })
+                dbContext.socialEntities.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.fields.find({ selector: { "accountId": user?.accountId } })
             ]);
             const exitFields = promisesResult[0].docs;
             const supplies = promisesResult[1].docs;
             const socialEntities = promisesResult[2].docs;
+            const fields = promisesResult[3].docs;
 
             if (exitFields.length) {
                 // const documents = exitFields.map(row => row as ExitField);
@@ -35,7 +37,8 @@ export const useExitField = () => {
                     return {
                         ...row,
                         supply: supplies.find(s => s._id === row.supplyId),
-                        transport: socialEntities.find(s => s._id === row.transportId)
+                        transport: socialEntities.find(s => s._id === row.transportId),
+                        field: fields.find(s => s._id === row.fieldId),
                     } as ExitFieldItem
                 });
                 setExitFields(documents);
@@ -79,7 +82,7 @@ export const useExitField = () => {
                 supplyId: newExitField.supplyId,
                 location: newExitField.deposit.locations[0],
                 creationDate: newExitField.creationDate,
-                campaign: newExitField.campaign,
+                campaignId: newExitField.campaignId,
                 voucher: newExitField.additionalInformation,
                 isIncome: false,
                 currency: "",

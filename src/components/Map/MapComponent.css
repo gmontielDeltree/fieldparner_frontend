@@ -4,5 +4,17 @@
 .mapboxgl-ctrl-geocoder {
     z-index: 2; 
     margin-top: 50px; 
+}      
+
+.mapboxgl-popup-content {
+    background-color: rgb(21, 101, 192);
+    color: #EEEEEE;    
 }
 
+.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+    border-right-color: rgb(21, 101, 192);
+  }
+
+  .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+    border-top-color: rgb(21, 101, 192);
+  }

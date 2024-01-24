@@ -1,21 +1,19 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-interface MapState {
-  map: any;
-}
-
-const initialState: MapState = {
-  map: null
-};
+import { createSlice } from "@reduxjs/toolkit";
 
 export const mapSlice = createSlice({
   name: "map",
-  initialState,
+  initialState: {
+    map: null
+  },
   reducers: {
-    setMap: (state, action: PayloadAction<any>) => {
+    setMap: (state, action) => {
       state.map = action.payload;
     }
   }
 });
 
 export const { setMap } = mapSlice.actions;
+
+export const selectMap = (state) => state.map.map;
+
+export default mapSlice.reducer;

@@ -1,6 +1,7 @@
 import { Grid, InputAdornment, TextField } from "@mui/material";
 import { Supply } from "@types";
 import React, { ChangeEvent } from "react";
+import { useTranslation } from "react-i18next";
 
 export interface DoseFormProps {
   formValues: Supply;
@@ -21,13 +22,15 @@ export const DoseForm: React.FC<DoseFormProps> = ({
     mermaVolatile,
   } = formValues;
 
+  const {t} = useTranslation();
+
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
       <Grid item xs={12} sm={6}>
         <TextField
           variant="outlined"
           type="text"
-          label="Tipo"
+          label={t("_type")}
           name="type"
           value={type}
           disabled
@@ -45,7 +48,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Insumo"
+          label={t("_supply")}
           name="name"
           value={name}
           disabled
@@ -63,7 +66,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Principio Activo"
+          label={t("active_principle")}
           name="activePrincipal"
           onChange={handleInputChange}
           value={activePrincipal}
@@ -77,7 +80,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Merma Volatil"
+          label={t("volatile_shrinkage")}
           name="mermaVolatile"
           value={mermaVolatile}
           onChange={handleInputChange}
@@ -91,7 +94,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Dosis Min."
+          label={t("min_dose")}
           name="minimumDose"
           value={minimumDose}
           onChange={handleInputChange}
@@ -105,7 +108,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Dosis Max."
+          label={t("max_dose")}
           name="maximumDose"
           value={maximumDose}
           onChange={handleInputChange}
@@ -119,7 +122,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Dosis Recomendada"
+          label={t("recommended_dose")}
           name="recommendedDose"
           value={recommendedDose}
           onChange={handleInputChange}

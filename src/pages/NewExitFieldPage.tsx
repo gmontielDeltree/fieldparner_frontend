@@ -6,24 +6,19 @@ import {
     Agriculture as AgricultureIcon,
     ArrowRightAlt as ArrowRightAltIcon
 } from '@mui/icons-material';
-import { useBusiness, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../hooks';
+import { useBusiness, useCampaign, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../hooks';
 import { ExitField, SupplyType } from '../types';
 import { getShortDate } from '../helpers/dates';
+import { useTranslation } from 'react-i18next';
 
 
-
-const steps = [
-    "Datos Generales",
-    "Transporte / Destino",
-];
 
 const initialState: ExitField = {
     creationDate: getShortDate(),
-    campaign: 0,
+    campaignId: "",
     cultive: "",
-    field: "",
-    has: "",
-    lot: "",
+    fieldId: "",
+    lotId: "",
     transportDocument: "",
     ticket: "",
     additionalInformation: "",
@@ -34,7 +29,7 @@ const initialState: ExitField = {
     location: "",
     transportId: "",
     truckerId: "",
-    truckTrailer: "",
+    truckTrailerId: "",
     harvesterId: "",
     supplyId: "",
     grossWeight: 0,
@@ -53,6 +48,7 @@ export const NewExitFieldPage: React.FC = () => {
     // const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
+const {t} = useTranslation();
     const {
         formulario: formValues,
         handleInputChange,
@@ -66,6 +62,12 @@ export const NewExitFieldPage: React.FC = () => {
     const { vehicles, getVehicles } = useVehicle();
     const { deposits, getDeposits } = useDeposit();
     const { isLoading, createExitField } = useExitField();
+    
+
+    const steps = [
+        t("transport_destiny"),
+        t("general_data"),
+    ];
 
     const getStepContent = useMemo(
         () => (step: number) => {
@@ -76,6 +78,7 @@ export const NewExitFieldPage: React.FC = () => {
                             key="general-data-exit-field"
                             formValues={formValues}
                             crops={supplies.filter(s => s.type === SupplyType.Cultivo)}
+                            campaigns={campaigns}
                             handleInputChange={handleInputChange}
                             handleSelectChange={handleSelectChange}
                             setFormValues={setFormValues}
@@ -107,7 +110,8 @@ export const NewExitFieldPage: React.FC = () => {
             supplies,
             deposits,
             vehicles,
-            socialEntities
+            socialEntities,
+            campaigns
         ]
     );
 
@@ -137,6 +141,7 @@ export const NewExitFieldPage: React.FC = () => {
         getBusinesses();
         getVehicles();
         getDeposits();
+        getCampaigns();
     }, [])
 
 
@@ -163,7 +168,7 @@ export const NewExitFieldPage: React.FC = () => {
                     >
                         <AgricultureIcon fontSize='large' /> <ArrowRightAltIcon fontSize='large' />
                         <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-                            Salida de Campo
+                            {t("field_output")}
                         </Typography>
                     </Box>
                     <Stepper activeStep={activeStep} sx={{ pt: 5, pb: 5 }}>
@@ -190,7 +195,7 @@ export const NewExitFieldPage: React.FC = () => {
                                     onClick={activeStep !== 0 ? handleBack : onClickCancelar}
                                     sx={{ ml: 1 }}
                                 >
-                                    {activeStep !== 0 ? "Volver" : "Cancelar"}
+                                    {activeStep !== 0 ? t("id_back") : t("id_cancel")}
                                 </Button>
                             </Grid>
                             <Grid item xs={12} sm={3}>
@@ -202,7 +207,7 @@ export const NewExitFieldPage: React.FC = () => {
                                         onClick={handleNext}
                                         fullWidth
                                     >
-                                        Siguiente
+                                        {t("id_next")}
                                     </Button>
                                 )}
                             </Grid>
@@ -214,7 +219,7 @@ export const NewExitFieldPage: React.FC = () => {
                                     onClick={() => onClickSaveExitField()}
                                     fullWidth
                                 >
-                                    Guardar
+                                    {t("_add")}
                                 </Button>
                             </Grid>
                         </Grid>

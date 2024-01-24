@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import PlanSowing from "./PlanSowing";
-import PlanHarvest from "./PlanHarvest";
-import PlanAplication from "./PlanAplication";
+import PlanActivity from "./PlanActivity";
 import Tour from "./Tour";
 import { Avatar, ButtonBase, Paper } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
@@ -15,27 +13,33 @@ import categoryIcon6 from "../../images/icons/suelo_act.webp";
 import PouchDB from "pouchdb";
 import { Activities } from "./Activities/index";
 import { Actividad } from "../../interfaces/activity";
-import { isBefore, isWithinInterval, parseISO } from "date-fns";
-import activitiesData from "./test.json";
+import { isBefore, parseISO } from "date-fns";
+import GroundSample from "./GroundSample";
+import { useNavigate } from "react-router-dom";
 
 interface LotsMenuProps {
   lot: any;
+  field: any;
   isOpen: () => void;
   toggle: () => void;
 }
 
-const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
+const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const db = new PouchDB("campos_randyv7");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activities, setActivities] = useState(null);
 
+  const navigate = useNavigate();
+
+
+  console.log("Log seleccionado: ", lot);
   const categories = [
     { id: "Planificar Siembra", icon: categoryIcon1 },
     { id: "Planificar Aplicacion", icon: categoryIcon2 },
     { id: "Planificar Cosecha", icon: categoryIcon3 },
     { id: "Tour", icon: categoryIcon4 },
-    { id: "Category 5", icon: categoryIcon5 },
-    { id: "Category 6", icon: categoryIcon6 }
+    { id: "Indices", icon: categoryIcon5, link: `/init/overview/satellite/${lot.id}` },
+    { id: "Muestra de suelo", icon: categoryIcon6 }
   ];
 
   const selectCategory = (categoryId: any) => {
@@ -87,16 +91,13 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
 
     if (result.rows) {
-      // Iter 1: Actividades
       _actividades_docs.forEach((actividad) => {
         let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid));
         respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
       });
 
       console.log("Respuesta actividades y ejecuciones preorden", respuesta);
-      // Ordenar respuesta teniendo en cuenta la ejecución.
       respuesta.sort((a, b) => {
-        // Si tiene ejecucion usar la fecha de ejecucion
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
           : parseISO(
@@ -163,7 +164,12 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
   const renderFormContent = () => {
     if (!selectedCategory) {
       return activities && activities.length > 0 ? (
-        <Activities activitiesData={activities} />
+        <Activities
+          activitiesData={activities}
+          setActivitiesData={setActivities}
+          lotDoc={lot}
+          fieldDoc={field}
+        />
       ) : (
         <div style={{ textAlign: "center" }}>
           <p>No hay actividades.</p>
@@ -175,22 +181,39 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     switch (selectedCategory) {
       case "Planificar Siembra":
         return (
-          <PlanSowing lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"sowing"}
+            lot={lot}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
       case "Planificar Cosecha":
         return (
-          <PlanHarvest lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"harvesting"}
+            lot={lot}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
       case "Planificar Aplicacion":
         return (
-          <PlanAplication lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"application"}
+            lot={lot}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
       case "Tour":
         return <Tour lot={lot} db={db} backToActivites={backToActivites} />;
       case "Category 5":
         return <div>Category 5</div>;
-      case "Category 6":
-        return <Activities activitiesData={activities} />;
+      case "Muestra de suelo":
+        return (
+          <GroundSample lot={lot} db={db} backToActivites={backToActivites} />
+        );
       default:
         return <div>Select a category to view its forms</div>;
     }
@@ -230,8 +253,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
         }}
       >
         <div>
-          {categories.map(({ id, icon }) => (
-            <ButtonBase key={id} onClick={() => selectCategory(id)}>
+          {categories.map(({ id, icon, link }) => (
+            <ButtonBase key={id} onClick={() => link ? navigate(link) : selectCategory(id)} title={id}>
               <Avatar alt={id} src={icon} sx={avatarStyle(id)} />
             </ButtonBase>
           ))}

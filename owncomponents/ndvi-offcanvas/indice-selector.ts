@@ -41,6 +41,14 @@ export class IndiceSelector extends LitElement {
         composed: true,
       })
     );
+
+    this.dispatchEvent(
+      new CustomEvent("selectedFeatureChange", {
+        detail: { feature: this.featureSelected, indice: index },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   deduplicateDates(ofc: FeatureCollection) {

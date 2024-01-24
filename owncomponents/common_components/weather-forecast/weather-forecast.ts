@@ -5,7 +5,7 @@ import { OpenMeteoDaily, OpenMeteoResponse, forecastWeather } from "./weather-fu
 import { LngLat, LngLatLike } from "mapbox-gl";
 import { machine } from "./weather-machine"
 import { interpret, assign } from 'xstate';
-import { SelectorController } from 'xstate-lit/dist/select-controller';
+import { SelectorController } from 'xstate-lit';
 import { showNotification } from '../../helpers/notificaciones';
 import { get, translate } from 'lit-translate';
 import { weather_icons } from "./weather-icons";

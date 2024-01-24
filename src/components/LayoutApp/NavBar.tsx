@@ -8,42 +8,47 @@ import {
   ButtonBase,
   Button,
   Menu,
-  MenuItem
+  MenuItem,
 } from "@mui/material";
 import React, { useState } from "react";
 import { NavBarProps } from "../../types";
 import iconoCampo from "../../images/icons/iconodecampo2D.webp";
+import integrationsIcon from "../../images/icons/integrations.png";
 import deposito from "../../images/icons/deposito_2.webp";
 import insumos from "../../images/icons/icono de insumos.webp";
 import spanishFlagIcon from "../../images/icons/spain_flag.png";
 import englishFlagIcon from "../../images/icons/usa_flag.png";
 import brazilFlagIcon from "../../images/icons/brazil_flag.png";
+import { useAuthStore } from "../../hooks";
 
 import {
   Notifications,
   NotificationsActive,
   MenuOutlined,
-  ExitToApp
+  ExitToApp,
 } from "@mui/icons-material";
 import { Badge, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
   open,
-  handleSideBarOpen
+  handleSideBarOpen,
 }) => {
+  const navigate = useNavigate();
   const navigateTo = (path: string) => {
     window.location.replace(path);
   };
 
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
-  const [language, setLanguage] = useState("es");
+  const [language, setLanguage] = useState("spanish");
+  const { startLogout } = useAuthStore();
 
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState(null);
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
-  const { i18n } = useTranslation();
+
   const { t } = useTranslation();
 
   const handleLanguageMenu = (event) => {
@@ -51,7 +56,7 @@ export const NavBar: React.FC<NavBarProps> = ({
   };
 
   const handleLanguageChange = (newLanguage) => {
-    i18n.changeLanguage(newLanguage);
+    t.changeLanguage(newLanguage);
     setLanguage(newLanguage);
     setLanguageAnchorEl(null);
   };
@@ -69,21 +74,21 @@ export const NavBar: React.FC<NavBarProps> = ({
     animation: "pulse 2s infinite",
     "@keyframes pulse": {
       "0%": {
-        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0.7)"
+        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0.7)",
       },
       "70%": {
-        boxShadow: "0 0 0 10px rgba(0, 123, 255, 0)"
+        boxShadow: "0 0 0 10px rgba(0, 123, 255, 0)",
       },
       "100%": {
-        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0)"
-      }
-    }
+        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0)",
+      },
+    },
   };
   const [anchorEl, setAnchorEl] = React.useState(null);
   const openDropdown = Boolean(anchorEl);
   const handleLogout = () => {
-    // Implement your logout logic here, e.g., clearing user data, tokens, and redirecting
     console.log("Logout clicked");
+    startLogout();
   };
   // 3. Handler functions for dropdown menu
   const handleMenu = (event) => {
@@ -111,7 +116,7 @@ export const NavBar: React.FC<NavBarProps> = ({
     borderColor: selectedAvatar === avatar ? "#1976d2" : "transparent",
     borderRadius: "50%",
     backgroundColor:
-      selectedAvatar === avatar ? "rgba(25, 118, 210, 0.1)" : "transparent"
+      selectedAvatar === avatar ? "rgba(25, 118, 210, 0.1)" : "transparent",
   });
 
   return (
@@ -122,8 +127,8 @@ export const NavBar: React.FC<NavBarProps> = ({
         color: "black",
         ...(open && {
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` }
-        })
+          ml: { sm: `${drawerWidth}px` },
+        }),
       }}
     >
       <Toolbar>
@@ -145,6 +150,7 @@ export const NavBar: React.FC<NavBarProps> = ({
         >
           <Grid item sx={{ display: "flex", alignItems: "center" }}>
             <Typography
+              onClick={() => navigate("/init/overview/fields")}
               variant="h6"
               noWrap
               component="div"
@@ -152,7 +158,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 color: "black",
                 fontWeight: "bold",
                 whiteSpace: "nowrap",
-                marginRight: "40px"
+                marginRight: "40px",
               }}
             >
               FieldPartner
@@ -165,6 +171,16 @@ export const NavBar: React.FC<NavBarProps> = ({
                 alt="Campo"
                 src={iconoCampo}
                 sx={avatarStyle("avatar1")}
+              />
+            </ButtonBase>
+            <ButtonBase
+              onClick={() => navigate("/init/overview/fields/integrations")}
+              sx={{ borderRadius: "50%", marginRight: "18px" }}
+            >
+              <Avatar
+                alt="Integrations"
+                src={integrationsIcon}
+                sx={avatarStyle("avatar2")}
               />
             </ButtonBase>
             {/* <ButtonBase
@@ -210,7 +226,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 backgroundColor: "#f5f5f5",
                 color: "#1976d2",
                 borderRadius: "4px",
-                textTransform: "none"
+                textTransform: "none",
               }}
             >
               {t("no_campaign")}
@@ -221,11 +237,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               anchorEl={anchorEl}
               anchorOrigin={{
                 vertical: "bottom",
-                horizontal: "left"
+                horizontal: "left",
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "left"
+                horizontal: "left",
               }}
               open={openDropdown}
               onClose={handleClose}
@@ -258,11 +274,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               anchorEl={languageAnchorEl}
               anchorOrigin={{
                 vertical: "top",
-                horizontal: "right"
+                horizontal: "right",
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "right"
+                horizontal: "right",
               }}
               open={isLanguageMenuOpen}
               onClose={handleLanguageMenuClose}

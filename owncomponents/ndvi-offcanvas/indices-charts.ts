@@ -147,7 +147,7 @@ export class IndicesCharts extends LitElement {
     if (prop.has("indice")) {
       this.initialized = false
     }
-    if (prop.has("data")) {
+    if (prop.has("data") && this.shadowRoot?.getElementById("full")) {
       if (!this.initialized) {
 
         this.thr.forEach((c) => c.destroy())
@@ -197,7 +197,9 @@ export class IndicesCharts extends LitElement {
 
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-  ): void { }
+  ): void { 
+
+  }
 
   static override styles = css`
     .container {
