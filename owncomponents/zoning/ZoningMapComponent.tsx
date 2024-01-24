@@ -73,7 +73,7 @@ export const ZoningMapComponent : React.FC = ({ baseImageNameParam }) => {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/satellite-v9",
+      style: "mapbox://styles/mapbox/satellite-streets-v12?optimize=true",
       center: [5, 34],
       zoom: 5,
     });

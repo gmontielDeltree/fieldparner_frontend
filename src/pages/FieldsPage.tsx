@@ -46,6 +46,17 @@ export const FieldsPage: React.FC = () => {
 
 
   useEffect(() => {
+
+    if(campoId && map){
+
+      db.get(campoId).then((campo)=>{
+        setSelectedField(campo)
+        addLotsToMap(map, campo.lotes);
+        handleLocateField();
+      })
+    }
+
+
     if(loteId && campoId && map){
  
       db.get(campoId).then((campo)=>{
@@ -90,16 +101,6 @@ export const FieldsPage: React.FC = () => {
     }
   },[loteId, campoId, map])
 
-  useEffect(() => {
-    if(campoId && map){
-
-      db.get(campoId).then((campo)=>{
-        setSelectedField(campo)
-        addLotsToMap(map, campo.lotes);
-        handleLocateField();
-      })
-    }
-  },[campoId, map])
 
   /* Es para forzar el resizing del mapa siempre
     Cuando la pagina de
