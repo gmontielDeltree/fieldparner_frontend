@@ -25,6 +25,7 @@ import { addDepositosToMap } from "../../owncomponents/mapa-principal/depositos-
 import { useDeposit } from "../hooks";
 import useResizeObserver from '@react-hook/resize-observer'
 import { dbContext } from "../services";
+import { touchEvent } from "../../owncomponents/helpers";
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
@@ -182,11 +183,11 @@ export const FieldsPage: React.FC = () => {
 
   useEffect(() => {
     if (map) {
-      map.on("click", handleMapClick);
+      map.on(touchEvent, handleMapClick);
     }
     return () => {
       if (map) {
-        map.off("click", handleMapClick);
+        map.off(touchEvent, handleMapClick);
       }
     };
   }, [map, handleMapClick]);
