@@ -166,7 +166,7 @@ export class MapPicker extends LitElement {
       container: this.shadowRoot.getElementById("map"),
       //style: "mapbox://styles/mapbox/outdoors-v11",
       //style: mapStyle,
-      style: "mapbox://styles/mapbox/satellite-v9?optimize=true",
+      style: "mapbox://styles/mapbox/satellite-streets-v12?optimize=true",
       center: new LngLat(-59.2965, -35.1923),
       zoom: 14,
       attributionControl: false,

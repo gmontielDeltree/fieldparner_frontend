@@ -148,12 +148,12 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary="Insumos/Lotes" />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              {/* <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
+                   <CabinIcon /> 
                 </ListItemIcon>
                 <ListItemText primary="Monedas-Cotizaciones" />
-              </ListItemButton>
+              </ListItemButton> */}
               <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}

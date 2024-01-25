@@ -32,8 +32,11 @@ export const InitRouter = () => {
       // 3 - /init/overview/fields (por el render de mas abajo)
       // 4 - navigate(from) vuelve a /init/overview/deposits
       
-      console.log("WINDOW LOCATION HREF POST AUTH", window.location.href) 
-      navigate(from);
+      console.log("WINDOW LOCATION HREF POST AUTH", window.location.href)
+      if(from !== "/init/auth/login") {
+        navigate(from);
+      }
+      
     }
   }, [status]);
 

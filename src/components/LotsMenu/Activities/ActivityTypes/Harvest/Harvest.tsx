@@ -79,17 +79,18 @@ function Harvest({ activity, complementaryColor, handleDeleteActivity }) {
         </IconButton>
       </Box>
 
+{/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={handleMenuClose}>Editar</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem>
+        {/* <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem> */}
         <MenuItem onClick={handleMenuClose}>Orden de Trabajo PDF</MenuItem>
-        <MenuItem onClick={handleMenuClose}>
+        {/* <MenuItem onClick={handleMenuClose}>
           Compartir Orden de Trabajo
         </MenuItem>
         <MenuItem onClick={handleMenuClose}>
           Ejecución vs Planificación PDF
         </MenuItem>
-        <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem>
+        <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem> */}
         <MenuItem onClick={() => handleDeleteActivity(activity.actividad._id)}>
           Eliminar
         </MenuItem>
