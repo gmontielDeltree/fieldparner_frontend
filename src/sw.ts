@@ -42,6 +42,8 @@ console.log("SW Version for version", import.meta.env.VITE_VERSION)
 precacheAndRoute(self.__WB_MANIFEST);
 //precacheAndRoute([]);
 
+registerRoute(/.*api\.mapbox\.com\/v4\/mapbox\.satellite\/.*$/, new CacheFirst({ cacheName: "mapbox-satellite" }));
+registerRoute(/.*api\.mapbox\.com\/v4\/mapbox\.mapbox\-streets\-v8.*\.vector\.pbf.*$/, new CacheFirst({ cacheName: "mapbox-vector-v8" }));
 
 // precacheAndRoute([
 //   {url: 'https://agrotools.qts-ar.com.ar/couchdb/fieldpartner-platform/recorrida-fields', revision: null},
