@@ -14,6 +14,7 @@ import { usePlanification } from "../../hooks/usePlanifications";
 import { useField } from "../../hooks/useField";
 import { IPlanificacion } from "../../interfaces/planification";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CicloEditorDialog from "./CicloEditorDialog";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -49,6 +50,7 @@ export const PlanificationByField = ({planId, fieldId}) => {
   // Planificaciones por campaña
   //
 
+  const [campo, setCampo] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [planification, setPlanification] = useState<IPlanificacion>([]);
 
@@ -69,7 +71,7 @@ export const PlanificationByField = ({planId, fieldId}) => {
 
   useEffect(() => {
     let campo = fields.filter((f) => f._id === fieldId);
-
+    setCampo(campo)
     setLotes(campo.lotes);
   }, [fields]);
 
@@ -77,14 +79,18 @@ export const PlanificationByField = ({planId, fieldId}) => {
     return plan.ciclos.filter((c) => c.loteId === loteId);
   };
 
+  const abrirModalNuevoCiclo = (plan,lote)=>{
+
+  }
+  
   return (
     <>
       <Box>
-        <Box>titulo</Box>
+        <Box>{campo?.nombre}</Box>
       </Box>
 
       {/* Por cada lote */}
-      {lotes.map((lote) => {
+      {lotes?.map((lote) => {
         return (
           <Accordion>
             <AccordionSummary
@@ -92,12 +98,12 @@ export const PlanificationByField = ({planId, fieldId}) => {
               aria-controls="panel1-content"
               id="panel1-header"
             >
-              {lote._id} <Button>+ Ciclo</Button>
+              {lote._id} <CicloEditorDialog lote={{lote}} planification={{planification}}></CicloEditorDialog>
             </AccordionSummary>
             <AccordionDetails>
               {/* por cada ciclo del lote */}
-              {ciclosPorLote(planification, lote._id).map((c) => {
-                return <Ciclo></Ciclo>;
+              {planification && ciclosPorLote(planification, lote._id).map((c) => {
+                return <Ciclo ciclo={c}></Ciclo>;
               })}
             </AccordionDetails>
           </Accordion>
