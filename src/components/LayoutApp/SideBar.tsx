@@ -1,4 +1,4 @@
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Navigate, Link as RouterLink, useLocation } from "react-router-dom";
 import {
   Box,
   Collapse,
@@ -219,10 +219,14 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary="Campos/Lotes/Hectareas" />
               </ListItemButton>
-              <ListItemButton >
+              <ListItemButton 
+                component={RouterLink}
+                to="/init/overview/planification"
+                selected={pathname.includes("/init/overview/planification")}
+                >
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Proyeccion Anual Campaña" />
+                <ListItemText primary="Planificación Anual Campaña" />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>

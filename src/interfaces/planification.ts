@@ -16,7 +16,7 @@ interface FPAccountBaseDoc {
 
 type FPDocument = PouchDB.Core.Document<FPAccountBaseDoc>
 
-export interface IInsumosPlanificacion {
+export interface IInsumosPlanificacion extends FPDocument {
     uuid: string,
     insumoId: string,
     dosis: number,
@@ -26,7 +26,7 @@ export interface IInsumosPlanificacion {
     totalCosto:number
 }
 
-export interface ILaboresPlanificacion {
+export interface ILaboresPlanificacion extends FPDocument {
     uuid: string,
     laborId: string,
     costoPorHectarea:number,
@@ -38,16 +38,15 @@ export interface ILaboresPlanificacion {
 export interface IActividadPlanificacion extends FPDocument {
 
     tipo : TTipoActividadPlanificada,
-    insumos : IInsumosPlanificacion[],
-    labores : ILaboresPlanificacion[],
+    insumosLineasIds : string[],
+    laboresLineasIds : string[],
     fecha : string,
     totalCosto : number,
     area: number,
-    rindeEstimado ?: number 
+    rindeEstimado ?: number,
     contratistaId?: string,
     cicloId: string,
     campanaId:string,
-    planId:string,
     campoId:string,
     loteId:string,
     ejecutada:boolean,
@@ -56,14 +55,13 @@ export interface IActividadPlanificacion extends FPDocument {
 
 
 export interface ICiclosPlanificacion extends FPDocument {
+    // Usar un ID ciclo:campanaId:campoId:loteId:uuid
     fechaInicio : string,
     fechaFin : string,
-    actividades : IActividadPlanificacion[],
+    actividadesIds : string[],
     campanaId:string,
-    planId:string,
     campoId:string,
     loteId:string,
-    costoTotal : number,
     cultivoId : string
 }
 

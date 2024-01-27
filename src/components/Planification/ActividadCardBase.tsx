@@ -21,14 +21,17 @@ import siembraIcon from "../../images/icons/sembradora_act.webp";
 import cosechaIcon from "../../images/icons/cosechadora_act.webp";
 import aplicacionIcon from "../../images/icons/pulverizadora_act.webp";
 import notaIcon from "../../images/icons/iconodenotas_act.webp";
+import { usePlanificationActividad } from "../../hooks/usePlanifications";
 
 export const ActividadCardBase: React.FC = ({
-  actividad,
+  actividadId,
 }: {
-  actividad: IActividadPlanificacion;
+  actividadId: string;
 }) => {
-  let { fecha, insumos, labores, ejecutada, totalCosto, tipo, area } =
-    actividad;
+
+  // const actividad = usePlanificationActividad(actividadId)
+
+  let { fecha, insumos, labores, ejecutada, totalCosto, tipo, area } = usePlanificationActividad(actividadId)
 
   let cardColor = FieldPartnerColors[tipo as unknown as string];
 

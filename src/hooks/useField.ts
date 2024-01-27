@@ -28,7 +28,7 @@ export const useField = () => {
                 
                 const documents = result.docs.map(doc => doc);
                 const d : Field[]= documents.filter((d)=>d._id.includes("campos_"))
-                console.log("DSDSDSSDSDSDSDS",d)
+                // console.log("DSDSDSSDSDSDSDS",d)
                 setFields(d);
             }
 
