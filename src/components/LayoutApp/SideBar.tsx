@@ -9,7 +9,8 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Typography
 } from "@mui/material";
 import {
   // Cabin as CabinIcon,
@@ -33,10 +34,10 @@ import {
   ListAlt as ListAltIcon,
   Gite as GiteIcon,
   Work as WorkIcon,
+  Assignment as AssignmentIcon,
   // Flag as FlagIcon,
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
-import { Typography } from "@mui/material";
 import { useState } from "react";
 
 const keysCollapse = ["seguridad", "configuracion", "general", "agricultura", "stock", "cosecha", "gestion", "reporting", "wiki", "erp"];
@@ -178,9 +179,9 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemText primary="Zonas/Agrupaciones" />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}
-                              component={RouterLink}
-                              to="/init/overview/prices"
-                              selected={pathname.includes("/init/overview/prices")}
+                component={RouterLink}
+                to="/init/overview/prices"
+                selected={pathname.includes("/init/overview/prices")}
               >
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
@@ -303,9 +304,13 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary="Consulta De Stock" />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/list-orders"
+                selected={pathname.includes("/init/overview/list-orders")}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
+                  <AssignmentIcon />
                 </ListItemIcon>
                 <ListItemText primary="Ordenes de Retiro" />
               </ListItemButton>

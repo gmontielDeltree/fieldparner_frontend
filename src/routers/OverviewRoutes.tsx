@@ -18,14 +18,17 @@ import {
   NewExitFieldPage,
   ListOriginsDestinationsPage,
   NewOriginsDestinationsPage,
+  SatellitePage,
+  DevicePage,
+  PricesPage,
+  ZoningPage,
+  IntegrationsPage,
+  PlanificationPage,
+  ListWithdrawalOrdersPage,
+  WithdrawalOrdersPage,
+  ConfirmWithdrawalOrderPage
 } from "../pages";
 import { AppLayout } from "../components";
-import { SatellitePage } from "../pages/SatellitePage";
-import { DevicePage } from "../pages/DevicePage";
-import { PricesPage } from "../pages/PricesPage";
-import { ZoningPage } from "../pages/ZoningPage";
-import { IntegrationsPage } from "../pages/IntegrationsPage";
-import { PlanificationPage } from "../pages/PlanificationPage";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
 
@@ -87,7 +90,9 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/prices" element={<PricesPage />} />
         <Route path="/overview/planification" element={<PlanificationPage />} />
 
-
+        <Route path="/overview/list-orders" element={<ListWithdrawalOrdersPage />} />
+        <Route path="/overview/order" element={<WithdrawalOrdersPage />} />
+        <Route path="/overview/order/:orderId" element={<ConfirmWithdrawalOrderPage />} />
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

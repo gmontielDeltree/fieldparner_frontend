@@ -144,15 +144,15 @@ export const useAuthStore = () => {
         return;
       }
 
-      const response = await fieldpartnerAPI.post<ResponseAuthRenew>(
-        `${controller}/renew`,
-        { refreshToken }
-      );
-
       const lastPath = localStorage.getItem("lastPath") || "/";
       navigate(lastPath, { replace: true });
       const userLogin = JSON.parse(userSession || "") as User;
       dispatch(onLogin(userLogin));
+
+      const response = await fieldpartnerAPI.post<ResponseAuthRenew>(
+        `${controller}/renew`,
+        { refreshToken }
+      );
 
       if (response.status === HttpStatusCode.Created) {
         const expiresIn = new Date().getTime() + response.data.ExpiresIn * 1000;
@@ -189,6 +189,7 @@ export const useAuthStore = () => {
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("token_expiration");
       localStorage.removeItem("user_session");
+      localStorage.removeItem("lastPath");
 
       dispatch(onLogout("User logged out successfully."));
 

@@ -268,7 +268,7 @@ export interface Deposit extends Document {
     description: string;
     owner: string;
     isVirtual: boolean;
-    geolocation: {lng : number, lat:number};
+    geolocation: { lng: number, lat: number };
     isNegative: boolean;
     address: string;
     zipCode: string;
@@ -450,6 +450,16 @@ export interface Field extends Document {
     // _rev: string;
 }
 
+export interface WithdrawalOrder extends Document {
+    type: string;
+    creationDate: string;
+    order: string;
+    reason: string;
+    withdrawId: string;
+    campaignId: string;
+    state: OrderStatus;
+}
+
 //#region Enums
 
 export enum TipoCombustible {
@@ -527,6 +537,12 @@ export enum SupplyType {
 
 export enum TipoInsumo {
     CULTIVO = "CuLtivo",
+}
+
+export enum OrderStatus {
+    Parcial = "Parcial",
+    Pending = "Pendiente",
+    Completed = "Completada"
 }
 
 //#endregion
