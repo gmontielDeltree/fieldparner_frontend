@@ -15,6 +15,7 @@ import PlanTasksForm from "./forms/PlanTasksForm";
 import { PlanSuppliesTableForm } from "./forms/PlanSuppliesTableForm";
 import PlanSuppliesForm from "./forms/PlanSuppliesForm";
 import { usePlanActividad } from "../../hooks/usePlanifications";
+import { ILaboresPlanificacion } from "../../interfaces/planification";
 
 const steps = ["Fecha", "Insumos", "Labores"];
 
@@ -29,18 +30,20 @@ export const ActividadEditorBase = ({
   onClose: () => void;
 }) => {
   const [rows, setRows] = useState<IInsumosPlanificacion[]>([]);
+  const [rowsLab, setRowsLab] = useState<ILaboresPlanificacion[]>([]);
 
   const [actividad, setActividad] =
     useState<IActividadPlanificacion>(actividadDoc);
 
- const {saveActividad} = usePlanActividad()
+  const { saveActividad } = usePlanActividad();
 
-  useEffect(()=>{
-    setActividad(actividadDoc)
+  useEffect(() => {
+    setActividad(actividadDoc);
     // Reset rows
-    setRows([])
-    setActiveStep(0)
-  },[actividadDoc])
+    setRows([]);
+    setRowsLab([]);
+    setActiveStep(0);
+  }, [actividadDoc]);
 
   const [activeStep, setActiveStep] = React.useState(0);
   const [completed, setCompleted] = React.useState<{
@@ -121,7 +124,12 @@ export const ActividadEditorBase = ({
               />
             )}
             {activeStep === 2 && (
-              <PlanTasksForm formData={actividad} setFormData={setActividad} />
+              <PlanTasksForm
+                formData={actividad}
+                setFormData={setActividad}
+                rows={rowsLab}
+                setRows={setRowsLab}
+              />
             )}
             <Typography sx={{ mt: 2, mb: 1, py: 1 }}></Typography>
 
@@ -168,8 +176,29 @@ export const ActividadEditorBase = ({
                   console.log("new insumos lists id", newIds, newLineasDocs);
                   setActividad({ ...actividad, insumosLineasIds: newIds });
 
+                  let newLaboresIds = rowsLab.map((f) => f.id);
+                  let newLabLinDocs: ILaboresPlanificacion[] = rowsLab.map(
+                    (f) => {
+                      return {
+                        _id: f.id,
+                        laborId: f.labor.id,
+                        costoPorHectarea: f.costoPorHectarea,
+                        hectareas: f.hectareas,
+                        totalCosto: f.totalCosto,
+                      };
+                    }
+                  );
+
                   console.log("update actividad");
-                  saveActividad({ ...actividad, insumosLineasIds: newIds },newLineasDocs)
+                  saveActividad(
+                    {
+                      ...actividad,
+                      insumosLineasIds: newIds,
+                      laboresLineasIds: newLaboresIds,
+                    },
+                    newLineasDocs,
+                    newLabLinDocs
+                  );
 
                   onSave();
                 }}

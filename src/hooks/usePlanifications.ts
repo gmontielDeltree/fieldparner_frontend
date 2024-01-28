@@ -36,6 +36,11 @@ export const usePlanActividad = () => {
         console.log("Lineas Guardadas", lineasInsumos)
       );
     }
+    if (lineasLabores) {
+      db.bulkDocs(lineasLabores).then(() =>
+        console.log("Lineas Labores Guardadas", lineasLabores)
+      );
+    }
   };
 
   const getActividadesByCiclo = (cicloId) => {};
@@ -49,8 +54,20 @@ export const usePlanActividad = () => {
     // Update cicloParent
     db.put(cicloParent);
 
-    // Remove Lineas
-    let lineas = only_docs(await db.allDocs({include_docs:true, keys: act.insumosLineasIds}))
+    // Remove Lineas de insumos
+    let lineas = only_docs(
+      await db.allDocs({ include_docs: true, keys: act.insumosLineasIds })
+    );
+    lineas = lineas.map((l) => {
+      l["_deleted"] = true;
+      return l;
+    });
+    db.bulkDocs(lineas);
+
+    // Remove Lineas de labores
+    lineas = only_docs(
+      await db.allDocs({ include_docs: true, keys: act.laboresLineasIds })
+    );
     lineas = lineas.map((l) => {
       l["_deleted"] = true;
       return l;
@@ -92,6 +109,7 @@ export const useLineasInsumos = (lineasIds) => {
 export const usePlanificationActividad = (actividadId: string) => {
   const [actividad, setAct] = useState<IActividadPlanificacion>();
   const [lineasInsumos, setLineasInsumos] = useState([]);
+  const [lineasLabores, setLineasLabores] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -100,24 +118,51 @@ export const usePlanificationActividad = (actividadId: string) => {
 
   const getLineasInsumos = async () => {
     if (actividad?.insumosLineasIds.length) {
-      let a = only_docs(await db.allDocs({ include_docs:true, keys: actividad.insumosLineasIds }));
-      console.log(a,db, actividad.insumosLineasIds);
+      let a = only_docs(
+        await db.allDocs({
+          include_docs: true,
+          keys: actividad.insumosLineasIds,
+        })
+      );
+      console.log(a, db, actividad.insumosLineasIds);
       setLineasInsumos(a);
     }
   };
 
-  useEffect(() => {getLineasInsumos()}, [actividad]);
+  const getLineasLabores = async () => {
+    if (actividad?.laboresLineasIds.length) {
+      let a = only_docs(
+        await db.allDocs({
+          include_docs: true,
+          keys: actividad.laboresLineasIds,
+        })
+      );
+      console.log("LINEAS LABORES ",a, actividad.laboresLineasIds);
+      setLineasLabores(a);
+    }
+  };
+
+  const loadLines = async ()=>{
+   await getLineasInsumos();
+   await getLineasLabores();
+   setLoading(false)
+  }
+
+  useEffect(() => {
+    if(actividad){
+      loadLines()
+    }
+    
+  }, [actividad]);
 
   useEffect(() => {
     db.get(actividadId)
       .then((a) => {
         setAct(a);
       })
-
-      .then(() => setLoading(false));
   }, []);
 
-  return { ...actividad, lineasInsumos, loading };
+  return { ...actividad, lineasInsumos, lineasLabores, loading };
 };
 
 export const useCiclo = ({

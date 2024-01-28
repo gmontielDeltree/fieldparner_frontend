@@ -32,7 +32,7 @@ export const ActividadCardBase: React.FC = ({
 
   // const actividad = usePlanificationActividad(actividadId)
  const {removeActividad} = usePlanActividad()
-  let { fecha, insumosLineasIds, laboresLineasIds, ejecutada, totalCosto, tipo, area, lineasInsumos, loading } = usePlanificationActividad(actividadId)
+let { fecha, insumosLineasIds, laboresLineasIds, ejecutada, totalCosto, tipo, area, lineasInsumos, lineasLabores,loading } = usePlanificationActividad(actividadId)
 
   let cardColor = FieldPartnerColors[tipo as unknown as string];
 
@@ -82,20 +82,21 @@ export const ActividadCardBase: React.FC = ({
           <TreeItem nodeId="1" label="Insumos">
             {lineasInsumos?.length === 0 && <p>La actividad no tiene insumos</p>}
             {lineasInsumos?.map((i,indec) => {
-              console.log(i,lineasInsumos)
+              // console.log(i,lineasInsumos)
               return (
-                <TreeItem key={indec} nodeId={"2"} label="Calendar">
                   <Box>
-                    {i.insumoId} {i.totalCantidad} {i.totalCosto}
+                    {i.hectareas} {i.totalCantidad?.toFixed(2)} {i.totalCosto?.toFixed(2)}
                   </Box>
-                </TreeItem>
               );
             })}
           </TreeItem>
           <TreeItem nodeId="5" label="Labores">
-            {laboresLineasIds.length === 0 && <p>La actividad no tiene labores</p>}
-            {laboresLineasIds.map((i,indec) => {
-              return <TreeItem key={indec} nodeId="2" label="Calendar" />;
+            {lineasLabores?.length === 0 && <p>La actividad no tiene labores</p>}
+            {lineasLabores?.map((i,indec) => {
+              
+              return <Box>
+                {i.totalCosto}
+              </Box>
             })}
           </TreeItem>
         </TreeView>

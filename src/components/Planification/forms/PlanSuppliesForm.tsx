@@ -200,15 +200,22 @@ function PlanSuppliesForm({
       valueFormatter: (params) => {
         return `${params.value.name || ""}`;
       },
+      valueSetter: (params)=>{
+        let hectareas = formData.area
+        return { ...params.row, insumo :params.value, hectareas,dosis:0 };
+      }
     },
     {
       field: "dosis",
-      headerName: "Dosis",
+      headerName: "Unidades/has",
       type: "number",
       width: 80,
       align: "right",
       headerAlign: "left",
       editable: true,
+      valueSetter: (params)=>{
+        return { ...params.row, dosis :params.value, totalCantidad:params.value*params.row.hectareas };
+      },
       valueFormatter: (params) => {
         return `${params.value}`;
       },
@@ -218,13 +225,55 @@ function PlanSuppliesForm({
       headerName: "",
       type: "number",
       width: 80,
-      align: "left",
+      align: "right",
       headerAlign: "left",
       editable: false,
       valueGetter: (params) => {
         return `${params.row.insumo.unitMeasurement || ""}`;
       },
     },
+    {
+      field: "totalCantidad",
+      headerName: "Cant. Total",
+      type: "number",
+      width: 80,
+      align: "right",
+      headerAlign: "left",
+      editable: false,
+      valueGetter: (params) => {
+        return params.row.dosis * formData.area;
+      },
+    },
+    {
+      field: "precioUnitario",
+      headerName: "Precio Unitario",
+      type: "number",
+      width: 80,
+      align: "right",
+      headerAlign: "left",
+      editable: true,
+      valueSetter: (params)=>{
+        return { ...params.row, precioUnitario :params.value, totalCosto:params.value*params.row.totalCantidad };
+      },
+      valueFormatter: (params) => {
+        return `USD ${params.value || ""}`;
+      },
+    },
+
+    {
+      field: "totalCosto",
+      headerName: "Costo",
+      type: "number",
+      width: 80,
+      align: "right",
+      headerAlign: "left",
+      editable: false,
+      valueGetter: (params) => {
+        return params.row.dosis * formData.area * params.row.precioUnitario;
+      },
+    },
+
+
     {
       field: "actions",
       type: "actions",

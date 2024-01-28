@@ -4,6 +4,7 @@ import {
   AccordionSummary,
   Box,
   Button,
+  Paper,
   Typography,
 } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
@@ -47,14 +48,14 @@ export const Ciclo = ({ ciclo, loteId }) => {
           />
         </Box>
 
-      <Box sx={{display:"flex",flexDirection:"column", alignItems:"center", gap:"1rem", 
+      <Paper sx={{display:"flex",flexDirection:"column", alignItems:"center", gap:"1rem", 
       backgroundColor:"#c7bb27",margin:"0.2rem",paddingY:"1rem",borderRadius:"1rem"}}>
           {ciclo.actividadesIds?.map((a ,i ) => {
             return <ActividadCardBase key={i} actividadId={a}></ActividadCardBase>;
           })}
 
           {!ciclo.actividadesIds.length && <Typography>Sin Actividades Planificadas</Typography>}
-        </Box>
+        </Paper>
       </AccordionDetails>
     </Accordion>
   );
