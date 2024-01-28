@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useBusiness, useCampaign, useDeposit, useForm, useOrder, useSupply } from '../hooks';
-import { BorderContainer, Loading, NewSupplyRow, TableCellStyledBlack, TemplateLayout } from '../components';
+import Swal from 'sweetalert2';
+import {
+    useAppDispatch,
+    useBusiness,
+    useCampaign,
+    useDeposit,
+    useForm,
+    useOrder,
+    useStockMovement,
+    useSupply
+} from '../hooks';
+import { BorderContainer, DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TableCellStyledBlack, TemplateLayout } from '../components';
 import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, Table, TableBody, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import { Assignment as AssignmentIcon } from '@mui/icons-material';
-import { ColumnProps, OrderStatus, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderType } from '../types';
+import { ColumnProps, OrderStatus, StockByLot, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderType } from '../types';
 import { getShortDate } from '../helpers/dates';
 
 
@@ -13,17 +23,20 @@ const columns: ColumnProps[] = [
     { text: "Deposito", align: "left" },
     { text: "Insumo", align: "left" },
     { text: "UM", align: "center" },
+    { text: "N° Lote", align: "center" },
     { text: "Cantidad a Retirar", align: "center" },
 ];
 
 const initialForm: WithdrawalOrder = {
+    accountId: "",
     creationDate: getShortDate(),
     reason: "",
     campaignId: "",
     withdrawId: "",
     order: "",
     state: OrderStatus.Pending,
-    type: WithdrawalOrderType.Individual
+    type: WithdrawalOrderType.Individual,
+    suppliesToBeWithdrawn: [],
 };
 
 export const WithdrawalOrdersPage: React.FC = () => {
@@ -31,17 +44,18 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { isLoading, createWithdrawalOrder } = useOrder();
-
+    const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
     const { isLoading: supplyLoading, supplies, getSupplies } = useSupply();
     const { deposits, getDeposits } = useDeposit();
     const { campaigns, getCampaigns } = useCampaign();
     const { isLoading: loadingEntities, businesses: socialEntities } = useBusiness();
+    const { getStock } = useStockMovement();
     const {
         creationDate,
         reason,
         campaignId,
         withdrawId,
-        formulario,
+        formulario: formValues,
         setFormulario,
         handleInputChange,
         handleFormValueChange,
@@ -50,10 +64,66 @@ export const WithdrawalOrdersPage: React.FC = () => {
 
     const onClickCancel = () => navigate("/init/overview/list-orders");
 
-    const handleAddOrder = () => { }
+    const handleAddWithdrawalOrder = () => {
+        
+        createWithdrawalOrder({
+            type: "Individual",
+            campaignId,
+            creationDate,
+            withdrawId,
+            order: formValues.order,
+            reason: formValues.reason,
+            state: OrderStatus.Pending,
+            suppliesToBeWithdrawn: suppliesToAdd,
+            accountId: ""
+        });
+    }
 
-    const addNewDepositSupply = (item: TransformSupply) => {
-        console.log('item', item);
+    const validateStock = async (newSupply: TransformSupply) => {
+        try {
+            const { supply, deposit } = newSupply;
+            if (!supply._id || !deposit._id) return false;
+
+            const result = await getStock(supply._id, deposit._id, newSupply.location, newSupply.nroLot);
+
+            //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
+            if (result && result.currentStock > 0) {
+
+                let supplyStock: StockByLot = result;
+                const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
+                if (newCurrentStock <= 0) {
+                    Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
+                    return false;
+                }
+                return true;
+            }
+            else {
+                Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
+                return false;
+            }
+        } catch (error) {
+            console.log('error', error);
+            return false;
+        }
+    }
+
+    const addSupplyToAdd = async (item: TransformSupply) => {
+        const depositId = item.deposit._id;
+        const supplyId = item.supply._id;
+        const existSupply = suppliesToAdd.find(s => s.deposit._id === depositId && s.supply._id === supplyId);
+
+        if (existSupply) {
+            Swal.fire('Deposito/Insumo.', 'Deposito / Insumo existente.', 'error');
+            return;
+        }
+
+        if (await validateStock(item))
+            setSuppliesToAdd([item, ...suppliesToAdd]);
+    }
+
+    //TODO: validar deposito/insumo que no se repita.
+    const handleAddDepositSupply = (item: TransformSupply) => {
+        addSupplyToAdd(item);
     }
 
     useEffect(() => {
@@ -70,7 +140,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                 sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}
             >
                 <Box className="text-center">
-                    <AssignmentIcon />
+                    <AssignmentIcon fontSize='large' />
                 </Box>
                 <Typography
                     component="h1"
@@ -159,36 +229,30 @@ export const WithdrawalOrdersPage: React.FC = () => {
                     }}
                     component={Paper}
                 >
-                    <Table sx={{ minWidth: 350 }} aria-label="customized table">
-                        <TableHead>
-                            <TableRow>
-                                {
-                                    columns.map(({ text, align }) => (
-                                        <TableCellStyledBlack key={text} align={align} >
-                                            {text}
-                                        </TableCellStyledBlack>
-                                    ))
-                                }
-                                <TableCellStyledBlack />
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {/* {supplies.map((originSupply) => (
-                                    <SupplyRow
-                                        key={originSupply.id}
-                                        type='origin'
-                                        row={originSupply}
-                                        deleteRow={deleteRowOrigin}
-                                    />
-                                ))} */}
-                        </TableBody>
-                    </Table>
+                    <DataTable
+                        key="datatable-orders"
+                        columns={columns}
+                        isLoading={isLoading}
+                    >
+                        {suppliesToAdd.map((row) => (
+                            <ItemRow key={row.id}>
+                                <TableCellStyled align="left">
+                                    {row.deposit.description}
+                                </TableCellStyled>
+                                <TableCellStyled align="left">{row.supply.name} </TableCellStyled>
+                                <TableCellStyled align="center">{row.supply.unitMeasurement}</TableCellStyled>
+                                <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
+                                <TableCellStyled align='center'>{row.amount}</TableCellStyled>
+                            </ItemRow>
+                        ))}
+                    </DataTable>
                 </TableContainer>
                 <NewSupplyRow
-                    key="new-supply-to-origin"
+                    key="new-supply-order"
                     supplies={supplies}
                     deposits={deposits}
-                    addNewSupply={addNewDepositSupply} />
+                    showDueDate={false}
+                    addNewSupply={handleAddDepositSupply} />
 
                 <Grid
                     container
@@ -204,7 +268,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                         <Button
                             variant="contained"
                             color="primary"
-                            onClick={() => handleAddOrder()}
+                            onClick={() => handleAddWithdrawalOrder()}
                         >
                             Generar
                         </Button>

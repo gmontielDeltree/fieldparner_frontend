@@ -451,6 +451,7 @@ export interface Field extends Document {
 }
 
 export interface WithdrawalOrder extends Document {
+    accountId: string;
     type: string;
     creationDate: string;
     order: string;
@@ -458,6 +459,7 @@ export interface WithdrawalOrder extends Document {
     withdrawId: string;
     campaignId: string;
     state: OrderStatus;
+    suppliesToBeWithdrawn: TransformSupply[];
 }
 
 //#region Enums

@@ -360,6 +360,7 @@ export const TransformPage: React.FC = () => {
                         key="new-supply-to-origin"
                         supplies={supplies}
                         deposits={deposits}
+                        showDueDate
                         addNewSupply={handleAddSupplyOrigin} />
                 </BorderContainer>
                 <Typography variant="h5" sx={{ my: 3 }}>
@@ -405,6 +406,7 @@ export const TransformPage: React.FC = () => {
                         key="new-supply-to-destination"
                         supplies={supplies}
                         deposits={deposits}
+                        showDueDate
                         addNewSupply={handleAddSupplyDestination} />
                 </BorderContainer>
                 <Grid container justifyContent="end" spacing={3} mt={2}>
