@@ -16,7 +16,6 @@ const NewsBar: React.FC = () => {
         `https://agrotools.qts-ar.com.ar/satimages/newsfeed`
       );
       const data: NewsItem[] = await response.json();
-      console.log("News feed data:", data);
       setNews(data);
     } catch (error) {
       console.error("Error fetching news feed:", error);

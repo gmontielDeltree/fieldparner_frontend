@@ -29,7 +29,6 @@ function NewGeometry({ handleSaveGeometry, onClose, type }: NewGeometryProps) {
   };
 
   const handleGeoJSONProcessed = (geoJSON: GeoJsonObject) => {
-    console.log("geoJSON (handleGeoJSONProcessed): ", geoJSON);
     handleSaveGeometry?.(geoJSON);
   };
 

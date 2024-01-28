@@ -49,7 +49,7 @@ const ObservationsForm: React.FC<ObservationsFormProps> = ({
               fullWidth
               multiline
               rows={4}
-              value={formData.comment}
+              value={formData.comentario}
               onChange={handleInputChange}
               variant="outlined"
             />

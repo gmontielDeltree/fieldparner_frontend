@@ -8,6 +8,7 @@ interface EditFieldProps {
   onDelete: () => void;
   onLocate: () => void;
   handleCreateLot: () => void;
+  handleCreateUniqueLot: (field: any) => void;
 }
 
 const EditField: React.FC<EditFieldProps> = ({
@@ -16,7 +17,8 @@ const EditField: React.FC<EditFieldProps> = ({
   onClose,
   onDelete,
   onLocate,
-  handleCreateLot
+  handleCreateLot,
+  handleCreateUniqueLot
 }) => {
   const cardStyle: React.CSSProperties = {
     position: "fixed",
@@ -71,16 +73,26 @@ const EditField: React.FC<EditFieldProps> = ({
             ? "Toque en un lote del mapa para ver detalles"
             : "Sin Lotes - Agregue uno!!!"}
         </p>
-        {
+        {field?.lotes?.length === 0 && (
           <Button
             color="success"
             size="sm"
-            onClick={handleCreateLot}
+            onClick={() => handleCreateUniqueLot(field)}
             style={buttonStyle}
           >
-            Añadir Lote
+            Crear Lote Unico
           </Button>
-        }
+        )}
+
+        <Button
+          color="success"
+          size="sm"
+          onClick={handleCreateLot}
+          style={buttonStyle}
+        >
+          Añadir Lote
+        </Button>
+
         <Button
           color="danger"
           size="sm"

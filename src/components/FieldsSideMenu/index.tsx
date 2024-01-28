@@ -125,7 +125,7 @@ const FieldsSideMenu = ({ open, fields, onSelectField }) => {
       <List sx={{ width: "100%" }}>
         {fields.map((field, index) => (
           <React.Fragment key={index}>
-            <ListItem>
+            <ListItem button onClick={() => handleFieldSelect(field)}>
               <ListItemText
                 primary={
                   <Typography variant="subtitle1">{field.nombre}</Typography>
@@ -154,7 +154,10 @@ const FieldsSideMenu = ({ open, fields, onSelectField }) => {
                 aria-label="more"
                 aria-controls="long-menu"
                 aria-haspopup="true"
-                onClick={(event) => handleClick(event, field)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleClick(event, field);
+                }}
               >
                 <MoreVertIcon />
               </IconButton>
@@ -163,6 +166,7 @@ const FieldsSideMenu = ({ open, fields, onSelectField }) => {
           </React.Fragment>
         ))}
       </List>
+
       <Menu
         id="field-menu"
         anchorEl={anchorEl}

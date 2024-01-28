@@ -34,9 +34,15 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
   formData,
   setFormData
 }) => {
+  console.log("Tipo siembra: ", formData.detalles.tipo_siembra);
+  console.log("densidad siembra: ", formData.detalles.densidad);
+  console.log("distancia siembra: ", formData.detalles.distancia);
+  console.log("profundidad siembra: ", formData.detalles.profundidad);
+
   const handleInputChange = (field) => (event) => {
     const { value } = event.target;
-    console.log("Field: ", field);
+    console.log("FormData inside : ", field);
+
     setFormData({
       ...formData,
       detalles: {

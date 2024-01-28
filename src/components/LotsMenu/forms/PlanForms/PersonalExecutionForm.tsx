@@ -15,6 +15,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { styled } from "@mui/material/styles";
 import uuid4 from "uuid4";
+import { TimePicker } from "@mui/x-date-pickers";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -29,7 +30,7 @@ const Title = styled(Typography)({
   marginBottom: "20px"
 });
 
-function PersonalForm({ lot, formData, setFormData }) {
+function PersonalExecutionForm({ lot, formData, setFormData }) {
   const { businesses, getBusinesses } = useBusiness();
 
   useEffect(() => {
@@ -70,7 +71,31 @@ function PersonalForm({ lot, formData, setFormData }) {
           fecha_ejecucion_tentativa: value
         }
       });
-    } else {
+    } else if (fieldName === "fecha_ejecucion") {
+      setFormData({
+        ...formData,
+        detalles: {
+          ...formData.detalles,
+          fecha_ejecucion: value
+        }
+      });
+    } else if (fieldName === "fecha_hora_inicio") {
+      setFormData({
+        ...formData,
+        detalles: {
+          ...formData.detalles,
+          fecha_hora_inicio: value
+        }
+      });
+    } else if (fieldName === "fecha_hora_fin") {
+      setFormData({
+        ...formData,
+        detalles: {
+          ...formData.detalles,
+          fecha_hora_fin: value
+        }
+      });
+    } else if (fieldName === "hectareas") {
       setFormData({
         ...formData,
         detalles: {
@@ -86,7 +111,7 @@ function PersonalForm({ lot, formData, setFormData }) {
       <Title>Personal</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12}>
             <InputLabel id="contratista-label">Contratista</InputLabel>
             <Select
               labelId="contratista-label"
@@ -106,20 +131,6 @@ function PersonalForm({ lot, formData, setFormData }) {
               ))}
             </Select>
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Fecha"
-                value={
-                  formData.detalles.fecha_ejecucion_tentativa
-                    ? new Date(formData.detalles.fecha_ejecucion_tentativa)
-                    : new Date()
-                }
-                onChange={(newValue) => onFieldChange("fecha", newValue)}
-                renderInput={(params) => <TextField {...params} fullWidth />}
-              />
-            </LocalizationProvider>
-          </Grid>
 
           <Grid item xs={12}>
             <TextField
@@ -131,10 +142,46 @@ function PersonalForm({ lot, formData, setFormData }) {
               onChange={(e) => onFieldChange("hectareas", e.target.value)}
             />
           </Grid>
+          <Grid item xs={12} sm={4}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Fecha de Ejecución"
+                value={formData.detalles.fecha_ejecucion || new Date()}
+                onChange={(newValue) =>
+                  onFieldChange("fecha_ejecucion", newValue)
+                }
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+            </LocalizationProvider>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <TimePicker
+                label="Hora de Inicio"
+                value={formData.detalles.fecha_hora_inicio || new Date()}
+                onChange={(newValue) =>
+                  onFieldChange("fecha_hora_inicio", newValue)
+                }
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+            </LocalizationProvider>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <TimePicker
+                label="Hora de Finalización"
+                value={formData.detalles.fecha_hora_fin || new Date()}
+                onChange={(newValue) =>
+                  onFieldChange("fecha_hora_fin", newValue)
+                }
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+            </LocalizationProvider>
+          </Grid>
         </Grid>
       </FormControl>
     </CustomPaper>
   );
 }
 
-export default PersonalForm;
+export default PersonalExecutionForm;

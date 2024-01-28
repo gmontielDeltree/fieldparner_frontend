@@ -36,6 +36,8 @@ function Activity({
             activity={activity}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
+            handleEditActivity={handleEditActivity}
+            handleDownloadPDF={handleDownloadPDF}
           />
         );
       case "nota":
@@ -52,6 +54,8 @@ function Activity({
             activity={activity}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
+            handleEditActivity={handleEditActivity}
+            handleDownloadPDF={handleDownloadPDF}
           />
         );
       case "analisis de suelo":

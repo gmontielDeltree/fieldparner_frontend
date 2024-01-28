@@ -62,7 +62,6 @@ export const FieldsPage: React.FC = () => {
 
       if (fieldFeature) {
         const fieldId = fieldFeature.layer.source;
-        console.log("Clicked field ID:", fieldId);
 
         if (typeof fieldId === "string") {
           try {
@@ -71,7 +70,7 @@ export const FieldsPage: React.FC = () => {
             console.log("Field selected (setSelectedField called):", fieldDoc);
 
             addLotsToMap(map, fieldDoc.lotes);
-            handleLocateField();
+            handleLocateField(selectedField);
           } catch (err) {
             console.error("Error fetching field from PouchDB", err);
           }
@@ -105,8 +104,6 @@ export const FieldsPage: React.FC = () => {
     if (lot && map) {
       setSelectedLot(lot);
 
-      console.log("Lot geometry:", lot.geometry);
-
       const lotCentroid = centroid(lot.geometry);
       if (
         lotCentroid &&
@@ -114,7 +111,6 @@ export const FieldsPage: React.FC = () => {
         lotCentroid.geometry.coordinates
       ) {
         const centroidCoordinates = lotCentroid.geometry.coordinates;
-        console.log("Centroid coordinates:", centroidCoordinates);
 
         if (
           Array.isArray(centroidCoordinates) &&
@@ -138,15 +134,7 @@ export const FieldsPage: React.FC = () => {
     }
   };
 
-  const handleSelectField = (field) => {
-    console.log("Field selected from menu:", field);
-    setSelectedField(field);
-  };
-
   const handleSaveGeometry = (data) => {
-    console.log("Event: guardar_nueva_geometria triggered");
-    console.log("guardar_nueva_geometria", data);
-
     const geometryData = data.geometry ? data.geometry[0] : data;
 
     const campoGeojson =
@@ -225,7 +213,6 @@ export const FieldsPage: React.FC = () => {
   };
 
   const handleSaveGeometryLot = (data) => {
-    console.log("Event: add_lot_to_field triggered");
     console.log("add_lot_to_field", data);
 
     const lotGeometry = data.geometry[0].features[0].geometry;
@@ -283,7 +270,6 @@ export const FieldsPage: React.FC = () => {
   }
 
   const addLotsToMap = (map: any, lots: any) => {
-    console.log("addLotsToMap called: ", lots);
     lots.forEach((lot: any) => {
       const lotId = lot.id;
 
@@ -321,11 +307,14 @@ export const FieldsPage: React.FC = () => {
       }
     });
   };
-
-  const handleLocateField = () => {
-    console.log("selected field: ", selectedField);
-    if (selectedField && map) {
-      const fieldGeoJSON = selectedField.campo_geojson;
+  const handleSelectField = (field) => {
+    console.log("Field selected from menu:", field);
+    setSelectedField(field);
+    handleLocateField(field);
+  };
+  const handleLocateField = (field) => {
+    if (field && map) {
+      const fieldGeoJSON = field.campo_geojson;
       if (fieldGeoJSON && fieldGeoJSON.geometry) {
         const coordinates = fieldGeoJSON.geometry.coordinates[0][0];
         const [longitude, latitude] = coordinates;
@@ -385,17 +374,29 @@ export const FieldsPage: React.FC = () => {
   };
 
   const handleCloseNewLot = () => {
-    console.log("handleCloseNewLot");
     setShowNewLot(false);
     fetchData();
   };
 
   const handleCreateLot = () => {
-    handleLocateField();
-    console.log("handleCreateLot");
+    handleLocateField(selectedField);
 
     setShowNewLot(true);
   };
+
+  const handleCreateUniqueLot = (field: any) => {
+    const data = {
+      field_name: "unique_lot",
+      geometry: [
+        {
+          type: "FeatureCollection",
+          features: [field.campo_geojson]
+        }
+      ]
+    };
+    handleSaveGeometryLot(data);
+  };
+
   const fetchData = async () => {
     try {
       const allDocs = await db.allDocs({ include_docs: true });
@@ -462,6 +463,7 @@ export const FieldsPage: React.FC = () => {
           onDelete={handleDeleteField}
           onLocate={handleLocateField}
           handleCreateLot={handleCreateLot}
+          handleCreateUniqueLot={handleCreateUniqueLot}
         />
       ) : null}
 

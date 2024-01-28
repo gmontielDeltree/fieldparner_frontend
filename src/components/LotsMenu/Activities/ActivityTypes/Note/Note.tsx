@@ -5,6 +5,7 @@ import EventNoteIcon from "@mui/icons-material/EventNote";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import NoteContent from "../TabsContent/Note";
 import AttachedContent from "../TabsContent/Attached";
+import NotePoints from "../TabsContent/Points";
 
 function Note({ activity, complementaryColor, handleDeleteActivity }) {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -94,10 +95,11 @@ function Note({ activity, complementaryColor, handleDeleteActivity }) {
         sx={{ marginBottom: "16px" }}
       >
         <Tab label="Nota" />
-        <Tab label="Adjuntos" />
+        <Tab label="Puntos" />
       </Tabs>
 
       {selectedTab === 0 && <NoteContent activity={activity.actividad} />}
+      {selectedTab === 1 && <NotePoints activity={activity.actividad} />}
       {selectedTab === 2 && <AttachedContent />}
     </div>
   );
