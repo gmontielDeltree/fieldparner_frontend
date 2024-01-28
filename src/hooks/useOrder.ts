@@ -1,3 +1,5 @@
+import { useAppSelector } from ".";
+import { dbContext } from "../services";
 import { OrderStatus, WithdrawalOrder } from "../types";
 import { useState } from "react";
 
@@ -5,13 +7,21 @@ import { useState } from "react";
 export const useOrder = () => {
 
     const [orders, setOrders] = useState<WithdrawalOrder[]>([]);
+    const { user } = useAppSelector(state => state.auth);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState({});
 
-    const getWithdrawalOrders = () => {
-
+    const getWithdrawalOrders = async () => {
+        setIsLoading(true);
         try {
-            setIsLoading(true);
+
+            if (!user) throw new Error("User not found.");
+
+            const response = await dbContext.withdrawalOrders.find({
+                selector: { "accountId": user?.accountId },
+            });
+            const orders = response.docs;
+            console.log("orders: ",orders);
 
             const data: WithdrawalOrder[] = [
                 { _id: "id-1", campaignId: "1", creationDate: "20/01/2024", order: "001", reason: "Falta Gasoil", state: OrderStatus.Parcial, type: "Indiv", withdrawId: "123" },
@@ -19,6 +29,7 @@ export const useOrder = () => {
                 { _id: "id-3", campaignId: "3", creationDate: "20/01/2023", order: "00100", reason: "Demo siembra", state: OrderStatus.Completed, type: "Indiv", withdrawId: "123" },
                 { _id: "id-4", campaignId: "4", creationDate: "20/01/2021", order: "0011", reason: "Prestamo", state: OrderStatus.Pending, type: "Indiv", withdrawId: "123" },
             ];
+
             setOrders(data);
             setIsLoading(false);
         } catch (error) {

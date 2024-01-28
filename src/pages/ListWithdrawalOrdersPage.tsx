@@ -37,8 +37,8 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
         console.log('search');
     };
 
-    const onClickEdit = () => {
-        console.log('edit');
+    const onClickEdit = (row: WithdrawalOrder) => {
+        // dispatch();
     }
 
     useEffect(() => {
@@ -77,7 +77,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
                             variant="contained"
                             color="success"
                             startIcon={<AddIcon />}
-                            onClick={() => console.log('add new withdrawl order')}
+                            onClick={() => navigate('/init/overview/order')}
                         >
                             Nuevo
                         </Button>
@@ -155,7 +155,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
                                     <Tooltip title="Eliminar">
                                         <IconButton
                                             // onClick={() =>  handleDeleteVehicle (row)}
-                                            style={{ fontSize: '1.5rem' }}
+                                            sx={{ fontSize: '1.5rem' }}
                                         >
                                             <Icon name="trash alternate" />
                                         </IconButton>
@@ -163,7 +163,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
                                     <Tooltip title="Editar">
                                         <IconButton
                                             aria-label="Editar"
-                                            onClick={() => onClickEdit()}
+                                            onClick={() => onClickEdit(row)}
                                         >
                                             <EditIcon fontSize='medium' />
                                         </IconButton>
@@ -171,7 +171,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
                                     <Tooltip title="Download">
                                         <IconButton
                                             // onClick={() =>  handleDeleteVehicle (row)}
-                                            style={{ fontSize: '1.5rem' }}
+                                            sx={{ fontSize: '1.5rem' }}
                                         >
                                             <Icon name="file pdf outline" />
                                         </IconButton>

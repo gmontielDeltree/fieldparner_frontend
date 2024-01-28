@@ -91,7 +91,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       container
       alignItems="center"
       spacing={1}
-      borderRadius={5}
+      borderRadius={2}
       pb={1}
       wrap="nowrap"
       bgcolor="#f3f3f3"

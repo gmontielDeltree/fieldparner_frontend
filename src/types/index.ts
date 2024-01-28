@@ -545,4 +545,9 @@ export enum OrderStatus {
     Completed = "Completada"
 }
 
+export enum WithdrawalOrderType {
+    Individual = "Individual",
+    Labor = "Labor",
+}
+
 //#endregion
