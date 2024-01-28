@@ -32,7 +32,7 @@ const Title = styled(Typography)({
   marginBottom: "20px",
 });
 
-function PlanPersonalForm({ formData, setFormData }) {
+function PlanPersonalForm({ formData, setFormData, tipo }) {
   const { businesses, getBusinesses } = useBusiness();
 
   useEffect(() => {
@@ -119,7 +119,7 @@ function PlanPersonalForm({ formData, setFormData }) {
           </Grid>
 
           {(formData.tipo === TTipoActividadPlanificada.COSECHA) && (
-            <Grid item container xs={4} spacing={1}>
+            <Grid item container xs={8} spacing={1}>
               <Grid item xs={4}>
               <TextField
                 id="rendimiento"
@@ -143,7 +143,7 @@ function PlanPersonalForm({ formData, setFormData }) {
                   readOnly: true,
                   endAdornment: <InputAdornment position="end">kg</InputAdornment>,
                 }}
-                value={formData.rindeEstimado || 0}
+                value={formData.rindeEstimado * formData.area || 0}
                 onChange={(e) => onFieldChange("rindeEstimado", +e.target.value)}
               />
               </Grid>

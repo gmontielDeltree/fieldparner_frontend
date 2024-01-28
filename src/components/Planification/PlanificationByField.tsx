@@ -3,6 +3,9 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Divider,
+  IconButton,
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { Ciclo } from "./Ciclo";
@@ -10,6 +13,7 @@ import { useCiclos } from "../../hooks/usePlanifications";
 import { useField } from "../../hooks/useField";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CicloEditorDialog from "./CicloEditorDialog";
+import { MoreVert } from "@mui/icons-material";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -41,26 +45,34 @@ function a11yProps(index: number) {
 }
 
 const LoteAccordion: React.FC = ({ lote, campanaId }) => {
-  const [ciclos, refreshCiclos] = useCiclos(campanaId, lote.id);
+  const {ciclos, refreshCiclos} = useCiclos(campanaId, lote.id);
 
   return (
-    <Accordion>
+    <Accordion defaultExpanded>
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
+        sx={{backgroundColor:"#e0e5de", height:"2rem"}}
         aria-controls="panel1-content"
         id="panel1-header"
       >
-        {lote.properties.nombre} <CicloEditorDialog campanaId={campanaId} loteId={ lote.id } onSave={()=>{
-          // Update
-          refreshCiclos()
+        <Box sx={{display:"flex",justifyContent:"space-around", alignItems:"center", width:"100%"}}>
+          <Typography>{lote.properties.nombre}</Typography>
 
-        }}></CicloEditorDialog>
+          <CicloEditorDialog
+            campanaId={campanaId}
+            loteId={lote.id}
+            onSave={() => {
+              // Update
+              refreshCiclos();
+            }}
+          />
+        </Box>
       </AccordionSummary>
       <AccordionDetails>
         {ciclos.length === 0 && "No hay ciclos planificados para este lote"}
         {/* por cada ciclo del lote */}
-        {ciclos.map((c) => {
-          return <Ciclo ciclo={c}></Ciclo>;
+        {ciclos.map((c, i) => {
+          return <Ciclo key={i} ciclo={c} loteId={lote.id}></Ciclo>;
         })}
       </AccordionDetails>
     </Accordion>
@@ -95,15 +107,26 @@ export const PlanificationByField = ({ campaignId, fieldId }) => {
   return (
     <Box sx={{ width: "100%", height: "100%" }}>
       <Box>
-        <Box>{campo?.nombre}</Box>
+        <Box sx={{ display: "flex", justifyContent: "space-between", paddingX:"1rem" }}>
+          <Box>
+            <Typography variant="h5">{campo?.nombre}</Typography>
+            <Typography variant="subtitle2">Planificación Campaña</Typography>
+          </Box>
+
+          <IconButton>
+            <MoreVert></MoreVert>
+          </IconButton>
+        </Box>
+        <Divider component={"div"} variant="middle" />
       </Box>
 
-
-      {/* Por cada lote */}
-      {lotes?.map((lote) => {
-        return <LoteAccordion lote={lote} campanaId={campaignId} />;
-      })}
-      {/* fin por cada lote */}
+      <Box sx={{ marginBottom: "0.2rem" }}>
+        {/* Por cada lote */}
+        {lotes?.map((lote, i) => {
+          return <LoteAccordion  key={i} lote={lote} campanaId={campaignId} />;
+        })}
+        {/* fin por cada lote */}
+      </Box>
     </Box>
   );
 };

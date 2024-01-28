@@ -20,6 +20,7 @@ export default function DateRangePicker({startDate, endDate, onRangeChange}) {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <DatePicker
+        sx={{marginRight:"10px"}}
         label="Start Date"
         value={_startDate}
         maxDate={_endDate}

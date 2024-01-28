@@ -9,6 +9,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DateRangePicker from "./DateRangePicker";
 import { Autocomplete } from "@mui/material";
 import { useCiclo } from "../../hooks/usePlanifications";
+import { CultivoContext } from "./contexts/CultivosContext";
 
 export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, onSave}) {
 
@@ -18,7 +19,8 @@ export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, o
   const [cultivo, setCultivo] = React.useState(top100Films[0])
   const [startDate, setStartDate] = React.useState(new Date())
   const [endDate, setEndDate] = React.useState(new Date())
- 
+
+  const {crops} = React.useContext(CultivoContext)
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -30,7 +32,7 @@ export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, o
 
   return (
     <React.Fragment>
-      <Button variant="outlined" onClick={handleClickOpen}>
+      <Button variant="contained"  onClick={handleClickOpen}>
         + Ciclo
       </Button>
       <Dialog
@@ -51,22 +53,22 @@ export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, o
         <DialogTitle>Nuevo Ciclo</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            To subscribe to this website, please enter your email address here.
-            We will send updates occasionally.
           </DialogContentText>
 
+
           <Autocomplete
+          style={{marginBottom:"1rem",marginTop:"1rem"}}
             disablePortal
             value={cultivo}
             id="combo-box-demo"
-            options={top100Films}
+            options={crops}
             sx={{ width: 300 }}
             isOptionEqualToValue={(option,value)=>option.cultivoId ===value.cultivoId}
             onChange={(event: any, newValue: string | null)=>setCultivo(newValue)}
             renderInput={(params) => <TextField {...params} label="Cultivo" />}
           />
 
-          <DateRangePicker startDate={startDate} endDate={endDate} onRangeChange={(s,e)=>{
+          <DateRangePicker  startDate={startDate} endDate={endDate} onRangeChange={(s,e)=>{
             console.log(s,e)
             setStartDate(s)
             setEndDate(e)

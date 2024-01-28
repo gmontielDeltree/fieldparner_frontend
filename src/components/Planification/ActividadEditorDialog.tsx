@@ -17,6 +17,7 @@ import {
 import { uuidv7 } from "uuidv7";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import { usePlanActividad } from "../../hooks/usePlanifications";
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -30,7 +31,7 @@ const Transition = React.forwardRef(function Transition(
 export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
   const [open, setOpen] = React.useState(false);
 
-  const [actividad, setActividad] = useState<IActividadPlanificacion>({
+  let cleanAct = {
     accountId: "ffdfs",
     _id: "ciclo:actividad:" + uuidv7(),
     insumosLineasIds: [],
@@ -39,14 +40,18 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
     tipo: TTipoActividadPlanificada.COSECHA,
     area: 23.4,
     totalCosto: 2344,
-    campanaId: "dddd",
-    cicloId: "cicloid",
+    campanaId: campanaId,
+    cicloId: cicloId,
     campoId: "campoId",
-    loteId: "loteId",
+    loteId: loteId,
     ejecutada: false,
     created: { userId: "dfsdfd", date: "" },
     modified: { userId: "dfsdfd", date: "" },
-  });
+  }
+
+  const [actividad, setActividad] = useState<IActividadPlanificacion>({...cleanAct});
+
+  const {saveActividad} = usePlanActividad()
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -67,7 +72,7 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
 
   return (
     <React.Fragment>
-      <Button variant="outlined" onClick={handleMenuClick}>
+      <Button variant={"contained"} color={"success"} onClick={handleMenuClick}>
         + Actividad
       </Button>
 
@@ -84,7 +89,7 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
           onClick={() => {
             handleMenuClose();
             setActividad({
-              ...actividad,
+              ...cleanAct,
               tipo: TTipoActividadPlanificada.SIEMBRA,
             });
             handleClickOpen();
@@ -96,7 +101,7 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
           onClick={() => {
             handleMenuClose();
             setActividad({
-              ...actividad,
+              ...cleanAct,
               tipo: TTipoActividadPlanificada.APLICACION,
             });
             handleClickOpen();
@@ -108,7 +113,7 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
           onClick={() => {
             handleMenuClose();
             setActividad({
-              ...actividad,
+              ...cleanAct,
               tipo: TTipoActividadPlanificada.COSECHA,
             });
             handleClickOpen();
@@ -125,19 +130,22 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
         onClose={handleClose}
         aria-describedby="alert-dialog-slide-description"
       >
-        <DialogTitle>{actividad.tipo}</DialogTitle>
+        <DialogTitle>Nuevo plan de {actividad.tipo.toLocaleUpperCase()}</DialogTitle>
         <DialogContent>
           <ActividadEditorBase
+            tipo={actividad.tipo}
             actividadDoc={actividad}
+            onClose={handleClose}
             onSave={() => {
-              console.log("update actividad");
+
+              handleClose()
             }}
           />
         </DialogContent>
-        <DialogActions>
+        {/* <DialogActions>
           <Button onClick={handleClose}>Disagree</Button>
           <Button onClick={handleClose}>Agree</Button>
-        </DialogActions>
+        </DialogActions> */}
       </Dialog>
     </React.Fragment>
   );

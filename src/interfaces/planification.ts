@@ -17,7 +17,6 @@ interface FPAccountBaseDoc {
 type FPDocument = PouchDB.Core.Document<FPAccountBaseDoc>
 
 export interface IInsumosPlanificacion extends FPDocument {
-    uuid: string,
     insumoId: string,
     dosis: number,
     totalCantidad: number,
@@ -27,7 +26,6 @@ export interface IInsumosPlanificacion extends FPDocument {
 }
 
 export interface ILaboresPlanificacion extends FPDocument {
-    uuid: string,
     laborId: string,
     costoPorHectarea:number,
     hectareas: number,

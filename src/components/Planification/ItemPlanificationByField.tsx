@@ -1,10 +1,8 @@
-import { Box, Fab, ListItem, Typography } from "@mui/material";
-import React from "react";
+import { Box, Divider, Fab, ListItem, Typography } from "@mui/material";
+import React, { useContext } from "react";
 import { Campo } from "../../../owncomponents/tipos/campos";
 import { Campaign } from "@types";
-import {
-  ICiclosPlanificacion
-} from "../../interfaces/planification";
+import { ICiclosPlanificacion } from "../../interfaces/planification";
 import { Lote } from "../../../owncomponents/tipos/lotes";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
 import { TreeView } from "@mui/x-tree-view/TreeView";
@@ -12,6 +10,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { getYear, parse } from "date-fns";
 import { useCiclos } from "../../hooks/usePlanifications";
+import { CultivoContext } from "./contexts/CultivosContext";
 
 const palette = [
   "#00429d",
@@ -32,7 +31,8 @@ const dateToColor = (strDate) => {
 };
 
 const LineaDeCampana: React.FC = ({ campana, lote, onCampaignClick }) => {
-  const [ciclos, refreshCiclos]= useCiclos(campana._id, lote.id);
+  const {ciclos, refreshCiclos} = useCiclos(campana._id, lote.id);
+  const {getCropLabelFromId,getCropColorFromId} = useContext(CultivoContext)
 
   return (
     <Box
@@ -40,7 +40,8 @@ const LineaDeCampana: React.FC = ({ campana, lote, onCampaignClick }) => {
         display: "flex",
         paddingX: "8px",
         paddingY: "5px",
-        alignItems: "center",
+        justifyContent:"space-between",
+        alignItems:"center"
       }}
     >
       <Fab
@@ -49,14 +50,26 @@ const LineaDeCampana: React.FC = ({ campana, lote, onCampaignClick }) => {
           borderRadius: "100px",
           backgroundColor: dateToColor(campana.startDate),
           color: "white",
+          height: "2.5rem",
         }}
-        onClick={()=>{onCampaignClick(campana, lote)}}
+        onClick={() => {
+          onCampaignClick(campana, lote);
+        }}
       >
         {campana.description}
       </Fab>
-      {ciclos?.map((ciclo,i) => <Fab key={i} variant="extended">{ciclo.cultivoId}</Fab>)}
 
-      {!ciclos.length && "No hay ciclos para esta campaña y lote"}
+
+      {(ciclos.length > 0) && <Box sx={{display:"flex", justifyContent:"space-around", flexGrow:1}}>
+        {ciclos?.map((ciclo, i) => (
+          <Fab key={i} variant="extended" sx={{ borderRadius: "4px", height:"1.9rem", backgroundColor:getCropColorFromId(ciclo.cultivoId) }}>
+            {getCropLabelFromId(ciclo.cultivoId)}
+          </Fab>
+        ))}
+      </Box>
+      }
+
+      {!ciclos.length && <Box>No hay ciclos para esta campaña y lote</Box>}
     </Box>
   );
 };
@@ -65,7 +78,12 @@ const LineaLote: React.FC = ({ lote, campanas, onCampaignClick }) => {
   return (
     <TreeItem nodeId={lote.id} label={lote.properties.nombre}>
       {campanas.map((c, i) => (
-        <LineaDeCampana key={i} campana={c} lote={lote} onCampaignClick={onCampaignClick} />
+        <LineaDeCampana
+          key={i}
+          campana={c}
+          lote={lote}
+          onCampaignClick={onCampaignClick}
+        />
       ))}
     </TreeItem>
   );
@@ -80,18 +98,23 @@ export const ItemPlanificationByField = ({
   campanas: Campaign[];
   onCampaignClick: () => void;
 }) => {
-
   return (
-    <ListItem key={campo._id} component="div" sx={{ flexDirection: "column" }}>
-      <Typography variant="h6">{campo.nombre}</Typography>
+    <Box>
+      <Typography variant="subtitle1">{campo.nombre}</Typography>
       <TreeView
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
       >
         {campo.lotes.map((lote: Lote, i) => (
-          <LineaLote key={i} lote={lote} campanas={campanas} onCampaignClick={onCampaignClick} />
+          <LineaLote
+            key={i}
+            lote={lote}
+            campanas={campanas}
+            onCampaignClick={onCampaignClick}
+          />
         ))}
       </TreeView>
-    </ListItem>
+      <Divider variant="middle" component={"div"}></Divider>
+    </Box>
   );
 };

@@ -21,7 +21,8 @@ import siembraIcon from "../../images/icons/sembradora_act.webp";
 import cosechaIcon from "../../images/icons/cosechadora_act.webp";
 import aplicacionIcon from "../../images/icons/pulverizadora_act.webp";
 import notaIcon from "../../images/icons/iconodenotas_act.webp";
-import { usePlanificationActividad } from "../../hooks/usePlanifications";
+import { usePlanActividad, usePlanificationActividad } from "../../hooks/usePlanifications";
+
 
 export const ActividadCardBase: React.FC = ({
   actividadId,
@@ -30,20 +31,21 @@ export const ActividadCardBase: React.FC = ({
 }) => {
 
   // const actividad = usePlanificationActividad(actividadId)
-
-  let { fecha, insumos, labores, ejecutada, totalCosto, tipo, area } = usePlanificationActividad(actividadId)
+ const {removeActividad} = usePlanActividad()
+  let { fecha, insumosLineasIds, laboresLineasIds, ejecutada, totalCosto, tipo, area, lineasInsumos, loading } = usePlanificationActividad(actividadId)
 
   let cardColor = FieldPartnerColors[tipo as unknown as string];
 
-  let fechaString = format(parseISO(fecha), "dd MMMM yyyy");
+  const fechaString  = (fechaa)=> format(parseISO(fechaa), "dd MMMM yyyy");
 
   let icon = siembraIcon;
 
+  if(loading) return <div>Loading</div>
   return (
-    <Card sx={{ maxWidth: 345, backgroundColor: cardColor }}>
+    <Card sx={{ maxWidth: "100%", minWidth:"50%", backgroundColor: cardColor }}>
       <CardContent>
         <Box>
-          {fechaString} {ejecutada && "EJECUTADA"}
+          {fechaString(fecha)} {ejecutada && "EJECUTADA"}
         </Box>
         <Box
           sx={{
@@ -69,6 +71,7 @@ export const ActividadCardBase: React.FC = ({
             }}
             onDelete={() => {
               console.log("DELETE ACT");
+              removeActividad(actividadId)
             }}
           />
         </Box>
@@ -77,10 +80,11 @@ export const ActividadCardBase: React.FC = ({
           defaultExpandIcon={<ChevronRightIcon />}
         >
           <TreeItem nodeId="1" label="Insumos">
-            {labores.length === 0 && <p>La actividad no tiene insumos</p>}
-            {insumos.map((i) => {
+            {lineasInsumos?.length === 0 && <p>La actividad no tiene insumos</p>}
+            {lineasInsumos?.map((i,indec) => {
+              console.log(i,lineasInsumos)
               return (
-                <TreeItem nodeId="2" label="Calendar">
+                <TreeItem key={indec} nodeId={"2"} label="Calendar">
                   <Box>
                     {i.insumoId} {i.totalCantidad} {i.totalCosto}
                   </Box>
@@ -89,9 +93,9 @@ export const ActividadCardBase: React.FC = ({
             })}
           </TreeItem>
           <TreeItem nodeId="5" label="Labores">
-            {labores.length === 0 && <p>La actividad no tiene labores</p>}
-            {labores.map((i) => {
-              return <TreeItem nodeId="2" label="Calendar" />;
+            {laboresLineasIds.length === 0 && <p>La actividad no tiene labores</p>}
+            {laboresLineasIds.map((i,indec) => {
+              return <TreeItem key={indec} nodeId="2" label="Calendar" />;
             })}
           </TreeItem>
         </TreeView>

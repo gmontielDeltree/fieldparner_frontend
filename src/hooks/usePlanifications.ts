@@ -5,24 +5,119 @@ import { useAppSelector } from ".";
 import {
   IActividadPlanificacion,
   ICiclosPlanificacion,
+  IInsumosPlanificacion,
   IPlanificacion,
 } from "../interfaces/planification";
 import { only_docs } from "../../owncomponents/helpers";
 import { formatISO } from "date-fns";
 import { uuidv7 } from "uuidv7";
-import { Ciclo } from '../components/Planification/Ciclo';
+import { Ciclo } from "../components/Planification/Ciclo";
+import { Row } from "reactstrap";
+import { Loading } from "../components/Loading/index";
+import async from "../../netlify/edge-functions/geo";
 
-export const usePlanificationActividad = (actividadId: string) => {
-  const [actividad, setAct] = useState<IActividadPlanificacion>();
+export const usePlanActividad = () => {
+  let db =
+    dbContext.fields as unknown as PouchDB.Database<IActividadPlanificacion>;
+
+  const saveActividad = (
+    actividadDoc: IActividadPlanificacion,
+    lineasInsumos?,
+    lineasLabores?
+  ) => {
+    db.put(actividadDoc);
+    db.get(actividadDoc.cicloId).then((doc) => {
+      let d = doc as unknown as ICiclosPlanificacion;
+      d.actividadesIds = [...new Set([...d.actividadesIds, actividadDoc._id])];
+      db.put(d);
+    });
+    if (lineasInsumos) {
+      db.bulkDocs(lineasInsumos).then(() =>
+        console.log("Lineas Guardadas", lineasInsumos)
+      );
+    }
+  };
+
+  const getActividadesByCiclo = (cicloId) => {};
+
+  const removeActividad = async (actividadId) => {
+    let act: IActividadPlanificacion = await db.get(actividadId);
+    let cicloParent: ICiclosPlanificacion = await db.get(act.cicloId);
+    cicloParent.actividadesIds = cicloParent.actividadesIds.filter(
+      (id) => id !== actividadId
+    );
+    // Update cicloParent
+    db.put(cicloParent);
+
+    // Remove Lineas
+    let lineas = only_docs(await db.allDocs({include_docs:true, keys: act.insumosLineasIds}))
+    lineas = lineas.map((l) => {
+      l["_deleted"] = true;
+      return l;
+    });
+    db.bulkDocs(lineas);
+
+    // Finally remove the doc
+    db.remove(act);
+  };
+
+  return {
+    saveActividad,
+    removeActividad,
+  };
+};
+
+export const useLineasInsumos = (lineasIds) => {
+  const [lin, setLin] = useState();
 
   let db =
     dbContext.fields as unknown as PouchDB.Database<IActividadPlanificacion>;
 
+  const getLineas = useCallback(async () => {
+    if (lineasIds?.length > 0) {
+      let dr = only_docs(
+        await db.allDocs({ include_docs: true, keys: lineasIds })
+      );
+      setLin(dr);
+    }
+  }, [lineasIds]);
+
   useEffect(() => {
-    db.get(actividadId).then((a) => setAct(a));
+    getLineas();
+  }, [lineasIds]);
+
+  return lin;
+};
+
+export const usePlanificationActividad = (actividadId: string) => {
+  const [actividad, setAct] = useState<IActividadPlanificacion>();
+  const [lineasInsumos, setLineasInsumos] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+  let db =
+    dbContext.fields as unknown as PouchDB.Database<IActividadPlanificacion>;
+
+  const getLineasInsumos = async () => {
+    if (actividad?.insumosLineasIds.length) {
+      let a = only_docs(await db.allDocs({ include_docs:true, keys: actividad.insumosLineasIds }));
+      console.log(a,db, actividad.insumosLineasIds);
+      setLineasInsumos(a);
+    }
+  };
+
+  useEffect(() => {getLineasInsumos()}, [actividad]);
+
+  useEffect(() => {
+    db.get(actividadId)
+      .then((a) => {
+        setAct(a);
+      })
+
+      .then(() => setLoading(false));
   }, []);
 
-  return actividad;
+  return { ...actividad, lineasInsumos, loading };
 };
 
 export const useCiclo = ({
@@ -32,10 +127,9 @@ export const useCiclo = ({
 }: {
   campaingId: string;
   loteId: string;
-  cicloId:string
+  cicloId: string;
 }) => {
   const { user } = useAppSelector((state) => state.auth);
-
 
   const [ciclo, setCiclo] = useState<ICiclosPlanificacion>({
     _id: `ciclo:${campaingId}:${loteId}:${uuidv7()}`,
@@ -54,21 +148,24 @@ export const useCiclo = ({
   let db =
     dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
 
-  const saveCiclo = useCallback((cultivoId, startDate, endDate) => {
+  const saveCiclo = useCallback(
+    (cultivoId, startDate, endDate) => {
+      // console.log("ACAAAAAAAAAAAAAAAA",campaingId)
+      let c = { ...ciclo };
 
-    let c = { ...ciclo };
+      if (!cicloId) {
+        // Nuevo -> setOtroId
+        c._id = `ciclo:${campaingId}:${loteId}:${uuidv7()}`;
+      }
 
-    if(!cicloId) {
-      // Nuevo -> setOtroId
-      c._id = `ciclo:${campaingId}:${loteId}:${uuidv7()}`
-    }
-
-    c.fechaFin = endDate;
-    c.fechaInicio = startDate;
-    c.cultivoId = cultivoId;
-    db.put(c).then(() => console.log("saveCiclo", c, ciclo));
-    setCiclo(c);
-  }, []);
+      c.fechaFin = endDate;
+      c.fechaInicio = startDate;
+      c.cultivoId = cultivoId;
+      db.put(c).then(() => console.log("saveCiclo", c, ciclo));
+      setCiclo(c);
+    },
+    [campaingId, loteId]
+  );
 
   return [ciclo, saveCiclo];
 };
@@ -79,8 +176,8 @@ export const useCiclos = (campaingId: string, loteId: string) => {
   let db =
     dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
 
-  const getCiclos = async (campaingId, loteId) => {
-    let key = "ciclo:" + campaingId + ":" + loteId;
+  const getCiclos = async (campanaId, loteId) => {
+    let key = "ciclo:" + campanaId + ":" + loteId;
     let docsResp = only_docs(
       await db.allDocs({
         include_docs: true,
@@ -88,7 +185,7 @@ export const useCiclos = (campaingId: string, loteId: string) => {
         endkey: key + "\ufff0",
       })
     );
-    console.log("CICLOS", docsResp, campaingId, loteId);
+    console.log("CICLOS", docsResp, campanaId, loteId);
     setCiclos(docsResp);
   };
 
@@ -103,13 +200,17 @@ export const useCiclos = (campaingId: string, loteId: string) => {
     );
     console.log("CICLOS", docsResp, campaingId, loteId);
     setCiclos(docsResp);
-  }, [campaingId,loteId])
+  }, [campaingId, loteId]);
+
+  const removeCiclo = (cicloId) => {
+    db.get(cicloId).then((d) => db.remove(d));
+  };
 
   useEffect(() => {
     getCiclos(campaingId, loteId);
   }, [campaingId, loteId]);
 
-  return [ciclos, refreshCiclos] as const;
+  return { ciclos, refreshCiclos, removeCiclo };
 };
 export const usePlanification = (campaingId: string, campoId: string) => {
   const { user } = useAppSelector((state) => state.auth);
