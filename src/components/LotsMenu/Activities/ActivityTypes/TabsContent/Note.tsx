@@ -8,7 +8,6 @@ function NoteContent({ activity }) {
   const activityDate = new Date(activity.fecha).toLocaleDateString();
   const nextVisitDate = new Date(activity.proxima_visita).toLocaleDateString();
 
-  // Function to render the value, handling both simple and object values
   const renderPropertyValue = (value) => {
     if (typeof value === "object" && value !== null) {
       return (

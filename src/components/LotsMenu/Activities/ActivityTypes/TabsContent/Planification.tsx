@@ -15,15 +15,14 @@ import { styled } from "@mui/material/styles";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
-import WaterDropIcon from "@mui/icons-material/Opacity"; // For Humidity
-import WindPowerIcon from "@mui/icons-material/Air"; // For Wind Speed
+import WaterDropIcon from "@mui/icons-material/Opacity";
+import WindPowerIcon from "@mui/icons-material/Air";
 
-// Custom styling
 const CustomAccordion = styled(Accordion)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   borderRadius: theme.shape.borderRadius,
-  backgroundColor: `rgba(255, 255, 255, 0.5)`, // Using RGBA for semi-transparent white
-  backdropFilter: "blur(10px)", // Blurry effect
+  backgroundColor: `rgba(255, 255, 255, 0.5)`,
+  backdropFilter: "blur(10px)",
   boxShadow: `0 4px 8px 0 rgba(0,0,0,0.2)`,
   "&:not(:last-child)": {
     borderBottom: 0
@@ -35,9 +34,9 @@ const CustomAccordion = styled(Accordion)(({ theme }) => ({
     margin: theme.spacing(1, 0)
   },
   "& .MuiAccordionSummary-root": {
-    backgroundColor: `rgba(255, 255, 255, 0.5)`, // Using RGBA for semi-transparent white
+    backgroundColor: `rgba(255, 255, 255, 0.5)`,
     "&.Mui-expanded": {
-      backgroundColor: `rgba(255, 255, 255, 0.7)` // Slightly more opaque on expansion
+      backgroundColor: `rgba(255, 255, 255, 0.7)`
     }
   },
   color: theme.palette.getContrastText(theme.palette.background.paper)

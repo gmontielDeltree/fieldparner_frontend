@@ -1,12 +1,13 @@
 import React from "react";
 import { Card, CardHeader, CardBody, Button } from "reactstrap";
+import LocationOnIcon from "@mui/icons-material/LocationOn"; // Import the LocationOn icon
 
 interface EditFieldProps {
   isOpen: boolean;
   field: any;
   onClose: () => void;
   onDelete: () => void;
-  onLocate: () => void;
+  onLocate: (field: any) => void;
   handleCreateLot: () => void;
   handleCreateUniqueLot: (field: any) => void;
 }
@@ -38,7 +39,7 @@ const EditField: React.FC<EditFieldProps> = ({
   };
 
   const handleLocateField = () => {
-    onLocate();
+    onLocate(field);
   };
 
   const handleDeleteField = () => {
@@ -46,20 +47,28 @@ const EditField: React.FC<EditFieldProps> = ({
       onDelete();
     }
   };
+  const cardHeaderStyle: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
+  };
 
   return (
     <Card style={cardStyle}>
-      <CardHeader>
-        {field?.nombre}
-        <Button
-          color="primary"
-          size="sm"
-          onClick={handleLocateField}
-          style={buttonStyle}
-        >
-          <i className="bi bi-geo-alt" />
-        </Button>
-        <Button close onClick={onClose} />
+      <CardHeader style={cardHeaderStyle}>
+        <span>{field?.nombre}</span>
+        <div>
+          <Button
+            color="primary"
+            size="sm"
+            onClick={handleLocateField}
+            style={buttonStyle}
+          >
+            <LocationOnIcon /> {/* Use the Material-UI LocationOn icon */}
+          </Button>
+
+          <Button close onClick={onClose} />
+        </div>
       </CardHeader>
       <CardBody>
         <p style={{ fontWeight: "bold" }}>

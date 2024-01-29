@@ -16,9 +16,8 @@ export const InitRouter = () => {
   }
 
   return (
-    <OverviewRoutes />
-    // <>
-    //   {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
-    // </>
+    <>
+      {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
+    </>
   );
 };

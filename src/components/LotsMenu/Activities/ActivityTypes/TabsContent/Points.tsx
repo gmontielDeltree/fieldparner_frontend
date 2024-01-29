@@ -64,10 +64,23 @@ const containerVariants = {
     }
   }
 };
-
 const FeatureAccordion = styled(Accordion)({
-  backgroundColor: "#f0f0f0",
-  margin: "10px 0"
+  backgroundColor: "rgba(255, 255, 255, 0.4)", // semi-transparent white
+  backdropFilter: "blur(10px)", // blur effect
+  margin: "10px 0",
+  borderRadius: "10px", // rounded corners
+  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", // subtle shadow
+  transition: "all 0.3s ease-in-out", // smooth transition
+
+  "&:before": {
+    // Remove the default MUI inset shadow
+    display: "none"
+  },
+
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.8)", // slightly less transparent on hover
+    boxShadow: "0 6px 10px rgba(0, 0, 0, 0.15)" // deeper shadow on hover
+  }
 });
 
 function NotePoints({ activity }) {
@@ -120,8 +133,26 @@ function NotePoints({ activity }) {
   };
 
   const DetailCard = styled(Card)({
+    position: "relative", // Ensure this is set for pseudo-elements to work
     marginBottom: "10px",
-    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)"
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+    borderRadius: "8px",
+    overflow: "hidden",
+    background: "rgba(255, 255, 255, 0.8)",
+    backdropFilter: "blur(10px)",
+    border: "1px solid rgba(255, 255, 255, 0.3)",
+    padding: "10px",
+    "&:before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundImage:
+        "linear-gradient(to top right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2))",
+      borderRadius: "8px"
+    }
   });
 
   const ImageGrid = styled(ImageList)({
@@ -175,23 +206,21 @@ function NotePoints({ activity }) {
   };
 
   return (
-    <CustomPaper elevation={3}>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key="mainForm"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
-          {formData.features.length > 0 ? (
-            <Grid item xs={12} style={{ marginTop: "50px" }}>
-              {renderFeatureList()}
-            </Grid>
-          ) : null}
-        </motion.div>
-      </AnimatePresence>
-    </CustomPaper>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key="mainForm"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
+        {formData.features.length > 0 ? (
+          <Grid item xs={12} style={{ marginTop: "50px" }}>
+            {renderFeatureList()}
+          </Grid>
+        ) : null}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

@@ -148,7 +148,6 @@ function ExecutionContent(props) {
                   icon={<EventIcon />}
                   label={`Tipo: ${execution.tipo || "N/A"}`}
                 />
-                {/* Add more chips or details as needed */}
               </Box>
             </Box>
           ) : (

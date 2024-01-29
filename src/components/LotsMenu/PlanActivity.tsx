@@ -300,7 +300,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       })
       .then(() => {
         console.log("Actividad guardada", "success");
-        // Optionally provide feedback to user here
+
         backToActivites();
       })
       .catch((error) => {
@@ -310,20 +310,17 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           db.put(actividad)
             .then(() => {
               console.log("New actividad created", "success");
-              // Optionally provide feedback to user here
+
               backToActivites();
             })
             .catch((err) => {
               console.error("Error creating new actividad:", err);
-              // Optionally provide feedback to user here
             });
         } else if (error.name === "conflict") {
           console.error("Conflict detected. Trying to save again.");
           // Implement a better conflict resolution strategy here
-          // Optionally provide feedback to user here
         } else {
           console.error("Error saving actividad:", error);
-          // Optionally provide feedback to user here
         }
       });
   };
@@ -359,7 +356,6 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             `Ejecutar ${translatedActivityType}`
           ) : isEditing ? (
             <>
-              {/* Editing specific icon and text */}
               <EditIcon
                 sx={{
                   verticalAlign: "middle",
