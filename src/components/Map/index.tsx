@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import Map from "react-map-gl";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import { NavigationControl, GeolocateControl } from "mapbox-gl";
@@ -9,6 +9,20 @@ import "./MapComponent.css";
 
 interface MapComponentProps {
   onMapLoad: (event: any) => void;
+}
+
+const get_initialVS = ()=>{
+  let mp = localStorage.getItem("mapposition")
+  if(mp){
+    let d = JSON.parse(mp)
+    return {longitude : +d[0].lng, latitude: +d[0].lat , zoom: +d[1]}
+  }else{
+    return {
+      longitude: -59.2965,
+      latitude: -35.1923,
+      zoom: 14,
+    }
+  }
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({ onMapLoad }) => {
@@ -35,7 +49,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ onMapLoad }) => {
         geocoderRef.current = new MapboxGeocoder({
           accessToken: mapboxAccessToken,
           mapboxgl: mapRef.current,
-          marker: false
+          marker: false,
         });
         map.addControl(geocoderRef.current, "top-right");
       }
@@ -67,22 +81,30 @@ const MapComponent: React.FC<MapComponentProps> = ({ onMapLoad }) => {
     };
   }, [isMapLoaded]);
 
+
+  
+  const [viewState, setViewState] = useState(get_initialVS());
+
   return (
     <Map
       ref={mapRef}
       onLoad={handleMapLoad}
-      initialViewState={{
-        longitude: -59.2965,
-        latitude: -35.1923,
-        zoom: 14
-      }}
+      {...viewState}
+      onMove={evt => setViewState(evt.viewState)}
       mapboxAccessToken={mapboxAccessToken}
       style={{
-        width: "100vw",
-        height: "100vh",
-        position: "absolute"
+        width: "100%",
+        height: "100%",
+        position: "absolute",
       }}
-      mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
+      onMoveEnd={() => {
+        if (mapRef.current) {
+          let center = mapRef?.current.getCenter();
+          let zoom = mapRef?.current.getZoom();
+          localStorage.setItem("mapposition", JSON.stringify([center, zoom]));
+        }
+      }}
+      mapStyle="mapbox://styles/mapbox/satellite-streets-v12?optimize=true"
     ></Map>
   );
 };

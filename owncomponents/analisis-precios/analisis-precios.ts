@@ -1,229 +1,168 @@
-import { Router } from "@vaadin/router";
-import { RouterLocation } from "@vaadin/router";
-import {
-  unsafeCSS,
-  CSSResultGroup,
-  html,
-  LitElement,
-  PropertyValueMap,
-} from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { unsafeCSS, CSSResultGroup, html, LitElement, PropertyValueMap } from "lit";
+import { customElement, state } from "lit/decorators.js";
 
-import "@vaadin/button";
-import "@vaadin/dialog";
-import "@vaadin/text-field";
+import "@vaadin/combo-box";
 import "@vaadin/vertical-layout";
 import { get, translate } from "lit-translate";
-import { showNotification } from "../helpers/notificaciones";
-import { Route, RouteWithRedirect } from "@vaadin/router";
 import "../map-picker/map-picker";
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
-import { add_download_xls_button } from "../sensores/excel_boton";
-import ApexCharts from "apexcharts";
-import { createRef, ref } from "lit/directives/ref.js";
 
-import { Task, TaskStatus } from "@lit-labs/task";
+import gridcss from "flexboxgrid2/flexboxgrid2.css?inline";
+import "./chart-precio";
+import "./chart-comparacion-dual";
+import "./chart-comparacion-interanual";
+import "./chart-precio-dolares-ar";
+import "./tabla-precios";
+import { nav_back } from "../state";
+import { fetch_precios, price_tickers } from "./precios-functions";
+import "../modal-generico/modal-generico";
+
+const solo_exchange = (tickers, ex) => {
+  return tickers.filter((t) => t.exchange === ex);
+};
 
 @customElement("analisis-precios")
 export class AnalisisPrecios extends LitElement {
-  static override styles: CSSResultGroup = [unsafeCSS(apex_css)];
-  @property()
-  opened: boolean = true;
-
-  @property()
-  mercado: any;
-
-  @property()
-  selected_product: any;
+  static override styles: CSSResultGroup = [
+    unsafeCSS(apex_css),
+    unsafeCSS(gridcss),
+  ];
 
   @state()
-  valido: boolean = false;
+  selected_ticker_1 = price_tickers[0];
 
-  private _loadTask = new Task(
-    this,
-    () => this.load_data(),
-    () => []
-  );
+  @state()
+  selected_ticker_2 = price_tickers[5];
 
-  private mercados: any[] = [
-    { nombre: "Cámara Arbitral de Rosario", value: "car" }
-  ];
-  private products: any[] = [
-    { nombre: "Rosario - Soja (pesos)", value: "soja" },
-    { nombre: "Rosario - Trigo (pesos)", value: "trigo" },
-    { nombre: "Rosario - Maiz (pesos)", value: "maiz" },
-    { nombre: "Rosario - Girasol (pesos)", value: "girasol" },
-    { nombre: "Rosario - Sorgo (pesos)", value: "sorgo" },
-    { nombre: "Chicago (CBOT) - Soja Front Month (usd)", value: "chicago_soybeans" },
-    { nombre: "Chicago (CBOT) - Trigo Front Month (usd)", value: "chicago_wheat" },
-    { nombre: "Chicago (CBOT) - Maiz Front Month (usd)", value: "chicago_corn" },
-  ];
-  private chart: ApexCharts;
+  @state()
+  data_1 = [];
 
-  chartRef = createRef();
+  @state()
+  data_2 = [];
 
-  protected willUpdate(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-  ): void {
-    if (_changedProperties.has("location")) {
-    }
-  }
 
-  // Ocurre cuando ya se renderizo
-  override updated(changedProps) {
-    console.log("ChartRef", this.chartRef);
-    if (this.shadowRoot.getElementById("chart")) {
-      this.renderCentralChart();
-    }
-  }
+  @state()
+  ars = [];
 
-  async renderCentralChart() {
-    await this.updateComplete;
-    this.shadowRoot.getElementById("chart").textContent = "";
+  @state()
+  brl = [];
 
-    var options = {
-      series: [
-        {
-          data: [
-            //[1327359600000,30.95]
-          ],
-        },
-      ],
-      chart: {
-        id: "area-datetime",
-        type: "area",
-        height: 350,
-        zoom: {
-          autoScaleYaxis: true,
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      markers: {
-        size: 0,
-        style: "hollow",
-      },
-      xaxis: {
-        type: "datetime",
-        min: new Date("01 Mar 2012").getTime(),
-        tickAmount: 6,
-        categories: [],
-      },
-      tooltip: {
-        x: {
-          format: "dd MMM yyyy",
-        },
-      },
-      fill: {
-        type: "gradient",
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.7,
-          opacityTo: 0.9,
-          stops: [0, 100],
-        },
-      },
-      yaxis: [
-        {
-          title: {
-            text: "Price",
-          },
-          tooltip: {
-            enabled: true,
-          },
-        },
-      ],
-      noData: {
-        text: "Loading...",
-      },
-    };
+  @state()
+  pyg = [];
 
-    this.chart = new ApexCharts(
-      this.shadowRoot.querySelector("#chart"),
-      options
+  selected_item_1_changed = (e) => {
+    this.selected_ticker_1 = e.detail.value;
+    this.selected_ticker_2 = price_tickers.find(
+      (r) => r.value == e.detail.value.cbot_eq
     );
-    this.chart.render();
+    fetch_precios(e.detail.value.value).then((data) => (this.data_1 = data));
+  };
+
+  selected_item_2_changed = (e) => {
+    fetch_precios(e.detail.value.value).then((data) => (this.data_2 = data));
+  };
+
+  load_currencies(){
+    fetch_precios("arsusd").then((data) => (this.ars = data));
+    fetch_precios("brlusd").then((data) => (this.brl = data));
+    fetch_precios("pygusd").then((data) => (this.pyg = data));
   }
 
-  updateChart(data) {
-    
-    this.chart.updateSeries([
-      {
-        name: "Price",
-        data: data,
-      },
-    ]);
-    this.chart.zoomX(
-      new Date("3 Dec 2022").getTime(),
-      new Date().getTime()
-    );
-
-    add_download_xls_button(
-      this.shadowRoot,
-      [],
-      data,
-      "Precios"
-    );
-  }
-
-  load_data(sp) {
-    fetch("/prices/car/" + sp.value + "/precio.json")
-      .then((result) => {
-        console.log(result.body);
-        return result.json();
-      })
-      .then((b) => {
-        console.log("B", b);
-        this.updateChart(b);
-        // Agregar boton de descarga Excel
-
-      });
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    this.load_currencies()
   }
 
   render() {
     return html`
-      <modal-generico .modalOpened=${this.opened} backurl="/">
+      <modal-generico .modalOpened=${true} backurl="/">
         <div slot="title">${translate("precios")}</div>
-        <div slot="body">
-          <vaadin-vertical-layout theme="spacing">
-            <vaadin-horizontal-layout theme="spacing">
-              <!-- <vaadin-combo-box
-                style="width:20em"
-                .label=${get("mercado")}
-                .items=${this.mercados}
-                .selectedItem=${this.mercados[0]}
-                .itemLabelPath=${"nombre"}
-                @selected-item-changed=${(e) => {
-                  this.mercado = e.detail.value;
-                  this.load_data();
-                }}
+        <div slot="body" class="container" style="width: 100%;">
+          <vaadin-tabsheet>
+            <vaadin-tabs slot="tabs">
+              <vaadin-tab id="dashboard-tab"
+                >${translate("Precios")}</vaadin-tab
               >
-              </vaadin-combo-box> -->
-              <vaadin-combo-box
-                style='width:25em'
-                placeholder=${get('seleccione_un_producto')}
-                .label=${get("productos")}
-                .items=${this.products}
-                .itemLabelPath=${"nombre"}
-                .helper-text=${get("seleccione_un_item_para_mostrar")}
-                @selected-item-changed=${(e) => {
-                  this.selected_product = e.detail.value;
-                  this.load_data(this.selected_product);
-                }}
-              >
-              </vaadin-combo-box>
-            </vaadin-horizontal-layout>
-            <div
-              id="chart"
-              style="width:100%; height:400px;"
-              ${ref(this.chartRef)}
-            ></div>
-          </vaadin-vertical-layout>
-          ${this._loadTask.render({
-            pending: () => html`${translate("cargando")}`,
-            complete: (vehiculos) => html``,
-          })}
+              <vaadin-tab id="payment-tab">${translate("Monedas")}</vaadin-tab>
+            </vaadin-tabs>
+
+            <div tab="dashboard-tab">
+              <div class="row" style="margin:3px;">
+                <div class="col-xs-4">
+                  <vaadin-combo-box
+                    class="row"
+                    style="width:100%"
+                    placeholder=${get("seleccione_un_producto")}
+                    .label=${get("Precios Rosario")}
+                    .items=${solo_exchange(price_tickers, "rosario")}
+                    .selectedItem=${this.selected_ticker_1}
+                    .itemLabelPath=${"nombre"}
+                    .helper-text=${get("seleccione_un_item_para_mostrar")}
+                    @selected-item-changed=${this.selected_item_1_changed}
+                  >
+                  </vaadin-combo-box>
+                  <chart-precio class="row" .data=${this.data_1}></chart-precio>
+                </div>
+                <div class="col-xs-4">
+                  <tabla-precios .data=${this.data_1}></tabla-precios>
+                </div>
+                <div class="col-xs-4">
+                  <char-comparacion-interanual
+                    .data=${this.data_1}
+                  ></char-comparacion-interanual>
+                </div>
+              </div>
+              <div class="row" style="margin:3px;">
+                <div class="col-xs-4">
+                  <vaadin-combo-box
+                    class="row"
+                    style="width:100%"
+                    placeholder=${get("seleccione_un_producto")}
+                    .label=${get("Precios Chicago")}
+                    .items=${solo_exchange(price_tickers, "cbot")}
+                    .selectedItem=${this.selected_ticker_2}
+                    .itemLabelPath=${"nombre"}
+                    .helper-text=${get("seleccione_un_item_para_mostrar")}
+                    @selected-item-changed=${this.selected_item_2_changed}
+                  >
+                  </vaadin-combo-box>
+                  <chart-precio class="row" .data=${this.data_2}></chart-precio>
+                </div>
+                <div class="col-xs-4">
+                  <tabla-precios .data=${this.data_2}></tabla-precios>
+                </div>
+                <div class="col-xs-4">
+                  <char-comparacion-interanual
+                    .data=${this.data_2}
+                  ></char-comparacion-interanual>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-xs-12">
+                  <chart-comparacion-dual
+                    .data_1=${this.data_1}
+                    .data_2=${this.data_2}
+                  ></chart-comparacion-dual>
+                </div>
+              </div>
+            </div>
+            <div tab="payment-tab">
+              <div class="row">
+                <div class="col-xs-12">
+                  ${
+                    (this.ars.length > 0  && this.brl.length > 0  && this.pyg.length > 0 ) ? 
+                      html`
+                        <chart-precio-dolares-ar class="row" .data=${this.ars} title="ARS/USD Oficial"></chart-precio-dolares-ar>
+                        <chart-precio-dolares-ar class="row" .data=${this.brl} title="Real/USD" color="#00FF00"></chart-precio-dolares-ar>
+                        <chart-precio-dolares-ar class="row" .data=${this.pyg} title="Guaraní/USD" color="#FF0088"></chart-precio-dolares-ar>
+                      `:null
+                    
+                  }
+
+                </div>
+              </div>
+            </div>
+          </vaadin-tabsheet>
+
           <slot></slot>
         </div>
       </modal-generico>
@@ -231,8 +170,8 @@ export class AnalisisPrecios extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "analisis-precios": AnalisisPrecios;
-  }
-}
+// declare global {
+//   interface HTMLElementTagNameMap {
+//     "analisis-precios": AnalisisPrecios;
+//   }
+// }

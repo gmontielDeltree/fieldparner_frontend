@@ -96,6 +96,7 @@ function Harvest({
         </IconButton>
       </Box>
 
+{/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={() => handleEditActivity(activity.actividad)}>
           Editar
@@ -104,13 +105,6 @@ function Harvest({
         <MenuItem onClick={() => handleDownloadPDF()}>
           Orden de Trabajo PDF
         </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          Compartir Orden de Trabajo
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          Ejecución vs Planificación PDF
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem>
         <MenuItem onClick={() => handleDeleteActivity(activity.actividad._id)}>
           Eliminar
         </MenuItem>

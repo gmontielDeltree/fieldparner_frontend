@@ -8,11 +8,12 @@ import {
   ButtonBase,
   Button,
   Menu,
-  MenuItem
+  MenuItem,
 } from "@mui/material";
 import React, { useState } from "react";
 import { NavBarProps } from "../../types";
 import iconoCampo from "../../images/icons/iconodecampo2D.webp";
+import integrationsIcon from "../../images/icons/integrations.png";
 import deposito from "../../images/icons/deposito_2.webp";
 import insumos from "../../images/icons/icono de insumos.webp";
 import spanishFlagIcon from "../../images/icons/spain_flag.png";
@@ -26,16 +27,18 @@ import {
   Notifications,
   NotificationsActive,
   MenuOutlined,
-  ExitToApp
+  ExitToApp,
 } from "@mui/icons-material";
 import { Badge, Tooltip } from "@mui/material";
 import { RootState } from "../../redux/store";
+import { useNavigate } from "react-router-dom";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
   open,
-  handleSideBarOpen
+  handleSideBarOpen,
 }) => {
+  const navigate = useNavigate();
   const navigateTo = (path: string) => {
     window.location.replace(path);
   };
@@ -70,15 +73,15 @@ export const NavBar: React.FC<NavBarProps> = ({
     animation: "pulse 2s infinite",
     "@keyframes pulse": {
       "0%": {
-        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0.7)"
+        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0.7)",
       },
       "70%": {
-        boxShadow: "0 0 0 10px rgba(0, 123, 255, 0)"
+        boxShadow: "0 0 0 10px rgba(0, 123, 255, 0)",
       },
       "100%": {
-        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0)"
-      }
-    }
+        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0)",
+      },
+    },
   };
   const [anchorEl, setAnchorEl] = React.useState(null);
   const openDropdown = Boolean(anchorEl);
@@ -118,6 +121,7 @@ export const NavBar: React.FC<NavBarProps> = ({
     borderColor: isVisible ? "#1976d2" : "transparent",
     borderRadius: "50%",
     backgroundColor: isVisible ? "rgba(25, 118, 210, 0.1)" : "transparent"
+
   });
 
   return (
@@ -128,8 +132,8 @@ export const NavBar: React.FC<NavBarProps> = ({
         color: "black",
         ...(open && {
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` }
-        })
+          ml: { sm: `${drawerWidth}px` },
+        }),
       }}
     >
       <Toolbar>
@@ -151,6 +155,7 @@ export const NavBar: React.FC<NavBarProps> = ({
         >
           <Grid item sx={{ display: "flex", alignItems: "center" }}>
             <Typography
+              onClick={() => navigate("/init/overview/fields")}
               variant="h6"
               noWrap
               component="div"
@@ -158,7 +163,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 color: "black",
                 fontWeight: "bold",
                 whiteSpace: "nowrap",
-                marginRight: "40px"
+                marginRight: "40px",
               }}
             >
               FieldPartner
@@ -166,8 +171,19 @@ export const NavBar: React.FC<NavBarProps> = ({
             <ButtonBase
               onClick={selectAvatar}
               sx={{ borderRadius: "50%", marginRight: "18px" }}
+              title="Campos"
             >
               <Avatar alt="Campo" src={iconoCampo} sx={avatarStyle()} />
+            </ButtonBase>
+            <ButtonBase
+              onClick={() => navigate("/init/overview/fields/integrations")}
+              sx={{ borderRadius: "50%", marginRight: "18px" }} title="Integraciones"
+            >
+              <Avatar
+                alt="Integrations"
+                src={integrationsIcon}
+                sx={avatarStyle("avatar2")}
+              />
             </ButtonBase>
             {/* <ButtonBase
               onClick={() => selectAvatar("avatar2")}
@@ -212,7 +228,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 backgroundColor: "#f5f5f5",
                 color: "#1976d2",
                 borderRadius: "4px",
-                textTransform: "none"
+                textTransform: "none",
               }}
             >
               Sin campaña
@@ -223,11 +239,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               anchorEl={anchorEl}
               anchorOrigin={{
                 vertical: "bottom",
-                horizontal: "left"
+                horizontal: "left",
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "left"
+                horizontal: "left",
               }}
               open={openDropdown}
               onClose={handleClose}
@@ -259,11 +275,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               anchorEl={languageAnchorEl}
               anchorOrigin={{
                 vertical: "top",
-                horizontal: "right"
+                horizontal: "right",
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "right"
+                horizontal: "right",
               }}
               open={isLanguageMenuOpen}
               onClose={handleLanguageMenuClose}

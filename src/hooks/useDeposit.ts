@@ -47,7 +47,7 @@ export const useDeposit = () => {
         setIsLoading(true);
         try {
 
-            if (!user) throw new Error();
+            if (!user) throw new Error("There is no user!!!!");
 
             const response = await dbContext.deposits.post({ ...newDeposit, accountId: user.accountId });
             setIsLoading(false);
@@ -58,7 +58,7 @@ export const useDeposit = () => {
             navigate("/init/overview/deposit");
 
         } catch (error) {
-            console.log('Error al crear el documento: ', error);
+            console.log('Error al crear el documento: ', error, newDeposit);
             Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
             setIsLoading(false);
         }

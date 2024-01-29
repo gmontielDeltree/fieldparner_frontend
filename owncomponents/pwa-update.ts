@@ -106,7 +106,7 @@ export class pwaupdate extends LitElement {
       if ("serviceWorker" in navigator) {
         // Check the flag to know if we should display the notification
         const lr = localStorage.getItem("updated_flg");
-        console.log("LOCALSTORAGE R",lr)
+        // console.log("LOCALSTORAGE R",lr)
 
         if(lr === 'true'){
           localStorage.setItem("updated_flg","false")

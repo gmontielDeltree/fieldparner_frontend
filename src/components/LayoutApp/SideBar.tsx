@@ -1,4 +1,4 @@
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Navigate, Link as RouterLink, useLocation } from "react-router-dom";
 import {
   Box,
   Collapse,
@@ -12,7 +12,7 @@ import {
   ListItemText
 } from "@mui/material";
 import {
-  Cabin as CabinIcon,
+  // Cabin as CabinIcon,
   ChevronLeft as ChevronLeftIcon,
   LocalShipping as LocalShippingIcon,
   // AttachMoney as AttachMoneyIcon,
@@ -33,13 +33,13 @@ import {
   ListAlt as ListAltIcon,
   Gite as GiteIcon,
   Work as WorkIcon,
-  Flag as FlagIcon,
+  // Flag as FlagIcon,
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
 import { Typography } from "@mui/material";
 import { useState } from "react";
 
-const keysCollapse = ["seguridad", "configuracion", "maestros", "agricultura", "stock", "cosecha", "gestion", "reporting", "wiki", "erp"];
+const keysCollapse = ["seguridad", "configuracion", "general", "agricultura", "stock", "cosecha", "gestion", "reporting", "wiki", "erp"];
 
 //TODO: crear objeto de menu y submenus
 
@@ -83,79 +83,9 @@ export const SideBar: React.FC<SideBarProps> = ({
         </Box>
         <Divider />
         <List>
-          <ListItem key="Seguridad" disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[0])}
-            // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <SecurityIcon />
-              </ListItemIcon>
-              <ListItemText primary="Seguridad" />
-              {openCollapse === keysCollapse[0] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse key={keysCollapse[0]}
-            in={openCollapse === keysCollapse[0]}
-            timeout="auto"
-            unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Usuarios y permisos" />
-              </ListItemButton>
-            </List>
-          </Collapse>
-          <ListItem key="Configuracion" disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[1])}
-            // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary="Configuracion" />
-              {openCollapse === keysCollapse[1] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse key={keysCollapse[1]}
-            in={openCollapse === keysCollapse[1]}
-            timeout="auto"
-            unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Definicion Campaña" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Colores Cultivos" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Perfil del usario" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Config. Generales" />
-              </ListItemButton>
-            </List>
-          </Collapse>
-          <ListItem key="Maestros" disablePadding>
+
+
+          <ListItem key="General" disablePadding>
             <ListItemButton
               // component={RouterLink}
               // to="/init/overview/fields"
@@ -165,7 +95,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <ListAltIcon />
               </ListItemIcon>
-              <ListItemText primary="Maestros" />
+              <ListItemText primary="General" />
               {openCollapse === keysCollapse[2] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </ListItemButton>
           </ListItem>
@@ -183,13 +113,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <GroupIcon />
                 </ListItemIcon>
-                <ListItemText primary="Entidades Sociales" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Tipo Vehiculo" />
+                <ListItemText primary="Padron Entidades Sociales" />
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
@@ -224,12 +148,12 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary="Insumos/Lotes" />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              {/* <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
+                   <CabinIcon /> 
                 </ListItemIcon>
                 <ListItemText primary="Monedas-Cotizaciones" />
-              </ListItemButton>
+              </ListItemButton> */}
               <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}
@@ -239,7 +163,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <AddLocationAltIcon />
                 </ListItemIcon>
-                <ListItemText primary="Procedencias/destinos" />
+                <ListItemText primary="Destinos/Procedencias" />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
@@ -253,11 +177,15 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary="Zonas/Agrupaciones" />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton sx={{ pl: 4 }}
+                              component={RouterLink}
+                              to="/init/overview/prices"
+                              selected={pathname.includes("/init/overview/prices")}
+              >
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Precios Mercado" />
+                <ListItemText primary="Mercados" />
               </ListItemButton>
 
             </List>
@@ -281,107 +209,61 @@ export const SideBar: React.FC<SideBarProps> = ({
             timeout="auto"
             unmountOnExit>
             <List component="div" disablePadding>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to="/init/overview/fields"
-                selected={pathname.includes("/init/overview/fields")}
-              >
+              <ListItemButton >
                 <ListItemIcon>
-                  <CabinIcon />
                 </ListItemIcon>
-                <ListItemText primary="Campos ABM" />
+                <ListItemText primary="Definicion Campaña" />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Lotes ABM" />
-              </ListItemButton>
-              <ListItemButton >
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
                 <ListItemText primary="Campos/Lotes/Hectareas" />
               </ListItemButton>
-              <ListItemButton >
+              <ListItemButton 
+                component={RouterLink}
+                to="/init/overview/fields/planification"
+                selected={pathname.includes("/init/overview/fields/planification")}
+                >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Fraccionamiento de Lotes" />
+                <ListItemText primary="Planificación Anual Campaña" />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Análisis de suelo" />
+                <ListItemText primary="Carta de Porte" />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Imagenes Satelitales" />
+                <ListItemText primary="Fletes" />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Pronostico Meteorologico" />
+                <ListItemText primary="Tabla de Mermas" />
+              </ListItemButton>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/exit-field"
+                selected={pathname.includes("/init/overview/exit-field")}
+              >
+                <ListItemIcon>
+                  <AgricultureIcon />
+                </ListItemIcon>
+                <ListItemText primary="Salidas de Campo" />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Dispositivos/Alertas" />
+                <ListItemText primary="Romaneos" />
               </ListItemButton>
-              <ListItemButton >
+              {/* <ListItemButton >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Proyeccion Anual Campaña" />
-              </ListItemButton>
-              <ListItemButton >
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Planificacion" />
-              </ListItemButton>
-              <ListItemButton >
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Orden de Trabajo" />
-              </ListItemButton>
-              <ListItemButton >
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Replicacion de OT" />
-              </ListItemButton>
-              <ListItemButton >
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Confirmacion" />
-              </ListItemButton>
-              <ListItemButton >
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Ejecucion" />
-              </ListItemButton>
-              <ListItemButton >
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Notas" />
-              </ListItemButton>
-              <ListItemButton >
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Ambientacion" />
-              </ListItemButton>
+                <ListItemText primary="Integracion con Maquinas" />
+              </ListItemButton> */}
             </List>
           </Collapse>
           <ListItem key="Stock" disablePadding>
@@ -439,69 +321,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <TransformIcon />
                 </ListItemIcon>
-                <ListItemText primary="Transformacion" />
-              </ListItemButton>
-            </List>
-          </Collapse>
-          <ListItem key="Cosecha" disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[5])}
-            // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <AgricultureIcon />
-              </ListItemIcon>
-              <ListItemText primary="Cosecha" />
-              {openCollapse === keysCollapse[5] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse key={keysCollapse[5]}
-            in={openCollapse === keysCollapse[5]}
-            timeout="auto"
-            unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Carta de Porte" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Fletes" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Tabla de Mermas" />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to="/init/overview/exit-field"
-                selected={pathname.includes("/init/overview/exit-field")}
-              >
-                <ListItemIcon>
-                  <AgricultureIcon />
-                </ListItemIcon>
-                <ListItemText primary="Salida de Campo" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Romaneos" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary="Integracion con Maquinas" />
+                <ListItemText primary="Transformacion - Valor Agregado" />
               </ListItemButton>
             </List>
           </Collapse>
@@ -616,7 +436,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               </ListItemButton>
             </List>
           </Collapse>
-          <ListItem key="Reporting" disablePadding>
+          {/* <ListItem key="Reporting" disablePadding>
             <ListItemButton
               // component={RouterLink}
               // to="/init/overview/fields"
@@ -637,9 +457,76 @@ export const SideBar: React.FC<SideBarProps> = ({
             <List component="div" disablePadding>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
                 <ListItemText primary="SmartView" />
+              </ListItemButton>
+            </List>
+          </Collapse> */}
+          <ListItem key="Seguridad" disablePadding>
+            <ListItemButton
+              // component={RouterLink}
+              // to="/init/overview/fields"
+              onClick={() => onClickMenu(keysCollapse[0])}
+            // selected={pathname.includes("/init/overview/fields")}
+            >
+              <ListItemIcon>
+                <SecurityIcon />
+              </ListItemIcon>
+              <ListItemText primary="Seguridad" />
+              {openCollapse === keysCollapse[0] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </ListItemButton>
+          </ListItem>
+          <Collapse key={keysCollapse[0]}
+            in={openCollapse === keysCollapse[0]}
+            timeout="auto"
+            unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItemButton sx={{ pl: 4 }}>
+                <ListItemIcon>
+                  {/* <CabinIcon /> */}
+                </ListItemIcon>
+                <ListItemText primary="Usuarios y permisos" />
+              </ListItemButton>
+            </List>
+          </Collapse>
+          <ListItem key="Configuracion" disablePadding>
+            <ListItemButton
+              // component={RouterLink}
+              // to="/init/overview/fields"
+              onClick={() => onClickMenu(keysCollapse[1])}
+            // selected={pathname.includes("/init/overview/fields")}
+            >
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Configuracion" />
+              {openCollapse === keysCollapse[1] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </ListItemButton>
+          </ListItem>
+          <Collapse key={keysCollapse[1]}
+            in={openCollapse === keysCollapse[1]}
+            timeout="auto"
+            unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItemButton sx={{ pl: 4 }}>
+                <ListItemIcon>
+                </ListItemIcon>
+                <ListItemText primary="Colores Cultivos" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }}>
+                <ListItemIcon>
+                </ListItemIcon>
+                <ListItemText primary="Perfil del usario" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }}>
+                <ListItemIcon>
+                </ListItemIcon>
+                <ListItemText primary="Config. Generales de la App" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }}>
+                <ListItemIcon>
+                </ListItemIcon>
+                <ListItemText primary="Numeradores" />
               </ListItemButton>
             </List>
           </Collapse>

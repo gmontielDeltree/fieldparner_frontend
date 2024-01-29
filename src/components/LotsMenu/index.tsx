@@ -18,6 +18,7 @@ import GroundSample from "./GroundSample";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExecuteActivity from "./ExecuteActivity";
+import { dbContext } from "../../services";
 
 interface LotsMenuProps {
   lot: any;
@@ -27,8 +28,8 @@ interface LotsMenuProps {
 }
 
 const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
-  const db = new PouchDB("campos_randyv7");
   const [selectedCategory, setSelectedCategory] = useState<null | string>(null);
+  const db = dbContext.fields //new PouchDB("campos_randyv7");
   const [activities, setActivities] = useState(null);
   const [editingActivityInfo, setEditingActivityInfo] = useState<{
     activity: Actividad | null;
