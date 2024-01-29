@@ -35,6 +35,7 @@ export const PlanificationPage: React.FC = () => {
   const [selCampanaId, setSelCampanaId] = useState();
   const [selCampoId, setSelCampoId] = useState();
   const [selLoteId, setSelLoteId] = useState();
+  const [selCicloId, setSelCicloId] = useState();
 
   useEffect(() => {
     getCampaigns();
@@ -97,10 +98,16 @@ export const PlanificationPage: React.FC = () => {
                           key={i}
                           campo={campo}
                           campanas={campaigns}
-                          onCampaignClick={(campana, lote) => {
+                          onCampaignClick={(campana, lote,ciclo) => {
                             setSelCampanaId(campana._id);
                             setSelCampoId(campo._id);
                             setSelLoteId(lote.id)
+                            if(ciclo){
+                              setSelCicloId(ciclo._id)
+                            }else{
+                              setSelCicloId(" ")
+                            }
+                            
                             console.log("CLICK!!!", campana, campo);
                           }}
                         />
@@ -109,13 +116,14 @@ export const PlanificationPage: React.FC = () => {
                   </Paper>
                 </Grid>
 
-                {selCampanaId && selCampoId && selLoteId && (
+                {selCampanaId && selCampoId && selLoteId && selCicloId && (
                   <Grid item xs={6} >
                     <Paper sx={{ marginTop: "4rem" }}>
                       <PlanificationByField
                         campaignId={selCampanaId}
                         fieldId={selCampoId}
                         loteSelected={selLoteId}
+                        cicloSelected={selCicloId}
                       />
                     </Paper>
                   </Grid>

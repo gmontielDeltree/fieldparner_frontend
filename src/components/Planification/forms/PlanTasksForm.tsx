@@ -239,6 +239,7 @@ function PlanTasksForm({
       width: 80,
       align: "right",
       headerAlign: "left",
+      cellClassName:"readonly",
       editable: false,
       valueGetter: (params) => {
         return params.row.hectareas * params.row.costoPorHectarea;
@@ -303,6 +304,11 @@ function PlanTasksForm({
         },
         "& .textPrimary": {
           color: "text.primary",
+        },
+        '& .readonly': {
+          backgroundColor: '#e9e9e9',
+          color: '#1a3e72',
+          fontWeight: '600',
         },
       }}
     >

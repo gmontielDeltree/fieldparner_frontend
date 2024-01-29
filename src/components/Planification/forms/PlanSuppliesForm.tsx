@@ -228,6 +228,7 @@ function PlanSuppliesForm({
       align: "right",
       headerAlign: "left",
       editable: false,
+      cellClassName:"readonly",
       valueGetter: (params) => {
         return `${params.row.insumo.unitMeasurement || ""}`;
       },
@@ -248,7 +249,7 @@ function PlanSuppliesForm({
       field: "precioUnitario",
       headerName: "Precio Unitario",
       type: "number",
-      width: 80,
+      width: 120,
       align: "right",
       headerAlign: "left",
       editable: true,
@@ -256,7 +257,7 @@ function PlanSuppliesForm({
         return { ...params.row, precioUnitario :params.value, totalCosto:params.value*params.row.totalCantidad };
       },
       valueFormatter: (params) => {
-        return `USD ${params.value || ""}`;
+        return `USD ${params.value?.toFixed(2) || ""}`;
       },
     },
 
@@ -264,10 +265,14 @@ function PlanSuppliesForm({
       field: "totalCosto",
       headerName: "Costo",
       type: "number",
-      width: 80,
+      width: 120,
       align: "right",
+      cellClassName:"readonly",
       headerAlign: "left",
       editable: false,
+      valueFormatter: (params) => {
+        return `USD ${params.value?.toFixed(2) || ""}`;
+      },
       valueGetter: (params) => {
         return params.row.dosis * formData.area * params.row.precioUnitario;
       },
@@ -332,6 +337,11 @@ function PlanSuppliesForm({
         },
         "& .textPrimary": {
           color: "text.primary",
+        },
+        '& .readonly': {
+          backgroundColor: '#e9e9e9',
+          color: '#1a3e72',
+          fontWeight: '600',
         },
       }}
     >

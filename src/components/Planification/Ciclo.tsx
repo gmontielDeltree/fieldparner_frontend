@@ -23,16 +23,19 @@ import { CiclosContext } from "./contexts/CiclosContext";
 
 const ActividadContext = createContext()
 
-export const Ciclo = ({ ciclo, loteId }) => {
+export const Ciclo = ({ ciclo, loteId, expanded }) => {
+
+  const [expan, setExpan] = useState(expanded)
+
   console.log(ciclo);
 
-  const {getCropLabelFromId} = useContext(CultivoContext)
+  const {getCropLabelFromId,getCropColorFromId} = useContext(CultivoContext)
 
   const [actividades, setActividades] = useState<IActividadPlanificacion[]>();
   const {removeCiclo} = useContext(CiclosContext)
   return (
    
-    <Accordion sx={{backgroundColor:"#3E9913"}}>
+    <Accordion sx={{backgroundColor:getCropColorFromId(ciclo.cultivoId)}} expanded={expan} onChange={(_,e)=>setExpan(e)}>
       <AccordionSummary
       
         expandIcon={<ExpandMoreIcon />}

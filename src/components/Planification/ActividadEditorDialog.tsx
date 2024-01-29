@@ -131,6 +131,7 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
         TransitionComponent={Transition}
         keepMounted
         onClose={handleClose}
+        maxWidth={"lg"}
         aria-describedby="alert-dialog-slide-description"
       >
         <DialogTitle>Nuevo plan de {actividad.tipo.toLocaleUpperCase()}</DialogTitle>
