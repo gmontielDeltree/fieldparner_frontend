@@ -4,7 +4,7 @@ import { useState } from "react"
 const tablaCultivos = [
     { label: "Soja", cultivoId: 1994,color:"#3E9913" },
     { label: "Trigo",cultivoId: 1972,color:"#facc15" },
-    { label: "Maíz", cultivoId: 1974,color:"#c65e4c" },
+    { label: "Maíz", cultivoId: 1974,color:"#ff9f38" },
   ];
 
   
