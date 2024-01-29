@@ -117,6 +117,7 @@ export const ItemPlanificationByField = ({
     <Box>
       <Typography variant="subtitle1">{campo.nombre}</Typography>
       <TreeView
+      defaultExpanded={campo.lotes.map((l)=>l.id)}
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
       >
