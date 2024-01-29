@@ -3,17 +3,20 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
-  Tab,
-  Tabs,
+  Divider,
+  IconButton,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Ciclo } from "./Ciclo";
-import { usePlanification } from "../../hooks/usePlanifications";
 import { useField } from "../../hooks/useField";
-import { IPlanificacion } from "../../interfaces/planification";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CicloEditorDialog from "./CicloEditorDialog";
+import { MoreVert } from "@mui/icons-material";
+import { CiclosContext } from "./contexts/CiclosContext";
+import { CampanasContext } from "./contexts/CampanasContext";
+import { useCiclos } from "../../hooks/usePlanifications";
+import uuid4 from "uuid4";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -44,66 +47,108 @@ function a11yProps(index: number) {
   };
 }
 
-export const PlanificationByField = ({planId, fieldId}) => {
+const LoteAccordion: React.FC = ({ lote, campanaId, expanded }) => {
+
+  const [exp,setExp] = useState(expanded)
+
+  console.log("LOTEACORDION", lote,campanaId)
+  // const [ciclos, setCiclos] = useState([])
+  const {getCiclosFromCampanaAndLote, refreshCiclos } = useContext(CiclosContext)
+  let ciclos = getCiclosFromCampanaAndLote(campanaId, lote.id)
+
+  useEffect(()=>{
+    setExp(expanded)
+  },[expanded])
+  // useEffect(()=>{
+
+  //   console.log("AVERRR from PlanifByField",ciclosLista,getCiclosFromCampanaAndLote(campanaId, lote.id))
+  //  setCiclos(getCiclosFromCampanaAndLote(campanaId, lote.id))
+  // },[ciclosLista, campanaId, lote])
+
+  // const {ciclos, refreshCiclos} = useCiclos(campanaId, lote.id);
+
+
+  return (
+    <Accordion expanded={exp} onChange={(_,expa)=>setExp(expa)} >
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        sx={{backgroundColor:"#e0e5de", height:"2rem"}}
+        aria-controls="panel1-content"
+        id="panel1-header"
+      >
+        <Box sx={{display:"flex",justifyContent:"space-around", alignItems:"center", width:"100%"}}>
+          <Typography>{lote.properties.nombre}</Typography>
+
+          <CicloEditorDialog
+            campanaId={campanaId}
+            loteId={lote.id}
+            onSave={() => {
+              // Update
+              refreshCiclos();
+            }}
+          />
+        </Box>
+      </AccordionSummary>
+      <AccordionDetails>
+        {ciclos.length === 0 && "No hay ciclos planificados para este lote"}
+        {/* por cada ciclo del lote */}
+        {ciclos.map((c, i) => {
+          return <Ciclo key={lote.id+uuid4()} ciclo={c} loteId={lote.id}></Ciclo>;
+        })}
+      </AccordionDetails>
+    </Accordion>
+  );
+};
+export const PlanificationByField = ({ campaignId, fieldId, loteSelected }) => {
   // Lista de Campañas
   // Planificaciones por campaña
   //
 
+  const {getCampanaDesc} = useContext(CampanasContext)
+  const [campo, setCampo] = useState([]);
   const [lotes, setLotes] = useState([]);
-  const [planification, setPlanification] = useState<IPlanificacion>([]);
 
   const { fields, getFields } = useField();
-  const { planifications, getPlanifications } = usePlanification();
 
   useEffect(() => {
     getFields();
-    getPlanifications();
   }, []);
 
   useEffect(() => {
-    let p = planifications.find((p) => p._id === planId);
-    if (p) {
-      setPlanification(p);
+    if (fields && fieldId) {
+      let campoEste = fields.find((f) => f._id === fieldId);
+      if (campoEste) {
+        setCampo(campoEste);
+        setLotes(campoEste.lotes);
+      }
+
+      console.log("casdsdd", campo, campoEste);
     }
-  }, [planifications]);
-
-  useEffect(() => {
-    let campo = fields.filter((f) => f._id === fieldId);
-
-    setLotes(campo.lotes);
-  }, [fields]);
-
-  const ciclosPorLote = (plan: IPlanificacion, loteId: string) => {
-    return plan.ciclos.filter((c) => c.loteId === loteId);
-  };
+  }, [fields, fieldId]);
 
   return (
-    <>
+    <Box sx={{ width: "100%", height: "100%"}}>
       <Box>
-        <Box>titulo</Box>
+        <Box sx={{ display: "flex", justifyContent: "space-between", paddingX:"1rem" }}>
+          <Box>
+            <Typography variant="h5">{campo?.nombre}</Typography>
+            <Typography variant="subtitle2">Planificación Campaña {getCampanaDesc(campaignId)}</Typography>
+          </Box>
+
+          <IconButton>
+            <MoreVert></MoreVert>
+          </IconButton>
+        </Box>
+        <Divider component={"div"} variant="middle" />
       </Box>
 
-      {/* Por cada lote */}
-      {lotes.map((lote) => {
-        return (
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1-content"
-              id="panel1-header"
-            >
-              {lote._id} <Button>+ Ciclo</Button>
-            </AccordionSummary>
-            <AccordionDetails>
-              {/* por cada ciclo del lote */}
-              {ciclosPorLote(planification, lote._id).map((c) => {
-                return <Ciclo></Ciclo>;
-              })}
-            </AccordionDetails>
-          </Accordion>
-        );
-      })}
-      {/* fin por cada lote */}
-    </>
+      <Box sx={{ marginBottom: "0.2rem", maxHeight: "70vh", overflowY:"auto" }}>
+        {/* Por cada lote */}
+        {lotes?.map((lote, i) => {
+          return <LoteAccordion  key={lote.id} lote={lote} campanaId={campaignId} expanded={loteSelected === lote.id} />;
+        })}
+        {/* fin por cada lote */}
+      </Box>
+    </Box>
   );
 };
