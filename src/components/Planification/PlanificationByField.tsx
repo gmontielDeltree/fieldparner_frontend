@@ -17,6 +17,7 @@ import { CiclosContext } from "./contexts/CiclosContext";
 import { CampanasContext } from "./contexts/CampanasContext";
 import { useCiclos } from "../../hooks/usePlanifications";
 import uuid4 from "uuid4";
+import CancelIcon from '@mui/icons-material/Close';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -99,7 +100,7 @@ const LoteAccordion: React.FC = ({ lote, campanaId, expanded, cicloSelected }) =
     </Accordion>
   );
 };
-export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloSelected }) => {
+export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloSelected, onClose }) => {
   // Lista de Campañas
   // Planificaciones por campaña
   //
@@ -113,6 +114,11 @@ export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloS
   useEffect(() => {
     getFields();
   }, []);
+
+
+  const handleClose =()=>{
+    onClose()
+  }
 
   useEffect(() => {
     if (fields && fieldId) {
@@ -135,8 +141,10 @@ export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloS
             <Typography variant="subtitle2">Planificación Campaña {getCampanaDesc(campaignId)}</Typography>
           </Box>
 
-          <IconButton>
-            <MoreVert></MoreVert>
+          <IconButton onClick={handleClose}>
+            <CancelIcon/>
+             
+            {/* <MoreVert></MoreVert> */}
           </IconButton>
         </Box>
         <Divider component={"div"} variant="middle" />

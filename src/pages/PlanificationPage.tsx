@@ -25,6 +25,8 @@ import { useLabores } from "../hooks/useLabores";
 import { CiclosContext } from '../components/Planification/contexts/CiclosContext';
 import { useCiclos, useListaDeCiclos } from "../hooks/usePlanifications";
 import { ArrowBack } from "@mui/icons-material";
+import { ReporteDeCampanas } from "../components/Planification/FuncionesInformes";
+import { CloseButtonPage } from "../components";
 
 export const PlanificationPage: React.FC = () => {
   const navigation = useNavigate();
@@ -36,6 +38,9 @@ export const PlanificationPage: React.FC = () => {
   const [selCampoId, setSelCampoId] = useState();
   const [selLoteId, setSelLoteId] = useState();
   const [selCicloId, setSelCicloId] = useState();
+
+
+  const ciclos = useListaDeCiclos()
 
   useEffect(() => {
     getCampaigns();
@@ -80,9 +85,12 @@ export const PlanificationPage: React.FC = () => {
                       </Box>
                       
 
-                      <IconButton>
+                      
+                      {/* <IconButton onClick={()=>{
+                        ReporteDeCampanas(ciclos,campaigns)
+                      }}>
                         <MoreVertIcon />
-                      </IconButton>
+                      </IconButton> */}
                     </Box>
                     <Divider variant="middle" component={"div"}></Divider>
                     <Box
@@ -124,6 +132,9 @@ export const PlanificationPage: React.FC = () => {
                         fieldId={selCampoId}
                         loteSelected={selLoteId}
                         cicloSelected={selCicloId}
+                        onClose={()=>{
+                          setSelCampanaId(undefined)
+                        }}
                       />
                     </Paper>
                   </Grid>
