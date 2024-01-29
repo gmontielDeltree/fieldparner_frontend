@@ -27,6 +27,7 @@ import {
 } from "../../hooks/usePlanifications";
 import { InsumosContext } from "./contexts/InsumosContext";
 import { LaboresContext } from "./contexts/LaboresContext";
+import { CiclosContext } from "./contexts/CiclosContext";
 
 const calcTotal =(linInsumos : IInsumosPlanificacion[], linLabores : ILaboresPlanificacion[])=>{
   let totalI = linInsumos.reduce((acc,lin)=>lin.totalCosto + acc,0)
@@ -43,6 +44,9 @@ export const ActividadCardBase: React.FC = ({
   const { removeActividad } = usePlanActividad();
   const { getInsumoFromId } = useContext(InsumosContext);
   const { getLaborLabelFromId } = useContext(LaboresContext);
+
+  const {refreshCiclos} = useContext(CiclosContext) // useCiclos(ciclo.campanaId,loteId)
+
 
   let {
     fecha,
@@ -100,7 +104,7 @@ export const ActividadCardBase: React.FC = ({
             }}
             onDelete={() => {
               console.log("DELETE ACT");
-              removeActividad(actividadId);
+              removeActividad(actividadId).then(refreshCiclos);
             }}
           />
         </Box>

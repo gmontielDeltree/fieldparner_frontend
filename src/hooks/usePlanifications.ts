@@ -20,24 +20,24 @@ export const usePlanActividad = () => {
   let db =
     dbContext.fields as unknown as PouchDB.Database<IActividadPlanificacion>;
 
-  const saveActividad = (
+  const saveActividad = async (
     actividadDoc: IActividadPlanificacion,
     lineasInsumos?,
     lineasLabores?
   ) => {
-    db.put(actividadDoc);
-    db.get(actividadDoc.cicloId).then((doc) => {
+    await db.put(actividadDoc);
+    await db.get(actividadDoc.cicloId).then((doc) => {
       let d = doc as unknown as ICiclosPlanificacion;
       d.actividadesIds = [...new Set([...d.actividadesIds, actividadDoc._id])];
       db.put(d);
     });
     if (lineasInsumos) {
-      db.bulkDocs(lineasInsumos).then(() =>
+      await db.bulkDocs(lineasInsumos).then(() =>
         console.log("Lineas Guardadas", lineasInsumos)
       );
     }
     if (lineasLabores) {
-      db.bulkDocs(lineasLabores).then(() =>
+      await db.bulkDocs(lineasLabores).then(() =>
         console.log("Lineas Labores Guardadas", lineasLabores)
       );
     }

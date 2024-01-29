@@ -7,7 +7,7 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import React, { useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   ICiclosPlanificacion,
@@ -21,15 +21,17 @@ import { CultivoContext } from "./contexts/CultivosContext";
 import { useCiclos } from "../../hooks/usePlanifications";
 import { CiclosContext } from "./contexts/CiclosContext";
 
+const ActividadContext = createContext()
+
 export const Ciclo = ({ ciclo, loteId }) => {
   console.log(ciclo);
 
   const {getCropLabelFromId} = useContext(CultivoContext)
 
-  const {removeCiclo} = useContext(CiclosContext) // useCiclos(ciclo.campanaId,loteId)
   const [actividades, setActividades] = useState<IActividadPlanificacion[]>();
 
   return (
+   
     <Accordion sx={{backgroundColor:"#3E9913"}}>
       <AccordionSummary
       
@@ -52,7 +54,7 @@ export const Ciclo = ({ ciclo, loteId }) => {
       <Paper sx={{display:"flex",flexDirection:"column", alignItems:"center", gap:"1rem", 
       backgroundColor:"#c7bb27",margin:"0.2rem",paddingY:"1rem",borderRadius:"1rem"}}>
           {ciclo.actividadesIds?.map((a ,i ) => {
-            return <ActividadCardBase key={i} actividadId={a}></ActividadCardBase>;
+            return <ActividadCardBase key={a} actividadId={a}></ActividadCardBase>;
           })}
 
           {!ciclo.actividadesIds.length && <Typography>Sin Actividades Planificadas</Typography>}

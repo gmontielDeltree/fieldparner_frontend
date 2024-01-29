@@ -198,9 +198,8 @@ export const ActividadEditorBase = ({
                     },
                     newLineasDocs,
                     newLabLinDocs
-                  );
+                  ).then(onSave);
 
-                  onSave();
                 }}
                 sx={{ mr: 1 }}
               >

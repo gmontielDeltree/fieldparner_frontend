@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -18,6 +18,7 @@ import { uuidv7 } from "uuidv7";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { usePlanActividad } from "../../hooks/usePlanifications";
+import { CiclosContext } from "./contexts/CiclosContext";
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -30,6 +31,8 @@ const Transition = React.forwardRef(function Transition(
 
 export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
   const [open, setOpen] = React.useState(false);
+
+  const {refreshCiclos} = useContext(CiclosContext) // useCiclos(ciclo.campanaId,loteId)
 
   let cleanAct = {
     accountId: "ffdfs",
@@ -137,7 +140,7 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
             actividadDoc={actividad}
             onClose={handleClose}
             onSave={() => {
-
+              refreshCiclos()
               handleClose()
             }}
           />
