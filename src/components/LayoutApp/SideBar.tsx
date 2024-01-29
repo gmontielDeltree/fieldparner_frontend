@@ -221,8 +221,8 @@ export const SideBar: React.FC<SideBarProps> = ({
               </ListItemButton>
               <ListItemButton 
                 component={RouterLink}
-                to="/init/overview/planification"
-                selected={pathname.includes("/init/overview/planification")}
+                to="/init/overview/fields/planification"
+                selected={pathname.includes("/init/overview/fields/planification")}
                 >
                 <ListItemIcon>
                 </ListItemIcon>

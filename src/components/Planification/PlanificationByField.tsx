@@ -16,6 +16,7 @@ import { MoreVert } from "@mui/icons-material";
 import { CiclosContext } from "./contexts/CiclosContext";
 import { CampanasContext } from "./contexts/CampanasContext";
 import { useCiclos } from "../../hooks/usePlanifications";
+import uuid4 from "uuid4";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -46,12 +47,18 @@ function a11yProps(index: number) {
   };
 }
 
-const LoteAccordion: React.FC = ({ lote, campanaId }) => {
+const LoteAccordion: React.FC = ({ lote, campanaId, expanded }) => {
+
+  const [exp,setExp] = useState(expanded)
 
   console.log("LOTEACORDION", lote,campanaId)
   // const [ciclos, setCiclos] = useState([])
   const {getCiclosFromCampanaAndLote, refreshCiclos } = useContext(CiclosContext)
   let ciclos = getCiclosFromCampanaAndLote(campanaId, lote.id)
+
+  useEffect(()=>{
+    setExp(expanded)
+  },[expanded])
   // useEffect(()=>{
 
   //   console.log("AVERRR from PlanifByField",ciclosLista,getCiclosFromCampanaAndLote(campanaId, lote.id))
@@ -62,7 +69,7 @@ const LoteAccordion: React.FC = ({ lote, campanaId }) => {
 
 
   return (
-    <Accordion defaultExpanded>
+    <Accordion expanded={exp} onChange={(_,expa)=>setExp(expa)} >
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
         sx={{backgroundColor:"#e0e5de", height:"2rem"}}
@@ -86,7 +93,7 @@ const LoteAccordion: React.FC = ({ lote, campanaId }) => {
         {ciclos.length === 0 && "No hay ciclos planificados para este lote"}
         {/* por cada ciclo del lote */}
         {ciclos.map((c, i) => {
-          return <Ciclo key={i} ciclo={c} loteId={lote.id}></Ciclo>;
+          return <Ciclo key={lote.id+uuid4()} ciclo={c} loteId={lote.id}></Ciclo>;
         })}
       </AccordionDetails>
     </Accordion>
@@ -120,7 +127,7 @@ export const PlanificationByField = ({ campaignId, fieldId, loteSelected }) => {
   }, [fields, fieldId]);
 
   return (
-    <Box sx={{ width: "100%", height: "100%" }}>
+    <Box sx={{ width: "100%", height: "100%"}}>
       <Box>
         <Box sx={{ display: "flex", justifyContent: "space-between", paddingX:"1rem" }}>
           <Box>
@@ -135,10 +142,10 @@ export const PlanificationByField = ({ campaignId, fieldId, loteSelected }) => {
         <Divider component={"div"} variant="middle" />
       </Box>
 
-      <Box sx={{ marginBottom: "0.2rem" }}>
+      <Box sx={{ marginBottom: "0.2rem", maxHeight: "70vh", overflowY:"auto" }}>
         {/* Por cada lote */}
         {lotes?.map((lote, i) => {
-          return <LoteAccordion  key={i} lote={lote} campanaId={campaignId} />;
+          return <LoteAccordion  key={lote.id} lote={lote} campanaId={campaignId} expanded={loteSelected === lote.id} />;
         })}
         {/* fin por cada lote */}
       </Box>

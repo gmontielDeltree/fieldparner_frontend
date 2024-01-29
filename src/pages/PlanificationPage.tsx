@@ -33,6 +33,7 @@ export const PlanificationPage: React.FC = () => {
 
   const [selCampanaId, setSelCampanaId] = useState();
   const [selCampoId, setSelCampoId] = useState();
+  const [selLoteId, setSelLoteId] = useState();
 
   useEffect(() => {
     getCampaigns();
@@ -52,7 +53,7 @@ export const PlanificationPage: React.FC = () => {
             <CiclosContext.Provider value={useListaDeCiclos()}>
 
             
-              <Grid container sx={{ position: "relative" }} spacing={"2rem"}>
+              <Grid container sx={{ position: "absolute", zIndex:2, backgroundColor:"#ffffff52" }} spacing={"2rem"}>
                 <Grid item sx={{ maxHeight: "100%" }}>
                   <Paper sx={{ maxHeight: "100%" }}>
                     <Box
@@ -74,7 +75,7 @@ export const PlanificationPage: React.FC = () => {
                     <Divider variant="middle" component={"div"}></Divider>
                     <Box
                       sx={{
-                        maxHeight: "100%",
+                        maxHeight: "85vh",
                         overflowY: "auto",
                         paddingX: "1rem",
                       }}
@@ -88,6 +89,7 @@ export const PlanificationPage: React.FC = () => {
                           onCampaignClick={(campana, lote) => {
                             setSelCampanaId(campana._id);
                             setSelCampoId(campo._id);
+                            setSelLoteId(lote.id)
                             console.log("CLICK!!!", campana, campo);
                           }}
                         />
@@ -96,12 +98,13 @@ export const PlanificationPage: React.FC = () => {
                   </Paper>
                 </Grid>
 
-                {selCampanaId && selCampoId && (
-                  <Grid item xs={6} sx={{ paddingTop: "3rem" }}>
-                    <Paper>
+                {selCampanaId && selCampoId && selLoteId && (
+                  <Grid item xs={6} >
+                    <Paper sx={{ marginTop: "4rem" }}>
                       <PlanificationByField
                         campaignId={selCampanaId}
                         fieldId={selCampoId}
+                        loteSelected={selLoteId}
                       />
                     </Paper>
                   </Grid>

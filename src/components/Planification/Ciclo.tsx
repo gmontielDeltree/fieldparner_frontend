@@ -29,7 +29,7 @@ export const Ciclo = ({ ciclo, loteId }) => {
   const {getCropLabelFromId} = useContext(CultivoContext)
 
   const [actividades, setActividades] = useState<IActividadPlanificacion[]>();
-
+  const {removeCiclo} = useContext(CiclosContext)
   return (
    
     <Accordion sx={{backgroundColor:"#3E9913"}}>
