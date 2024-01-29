@@ -124,7 +124,7 @@ export const ActividadCardBase: React.FC = ({
                   <Box>{insumo?.name}</Box>
 
                   <Box sx={{ display: "flex", justifyContent: "space-between", gap:"1rem" }}>
-                    {i.totalCantidad?.toFixed(2)} {insumo?.unitMeasurement}
+                    {/* {i.totalCantidad?.toFixed(2)} {insumo?.unitMeasurement} */}
                     <Box sx={{ fontWeight: "bold" }}>
                       USD {i.totalCosto?.toFixed(2)}
                     </Box>
