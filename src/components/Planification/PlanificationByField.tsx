@@ -47,7 +47,7 @@ function a11yProps(index: number) {
   };
 }
 
-const LoteAccordion: React.FC = ({ lote, campanaId, expanded }) => {
+const LoteAccordion: React.FC = ({ lote, campanaId, expanded, cicloSelected }) => {
 
   const [exp,setExp] = useState(expanded)
 
@@ -93,13 +93,13 @@ const LoteAccordion: React.FC = ({ lote, campanaId, expanded }) => {
         {ciclos.length === 0 && "No hay ciclos planificados para este lote"}
         {/* por cada ciclo del lote */}
         {ciclos.map((c, i) => {
-          return <Ciclo key={lote.id+uuid4()} ciclo={c} loteId={lote.id}></Ciclo>;
+          return <Ciclo key={lote.id+uuid4()} ciclo={c} loteId={lote.id} expanded={cicloSelected===c._id}></Ciclo>;
         })}
       </AccordionDetails>
     </Accordion>
   );
 };
-export const PlanificationByField = ({ campaignId, fieldId, loteSelected }) => {
+export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloSelected }) => {
   // Lista de Campañas
   // Planificaciones por campaña
   //
@@ -145,7 +145,7 @@ export const PlanificationByField = ({ campaignId, fieldId, loteSelected }) => {
       <Box sx={{ marginBottom: "0.2rem", maxHeight: "70vh", overflowY:"auto" }}>
         {/* Por cada lote */}
         {lotes?.map((lote, i) => {
-          return <LoteAccordion  key={lote.id} lote={lote} campanaId={campaignId} expanded={loteSelected === lote.id} />;
+          return <LoteAccordion  key={lote.id} lote={lote} campanaId={campaignId} expanded={loteSelected === lote.id} cicloSelected={cicloSelected} />;
         })}
         {/* fin por cada lote */}
       </Box>

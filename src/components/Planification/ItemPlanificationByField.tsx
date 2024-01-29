@@ -75,7 +75,7 @@ const LineaDeCampana: React.FC = ({ campana, lote, onCampaignClick }) => {
 
       {(ciclos?.length > 0) && <Box sx={{display:"flex", justifyContent:"space-around", flexGrow:1}}>
         {ciclos?.map((ciclo, i) => (
-          <Fab key={i} variant="extended" sx={{ borderRadius: "4px", height:"1.9rem", backgroundColor:getCropColorFromId(ciclo.cultivoId) }}>
+          <Fab key={i} variant="extended" onClick={()=>onCampaignClick(campana, lote, ciclo)} sx={{ borderRadius: "4px", height:"1.9rem", backgroundColor:getCropColorFromId(ciclo.cultivoId) }}>
             {getCropLabelFromId(ciclo.cultivoId)}
           </Fab>
         ))}

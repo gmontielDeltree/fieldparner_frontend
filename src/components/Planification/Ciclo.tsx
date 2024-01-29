@@ -23,7 +23,10 @@ import { CiclosContext } from "./contexts/CiclosContext";
 
 const ActividadContext = createContext()
 
-export const Ciclo = ({ ciclo, loteId }) => {
+export const Ciclo = ({ ciclo, loteId, expanded }) => {
+
+  const [expan, setExpan] = useState(expanded)
+
   console.log(ciclo);
 
   const {getCropLabelFromId} = useContext(CultivoContext)
@@ -32,7 +35,7 @@ export const Ciclo = ({ ciclo, loteId }) => {
   const {removeCiclo} = useContext(CiclosContext)
   return (
    
-    <Accordion sx={{backgroundColor:"#3E9913"}}>
+    <Accordion sx={{backgroundColor:"#3E9913"}} expanded={expan} onChange={(_,e)=>setExpan(e)}>
       <AccordionSummary
       
         expandIcon={<ExpandMoreIcon />}
