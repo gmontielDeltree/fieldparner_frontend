@@ -20,7 +20,7 @@ export const useField = () => {
 
             // const result = await dbContext.fields.allDocs({ include_docs: true });
             const result = await dbContext.fields.find({
-                 selector: { "accountId": user?.accountId }
+                 selector: { "accountId": undefined } //user?.accountId }
             });
 
             // const vehiculos = response.map((v: any) => v.content);
