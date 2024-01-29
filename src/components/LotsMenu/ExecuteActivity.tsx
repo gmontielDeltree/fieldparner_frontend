@@ -300,7 +300,6 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       .catch((error) => {
         if (error.name === "conflict") {
           console.error("Conflict detected, saving execution details:", error);
-         about the conflict
         } else if (error.name === "not_found") {
           console.log("Document not found. Creating a new one.");
           delete executionDetails._rev; // Important: Remove _rev before creating a new document
