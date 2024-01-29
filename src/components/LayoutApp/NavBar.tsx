@@ -20,6 +20,8 @@ import spanishFlagIcon from "../../images/icons/spain_flag.png";
 import englishFlagIcon from "../../images/icons/usa_flag.png";
 import brazilFlagIcon from "../../images/icons/brazil_flag.png";
 import { useAuthStore } from "../../hooks";
+import { useDispatch, useSelector } from "react-redux";
+import { showFieldList, hideFieldList } from "../../redux/fieldsList";
 
 import {
   Notifications,
@@ -28,6 +30,7 @@ import {
   ExitToApp,
 } from "@mui/icons-material";
 import { Badge, Tooltip } from "@mui/material";
+import { RootState } from "../../redux/store";
 import { useNavigate } from "react-router-dom";
 
 export const NavBar: React.FC<NavBarProps> = ({
@@ -44,7 +47,7 @@ export const NavBar: React.FC<NavBarProps> = ({
   const [notificationCount, setNotificationCount] = useState(3);
   const [language, setLanguage] = useState("spanish");
   const { startLogout } = useAuthStore();
-
+  const dispatch = useDispatch();
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState(null);
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
 
@@ -86,7 +89,7 @@ export const NavBar: React.FC<NavBarProps> = ({
     console.log("Logout clicked");
     startLogout();
   };
-  // 3. Handler functions for dropdown menu
+
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -95,24 +98,30 @@ export const NavBar: React.FC<NavBarProps> = ({
     setAnchorEl(null);
   };
 
-  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
+  const isVisible = useSelector(
+    (state: RootState) => state.fieldList.isVisible
+  );
 
-  const selectAvatar = (avatar: string) => {
-    setSelectedAvatar(avatar);
+  const selectAvatar = () => {
+    if (isVisible) {
+      dispatch(hideFieldList());
+    } else {
+      dispatch(showFieldList());
+    }
   };
-  const avatarStyle = (avatar: string) => ({
+
+  const avatarStyle = () => ({
     width: 30,
     height: 30,
     transition:
       "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
-    transform: selectedAvatar === avatar ? "scale(1.2)" : "scale(1)",
-    boxShadow:
-      selectedAvatar === avatar ? "0 3px 10px 0 rgba(0,0,0,0.2)" : "none",
+    transform: isVisible ? "scale(1.2)" : "scale(1)",
+    boxShadow: isVisible ? "0 3px 10px 0 rgba(0,0,0,0.2)" : "none",
     border: "2px solid",
-    borderColor: selectedAvatar === avatar ? "#1976d2" : "transparent",
+    borderColor: isVisible ? "#1976d2" : "transparent",
     borderRadius: "50%",
-    backgroundColor:
-      selectedAvatar === avatar ? "rgba(25, 118, 210, 0.1)" : "transparent",
+    backgroundColor: isVisible ? "rgba(25, 118, 210, 0.1)" : "transparent"
+
   });
 
   return (
@@ -160,15 +169,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               FieldPartner
             </Typography>
             <ButtonBase
-              onClick={() => selectAvatar("avatar1")}
+              onClick={selectAvatar}
               sx={{ borderRadius: "50%", marginRight: "18px" }}
               title="Campos"
             >
-              <Avatar
-                alt="Campo"
-                src={iconoCampo}
-                sx={avatarStyle("avatar1")}
-              />
+              <Avatar alt="Campo" src={iconoCampo} sx={avatarStyle()} />
             </ButtonBase>
             <ButtonBase
               onClick={() => navigate("/init/overview/fields/integrations")}

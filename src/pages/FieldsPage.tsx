@@ -19,6 +19,7 @@ import { Field, Lot } from "../interfaces/field";
 import { useDispatch, useSelector } from "react-redux";
 import { setMap, selectMap } from "../redux/map/mapSlice";
 import { selectDraw } from "../redux/draw/drawSlice";
+import { RootState } from "../redux/store";
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Devices } from "../../owncomponents/sensores/sensores";
 import { addDepositosToMap } from "../../owncomponents/mapa-principal/depositos-layer";
@@ -26,6 +27,7 @@ import { useDeposit } from "../hooks";
 import useResizeObserver from '@react-hook/resize-observer'
 import { dbContext } from "../services";
 import { touchEvent } from "../../owncomponents/helpers";
+import FieldsSideMenu from "../components/FieldsSideMenu";
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
@@ -38,6 +40,11 @@ export const FieldsPage: React.FC = () => {
   const selectedFieldRef = useRef<Field | null>(null);
   const draw = useSelector(selectDraw);
   const dispatch = useDispatch();
+
+  const isVisible = useSelector(
+    (state: RootState) => state.fieldList.isVisible
+  );
+  
   const navigate = useNavigate();
 
   const {loteId, campoId} = useParams();
@@ -159,7 +166,6 @@ export const FieldsPage: React.FC = () => {
 
       if (fieldFeature) {
         const fieldId = fieldFeature.layer.source;
-        console.log("Clicked field ID:", fieldId);
 
         if (typeof fieldId === "string") {
           try {
@@ -168,8 +174,9 @@ export const FieldsPage: React.FC = () => {
             console.log("Field selected (setSelectedField called):", fieldDoc);
 
             addLotsToMap(map, fieldDoc.lotes);
-            handleLocateField();
+            handleLocateField(selectedField);
             navigate(fieldId)
+
           } catch (err) {
             console.error("Error fetching field from PouchDB", err);
           }
@@ -204,8 +211,6 @@ export const FieldsPage: React.FC = () => {
       setSelectedLot(lot);
       navigate(lotId)
 
-      console.log("Lot geometry:", lot.geometry);
-
       const lotCentroid = centroid(lot.geometry);
       if (
         lotCentroid &&
@@ -213,7 +218,6 @@ export const FieldsPage: React.FC = () => {
         lotCentroid.geometry.coordinates
       ) {
         const centroidCoordinates = lotCentroid.geometry.coordinates;
-        console.log("Centroid coordinates:", centroidCoordinates);
 
         if (
           Array.isArray(centroidCoordinates) &&
@@ -238,9 +242,6 @@ export const FieldsPage: React.FC = () => {
   };
 
   const handleSaveGeometry = (data) => {
-    console.log("Event: guardar_nueva_geometria triggered");
-    console.log("guardar_nueva_geometria", data);
-
     const geometryData = data.geometry ? data.geometry[0] : data;
 
     const campoGeojson =
@@ -322,7 +323,6 @@ export const FieldsPage: React.FC = () => {
   };
 
   const handleSaveGeometryLot = (data) => {
-    console.log("Event: add_lot_to_field triggered");
     console.log("add_lot_to_field", data);
 
     const lotGeometry = data.geometry[0].features[0].geometry;
@@ -380,7 +380,6 @@ export const FieldsPage: React.FC = () => {
   }
 
   const addLotsToMap = (map: any, lots: any) => {
-    console.log("addLotsToMap called: ", lots);
     lots.forEach((lot: any) => {
       const lotId = lot.id;
 
@@ -418,11 +417,14 @@ export const FieldsPage: React.FC = () => {
       }
     });
   };
-
-  const handleLocateField = () => {
-    console.log("selected field: ", selectedField);
-    if (selectedField && map) {
-      const fieldGeoJSON = selectedField.campo_geojson;
+  const handleSelectField = (field) => {
+    console.log("Field selected from menu:", field);
+    setSelectedField(field);
+    handleLocateField(field);
+  };
+  const handleLocateField = (field) => {
+    if (field && map) {
+      const fieldGeoJSON = field.campo_geojson;
       if (fieldGeoJSON && fieldGeoJSON.geometry) {
         const coordinates = fieldGeoJSON.geometry.coordinates[0][0];
         const [longitude, latitude] = coordinates;
@@ -482,16 +484,27 @@ export const FieldsPage: React.FC = () => {
   };
 
   const handleCloseNewLot = () => {
-    console.log("handleCloseNewLot");
     setShowNewLot(false);
     fetchData();
   };
 
   const handleCreateLot = () => {
-    handleLocateField();
-    console.log("handleCreateLot");
+    handleLocateField(selectedField);
 
     setShowNewLot(true);
+  };
+
+  const handleCreateUniqueLot = (field: any) => {
+    const data = {
+      field_name: "unique_lot",
+      geometry: [
+        {
+          type: "FeatureCollection",
+          features: [field.campo_geojson]
+        }
+      ]
+    };
+    handleSaveGeometryLot(data);
   };
 
   const fetchData = async () => {
@@ -519,6 +532,11 @@ export const FieldsPage: React.FC = () => {
 
   return (
     <>
+      <FieldsSideMenu
+        open={isVisible}
+        fields={fields}
+        onSelectField={handleSelectField}
+      />
       <Outlet />
       <Grid container style={{ position: "relative" }} ref={target}>
         <MapComponent onMapLoad={onMapLoad}  />
@@ -560,6 +578,7 @@ export const FieldsPage: React.FC = () => {
           onDelete={handleDeleteField}
           onLocate={handleLocateField}
           handleCreateLot={handleCreateLot}
+          handleCreateUniqueLot={handleCreateUniqueLot}
         />
       ) : null}
 

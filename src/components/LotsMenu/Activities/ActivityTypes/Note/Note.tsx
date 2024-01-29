@@ -5,6 +5,7 @@ import EventNoteIcon from "@mui/icons-material/EventNote";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import NoteContent from "../TabsContent/Note";
 import AttachedContent from "../TabsContent/Attached";
+import NotePoints from "../TabsContent/Points";
 
 function Note({ activity, complementaryColor, handleDeleteActivity }) {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -55,7 +56,13 @@ function Note({ activity, complementaryColor, handleDeleteActivity }) {
           <Typography
             sx={{ fontSize: 16, fontWeight: "bold" }}
             style={{ marginLeft: "10px" }}
-            color={activity.actividad.color}
+          >
+            {activity.actividad.nombre}
+          </Typography>
+
+          <Typography
+            sx={{ fontSize: 16, fontWeight: "bold" }}
+            style={{ marginLeft: "10px", color: activity.actividad.color }}
           >
             {activity.actividad.color == "red" ? "URGENTE" : "NORMAL"}
           </Typography>
@@ -74,8 +81,8 @@ function Note({ activity, complementaryColor, handleDeleteActivity }) {
 {/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={handleMenuClose}>Editar</MenuItem>
+
         {/* <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem> */}
-        <MenuItem onClick={handleMenuClose}>Orden de Trabajo PDF</MenuItem>
         {/* <MenuItem onClick={handleMenuClose}>
           Compartir Orden de Trabajo
         </MenuItem>
@@ -96,10 +103,11 @@ function Note({ activity, complementaryColor, handleDeleteActivity }) {
         sx={{ marginBottom: "16px" }}
       >
         <Tab label="Nota" />
-        <Tab label="Adjuntos" />
+        <Tab label="Puntos" />
       </Tabs>
 
       {selectedTab === 0 && <NoteContent activity={activity.actividad} />}
+      {selectedTab === 1 && <NotePoints activity={activity.actividad} />}
       {selectedTab === 2 && <AttachedContent />}
     </div>
   );

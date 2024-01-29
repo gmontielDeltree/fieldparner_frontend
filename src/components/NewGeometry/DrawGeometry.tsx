@@ -52,15 +52,12 @@ function DrawGeometry({ handleSaveGeometry, type }: DrawGeometryProps) {
       };
 
       draw.deleteAll();
-      console.log("before draw add: ", draw);
-      console.log("before draw add 2: ", geometryData);
       if (draw && draw.changeMode) {
         draw.changeMode("draw_polygon");
       } else {
         console.error("draw object or changeMode method not available");
       }
 
-      console.log("after draw add");
       draw.changeMode("simple_select");
 
       handleSaveGeometry?.(formattedData);

@@ -7,13 +7,13 @@ import {
   Stepper,
   Typography
 } from "@mui/material";
-import PersonalForm from "./forms/PlanForms/PersonalForm";
+import PersonalExecutionForm from "./forms/PlanForms/PersonalExecutionForm";
 import SuppliesForm from "./forms/PlanForms/SuppliesForm";
 import OtherDetailsForm from "./forms/PlanForms/OtherDetailsForm";
 import TasksForm from "./forms/PlanForms/TasksForm";
 import ConditionsForm from "./forms/PlanForms/ConditionsForm";
 import ObservationsForm from "./forms/PlanForms/ObservationsForm";
-import { getEmptyActivity } from "../../interfaces/activity";
+import { getEmptyActivity, getEmptyExecution } from "../../interfaces/activity";
 import { format, parse } from "date-fns";
 import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
 import GrassIcon from "@mui/icons-material/Grass";
@@ -22,8 +22,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import { keyframes } from "@emotion/react";
 import { useTheme } from "@mui/material/styles";
 import Badge from "@mui/material/Badge";
-import { Actividad } from "../../interfaces/activity";
-import { exit } from "process";
+import { Ejecucion, Actividad } from "../../interfaces/activity";
+import uuid4 from "uuid4";
 
 const activityTypeTranslations = {
   sowing: "Siembra",
@@ -37,26 +37,27 @@ const activityIcons = {
   harvesting: <AgricultureIcon sx={{ fontSize: 50, color: "green" }} />
 };
 
-interface PlanActivityProps {
+interface ExecuteActivityProps {
   activityType: string;
   lot: any;
   db: any;
   backToActivites: () => void;
   existingActivity: Actividad;
-  isExecuting?: boolean;
 }
 
-const PlanActivity: React.FC<PlanActivityProps> = ({
+const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   activityType,
   lot,
   db,
   backToActivites,
-  existingActivity,
-  isExecuting = false
+  existingActivity
 }) => {
   if (!lot) return null;
+  console.log("Lot: ", lot);
+  console.log("EXISTING ACTIVITY: ", existingActivity);
+  console.log("EXISTING ACTIVITY type: ", activityType);
   const [formData, setFormData] = useState(
-    existingActivity || getEmptyActivity()
+    existingActivity || getEmptyExecution()
   );
   const [activeStep, setActiveStep] = useState(0);
   const translatedActivityType = activityTypeTranslations[activityType];
@@ -86,7 +87,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   useEffect(() => {
     setFormData((prevFormData) => ({
       ...prevFormData,
-      lote_uuid: lot.id,
+      actividad_uuid: existingActivity.uuid,
       ts_generacion: 0,
       tipo: translatedActivityType.toLowerCase(),
       detalles: {
@@ -105,25 +106,24 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   }, [existingActivity]);
 
   useEffect(() => {
-    if (!existingActivity) {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        lote_uuid: lot.id,
-        ts_generacion: 0,
-        tipo: translatedActivityType.toLowerCase(),
-        detalles: {
-          ...prevFormData.detalles,
-          hectareas: lot.properties.hectareas
-        }
-      }));
-    }
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      uuid: uuid4(),
+      actividad_uuid: existingActivity.uuid,
+      ts_generacion: 0,
+      tipo: translatedActivityType.toLowerCase(),
+      detalles: {
+        ...prevFormData.detalles,
+        hectareas: lot.properties.hectareas
+      }
+    }));
   }, [lot, translatedActivityType, existingActivity]);
 
   const countMissingFields = (formData, step) => {
     let missingFields = 0;
 
     switch (step) {
-      case 0: // PersonalForm
+      case 0: // PersonalExecutionForm
         if (!formData.detalles.fecha_ejecucion_tentativa) {
           missingFields++;
         }
@@ -208,7 +208,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     switch (step) {
       case 0:
         return (
-          <PersonalForm
+          <PersonalExecutionForm
             lot={lot}
             formData={formData}
             setFormData={setFormData}
@@ -276,51 +276,43 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     setActiveStep(step);
     setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, step));
   };
+
   const handleSave = () => {
-    let actividad = { ...formData };
-    if (isExecuting) {
-      actividad.fecha_ejecucion = new Date();
-    }
-    if (!isEditing) {
-      try {
-        const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
-        const parsedDate = new Date(fechaEjecucion);
-        const formattedDate = format(parsedDate, "yyyy-MM-dd");
-        actividad._id = "actividad:" + formattedDate + ":" + actividad.uuid;
-      } catch (error) {
-        console.error("Error generating new ID for activity:", error);
-        return;
-      }
+    let executionDetails = { ...formData };
+    console.log("Execution details: ", executionDetails);
+    try {
+      const formattedDate = format(
+        executionDetails.detalles.fecha_ejecucion,
+        "yyyy-MM-dd"
+      );
+      executionDetails._id =
+        "ejecucion:" + formattedDate + ":" + executionDetails.uuid;
+    } catch (error) {
+      console.error("Error generating new ID for execution:", error);
+      return;
     }
 
-    db.get(actividad._id)
+    db.get(executionDetails._id)
       .then((doc) => {
-        actividad._rev = doc._rev;
-        return db.put(actividad);
-      })
-      .then(() => {
-        console.log("Actividad guardada", "success");
-
-        backToActivites();
+        executionDetails._rev = doc._rev;
+        return db.put(executionDetails);
       })
       .catch((error) => {
-        if (error.name === "not_found") {
-          console.log("Actividad not found. Creating a new one.");
-          delete actividad._rev;
-          db.put(actividad)
+        if (error.name === "conflict") {
+          console.error("Conflict detected, saving execution details:", error);
+        } else if (error.name === "not_found") {
+          console.log("Document not found. Creating a new one.");
+          delete executionDetails._rev; // Important: Remove _rev before creating a new document
+          db.put(executionDetails)
             .then(() => {
-              console.log("New actividad created", "success");
-
+              console.log("New document created", "success");
               backToActivites();
             })
             .catch((err) => {
-              console.error("Error creating new actividad:", err);
+              console.error("Error creating new document:", err);
             });
-        } else if (error.name === "conflict") {
-          console.error("Conflict detected. Trying to save again.");
-          // Implement a better conflict resolution strategy here
         } else {
-          console.error("Error saving actividad:", error);
+          console.error("Error saving execution details:", error);
         }
       });
   };
@@ -352,22 +344,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
               : "none"
           }}
         >
-          {isExecuting ? (
-            `Ejecutar ${translatedActivityType}`
-          ) : isEditing ? (
-            <>
-              <EditIcon
-                sx={{
-                  verticalAlign: "middle",
-                  mr: 1,
-                  animation: `${floating} 3s ease-in-out infinite`
-                }}
-              />
-              Editar {translatedActivityType}
-            </>
-          ) : (
-            `Programar ${translatedActivityType}`
-          )}
+          Ejecutar {translatedActivityType}
         </Typography>
       </Box>
       <Stepper
@@ -433,7 +410,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
               handleSave();
             }}
           >
-            Guardar
+            Ejecutar actividad
           </Button>
         )}
       </div>
@@ -441,4 +418,4 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   );
 };
 
-export default PlanActivity;
+export default ExecuteActivity;
