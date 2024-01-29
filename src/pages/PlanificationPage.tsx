@@ -24,6 +24,7 @@ import { LaboresContext } from "../components/Planification/contexts/LaboresCont
 import { useLabores } from "../hooks/useLabores";
 import { CiclosContext } from '../components/Planification/contexts/CiclosContext';
 import { useCiclos, useListaDeCiclos } from "../hooks/usePlanifications";
+import { ArrowBack } from "@mui/icons-material";
 
 export const PlanificationPage: React.FC = () => {
   const navigation = useNavigate();
@@ -45,6 +46,8 @@ export const PlanificationPage: React.FC = () => {
     console.log("campañas", campaigns);
   }, [fields, campaigns]);
 
+  const navigate = useNavigate()
+
   return (
     <CultivoContext.Provider value={useCrops()}>
       <CampanasContext.Provider value={useListaCampanas()}>
@@ -64,9 +67,17 @@ export const PlanificationPage: React.FC = () => {
                         justifyContent: "space-between",
                       }}
                     >
-                      <Typography variant="h5">
+                      <Box sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems:"center"
+                      }}>
+                        <IconButton onClick={()=>navigate(-1)}><ArrowBack></ArrowBack></IconButton>
+                        <Typography variant="h5">
                         Planificación Anual de Campañas
                       </Typography>
+                      </Box>
+                      
 
                       <IconButton>
                         <MoreVertIcon />
