@@ -124,6 +124,7 @@
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.9",
     "deck.gl": "^8.9.33",
+    "esbuild": "^0.20.0",
     "events": "^3.3.0",
     "flexboxgrid2": "^7.2.1",
     "framer-motion": "^10.16.16",
