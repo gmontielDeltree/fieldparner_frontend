@@ -7,13 +7,15 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Ciclo } from "./Ciclo";
-import { useCiclos } from "../../hooks/usePlanifications";
 import { useField } from "../../hooks/useField";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CicloEditorDialog from "./CicloEditorDialog";
 import { MoreVert } from "@mui/icons-material";
+import { CiclosContext } from "./contexts/CiclosContext";
+import { CampanasContext } from "./contexts/CampanasContext";
+import { useCiclos } from "../../hooks/usePlanifications";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -45,7 +47,19 @@ function a11yProps(index: number) {
 }
 
 const LoteAccordion: React.FC = ({ lote, campanaId }) => {
-  const {ciclos, refreshCiclos} = useCiclos(campanaId, lote.id);
+
+  console.log("LOTEACORDION", lote,campanaId)
+  // const [ciclos, setCiclos] = useState([])
+  const {getCiclosFromCampanaAndLote, refreshCiclos } = useContext(CiclosContext)
+  let ciclos = getCiclosFromCampanaAndLote(campanaId, lote.id)
+  // useEffect(()=>{
+
+  //   console.log("AVERRR from PlanifByField",ciclosLista,getCiclosFromCampanaAndLote(campanaId, lote.id))
+  //  setCiclos(getCiclosFromCampanaAndLote(campanaId, lote.id))
+  // },[ciclosLista, campanaId, lote])
+
+  // const {ciclos, refreshCiclos} = useCiclos(campanaId, lote.id);
+
 
   return (
     <Accordion defaultExpanded>
@@ -78,11 +92,12 @@ const LoteAccordion: React.FC = ({ lote, campanaId }) => {
     </Accordion>
   );
 };
-export const PlanificationByField = ({ campaignId, fieldId }) => {
+export const PlanificationByField = ({ campaignId, fieldId, loteSelected }) => {
   // Lista de Campañas
   // Planificaciones por campaña
   //
 
+  const {getCampanaDesc} = useContext(CampanasContext)
   const [campo, setCampo] = useState([]);
   const [lotes, setLotes] = useState([]);
 
@@ -110,7 +125,7 @@ export const PlanificationByField = ({ campaignId, fieldId }) => {
         <Box sx={{ display: "flex", justifyContent: "space-between", paddingX:"1rem" }}>
           <Box>
             <Typography variant="h5">{campo?.nombre}</Typography>
-            <Typography variant="subtitle2">Planificación Campaña</Typography>
+            <Typography variant="subtitle2">Planificación Campaña {getCampanaDesc(campaignId)}</Typography>
           </Box>
 
           <IconButton>

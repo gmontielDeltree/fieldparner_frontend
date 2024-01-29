@@ -1,5 +1,5 @@
 import { Box, Divider, Fab, ListItem, Typography } from "@mui/material";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Campo } from "../../../owncomponents/tipos/campos";
 import { Campaign } from "@types";
 import { ICiclosPlanificacion } from "../../interfaces/planification";
@@ -11,6 +11,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { getYear, parse } from "date-fns";
 import { useCiclos } from "../../hooks/usePlanifications";
 import { CultivoContext } from "./contexts/CultivosContext";
+import { CiclosContext } from "./contexts/CiclosContext";
 
 const palette = [
   "#00429d",
@@ -31,8 +32,20 @@ const dateToColor = (strDate) => {
 };
 
 const LineaDeCampana: React.FC = ({ campana, lote, onCampaignClick }) => {
-  const {ciclos, refreshCiclos} = useCiclos(campana._id, lote.id);
-  const {getCropLabelFromId,getCropColorFromId} = useContext(CultivoContext)
+   const {getCropLabelFromId,getCropColorFromId} = useContext(CultivoContext)
+   //const {ciclos} = useCiclos(campana._id, lote.id);
+
+//  const [ciclos, setCiclos] = useState()
+  const {ciclos : ciclosLista , getCiclosFromCampanaAndLote} = useContext(CiclosContext)
+
+  let ciclos = getCiclosFromCampanaAndLote(campana._id,lote.id)
+
+  //  useEffect(()=>{
+
+  //    console.log("AVERRR",ciclosLista,getCiclosFromCampanaAndLote(campana._id, lote.id))
+  //   setCiclos(getCiclosFromCampanaAndLote(campana._id, lote.id))
+  //  },[ciclosLista,campana,lote])
+ 
 
   return (
     <Box
@@ -60,7 +73,7 @@ const LineaDeCampana: React.FC = ({ campana, lote, onCampaignClick }) => {
       </Fab>
 
 
-      {(ciclos.length > 0) && <Box sx={{display:"flex", justifyContent:"space-around", flexGrow:1}}>
+      {(ciclos?.length > 0) && <Box sx={{display:"flex", justifyContent:"space-around", flexGrow:1}}>
         {ciclos?.map((ciclo, i) => (
           <Fab key={i} variant="extended" sx={{ borderRadius: "4px", height:"1.9rem", backgroundColor:getCropColorFromId(ciclo.cultivoId) }}>
             {getCropLabelFromId(ciclo.cultivoId)}
@@ -69,7 +82,7 @@ const LineaDeCampana: React.FC = ({ campana, lote, onCampaignClick }) => {
       </Box>
       }
 
-      {!ciclos.length && <Box>No hay ciclos para esta campaña y lote</Box>}
+      {!ciclos?.length && <Box>No hay ciclos para esta campaña y lote</Box>}
     </Box>
   );
 };
@@ -98,6 +111,8 @@ export const ItemPlanificationByField = ({
   campanas: Campaign[];
   onCampaignClick: () => void;
 }) => {
+
+
   return (
     <Box>
       <Typography variant="subtitle1">{campo.nombre}</Typography>

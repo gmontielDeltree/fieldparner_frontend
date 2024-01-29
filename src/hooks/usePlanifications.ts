@@ -137,29 +137,27 @@ export const usePlanificationActividad = (actividadId: string) => {
           keys: actividad.laboresLineasIds,
         })
       );
-      console.log("LINEAS LABORES ",a, actividad.laboresLineasIds);
+      console.log("LINEAS LABORES ", a, actividad.laboresLineasIds);
       setLineasLabores(a);
     }
   };
 
-  const loadLines = async ()=>{
-   await getLineasInsumos();
-   await getLineasLabores();
-   setLoading(false)
-  }
+  const loadLines = async () => {
+    await getLineasInsumos();
+    await getLineasLabores();
+    setLoading(false);
+  };
 
   useEffect(() => {
-    if(actividad){
-      loadLines()
+    if (actividad) {
+      loadLines();
     }
-    
   }, [actividad]);
 
   useEffect(() => {
-    db.get(actividadId)
-      .then((a) => {
-        setAct(a);
-      })
+    db.get(actividadId).then((a) => {
+      setAct(a);
+    });
   }, []);
 
   return { ...actividad, lineasInsumos, lineasLabores, loading };
@@ -193,26 +191,94 @@ export const useCiclo = ({
   let db =
     dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
 
-  const saveCiclo = useCallback(
-    (cultivoId, startDate, endDate) => {
-      // console.log("ACAAAAAAAAAAAAAAAA",campaingId)
+  const saveCiclo = 
+    (campanaId, lotePId,cultivoId, startDate, endDate) => {
+      console.log("ACAAAAAAAAAAAAAAAA",campanaId)
       let c = { ...ciclo };
 
       if (!cicloId) {
         // Nuevo -> setOtroId
-        c._id = `ciclo:${campaingId}:${loteId}:${uuidv7()}`;
+        c._id = `ciclo:${campanaId}:${lotePId}:${uuidv7()}`;
       }
 
+      c.loteId= loteId;
+      c.campanaId = campanaId;
       c.fechaFin = endDate;
       c.fechaInicio = startDate;
       c.cultivoId = cultivoId;
       db.put(c).then(() => console.log("saveCiclo", c, ciclo));
       setCiclo(c);
-    },
-    [campaingId, loteId]
-  );
+    };
 
   return [ciclo, saveCiclo];
+};
+
+export const useListaDeCiclos = () => {
+  const [ciclos, setCiclos] = useState<ICiclosPlanificacion[]>([]);
+
+  let db =
+    dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
+
+  const getCiclos = async () => {
+    let key = "ciclo:";
+    let docsResp = only_docs(
+      await db.allDocs({
+        include_docs: true,
+        startkey: key,
+        endkey: key + "\ufff0",
+      })
+    );
+    // console.log("CICLOS", docsResp, campanaId, loteId);
+    setCiclos(docsResp);
+  };
+
+  const refreshCiclos = async () => {
+    let key = "ciclo:";
+    let docsResp = only_docs(
+      await db.allDocs({
+        include_docs: true,
+        startkey: key,
+        endkey: key + "\ufff0",
+      })
+    );
+    setCiclos(docsResp);
+  };
+
+  const getCiclosFromCampanaAndLote = (campanaId, loteId) => {
+    let fff = ciclos.filter(
+      (c) => c.campanaId === campanaId && c.loteId === loteId
+    );
+    return fff;
+  };
+
+  const removeCiclo = (cicloId) => {
+    db.get(cicloId)
+      .then((d) => db.remove(d))
+      .then(getCiclos);
+  };
+
+  const saveCiclo = (campanaId, loteId, ciclo, cultivoId, startDate, endDate) => {
+    // console.log("ACAAAAAAAAAAAAAAAA",campaingId)
+    let c = { ...ciclo };
+
+    if (!cicloId) {
+      // Nuevo -> setOtroId
+      c._id = `ciclo:${campanaId}:${loteId}:${uuidv7()}`;
+    }
+
+
+    c.fechaFin = endDate;
+    c.fechaInicio = startDate;
+    c.cultivoId = cultivoId;
+    db.put(c).then(() => console.log("saveCiclo", c, ciclo));
+    setCiclo(c);
+  };
+
+  useEffect(() => {
+    getCiclos();
+  }, []);
+
+  return { ciclos, refreshCiclos, removeCiclo, getCiclosFromCampanaAndLote };
 };
 
 export const useCiclos = (campaingId: string, loteId: string) => {
@@ -222,16 +288,18 @@ export const useCiclos = (campaingId: string, loteId: string) => {
     dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
 
   const getCiclos = async (campanaId, loteId) => {
-    let key = "ciclo:" + campanaId + ":" + loteId;
-    let docsResp = only_docs(
-      await db.allDocs({
-        include_docs: true,
-        startkey: key,
-        endkey: key + "\ufff0",
-      })
-    );
-    console.log("CICLOS", docsResp, campanaId, loteId);
-    setCiclos(docsResp);
+    if (campanaId && loteId) {
+      let key = "ciclo:" + campanaId + ":" + loteId;
+      let docsResp = only_docs(
+        await db.allDocs({
+          include_docs: true,
+          startkey: key,
+          endkey: key + "\ufff0",
+        })
+      );
+      // console.log("CICLOS", docsResp, campanaId, loteId);
+      setCiclos(docsResp);
+    }
   };
 
   const refreshCiclos = useCallback(async () => {

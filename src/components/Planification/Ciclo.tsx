@@ -19,13 +19,14 @@ import ActividadEditorDialog from "./ActividadEditorDialog";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { CultivoContext } from "./contexts/CultivosContext";
 import { useCiclos } from "../../hooks/usePlanifications";
+import { CiclosContext } from "./contexts/CiclosContext";
 
 export const Ciclo = ({ ciclo, loteId }) => {
   console.log(ciclo);
 
   const {getCropLabelFromId} = useContext(CultivoContext)
 
-  const {removeCiclo} = useCiclos(ciclo.campanaId,loteId)
+  const {removeCiclo} = useContext(CiclosContext) // useCiclos(ciclo.campanaId,loteId)
   const [actividades, setActividades] = useState<IActividadPlanificacion[]>();
 
   return (

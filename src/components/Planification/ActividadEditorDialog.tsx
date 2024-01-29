@@ -33,7 +33,7 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
 
   let cleanAct = {
     accountId: "ffdfs",
-    _id: "ciclo:actividad:" + uuidv7(),
+    _id: "planactividad:" + uuidv7(),
     insumosLineasIds: [],
     laboresLineasIds: [],
     fecha: formatISO(new Date()),

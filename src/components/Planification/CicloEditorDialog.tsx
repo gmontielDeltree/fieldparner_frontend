@@ -36,10 +36,12 @@ export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, o
         + Ciclo
       </Button>
       <Dialog
+      
         open={open}
         onClose={handleClose}
         PaperProps={{
           component: "form",
+          onClick: e => e.stopPropagation(),
           onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
@@ -50,7 +52,7 @@ export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, o
           },
         }}
       >
-        <DialogTitle>Nuevo Ciclo</DialogTitle>
+        <DialogTitle>Nuevo Ciclo {campanaId}</DialogTitle>
         <DialogContent>
           <DialogContentText>
           </DialogContentText>
@@ -77,7 +79,7 @@ export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, o
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>
           <Button type="submit" disabled={!cultivo} onClick={()=>{
-            saveCiclo(cultivo.cultivoId,startDate,endDate)
+            saveCiclo(campanaId,loteId,cultivo.cultivoId,startDate,endDate)
             onSave()
           }}>Aceptar</Button>
         </DialogActions>
