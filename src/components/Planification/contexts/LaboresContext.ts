@@ -1,4 +1,4 @@
 import React, { createContext} from 'react';
 
 
-export const CultivoContext = createContext()
+export const LaboresContext = createContext()

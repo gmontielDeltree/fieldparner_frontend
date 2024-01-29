@@ -15,6 +15,9 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { CultivoContext } from "../components/Planification/contexts/CultivosContext";
 import { useCrops } from "../hooks/useCrops";
 import { CampanasContext } from "../components/Planification/contexts/CampanasContext";
+import { InsumosContext, useInsumos } from "../components/Planification/contexts/InsumosContext";
+import { LaboresContext } from "../components/Planification/contexts/LaboresContext";
+import { useLabores } from "../hooks/useLabores";
 
 
 
@@ -43,6 +46,10 @@ export const PlanificationPage: React.FC = () => {
   return (
     <CultivoContext.Provider value={useCrops()}>
       <CampanasContext.Provider value={useCampaign()}>
+        <InsumosContext.Provider value={useInsumos()}>
+          <LaboresContext.Provider value={useLabores()}>
+
+
          <Grid container sx={{ position: "relative" }} spacing={"2rem"}>
         <Grid item sx={{ maxHeight: "100%" }}>
           <Paper sx={{ maxHeight: "100%" }}>
@@ -93,6 +100,8 @@ export const PlanificationPage: React.FC = () => {
         )}
       </Grid>
 
+          </LaboresContext.Provider>
+        </InsumosContext.Provider>
       </CampanasContext.Provider>
     </CultivoContext.Provider>
    

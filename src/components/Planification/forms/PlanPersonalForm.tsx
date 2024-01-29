@@ -114,7 +114,7 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
                 endAdornment: <InputAdornment position="end">has</InputAdornment>,
               }}
               value={formData.area || 0}
-              onChange={(e) => onFieldChange("area", e.target.value)}
+              onChange={(e) => onFieldChange("area", +e.target.value)}
             />
           </Grid>
 
@@ -130,7 +130,7 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
                   endAdornment: <InputAdornment position="end">kg/has</InputAdornment>,
                 }}
                 value={formData.rindeEstimado || 0}
-                onChange={(e) => onFieldChange("rindeEstimado", e.target.value)}
+                onChange={(e) => onFieldChange("rindeEstimado", +e.target.value)}
               />
               </Grid>
 
