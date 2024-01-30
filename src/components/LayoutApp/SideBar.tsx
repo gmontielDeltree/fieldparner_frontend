@@ -38,6 +38,7 @@ import {
 import { SideBarProps } from "../../types";
 import { Typography } from "@mui/material";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const keysCollapse = ["seguridad", "configuracion", "general", "agricultura", "stock", "cosecha", "gestion", "reporting", "wiki", "erp"];
 
@@ -52,6 +53,7 @@ export const SideBar: React.FC<SideBarProps> = ({
 
   const { pathname } = useLocation();
   const version = "2.23.1";
+  const {t} = useTranslation();
 
   const onClickMenu = (collapse: string) => setOpenCollapse(collapse === openCollapse ? "" : collapse);
 
@@ -95,7 +97,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <ListAltIcon />
               </ListItemIcon>
-              <ListItemText primary="General" />
+              <ListItemText primary={t("_general")} />
               {openCollapse === keysCollapse[2] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </ListItemButton>
           </ListItem>
@@ -113,7 +115,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <GroupIcon />
                 </ListItemIcon>
-                <ListItemText primary="Padron Entidades Sociales" />
+                <ListItemText primary={t("social_entities_census")} />
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
@@ -124,7 +126,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <LocalShippingIcon />
                 </ListItemIcon>
-                <ListItemText primary="Vehiculos" />
+                <ListItemText primary={t("_vehicles")} />
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
@@ -135,7 +137,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <WarehouseIcon />
                 </ListItemIcon>
-                <ListItemText primary="Depositos" />
+                <ListItemText primary={t("_warehouses")} />
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
@@ -146,14 +148,14 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <InventoryIcon />
                 </ListItemIcon>
-                <ListItemText primary="Insumos/Lotes" />
+                <ListItemText primary={t("supply_lots")} />
               </ListItemButton>
-              {/* <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
-                   <CabinIcon /> 
+                  {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Monedas-Cotizaciones" />
-              </ListItemButton> */}
+                <ListItemText primary={t("currencies_quotes")} />
+              </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}
@@ -163,19 +165,19 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <AddLocationAltIcon />
                 </ListItemIcon>
-                <ListItemText primary="Destinos/Procedencias" />
+                <ListItemText primary={t("origins_destinations")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Conceptos-Rubros" />
+                <ListItemText primary={t("concepts_categories")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Zonas/Agrupaciones" />
+                <ListItemText primary={t("zones_groups")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}
                               component={RouterLink}
@@ -185,7 +187,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Mercados" />
+                <ListItemText primary={t("market_prices")} />
               </ListItemButton>
 
             </List>
@@ -200,7 +202,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <GiteIcon />
               </ListItemIcon>
-              <ListItemText primary="Agricultura" />
+              <ListItemText primary={t("_agriculture")} />
               {openCollapse === keysCollapse[3] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </ListItemButton>
           </ListItem>
@@ -212,36 +214,32 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Definicion Campaña" />
+                <ListItemText primary={t("campaign_definition")} />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Campos/Lotes/Hectareas" />
-              </ListItemButton>
-              <ListItemButton 
-                component={RouterLink}
-                to="/init/overview/fields/planification"
-                selected={pathname.includes("/init/overview/fields/planification")}
-                >
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary="Planificación Anual Campaña" />
+                <ListItemText primary={t("fields_lots_hectares")} />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Carta de Porte" />
+                <ListItemText primary={t("annual_campaign_projection")} />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Fletes" />
+                <ListItemText primary={t("_waybill")} />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Tabla de Mermas" />
+                <ListItemText primary={t("_freight")} />
+              </ListItemButton>
+              <ListItemButton >
+                <ListItemIcon>
+                </ListItemIcon>
+                <ListItemText primary={t("spoilage_table")} />
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
@@ -252,12 +250,12 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <AgricultureIcon />
                 </ListItemIcon>
-                <ListItemText primary="Salidas de Campo" />
+                <ListItemText primary={t("field_exits")} />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Romaneos" />
+                <ListItemText primary={t("_romaneos")} />
               </ListItemButton>
               {/* <ListItemButton >
                 <ListItemIcon>
@@ -276,7 +274,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <SettingsIcon />
               </ListItemIcon>
-              <ListItemText primary="Stock" />
+              <ListItemText primary={t("_stock")} />
               {openCollapse === keysCollapse[4] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </ListItemButton>
           </ListItem>
@@ -294,7 +292,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <SyncAltIcon />
                 </ListItemIcon>
-                <ListItemText primary="Movimiento de Stock" />
+                <ListItemText primary={t("stock_movements")} />
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
@@ -305,13 +303,13 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <QueryStatsIcon />
                 </ListItemIcon>
-                <ListItemText primary="Consulta De Stock" />
+                <ListItemText primary={t("stock_query")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Ordenes de Retiro" />
+                <ListItemText primary={t("withdrawal_orders")} />
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
@@ -321,7 +319,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <TransformIcon />
                 </ListItemIcon>
-                <ListItemText primary="Transformacion - Valor Agregado" />
+                <ListItemText primary={t("transformation_added_value")} />
               </ListItemButton>
             </List>
           </Collapse>
@@ -335,7 +333,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <WorkIcon />
               </ListItemIcon>
-              <ListItemText primary="Gestion" />
+              <ListItemText primary={t("_management")} />
               {openCollapse === keysCollapse[6] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </ListItemButton>
           </ListItem>
@@ -348,91 +346,91 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Sociedades" />
+                <ListItemText primary={t("_societies")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Contratos" />
+                <ListItemText primary={t("_contracts")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Gastos" />
+                <ListItemText primary={t("_expenses")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Cosecha" />
+                <ListItemText primary={t("_harvest")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Costos" />
+                <ListItemText primary={t("_costs")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Ordenes de Pago" />
+                <ListItemText primary={t("payment_orders")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Liquidaciones" />
+                <ListItemText primary={t("_settlements")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Liquidacion Horas" />
+                <ListItemText primary={t("hourly_settlement")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Certificados de Depositos" />
+                <ListItemText primary={t("deposit_certificates")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Adelantos" />
+                <ListItemText primary={t("_advances")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Venta de Cereales" />
+                <ListItemText primary={t("grain_sales")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Proyecciones" />
+                <ListItemText primary={t("_projections")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Resultados finales" />
+                <ListItemText primary={t("final_results")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Simulador web" />
+                <ListItemText primary={t("web_simulator")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Seguros" />
+                <ListItemText primary={t("_insurance")} />
               </ListItemButton>
             </List>
           </Collapse>
@@ -472,7 +470,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <SecurityIcon />
               </ListItemIcon>
-              <ListItemText primary="Seguridad" />
+              <ListItemText primary={t("_security")} />
               {openCollapse === keysCollapse[0] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </ListItemButton>
           </ListItem>
@@ -485,7 +483,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
-                <ListItemText primary="Usuarios y permisos" />
+                <ListItemText primary={t("users_and_permissions")} />
               </ListItemButton>
             </List>
           </Collapse>
@@ -499,7 +497,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <SettingsIcon />
               </ListItemIcon>
-              <ListItemText primary="Configuracion" />
+              <ListItemText primary={t("_configuration")} />
               {openCollapse === keysCollapse[1] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </ListItemButton>
           </ListItem>
@@ -511,22 +509,22 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Colores Cultivos" />
+                <ListItemText primary={t("crop_colors")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Perfil del usario" />
+                <ListItemText primary={t("user_profile")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Config. Generales de la App" />
+                <ListItemText primary={t("app_general_config")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                 </ListItemIcon>
-                <ListItemText primary="Numeradores" />
+                <ListItemText primary={t("_numerators")} />
               </ListItemButton>
             </List>
           </Collapse>
@@ -613,7 +611,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <CabinIcon />
               </ListItemIcon>
-              <ListItemText primary="Campos" />
+              <ListItemText primary= {t("_fields")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="recargar" disablePadding>
@@ -621,7 +619,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <CachedIcon />
               </ListItemIcon>
-              <ListItemText primary="Recargar" />
+              <ListItemText primary={t("_reload")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="dispositivos" disablePadding>
@@ -629,7 +627,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <ListIcon />
               </ListItemIcon>
-              <ListItemText primary="Lista de Dispositivos" />
+              <ListItemText primary={t("device_list")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="business" disablePadding>
@@ -641,7 +639,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <GroupIcon />
               </ListItemIcon>
-              <ListItemText primary="Entidades Sociales" />
+              <ListItemText primary={t("social_entities")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="out-field" disablePadding>
@@ -653,7 +651,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <AgricultureIcon />
               </ListItemIcon>
-              <ListItemText primary="Salida de Campo" />
+              <ListItemText primary={t("field_output")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="origins-destinations" disablePadding>
@@ -665,7 +663,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <AddLocationAltIcon />
               </ListItemIcon>
-              <ListItemText primary="Procedencias/destinos" />
+              <ListItemText primary={t("origins_destinations")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="supplies" disablePadding>
@@ -677,7 +675,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <InventoryIcon />
               </ListItemIcon>
-              <ListItemText primary="Insumos" />
+              <ListItemText primary={t("_supplies")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="deposits" disablePadding>
@@ -689,7 +687,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <WarehouseIcon />
               </ListItemIcon>
-              <ListItemText primary="Depositos" />
+              <ListItemText primary={t("_warehouses")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="vehicles" disablePadding>
@@ -701,7 +699,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <LocalShippingIcon />
               </ListItemIcon>
-              <ListItemText primary="Vehiculos" />
+              <ListItemText primary={t("_vehicles")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="stock-movement" disablePadding>
@@ -713,7 +711,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <SyncAltIcon />
               </ListItemIcon>
-              <ListItemText primary="Movimiento de Stock" />
+              <ListItemText primary={t("stock_movements")}/>
             </ListItemButton>
           </ListItem>
           <ListItem key="list-stock" disablePadding>
@@ -725,7 +723,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <QueryStatsIcon />
               </ListItemIcon>
-              <ListItemText primary="Consulta De Stock" />
+              <ListItemText primary={t("stock_inquiry")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="transform" disablePadding>
@@ -736,7 +734,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <TransformIcon />
               </ListItemIcon>
-              <ListItemText primary="Transformacion" />
+              <ListItemText primary={t("_transformation")} />
             </ListItemButton>
           </ListItem>
           <ListItem key="ajustes" disablePadding>
@@ -744,7 +742,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemIcon>
                 <SettingsIcon />
               </ListItemIcon>
-              <ListItemText primary="Ajustes" />
+              <ListItemText primary={t("_adjustments")} />
             </ListItemButton>
           </ListItem> */}
           {/* {sideBarMenu.map(({ text, icon }) => (

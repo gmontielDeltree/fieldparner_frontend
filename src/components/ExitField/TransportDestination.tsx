@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { Business, Deposit, ExitField, TipoEntidad, Vehicle, VehicleType } from '../../types';
 import { LocalShipping as LocalShippingIcon } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 
 
 interface TransportDestinationProps {
@@ -41,6 +42,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
     const netWeight = Number(grossWeight - tareWeight);
     const kgNet = (netWeight - ((netWeight * totalMerma) / 100));
+    const {t} = useTranslation();
 
     const onChangeDeposit = ({ target }: SelectChangeEvent) => {
         const { value } = target;
@@ -80,16 +82,16 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
             justifyContent="space-between">
             <Grid item xs={12} display="flex" alignItems="center" mb={2}>
                 <LocalShippingIcon sx={{ mx: 1 }} />
-                <Typography variant="h5">Transportista / Kgs / Destino</Typography>
+                <Typography variant="h5">{t("carrier_kgs_destination")} </Typography>
             </Grid>
             <Grid item xs={12} sm={4}>
                 <FormControl key="transport-select" fullWidth>
-                    <InputLabel id="transporte">Transporte</InputLabel>
+                    <InputLabel id="transporte">{t("_transportation")}</InputLabel>
                     <Select
                         labelId="transporte"
                         name="transportId"
                         value={formValues.transportId}
-                        label="Transporte"
+                        label={t("_transportation")}
                         onChange={handleSelectChange}
                     >
                         {socialEntities?.map((f) => (
@@ -102,12 +104,12 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
             </Grid>
             <Grid item xs={12} sm={4}>
                 <FormControl key="trucker-select" fullWidth>
-                    <InputLabel id="trucker">Camionero</InputLabel>
+                    <InputLabel id="trucker">{t("truck_driver")} </InputLabel>
                     <Select
                         labelId="trucker"
                         name="truckerId"
                         value={formValues.truckerId}
-                        label="Camionero"
+                        label={t("truck_driver")}
                         onChange={handleSelectChange}
                     >
                         {socialEntities?.filter(s => s.tipoEntidad === TipoEntidad.FISICA).map((f) => (
@@ -122,7 +124,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                 <TextField
                     variant="outlined"
                     type="text"
-                    label="Cultivo"
+                    label={t("_crop")}
                     disabled
                     value={formValues.cultive}
                     InputProps={{
@@ -133,12 +135,12 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
             </Grid>
             <Grid item xs={12} sm={6}>
                 <FormControl key="vehicle-select" fullWidth>
-                    <InputLabel id="vehicle">Vehiculo</InputLabel>
+                    <InputLabel id="vehicle">{t("_vehicle")}</InputLabel>
                     <Select
                         labelId="vehicle"
                         name="vehicle"
                         value={formValues.vehicleId}
-                        label="Vehiculo"
+                        label={t("_vehicle")}
                         onChange={onChangeVehicle}
                     >
                         {vehicles?.map((vehicle) => (
@@ -151,12 +153,12 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
             </Grid>
             <Grid item xs={12} sm={6}>
                 <FormControl key="truck-trailer-select" fullWidth>
-                    <InputLabel id="truckTrailer">Acoplado</InputLabel>
+                    <InputLabel id="truckTrailer">{t("_trailer")}</InputLabel>
                     <Select
                         labelId="truckTrailer"
                         name="truckTrailer"
                         value={formValues.truckTrailerId}
-                        label="Acoplado"
+                        label={t("_trailer")}
                         onChange={onChangeVehicle}
                     >
                         {vehicles.filter(v => v.vehicleType === VehicleType.Acoplado)?.map((vehicle) => (
@@ -174,7 +176,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                 <TextField
                     variant="outlined"
                     type="number"
-                    label="Peso Bruto"
+                    label={t("gross_weight")}
                     name="grossWeight"
                     value={formValues.grossWeight}
                     onChange={handleInputChange}
@@ -188,7 +190,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                 <TextField
                     variant="outlined"
                     type="number"
-                    label="Peso Tara"
+                    label={t("tare_weight")}
                     name="tareWeight"
                     value={formValues.tareWeight}
                     onChange={handleInputChange}
@@ -202,7 +204,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                 <TextField
                     variant="outlined"
                     type="number"
-                    label="Peso Neto"
+                    label={t("net_weight")}
                     disabled
                     name="netWeight"
                     value={netWeight}
@@ -215,12 +217,12 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
             </Grid>
             <Grid item xs={6} sm={3}>
                 <FormControl fullWidth>
-                    <InputLabel id="deposit">Deposito</InputLabel>
+                    <InputLabel id="deposit">{t("_warehouse")}</InputLabel>
                     <Select
                         labelId="deposit"
                         name="depositId"
                         value={formValues.depositId}
-                        label="Deposito"
+                        label={t("_warehouse")}
                         onChange={onChangeDeposit}
                     >
                         {deposits.map((deposit) => (
@@ -244,7 +246,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="% Humedad"
+                        label={`% ${t("_humidity")}`}
                         name="humidityPercentage"
                         value={formValues.humidityPercentage}
                         onChange={handleInputChange}
@@ -259,7 +261,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="% Merma"
+                        label={`% ${t("_shrinkage")}`}
                         name="mermaPercentage"
                         value={formValues.mermaPercentage}
                         onChange={handleInputChange}
@@ -274,7 +276,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="% Volatil"
+                        label={`% ${t("_volatile")}`}
                         name="volatilePercentage"
                         value={formValues.volatilePercentage}
                         onChange={handleInputChange}
@@ -289,7 +291,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="% Otras"
+                        label={`% ${t("_other")}`}
                         name="otherPercentage"
                         value={formValues.otherPercentage}
                         onChange={handleInputChange}
@@ -304,7 +306,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="% Total Merma"
+                        label={`% ${t("total_shrinkage")}`}
                         disabled
                         // name="totalMerma"
                         value={totalMerma}
@@ -319,7 +321,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="KG Netos"
+                        label={t("net_kg")}
                         name="kgNet"
                         value={kgNet}
                         // onChange={handleInputChange}
@@ -347,7 +349,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     fullWidth
                 /> */}
                 <FormControl key="harvester-select" fullWidth>
-                    <InputLabel id="harvester">Cosechador</InputLabel>
+                    <InputLabel id="harvester">{t("_harvester")}</InputLabel>
                     <Select
                         labelId="harvester"
                         name="harvesterId"
@@ -367,7 +369,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                 <TextField
                     variant="outlined"
                     type="text"
-                    label="Destino"
+                    label={t("_destination")}
                     name="destination"
                     value={formValues.destination}
                     onChange={handleInputChange}
@@ -381,7 +383,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                 <TextField
                     variant="outlined"
                     type="text"
-                    label="Informacion adicional"
+                    label={t("additional_information")}
                     name="additionalInformation"
                     value={formValues.additionalInformation}
                     onChange={handleInputChange}

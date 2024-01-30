@@ -119,7 +119,10 @@ function Sowing({
       </Tabs>
 
       {selectedTab === 0 && (
-        <PlanificationContent activity={activity.actividad} />
+        <PlanificationContent
+          activity={activity.actividad}
+          backgroundColor={complementaryColor}
+        />
       )}
       {selectedTab === 1 && (
         <LaborOrderContent

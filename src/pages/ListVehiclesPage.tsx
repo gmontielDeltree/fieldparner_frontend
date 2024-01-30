@@ -33,19 +33,14 @@ import {
   // getVehiculos,
   setVehiculoActivo,
 } from "../redux/vehicle";
+import { useTranslation } from "react-i18next";
 
-const columns: ColumnProps[] = [
-  { text: "Tipo Vehiculo", align: "center" },
-  { text: "Marca", align: "center" },
-  { text: "Modelo", align: "center" },
-  { text: "Patente", align: "left" },
-  { text: "Año", align: "center" },
-  { text: "", align: "center" }
-];
+
 
 export const ListVehiclesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+const {t} = useTranslation();
   const { isLoading } = useAppSelector((state) => state.ui);
   // const { vehiculos: vehicles } = useAppSelector((state) => state.vehiculo);
   const { vehicles, getVehicles } = useVehicle();
@@ -62,6 +57,15 @@ export const ListVehiclesPage: React.FC = () => {
     );
     dispatch(cargarVehiculos(filteredVehiculos));
   };
+
+  const columns: ColumnProps[] = [
+    { text: t("vehicle_type"), align: "center" },
+    { text: t("_brand"), align: "center" },
+    { text: t("_model"), align: "center" },
+    { text: t("_patent"), align: "left" },
+    { text: t("_year"), align: "center" },
+    { text: "", align: "center" }
+  ];
 
   const onClickAddVehicle = () => navigate("/init/overview/vehicle/new");
 
@@ -88,7 +92,7 @@ export const ListVehiclesPage: React.FC = () => {
         <Box display="flex" alignItems="center">
           <LocalShippingIcon sx={{ marginRight: '8px' }} />
           <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-            Vehiculos
+            {t("_vehicles")}
           </Typography>
         </Box>
         <CloseButtonPage />
@@ -109,7 +113,7 @@ export const ListVehiclesPage: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={onClickAddVehicle}
             >
-              Nuevo
+              {t("add_new")}
             </Button>
           </Grid>
           <Grid item xs={12} sm={10}>
@@ -119,7 +123,7 @@ export const ListVehiclesPage: React.FC = () => {
                   variant="outlined"
                   type="text"
                   size="small"
-                  placeholder="Vehiculo/Marca/Modelo"
+                  placeholder={t("vehicle_brand_model")}
                   autoComplete="off"
                   name="filterText"
                   value={filterText}
@@ -145,7 +149,7 @@ export const ListVehiclesPage: React.FC = () => {
                   onClick={() => onClickBuscar()}
                   startIcon={<SearchIcon />}
                 >
-                  Buscar
+                  {t("icon_search")}
                 </Button>
               </Grid>
             </Grid>
@@ -167,15 +171,15 @@ export const ListVehiclesPage: React.FC = () => {
                 <TableCellStyled>{row.patent}</TableCellStyled>
                 <TableCellStyled align="center">{row.modelYear}</TableCellStyled>
                 <TableCellStyled align="center">
-                  <Tooltip title="Editar">
+                  <Tooltip title={t("icon_edit")}>
                     <IconButton
-                      aria-label="Editar"
+                      aria-label={t("icon_edit")}
                       onClick={() => onClickUpdateVehicle(row)}
                     >
                       <EditIcon />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Eliminar">
+                  <Tooltip title={t("icon_delete")}>
                       <IconButton
                         // onClick={() =>  handleDeleteVehicle (row)}
                         style={{ fontSize: '1rem' }}

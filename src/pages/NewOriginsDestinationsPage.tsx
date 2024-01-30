@@ -25,18 +25,19 @@ import {
 import { OriginDestinations } from "../types";
 import { removeOriginsDestinations } from "../redux/originsdestinatons/originDestiantionsSlice";
 import { useOriginDestinations } from "../hooks/useOriginDestinations";
-
+import { useTranslation } from "react-i18next";
 
 const initialForm: OriginDestinations = {
   name: "",
   description: "",
-  destino: false,
+  destino: true,
   procedencia: false,
 };
 
 export const NewOriginsDestinationsPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+const {t} = useTranslation();
   const { originsDestinationsActive } = useAppSelector((state) => state.ordesti);
 
   const {
@@ -88,7 +89,7 @@ export const NewOriginsDestinationsPage: React.FC = () => {
           
           < AddLocationAltIcon /><ArrowRightAltIcon fontSize='large' /> 
           <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
-            Procedencias/Destinos
+            {t("origins_destinations")}
           </Typography>
         </Box>
 
@@ -102,7 +103,8 @@ export const NewOriginsDestinationsPage: React.FC = () => {
             align="center"
             sx={{ my: 3, mb: 5 }}
           >
-            {originsDestinationsActive ? "Editar" : "Nueva"} Procedencias/Destinos
+            {originsDestinationsActive ?  t("icon_edit") : t("new_famale")} {' '}
+          {t("origin_destination")}
           </Typography>
           <Grid
             container
@@ -112,21 +114,21 @@ export const NewOriginsDestinationsPage: React.FC = () => {
           >
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Descripcion"
+                label={t("_description")}
                 variant="outlined"
                 type="text"
                 name="name"
                 value={name}
                 onChange={handleInputChange}
                 error={conceptoError}
-                helperText={conceptoError ? "Este campo es obligatorio" : ""}
+                helperText={conceptoError ? t("this_field_is_mandatory") : ""}
                 InputProps={{ startAdornment: <InputAdornment position="start" /> }}
                 fullWidth
               />
             </Grid>
             <Grid item xs={6}>
               <TextField
-                label="Geolocalizacion"
+                label={t("_geolocation")}
                 variant="outlined"
                 type="text"
                 name="description"
@@ -155,12 +157,12 @@ export const NewOriginsDestinationsPage: React.FC = () => {
                 <FormControlLabel
                 value="destino"
                 control={<Radio />}
-                label="Destino"
+                label={t("_destination")}
                 />
                 <FormControlLabel
                 value="procedencia"
                 control={<Radio />}
-                label="Procedencia"
+                label={t("_origin")}
                 />
             </RadioGroup>
             </Grid>
@@ -175,7 +177,7 @@ export const NewOriginsDestinationsPage: React.FC = () => {
             sx={{ mt: { sm: 5 } }}
           >
             <Grid item xs={12} sm={3} key="grid-back">
-              <Button onClick={() => onClickCancel()}>Cancelar</Button>
+              <Button onClick={() => onClickCancel()}>{t("id_cancel")}</Button>
             </Grid>
             <Grid item xs={12} sm={3}>
               <Button
@@ -185,7 +187,7 @@ export const NewOriginsDestinationsPage: React.FC = () => {
                   originsDestinationsActive ? handleUpdateOriginDestinations: handleAddOriginDestinations
                 }
               >
-                {!originsDestinationsActive ? "Guardar" : "Actualizar"}
+                {!originsDestinationsActive ? t("_add") : t("id_update")} {' '}
               </Button>
             </Grid>
           </Grid>

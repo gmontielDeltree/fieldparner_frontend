@@ -10,6 +10,8 @@ import {
 } from "@mui/material";
 import { Supply, UnidadesDeMedida } from "../../types";
 import React, { ChangeEvent } from "react";
+import { useTranslation } from "react-i18next";
+
 
 export interface StockFormProps {
   formValues: Supply;
@@ -23,6 +25,7 @@ export const StockForm: React.FC<StockFormProps> = ({
   handleSelectChange,
 }) => {
   const { type, name, unitMeasurement, replenishmentPoint } = formValues;
+const {t} = useTranslation();
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
@@ -30,7 +33,7 @@ export const StockForm: React.FC<StockFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Tipo"
+          label={t("_type")}
           value={type}
           disabled
           InputProps={{
@@ -47,7 +50,7 @@ export const StockForm: React.FC<StockFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Insumo"
+          label={t("_supply")}
           value={name}
           disabled
           InputProps={{
@@ -62,16 +65,16 @@ export const StockForm: React.FC<StockFormProps> = ({
       </Grid>
       <Grid item xs={12} sm={6}>
         <FormControl fullWidth>
-          <InputLabel id="unidadMedida">Unidad de medida</InputLabel>
+          <InputLabel id="unidadMedida">{t("unit_of_measure")}</InputLabel>
           <Select
             labelId="unidadMedida"
             name="unitMeasurement"
             value={unitMeasurement}
             // autoWidth
-            label="Unidad de medida"
+            label={t("unit_of_measure")}
             onChange={handleSelectChange}
           >
-            {UnidadesDeMedida.map((um, index) => (
+            {UnidadesDeMedida().map((um, index) => (
               <MenuItem key={`${um}-${index}`} value={um}>
                 {um}
               </MenuItem>
@@ -83,7 +86,7 @@ export const StockForm: React.FC<StockFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Punto Reposición"
+          label={t("reorder_point")}
           name="replenishmentPoint"
           value={replenishmentPoint}
           onChange={handleInputChange}

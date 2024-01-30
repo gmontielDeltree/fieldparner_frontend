@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { Business, TipoEntidad } from "../../types";
 import React, { ChangeEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Phone as PhoneIcon } from "@mui/icons-material";
 
 export interface BusinessFormProps {
@@ -58,11 +59,13 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
     legajo,
   } = values;
 
+  const { t } =useTranslation ();
+
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
       <Grid item xs={12} sm={3}>
         <FormControl fullWidth>
-          <InputLabel id="label-tipo-entidad">Tipo entidad</InputLabel>
+          <InputLabel id="label-tipo-entidad">{t("entity_type")}</InputLabel>
           <Select
             labelId="label-tipo-entidad"
             name="tipoEntidad"
@@ -70,9 +73,9 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
             label="Tipo entidad"
             onChange={handleSelectChange}
           >
-            <MenuItem value={TipoEntidad.FISICA.toString()}>Fisica</MenuItem>
+            <MenuItem value={TipoEntidad.FISICA.toString()}>{t("_physical")}</MenuItem>
             <MenuItem value={TipoEntidad.JURIDICA.toString()}>
-              Jurídica
+            {t("_legal")}
             </MenuItem>
           </Select>
         </FormControl>
@@ -83,7 +86,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
             <TextField
               variant="outlined"
               type="text"
-              label="Documento"
+              label={t("_document")}
               name="documento"
               value={documento}
               error={documentError}
@@ -99,7 +102,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
             <TextField
               variant="outlined"
               type="text"
-              label="Nombre completo"
+              label={t("full_name")}
               name="nombreCompleto"
               value={nombreCompleto}
               error={nameError}
@@ -125,7 +128,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
                   defaultChecked
                 />
               }
-              label="Empleado"
+              label={t("_employee")}
 
             />
           </Grid>
@@ -133,7 +136,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
             <TextField
               variant="outlined"
               type="text"
-              label="Legajo"
+              label={t("employee_file")}
               name="legajo"
               value={legajo}
               error={legajoError}
@@ -149,7 +152,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
             <TextField
               variant="outlined"
               type="text"
-              label="Matricula Profesional"
+              label={t("professional_registration")}
               name="matricula"
               value={matricula}
               onChange={handleInputChange}
@@ -164,7 +167,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
         <>
           <Grid item xs={12} sm={4}>
             <TextField
-              label="Cuit"
+              label={t("tax_id_cuit_cnpj")}
               variant="outlined"
               // disabled={disabledFields}
               type="text"
@@ -181,7 +184,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           </Grid>
           <Grid item xs={12} sm={5}>
             <TextField
-              label="Razon Social"
+              label={t("name_negal_name")}
               variant="outlined"
               // disabled={disabledFields}
               type="text"
@@ -218,7 +221,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
       </Grid>
       <Grid item xs={12} sm={6}>
         <TextField
-          label="Telefono"
+          label={t("_phone")}
           variant="outlined"
           // disabled={disabledFields}
           type="text"
@@ -238,7 +241,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
       </Grid>
       <Grid item xs={12} sm={6}>
         <TextField
-          label="Contacto principal"
+          label={t("main_contact")}
           variant="outlined"
           // disabled={disabledFields}
           type="text"
@@ -253,7 +256,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
       </Grid>
       <Grid item xs={12} sm={6}>
         <TextField
-          label="Contacto secundario"
+          label={t("secondary_contact")}
           variant="outlined"
           // disabled={disabledFields}
           type="text"

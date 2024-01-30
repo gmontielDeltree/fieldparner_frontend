@@ -26,7 +26,6 @@ import mapbox_style from "mapbox-gl/dist/mapbox-gl.css?inline";
 import mapbox_draw_style from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css?inline";
 import { map } from "lit/directives/map.js";
 import { LastUpdateTag } from "../depositos/depositos-types";
-import { LngLat } from "mapbox-gl";
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";

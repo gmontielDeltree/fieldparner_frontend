@@ -7,6 +7,7 @@ import { Campaign, ExitField, Field, Lot, Supply } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 import uuid4 from 'uuid4';
 import { uuidv4 } from 'uuidv7';
+import { useTranslation } from 'react-i18next';
 
 
 interface GeneralDataProps {
@@ -144,6 +145,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
             }));
         }
     };
+    const {t} = useTranslation();
 
     return (
         <Grid
@@ -154,13 +156,13 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
             justifyContent="space-between">
             <Grid item xs={12} display="flex" alignItems="center" mb={2}>
                 <FolderOpenIcon sx={{ mx: 1 }} />
-                <Typography variant="h5">Datos Generales</Typography>
+                <Typography variant="h5">{t("general_data")}</Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
                 <TextField
                     variant="outlined"
                     type="date"
-                    label="Fecha de Operacion"
+                    label={t("operation_date")}
                     name="creationDate"
                     value={formValues.creationDate}
                     onChange={handleInputChange}
@@ -232,7 +234,36 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                     )
                 }
             </Grid>
+            <Grid item xs={12} sm={3}>
+                {
+                    (fieldSelected) && (
+                        <FormControl key="lot-select" fullWidth>
+                            <InputLabel id="lot">{t("_lot")}</InputLabel>
+                            <Select
+                                labelId="lot"
+                                name="lotId"
+                                value={formValues.lotId}
+                                label={t("_lot")} 
+                                onChange={onChangeLot}
+                            >
+                                {fieldSelected?.lotes.map((lot) => (
+                                    <MenuItem key={lot._id} value={lot._id}>
+                                        {lot.properties.nombre}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    )
+                }
+            </Grid>
             <Grid item xs={6} sm={2}>
+                {
+                    lotSelected && (
+                        <Typography variant="body1">
+                            <b>Hectareas: </b> {lotSelected?.properties.hectareas}
+                        </Typography>
+                    )
+                }
                 {
                     lotSelected && (
                         <Typography variant="body1">
@@ -243,12 +274,12 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
             </Grid>
             <Grid item xs={12} sm={4}>
                 <FormControl key="lot-select" fullWidth>
-                    <InputLabel id="lot">Cultivo</InputLabel>
+                    <InputLabel id="lot">{t("_crop")}</InputLabel>
                     <Select
                         labelId="lot"
                         name="supplyId"
                         value={formValues.supplyId}
-                        label="Cultivo"
+                        label={t("_crop")}
                         onChange={onChangeCrop}
                     >
                         {crops?.map((crop) => (
@@ -263,7 +294,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                 <TextField
                     variant="outlined"
                     type="text"
-                    label='Carta de Porte'
+                    label={t("_waybill")}
                     name="transportDocument"
                     value={formValues.transportDocument}
                     onChange={handleInputChange}
@@ -277,7 +308,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                 <TextField
                     variant="outlined"
                     type="text"
-                    label="Ticker / Remito"
+                    label={t("Ticket/ Receipt")}
                     name="ticket"
                     value={formValues.ticket}
                     onChange={handleInputChange}

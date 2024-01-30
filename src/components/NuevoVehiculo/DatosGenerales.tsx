@@ -12,6 +12,7 @@ import {
   FolderOpen as FolderOpenIcon,
   Security as SecurityIcon,
 } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 
 
 export interface DatosGeneralesProps {
@@ -32,6 +33,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   const typeVehicles = vehicleTypes.map(t => t.name);
   const { vehiculoActivo } = useAppSelector((state) => state.vehiculo);
   const disabledFields = !!vehiculoActivo;
+const {t} = useTranslation();
   const {
     vehicleType,
     patent,
@@ -85,7 +87,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
       >
         <Grid item xs={12} display="flex" alignItems="center">
           <FolderOpenIcon sx={{ mx: 1 }} />
-          <Typography variant="h5">Datos Generales</Typography>
+          <Typography variant="h5">{t("general_data")}</Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
           <Autocomplete
@@ -103,14 +105,14 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
               handleFormValueChange("vehicleType", newInputValue);
             }}
             renderInput={(params) => (
-              <TextField {...params} label="Tipo de Vehiculo" required />
+              <TextField {...params} label={t("vehicle_type")} required />
             )}
           />
         </Grid>
 
         <Grid item xs={12} sm={6}>
           <TextField
-            label="Marca"
+            label={t("_brand")}
             required
             variant="outlined"
             disabled={disabledFields}
@@ -126,7 +128,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField
-            label="Modelo"
+            label={t("_model")}
             required
             disabled={disabledFields}
             variant="outlined"
@@ -143,7 +145,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         <Grid item xs={12} sm={2}>
           <TextField
             type="text"
-            label="Año"
+            label={t("_year")}
             name="modelYear"
             value={modelYear}
             onChange={handleYearChange}
@@ -158,7 +160,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         </Grid>
         <Grid item xs={12} sm={4}>
           <TextField
-            label="Patente"
+            label={t("_patent")}
             variant="outlined"
             type="text"
             name="patent"
@@ -172,9 +174,11 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField
-            label="Numero de chasis"
+            label={t("_chassis")}
             variant="outlined"
             type="text"
+            name="chassisNumber"
+            value={chassisNumber}
             name="chassisNumber"
             value={chassisNumber}
             onChange={handleInputChange}
@@ -200,17 +204,17 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             options={["Propio", ...optionsPropietario]}
             fullWidth
             renderInput={(params) => (
-              <TextField {...params} name="owner" label="Propietario" />
+              <TextField {...params} name="owner" label={t("_owner")} />
             )}
           />
         </Grid>
         <Grid item xs={12} sm={12}>
           <TextField
-            label="Ubicacion"
+            label={t("id_location")}
             variant="outlined"
             type="text"
             name="location"
-            placeholder="Ubicacion"
+            placeholder={t("id_location")}
             value={location}
             onChange={handleInputChange}
             InputProps={{
@@ -221,11 +225,11 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         </Grid>
         <Grid item xs={12} display="flex" alignItems="center">
           <SecurityIcon sx={{ mx: 1 }} />
-          <Typography variant="h5">Seguro</Typography>
+          <Typography variant="h5">{t("_insurance")}</Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField
-            label="Compañía de seguro"
+            label={t("insurance_company")}
             variant="outlined"
             type="text"
             name="insurence"
@@ -239,7 +243,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         </Grid>
         <Grid item xs={12} sm={3}>
           <TextField
-            label="Tipo de Cobertura"
+            label={t("coverage_type")}
             variant="outlined"
             type="text"
             name="coverageType"
@@ -253,7 +257,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         </Grid>
         <Grid item xs={12} sm={3}>
           <TextField
-            label="Numero de Póliza"
+            label={t("policy_number")}
             variant="outlined"
             type="text"
             name="policyNumber"
@@ -269,7 +273,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
           <TextField
             variant="outlined"
             type="date"
-            label="Fecha de Inicio del Seguro"
+            label={t("insurance_start_date")}
             name="insurenceStartDate"
             value={insurenceStartDate}
             onChange={handleInputChange}
@@ -283,7 +287,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
           <TextField
             variant="outlined"
             type="date"
-            label="Fecha Vencimiento del Seguro"
+            label={t("insurance_expiry_date")}
             name="insurenceDueDate"
             value={insurenceDueDate}
             onChange={handleInputChange}
