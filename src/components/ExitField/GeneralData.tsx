@@ -7,8 +7,6 @@ import { Campaign, ExitField, Field, Lot, Supply } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 import uuid4 from 'uuid4';
 import { uuidv4 } from 'uuidv7';
-import { uuidv4 } from 'uuidv7';
-import uuid4 from 'uuid4';
 import { useTranslation } from 'react-i18next';
 
 

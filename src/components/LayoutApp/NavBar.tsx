@@ -1,4 +1,11 @@
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { showFieldList, hideFieldList } from "../../redux/fieldsList";
+import { useAuthStore } from "../../hooks";
+
 import {
+  Badge,
+  Tooltip,
   AppBar,
   Grid,
   IconButton,
@@ -10,25 +17,15 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { showFieldList, hideFieldList } from "../../redux/fieldsList";
-import { useAuthStore } from "../../hooks";
-import { Notifications, NotificationsActive, MenuOutlined, ExitToApp } from "@mui/icons-material";
-import { Badge, Tooltip, AppBar, Grid, IconButton, Toolbar, Typography, Avatar, ButtonBase, Button, Menu, MenuItem } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../redux/store";
 import { useNavigate } from "react-router-dom";
 import iconoCampo from "../../images/icons/iconodecampo2D.webp";
 import integrationsIcon from "../../images/icons/integrations.png";
 import deposito from "../../images/icons/deposito_2.webp";
-import insumos from "../../images/icons/icono de insumos.webp";
 import spanishFlagIcon from "../../images/icons/spain_flag.png";
 import englishFlagIcon from "../../images/icons/usa_flag.png";
 import brazilFlagIcon from "../../images/icons/brazil_flag.png";
-import { useAuthStore } from "../../hooks";
-import { useDispatch, useSelector } from "react-redux";
-import { showFieldList, hideFieldList } from "../../redux/fieldsList";
 
 import {
   Notifications,
@@ -36,9 +33,6 @@ import {
   MenuOutlined,
   ExitToApp,
 } from "@mui/icons-material";
-import { Badge, Tooltip } from "@mui/material";
-import { RootState } from "../../redux/store";
-import { useNavigate } from "react-router-dom";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
