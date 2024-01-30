@@ -75,6 +75,9 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   });
 
   const findInsumoByOption = (option) => {
+    if (option === "test") {
+      return { marca_comercial: "test" /* other properties if needed */ };
+    }
     return inputs.find((input) => input.marca_comercial === option);
   };
 
@@ -203,6 +206,10 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               onChange={handleSelectChange}
               fullWidth
             >
+              <MenuItem key="default" value="test">
+                Test
+              </MenuItem>
+
               {supplies.map((supply, index) => (
                 <MenuItem key={index} value={supply.name}>
                   {supply.name}
