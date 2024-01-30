@@ -177,17 +177,13 @@ export const NavBar: React.FC<NavBarProps> = ({
             <ButtonBase
               onClick={selectAvatar}
               sx={{ borderRadius: "50%", marginRight: "18px" }}
-              title={t("fields")}
+              title="Campos"
             >
-              <Avatar
-                alt="Integrations"
-                src={integrationsIcon}
-                sx={avatarStyle("avatar2")}
-              />
+              <Avatar alt="Campo" src={iconoCampo} sx={avatarStyle()} />
             </ButtonBase>
             <ButtonBase
               onClick={() => navigate("/init/overview/fields/integrations")}
-              sx={{ borderRadius: "50%", marginRight: "18px" }} title={t("integrations")}
+              sx={{ borderRadius: "50%", marginRight: "18px" }} title="Integraciones"
             >
               <Avatar
                 alt="Integrations"
@@ -242,7 +238,7 @@ export const NavBar: React.FC<NavBarProps> = ({
               open={openDropdown}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleClose}> + {t("newCampaign")}</MenuItem>
+              <MenuItem onClick={handleClose}> + {t("no_campaign")}</MenuItem>
             </Menu>
           </Grid>
           <Grid item>
