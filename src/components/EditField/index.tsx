@@ -64,7 +64,7 @@ const EditField: React.FC<EditFieldProps> = ({
             onClick={handleLocateField}
             style={buttonStyle}
           >
-            <LocationOnIcon /> {/* Use the Material-UI LocationOn icon */}
+            <LocationOnIcon />
           </Button>
 
           <Button close onClick={onClose} />

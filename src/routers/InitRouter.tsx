@@ -9,37 +9,35 @@ export const InitRouter = () => {
   let navigate = useNavigate();
   let location = useLocation();
 
-
   // Original URL
-  const [from, setFrom] = useState<string>("/" + (window.location.pathname+window.location.search).substr(1))
+  const [from, setFrom] = useState<string>(
+    "/" + (window.location.pathname + window.location.search).substr(1)
+  );
 
   const { status, checkAuthToken } = useAuthStore();
 
   useEffect(() => {
     // anotar la url original
-    console.log("WINDOW LOCATION HREF PRE AUTH", from)
+    console.log("WINDOW LOCATION HREF PRE AUTH", from);
     checkAuthToken();
 
   }, []);
 
-  
   useEffect(() => {
-    if(status === "authenticated"){
+    if (status === "authenticated") {
       // Despues de autenticar hay que volver atras
       // para recuperar la url antes del login. Ej.:
       // 1 - /init/overview/deposits (request original)
       // 2 - /login (por checkAuthToken)
       // 3 - /init/overview/fields (por el render de mas abajo)
       // 4 - navigate(from) vuelve a /init/overview/deposits
-      
-      console.log("WINDOW LOCATION HREF POST AUTH", window.location.href)
-      if(from !== "/init/auth/login") {
+
+      console.log("WINDOW LOCATION HREF POST AUTH", window.location.href);
+      if (from !== "/init/auth/login") {
         navigate(from);
       }
-      
     }
   }, [status]);
-
 
   if (status === "checking") {
     return <Loading key="loading-auth" loading />;

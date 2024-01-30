@@ -188,6 +188,197 @@ export const FieldsPage: React.FC = () => {
     [map, db, selectedField]
   );
 
+  useEffect(() => {
+    if (map) {
+      map.on(touchEvent, handleMapClick);
+    }
+    return () => {
+      if (map) {
+        map.off(touchEvent, handleMapClick);
+      }
+    };
+  }, [map, handleMapClick]);
+
+  const handleLotClick = (lotId: string) => {
+    const currentSelectedField = selectedFieldRef.current;
+    if (!currentSelectedField) {
+      console.warn("No field selected");
+      return;
+    }
+
+    const lot = currentSelectedField.lotes.find((l) => l.id === lotId);
+    if (lot && map) {
+      setSelectedLot(lot);
+      navigate(lotId)
+
+      const lotCentroid = centroid(lot.geometry);
+      if (
+        lotCentroid &&
+        lotCentroid.geometry &&
+        lotCentroid.geometry.coordinates
+      ) {
+        const centroidCoordinates = lotCentroid.geometry.coordinates;
+
+        if (
+          Array.isArray(centroidCoordinates) &&
+          centroidCoordinates.length === 2
+        ) {
+          const longitudeAdjustment = 0.005;
+          const adjustedCoordinates = [
+            centroidCoordinates[0] - longitudeAdjustment,
+            centroidCoordinates[1],
+          ];
+
+          map.flyTo({ center: adjustedCoordinates, zoom: 16, pitch: 45 });
+        } else {
+          console.error("Invalid centroid coordinates:", centroidCoordinates);
+        }
+      } else {
+        console.error("Unable to calculate the centroid of the lot");
+      }
+
+      map.setPaintProperty(lotId + "-fill", "fill-color", "#808080");
+    }
+  };
+
+  const handleSaveGeometry = (data) => {
+    const geometryData = data.geometry ? data.geometry[0] : data;
+
+    const campoGeojson =
+      geometryData.features.length > 1
+        ? convex(geometryData.features)
+        : geometryData.features[0];
+
+    const name =
+      data.field_name || geometryData.features[0]?.properties?.name || "";
+    const uuid = uuid4();
+
+    if (campoGeojson && campoGeojson.properties) {
+      campoGeojson.properties.hectareas = roundArea(campoGeojson);
+    }
+
+    const lotes =
+      geometryData.features.length > 1
+        ? processLotes(geometryData.features, name)
+        : [];
+
+    const campoData = {
+      _id: "campos_" + name,
+      nombre: name,
+      campo_geojson: campoGeojson,
+      uuid,
+      lotes,
+    };
+
+    dbPut(campoData, (err, result) => {
+      if (!err) {
+        console.log("Successfully posted a Campo!");
+        updateFields(campoData, result.rev);
+      } else {
+        console.log(err);
+      }
+    });
+  };
+
+  function roundArea(feature) {
+    return Math.round((area(feature) / 10000) * 100) / 100;
+  }
+
+  function processLotes(features, name) {
+    return features.map((feature) => {
+      const lote = { ...feature };
+      lote.properties = {
+        ...lote.properties,
+        nombre: lote.properties?.name,
+        uuid: uuid4(),
+        campo_parent_id: "campos_" + name,
+        hectareas: roundArea(lote),
+        actividades: [],
+      };
+      lote.id = lote.properties.uuid;
+      return lote;
+    });
+  }
+
+  function dbPut(campoData, callback) {
+    db.put(campoData, callback);
+  }
+
+  function updateFields(campoData, rev) {
+    draw.deleteAll();
+    setFields((prevFields) => [...prevFields, { ...campoData, _rev: rev }]);
+  }
+
+  const toggleLotDetailsModal = () => {
+    if (selectedLot && map) {
+      map.flyTo({ pitch: 0 });
+
+      map.setPaintProperty(selectedLot.id + "-fill", "fill-color", "#0080ff");
+    }
+
+    if(campoId){
+      navigate("/init/overview/fields/" + campoId)
+    }
+    setSelectedLot(null);
+  };
+
+  const handleSaveGeometryLot = (data) => {
+    console.log("add_lot_to_field", data);
+
+    const lotGeometry = data.geometry[0].features[0].geometry;
+    const lotName = data.field_name;
+    const fieldId = `campos_${selectedField?.nombre}`;
+
+    getField(fieldId, (err, field) => {
+      if (err) {
+        console.log("Error retrieving field:", err);
+        return;
+      }
+
+      const newLot = createNewLot(lotGeometry, lotName, fieldId);
+      updateFieldWithLot(fieldId, field, newLot);
+    });
+  };
+
+  function getField(fieldId, callback) {
+    db.get(fieldId, callback);
+  }
+
+  function createNewLot(lotGeometry, lotName, fieldId) {
+    const lotUuid = uuid4();
+    const lotAreaHectares = roundArea(lotGeometry);
+
+    return {
+      id: lotUuid,
+      type: "Feature",
+      properties: {
+        nombre: lotName,
+        campo_parent_id: fieldId,
+        uuid: lotUuid,
+        hectareas: lotAreaHectares,
+      },
+      geometry: lotGeometry,
+    };
+  }
+
+  function updateFieldWithLot(fieldId, field, newLot) {
+    field.lotes.push(newLot);
+    db.put({ ...field, _id: fieldId }, (error, result) => {
+      if (!error) {
+        console.log("Successfully added a new Lot to Campo!");
+        updateUIAfterAddingLot(field, result);
+      } else {
+        console.log(error);
+      }
+    });
+  }
+
+  function updateUIAfterAddingLot(field, result) {
+    setSelectedField({ ...field, lotes: field.lotes });
+    addLotsToMap(map, field.lotes);
+    handleCloseNewLot();
+  }
+
   const addLotsToMap = (map: any, lots: any) => {
     lots.forEach((lot: any) => {
       const lotId = lot.id;
@@ -341,7 +532,15 @@ export const FieldsPage: React.FC = () => {
 
   return (
     <>
-      <MapComponent onMapLoad={onMapLoad} />
+      <FieldsSideMenu
+        open={isVisible}
+        fields={fields}
+        onSelectField={handleSelectField}
+      />
+      <Outlet />
+      <Grid container style={{ position: "relative" }} ref={target}>
+        <MapComponent onMapLoad={onMapLoad}  />
+      </Grid>
 
       <Button
         color="primary"
@@ -379,7 +578,7 @@ export const FieldsPage: React.FC = () => {
           onDelete={handleDeleteField}
           onLocate={handleLocateField}
           handleCreateLot={handleCreateLot}
-          handleCloseNewLot={handleCloseNewLot}
+          handleCreateUniqueLot={handleCreateUniqueLot}
         />
       ) : null}
 

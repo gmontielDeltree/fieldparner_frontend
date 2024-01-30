@@ -1,4 +1,4 @@
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Navigate, Link as RouterLink, useLocation } from "react-router-dom";
 import {
   Box,
   Collapse,

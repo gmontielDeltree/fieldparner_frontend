@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Typography from "@mui/material/Typography";
 import {
   Accordion,
@@ -167,7 +167,7 @@ const CustomAccordionDetails = styled(AccordionDetails)({
   padding: "16px"
 });
 
-function PlanificationContent({
+const PlanificationContent = React.memo(function PlanificationContent({
   activity,
   showEstimatedApplicationDate = true
 }) {
@@ -181,6 +181,10 @@ function PlanificationContent({
         locale: es
       })
     : "No especificada";
+
+  useEffect(() => {
+    console.log("Planification  component rendered");
+  }, []);
   return (
     <>
       {showEstimatedApplicationDate && (
@@ -262,6 +266,6 @@ function PlanificationContent({
       </CustomAccordion>
     </>
   );
-}
+});
 
 export default PlanificationContent;

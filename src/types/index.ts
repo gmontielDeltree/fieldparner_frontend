@@ -271,10 +271,10 @@ export const TypeMovements = () => {
     ];
 };
 
-export interface Lot {
-nro: string;
-location: string;
-}
+// export interface Lot {
+//     nro: string;
+//     location: string;
+// }
 
 export interface DepositState {
     depositActive: Deposit | null;

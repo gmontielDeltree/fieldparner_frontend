@@ -59,6 +59,23 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   },
 }));
 
+const locationDefault = "General";
+const initialForm: Deposit = {
+  description: "",
+  zipCode: "",
+  address: "",
+  geolocation: { lng: -35, lat: -34 },
+  locality: "",
+  isNegative: false,
+  isVirtual: false,
+  country: "",
+  owner: "Propio",
+  province: "",
+  accountId: "",
+  locations: [locationDefault],
+};
+
+const optionsCountry = ["Argentina", "Brasil", "Chile"];
 
 
 
