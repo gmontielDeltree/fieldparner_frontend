@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Typography from "@mui/material/Typography";
 import {
   List,
@@ -54,6 +54,9 @@ function Application({
         { locale: es }
       )
     : "Fecha no definida";
+  useEffect(() => {
+    console.log("Application component rendered");
+  }, []);
 
   return (
     <div>
@@ -97,7 +100,7 @@ function Application({
         </IconButton>
       </Box>
 
-{/* LGO Comento los items que no estan implementados aún */}
+      {/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={handleMenuClose}>Editar</MenuItem>
         {/* <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem> */}

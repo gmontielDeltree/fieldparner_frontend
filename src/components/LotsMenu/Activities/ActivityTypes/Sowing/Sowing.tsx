@@ -84,7 +84,7 @@ function Sowing({
         </IconButton>
       </Box>
 
-{/* LGO Comento los items que no estan implementados aún */}
+      {/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={() => handleEditActivity(activity.actividad)}>
           Editar Siembra
@@ -119,10 +119,7 @@ function Sowing({
       </Tabs>
 
       {selectedTab === 0 && (
-        <PlanificationContent
-          activity={activity.actividad}
-          backgroundColor={complementaryColor}
-        />
+        <PlanificationContent activity={activity.actividad} />
       )}
       {selectedTab === 1 && (
         <LaborOrderContent
