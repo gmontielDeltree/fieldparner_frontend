@@ -28,6 +28,7 @@ import useResizeObserver from '@react-hook/resize-observer'
 import { dbContext } from "../services";
 import { touchEvent } from "../../owncomponents/helpers";
 import FieldsSideMenu from "../components/FieldsSideMenu";
+import { useTranslation } from "react-i18next";
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
@@ -40,6 +41,7 @@ export const FieldsPage: React.FC = () => {
   const selectedFieldRef = useRef<Field | null>(null);
   const draw = useSelector(selectDraw);
   const dispatch = useDispatch();
+  const {t} = useTranslation();
 
   const isVisible = useSelector(
     (state: RootState) => state.fieldList.isVisible
