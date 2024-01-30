@@ -253,11 +253,6 @@ export const TypeMovements = [
     "Prestamos",
 ];
 
-// export interface Lot {
-//     nro: string;
-//     location: string;
-// }
-
 export interface DepositState {
     depositActive: Deposit | null;
     deposits: Deposit[];
@@ -451,15 +446,25 @@ export interface Field extends Document {
 }
 
 export interface WithdrawalOrder extends Document {
-    accountId: string;
     type: string;
     creationDate: string;
-    order: string;
+    order: number;
     reason: string;
     withdrawId: string;
     campaignId: string;
     state: OrderStatus;
     suppliesToBeWithdrawn: TransformSupply[];
+}
+
+export interface WithdrawalOrderItem extends WithdrawalOrder {
+    campaing: Campaign;
+    withdraw: Business;
+}
+
+export interface Numerator extends Document {
+    accountId: string;
+    numeratorType: NumeratorType;
+    lastNumerator: number;
 }
 
 //#region Enums
@@ -550,6 +555,10 @@ export enum OrderStatus {
 export enum WithdrawalOrderType {
     Individual = "Individual",
     Labor = "Labor",
+}
+
+export enum NumeratorType {
+    Client = "Cliente",
 }
 
 //#endregion

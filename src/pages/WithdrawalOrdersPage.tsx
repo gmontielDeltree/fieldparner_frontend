@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import {
-    useAppDispatch,
     useBusiness,
     useCampaign,
     useDeposit,
@@ -11,8 +10,8 @@ import {
     useStockMovement,
     useSupply
 } from '../hooks';
-import { BorderContainer, DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TableCellStyledBlack, TemplateLayout } from '../components';
-import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, Table, TableBody, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
+import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TemplateLayout } from '../components';
+import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, TableContainer, TextField, Typography } from '@mui/material';
 import { Assignment as AssignmentIcon } from '@mui/icons-material';
 import { ColumnProps, OrderStatus, StockByLot, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderType } from '../types';
 import { getShortDate } from '../helpers/dates';
@@ -28,12 +27,11 @@ const columns: ColumnProps[] = [
 ];
 
 const initialForm: WithdrawalOrder = {
-    accountId: "",
     creationDate: getShortDate(),
     reason: "",
     campaignId: "",
     withdrawId: "",
-    order: "",
+    order: 0,
     state: OrderStatus.Pending,
     type: WithdrawalOrderType.Individual,
     suppliesToBeWithdrawn: [],
@@ -42,13 +40,13 @@ const initialForm: WithdrawalOrder = {
 export const WithdrawalOrdersPage: React.FC = () => {
 
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
+    // const dispatch = useAppDispatch();
     const { isLoading, createWithdrawalOrder } = useOrder();
     const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
     const { isLoading: supplyLoading, supplies, getSupplies } = useSupply();
     const { deposits, getDeposits } = useDeposit();
     const { campaigns, getCampaigns } = useCampaign();
-    const { isLoading: loadingEntities, businesses: socialEntities } = useBusiness();
+    const { isLoading: loadingEntities, businesses: socialEntities, getBusinesses } = useBusiness();
     const { getStock } = useStockMovement();
     const {
         creationDate,
@@ -56,16 +54,14 @@ export const WithdrawalOrdersPage: React.FC = () => {
         campaignId,
         withdrawId,
         formulario: formValues,
-        setFormulario,
         handleInputChange,
-        handleFormValueChange,
         handleSelectChange,
     } = useForm(initialForm);
 
     const onClickCancel = () => navigate("/init/overview/list-orders");
 
     const handleAddWithdrawalOrder = () => {
-        
+
         createWithdrawalOrder({
             type: "Individual",
             campaignId,
@@ -75,7 +71,6 @@ export const WithdrawalOrdersPage: React.FC = () => {
             reason: formValues.reason,
             state: OrderStatus.Pending,
             suppliesToBeWithdrawn: suppliesToAdd,
-            accountId: ""
         });
     }
 
@@ -121,15 +116,16 @@ export const WithdrawalOrdersPage: React.FC = () => {
             setSuppliesToAdd([item, ...suppliesToAdd]);
     }
 
-    //TODO: validar deposito/insumo que no se repita.
+
     const handleAddDepositSupply = (item: TransformSupply) => {
         addSupplyToAdd(item);
     }
 
     useEffect(() => {
-        getCampaigns();
         getSupplies();
         getDeposits();
+        getCampaigns();
+        getBusinesses();
     }, [])
 
     return (

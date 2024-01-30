@@ -135,7 +135,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
                                 <TableCellStyled align="center">{row.creationDate} </TableCellStyled>
                                 <TableCellStyled align="center">{row.order}</TableCellStyled>
                                 <TableCellStyled>{row.reason}</TableCellStyled>
-                                <TableCellStyled align="center">{row.withdrawId}</TableCellStyled>
+                                <TableCellStyled align="center">{row.withdraw.nombreCompleto}</TableCellStyled>
                                 <TableCellStyled align="center">{row.campaignId}</TableCellStyled>
                                 <TableCellStyled align="center">
                                     <IconButton
