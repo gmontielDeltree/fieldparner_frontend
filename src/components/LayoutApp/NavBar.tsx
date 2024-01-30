@@ -1,38 +1,17 @@
-import {
-  AppBar,
-  Grid,
-  IconButton,
-  Toolbar,
-  Typography,
-  Avatar,
-  ButtonBase,
-  Button,
-  Menu,
-  MenuItem,
-} from "@mui/material";
 import React, { useState } from "react";
-import { NavBarProps } from "../../types";
+import { useDispatch, useSelector } from "react-redux";
+import { showFieldList, hideFieldList } from "../../redux/fieldsList";
+import { useAuthStore } from "../../hooks";
+import { Notifications, NotificationsActive, MenuOutlined, ExitToApp } from "@mui/icons-material";
+import { Badge, Tooltip, AppBar, Grid, IconButton, Toolbar, Typography, Avatar, ButtonBase, Button, Menu, MenuItem } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import { RootState } from "../../redux/store";
+import { useNavigate } from "react-router-dom";
 import iconoCampo from "../../images/icons/iconodecampo2D.webp";
 import integrationsIcon from "../../images/icons/integrations.png";
-import deposito from "../../images/icons/deposito_2.webp";
-import insumos from "../../images/icons/icono de insumos.webp";
 import spanishFlagIcon from "../../images/icons/spain_flag.png";
 import englishFlagIcon from "../../images/icons/usa_flag.png";
 import brazilFlagIcon from "../../images/icons/brazil_flag.png";
-import { useAuthStore } from "../../hooks";
-import { useDispatch, useSelector } from "react-redux";
-import { showFieldList, hideFieldList } from "../../redux/fieldsList";
-
-import {
-  Notifications,
-  NotificationsActive,
-  MenuOutlined,
-  ExitToApp,
-} from "@mui/icons-material";
-import { Badge, Tooltip } from "@mui/material";
-import { RootState } from "../../redux/store";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
@@ -46,20 +25,20 @@ export const NavBar: React.FC<NavBarProps> = ({
 
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
-  const [language, setLanguage] = useState("spanish");
+  const [language, setLanguage] = useState("es"); // Cambiado a código estándar "es" (español)
   const { startLogout } = useAuthStore();
   const dispatch = useDispatch();
+  const { t, i18n } = useTranslation();
+
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState(null);
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
-
-  const { t } = useTranslation();
 
   const handleLanguageMenu = (event) => {
     setLanguageAnchorEl(event.currentTarget);
   };
 
   const handleLanguageChange = (newLanguage) => {
-    t.changeLanguage(newLanguage);
+    i18n.changeLanguage(newLanguage);
     setLanguage(newLanguage);
     setLanguageAnchorEl(null);
   };
@@ -87,8 +66,10 @@ export const NavBar: React.FC<NavBarProps> = ({
       },
     },
   };
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const openDropdown = Boolean(anchorEl);
+
   const handleLogout = () => {
     console.log("Logout clicked");
     startLogout();
@@ -125,7 +106,6 @@ export const NavBar: React.FC<NavBarProps> = ({
     borderColor: isVisible ? "#1976d2" : "transparent",
     borderRadius: "50%",
     backgroundColor: isVisible ? "rgba(25, 118, 210, 0.1)" : "transparent"
-
   });
 
   return (
@@ -141,7 +121,6 @@ export const NavBar: React.FC<NavBarProps> = ({
       }}
     >
       <Toolbar>
-        {" "}
         <IconButton
           color="default"
           edge="start"
@@ -150,6 +129,7 @@ export const NavBar: React.FC<NavBarProps> = ({
         >
           <MenuOutlined />
         </IconButton>
+
         <Grid
           container
           direction="row"
@@ -175,13 +155,13 @@ export const NavBar: React.FC<NavBarProps> = ({
             <ButtonBase
               onClick={selectAvatar}
               sx={{ borderRadius: "50%", marginRight: "18px" }}
-              title="Campos"
+              title={t("fields")}
             >
               <Avatar alt="Campo" src={iconoCampo} sx={avatarStyle()} />
             </ButtonBase>
             <ButtonBase
               onClick={() => navigate("/init/overview/fields/integrations")}
-              sx={{ borderRadius: "50%", marginRight: "18px" }} title="Integraciones"
+              sx={{ borderRadius: "50%", marginRight: "18px" }} title={t("integrations")}
             >
               <Avatar
                 alt="Integrations"
@@ -189,34 +169,8 @@ export const NavBar: React.FC<NavBarProps> = ({
                 sx={avatarStyle("avatar2")}
               />
             </ButtonBase>
-            <ButtonBase
-              onClick={() => navigate("/init/overview/fields/integrations")}
-              sx={{ borderRadius: "50%", marginRight: "18px" }}
-            >
-              <Avatar
-                alt="Integrations"
-                src={integrationsIcon}
-                sx={avatarStyle("avatar2")}
-              />
-            </ButtonBase>
-            {/* <ButtonBase
-              onClick={() => selectAvatar("avatar2")}
-              sx={{ borderRadius: "50%", marginRight: "18px" }}
-            >
-              <Avatar
-                alt="Deposito"
-                src={deposito}
-                sx={avatarStyle("avatar2")}
-              />
-            </ButtonBase>
-            <ButtonBase
-              onClick={() => selectAvatar("avatar3")}
-              sx={{ borderRadius: "50%", marginRight: "25px" }}
-            >
-              <Avatar alt="Insumos" src={insumos} sx={avatarStyle("avatar3")} />
-            </ButtonBase> */}
 
-            <Tooltip title="Notifications" enterDelay={500} leaveDelay={200}>
+            <Tooltip title={t("notifications")} enterDelay={500} leaveDelay={200}>
               <IconButton
                 color={hasNotifications ? "secondary" : "default"}
                 onClick={handleNotificationClick}
@@ -245,7 +199,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 textTransform: "none",
               }}
             >
-              {t("no_campaign")}
+              {t("noCampaign")}
             </Button>
 
             <Menu
@@ -262,10 +216,9 @@ export const NavBar: React.FC<NavBarProps> = ({
               open={openDropdown}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleClose}> + Nueva Campaña</MenuItem>
+              <MenuItem onClick={handleClose}> + {t("newCampaign")}</MenuItem>
             </Menu>
           </Grid>
-
           <Grid item>
             <IconButton
               color="inherit"

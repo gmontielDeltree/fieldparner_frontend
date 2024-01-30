@@ -300,6 +300,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       })
       .then(() => {
         console.log("Actividad guardada", "success");
+
         backToActivites();
       })
       .catch((error) => {
