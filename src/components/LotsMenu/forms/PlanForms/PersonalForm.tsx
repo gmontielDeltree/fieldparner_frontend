@@ -111,7 +111,9 @@ function PersonalForm({ lot, formData, setFormData }) {
               <DatePicker
                 label="Fecha"
                 value={
-                  formData.detalles.fecha_ejecucion_tentativa || new Date()
+                  formData.detalles.fecha_ejecucion_tentativa
+                    ? new Date(formData.detalles.fecha_ejecucion_tentativa)
+                    : new Date()
                 }
                 onChange={(newValue) => onFieldChange("fecha", newValue)}
                 renderInput={(params) => <TextField {...params} fullWidth />}

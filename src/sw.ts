@@ -16,54 +16,57 @@ import {
 import type { ManifestEntry } from "workbox-build";
 import {ExpirationPlugin} from 'workbox-expiration';
 
-import PouchDB from "pouchdb";
-import {
-  fetch_file,
-  postData,
-  SWFileAttachment,
-  sw_docs_starting,
-  sw_get_file_doc,
-  sw_only_docs,
-  sw_post_file_doc,
-} from "./sw-helpers";
-import { process_analisis_suelo } from "./sw-importers";
-import { uuidv7 } from "uuidv7";
+// import PouchDB from "pouchdb";
+// import {
+//   fetch_file,
+//   postData,
+//   SWFileAttachment,
+//   sw_docs_starting,
+//   sw_get_file_doc,
+//   sw_only_docs,
+//   sw_post_file_doc,
+// } from "./sw-helpers";
+// import { process_analisis_suelo } from "./sw-importers";
+// import { uuidv7 } from "uuidv7";
 
-let adjuntos_db = new PouchDB("adjuntos");
+// let adjuntos_db = new PouchDB("adjuntos");
 //adjuntos_db.put({_id:'esbolonio',bolonio:3})
 
 // Give TypeScript the correct global.
 declare let self: ServiceWorkerGlobalScope;
 declare type ExtendableEvent = any;
 
-console.log("SW Version ", import.meta.env.VITE_VERSION)
+console.log("Service Worker Loading...")
+console.log("SW Version for version", import.meta.env.VITE_VERSION)
 // self.__WB_MANIFEST is default injection point
 precacheAndRoute(self.__WB_MANIFEST);
 //precacheAndRoute([]);
 
+registerRoute(/.*api\.mapbox\.com\/v4\/mapbox\.satellite\/.*$/, new CacheFirst({ cacheName: "mapbox-satellite" }));
+registerRoute(/.*api\.mapbox\.com\/v4\/mapbox\.mapbox\-streets\-v8.*\.vector\.pbf.*$/, new CacheFirst({ cacheName: "mapbox-vector-v8" }));
 
 // precacheAndRoute([
 //   {url: 'https://agrotools.qts-ar.com.ar/couchdb/fieldpartner-platform/recorrida-fields', revision: null},
 // ])
 
-registerRoute(/.*index.html*$/, new NetworkFirst({ cacheName: "html" }));
+// registerRoute(/.*index.html*$/, new NetworkFirst({ cacheName: "fphtml" }));
 
-registerRoute(/.*.css*$/, new NetworkFirst({ cacheName: "css" }));
+// registerRoute(/.*.css*$/, new NetworkFirst({ cacheName: "css" }));
 
-registerRoute(/.*.js*$/, new NetworkFirst({ cacheName: "js" }));
+// registerRoute(/.*.js*$/, new NetworkFirst({ cacheName: "js" }));
 
 
-registerRoute(
-  /.*.json*$/,
-  new CacheFirst({
-    cacheName: "jsons",
-    // plugins: [
-    //   new ExpirationPlugin({
-    //     maxAgeSeconds: 60,
-    //   }),
-    // ],
-  })
-);
+// registerRoute(
+//   /.*.json*$/,
+//   new CacheFirst({
+//     cacheName: "jsons",
+//     // plugins: [
+//     //   new ExpirationPlugin({
+//     //     maxAgeSeconds: 60,
+//     //   }),
+//     // ],
+//   })
+// );
 
 // Mapas tiles
 // registerRoute(
@@ -87,200 +90,200 @@ registerRoute(
 // );
 
 // Geotiffs
-registerRoute(/.*\/satimages\/cog.*$/, new CacheFirst({ cacheName: "geotiff" }));
-registerRoute(/.*.tiff*$/, new CacheFirst({ cacheName: "geotiff2" }));
+// registerRoute(/.*\/satimages\/cog.*$/, new CacheFirst({ cacheName: "geotiff" }));
+// registerRoute(/.*.tiff*$/, new CacheFirst({ cacheName: "geotiff2" }));
 
-// Fechas de generacion
-registerRoute(
-  /.*us-south\.functions\.appdomain\.cloud\/api\/v1\/web\/2659fadf-b282-4e49-b323-bf8cd87cd5e6\/default\/indicesdates.*$/,
-  new StaleWhileRevalidate({ cacheName: "fechas_stale" })
-);
+// // Fechas de generacion
+// registerRoute(
+//   /.*us-south\.functions\.appdomain\.cloud\/api\/v1\/web\/2659fadf-b282-4e49-b323-bf8cd87cd5e6\/default\/indicesdates.*$/,
+//   new StaleWhileRevalidate({ cacheName: "fechas_stale" })
+// );
 
-// https://stackoverflow.com/questions/68772017/serviceworker-not-intercepting-calls-immediately-after-installation
-// https://developer.mozilla.org/en-US/docs/Web/API/Clients/claim
-self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
-});
+// // https://stackoverflow.com/questions/68772017/serviceworker-not-intercepting-calls-immediately-after-installation
+// // https://developer.mozilla.org/en-US/docs/Web/API/Clients/claim
+// self.addEventListener("activate", (event) => {
+//   event.waitUntil(self.clients.claim());
+// });
 
-registerRoute(
-  /attachments.*$/,
-  async ({ url, request, event, params }) => {
-    console.log("ATT GET", url, event, params);
-    let filename = url.searchParams.get("file"); //esta URL encoded,pero se decode solo.
+// registerRoute(
+//   /attachments.*$/,
+//   async ({ url, request, event, params }) => {
+//     console.log("ATT GET", url, event, params);
+//     let filename = url.searchParams.get("file"); //esta URL encoded,pero se decode solo.
     
-    if(filename === null){
-      return Promise.reject("Filename can't be null");
-    }
+//     if(filename === null){
+//       return Promise.reject("Filename can't be null");
+//     }
     
-    let file_doc: SWFileAttachment = (await sw_get_file_doc(
-      adjuntos_db,
-      filename
-    )) as SWFileAttachment;
+//     let file_doc: SWFileAttachment = (await sw_get_file_doc(
+//       adjuntos_db,
+//       filename
+//     )) as SWFileAttachment;
     
-    if (file_doc !== null) {
-      //existe
-      console.log("El archivo existe en la db");
-      let blob = file_doc._attachments["file_0"].data;
-      //let content_type = file_doc._attachments["file_0"].content_type;
-      //request.clone()
-      //console.log("BLOB GET", blob);
-      const response = await fetch(request);
-      const responseBody = await response.text();
-      return new Response(blob, {
-        headers: { ...response.headers, "Content-Type": blob.type },
-      });
-    } else {
-      console.log("El archivo no existe en la db");
-      // no existe
-      // Buscarlo en linea
-      return fetch_file(filename)
-        .then((f: File) => {
-          console.log("File Encontrado en server", f);
-          return new Response(f);
-        })
-        .catch(async () => {
-          const response = await fetch(request);
-          const responseBody = await response.text();
-          return new Response(`{"error":"no se encuentra el archivo"}`, {
-            headers: response.headers,
-            status: 404,
-          });
-        });
-    }
-  },
-  "GET"
-);
+//     if (file_doc !== null) {
+//       //existe
+//       console.log("El archivo existe en la db");
+//       let blob = file_doc._attachments["file_0"].data;
+//       //let content_type = file_doc._attachments["file_0"].content_type;
+//       //request.clone()
+//       //console.log("BLOB GET", blob);
+//       const response = await fetch(request);
+//       const responseBody = await response.text();
+//       return new Response(blob, {
+//         headers: { ...response.headers, "Content-Type": blob.type },
+//       });
+//     } else {
+//       console.log("El archivo no existe en la db");
+//       // no existe
+//       // Buscarlo en linea
+//       return fetch_file(filename)
+//         .then((f: File) => {
+//           console.log("File Encontrado en server", f);
+//           return new Response(f);
+//         })
+//         .catch(async () => {
+//           const response = await fetch(request);
+//           const responseBody = await response.text();
+//           return new Response(`{"error":"no se encuentra el archivo"}`, {
+//             headers: response.headers,
+//             status: 404,
+//           });
+//         });
+//     }
+//   },
+//   "GET"
+// );
 
 /**
  * Procesa el post que viene desde vaadin/upload
  * El archivo viene en el campo data de el "form"ulario posteado.
  */
-registerRoute(
-  "/attachments",
-  async ({ url, request, event, params }) => {
-    //const response = await fetch(request);
-    const data = await request.formData();
+// registerRoute(
+//   "/attachments",
+//   async ({ url, request, event, params }) => {
+//     //const response = await fetch(request);
+//     const data = await request.formData();
 
-    // Get the data from the named element 'file'
-    const file: File = data.get("file") as File;
-    console.log("FILE UPLOAD", file, file.name, file.type);
+//     // Get the data from the named element 'file'
+//     const file: File = data.get("file") as File;
+//     console.log("FILE UPLOAD", file, file.name, file.type);
 
-    let assigned_filename = uuidv7()
-    // postData(file,assigned_filename);
+//     let assigned_filename = uuidv7()
+//     // postData(file,assigned_filename);
 
-    // La _id s el nombre del archivo URIencodedeeado
-    await sw_post_file_doc(adjuntos_db, file, false, assigned_filename);
+//     // La _id s el nombre del archivo URIencodedeeado
+//     await sw_post_file_doc(adjuntos_db, file, false, assigned_filename);
 
-    return new Response(JSON.stringify({status:"ok",filename:assigned_filename}), {
-      headers: { ...request.headers },
-    });
-  },
-  "POST"
-);
+//     return new Response(JSON.stringify({status:"ok",filename:assigned_filename}), {
+//       headers: { ...request.headers },
+//     });
+//   },
+//   "POST"
+// );
 
-registerRoute(
-  /\.(?:png|gif|jpg|svg|webp)$/,
-  new CacheFirst({ cacheName: "images" })
-);
+// registerRoute(
+//   /\.(?:png|gif|jpg|svg|webp)$/,
+//   new CacheFirst({ cacheName: "images" })
+// );
 
+
+// /* Upload Excel handler */
+// self.addEventListener("fetch", (event) => {
+//   if (event.request.method !== "POST") return;
+//   // Es POST
+//   if (event.request.url.includes("excel-contratistas-upload")) {
+//     /* This is to fix the issue Jake found */
+//     //event.respondWith(Response.redirect('/index.html'));
+//     event.respondWith(
+//       new Response(
+//         "<p>This is a response that comes from your service worker!</p>",
+//         {
+//           headers: { "Content-Type": "text/html" },
+//         }
+//       )
+//     );
+
+//     event.waitUntil(
+//       (async function () {
+//         const data = await event.request.formData();
+//         const client = await self.clients.get(
+//           event.resultingClientId || event.clientId
+//         );
+//         // Get the data from the named element 'file'
+//         const file = data.get("file");
+
+//         console.log("Excel file", file);
+//         client?.postMessage({ file, action: "load-excel" });
+//       })()
+//     );
+//   }
+
+//   if (event.request.url.includes("upload-analisis-suelo")) {
+//     process_analisis_suelo(self, event);
+//   }
+
+//   // Es shared-audio
+// });
 
 /* Upload Excel handler */
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "POST") return;
-  // Es POST
-  if (event.request.url.includes("excel-contratistas-upload")) {
-    /* This is to fix the issue Jake found */
-    //event.respondWith(Response.redirect('/index.html'));
-    event.respondWith(
-      new Response(
-        "<p>This is a response that comes from your service worker!</p>",
-        {
-          headers: { "Content-Type": "text/html" },
-        }
-      )
-    );
+// self.addEventListener("fetch", (event) => {
+//   if (event.request.method !== "POST") return;
+//   // Es POST
+//   if (event.request.url.includes("excel-insumos-upload") === false) return;
+//   // Es shared-audio
 
-    event.waitUntil(
-      (async function () {
-        const data = await event.request.formData();
-        const client = await self.clients.get(
-          event.resultingClientId || event.clientId
-        );
-        // Get the data from the named element 'file'
-        const file = data.get("file");
+//   /* This is to fix the issue Jake found */
+//   //event.respondWith(Response.redirect('/index.html'));
+//   event.respondWith(
+//     new Response(
+//       "<p>This is a response that comes from your service worker!</p>",
+//       {
+//         headers: { "Content-Type": "text/html" },
+//       }
+//     )
+//   );
 
-        console.log("Excel file", file);
-        client?.postMessage({ file, action: "load-excel" });
-      })()
-    );
-  }
+//   event.waitUntil(
+//     (async function () {
+//       const data = await event.request.formData();
+//       const client = await self.clients.get(
+//         event.resultingClientId || event.clientId
+//       );
+//       // Get the data from the named element 'file'
+//       const file = data.get("file");
 
-  if (event.request.url.includes("upload-analisis-suelo")) {
-    process_analisis_suelo(self, event);
-  }
-
-  // Es shared-audio
-});
-
-/* Upload Excel handler */
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "POST") return;
-  // Es POST
-  if (event.request.url.includes("excel-insumos-upload") === false) return;
-  // Es shared-audio
-
-  /* This is to fix the issue Jake found */
-  //event.respondWith(Response.redirect('/index.html'));
-  event.respondWith(
-    new Response(
-      "<p>This is a response that comes from your service worker!</p>",
-      {
-        headers: { "Content-Type": "text/html" },
-      }
-    )
-  );
-
-  event.waitUntil(
-    (async function () {
-      const data = await event.request.formData();
-      const client = await self.clients.get(
-        event.resultingClientId || event.clientId
-      );
-      // Get the data from the named element 'file'
-      const file = data.get("file");
-
-      console.log("Excel file", file);
-      client?.postMessage({ file, action: "load-excel-insumos" });
-    })()
-  );
-});
+//       console.log("Excel file", file);
+//       client?.postMessage({ file, action: "load-excel-insumos" });
+//     })()
+//   );
+// });
 
 /* Share Audio handler */
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "POST") return;
-  // Es POST
-  if (event.request.url.includes("shared-audio") === false) return;
-  // Es shared-audio
+// self.addEventListener("fetch", (event) => {
+//   if (event.request.method !== "POST") return;
+//   // Es POST
+//   if (event.request.url.includes("shared-audio") === false) return;
+//   // Es shared-audio
 
-  /* This is to fix the issue Jake found */
-  event.respondWith(Response.redirect("/index.html"));
+//   /* This is to fix the issue Jake found */
+//   event.respondWith(Response.redirect("/index.html"));
 
-  event.waitUntil(
-    (async function () {
-      const data = await event.request.formData();
-      const client = await self.clients.get(
-        event.resultingClientId || event.clientId
-      );
-      // Get the data from the named element 'file'
-      const file = data.get("file");
+//   event.waitUntil(
+//     (async function () {
+//       const data = await event.request.formData();
+//       const client = await self.clients.get(
+//         event.resultingClientId || event.clientId
+//       );
+//       // Get the data from the named element 'file'
+//       const file = data.get("file");
 
-      console.log("Audio file", file);
-      client?.postMessage({ file, action: "load-audio" });
-    })()
-  );
-});
+//       console.log("Audio file", file);
+//       client?.postMessage({ file, action: "load-audio" });
+//     })()
+//   );
+// });
 
-self.addEventListener("fetch", (event) => {
+// self.addEventListener("fetch", (event) => {
   // if (event.request.url.endsWith(".json")) {
   //   // Using the previously-initialized strategies will work as expected.
   //   const cacheFirst = new NetworkFirst();
@@ -308,26 +311,26 @@ self.addEventListener("fetch", (event) => {
   //   event.respondWith(cacheFirst.handle({ request: event.request, event }));
   // }
 
-  if (event.request.url.includes("https://events.mapbox.com/")) {
-    event.respondWith(
-      new Response("<h1>Service Unavailable</h1>", {
-        status: 200,
-        statusText: "Fake Unavailable",
-        headers: new Headers({ "Content-Type": "text/html" }),
-      })
-    );
-  }
+//   if (event.request.url.includes("https://events.mapbox.com/")) {
+//     event.respondWith(
+//       new Response("<h1>Service Unavailable</h1>", {
+//         status: 200,
+//         statusText: "Fake Unavailable",
+//         headers: new Headers({ "Content-Type": "text/html" }),
+//       })
+//     );
+//   }
 
-  if (event.request.url.includes("https://api.mapbox.com/map-sessions/v1")) {
-    event.respondWith(
-      new Response("<h1>Service Unavailable</h1>", {
-        status: 200,
-        statusText: "Fake Unavailable",
-        headers: new Headers({ "Content-Type": "text/html" }),
-      })
-    );
-  }
-});
+//   if (event.request.url.includes("https://api.mapbox.com/map-sessions/v1")) {
+//     event.respondWith(
+//       new Response("<h1>Service Unavailable</h1>", {
+//         status: 200,
+//         statusText: "Fake Unavailable",
+//         headers: new Headers({ "Content-Type": "text/html" }),
+//       })
+//     );
+//   }
+// });
 
 //setDefaultHandler(new NetworkOnly());
 

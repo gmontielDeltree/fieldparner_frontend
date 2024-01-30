@@ -9,10 +9,11 @@ import bbox from "@turf/bbox";
 import { format } from "date-fns";
 import centroid from "@turf/centroid";
 import { SatelliteMap } from "../components/Satellite/SatelliteMap";
+import { dbContext } from "../services";
 
 export const SatellitePage: React.FC = () => {
   const database_name = "campos_randyv7";
-  const db = new PouchDB(database_name); //dbContext.fields
+  const db = dbContext.fields // new PouchDB(database_name); 
   let { loteId } = useParams();
 
   const [lote, setLote] = useState();

@@ -15,12 +15,14 @@ export const useCampaign = () => {
     const getCampaigns = async () => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not found");
-
+            if(import.meta.env.PROD){
+                if (!user) throw new Error("User not found");
+            }
+                
             const result = await dbContext.campaigns.find({
-                selector: { "accountId": user.accountId }
+                selector: { "accountId": import.meta.env.PROD ? user.accountId : "ec3590d5c24e5bec5a21299d30013596" }
             });
-
+            
             // const vehiculos = response.map((v: any) => v.content);
             if (result.docs.length) {
                 const documents: Campaign[] = result.docs.map(doc => doc as Campaign);

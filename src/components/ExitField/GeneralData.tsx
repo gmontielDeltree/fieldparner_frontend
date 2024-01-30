@@ -5,8 +5,8 @@ import {
 import React, { ChangeEvent, useState } from 'react';
 import { Campaign, ExitField, Field, Lot, Supply } from '../../types';
 import { getShortDate } from '../../helpers/dates';
-import uuid4 from 'uuid4';
 import { uuidv4 } from 'uuidv7';
+import uuid4 from 'uuid4';
 import { useTranslation } from 'react-i18next';
 
 
@@ -108,35 +108,6 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
     setFormValues
 }) => {
 
-    const {t} =useTranslation();
-    const fields = [t("field_1"), t("field_2"), t("field_3")]; //TODO: tabla campo-lote
-    const lots = [t("batch_1"), t("batch_2"), t("batch_3")]; //TODO: tabla campo-lote
-    // const crops = ["Alfalfa", "Soja", "Maiz"];
-
-    const [fieldSelected, setFieldSelected] = useState<Field | null>(null);
-    const [lotSelected, setLotSelected] = useState<Lot | null>(null);
-
-    const onChangeField = ({ target }: SelectChangeEvent) => {
-        const fieldId = target.value;
-        const fieldSelected = listFields.find(f => f._id === fieldId);
-
-        if (!fieldSelected) return;
-
-        setFormValues((prevState) => ({ ...prevState, fieldId }));
-        setFieldSelected(fieldSelected);
-        setLotSelected(null);
-    }
-
-    const onChangeLot = ({ target }: SelectChangeEvent) => {
-        const lotId = target.value;
-        const lotSelected = fieldSelected?.lotes.find(l => l._id === lotId);
-
-        if (!lotSelected) return;
-
-        setLotSelected(lotSelected);
-        setFormValues((prevState) => ({ ...prevState, lotId }));
-    }
-
     const onChangeCrop = ({ target }: SelectChangeEvent) => {
         const { value } = target;
         const cropSelected = crops.find((crop) => crop._id === value);
@@ -150,6 +121,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
             }));
         }
     };
+    const {t} = useTranslation();
 
     return (
         <Grid
@@ -181,36 +153,50 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
             </Grid>
             {/* TODO: ?? tabla campaña */}
             <Grid item xs={12} sm={6}>
-                <FormControl key="campaign-select" fullWidth>
-                    <InputLabel id="campaign">{t("_campaign")}</InputLabel>
+                <TextField
+                    variant="outlined"
+                    type="number"
+                    label="Campaña"
+                    name="campaign"
+                    value={formValues.campaign}
+                    onChange={handleInputChange}
+                    InputProps={{
+                        startAdornment: <InputAdornment position="start" />,
+                    }}
+                    fullWidth
+                />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+                <FormControl key="field-select" fullWidth>
+                    <InputLabel id="field">Campo</InputLabel>
                     <Select
-                        labelId="campaign"
-                        name="campaignId"
-                        value={formValues.campaignId}
-                        label={t("_campaign")}
+                        labelId="field"
+                        name="field"
+                        value={formValues.field}
+                        label="Campo"
                         onChange={handleSelectChange}
                     >
-                        {campaigns?.map((c) => (
-                            <MenuItem key={c.campaignId} value={c.campaignId}>
-                                {c.campaignId}
+                        {fields?.map((f) => (
+                            <MenuItem key={f} value={f}>
+                                {f}
                             </MenuItem>
                         ))}
                     </Select>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
-                <FormControl key="field-select" fullWidth>
-                    <InputLabel id="field">{t("_field")}</InputLabel>
+                <FormControl key="lot-select" fullWidth>
+                    <InputLabel id="lot">Lote</InputLabel>
                     <Select
-                        labelId="field"
-                        name="fieldId"
-                        value={formValues.fieldId}
-                        label={t("_field")}
-                        onChange={onChangeField}
+                        labelId="lot"
+                        name="lot"
+                        value={formValues.lot}
+                        label="Lote"
+                        onChange={handleSelectChange}
                     >
-                        {listFields?.map((field) => (
-                            <MenuItem key={field._id} value={field._id}>
-                                {field.nombre}
+                        {lots?.map((l) => (
+                            <MenuItem key={l} value={l}>
+                                {l}
                             </MenuItem>
                         ))}
                     </Select>

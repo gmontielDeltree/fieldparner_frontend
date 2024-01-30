@@ -33,7 +33,8 @@ export const OverviewRoutes: React.FC = () => {
   return (
     <AppLayout key="app-layout">
       <Routes>
-        <Route path="/overview/fields" element={<FieldsPage />} >
+        <Route path="/overview/fields/:campoId?/:loteId?" element={<FieldsPage />} >
+          <Route path="planification" element={<PlanificationPage />} />
           <Route path="device/:deviceId/:date" element={<DevicePage/>}/>
           <Route path="integrations" element={<IntegrationsPage />} />
           <Route path="john-deere" element={<JohnDeereIntegration/>}/>
@@ -79,7 +80,6 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/satellite/:loteId" element={<SatellitePage />}  />
         <Route path="/overview/zoning/:baseImageName" element={<ZoningPage />} />
         <Route path="/overview/prices" element={<PricesPage />} />
-        <Route path="/overview/planification" element={<PlanificationPage />} />
 
         
 

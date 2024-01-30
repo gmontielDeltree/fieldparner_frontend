@@ -22,6 +22,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { styled, keyframes } from "@mui/material/styles";
 import useInputs from "../../../../hooks/useInputs";
 import uuid4 from "uuid4";
+import { useAppDispatch, useForm, useSupply } from "../../../../hooks";
 
 const flashFadeAnimation = keyframes`
   0% {
@@ -57,13 +58,15 @@ const CustomPaper = styled(Paper)({
 });
 
 function SuppliesForm({ lot, db, formData, setFormData }) {
-  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedOption, setSelectedOption] = useState("test");
   const [dosificacion, setDosificacion] = useState("");
   const [total, setTotal] = useState("");
   const [precio, setPrecio] = useState("");
   const [rows, setRows] = useState([]);
   const { inputs, loading, error } = useInputs(db);
   const [editIndex, setEditIndex] = useState(-1);
+  const { isLoading, supplies, getSupplies, setSupplies, deleteSupply } =
+    useSupply();
   const [editData, setEditData] = useState({
     selectedOption: "",
     dosificacion: "",
@@ -83,7 +86,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       motivos: [],
       uuid: uuid4(),
       total: total,
-      precio_estimado: precio 
+      precio_estimado: precio
     };
     const newDetalles = [...formData.detalles.dosis, newRow];
     setFormData({
@@ -102,9 +105,9 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       dosis: editData.dosificacion,
       insumo: input,
       motivos: [],
-      uuid: rows[editIndex].uuid, 
+      uuid: rows[editIndex].uuid,
       total: editData.total,
-      precio_estimado: editData.precio 
+      precio_estimado: editData.precio
     };
     const updatedDetalles = [...formData.detalles.dosis];
     updatedDetalles[editIndex] = updatedRow;
@@ -153,7 +156,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
         ...formData,
         detalles: { ...formData.detalles, dosis: updatedDetalles }
       });
-    }, 1000); 
+    }, 1000);
   };
 
   const handleEditChange = (prop) => (event) => {
@@ -163,6 +166,10 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   useEffect(() => {
     console.log("Inputs:", inputs);
   }, [inputs]);
+
+  useEffect(() => {
+    console.log("SUPPLIES POSTA", supplies);
+  }, [supplies]);
 
   useEffect(() => {
     if (formData && formData.detalles && formData.detalles.dosis) {
@@ -192,13 +199,13 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               labelId="select-input-label"
               id="select-input"
               value={selectedOption}
-              label="Inputs"
+              label="Supplies"
               onChange={handleSelectChange}
               fullWidth
             >
-              {inputs.map((input, index) => (
-                <MenuItem key={index} value={input.marca_comercial}>
-                  {input.marca_comercial || "No Name"}
+              {supplies.map((supply, index) => (
+                <MenuItem key={index} value={supply.name}>
+                  {supply.name}
                 </MenuItem>
               ))}
             </Select>

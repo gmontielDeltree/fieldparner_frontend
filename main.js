@@ -1,6 +1,6 @@
 // Se inyecta bootstrap https://vitejs.dev/guide/features.html#css
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./owncomponents/loader.ts";
+//import "./owncomponents/loader.ts";
 import "./owncomponents/pwa-update.ts";
 import '@shoelace-style/shoelace/dist/themes/light.css';
 

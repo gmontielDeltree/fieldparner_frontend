@@ -38,7 +38,6 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     handleSelectChange,
     setFormValues
 }) => {
-
     const { humidityPercentage, mermaPercentage, volatilePercentage, otherPercentage, grossWeight, tareWeight } = formValues;
     const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
     const netWeight = Number(grossWeight - tareWeight);

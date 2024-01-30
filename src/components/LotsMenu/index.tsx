@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PlanActivity from "./PlanActivity";
 import Tour from "./Tour";
-import { Avatar, ButtonBase, Paper } from "@mui/material";
+import { Avatar, ButtonBase, Paper, Tooltip } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
@@ -16,6 +16,9 @@ import { Actividad } from "../../interfaces/activity";
 import { isBefore, parseISO } from "date-fns";
 import GroundSample from "./GroundSample";
 import { useNavigate } from "react-router-dom";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ExecuteActivity from "./ExecuteActivity";
+import { dbContext } from "../../services";
 
 interface LotsMenuProps {
   lot: any;
@@ -25,20 +28,27 @@ interface LotsMenuProps {
 }
 
 const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
-  const db = new PouchDB("campos_randyv7");
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState<null | string>(null);
+  const db = dbContext.fields //new PouchDB("campos_randyv7");
   const [activities, setActivities] = useState(null);
+  const [editingActivityInfo, setEditingActivityInfo] = useState<{
+    activity: Actividad | null;
+    isExecuting: boolean;
+  }>({ activity: null, isExecuting: false });
 
   const navigate = useNavigate();
-
 
   console.log("Log seleccionado: ", lot);
   const categories = [
     { id: "Planificar Siembra", icon: categoryIcon1 },
     { id: "Planificar Aplicacion", icon: categoryIcon2 },
     { id: "Planificar Cosecha", icon: categoryIcon3 },
-    { id: "Tour", icon: categoryIcon4 },
-    { id: "Indices", icon: categoryIcon5, link: `/init/overview/satellite/${lot.id}` },
+    { id: "Recorrido", icon: categoryIcon4 },
+    {
+      id: "Vista de Satelite",
+      icon: categoryIcon5,
+      link: `/init/overview/satellite/${lot.id}`
+    },
     { id: "Muestra de suelo", icon: categoryIcon6 }
   ];
 
@@ -51,6 +61,12 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     if (lot && lot.id) {
       getActivities(lot.id).then((res) => setActivities(res));
     }
+  };
+
+  const activityTypeTranslations = {
+    siembra: "sowing",
+    cosecha: "harvesting",
+    aplicacion: "application"
   };
 
   const avatarStyle = (categoryId: any) => ({
@@ -139,6 +155,11 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         return result;
       });
   };
+  const handleEditActivity = (activity, isExecuting = false) => {
+    setSelectedCategory("Edit Activity");
+    console.log("Editando actividad", activity, isExecuting);
+    setEditingActivityInfo({ activity, isExecuting });
+  };
 
   const only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
     if (alldocs.rows.length > 0) {
@@ -169,6 +190,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           setActivitiesData={setActivities}
           lotDoc={lot}
           fieldDoc={field}
+          handleEditActivity={handleEditActivity}
         />
       ) : (
         <div style={{ textAlign: "center" }}>
@@ -206,7 +228,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             backToActivites={backToActivites}
           />
         );
-      case "Tour":
+      case "Recorrido":
         return <Tour lot={lot} db={db} backToActivites={backToActivites} />;
       case "Category 5":
         return <div>Category 5</div>;
@@ -214,6 +236,22 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         return (
           <GroundSample lot={lot} db={db} backToActivites={backToActivites} />
         );
+      case "Edit Activity":
+        return (
+          <ExecuteActivity
+            activityType={
+              activityTypeTranslations[
+                editingActivityInfo.activity.tipo.toLowerCase()
+              ]
+            }
+            lot={lot}
+            db={db}
+            backToActivites={backToActivites}
+            existingActivity={editingActivityInfo.activity}
+            isExecuting={editingActivityInfo.isExecuting}
+          />
+        );
+
       default:
         return <div>Select a category to view its forms</div>;
     }
@@ -253,16 +291,49 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         }}
       >
         <div>
-          {categories.map(({ id, icon, link }) => (
-            <ButtonBase key={id} onClick={() => link ? navigate(link) : selectCategory(id)} title={id}>
-              <Avatar alt={id} src={icon} sx={avatarStyle(id)} />
-            </ButtonBase>
-          ))}
+          <div>
+            {categories.map(({ id, icon, link }) => (
+              <Tooltip
+                title={id}
+                arrow
+                placement="top"
+                sx={{
+                  tooltip: {
+                    backgroundColor: "#333",
+                    color: "white",
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+                    fontSize: "1em"
+                  },
+                  arrow: {
+                    color: "#333"
+                  }
+                }}
+              >
+                <ButtonBase
+                  key={id}
+                  onClick={() => (link ? navigate(link) : selectCategory(id))}
+                >
+                  <Avatar alt={id} src={icon} sx={avatarStyle(id)} />
+                </ButtonBase>
+              </Tooltip>
+            ))}
+          </div>
         </div>
-        <IconButton aria-label="close" onClick={toggle}>
-          <CloseIcon />
-        </IconButton>
+        <div>
+          {selectedCategory && (
+            <IconButton
+              aria-label="back to activities"
+              onClick={backToActivites}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+          )}
+          <IconButton aria-label="close" onClick={toggle}>
+            <CloseIcon />
+          </IconButton>
+        </div>
       </div>
+
       <hr style={hrStyle} />
       <div>{renderFormContent()}</div>
     </Paper>

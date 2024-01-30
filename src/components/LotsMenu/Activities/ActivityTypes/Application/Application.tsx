@@ -20,8 +20,16 @@ import PlanificationContent from "../TabsContent/Planification";
 import LaborOrderContent from "../TabsContent/LaborOrder";
 import ExecutionContent from "../TabsContent/Execution";
 import AttachedContent from "../TabsContent/Attached";
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 
-function Application({ activity, complementaryColor, handleDeleteActivity }) {
+function Application({
+  activity,
+  complementaryColor,
+  handleDeleteActivity,
+  handleEditActivity,
+  handleDownloadPDF
+}) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -37,6 +45,15 @@ function Application({ activity, complementaryColor, handleDeleteActivity }) {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  const formattedPlanificadaDate = activity.actividad.detalles
+    ?.fecha_ejecucion_tentativa
+    ? format(
+        parseISO(activity.actividad.detalles.fecha_ejecucion_tentativa),
+        "PPPP",
+        { locale: es }
+      )
+    : "Fecha no definida";
 
   return (
     <div>
@@ -65,7 +82,7 @@ function Application({ activity, complementaryColor, handleDeleteActivity }) {
             sx={{ fontSize: 16, fontWeight: "bold" }}
             color="text.primary"
           >
-            {activity.actividad.detalles?.fecha_ejecucion_tentativa} Planificada
+            Planificada para: {formattedPlanificadaDate}
           </Typography>
         </Box>
         <Typography
@@ -80,17 +97,18 @@ function Application({ activity, complementaryColor, handleDeleteActivity }) {
         </IconButton>
       </Box>
 
+{/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={handleMenuClose}>Editar</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem>
+        {/* <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem> */}
         <MenuItem onClick={handleMenuClose}>Orden de Trabajo PDF</MenuItem>
-        <MenuItem onClick={handleMenuClose}>
+        {/* <MenuItem onClick={handleMenuClose}>
           Compartir Orden de Trabajo
         </MenuItem>
         <MenuItem onClick={handleMenuClose}>
           Ejecución vs Planificación PDF
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem>
+        </MenuItem> */}
+        {/* <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem> */}
         <MenuItem onClick={() => handleDeleteActivity(activity.actividad._id)}>
           Eliminar
         </MenuItem>
@@ -110,10 +128,23 @@ function Application({ activity, complementaryColor, handleDeleteActivity }) {
       </Tabs>
 
       {selectedTab === 0 && (
-        <PlanificationContent activity={activity.actividad} />
+        <PlanificationContent
+          activity={activity.actividad}
+          showEstimatedApplicationDate={false}
+        />
       )}
-      {selectedTab === 1 && <LaborOrderContent />}
-      {selectedTab === 2 && <ExecutionContent />}
+      {selectedTab === 1 && (
+        <LaborOrderContent
+          activity={activity.actividad}
+          handleDownloadPDF={handleDownloadPDF}
+        />
+      )}
+      {selectedTab === 2 && (
+        <ExecutionContent
+          activity={activity.actividad}
+          handleEditActivity={handleEditActivity}
+        />
+      )}
       {selectedTab === 3 && <AttachedContent />}
     </div>
   );

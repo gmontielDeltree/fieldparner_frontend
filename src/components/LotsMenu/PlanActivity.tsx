@@ -18,8 +18,12 @@ import { format, parse } from "date-fns";
 import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
 import GrassIcon from "@mui/icons-material/Grass";
 import AgricultureIcon from "@mui/icons-material/Agriculture";
-
+import EditIcon from "@mui/icons-material/Edit";
+import { keyframes } from "@emotion/react";
+import { useTheme } from "@mui/material/styles";
 import Badge from "@mui/material/Badge";
+import { Actividad } from "../../interfaces/activity";
+import { exit } from "process";
 
 const activityTypeTranslations = {
   sowing: "Siembra",
@@ -38,7 +42,8 @@ interface PlanActivityProps {
   lot: any;
   db: any;
   backToActivites: () => void;
-  existingActivity: any;
+  existingActivity: Actividad;
+  isExecuting?: boolean;
 }
 
 const PlanActivity: React.FC<PlanActivityProps> = ({
@@ -46,17 +51,29 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   lot,
   db,
   backToActivites,
-  existingActivity
+  existingActivity,
+  isExecuting = false
 }) => {
   if (!lot) return null;
-  console.log("Lot: ", lot);
   const [formData, setFormData] = useState(
     existingActivity || getEmptyActivity()
   );
   const [activeStep, setActiveStep] = useState(0);
-  const translatedActivityType =
-    activityTypeTranslations[activityType] || activityType;
+  const translatedActivityType = activityTypeTranslations[activityType];
   const [maxStepReached, setMaxStepReached] = useState(0);
+  const theme = useTheme();
+  const isEditing =
+    existingActivity && Object.keys(existingActivity).length > 0;
+
+  const floating = keyframes`
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  `;
+
+  const titleBg = isEditing
+    ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
+    : `linear-gradient(45deg, #a0a0a0, #626262)`;
   const steps = [
     "Personal",
     "Insumos",
@@ -78,6 +95,29 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       }
     }));
   }, []);
+
+  useEffect(() => {
+    if (existingActivity) {
+      setFormData(existingActivity);
+    } else {
+      setFormData(getEmptyActivity());
+    }
+  }, [existingActivity]);
+
+  useEffect(() => {
+    if (!existingActivity) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        lote_uuid: lot.id,
+        ts_generacion: 0,
+        tipo: translatedActivityType.toLowerCase(),
+        detalles: {
+          ...prevFormData.detalles,
+          hectareas: lot.properties.hectareas
+        }
+      }));
+    }
+  }, [lot, translatedActivityType, existingActivity]);
 
   const countMissingFields = (formData, step) => {
     let missingFields = 0;
@@ -237,22 +277,22 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, step));
   };
   const handleSave = () => {
-    let actividad = formData;
-    try {
-      const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
-      console.log("FECHA EJECUCION: ", fechaEjecucion);
-
-      // Parse the ISO string into a Date object
-      const parsedDate = new Date(fechaEjecucion);
-
-      // Format the Date object into 'yyyy-MM-dd' format
-      const formattedDate = format(parsedDate, "yyyy-MM-dd");
-      actividad._id = "actividad:" + formattedDate + ":" + actividad.uuid;
-    } catch (error) {
-      console.error("Error in handleSave:", error);
+    let actividad = { ...formData };
+    if (isExecuting) {
+      actividad.fecha_ejecucion = new Date();
+    }
+    if (!isEditing) {
+      try {
+        const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
+        const parsedDate = new Date(fechaEjecucion);
+        const formattedDate = format(parsedDate, "yyyy-MM-dd");
+        actividad._id = "actividad:" + formattedDate + ":" + actividad.uuid;
+      } catch (error) {
+        console.error("Error generating new ID for activity:", error);
+        return;
+      }
     }
 
-    console.log("ACTIVIDAD ID: ", actividad._id);
     db.get(actividad._id)
       .then((doc) => {
         actividad._rev = doc._rev;
@@ -269,14 +309,15 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           db.put(actividad)
             .then(() => {
               console.log("New actividad created", "success");
+
               backToActivites();
             })
-            .catch((err) =>
-              console.error("Error creating new actividad:", err)
-            );
+            .catch((err) => {
+              console.error("Error creating new actividad:", err);
+            });
         } else if (error.name === "conflict") {
           console.error("Conflict detected. Trying to save again.");
-          handleSave();
+          // Implement a better conflict resolution strategy here
         } else {
           console.error("Error saving actividad:", error);
         }
@@ -287,7 +328,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     console.log("FORM DATA: ", formData);
   });
 
-  const ActivityIcon = activityIcons[activityType] || LocalFloristIcon; // Default icon if not found
+  const ActivityIcon = activityIcons["sowing"];
 
   return (
     <div>
@@ -301,19 +342,31 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           sx={{
             fontWeight: "bold",
             mt: 2,
-            background: "linear-gradient(45deg, #a0a0a0, #626262)",
+            background: titleBg,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             textShadow: "1px 1px 4px rgba(0,0,0,0.15)",
-            animation: "shine 5s linear infinite",
-            "@keyframes shine": {
-              "0%": { opacity: 0.8 },
-              "50%": { opacity: 1 },
-              "100%": { opacity: 0.8 }
-            }
+            animation: isEditing
+              ? `${floating} 3s ease-in-out infinite`
+              : "none"
           }}
         >
-          Planificar {translatedActivityType}
+          {isExecuting ? (
+            `Ejecutar ${translatedActivityType}`
+          ) : isEditing ? (
+            <>
+              <EditIcon
+                sx={{
+                  verticalAlign: "middle",
+                  mr: 1,
+                  animation: `${floating} 3s ease-in-out infinite`
+                }}
+              />
+              Editar {translatedActivityType}
+            </>
+          ) : (
+            `Programar ${translatedActivityType}`
+          )}
         </Typography>
       </Box>
       <Stepper

@@ -5,9 +5,9 @@ import HarvestIcon from "../../../images/icons/cosechadora_act.webp";
 import NoteIcon from "../../../images/icons/iconodenotas_act.webp";
 import SoilAnalysisIcon from "../../../images/icons/suelo_act.webp";
 import ApplicationIcon from "../../../images/icons/pulverizadora_act.webp";
-import PouchDB from "pouchdb";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import PouchDB from "pouchdb";
 import "./Activities.css";
 import { styled } from "@mui/material/styles";
 import PlanActivity from "../PlanActivity";
@@ -15,6 +15,7 @@ import { mapboxStaticImg } from "../../../utils/mapboxStaticImg";
 import { googleMapsLinkGoTo } from "../../../utils/googleMapsLink";
 import ordenDefinition from "../../../utils/ordenDefinition";
 import { error } from "xstate/lib/actions";
+import { dbContext } from "../../../services";
 
 const Alert = styled(MuiAlert)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -36,16 +37,15 @@ export const Activities = ({
   activitiesData,
   setActivitiesData,
   fieldDoc,
-  lotDoc
+  lotDoc,
+  handleEditActivity
 }) => {
-  console.log("ACTIVITIES DATA: ", activitiesData);
   const [userMessage, setUserMessage] = useState("");
-  const db = new PouchDB("campos_randyv7");
+  const db = dbContext.fields //new PouchDB("campos_randyv7");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const handleSnackbarClose = (event: any, reason: string) => {
-    console.log("Snackbar closing, reason:", reason);
     if (reason === "clickaway") {
       return;
     }
@@ -53,8 +53,6 @@ export const Activities = ({
   };
 
   const handleDeleteActivity = (activityId) => {
-    console.log("DELETE ACTIVITY: ", activityId);
-
     db.get(activityId)
       .then((doc) => {
         return db.remove(doc);
@@ -75,10 +73,6 @@ export const Activities = ({
         setUserMessage("Error al eliminar la actividad.");
         setSnackbarSeverity("error");
       });
-  };
-
-  const handleEditActivity = (activityId) => {
-    console.log("EDIT ACTIVITY: ", activityId);
   };
 
   const handleDownloadPDF = (activity) => {

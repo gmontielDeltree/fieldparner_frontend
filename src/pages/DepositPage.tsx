@@ -81,7 +81,7 @@ const initialForm: Deposit = {
   description: "",
   zipCode: "",
   address: "",
-  geolocation: "",
+  geolocation: { lng: -35, lat: -34 },
   locality: "",
   isNegative: false,
   isVirtual: false,
@@ -344,7 +344,7 @@ const initialForm: Deposit = {
                 labelPlacement="start"
               />
             </FormGroup>
-          </Grid>
+            </Grid>
           <Grid item xs={12} sm={4} justifyContent="center">
             <FormGroup row sx={{ alignItems: "center" }}>
               <label htmlFor="">{t("admits_negative_stock")}</label>

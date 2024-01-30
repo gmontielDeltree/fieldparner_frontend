@@ -12,7 +12,7 @@ function PlaceMarker({
 }) {
   const [lastKnownPosition, setLastKnownPosition] = useState(null);
   const map = useSelector(selectMap);
-  const markerRef = useRef<Marker | null>(null); // Ref to store the current marker
+  const markerRef = useRef<Marker | null>(null);
 
   useEffect(() => {
     if (map && selectedLot) {
@@ -56,14 +56,13 @@ function PlaceMarker({
       }
     };
 
-    // Listen for the tour save event
     if (onRemoveMarkers) {
       onRemoveMarkers(removeMarker);
     }
 
     // Clean-up function
     return () => {
-      removeMarker();
+      // removeMarker();
     };
   }, [map, selectedLot, isDraggable, onRemoveMarkers]);
 
