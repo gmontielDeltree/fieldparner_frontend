@@ -4,6 +4,7 @@ import {
   AccordionSummary,
   Box,
   Divider,
+  Fab,
   IconButton,
   Typography,
 } from "@mui/material";
@@ -18,6 +19,7 @@ import { CampanasContext } from "./contexts/CampanasContext";
 import { useCiclos } from "../../hooks/usePlanifications";
 import uuid4 from "uuid4";
 import CancelIcon from '@mui/icons-material/Close';
+import { CultivoContext } from "./contexts/CultivosContext";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -56,6 +58,8 @@ const LoteAccordion: React.FC = ({ lote, campanaId, expanded, cicloSelected }) =
   // const [ciclos, setCiclos] = useState([])
   const {getCiclosFromCampanaAndLote, refreshCiclos } = useContext(CiclosContext)
   let ciclos = getCiclosFromCampanaAndLote(campanaId, lote.id)
+  const {getCropLabelFromId,getCropColorFromId} = useContext(CultivoContext)
+
 
   useEffect(()=>{
     setExp(expanded)
@@ -79,6 +83,18 @@ const LoteAccordion: React.FC = ({ lote, campanaId, expanded, cicloSelected }) =
       >
         <Box sx={{display:"flex",justifyContent:"space-around", alignItems:"center", width:"100%"}}>
           <Typography>{lote.properties.nombre}</Typography>
+
+
+          <Box sx={{display:"flex",gap:"0.4rem"}}>
+
+        
+                     {ciclos?.map((ciclo, i) => (
+                      <Fab key={i} variant="extended" sx={{ borderRadius: "4px", height:"1.9rem", backgroundColor:getCropColorFromId(ciclo.cultivoId) }}>
+                        {getCropLabelFromId(ciclo.cultivoId)}
+                      </Fab>
+                    ))}
+            
+          </Box>
 
           <CicloEditorDialog
             campanaId={campanaId}

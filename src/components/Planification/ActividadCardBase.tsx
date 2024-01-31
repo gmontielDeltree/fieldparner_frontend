@@ -56,6 +56,8 @@ export const ActividadCardBase: React.FC = ({
     totalCosto,
     tipo,
     area,
+    rindeEstimado,
+    precioEstimadoCosecha,
     lineasInsumos,
     lineasLabores,
     loading,
@@ -151,8 +153,23 @@ export const ActividadCardBase: React.FC = ({
             })}
           </TreeItem>
         </TreeView>
-        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap:"0.2rem" }}>
+
+        {precioEstimadoCosecha &&
+        <Chip
+            label={precioEstimadoCosecha?.toFixed(2) + " USD/tn"}
+            title="Precio Estimado"
+            sx={{ backgroundColor: "#436716", color: "#FFD567", fontWeight:"bold" }}
+          />}
+
+          {rindeEstimado &&
+        <Chip
+            label={ rindeEstimado?.toFixed(2) + " tn/ha" }
+            title="Rinde Estimado"
+            sx={{ backgroundColor: "#16672f", color: "#FFD567", fontWeight:"bold" }}
+          />}
           <Chip
+            title="Costo Total"
             label={"USD " + calcTotal(lineasInsumos,lineasLabores)?.toFixed(2)}
             sx={{ backgroundColor: "#01579b", color: "#FFD567", fontWeight:"bold" }}
           />
