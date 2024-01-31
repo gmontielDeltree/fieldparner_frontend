@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextField,
   FormControl,
@@ -35,6 +35,9 @@ const Title = styled(Typography)({
 function PlanPersonalForm({ formData, setFormData, tipo }) {
   const { businesses, getBusinesses } = useBusiness();
 
+  const [interPrecio, setInterPrecio] = useState("0")
+  const [interRinde, setInterRinde] = useState("0")
+
   useEffect(() => {
     getBusinesses();
     console.log("businesses", businesses);
@@ -62,15 +65,27 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
         area: value,
       });
     } else if (fieldName === "rindeEstimado") {
-      setFormData({
-        ...formData,
-        rindeEstimado: value,
-      });
+
+      if (/^\d*\.?\d*$/.test(value)) {
+        setInterRinde(value); 
+        setFormData({
+          ...formData,
+          rindeEstimado: +value,
+        });
+      }
+
+    
     } else if (fieldName === "precioEstimadoCosecha") {
-      setFormData({
-        ...formData,
-        precioEstimadoCosecha: value,
-      });
+
+      if (/^\d*\.?\d*$/.test(value)) {
+        setInterPrecio(value); 
+        setFormData({
+          ...formData,
+          precioEstimadoCosecha: +value,
+        });
+      }
+
+     
     }
   };
 
@@ -140,9 +155,9 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
                       <InputAdornment position="end">tn/has</InputAdornment>
                     ),
                   }}
-                  value={formData.rindeEstimado || 0}
+                  value={interRinde || 0}
                   onChange={(e) =>
-                    onFieldChange("rindeEstimado", +e.target.value)
+                    onFieldChange("rindeEstimado", e.target.value)
                   }
                 />
               </Grid>
@@ -160,9 +175,6 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
                     ),
                   }}
                   value={formData.rindeEstimado * formData.area || 0}
-                  onChange={(e) =>
-                    onFieldChange("rindeEstimado", +e.target.value)
-                  }
                 />
               </Grid>
               <Grid item xs={3}>
@@ -175,10 +187,10 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
                       <InputAdornment position="end">USD/tn</InputAdornment>
                     ),
                   }}
-                  value={formData.precioEstimadoCosecha || 0}
+                  value={interPrecio || 0}
                   onChange={(e) =>{
                     console.log("dsds")
-                    onFieldChange("precioEstimadoCosecha", +e.target.value)
+                    onFieldChange("precioEstimadoCosecha", e.target.value)
                   }
                   }
                 />
