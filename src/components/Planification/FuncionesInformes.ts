@@ -114,7 +114,7 @@ export const ReporteDeCampanas = async (
       );
       if (cosecha) {
         if (cosecha.rindeEstimado) {
-          let precioPorTn = 23;
+          let precioPorTn = cosecha.precioEstimadoCosecha ?? 0;
           c[ciclo.cultivoId].cosechado += cosecha.area * cosecha.rindeEstimado;
           c[ciclo.cultivoId].ingresoCosechado +=
             cosecha.area * cosecha.rindeEstimado * precioPorTn;

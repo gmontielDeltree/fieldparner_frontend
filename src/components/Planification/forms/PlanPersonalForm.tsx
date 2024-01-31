@@ -66,7 +66,7 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
         ...formData,
         rindeEstimado: value,
       });
-    }else if (fieldName === "precioEstimadoCosecha") {
+    } else if (fieldName === "precioEstimadoCosecha") {
       setFormData({
         ...formData,
         precioEstimadoCosecha: value,
@@ -78,11 +78,12 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
     <CustomPaper elevation={3}>
       {/* <Title>Datos Generales</Title> */}
       <FormControl fullWidth>
-        <Grid container spacing={2}>
+        <Grid container spacing={2} sx={{justifyContent:"center"}}>
           <Grid item xs={12} sm={4}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
                 label="Fecha"
+                size="small"
                 value={parseISO(formData.fecha) || new Date()}
                 onChange={(newValue) => onFieldChange("fecha", newValue)}
               />
@@ -114,56 +115,73 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
               id="hectareas"
               label="Hectáreas"
               type="number"
-              inputProps={{min: 0, style: { textAlign: 'right' }}}
+              size="small"
+              inputProps={{ min: 0, style: { textAlign: "right" } }}
               InputProps={{
-                endAdornment: <InputAdornment position="end">has</InputAdornment>,
+                endAdornment: (
+                  <InputAdornment position="end">has</InputAdornment>
+                ),
               }}
               value={formData.area || 0}
               onChange={(e) => onFieldChange("area", +e.target.value)}
             />
           </Grid>
 
-          {(formData.tipo === TTipoActividadPlanificada.COSECHA) && (
-            <Grid item container xs={8} spacing={1}>
-              <Grid item xs={4}>
-              <TextField
-                id="rendimiento"
-                label="Rinde estimado"
-                inputProps={{min: 0, style: { textAlign: 'right' }}}
-                InputProps={{
-                 
-                  endAdornment: <InputAdornment position="end">tn/has</InputAdornment>,
-                }}
-                value={formData.rindeEstimado || 0}
-                onChange={(e) => onFieldChange("rindeEstimado", +e.target.value)}
-              />
+          {formData.tipo === TTipoActividadPlanificada.COSECHA && (
+            <Grid item container xs={6} spacing={1}>
+              <Grid item xs={3}>
+                <TextField
+                  id="rendimiento"
+                  label="Rinde estimado"
+                  size="small"
+                  inputProps={{ min: 0, style: { textAlign: "right" } }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">tn/has</InputAdornment>
+                    ),
+                  }}
+                  value={formData.rindeEstimado || 0}
+                  onChange={(e) =>
+                    onFieldChange("rindeEstimado", +e.target.value)
+                  }
+                />
               </Grid>
 
-                <Grid item xs={4}>
-            <TextField
-                label="Rinde Total"
-                disabled
-                inputProps={{min: 0, style: { textAlign: 'right' }}}
-                InputProps={{
-                  readOnly: true,
-                  endAdornment: <InputAdornment position="end">tn</InputAdornment>,
-                }}
-                value={formData.rindeEstimado * formData.area || 0}
-                onChange={(e) => onFieldChange("rindeEstimado", +e.target.value)}
-              />
+              <Grid item xs={3}>
+                <TextField
+                  label="Rinde Total"
+                  disabled
+                  size="small"
+                  inputProps={{ min: 0, style: { textAlign: "right" } }}
+                  InputProps={{
+                    readOnly: true,
+                    endAdornment: (
+                      <InputAdornment position="end">tn</InputAdornment>
+                    ),
+                  }}
+                  value={formData.rindeEstimado * formData.area || 0}
+                  onChange={(e) =>
+                    onFieldChange("rindeEstimado", +e.target.value)
+                  }
+                />
               </Grid>
-              <Grid item xs={4}>
-            <TextField
-                label="Precio Estimado"
-                disabled
-                inputProps={{min: 0, style: { textAlign: 'right' }}}
-                InputProps={{
-                  readOnly: true,
-                  endAdornment: <InputAdornment position="end">USD/tn</InputAdornment>,
-                }}
-                value={formData.precioEstimadoCosecha || 0}
-                onChange={(e) => onFieldChange("precioEstimadoCosecha", +e.target.value)}
-              />
+              <Grid item xs={3}>
+                <TextField
+                  label="Precio Estimado"
+                  size="small"
+                  inputProps={{ min: 0, style: { textAlign: "right" } }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">USD/tn</InputAdornment>
+                    ),
+                  }}
+                  value={formData.precioEstimadoCosecha || 0}
+                  onChange={(e) =>{
+                    console.log("dsds")
+                    onFieldChange("precioEstimadoCosecha", +e.target.value)
+                  }
+                  }
+                />
               </Grid>
             </Grid>
           )}
