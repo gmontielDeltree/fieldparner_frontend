@@ -101,7 +101,7 @@ function EditToolbar(props: EditToolbarProps) {
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-        Add record
+        Nueva Labor
       </Button>
     </GridToolbarContainer>
   );
@@ -211,10 +211,13 @@ function PlanTasksForm({
       valueFormatter: (params) => {
         return `${params.value.name || ""}`;
       },
-      valueSetter: (params)=>{
-        let hectareas = formData.area
-        return { ...params.row, labor :params.value, hectareas,costoPorHectarea:0 };
-      }
+      // valueSetter: (params)=>{
+      //   let hectareas = formData.area
+      //   let rv = { ...params.row,costoPorHectarea:0, labor :params.value, hectareas }
+      //           console.log("VALUESETTER",rv)
+
+      //   return rv;
+      // }
     },
     {
       field: "costoPorHectarea",
@@ -222,13 +225,27 @@ function PlanTasksForm({
       type: "number",
       width: 80,
       align: "right",
-      headerAlign: "left",
+      headerAlign: "right",
       editable: true,
-      valueSetter: (params)=>{
-        return { ...params.row, costoPorHectarea :params.value, totalCosto:params.value*params.row.hectareas };
-      },
+      // valueSetter: (params)=>{
+      //   return { ...params.row, costoPorHectarea :params.value, totalCosto:params.value*params.row.hectareas };
+      // },
       valueFormatter: (params) => {
         return `${params.value}`;
+      },
+      preProcessEditCellProps: (a) => {
+        if(a.props.value !== undefined){
+          console.log("APROPSVALUE",a.props.value)
+                  a.row.costoPorHectarea = a.props.value;
+                  a.row.totalCosto = a.row.costoPorHectarea * formData.area;
+
+        }
+        // a.row.labor = a.otherFieldsProps.labor.value;
+
+
+        console.log(a);
+        return a.props
+
       },
     },
 
@@ -238,18 +255,23 @@ function PlanTasksForm({
       type: "number",
       width: 80,
       align: "right",
-      headerAlign: "left",
+      headerAlign: "right",
       cellClassName:"readonly",
       editable: false,
-      valueGetter: (params) => {
-        return params.row.hectareas * params.row.costoPorHectarea;
+      valueFormatter: (params) => {
+        if (isNaN(params.value)) {
+          return "USD 0";
+        }
+        return `USD ${params.value?.toFixed(2) || ""}`;
       },
+      // valueGetter: (params) => {
+      //   return params.totalCosto//row.hectareas * params.row.costoPorHectarea;
+      // },
     },
-
     {
       field: "actions",
       type: "actions",
-      headerName: "Actions",
+      headerName: "Acciones",
       width: 100,
       cellClassName: "actions",
       getActions: ({ id }) => {
@@ -295,9 +317,13 @@ function PlanTasksForm({
   ];
 
   return (
+    <CustomPaper elevation={3}>
+
+
     <Box
       sx={{
-        height: 500,
+        maxHeight: "100%",
+        height: "20rem",
         width: "100%",
         "& .actions": {
           color: "text.secondary",
@@ -326,8 +352,22 @@ function PlanTasksForm({
         slotProps={{
           toolbar: { setRows, setRowModesModel },
         }}
+        localeText={{
+          noRowsLabel: "No hay filas",
+          noResultsOverlayLabel: "Sin resultado",
+          footerRowSelected: (count) =>
+            count !== 1
+              ? `${count.toLocaleString()} filas seleccionadas`
+              : `${count.toLocaleString()} fila seleccionada`,
+          MuiTablePagination: {
+            labelDisplayedRows: ({ from, to, count }) =>
+              `${from} - ${to} de mas de ${count}`,
+            labelRowsPerPage: "Filas por página",
+          },
+        }}
       />
     </Box>
+    </CustomPaper>
   );
 }
 

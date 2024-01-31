@@ -66,6 +66,11 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
         ...formData,
         rindeEstimado: value,
       });
+    }else if (fieldName === "precioEstimadoCosecha") {
+      setFormData({
+        ...formData,
+        precioEstimadoCosecha: value,
+      });
     }
   };
 
@@ -127,7 +132,7 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
                 inputProps={{min: 0, style: { textAlign: 'right' }}}
                 InputProps={{
                  
-                  endAdornment: <InputAdornment position="end">kg/has</InputAdornment>,
+                  endAdornment: <InputAdornment position="end">tn/has</InputAdornment>,
                 }}
                 value={formData.rindeEstimado || 0}
                 onChange={(e) => onFieldChange("rindeEstimado", +e.target.value)}
@@ -141,10 +146,23 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
                 inputProps={{min: 0, style: { textAlign: 'right' }}}
                 InputProps={{
                   readOnly: true,
-                  endAdornment: <InputAdornment position="end">kg</InputAdornment>,
+                  endAdornment: <InputAdornment position="end">tn</InputAdornment>,
                 }}
                 value={formData.rindeEstimado * formData.area || 0}
                 onChange={(e) => onFieldChange("rindeEstimado", +e.target.value)}
+              />
+              </Grid>
+              <Grid item xs={4}>
+            <TextField
+                label="Precio Estimado"
+                disabled
+                inputProps={{min: 0, style: { textAlign: 'right' }}}
+                InputProps={{
+                  readOnly: true,
+                  endAdornment: <InputAdornment position="end">USD/tn</InputAdornment>,
+                }}
+                value={formData.precioEstimadoCosecha || 0}
+                onChange={(e) => onFieldChange("precioEstimadoCosecha", +e.target.value)}
               />
               </Grid>
             </Grid>
