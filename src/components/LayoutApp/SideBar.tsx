@@ -221,7 +221,11 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("fields_lots_hectares")} />
               </ListItemButton>
-              <ListItemButton >
+              <ListItemButton 
+                component={RouterLink}
+                to="/init/overview/fields/planification"
+                selected={pathname.includes("/init/overview/fields/planification")}
+                >
                 <ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={t("annual_campaign_projection")} />
