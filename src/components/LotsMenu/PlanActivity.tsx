@@ -167,6 +167,9 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         if (!formData.detalles.fecha_ejecucion_tentativa) {
           missingFields++;
         }
+        if (!formData.detalles.cultivo) {
+          missingFields++;
+        }
         if (!formData.contratista) {
           missingFields++;
         }
