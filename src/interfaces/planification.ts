@@ -42,6 +42,7 @@ export interface IActividadPlanificacion extends FPDocument {
     totalCosto : number,
     area: number,
     rindeEstimado ?: number,
+    precioEstimadoCosecha ? :number, 
     contratistaId?: string,
     cicloId: string,
     campanaId:string,

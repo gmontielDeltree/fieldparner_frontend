@@ -67,7 +67,7 @@ const get_lote_doc = async (db: PouchDB.Database, uuid: string) => {
 
   let result = undefined;
   campos_docs.forEach(({ doc }) => {
-    console.log(doc);
+    // console.log(doc);
     let _lote_doc = doc.lotes.find((lote) => lote.properties.uuid === uuid);
 
     if (_lote_doc) {
@@ -291,6 +291,8 @@ export const createMenuDots = (iconName: string) => {
   item.appendChild(icon);
   return item;
 };
+
+
 
 export const get_lote_detalles_by_uuid = async (uuid: string) => {
   let campos_docs = await gbl_docs_starting("campos_", true).then(only_docs);

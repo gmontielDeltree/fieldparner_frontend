@@ -19,6 +19,8 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { usePlanActividad } from "../../hooks/usePlanifications";
 import { CiclosContext } from "./contexts/CiclosContext";
+import { Box, IconButton } from "@mui/material";
+import CancelIcon from "@mui/icons-material/Close";
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -32,7 +34,7 @@ const Transition = React.forwardRef(function Transition(
 export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
   const [open, setOpen] = React.useState(false);
 
-  const {refreshCiclos} = useContext(CiclosContext) // useCiclos(ciclo.campanaId,loteId)
+  const { refreshCiclos } = useContext(CiclosContext); // useCiclos(ciclo.campanaId,loteId)
 
   let cleanAct = {
     accountId: "ffdfs",
@@ -50,11 +52,13 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
     ejecutada: false,
     created: { userId: "dfsdfd", date: "" },
     modified: { userId: "dfsdfd", date: "" },
-  }
+  };
 
-  const [actividad, setActividad] = useState<IActividadPlanificacion>({...cleanAct});
+  const [actividad, setActividad] = useState<IActividadPlanificacion>({
+    ...cleanAct,
+  });
 
-  const {saveActividad} = usePlanActividad()
+  const { saveActividad } = usePlanActividad();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -134,15 +138,23 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
         maxWidth={"lg"}
         aria-describedby="alert-dialog-slide-description"
       >
-        <DialogTitle>Nuevo plan de {actividad.tipo.toLocaleUpperCase()}</DialogTitle>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems:"center", paddingX:"1rem" }}>
+          <DialogTitle>
+            Nuevo plan de {actividad.tipo.toLocaleUpperCase()}
+          </DialogTitle>
+          <IconButton onClick={handleClose}>
+            <CancelIcon />
+          </IconButton>
+        </Box>
+
         <DialogContent>
           <ActividadEditorBase
             tipo={actividad.tipo}
             actividadDoc={actividad}
             onClose={handleClose}
             onSave={() => {
-              refreshCiclos()
-              handleClose()
+              refreshCiclos();
+              handleClose();
             }}
           />
         </DialogContent>

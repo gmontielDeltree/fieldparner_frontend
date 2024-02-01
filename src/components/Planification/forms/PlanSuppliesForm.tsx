@@ -90,7 +90,7 @@ function EditToolbar(props: EditToolbarProps) {
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-        Add record
+        Nuevo Insumo
       </Button>
     </GridToolbarContainer>
   );
@@ -105,7 +105,6 @@ function PlanSuppliesForm({
   formData: IActividadPlanificacion;
   setFormData: (a: IActividadPlanificacion) => void;
 }) {
-
   // Son la representacion interna de cada linea de insumo
   const { supplies, getSupplies } = useSupply();
 
@@ -200,24 +199,48 @@ function PlanSuppliesForm({
       valueFormatter: (params) => {
         return `${params.value.name || ""}`;
       },
-      valueSetter: (params)=>{
-        let hectareas = formData.area
-        return { ...params.row, insumo :params.value, hectareas,dosis:0 };
-      }
+      valueSetter: (params) => {
+        let hectareas = formData.area;
+        return { ...params.row, insumo: params.value, hectareas, dosis: 0 };
+      },
     },
     {
       field: "dosis",
-      headerName: "Unidades/has",
+      headerName: "Un./has",
       type: "number",
-      width: 80,
+      width: 120,
       align: "right",
-      headerAlign: "left",
+      headerAlign: "right",
       editable: true,
-      valueSetter: (params)=>{
-        return { ...params.row, dosis :params.value, totalCantidad:params.value*params.row.hectareas };
+      valueSetter: (params) => {
+        return {
+          ...params.row,
+          dosis: params.value,
+          totalCantidad: params.value * params.row.hectareas,
+        };
       },
       valueFormatter: (params) => {
         return `${params.value}`;
+      },
+      preProcessEditCellProps: (a) => {
+        console.log(a);
+        if(a.props.value !== undefined){
+                  a.row.dosis = a.props.value;
+        }
+
+        a.row.totalCantidad = a.row.dosis * formData.area;
+
+        a.row.precioUnitario = a.otherFieldsProps.precioUnitario.value;
+
+        a.row.totalCosto = a.row.precioUnitario * a.row.totalCantidad;
+
+        a.row.insumo = a.otherFieldsProps.insumo.value;
+        if (a.otherFieldsProps.insumo.value) {
+          a.row.unit = a.otherFieldsProps.insumo.value.unitMeasurement;
+        } else {
+          a.row.unit = "";
+        }
+        return a.props
       },
     },
     {
@@ -226,9 +249,10 @@ function PlanSuppliesForm({
       type: "number",
       width: 80,
       align: "right",
-      headerAlign: "left",
+      headerAlign: "right",
       editable: false,
-      cellClassName:"readonly",
+      cellClassName: "readonly",
+
       valueGetter: (params) => {
         return `${params.row.insumo.unitMeasurement || ""}`;
       },
@@ -237,9 +261,9 @@ function PlanSuppliesForm({
       field: "totalCantidad",
       headerName: "Cant. Total",
       type: "number",
-      width: 80,
+      width: 120,
       align: "right",
-      headerAlign: "left",
+      headerAlign: "right",
       editable: false,
       valueGetter: (params) => {
         return params.row.dosis * formData.area;
@@ -251,10 +275,14 @@ function PlanSuppliesForm({
       type: "number",
       width: 120,
       align: "right",
-      headerAlign: "left",
+      headerAlign: "right",
       editable: true,
-      valueSetter: (params)=>{
-        return { ...params.row, precioUnitario :params.value, totalCosto:params.value*params.row.totalCantidad };
+      valueSetter: (params) => {
+        return {
+          ...params.row,
+          precioUnitario: params.value,
+          totalCosto: params.value * params.row.totalCantidad,
+        };
       },
       valueFormatter: (params) => {
         return `USD ${params.value?.toFixed(2) || ""}`;
@@ -267,22 +295,23 @@ function PlanSuppliesForm({
       type: "number",
       width: 120,
       align: "right",
-      cellClassName:"readonly",
-      headerAlign: "left",
+      cellClassName: "readonly",
+      headerAlign: "right",
       editable: false,
       valueFormatter: (params) => {
+        if (isNaN(params.value)) {
+          return "USD 0";
+        }
         return `USD ${params.value?.toFixed(2) || ""}`;
       },
       valueGetter: (params) => {
         return params.row.dosis * formData.area * params.row.precioUnitario;
       },
     },
-
-
     {
       field: "actions",
       type: "actions",
-      headerName: "Actions",
+      headerName: "Acciones",
       width: 100,
       cellClassName: "actions",
       getActions: ({ id }) => {
@@ -328,39 +357,55 @@ function PlanSuppliesForm({
   ];
 
   return (
-    <Box
-      sx={{
-        height: 500,
-        width: "100%",
-        "& .actions": {
-          color: "text.secondary",
-        },
-        "& .textPrimary": {
-          color: "text.primary",
-        },
-        '& .readonly': {
-          backgroundColor: '#e9e9e9',
-          color: '#1a3e72',
-          fontWeight: '600',
-        },
-      }}
-    >
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        editMode="row"
-        rowModesModel={rowModesModel}
-        onRowModesModelChange={handleRowModesModelChange}
-        onRowEditStop={handleRowEditStop}
-        processRowUpdate={processRowUpdate}
-        slots={{
-          toolbar: EditToolbar,
+    <CustomPaper elevation={3}>
+      <Box
+        sx={{
+          maxHeight: "100%",
+          height: "20rem",
+          width: "100%",
+          "& .actions": {
+            color: "text.secondary",
+          },
+          "& .textPrimary": {
+            color: "text.primary",
+          },
+          "& .readonly": {
+            backgroundColor: "#e9e9e9",
+            color: "#1a3e72",
+            fontWeight: "600",
+          },
         }}
-        slotProps={{
-          toolbar: { setRows, setRowModesModel },
-        }}
-      />
-    </Box>
+      >
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          editMode="row"
+          rowModesModel={rowModesModel}
+          onRowModesModelChange={handleRowModesModelChange}
+          onRowEditStop={handleRowEditStop}
+          processRowUpdate={processRowUpdate}
+          slots={{
+            toolbar: EditToolbar,
+          }}
+          slotProps={{
+            toolbar: { setRows, setRowModesModel },
+          }}
+          localeText={{
+            noRowsLabel: "No hay filas",
+            noResultsOverlayLabel: "Sin resultado",
+            footerRowSelected: (count) =>
+              count !== 1
+                ? `${count.toLocaleString()} filas seleccionadas`
+                : `${count.toLocaleString()} fila seleccionada`,
+            MuiTablePagination: {
+              labelDisplayedRows: ({ from, to, count }) =>
+                `${from} - ${to} de mas de ${count}`,
+              labelRowsPerPage: "Filas por página",
+            },
+          }}
+        />
+      </Box>
+    </CustomPaper>
   );
 }
 
