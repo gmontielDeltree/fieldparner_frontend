@@ -6,7 +6,6 @@ import { Loading } from "../components";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export const InitRouter = () => {
-  return <OverviewRoutes />;
   let navigate = useNavigate();
   let location = useLocation();
 
