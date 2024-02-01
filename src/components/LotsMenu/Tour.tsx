@@ -5,15 +5,34 @@ import { getEmptyNote } from "../../interfaces/activity";
 import { format } from "date-fns";
 import AgricultureIcon from "@mui/icons-material/Assignment";
 import uuid4 from "uuid4";
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
 
+const Header = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  textAlign: "center",
+  color: theme.palette.text.secondary,
+  background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`,
+  boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
+  borderRadius: "8px",
+  margin: theme.spacing(2, 0)
+}));
+
+const FieldInfo = styled("div")(({ theme }) => ({
+  fontWeight: "bold",
+  fontSize: "1.2rem",
+  color: theme.palette.primary.contrastText
+}));
 interface TourProps {
   lot: any;
+  fieldName: string;
   db: any;
   backToActivites: () => void;
 }
 
-const Tour: React.FC<TourProps> = ({ lot, db, backToActivites }) => {
+const Tour: React.FC<TourProps> = ({ lot, db, fieldName, backToActivites }) => {
   if (!lot) return null;
+  const lotName = lot.properties.name;
 
   const [formData, setFormData] = useState(getEmptyNote());
 
@@ -74,6 +93,10 @@ const Tour: React.FC<TourProps> = ({ lot, db, backToActivites }) => {
 
   return (
     <div>
+      <Header>
+        <FieldInfo>Lote: {lotName}</FieldInfo>
+        <FieldInfo>Campo: {fieldName}</FieldInfo>
+      </Header>
       <Box sx={{ textAlign: "center", mt: 2, mb: 4 }}>
         <AgricultureIcon sx={{ fontSize: 50, color: "green" }} />
         <Typography

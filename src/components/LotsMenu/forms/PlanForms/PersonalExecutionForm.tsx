@@ -108,7 +108,7 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
 
   return (
     <CustomPaper elevation={3}>
-      <Title>Personal</Title>
+      <Title>General</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
           <Grid item xs={12}>

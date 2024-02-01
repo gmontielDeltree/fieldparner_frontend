@@ -101,7 +101,19 @@ const FieldsSideMenu = ({ open, fields, onSelectField }) => {
   };
 
   return (
-    <Drawer anchor="left" open={open} onClose={handleClose}>
+    <Drawer
+      anchor="left"
+      open={open}
+      onClose={handleClose}
+      sx={{
+        width: "66%",
+        flexShrink: 0,
+        "& .MuiDrawer-paper": {
+          width: "66%",
+          boxSizing: "border-box"
+        }
+      }}
+    >
       <div style={{ display: "none" }} id="pdf-content">
         {pdfContent && <div dangerouslySetInnerHTML={{ __html: pdfContent }} />}
       </div>

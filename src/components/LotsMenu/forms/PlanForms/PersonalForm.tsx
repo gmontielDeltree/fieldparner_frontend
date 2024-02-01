@@ -10,6 +10,7 @@ import {
   Typography
 } from "@mui/material";
 import { useBusiness } from "../../../../hooks";
+import { useCrops } from "../../../../hooks/useCrops";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -31,6 +32,7 @@ const Title = styled(Typography)({
 
 function PersonalForm({ lot, formData, setFormData }) {
   const { businesses, getBusinesses } = useBusiness();
+  const { crops } = useCrops();
 
   useEffect(() => {
     getBusinesses();
@@ -70,6 +72,14 @@ function PersonalForm({ lot, formData, setFormData }) {
           fecha_ejecucion_tentativa: value
         }
       });
+    } else if (fieldName === "cultivo") {
+      setFormData({
+        ...formData,
+        detalles: {
+          ...formData.detalles,
+          cultivo: value
+        }
+      });
     } else {
       setFormData({
         ...formData,
@@ -83,9 +93,28 @@ function PersonalForm({ lot, formData, setFormData }) {
 
   return (
     <CustomPaper elevation={3}>
-      <Title>Personal</Title>
+      <Title>General</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <InputLabel id="cultivo-label">Cultivo</InputLabel>
+            <Select
+              labelId="cultivo-label"
+              id="cultivo"
+              value={formData.detalles.cultivo || ""}
+              label="Cultivo"
+              fullWidth
+              onChange={(e) => onFieldChange("cultivo", e.target.value)}
+              inputProps={{ name: "cultivo", id: "cultivo" }}
+            >
+              {crops.map((crop) => (
+                <MenuItem key={crop.cultivoId} value={crop.cultivoId}>
+                  {crop.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </Grid>
+
           <Grid item xs={12} sm={6}>
             <InputLabel id="contratista-label">Contratista</InputLabel>
             <Select
@@ -95,6 +124,7 @@ function PersonalForm({ lot, formData, setFormData }) {
               label="Contratista"
               fullWidth
               onChange={(e) => onFieldChange("contratista", e.target.value)}
+              inputProps={{ name: "contratista", id: "contratista" }}
             >
               {businesses.map((business) => (
                 <MenuItem
@@ -106,6 +136,7 @@ function PersonalForm({ lot, formData, setFormData }) {
               ))}
             </Select>
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker

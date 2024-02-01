@@ -25,6 +25,25 @@ import Badge from "@mui/material/Badge";
 import { Ejecucion, Actividad } from "../../interfaces/activity";
 import uuid4 from "uuid4";
 
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
+
+const Header = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  textAlign: "center",
+  color: theme.palette.text.secondary,
+  background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`,
+  boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
+  borderRadius: "8px",
+  margin: theme.spacing(2, 0)
+}));
+
+const FieldInfo = styled("div")(({ theme }) => ({
+  fontWeight: "bold",
+  fontSize: "1.2rem",
+  color: theme.palette.primary.contrastText
+}));
+
 const activityTypeTranslations = {
   sowing: "Siembra",
   harvesting: "Cosecha",
@@ -41,6 +60,7 @@ interface ExecuteActivityProps {
   activityType: string;
   lot: any;
   db: any;
+  fieldName: string;
   backToActivites: () => void;
   existingActivity: Actividad;
 }
@@ -49,13 +69,12 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   activityType,
   lot,
   db,
+  fieldName,
   backToActivites,
   existingActivity
 }) => {
   if (!lot) return null;
-  console.log("Lot: ", lot);
-  console.log("EXISTING ACTIVITY: ", existingActivity);
-  console.log("EXISTING ACTIVITY type: ", activityType);
+  const lotName = lot.properties.name;
   const [formData, setFormData] = useState(
     existingActivity || getEmptyExecution()
   );
@@ -76,7 +95,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
     : `linear-gradient(45deg, #a0a0a0, #626262)`;
   const steps = [
-    "Personal",
+    "General",
     "Insumos",
     "Otros Datos",
     "Labores",
@@ -302,7 +321,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           console.error("Conflict detected, saving execution details:", error);
         } else if (error.name === "not_found") {
           console.log("Document not found. Creating a new one.");
-          delete executionDetails._rev; // Important: Remove _rev before creating a new document
+          delete executionDetails._rev;
           db.put(executionDetails)
             .then(() => {
               console.log("New document created", "success");
@@ -325,6 +344,10 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
   return (
     <div>
+      <Header>
+        <FieldInfo>Lote: {lotName}</FieldInfo>
+        <FieldInfo>Campo: {fieldName}</FieldInfo>
+      </Header>
       <Box sx={{ textAlign: "center", mt: 2, mb: 4 }}>
         {ActivityIcon}{" "}
         <Typography
