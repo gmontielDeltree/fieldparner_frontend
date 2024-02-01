@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { showFieldList, hideFieldList } from "../../redux/fieldsList";
 import { useAuthStore } from "../../hooks";
+import { useCampaign } from "../../hooks";
 
 import {
   Badge,
@@ -15,7 +16,7 @@ import {
   ButtonBase,
   Button,
   Menu,
-  MenuItem,
+  MenuItem
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../redux/store";
@@ -31,18 +32,16 @@ import {
   Notifications,
   NotificationsActive,
   MenuOutlined,
-  ExitToApp,
+  ExitToApp
 } from "@mui/icons-material";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
   open,
-  handleSideBarOpen,
+  handleSideBarOpen
 }) => {
   const navigate = useNavigate();
-  const navigateTo = (path: string) => {
-    window.location.replace(path);
-  };
+  const { campaigns, getCampaigns, isLoading, error } = useCampaign();
 
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
@@ -53,7 +52,13 @@ export const NavBar: React.FC<NavBarProps> = ({
 
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState(null);
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
+  useEffect(() => {
+    getCampaigns();
+  }, []);
 
+  useEffect(() => {
+    console.log("campaigns", campaigns);
+  }, [getCampaigns]);
   const handleLanguageMenu = (event) => {
     setLanguageAnchorEl(event.currentTarget);
   };
@@ -77,15 +82,15 @@ export const NavBar: React.FC<NavBarProps> = ({
     animation: "pulse 2s infinite",
     "@keyframes pulse": {
       "0%": {
-        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0.7)",
+        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0.7)"
       },
       "70%": {
-        boxShadow: "0 0 0 10px rgba(0, 123, 255, 0)",
+        boxShadow: "0 0 0 10px rgba(0, 123, 255, 0)"
       },
       "100%": {
-        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0)",
-      },
-    },
+        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0)"
+      }
+    }
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -127,7 +132,6 @@ export const NavBar: React.FC<NavBarProps> = ({
     borderColor: isVisible ? "#1976d2" : "transparent",
     borderRadius: "50%",
     backgroundColor: isVisible ? "rgba(25, 118, 210, 0.1)" : "transparent"
-
   });
 
   return (
@@ -138,8 +142,8 @@ export const NavBar: React.FC<NavBarProps> = ({
         color: "black",
         ...(open && {
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-        }),
+          ml: { sm: `${drawerWidth}px` }
+        })
       }}
     >
       <Toolbar>
@@ -169,7 +173,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 color: "black",
                 fontWeight: "bold",
                 whiteSpace: "nowrap",
-                marginRight: "40px",
+                marginRight: "40px"
               }}
             >
               FieldPartner
@@ -183,7 +187,8 @@ export const NavBar: React.FC<NavBarProps> = ({
             </ButtonBase>
             <ButtonBase
               onClick={() => navigate("/init/overview/fields/integrations")}
-              sx={{ borderRadius: "50%", marginRight: "18px" }} title="Integraciones"
+              sx={{ borderRadius: "50%", marginRight: "18px" }}
+              title="Integraciones"
             >
               <Avatar
                 alt="Integrations"
@@ -192,7 +197,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               />
             </ButtonBase>
 
-            <Tooltip title={t("notifications")} enterDelay={500} leaveDelay={200}>
+            <Tooltip
+              title={t("notifications")}
+              enterDelay={500}
+              leaveDelay={200}
+            >
               <IconButton
                 color={hasNotifications ? "secondary" : "default"}
                 onClick={handleNotificationClick}
@@ -211,14 +220,14 @@ export const NavBar: React.FC<NavBarProps> = ({
               aria-label="campaign"
               aria-controls="menu-appbar"
               aria-haspopup="true"
-              onClick={handleMenu}
+              onClick={getCampaigns}
               color="inherit"
               style={{
                 marginLeft: "50px",
                 backgroundColor: "#f5f5f5",
                 color: "#1976d2",
                 borderRadius: "4px",
-                textTransform: "none",
+                textTransform: "none"
               }}
             >
               {t("no_campaign")}
@@ -229,16 +238,35 @@ export const NavBar: React.FC<NavBarProps> = ({
               anchorEl={anchorEl}
               anchorOrigin={{
                 vertical: "bottom",
-                horizontal: "left",
+                horizontal: "left"
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "left",
+                horizontal: "left"
               }}
               open={openDropdown}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleClose}> + {t("no_campaign")}</MenuItem>
+              <MenuItem
+                onClick={() => {
+                  // Example of how you might trigger campaign creation
+                  // In a real app, you'd likely open a form or dialog here to get user input
+                  const campaignDetails = {
+                    name: "New Campaign" // Example detail, replace with actual data collection
+                    // other details as needed
+                  };
+                  // createCampaign(campaignDetails);
+                  handleClose(); // Close the menu
+                }}
+              >
+                + Add Campaign
+              </MenuItem>
+
+              {campaigns.map((campaign) => (
+                <MenuItem key={campaign.campaignId} onClick={handleClose}>
+                  {campaign.campaignId}
+                </MenuItem>
+              ))}
             </Menu>
           </Grid>
           <Grid item>
@@ -265,11 +293,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               anchorEl={languageAnchorEl}
               anchorOrigin={{
                 vertical: "top",
-                horizontal: "right",
+                horizontal: "right"
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "right",
+                horizontal: "right"
               }}
               open={isLanguageMenuOpen}
               onClose={handleLanguageMenuClose}
