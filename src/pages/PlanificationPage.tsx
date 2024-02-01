@@ -54,8 +54,10 @@ export const PlanificationPage: React.FC = () => {
 
   const navigate = useNavigate()
 
+  const crops = useCrops()
+
   return (
-    <CultivoContext.Provider value={useCrops()}>
+    <CultivoContext.Provider value={crops}>
       <CampanasContext.Provider value={useListaCampanas()}>
         <InsumosContext.Provider value={useInsumos()}>
           <LaboresContext.Provider value={useLabores()}>
@@ -86,11 +88,11 @@ export const PlanificationPage: React.FC = () => {
                       
 
                       
-                      {/* <IconButton onClick={()=>{
-                        ReporteDeCampanas(ciclos,campaigns)
+                      <IconButton onClick={()=>{
+                        ReporteDeCampanas(ciclos.ciclos,campaigns,crops)
                       }}>
                         <MoreVertIcon />
-                      </IconButton> */}
+                      </IconButton>
                     </Box>
                     <Divider variant="middle" component={"div"}></Divider>
                     <Box

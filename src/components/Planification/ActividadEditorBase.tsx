@@ -140,21 +140,21 @@ export const ActividadEditorBase = ({
                 onClick={handleBack}
                 sx={{ mr: 1 }}
               >
-                Back
+                Atras
               </Button>
               <Box sx={{ flex: "1 1 auto" }} />
               <Button onClick={handleNext} sx={{ mr: 1 }}>
-                Next
+                Siguiente
               </Button>
 
-              <Button
+              {/* <Button
                 variant="contained"
                 color="error"
                 onClick={onClose}
                 sx={{ mr: 1 }}
               >
                 Cancelar
-              </Button>
+              </Button> */}
 
               <Button
                 variant="contained"

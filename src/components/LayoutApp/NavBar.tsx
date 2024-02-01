@@ -230,7 +230,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 textTransform: "none"
               }}
             >
-              {"campaign"}
+              {t("no_campaign")}
             </Button>
 
             <Menu
