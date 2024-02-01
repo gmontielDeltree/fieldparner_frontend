@@ -20,9 +20,16 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import { styled, keyframes } from "@mui/material/styles";
-import useInputs from "../../../../hooks/useInputs";
 import uuid4 from "uuid4";
 import { useAppDispatch, useForm, useSupply } from "../../../../hooks";
+import Chip from "@mui/material/Chip";
+
+const TypeBadge = styled(Chip)(({ theme }) => ({
+  marginLeft: theme.spacing(1),
+  fontSize: "0.75rem",
+  height: "auto",
+  padding: "0 6px"
+}));
 
 const flashFadeAnimation = keyframes`
   0% {
@@ -63,7 +70,6 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   const [total, setTotal] = useState("");
   const [precio, setPrecio] = useState("");
   const [rows, setRows] = useState([]);
-  const { inputs, loading, error } = useInputs(db);
   const [editIndex, setEditIndex] = useState(-1);
   const { isLoading, supplies, getSupplies, setSupplies, deleteSupply } =
     useSupply();
@@ -75,14 +81,14 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   });
 
   const findInsumoByOption = (option) => {
-    return inputs.find((input) => input.marca_comercial === option);
+    return supplies.find((supply) => supply.name === option);
   };
 
   const handleAddRow = () => {
-    const input = findInsumoByOption(selectedOption);
+    const supply = findInsumoByOption(selectedOption);
     const newRow = {
       dosis: dosificacion,
-      insumo: input,
+      insumo: supply,
       motivos: [],
       uuid: uuid4(),
       total: total,
@@ -100,10 +106,10 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   };
 
   const handleSaveEdit = () => {
-    const input = findInsumoByOption(editData.selectedOption);
+    const supply = findInsumoByOption(editData.selectedOption);
     const updatedRow = {
       dosis: editData.dosificacion,
-      insumo: input,
+      insumo: supply,
       motivos: [],
       uuid: rows[editIndex].uuid,
       total: editData.total,
@@ -164,18 +170,18 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   };
 
   useEffect(() => {
-    console.log("Inputs:", inputs);
-  }, [inputs]);
+    getSupplies();
+  }, []);
 
   useEffect(() => {
-    console.log("SUPPLIES POSTA", supplies);
+    console.log("supplies:", supplies);
   }, [supplies]);
 
   useEffect(() => {
     if (formData && formData.detalles && formData.detalles.dosis) {
       setRows(
         formData.detalles.dosis.map((dosis) => ({
-          selectedOption: dosis.insumo.marca_comercial,
+          selectedOption: dosis.insumo.name,
           dosificacion: dosis.dosis,
           total: dosis.total,
           precio: dosis.precio_estimado,
@@ -185,8 +191,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     }
   }, [formData]);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error loading inputs</div>;
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <CustomPaper elevation={3}>
@@ -202,10 +207,24 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               label="Supplies"
               onChange={handleSelectChange}
               fullWidth
+              renderValue={(selected) => {
+                const selectedSupply = supplies.find(
+                  (supply) => supply.name === selected
+                );
+                return (
+                  <div>
+                    {selected}
+                    {selectedSupply && (
+                      <TypeBadge label={selectedSupply.type} color="primary" />
+                    )}
+                  </div>
+                );
+              }}
             >
               {supplies.map((supply, index) => (
                 <MenuItem key={index} value={supply.name}>
                   {supply.name}
+                  <TypeBadge label={supply.type} color="primary" />
                 </MenuItem>
               ))}
             </Select>
@@ -264,9 +283,9 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                           value={editData.selectedOption}
                           onChange={handleEditChange("selectedOption")}
                         >
-                          {inputs.map((input, idx) => (
-                            <MenuItem key={idx} value={input.marca_comercial}>
-                              {input.marca_comercial || "No Name"}
+                          {supplies.map((supply, idx) => (
+                            <MenuItem key={idx} value={supply.name}>
+                              {supply.name || "No Name"}
                             </MenuItem>
                           ))}
                         </TextField>

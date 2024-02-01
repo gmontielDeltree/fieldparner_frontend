@@ -29,13 +29,12 @@ interface LotsMenuProps {
 
 const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const [selectedCategory, setSelectedCategory] = useState<null | string>(null);
-  const db = dbContext.fields //new PouchDB("campos_randyv7");
+  const db = dbContext.fields; //new PouchDB("campos_randyv7");
   const [activities, setActivities] = useState(null);
   const [editingActivityInfo, setEditingActivityInfo] = useState<{
     activity: Actividad | null;
     isExecuting: boolean;
   }>({ activity: null, isExecuting: false });
-
   const navigate = useNavigate();
 
   console.log("Log seleccionado: ", lot);
@@ -156,7 +155,11 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
       });
   };
   const handleEditActivity = (activity, isExecuting = false) => {
-    setSelectedCategory("Edit Activity");
+    if (isExecuting) {
+      setSelectedCategory("Execute Activity");
+    } else {
+      setSelectedCategory("Edit Activity");
+    }
     console.log("Editando actividad", activity, isExecuting);
     setEditingActivityInfo({ activity, isExecuting });
   };
@@ -206,6 +209,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <PlanActivity
             activityType={"sowing"}
             lot={lot}
+            fieldName={field.nombre}
             db={db}
             backToActivites={backToActivites}
           />
@@ -215,6 +219,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <PlanActivity
             activityType={"harvesting"}
             lot={lot}
+            fieldName={field.nombre}
             db={db}
             backToActivites={backToActivites}
           />
@@ -224,19 +229,47 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <PlanActivity
             activityType={"application"}
             lot={lot}
+            fieldName={field.nombre}
             db={db}
             backToActivites={backToActivites}
           />
         );
       case "Recorrido":
-        return <Tour lot={lot} db={db} backToActivites={backToActivites} />;
+        return (
+          <Tour
+            lot={lot}
+            db={db}
+            fieldName={field.nombre}
+            backToActivites={backToActivites}
+          />
+        );
       case "Category 5":
         return <div>Category 5</div>;
       case "Muestra de suelo":
         return (
-          <GroundSample lot={lot} db={db} backToActivites={backToActivites} />
+          <GroundSample
+            lot={lot}
+            db={db}
+            fieldName={field.nombre}
+            backToActivites={backToActivites}
+          />
         );
       case "Edit Activity":
+        return (
+          <PlanActivity
+            activityType={
+              activityTypeTranslations[
+                editingActivityInfo.activity.tipo.toLowerCase()
+              ]
+            }
+            lot={lot}
+            fieldName={field.nombre}
+            db={db}
+            backToActivites={backToActivites}
+            existingActivity={editingActivityInfo.activity}
+          />
+        );
+      case "Execute Activity":
         return (
           <ExecuteActivity
             activityType={
@@ -246,6 +279,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             }
             lot={lot}
             db={db}
+            fieldName={field.nombre}
             backToActivites={backToActivites}
             existingActivity={editingActivityInfo.activity}
             isExecuting={editingActivityInfo.isExecuting}
