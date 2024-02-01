@@ -10,7 +10,6 @@ import categoryIcon3 from "../../images/icons/cosechadora_act.webp";
 import categoryIcon4 from "../../images/icons/iconodenotas_act.webp";
 import categoryIcon5 from "../../images/icons/iconosatelite.webp";
 import categoryIcon6 from "../../images/icons/suelo_act.webp";
-import PouchDB from "pouchdb";
 import { Activities } from "./Activities/index";
 import { Actividad } from "../../interfaces/activity";
 import { isBefore, parseISO } from "date-fns";
@@ -19,6 +18,23 @@ import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExecuteActivity from "./ExecuteActivity";
 import { dbContext } from "../../services";
+import { styled } from "@mui/material/styles";
+
+const Header = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  textAlign: "center",
+  color: theme.palette.text.secondary,
+  background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`,
+  boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
+  borderRadius: "8px",
+  margin: theme.spacing(2, 0)
+}));
+
+const FieldInfo = styled("div")(({ theme }) => ({
+  fontWeight: "bold",
+  fontSize: "1.2rem",
+  color: theme.palette.primary.contrastText
+}));
 
 interface LotsMenuProps {
   lot: any;
@@ -37,7 +53,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   }>({ activity: null, isExecuting: false });
   const navigate = useNavigate();
 
-  console.log("Log seleccionado: ", lot);
+  console.log("Lot seleccionado: ", lot);
   const categories = [
     { id: "Planificar Siembra", icon: categoryIcon1 },
     { id: "Planificar Aplicacion", icon: categoryIcon2 },
@@ -369,6 +385,10 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
       </div>
 
       <hr style={hrStyle} />
+      <Header>
+        <FieldInfo>Lote: {lot.properties.nombre}</FieldInfo>
+        <FieldInfo>Campo: {field.nombre}</FieldInfo>
+      </Header>
       <div>{renderFormContent()}</div>
     </Paper>
   );

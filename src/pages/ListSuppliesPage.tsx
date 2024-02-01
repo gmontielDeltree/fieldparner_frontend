@@ -73,9 +73,6 @@ export const ListSuppliesPage: React.FC = () => {
       getSupplies();
     }
   };
-  useEffect(() => {
-    console.log("Supplies:", supplies); // This line logs the supplies data
-  }, [supplies]); // Add supplies as a dependency so it logs whenever supplies changes
 
   useEffect(() => {
     getSupplies();
