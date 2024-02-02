@@ -2,6 +2,7 @@ import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import {
+    useAppSelector,
     useBusiness,
     useCampaign,
     useDeposit,
@@ -13,7 +14,7 @@ import {
 import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TemplateLayout } from '../components';
 import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, TableContainer, TextField, Typography } from '@mui/material';
 import { Assignment as AssignmentIcon } from '@mui/icons-material';
-import { ColumnProps, OrderStatus, StockByLot, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderType } from '../types';
+import { ColumnProps, OrderStatus, StockByLot, DepositSupplyOrder, TipoEntidad, TransformSupply, WithdrawalOrderType } from '../types';
 import { getShortDate } from '../helpers/dates';
 
 
@@ -22,11 +23,12 @@ const columns: ColumnProps[] = [
     { text: "Deposito", align: "left" },
     { text: "Insumo", align: "left" },
     { text: "UM", align: "center" },
-    { text: "N° Lote", align: "center" },
+    { text: "Lote", align: "center" },
     { text: "Cantidad a Retirar", align: "center" },
 ];
 
-const initialForm: WithdrawalOrder = {
+const initialForm = {
+    accountId: "",
     creationDate: getShortDate(),
     reason: "",
     campaignId: "",
@@ -34,13 +36,13 @@ const initialForm: WithdrawalOrder = {
     order: 0,
     state: OrderStatus.Pending,
     type: WithdrawalOrderType.Individual,
-    suppliesToBeWithdrawn: [],
 };
 
 export const WithdrawalOrdersPage: React.FC = () => {
 
     const navigate = useNavigate();
     // const dispatch = useAppDispatch();
+    const { user } = useAppSelector(state => state.auth);
     const { isLoading, createWithdrawalOrder } = useOrder();
     const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
     const { isLoading: supplyLoading, supplies, getSupplies } = useSupply();
@@ -61,17 +63,34 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const onClickCancel = () => navigate("/init/overview/list-orders");
 
     const handleAddWithdrawalOrder = () => {
+        const campaign = campaigns.find(c => c._id === campaignId);
+        const withdraw = socialEntities.find(s => s._id === withdrawId);
+        
+        if (!user || !campaign || !withdraw) throw new Error("Error: usuario, campaña o entidad social");
+
+        let newDepositSupplyOrders: DepositSupplyOrder[] = suppliesToAdd.map(s => ({
+            accountId: user.accountId,
+            deposit: s.deposit,
+            supply: s.supply,
+            location: s.location,
+            nroLot: s.nroLot,
+            order: 0, // El numero lo genera en createWithdrawalOrder()
+            withdrawalAmount: 0,
+            originalAmount: Number(s.amount),
+
+        }));
 
         createWithdrawalOrder({
-            type: "Individual",
-            campaignId,
+            type: WithdrawalOrderType.Individual,
+            campaign,
             creationDate,
-            withdrawId,
+            withdraw,
             order: formValues.order,
             reason: formValues.reason,
             state: OrderStatus.Pending,
-            suppliesToBeWithdrawn: suppliesToAdd,
-        });
+            // suppliesToBeWithdrawn: suppliesToAdd,
+            accountId: "",
+        }, newDepositSupplyOrders);
     }
 
     const validateStock = async (newSupply: TransformSupply) => {
@@ -102,9 +121,11 @@ export const WithdrawalOrdersPage: React.FC = () => {
         }
     }
 
-    const addSupplyToAdd = async (item: TransformSupply) => {
+    const addDepositSupplyToAdd = async (item: TransformSupply) => {
         const depositId = item.deposit._id;
         const supplyId = item.supply._id;
+
+        if (!user || !depositId || !supplyId) return;
         const existSupply = suppliesToAdd.find(s => s.deposit._id === depositId && s.supply._id === supplyId);
 
         if (existSupply) {
@@ -112,13 +133,12 @@ export const WithdrawalOrdersPage: React.FC = () => {
             return;
         }
 
-        if (await validateStock(item))
-            setSuppliesToAdd([item, ...suppliesToAdd]);
+        if (await validateStock(item)) setSuppliesToAdd([item, ...suppliesToAdd]);
     }
 
 
     const handleAddDepositSupply = (item: TransformSupply) => {
-        addSupplyToAdd(item);
+        addDepositSupplyToAdd(item);
     }
 
     useEffect(() => {
@@ -189,7 +209,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                                 onChange={handleSelectChange}
                             >
                                 {campaigns?.map((c) => (
-                                    <MenuItem key={c.campaignId} value={c.campaignId}>
+                                    <MenuItem key={c.campaignId} value={c._id}>
                                         {c.campaignId}
                                     </MenuItem>
                                 ))}

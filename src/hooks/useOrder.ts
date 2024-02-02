@@ -1,16 +1,19 @@
 import { useNavigate } from "react-router-dom";
-import { useAppSelector } from ".";
+import { useAppDispatch, useAppSelector } from ".";
 import { dbContext } from "../services";
-import { Numerator, WithdrawalOrder, WithdrawalOrderItem } from "../types";
+import { Business, Campaign, Deposit, DepositSupplyOrder, DepositSupplyOrderItem, Numerator, Supply, WithdrawalOrder, WithdrawalOrderItem, WithdrawalsByDepositSupply } from "../types";
 import { useState } from "react";
 import Swal from 'sweetalert2';
+import { setWithdrawalOrderActive } from "../redux/withdrawalOrder";
 
 
 
 export const useOrder = () => {
 
     const navigate = useNavigate();
-    const [orders, setOrders] = useState<WithdrawalOrderItem[]>([]);
+    const dispatch = useAppDispatch();
+    const [orders, setOrders] = useState<WithdrawalOrder[]>([]);
+    const [depositsSuppliesOrder, setDepositsSuppliesOrder] = useState<DepositSupplyOrderItem[]>([]);
     const { user } = useAppSelector(state => state.auth);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState({});
@@ -22,7 +25,6 @@ export const useOrder = () => {
                 descending: true,
                 limit: 1,
             });
-
             if (response.rows.length)
                 return response.rows[0].doc as Numerator;
 
@@ -43,28 +45,28 @@ export const useOrder = () => {
     const getWithdrawalOrders = async () => {
         setIsLoading(true);
         try {
-
             if (!user) throw new Error("User not found.");
 
-            const responseAll = await Promise.all([
-                dbContext.withdrawalOrders.find({ selector: { "accountId": user?.accountId } }),
-                dbContext.socialEntities.allDocs({ include_docs: true }),
-                dbContext.campaigns.find({ selector: { "accountId": user?.accountId } })
-            ]);
-            const responseOrder = responseAll[0].docs;
-            const responseSocialEntities = responseAll[1].rows.map(row => row.doc);
-            const responseCampaign = responseAll[2].docs;
+            const response = await dbContext.withdrawalOrders.find({ selector: { "accountId": user?.accountId } });
+            // dbContext.socialEntities.allDocs({ include_docs: true }),
+            // dbContext.campaigns.find({ selector: { "accountId": user?.accountId } })
 
-            const orders: WithdrawalOrderItem[] = responseOrder.map(row => {
+            if (response) {
+                const orders = response.docs.map(doc => doc as WithdrawalOrder);
+                setOrders(orders);
+            }
 
-                return {
-                    ...row,
-                    campaing: responseCampaign.find(c => c._id === row.campaignId),
-                    withdraw: responseSocialEntities.find(s => s?._id === row.withdrawId),
-                } as WithdrawalOrderItem;
-            });
+            // const responseSocialEntities = responseAll[1].rows.map(row => row.doc);
+            // const responseCampaign = responseAll[2].docs;
 
-            setOrders(orders);
+            // const orders: WithdrawalOrderItem[] = responseOrder.map(row => {
+            //     return {
+            //         ...row,
+            //         campaign: responseCampaign.find(c => c._id === row.campaign),
+            //         withdraw: responseSocialEntities.find(s => s?._id === row.withdraw),
+            //     } as WithdrawalOrderItem;
+            // });
+
             setIsLoading(false);
         } catch (error) {
             console.log(error);
@@ -72,27 +74,32 @@ export const useOrder = () => {
         }
     }
 
-    const createWithdrawalOrder = async (newWithdrawalOrder: WithdrawalOrder) => {
+    const createWithdrawalOrder = async (newWithdrawalOrder: WithdrawalOrder, newDepositSupplies: DepositSupplyOrder[]) => {
         setIsLoading(true);
         try {
 
             if (!user) throw new Error("There is no user!!!!");
-            let lastNumerator = await getLastNumerator();
+            // const lastNumerator = await getLastNumerator();
 
-
-            if (!lastNumerator) throw new Error("Error: create numerator");
-
-            lastNumerator.lastNumerator += 1;
-            let newOrder: WithdrawalOrder = { ...newWithdrawalOrder, order: lastNumerator.lastNumerator };
+            // if (!lastNumerator) throw new Error("Error: order number");
+            let lastNumerator = 1;
+            // lastNumerator.lastNumerator += 1;
+            let newOrder: WithdrawalOrder = {
+                ...newWithdrawalOrder,
+                order: lastNumerator,
+                accountId: user.accountId
+            };
+            let depositSuppliesOrder = newDepositSupplies.map(s => ({ ...s, order: lastNumerator }));
 
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
-                updateLastNumerator(lastNumerator)
+                dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
+                // updateLastNumerator(lastNumerator)
             ]);
 
             setIsLoading(false);
 
-            if (response[0].ok) {
+            if (response) {
                 Swal.fire('Orden de Retiro', 'Agregado con exito.', 'success');
             }
             navigate("/init/overview/list-orders");
@@ -104,12 +111,61 @@ export const useOrder = () => {
         }
     }
 
-    const confirmWithdrawalOrder = () => { }
+    //TODO: obtener orden de retiro, y sus deposito/insumos a retirar por nro orden.
+    const getOrderWithDepositsAndSuppliesByOrder = async (order: number) => {
+        setIsLoading(true);
+        try {
+
+            if (!user) throw new Error("User not found.");
+
+            const responseAll = await Promise.all([
+                dbContext.withdrawalOrders.find({
+                    selector: {
+                        "$and": [{ "accountId": user.accountId }, { "order": order }],
+                    }
+                }),
+                dbContext.depositSupplyOrder.find({
+                    selector: {
+                        "$and": [{ "accountId": user.accountId }, { "order": order }],
+                    }
+                })
+            ]);
+
+            if (responseAll) {
+                const withdrawalOrder = responseAll[0].docs[0] as WithdrawalOrder;
+                const depositAndSuppliesOrder = responseAll[1].docs.map(doc => doc as DepositSupplyOrder);
+                dispatch(setWithdrawalOrderActive(withdrawalOrder));
+                setDepositsSuppliesOrder(depositAndSuppliesOrder);
+            }
+
+            setIsLoading(false);
+        } catch (error) {
+            console.log(error);
+            error && setError(error);
+        }
+    }
+    //TODO: Actualizar los stock correspondientes a la tabla
+    const confirmWithdrawalOrder = async (newWithdrawals: WithdrawalsByDepositSupply[]) => {
+        setIsLoading(true);
+        try {
+            const response = await dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals);
+            if (response) {
+                Swal.fire('Orden de Retiro', 'Confirmacion exitosa.', 'success');
+            }
+            navigate("/init/overview/list-orders");
+
+        } catch (error) {
+            console.log('error', error);
+            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            setIsLoading(false);
+        }
+    }
 
     const deleteWithdrawalOrder = () => { }
 
     return {
         orders,
+        depositsSuppliesOrder,
         isLoading,
         error,
 
@@ -117,5 +173,6 @@ export const useOrder = () => {
         createWithdrawalOrder,
         confirmWithdrawalOrder,
         deleteWithdrawalOrder,
+        getOrderWithDepositsAndSuppliesByOrder
     }
 }

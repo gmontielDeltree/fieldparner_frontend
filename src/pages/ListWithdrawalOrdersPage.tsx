@@ -12,8 +12,9 @@ import {
     CheckCircle as CheckCircleIcon,
     MoreHoriz as MoreHorizIcon,
 } from '@mui/icons-material';
-import { ColumnProps, OrderStatus, WithdrawalOrder } from '../types';
+import { ColumnProps, OrderStatus, WithdrawalOrder, WithdrawalOrderItem } from '../types';
 import { Icon } from 'semantic-ui-react';
+import { setWithdrawalOrderActive } from '../redux/withdrawalOrder';
 
 const columns: ColumnProps[] = [
     { text: "Tipo", align: "left" },
@@ -39,6 +40,13 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
 
     const onClickEdit = (row: WithdrawalOrder) => {
         // dispatch();
+    }
+
+    const onClickStatus = (row: WithdrawalOrderItem) => {
+        if (row.state !== OrderStatus.Completed) {
+            dispatch(setWithdrawalOrderActive(row));
+            navigate(`/init/overview/order/${row.order}`);
+        }
     }
 
     useEffect(() => {
@@ -136,12 +144,11 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
                                 <TableCellStyled align="center">{row.order}</TableCellStyled>
                                 <TableCellStyled>{row.reason}</TableCellStyled>
                                 <TableCellStyled align="center">{row.withdraw.nombreCompleto}</TableCellStyled>
-                                <TableCellStyled align="center">{row.campaignId}</TableCellStyled>
+                                <TableCellStyled align="center">{row.campaign.campaignId}</TableCellStyled>
                                 <TableCellStyled align="center">
                                     <IconButton
                                         aria-label="acation"
-                                        onClick={() => console.log}
-                                    >
+                                        onClick={() => onClickStatus(row)}>
                                         {
                                             (row.state === OrderStatus.Completed) ?
                                                 <CheckCircleIcon color='success' fontSize='medium' />

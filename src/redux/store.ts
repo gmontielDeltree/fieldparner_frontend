@@ -9,6 +9,7 @@ import { depositSlice } from "./deposit";
 import { mapSlice } from "./map";
 import { drawSlice } from "./draw";
 import { originsDestinationsSlice } from "./originsdestinatons/originDestiantionsSlice";
+import { withdrawalOrderSlice } from "./withdrawalOrder";
 
 const store = configureStore({
   reducer: {
@@ -20,7 +21,8 @@ const store = configureStore({
     deposit: depositSlice.reducer,
     map: mapSlice.reducer,
     draw: drawSlice.reducer,
-    ordesti: originsDestinationsSlice.reducer
+    ordesti: originsDestinationsSlice.reducer,
+    order: withdrawalOrderSlice.reducer
   }
 });
 

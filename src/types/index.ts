@@ -445,19 +445,46 @@ export interface Field extends Document {
     // _rev: string;
 }
 
+//Retiros del Deposito e Insumo
+export interface WithdrawalsByDepositSupply extends Document {
+    accountId: string;
+    order: number;
+    depositSupplyOrderId: string;
+    withdrawalDate: string;
+    amount: number;
+}
+
+//Deposito e Insumo de una Orden
+export interface DepositSupplyOrder extends Document {
+    order: number;
+    accountId: string;
+    deposit: Deposit;
+    location: string;
+    supply: Supply;
+    nroLot: string;
+    withdrawalAmount: number;
+    originalAmount: number;
+}
+
+export interface DepositSupplyOrderItem extends DepositSupplyOrder {
+    deposit: Deposit;
+    supply: Supply;
+}
+
+//Orden de retiro
 export interface WithdrawalOrder extends Document {
-    type: string;
+    accountId: string;
+    type: WithdrawalOrderType;
     creationDate: string;
     order: number;
     reason: string;
-    withdrawId: string;
-    campaignId: string;
+    withdraw: Business;
+    campaign: Campaign;
     state: OrderStatus;
-    suppliesToBeWithdrawn: TransformSupply[];
 }
 
 export interface WithdrawalOrderItem extends WithdrawalOrder {
-    campaing: Campaign;
+    campaign: Campaign;
     withdraw: Business;
 }
 
