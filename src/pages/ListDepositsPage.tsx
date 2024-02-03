@@ -30,23 +30,27 @@ import {
   Warehouse as WarehouseIcon,
 } from "@mui/icons-material";
 import { setDepositActive } from "../redux/deposit";
+import { useTranslation } from "react-i18next";
 
-const columns: ColumnProps[] = [
-  { text: "Descripcion", align: "left" },
-  { text: "Propietario", align: "center" },
-  { text: "Fisico/Virtual", align: "left" },
-  { text: "Domicilio", align: "center" },
-  { text: "Localidad", align: "center" },
-  { text: "Pais", align: "center" },
-  { text: "", align: "center" },
-];
+
 
 export const ListDepositsPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+const {t} =useTranslation();
 
   const { isLoading, deposits, getDeposits, setDeposits, deleteDeposit } = useDeposit();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
+
+  const columns: ColumnProps[] = [
+    { text: t("_description"), align: "left" },
+    { text: t("_owner"), align: "center" },
+    { text: t("physical_virtual"), align: "left" },
+    { text: t("_address"), align: "center" },
+    { text: t("_locality"), align: "center" },
+    { text: t("id_country"), align: "center" },
+    { text: "", align: "center" },
+  ];
 
   const onClickSearch = () => {
     if (filterText === "") {
@@ -92,7 +96,7 @@ export const ListDepositsPage: React.FC = () => {
         <Box display="flex" alignItems="center">
           <WarehouseIcon sx={{ marginRight: '8px' }} />
           <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-            Depositos
+            {t("_warehouses")}
           </Typography>
         </Box>
         <CloseButtonPage />
@@ -113,7 +117,7 @@ export const ListDepositsPage: React.FC = () => {
                 startIcon={<AddIcon />}
                 onClick={() => navigate("/init/overview/deposit/new")}
               >
-                Nuevo
+                {t("add_new")}
               </Button>
             </Grid>
             <Grid item xs={12} sm={10}>
@@ -121,12 +125,12 @@ export const ListDepositsPage: React.FC = () => {
                 <Grid item xs={8} sm={7}>
                   <SearchInput
                     value={filterText}
-                    placeholder="Descripcion / Propietario"
+                    placeholder={t("description_owner")}
                     handleInputChange={handleInputChange}
                   />
                 </Grid>
                 <Grid item xs={4} sm={3}>
-                  <SearchButton text="Buscar" onClick={() => onClickSearch()} />
+                  <SearchButton text={t("icon_search")} onClick={() => onClickSearch()} />
                 </Grid>
               </Grid>
             </Grid>
@@ -148,7 +152,7 @@ export const ListDepositsPage: React.FC = () => {
                   <TableCellStyled align="center">
                     <Chip
                       variant={row.isVirtual ? "filled" : "outlined"}
-                      label={row.isVirtual ? "Virtual" : "Fisico"}
+                      label={row.isVirtual ? t("_virtual"): t("physical_masculine")}
                     />
                   </TableCellStyled>
                   <TableCellStyled align="center">
@@ -159,15 +163,15 @@ export const ListDepositsPage: React.FC = () => {
                   </TableCellStyled>
                   <TableCellStyled align="center">{row.country}</TableCellStyled>
                   <TableCellStyled align="center">
-                    <Tooltip title="Editar">
+                    <Tooltip title={t("icon_edit")}>
                       <IconButton
-                        aria-label="Editar"
+                        aria-label={t("icon_edit")}
                         onClick={() => onClickUpdateDeposit(row)}
                       >
                         <EditIcon />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Eliminar">
+                    <Tooltip title={t("icon_delete")}>
                       <IconButton
                         onClick={() => handleDeleteDeposit(row)}
                         style={{ fontSize: '1rem' }}

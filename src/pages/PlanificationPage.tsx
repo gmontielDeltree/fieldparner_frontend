@@ -1,109 +1,153 @@
-import React, { useEffect } from "react";
-import { ActividadEditorBase } from "../components/Planification/ActividadEditorBase";
-import {
-  IActividadPlanificacion,
-  ICiclosPlanificacion,
-  IPlanificacion,
-  TTipoActividadPlanificada,
-} from "../interfaces/planification";
-import { uuidv7 } from "uuidv7";
-import { formatISO } from "date-fns";
-import { usePlanification } from "../hooks/usePlanifications";
-import { ActividadCardBase } from "../components/Planification/ActividadCardBase";
+import React, { useEffect, useState } from "react";
 import { PlanificationByField } from "../components/Planification/PlanificationByField";
-import { Grid } from "@mui/material";
+import {
+  Box,
+  Divider,
+  Grid,
+  IconButton,
+  Paper,
+  Typography,
+} from "@mui/material";
+import { useField } from "../hooks/useField";
+import { useCampaign } from "../hooks";
+import { ItemPlanificationByField } from "../components/Planification/ItemPlanificationByField";
+import { useNavigate } from "react-router-dom";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { CultivoContext } from "../components/Planification/contexts/CultivosContext";
+import { useCrops } from "../hooks/useCrops";
+import { CampanasContext, useListaCampanas } from "../components/Planification/contexts/CampanasContext";
+import {
+  InsumosContext,
+  useInsumos,
+} from "../components/Planification/contexts/InsumosContext";
+import { LaboresContext } from "../components/Planification/contexts/LaboresContext";
+import { useLabores } from "../hooks/useLabores";
+import { CiclosContext } from '../components/Planification/contexts/CiclosContext';
+import { useCiclos, useListaDeCiclos } from "../hooks/usePlanifications";
+import { ArrowBack } from "@mui/icons-material";
+import { ReporteDeCampanas } from "../components/Planification/FuncionesInformes";
+import { CloseButtonPage } from "../components";
 
 export const PlanificationPage: React.FC = () => {
-  const { planifications, getPlanifications, putPlanification } =
-    usePlanification();
+  const navigation = useNavigate();
+
+  const { fields, getFields } = useField();
+  const { campaigns, getCampaigns } = useCampaign();
+
+  const [selCampanaId, setSelCampanaId] = useState();
+  const [selCampoId, setSelCampoId] = useState();
+  const [selLoteId, setSelLoteId] = useState();
+  const [selCicloId, setSelCicloId] = useState();
+
+
+  const ciclos = useListaDeCiclos()
 
   useEffect(() => {
-    getPlanifications();
+    getCampaigns();
+    getFields();
   }, []);
 
   useEffect(() => {
-    console.log("planificaciones", planifications);
-  }, [planifications]);
+    console.log("campos", fields);
+    console.log("campañas", campaigns);
+  }, [fields, campaigns]);
 
-  let actDoc: IActividadPlanificacion = {
-    accountId: "ffdfs",
-    _id: "plan:actividad:" + uuidv7(),
-    insumos: [],
-    labores: [],
-    fecha: formatISO(new Date()),
-    tipo: TTipoActividadPlanificada.COSECHA,
-    area: 23.4,
-    totalCosto: 2344,
-    campanaId: "dddd",
-    planId: "dddd",
-    cicloId: "cicloid",
-    campoId: "campoId",
-    loteId: "loteId",
-    ejecutada: false,
-    created: { userId: "dfsdfd", date: "" },
-    modified: { userId: "dfsdfd", date: "" },
-  };
+  const navigate = useNavigate()
 
-  let ciclo: ICiclosPlanificacion = {
-    _id: "plan:ciclo:" + uuidv7(),
-    accountId: "ffdss",
-    campanaId: "campañaid",
-    fechaInicio: formatISO(new Date()),
-    fechaFin: formatISO(new Date()),
-    actividades: [actDoc],
-    planId: "dddd",
-    campoId: "ddd",
-    loteId: "ssssss",
-    costoTotal: 2122,
-    cultivoId: "sojaId",
-    created: {
-      userId: "dfsdf",
-      date: "",
-    },
-    modified: {
-      userId: "fdfsd",
-      date: "",
-    },
-  };
-
-  let plan: IPlanificacion = {
-    ciclos: [ciclo],
-    campanaId: "",
-    locked: false,
-    accountId: "",
-    created: {
-      userId: "",
-      date: "",
-    },
-    modified: {
-      userId: "",
-      date: "",
-    },
-    _id: "plan:" + uuidv7(),
-  };
+  const crops = useCrops()
 
   return (
-    <>
-      <div>
-        <Grid container></Grid>
+    <CultivoContext.Provider value={crops}>
+      <CampanasContext.Provider value={useListaCampanas()}>
+        <InsumosContext.Provider value={useInsumos()}>
+          <LaboresContext.Provider value={useLabores()}>
+            <CiclosContext.Provider value={useListaDeCiclos()}>
 
-        <PlanificationByField
-          planId="dsdsds"
-          fieldId="dsdsds"
-        ></PlanificationByField>
+            
+              <Grid container sx={{ position: "absolute", zIndex:2, backgroundColor:"#ffffff52" }} spacing={"2rem"}>
+                <Grid item sx={{ maxHeight: "100%" }}>
+                  <Paper sx={{ maxHeight: "100%" }}>
+                    <Box
+                      sx={{
+                        paddingY: "8px",
+                        paddingX: "1rem",
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Box sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems:"center"
+                      }}>
+                        <IconButton onClick={()=>navigate(-1)}><ArrowBack></ArrowBack></IconButton>
+                        <Typography variant="h5">
+                        Planificación Anual de Campañas
+                      </Typography>
+                      </Box>
+                      
 
-        <ActividadCardBase actividad={actDoc}></ActividadCardBase>
+                      
+                      <IconButton onClick={()=>{
+                        ReporteDeCampanas(ciclos.ciclos,campaigns,crops)
+                      }}>
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Box>
+                    <Divider variant="middle" component={"div"}></Divider>
+                    <Box
+                      sx={{
+                        maxHeight: "85vh",
+                        overflowY: "auto",
+                        paddingX: "1rem",
+                      }}
+                    >
+                      {fields === undefined && <li>"No hay campos"</li>}
+                      {fields?.map((campo, i) => (
+                        <ItemPlanificationByField
+                          key={i}
+                          campo={campo}
+                          campanas={campaigns}
+                          onCampaignClick={(campana, lote,ciclo) => {
+                            setSelCampanaId(campana._id);
+                            setSelCampoId(campo._id);
+                            setSelLoteId(lote.id)
+                            if(ciclo){
+                              setSelCicloId(ciclo._id)
+                            }else{
+                              setSelCicloId(" ")
+                            }
+                            
+                            console.log("CLICK!!!", campana, campo);
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Paper>
+                </Grid>
 
-        <ActividadEditorBase
-          actividadDoc={plan.ciclos[0].actividades[0]}
-          onSave={() => {
-            // Update doc
-            console.log("SAVE ACTIVIDAD TODO");
-            putPlanification(plan);
-            getPlanifications();
-          }}
-        ></ActividadEditorBase>
-      </div>
-    </>
+                {selCampanaId && selCampoId && selLoteId && selCicloId && (
+                  <Grid item xs={6} >
+                    <Paper sx={{ marginTop: "4rem" }}>
+                      <PlanificationByField
+                        campaignId={selCampanaId}
+                        fieldId={selCampoId}
+                        loteSelected={selLoteId}
+                        cicloSelected={selCicloId}
+                        onClose={()=>{
+                          setSelCampanaId(undefined)
+                        }}
+                      />
+                    </Paper>
+                  </Grid>
+                )}
+              </Grid>
+
+
+              </CiclosContext.Provider>
+          </LaboresContext.Provider>
+        </InsumosContext.Provider>
+      </CampanasContext.Provider>
+    </CultivoContext.Provider>
   );
 };

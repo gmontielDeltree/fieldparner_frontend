@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { Supply, TipoInsumo, TypeSupplies } from "../../types";
 import React, { ChangeEvent } from "react";
+import { useTranslation } from "react-i18next";
 
 export interface LaborsFormProps {
   formValues: Supply;
@@ -56,19 +57,21 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
     }
   };
 
+  const {t} = useTranslation();
+
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
       <Grid item xs={12} sm={6}>
         <FormControl fullWidth>
-          <InputLabel id="tipo-insumo">Tipo</InputLabel>
+          <InputLabel id="tipo-insumo">{t("_type")}</InputLabel>
           <Select
             labelId="tipo-insumo"
             name="type"
             value={type}
-            label="Tipo"
+            label={t("_type")}
             onChange={handleSelectChange}
           >
-            {TypeSupplies.map((supply) => (
+            {TypeSupplies().map((supply) => (
               <MenuItem key={supply} value={supply}>
                 {supply}
               </MenuItem>
@@ -80,10 +83,10 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Insumo"
+          label={t("_supply")}
           name="name"
           error={supplyError}
-          helperText={supplyError ? "Este campo es obligatorio" : ""}
+          helperText={supplyError ? t("this_field_is_mandatory") : ""}
           value={name}
           onChange={handleInputChange}
           InputProps={{
@@ -96,7 +99,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Descripcion"
+          label={t("_description")}
           name="description"
           value={description}
           onChange={handleInputChange}
@@ -110,7 +113,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Codigo de Barra"
+          label={t("_barcode")}
           name="barCode"
           value={barCode}
           onChange={handleInputChange}
@@ -122,7 +125,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
       </Grid>
       <Grid item xs={12} sm={6}>
         <FormGroup row sx={{ alignItems: "center" }}>
-          <label htmlFor="">Aplica Stock por Lotes?</label>
+          <label htmlFor="">{t("apply_stock_by_lots")}</label>
           <FormControlLabel
             key="yes"
             control={
@@ -132,7 +135,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                 onChange={() => setFormValues(prevState=> ({...prevState, stockByLot: true}))}
               />
             }
-            label="Si"
+            label={t("_yes")}
             labelPlacement="start"
           />
           <FormControlLabel
@@ -144,7 +147,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                 onChange={() => setFormValues(prevState=> ({...prevState, stockByLot: false}))}
               />
             }
-            label="No"
+            label={t("_no")}
             labelPlacement="start"
           />
         </FormGroup>
@@ -153,7 +156,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         {type.toLowerCase() === TipoInsumo.CULTIVO.toLowerCase() && (
           <>
             <Typography variant="h5" sx={{ pl: 2, mb: 2 }}>
-              Labores que aplica
+              {t("tasks_applied")}
             </Typography>
             <FormGroup row sx={{ justifyContent: "center" }}>
               <FormControlLabel
@@ -164,7 +167,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                     onChange={handleChangeLabors}
                   />
                 }
-                label="Preparado"
+                label={t("_prepared")}
               />
               <FormControlLabel
                 control={
@@ -174,7 +177,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                     onChange={handleChangeLabors}
                   />
                 }
-                label="Siembra"
+                label={t("_planting")}
               />
               <FormControlLabel
                 control={
@@ -184,7 +187,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                     onChange={handleChangeLabors}
                   />
                 }
-                label="Aplicacion"
+                label={t("_application")}
               />
               <FormControlLabel
                 control={
@@ -194,7 +197,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                     onChange={handleChangeLabors}
                   />
                 }
-                label="Arrancado"
+                label={t("_harvested")}
               />
               <FormControlLabel
                 control={
@@ -204,7 +207,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
                     onChange={handleChangeLabors}
                   />
                 }
-                label="Cosecha"
+                label={t("_harvest")}
               />
             </FormGroup>
           </>

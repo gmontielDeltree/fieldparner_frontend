@@ -42,8 +42,8 @@ export const OverviewRoutes: React.FC = () => {
     <AppLayout key="app-layout">
       <Routes>
         <Route path="/overview/fields/:campoId?/:loteId?" element={<FieldsPage />} >
-
-          <Route path="device/:deviceId/:date" element={<DevicePage />} />
+          <Route path="planification" element={<PlanificationPage />} />
+          <Route path="device/:deviceId/:date" element={<DevicePage/>}/>
           <Route path="integrations" element={<IntegrationsPage />} />
           <Route path="john-deere" element={<JohnDeereIntegration />} />
           <Route path="magris/:id" element={<MagrisReportIntegration />} />
@@ -88,7 +88,6 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
         <Route path="/overview/zoning/:baseImageName" element={<ZoningPage />} />
         <Route path="/overview/prices" element={<PricesPage />} />
-        <Route path="/overview/planification" element={<PlanificationPage />} />
 
         <Route path="/overview/list-orders" element={<ListWithdrawalOrdersPage />} />
         <Route path="/overview/order" element={<WithdrawalOrdersPage />} />

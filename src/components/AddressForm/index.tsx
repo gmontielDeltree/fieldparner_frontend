@@ -3,6 +3,7 @@ import { Grid, TextField, InputAdornment } from "@mui/material";
 import { getLocalityAndStateByZipCode } from "../../services"; 
 import {Autocomplete} from "@mui/material";
 import { Loading } from "../../components"
+import { useTranslation } from "react-i18next";
 
 export interface Address {
   domicilio: string;
@@ -33,6 +34,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [localities, setLocalities] = useState<string[]>([]);
   const [isLoading] = useState(false);
+  const { t } =useTranslation ();
 
   const onBlurZipCode = async () => {
     if (cp !== "") {
@@ -90,7 +92,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
 
       <Grid item xs={12} sm={6}>
         <TextField
-          label="Pais"
+          label={t("id_country")}
           variant="outlined"
           type="text"
           name="pais"
@@ -108,7 +110,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
       <TextField
           variant="outlined"
           type="text"
-          label="Codigo postal"
+          label={t("postal_code")}
           name="cp"
           value={cp}
           onBlur={onBlurZipCode} 
@@ -121,7 +123,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
       </Grid>
       <Grid item xs={12} sm={6}>
         <TextField
-          label="Provincia"
+          label={t("_state")}
           variant="outlined"
           type="text"
           name="provincia"
@@ -140,7 +142,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Localidad"
+                label={t("_locality")}
                 variant="outlined"
                 name="localidad"
                 value={localidad}
@@ -156,10 +158,10 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         </Grid>
       <Grid item xs={12} sm={12}>
         <TextField
-          label="Domicilio"
+          label={t("_locality")}
           variant="outlined"
           type="text"
-          name="domicilio"
+          name="_address"
           value={domicilio}
           onChange={handleInputChange}
           InputProps={{

@@ -3,6 +3,7 @@ import { Field } from "@types";
 import { useState } from "react";
 import { dbContext } from "../services";
 import { useAppSelector } from ".";
+import { filter } from 'jszip';
 
 
 export const useField = () => {
@@ -15,17 +16,20 @@ export const useField = () => {
     const getFields = async () => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not found");
+            // if (!user) throw new Error("User not found");
 
             // const result = await dbContext.fields.allDocs({ include_docs: true });
             const result = await dbContext.fields.find({
-                selector: { "accountId": user.accountId }
+                 selector: { "accountId": undefined } //user?.accountId }
             });
 
             // const vehiculos = response.map((v: any) => v.content);
             if (result.docs.length) {
-                const documents: Field[] = result.docs.map(doc => doc as Field);
-                setFields(documents);
+                
+                const documents = result.docs.map(doc => doc);
+                const d : Field[]= documents.filter((d)=>d._id.includes("campos_"))
+                // console.log("DSDSDSSDSDSDSDS",d)
+                setFields(d);
             }
 
             setIsLoading(false);

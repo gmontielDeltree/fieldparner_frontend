@@ -26,7 +26,6 @@ import mapbox_style from "mapbox-gl/dist/mapbox-gl.css?inline";
 import mapbox_draw_style from "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css?inline";
 import { map } from "lit/directives/map.js";
 import { LastUpdateTag } from "../depositos/depositos-types";
-import { LngLat } from "mapbox-gl";
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
@@ -174,7 +173,7 @@ export class MapPicker extends LitElement {
       container: this.shadowRoot.getElementById("map"),
       //style: "mapbox://styles/mapbox/outdoors-v11",
       //style: mapStyle,
-      style: "mapbox://styles/mapbox/satellite-v9?optimize=true",
+      style: "mapbox://styles/mapbox/satellite-streets-v12?optimize=true",
       center: new LngLat(-59.2965, -35.1923),
       zoom: 14,
       attributionControl: false,

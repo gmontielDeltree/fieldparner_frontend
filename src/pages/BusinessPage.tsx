@@ -21,6 +21,7 @@ import {
 import { BusinessForm } from "../components";
 import { removeBusinessActive } from "../redux/business";
 import { getLocalityAndStateByZipCode } from "../services";
+import { useTranslation } from "react-i18next";
 
 const initialForm: Business = {
   nombreCompleto: "",
@@ -48,6 +49,7 @@ const initialForm: Business = {
 export const BusinessPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+const { t } =useTranslation ();
   const { businessActive } = useAppSelector((state) => state.business);
   const [activeStep, setActiveStep] = useState(0);
   const [nameError, setNameError] = useState(false);
@@ -60,9 +62,9 @@ export const BusinessPage: React.FC = () => {
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [localities, setLocalities] = useState<string[]>([]);
   const [steps, setSteps] = useState<string[]>([
-    "Informacion",
-    "Categoría",
-    "Ubicacion",
+    t("id_information"),
+    t("id_category"),
+    t("id_location"),
   ]);
   const {
     formulario,
@@ -312,7 +314,8 @@ export const BusinessPage: React.FC = () => {
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
         >
           <Typography component="h1" variant="h4" align="center" gutterBottom>
-            {businessActive ? "Editar" : "Nueva"} Entidad Social
+            {businessActive ? t("icon_edit") : t("new_famale")} {' '}
+          {t("social_entities")}
           </Typography>
           <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 3, mb: 2 }}>
             {steps.map((label) => (
@@ -332,7 +335,7 @@ export const BusinessPage: React.FC = () => {
             >
               <Grid item xs={12} sm={3} key="grid-back">
                 <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
-                  {activeStep !== 0 ? "Volver" : "Cancelar"}
+                  {activeStep !== 0 ? t("id_back") : t("id_cancel")}
                 </Button>
               </Grid>
               <Grid item xs={12} sm={3} key="grid-next">
@@ -342,7 +345,7 @@ export const BusinessPage: React.FC = () => {
                     color="primary"
                     onClick={handleNext}
                   >
-                    Siguiente
+                    {t("id_next")}
                   </Button>
                 )}
               </Grid>
@@ -354,7 +357,7 @@ export const BusinessPage: React.FC = () => {
                     businessActive ? handleUpdateBusiness : addNewBusiness
                   }
                 >
-                  {!businessActive ? "Agregar" : "Actualizar"}
+                  {!businessActive ? t("_add") : t("id_update")} {' '}
                 </Button>
               </Grid>
               {businessActive && (
@@ -364,7 +367,7 @@ export const BusinessPage: React.FC = () => {
                     color="error"
                     onClick={handleDelete}
                   >
-                    Eliminar
+                    {t("icon_delete")}
                   </Button>
                 </Grid>
               )}

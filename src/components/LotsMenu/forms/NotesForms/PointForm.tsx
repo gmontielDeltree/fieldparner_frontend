@@ -411,3 +411,6 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
 }
 
 export default PointForm;
+function useTranslation(): { t: any } {
+  throw new Error("Function not implemented.");
+}

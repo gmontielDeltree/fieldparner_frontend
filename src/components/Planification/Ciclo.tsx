@@ -1,23 +1,67 @@
-import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
-import React from "react";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  Paper,
+  Typography,
+} from "@mui/material";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { ICiclosPlanificacion } from "../../interfaces/planification";
+import {
+  ICiclosPlanificacion,
+  IActividadPlanificacion,
+} from "../../interfaces/planification";
 import { ActividadCardBase } from "./ActividadCardBase";
+import { ActividadEditorBase } from "./ActividadEditorBase";
+import ActividadEditorDialog from "./ActividadEditorDialog";
+import DeleteIcon from '@mui/icons-material/Delete';
+import { CultivoContext } from "./contexts/CultivosContext";
+import { useCiclos } from "../../hooks/usePlanifications";
+import { CiclosContext } from "./contexts/CiclosContext";
 
-export const Ciclo = (ciclo : ICiclosPlanificacion) => {
+const ActividadContext = createContext()
+
+export const Ciclo = ({ ciclo, loteId, expanded }) => {
+
+  const [expan, setExpan] = useState(expanded)
+
+  console.log(ciclo);
+
+  const {getCropLabelFromId,getCropColorFromId} = useContext(CultivoContext)
+
+  const [actividades, setActividades] = useState<IActividadPlanificacion[]>();
+  const {removeCiclo} = useContext(CiclosContext)
   return (
-    <Accordion>
+   
+    <Accordion sx={{backgroundColor:getCropColorFromId(ciclo.cultivoId)}} expanded={expan} onChange={(_,e)=>setExpan(e)}>
       <AccordionSummary
+      
         expandIcon={<ExpandMoreIcon />}
         aria-controls="panel1-content"
         id="panel1-header"
       >
-        Ciclo {ciclo.cultivoId}
+        <Typography>Ciclo {getCropLabelFromId(ciclo.cultivoId)}</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        {ciclo.actividades.map((a)=>{
-            return <ActividadCardBase actividad={a}></ActividadCardBase>
-        })}
+        <Box sx={{justifyContent:"flex-end",margin:"0.5rem",gap:"0.2rem",display:"flex"}}>
+        <Button  variant="outlined" startIcon={<DeleteIcon />} onClick={()=>removeCiclo(ciclo._id)}>Eliminar</Button>
+          <ActividadEditorDialog
+            cicloId={ciclo._id}
+            campanaId={ciclo.campanaId}
+            loteId={loteId}
+          />
+        </Box>
+
+      <Paper sx={{display:"flex",flexDirection:"column", alignItems:"center", gap:"1rem", 
+      backgroundColor:"#c7bb27",margin:"0.2rem",paddingY:"1rem",borderRadius:"1rem"}}>
+          {ciclo.actividadesIds?.map((a ,i ) => {
+            return <ActividadCardBase key={a} actividadId={a}></ActividadCardBase>;
+          })}
+
+          {!ciclo.actividadesIds.length && <Typography>Sin Actividades Planificadas</Typography>}
+        </Paper>
       </AccordionDetails>
     </Accordion>
   );

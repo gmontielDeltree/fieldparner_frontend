@@ -8,6 +8,8 @@ import { supplySlice } from "./supply";
 import { depositSlice } from "./deposit";
 import { mapSlice } from "./map";
 import { drawSlice } from "./draw";
+import { fieldListSlice } from "./fieldsList";
+
 import { originsDestinationsSlice } from "./originsdestinatons/originDestiantionsSlice";
 import { withdrawalOrderSlice } from "./withdrawalOrder";
 
@@ -22,7 +24,8 @@ const store = configureStore({
     map: mapSlice.reducer,
     draw: drawSlice.reducer,
     ordesti: originsDestinationsSlice.reducer,
-    order: withdrawalOrderSlice.reducer
+    fieldList: fieldListSlice.reducer,
+    order: withdrawalOrderSlice.reducer,
   }
 });
 

@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { Supply } from "../types";
 import { removeSupplyActive } from "../redux/supply";
+import { useTranslation } from "react-i18next";
 
 
 const initialForm: Supply = {
@@ -40,7 +41,8 @@ export const SupplyPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { supplyActive } = useAppSelector((state) => state.supply);
   const [activeStep, setActiveStep] = useState(0);
-  const [steps] = useState<string[]>(["Insumos", "Dosis", "Stock"]);
+  const {t} = useTranslation();
+  const [steps] = useState<string[]>([t("_supplies"), t("_dose"), t("_stock")]);
   const {
     formulario,
     setFormulario,
@@ -152,7 +154,8 @@ export const SupplyPage: React.FC = () => {
         sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}
       >
         <Typography component="h1" variant="h4" align="center" sx={{ mb: 3 }}>
-          {supplyActive ? "Editar" : "Nuevo"} Insumo
+          {supplyActive ? t("icon_edit") : t("new_masculine")} {' '}
+          {t("_supplies")}
         </Typography>
         <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 3, mb: 2 }}>
           {steps.map((label) => (
@@ -172,13 +175,13 @@ export const SupplyPage: React.FC = () => {
           >
             <Grid item xs={12} sm={3}>
               <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
-                {activeStep !== 0 ? "Volver" : "Cancelar"}
+                {activeStep !== 0 ? t("id_back") : t("id_cancel")}
               </Button>
             </Grid>
             <Grid item xs={12} sm={3} key="grid-next">
               {!(activeStep === steps.length - 1) && (
                 <Button variant="outlined" color="primary" onClick={handleNext}>
-                  Siguiente
+                  {t("id_next")}
                 </Button>
               )}
             </Grid>
@@ -188,7 +191,7 @@ export const SupplyPage: React.FC = () => {
                 color="primary"
                 onClick={supplyActive ? handleUpdateSupply : handleAddSupply}
               >
-                {!supplyActive ? "Agregar" : "Actualizar"}
+                {!supplyActive ? t("_add") : t("id_update")}
               </Button>
             </Grid>
           </Grid>

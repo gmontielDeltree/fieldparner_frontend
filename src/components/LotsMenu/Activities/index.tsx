@@ -37,16 +37,15 @@ export const Activities = ({
   activitiesData,
   setActivitiesData,
   fieldDoc,
-  lotDoc
+  lotDoc,
+  handleEditActivity
 }) => {
-  console.log("ACTIVITIES DATA: ", activitiesData);
   const [userMessage, setUserMessage] = useState("");
   const db = dbContext.fields //new PouchDB("campos_randyv7");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const handleSnackbarClose = (event: any, reason: string) => {
-    console.log("Snackbar closing, reason:", reason);
     if (reason === "clickaway") {
       return;
     }
@@ -54,8 +53,6 @@ export const Activities = ({
   };
 
   const handleDeleteActivity = (activityId) => {
-    console.log("DELETE ACTIVITY: ", activityId);
-
     db.get(activityId)
       .then((doc) => {
         return db.remove(doc);
@@ -76,10 +73,6 @@ export const Activities = ({
         setUserMessage("Error al eliminar la actividad.");
         setSnackbarSeverity("error");
       });
-  };
-
-  const handleEditActivity = (activityId) => {
-    console.log("EDIT ACTIVITY: ", activityId);
   };
 
   const handleDownloadPDF = (activity) => {

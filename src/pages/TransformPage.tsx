@@ -25,32 +25,11 @@ import { useAppSelector, useDeposit, useForm, useStockMovement, useSupply } from
 import { getShortDate } from '../helpers/dates';
 import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack } from '../components';
 import { ColumnProps, StockByLot, TransformSupply } from '../types';
-
+import { useTranslation } from 'react-i18next';
 
 
 const today = getShortDate();
-const originColumns: ColumnProps[] = [
-    { text: "Insumo/cultivo", align: "left" },
-    { text: "Deposito", align: "left" },
-    { text: "Ubicacion", align: "left" },
-    { text: "Nro Lote", align: "left" },
-    { text: "Vencimiento", align: "left" },
-    { text: "UM", align: "center" },
-    { text: "Stock Actual", align: "left" },
-    { text: "Stock Reservado", align: "left" },
-    { text: "Stock Disponible", align: "left" },
-    { text: "Cantidad a Utilizar", align: "center" },
-];
-const destinationColumns: ColumnProps[] = [
-    { text: "Insumo/cultivo", align: "left" },
-    { text: "Deposito", align: "left" },
-    { text: "Ubicacion", align: "left" },
-    { text: "Nro Lote", align: "left" },
-    { text: "Vencimiento", align: "left" },
-    { text: "UM", align: "center" },
-    { text: "Cantidad a Crear", align: "center" },
-    { text: "Horas/Empledo", align: "center" },
-];
+
 
 
 type SupplyRowProps = {
@@ -137,6 +116,7 @@ export const TransformPage: React.FC = () => {
     const [stockBySupplies, setStockBySupplies] = useState<StockByLot[]>([]);
     const { isLoading, supplies, getSupplies } = useSupply();
     const { deposits, getDeposits } = useDeposit();
+const {t} = useTranslation();
     const {
         operationDate,
         detail,
@@ -144,6 +124,29 @@ export const TransformPage: React.FC = () => {
         reset,
     } = useForm(initialStateTransform);
     const { isLoading: loadingTransform, transformStock, getStock } = useStockMovement();
+
+    const originColumns: ColumnProps[] = [
+        { text: t("supply_crop"), align: "left" },
+        { text: t("_warehouse"), align: "left" },
+        { text: t("id_location"), align: "left" },
+        { text: t("lot_number"), align: "left" },
+        { text: t("expiration_date"), align: "left" },
+        { text: "UM", align: "center" },
+        { text: t("current_stock"), align: "left" },
+        { text: t("reserved_stock"), align: "left" },
+        { text: t("available_stock"), align: "left" },
+        { text: t("quantity_to_use"), align: "center" },
+    ];
+    const destinationColumns: ColumnProps[] = [
+        { text: t("supply_crop"), align: "left" },
+        { text: t("_warehouse"), align: "left" },
+        { text: t("id_location"), align: "left" },
+        { text: t("lot_number"), align: "left" },
+        { text: t("expiration_date"), align: "left" },
+        { text: "UM", align: "center" },
+        { text: t("quantity_to_create"), align: "center" },
+        { text: t("hours_per_employee"), align: "center" },
+    ];
 
     const validateSupplyStock = async (newSupply: TransformSupply, type: "origin" | "destination" = "origin") => {
         try {
@@ -273,7 +276,7 @@ export const TransformPage: React.FC = () => {
             >
                 <TransformIcon />
                 <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
-                    Transformarción - Valor Agregado
+                    {t("transformation_added_value")}
                 </Typography>
             </Box>
             <Paper variant="outlined"
@@ -285,14 +288,14 @@ export const TransformPage: React.FC = () => {
                     overflow: "scroll"
                 }}>
                 <Typography variant="h5" sx={{ mb: 3 }}>
-                    Insumos Origen
+                    {t("source_supplies")}
                 </Typography>
                 <Grid container spacing={2} mb={2}>
                     <Grid item xs={12} sm={3}>
                         <TextField
                             variant="outlined"
                             type="date"
-                            label="Fecha de la operacion:"
+                            label={t("operation_date")}
                             name="operationDate"
                             value={operationDate}
                             onChange={handleInputChange}
@@ -309,7 +312,7 @@ export const TransformPage: React.FC = () => {
                         <TextField
                             variant="outlined"
                             type="text"
-                            label="Motivo:"
+                            label={t("_reason")}
                             name="detail"
                             value={detail}
                             onChange={handleInputChange}
@@ -364,7 +367,7 @@ export const TransformPage: React.FC = () => {
                         addNewSupply={handleAddSupplyOrigin} />
                 </BorderContainer>
                 <Typography variant="h5" sx={{ my: 3 }}>
-                    Nuevo Insumo Destino
+                    {t("new_supply_destination")}
                 </Typography>
                 <BorderContainer key="supplies-destination">
                     <TableContainer
@@ -416,7 +419,7 @@ export const TransformPage: React.FC = () => {
                             color="inherit"
                             onClick={() => onClickCancel()}
                             fullWidth>
-                            Cancelar
+                            {t("id_cancel")}
                         </Button>
                     </Grid>
                     <Grid item xs={12} sm={3}>
@@ -425,7 +428,7 @@ export const TransformPage: React.FC = () => {
                             color="success"
                             onClick={() => saveTransformStock()}
                             fullWidth>
-                            Guardar
+                            {t("_save")}
                         </Button>
                     </Grid>
                 </Grid>

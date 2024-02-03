@@ -1,0 +1,254 @@
+[33mcommit 517e77dfd01a62e2784e17cce38795a729c32c1f[m[33m ([m[1;36mHEAD -> [m[1;32mtranslateRG[m[33m)[m
+Merge: 4ec47666 498b8a85
+Author: Rodrigo Garro <rgarro@deltree.com.ar>
+Date:   Tue Jan 9 16:07:38 2024 -0300
+
+    Merge branch 'main' of https://github.com/aequitasetveritas/fieldpartner_frontend into translateRG
+
+[33mcommit 4ec47666afd1847efe7dc1e59fa749e245f9cf6a[m[33m ([m[1;31morigin/feature/translate[m[33m, [m[1;32mfeature/translate[m[33m)[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Wed Jan 3 01:38:56 2024 -0300
+
+    reverted changes made to initrouter
+
+[33mcommit 19497a79028ff24a75ea0f97f23918aea05129be[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Wed Jan 3 01:38:35 2024 -0300
+
+    fixed icon swithching bug
+
+[33mcommit a30cd62d272fc0fe28736c713bfc12b6deef188f[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Wed Jan 3 01:32:31 2024 -0300
+
+    added translation logic
+
+[33mcommit 4fafa477129ded6d45ac6c4cc1fc8eb94352c308[m
+Merge: a6b0a2de 1dfe7839
+Author: gmontielDeltree <132007734+gmontielDeltree@users.noreply.github.com>
+Date:   Tue Jan 2 23:32:01 2024 -0300
+
+    Merge pull request #51 from aequitasetveritas/rama2
+    
+    Rama2
+
+[33mcommit 1dfe78392c1652671d19b29b467df7f8bd8e17e5[m[33m ([m[1;31morigin/rama2[m[33m)[m
+Author: Rodrigo Garro <rgarro@deltree.com.ar>
+Date:   Tue Jan 2 18:53:52 2024 -0300
+
+    procedencias/desstinos
+
+[33mcommit a3697f1ccb6e2af9a3778a1a5c8b741034477d14[m
+Author: Rodrigo Garro <rgarro@deltree.com.ar>
+Date:   Tue Jan 2 18:48:01 2024 -0300
+
+    abm procedencias/destinos
+
+[33mcommit a6b0a2de805c808c7d68a8d07d8a993dde466ee5[m
+Merge: c124ae7d 0fb97862
+Author: Joaquin Fernandez Cedeira <Fcedeirajoaquin@gmail.com>
+Date:   Fri Dec 29 13:38:36 2023 -0300
+
+    Merge pull request #50 from aequitasetveritas/feature/activities
+    
+    created all the forms and almost finished notes
+
+[33mcommit 0fb97862aa843d3ce2b72733ddcdf477f179ab62[m[33m ([m[1;31morigin/feature/activities[m[33m)[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Fri Dec 29 13:37:54 2023 -0300
+
+    reverted changes made to initrouter
+
+[33mcommit f616be1ebefbbbac218586ed5002d8b0cfe6b926[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Fri Dec 29 13:35:34 2023 -0300
+
+    changed comment
+
+[33mcommit 4db97452f5d415be25a513c7b543da76baa48790[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Fri Dec 29 13:35:07 2023 -0300
+
+    removed comments
+
+[33mcommit 13345d38cbb599979948ca68550416f6d490d0fd[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Fri Dec 29 13:31:45 2023 -0300
+
+    created all the forms and almost finished notes
+
+[33mcommit c124ae7ddea1c735f838350053579b8ab4006233[m
+Merge: 0fa614f5 88c9ed4f
+Author: gmontielDeltree <132007734+gmontielDeltree@users.noreply.github.com>
+Date:   Thu Dec 28 17:11:53 2023 -0300
+
+    Merge pull request #48 from aequitasetveritas/feature/exitField
+    
+    fix: newExitFieldPage
+
+[33mcommit 88c9ed4feaae1c6d311ca69b46b93911cd0ba7d4[m
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Thu Dec 28 17:06:01 2023 -0300
+
+    fix: newExitFieldPage
+
+[33mcommit 0fa614f590d6287084fa27d7e3833088ba8c7fb6[m
+Merge: 6fcf2f5f 0341751f
+Author: gmontielDeltree <132007734+gmontielDeltree@users.noreply.github.com>
+Date:   Thu Dec 28 00:50:08 2023 -0300
+
+    Merge pull request #46 from aequitasetveritas/feature/exitField
+    
+    Feature/exit field
+
+[33mcommit 0341751fa8b6f3e7d6d50560e4cb6353b6c7e5c3[m
+Merge: da13b2ee 6fcf2f5f
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Thu Dec 28 00:42:04 2023 -0300
+
+    merge staging
+
+[33mcommit da13b2eea05998aa37f49680d98dbe57c896acad[m
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Thu Dec 28 00:39:21 2023 -0300
+
+    terminado createExitField
+
+[33mcommit c2aec7a0baa9b3eca32e62043c61bb5418c85e5b[m
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Wed Dec 27 01:04:47 2023 -0300
+
+    createExitField
+
+[33mcommit 6fcf2f5ff210ed70aa0e7f198b9415b40c808c52[m
+Merge: 10f08d67 b657a818
+Author: Joaquin Fernandez Cedeira <Fcedeirajoaquin@gmail.com>
+Date:   Tue Dec 26 14:14:25 2023 -0300
+
+    Merge pull request #45 from aequitasetveritas/feature/activities
+    
+    Feature/activities
+
+[33mcommit b657a818f0670afca77ee0e2b561b9e9a216f4c6[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Tue Dec 26 14:09:04 2023 -0300
+
+    removed comment and reverted changes on router
+
+[33mcommit 704bad1e2a620458fc235658441cd5f38d001fe2[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Tue Dec 26 14:04:53 2023 -0300
+
+    removed comment
+
+[33mcommit 1e960822c6936f8c3a2410d7f38653fc4760eeab[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Tue Dec 26 13:59:52 2023 -0300
+
+    activities migration
+
+[33mcommit fa288c594a93db4204a93c6863bd8d86c79079a7[m
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Sun Dec 24 14:08:41 2023 -0300
+
+    create step transport
+
+[33mcommit 389a02233772e5eb8266a00b94103962208029a5[m
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Fri Dec 22 00:43:53 2023 -0300
+
+    create table exit field
+
+[33mcommit 10f08d6754420fb1738df09c07a60e08c6ba78e2[m
+Merge: 83937ea5 e3b732c9
+Author: gmontielDeltree <132007734+gmontielDeltree@users.noreply.github.com>
+Date:   Thu Dec 21 15:46:05 2023 -0300
+
+    Merge pull request #43 from aequitasetveritas/rama2
+    
+    fix
+
+[33mcommit e3b732c9f90f6556868e1c7f00b6fbe18d7b5733[m
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Thu Dec 21 15:45:30 2023 -0300
+
+    fix
+
+[33mcommit 83937ea5e1cb5fd6c6b92e558830a0ca425400fc[m
+Merge: cbd05245 5f29524e
+Author: gmontielDeltree <132007734+gmontielDeltree@users.noreply.github.com>
+Date:   Thu Dec 21 15:38:13 2023 -0300
+
+    Merge pull request #42 from aequitasetveritas/rama2
+    
+    Rama2
+
+[33mcommit 5f29524e2b7c56ed1a67e2b2dcb646a40e5b90b7[m
+Merge: b0b210bb cbd05245
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Thu Dec 21 15:37:34 2023 -0300
+
+    merge
+
+[33mcommit b0b210bb1fc57e68e9c60d936f997af3efbea32d[m
+Author: Rodrigo Garro <rgarro@deltree.com.ar>
+Date:   Thu Dec 21 13:50:12 2023 -0300
+
+    cambios 26/10
+
+[33mcommit 4f9e377f9791470190b6dcdd58a8abe423990f32[m
+Author: Rodrigo Garro <rgarro@deltree.com.ar>
+Date:   Thu Dec 21 13:39:25 2023 -0300
+
+    cambios 26/10
+
+[33mcommit abafab74f1cedde9b526a42ad3562da399cb18d9[m
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Wed Dec 20 17:41:08 2023 -0300
+
+    create page
+
+[33mcommit 42b2eebbffb540adb60603e404d8591ea0dcf7ea[m
+Author: Joaquin Fernandez Cedeira <joaquin.jfernandez@mercadolibre.com>
+Date:   Tue Dec 19 17:37:09 2023 -0300
+
+    activities migration
+
+[33mcommit c2941fed8c8dba8dc210da6f84b4010225e98391[m
+Author: Rodrigo Garro <rgarro@deltree.com.ar>
+Date:   Mon Dec 18 20:15:25 2023 -0300
+
+    changes 26/10/
+
+[33mcommit cbd05245233bd0d80ac71959c346707e8d351cac[m
+Merge: 20106e79 2baa096d
+Author: gmontielDeltree <132007734+gmontielDeltree@users.noreply.github.com>
+Date:   Wed Dec 13 15:20:44 2023 -0300
+
+    Merge pull request #41 from aequitasetveritas/feature/transformSupply
+    
+    remover comentarios
+
+[33mcommit 2baa096d9ac26604f71294eba722787051483bad[m
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Wed Dec 13 15:20:03 2023 -0300
+
+    remover comentarios
+
+[33mcommit 20106e7986ca78d6a09a475265d1ff5039e10ee6[m
+Merge: 119b7898 d43ab77a
+Author: gmontielDeltree <132007734+gmontielDeltree@users.noreply.github.com>
+Date:   Wed Dec 13 15:18:27 2023 -0300
+
+    Merge pull request #40 from aequitasetveritas/feature/transformSupply
+    
+    Feature/transform supply
+
+[33mcommit d43ab77a1cf56889f86e82f47e5ce429320f8b42[m
+Author: German Montiel <german_montiel96@hotmail.com>
+Date:   Wed Dec 13 15:17:08 2023 -0300
+
+    refactorizacion de pagina transformacion
+
+[33mcommit 80f3e6cb2e7cc30024268a34c8cf119eaf5c3bac[m
+Author: German Montiel <germ

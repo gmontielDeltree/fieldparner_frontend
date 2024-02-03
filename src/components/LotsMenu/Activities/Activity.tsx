@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -11,12 +11,29 @@ function Activity({
   activity,
   complementaryColor,
   icon,
-  isFirst,
   handleDeleteActivity,
   handleEditActivity,
   handleDownloadPDF
 }) {
-  const gradientBackground = `linear-gradient(135deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
+  const [gradientAngle, setGradientAngle] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  const gradientBackground = `linear-gradient(${gradientAngle}deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
+
+  const cardStyle = {
+    border: `2px solid ${complementaryColor}`,
+    borderRadius: "10px",
+    minWidth: 275,
+    width: "100%",
+    backgroundImage: gradientBackground,
+    boxShadow: "0 4px 8px 0 rgba(0,0,0,0.2)"
+  };
 
   const renderActivityContent = () => {
     switch (activity.actividad.tipo) {
@@ -36,6 +53,8 @@ function Activity({
             activity={activity}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
+            handleEditActivity={handleEditActivity}
+            handleDownloadPDF={handleDownloadPDF}
           />
         );
       case "nota":
@@ -52,6 +71,8 @@ function Activity({
             activity={activity}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
+            handleEditActivity={handleEditActivity}
+            handleDownloadPDF={handleDownloadPDF}
           />
         );
       case "analisis de suelo":
@@ -60,14 +81,9 @@ function Activity({
         return <Typography>Unknown Activity Type</Typography>;
     }
   };
-
   return (
     <div
-      style={{
-        display: "flex",
-        marginBottom: "32px",
-        position: "relative"
-      }}
+      style={{ display: "flex", marginBottom: "32px", position: "relative" }}
     >
       <div style={{ marginRight: "8px", position: "relative", zIndex: 2 }}>
         {icon && (
@@ -77,13 +93,17 @@ function Activity({
             style={{
               height: "40px",
               width: "40px",
-              transition: "transform 0.3s ease",
+              transition: "transform 0.3s ease, filter 0.3s ease",
               filter: `drop-shadow(2px 4px 6px ${complementaryColor})`
             }}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.transform = "scale(1.2)")
-            }
-            onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = "rotate(20deg)";
+              e.currentTarget.style.filter = `drop-shadow(2px 4px 6px ${complementaryColor})`;
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = "rotate(0deg)";
+              e.currentTarget.style.filter = `drop-shadow(2px 4px 6px ${complementaryColor})`;
+            }}
           />
         )}
       </div>
@@ -98,13 +118,7 @@ function Activity({
           zIndex: 1
         }}
       ></div>
-      <Card
-        sx={{
-          minWidth: 275,
-          width: "100%",
-          backgroundImage: gradientBackground
-        }}
-      >
+      <Card sx={cardStyle}>
         <CardContent>{renderActivityContent()}</CardContent>
       </Card>
     </div>

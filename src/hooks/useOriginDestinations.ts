@@ -4,6 +4,7 @@ import { useState } from "react";
 import { OriginDestinations } from "../types";
 import { dbContext} from "../services/pouchdbService";
 import { useAppSelector } from '.';
+import { useTranslation } from 'react-i18next';
 
 export const useOriginDestinations = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export const useOriginDestinations = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [originsDestinations, setOriginDestinations] = useState<OriginDestinations[]>([]);
   const [conceptoError, setConceptoError] = useState(false);
-
+const {t} = useTranslation();
   const createOriginDestinations = async (newSOriginDestinations: OriginDestinations) => {
     setIsLoading(true);
 
@@ -27,14 +28,14 @@ export const useOriginDestinations = () => {
 
       setIsLoading(false);
       if (response.ok)
-        Swal.fire('Procedencia/Destino', 'Nueva Procedencia/Destino.', 'success');
+        Swal.fire(t("origin_destination"), t("new_origin_destination"), 'success');
       else
-        Swal.fire('Procedencia/Destino', 'Verificar campos obligatorios.', 'error');
+        Swal.fire(t("origin_destination"), t("verify_mandatory_fields"), 'error');
 
       navigate('/init/overview/origins-destinations/');
     } catch (error) {
       console.log(error);
-      Swal.fire('Ups', 'Ocurrió un error inesperado', 'error');
+      Swal.fire('Ups',  t("unexpected_error"), 'error');
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -56,7 +57,7 @@ export const useOriginDestinations = () => {
 
     } catch (error) {
       console.log(error)
-      Swal.fire('Error', 'No se encontraron destinos/procedencias.', 'error');
+      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -76,12 +77,12 @@ export const useOriginDestinations = () => {
       setIsLoading(false);
 
       if (response.ok)
-        Swal.fire('Procedencia/Destino', 'Actualizado.', 'success');
+        Swal.fire(t("origin_destination"), t("_updated"), 'success');
 
       navigate('/init/overview/origins-destinations/');
     } catch (error) {
       console.log(error);
-      Swal.fire('Error', 'No se encontraron Procedencia/Destino.', 'error');
+      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -94,12 +95,12 @@ export const useOriginDestinations = () => {
       setIsLoading(false);
 
       if (response.ok)
-        Swal.fire('Destino/procedencia', 'Eliminada.', 'success');
+        Swal.fire(t("origin_destination"), t("_deleted"), 'success');
 
       navigate('/init/overview/origins-destinations/');
     } catch (error) {
       console.log(error)
-      Swal.fire('Error', 'No se encontraron Destinos/procedencias.', 'error');
+      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -125,7 +126,7 @@ export const useOriginDestinations = () => {
       }
     } catch (error) {
       console.error(error);
-      Swal.fire('Error', 'Ocurrió un error durante la búsqueda.', 'error');
+      Swal.fire('Error', t("error_during_search"), 'error');
       setIsLoading(false);
       if (error) setError(error);
     }

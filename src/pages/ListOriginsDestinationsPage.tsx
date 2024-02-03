@@ -30,14 +30,8 @@ import {
 } from "@mui/icons-material";
 import { useForm, useAppDispatch, useAppSelector, useOriginDestinations } from "../hooks";
 import {  setOriginsDestinationsActive } from "../redux/originsdestinatons/originDestiantionsSlice";
+import { useTranslation } from "react-i18next";
 
-
-const columns: ColumnProps[] = [
-  { text: "Tipo", align: "center" },
-  { text: "Descripcion", align: "center" },
-  { text: "Geolocalizacion", align: "center" },
-  { text: "", align: "right" },
-];
 
 export const ListOriginsDestinationsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -45,7 +39,14 @@ export const ListOriginsDestinationsPage: React.FC = () => {
   const { isLoading } = useAppSelector((state) => state.ui);
   const { originsDestinations, getOriginDestinations, removeOriginDestinations, searchOriginDestinations, } = useOriginDestinations();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
+  const {t} =useTranslation();
   
+  const columns: ColumnProps[] = [
+    { text: t("_type"), align: "center" },
+    { text: t("_description"), align: "center" },
+    { text: t("_geolocation"), align: "center" },
+    { text: "", align: "right" },
+  ];
 
   
 
@@ -65,7 +66,7 @@ export const ListOriginsDestinationsPage: React.FC = () => {
 
   const onClickSearch = () => {
     if (filterText === "") {
-      alert("Por favor, ingrese un término de búsqueda");
+      alert(t("please_enter_search_term"));
       return;
     }
     searchOriginDestinations(filterText);
@@ -90,7 +91,7 @@ export const ListOriginsDestinationsPage: React.FC = () => {
         <Box display="flex" alignItems="center">
           <AddLocationAltIcon sx={{ marginRight: '8px' }} /><ArrowRightAltIcon fontSize='large' />
           <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-          Procedencias/Destinos
+          {t("origins_destinations")}
           </Typography>
         </Box>
         <CloseButtonPage />
@@ -111,7 +112,7 @@ export const ListOriginsDestinationsPage: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={onClickAddOriginsDestinations}
             >
-              Nuevo
+              {t("add_new")}
             </Button>
           </Grid>
           <Grid item xs={12} sm={10}>
@@ -121,7 +122,7 @@ export const ListOriginsDestinationsPage: React.FC = () => {
                   variant="outlined"
                   type="text"
                   size="small"
-                  placeholder="Procedencia/Destino"
+                  placeholder={t("origin_destination")}
                   autoComplete="off"
                   name="filterText"
                   value={filterText}
@@ -147,7 +148,7 @@ export const ListOriginsDestinationsPage: React.FC = () => {
                   onClick={() => onClickSearch ()}
                   startIcon={<SearchIcon />}
                 >
-                  Buscar
+                  {t("icon_search")}
                 </Button>
               </Grid>
             </Grid>
@@ -161,12 +162,12 @@ export const ListOriginsDestinationsPage: React.FC = () => {
               <TableCellStyled align="center">{row.name}</TableCellStyled>
               <TableCellStyled align="center">{row.description}</TableCellStyled>
               <TableCellStyled align="right">
-                <Tooltip title="Editar">
-                  <IconButton aria-label="Editar" onClick={() => onClickUpdateOriginsDestinations(row)}>
+                <Tooltip title={t("icon_edit")}>
+                  <IconButton aria-label={t("icon_edit")} onClick={() => onClickUpdateOriginsDestinations(row)}>
                     <EditIcon />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Eliminar">
+                <Tooltip title={t("icon_delete")}>
                   <IconButton onClick={() => handleDeleteOriginsDestinations(row)} style={{ fontSize: '1rem' }}>
                     <Icon name="trash alternate" />
                   </IconButton>
