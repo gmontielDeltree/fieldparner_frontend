@@ -39,7 +39,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
     };
 
     const onClickEdit = (row: WithdrawalOrder) => {
-        // dispatch();
+        console.log('row', row)
     }
 
     const onClickStatus = (row: WithdrawalOrderItem) => {

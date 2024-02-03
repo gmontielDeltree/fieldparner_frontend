@@ -1,20 +1,19 @@
 import Swal from 'sweetalert2';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import {
     useAppSelector,
     useForm,
     useOrder,
-    useStockMovement,
 } from '../hooks';
-import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TemplateLayout } from '../components';
-import { Box, Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Paper, Select, TableContainer, TextField, Tooltip, Typography } from '@mui/material';
+import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../components';
+import { Box, Button, Grid, IconButton, InputAdornment, Paper, TableContainer, TextField, Tooltip, Typography } from '@mui/material';
 import {
     Assignment as AssignmentIcon,
     Add as AddIcon
 } from '@mui/icons-material';
 import { Icon } from 'semantic-ui-react';
-import { ColumnProps, OrderStatus, StockByLot, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderType, WithdrawalsByDepositSupply } from '../types';
+import { ColumnProps, WithdrawalsByDepositSupply } from '../types';
 import { getShortDate } from '../helpers/dates';
 import { DepositSupplyOrderItem } from '../types/index';
 

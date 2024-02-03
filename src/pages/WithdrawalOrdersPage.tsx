@@ -88,7 +88,6 @@ export const WithdrawalOrdersPage: React.FC = () => {
             order: formValues.order,
             reason: formValues.reason,
             state: OrderStatus.Pending,
-            // suppliesToBeWithdrawn: suppliesToAdd,
             accountId: "",
         }, newDepositSupplyOrders);
     }

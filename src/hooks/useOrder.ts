@@ -79,22 +79,22 @@ export const useOrder = () => {
         try {
 
             if (!user) throw new Error("There is no user!!!!");
-            // const lastNumerator = await getLastNumerator();
+            const lastNumerator = await getLastNumerator();
 
-            // if (!lastNumerator) throw new Error("Error: order number");
-            let lastNumerator = 1;
+            if (!lastNumerator) throw new Error("Error: order number");
+            // let lastNumerator = 1;
             // lastNumerator.lastNumerator += 1;
             let newOrder: WithdrawalOrder = {
                 ...newWithdrawalOrder,
-                order: lastNumerator,
+                order: lastNumerator.lastNumerator,
                 accountId: user.accountId
             };
-            let depositSuppliesOrder = newDepositSupplies.map(s => ({ ...s, order: lastNumerator }));
+            let depositSuppliesOrder = newDepositSupplies.map(s => ({ ...s, order: lastNumerator.lastNumerator }));
 
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
                 dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
-                // updateLastNumerator(lastNumerator)
+                updateLastNumerator(lastNumerator)
             ]);
 
             setIsLoading(false);
@@ -111,7 +111,6 @@ export const useOrder = () => {
         }
     }
 
-    //TODO: obtener orden de retiro, y sus deposito/insumos a retirar por nro orden.
     const getOrderWithDepositsAndSuppliesByOrder = async (order: number) => {
         setIsLoading(true);
         try {
