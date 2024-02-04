@@ -485,8 +485,7 @@ export interface DepositSupplyOrder extends Document {
 }
 
 export interface DepositSupplyOrderItem extends DepositSupplyOrder {
-    deposit: Deposit;
-    supply: Supply;
+    amount: number;
 }
 
 //Orden de retiro
@@ -553,6 +552,7 @@ export enum TypeMovement {
     Prestamos = "Prestamos",
     Transformacion = "Transformacion",
     SalidaDeCampo = "Salida de Campo",
+    OrdenRetiro= "Orden de Retiro",
 }
 
 export enum Movement {

@@ -35,7 +35,7 @@ const initialForm: StockMovement = {
   amount: 0,
   nroLot: "",
   creationDate: new Date().toLocaleString(),
-  campaignId: 0,
+  campaignId: "0",
   currency: "",
   depositId: "",
   location: "",
