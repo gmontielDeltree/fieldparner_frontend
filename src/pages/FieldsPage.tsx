@@ -29,6 +29,8 @@ import { dbContext } from "../services";
 import { touchEvent } from "../../owncomponents/helpers";
 import FieldsSideMenu from "../components/FieldsSideMenu";
 import { useTranslation } from "react-i18next";
+import { Actividad } from "../interfaces/activity";
+import { format, isBefore, isToday, parseISO } from "date-fns";
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
@@ -52,58 +54,6 @@ export const FieldsPage: React.FC = () => {
   const { loteId, campoId } = useParams();
 
   const { deposits, getDeposits } = useDeposit();
-
-  useEffect(() => {
-    if (campoId && map) {
-      db.get(campoId).then((campo) => {
-        setSelectedField(campo);
-        addLotsToMap(map, campo.lotes);
-        handleLocateField();
-      });
-    }
-
-    if (loteId && campoId && map) {
-      db.get(campoId).then((campo) => {
-        const lot = campo.lotes.find((l) => l.id === loteId);
-        setSelectedField(campo);
-        if (lot === undefined) {
-          return;
-        }
-        setSelectedLot(lot);
-
-        console.log("Lot geometry:", lot.geometry);
-
-        const lotCentroid = centroid(lot.geometry);
-        if (
-          lotCentroid &&
-          lotCentroid.geometry &&
-          lotCentroid.geometry.coordinates
-        ) {
-          const centroidCoordinates = lotCentroid.geometry.coordinates;
-          console.log("Centroid coordinates:", centroidCoordinates);
-
-          if (
-            Array.isArray(centroidCoordinates) &&
-            centroidCoordinates.length === 2
-          ) {
-            const longitudeAdjustment = 0.005;
-            const adjustedCoordinates = [
-              centroidCoordinates[0] - longitudeAdjustment,
-              centroidCoordinates[1]
-            ];
-
-            map.flyTo({ center: adjustedCoordinates, zoom: 16, pitch: 45 });
-          } else {
-            console.error("Invalid centroid coordinates:", centroidCoordinates);
-          }
-        } else {
-          console.error("Unable to calculate the centroid of the lot");
-        }
-
-        map.setPaintProperty(loteId + "-fill", "fill-color", "#808080");
-      });
-    }
-  }, [loteId, campoId, map]);
 
   /* Es para forzar el resizing del mapa siempre
     Cuando la pagina de
@@ -373,33 +323,53 @@ export const FieldsPage: React.FC = () => {
     handleCloseNewLot();
   }
 
-  const addLotsToMap = (map: any, lots: any) => {
-    lots.forEach((lot: any) => {
+  const addLotsToMap = (map, lots) => {
+    let tooltip = document.getElementById("map-tooltip");
+    if (!tooltip) {
+      tooltip = document.createElement("div");
+      tooltip.setAttribute("id", "map-tooltip");
+      tooltip.style.position = "absolute";
+      tooltip.style.minWidth = "200px";
+      tooltip.style.maxWidth = "350px";
+      tooltip.style.background = "#2a3f54";
+      tooltip.style.color = "#fff";
+      tooltip.style.padding = "10px";
+      tooltip.style.borderRadius = "8px";
+      tooltip.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.3)";
+      tooltip.style.display = "none";
+      tooltip.style.pointerEvents = "none";
+      tooltip.style.zIndex = "9999";
+      tooltip.style.fontFamily =
+        "'Helvetica Neue', Helvetica, Arial, sans-serif";
+      tooltip.style.fontSize = "14px";
+      tooltip.style.lineHeight = "1.4";
+      tooltip.style.transition = "opacity 0.3s";
+      document.body.appendChild(tooltip);
+    }
+
+    lots.forEach((lot) => {
       const lotId = lot.id;
+      const lotUUID = lot.properties.uuid;
 
-      const lotFeature = {
-        type: "Feature",
-        properties: { ...lot.properties },
-        geometry: lot.geometry
-      };
-
-      map.on("click", lotId + "-fill", (e: any) => {
+      map.on("click", lotId + "-fill", (e) => {
         e.preventDefault();
         handleLotClick(lotId);
       });
 
-      if (map.getSource(lotId)) {
-        map.getSource(lotId).setData(lotFeature);
-      } else {
+      if (!map.getSource(lotId)) {
         map.addSource(lotId, {
           type: "geojson",
-          data: lotFeature
+          data: {
+            type: "Feature",
+            properties: { ...lot.properties },
+            geometry: lot.geometry
+          }
         });
       }
 
-      if (!map.getLayer(lotId + "-fill")) {
+      if (!map.getLayer(`${lotId}-fill`)) {
         map.addLayer({
-          id: lotId + "-fill",
+          id: `${lotId}-fill`,
           type: "fill",
           source: lotId,
           layout: {},
@@ -409,8 +379,131 @@ export const FieldsPage: React.FC = () => {
           }
         });
       }
+
+      // Mousemove event
+      map.on("mousemove", `${lotId}-fill`, async (e) => {
+        map.getCanvas().style.cursor = "pointer";
+
+        const activities = await getActivities(lotUUID);
+        const todayActivities = activities.filter(({ actividad }) =>
+          isToday(
+            new Date(
+              actividad.detalles.fecha_ejecucion_tentativa || actividad.fecha
+            )
+          )
+        );
+
+        let content = `<strong>No hay actividades programadas para hoy en el lote ${lot.properties.nombre}.</strong>`;
+        if (todayActivities.length > 0) {
+          content = `<strong>Actividades para hoy en el lote ${lot.properties.nombre}:</strong><ul style="padding-left: 20px;">`;
+          todayActivities.forEach(({ actividad }) => {
+            const activityDate = new Date(
+              actividad.detalles.fecha_ejecucion_tentativa || actividad.fecha
+            );
+            const time = format(activityDate, "p");
+            content += `<li>${actividad.tipo}: Horario previsto a las ${time}.</li>`;
+          });
+          content += `</ul>`;
+        }
+
+        tooltip.innerHTML = content;
+        tooltip.style.opacity = "0";
+        tooltip.style.display = "block";
+        tooltip.style.left = `${e.originalEvent.clientX + 15}px`;
+        tooltip.style.top = `${e.originalEvent.clientY + 15}px`;
+        setTimeout(() => (tooltip.style.opacity = "1"), 10);
+      });
+
+      // Mouseleave event
+      map.on("mouseleave", `${lotId}-fill`, () => {
+        map.getCanvas().style.cursor = "";
+        tooltip.style.opacity = "0";
+        setTimeout(() => (tooltip.style.display = "none"), 300); // Delay hiding for animation
+      });
     });
   };
+
+  const only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
+    if (alldocs.rows.length > 0) {
+      return alldocs.rows.map((row) => {
+        return row.doc;
+      });
+    } else {
+      return [];
+    }
+  };
+
+  const getActivities = async (uuid_del_lote) => {
+    let acts: Actividad[] = await gbl_docs_starting(
+      "actividad",
+      true,
+      true,
+      true
+    ).then(only_docs);
+
+    let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote);
+
+    let _actividades_docs = s.reverse();
+
+    console.log("ACTIVIDADES", _actividades_docs, acts);
+
+    let result = await db.allDocs({
+      startkey: "ejecucion:",
+      endkey: "ejecucion:\ufff0"
+    });
+
+    let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
+
+    if (result.rows) {
+      _actividades_docs.forEach((actividad) => {
+        let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid));
+        respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
+      });
+
+      console.log("Respuesta actividades y ejecuciones preorden", respuesta);
+      respuesta.sort((a, b) => {
+        let fecha_1 = a.ejecucion_id
+          ? parseISO(a.ejecucion_id.split(":")[1])
+          : parseISO(
+              a.actividad.tipo === "nota"
+                ? a.actividad.fecha
+                : a.actividad.detalles.fecha_ejecucion_tentativa
+            );
+        let fecha_2 = b.ejecucion_id
+          ? parseISO(b.ejecucion_id.split(":")[1])
+          : parseISO(
+              b.actividad.tipo === "nota"
+                ? b.actividad.fecha
+                : b.actividad.detalles.fecha_ejecucion_tentativa
+            );
+        return isBefore(fecha_1, fecha_2) ? 1 : -1;
+      });
+    }
+
+    console.log("Respuesta actividades y ejecuciones post orden", respuesta);
+
+    return respuesta ? respuesta : null;
+  };
+
+  const gbl_docs_starting = async (
+    key: string,
+    devolver_docs: boolean = false,
+    attachments: boolean = false,
+    binary: boolean = false
+  ) => {
+    return db
+      .allDocs({
+        include_docs: devolver_docs,
+        attachments: attachments,
+        binary: binary,
+        startkey: key,
+        endkey: key + "\ufff0"
+      })
+      .then((result) => {
+        return result;
+      });
+  };
+
   const handleSelectField = (field) => {
     console.log("Field selected from menu:", field);
     setSelectedField(field);
