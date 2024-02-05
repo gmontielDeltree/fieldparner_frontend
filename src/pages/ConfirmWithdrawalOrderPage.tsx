@@ -13,7 +13,7 @@ import {
     Add as AddIcon
 } from '@mui/icons-material';
 import { Icon } from 'semantic-ui-react';
-import { ColumnProps, WithdrawalsByDepositSupply } from '../types';
+import { ColumnProps, DepositSupplyOrder } from '../types';
 import { getShortDate } from '../helpers/dates';
 import { DepositSupplyOrderItem } from '../types/index';
 
@@ -41,7 +41,7 @@ const columnsWithdrawals: ColumnProps[] = [
 ];
 
 interface NewWithdrawalRowProps {
-    row: DepositSupplyOrderItem;
+    row: DepositSupplyOrder;
     addNewWithdrawal: (newWithdrawal: DepositSupplyOrderItem) => void;
 }
 
@@ -53,11 +53,11 @@ export const NewWithdrawalRow = ({ row, addNewWithdrawal }: NewWithdrawalRowProp
         reset,
     } = useForm({ amount: 0 });
 
-    const handleAddNewWithdrawal = (item: DepositSupplyOrderItem) => {
+    const handleAddNewWithdrawal = (item: DepositSupplyOrder) => {
         if (!item._id) throw new Error("Error: item not found.");
         addNewWithdrawal({
             ...item,
-            withdrawalAmount: Number(formValues.amount)
+            amount: Number(formValues.amount)
         });
         reset();
     }
@@ -123,19 +123,9 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
     const onClickCancel = () => navigate("/init/overview/list-orders");
 
     const handleConfirmOrder = () => {
-
-        const newList: WithdrawalsByDepositSupply[] = listWithdrawals.map(w => ({
-            accountId: w.accountId,
-            amount: Number(w.withdrawalAmount),
-            depositSupplyOrderId: w._id,
-            order: w.order,
-            withdrawalDate: formValues.withdrawalDate,
-        } as WithdrawalsByDepositSupply));
-
-        confirmWithdrawalOrder(newList);
-
+        confirmWithdrawalOrder(listWithdrawals, formValues.withdrawalDate);
     }
-    //Validar q no se duplique para mismo depo/insu
+
     const addNewWithdrawal = (newWithdrawal: DepositSupplyOrderItem) => {
         let existWithdrawal = listWithdrawals.find(w => w._id === newWithdrawal._id);
         if (existWithdrawal) {
@@ -304,7 +294,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                                 <TableCellStyled align="left">{row.supply?.name || "-"} </TableCellStyled>
                                 <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
                                 <TableCellStyled align='center'>{row.location}</TableCellStyled>
-                                <TableCellStyled align='center'>{row.withdrawalAmount}</TableCellStyled>
+                                <TableCellStyled align='center'>{row.amount}</TableCellStyled>
                                 <TableCellStyled align='center'>
                                     <Tooltip title="Eliminar">
                                         <IconButton
