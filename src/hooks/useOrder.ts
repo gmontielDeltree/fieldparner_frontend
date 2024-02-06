@@ -2,7 +2,7 @@ import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from ".";
 import { dbContext } from "../services";
-import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, StockByLot, StockMovement, Supply, TypeMovement, WithdrawalOrder, WithdrawalsByDepositSupply } from "../types";
+import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, OrderStatus, StockByLot, StockMovement, Supply, TypeMovement, WithdrawalOrder, WithdrawalsByDepositSupply } from "../types";
 import { useState } from "react";
 import { setWithdrawalOrderActive } from "../redux/withdrawalOrder";
 
@@ -131,20 +131,14 @@ export const useOrder = () => {
             error && setError(error);
         }
     }
-    /*
-        TODO: Actualizar los stock correspondientes a la tabla
-        -1 Actualizar la cantidad retirada de los depo/insu de la orden
-        -2 Actualizar el stock correspondiente en lots-stock
-        -3 Crear un movimiento por cada registro de depo/insumo
-        -4 Actualizar el stock del insumo
-    */
 
     const confirmWithdrawalOrder = async (listWithdrawals: DepositSupplyOrderItem[], withdrawalDate: string) => {
         setIsLoading(true);
         try {
             if (!user) throw new Error("User not found.");
             if (!withdrawalOrderActive) throw new Error("Withdrawal Order not found");
-            debugger;
+            let isComplete = true;
+
             const newWithdrawals: WithdrawalsByDepositSupply[] = listWithdrawals.map(w => ({
                 accountId: w.accountId,
                 amount: Number(w.amount),
@@ -154,21 +148,28 @@ export const useOrder = () => {
             } as WithdrawalsByDepositSupply));
             const updateDepositSupplies: DepositSupplyOrder[] = listWithdrawals.map(w => {
                 const { amount, ...newObject } = w;
+                let withdrawalAmount = Number(w.withdrawalAmount + amount);
                 return {
                     ...newObject,
-                    withdrawalAmount: Number(w.withdrawalAmount + amount)
+                    withdrawalAmount
                 };
+            });
+            updateDepositSupplies.forEach(u => {
+                if (u.originalAmount > u.withdrawalAmount) {
+                    isComplete = false;
+                    return;
+                }
             });
 
             const response = await Promise.all([
                 dbContext.stockByLots.find({ selector: { "accountId": user.accountId } }),
                 dbContext.supplies.find({ selector: { "accountId": user.accountId } }),
             ]);
-            const reponseStockFromSupplies = response[0].docs;
-            const responseSupplies = response[1].docs;
 
             if (!response) throw new Error("Supplies not found.");
 
+            const reponseStockFromSupplies = response[0].docs;
+            const responseSupplies = response[1].docs;
             let updateStockSupplies: StockByLot[] = [];
             let updateSupplies: Supply[] = [];
 
@@ -210,13 +211,17 @@ export const useOrder = () => {
                 typeMovement: TypeMovement.OrdenRetiro,
             } as StockMovement));
 
-            const responseAll = await Promise.all([
+            let responseAll = await Promise.all([
                 dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
                 dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
                 dbContext.stockByLots.bulkDocs(updateStockSupplies),
                 dbContext.supplies.bulkDocs(updateSupplies),
                 dbContext.stockMovements.bulkDocs(newMovements),
             ]);
+
+            if (isComplete) {
+                await dbContext.withdrawalOrders.put({ ...withdrawalOrderActive, state: OrderStatus.Completed });
+            }
 
             if (responseAll) {
                 Swal.fire('Orden de Retiro', 'Confirmacion exitosa.', 'success');
