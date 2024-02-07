@@ -84,6 +84,7 @@ export const machine = createMachine(
                     ambientes_iniciales: 2,
                   },
                 },
+                {type: "inicializarRanges"}
               ],
             },
           ],
