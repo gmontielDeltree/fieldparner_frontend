@@ -3,8 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { showFieldList, hideFieldList } from "../../redux/fieldsList";
 import { useAuthStore } from "../../hooks";
 import { useCampaign } from "../../hooks";
-import CreateCampaignModal from "./CreateCampaignModal";
-import AddIcon from "@mui/icons-material/Add";
+import CreateCampaignModal from "../CreateCampaign";
 import { campaignSlice } from "../../redux/campaign";
 
 import {

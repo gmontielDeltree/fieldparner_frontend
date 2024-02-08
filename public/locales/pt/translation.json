@@ -281,5 +281,6 @@
     "cancel":"Cancelar",
     "create":"Criar",
     "choose_a_campaign":"Escolha uma campanha",
-    "select_a_campaign_from_the_top_row":"Selecione uma campanha na linha superior"
+    "select_a_campaign_from_the_top_row":"Selecione uma campanha na linha superior",
+    "create_new_campaign":"Criar nova campanha"
 }

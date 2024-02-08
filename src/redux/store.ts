@@ -26,8 +26,8 @@ const store = configureStore({
     draw: drawSlice.reducer,
     ordesti: originsDestinationsSlice.reducer,
     fieldList: fieldListSlice.reducer,
-    campaign: campaignSlice.reducer
-    order: withdrawalOrderSlice.reducer,
+    campaign: campaignSlice.reducer,
+    order: withdrawalOrderSlice.reducer
   }
 });
 

@@ -42,7 +42,7 @@ const CreateCampaignModal = ({ open, onClose, onCreate }) => {
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t("createNewCampaign")}</DialogTitle>
+      <DialogTitle>{t("create_new_campaign")}</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
