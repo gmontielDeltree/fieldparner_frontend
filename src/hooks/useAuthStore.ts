@@ -144,6 +144,11 @@ export const useAuthStore = () => {
         return;
       }
 
+      const lastPath = localStorage.getItem("lastPath") || "/";
+      navigate(lastPath, { replace: true });
+      const userLogin = JSON.parse(userSession || "") as User;
+      dispatch(onLogin(userLogin));
+
       const response = await fieldpartnerAPI.post<ResponseAuthRenew>(
         `${controller}/renew`,
         { refreshToken }
@@ -153,8 +158,6 @@ export const useAuthStore = () => {
         const expiresIn = new Date().getTime() + response.data.ExpiresIn * 1000;
         localStorage.setItem("accessToken", response.data.AccessToken);
         localStorage.setItem("token_expiration", expiresIn.toString());
-        const userLogin = JSON.parse(userSession || "") as User;
-        dispatch(onLogin(userLogin));
       }
     } catch (error) {
       localStorage.clear();
@@ -164,17 +167,20 @@ export const useAuthStore = () => {
 
   // const checkAuthToken = async () => {
 
-  //     dispatch(onChecking())
-  //     try {
-  //         localStorage.setItem('accessToken',"" );
-  //         localStorage.setItem('token_expiration',"" );
+  //   dispatch(onChecking())
+  //   try {
+  //     localStorage.setItem('accessToken', "");
+  //     localStorage.setItem('token_expiration', "");
 
-  //         dispatch(onLogin({isAdmin:true,username:"Rodrigo"}));
+  //     const lastPath = localStorage.getItem("lastPath") || "/";
 
-  //     } catch (error) {
-  //         localStorage.clear();
-  //         dispatch(onLogout(""));
-  //     }
+  //     dispatch(onLogin({ isAdmin: true, firstName: 'test', accountId: "test", id: "asd123", lastName: "pepe" }));
+  //     navigate(lastPath, { replace: true });
+
+  //   } catch (error) {
+  //     localStorage.clear();
+  //     dispatch(onLogout(""));
+  //   }
   // }
   const startLogout = () => {
     dispatch(startLoading());
@@ -183,6 +189,7 @@ export const useAuthStore = () => {
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("token_expiration");
       localStorage.removeItem("user_session");
+      localStorage.removeItem("lastPath");
 
       dispatch(onLogout("User logged out successfully."));
 

@@ -1,5 +1,5 @@
-import React from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import React, { useMemo } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import {
   ListVehiclesPage,
   VehiclePage,
@@ -18,18 +18,26 @@ import {
   NewExitFieldPage,
   ListOriginsDestinationsPage,
   NewOriginsDestinationsPage,
+  SatellitePage,
+  DevicePage,
+  PricesPage,
+  ZoningPage,
+  IntegrationsPage,
+  PlanificationPage,
+  ListWithdrawalOrdersPage,
+  WithdrawalOrdersPage,
+  ConfirmWithdrawalOrderPage
 } from "../pages";
 import { AppLayout } from "../components";
-import { SatellitePage } from "../pages/SatellitePage";
-import { DevicePage } from "../pages/DevicePage";
-import { PricesPage } from "../pages/PricesPage";
-import { ZoningPage } from "../pages/ZoningPage";
-import { IntegrationsPage } from "../pages/IntegrationsPage";
-import { PlanificationPage } from "../pages/PlanificationPage";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
 
 export const OverviewRoutes: React.FC = () => {
+  const { pathname, search } = useLocation();
+
+  const lastPath = useMemo(() => pathname + search, [pathname, search]);
+  localStorage.setItem('lastPath', lastPath);
+
   return (
     <AppLayout key="app-layout">
       <Routes>
@@ -37,9 +45,9 @@ export const OverviewRoutes: React.FC = () => {
           <Route path="planification" element={<PlanificationPage />} />
           <Route path="device/:deviceId/:date" element={<DevicePage/>}/>
           <Route path="integrations" element={<IntegrationsPage />} />
-          <Route path="john-deere" element={<JohnDeereIntegration/>}/>
-          <Route path="magris/:id" element={<MagrisReportIntegration/>}/>
-          <Route path="magris" element={<MagrisIntegration/>}/>
+          <Route path="john-deere" element={<JohnDeereIntegration />} />
+          <Route path="magris/:id" element={<MagrisReportIntegration />} />
+          <Route path="magris" element={<MagrisIntegration />} />
         </Route>
 
         <Route path="/overview/vehicle" element={<ListVehiclesPage />} />
@@ -77,11 +85,13 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />
 
 
-        <Route path="/overview/satellite/:loteId" element={<SatellitePage />}  />
+        <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
         <Route path="/overview/zoning/:baseImageName" element={<ZoningPage />} />
         <Route path="/overview/prices" element={<PricesPage />} />
 
-        
+        <Route path="/overview/list-orders" element={<ListWithdrawalOrdersPage />} />
+        <Route path="/overview/order" element={<WithdrawalOrdersPage />} />
+        <Route path="/overview/order/:orderId" element={<ConfirmWithdrawalOrderPage />} />
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

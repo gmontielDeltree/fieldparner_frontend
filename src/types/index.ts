@@ -271,11 +271,6 @@ export const TypeMovements = () => {
     ];
 };
 
-// export interface Lot {
-//     nro: string;
-//     location: string;
-// }
-
 export interface DepositState {
     depositActive: Deposit | null;
     deposits: Deposit[];
@@ -286,7 +281,7 @@ export interface Deposit extends Document {
     description: string;
     owner: string;
     isVirtual: boolean;
-    geolocation: {lng : number, lat:number};
+    geolocation: { lng: number, lat: number };
     isNegative: boolean;
     address: string;
     zipCode: string;
@@ -468,6 +463,54 @@ export interface Field extends Document {
     // _rev: string;
 }
 
+//Retiros del Deposito e Insumo
+export interface WithdrawalsByDepositSupply extends Document {
+    accountId: string;
+    order: number;
+    depositSupplyOrderId: string;
+    withdrawalDate: string;
+    amount: number;
+}
+
+//Deposito e Insumo de una Orden
+export interface DepositSupplyOrder extends Document {
+    order: number;
+    accountId: string;
+    deposit: Deposit;
+    location: string;
+    supply: Supply;
+    nroLot: string;
+    withdrawalAmount: number;
+    originalAmount: number;
+}
+
+export interface DepositSupplyOrderItem extends DepositSupplyOrder {
+    amount: number;
+}
+
+//Orden de retiro
+export interface WithdrawalOrder extends Document {
+    accountId: string;
+    type: WithdrawalOrderType;
+    creationDate: string;
+    order: number;
+    reason: string;
+    withdraw: Business;
+    campaign: Campaign;
+    state: OrderStatus;
+}
+
+export interface WithdrawalOrderItem extends WithdrawalOrder {
+    campaign: Campaign;
+    withdraw: Business;
+}
+
+export interface Numerator extends Document {
+    accountId: string;
+    numeratorType: NumeratorType;
+    lastNumerator: number;
+}
+
 //#region Enums
 
 export enum TipoCombustible {
@@ -509,6 +552,7 @@ export enum TypeMovement {
     Prestamos = "Prestamos",
     Transformacion = "Transformacion",
     SalidaDeCampo = "Salida de Campo",
+    OrdenRetiro= "Orden de Retiro",
 }
 
 export enum Movement {
@@ -545,6 +589,21 @@ export enum SupplyType {
 
 export enum TipoInsumo {
     CULTIVO = "CuLtivo",
+}
+
+export enum OrderStatus {
+    Parcial = "Parcial",
+    Pending = "Pendiente",
+    Completed = "Completada"
+}
+
+export enum WithdrawalOrderType {
+    Individual = "Individual",
+    Labor = "Labor",
+}
+
+export enum NumeratorType {
+    Client = "Cliente",
 }
 
 //#endregion
