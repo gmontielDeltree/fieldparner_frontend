@@ -143,6 +143,22 @@ export const provideMachine = () => {
           return ambientes;
         },
       }),
+      inicializarRanges: assign({
+        rangos:({context,event},params) =>{
+          let num_amb = 2;
+          let new_ranges_A = [...Array(num_amb - 1).keys()].map(
+            (a) => (a + 1) * (2 / num_amb) - 1
+          ); // va desde -1 a 1
+      
+          // scalar entre min y max
+          let min = mymin(context.base_image.data[0]);
+          let max = mymax(context.base_image.data[0]);
+          let new_ranges = new_ranges_A.map((r) => scale(r, -1, 1, min, max));
+          
+          console.log("MMM", min, max, new_ranges_A, new_ranges);
+          return new_ranges.sort()
+        }
+      }),
       updateRanges: assign({
         rangos: ({ context, event }) => event.new_ranges.sort(),
       }),

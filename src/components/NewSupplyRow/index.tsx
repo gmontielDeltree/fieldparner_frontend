@@ -10,6 +10,7 @@ import { getShortDate } from '../../helpers/dates';
 interface NewSupplyRowProps {
   supplies: Supply[],
   deposits: Deposit[],
+  showDueDate: boolean,
   addNewSupply: (item: TransformSupply) => void;
 }
 
@@ -26,7 +27,8 @@ const initialStateNewSupply = {
 export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
   supplies,
   deposits,
-  addNewSupply
+  addNewSupply,
+  showDueDate = true,
 }) => {
 
   const {
@@ -91,7 +93,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       container
       alignItems="center"
       spacing={1}
-      borderRadius={5}
+      borderRadius={2}
       pb={1}
       wrap="nowrap"
       bgcolor="#f3f3f3"
@@ -158,47 +160,45 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
           )
         }
       </Grid>
-      <Grid item xs={12} sm={2}>
-        {
-          (supplySelected && supplySelected.stockByLot && depositSelected)
-            ? (
-              <TextField
-                key="nroLot-input"
-                variant="outlined"
-                type="text"
-                label="Nro Lote"
-                name="nroLot"
-                value={nroLot}
-                onChange={handleInputChange}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start" />,
-                }}
-                fullWidth
-              />
-            )
-            : "-"
-        }
-      </Grid>
-      <Grid item xs={12} sm={2}>
-        {
-          (supplySelected && supplySelected.stockByLot && depositSelected)
-            ? (
-              <TextField
-                variant="outlined"
-                type="date"
-                label="Fecha vencimiento"
-                name="dueDate"
-                value={dueDate}
-                onChange={handleInputChange}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start" />,
-                }}
-                fullWidth
-              />
-            )
-            : "-"
-        }
-      </Grid>
+      {
+        (supplySelected && supplySelected.stockByLot && depositSelected)
+        && (
+          <Grid item xs={12} sm={2}>
+            <TextField
+              key="nroLot-input"
+              variant="outlined"
+              type="text"
+              label="Nro Lote"
+              name="nroLot"
+              value={nroLot}
+              onChange={handleInputChange}
+              InputProps={{
+                startAdornment: <InputAdornment position="start" />,
+              }}
+              fullWidth
+            />
+          </Grid>
+        )
+      }
+      {
+        (supplySelected && supplySelected.stockByLot && depositSelected && showDueDate)
+        && (
+          <Grid item xs={12} sm={2}>
+            <TextField
+              variant="outlined"
+              type="date"
+              label="Fecha vencimiento"
+              name="dueDate"
+              value={dueDate}
+              onChange={handleInputChange}
+              InputProps={{
+                startAdornment: <InputAdornment position="start" />,
+              }}
+              fullWidth
+            />
+          </Grid>
+        )
+      }
       <Grid item xs={12} sm={2}>
         {
           (supplySelected && depositSelected && location) && (
