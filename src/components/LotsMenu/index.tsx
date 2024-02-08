@@ -109,8 +109,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     borderRadius: "50%",
     margin: "0 15px",
     cursor: "pointer",
-    opacity: 1, // Keep full opacity
-    filter: selectedCampaign ? "none" : "grayscale(100%)", // Apply grayscale filter when no campaign is selected
+    opacity: 1,
+    filter: selectedCampaign ? "none" : "grayscale(100%)",
     "&:hover": {
       transform: "scale(1.2)",
       boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
