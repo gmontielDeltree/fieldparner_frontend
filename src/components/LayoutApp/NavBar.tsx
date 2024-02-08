@@ -3,6 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { showFieldList, hideFieldList } from "../../redux/fieldsList";
 import { useAuthStore } from "../../hooks";
 import { useCampaign } from "../../hooks";
+import CreateCampaignModal from "./CreateCampaignModal";
+import AddIcon from "@mui/icons-material/Add";
+import { campaignSlice } from "../../redux/campaign";
 
 import {
   Badge,
@@ -16,7 +19,8 @@ import {
   ButtonBase,
   Button,
   Menu,
-  MenuItem
+  MenuItem,
+  Divider
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../redux/store";
@@ -34,6 +38,7 @@ import {
   MenuOutlined,
   ExitToApp
 } from "@mui/icons-material";
+import { add } from "date-fns";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
@@ -41,7 +46,9 @@ export const NavBar: React.FC<NavBarProps> = ({
   handleSideBarOpen
 }) => {
   const navigate = useNavigate();
-  const { campaigns, getCampaigns, isLoading, error } = useCampaign();
+  const { campaigns, getCampaigns, isLoading, error, addCampaign } =
+    useCampaign();
+  const [selectedCampaign, setSelectedCampaign] = useState(""); // State to hold the selected campaign ID
 
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
@@ -52,6 +59,24 @@ export const NavBar: React.FC<NavBarProps> = ({
 
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState(null);
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const handleCreateCampaign = async (campaignName) => {
+    const campaignData = {
+      campaignId: `campaign_${new Date().getTime()}`,
+      name: campaignName,
+      description: "",
+      zoneId: "defaultZone",
+      startDate: new Date().toISOString(),
+      endDate: new Date().toISOString(),
+      state: "active"
+    };
+
+    await addCampaign(campaignData);
+    setIsCreateModalOpen(false);
+    getCampaigns();
+  };
+
   useEffect(() => {
     getCampaigns();
   }, []);
@@ -112,7 +137,18 @@ export const NavBar: React.FC<NavBarProps> = ({
   const isVisible = useSelector(
     (state: RootState) => state.fieldList.isVisible
   );
-
+  const handleCampaignMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleCampaignSelect = (campaignId) => {
+    // Assuming 'campaigns' is an array of Campaign objects
+    const campaign = campaigns.find((c) => c.campaignId === campaignId);
+    if (campaign) {
+      setSelectedCampaign(campaignId); // Update the local state if necessary
+      dispatch(campaignSlice.actions.setSelectedCampaign(campaign)); // Dispatch the action with the campaign object
+      handleClose(); // Close the dropdown menu
+    }
+  };
   const selectAvatar = () => {
     if (isVisible) {
       dispatch(hideFieldList());
@@ -220,7 +256,7 @@ export const NavBar: React.FC<NavBarProps> = ({
               aria-label="campaign"
               aria-controls="menu-appbar"
               aria-haspopup="true"
-              onClick={getCampaigns}
+              onClick={handleCampaignMenu}
               color="inherit"
               style={{
                 marginLeft: "50px",
@@ -230,8 +266,13 @@ export const NavBar: React.FC<NavBarProps> = ({
                 textTransform: "none"
               }}
             >
-              {t("no_campaign")}
+              {selectedCampaign || t("no_campaign")}
             </Button>
+            <CreateCampaignModal
+              open={isCreateModalOpen}
+              onClose={() => setIsCreateModalOpen(false)}
+              onCreate={handleCreateCampaign}
+            />
 
             <Menu
               id="menu-appbar"
@@ -247,24 +288,16 @@ export const NavBar: React.FC<NavBarProps> = ({
               open={openDropdown}
               onClose={handleClose}
             >
-              <MenuItem
-                onClick={() => {
-                  // Example of how you might trigger campaign creation
-                  // In a real app, you'd likely open a form or dialog here to get user input
-                  const campaignDetails = {
-                    name: "New Campaign" // Example detail, replace with actual data collection
-                    // other details as needed
-                  };
-                  // createCampaign(campaignDetails);
-                  handleClose(); // Close the menu
-                }}
-              >
-                + Add Campaign
+              <MenuItem onClick={() => setIsCreateModalOpen(true)}>
+                {t("add_new_campaign")} +{" "}
               </MenuItem>
-
+              <Divider />
               {campaigns.map((campaign) => (
-                <MenuItem key={campaign.campaignId} onClick={handleClose}>
-                  {campaign.campaignId}
+                <MenuItem
+                  key={campaign.campaignId}
+                  onClick={() => handleCampaignSelect(campaign.campaignId)}
+                >
+                  {campaign.campaignId}{" "}
                 </MenuItem>
               ))}
             </Menu>

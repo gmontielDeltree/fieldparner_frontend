@@ -6,6 +6,7 @@ import { Loading } from "../components";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export const InitRouter = () => {
+  return <OverviewRoutes />;
   let navigate = useNavigate();
   let location = useLocation();
 
@@ -41,11 +42,10 @@ export const InitRouter = () => {
   if (status === "checking") {
     return <Loading key="loading-auth" loading />;
   }
-//  {/* <OverviewRoutes /> */}
+  //  {/* <OverviewRoutes /> */}
   return (
     <>
       {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
-     
     </>
   );
 };

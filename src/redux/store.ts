@@ -9,6 +9,7 @@ import { depositSlice } from "./deposit";
 import { mapSlice } from "./map";
 import { drawSlice } from "./draw";
 import { fieldListSlice } from "./fieldsList";
+import { campaignSlice } from "./campaign";
 
 import { originsDestinationsSlice } from "./originsdestinatons/originDestiantionsSlice";
 
@@ -23,7 +24,8 @@ const store = configureStore({
     map: mapSlice.reducer,
     draw: drawSlice.reducer,
     ordesti: originsDestinationsSlice.reducer,
-    fieldList: fieldListSlice.reducer
+    fieldList: fieldListSlice.reducer,
+    campaign: campaignSlice.reducer
   }
 });
 
