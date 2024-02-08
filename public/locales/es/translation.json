@@ -270,12 +270,18 @@
 "_security": "Seguridad",
 "users_and_permissions": "Usuarios y Permisos",
 "_configuration": "Configuración",
-"crop_colors": "Colores de Cultivo"
-  
-
-
-
-
-
+"crop_colors": "Colores de Cultivo",
+"add_new_campaign": "Agregar Nueva Campaña",
+"campaign_name":"Nombre de Campaña",
+"description":"Descripción",
+"zone_id":"Zona ID",
+"start_date":"Fecha de Inicio",
+"end_date":"Fecha de Finalizacion",
+"state":"Estado",
+"cancel":"Cancelar",
+"create":"Crear",
+"choose_a_campaign":"Elija una Campaña",
+"select_a_campaign_from_the_top_row":"Seleccione una Campaña de la Fila Superior",
+"create_new_campaign":"Crear Nueva Campaña"
 }
    

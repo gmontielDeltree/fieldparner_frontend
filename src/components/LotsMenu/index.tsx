@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
 import PlanActivity from "./PlanActivity";
 import Tour from "./Tour";
-import { Avatar, ButtonBase, Paper, Tooltip } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  ButtonBase,
+  Fade,
+  Paper,
+  Tooltip,
+  Typography
+} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
@@ -19,6 +27,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExecuteActivity from "./ExecuteActivity";
 import { dbContext } from "../../services";
 import { styled } from "@mui/material/styles";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { useTranslation } from "react-i18next";
 
 const Header = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -47,10 +58,15 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const [selectedCategory, setSelectedCategory] = useState<null | string>(null);
   const db = dbContext.fields; //new PouchDB("campos_randyv7");
   const [activities, setActivities] = useState(null);
+  const { t } = useTranslation();
   const [editingActivityInfo, setEditingActivityInfo] = useState<{
     activity: Actividad | null;
     isExecuting: boolean;
   }>({ activity: null, isExecuting: false });
+  const selectedCampaign = useSelector(
+    (state: RootState) => state.campaign.selectedCampaign
+  );
+
   const navigate = useNavigate();
 
   console.log("Lot seleccionado: ", lot);
@@ -83,7 +99,6 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     cosecha: "harvesting",
     aplicacion: "application"
   };
-
   const avatarStyle = (categoryId: any) => ({
     width: 50,
     height: 50,
@@ -94,6 +109,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     borderRadius: "50%",
     margin: "0 15px",
     cursor: "pointer",
+    opacity: 1,
+    filter: selectedCampaign ? "none" : "grayscale(100%)",
     "&:hover": {
       transform: "scale(1.2)",
       boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
@@ -202,6 +219,21 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   }, [lot, selectedCategory]);
 
   const renderFormContent = () => {
+    if (!selectedCampaign) {
+      return (
+        <Fade in={true} timeout={1000}>
+          <Box textAlign="center" marginTop="20px">
+            {/* <CampaignIcon sx={{ fontSize: 60, color: "rgba(0, 0, 0, 0.54)" }} /> */}
+            <Typography variant="h5" component="h2" gutterBottom>
+              {t("choose_a_campaign")}
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              {t("select_a_campaign_from_the_top_row")}
+            </Typography>
+          </Box>
+        </Fade>
+      );
+    }
     if (!selectedCategory) {
       return activities && activities.length > 0 ? (
         <Activities
@@ -383,8 +415,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           </IconButton>
         </div>
       </div>
-
       <hr style={hrStyle} />
+
       <Header>
         <FieldInfo>Lote: {lot.properties.nombre}</FieldInfo>
         <FieldInfo>Campo: {field.nombre}</FieldInfo>

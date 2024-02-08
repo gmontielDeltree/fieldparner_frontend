@@ -12,6 +12,7 @@ export const InitRouter = () => {
   // console.log('lastPath', lastPath);
   // localStorage.setItem('lastPath', lastPath);
 
+
   // Original URL
   const [from, setFrom] = useState<string>("/" + (window.location.pathname + window.location.search).substr(1))
 
@@ -41,11 +42,10 @@ export const InitRouter = () => {
   if (status === "checking") {
     return <Loading key="loading-auth" loading />;
   }
-//  {/* <OverviewRoutes /> */}
+  //  {/* <OverviewRoutes /> */}
   return (
     <>
       {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
-     
     </>
   );
 };
