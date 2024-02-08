@@ -48,7 +48,7 @@ export const NavBar: React.FC<NavBarProps> = ({
   const navigate = useNavigate();
   const { campaigns, getCampaigns, isLoading, error, addCampaign } =
     useCampaign();
-  const [selectedCampaign, setSelectedCampaign] = useState(""); // State to hold the selected campaign ID
+  const [selectedCampaign, setSelectedCampaign] = useState("");
 
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
@@ -141,12 +141,11 @@ export const NavBar: React.FC<NavBarProps> = ({
     setAnchorEl(event.currentTarget);
   };
   const handleCampaignSelect = (campaignId) => {
-    // Assuming 'campaigns' is an array of Campaign objects
     const campaign = campaigns.find((c) => c.campaignId === campaignId);
     if (campaign) {
-      setSelectedCampaign(campaignId); // Update the local state if necessary
-      dispatch(campaignSlice.actions.setSelectedCampaign(campaign)); // Dispatch the action with the campaign object
-      handleClose(); // Close the dropdown menu
+      setSelectedCampaign(campaignId);
+      dispatch(campaignSlice.actions.setSelectedCampaign(campaign));
+      handleClose();
     }
   };
   const selectAvatar = () => {
