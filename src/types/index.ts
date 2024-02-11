@@ -562,7 +562,8 @@ export enum Movement {
 
 export enum DisplayModals {
     SupplyByDeposits = "SupplyByDeposits",
-    SupplyByLots = "SupplyByLots"
+    SupplyByLots = "SupplyByLots",
+    LaborOrder= "LaborOrder",
 }
 
 export enum VehicleType {
