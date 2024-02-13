@@ -1,8 +1,8 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, styled, Paper, Box, Typography, Grid, TextField, InputAdornment, TableContainer, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
 import React, { useEffect, useState } from 'react'
-import { useAppDispatch, useAppSelector, useBusiness, useDeposit, useForm, useSupply } from '../../../hooks';
+import { useAppDispatch, useAppSelector, useBusiness, useDeposit, useForm, useOrder, useSupply } from '../../../hooks';
 import { uiCloseModal } from '../../../redux/ui';
-import { ColumnProps, DisplayModals, TipoEntidad, TransformSupply } from '../../../types';
+import { ColumnProps, DepositSupplyOrderItem, DisplayModals, TipoEntidad, TransformSupply } from '../../../types';
 import {
     Close as CloseIcon,
     Assignment as AssignmentIcon
@@ -23,7 +23,7 @@ const columns: ColumnProps[] = [
     { text: "Deposito", align: "left" },
     { text: "Insumo", align: "left" },
     { text: "UM", align: "center" },
-    { text: "Lote", align: "center" },
+    { text: "Ubicacion", align: "center" },
     { text: "Cantidad a Retirar", align: "center" },
 ];
 /*
@@ -33,11 +33,13 @@ const columns: ColumnProps[] = [
 export const LaborOrderModal = () => {
     const dispatch = useAppDispatch();
     const { showModal } = useAppSelector((state) => state.ui);
-    const { businesses, getBusinesses } = useBusiness();
+    const [listWithdrawals, setListWithdrawals] = useState<DepositSupplyOrderItem[]>([]);
+    const { isLoading, confirmLaborORder, createLaborOrder } = useOrder();
     //Ver de donde obtenemos los insumos y depositos:
     const { deposits, getDeposits } = useDeposit();
     const { supplies, getSupplies } = useSupply();
-    const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
+    const { businesses, getBusinesses } = useBusiness();
+    // const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
 
     const {
         creationDate,
@@ -53,11 +55,14 @@ export const LaborOrderModal = () => {
     };
 
     const handleAddDepositSupply = (item) => {
-        setSuppliesToAdd([item, ...suppliesToAdd])
+        setListWithdrawals([item, ...listWithdrawals])
     }
 
+    const generateLaborOrder = async () => {
+        await confirmLaborORder(listWithdrawals, creationDate);
+    }
     const handleGenerateLaborOrder = () => {
-        console.log("generate labor order");
+        generateLaborOrder();
     }
 
     const handlePrint = () => {
@@ -194,18 +199,22 @@ export const LaborOrderModal = () => {
                             />
                         </Grid>
                         <Grid item xs={12} sm={4}>
-                            <TextField
-                                variant="outlined"
-                                type="date"
-                                label="Orden Retiro"
-                                name="withdrawalOrder"
-                                value={20188}
-                                // onChange={handleInputChange}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
+                            <FormControl key="labor-order" fullWidth>
+                                <InputLabel id="labor-order">Orden Retiro</InputLabel>
+                                <Select
+                                    labelId="labor-order"
+                                    name="contractor"
+                                    value={contractor}
+                                    label="Orden Retiro"
+                                    onChange={handleSelectChange}
+                                >
+                                    {["001", "003", "201"].map((f) => (
+                                        <MenuItem key={f} value={f}>
+                                            {f}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
                         </Grid>
                         <Grid item xs={12} sm={4}>
                             <FormControl key="contractor-select" fullWidth>
@@ -231,7 +240,7 @@ export const LaborOrderModal = () => {
                         <NewSupplyRow
                             key="new-supply-order"
                             supplies={supplies}
-                            deposits={deposits}
+                            deposits={[]}
                             showDueDate={false}
                             addNewSupply={handleAddDepositSupply} />
                     </Box>
@@ -251,14 +260,14 @@ export const LaborOrderModal = () => {
                             columns={columns}
                             isLoading={false}
                         >
-                            {suppliesToAdd.map((row) => (
-                                <ItemRow key={row.id}>
+                            {listWithdrawals.map((row) => (
+                                <ItemRow key={row._id}>
                                     <TableCellStyled align="left">
                                         {row.deposit.description}
                                     </TableCellStyled>
                                     <TableCellStyled align="left">{row.supply.name} </TableCellStyled>
                                     <TableCellStyled align="center">{row.supply.unitMeasurement}</TableCellStyled>
-                                    <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
+                                    <TableCellStyled align='center'>{row.location || "-"}</TableCellStyled>
                                     <TableCellStyled align='center'>{row.amount}</TableCellStyled>
                                 </ItemRow>
                             ))}

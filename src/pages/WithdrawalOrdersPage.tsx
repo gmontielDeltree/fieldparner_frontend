@@ -14,7 +14,7 @@ import {
 import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TemplateLayout } from '../components';
 import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, TableContainer, TextField, Typography } from '@mui/material';
 import { Assignment as AssignmentIcon } from '@mui/icons-material';
-import { ColumnProps, OrderStatus, StockByLot, DepositSupplyOrder, TipoEntidad, TransformSupply, WithdrawalOrderType } from '../types';
+import { ColumnProps, OrderStatus, StockByLot, DepositSupplyOrder, TipoEntidad, TransformSupply, WithdrawalOrderType, WithdrawalOrder } from '../types';
 import { getShortDate } from '../helpers/dates';
 
 
@@ -62,10 +62,15 @@ export const WithdrawalOrdersPage: React.FC = () => {
 
     const onClickCancel = () => navigate("/init/overview/list-orders");
 
+    const addNewWithdrawalOrder = async (newOrder: WithdrawalOrder, suppliesOrder: DepositSupplyOrder[]) => {
+        if (await createWithdrawalOrder(newOrder, suppliesOrder))
+            navigate("/init/overview/list-orders");
+    }
+
     const handleAddWithdrawalOrder = () => {
         const campaign = campaigns.find(c => c._id === campaignId);
         const withdraw = socialEntities.find(s => s._id === withdrawId);
-        
+
         if (!user || !campaign || !withdraw) throw new Error("Error: usuario, campaña o entidad social");
 
         let newDepositSupplyOrders: DepositSupplyOrder[] = suppliesToAdd.map(s => ({
@@ -80,7 +85,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
 
         }));
 
-        createWithdrawalOrder({
+        addNewWithdrawalOrder({
             type: WithdrawalOrderType.Individual,
             campaign,
             creationDate,
@@ -89,6 +94,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
             reason: formValues.reason,
             state: OrderStatus.Pending,
             accountId: "",
+            field: ""
         }, newDepositSupplyOrders);
     }
 
@@ -134,7 +140,6 @@ export const WithdrawalOrdersPage: React.FC = () => {
 
         if (await validateStock(item)) setSuppliesToAdd([item, ...suppliesToAdd]);
     }
-
 
     const handleAddDepositSupply = (item: TransformSupply) => {
         addDepositSupplyToAdd(item);
