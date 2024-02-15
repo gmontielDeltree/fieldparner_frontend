@@ -31,6 +31,7 @@ import FieldsSideMenu from "../components/FieldsSideMenu";
 import { useTranslation } from "react-i18next";
 import { Actividad } from "../interfaces/activity";
 import { format, isBefore, isToday, parseISO } from "date-fns";
+import { hideFieldList } from "../redux/fieldsList";
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
@@ -484,6 +485,13 @@ export const FieldsPage: React.FC = () => {
 
     return respuesta ? respuesta : null;
   };
+  const handleDirectLotSelection = (lot, field) => {
+    handleSelectField(field);
+    dispatch(hideFieldList());
+    setTimeout(() => {
+      handleLotClick(lot.id);
+    }, 500);
+  };
 
   const gbl_docs_starting = async (
     key: string,
@@ -625,6 +633,7 @@ export const FieldsPage: React.FC = () => {
         open={isVisible}
         fields={fields}
         onSelectField={handleSelectField}
+        onSelectLot={handleDirectLotSelection}
       />
       <Outlet />
       <Grid container style={{ position: "relative" }} ref={target}>

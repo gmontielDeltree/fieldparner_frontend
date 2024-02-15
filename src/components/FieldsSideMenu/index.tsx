@@ -14,7 +14,7 @@ import html2canvas from "html2canvas";
 
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
-const FieldsSideMenu = ({ open, fields, onSelectField }) => {
+const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
   const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [currentField, setCurrentField] = React.useState(null);
@@ -106,10 +106,10 @@ const FieldsSideMenu = ({ open, fields, onSelectField }) => {
       open={open}
       onClose={handleClose}
       sx={{
-        width: "66%",
+        width: "40%",
         flexShrink: 0,
         "& .MuiDrawer-paper": {
-          width: "66%",
+          width: "40%",
           boxSizing: "border-box"
         }
       }}
@@ -157,6 +157,10 @@ const FieldsSideMenu = ({ open, fields, onSelectField }) => {
                         size="small"
                         variant="outlined"
                         sx={{ margin: "2px" }}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onSelectLot(lote, field);
+                        }}
                       />
                     ))}
                   </>
