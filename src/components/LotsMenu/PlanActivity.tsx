@@ -52,6 +52,7 @@ interface PlanActivityProps {
   fieldName: string;
   lot: any;
   db: any;
+  field: any;
   backToActivites: () => void;
   existingActivity: Actividad;
 }

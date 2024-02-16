@@ -25,11 +25,12 @@ const GlossyButton = styled(Button)(({ theme }) => ({
 
 function LaborOrderContent(props) {
   const { activity, handleDownloadPDF } = props;
+  
   const dispatch = useAppDispatch();
 
   return (
     <>
-      <LaborOrderModal key="order-modal" />
+      <LaborOrderModal key="order-modal" activity={activity} />
       <GlossyButton
         key="withdrawal-order"
         variant="contained"

@@ -25,22 +25,24 @@ import { es } from "date-fns/locale";
 
 function Harvest({
   activity,
+  lotDoc,
   complementaryColor,
   handleDeleteActivity,
   handleEditActivity,
   handleDownloadPDF
 }) {
+  
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-
+  
   const formattedPlanificadaDate = activity.actividad.detalles
     ?.fecha_ejecucion_tentativa
     ? format(
-        parseISO(activity.actividad.detalles.fecha_ejecucion_tentativa),
-        "PPPP",
-        { locale: es }
-      )
+      parseISO(activity.actividad.detalles.fecha_ejecucion_tentativa),
+      "PPPP",
+      { locale: es }
+    )
     : "Fecha no definida";
 
   const handleTabChange = (event, newValue) => {
@@ -96,7 +98,7 @@ function Harvest({
         </IconButton>
       </Box>
 
-{/* LGO Comento los items que no estan implementados aún */}
+      {/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={() => handleEditActivity(activity.actividad)}>
           Editar
@@ -129,6 +131,7 @@ function Harvest({
       {selectedTab === 1 && (
         <LaborOrderContent
           activity={activity.actividad}
+          lotDoc={lotDoc}
           handleDownloadPDF={handleDownloadPDF}
         />
       )}

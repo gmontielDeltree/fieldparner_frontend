@@ -1,8 +1,8 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, styled, Paper, Box, Typography, Grid, TextField, InputAdornment, TableContainer, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
-import React, { useEffect, useState } from 'react'
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, Paper, Box, Typography, Grid, TextField, InputAdornment, TableContainer, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector, useBusiness, useDeposit, useForm, useOrder, useSupply } from '../../../hooks';
 import { uiCloseModal } from '../../../redux/ui';
-import { ColumnProps, DepositSupplyOrderItem, DisplayModals, TipoEntidad, TransformSupply } from '../../../types';
+import { ColumnProps, DepositSupplyOrderItem, DisplayModals, TipoEntidad } from '../../../types';
 import {
     Close as CloseIcon,
     Assignment as AssignmentIcon
@@ -10,14 +10,6 @@ import {
 import { getShortDate } from '../../../helpers/dates';
 import { DataTable, ItemRow, NewSupplyRow, TableCellStyled } from '../..';
 
-const CustomDialog = styled(Dialog)(({ theme }) => ({
-    '& .MuiDialogContent-root': {
-        padding: theme.spacing(2),
-    },
-    '& .MuiDialogActions-root': {
-        padding: theme.spacing(1),
-    },
-}));
 
 const columns: ColumnProps[] = [
     { text: "Deposito", align: "left" },
@@ -30,16 +22,21 @@ const columns: ColumnProps[] = [
     TODO: Valor fijos de la cabezera 
 */
 
-export const LaborOrderModal = () => {
+export const LaborOrderModal = ({ activity }) => {
+
     const dispatch = useAppDispatch();
     const { showModal } = useAppSelector((state) => state.ui);
+    const { selectedCampaign } = useAppSelector(state => state.campaign);
+    const { lotActive } = useAppSelector(state => state.map);
     const [listWithdrawals, setListWithdrawals] = useState<DepositSupplyOrderItem[]>([]);
     const { isLoading, confirmLaborORder, createLaborOrder } = useOrder();
     //Ver de donde obtenemos los insumos y depositos:
     const { deposits, getDeposits } = useDeposit();
     const { supplies, getSupplies } = useSupply();
     const { businesses, getBusinesses } = useBusiness();
-    // const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
+
+    const contractorActivity = useMemo(() => { return activity.contratista }, []);
+
 
     const {
         creationDate,
@@ -120,8 +117,7 @@ export const LaborOrderModal = () => {
                                 variant="outlined"
                                 type="text"
                                 label="Campo"
-                                name="field"
-                                value={"German"}
+                                value={lotActive?.properties?.campo_parent_id}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start" />,
                                 }}
@@ -133,8 +129,7 @@ export const LaborOrderModal = () => {
                                 variant="outlined"
                                 type="text"
                                 label="Lote"
-                                name="lot"
-                                value={"1"}
+                                value={lotActive?.properties?.nombre}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start" />,
                                 }}
@@ -147,7 +142,7 @@ export const LaborOrderModal = () => {
                                 type="text"
                                 label="Hectareas"
                                 name="has"
-                                value={"50"}
+                                value={lotActive?.properties?.hectareas}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start" />,
                                 }}
@@ -160,7 +155,7 @@ export const LaborOrderModal = () => {
                                 type="text"
                                 label="Campaña"
                                 name="campaign"
-                                value={"24/25"}
+                                value={selectedCampaign?.campaignId.toString().toUpperCase()}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start" />,
                                 }}
@@ -172,8 +167,7 @@ export const LaborOrderModal = () => {
                                 variant="outlined"
                                 type="text"
                                 label="Cultivo"
-                                name="harvest"
-                                value={"Maiz"}
+                                value={activity?.tipo.toString().toUpperCase()}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start" />,
                                 }}
@@ -198,7 +192,7 @@ export const LaborOrderModal = () => {
                                 fullWidth
                             />
                         </Grid>
-                        <Grid item xs={12} sm={4}>
+                        {/* <Grid item xs={12} sm={4}>
                             <FormControl key="labor-order" fullWidth>
                                 <InputLabel id="labor-order">Orden Retiro</InputLabel>
                                 <Select
@@ -215,18 +209,18 @@ export const LaborOrderModal = () => {
                                     ))}
                                 </Select>
                             </FormControl>
-                        </Grid>
+                        </Grid> */}
                         <Grid item xs={12} sm={4}>
                             <FormControl key="contractor-select" fullWidth>
                                 <InputLabel id="contractor-label">Contratista</InputLabel>
                                 <Select
                                     labelId="contractor-label"
                                     name="contractor"
-                                    value={contractor}
+                                    value={contractorActivity._id}
                                     label="Contratista"
                                     onChange={handleSelectChange}
                                 >
-                                    {businesses?.filter(s => s.tipoEntidad === TipoEntidad.FISICA).map((f) => (
+                                    {businesses.map((f) => (
                                         <MenuItem key={f._id} value={f._id}>
                                             {f.nombreCompleto || f.razonSocial}
                                         </MenuItem>
