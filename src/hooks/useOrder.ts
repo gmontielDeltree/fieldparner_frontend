@@ -19,13 +19,14 @@ export const useOrder = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState({});
 
-    const getLastNumerator = async (accountId: string, type: string) => {
+    const getLastNumerator = async (accountId: string, type: NumeratorType) => {
         try {
             const response = await dbContext.numerators.find({
                 selector: {
                     "$and": [{ "accountId": accountId }, { "numeratorType": type }],
                 }
             });
+            console.log('response', response);
             if (response.docs.length)
                 return response.docs[0] as Numerator;
 
@@ -264,23 +265,22 @@ export const useOrder = () => {
             setIsLoading(false);
 
             if (response) {
-                Swal.fire('Orden de Retiro', ` N° de orden ${lastNumerator.lastNumerator} creado exitosamente. `, 'success');
-                return true;
+                return lastNumerator.lastNumerator;
             }
-            return false;
+            return -1;
         } catch (error) {
             console.log('Error al crear el documento: ', error);
             Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
             setIsLoading(false);
-            return false;
+            return -1;
         }
     }
 
-    const confirmLaborORder = async (listWithdrawals: DepositSupplyOrderItem[], withdrawalDate: string) => {
+    const confirmLaborOrder = async (listWithdrawals: DepositSupplyOrderItem[], withdrawalDate: string) => {
         setIsLoading(true);
         try {
             if (!user) throw new Error("User not found.");
-            if (!withdrawalOrderActive) throw new Error("Withdrawal Order not found");
+            // if (!withdrawalOrderActive) throw new Error("Withdrawal Order not found");
 
             //Registro de los retiros 
             const newWithdrawals: WithdrawalsByDepositSupply[] = listWithdrawals.map(w => ({
@@ -322,6 +322,36 @@ export const useOrder = () => {
         }
     }
 
+    const getLaborOrder = async (field: string, campaignId: string, contractorId: string) => {
+        setIsLoading(true);
+        try {
+            if (!user) throw new Error("User not found.");
+
+            const response = await dbContext.withdrawalOrders.find({
+                selector: {
+                    "$and": [
+                        { "accountId": user.accountId },
+                        { "field": field },
+                        { "campaign.campaignId": campaignId },
+                        { "contractor._id": contractorId }
+                    ],
+                },
+            });
+
+            setIsLoading(false);
+
+            if (response) {
+                return response.docs[0] as WithdrawalOrder;
+            }
+            return null;
+        } catch (error) {
+            setIsLoading(false);
+            error && setError(error);
+            return null;
+        }
+    }
+
+
     const deleteWithdrawalOrder = () => { }
 
     return {
@@ -336,6 +366,7 @@ export const useOrder = () => {
         deleteWithdrawalOrder,
         getOrderWithDepositsAndSuppliesByOrder,
         createLaborOrder,
-        confirmLaborORder,
+        confirmLaborOrder,
+        getLaborOrder
     }
 }

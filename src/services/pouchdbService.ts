@@ -26,7 +26,7 @@ PouchDB.plugin(PouchDBFind);
 
 const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
 const opts: PouchDB.Replication.SyncOptions = { live: true, retry: true };
-
+console.log('remoteCouchDBUrl', remoteCouchDBUrl)
 const dbNames = Object.freeze({
     vehicles: "vehicles",
     deposits: "deposits",

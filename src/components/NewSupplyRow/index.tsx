@@ -81,7 +81,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       location,
       nroLot,
       dueDate,
-      amount,
+      amount: Number(amount),
       currentStock: 0
     });
     reset();

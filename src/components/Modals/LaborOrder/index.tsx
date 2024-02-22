@@ -1,14 +1,19 @@
+import Swal from 'sweetalert2';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, Paper, Box, Typography, Grid, TextField, InputAdornment, TableContainer, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react'
-import { useAppDispatch, useAppSelector, useBusiness, useDeposit, useForm, useOrder, useSupply } from '../../../hooks';
+import { useAppDispatch, useAppSelector, useBusiness, useCampaign, useDeposit, useForm, useOrder, useSupply } from '../../../hooks';
 import { uiCloseModal } from '../../../redux/ui';
-import { ColumnProps, DepositSupplyOrderItem, DisplayModals, TipoEntidad } from '../../../types';
+import { ColumnProps, DepositSupplyOrder, DepositSupplyOrderItem, DisplayModals, OrderStatus, TransformSupply, WithdrawalOrder, WithdrawalOrderType } from '../../../types';
 import {
     Close as CloseIcon,
-    Assignment as AssignmentIcon
+    Assignment as AssignmentIcon,
+    Edit as EditIcon,
+    Save as SaveIcon,
+
 } from '@mui/icons-material';
+import { Icon } from "semantic-ui-react";
 import { getShortDate } from '../../../helpers/dates';
-import { DataTable, ItemRow, NewSupplyRow, TableCellStyled } from '../..';
+import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled } from '../..';
 
 
 const columns: ColumnProps[] = [
@@ -17,61 +22,233 @@ const columns: ColumnProps[] = [
     { text: "UM", align: "center" },
     { text: "Ubicacion", align: "center" },
     { text: "Cantidad a Retirar", align: "center" },
+    { text: "", align: "right" },
 ];
-/*
-    TODO: Valor fijos de la cabezera 
-*/
+
+interface RowSupplyProps {
+    row: DepositSupplyOrderItem;
+    handleEdit: (item: DepositSupplyOrderItem) => void;
+    handleDelete: (item: DepositSupplyOrderItem) => void;
+}
+const RowSupply: React.FC<RowSupplyProps> = ({ row, handleDelete, handleEdit }) => {
+
+    const { amountValue, handleInputChange } = useForm({ amountValue: row.amount });
+    const [isEdit, setIsEdit] = useState(false);
+
+    const onClickEdit = () => {
+        setIsEdit(true);
+    }
+    const handleSaveEdit = () => {
+        handleEdit({ ...row, amount: Number(amountValue) });
+        setIsEdit(false);
+    }
+    const handleCancelEdit = () => {
+        setIsEdit(false);
+    }
+
+    return (
+        <ItemRow key={row._id}>
+            <TableCellStyled align="left">
+                {row.deposit.description}
+            </TableCellStyled>
+            <TableCellStyled align="left">{row.supply.name} </TableCellStyled>
+            <TableCellStyled align="center">{row.supply.unitMeasurement}</TableCellStyled>
+            <TableCellStyled align='center'>{row.location || "-"}</TableCellStyled>
+            <TableCellStyled align='center'>{
+                isEdit ? (
+                    <TextField
+                        type="number"
+                        name="amountValue"
+                        size='small'
+                        value={amountValue}
+                        onChange={handleInputChange}
+                    />) : row.amount
+            }</TableCellStyled>
+            <TableCellStyled align='center'>
+                {
+                    isEdit ? (
+                        <>
+                            <IconButton
+                                color="primary"
+                                aria-label="save"
+                                onClick={handleSaveEdit}
+                            >
+                                <SaveIcon />
+                            </IconButton>
+                            <IconButton
+                                color="secondary"
+                                aria-label="cancel"
+                                onClick={handleCancelEdit}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                        </>
+                    ) :
+                        <>
+                            <IconButton
+                                onClick={onClickEdit}
+                            >
+                                <EditIcon />
+                            </IconButton>
+                            <IconButton
+                                onClick={() => handleDelete(row)}
+                                style={{ fontSize: '1rem' }}
+                            >
+                                <Icon name="trash alternate" />
+                            </IconButton>
+                        </>
+                }
+            </TableCellStyled>
+        </ItemRow>
+    )
+}
 
 export const LaborOrderModal = ({ activity }) => {
 
     const dispatch = useAppDispatch();
+    const [initializeLoading, setinitializeLoading] = useState(false);
+    const [orderActive, setOrderActive] = useState<WithdrawalOrder | null>(null);
+    const { user } = useAppSelector(state => state.auth);
     const { showModal } = useAppSelector((state) => state.ui);
     const { selectedCampaign } = useAppSelector(state => state.campaign);
     const { lotActive } = useAppSelector(state => state.map);
     const [listWithdrawals, setListWithdrawals] = useState<DepositSupplyOrderItem[]>([]);
-    const { isLoading, confirmLaborORder, createLaborOrder } = useOrder();
+    const { isLoading,
+        depositsSuppliesOrder,
+        createLaborOrder,
+        confirmLaborOrder,
+        getLaborOrder,
+        getOrderWithDepositsAndSuppliesByOrder } = useOrder();
     //Ver de donde obtenemos los insumos y depositos:
     const { deposits, getDeposits } = useDeposit();
     const { supplies, getSupplies } = useSupply();
     const { businesses, getBusinesses } = useBusiness();
-
+    const { campaigns, getCampaigns } = useCampaign();
     const contractorActivity = useMemo(() => { return activity.contratista }, []);
-
-
     const {
         creationDate,
-        contractor,
-        handleInputChange,
-        handleSelectChange } = useForm({
+        handleInputChange } = useForm({
             creationDate: getShortDate(),
-            contractor: ""
         })
 
     const onCloseModal = () => {
         dispatch(uiCloseModal());
+        setListWithdrawals([]);
     };
 
-    const handleAddDepositSupply = (item) => {
-        setListWithdrawals([item, ...listWithdrawals])
+    const handleAddDepositSupply = (item: TransformSupply) => {
+        if (!user) return;
+
+        let newDepositSupplyOrders: DepositSupplyOrderItem = {
+            accountId: user.accountId,
+            deposit: item.deposit,
+            supply: item.supply,
+            location: item.location,
+            nroLot: item.nroLot,
+            order: 0, // El numero lo genera en createWithdrawalOrder()
+            withdrawalAmount: 0,
+            originalAmount: Number(item.amount),
+            amount: Number(item.amount)
+        };
+        setListWithdrawals([newDepositSupplyOrders, ...listWithdrawals]);
     }
 
     const generateLaborOrder = async () => {
-        await confirmLaborORder(listWithdrawals, creationDate);
+        const findCampaing = campaigns.find(x => x.campaignId === selectedCampaign?.campaignId);
+        const findContractor = businesses.find(x => x._id === contractorActivity._id);
+        if (!user || !findCampaing || !findContractor) return;
+
+        const newLaborOrder: WithdrawalOrder = {
+            type: WithdrawalOrderType.Labor,
+            campaign: findCampaing,
+            creationDate,
+            order: 0,
+            contractor: findContractor,
+            reason: "",
+            state: OrderStatus.Pending,
+            accountId: "",
+            field: lotActive?.properties?.campo_parent_id || ""
+        };
+        let newDepositSupplyOrders: DepositSupplyOrder[] = listWithdrawals.map(s => ({
+            accountId: user.accountId,
+            deposit: s.deposit,
+            supply: s.supply,
+            location: s.location,
+            nroLot: s.nroLot,
+            order: 0, // El numero lo genera en createWithdrawalOrder()
+            withdrawalAmount: 0,
+            originalAmount: Number(s.amount),
+        }));
+        const numberOrder = await createLaborOrder(newLaborOrder, newDepositSupplyOrders);
+
+        if (numberOrder > 0)
+            Swal.fire('Orden de Retiro', ` N° de orden ${numberOrder} creado exitosamente. `, 'success');
+        else
+            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+
+        onCloseModal();
     }
-    const handleGenerateLaborOrder = () => {
-        generateLaborOrder();
+    const initConfirmLaborOrder = async () => {
+        confirmLaborOrder(listWithdrawals, creationDate);
+        onCloseModal();
+        // if (confirm) Swal.fire('Orden de Retiro', 'Confirmacion exitosa.', 'success');
+        // else
+        //     Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
     }
 
     const handlePrint = () => {
         console.log("Imprimir orden");
     }
 
+    const deleteRowSupply = (item: DepositSupplyOrderItem) => {
+        setListWithdrawals(listWithdrawals.filter(x => x._id !== item._id));
+    }
+
+    const editRowSupply = (item: DepositSupplyOrderItem) => {
+        setListWithdrawals(listWithdrawals.map(x => x._id === item._id ? item : x));
+    }
+
+    const onClickCreateOrder = () => {
+        if (orderActive)
+            initConfirmLaborOrder()
+        else
+            generateLaborOrder()
+    }
+
     useEffect(() => {
-        getBusinesses();
-        getSupplies();
-        getDeposits();
+        const initializeGetOrder = async () => {
+            console.log("start initialize order");
+            setinitializeLoading(true);
+            const responseAll = await Promise.all([
+                getBusinesses(),
+                getSupplies(),
+                getDeposits(),
+                getCampaigns(),
+            ]);
+
+            if (responseAll) console.log("initialized success.");
+
+            const field = lotActive?.properties?.campo_parent_id as string;
+            const campaignId = selectedCampaign?.campaignId;
+            const contractorId = contractorActivity._id;
+            if (!campaignId) return;
+            const order = await getLaborOrder(field, campaignId, contractorId);
+            if (order) {
+                setOrderActive(order);
+                await getOrderWithDepositsAndSuppliesByOrder(order.order);
+            }
+
+            setinitializeLoading(false);
+        }
+
+        initializeGetOrder();
     }, [])
 
+    useEffect(() => {
+        if (depositsSuppliesOrder.length) {
+            setListWithdrawals(depositsSuppliesOrder.map(x => ({ ...x, amount: 0 } as DepositSupplyOrderItem)));
+        }
+    }, [depositsSuppliesOrder])
 
     return (
         <Dialog
@@ -107,75 +284,38 @@ export const LaborOrderModal = ({ activity }) => {
                 <CloseIcon />
             </IconButton>
             <DialogContent>
+                <Loading key="loading-labor" loading={isLoading || initializeLoading} />
                 <Paper
                     variant="outlined"
                     sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}
                 >
                     <Grid container spacing={2} mb={2}>
-                        <Grid item xs={12} sm={3}>
-                            <TextField
-                                variant="outlined"
-                                type="text"
-                                label="Campo"
-                                value={lotActive?.properties?.campo_parent_id}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
+                        <Grid item xs={12} sm={5}>
+                            <Typography variant="subtitle1">
+                                <strong> Campaña:</strong> {selectedCampaign?.campaignId.toString().toUpperCase()}
+                            </Typography>
                         </Grid>
-                        <Grid item xs={12} sm={2}>
-                            <TextField
-                                variant="outlined"
-                                type="text"
-                                label="Lote"
-                                value={lotActive?.properties?.nombre}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={2}>
-                            <TextField
-                                variant="outlined"
-                                type="text"
-                                label="Hectareas"
-                                name="has"
-                                value={lotActive?.properties?.hectareas}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
+                        <Grid item xs={12} sm={5}>
+                            <Typography variant="subtitle1">
+                                <strong> Cultivo:</strong> {activity?.tipo.toString().toUpperCase()}
+                            </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}>
-                            <TextField
-                                variant="outlined"
-                                type="text"
-                                label="Campaña"
-                                name="campaign"
-                                value={selectedCampaign?.campaignId.toString().toUpperCase()}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
+                            <Typography variant="subtitle1">
+                                <strong> Campo:</strong> {lotActive?.properties?.campo_parent_id}
+                            </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}>
-                            <TextField
-                                variant="outlined"
-                                type="text"
-                                label="Cultivo"
-                                value={activity?.tipo.toString().toUpperCase()}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
+                            <Typography variant="subtitle1">
+                                <strong> Lote:</strong> {lotActive?.properties?.nombre}
+                            </Typography>
                         </Grid>
-                        <Grid item xs={12} sm={8} />
                         <Grid item xs={12} sm={4}>
+                            <Typography variant="subtitle1">
+                                <strong> Hectareas:</strong> {lotActive?.properties?.hectareas}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={4} sx={{ mt: 3 }}>
                             <TextField
                                 variant="outlined"
                                 type="date"
@@ -192,33 +332,33 @@ export const LaborOrderModal = ({ activity }) => {
                                 fullWidth
                             />
                         </Grid>
-                        {/* <Grid item xs={12} sm={4}>
-                            <FormControl key="labor-order" fullWidth>
-                                <InputLabel id="labor-order">Orden Retiro</InputLabel>
-                                <Select
-                                    labelId="labor-order"
-                                    name="contractor"
-                                    value={contractor}
-                                    label="Orden Retiro"
-                                    onChange={handleSelectChange}
-                                >
-                                    {["001", "003", "201"].map((f) => (
-                                        <MenuItem key={f} value={f}>
-                                            {f}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Grid> */}
-                        <Grid item xs={12} sm={4}>
-                            <FormControl key="contractor-select" fullWidth>
+                        {
+                            orderActive && (
+                                <Grid item xs={12} sm={4} sx={{ mt: 3, display: "flex", alignItems: "center" }}>
+                                    <Typography variant="subtitle1">
+                                        <strong> Orden Retiro:</strong> {orderActive.order.toString().toUpperCase()}
+                                    </Typography>
+                                    {/* <TextField
+                                        variant="outlined"
+                                        type="text"
+                                        label="Orden Retiro"
+                                        value={orderActive.order.toString().toUpperCase()}
+                                        fullWidth
+                                    /> */}
+                                </Grid>
+                            )
+                        }
+                        <Grid item xs={12} sm={4} sx={{ mt: 3, display: "flex", alignItems: "center" }}>
+                            <Typography variant="subtitle1">
+                                <strong> Contratista:</strong> {contractorActivity.nombre}
+                            </Typography>
+                            {/* <FormControl key="contractor-select" fullWidth>
                                 <InputLabel id="contractor-label">Contratista</InputLabel>
                                 <Select
                                     labelId="contractor-label"
-                                    name="contractor"
+                                    disabled
                                     value={contractorActivity._id}
                                     label="Contratista"
-                                    onChange={handleSelectChange}
                                 >
                                     {businesses.map((f) => (
                                         <MenuItem key={f._id} value={f._id}>
@@ -226,7 +366,7 @@ export const LaborOrderModal = ({ activity }) => {
                                         </MenuItem>
                                     ))}
                                 </Select>
-                            </FormControl>
+                            </FormControl> */}
                         </Grid>
                     </Grid>
                     <Divider />
@@ -234,11 +374,17 @@ export const LaborOrderModal = ({ activity }) => {
                         <NewSupplyRow
                             key="new-supply-order"
                             supplies={supplies}
-                            deposits={[]}
+                            deposits={deposits}
                             showDueDate={false}
                             addNewSupply={handleAddDepositSupply} />
                     </Box>
-
+                    <Typography
+                        variant="h5"
+                        align="left"
+                        sx={{ mt: 1, mb: 3 }}
+                    >
+                        Insumos a retirar:
+                    </Typography>
                     <TableContainer
                         key="table-labor-order"
                         sx={{
@@ -255,15 +401,11 @@ export const LaborOrderModal = ({ activity }) => {
                             isLoading={false}
                         >
                             {listWithdrawals.map((row) => (
-                                <ItemRow key={row._id}>
-                                    <TableCellStyled align="left">
-                                        {row.deposit.description}
-                                    </TableCellStyled>
-                                    <TableCellStyled align="left">{row.supply.name} </TableCellStyled>
-                                    <TableCellStyled align="center">{row.supply.unitMeasurement}</TableCellStyled>
-                                    <TableCellStyled align='center'>{row.location || "-"}</TableCellStyled>
-                                    <TableCellStyled align='center'>{row.amount}</TableCellStyled>
-                                </ItemRow>
+                                <RowSupply
+                                    key={row._id}
+                                    row={row}
+                                    handleEdit={editRowSupply}
+                                    handleDelete={deleteRowSupply} />
                             ))}
                         </DataTable>
                     </TableContainer>
@@ -283,17 +425,17 @@ export const LaborOrderModal = ({ activity }) => {
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
-                            color="primary"
-                            onClick={() => handleGenerateLaborOrder()}
+                            color="success"
+                            onClick={() => onClickCreateOrder()}
                         >
-                            Generar
+                            {orderActive ? "Confirmar" : "Generar"}
                         </Button>
                     </Grid>
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
                             color="primary"
-                            disabled
+                            disabled={!orderActive}
                             onClick={() => handlePrint()}
                         >
                             Inprimir
