@@ -124,7 +124,7 @@ function Application({
         scrollButtons="auto"
         sx={{ marginBottom: "16px" }}
       >
-        <Tab label="Planificacion" />
+        <Tab label="Programacion" />
         <Tab label="Orden de trabajo" />
         <Tab label="Ejecucion" />
         <Tab label="Adjuntos" />
