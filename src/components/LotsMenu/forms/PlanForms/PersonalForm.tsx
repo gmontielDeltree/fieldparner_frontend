@@ -90,51 +90,56 @@ function PersonalForm({ lot, formData, setFormData }) {
       });
     }
   };
-
+  console.log("ALPHA cultivo", formData.detalles.cultivo);
+  console.log("ALPHA contratista", formData.contratista.nombre);
   return (
     <CustomPaper elevation={3}>
       <Title>General</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <InputLabel id="cultivo-label">Cultivo</InputLabel>
-            <Select
-              labelId="cultivo-label"
-              id="cultivo"
-              value={formData.detalles.cultivo || ""}
-              label="Cultivo"
-              fullWidth
-              onChange={(e) => onFieldChange("cultivo", e.target.value)}
-              inputProps={{ name: "cultivo", id: "cultivo" }}
-            >
-              {crops.map((crop) => (
-                <MenuItem key={crop.cultivoId} value={crop.cultivoId}>
-                  {crop.label}
-                </MenuItem>
-              ))}
-            </Select>
+            <FormControl fullWidth variant="outlined">
+              <InputLabel id="cultivo-label">Cultivo</InputLabel>
+              <Select
+                labelId="cultivo-label"
+                id="cultivo"
+                value={formData.detalles.cultivo || ""}
+                label="Cultivo"
+                fullWidth
+                onChange={(e) => onFieldChange("cultivo", e.target.value)}
+                inputProps={{ name: "cultivo", id: "cultivo-select" }}
+              >
+                {crops.map((crop) => (
+                  <MenuItem key={crop.cultivoId} value={crop.cultivoId}>
+                    {crop.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <InputLabel id="contratista-label">Contratista</InputLabel>
-            <Select
-              labelId="contratista-label"
-              id="contratista"
-              value={formData.contratista.nombre || ""}
-              label="Contratista"
-              fullWidth
-              onChange={(e) => onFieldChange("contratista", e.target.value)}
-              inputProps={{ name: "contratista", id: "contratista" }}
-            >
-              {businesses.map((business) => (
-                <MenuItem
-                  key={business._id}
-                  value={business.razonSocial || business.nombreCompleto}
-                >
-                  {business.razonSocial || business.nombreCompleto}
-                </MenuItem>
-              ))}
-            </Select>
+            <FormControl fullWidth variant="outlined">
+              <InputLabel id="contratista-label">Contratista</InputLabel>
+              <Select
+                labelId="contratista-label"
+                id="Contratista"
+                value={formData.contratista.nombre || ""}
+                label="Contratista"
+                fullWidth
+                onChange={(e) => onFieldChange("contratista", e.target.value)}
+                inputProps={{ name: "contratista", id: "contratista" }}
+              >
+                {businesses.map((business) => (
+                  <MenuItem
+                    key={business._id}
+                    value={business.razonSocial || business.nombreCompleto}
+                  >
+                    {business.razonSocial || business.nombreCompleto}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
 
           <Grid item xs={12} sm={6}>

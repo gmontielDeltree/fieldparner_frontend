@@ -23,6 +23,7 @@ import { styled, keyframes } from "@mui/material/styles";
 import uuid4 from "uuid4";
 import { useAppDispatch, useForm, useSupply } from "../../../../hooks";
 import Chip from "@mui/material/Chip";
+import { useDeposit } from "../../../../hooks";
 
 const TypeBadge = styled(Chip)(({ theme }) => ({
   marginLeft: theme.spacing(1),
@@ -71,12 +72,15 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   const [precio, setPrecio] = useState("");
   const [rows, setRows] = useState([]);
   const [editIndex, setEditIndex] = useState(-1);
+  const [deposito, setDeposito] = useState({});
   const { isLoading, supplies, getSupplies, setSupplies, deleteSupply } =
     useSupply();
+  const { deposits, getDeposits } = useDeposit();
   const [editData, setEditData] = useState({
     selectedOption: "",
     dosificacion: "",
     total: "",
+    deposito: {},
     precio: ""
   });
 
@@ -92,6 +96,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       motivos: [],
       uuid: uuid4(),
       total: total,
+      deposito: deposito,
       precio_estimado: precio
     };
     const newDetalles = [...formData.detalles.dosis, newRow];
@@ -99,9 +104,11 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       ...formData,
       detalles: { ...formData.detalles, dosis: newDetalles }
     });
+    console.log("NUEVA FILA", newRow);
     setSelectedOption("");
     setDosificacion("");
     setTotal("");
+    setDeposito("");
     setPrecio("");
   };
 
@@ -112,6 +119,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       insumo: supply,
       motivos: [],
       uuid: rows[editIndex].uuid,
+      deposito: editData.deposito,
       total: editData.total,
       precio_estimado: editData.precio
     };
@@ -130,6 +138,10 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
 
   const handleDosificacionChange = (event) => {
     setDosificacion(event.target.value);
+  };
+
+  const handleDepositoChange = (event) => {
+    setDeposito(event.target.value);
   };
 
   const handleTotalChange = (event) => {
@@ -171,11 +183,20 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
 
   useEffect(() => {
     getSupplies();
+    getDeposits();
   }, []);
 
   useEffect(() => {
     console.log("supplies:", supplies);
   }, [supplies]);
+
+  useEffect(() => {
+    console.log("deposits:", deposits);
+  }, [deposits]);
+
+  useEffect(() => {
+    console.log("EDIT DATA:", editData);
+  }, [editData]);
 
   useEffect(() => {
     if (formData && formData.detalles && formData.detalles.dosis) {
@@ -184,6 +205,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           selectedOption: dosis.insumo.name,
           dosificacion: dosis.dosis,
           total: dosis.total,
+          deposito: dosis.deposito,
           precio: dosis.precio_estimado,
           uuid: dosis.uuid
         }))
@@ -199,37 +221,60 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       <FormControl fullWidth>
         <Grid container spacing={2}>
           <Grid item xs={3}>
-            <InputLabel id="select-input-label">Insumos</InputLabel>
-            <Select
-              labelId="select-input-label"
-              id="select-input"
-              value={selectedOption}
-              label="Supplies"
-              onChange={handleSelectChange}
-              fullWidth
-              renderValue={(selected) => {
-                const selectedSupply = supplies.find(
-                  (supply) => supply.name === selected
-                );
-                return (
-                  <div>
-                    {selected}
-                    {selectedSupply && (
-                      <TypeBadge label={selectedSupply.type} color="primary" />
-                    )}
-                  </div>
-                );
-              }}
-            >
-              {supplies.map((supply, index) => (
-                <MenuItem key={index} value={supply.name}>
-                  {supply.name}
-                  <TypeBadge label={supply.type} color="primary" />
-                </MenuItem>
-              ))}
-            </Select>
+            <FormControl fullWidth>
+              <InputLabel id="select-input-label">Insumos</InputLabel>
+              <Select
+                labelId="select-input-label"
+                id="select-input"
+                value={selectedOption}
+                label="Supplies"
+                onChange={handleSelectChange}
+                fullWidth
+                renderValue={(selected) => {
+                  const selectedSupply = supplies.find(
+                    (supply) => supply.name === selected
+                  );
+                  return (
+                    <div>
+                      {selected}
+                      {selectedSupply && (
+                        <TypeBadge
+                          label={selectedSupply.type}
+                          color="primary"
+                        />
+                      )}
+                    </div>
+                  );
+                }}
+              >
+                {supplies.map((supply, index) => (
+                  <MenuItem key={index} value={supply.name}>
+                    {supply.name}
+                    <TypeBadge label={supply.type} color="primary" />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2.5}>
+            <FormControl fullWidth>
+              <InputLabel id="deposit-select-label">Deposito</InputLabel>
+              <Select
+                labelId="deposit-select-label"
+                id="deposit-select"
+                value={deposito}
+                onChange={handleDepositoChange}
+                fullWidth
+              >
+                {deposits.map((deposit, index) => (
+                  <MenuItem key={index} value={deposit._id}>
+                    {deposit.description}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={2}>
             <TextField
               fullWidth
               label="Dosificación"
@@ -238,7 +283,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               type="number"
             />
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={1.5}>
             <TextField
               fullWidth
               label="Total"
@@ -271,7 +316,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           {rows.map((row, index) => (
             <CustomListItem key={index} deleting={row.deleting}>
               <CardContent>
-                <Grid container alignItems="center" spacing={2}>
+                <Grid container alignItems="center" spacing={1}>
                   {/* Editable fields when in edit mode */}
                   {editIndex === index ? (
                     <>
@@ -290,6 +335,28 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                           ))}
                         </TextField>
                       </Grid>
+                      <Grid item xs={2}>
+                        <FormControl fullWidth>
+                          <InputLabel id="deposit-select-label">
+                            Deposito
+                          </InputLabel>
+                          <TextField
+                            fullWidth
+                            select
+                            label="Deposito"
+                            id="deposit-select"
+                            value={editData.deposito}
+                            onChange={handleEditChange("deposito")}
+                          >
+                            {deposits.map((deposit, idx) => (
+                              <MenuItem key={idx} value={deposit._id}>
+                                {deposit.description || "No Name"}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        </FormControl>
+                      </Grid>
+
                       <Grid item xs={3}>
                         <TextField
                           fullWidth
@@ -320,17 +387,25 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                     </>
                   ) : (
                     <>
-                      <Grid item xs={2}>
+                      <Grid item xs={12}>
                         <Typography variant="subtitle1">
                           {row.selectedOption}
                         </Typography>
                       </Grid>
                       <Grid item xs={3}>
                         <Typography variant="subtitle1">
+                          <strong> Deposito:</strong>{" "}
+                          {deposits.find(
+                            (deposit) => deposit._id === row.deposito
+                          )?.description || "Deposit Not Found"}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={2.5}>
+                        <Typography variant="subtitle1">
                           <strong> Dosificación:</strong> {row.dosificacion}
                         </Typography>
                       </Grid>
-                      <Grid item xs={2}>
+                      <Grid item xs={1.5}>
                         <Typography variant="subtitle1">
                           <strong> Total:</strong> {row.total}
                         </Typography>

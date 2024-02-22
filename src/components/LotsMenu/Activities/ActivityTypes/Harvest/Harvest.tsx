@@ -96,7 +96,7 @@ function Harvest({
         </IconButton>
       </Box>
 
-{/* LGO Comento los items que no estan implementados aún */}
+      {/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={() => handleEditActivity(activity.actividad)}>
           Editar
@@ -117,7 +117,7 @@ function Harvest({
         scrollButtons="auto"
         sx={{ marginBottom: "16px" }}
       >
-        <Tab label="Planificacion" />
+        <Tab label="Programacion" />
         <Tab label="Orden de trabajo" />
         <Tab label="Ejecucion" />
         <Tab label="Adjuntos" />
