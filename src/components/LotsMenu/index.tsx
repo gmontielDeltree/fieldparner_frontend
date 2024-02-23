@@ -30,6 +30,8 @@ import { styled } from "@mui/material/styles";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useTranslation } from "react-i18next";
+import { useAppDispatch } from "../../hooks";
+import { setLotActive } from "../../redux/map";
 
 const Header = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -55,6 +57,7 @@ interface LotsMenuProps {
 }
 
 const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
+  const dispatch = useAppDispatch();
   const [selectedCategory, setSelectedCategory] = useState<null | string>(null);
   const db = dbContext.fields; //new PouchDB("campos_randyv7");
   const [activities, setActivities] = useState(null);
@@ -149,17 +152,17 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
           : parseISO(
-              a.actividad.tipo === "nota"
-                ? a.actividad.fecha
-                : a.actividad.detalles.fecha_ejecucion_tentativa
-            );
+            a.actividad.tipo === "nota"
+              ? a.actividad.fecha
+              : a.actividad.detalles.fecha_ejecucion_tentativa
+          );
         let fecha_2 = b.ejecucion_id
           ? parseISO(b.ejecucion_id.split(":")[1])
           : parseISO(
-              b.actividad.tipo === "nota"
-                ? b.actividad.fecha
-                : b.actividad.detalles.fecha_ejecucion_tentativa
-            );
+            b.actividad.tipo === "nota"
+              ? b.actividad.fecha
+              : b.actividad.detalles.fecha_ejecucion_tentativa
+          );
         return isBefore(fecha_1, fecha_2) ? 1 : -1;
       });
     }
@@ -209,14 +212,15 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   useEffect(() => {
     if (lot && lot.id) {
       getActivities(lot.id).then((res) => setActivities(res));
+      dispatch(setLotActive(lot));
     }
-  }, [lot, selectedCategory]);
+  }, [lot, selectedCategory, dispatch]);
 
-  useEffect(() => {
-    if (lot && lot.id) {
-      getActivities(lot.id).then((res) => setActivities(res));
-    }
-  }, [lot, selectedCategory]);
+  // useEffect(() => {
+  //   if (lot && lot.id) {
+  //     getActivities(lot.id).then((res) => setActivities(res));
+  //   }
+  // }, [lot, selectedCategory]);
 
   const renderFormContent = () => {
     if (!selectedCampaign) {
@@ -307,7 +311,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <PlanActivity
             activityType={
               activityTypeTranslations[
-                editingActivityInfo.activity.tipo.toLowerCase()
+              editingActivityInfo.activity.tipo.toLowerCase()
               ]
             }
             lot={lot}
@@ -322,7 +326,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <ExecuteActivity
             activityType={
               activityTypeTranslations[
-                editingActivityInfo.activity.tipo.toLowerCase()
+              editingActivityInfo.activity.tipo.toLowerCase()
               ]
             }
             lot={lot}

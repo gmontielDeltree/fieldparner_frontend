@@ -495,8 +495,13 @@ export interface WithdrawalOrder extends Document {
     creationDate: string;
     order: number;
     reason: string;
-    withdraw: Business;
+    withdraw?: Business ;
     campaign: Campaign;
+    field: string;
+    contractor?: Business;
+    labor?: string;
+    laborNro?: string;
+    crop?: string;
     state: OrderStatus;
 }
 
@@ -510,6 +515,7 @@ export interface Numerator extends Document {
     numeratorType: NumeratorType;
     lastNumerator: number;
 }
+
 
 //#region Enums
 
@@ -562,7 +568,8 @@ export enum Movement {
 
 export enum DisplayModals {
     SupplyByDeposits = "SupplyByDeposits",
-    SupplyByLots = "SupplyByLots"
+    SupplyByLots = "SupplyByLots",
+    LaborOrder= "LaborOrder",
 }
 
 export enum VehicleType {
@@ -604,6 +611,7 @@ export enum WithdrawalOrderType {
 
 export enum NumeratorType {
     Client = "Cliente",
+    LaborOrder = "Orden de Trabajo",
 }
 
 //#endregion

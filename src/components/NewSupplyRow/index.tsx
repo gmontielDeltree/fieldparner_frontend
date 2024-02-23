@@ -81,7 +81,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       location,
       nroLot,
       dueDate,
-      amount,
+      amount: Number(amount),
       currentStock: 0
     });
     reset();
@@ -89,14 +89,15 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
 
   return (
     <Grid
-      key="row-new-supply-origin"
+      key="row-new-supply"
       container
       alignItems="center"
       spacing={1}
       borderRadius={2}
       pb={1}
       wrap="nowrap"
-      bgcolor="#f3f3f3"
+      sx={{ boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.2)" }}
+    // bgcolor="#f3f3f3"
     >
       <Grid item xs={12} sm={3}>
         <FormControl fullWidth>

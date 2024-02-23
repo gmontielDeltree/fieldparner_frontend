@@ -44,7 +44,7 @@ export const Activities = ({
   const db = dbContext.fields //new PouchDB("campos_randyv7");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
+  
   const handleSnackbarClose = (event: any, reason: string) => {
     if (reason === "clickaway") {
       return;
@@ -180,6 +180,7 @@ export const Activities = ({
               activity={activityData}
               complementaryColor={complementaryColor}
               icon={Icon}
+              lotDoc={lotDoc}
               isFirst={isFirst}
               handleDeleteActivity={handleDeleteActivity}
               handleEditActivity={handleEditActivity}

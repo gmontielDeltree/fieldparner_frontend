@@ -11,12 +11,13 @@ function Activity({
   activity,
   complementaryColor,
   icon,
+  lotDoc,
   handleDeleteActivity,
   handleEditActivity,
   handleDownloadPDF
 }) {
   const [gradientAngle, setGradientAngle] = useState(0);
-
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
@@ -51,6 +52,7 @@ function Activity({
         return (
           <Harvest
             activity={activity}
+            lotDoc={lotDoc}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
