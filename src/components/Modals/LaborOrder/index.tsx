@@ -3,7 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, 
 import { useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector, useBusiness, useCampaign, useDeposit, useForm, useOrder, useSupply } from '../../../hooks';
 import { uiCloseModal } from '../../../redux/ui';
-import { ColumnProps, DepositSupplyOrder, DepositSupplyOrderItem, DisplayModals, OrderStatus, TransformSupply, WithdrawalOrder, WithdrawalOrderType } from '../../../types';
+import { ColumnProps, DepositSupplyOrder, DepositSupplyOrderItem, DisplayModals, OrderStatus, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderType } from '../../../types';
 import {
     Close as CloseIcon,
     Assignment as AssignmentIcon,
@@ -191,6 +191,9 @@ const LaborOrderDoc: React.FC<LaborOrderDocProps> = ({
     withdrawalOrder,
     depositAndSupplies
 }) => {
+    const contractor = withdrawalOrder.contractor;
+    let contractorName = (contractor && contractor.tipoEntidad === TipoEntidad.FISICA) ? contractor.nombreCompleto : contractor?.razonSocial;
+
     return (
         <Document title='QTS Agro'>
             <Page size="A3" style={styles.body}>
@@ -200,7 +203,7 @@ const LaborOrderDoc: React.FC<LaborOrderDocProps> = ({
                     <Text style={styles.titlePrincipal}>Orden Retiro Nro: {withdrawalOrder.order} </Text>
                 </View>
                 <View style={styles.section}>
-                    <Text style={styles.text}>Fecha: <Text style={styles.textBody}>{withdrawalOrder.creationDate}</Text> - Contratista: <Text style={styles.textBody}>{withdrawalOrder.contractor?.nombreCompleto}</Text> - Labor: <Text style={styles.textBody}>{withdrawalOrder.labor}</Text></Text>
+                    <Text style={styles.text}>Fecha: <Text style={styles.textBody}>{withdrawalOrder.creationDate}</Text> - Contratista: <Text style={styles.textBody}>{contractorName || ""}</Text> - Labor: <Text style={styles.textBody}>{withdrawalOrder.labor?.toUpperCase()}</Text></Text>
                 </View>
                 {
                     depositAndSupplies.map(x => (
@@ -575,7 +578,6 @@ export const LaborOrderModal = ({ activity }) => {
                             download={`order-${orderActive?.order}.pdf`}
                             color="primary"
                             disabled={!orderActive}
-                        // onClick={generatePDF}
                         >
                             Inprimir
                         </Button>
