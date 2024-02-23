@@ -4,7 +4,7 @@ import "../owncomponents/loader";
 import store from "./redux/store";
 import { Provider } from "react-redux";
 import FieldPartnerApp from "./FieldPartnerApp";
-// import "./i18n"; //TODO: chequear middleware
+import "./i18n"; //TODO: chequear middleware
 
 /* Supongo que esto hay que wrappearlo con algún componente de Auth */
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

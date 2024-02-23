@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, Paper, Box, Typography, Grid, TextField, InputAdornment, TableContainer, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, Paper, Box, Typography, Grid, TextField, InputAdornment, TableContainer, Divider, Link } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector, useBusiness, useCampaign, useDeposit, useForm, useOrder, useSupply } from '../../../hooks';
 import { uiCloseModal } from '../../../redux/ui';
@@ -15,6 +15,85 @@ import { Icon } from "semantic-ui-react";
 import { getShortDate } from '../../../helpers/dates';
 import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled } from '../..';
 
+import {
+    usePDF,
+    Image,
+    Document,
+    Page,
+    Text,
+    View,
+    StyleSheet,
+    PDFDownloadLink,
+} from '@react-pdf/renderer';
+
+
+// Estilos para el PDF
+const styles = StyleSheet.create({
+    body: {
+        paddingTop: 35,
+        paddingBottom: 65,
+        paddingHorizontal: 30,
+    },
+    subtitle: {
+        fontSize: 18,
+        margin: 12,
+        fontFamily: 'Helvetica'
+    },
+    text: {
+        margin: 12,
+        fontSize: 18,
+        textAlign: 'justify',
+        fontFamily: 'Courier-Bold'
+    },
+    textDetail: {
+        margin: 12,
+        fontSize: 14,
+        textAlign: 'justify',
+        fontFamily: 'Courier-Bold'
+    },
+    textBody: {
+        margin: 12,
+        fontSize: 14,
+        textAlign: 'justify',
+        fontFamily: 'Times-Roman'
+    },
+    page: {
+        display: "flex",
+        flexDirection: 'row',
+        backgroundColor: '#E4E4E4',
+    },
+    header: {
+        display: "flex",
+        flexDirection: "row",
+        width: "100%",
+        height: "90px"
+    },
+    section: {
+        margin: 1,
+        // flexGrow: 1,
+    },
+    image: {
+        width: "30px",
+        height: "30px",
+        // objectFit: "center",
+        // margin: 2
+    },
+    titleImage: {
+        fontFamily: 'Helvetica',
+        fontSize: 22,
+        color: "#71d076",
+        textAlign: "center",
+        letterSpacing: "3px",
+        // marginTop: 12,
+        marginLeft: 5
+    },
+    titlePrincipal: {
+        marginTop: 25,
+        fontFamily: 'Courier',
+        fontSize: 24,
+        textAlign: "center",
+    },
+});
 
 const columns: ColumnProps[] = [
     { text: "Deposito", align: "left" },
@@ -103,6 +182,41 @@ const RowSupply: React.FC<RowSupplyProps> = ({ row, handleDelete, handleEdit }) 
     )
 }
 
+interface LaborOrderDocProps {
+    withdrawalOrder: WithdrawalOrder;
+    depositAndSupplies: DepositSupplyOrderItem[];
+}
+
+const LaborOrderDoc: React.FC<LaborOrderDocProps> = ({
+    withdrawalOrder,
+    depositAndSupplies
+}) => {
+    return (
+        <Document title='QTS Agro'>
+            <Page size="A3" style={styles.body}>
+                <View style={styles.header}>
+                    <Image style={styles.image} src={"/assets/images/logos/agrootolss_logo_sol.png"} />
+                    <Text style={styles.titleImage}>QTS Agro</Text>
+                    <Text style={styles.titlePrincipal}>Orden Retiro Nro: {withdrawalOrder.order} </Text>
+                </View>
+                <View style={styles.section}>
+                    <Text style={styles.text}>Fecha: <Text style={styles.textBody}>{withdrawalOrder.creationDate}</Text> - Contratista: <Text style={styles.textBody}>{withdrawalOrder.contractor?.nombreCompleto}</Text> - Labor: <Text style={styles.textBody}>{withdrawalOrder.labor}</Text></Text>
+                </View>
+                {
+                    depositAndSupplies.map(x => (
+                        <>
+                            <View key={x._id} style={styles.section}>
+                                <Text style={styles.textDetail}>Deposito:<Text style={styles.textBody}>{x.deposit.description}</Text> Insumo:<Text style={styles.textBody}>{x.supply.name}</Text> UM:<Text style={styles.textBody}>{x.supply.unitMeasurement} </Text> Cantidad a Retirar:<Text style={styles.textBody}>{x.amount}</Text></Text>
+                            </View>
+                            <View style={{ width: "100%", borderBottom: "1px solid black" }} />
+                        </>
+                    ))
+                }
+            </Page>
+        </Document >
+    )
+}
+
 export const LaborOrderModal = ({ activity }) => {
 
     const dispatch = useAppDispatch();
@@ -124,12 +238,11 @@ export const LaborOrderModal = ({ activity }) => {
     const { supplies, getSupplies } = useSupply();
     const { businesses, getBusinesses } = useBusiness();
     const { campaigns, getCampaigns } = useCampaign();
-    const contractorActivity = useMemo(() => { return activity.contratista }, []);
-    const {
-        creationDate,
-        handleInputChange } = useForm({
-            creationDate: getShortDate(),
-        })
+    const contractorActivity = useMemo(() => {
+        return activity.contratista
+    }, []);
+    const { creationDate, handleInputChange } = useForm({ creationDate: getShortDate() });
+    const [instance, updateInstance] = usePDF({ document: <></> });
 
     const onCloseModal = () => {
         dispatch(uiCloseModal());
@@ -167,7 +280,8 @@ export const LaborOrderModal = ({ activity }) => {
             reason: "",
             state: OrderStatus.Pending,
             accountId: "",
-            field: lotActive?.properties?.campo_parent_id || ""
+            field: lotActive?.properties?.campo_parent_id || "",
+            labor: activity.tipo
         };
         let newDepositSupplyOrders: DepositSupplyOrder[] = listWithdrawals.map(s => ({
             accountId: user.accountId,
@@ -196,9 +310,13 @@ export const LaborOrderModal = ({ activity }) => {
         //     Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
     }
 
-    const handlePrint = () => {
-        console.log("Imprimir orden");
-    }
+    // const generatePDF = () => {
+    //     if (orderActive) {
+    //         updateInstance(<LaborOrderDoc
+    //             withdrawalOrder={orderActive}
+    //             depositAndSupplies={listWithdrawals} />);
+    //     }
+    // };
 
     const deleteRowSupply = (item: DepositSupplyOrderItem) => {
         setListWithdrawals(listWithdrawals.filter(x => x._id !== item._id));
@@ -249,6 +367,16 @@ export const LaborOrderModal = ({ activity }) => {
             setListWithdrawals(depositsSuppliesOrder.map(x => ({ ...x, amount: 0 } as DepositSupplyOrderItem)));
         }
     }, [depositsSuppliesOrder])
+
+    useEffect(() => {
+        if (orderActive && listWithdrawals.length) {
+            console.log('update file', { orderActive });
+            updateInstance(<LaborOrderDoc
+                withdrawalOrder={orderActive}
+                depositAndSupplies={listWithdrawals} />)
+        }
+    }, [listWithdrawals, orderActive])
+
 
     return (
         <Dialog
@@ -410,6 +538,14 @@ export const LaborOrderModal = ({ activity }) => {
                         </DataTable>
                     </TableContainer>
                 </Paper>
+                {/* <a href={instance.blob} target='_blank' download={`order-${orderActive?.order}.pdf`}>
+                    Download
+                </a> */}
+                {/* {
+                    <PDFViewer style={{ width: '100%', height: '800px' }}>
+                        {content}
+                    </PDFViewer>
+                } */}
             </DialogContent>
             <DialogActions>
                 <Grid
@@ -434,12 +570,27 @@ export const LaborOrderModal = ({ activity }) => {
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
+                            href={instance.url || "#"}
+                            target='_blank'
+                            download={`order-${orderActive?.order}.pdf`}
                             color="primary"
                             disabled={!orderActive}
-                            onClick={() => handlePrint()}
+                        // onClick={generatePDF}
                         >
                             Inprimir
                         </Button>
+                        {/* {
+                            orderActive && (
+                                <PDFDownloadLink document={
+                                    <LaborOrderDoc
+                                        withdrawalOrder={orderActive}
+                                        depositAndSupplies={listWithdrawals} />} fileName={`order-${orderActive.order}.pdf`}>
+                                    {({ blob, url, loading, error }) =>
+                                        (orderActive && !loading) ? 'Imprimir' : ''
+                                    }
+                                </PDFDownloadLink>
+                            )
+                        } */}
                     </Grid>
                 </Grid>
             </DialogActions>
