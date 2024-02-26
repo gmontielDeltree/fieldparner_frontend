@@ -16,6 +16,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { styled } from "@mui/material/styles";
 import uuid4 from "uuid4";
+import { AutocompleteCultivo } from "../../components/AutocompleteCultivo";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -99,7 +100,11 @@ function PersonalForm({ lot, formData, setFormData }) {
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <InputLabel id="cultivo-label">Cultivo</InputLabel>
+              <AutocompleteCultivo value={formData.detalles.cultivo || ""} 
+              onChange={(e) => onFieldChange("cultivo", e.target.value)}
+              />
+
+              {/* <InputLabel id="cultivo-label">Cultivo</InputLabel>
               <Select
                 labelId="cultivo-label"
                 id="cultivo"
@@ -114,7 +119,7 @@ function PersonalForm({ lot, formData, setFormData }) {
                     {crop.label}
                   </MenuItem>
                 ))}
-              </Select>
+              </Select> */}
             </FormControl>
           </Grid>
 

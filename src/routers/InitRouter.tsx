@@ -18,6 +18,9 @@ export const InitRouter = () => {
 
   const { status, checkAuthToken } = useAuthStore();
 
+  console.count("InitRouter Render")
+
+
   useEffect(() => {
     // anotar la url original
     console.log("WINDOW LOCATION HREF PRE AUTH", from);
@@ -45,7 +48,7 @@ export const InitRouter = () => {
   //  {/* <OverviewRoutes /> */}
   return (
     <>
-      {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
+      {status !== "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
     </>
   );
 };

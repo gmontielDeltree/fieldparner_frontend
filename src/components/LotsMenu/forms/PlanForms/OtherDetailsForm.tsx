@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import id from "date-fns/locale/id";
+import { NumberFieldWithUnits } from "../../components/NumberField";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -77,6 +78,11 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
             </TextField>
           </Grid>
           <Grid item xs={12} sm={6}>
+            <NumberFieldWithUnits 
+              value={formData.detalles.densidad_objetivo}
+              onChange={handleInputChange("densidad_objetivo")}
+              unit="plantas/ha"
+              label="Densidad Objetivo" />
             <TextField
               id="densidad_objetivo"
               label="Densidad Objetivo"

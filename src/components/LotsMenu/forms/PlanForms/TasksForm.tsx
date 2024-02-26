@@ -23,6 +23,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import { styled, keyframes } from "@mui/material/styles";
 import uuid4 from "uuid4";
+import { NumberFieldWithUnits } from '../../components/NumberField';
 
 const flashFadeAnimation = keyframes`
   0% {
@@ -161,11 +162,11 @@ function TasksForm({ lot, formData, setFormData }) {
 
   return (
     <CustomPaper elevation={3}>
-      <Title>Labores</Title>
+      <Title>Costo de Labores</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
           <Grid item xs={4}>
-            <InputLabel id="select-input-label">Labores</InputLabel>
+            <InputLabel id="select-input-label">Labor</InputLabel>
             <Select
               labelId="select-input-label"
               id="select-input"
@@ -182,13 +183,21 @@ function TasksForm({ lot, formData, setFormData }) {
             </Select>
           </Grid>
           <Grid item xs={3}>
-            <TextField
+          <NumberFieldWithUnits
+                           fullWidth
+                           label="Costo"
+                           value={editData.price}
+                           onChange={handleEditChange("price")}
+                           unit="USD"
+                        />
+
+            {/* <TextField
               fullWidth
               label="Costo (USD$)"
               value={price}
               onChange={handlePriceChange}
               type="number"
-            />
+            /> */}
           </Grid>
           <Grid item xs={4}>
             <TextField
@@ -232,13 +241,22 @@ function TasksForm({ lot, formData, setFormData }) {
                         </TextField>
                       </Grid>
                       <Grid item xs={2}>
-                        <TextField
+                        <NumberFieldWithUnits
+                           fullWidth
+                           label="Costo"
+                           value={editData.price}
+                           onChange={handleEditChange("price")}
+                           unit="USD"
+                        />
+
+                      
+                        {/* <TextField
                           fullWidth
-                          label="Costo (USD$)"
+                          label="Costo"
                           value={editData.price}
                           onChange={handleEditChange("price")}
                           type="number"
-                        />
+                        /> */}
                       </Grid>
                       <Grid item xs={4}>
                         <TextField

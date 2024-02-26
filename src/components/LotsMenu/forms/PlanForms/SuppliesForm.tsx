@@ -12,7 +12,7 @@ import {
   CardContent,
   Typography,
   Box,
-  Paper
+  Paper,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -24,12 +24,14 @@ import uuid4 from "uuid4";
 import { useAppDispatch, useForm, useSupply } from "../../../../hooks";
 import Chip from "@mui/material/Chip";
 import { useDeposit } from "../../../../hooks";
+import { useTranslation } from "react-i18next";
+import { NumberFieldWithUnits } from "../../components/NumberField";
 
 const TypeBadge = styled(Chip)(({ theme }) => ({
   marginLeft: theme.spacing(1),
   fontSize: "0.75rem",
   height: "auto",
-  padding: "0 6px"
+  padding: "0 6px",
 }));
 
 const flashFadeAnimation = keyframes`
@@ -49,23 +51,24 @@ const CustomListItem = styled(Card)(({ deleting }) => ({
   margin: "10px 0",
   backgroundColor: "#f9f9f9",
   borderRadius: "8px",
-  animation: deleting ? `${flashFadeAnimation} 1s forwards` : "none"
+  animation: deleting ? `${flashFadeAnimation} 1s forwards` : "none",
 }));
 
 const Title = styled(Typography)({
   fontSize: "1.5em",
   fontWeight: "bold",
   color: "#333",
-  marginBottom: "20px"
+  marginBottom: "20px",
 });
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
   margin: "20px 0",
-  backgroundColor: "#f7f7f7"
+  backgroundColor: "#f7f7f7",
 });
 
 function SuppliesForm({ lot, db, formData, setFormData }) {
+  const { t } = useTranslation();
   const [selectedOption, setSelectedOption] = useState("test");
   const [dosificacion, setDosificacion] = useState("");
   const [total, setTotal] = useState("");
@@ -81,7 +84,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     dosificacion: "",
     total: "",
     deposito: {},
-    precio: ""
+    precio: "",
   });
 
   const findInsumoByOption = (option) => {
@@ -97,12 +100,12 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       uuid: uuid4(),
       total: total,
       deposito: deposito,
-      precio_estimado: precio
+      precio_estimado: precio,
     };
     const newDetalles = [...formData.detalles.dosis, newRow];
     setFormData({
       ...formData,
-      detalles: { ...formData.detalles, dosis: newDetalles }
+      detalles: { ...formData.detalles, dosis: newDetalles },
     });
     console.log("NUEVA FILA", newRow);
     setSelectedOption("");
@@ -121,13 +124,13 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       uuid: rows[editIndex].uuid,
       deposito: editData.deposito,
       total: editData.total,
-      precio_estimado: editData.precio
+      precio_estimado: editData.precio,
     };
     const updatedDetalles = [...formData.detalles.dosis];
     updatedDetalles[editIndex] = updatedRow;
     setFormData({
       ...formData,
-      detalles: { ...formData.detalles, dosis: updatedDetalles }
+      detalles: { ...formData.detalles, dosis: updatedDetalles },
     });
     setEditIndex(-1);
   };
@@ -172,7 +175,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       );
       setFormData({
         ...formData,
-        detalles: { ...formData.detalles, dosis: updatedDetalles }
+        detalles: { ...formData.detalles, dosis: updatedDetalles },
       });
     }, 1000);
   };
@@ -207,7 +210,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           total: dosis.total,
           deposito: dosis.deposito,
           precio: dosis.precio_estimado,
-          uuid: dosis.uuid
+          uuid: dosis.uuid,
         }))
       );
     }
@@ -275,21 +278,21 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
             </FormControl>
           </Grid>
           <Grid item xs={2}>
-            <TextField
+            <NumberFieldWithUnits
               fullWidth
-              label="Dosificación"
-              value={dosificacion}
+              label={t("_quantity_per_hectare")}
+              value={+dosificacion}
               onChange={handleDosificacionChange}
-              type="number"
+              unit="unit/ha"
             />
           </Grid>
           <Grid item xs={1.5}>
-            <TextField
+            <NumberFieldWithUnits
               fullWidth
               label="Total"
-              value={total}
+              value={+total}
               onChange={handleTotalChange}
-              type="number"
+              unit="unit"
             />
           </Grid>
           <Grid item xs={2}>
@@ -358,21 +361,21 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                       </Grid>
 
                       <Grid item xs={3}>
-                        <TextField
+                        <NumberFieldWithUnits
                           fullWidth
-                          label="Dosificación"
-                          value={editData.dosificacion}
+                          label={t("_quantity_per_hectare")}
+                          value={+editData.dosificacion}
                           onChange={handleEditChange("dosificacion")}
-                          type="number"
+                          unit="unit/ha"
                         />
                       </Grid>
                       <Grid item xs={3}>
-                        <TextField
+                        <NumberFieldWithUnits
                           fullWidth
-                          label="Total"
-                          value={editData.total}
+                          label={t("_total_quantity")}
+                          value={+editData.total}
                           onChange={handleEditChange("total")}
-                          type="number"
+                          unit="ha"
                         />
                       </Grid>
                       <Grid item xs={2}>
@@ -402,17 +405,17 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                       </Grid>
                       <Grid item xs={2.5}>
                         <Typography variant="subtitle1">
-                          <strong> Dosificación:</strong> {row.dosificacion}
+                          <strong>{t("_quantity_per_hectare")}</strong> {row.dosificacion}
                         </Typography>
                       </Grid>
                       <Grid item xs={1.5}>
                         <Typography variant="subtitle1">
-                          <strong> Total:</strong> {row.total}
+                          <strong>{t("total_quantity")}</strong> {row.total}
                         </Typography>
                       </Grid>
                       <Grid item xs={2}>
                         <Typography variant="subtitle1">
-                          <strong> Precio:</strong> {row.precio}
+                          <strong>{t("_price")}</strong> {row.precio}
                         </Typography>
                       </Grid>
                     </>
