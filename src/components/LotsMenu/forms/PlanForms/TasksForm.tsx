@@ -22,6 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import { styled, keyframes } from "@mui/material/styles";
+import { useVehicle } from "../../../../hooks/useVehicle";
 import uuid4 from "uuid4";
 import { NumberFieldWithUnits } from '../../components/NumberField';
 
@@ -58,7 +59,8 @@ const CustomPaper = styled(Paper)({
   backgroundColor: "#f7f7f7"
 });
 
-function TasksForm({ lot, formData, setFormData }) {
+function TasksForm({ lot, formData, setFormData, isExecution = false }) {
+  const { vehicles, vehicleTypes, getVehicles, getTypeVehicles } = useVehicle();
   const [selectedOption, setSelectedOption] = useState("");
   const [comment, setComment] = useState("");
   const [price, setPrice] = useState("");
@@ -102,8 +104,22 @@ function TasksForm({ lot, formData, setFormData }) {
     });
   };
 
+  useEffect(() => {
+    getVehicles();
+  }, []);
+
   const handleCancelEdit = () => {
     setEditIndex(-1);
+  };
+  const handleVehicleChange = (event) => {
+    const newVehicleId = event.target.value;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      detalles: {
+        ...prevFormData.detalles,
+        vehiculo: newVehicleId
+      }
+    }));
   };
 
   const handleAddRow = () => {
@@ -329,6 +345,31 @@ function TasksForm({ lot, formData, setFormData }) {
           ))}
         </List>
       </Box>
+
+      {vehicles && isExecution && (
+        <Box mt={3}>
+          <Typography variant="h6" style={{ marginBottom: "15px" }}>
+            Vehículos
+          </Typography>
+          <FormControl fullWidth>
+            <InputLabel id="vehicle-select-label">Vehículo</InputLabel>
+            <Select
+              labelId="vehicle-select-label"
+              id="vehicle-select"
+              value={formData.detalles.vehiculo || ""}
+              label="Vehículo"
+              onChange={handleVehicleChange}
+              fullWidth
+            >
+              {vehicles.map((vehicle) => (
+                <MenuItem key={vehicle._id} value={vehicle._id}>
+                  {vehicle.model}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      )}
     </CustomPaper>
   );
 }

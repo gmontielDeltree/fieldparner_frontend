@@ -41,7 +41,7 @@ export const Activities = ({
   handleEditActivity
 }) => {
   const [userMessage, setUserMessage] = useState("");
-  const db = dbContext.fields //new PouchDB("campos_randyv7");
+  const db = dbContext.fields; //new PouchDB("campos_randyv7");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   
@@ -180,6 +180,8 @@ export const Activities = ({
           <div key={index}>
             <Activity
               activity={activityData}
+              fieldDoc={fieldDoc}
+              lotDoc={lotDoc}
               complementaryColor={complementaryColor}
               icon={Icon}
               lotDoc={lotDoc}
