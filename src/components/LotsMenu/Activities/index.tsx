@@ -182,7 +182,6 @@ export const Activities = ({
               lotDoc={lotDoc}
               complementaryColor={complementaryColor}
               icon={Icon}
-              lotDoc={lotDoc}
               isFirst={isFirst}
               handleDeleteActivity={handleDeleteActivity}
               handleEditActivity={handleEditActivity}

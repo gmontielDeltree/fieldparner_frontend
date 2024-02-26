@@ -13,7 +13,6 @@ function Activity({
   lotDoc,
   complementaryColor,
   icon,
-  lotDoc,
   handleDeleteActivity,
   handleEditActivity,
   handleDownloadPDF
