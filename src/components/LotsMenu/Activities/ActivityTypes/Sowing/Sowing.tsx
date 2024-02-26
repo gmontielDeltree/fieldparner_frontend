@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Typography from "@mui/material/Typography";
 import { Box, Tabs, Tab, IconButton, Menu, MenuItem } from "@mui/material";
 import EventNoteIcon from "@mui/icons-material/EventNote";
@@ -9,16 +9,22 @@ import ExecutionContent from "./../TabsContent/Execution";
 import AttachedContent from "./../TabsContent/Attached";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { ComparisonReportPdf } from "../helper";
+import { dbContext } from "../../../../../services";
 
 function Sowing({
   activity,
+  fieldName,
+  lotName,
   complementaryColor,
   handleDeleteActivity,
   handleEditActivity,
   handleDownloadPDF
 }) {
+  const db = dbContext.fields;
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [execution, setExecution] = useState(null);
   const open = Boolean(anchorEl);
 
   const handleTabChange = (event, newValue) => {
@@ -32,6 +38,31 @@ function Sowing({
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  useEffect(() => {
+    console.log("USE EFFECT SOWING CONTENT", activity.actividad);
+    const fetchExecution = async () => {
+      try {
+        const response = await db.find({
+          selector: { actividad_uuid: activity.actividad.uuid }
+        });
+        console.log("RESPONSE SOWING CONTENT: ", response);
+        if (response.docs.length > 0) {
+          console.log("SETTED EXECUTION: ", response.docs[0]);
+          setExecution(response.docs[0]);
+        } else {
+          setExecution(null);
+        }
+      } catch (error) {
+        console.error("Error fetching executions:", error);
+        setExecution(null);
+      }
+    };
+
+    if (activity.actividad.uuid) {
+      fetchExecution();
+    }
+  }, [activity.uuid, db]);
 
   const formattedPlanificadaDate = activity.actividad.detalles
     ?.fecha_ejecucion_tentativa
@@ -95,11 +126,22 @@ function Sowing({
         </MenuItem>
         {/* <MenuItem onClick={handleMenuClose}>
           Compartir Orden de Trabajo
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          Ejecución vs Planificación PDF
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem> */}
+        </MenuItem> */}
+        {execution && (
+          <MenuItem
+            onClick={() =>
+              ComparisonReportPdf(
+                activity.actividad,
+                execution,
+                fieldName,
+                lotName
+              )
+            }
+          >
+            Ejecución vs Planificación PDF
+          </MenuItem>
+        )}
+        {/* <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem> */}
         <MenuItem onClick={() => handleDeleteActivity(activity.actividad._id)}>
           Eliminar
         </MenuItem>

@@ -233,7 +233,12 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         );
       case 3:
         return (
-          <TasksForm lot={lot} formData={formData} setFormData={setFormData} />
+          <TasksForm
+            lot={lot}
+            formData={formData}
+            setFormData={setFormData}
+            isExecution={true}
+          />
         );
       case 4:
         return (
@@ -279,10 +284,11 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
   const handleSave = () => {
     let executionDetails = { ...formData };
+    executionDetails.detalles.fecha_ejecucion = new Date().toISOString();
     console.log("Execution details: ", executionDetails);
     try {
       const formattedDate = format(
-        executionDetails.detalles.fecha_ejecucion,
+        new Date(executionDetails.detalles.fecha_ejecucion_tentativa),
         "yyyy-MM-dd"
       );
       executionDetails._id =
@@ -315,6 +321,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           console.error("Error saving execution details:", error);
         }
       });
+    console.log("Execution details: ", executionDetails);
   };
 
   useEffect(() => {
