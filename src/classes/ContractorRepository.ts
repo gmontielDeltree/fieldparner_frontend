@@ -20,7 +20,7 @@ export class ContractorRepository
   }
 
   async getAll() {
-    this._businnes = (await this.getAllDocs("contractor:")) as unknown as Business[];
+    this._businnes = (await this.getAllDocs("")) as unknown as Business[];
     return this._businnes;
   }
 

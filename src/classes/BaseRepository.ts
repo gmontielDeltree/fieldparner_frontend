@@ -2,6 +2,7 @@ import { uuidv7 } from "uuidv7";
 import { only_docs } from "../../owncomponents/helpers";
 import { FPDocument } from "../interfaces/planification";
 import { dbContext } from "../services";
+import { useAppSelector } from "../hooks";
 
 
 
@@ -10,16 +11,24 @@ export class BaseDocRepository<T> {
   private _userId: string
   private _db : PouchDB.Database
 
+
   observers: ((crops: T[]) => void)[] = [];
 
 
   constructor(dataBase : PouchDB.Database){
-    this._userId = "elid"
+    const { user } = useAppSelector(state => state.auth);
+
+    this._userId = user?.accountId || "testid"
+    console.log("The userId is", this._userId)
+
     this._db = dataBase
   }
 
   async saveDoc(doc : PouchDB.Core.Document<any>){
-    return this._db.put(doc)
+    
+    await this._db.put(doc)
+    return doc
+
   }
 
   async getAllDocs(key :string){
