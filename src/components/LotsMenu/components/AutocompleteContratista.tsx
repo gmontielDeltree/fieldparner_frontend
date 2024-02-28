@@ -7,6 +7,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
+import { useTranslation } from 'react-i18next';
 
 const filter = createFilterOptions<FilmOptionType>();
 
@@ -20,7 +21,9 @@ interface FilmOptionType {
 export const AutocompleteContratista = ({value, onChange}) => {
     const [_value, setValue] = React.useState<FilmOptionType | null>(null);
     const [open, toggleOpen] = React.useState(false);
-  
+    const { t } = useTranslation();
+
+
     const handleClose = () => {
       setDialogValue({
         title: '',

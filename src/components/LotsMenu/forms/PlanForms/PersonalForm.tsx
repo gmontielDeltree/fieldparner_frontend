@@ -11,12 +11,14 @@ import {
 } from "@mui/material";
 import { useBusiness } from "../../../../hooks";
 import { useCrops } from "../../../../hooks/useCrops";
+import "../../../../classes/Crops"
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { styled } from "@mui/material/styles";
 import uuid4 from "uuid4";
 import { AutocompleteCultivo } from "../../components/AutocompleteCultivo";
+import { AutocompleteContratista } from "../../components/AutocompleteContratista";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -101,7 +103,7 @@ function PersonalForm({ lot, formData, setFormData }) {
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
               <AutocompleteCultivo value={formData.detalles.cultivo || ""} 
-              onChange={(e) => onFieldChange("cultivo", e.target.value)}
+              onChange={(value) => onFieldChange("cultivo", value)}
               />
 
               {/* <InputLabel id="cultivo-label">Cultivo</InputLabel>
@@ -125,7 +127,11 @@ function PersonalForm({ lot, formData, setFormData }) {
 
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <InputLabel id="contratista-label">Contratista</InputLabel>
+              <AutocompleteContratista 
+              value={formData.contratista.nombre || ""}
+              onChange={(value) => onFieldChange("contratista", value)}
+              />
+              {/* <InputLabel id="contratista-label">Contratista</InputLabel>
               <Select
                 labelId="contratista-label"
                 id="Contratista"
@@ -143,7 +149,7 @@ function PersonalForm({ lot, formData, setFormData }) {
                     {business.razonSocial || business.nombreCompleto}
                   </MenuItem>
                 ))}
-              </Select>
+              </Select> */}
             </FormControl>
           </Grid>
 
