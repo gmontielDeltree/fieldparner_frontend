@@ -6,15 +6,17 @@ import { Loading } from "../components";
 // import { useLocation, useNavigate } from "react-router-dom";
 
 export const InitRouter = () => {
+  return <OverviewRoutes />;
   // const navigate = useNavigate();
   // const { pathname, search } = useLocation();
   // const lastPath = pathname + search;
   // console.log('lastPath', lastPath);
   // localStorage.setItem('lastPath', lastPath);
 
-
   // Original URL
-  const [from, setFrom] = useState<string>("/" + (window.location.pathname + window.location.search).substr(1))
+  const [from, setFrom] = useState<string>(
+    "/" + (window.location.pathname + window.location.search).substr(1)
+  );
 
   const { status, checkAuthToken } = useAuthStore();
 
@@ -23,7 +25,6 @@ export const InitRouter = () => {
     console.log("WINDOW LOCATION HREF PRE AUTH", from);
     checkAuthToken();
   }, []);
-
 
   // useEffect(() => {
   //   if(status === "authenticated"){
@@ -34,7 +35,7 @@ export const InitRouter = () => {
   //     // 3 - /init/overview/fields (por el render de mas abajo)
   //     // 4 - navigate(from) vuelve a /init/overview/deposits
 
-  //     console.log("WINDOW LOCATION HREF POST AUTH", window.location.href) 
+  //     console.log("WINDOW LOCATION HREF POST AUTH", window.location.href)
   //     navigate(from);
   //   }
   // }, [status]);

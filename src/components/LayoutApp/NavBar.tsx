@@ -19,14 +19,15 @@ import {
   Button,
   Menu,
   MenuItem,
-  Divider
+  Divider,
+  Box
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../redux/store";
 import { useNavigate } from "react-router-dom";
 import iconoCampo from "../../images/icons/iconodecampo2D.webp";
 import integrationsIcon from "../../images/icons/integrations.png";
-import deposito from "../../images/icons/deposito_2.webp";
+import logoImage from "/assets/images/logos/agrootolss_logo_sol.png";
 import spanishFlagIcon from "../../images/icons/spain_flag.png";
 import englishFlagIcon from "../../images/icons/usa_flag.png";
 import brazilFlagIcon from "../../images/icons/brazil_flag.png";
@@ -198,6 +199,12 @@ export const NavBar: React.FC<NavBarProps> = ({
           wrap="nowrap"
         >
           <Grid item sx={{ display: "flex", alignItems: "center" }}>
+            {/* Logo and FieldPartner Text */}
+            <Avatar
+              alt="Logo"
+              src={logoImage}
+              sx={{ width: 30, height: 30, marginRight: 2 }}
+            />
             <Typography
               onClick={() => navigate("/init/overview/fields")}
               variant="h6"
@@ -206,7 +213,9 @@ export const NavBar: React.FC<NavBarProps> = ({
               sx={{
                 color: "black",
                 fontWeight: "bold",
-                whiteSpace: "nowrap",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
                 marginRight: "40px"
               }}
             >
