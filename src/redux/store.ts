@@ -11,6 +11,7 @@ import { drawSlice } from "./draw";
 import { fieldListSlice } from "./fieldsList";
 
 import { originsDestinationsSlice } from "./originsdestinatons/originDestiantionsSlice";
+import { usersSlice } from "./users/userSlice";
 
 const store = configureStore({
   reducer: {
@@ -23,7 +24,8 @@ const store = configureStore({
     map: mapSlice.reducer,
     draw: drawSlice.reducer,
     ordesti: originsDestinationsSlice.reducer,
-    fieldList: fieldListSlice.reducer
+    fieldList: fieldListSlice.reducer,
+    users: usersSlice.reducer
   }
 });
 

@@ -24,12 +24,7 @@ export const InitRouter = () => {
 
   useEffect(() => {
     if (status === "authenticated") {
-      // Despues de autenticar hay que volver atras
-      // para recuperar la url antes del login. Ej.:
-      // 1 - /init/overview/deposits (request original)
-      // 2 - /login (por checkAuthToken)
-      // 3 - /init/overview/fields (por el render de mas abajo)
-      // 4 - navigate(from) vuelve a /init/overview/deposits
+      
 
       console.log("WINDOW LOCATION HREF POST AUTH", window.location.href);
       if (from !== "/init/auth/login") {
@@ -44,7 +39,8 @@ export const InitRouter = () => {
 //  {/* <OverviewRoutes /> */}
   return (
     <>
-      {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
+      {/* {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />} */}
+      <OverviewRoutes />
      +
     </>
   );

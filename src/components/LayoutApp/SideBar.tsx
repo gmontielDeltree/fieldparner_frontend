@@ -33,6 +33,7 @@ import {
   ListAlt as ListAltIcon,
   Gite as GiteIcon,
   Work as WorkIcon,
+  Person as PersonAddIcon,
   // Flag as FlagIcon,
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
@@ -514,6 +515,17 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={t("crop_colors")} />
+              </ListItemButton>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/users"
+                selected={pathname.includes("/init/overview/users")}
+              >
+                <ListItemIcon>
+                  <PersonAddIcon />
+                </ListItemIcon>
+                <ListItemText primary="Usuarios" />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>

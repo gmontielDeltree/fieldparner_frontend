@@ -18,6 +18,7 @@ import {
   NewExitFieldPage,
   ListOriginsDestinationsPage,
   NewOriginsDestinationsPage,
+  ListUsersPage,
 } from "../pages";
 import { AppLayout } from "../components";
 import { SatellitePage } from "../pages/SatellitePage";
@@ -28,6 +29,7 @@ import { IntegrationsPage } from "../pages/IntegrationsPage";
 import { PlanificationPage } from "../pages/PlanificationPage";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
+import { NewUserPage } from "../pages/NewUserPage";
 
 export const OverviewRoutes: React.FC = () => {
   return (
@@ -80,6 +82,9 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/satellite/:loteId" element={<SatellitePage />}  />
         <Route path="/overview/zoning/:baseImageName" element={<ZoningPage />} />
         <Route path="/overview/prices" element={<PricesPage />} />
+
+        <Route path="/overview/users" element={<ListUsersPage />} />
+        <Route path="/overview/users/new" element={<NewUserPage />} />
 
         
 

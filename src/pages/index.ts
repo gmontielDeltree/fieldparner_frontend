@@ -16,6 +16,7 @@ export * from './ListExitFieldPage';
 export * from './NewExitFieldPage';
 export * from './ListOriginsDestinationsPage';
 export * from './NewOriginsDestinationsPage';
+export * from './ListUsersPage';
 
 //Paginas publicas
 export * from "./LoginPage";

@@ -186,6 +186,21 @@ export interface Supply extends Document {
     labors: string[];
 }
 
+export interface Users extends Document {
+    accountId: string;
+    name: string;
+    email: string;
+    password: string;
+    state:boolean;
+    admin:boolean;
+    lastName: string;
+    language: string;
+}
+export interface UsersState {
+    usersActive: Users | null;
+    Users: Users [];
+}
+
 export interface OriginDestinationsState {
     originsDestinationsActive: OriginDestinations | null;
     OriginsDestinations: OriginDestinations[];
