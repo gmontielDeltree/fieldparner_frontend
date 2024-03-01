@@ -143,7 +143,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           label="Genérico"
           name="generico"
           value={generico}
-          onChange={handleInputChange}
+          onChange={handleGenercoChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
