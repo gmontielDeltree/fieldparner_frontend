@@ -184,6 +184,7 @@ export interface Supply extends Document {
     recommendedDose: string;
     replenishmentPoint: string;
     labors: string[];
+    generico: string;
 }
 
 export interface OriginDestinationsState {
