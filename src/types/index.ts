@@ -210,65 +210,65 @@ export const LaboresItems = [
 
 
 export const UnidadesDeMedida = () => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     return [
-    t("_kilogram"),
-    t("_meters"),
-    t("square_meter"),
-    t("cubic_meter"),
-    t("_liters"),
-    t("_unit"),
-    t("_pair"),
-    t("_dozen"),
-    t("_gram"),
-    t("_millimeter"),
-    t("cubic_millimeter"),
-    t("_kilometer"),
-    t("_hectoliter"),
-    t("_centimeter"),
-    t("set_pack_deck_of_cards"),
-    t("cubic_centimeter"),
-    t("_ton"),
-    t("hectocubic_meter"),
-    t("kilocubic_meter"),
-    t("_microgram"),
-    t("_nanogram"),
-    t("_milligram"),
-    t("_milliliter"),
-    t("_gross"),
-    t("gross_kilogram"),
-    t("_seeds"),
-    t("_bags"),
-    t("_quintal"),
+        t("_kilogram"),
+        t("_meters"),
+        t("square_meter"),
+        t("cubic_meter"),
+        t("_liters"),
+        t("_unit"),
+        t("_pair"),
+        t("_dozen"),
+        t("_gram"),
+        t("_millimeter"),
+        t("cubic_millimeter"),
+        t("_kilometer"),
+        t("_hectoliter"),
+        t("_centimeter"),
+        t("set_pack_deck_of_cards"),
+        t("cubic_centimeter"),
+        t("_ton"),
+        t("hectocubic_meter"),
+        t("kilocubic_meter"),
+        t("_microgram"),
+        t("_nanogram"),
+        t("_milligram"),
+        t("_milliliter"),
+        t("_gross"),
+        t("gross_kilogram"),
+        t("_seeds"),
+        t("_bags"),
+        t("_quintal"),
     ];
 };
 
 //"JGO.PQT.MAZO NAIPES",
 
-export const TypeSupplies  = () => {
-    const {t} = useTranslation();
+export const TypeSupplies = () => {
+    const { t } = useTranslation();
 
     return [
-    t("_various"),
-    t("seeds_min"),
-    t("_cultivation"),
-    t("_fertilizers"),
-    t("_phytosanitary"),
-    t("spare_parts"),
-    t("_materials"),
-    t("_fuel"),
+        t("_various"),
+        t("seeds_min"),
+        t("_cultivation"),
+        t("_fertilizers"),
+        t("_phytosanitary"),
+        t("spare_parts"),
+        t("_materials"),
+        t("_fuel"),
     ];
 };
 
 export const TypeMovements = () => {
     const { t } = useTranslation();
     return [
-      t("_adjustments"),
-      t("_purchase"),
-      t("various_sales"),
-      t("transfer_between_warehouses"),
-      t("_loans"),
+        t("_adjustments"),
+        t("_purchase"),
+        t("various_sales"),
+        t("transfer_between_warehouses"),
+        t("_loans"),
     ];
 };
 
@@ -496,7 +496,7 @@ export interface WithdrawalOrder extends Document {
     creationDate: string;
     order: number;
     reason: string;
-    withdraw?: Business ;
+    withdraw?: Business;
     campaign: Campaign;
     field: string;
     contractor?: Business;
@@ -541,6 +541,7 @@ export enum CountryCode {
     ARGENTINA = 'ARG',
     BRASIL = "BRA",
     CHILE = "CHL",
+    PARAGUAY = "PRY",
 }
 
 export enum CurrencyCode {
@@ -559,7 +560,7 @@ export enum TypeMovement {
     Prestamos = "Prestamos",
     Transformacion = "Transformacion",
     SalidaDeCampo = "Salida de Campo",
-    OrdenRetiro= "Orden de Retiro",
+    OrdenRetiro = "Orden de Retiro",
 }
 
 export enum Movement {
@@ -570,7 +571,7 @@ export enum Movement {
 export enum DisplayModals {
     SupplyByDeposits = "SupplyByDeposits",
     SupplyByLots = "SupplyByLots",
-    LaborOrder= "LaborOrder",
+    LaborOrder = "LaborOrder",
 }
 
 export enum VehicleType {

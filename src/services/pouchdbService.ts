@@ -31,7 +31,8 @@ const dbNames = Object.freeze({
     vehicles: "vehicles",
     deposits: "deposits",
     typeVehicles: "type-vehicles",
-    zipCodeArg: "zip-code-arg",
+    zipCodeARG: "zip-code-arg",
+    zipCodePRY: "zip-code-pry",
     supplies: "supplies",
     socialEntities: "social-entities",
     categories: "categories",
@@ -51,7 +52,8 @@ export const dbContext = Object.freeze({
     vehicles: new PouchDB<Vehicle>(dbNames.vehicles),
     typeVehicles: new PouchDB(dbNames.typeVehicles),
     deposits: new PouchDB<Deposit>(dbNames.deposits),
-    zipCodeArg: new PouchDB<ItemZipCode>(dbNames.zipCodeArg),
+    zipCodeARG: new PouchDB<ItemZipCode>(dbNames.zipCodeARG),
+    zipCodePRY: new PouchDB<ItemZipCode>(dbNames.zipCodePRY),
     supplies: new PouchDB<Supply>(dbNames.supplies),
     socialEntities: new PouchDB<Business>(dbNames.socialEntities),
     categories: new PouchDB<Category>(dbNames.categories),
@@ -70,7 +72,8 @@ export const dbContext = Object.freeze({
 dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
 dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
 dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
-// dbContext.zipCodeArg.sync(`${remoteCouchDBUrl}${dbNames.zipCodeArg}`, opts);
+dbContext.zipCodeARG.sync(`${remoteCouchDBUrl}${dbNames.zipCodeARG}`, opts);
+dbContext.zipCodePRY.sync(`${remoteCouchDBUrl}${dbNames.zipCodePRY}`, opts);
 dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, opts);
 dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, opts);
 dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, opts);
@@ -89,15 +92,36 @@ dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdraw
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
     try {
-
-        if (country === CountryCode.ARGENTINA) {
-            const result = await dbContext.zipCodeArg.find({
-                selector: { "CP": zipCode },
-            });
-            return result.docs;
+        let result;
+        switch (country) {
+            case CountryCode.ARGENTINA:
+                result = await dbContext.zipCodeARG.find({
+                    selector: { "CP": zipCode },
+                });
+                return result.docs;
+            case CountryCode.PARAGUAY:
+                result = await dbContext.zipCodePRY.find({
+                    selector: { "CP": zipCode },
+                });
+                return result.docs;
+            default:
+                return [];
         }
+        // if (country === CountryCode.ARGENTINA) {
+        //     const result = await dbContext.zipCodeARG.find({
+        //         selector: { "CP": zipCode },
+        //     });
+        //     return result.docs;
+        // }
+        // if (country === CountryCode.PARAGUAY) {
+        //     const result = await dbContext.zipCodePRY.find({
+        //         selector: { "CP": zipCode },
+        //     });
+        //     return result.docs;
+        // }
     } catch (error) {
         console.log(error);
+        return [];
     }
 }
 
