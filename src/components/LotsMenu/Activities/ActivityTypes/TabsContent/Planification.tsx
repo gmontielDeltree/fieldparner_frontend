@@ -17,6 +17,7 @@ import { es } from "date-fns/locale";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
 import WaterDropIcon from "@mui/icons-material/Opacity";
 import WindPowerIcon from "@mui/icons-material/Air";
+import WeatherForecast from "./../../../../WeatherForecast";
 
 const CustomAccordion = styled(Accordion)(({ theme }) => ({
   marginBottom: theme.spacing(2),
@@ -264,6 +265,8 @@ const PlanificationContent = React.memo(function PlanificationContent({
           </Typography>
         </CustomAccordionDetails>
       </CustomAccordion>
+
+      <WeatherForecast />
     </>
   );
 });

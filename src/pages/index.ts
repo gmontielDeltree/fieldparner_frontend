@@ -16,6 +16,15 @@ export * from './ListExitFieldPage';
 export * from './NewExitFieldPage';
 export * from './ListOriginsDestinationsPage';
 export * from './NewOriginsDestinationsPage';
+export * from './SatellitePage';
+export * from './DevicePage';
+export * from './PricesPage';
+export * from './ZoningPage';
+export * from './IntegrationsPage';
+export * from './PlanificationPage';
+export * from './WithdrawalOrdersPage';
+export * from './ListWithdrawalOrdersPage';
+export * from './ConfirmWithdrawalOrderPage';
 
 //Paginas publicas
 export * from "./LoginPage";

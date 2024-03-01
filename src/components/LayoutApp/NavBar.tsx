@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { showFieldList, hideFieldList } from "../../redux/fieldsList";
 import { useAuthStore } from "../../hooks";
+import { useCampaign } from "../../hooks";
+import CreateCampaignModal from "../CreateCampaign";
+import { campaignSlice } from "../../redux/campaign";
 
 import {
   Badge,
@@ -16,13 +19,15 @@ import {
   Button,
   Menu,
   MenuItem,
+  Divider,
+  Box
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../redux/store";
 import { useNavigate } from "react-router-dom";
 import iconoCampo from "../../images/icons/iconodecampo2D.webp";
 import integrationsIcon from "../../images/icons/integrations.png";
-import deposito from "../../images/icons/deposito_2.webp";
+import logoImage from "/assets/images/logos/agrootolss_logo_sol.png";
 import spanishFlagIcon from "../../images/icons/spain_flag.png";
 import englishFlagIcon from "../../images/icons/usa_flag.png";
 import brazilFlagIcon from "../../images/icons/brazil_flag.png";
@@ -31,18 +36,19 @@ import {
   Notifications,
   NotificationsActive,
   MenuOutlined,
-  ExitToApp,
+  ExitToApp
 } from "@mui/icons-material";
+import { add } from "date-fns";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
   open,
-  handleSideBarOpen,
+  handleSideBarOpen
 }) => {
   const navigate = useNavigate();
-  const navigateTo = (path: string) => {
-    window.location.replace(path);
-  };
+  const { campaigns, getCampaigns, isLoading, error, addCampaign } =
+    useCampaign();
+  const [selectedCampaign, setSelectedCampaign] = useState("");
 
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
@@ -53,7 +59,31 @@ export const NavBar: React.FC<NavBarProps> = ({
 
   const [languageAnchorEl, setLanguageAnchorEl] = React.useState(null);
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const handleCreateCampaign = async (campaignName) => {
+    const campaignData = {
+      campaignId: `campaign_${new Date().getTime()}`,
+      name: campaignName,
+      description: "",
+      zoneId: "defaultZone",
+      startDate: new Date().toISOString(),
+      endDate: new Date().toISOString(),
+      state: "active"
+    };
+
+    await addCampaign(campaignData);
+    setIsCreateModalOpen(false);
+    getCampaigns();
+  };
+
+  useEffect(() => {
+    getCampaigns();
+  }, []);
+
+  useEffect(() => {
+    console.log("campaigns", campaigns);
+  }, [getCampaigns]);
   const handleLanguageMenu = (event) => {
     setLanguageAnchorEl(event.currentTarget);
   };
@@ -77,15 +107,15 @@ export const NavBar: React.FC<NavBarProps> = ({
     animation: "pulse 2s infinite",
     "@keyframes pulse": {
       "0%": {
-        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0.7)",
+        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0.7)"
       },
       "70%": {
-        boxShadow: "0 0 0 10px rgba(0, 123, 255, 0)",
+        boxShadow: "0 0 0 10px rgba(0, 123, 255, 0)"
       },
       "100%": {
-        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0)",
-      },
-    },
+        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0)"
+      }
+    }
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -107,7 +137,17 @@ export const NavBar: React.FC<NavBarProps> = ({
   const isVisible = useSelector(
     (state: RootState) => state.fieldList.isVisible
   );
-
+  const handleCampaignMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleCampaignSelect = (campaignId) => {
+    const campaign = campaigns.find((c) => c.campaignId === campaignId);
+    if (campaign) {
+      setSelectedCampaign(campaignId);
+      dispatch(campaignSlice.actions.setSelectedCampaign(campaign));
+      handleClose();
+    }
+  };
   const selectAvatar = () => {
     if (isVisible) {
       dispatch(hideFieldList());
@@ -127,7 +167,6 @@ export const NavBar: React.FC<NavBarProps> = ({
     borderColor: isVisible ? "#1976d2" : "transparent",
     borderRadius: "50%",
     backgroundColor: isVisible ? "rgba(25, 118, 210, 0.1)" : "transparent"
-
   });
 
   return (
@@ -138,8 +177,8 @@ export const NavBar: React.FC<NavBarProps> = ({
         color: "black",
         ...(open && {
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-        }),
+          ml: { sm: `${drawerWidth}px` }
+        })
       }}
     >
       <Toolbar>
@@ -160,6 +199,12 @@ export const NavBar: React.FC<NavBarProps> = ({
           wrap="nowrap"
         >
           <Grid item sx={{ display: "flex", alignItems: "center" }}>
+            {/* Logo and FieldPartner Text */}
+            <Avatar
+              alt="Logo"
+              src={logoImage}
+              sx={{ width: 30, height: 30, marginRight: 2 }}
+            />
             <Typography
               onClick={() => navigate("/init/overview/fields")}
               variant="h6"
@@ -168,8 +213,10 @@ export const NavBar: React.FC<NavBarProps> = ({
               sx={{
                 color: "black",
                 fontWeight: "bold",
-                whiteSpace: "nowrap",
-                marginRight: "40px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                marginRight: "40px"
               }}
             >
               FieldPartner
@@ -183,7 +230,8 @@ export const NavBar: React.FC<NavBarProps> = ({
             </ButtonBase>
             <ButtonBase
               onClick={() => navigate("/init/overview/fields/integrations")}
-              sx={{ borderRadius: "50%", marginRight: "18px" }} title="Integraciones"
+              sx={{ borderRadius: "50%", marginRight: "18px" }}
+              title="Integraciones"
             >
               <Avatar
                 alt="Integrations"
@@ -192,7 +240,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               />
             </ButtonBase>
 
-            <Tooltip title={t("notifications")} enterDelay={500} leaveDelay={200}>
+            <Tooltip
+              title={t("notifications")}
+              enterDelay={500}
+              leaveDelay={200}
+            >
               <IconButton
                 color={hasNotifications ? "secondary" : "default"}
                 onClick={handleNotificationClick}
@@ -211,34 +263,50 @@ export const NavBar: React.FC<NavBarProps> = ({
               aria-label="campaign"
               aria-controls="menu-appbar"
               aria-haspopup="true"
-              onClick={handleMenu}
+              onClick={handleCampaignMenu}
               color="inherit"
               style={{
                 marginLeft: "50px",
                 backgroundColor: "#f5f5f5",
                 color: "#1976d2",
                 borderRadius: "4px",
-                textTransform: "none",
+                textTransform: "none"
               }}
             >
-              {t("no_campaign")}
+              {selectedCampaign || t("no_campaign")}
             </Button>
+            <CreateCampaignModal
+              open={isCreateModalOpen}
+              onClose={() => setIsCreateModalOpen(false)}
+              onCreate={handleCreateCampaign}
+            />
 
             <Menu
               id="menu-appbar"
               anchorEl={anchorEl}
               anchorOrigin={{
                 vertical: "bottom",
-                horizontal: "left",
+                horizontal: "left"
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "left",
+                horizontal: "left"
               }}
               open={openDropdown}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleClose}> + {t("no_campaign")}</MenuItem>
+              <MenuItem onClick={() => setIsCreateModalOpen(true)}>
+                {t("add_new_campaign")} +{" "}
+              </MenuItem>
+              <Divider />
+              {campaigns.map((campaign) => (
+                <MenuItem
+                  key={campaign.campaignId}
+                  onClick={() => handleCampaignSelect(campaign.campaignId)}
+                >
+                  {campaign.campaignId}{" "}
+                </MenuItem>
+              ))}
             </Menu>
           </Grid>
           <Grid item>
@@ -265,11 +333,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               anchorEl={languageAnchorEl}
               anchorOrigin={{
                 vertical: "top",
-                horizontal: "right",
+                horizontal: "right"
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "right",
+                horizontal: "right"
               }}
               open={isLanguageMenuOpen}
               onClose={handleLanguageMenuClose}

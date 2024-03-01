@@ -9,6 +9,8 @@ import Application from "./ActivityTypes/Application/Application";
 
 function Activity({
   activity,
+  fieldDoc,
+  lotDoc,
   complementaryColor,
   icon,
   handleDeleteActivity,
@@ -41,6 +43,8 @@ function Activity({
         return (
           <Sowing
             activity={activity}
+            fieldName={fieldDoc.nombre}
+            lotName={lotDoc.properties.nombre}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
@@ -51,6 +55,7 @@ function Activity({
         return (
           <Harvest
             activity={activity}
+            lotDoc={lotDoc}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}

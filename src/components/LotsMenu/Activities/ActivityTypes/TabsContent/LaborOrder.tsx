@@ -2,6 +2,10 @@ import React from "react";
 import { Button } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import { styled } from "@mui/material/styles";
+import { useAppDispatch } from "../../../../../hooks";
+import { uiOpenModal } from "../../../../../redux/ui";
+import { DisplayModals } from "../../../../../types";
+import { LaborOrderModal } from "../../../../";
 
 const GlossyButton = styled(Button)(({ theme }) => ({
   borderRadius: "20px",
@@ -21,9 +25,21 @@ const GlossyButton = styled(Button)(({ theme }) => ({
 
 function LaborOrderContent(props) {
   const { activity, handleDownloadPDF } = props;
+  
+  const dispatch = useAppDispatch();
 
   return (
     <>
+      <LaborOrderModal key="order-modal" activity={activity} />
+      <GlossyButton
+        key="withdrawal-order"
+        variant="contained"
+        sx={{ mr: 2 }}
+        onClick={() => dispatch(uiOpenModal(DisplayModals.LaborOrder))}
+      >
+        Orden de Retiro
+      </GlossyButton>
+
       <GlossyButton
         variant="contained"
         startIcon={<DownloadIcon />}

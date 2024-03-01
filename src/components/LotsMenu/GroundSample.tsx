@@ -15,19 +15,25 @@ import SoilCharacteristicsForm from "./forms/GroundSampleForms/SoilCharacteristi
 import VariablesForm from "./forms/GroundSampleForms/VariablesForm";
 import AttachmentsForm from "./forms/GroundSampleForms/AttachmentsForm";
 
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
+
 interface GroundSampleProps {
   lot: any;
   db: any;
+  fieldName: string;
   backToActivites: () => void;
 }
 
 const GroundSample: React.FC<GroundSampleProps> = ({
   lot,
   db,
+  fieldName,
   backToActivites
 }) => {
   if (!lot) return null;
   console.log("Lot: ", lot);
+  const lotName = lot.properties.name;
   const [formData, setFormData] = useState(getEmptyActivity());
   const [activeStep, setActiveStep] = useState(0);
   const steps = [

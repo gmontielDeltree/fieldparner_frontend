@@ -17,8 +17,8 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import BusinessIcon from "@mui/icons-material/Business";
 import EcoIcon from "@mui/icons-material/Nature";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
-import PouchDB from "pouchdb";
 import PlanificationContent from "./Planification";
+import { dbContext } from "../../../../../services";
 
 const FrostedGlassButton = styled(Button)(({ theme }) => ({
   borderRadius: "20px",
@@ -56,7 +56,7 @@ const FrostedGlassButton = styled(Button)(({ theme }) => ({
 function ExecutionContent(props) {
   const { activity, handleEditActivity } = props;
   const [execution, setExecution] = useState(null);
-  const db = useMemo(() => new PouchDB("campos_randyv7"), []);
+  const db = dbContext.fields;
   const executedStyle = {
     color: "green",
     display: "flex",
@@ -75,12 +75,14 @@ function ExecutionContent(props) {
   const backgroundColor = `rgba(255, 255, 255, 0.6)`;
 
   useEffect(() => {
+    console.log("USE EFFECT EXECUTION CONTENT", activity);
+    console.log("USE EFFECT EXECUTION CONTENT UUID", activity.uuid);
     const fetchExecution = async () => {
       try {
         const response = await db.find({
           selector: { actividad_uuid: activity.uuid }
         });
-
+        console.log("RESPONSE EXECUTION CONTENT: ", response);
         if (response.docs.length > 0) {
           setExecution(response.docs[0]);
         } else {

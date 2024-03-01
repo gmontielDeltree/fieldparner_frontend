@@ -3,14 +3,17 @@ import { Supply } from "@types";
 import React, { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+
 export interface DoseFormProps {
   formValues: Supply;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
+  handleGenercoChange:({target}:ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const DoseForm: React.FC<DoseFormProps> = ({
   formValues,
   handleInputChange,
+  handleGenercoChange,
 }) => {
   const {
     type,
@@ -20,6 +23,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
     recommendedDose,
     activePrincipal,
     mermaVolatile,
+    generico,
   } = formValues;
 
   const {t} = useTranslation();
@@ -75,7 +79,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           }}
           fullWidth
         />
-      </Grid>
+      </Grid>    
       <Grid item xs={12} sm={4}>
         <TextField
           variant="outlined"
@@ -132,6 +136,20 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           fullWidth
         />
       </Grid>
-    </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+         variant="outlined"
+         type="text"
+          label="Genérico"
+          name="generico"
+          value={generico}
+          onChange={handleInputChange}
+          InputProps={{
+            startAdornment: <InputAdornment position="start" />,
+          }}
+          fullWidth
+        />
+      </Grid>
+      </Grid>
   );
 };

@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
 import PlanActivity from "./PlanActivity";
 import Tour from "./Tour";
-import { Avatar, ButtonBase, Paper, Tooltip } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  ButtonBase,
+  Fade,
+  Paper,
+  Tooltip,
+  Typography
+} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
@@ -10,7 +18,6 @@ import categoryIcon3 from "../../images/icons/cosechadora_act.webp";
 import categoryIcon4 from "../../images/icons/iconodenotas_act.webp";
 import categoryIcon5 from "../../images/icons/iconosatelite.webp";
 import categoryIcon6 from "../../images/icons/suelo_act.webp";
-import PouchDB from "pouchdb";
 import { Activities } from "./Activities/index";
 import { Actividad } from "../../interfaces/activity";
 import { isBefore, parseISO } from "date-fns";
@@ -19,6 +26,28 @@ import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExecuteActivity from "./ExecuteActivity";
 import { dbContext } from "../../services";
+import { styled } from "@mui/material/styles";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { useTranslation } from "react-i18next";
+import { useAppDispatch } from "../../hooks";
+import { setLotActive } from "../../redux/map";
+
+const Header = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  textAlign: "center",
+  color: theme.palette.text.secondary,
+  background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`,
+  boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
+  borderRadius: "8px",
+  margin: theme.spacing(2, 0)
+}));
+
+const FieldInfo = styled("div")(({ theme }) => ({
+  fontWeight: "bold",
+  fontSize: "1.2rem",
+  color: theme.palette.primary.contrastText
+}));
 
 interface LotsMenuProps {
   lot: any;
@@ -28,17 +57,22 @@ interface LotsMenuProps {
 }
 
 const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
+  const dispatch = useAppDispatch();
   const [selectedCategory, setSelectedCategory] = useState<null | string>(null);
-  const db = dbContext.fields //new PouchDB("campos_randyv7");
+  const db = dbContext.fields; //new PouchDB("campos_randyv7");
   const [activities, setActivities] = useState(null);
+  const { t } = useTranslation();
   const [editingActivityInfo, setEditingActivityInfo] = useState<{
     activity: Actividad | null;
     isExecuting: boolean;
   }>({ activity: null, isExecuting: false });
+  const selectedCampaign = useSelector(
+    (state: RootState) => state.campaign.selectedCampaign
+  );
 
   const navigate = useNavigate();
 
-  console.log("Log seleccionado: ", lot);
+  console.log("Lot seleccionado: ", lot);
   const categories = [
     { id: "Planificar Siembra", icon: categoryIcon1 },
     { id: "Planificar Aplicacion", icon: categoryIcon2 },
@@ -68,7 +102,6 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     cosecha: "harvesting",
     aplicacion: "application"
   };
-
   const avatarStyle = (categoryId: any) => ({
     width: 50,
     height: 50,
@@ -79,6 +112,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     borderRadius: "50%",
     margin: "0 15px",
     cursor: "pointer",
+    opacity: 1,
+    filter: selectedCampaign ? "none" : "grayscale(100%)",
     "&:hover": {
       transform: "scale(1.2)",
       boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
@@ -117,17 +152,17 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
           : parseISO(
-              a.actividad.tipo === "nota"
-                ? a.actividad.fecha
-                : a.actividad.detalles.fecha_ejecucion_tentativa
-            );
+            a.actividad.tipo === "nota"
+              ? a.actividad.fecha
+              : a.actividad.detalles.fecha_ejecucion_tentativa
+          );
         let fecha_2 = b.ejecucion_id
           ? parseISO(b.ejecucion_id.split(":")[1])
           : parseISO(
-              b.actividad.tipo === "nota"
-                ? b.actividad.fecha
-                : b.actividad.detalles.fecha_ejecucion_tentativa
-            );
+            b.actividad.tipo === "nota"
+              ? b.actividad.fecha
+              : b.actividad.detalles.fecha_ejecucion_tentativa
+          );
         return isBefore(fecha_1, fecha_2) ? 1 : -1;
       });
     }
@@ -156,7 +191,11 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
       });
   };
   const handleEditActivity = (activity, isExecuting = false) => {
-    setSelectedCategory("Edit Activity");
+    if (isExecuting) {
+      setSelectedCategory("Execute Activity");
+    } else {
+      setSelectedCategory("Edit Activity");
+    }
     console.log("Editando actividad", activity, isExecuting);
     setEditingActivityInfo({ activity, isExecuting });
   };
@@ -173,16 +212,32 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   useEffect(() => {
     if (lot && lot.id) {
       getActivities(lot.id).then((res) => setActivities(res));
+      dispatch(setLotActive(lot));
     }
-  }, [lot, selectedCategory]);
+  }, [lot, selectedCategory, dispatch]);
 
-  useEffect(() => {
-    if (lot && lot.id) {
-      getActivities(lot.id).then((res) => setActivities(res));
-    }
-  }, [lot, selectedCategory]);
+  // useEffect(() => {
+  //   if (lot && lot.id) {
+  //     getActivities(lot.id).then((res) => setActivities(res));
+  //   }
+  // }, [lot, selectedCategory]);
 
   const renderFormContent = () => {
+    if (!selectedCampaign) {
+      return (
+        <Fade in={true} timeout={1000}>
+          <Box textAlign="center" marginTop="20px">
+            {/* <CampaignIcon sx={{ fontSize: 60, color: "rgba(0, 0, 0, 0.54)" }} /> */}
+            <Typography variant="h5" component="h2" gutterBottom>
+              {t("choose_a_campaign")}
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              {t("select_a_campaign_from_the_top_row")}
+            </Typography>
+          </Box>
+        </Fade>
+      );
+    }
     if (!selectedCategory) {
       return activities && activities.length > 0 ? (
         <Activities
@@ -206,6 +261,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <PlanActivity
             activityType={"sowing"}
             lot={lot}
+            fieldName={field.nombre}
             db={db}
             backToActivites={backToActivites}
           />
@@ -215,6 +271,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <PlanActivity
             activityType={"harvesting"}
             lot={lot}
+            fieldName={field.nombre}
             db={db}
             backToActivites={backToActivites}
           />
@@ -224,28 +281,57 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <PlanActivity
             activityType={"application"}
             lot={lot}
+            fieldName={field.nombre}
             db={db}
             backToActivites={backToActivites}
           />
         );
       case "Recorrido":
-        return <Tour lot={lot} db={db} backToActivites={backToActivites} />;
+        return (
+          <Tour
+            lot={lot}
+            db={db}
+            fieldName={field.nombre}
+            backToActivites={backToActivites}
+          />
+        );
       case "Category 5":
         return <div>Category 5</div>;
       case "Muestra de suelo":
         return (
-          <GroundSample lot={lot} db={db} backToActivites={backToActivites} />
+          <GroundSample
+            lot={lot}
+            db={db}
+            fieldName={field.nombre}
+            backToActivites={backToActivites}
+          />
         );
       case "Edit Activity":
+        return (
+          <PlanActivity
+            activityType={
+              activityTypeTranslations[
+              editingActivityInfo.activity.tipo.toLowerCase()
+              ]
+            }
+            lot={lot}
+            fieldName={field.nombre}
+            db={db}
+            backToActivites={backToActivites}
+            existingActivity={editingActivityInfo.activity}
+          />
+        );
+      case "Execute Activity":
         return (
           <ExecuteActivity
             activityType={
               activityTypeTranslations[
-                editingActivityInfo.activity.tipo.toLowerCase()
+              editingActivityInfo.activity.tipo.toLowerCase()
               ]
             }
             lot={lot}
             db={db}
+            fieldName={field.nombre}
             backToActivites={backToActivites}
             existingActivity={editingActivityInfo.activity}
             isExecuting={editingActivityInfo.isExecuting}
@@ -333,8 +419,12 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           </IconButton>
         </div>
       </div>
-
       <hr style={hrStyle} />
+
+      <Header>
+        <FieldInfo>Lote: {lot.properties.nombre}</FieldInfo>
+        <FieldInfo>Campo: {field.nombre}</FieldInfo>
+      </Header>
       <div>{renderFormContent()}</div>
     </Paper>
   );

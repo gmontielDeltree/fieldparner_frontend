@@ -1,16 +1,16 @@
 import gp from "geojson-precision";
 import centroid from "@turf/centroid";
+
 const base_url = (geojson) =>
   `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/static/geojson(${geojson})/auto/500x300?access_token=pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw`;
 
 export const mapboxStaticImg = (campo_doc, lote_doc) => {
-  console.log("CAMPO", campo_doc);
-  console.log("LOTE", lote_doc);
-
   // Campo GeoJson - Copy
   let campo_geojson = {};
   campo_geojson["type"] = "Feature";
-  campo_geojson.geometry = campo_doc.campo_geojson.geometry;
+  campo_geojson.geometry = JSON.parse(
+    JSON.stringify(campo_doc.campo_geojson.geometry)
+  );
   campo_geojson.properties = { stroke: "#cc0000", "fill-opacity": 0 };
 
   let not_selected_props = {
@@ -35,7 +35,7 @@ export const mapboxStaticImg = (campo_doc, lote_doc) => {
   let lotes = [...campo_doc.lotes];
   lotes.map((lote) => {
     let new_lote = { type: "Feature", geometry: {}, properties: {} };
-    new_lote.geometry = lote.geometry;
+    new_lote.geometry = JSON.parse(JSON.stringify(lote.geometry));
     if (lote.properties.nombre === lote_doc.properties.nombre) {
       // Selecionado
       new_lote.properties = selected_props;
@@ -54,16 +54,11 @@ export const mapboxStaticImg = (campo_doc, lote_doc) => {
 
   feature_collection.features.push(center_marker);
 
-  console.log("FCOLL", feature_collection);
-
   let trimmed = gp.parse(feature_collection, 5);
 
   let json_str = JSON.stringify(trimmed);
   let json_str_ns = json_str.replace(/\s+/g, "");
-  console.log("No space", json_str_ns);
   let encoded = encodeURIComponent(json_str_ns);
   let url = base_url(encoded);
-  console.log("URL", url);
-  console.log("URL Length", url.length);
   return url;
 };

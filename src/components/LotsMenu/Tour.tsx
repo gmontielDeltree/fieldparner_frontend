@@ -5,15 +5,19 @@ import { getEmptyNote } from "../../interfaces/activity";
 import { format } from "date-fns";
 import AgricultureIcon from "@mui/icons-material/Assignment";
 import uuid4 from "uuid4";
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
 
 interface TourProps {
   lot: any;
+  fieldName: string;
   db: any;
   backToActivites: () => void;
 }
 
-const Tour: React.FC<TourProps> = ({ lot, db, backToActivites }) => {
+const Tour: React.FC<TourProps> = ({ lot, db, fieldName, backToActivites }) => {
   if (!lot) return null;
+  const lotName = lot.properties.name;
 
   const [formData, setFormData] = useState(getEmptyNote());
 
