@@ -109,13 +109,15 @@ export const AutocompleteContratista = ({value, onChange}) => {
           options={contractors}
           getOptionLabel={(option) => {
             // e.g. value selected with enter, right from the input
+
             if (typeof option === 'string') {
               return option;
             }
             if (option.inputValue) {
               return option.inputValue;
             }
-            return option.nombreCompleto === "" ? option.razonSocial : option.nombreCompleto;
+
+            return option.nombreCompleto === "" ? option.razonSocial : option.nombreCompleto || "";
           }}
           selectOnFocus
           clearOnBlur

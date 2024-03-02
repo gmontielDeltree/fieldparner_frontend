@@ -20,6 +20,9 @@ import uuid4 from "uuid4";
 import { AutocompleteCultivo } from "../../components/AutocompleteCultivo";
 import { AutocompleteContratista } from "../../components/AutocompleteContratista";
 
+import { es } from 'date-fns/locale'
+
+
 const CustomPaper = styled(Paper)({
   padding: "20px",
   margin: "20px 0",
@@ -137,7 +140,7 @@ function PersonalForm({ lot, formData, setFormData }) {
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
               <DatePicker
                 label="Fecha"
                 value={
