@@ -64,6 +64,11 @@ export const AutocompleteContratista = ({value, onChange}) => {
 
       handleClose();
     };
+
+    useEffect(()=>{
+      // console.log("_value",_value)
+      onChange(_value)
+    },[_value])
   
     return (
       <React.Fragment>

@@ -44,28 +44,11 @@ function PersonalForm({ lot, formData, setFormData }) {
 
   const onFieldChange = (fieldName, value) => {
     if (fieldName === "contratista") {
-      const selectedBusiness = businesses.find(
-        (business) =>
-          business.nombreCompleto === value || business.razonSocial === value
-      );
-      console.log("selectedBusiness", selectedBusiness);
-      const nombre =
-        selectedBusiness?.razonSocial || selectedBusiness?.nombreCompleto;
+      console.log("contratista",value)
+      // Set 
       setFormData({
         ...formData,
-        contratista: {
-          labores: [],
-          uuid: uuid4(),
-          nombre: nombre,
-          cuit: selectedBusiness?.cuit,
-          datos_generales: {
-            email: selectedBusiness?.email,
-            direccion: selectedBusiness?.domicilio,
-            telefono: selectedBusiness?.contactoPrincipal
-          },
-          _id: selectedBusiness?._id,
-          _rev: selectedBusiness?._rev
-        }
+        contratista: value
       });
     } else if (fieldName === "fecha") {
       setFormData({
@@ -128,7 +111,7 @@ function PersonalForm({ lot, formData, setFormData }) {
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
               <AutocompleteContratista 
-              value={formData.contratista.nombre || ""}
+              value={formData.contratista || ""}
               onChange={(value) => onFieldChange("contratista", value)}
               />
               {/* <InputLabel id="contratista-label">Contratista</InputLabel>
