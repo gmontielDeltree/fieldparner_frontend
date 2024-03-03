@@ -79,8 +79,7 @@ function PersonalForm({ lot, formData, setFormData }) {
       });
     }
   };
-  console.log("ALPHA cultivo", formData.detalles.cultivo);
-  console.log("ALPHA contratista", formData.contratista.nombre);
+
   return (
     <CustomPaper elevation={3}>
       <Title>General</Title>
@@ -117,25 +116,6 @@ function PersonalForm({ lot, formData, setFormData }) {
               value={formData.contratista || ""}
               onChange={(value) => onFieldChange("contratista", value)}
               />
-              {/* <InputLabel id="contratista-label">Contratista</InputLabel>
-              <Select
-                labelId="contratista-label"
-                id="Contratista"
-                value={formData.contratista.nombre || ""}
-                label="Contratista"
-                fullWidth
-                onChange={(e) => onFieldChange("contratista", e.target.value)}
-                inputProps={{ name: "contratista", id: "contratista" }}
-              >
-                {businesses.map((business) => (
-                  <MenuItem
-                    key={business._id}
-                    value={business.razonSocial || business.nombreCompleto}
-                  >
-                    {business.razonSocial || business.nombreCompleto}
-                  </MenuItem>
-                ))}
-              </Select> */}
             </FormControl>
           </Grid>
 

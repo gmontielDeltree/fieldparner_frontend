@@ -289,20 +289,31 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           <Grid item xs={1.5}>
             <NumberFieldWithUnits
               fullWidth
-              label="Total"
+              label={t("_total_quantity")}
               value={+total}
               onChange={handleTotalChange}
               unit="unit"
             />
           </Grid>
           <Grid item xs={2}>
-            <TextField
+          <NumberFieldWithUnits
               fullWidth
-              label="Precio"
-              value={precio}
+              label={t("_unit_price")}
+              value={+precio}
               onChange={handlePrecioChange}
-              type="number"
+              unit={"USD" + "/" + "unit"}
             />
+
+          </Grid>
+          <Grid item xs={2}>
+          <NumberFieldWithUnits
+              fullWidth
+              label={t("_total_cost")}
+              value={(+precio) * (+dosificacion)}
+              
+              unit="USD"
+            />
+
           </Grid>
           <Grid item xs={1}>
             <IconButton onClick={handleAddRow} color="primary" aria-label="add">

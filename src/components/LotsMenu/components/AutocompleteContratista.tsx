@@ -117,12 +117,12 @@ export const AutocompleteContratista = ({value, onChange}) => {
               return option.inputValue;
             }
 
-            return option.nombreCompleto === "" ? option.razonSocial : option.nombreCompleto || "";
+            return option?.nombreCompleto === "" ? option.razonSocial : option.nombreCompleto || "";
           }}
           selectOnFocus
           clearOnBlur
           handleHomeEndKeys
-          renderOption={(props, option) => <li {...props}>{option.nombreCompleto === "" ? option.razonSocial : option.nombreCompleto}</li>}
+          renderOption={(props, option) => <li {...props}>{option?.nombreCompleto === "" ? option.razonSocial : option.nombreCompleto}</li>}
           sx={{ width: 300 }}
           freeSolo
           renderInput={(params) => <TextField {...params} label={t("_contractor")} />}
