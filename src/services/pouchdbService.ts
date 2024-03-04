@@ -32,7 +32,7 @@ const dbNames = Object.freeze({
     deposits: "deposits",
     typeVehicles: "type-vehicles",
     zipCodeArg: "zip-code-arg",
-    supplies: "supplies",
+    supplies: "test-supplies",
     socialEntities: "social-entities",
     categories: "categories",
     stockMovements: "stock-movements",

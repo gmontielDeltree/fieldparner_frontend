@@ -26,6 +26,7 @@ import Chip from "@mui/material/Chip";
 import { useDeposit } from "../../../../hooks";
 import { useTranslation } from "react-i18next";
 import { NumberFieldWithUnits } from "../../components/NumberField";
+import { AutocompleteSupplies } from "../../components/AutocompleteSupplies";
 
 const TypeBadge = styled(Chip)(({ theme }) => ({
   marginLeft: theme.spacing(1),
@@ -69,7 +70,7 @@ const CustomPaper = styled(Paper)({
 
 function SuppliesForm({ lot, db, formData, setFormData }) {
   const { t } = useTranslation();
-  const [selectedOption, setSelectedOption] = useState("test");
+  const [selectedOption, setSelectedOption] = useState();
   const [dosificacion, setDosificacion] = useState("");
   const [total, setTotal] = useState("");
   const [precio, setPrecio] = useState("");
@@ -136,7 +137,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   };
 
   const handleSelectChange = (event) => {
-    setSelectedOption(event.target.value);
+    // setSelectedOption(event.target.value);
   };
 
   const handleDosificacionChange = (event) => {
@@ -225,7 +226,11 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
         <Grid container spacing={2}>
           <Grid item xs={3}>
             <FormControl fullWidth>
-              <InputLabel id="select-input-label">Insumos</InputLabel>
+              <AutocompleteSupplies 
+                value={selectedOption}
+                onChange={handleSelectChange}
+              />
+              {/* <InputLabel id="select-input-label">Insumos</InputLabel>
               <Select
                 labelId="select-input-label"
                 id="select-input"
@@ -256,7 +261,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                     <TypeBadge label={supply.type} color="primary" />
                   </MenuItem>
                 ))}
-              </Select>
+              </Select> */}
             </FormControl>
           </Grid>
           <Grid item xs={2.5}>
