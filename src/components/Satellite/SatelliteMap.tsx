@@ -206,7 +206,7 @@ export const SatelliteMap: React.FC = ({
       if (features) {
         let algoPa = parse(
           features.features[1].properties.datetime,
-          "yyyy-MM-dd'T'HH:mm:ss'Z'",
+          "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX",
           new Date()
         );
         console.log("una prop cambio",e,features,features.features[1].properties.datetime, algoPa)
