@@ -1,23 +1,25 @@
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { isEqual, parse } from "date-fns";
+import { isEqual, isSameDay, parse } from "date-fns";
 import React from "react";
 
 
 const datesFromFeatures = (featureCol) => {
   let dates = featureCol.features.map((f) =>
-    parse(f.properties.date, "yyyy-MM-dd", new Date())
+    parse(f.properties.datetime,
+      "yyyy-MM-dd'T'HH:mm:ss'Z'", new Date())
   );
   return dates;
 };
 
 const isInvalid = (datea: Date, validDates: Date[]) => {
-  let valid = validDates.find((d) => isEqual(d, datea));
+  let valid = validDates.find((d) => isSameDay(d, datea));
   return valid === undefined ? true : false;
 };
 
 export const SatelliteDatePicker: React.FC = ({value, onChange, features}) => {
   let validDates = datesFromFeatures(features)
+
   return (
     <React.Fragment>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
