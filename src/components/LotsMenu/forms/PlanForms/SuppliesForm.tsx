@@ -70,7 +70,7 @@ const CustomPaper = styled(Paper)({
 
 function SuppliesForm({ lot, db, formData, setFormData }) {
   const { t } = useTranslation();
-  const [selectedOption, setSelectedOption] = useState();
+  const [selectedSupply, setSelectedSupply] = useState();
   const [dosificacion, setDosificacion] = useState("");
   const [total, setTotal] = useState("");
   const [precio, setPrecio] = useState("");
@@ -93,7 +93,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   };
 
   const handleAddRow = () => {
-    const supply = findInsumoByOption(selectedOption);
+    const supply = findInsumoByOption(selectedSupply);
     const newRow = {
       dosis: dosificacion,
       insumo: supply,
@@ -109,7 +109,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       detalles: { ...formData.detalles, dosis: newDetalles },
     });
     console.log("NUEVA FILA", newRow);
-    setSelectedOption("");
+    setSelectedSupply("");
     setDosificacion("");
     setTotal("");
     setDeposito("");
@@ -137,11 +137,14 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   };
 
   const handleSelectChange = (event) => {
-    // setSelectedOption(event.target.value);
+    console.log(event)
+    setSelectedSupply(event);
   };
 
   const handleDosificacionChange = (event) => {
     setDosificacion(event.target.value);
+    setTotal(+event.target.value * formData.detalles.hectareas)
+
   };
 
   const handleDepositoChange = (event) => {
@@ -150,6 +153,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
 
   const handleTotalChange = (event) => {
     setTotal(event.target.value);
+    setDosificacion(+event.target.value / formData.detalles.hectareas)
   };
 
   const handlePrecioChange = (event) => {
@@ -227,7 +231,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           <Grid item xs={3}>
             <FormControl fullWidth>
               <AutocompleteSupplies 
-                value={selectedOption}
+                value={selectedSupply}
                 onChange={handleSelectChange}
               />
               {/* <InputLabel id="select-input-label">Insumos</InputLabel>
@@ -288,7 +292,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               label={t("_quantity_per_hectare")}
               value={+dosificacion}
               onChange={handleDosificacionChange}
-              unit="unit/ha"
+              unit= {selectedSupply && (selectedSupply?.unitMeasurement + "/ha") || "unit/ha"}
             />
           </Grid>
           <Grid item xs={1.5}>
@@ -297,7 +301,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               label={t("_total_quantity")}
               value={+total}
               onChange={handleTotalChange}
-              unit="unit"
+              unit= {selectedSupply?.unitMeasurement || "unit"}
             />
           </Grid>
           <Grid item xs={2}>
@@ -306,7 +310,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               label={t("_unit_price")}
               value={+precio}
               onChange={handlePrecioChange}
-              unit={"USD" + "/" + "unit"}
+              unit={"USD" + "/" + (selectedSupply?.unitMeasurement || "unit")}
             />
 
           </Grid>
@@ -314,7 +318,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           <NumberFieldWithUnits
               fullWidth
               label={t("_total_cost")}
-              value={(+precio) * (+dosificacion)}
+              value={(+precio) * (+total)}
               
               unit="USD"
             />

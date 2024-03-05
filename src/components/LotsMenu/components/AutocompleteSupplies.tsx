@@ -13,16 +13,19 @@ import { Business, Supply } from "@types";
 import { SuppliesRepository } from "../../../classes/SuppliesRepository";
 import { paramsToObject } from "lightgallery/plugins/video/lg-video-utils";
 import {
-    Box,
+  Box,
+  Chip,
+  Divider,
   IconButton,
   InputAdornment,
   Menu,
   MenuItem,
   Select,
+  Typography,
 } from "@mui/material";
 import FilterAltTwoToneIcon from "@mui/icons-material/FilterAltTwoTone";
 
-const filter = createFilterOptions<FilmOptionType>();
+const filter = createFilterOptions<FilmOptionType>({ limit: 50 });
 
 interface SupplyOptionType extends Supply {
   inputValue?: string;
@@ -38,7 +41,6 @@ export const AutocompleteSupplies = ({ value, onChange }) => {
 
   const [selectedTypesFilter, setSelectedTypesFilter] = useState<string[]>([]);
 
-  
   const [dialogValue, setDialogValue] = React.useState({
     name: "",
     type: "",
@@ -107,12 +109,12 @@ export const AutocompleteSupplies = ({ value, onChange }) => {
           }
         }}
         filterOptions={(options, params) => {
-        
-          const filteredOptions1 = options.filter((o)=> selectedTypesFilter.includes(o.type))
-          console.log("FITRO",selectedTypesFilter,options,filteredOptions1)
+          const filteredOptions1 = options.filter((o) =>
+            selectedTypesFilter.includes(o.type)
+          );
+          console.log("FITRO", selectedTypesFilter, options, filteredOptions1);
 
           const filtered = filter(filteredOptions1, params);
-
 
           if (params.inputValue !== "") {
             filtered.push({
@@ -140,16 +142,52 @@ export const AutocompleteSupplies = ({ value, onChange }) => {
         selectOnFocus
         clearOnBlur
         handleHomeEndKeys
-        renderOption={(props, option) => <li {...props} key={option?._id}>{option?.name}</li>}
+        renderOption={(props, option) => (
+          <Box
+
+            {...props}
+            key={option?._id}
+          >
+            <div style={{width:"100%"}}>
+              <Box>
+                <Typography variant="subtitle1">{option?.name}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2">{option?.brand}</Typography>
+              </Box>
+            </div>
+
+            {/* <Box>
+              <ul>
+                <li>
+                  {t("_active_ingredient")}: {option?.activePrincipal}
+                </li>
+              </ul>
+            </Box> */}
+
+            {/* <Typography variant="body2" component="div">
+              {option?.description}
+            </Typography> */}
+
+            { option?.type && <div>
+              <Chip label={option?.type} size="small" />
+            </div>}
+            <Divider/>
+          </Box>
+        )}
         freeSolo
         renderInput={(
           params //<TextField {...params} label={t("_contractor")} />
-        ) => <SuppliesTextInputWithFilterButton {...params} supplies={supplies} onChangeFilter={
-            (e)=>{
-            console.log("CHANGE filter#1",e)
-                setSelectedTypesFilter(e)}
-        }
-            />}
+        ) => (
+          <SuppliesTextInputWithFilterButton
+            {...params}
+            supplies={supplies}
+            onChangeFilter={(e) => {
+              console.log("CHANGE filter#1", e);
+              setSelectedTypesFilter(e);
+            }}
+          />
+        )}
       />
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
@@ -208,13 +246,14 @@ const SuppliesTextInputWithFilterButton: React.FC = (props) => {
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [selectedFilters, setSelectedFilters] = useState([]);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
 
-  const typesFromSupplies = useMemo(()=>{
-    if(!props.supplies) return []
-    let types = new Set(props.supplies.map(s=>s.type))
-    return [...types]
-  },[props.supplies])
+  const typesFromSupplies = useMemo(() => {
+    if (!props.supplies) return [];
+    let types = new Set<string>(props.supplies.map((s) => s.type));
+    setSelectedFilters([...types]);
+    return [...types];
+  }, [props.supplies]);
 
   const listOfFilters = typesFromSupplies || ["Semillas", "Combustibles"];
 
@@ -245,18 +284,24 @@ const SuppliesTextInputWithFilterButton: React.FC = (props) => {
     }
   }, [selectedFilters]);
 
+  const handleAllClick = () => {
+    setSelectedFilters(typesFromSupplies);
+  };
+
+  const handleNoneClick = () => {
+    setSelectedFilters([]);
+  };
+
   return (
     <>
       <TextField
         {...props}
         label={t("_supply")}
         InputProps={{
-            ...props.InputProps, startAdornment: (
+          ...props.InputProps,
+          startAdornment: (
             <InputAdornment position="start">
-              <IconButton
-                onClick={handleClick}
-                edge="end"
-              >
+              <IconButton onClick={handleClick} edge="end">
                 {<FilterAltTwoToneIcon />}
               </IconButton>
             </InputAdornment>
@@ -272,9 +317,12 @@ const SuppliesTextInputWithFilterButton: React.FC = (props) => {
         MenuListProps={{
           "aria-labelledby": "basic-button",
         }}
+        sx={{
+          "& .Mui-selected": { fontWeight: "bold" },
+        }}
       >
         {/* Crop selector */}
-        <MenuItem
+        {/* <MenuItem
           onClick={() => onFilterClick(filter)}
           selected={selectedFilters.includes(filter)}
         >
@@ -282,13 +330,13 @@ const SuppliesTextInputWithFilterButton: React.FC = (props) => {
             <MenuItem>Maiz</MenuItem>
             <MenuItem>Cerdo</MenuItem>
           </Select>
-        </MenuItem>
+        </MenuItem> */}
 
-
-
-        <MenuItem
-        >
-          <Box><Button> {t("_all")}</Button> <Button> {t("_none")}</Button></Box>
+        <MenuItem>
+          <Box>
+            <Button onClick={handleAllClick}> {t("_all")}</Button>{" "}
+            <Button onClick={handleNoneClick}> {t("_none")}</Button>
+          </Box>
         </MenuItem>
 
         {/* Regular Categories */}

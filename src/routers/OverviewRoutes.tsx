@@ -31,6 +31,7 @@ import {
 import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
+import { ComponentTestBed } from '../pages/ComponentTestBed';
 
 export const OverviewRoutes: React.FC = () => {
   const { pathname, search } = useLocation();
@@ -93,6 +94,7 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/order" element={<WithdrawalOrdersPage />} />
         <Route path="/overview/order/:orderId" element={<ConfirmWithdrawalOrderPage />} />
 
+        <Route path="/overview/component-test-bed" element={<ComponentTestBed />} />
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>
