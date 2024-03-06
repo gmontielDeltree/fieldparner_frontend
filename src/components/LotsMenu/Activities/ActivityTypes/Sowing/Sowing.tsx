@@ -19,7 +19,8 @@ function Sowing({
   complementaryColor,
   handleDeleteActivity,
   handleEditActivity,
-  handleDownloadPDF
+  handleDownloadPDF,
+  handleConfirmExecution
 }) {
   const db = dbContext.fields;
   const [selectedTab, setSelectedTab] = useState(0);
@@ -40,15 +41,12 @@ function Sowing({
   };
 
   useEffect(() => {
-    console.log("USE EFFECT SOWING CONTENT", activity.actividad);
     const fetchExecution = async () => {
       try {
         const response = await db.find({
           selector: { actividad_uuid: activity.actividad.uuid }
         });
-        console.log("RESPONSE SOWING CONTENT: ", response);
         if (response.docs.length > 0) {
-          console.log("SETTED EXECUTION: ", response.docs[0]);
           setExecution(response.docs[0]);
         } else {
           setExecution(null);
@@ -170,6 +168,7 @@ function Sowing({
         <LaborOrderContent
           activity={activity.actividad}
           handleDownloadPDF={handleDownloadPDF}
+          handleConfirmExecution={handleConfirmExecution}
         />
       )}
       {selectedTab === 2 && (

@@ -36,7 +36,6 @@ function PersonalForm({ lot, formData, setFormData }) {
 
   useEffect(() => {
     getBusinesses();
-    console.log("businesses", businesses);
   }, []);
 
   const onFieldChange = (fieldName, value) => {
@@ -45,7 +44,6 @@ function PersonalForm({ lot, formData, setFormData }) {
         (business) =>
           business.nombreCompleto === value || business.razonSocial === value
       );
-      console.log("selectedBusiness", selectedBusiness);
       const nombre =
         selectedBusiness?.razonSocial || selectedBusiness?.nombreCompleto;
       setFormData({
@@ -90,8 +88,6 @@ function PersonalForm({ lot, formData, setFormData }) {
       });
     }
   };
-  console.log("ALPHA cultivo", formData.detalles.cultivo);
-  console.log("ALPHA contratista", formData.contratista.nombre);
   return (
     <CustomPaper elevation={3}>
       <Title>General</Title>

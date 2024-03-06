@@ -28,7 +28,8 @@ function Application({
   complementaryColor,
   handleDeleteActivity,
   handleEditActivity,
-  handleDownloadPDF
+  handleDownloadPDF,
+  handleConfirmExecution
 }) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -54,9 +55,6 @@ function Application({
         { locale: es }
       )
     : "Fecha no definida";
-  useEffect(() => {
-    console.log("Application component rendered");
-  }, []);
 
   return (
     <div>
@@ -140,6 +138,7 @@ function Application({
         <LaborOrderContent
           activity={activity.actividad}
           handleDownloadPDF={handleDownloadPDF}
+          handleConfirmExecution={handleConfirmExecution}
         />
       )}
       {selectedTab === 2 && (

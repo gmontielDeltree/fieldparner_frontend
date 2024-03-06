@@ -6,6 +6,7 @@ import Sowing from "./ActivityTypes/Sowing/Sowing";
 import Note from "./ActivityTypes/Note/Note";
 import Harvest from "./ActivityTypes/Harvest/Harvest";
 import Application from "./ActivityTypes/Application/Application";
+import WeatherForecast from "./../../WeatherForecast";
 
 function Activity({
   activity,
@@ -15,7 +16,8 @@ function Activity({
   icon,
   handleDeleteActivity,
   handleEditActivity,
-  handleDownloadPDF
+  handleDownloadPDF,
+  handleConfirmExecution
 }) {
   const [gradientAngle, setGradientAngle] = useState(0);
 
@@ -49,6 +51,7 @@ function Activity({
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
+            handleConfirmExecution={handleConfirmExecution}
           />
         );
       case "cosecha":
@@ -60,6 +63,7 @@ function Activity({
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
+            handleConfirmExecution={handleConfirmExecution}
           />
         );
       case "nota":
@@ -78,6 +82,7 @@ function Activity({
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
+            handleConfirmExecution={handleConfirmExecution}
           />
         );
       case "analisis de suelo":
@@ -124,7 +129,10 @@ function Activity({
         }}
       ></div>
       <Card sx={cardStyle}>
-        <CardContent>{renderActivityContent()}</CardContent>
+        <CardContent>
+          {renderActivityContent()}
+          <WeatherForecast />
+        </CardContent>
       </Card>
     </div>
   );

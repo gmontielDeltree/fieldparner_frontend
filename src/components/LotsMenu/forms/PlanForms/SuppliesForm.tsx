@@ -104,7 +104,6 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       ...formData,
       detalles: { ...formData.detalles, dosis: newDetalles }
     });
-    console.log("NUEVA FILA", newRow);
     setSelectedOption("");
     setDosificacion("");
     setTotal("");
@@ -185,18 +184,6 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     getSupplies();
     getDeposits();
   }, []);
-
-  useEffect(() => {
-    console.log("supplies:", supplies);
-  }, [supplies]);
-
-  useEffect(() => {
-    console.log("deposits:", deposits);
-  }, [deposits]);
-
-  useEffect(() => {
-    console.log("EDIT DATA:", editData);
-  }, [editData]);
 
   useEffect(() => {
     if (formData && formData.detalles && formData.detalles.dosis) {
