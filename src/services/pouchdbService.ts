@@ -31,8 +31,9 @@ const dbNames = Object.freeze({
     vehicles: "vehicles",
     deposits: "deposits",
     typeVehicles: "type-vehicles",
-    zipCodeArg: "zip-code-arg",
-    supplies: "test-supplies",
+    zipCodeARG: "zip-code-arg",
+    zipCodePRY: "zip-code-pry",
+    supplies: "supplies",
     socialEntities: "social-entities",
     categories: "categories",
     stockMovements: "stock-movements",
@@ -44,15 +45,15 @@ const dbNames = Object.freeze({
     numerators: "numerators",
     withdrawalOrders: "withdrawal-orders",
     depositSupplyOrder: "deposit-supply-order",
-    withdrawalsByDepositSupply: "withdrawals-deposit-supply",
-    platform: "platform"
+    withdrawalsByDepositSupply: "withdrawals-deposit-supply"
 });
 
 export const dbContext = Object.freeze({
     vehicles: new PouchDB<Vehicle>(dbNames.vehicles),
     typeVehicles: new PouchDB(dbNames.typeVehicles),
     deposits: new PouchDB<Deposit>(dbNames.deposits),
-    zipCodeArg: new PouchDB<ItemZipCode>(dbNames.zipCodeArg),
+    zipCodeARG: new PouchDB<ItemZipCode>(dbNames.zipCodeARG),
+    zipCodePRY: new PouchDB<ItemZipCode>(dbNames.zipCodePRY),
     supplies: new PouchDB<Supply>(dbNames.supplies),
     socialEntities: new PouchDB<Business>(dbNames.socialEntities),
     categories: new PouchDB<Category>(dbNames.categories),
@@ -66,13 +67,13 @@ export const dbContext = Object.freeze({
     depositSupplyOrder: new PouchDB<DepositSupplyOrder>(dbNames.depositSupplyOrder),
     withdrawalsByDepositSupply: new PouchDB<WithdrawalsByDepositSupply>(dbNames.withdrawalsByDepositSupply),
     numerators: new PouchDB<Numerator>(dbNames.numerators),
-    platform: new PouchDB(dbNames.platform)
 });
 
 dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
 dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
 dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
-// dbContext.zipCodeArg.sync(`${remoteCouchDBUrl}${dbNames.zipCodeArg}`, opts);
+dbContext.zipCodeARG.sync(`${remoteCouchDBUrl}${dbNames.zipCodeARG}`, opts);
+dbContext.zipCodePRY.sync(`${remoteCouchDBUrl}${dbNames.zipCodePRY}`, opts);
 dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, opts);
 dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, opts);
 dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, opts);
@@ -86,21 +87,41 @@ dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`
 dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`);
 dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`);
 dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`);
-dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`,opts);
 
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
     try {
-
-        if (country === CountryCode.ARGENTINA) {
-            const result = await dbContext.zipCodeArg.find({
-                selector: { "CP": zipCode },
-            });
-            return result.docs;
+        let result;
+        switch (country) {
+            case CountryCode.ARGENTINA:
+                result = await dbContext.zipCodeARG.find({
+                    selector: { "CP": zipCode },
+                });
+                return result.docs;
+            case CountryCode.PARAGUAY:
+                result = await dbContext.zipCodePRY.find({
+                    selector: { "CP": zipCode },
+                });
+                return result.docs;
+            default:
+                return [];
         }
+        // if (country === CountryCode.ARGENTINA) {
+        //     const result = await dbContext.zipCodeARG.find({
+        //         selector: { "CP": zipCode },
+        //     });
+        //     return result.docs;
+        // }
+        // if (country === CountryCode.PARAGUAY) {
+        //     const result = await dbContext.zipCodePRY.find({
+        //         selector: { "CP": zipCode },
+        //     });
+        //     return result.docs;
+        // }
     } catch (error) {
         console.log(error);
+        return [];
     }
 }
 

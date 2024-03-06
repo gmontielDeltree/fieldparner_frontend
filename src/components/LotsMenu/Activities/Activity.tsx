@@ -18,7 +18,7 @@ function Activity({
   handleDownloadPDF
 }) {
   const [gradientAngle, setGradientAngle] = useState(0);
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
       setGradientAngle((prevAngle) => (prevAngle + 1) % 360);

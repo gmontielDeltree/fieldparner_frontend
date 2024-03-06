@@ -34,6 +34,7 @@ const initialForm: Supply = {
   replenishmentPoint: "",
   currentStock: 0,
   reservedStock: 0,
+  generico: ""
 };
 
 export const SupplyPage: React.FC = () => {
@@ -49,6 +50,7 @@ export const SupplyPage: React.FC = () => {
     handleInputChange,
     handleSelectChange,
     handleCheckboxChange,
+    handleGenercoChange,
     reset,
   } = useForm(initialForm);
 
@@ -93,6 +95,7 @@ export const SupplyPage: React.FC = () => {
               key="doseForm"
               formValues={formulario}
               handleInputChange={handleInputChange}
+              handleGenercoChange={handleGenercoChange}
             />
           );
         case 2:

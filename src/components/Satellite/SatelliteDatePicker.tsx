@@ -1,29 +1,29 @@
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { isEqual, parse } from "date-fns";
+import { validateDate } from "@mui/x-date-pickers/internals";
+import { isEqual, isSameDay, parse } from "date-fns";
 import React from "react";
-import { valid } from "uuid4";
 
+import { es } from 'date-fns/locale'
 
 const datesFromFeatures = (featureCol) => {
   let dates = featureCol.features.map((f) =>
     parse(f.properties.datetime,
-      "yyyy-MM-dd'T'HH:mm:ss'Z'", new Date())
+      "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX", new Date())
   );
   return dates;
 };
 
 const isInvalid = (datea: Date, validDates: Date[]) => {
-  let valid = validDates.find((d) => isEqual(d, datea));
+  let valid = validDates.find((d) => isSameDay(d, datea));
   return valid === undefined ? true : false;
 };
 
 export const SatelliteDatePicker: React.FC = ({value, onChange, features}) => {
   let validDates = datesFromFeatures(features)
-  console.log("ValidDates",validDates)
   return (
     <React.Fragment>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es} >
         <DatePicker
           label="Fecha"
           

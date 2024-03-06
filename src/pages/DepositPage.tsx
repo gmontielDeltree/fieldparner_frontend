@@ -75,11 +75,6 @@ const initialForm: Deposit = {
   locations: [locationDefault],
 };
 
-const optionsCountry = ["Argentina", "Brasil", "Chile"];
-
-
-
-
 
 export const DepositPage: React.FC = () => {
   const navigate = useNavigate();

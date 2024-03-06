@@ -12,21 +12,18 @@ export const InitRouter = () => {
   // console.log('lastPath', lastPath);
   // localStorage.setItem('lastPath', lastPath);
 
-
   // Original URL
-  const [from, setFrom] = useState<string>("/" + (window.location.pathname + window.location.search).substr(1))
+  const [from, setFrom] = useState<string>(
+    "/" + (window.location.pathname + window.location.search).substr(1)
+  );
 
   const { status, checkAuthToken } = useAuthStore();
-
-  console.count("InitRouter Render")
-
 
   useEffect(() => {
     // anotar la url original
     console.log("WINDOW LOCATION HREF PRE AUTH", from);
     checkAuthToken();
   }, []);
-
 
   // useEffect(() => {
   //   if(status === "authenticated"){
@@ -37,7 +34,7 @@ export const InitRouter = () => {
   //     // 3 - /init/overview/fields (por el render de mas abajo)
   //     // 4 - navigate(from) vuelve a /init/overview/deposits
 
-  //     console.log("WINDOW LOCATION HREF POST AUTH", window.location.href) 
+  //     console.log("WINDOW LOCATION HREF POST AUTH", window.location.href)
   //     navigate(from);
   //   }
   // }, [status]);
@@ -48,7 +45,8 @@ export const InitRouter = () => {
   //  {/* <OverviewRoutes /> */}
   return (
     <>
-      {status !== "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
+    
+      {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
     </>
   );
 };
