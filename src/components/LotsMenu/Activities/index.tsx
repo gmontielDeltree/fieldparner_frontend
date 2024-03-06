@@ -5,16 +5,13 @@ import HarvestIcon from "../../../images/icons/cosechadora_act.webp";
 import NoteIcon from "../../../images/icons/iconodenotas_act.webp";
 import SoilAnalysisIcon from "../../../images/icons/suelo_act.webp";
 import ApplicationIcon from "../../../images/icons/pulverizadora_act.webp";
-import PouchDB from "pouchdb";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import "./Activities.css";
 import { styled } from "@mui/material/styles";
-import PlanActivity from "../PlanActivity";
 import { mapboxStaticImg } from "../../../utils/mapboxStaticImg";
 import { googleMapsLinkGoTo } from "../../../utils/googleMapsLink";
 import ordenDefinition from "../../../utils/ordenDefinition";
-import { error } from "xstate/lib/actions";
 import { dbContext } from "../../../services";
 
 const Alert = styled(MuiAlert)(({ theme }) => ({
@@ -41,10 +38,10 @@ export const Activities = ({
   handleEditActivity
 }) => {
   const [userMessage, setUserMessage] = useState("");
-  const db = dbContext.fields; //new PouchDB("campos_randyv7");
+  const db = dbContext.fields;
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  
+
   const handleSnackbarClose = (event: any, reason: string) => {
     if (reason === "clickaway") {
       return;
@@ -58,7 +55,6 @@ export const Activities = ({
         return db.remove(doc);
       })
       .then(() => {
-        console.log("Actividad eliminada", "success");
         setActivitiesData(
           activitiesData.filter(
             (activity) => activity.actividad._id !== activityId
@@ -75,12 +71,76 @@ export const Activities = ({
       });
   };
 
+  const updateActivityStateToCompleted = (activityId) => {
+    db.get(activityId)
+      .then((doc) => {
+        doc.estado = "completada";
+        return db.put(doc);
+      })
+      .then(() => {
+        console.log("Activity state updated to completed successfully.");
+        setOpenSnackbar(true);
+        setSnackbarSeverity("success");
+      })
+      .catch((error) => {
+        console.error("Error updating activity state:", error);
+        setUserMessage("Error al actualizar el estado de la actividad.");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
+      });
+  };
+
+  const handleConfirmExecution = (activity) => {
+    let executionDetails = {
+      detalles: {
+        fecha_ejecucion: new Date().toISOString()
+      },
+      actividad_uuid: activity.uuid,
+      estado: "ejecutada"
+    };
+
+    executionDetails._id =
+      "ejecucion:" +
+      executionDetails.detalles.fecha_ejecucion +
+      ":" +
+      executionDetails.actividad_uuid;
+
+    db.get(executionDetails._id)
+      .then((doc) => {
+        executionDetails._rev = doc._rev;
+        return db.put(executionDetails);
+      })
+      .catch((error) => {
+        if (error.name === "not_found") {
+          delete executionDetails._rev;
+          db.put(executionDetails)
+            .then(() => {
+              setUserMessage("Actividad confirmada exitosamente.");
+              setOpenSnackbar(true);
+              setSnackbarSeverity("success");
+            })
+            .then(() => {
+              console.log("updating activity state to completed", activity._id);
+              updateActivityStateToCompleted(activity._id);
+            })
+            .catch((err) => {
+              console.error("Error creating new document:", err);
+              setUserMessage("Error al confirmar la actividad.");
+              setSnackbarSeverity("error");
+            });
+        } else {
+          console.error("Error saving execution details:", error);
+          setUserMessage("Error al confirmar la actividad.");
+          setSnackbarSeverity("error");
+        }
+      });
+  };
+
   const handleDownloadPDF = (activity) => {
     let campos_url = mapboxStaticImg(fieldDoc, lotDoc);
 
     let google_map_link = googleMapsLinkGoTo(lotDoc);
 
-    console.log("GENERANDO PDF", activity);
     let dd = ordenDefinition(
       activity,
       fieldDoc.nombre,
@@ -172,7 +232,6 @@ export const Activities = ({
         const complementaryColor = getComplementaryColor(
           activityData.actividad.tipo
         );
-        const isFirst = index === 0;
 
         return (
           <div key={index}>
@@ -182,11 +241,10 @@ export const Activities = ({
               lotDoc={lotDoc}
               complementaryColor={complementaryColor}
               icon={Icon}
-              lotDoc={lotDoc}
-              isFirst={isFirst}
               handleDeleteActivity={handleDeleteActivity}
               handleEditActivity={handleEditActivity}
               handleDownloadPDF={handleDownloadPDF}
+              handleConfirmExecution={handleConfirmExecution}
             />
           </div>
         );

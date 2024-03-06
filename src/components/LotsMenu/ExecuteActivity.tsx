@@ -282,10 +282,25 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, step));
   };
 
+  const updateActivityStateToCompleted = (activityId) => {
+    return db
+      .get(activityId)
+      .then((activityDoc) => {
+        activityDoc.estado = "completada";
+        return db.put(activityDoc);
+      })
+      .then(() => {
+        console.log("Activity state updated to completed successfully");
+      })
+      .catch((error) => {
+        console.error("Error updating activity state to completed:", error);
+      });
+  };
+
   const handleSave = () => {
     let executionDetails = { ...formData };
     executionDetails.detalles.fecha_ejecucion = new Date().toISOString();
-    console.log("Execution details: ", executionDetails);
+    executionDetails.estado = "completada";
     try {
       const formattedDate = format(
         new Date(executionDetails.detalles.fecha_ejecucion_tentativa),
@@ -299,6 +314,9 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     }
 
     db.get(executionDetails._id)
+      .then(() => {
+        return updateActivityStateToCompleted(executionDetails.actividad_uuid);
+      })
       .then((doc) => {
         executionDetails._rev = doc._rev;
         return db.put(executionDetails);
@@ -307,7 +325,6 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         if (error.name === "conflict") {
           console.error("Conflict detected, saving execution details:", error);
         } else if (error.name === "not_found") {
-          console.log("Document not found. Creating a new one.");
           delete executionDetails._rev;
           db.put(executionDetails)
             .then(() => {
@@ -321,12 +338,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           console.error("Error saving execution details:", error);
         }
       });
-    console.log("Execution details: ", executionDetails);
   };
-
-  useEffect(() => {
-    console.log("FORM DATA: ", formData);
-  });
 
   const ActivityIcon = activityIcons["sowing"];
 

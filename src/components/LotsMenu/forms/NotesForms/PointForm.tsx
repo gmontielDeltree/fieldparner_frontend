@@ -35,7 +35,7 @@ import { set } from "date-fns";
 import { dbContext } from "../../../../services";
 
 function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
-  const db = dbContext.fields //new PouchDB("campos_randyv7");
+  const db = dbContext.fields; //new PouchDB("campos_randyv7");
   const [point, setPoint] = useState({
     properties: {
       nombre: "",
@@ -79,10 +79,6 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
       setSelectedField("");
     }
   };
-
-  useEffect(() => {
-    console.log("point", point);
-  }, [point]);
 
   const handleDetailChange = (index, value) => {
     const newDetalles = [...point.properties.detalles];
@@ -217,7 +213,6 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   const [markerSaved, setMarkerSaved] = useState(false);
 
   const handleSaveMarker = () => {
-    console.log(" COORDINATES: ", coordinates);
     setPoint({
       ...point,
       properties: {

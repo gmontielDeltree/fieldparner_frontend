@@ -4,12 +4,15 @@ import {
   Typography,
   CircularProgress,
   Tooltip,
-  useTheme
+  useTheme,
+  styled,
+  Paper
 } from "@mui/material";
 import { forecastWeather } from "./helper";
 import Lottie from "react-lottie";
 import { motion } from "framer-motion";
 
+import ThunderstormIcon from "@mui/icons-material/Thunderstorm";
 // Import your Lottie animation files
 import sunnyAnimation from "./animations/sunny.json";
 import snowyAnimation from "./animations/thunderstorm.json";
@@ -47,6 +50,25 @@ const weatherAnimations = {
   99: defaultOptions(thunderstormAnimation) // Thunderstorm
 };
 
+const DateBadge = styled(Paper)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  background: `linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.5))`,
+  color: theme.palette.getContrastText(theme.palette.background.paper),
+  padding: theme.spacing(1),
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: `0 4px 8px 0 rgba(0,0,0,0.2)`,
+  backdropFilter: "blur(10px)"
+}));
+
+const StyledEventNoteIcon = styled(ThunderstormIcon)(({ theme }) => ({
+  fontSize: "2.3rem",
+  color: `rgba(255, 255, 255, 0.9)`,
+  borderRadius: "50%",
+  padding: "5px"
+}));
+
 const WeatherForecast = ({ position = [-59.0979, -35.1854] }) => {
   const { t } = useTranslation();
   const [weatherData, setWeatherData] = useState(null);
@@ -80,9 +102,21 @@ const WeatherForecast = ({ position = [-59.0979, -35.1854] }) => {
 
   return (
     <Box sx={{ overflowX: "auto", p: 2, whiteSpace: "nowrap" }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        {t("Pronostico del Tiempo")}
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          marginBottom: "20px"
+        }}
+      >
+        <StyledEventNoteIcon />
+        <DateBadge>
+          <Typography style={{ fontWeight: "bold" }}>
+            {t("Pronostico del Tiempo")}
+          </Typography>
+        </DateBadge>
+      </Box>
       <Box sx={{ display: "inline-flex", gap: 2 }}>
         {weatherData.daily.time.map((date, index) => {
           const tooltipTitle = (

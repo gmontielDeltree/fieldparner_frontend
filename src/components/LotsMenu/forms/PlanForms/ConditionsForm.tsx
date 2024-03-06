@@ -48,9 +48,6 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
     });
   };
 
-  useEffect(() => {
-    console.log("ConditionsForm rendered");
-  });
   return (
     <CustomPaper elevation={3}>
       <Title>Condiciones</Title>

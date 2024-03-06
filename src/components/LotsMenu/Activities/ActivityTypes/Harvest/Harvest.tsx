@@ -29,20 +29,20 @@ function Harvest({
   complementaryColor,
   handleDeleteActivity,
   handleEditActivity,
-  handleDownloadPDF
+  handleDownloadPDF,
+  handleConfirmExecution
 }) {
-  
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  
+
   const formattedPlanificadaDate = activity.actividad.detalles
     ?.fecha_ejecucion_tentativa
     ? format(
-      parseISO(activity.actividad.detalles.fecha_ejecucion_tentativa),
-      "PPPP",
-      { locale: es }
-    )
+        parseISO(activity.actividad.detalles.fecha_ejecucion_tentativa),
+        "PPPP",
+        { locale: es }
+      )
     : "Fecha no definida";
 
   const handleTabChange = (event, newValue) => {
@@ -133,6 +133,7 @@ function Harvest({
           activity={activity.actividad}
           lotDoc={lotDoc}
           handleDownloadPDF={handleDownloadPDF}
+          handleConfirmExecution={handleConfirmExecution}
         />
       )}
       {selectedTab === 2 && (
