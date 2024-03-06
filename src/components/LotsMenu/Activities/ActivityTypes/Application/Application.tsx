@@ -22,6 +22,7 @@ import ExecutionContent from "../TabsContent/Execution";
 import AttachedContent from "../TabsContent/Attached";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import ActivityActionsBar from "../../../components/ActivityActionsBar";
 
 function Application({
   activity,
@@ -95,6 +96,7 @@ function Application({
         </Typography>
         <IconButton onClick={handleMenuClick} sx={{ marginLeft: "8px" }}>
           <MoreVertIcon />
+          <ActivityActionsBar />
         </IconButton>
       </Box>
 
