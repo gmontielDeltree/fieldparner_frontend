@@ -315,6 +315,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     setActiveStep(step);
     setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, step));
   };
+
   const handleSave = () => {
     for (let step = 0; step < steps.length; step++) {
       const missingFields = countMissingFields(formData, step);

@@ -236,7 +236,7 @@ interface Actividad {
   contratista: Contratista;
   ingeniero: Ingeniero;
   comentario: string;
-  estado: number;
+  estado: string;
   detalles: Detalles;
   fecha?: Date;
   color?: string;
@@ -335,7 +335,7 @@ const getEmptyActivity = () => {
     contratista: { ...empty_contratista },
     ingeniero: null,
     comentario: "",
-    estado: 0,
+    estado: "pendiente",
     detalles: {
       fecha_ejecucion_tentativa: now,
       hectareas: 0,

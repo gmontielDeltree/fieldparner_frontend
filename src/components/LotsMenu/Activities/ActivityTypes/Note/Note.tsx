@@ -6,6 +6,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import NoteContent from "../TabsContent/Note";
 import AttachedContent from "../TabsContent/Attached";
 import NotePoints from "../TabsContent/Points";
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 
 function Note({ activity, complementaryColor, handleDeleteActivity }) {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -23,6 +25,11 @@ function Note({ activity, complementaryColor, handleDeleteActivity }) {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  const formattedPlanificadaDate = activity.actividad.fecha
+    ? format(parseISO(activity.actividad.fecha), "PPPP", { locale: es })
+    : "Fecha no definida";
+
   return (
     <div>
       <Box
@@ -50,7 +57,7 @@ function Note({ activity, complementaryColor, handleDeleteActivity }) {
             sx={{ fontSize: 16, fontWeight: "bold" }}
             color="text.primary"
           >
-            {activity.actividad.fecha}
+            {formattedPlanificadaDate}
           </Typography>
 
           <Typography
@@ -78,7 +85,7 @@ function Note({ activity, complementaryColor, handleDeleteActivity }) {
         </IconButton>
       </Box>
 
-{/* LGO Comento los items que no estan implementados aún */}
+      {/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={handleMenuClose}>Editar</MenuItem>
 

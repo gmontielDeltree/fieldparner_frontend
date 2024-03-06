@@ -32,8 +32,6 @@ const GroundSample: React.FC<GroundSampleProps> = ({
   backToActivites
 }) => {
   if (!lot) return null;
-  console.log("Lot: ", lot);
-  const lotName = lot.properties.name;
   const [formData, setFormData] = useState(getEmptyActivity());
   const [activeStep, setActiveStep] = useState(0);
   const steps = [
@@ -112,7 +110,6 @@ const GroundSample: React.FC<GroundSampleProps> = ({
     let actividad = formData;
     try {
       const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
-      console.log("FECHA EJECUCION: ", fechaEjecucion);
 
       const parsedDate = new Date(fechaEjecucion);
 
@@ -122,7 +119,6 @@ const GroundSample: React.FC<GroundSampleProps> = ({
       console.error("Error in handleSave:", error);
     }
 
-    console.log("ACTIVIDAD ID: ", actividad._id);
     db.get(actividad._id)
       .then((doc) => {
         actividad._rev = doc._rev;

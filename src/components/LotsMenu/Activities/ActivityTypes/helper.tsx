@@ -22,26 +22,14 @@ export const ComparisonReportPdf = (
   fieldName,
   lotName
 ) => {
-  console.log("GENERANDO PDF", activity);
-  let dd = differencesReportDefinition(
-    activity,
-    execution,
-    fieldName, //nombre del campo
-    lotName //nombre del lote
-  );
-  //console.log("DD", JSON.stringify(dd));
-  // Loading
-  //   this._loading_pdf = true;
-
+  let dd = differencesReportDefinition(activity, execution, fieldName, lotName);
   import("pdfmake/build/pdfmake.min.js").then(({ default: pdfMake }) => {
     pdfMake.fonts = pdf_fonts;
-    //console.log("Generando PDF");
     pdfMake.createPdf(dd).open();
   });
 };
 
 const pdfLine = (line, hectares) => {
-  console.log("line: ", line);
   return [
     {
       text: line.insumo.name.toUpperCase(),

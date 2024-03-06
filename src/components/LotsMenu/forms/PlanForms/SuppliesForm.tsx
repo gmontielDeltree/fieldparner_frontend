@@ -252,18 +252,6 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   }, []);
 
   useEffect(() => {
-    console.log("supplies:", supplies);
-  }, [supplies]);
-
-  useEffect(() => {
-    console.log("deposits:", deposits);
-  }, [deposits]);
-
-  useEffect(() => {
-    console.log("EDIT DATA:", editData);
-  }, [editData]);
-
-  useEffect(() => {
     if (formData && formData.detalles && formData.detalles.dosis) {
       setRows(
         formData.detalles.dosis.map((dosis) => ({

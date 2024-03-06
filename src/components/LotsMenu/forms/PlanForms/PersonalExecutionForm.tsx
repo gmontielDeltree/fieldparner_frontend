@@ -35,7 +35,6 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
 
   useEffect(() => {
     getBusinesses();
-    console.log("businesses", businesses);
   }, []);
 
   const onFieldChange = (fieldName, value) => {
@@ -44,7 +43,6 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
         (business) =>
           business.nombreCompleto === value || business.razonSocial === value
       );
-      console.log("selectedBusiness", selectedBusiness);
       const nombre =
         selectedBusiness?.razonSocial || selectedBusiness?.nombreCompleto;
       setFormData({

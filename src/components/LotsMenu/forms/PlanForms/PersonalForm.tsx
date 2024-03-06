@@ -44,7 +44,6 @@ function PersonalForm({ lot, formData, setFormData }) {
 
   useEffect(() => {
     getBusinesses();
-    console.log("businesses", businesses);
   }, []);
 
   const onFieldChange = (fieldName, value) => {
@@ -81,7 +80,6 @@ function PersonalForm({ lot, formData, setFormData }) {
       });
     }
   };
-
   return (
     <CustomPaper elevation={3}>
       <Title>General</Title>

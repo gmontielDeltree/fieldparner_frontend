@@ -22,7 +22,6 @@ const GlossyButton = styled(Button)(({ theme }) => ({
 function AttachedContent() {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
-    console.log(file);
   };
 
   return (
