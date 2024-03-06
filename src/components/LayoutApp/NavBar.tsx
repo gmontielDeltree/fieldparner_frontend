@@ -81,9 +81,6 @@ export const NavBar: React.FC<NavBarProps> = ({
     getCampaigns();
   }, []);
 
-  useEffect(() => {
-    console.log("campaigns", campaigns);
-  }, [getCampaigns]);
   const handleLanguageMenu = (event) => {
     setLanguageAnchorEl(event.currentTarget);
   };
@@ -122,7 +119,6 @@ export const NavBar: React.FC<NavBarProps> = ({
   const openDropdown = Boolean(anchorEl);
 
   const handleLogout = () => {
-    console.log("Logout clicked");
     startLogout();
   };
 
