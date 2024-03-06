@@ -20,7 +20,8 @@ function Sowing({
   handleDeleteActivity,
   handleEditActivity,
   handleDownloadPDF,
-  handleConfirmExecution
+  handleConfirmExecution,
+  handleRepeatActivity
 }) {
   const db = dbContext.fields;
   const [selectedTab, setSelectedTab] = useState(0);
@@ -118,7 +119,9 @@ function Sowing({
         <MenuItem onClick={() => handleEditActivity(activity.actividad)}>
           Editar Siembra
         </MenuItem>
-        {/* <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem> */}
+        <MenuItem onClick={() => handleRepeatActivity(activity.actividad)}>
+          Repetir Planificacion
+        </MenuItem>
         <MenuItem onClick={() => handleDownloadPDF(activity.actividad)}>
           Orden de Trabajo PDF
         </MenuItem>
