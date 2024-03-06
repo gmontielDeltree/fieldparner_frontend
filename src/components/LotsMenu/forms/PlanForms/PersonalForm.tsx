@@ -21,6 +21,8 @@ import { AutocompleteCultivo } from "../../components/AutocompleteCultivo";
 import { AutocompleteContratista } from "../../components/AutocompleteContratista";
 
 import { es } from 'date-fns/locale'
+import { NumberField } from "@vaadin/number-field";
+import { NumberFieldWithUnits } from "../../components/NumberField";
 
 
 const CustomPaper = styled(Paper)({
@@ -86,43 +88,18 @@ function PersonalForm({ lot, formData, setFormData }) {
       <FormControl fullWidth>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth variant="outlined">
+         
               <AutocompleteCultivo value={formData.detalles.cultivo || ""} 
               onChange={(value) => onFieldChange("cultivo", value)}
               />
-
-              {/* <InputLabel id="cultivo-label">Cultivo</InputLabel>
-              <Select
-                labelId="cultivo-label"
-                id="cultivo"
-                value={formData.detalles.cultivo || ""}
-                label="Cultivo"
-                fullWidth
-                onChange={(e) => onFieldChange("cultivo", e.target.value)}
-                inputProps={{ name: "cultivo", id: "cultivo-select" }}
-              >
-                {crops.map((crop) => (
-                  <MenuItem key={crop.cultivoId} value={crop.cultivoId}>
-                    {crop.label}
-                  </MenuItem>
-                ))}
-              </Select> */}
-            </FormControl>
+       
           </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth variant="outlined">
-              <AutocompleteContratista 
-              value={formData.contratista || ""}
-              onChange={(value) => onFieldChange("contratista", value)}
-              />
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
+         <Grid item xs={12} sm={4}>
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
               <DatePicker
                 label="Fecha"
+                sx={{width:"100%"}}
                 value={
                   formData.detalles.fecha_ejecucion_tentativa
                     ? new Date(formData.detalles.fecha_ejecucion_tentativa)
@@ -134,12 +111,17 @@ function PersonalForm({ lot, formData, setFormData }) {
             </LocalizationProvider>
           </Grid>
 
-          <Grid item xs={12}>
-            <TextField
-              id="hectareas"
+          <Grid item xs={10} sm={6}>
+              <AutocompleteContratista
+              value={formData.contratista || ""}
+              onChange={(value) => onFieldChange("contratista", value)}
+              />
+          </Grid>
+
+          <Grid item xs={4}>
+            <NumberFieldWithUnits
               label="Hectáreas"
-              fullWidth
-              type="number"
+              unit="ha"
               value={formData.detalles.hectareas || 0}
               onChange={(e) => onFieldChange("hectareas", e.target.value)}
             />
