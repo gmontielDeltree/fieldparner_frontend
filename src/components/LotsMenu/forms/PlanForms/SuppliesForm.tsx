@@ -74,6 +74,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   const [dosificacion, setDosificacion] = useState("");
   const [total, setTotal] = useState("");
   const [precio, setPrecio] = useState("");
+  const [costoTotal, setCostoTotal] = useState(0);
   const [rows, setRows] = useState([]);
   const [editIndex, setEditIndex] = useState(-1);
   const [deposito, setDeposito] = useState({});
@@ -93,10 +94,10 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   };
 
   const handleAddRow = () => {
-    const supply = findInsumoByOption(selectedSupply);
+    // const supply = findInsumoByOption(selectedSupply);
     const newRow = {
       dosis: dosificacion,
-      insumo: supply,
+      insumo: selectedSupply,
       motivos: [],
       uuid: uuid4(),
       total: total,
@@ -143,7 +144,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
 
   const handleDosificacionChange = (event) => {
     setDosificacion(event.target.value);
-    setTotal(+event.target.value * formData.detalles.hectareas)
+    setTotal((+event.target.value * formData.detalles.hectareas).toFixed(2))
 
   };
 
@@ -153,12 +154,18 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
 
   const handleTotalChange = (event) => {
     setTotal(event.target.value);
-    setDosificacion(+event.target.value / formData.detalles.hectareas)
+    setDosificacion((+event.target.value / formData.detalles.hectareas).toFixed(2))
   };
 
   const handlePrecioChange = (event) => {
     setPrecio(event.target.value);
+    setCostoTotal(((+event.target.value) * (+total)).toFixed(2))
   };
+
+  const handleCostoTotalChange = (event)=>{
+    setCostoTotal(+event.target.value)
+    setPrecio( ((+total) / (+event.target.value)).toFixed(2))
+  }
 
   const handleEditRow = (index) => {
     setEditIndex(index);
@@ -318,8 +325,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           <NumberFieldWithUnits
               fullWidth
               label={t("_total_cost")}
-              value={(+precio) * (+total)}
-              
+              value={costoTotal}
+              onChange={handleCostoTotalChange}
               unit="USD"
             />
 
