@@ -239,6 +239,9 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   };
 
   const getStepContent = (step: number) => {
+    if(activityType !== "sowing" && step>1){
+    step = step+1;
+    }      
     switch (step) {
       case 0:
         return (
@@ -258,7 +261,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           />
         );
       case 2:
-        if(activityType === "sowing"){
+      
                   return (
                     <OtherDetailsForm
                       lot={lot}
@@ -266,8 +269,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
                       setFormData={setFormData}
                     />
                   );
-        }
-        //Fallthrough para no siembra
+        
       case 3:
         return (
           <TasksForm lot={lot} formData={formData} setFormData={setFormData} />
