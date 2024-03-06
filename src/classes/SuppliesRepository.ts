@@ -14,14 +14,21 @@ export class SuppliesRepository
   implements SuppliesRepositoryInterface
 {
   private __supplies: Supply[];
+  private __platformSupplies: Supply[]
+
+  private __platformSuppliesRepo;
 
   constructor() {
     super(dbContext.supplies);
+
+    this.__platformSuppliesRepo = new BaseDocRepository(dbContext.platformSupplies)
   }
 
   async getAll() {
     this.__supplies = (await this.getAllDocs("")) as unknown as Supply[];
-    return this.__supplies;
+    this.__platformSupplies = await this.__platformSuppliesRepo.getAllDocs("") as unknown as Supply[]
+
+    return [...this.__supplies,...this.__platformSupplies];
   }
 
   async add(doc: Supply) {

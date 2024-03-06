@@ -13,6 +13,7 @@ import {
   Typography,
   Box,
   Paper,
+  Link,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -27,6 +28,9 @@ import { useDeposit } from "../../../../hooks";
 import { useTranslation } from "react-i18next";
 import { NumberFieldWithUnits } from "../../components/NumberField";
 import { AutocompleteSupplies } from "../../components/AutocompleteSupplies";
+import { Deposit, Supply } from "@types";
+import { AutocompleteDeposito } from "../../components/AutocompleteDeposito";
+import { TTipoActividadPlanificada } from "../../../../interfaces/planification";
 
 const TypeBadge = styled(Chip)(({ theme }) => ({
   marginLeft: theme.spacing(1),
@@ -70,14 +74,14 @@ const CustomPaper = styled(Paper)({
 
 function SuppliesForm({ lot, db, formData, setFormData }) {
   const { t } = useTranslation();
-  const [selectedSupply, setSelectedSupply] = useState();
+  const [selectedSupply, setSelectedSupply] = useState<Supply>();
   const [dosificacion, setDosificacion] = useState("");
   const [total, setTotal] = useState("");
   const [precio, setPrecio] = useState("");
   const [costoTotal, setCostoTotal] = useState(0);
   const [rows, setRows] = useState([]);
   const [editIndex, setEditIndex] = useState(-1);
-  const [deposito, setDeposito] = useState({});
+  const [deposito, setDeposito] = useState<Deposit>();
   const { isLoading, supplies, getSupplies, setSupplies, deleteSupply } =
     useSupply();
   const { deposits, getDeposits } = useDeposit();
@@ -118,10 +122,13 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   };
 
   const handleSaveEdit = () => {
-    const supply = findInsumoByOption(editData.selectedOption);
+    if (!editData.selectedOption) {
+      alert("Buen hombre seleccione un insumo antes de guardar!!!");
+      return;
+    }
     const updatedRow = {
       dosis: editData.dosificacion,
-      insumo: supply,
+      insumo: editData.selectedOption,
       motivos: [],
       uuid: rows[editIndex].uuid,
       deposito: editData.deposito,
@@ -138,34 +145,39 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   };
 
   const handleSelectChange = (event) => {
-    console.log(event)
+    console.log(event);
     setSelectedSupply(event);
   };
 
   const handleDosificacionChange = (event) => {
     setDosificacion(event.target.value);
-    setTotal((+event.target.value * formData.detalles.hectareas).toFixed(2))
+    setTotal((+event.target.value * formData.detalles.hectareas).toFixed(2));
+    setCostoTotal((+event.target.value * formData.detalles.hectareas * +precio).toFixed(2));
 
   };
 
   const handleDepositoChange = (event) => {
-    setDeposito(event.target.value);
+    setDeposito(event);
   };
 
   const handleTotalChange = (event) => {
     setTotal(event.target.value);
-    setDosificacion((+event.target.value / formData.detalles.hectareas).toFixed(2))
+    setDosificacion(
+      (+event.target.value / formData.detalles.hectareas).toFixed(2)
+    );
+    setCostoTotal((+event.target.value * +precio).toFixed(2));
+
   };
 
   const handlePrecioChange = (event) => {
     setPrecio(event.target.value);
-    setCostoTotal(((+event.target.value) * (+total)).toFixed(2))
+    setCostoTotal((+event.target.value * +total).toFixed(2));
   };
 
-  const handleCostoTotalChange = (event)=>{
-    setCostoTotal(+event.target.value)
-    setPrecio( ((+total) / (+event.target.value)).toFixed(2))
-  }
+  const handleCostoTotalChange = (event) => {
+    setCostoTotal(+event.target.value);
+    setPrecio((+total / +event.target.value).toFixed(2));
+  };
 
   const handleEditRow = (index) => {
     setEditIndex(index);
@@ -196,6 +208,44 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     setEditData({ ...editData, [prop]: event.target.value });
   };
 
+  const handleEditSupplyChange = (supply) => {
+    setEditData({ ...editData, selectedOption: supply });
+  };
+
+  const handleEditDepositoChange = (deposito) => {
+    setEditData({ ...editData, deposito: deposito });
+  };
+
+  const handleEditCantidadPorHaChange = (event) => {
+    setEditData({
+      ...editData,
+      dosificacion: event.target.value,
+      total: (+event.target.value * formData.detalles.hectareas).toFixed(2),
+      costo_total: (+event.target.value * formData.detalles.hectareas * editData.precio).toFixed(2),
+    });
+  };
+
+  const handleEditCantidadTotalChange = (event) => {
+    setEditData({ ...editData, total: event.target.value ,
+      dosificacion: (+event.target.value / formData.detalles.hectareas).toFixed(
+        2
+      ),
+      costo_total: (+event.target.value * editData.precio).toFixed(2),
+    });
+  };
+
+  const handleEditCostoTotalChange = (event) => {
+    setEditData({ ...editData, costo_total: event.target.value ,
+      precio: (+editData.total / +event.target.value).toFixed(2),
+    });
+  };
+
+  const handleEditPrecioUnitarioChange = (event) => {
+    setEditData({ ...editData, precio: event.target.value,
+      costo_total: (+editData.total / +event.target.value).toFixed(2),
+    });
+  };
+
   useEffect(() => {
     getSupplies();
     getDeposits();
@@ -217,7 +267,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     if (formData && formData.detalles && formData.detalles.dosis) {
       setRows(
         formData.detalles.dosis.map((dosis) => ({
-          selectedOption: dosis.insumo.name,
+          selectedOption: dosis.insumo,
           dosificacion: dosis.dosis,
           total: dosis.total,
           deposito: dosis.deposito,
@@ -235,106 +285,121 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       <Title>Insumos</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
-          <Grid item xs={3}>
-            <FormControl fullWidth>
-              <AutocompleteSupplies 
-                value={selectedSupply}
-                onChange={handleSelectChange}
-              />
-              {/* <InputLabel id="select-input-label">Insumos</InputLabel>
-              <Select
-                labelId="select-input-label"
-                id="select-input"
-                value={selectedOption}
-                label="Supplies"
-                onChange={handleSelectChange}
-                fullWidth
-                renderValue={(selected) => {
-                  const selectedSupply = supplies.find(
-                    (supply) => supply.name === selected
-                  );
-                  return (
-                    <div>
-                      {selected}
-                      {selectedSupply && (
-                        <TypeBadge
-                          label={selectedSupply.type}
-                          color="primary"
-                        />
-                      )}
-                    </div>
-                  );
-                }}
-              >
-                {supplies.map((supply, index) => (
-                  <MenuItem key={index} value={supply.name}>
-                    {supply.name}
-                    <TypeBadge label={supply.type} color="primary" />
-                  </MenuItem>
-                ))}
-              </Select> */}
-            </FormControl>
+          {/* Fila 1 */}
+          <Grid container item xs={12} spacing={1}>
+            <Grid item xs={4}>
+              <FormControl fullWidth>
+                <AutocompleteSupplies
+                  value={selectedSupply}
+                  onChange={handleSelectChange}
+                />
+              </FormControl>
+            </Grid>
+            <Grid container item xs={8}>
+              <Paper sx={{ width: "100%", padding: "5px" }}>
+                {selectedSupply?.description && (
+                  <Typography variant="body2" gutterBottom>
+                    {selectedSupply?.description}
+                  </Typography>
+                )}
+                <Grid item xs={12}>
+                  {selectedSupply?.brand && (
+                    <Typography variant="subtitle2" gutterBottom>
+                      Marca: {selectedSupply?.brand}
+                    </Typography>
+                  )}
+                  {selectedSupply?.activePrincipal && (
+                    <Typography variant="body2" gutterBottom>
+                      Principio Activo: {selectedSupply?.activePrincipal}
+                    </Typography>
+                  )}
+                  {selectedSupply?.formulationDenomination && (
+                    <Typography variant="body2" gutterBottom>
+                      Denominación Formulado:{" "}
+                      {selectedSupply?.formulationDenomination}
+                    </Typography>
+                  )}
+                  {selectedSupply?.toxicityClass && (
+                    <Typography variant="body2" gutterBottom>
+                      Clase de Toxicidad: {selectedSupply?.toxicityClass}
+                    </Typography>
+                  )}
+                  {selectedSupply?.chemicalComposition && (
+                    <Typography variant="body2" gutterBottom>
+                      Composicion Química: {selectedSupply?.chemicalComposition}
+                    </Typography>
+                  )}
+                  {selectedSupply?.productUrl && (
+                    <Link
+                      href={selectedSupply?.productUrl}
+                      target="_blank"
+                      variant="body2"
+                    >
+                      Website del Producto
+                    </Link>
+                  )}
+                  {/* {selectedSupply?._id} */}
+                </Grid>
+              </Paper>
+            </Grid>
           </Grid>
-          <Grid item xs={2.5}>
-            <FormControl fullWidth>
-              <InputLabel id="deposit-select-label">Deposito</InputLabel>
-              <Select
-                labelId="deposit-select-label"
-                id="deposit-select"
+
+          {/* Fila 2 */}
+          <Grid container item xs={12} spacing={1}>
+            <Grid item xs={3}>
+              <AutocompleteDeposito
                 value={deposito}
                 onChange={handleDepositoChange}
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <NumberFieldWithUnits
                 fullWidth
+                label={t("_quantity_per_hectare")}
+                value={+dosificacion}
+                onChange={handleDosificacionChange}
+                unit={
+                  (selectedSupply && selectedSupply?.unitMeasurement + "/ha") ||
+                  "unit/ha"
+                }
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <NumberFieldWithUnits
+                fullWidth
+                label={t("_total_quantity")}
+                value={+total}
+                onChange={handleTotalChange}
+                unit={selectedSupply?.unitMeasurement || "unit"}
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <NumberFieldWithUnits
+                fullWidth
+                label={t("_unit_price")}
+                value={+precio}
+                onChange={handlePrecioChange}
+                unit={"USD" + "/" + (selectedSupply?.unitMeasurement || "unit")}
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <NumberFieldWithUnits
+                fullWidth
+                label={t("_total_cost")}
+                value={costoTotal}
+                onChange={handleCostoTotalChange}
+                unit="USD"
+              />
+            </Grid>
+            <Grid item xs={1}>
+              <IconButton
+                onClick={handleAddRow}
+                color="primary"
+                aria-label="add"
               >
-                {deposits.map((deposit, index) => (
-                  <MenuItem key={index} value={deposit._id}>
-                    {deposit.description}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={2}>
-            <NumberFieldWithUnits
-              fullWidth
-              label={t("_quantity_per_hectare")}
-              value={+dosificacion}
-              onChange={handleDosificacionChange}
-              unit= {selectedSupply && (selectedSupply?.unitMeasurement + "/ha") || "unit/ha"}
-            />
-          </Grid>
-          <Grid item xs={1.5}>
-            <NumberFieldWithUnits
-              fullWidth
-              label={t("_total_quantity")}
-              value={+total}
-              onChange={handleTotalChange}
-              unit= {selectedSupply?.unitMeasurement || "unit"}
-            />
-          </Grid>
-          <Grid item xs={2}>
-          <NumberFieldWithUnits
-              fullWidth
-              label={t("_unit_price")}
-              value={+precio}
-              onChange={handlePrecioChange}
-              unit={"USD" + "/" + (selectedSupply?.unitMeasurement || "unit")}
-            />
-
-          </Grid>
-          <Grid item xs={2}>
-          <NumberFieldWithUnits
-              fullWidth
-              label={t("_total_cost")}
-              value={costoTotal}
-              onChange={handleCostoTotalChange}
-              unit="USD"
-            />
-
-          </Grid>
-          <Grid item xs={1}>
-            <IconButton onClick={handleAddRow} color="primary" aria-label="add">
-              <AddIcon />
-            </IconButton>
+                <AddIcon />
+              </IconButton>
+            </Grid>
           </Grid>
         </Grid>
       </FormControl>
@@ -350,100 +415,125 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                   {/* Editable fields when in edit mode */}
                   {editIndex === index ? (
                     <>
-                      <Grid item xs={3}>
-                        <TextField
-                          fullWidth
-                          select
-                          label="Insumos"
+                      <Grid item xs={12}>
+                        <AutocompleteSupplies
                           value={editData.selectedOption}
-                          onChange={handleEditChange("selectedOption")}
-                        >
-                          {supplies.map((supply, idx) => (
-                            <MenuItem key={idx} value={supply.name}>
-                              {supply.name || "No Name"}
-                            </MenuItem>
-                          ))}
-                        </TextField>
+                          onChange={handleEditSupplyChange}
+                        />
                       </Grid>
                       <Grid item xs={2}>
-                        <FormControl fullWidth>
-                          <InputLabel id="deposit-select-label">
-                            Deposito
-                          </InputLabel>
-                          <TextField
-                            fullWidth
-                            select
-                            label="Deposito"
-                            id="deposit-select"
-                            value={editData.deposito}
-                            onChange={handleEditChange("deposito")}
-                          >
-                            {deposits.map((deposit, idx) => (
-                              <MenuItem key={idx} value={deposit._id}>
-                                {deposit.description || "No Name"}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </FormControl>
+                        <AutocompleteDeposito
+                          value={editData.deposito}
+                          onChange={handleEditDepositoChange}
+                        />
                       </Grid>
 
-                      <Grid item xs={3}>
+                      <Grid item xs={2}>
                         <NumberFieldWithUnits
+                          size="small"
                           fullWidth
                           label={t("_quantity_per_hectare")}
                           value={+editData.dosificacion}
-                          onChange={handleEditChange("dosificacion")}
+                          onChange={handleEditCantidadPorHaChange}
                           unit="unit/ha"
                         />
                       </Grid>
-                      <Grid item xs={3}>
+                      <Grid item xs={2}>
                         <NumberFieldWithUnits
                           fullWidth
                           label={t("_total_quantity")}
                           value={+editData.total}
-                          onChange={handleEditChange("total")}
+                          onChange={handleEditCantidadTotalChange}
                           unit="ha"
                         />
                       </Grid>
                       <Grid item xs={2}>
-                        <TextField
+                        <NumberFieldWithUnits
                           fullWidth
-                          label="Precio"
+                          label="Precio Unitario"
                           value={editData.precio}
-                          onChange={handleEditChange("precio")}
+                          onChange={handleEditPrecioUnitarioChange}
                           type="number"
+                          unit={
+                            "USD" +
+                            "/" +
+                            (editData.selectedOption?.unitMeasurement || "unit")
+                          }
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <NumberFieldWithUnits
+                          fullWidth
+                          label="Costo Total"
+                          value={editData.costo_total || 0}
+                          onChange={handleEditCostoTotalChange}
+                          unit={"USD"}
                         />
                       </Grid>
                     </>
                   ) : (
                     <>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle1">
-                          {row.selectedOption}
-                        </Typography>
+                      <Grid container item xs={12}>
+                        <Grid item xs={10}>
+                          <Typography variant="subtitle1">
+                            {row.selectedOption.name}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle2">
+                            {row.selectedOption.type}
+                          </Typography>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                          <Typography variant="subtitle2">
+                            {row.selectedOption.description}
+                          </Typography>
+                        </Grid>
                       </Grid>
-                      <Grid item xs={3}>
-                        <Typography variant="subtitle1">
-                          <strong> Deposito:</strong>{" "}
-                          {deposits.find(
-                            (deposit) => deposit._id === row.deposito
-                          )?.description || "Deposit Not Found"}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={2.5}>
-                        <Typography variant="subtitle1">
-                          <strong>{t("_quantity_per_hectare")}</strong> {row.dosificacion}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={1.5}>
-                        <Typography variant="subtitle1">
-                          <strong>{t("total_quantity")}</strong> {row.total}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={2}>
-                        <Typography variant="subtitle1">
-                          <strong>{t("_price")}</strong> {row.precio}
-                        </Typography>
+                      <Grid container item xs={10}>
+                        <Grid item xs={3}>
+                          <Typography variant="caption">
+                            <strong> Deposito:</strong>
+                            {row.deposito?.description || "Si deposito"}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <Typography
+                            variant="caption"
+                            title={row.selectedOption?.unitMeasurement + "/ha"}
+                          >
+                            <strong>{t("_quantity_per_hectare")}:</strong>{" "}
+                            {row.dosificacion}{" "}
+                            {abrUnit(row.selectedOption?.unitMeasurement)}/ha
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <Typography
+                            variant="caption"
+                            title={row.selectedOption?.unitMeasurement}
+                          >
+                            <strong>{t("_total_quantity")}:</strong> {row.total}{" "}
+                            {abrUnit(row.selectedOption?.unitMeasurement)}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Typography
+                            variant="caption"
+                            title={"USD/" + row.selectedOption?.unitMeasurement}
+                          >
+                            <strong>{t("_unit_price")}:</strong> {row.precio}{" "}
+                            {abrUnit(
+                              "USD/" + row.selectedOption?.unitMeasurement
+                            )}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <Typography variant="caption">
+                            <strong>{t("_total_cost")}:</strong>{" "}
+                            {row.precio * row.total} USD
+                          </Typography>
+                        </Grid>
                       </Grid>
                     </>
                   )}
@@ -494,4 +584,14 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   );
 }
 
+function abrUnit(unit: string) {
+  let splited = unit.split("/");
+  if (splited.length > 0) {
+    let ns = splited.map((u) => (u.length > 7 ? u.slice(0, 7) + ".." : u));
+    return ns.join("/");
+  } else {
+    let ns = unit.length > 6 ? unit.slice(6) + ".." : unit;
+    return ns;
+  }
+}
 export default SuppliesForm;

@@ -192,7 +192,7 @@ export const AutocompleteSupplies = ({ value, onChange }) => {
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
           <DialogTitle>
-            t{"_quick_add"} t{"_supply"}
+            {t("_quick_add")} {t("_supply")}
           </DialogTitle>
           <DialogContent>
             <DialogContentText>

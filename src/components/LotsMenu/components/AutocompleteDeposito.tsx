@@ -12,20 +12,20 @@ import { capitalizeText } from "../../../helpers/helper";
 import { CultivoItem, useCrops } from "../../../hooks/useCrops";
 import { Cultivo } from "../../../interfaces/insumos";
 import { Crop, CropsRepository } from "../../../classes/Crops";
+import { WarehouseRepository } from "../../../classes/WarehouseRepository";
+import { Deposit } from "@types";
 
 const filter = createFilterOptions<CropOptionType>();
 
-interface CropOptionType {
+interface CropOptionType extends Deposit {
   inputValue?: string;
-  label: string;
-  color?: number;
 }
 
-export const AutocompleteCultivo = ({ value, onChange }) => {
+export const AutocompleteDeposito = ({ value, onChange }) => {
   const { t } = useTranslation();
   const [crops, setCrops] = useState<any[]>([]);
 
-  const [cropsRepo, _] = useState(new CropsRepository());
+  const [cropsRepo, _] = useState(new WarehouseRepository());
 
   useEffect(() => {
     cropsRepo.getAll().then((cropsFromDB) => {
@@ -51,12 +51,12 @@ export const AutocompleteCultivo = ({ value, onChange }) => {
       onChange={(event, newValue) => {
         if (typeof newValue === "string") {
           setValue({
-            label: `${newValue}`,
+            description: `${newValue}`,
           });
         } else if (newValue && newValue.inputValue) {
           // Create a new value from the user input
           cropsRepo
-            .add({ label: newValue.inputValue })
+            .add({ description: newValue.inputValue })
             .then((c) => setValue(c));
         } else {
           setValue(newValue);
@@ -68,12 +68,12 @@ export const AutocompleteCultivo = ({ value, onChange }) => {
         const { inputValue } = params;
         // Suggest the creation of a new value
         const isExisting = options.some(
-          (option) => inputValue === option.label
+          (option) => inputValue === option.description
         );
         if (inputValue !== "" && !isExisting) {
           filtered.push({
             inputValue,
-            label: `${t("_add")} "${inputValue}"`,
+            description: `${t("_add")} "${inputValue}"`,
           });
         }
 
@@ -90,17 +90,17 @@ export const AutocompleteCultivo = ({ value, onChange }) => {
           return option;
         }
         // Add "xxx" option created dynamically
-        if (option.label) {
-          return option.label;
+        if (option.description) {
+          return option.description;
         }
         // Regular option
-        return option.label;
+        return option.description;
       }}
-      renderOption={(props, option) => <li {...props}>{option.label}</li>}
-      sx={{ width: 300 }}
+      renderOption={(props, option) => <li {...props}>{option.description}</li>}
+     
       freeSolo
       renderInput={(params) => (
-        <TextField {...params} label={t("Crop")} />
+        <TextField {...params} label={t("_warehouse")} />
       )}
     />
   );

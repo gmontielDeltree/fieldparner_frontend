@@ -129,7 +129,7 @@ export const AutocompleteContratista = ({value, onChange}) => {
         />
         <Dialog open={open} onClose={handleClose}>
           <form onSubmit={handleSubmit}>
-            <DialogTitle>t{"_quick_add"} t{"_contractor"}</DialogTitle>
+            <DialogTitle>{t("_quick_add")} {t("_contractor")}</DialogTitle>
             <DialogContent>
               <DialogContentText>
                 {t("you_can_edit_more_details_later_in_the_contractors_menu_on_the_sidebar")}
