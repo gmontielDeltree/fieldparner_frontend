@@ -88,14 +88,20 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   const titleBg = isEditing
     ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
     : `linear-gradient(45deg, #a0a0a0, #626262)`;
-  const steps = [
+  const steps = activityType === 'sowing' ? [
     "General",
     "Insumos",
     "Otros Datos",
     "Labores",
     "Condiciones",
     "Observaciones"
-  ];
+  ] : [
+    "General",
+    "Insumos",
+    "Labores",
+    "Condiciones",
+    "Observaciones"
+  ] ;
 
   useEffect(() => {
     setFormData((prevFormData) => ({
@@ -252,13 +258,16 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           />
         );
       case 2:
-        return (
-          <OtherDetailsForm
-            lot={lot}
-            formData={formData}
-            setFormData={setFormData}
-          />
-        );
+        if(activityType === "sowing"){
+                  return (
+                    <OtherDetailsForm
+                      lot={lot}
+                      formData={formData}
+                      setFormData={setFormData}
+                    />
+                  );
+        }
+        //Fallthrough para no siembra
       case 3:
         return (
           <TasksForm lot={lot} formData={formData} setFormData={setFormData} />
