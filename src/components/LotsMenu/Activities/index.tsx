@@ -70,33 +70,17 @@ export const Activities = ({
         setSnackbarSeverity("error");
       });
   };
-  const checkIfActivityIsExecuted = (activityId) => {
-    db.get(activityId)
-      .then((doc) => {
-        return doc;
-      })
-      .catch((error) => {
-        if (error.name === "not_found") {
-          console.log("Document not found.");
-          return false;
-        } else {
-          console.log("Error getting document.");
-          return false;
-        }
-      });
-  };
+
   const updateActivityStateToCompleted = (activityId) => {
     db.get(activityId)
       .then((doc) => {
-        // Assuming the activity document has an 'estado' field to update
-        doc.estado = "completada"; // Updating the state to 'completed'
-        return db.put(doc); // Saving the updated document back to the database
+        doc.estado = "completada";
+        return db.put(doc);
       })
       .then(() => {
         console.log("Activity state updated to completed successfully.");
         setOpenSnackbar(true);
         setSnackbarSeverity("success");
-        // If you maintain a local state of activities, you should update that as well to reflect this change
       })
       .catch((error) => {
         console.error("Error updating activity state:", error);

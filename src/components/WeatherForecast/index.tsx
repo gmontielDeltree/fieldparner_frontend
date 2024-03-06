@@ -11,7 +11,7 @@ import {
 import { forecastWeather } from "./helper";
 import Lottie from "react-lottie";
 import { motion } from "framer-motion";
-// import weather icon from "@mui/icons-material/WeatherSunny";
+
 import ThunderstormIcon from "@mui/icons-material/Thunderstorm";
 // Import your Lottie animation files
 import sunnyAnimation from "./animations/sunny.json";

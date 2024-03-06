@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Tooltip } from "@mui/material"; // Import Tooltip here
+import { Button, Tooltip } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -45,7 +45,6 @@ function LaborOrderContent(props) {
     setExecutionConfirmed(true);
   };
 
-  // Determine the tooltip message based on the activity status
   const tooltipTitle = executionConfirmed
     ? `La ejecución ya esta en estado ${activity.estado}`
     : "";
