@@ -98,7 +98,7 @@ function Sowing({
             sx={{ fontSize: 16, fontWeight: "bold" }}
             color="text.primary"
           >
-            Planificada para: {formattedPlanificadaDate}
+            Programada para: {formattedPlanificadaDate}
           </Typography>
         </Box>
         <Typography
