@@ -147,22 +147,21 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
       });
 
-      console.log("Respuesta actividades y ejecuciones preorden", respuesta);
       respuesta.sort((a, b) => {
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
           : parseISO(
-            a.actividad.tipo === "nota"
-              ? a.actividad.fecha
-              : a.actividad.detalles.fecha_ejecucion_tentativa
-          );
+              a.actividad.tipo === "nota"
+                ? a.actividad.fecha
+                : a.actividad.detalles.fecha_ejecucion_tentativa
+            );
         let fecha_2 = b.ejecucion_id
           ? parseISO(b.ejecucion_id.split(":")[1])
           : parseISO(
-            b.actividad.tipo === "nota"
-              ? b.actividad.fecha
-              : b.actividad.detalles.fecha_ejecucion_tentativa
-          );
+              b.actividad.tipo === "nota"
+                ? b.actividad.fecha
+                : b.actividad.detalles.fecha_ejecucion_tentativa
+            );
         return isBefore(fecha_1, fecha_2) ? 1 : -1;
       });
     }
@@ -312,7 +311,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <PlanActivity
             activityType={
               activityTypeTranslations[
-              editingActivityInfo.activity.tipo.toLowerCase()
+                editingActivityInfo.activity.tipo.toLowerCase()
               ]
             }
             lot={lot}
@@ -327,7 +326,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <ExecuteActivity
             activityType={
               activityTypeTranslations[
-              editingActivityInfo.activity.tipo.toLowerCase()
+                editingActivityInfo.activity.tipo.toLowerCase()
               ]
             }
             lot={lot}

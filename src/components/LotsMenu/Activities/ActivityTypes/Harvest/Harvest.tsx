@@ -11,7 +11,7 @@ import {
   MenuItem,
   Accordion,
   AccordionSummary,
-  AccordionDetails,
+  AccordionDetails
 } from "@mui/material";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -33,7 +33,7 @@ function Harvest({
   handleDeleteActivity,
   handleEditActivity,
   handleDownloadPDF,
-  handleConfirmExecution,
+  handleConfirmExecution
 }) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -49,7 +49,7 @@ function Harvest({
     const fetchExecution = async () => {
       try {
         const response = await db.find({
-          selector: { actividad_uuid: activity.actividad.uuid },
+          selector: { actividad_uuid: activity.actividad.uuid }
         });
         if (response.docs.length > 0) {
           setExecution(response.docs[0]);
@@ -97,7 +97,7 @@ function Harvest({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "8px",
+          marginBottom: "8px"
         }}
       >
         <Box
@@ -107,7 +107,7 @@ function Harvest({
             backgroundColor: "rgba(255, 255, 255, 0.8)",
             borderRadius: "4px",
             padding: "4px 8px",
-            flexGrow: 1,
+            flexGrow: 1
           }}
         >
           <EventNoteIcon
@@ -143,7 +143,7 @@ function Harvest({
           onDeleteActivity={() => handleDeleteActivity(activity.actividad._id)}
           onMeteo={() => alert("Proximamente - En Construcción")}
           onDownloadOT={() => handleDownloadPDF(activity.actividad)}
-          onRepeatOT={() => alert("Proximamente - En Construcción")}
+          onRepeatOT={() => handleReplicateActivity()}
           onShareOT={() => alert("Proximamente - En Construcción")}
           onDownloadCompare={() => {
             if (!execution) {
