@@ -186,12 +186,12 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         if (!details.densidad_objetivo) {
           missingFields++;
         }
-        if (!details.formacion_inoculado) {
-          missingFields++;
-        }
-        if (!details.marca_inoculado) {
-          missingFields++;
-        }
+        // if (!details.formacion_inoculado) {
+        //   missingFields++;
+        // }
+        // if (!details.marca_inoculado) {
+        //   missingFields++;
+        // }
         if (!details.peso_1000) {
           missingFields++;
         }
