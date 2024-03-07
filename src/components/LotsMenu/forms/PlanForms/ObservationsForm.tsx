@@ -45,7 +45,6 @@ const ObservationsForm: React.FC<ObservationsFormProps> = ({
             </Typography>
             <TextField
               id="comment"
-              label="Observaciones"
               fullWidth
               multiline
               rows={4}

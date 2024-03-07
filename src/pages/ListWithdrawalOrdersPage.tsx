@@ -12,7 +12,7 @@ import {
     CheckCircle as CheckCircleIcon,
     MoreHoriz as MoreHorizIcon,
 } from '@mui/icons-material';
-import { ColumnProps, OrderStatus, WithdrawalOrder, WithdrawalOrderItem } from '../types';
+import { ColumnProps, OrderStatus, WithdrawalOrder } from '../types';
 import { Icon } from 'semantic-ui-react';
 import { setWithdrawalOrderActive } from '../redux/withdrawalOrder';
 
@@ -42,7 +42,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
         console.log('row', row)
     }
 
-    const onClickStatus = (row: WithdrawalOrderItem) => {
+    const onClickStatus = (row: WithdrawalOrder) => {
         if (row.state !== OrderStatus.Completed) {
             dispatch(setWithdrawalOrderActive(row));
             navigate(`/init/overview/order/${row.order}`);
@@ -143,7 +143,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
                                 <TableCellStyled align="center">{row.creationDate} </TableCellStyled>
                                 <TableCellStyled align="center">{row.order}</TableCellStyled>
                                 <TableCellStyled>{row.reason}</TableCellStyled>
-                                <TableCellStyled align="center">{row.withdraw.nombreCompleto}</TableCellStyled>
+                                <TableCellStyled align="center">{row?.withdraw?.nombreCompleto}</TableCellStyled>
                                 <TableCellStyled align="center">{row.campaign.campaignId}</TableCellStyled>
                                 <TableCellStyled align="center">
                                     <IconButton

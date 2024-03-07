@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import { Deposit } from "../types";
+import { Deposit, Supply } from "../types";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { dbContext } from "../services";
@@ -119,6 +119,48 @@ export const useDeposit = () => {
     }
   };
 
+  const getDepositsBySupply = async (supply: Supply) => {
+    setIsLoading(true);
+    try {
+      /*
+        -Filtrar del listado de depositos lo q tengamos en la tabla de stock de ese insumo
+      */
+      if (!user) return;
+      const accountId = user.accountId;
+
+      //Consultar en la tabla de stock, todo los q tengan el id de insumo e id de cuenta
+      const promisesResult = await Promise.all([
+        dbContext.stockByLots.find({
+          selector: {
+            "$and": [{ "supplyId": supply._id }, { "accountId": accountId }]
+          }
+        }),
+        dbContext.deposits.find({
+          selector: { accountId: accountId }
+        })
+      ]);
+
+      if (promisesResult) {
+        const supplyStock = promisesResult[0].docs;
+        const deposits = promisesResult[1].docs;
+        let depositsOfSupply: Deposit[] = [];
+
+        supplyStock.forEach((element) => {
+          const depositId = element.depositId;
+          const depositFound = deposits.find(d => d._id === depositId);
+          if (depositFound) depositsOfSupply.push(depositFound);
+        });
+        
+        setDeposits(depositsOfSupply);
+      }
+      setIsLoading(false);
+
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Error al cargar documentos:", error);
+    }
+  }
+
   return {
     deposits,
     isLoading,
@@ -127,6 +169,7 @@ export const useDeposit = () => {
     createDeposit,
     updateDeposit,
     deleteDeposit,
-    findDepositsByAccountId
+    findDepositsByAccountId,
+    getDepositsBySupply
   };
 };

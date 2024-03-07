@@ -28,13 +28,13 @@ export const StockMovementPage: React.FC = () => {
 
   const columns: GridColDef[] = [
     // { field: "id", hide: true },
-    { field: "date", headerName: t("_date"), width: 200 },
-    { field: "movement", headerName: t("_movement"), width: 150 },
-    { field: "supply", headerName: t("type_supply"), width: 200 },
-    { field: "deposit", headerName: t("_warehouse"), width: 200 },
+    { field: "date", headerName: t("_date"), width: 150 },
+    { field: "movement", headerName: t("_movement"), width: 120 },
+    { field: "supply", headerName: t("type_supply"), width: 150 },
+    { field: "deposit", headerName: t("_warehouse"), width: 150 },
     { field: "movementType", headerName: t("movement_type"), width: 150 },
-    { field: "isIncome", headerName: t("income_outcome"), width: 150 },
-    { field: "um", headerName: "UM", width: 100 },
+    { field: "isIncome", headerName: t("income_outcome"), width: 120 },
+    { field: "um", headerName: "UM", width: 150 },
     { field: "amount", headerName: t("_quantity"), width: 150 },
   ];
 

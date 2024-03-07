@@ -24,12 +24,13 @@ function Activity({
   const [showReplicateActivityMenu, setShowReplicateActivityMenu] =
     useState(false);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
+  // LANZA DEMASIADOS RENDERIZADOS
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
+  //   }, 100);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const gradientBackground = `linear-gradient(${gradientAngle}deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
 
@@ -67,6 +68,7 @@ function Activity({
           <Harvest
             activity={activity}
             lotDoc={lotDoc}
+            fieldName={fieldDoc.nombre}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
@@ -86,11 +88,14 @@ function Activity({
         return (
           <Application
             activity={activity}
+            fieldName={fieldDoc.nombre}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
             handleConfirmExecution={handleConfirmExecution}
+            lotDoc={lotDoc}
+
           />
         );
       case "analisis de suelo":

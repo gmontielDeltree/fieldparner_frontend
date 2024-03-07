@@ -14,7 +14,7 @@ import {
 import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TemplateLayout } from '../components';
 import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, TableContainer, TextField, Typography } from '@mui/material';
 import { Assignment as AssignmentIcon } from '@mui/icons-material';
-import { ColumnProps, OrderStatus, StockByLot, DepositSupplyOrder, TipoEntidad, TransformSupply, WithdrawalOrderType, WithdrawalOrder } from '../types';
+import { ColumnProps, OrderStatus, StockByLot, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder, Supply } from '../types';
 import { getShortDate } from '../helpers/dates';
 
 
@@ -46,7 +46,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const { isLoading, createWithdrawalOrder } = useOrder();
     const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
     const { isLoading: supplyLoading, supplies, getSupplies } = useSupply();
-    const { deposits, getDeposits } = useDeposit();
+    const { isLoading: depositLoading, deposits, getDeposits, getDepositsBySupply } = useDeposit();
     const { campaigns, getCampaigns } = useCampaign();
     const { isLoading: loadingEntities, businesses: socialEntities, getBusinesses } = useBusiness();
     const { getStock } = useStockMovement();
@@ -71,7 +71,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
         const campaign = campaigns.find(c => c._id === campaignId);
         const withdraw = socialEntities.find(s => s._id === withdrawId);
 
-        if (!user || !campaign || !withdraw) throw new Error("Error: usuario, campaña o entidad social");
+        if (!user || !campaign || !withdraw) throw new Error("Error: debe seleccionar campaña y quien retira.");
 
         let newDepositSupplyOrders: DepositSupplyOrder[] = suppliesToAdd.map(s => ({
             accountId: user.accountId,
@@ -145,6 +145,10 @@ export const WithdrawalOrdersPage: React.FC = () => {
         addDepositSupplyToAdd(item);
     }
 
+    const onChangeSupply = (item: Supply) => {
+        getDepositsBySupply(item);
+    }
+
     useEffect(() => {
         getSupplies();
         getDeposits();
@@ -154,7 +158,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
 
     return (
         <TemplateLayout key="new-withdrawal-order" viewMap={true}>
-            <Loading key="loading-deposit" loading={isLoading || supplyLoading || loadingEntities} />
+            <Loading key="loading-deposit" loading={isLoading || supplyLoading || loadingEntities || depositLoading} />
             <Paper
                 variant="outlined"
                 sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}
@@ -230,7 +234,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                                 label="Retira"
                                 onChange={handleSelectChange}
                             >
-                                {socialEntities?.filter(s => s.tipoEntidad === TipoEntidad.FISICA).map((f) => (
+                                {socialEntities?.map((f) => (
                                     <MenuItem key={f._id} value={f._id}>
                                         {f.nombreCompleto || f.razonSocial}
                                     </MenuItem>
@@ -239,6 +243,15 @@ export const WithdrawalOrdersPage: React.FC = () => {
                         </FormControl>
                     </Grid>
                 </Grid>
+                <Box sx={{ mt: 3, mb: 2, p: 1 }}>
+                    <NewSupplyRow
+                        key="new-supply-order"
+                        supplies={supplies}
+                        deposits={deposits}
+                        showDueDate={false}
+                        addNewSupply={handleAddDepositSupply}
+                        onChangeSupply={onChangeSupply} />
+                </Box>
                 <TableContainer
                     key="table-supply-origin"
                     sx={{
@@ -267,13 +280,6 @@ export const WithdrawalOrdersPage: React.FC = () => {
                         ))}
                     </DataTable>
                 </TableContainer>
-                <NewSupplyRow
-                    key="new-supply-order"
-                    supplies={supplies}
-                    deposits={deposits}
-                    showDueDate={false}
-                    addNewSupply={handleAddDepositSupply} />
-
                 <Grid
                     container
                     spacing={1}

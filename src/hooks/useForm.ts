@@ -1,18 +1,12 @@
 import { SelectChangeEvent } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
 
-// export function useForm<T>( initialState: T) {}
-// const currentYear = new Date().getFullYear();
 export const useForm = <T extends Object>(initialState: T) => {
 
     const [formulario, setFormulario] = useState(initialState);
 
     const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = target;
-        // let newValue = value;
-
-        // if (onlyNumeric) newValue = target.value.replace(/[^0-9]/g, '');
-
         setFormulario({
             ...formulario,
             [name]: value
@@ -57,12 +51,20 @@ export const useForm = <T extends Object>(initialState: T) => {
         });
     }
 
-    const handleGeolocationChange = ({lng , lat} : {lng:number, lat:number}) => {
+    const handleGeolocationChange = ({ lng, lat }: { lng: number, lat: number }) => {
         setFormulario({
             ...formulario,
-            geolocation: {lng,lat}
+            geolocation: { lng, lat }
         });
     }
+
+    const handleGenercoChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = target;
+        setFormulario({
+            ...formulario,
+            [name]: value
+        });
+    };
 
     return {
         formulario,
@@ -74,6 +76,7 @@ export const useForm = <T extends Object>(initialState: T) => {
         handleFormValueChange,
         handleCheckboxChange,
         handleGeolocationChange,
+        handleGenercoChange, // Agregar handleGenercoChange al objeto devuelto
         ...formulario
     }
 };

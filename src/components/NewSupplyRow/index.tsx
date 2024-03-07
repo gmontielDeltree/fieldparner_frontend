@@ -1,10 +1,11 @@
 import { FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Deposit, Supply, TransformSupply } from '../../types';
-import { useForm } from '../../hooks';
+import { useForm, useStockMovement } from '../../hooks';
 import uuid4 from 'uuid4';
 import { getShortDate } from '../../helpers/dates';
+import { Loading } from '..';
 
 
 interface NewSupplyRowProps {
@@ -12,6 +13,7 @@ interface NewSupplyRowProps {
   deposits: Deposit[],
   showDueDate: boolean,
   addNewSupply: (item: TransformSupply) => void;
+  onChangeSupply: (item: Supply) => void;
 }
 
 const today = getShortDate();
@@ -29,6 +31,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
   deposits,
   addNewSupply,
   showDueDate = true,
+  onChangeSupply
 }) => {
 
   const {
@@ -44,11 +47,13 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
   } = useForm(initialStateNewSupply);
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
+  const { isLoading, getStock } = useStockMovement();
 
-  const onChangeSupply = ({ target }: SelectChangeEvent) => {
+  const handleOnChangeSupply = ({ target }: SelectChangeEvent) => {
     const { value } = target;
     const supplySelected = supplies.find((supply) => supply._id === value);
     if (supplySelected && supplySelected._id) {
+      onChangeSupply(supplySelected); //Evento donde vamos a ir a buscar los depositos de ese insumo
       setFormulario((prevState) => ({
         ...prevState,
         supplyId: value,
@@ -87,6 +92,21 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
     reset();
   }
 
+  useEffect(() => {
+    const getAmount = async (supplyId: string, depositId: string, location: string, nroLot: string) => {
+      const supplyStock = await getStock(supplyId, depositId, location, nroLot);
+      
+      if (supplyStock)
+        setFormulario(prevState => ({ ...prevState, amount: supplyStock.currentStock }));
+    }
+
+    if (supplySelected?._id && depositSelected?._id && location) {
+      getAmount(supplySelected._id, depositSelected._id, location, nroLot);
+    }
+
+  }, [depositSelected, supplySelected, location, nroLot])
+
+
   return (
     <Grid
       key="row-new-supply"
@@ -99,6 +119,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       sx={{ boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.2)" }}
     // bgcolor="#f3f3f3"
     >
+      {isLoading && <Loading loading={true} />}
       <Grid item xs={12} sm={3}>
         <FormControl fullWidth>
           <InputLabel id="supply">Insumo</InputLabel>
@@ -107,7 +128,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
             labelId="supply"
             value={supplyId}
             label="Insumo"
-            onChange={onChangeSupply}
+            onChange={handleOnChangeSupply}
           >
             {supplies.map((supply) => (
               <MenuItem key={supply._id} value={supply._id}>
@@ -139,7 +160,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
           )
         }
       </Grid>
-      <Grid item xs={12} sm={3}>
+      <Grid item xs={12} sm={2}>
         {
           supplySelected && (
             <FormControl fullWidth>
@@ -200,7 +221,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
           </Grid>
         )
       }
-      <Grid item xs={12} sm={2}>
+      <Grid item xs={12} sm={3}>
         {
           (supplySelected && depositSelected && location) && (
             <TextField
@@ -211,6 +232,9 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
               value={amount}
               onChange={handleInputChange}
               inputProps={{ maxLength: 15, min: 1 }}
+              InputProps={{
+                endAdornment: <InputAdornment position="end" >{supplySelected.unitMeasurement}</InputAdornment>,
+              }}
               fullWidth
             />
           )
