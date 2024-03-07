@@ -153,6 +153,10 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   const countMissingFields = (formData, step) => {
     let missingFields = 0;
 
+    if(activityType !== "sowing" && step>1){
+      step = step+1;
+      }   
+      
     switch (step) {
       case 0: // PersonalForm
         if (!formData.detalles.fecha_ejecucion_tentativa) {

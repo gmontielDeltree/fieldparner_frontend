@@ -573,6 +573,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
 }
 
 function abrUnit(unit: string) {
+  if(!unit) return "unit"
+
   let splited = unit.split("/");
   if (splited.length > 0) {
     let ns = splited.map((u) => (u.length > 7 ? u.slice(0, 7) + ".." : u));

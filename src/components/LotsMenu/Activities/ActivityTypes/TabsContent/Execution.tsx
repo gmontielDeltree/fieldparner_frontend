@@ -18,6 +18,7 @@ import EcoIcon from "@mui/icons-material/Nature";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import PlanificationContent from "./Planification";
 import { dbContext } from "../../../../../services";
+import { Ejecucion } from "../../../../../interfaces/activity";
 
 const FrostedGlassButton = styled(Button)(({ theme }) => ({
   borderRadius: "20px",
@@ -54,7 +55,7 @@ const FrostedGlassButton = styled(Button)(({ theme }) => ({
 
 function ExecutionContent(props) {
   const { activity, handleEditActivity } = props;
-  const [execution, setExecution] = useState(null);
+  const [execution, setExecution] = useState<Ejecucion>(null);
   const db = dbContext.fields;
 
   useEffect(() => {
@@ -175,7 +176,7 @@ function ExecutionContent(props) {
               variant="contained"
               startIcon={<PlayCircleOutlineIcon />}
               onClick={() =>
-                handleEditActivity(activity, execution?.estado === "ejecutada")
+                handleEditActivity(activity, true)//execution?.estado === "ejecutada")
               }
               sx={{ margin: "auto", marginTop: "10px", marginBottom: "20px" }}
             >

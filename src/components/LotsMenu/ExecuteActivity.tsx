@@ -75,14 +75,20 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const titleBg = isEditing
     ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
     : `linear-gradient(45deg, #a0a0a0, #626262)`;
-  const steps = [
+  const steps = activityType === 'sowing' ? [
     "General",
     "Insumos",
     "Otros Datos",
     "Labores",
     "Condiciones",
     "Observaciones"
-  ];
+  ] : [
+    "General",
+    "Insumos",
+    "Labores",
+    "Condiciones",
+    "Observaciones"
+  ] ;
 
   useEffect(() => {
     setFormData((prevFormData) => ({
@@ -121,7 +127,9 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
   const countMissingFields = (formData, step) => {
     let missingFields = 0;
-
+    if(activityType !== "sowing" && step>1){
+      step = step+1;
+      } 
     switch (step) {
       case 0: // PersonalExecutionForm
         if (!formData.detalles.fecha_ejecucion_tentativa) {
@@ -205,6 +213,9 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   };
 
   const getStepContent = (step: number) => {
+    if(activityType !== "sowing" && step>1){
+      step = step+1;
+      } 
     switch (step) {
       case 0:
         return (

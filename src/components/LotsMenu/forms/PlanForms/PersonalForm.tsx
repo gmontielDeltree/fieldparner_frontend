@@ -1,27 +1,21 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
   TextField,
   FormControl,
-  Grid,
-  Select,
-  MenuItem,
-  InputLabel,
-  Paper,
+  Grid, Paper,
   Typography
 } from "@mui/material";
 import { useBusiness } from "../../../../hooks";
 import { useCrops } from "../../../../hooks/useCrops";
-import "../../../../classes/Crops"
+import "../../../../classes/Crops";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { styled } from "@mui/material/styles";
-import uuid4 from "uuid4";
 import { AutocompleteCultivo } from "../../components/AutocompleteCultivo";
 import { AutocompleteContratista } from "../../components/AutocompleteContratista";
 
-import { es } from 'date-fns/locale'
-import { NumberField } from "@vaadin/number-field";
+import { es } from 'date-fns/locale';
 import { NumberFieldWithUnits } from "../../components/NumberField";
 
 

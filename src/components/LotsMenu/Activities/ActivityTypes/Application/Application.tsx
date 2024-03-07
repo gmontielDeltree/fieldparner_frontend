@@ -11,7 +11,7 @@ import {
   MenuItem,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
 } from "@mui/material";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -30,8 +30,9 @@ function Application({
   handleDeleteActivity,
   handleEditActivity,
   handleDownloadPDF,
-  handleConfirmExecution
+  handleConfirmExecution,
 }) {
+  console.log("RENDER")
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -64,7 +65,7 @@ function Application({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "8px"
+          marginBottom: "8px",
         }}
       >
         <Box
@@ -74,30 +75,47 @@ function Application({
             backgroundColor: "rgba(255, 255, 255, 0.8)",
             borderRadius: "4px",
             padding: "4px 8px",
-            flexGrow: 1
+            flexGrow: 1,
           }}
         >
           <EventNoteIcon
             sx={{ marginRight: "4px", color: complementaryColor }}
-          />
+          />{" "}
           <Typography
-            sx={{ fontSize: 16, fontWeight: "bold" }}
-            color="text.primary"
+            sx={{ fontSize: 16, flexGrow: 2, textAlign: "left" }}
+            color="text.secondary"
           >
-            Programada para: {formattedPlanificadaDate}
+            {activity.actividad.tipo.toUpperCase()} en{" "}
+            {activity.actividad.detalles?.hectareas} has.{" "}
+            <Typography
+              sx={{ fontSize: 16, fontWeight: "bold" }}
+              color="text.primary"
+            >
+              Programada para: {formattedPlanificadaDate}
+            </Typography>
           </Typography>
         </Box>
-        <Typography
-          sx={{ fontSize: 16, flexGrow: 2, textAlign: "right" }}
-          color="text.secondary"
-        >
-          {activity.actividad.tipo} en {activity.actividad.detalles?.hectareas}{" "}
-          has.
-        </Typography>
-        <IconButton onClick={handleMenuClick} sx={{ marginLeft: "8px" }}>
+
+        <ActivityActionsBar
+          sx={{ marginLeft: "8px" }}
+          onEditActivity={() => handleEditActivity(activity.actividad)}
+          onDeleteActivity={() => handleDeleteActivity(activity.actividad._id)}
+          onMeteo={() => alert("Proximamente - En Construcción")}
+          onDownloadOT={() => handleDownloadPDF(activity.actividad)}
+          onRepeatOT={() => alert("Proximamente - En Construcción")}
+          onShareOT={() => alert("Proximamente - En Construcción")}
+          onDownloadCompare={() => {
+            if (!execution) {
+              alert("Debe ejecutar primero para generar el informe!!!");
+              return;
+            }
+            alert("LOL!!");
+          }}
+        />
+        {/* <IconButton onClick={handleMenuClick} sx={{ marginLeft: "8px" }}>
           <MoreVertIcon />
           <ActivityActionsBar />
-        </IconButton>
+        </IconButton> */}
       </Box>
 
       {/* LGO Comento los items que no estan implementados aún */}

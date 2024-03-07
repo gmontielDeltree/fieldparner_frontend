@@ -23,7 +23,7 @@ const ActivityActionsBar = ({
   const actions = [
     {
       icon: edicion_icon,
-      text: "Eliminar Actividad",
+      text: "Editar Actividad",
       action: onEditActivity,
     },
     {

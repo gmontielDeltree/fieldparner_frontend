@@ -204,7 +204,7 @@ const ordenDefinition = (
               alignment: "left"
             },
             {
-              text: "Tel: " + aplicacion.contratista.datos_generales.telefono,
+              text: "Tel: " + aplicacion.contratista?.datos_generales?.telefono,
               fontSize: 10,
               color: "#333333",
               alignment: "left"

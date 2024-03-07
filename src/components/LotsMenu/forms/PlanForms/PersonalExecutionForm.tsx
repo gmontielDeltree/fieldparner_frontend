@@ -16,6 +16,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { styled } from "@mui/material/styles";
 import uuid4 from "uuid4";
 import { TimePicker } from "@mui/x-date-pickers";
+import { es } from 'date-fns/locale';
+import { NumberFieldWithUnits } from "../../components/NumberField";
+import { AutocompleteContratista } from "../../components/AutocompleteContratista";
+
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -39,27 +43,15 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
 
   const onFieldChange = (fieldName, value) => {
     if (fieldName === "contratista") {
-      const selectedBusiness = businesses.find(
-        (business) =>
-          business.nombreCompleto === value || business.razonSocial === value
-      );
-      const nombre =
-        selectedBusiness?.razonSocial || selectedBusiness?.nombreCompleto;
+      // const selectedBusiness = businesses.find(
+      //   (business) =>
+      //     business.nombreCompleto === value || business.razonSocial === value
+      // );
+      // const nombre =
+      //   selectedBusiness?.razonSocial || selectedBusiness?.nombreCompleto;
       setFormData({
         ...formData,
-        contratista: {
-          labores: [],
-          uuid: uuid4(),
-          nombre: nombre,
-          cuit: selectedBusiness?.cuit,
-          datos_generales: {
-            email: selectedBusiness?.email,
-            direccion: selectedBusiness?.domicilio,
-            telefono: selectedBusiness?.contactoPrincipal
-          },
-          _id: selectedBusiness?._id,
-          _rev: selectedBusiness?._rev
-        }
+        contratista:value
       });
     } else if (fieldName === "fecha") {
       setFormData({
@@ -110,7 +102,13 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
       <FormControl fullWidth>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <InputLabel id="contratista-label">Contratista</InputLabel>
+            <AutocompleteContratista
+               value={formData.contratista}
+               onChange={(e) => onFieldChange("contratista", e)}
+            />
+
+          
+            {/* <InputLabel id="contratista-label">Contratista</InputLabel>
             <Select
               labelId="contratista-label"
               id="contratista"
@@ -127,21 +125,20 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
                   {business.razonSocial || business.nombreCompleto}
                 </MenuItem>
               ))}
-            </Select>
+            </Select> */}
           </Grid>
 
           <Grid item xs={12}>
-            <TextField
-              id="hectareas"
+            <NumberFieldWithUnits
               label="Hectáreas"
               fullWidth
-              type="number"
+              unit="ha"
               value={formData.detalles.hectareas || 0}
               onChange={(e) => onFieldChange("hectareas", e.target.value)}
             />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es} >
               <DatePicker
                 label="Fecha de Ejecución"
                 value={formData.detalles.fecha_ejecucion || new Date()}
@@ -153,7 +150,7 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
             </LocalizationProvider>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es} >
               <TimePicker
                 label="Hora de Inicio"
                 value={formData.detalles.fecha_hora_inicio || new Date()}
@@ -165,7 +162,7 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
             </LocalizationProvider>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
               <TimePicker
                 label="Hora de Finalización"
                 value={formData.detalles.fecha_hora_fin || new Date()}
