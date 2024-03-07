@@ -7,6 +7,7 @@ import Note from "./ActivityTypes/Note/Note";
 import Harvest from "./ActivityTypes/Harvest/Harvest";
 import Application from "./ActivityTypes/Application/Application";
 import WeatherForecast from "./../../WeatherForecast";
+import ReplicateActivityMenu from "./ReplicateActivityMenu";
 
 function Activity({
   activity,
@@ -20,6 +21,8 @@ function Activity({
   handleConfirmExecution
 }) {
   const [gradientAngle, setGradientAngle] = useState(0);
+  const [showReplicateActivityMenu, setShowReplicateActivityMenu] =
+    useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -39,6 +42,10 @@ function Activity({
     boxShadow: "0 4px 8px 0 rgba(0,0,0,0.2)"
   };
 
+  const handleReplicateActivity = () => {
+    setShowReplicateActivityMenu(!showReplicateActivityMenu);
+  };
+
   const renderActivityContent = () => {
     switch (activity.actividad.tipo) {
       case "siembra":
@@ -52,6 +59,7 @@ function Activity({
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
             handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
           />
         );
       case "cosecha":
@@ -91,6 +99,7 @@ function Activity({
         return <Typography>Unknown Activity Type</Typography>;
     }
   };
+
   return (
     <div
       style={{ display: "flex", marginBottom: "32px", position: "relative" }}
@@ -130,8 +139,17 @@ function Activity({
       ></div>
       <Card sx={cardStyle}>
         <CardContent>
-          {renderActivityContent()}
-          <WeatherForecast />
+          {showReplicateActivityMenu ? (
+            <ReplicateActivityMenu
+              originalActivity={activity.actividad}
+              handleReplicateActivity={handleReplicateActivity}
+            />
+          ) : (
+            <>
+              {renderActivityContent()}
+              <WeatherForecast />{" "}
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
