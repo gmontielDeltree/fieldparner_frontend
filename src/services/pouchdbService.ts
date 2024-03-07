@@ -91,7 +91,7 @@ dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`
 dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`);
 dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`);
 dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`);
-dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`);
+dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
