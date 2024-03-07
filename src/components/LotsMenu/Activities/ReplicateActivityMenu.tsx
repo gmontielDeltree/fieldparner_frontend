@@ -181,8 +181,6 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
       })
     );
 
-    console.log("successfulReplications...", successfulReplications);
-    console.log("length...", successfulReplications.length);
     if (successfulReplications.length > 0) {
       setSnackbarMessage(
         `Actividad replicada con éxito para ${successfulReplications.length} lotes.`
