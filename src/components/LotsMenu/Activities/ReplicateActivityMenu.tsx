@@ -157,8 +157,20 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
           JSON.stringify(newActivity)
         );
         newActivity.estado = "pendiente";
+        newActivity.detalles.hectareas =
+          lotWithFieldName.lot.properties.hectareas;
         newActivity.lote_uuid = lotWithFieldName.lot.properties.uuid;
         newActivity.uuid = uuid4();
+
+        newActivity.detalles.dosis.forEach((dosis) => {
+          const hectareas = newActivity.detalles.hectareas;
+          const dosisValue = parseFloat(dosis.dosis.replace(",", "."));
+          const total = hectareas * dosisValue;
+          dosis.total = total.toLocaleString("de-DE", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        });
 
         const fechaEjecucion = newActivity.detalles.fecha_ejecucion_tentativa;
         const parsedDate = new Date(fechaEjecucion);
@@ -170,6 +182,7 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
           await db.put(newActivity);
           successfulReplications.push(uuid);
           console.log("New activity replicated and saved for lot:", uuid);
+          console.log("New activity:", newActivity);
           setSnackbarOpen(true);
         } catch (error) {
           console.error(
