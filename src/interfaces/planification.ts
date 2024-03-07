@@ -14,7 +14,7 @@ interface FPAccountBaseDoc {
     modified : {userId:string,date: string},
 }
 
-type FPDocument = PouchDB.Core.Document<FPAccountBaseDoc>
+export type FPDocument = PouchDB.Core.Document<FPAccountBaseDoc>
 
 export interface IInsumosPlanificacion extends FPDocument {
     insumoId: string,

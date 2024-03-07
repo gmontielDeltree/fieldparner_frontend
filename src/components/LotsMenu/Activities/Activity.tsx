@@ -21,12 +21,13 @@ function Activity({
 }) {
   const [gradientAngle, setGradientAngle] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
+  // LANZA DEMASIADOS RENDERIZADOS
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
+  //   }, 100);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const gradientBackground = `linear-gradient(${gradientAngle}deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
 

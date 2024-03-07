@@ -137,6 +137,8 @@ export const Activities = ({
   };
 
   const handleDownloadPDF = (activity) => {
+    // TODO: Cambiar esto a un POST a server de informes
+    
     let campos_url = mapboxStaticImg(fieldDoc, lotDoc);
 
     let google_map_link = googleMapsLinkGoTo(lotDoc);

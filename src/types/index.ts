@@ -185,6 +185,21 @@ export interface Supply extends Document {
     replenishmentPoint: string;
     labors: string[];
     generico: string;
+
+    isUserDefined ?: boolean;
+    replacementId ?: string;
+    countryId ?: string;
+
+
+    brand?: string;
+    applyToCropsIds?: string[];
+    chemicalComposition? :string;
+    toxicityClass?:string;
+    formulationDenomination ?:string
+    productUrl ?: string;
+    eiqValue ? : string;
+    senasaId ?: string;
+    
 }
 
 export interface OriginDestinationsState {
