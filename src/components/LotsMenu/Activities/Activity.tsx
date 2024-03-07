@@ -74,6 +74,7 @@ function Activity({
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
             handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
           />
         );
       case "nota":
@@ -94,8 +95,8 @@ function Activity({
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
             handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
             lotDoc={lotDoc}
-
           />
         );
       case "analisis de suelo":

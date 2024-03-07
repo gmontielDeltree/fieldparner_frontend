@@ -195,8 +195,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     } else {
       setSelectedCategory("Edit Activity");
     }
-
-    console.log("Editando actividad POR EJECUCION", activity, isExecuting);
+    console.log("Editando actividad", activity, isExecuting);
     setEditingActivityInfo({ activity, isExecuting });
   };
 
