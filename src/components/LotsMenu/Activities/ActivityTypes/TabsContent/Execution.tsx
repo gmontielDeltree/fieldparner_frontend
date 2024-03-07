@@ -19,6 +19,7 @@ import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import PlanificationContent from "./Planification";
 import { dbContext } from "../../../../../services";
 import { Ejecucion } from "../../../../../interfaces/activity";
+import { format } from "date-fns";
 
 const FrostedGlassButton = styled(Button)(({ theme }) => ({
   borderRadius: "20px",
@@ -118,24 +119,24 @@ function ExecutionContent(props) {
                 <Typography variant="body1">
                   {execution.estado === "completada" ||
                   execution.estado === "ejecutada"
-                    ? `Ejecutada: ${new Date(
+                    ? `Ejecutada: ${format(new Date(
                         execution.detalles.fecha_ejecucion
-                      ).toLocaleDateString()}`
+                      ),"dd/MM/yyyy")}`
                     : "Actividad aún no ejecutada"}
                 </Typography>
                 <Box>
                   {execution.estado !== "pendiente" && (
                     <>
-                      <Chip
+                      {/* <Chip
                         icon={<LocationOnIcon />}
                         label={`Lote: ${execution.lote_uuid || "N/A"}`}
                         style={{ margin: "5px" }}
-                      />
+                      /> */}
                       <Chip
                         icon={<BusinessIcon />}
                         label={`Contratista: ${
                           execution.contratista
-                            ? execution.contratista.nombre
+                            ? execution.contratista.nombreCompleto + "-" + execution.contratista.razonSocial
                             : "N/A"
                         }`}
                         style={{ margin: "5px" }}
@@ -147,10 +148,10 @@ function ExecutionContent(props) {
                           style={{ margin: "5px" }}
                         />
                       )}
-                      <Chip
+                      {/* <Chip
                         icon={<EventIcon />}
                         label={`Tipo: ${execution.tipo || "N/A"}`}
-                      />
+                      /> */}
                     </>
                   )}
                 </Box>
