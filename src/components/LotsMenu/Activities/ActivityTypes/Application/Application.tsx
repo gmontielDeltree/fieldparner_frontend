@@ -33,6 +33,7 @@ function Application({
   handleEditActivity,
   handleDownloadPDF,
   handleConfirmExecution,
+  handleReplicateActivity,
   lotDoc,
   fieldName
 }) {

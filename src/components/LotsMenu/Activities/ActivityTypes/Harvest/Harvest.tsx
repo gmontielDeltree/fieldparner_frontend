@@ -33,7 +33,8 @@ function Harvest({
   handleDeleteActivity,
   handleEditActivity,
   handleDownloadPDF,
-  handleConfirmExecution
+  handleConfirmExecution,
+  handleReplicateActivity
 }) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
