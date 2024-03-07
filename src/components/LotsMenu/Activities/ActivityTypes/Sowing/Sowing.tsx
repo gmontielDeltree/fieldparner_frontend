@@ -12,6 +12,7 @@ import { es } from "date-fns/locale";
 import { ComparisonReportPdf } from "../helper";
 import { dbContext } from "../../../../../services";
 import ActivityActionsBar from "../../../components/ActivityActionsBar";
+import { Ejecucion } from "../../../../../interfaces/activity";
 
 function Sowing({
   activity,
@@ -26,7 +27,7 @@ function Sowing({
   const db = dbContext.fields;
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [execution, setExecution] = useState(null);
+  const [execution, setExecution] = useState<Ejecucion>(null);
   const open = Boolean(anchorEl);
 
   const handleTabChange = (event, newValue) => {
@@ -72,6 +73,9 @@ function Sowing({
       )
     : "Fecha no definida";
 
+  const formattedDate = (date?: string) =>
+    date ? format(parseISO(date), "PPPP", { locale: es }) : "Fecha no definida";
+
   return (
     <div>
       <Box
@@ -106,12 +110,21 @@ function Sowing({
           >
             {activity.actividad.tipo.toUpperCase()} en{" "}
             {activity.actividad.detalles?.hectareas} has.{" "}
-            <Typography
-              sx={{ fontSize: 16, fontWeight: "bold" }}
-              color="text.primary"
-            >
-              Programada para: {formattedPlanificadaDate}
-            </Typography>
+            {execution ? (
+              <Typography
+                sx={{ fontSize: 16, fontWeight: "bold" }}
+                color="green"
+              >
+                Ejecutada: {formattedDate(execution.detalles.fecha_ejecucion)}
+              </Typography>
+            ) : (
+              <Typography
+                sx={{ fontSize: 16, fontWeight: "bold" }}
+                color="text.primary"
+              >
+                Programada para: {formattedPlanificadaDate}
+              </Typography>
+            )}
           </Typography>
         </Box>
 

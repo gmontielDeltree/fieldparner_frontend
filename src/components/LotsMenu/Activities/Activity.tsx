@@ -60,6 +60,7 @@ function Activity({
           <Harvest
             activity={activity}
             lotDoc={lotDoc}
+            fieldName={fieldDoc.nombre}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
@@ -79,11 +80,14 @@ function Activity({
         return (
           <Application
             activity={activity}
+            fieldName={fieldDoc.nombre}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
             handleConfirmExecution={handleConfirmExecution}
+            lotDoc={lotDoc}
+
           />
         );
       case "analisis de suelo":
