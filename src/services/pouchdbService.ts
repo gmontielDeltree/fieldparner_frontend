@@ -25,6 +25,8 @@ import uuid4 from 'uuid4';
 PouchDB.plugin(PouchDBFind);
 
 const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
+const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
+
 const opts: PouchDB.Replication.SyncOptions = { live: true, retry: true };
 
 const dbNames = Object.freeze({
@@ -70,7 +72,7 @@ export const dbContext = Object.freeze({
     withdrawalsByDepositSupply: new PouchDB<WithdrawalsByDepositSupply>(dbNames.withdrawalsByDepositSupply),
     numerators: new PouchDB<Numerator>(dbNames.numerators),
     platform: new PouchDB<any>(dbNames.platform),
-    platformSupplies: new PouchDB<Supply>(`${remoteCouchDBUrl}${dbNames.platformSupplies}`),
+    platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
 });
 
 dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
@@ -91,7 +93,8 @@ dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`
 dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`);
 dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`);
 dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`);
-dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`);
+dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
+dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
