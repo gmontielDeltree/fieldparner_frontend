@@ -40,6 +40,7 @@ import {
 import { SideBarProps } from "../../types";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { getEnvVariables } from "../../helpers/getEnvVariables";
 
 const keysCollapse = ["seguridad", "configuracion", "general", "agricultura", "stock", "cosecha", "gestion", "reporting", "wiki", "erp"];
 
@@ -53,7 +54,7 @@ export const SideBar: React.FC<SideBarProps> = ({
   const [openCollapse, setOpenCollapse] = useState('');
 
   const { pathname } = useLocation();
-  const version = "2.23.1";
+  const version = getEnvVariables().VITE_VERSION;
   const {t} = useTranslation();
 
   const onClickMenu = (collapse: string) => setOpenCollapse(collapse === openCollapse ? "" : collapse);
