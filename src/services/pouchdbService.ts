@@ -19,6 +19,7 @@ import {
     Numerator,
     DepositSupplyOrder,
     WithdrawalsByDepositSupply,
+    MovementType,
 } from '../types';
 import uuid4 from 'uuid4';
 
@@ -45,7 +46,8 @@ const dbNames = Object.freeze({
     numerators: "numerators",
     withdrawalOrders: "withdrawal-orders",
     depositSupplyOrder: "deposit-supply-order",
-    withdrawalsByDepositSupply: "withdrawals-deposit-supply"
+    withdrawalsByDepositSupply: "withdrawals-deposit-supply",
+    movementsType: "movements-type",
 });
 
 export const dbContext = Object.freeze({
@@ -67,6 +69,7 @@ export const dbContext = Object.freeze({
     depositSupplyOrder: new PouchDB<DepositSupplyOrder>(dbNames.depositSupplyOrder),
     withdrawalsByDepositSupply: new PouchDB<WithdrawalsByDepositSupply>(dbNames.withdrawalsByDepositSupply),
     numerators: new PouchDB<Numerator>(dbNames.numerators),
+    movementsType: new PouchDB<MovementType>(dbNames.movementsType),
 });
 
 dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
@@ -87,6 +90,7 @@ dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`
 dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`);
 dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`);
 dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`);
+dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`);
 
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 

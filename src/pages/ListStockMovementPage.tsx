@@ -24,7 +24,7 @@ interface RowStockMovementItem {
 export const StockMovementPage: React.FC = () => {
   const navigate = useNavigate();
   const { isLoading, stockMovements, getStockMovements } = useStockMovement();
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const columns: GridColDef[] = [
     // { field: "id", hide: true },
@@ -102,13 +102,15 @@ export const StockMovementPage: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={onClickAddMovement}
             >
-             {t("add_new")}
+              {t("add_new")}
             </Button>
           </Grid>
         </Grid>
-        <Box component="div" sx={{ p: 1 }}>
+        <Box component="div" sx={{ p: 1, height: 600, width: "100%" }}>
           <DataGrid
-            autoHeight
+            // autoHeight
+            rows={rows}
+            columns={columns}
             rowSelection={false}
             loading={isLoading}
             slots={{ toolbar: GridToolbar }}
@@ -117,116 +119,17 @@ export const StockMovementPage: React.FC = () => {
                 showQuickFilter: true,
               },
             }}
-            rows={rows}
-            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5,
+                },
+              },
+            }}
+            pageSizeOptions={[5]}
           />
         </Box>
       </Box>
     </Container>
   );
 };
-
-/*
-const Row: React.FC<RowProps> = ({ row }) => {
-  const [open, setOpen] = React.useState(false);
-
-  return (
-    <>
-      <ItemRow sx={{ backgroundColor: row.isIncome ? "#81c784" : "#e57373" }}>
-        <TableCellStyled>
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
-        </TableCellStyled>
-        <TableCellStyled align="left">{row.operationDate}</TableCellStyled>
-        <TableCellStyled align="left">{row.movement}</TableCellStyled>
-        <TableCellStyled align="center">{`${row.supply?.type}/${row.supply?.name}`}</TableCellStyled>
-        <TableCellStyled align="center">
-          {row.deposit?.description}
-        </TableCellStyled>
-        <TableCellStyled align="center">{row.typeMovement}</TableCellStyled>
-        <TableCellStyled align="center">
-          {row.isIncome ? "Ingreso" : "Egreso"}
-        </TableCellStyled>
-        <TableCellStyled align="left">
-          {row.supply?.unitMeasurement}
-        </TableCellStyled>
-        <TableCellStyled align="left">{row.amount}</TableCellStyled>
-      </ItemRow>
-      <ItemRow
-        key={`detail-${row.operationDate}`}
-        // sx={{ backgroundColor: row.isIncome ? "#beeac0" : "#e57373" }}
-      >
-        <TableCellStyled
-          style={{ paddingBottom: 0, paddingTop: 0 }}
-          colSpan={12}
-        >
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ margin: 1 }}>
-              <Typography variant="h6" gutterBottom component="div">
-                Detalles
-              </Typography>
-              <Table size="small" aria-label="purchases">
-                <TableHead>
-                  <ItemRow>
-                    <TableCellStyled>Comprobante</TableCellStyled>
-                    <TableCellStyled>Moneda</TableCellStyled>
-                    <TableCellStyled align="center">Valor</TableCellStyled>
-                    <TableCellStyled align="left" sx={{ width: "60px" }}>
-                      Lote
-                    </TableCellStyled>
-                    <TableCellStyled align="center" sx={{ width: "220px" }}>
-                      Ubicacion
-                    </TableCellStyled>
-                    <TableCellStyled align="right" sx={{ width: "60px" }}>
-                      Horas
-                    </TableCellStyled>
-                    <TableCellStyled align="center" sx={{ width: "80px" }}>
-                      Vencimiento
-                    </TableCellStyled>
-                    <TableCellStyled align="center" sx={{ width: "320px" }}>
-                      Detalle
-                    </TableCellStyled>
-                    <TableCellStyled align="center">Campaña</TableCellStyled>
-                  </ItemRow>
-                </TableHead>
-                <TableBody>
-                  <TableRow key={row.operationDate}>
-                    <TableCellStyled align="center">
-                      {row.voucher}
-                    </TableCellStyled>
-                    <TableCellStyled align="center">
-                      {row.currency}
-                    </TableCellStyled>
-                    <TableCellStyled align="center">
-                      {row.totalValue}
-                    </TableCellStyled>
-                    <TableCell align="center">{row.nroLot}</TableCell>
-                    <TableCell align="center">
-                      {
-                        row.deposit?.lots.find(
-                          (lot) =>
-                            lot.nro.toLowerCase() === row.nroLot.toLowerCase()
-                        )?.location
-                      }
-                    </TableCell>
-                    <TableCell align="right">{row.hours}</TableCell>
-                    <TableCell align="center">{row.dueDate}</TableCell>
-                    <TableCell align="center">{row.detail}</TableCell>
-                    <TableCell align="center">{row.campaign}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </Box>
-          </Collapse>
-        </TableCellStyled>
-      </ItemRow>
-    </>
-  );
-};
-
-*/

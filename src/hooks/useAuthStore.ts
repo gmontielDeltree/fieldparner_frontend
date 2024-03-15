@@ -144,8 +144,8 @@ export const useAuthStore = () => {
         return;
       }
 
-      // const lastPath = localStorage.getItem("lastPath") || "/";
-      // navigate(lastPath, { replace: true });
+      const lastPath = localStorage.getItem("lastPath") || "/";
+      navigate(lastPath, { replace: true });
       const userLogin = JSON.parse(userSession || "") as User;
       dispatch(onLogin(userLogin));
 

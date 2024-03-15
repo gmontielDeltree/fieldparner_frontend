@@ -265,6 +265,10 @@ export const TransformPage: React.FC = () => {
         getDepositsBySupply(item);
     };
 
+    const onChangeSupplyDestination = (_item: Supply) => {
+        getDeposits();
+    }
+
     useEffect(() => {
         getSupplies(); getDeposits();
     }, [])
@@ -385,7 +389,7 @@ export const TransformPage: React.FC = () => {
                             deposits={deposits}
                             showDueDate
                             addNewSupply={handleAddSupplyDestination}
-                            onChangeSupply={onChangeSupply}
+                            onChangeSupply={onChangeSupplyDestination}
                         />
                     </Box>
                     <TableContainer

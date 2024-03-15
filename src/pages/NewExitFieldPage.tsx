@@ -48,7 +48,7 @@ export const NewExitFieldPage: React.FC = () => {
     // const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
-const {t} = useTranslation();
+    const { t } = useTranslation();
     const {
         formulario: formValues,
         handleInputChange,
@@ -59,10 +59,11 @@ const {t} = useTranslation();
 
     const { supplies, getSupplies } = useSupply();
     const { businesses: socialEntities, getBusinesses } = useBusiness();
+    const { campaigns, getCampaigns } = useCampaign();
     const { vehicles, getVehicles } = useVehicle();
     const { deposits, getDeposits } = useDeposit();
     const { isLoading, createExitField } = useExitField();
-    
+
 
     const steps = [
         t("transport_destiny"),

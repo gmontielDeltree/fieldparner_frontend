@@ -314,7 +314,7 @@ export interface StockMovement extends Document {
     nroLot: string;
     creationDate: string;
     dueDate: string;
-    typeMovement: TypeMovement;
+    typeMovement: string;
     isIncome: boolean;
     detail: string;
     operationDate: string;
@@ -517,6 +517,14 @@ export interface Numerator extends Document {
     lastNumerator: number;
 }
 
+export interface MovementType extends Document {
+    manual: boolean;
+    sumaStock: "both" | "suma" | "descuenta";
+    name: string;
+    description: string;
+    typeMovement: string;
+    concepto: string;
+}
 
 //#region Enums
 

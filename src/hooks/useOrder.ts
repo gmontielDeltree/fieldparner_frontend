@@ -36,9 +36,12 @@ export const useOrder = () => {
         }
     }
 
-    const updateLastNumerator = async (updateNumerator: Numerator) => {
+    const putLastNumerator = async (doc: Numerator, create = false) => {
         try {
-            await dbContext.numerators.put(updateNumerator);
+            if (create)
+                await dbContext.numerators.post(doc);
+            else
+                await dbContext.numerators.put(doc);
         } catch (error) {
             console.log('error', error);
         }
@@ -67,12 +70,26 @@ export const useOrder = () => {
         setIsLoading(true);
         try {
 
-            if (!user) throw new Error("There is no user!!!!");
-            const lastNumerator = await getLastNumerator(user.accountId, NumeratorType.Client);
+            if (!user) throw new Error("User not found.");
+            let lastNumerator: Numerator = {
+                accountId: user.accountId,
+                numeratorType: NumeratorType.Client,
+                lastNumerator: 1
+            };
 
-            if (!lastNumerator) throw new Error("Error: order number");
+            const lastNumeratorFound = await getLastNumerator(user.accountId, NumeratorType.Client);
 
-            lastNumerator.lastNumerator += 1;
+            if (!lastNumeratorFound) {
+                await putLastNumerator(lastNumerator, true);
+                const numeratorFound = await getLastNumerator(user.accountId, NumeratorType.Client);
+                lastNumerator._id = numeratorFound?._id;
+                lastNumerator._rev = numeratorFound?._rev;
+            }
+            else {
+                lastNumerator = { ...lastNumeratorFound };
+                lastNumerator.lastNumerator = (lastNumeratorFound.lastNumerator + 1);
+            }
+
             let newOrder: WithdrawalOrder = {
                 ...newWithdrawalOrder,
                 order: lastNumerator.lastNumerator,
@@ -83,7 +100,7 @@ export const useOrder = () => {
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
                 dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
-                updateLastNumerator(lastNumerator)
+                putLastNumerator(lastNumerator)
             ]);
 
             setIsLoading(false);
@@ -242,12 +259,26 @@ export const useOrder = () => {
         setIsLoading(true);
         try {
 
-            if (!user) throw new Error("There is no user!!!!");
-            const lastNumerator = await getLastNumerator(user.accountId, NumeratorType.LaborOrder);
+            if (!user) throw new Error("User not found.");
+            let lastNumerator: Numerator = {
+                accountId: user.accountId,
+                numeratorType: NumeratorType.LaborOrder,
+                lastNumerator: 1
+            };
 
-            if (!lastNumerator) throw new Error("Error: order number");
+            const lastNumeratorFound = await getLastNumerator(user.accountId, NumeratorType.LaborOrder);
 
-            lastNumerator.lastNumerator += 1;
+            if (!lastNumeratorFound) {
+                await putLastNumerator(lastNumerator);
+                const numeratorFound = await getLastNumerator(user.accountId, NumeratorType.LaborOrder);
+                lastNumerator._id = numeratorFound?._id;
+                lastNumerator._rev = numeratorFound?._rev;
+            }
+            else {
+                lastNumerator = { ...lastNumeratorFound };
+                lastNumerator.lastNumerator = (lastNumeratorFound.lastNumerator + 1);
+            }
+
             let newOrder: WithdrawalOrder = {
                 ...newLaborOrder,
                 type: WithdrawalOrderType.Labor,
@@ -259,7 +290,7 @@ export const useOrder = () => {
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
                 dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
-                updateLastNumerator(lastNumerator)
+                putLastNumerator(lastNumerator)
             ]);
 
             setIsLoading(false);

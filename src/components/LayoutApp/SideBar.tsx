@@ -217,11 +217,11 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("campaign_definition")} />
               </ListItemButton>
-              <ListItemButton >
+              {/* <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={t("fields_lots_hectares")} />
-              </ListItemButton>
+              </ListItemButton> */}
               <ListItemButton 
                 component={RouterLink}
                 to="/init/overview/fields/planification"
@@ -231,11 +231,11 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("annual_campaign_projection")} />
               </ListItemButton>
-              <ListItemButton >
+              {/* <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={t("_waybill")} />
-              </ListItemButton>
+              </ListItemButton> */}
               <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>

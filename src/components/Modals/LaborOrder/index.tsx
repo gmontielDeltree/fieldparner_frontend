@@ -3,7 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, 
 import { useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector, useBusiness, useCampaign, useDeposit, useForm, useOrder, useSupply } from '../../../hooks';
 import { uiCloseModal } from '../../../redux/ui';
-import { ColumnProps, DepositSupplyOrder, DepositSupplyOrderItem, DisplayModals, OrderStatus, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderType } from '../../../types';
+import { ColumnProps, DepositSupplyOrder, DepositSupplyOrderItem, DisplayModals, OrderStatus, Supply, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderType } from '../../../types';
 import {
     Close as CloseIcon,
     Assignment as AssignmentIcon,
@@ -237,7 +237,7 @@ export const LaborOrderModal = ({ activity }) => {
         getLaborOrder,
         getOrderWithDepositsAndSuppliesByOrder } = useOrder();
     //Ver de donde obtenemos los insumos y depositos:
-    const { deposits, getDeposits } = useDeposit();
+    const { deposits, getDeposits, getDepositsBySupply } = useDeposit();
     const { supplies, getSupplies } = useSupply();
     const { businesses, getBusinesses } = useBusiness();
     const { campaigns, getCampaigns } = useCampaign();
@@ -335,6 +335,10 @@ export const LaborOrderModal = ({ activity }) => {
         else
             generateLaborOrder()
     }
+
+    const onChangeSupply = (item: Supply) => {
+        getDepositsBySupply(item);
+    };
 
     useEffect(() => {
         const initializeGetOrder = async () => {
@@ -507,6 +511,7 @@ export const LaborOrderModal = ({ activity }) => {
                             supplies={supplies}
                             deposits={deposits}
                             showDueDate={false}
+                            onChangeSupply={onChangeSupply}
                             addNewSupply={handleAddDepositSupply} />
                     </Box>
                     <Typography

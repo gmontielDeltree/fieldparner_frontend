@@ -1,6 +1,6 @@
 import Swal from 'sweetalert2';
 // import PouchDB from 'pouchdb';
-import { DepositDestination, StockMovement, StockMovementItem, StockByLot, Supply, TypeMovement, TransformSupply, Movement } from "../types";
+import { DepositDestination, StockMovement, StockMovementItem, StockByLot, Supply, TypeMovement, TransformSupply, Movement, MovementType } from "../types";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
@@ -15,6 +15,7 @@ export const useStockMovement = () => {
     const { user } = useAppSelector(state => state.auth);
     const [stockMovements, setStockMovements] = useState<StockMovementItem[]>([]);
     const [stockByLots, setStockByLots] = useState<StockByLot[]>([]);
+    const [movementsType, setMovementsType] = useState<MovementType[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
@@ -302,10 +303,28 @@ export const useStockMovement = () => {
         }
     }
 
+    const getMovementsType = async () => {
+        try {
+            setIsLoading(true);
+            const response = await dbContext.movementsType.allDocs({ include_docs: true });
+
+            if (response)
+                setMovementsType(response.rows.map(row => row.doc as MovementType));
+            else
+                setMovementsType([]);
+
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+            console.log(error)
+        }
+    }
+
     return {
         //* Props
         stockMovements,
         stockByLots,
+        movementsType,
         error,
         isLoading,
 
@@ -317,6 +336,6 @@ export const useStockMovement = () => {
         getNroLotsBySupplyAndDeposit,
         transformStock,
         getStock,
-
+        getMovementsType
     }
 }
