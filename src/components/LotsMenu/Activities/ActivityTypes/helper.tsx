@@ -32,7 +32,7 @@ export const ComparisonReportPdf = (
 const pdfLine = (line, hectares) => {
   return [
     {
-      text: line.insumo.name.toUpperCase(),
+      text: line.insumo?.name?.toUpperCase() || "---",
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
       alignment: "left"
@@ -159,7 +159,7 @@ export const differencesReportDefinition = (
               alignment: "left"
             },
             {
-              text: "Tel: " + aplicacion.contratista.datos_generales.telefono,
+              text: "Tel: " + aplicacion.contratista.datos_generales?.telefono || "",
               fontSize: 10,
               color: "#333333",
               alignment: "left"
@@ -423,7 +423,7 @@ const executedLine = (line, hectares) => {
 
   return [
     {
-      text: line.insumo.name.toUpperCase(),
+      text: line.insumo.name?.toUpperCase() || "---",
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
       alignment: "left"

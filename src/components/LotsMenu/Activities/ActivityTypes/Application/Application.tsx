@@ -22,6 +22,9 @@ import ExecutionContent from "../TabsContent/Execution";
 import AttachedContent from "../TabsContent/Attached";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import ActivityActionsBar from "../../../components/ActivityActionsBar";
+import { dbContext } from "../../../../../services";
+import { ComparisonReportPdf } from "../helper";
 
 function Application({
   activity,
@@ -29,8 +32,12 @@ function Application({
   handleDeleteActivity,
   handleEditActivity,
   handleDownloadPDF,
-  handleConfirmExecution
+  handleConfirmExecution,
+  handleReplicateActivity,
+  lotDoc,
+  fieldName
 }) {
+  console.log("RENDER");
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -47,6 +54,32 @@ function Application({
     setAnchorEl(null);
   };
 
+  const [execution, setExecution] = useState(null);
+
+  const db = dbContext.fields;
+
+  useEffect(() => {
+    const fetchExecution = async () => {
+      try {
+        const response = await db.find({
+          selector: { actividad_uuid: activity.actividad.uuid }
+        });
+        if (response.docs.length > 0) {
+          setExecution(response.docs[0]);
+        } else {
+          setExecution(null);
+        }
+      } catch (error) {
+        console.error("Error fetching executions:", error);
+        setExecution(null);
+      }
+    };
+
+    if (activity.actividad.uuid) {
+      fetchExecution();
+    }
+  }, [activity.uuid, db]);
+
   const formattedPlanificadaDate = activity.actividad.detalles
     ?.fecha_ejecucion_tentativa
     ? format(
@@ -55,6 +88,9 @@ function Application({
         { locale: es }
       )
     : "Fecha no definida";
+
+  const formattedDate = (date?: string) =>
+    date ? format(parseISO(date), "PPPP", { locale: es }) : "Fecha no definida";
 
   return (
     <div>
@@ -78,24 +114,62 @@ function Application({
         >
           <EventNoteIcon
             sx={{ marginRight: "4px", color: complementaryColor }}
-          />
+          />{" "}
           <Typography
-            sx={{ fontSize: 16, fontWeight: "bold" }}
-            color="text.primary"
+            sx={{ fontSize: 16, flexGrow: 2, textAlign: "left" }}
+            color="text.secondary"
           >
-            Planificada para: {formattedPlanificadaDate}
+            {activity.actividad.tipo.toUpperCase()} en{" "}
+            {activity.actividad.detalles?.hectareas} has.{" "}
+            {execution ? (
+              <Typography
+                sx={{ fontSize: 16, fontWeight: "bold" }}
+                color="green"
+              >
+                Ejecutada: {formattedDate(execution.detalles.fecha_ejecucion)}
+              </Typography>
+            ) : (
+              <Typography
+                sx={{ fontSize: 16, fontWeight: "bold" }}
+                color="text.primary"
+              >
+                Programada para: {formattedPlanificadaDate}
+              </Typography>
+            )}
+            {/* <Typography
+              sx={{ fontSize: 16, fontWeight: "bold" }}
+              color="text.primary"
+            >
+              Programada para: {formattedPlanificadaDate}
+            </Typography> */}
           </Typography>
         </Box>
-        <Typography
-          sx={{ fontSize: 16, flexGrow: 2, textAlign: "right" }}
-          color="text.secondary"
-        >
-          {activity.actividad.tipo} en {activity.actividad.detalles?.hectareas}{" "}
-          has.
-        </Typography>
-        <IconButton onClick={handleMenuClick} sx={{ marginLeft: "8px" }}>
+
+        <ActivityActionsBar
+          sx={{ marginLeft: "8px" }}
+          onEditActivity={() => handleEditActivity(activity.actividad)}
+          onDeleteActivity={() => handleDeleteActivity(activity.actividad._id)}
+          onMeteo={() => alert("Proximamente - En Construcción")}
+          onDownloadOT={() => handleDownloadPDF(activity.actividad)}
+          onRepeatOT={() => handleReplicateActivity()}
+          onShareOT={() => alert("Proximamente - En Construcción")}
+          onDownloadCompare={() => {
+            if (!execution) {
+              alert("Debe ejecutar primero para generar el informe!!!");
+              return;
+            }
+            ComparisonReportPdf(
+              activity.actividad,
+              execution,
+              fieldName,
+              lotDoc?.properties?.nombre
+            );
+          }}
+        />
+        {/* <IconButton onClick={handleMenuClick} sx={{ marginLeft: "8px" }}>
           <MoreVertIcon />
-        </IconButton>
+          <ActivityActionsBar />
+        </IconButton> */}
       </Box>
 
       {/* LGO Comento los items que no estan implementados aún */}

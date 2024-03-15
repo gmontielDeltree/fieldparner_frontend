@@ -7,6 +7,7 @@ import Note from "./ActivityTypes/Note/Note";
 import Harvest from "./ActivityTypes/Harvest/Harvest";
 import Application from "./ActivityTypes/Application/Application";
 import WeatherForecast from "./../../WeatherForecast";
+import ReplicateActivityMenu from "./ReplicateActivityMenu";
 
 function Activity({
   activity,
@@ -20,13 +21,16 @@ function Activity({
   handleConfirmExecution
 }) {
   const [gradientAngle, setGradientAngle] = useState(0);
+  const [showReplicateActivityMenu, setShowReplicateActivityMenu] =
+    useState(false);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
+  // LANZA DEMASIADOS RENDERIZADOS
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
+  //   }, 100);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const gradientBackground = `linear-gradient(${gradientAngle}deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
 
@@ -37,6 +41,10 @@ function Activity({
     width: "100%",
     backgroundImage: gradientBackground,
     boxShadow: "0 4px 8px 0 rgba(0,0,0,0.2)"
+  };
+
+  const handleReplicateActivity = () => {
+    setShowReplicateActivityMenu(!showReplicateActivityMenu);
   };
 
   const renderActivityContent = () => {
@@ -52,6 +60,7 @@ function Activity({
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
             handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
           />
         );
       case "cosecha":
@@ -59,11 +68,13 @@ function Activity({
           <Harvest
             activity={activity}
             lotDoc={lotDoc}
+            fieldName={fieldDoc.nombre}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
             handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
           />
         );
       case "nota":
@@ -78,11 +89,14 @@ function Activity({
         return (
           <Application
             activity={activity}
+            fieldName={fieldDoc.nombre}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
             handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
+            lotDoc={lotDoc}
           />
         );
       case "analisis de suelo":
@@ -91,6 +105,7 @@ function Activity({
         return <Typography>Unknown Activity Type</Typography>;
     }
   };
+
   return (
     <div
       style={{ display: "flex", marginBottom: "32px", position: "relative" }}
@@ -130,8 +145,17 @@ function Activity({
       ></div>
       <Card sx={cardStyle}>
         <CardContent>
-          {renderActivityContent()}
-          <WeatherForecast />
+          {showReplicateActivityMenu ? (
+            <ReplicateActivityMenu
+              originalActivity={activity.actividad}
+              handleReplicateActivity={handleReplicateActivity}
+            />
+          ) : (
+            <>
+              {renderActivityContent()}
+              <WeatherForecast />{" "}
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

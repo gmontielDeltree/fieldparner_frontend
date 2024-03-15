@@ -461,7 +461,6 @@ export const FieldsPage: React.FC = () => {
         respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
       });
 
-      console.log("Respuesta actividades y ejecuciones preorden", respuesta);
       respuesta.sort((a, b) => {
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
@@ -480,8 +479,6 @@ export const FieldsPage: React.FC = () => {
         return isBefore(fecha_1, fecha_2) ? 1 : -1;
       });
     }
-
-    console.log("Respuesta actividades y ejecuciones post orden", respuesta);
 
     return respuesta ? respuesta : null;
   };

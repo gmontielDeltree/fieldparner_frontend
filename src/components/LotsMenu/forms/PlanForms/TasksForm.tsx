@@ -24,6 +24,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { styled, keyframes } from "@mui/material/styles";
 import { useVehicle } from "../../../../hooks/useVehicle";
 import uuid4 from "uuid4";
+import { NumberFieldWithUnits } from '../../components/NumberField';
 
 const flashFadeAnimation = keyframes`
   0% {
@@ -59,13 +60,20 @@ const CustomPaper = styled(Paper)({
 });
 
 function TasksForm({ lot, formData, setFormData, isExecution = false }) {
+
+  const tipo = formData?.tipo || "other"
+  const default_labor = {"siembra":"1", "aplicacion":"5", "cosecha": "3", "other":undefined}
+
   const { vehicles, vehicleTypes, getVehicles, getTypeVehicles } = useVehicle();
-  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedOption, setSelectedOption] = useState(default_labor[tipo]);
   const [comment, setComment] = useState("");
-  const [price, setPrice] = useState("");
+  const [costoPorHa, setCostoPorHa] = useState(0);
+  const [price, setPrice] = useState(0);
+
   const [editIndex, setEditIndex] = useState(-1);
   const [editData, setEditData] = useState({
     labor: {},
+    costo_por_ha:0,
     costo: "",
     observacion: ""
   });
@@ -90,7 +98,14 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
   };
 
   const handlePriceChange = (event) => {
-    setPrice(event.target.value);
+    setPrice(+event.target.value);
+    setCostoPorHa((+event.target.value / +formData.detalles.hectareas).toFixed(2));
+
+  };
+
+  const handleCostoPorHaChange = (event) => {
+    setCostoPorHa(+event.target.value)
+    setPrice((+event.target.value * +formData.detalles.hectareas).toFixed(2));
   };
 
   const handleEditRow = (index) => {
@@ -137,12 +152,27 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
     });
     setSelectedOption("");
     setComment("");
-    setPrice("");
+    setPrice(0);
   };
+
+
+
 
   const handleEditChange = (prop) => (event) => {
     setEditData({ ...editData, [prop]: event.target.value });
   };
+
+  const handleEditCostoPorHaChange = (event) => {
+    setEditData({ ...editData, costo_por_ha: event.target.value,
+    price: (+event.target.value * +formData.detalles.hectareas).toFixed(2)
+    })
+  }
+
+  const handleEditCostoTotalChange = (event) => {
+      setEditData({ ...editData, price: event.target.value,
+    costo_por_ha: (+event.target.value / +formData.detalles.hectareas).toFixed(2)
+    })
+  }
 
   const handleSaveEdit = () => {
     const updatedCostoLabor = [...formData.detalles.costo_labor];
@@ -177,11 +207,11 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
 
   return (
     <CustomPaper elevation={3}>
-      <Title>Labores</Title>
+      <Title>Costo de Labores</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
-          <Grid item xs={4}>
-            <InputLabel id="select-input-label">Labores</InputLabel>
+          <Grid item xs={3}>
+            <InputLabel id="select-input-label">Labor</InputLabel>
             <Select
               labelId="select-input-label"
               id="select-input"
@@ -197,14 +227,24 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
               ))}
             </Select>
           </Grid>
-          <Grid item xs={3}>
-            <TextField
-              fullWidth
-              label="Costo (USD$)"
-              value={price}
-              onChange={handlePriceChange}
-              type="number"
-            />
+          <Grid item xs={2}>
+          <NumberFieldWithUnits
+                           fullWidth
+                           label="Costo/ha"
+                           value={costoPorHa}
+                           onChange={handleCostoPorHaChange}
+                           unit="USD/ha"
+                        />
+          </Grid>
+          <Grid item xs={2}>
+
+          <NumberFieldWithUnits
+                           fullWidth
+                           label="Costo Total"
+                           value={price}
+                           onChange={handlePriceChange}
+                           unit="USD"
+                        />
           </Grid>
           <Grid item xs={4}>
             <TextField
@@ -248,15 +288,26 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
                         </TextField>
                       </Grid>
                       <Grid item xs={2}>
-                        <TextField
-                          fullWidth
-                          label="Costo (USD$)"
-                          value={editData.price}
-                          onChange={handleEditChange("price")}
-                          type="number"
+                        <NumberFieldWithUnits
+                           fullWidth
+                           label="Costo/ha"
+                           value={editData.costo_por_ha}
+                           onChange={handleEditCostoPorHaChange}
+                           unit="USD/ha"
                         />
+
                       </Grid>
-                      <Grid item xs={4}>
+                      <Grid item xs={2}>
+                        <NumberFieldWithUnits
+                           fullWidth
+                           label="Costo Total"
+                           value={editData.price}
+                           onChange={handleEditCostoTotalChange}
+                           unit="USD"
+                        />
+
+                      </Grid>
+                      <Grid item xs={2}>
                         <TextField
                           fullWidth
                           label="Comentario"
@@ -267,19 +318,24 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
                     </>
                   ) : (
                     <>
-                      <Grid item xs={4}>
+                      <Grid item xs={3}>
                         <Typography variant="subtitle1">
                           <strong>Labor:</strong> {row.labor.labor}
                         </Typography>
                       </Grid>
                       <Grid item xs={2}>
                         <Typography variant="subtitle1">
-                          <AttachMoneyIcon /> {row.costo}
+                        <strong>Costo/ha:</strong> {(row.costo / +formData.detalles.hectareas).toFixed(2)} USD/ha
                         </Typography>
                       </Grid>
-                      <Grid item xs={4}>
+                      <Grid item xs={2}>
                         <Typography variant="subtitle1">
-                          <CommentIcon /> {row.observacion}
+                        <strong>Costo Total:</strong> {row.costo} USD
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Typography variant="subtitle1">
+                        <strong>Comentario:</strong> {row.observacion}
                         </Typography>
                       </Grid>
                     </>
