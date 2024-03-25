@@ -12,7 +12,7 @@ import {
   Stepper,
   Typography,
 } from "@mui/material";
-import { Supply } from "../types";
+import { Supply, SupplyType } from "../types";
 import { removeSupplyActive } from "../redux/supply";
 import { useTranslation } from "react-i18next";
 
@@ -34,7 +34,12 @@ const initialForm: Supply = {
   replenishmentPoint: "",
   currentStock: 0,
   reservedStock: 0,
-  generico: ""
+  generico: "",
+  cropId: "",
+  brand: "",
+  senasaId: "",
+  formulationDenomination: "",
+  toxicityClass: ""
 };
 
 export const SupplyPage: React.FC = () => {
@@ -42,7 +47,7 @@ export const SupplyPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { supplyActive } = useAppSelector((state) => state.supply);
   const [activeStep, setActiveStep] = useState(0);
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [steps] = useState<string[]>([t("_supplies"), t("_dose"), t("_stock")]);
   const {
     formulario,
@@ -54,8 +59,8 @@ export const SupplyPage: React.FC = () => {
     reset,
   } = useForm(initialForm);
 
-  const {  isLoading, supplyError, createSupply, updateSupply, setSupplyError} = useSupply();
- 
+  const { isLoading, supplyError, supplies, createSupply, updateSupply, setSupplyError, getSupplies } = useSupply();
+
 
 
   const onClickCancel = () => navigate("/init/overview/supply");
@@ -69,6 +74,7 @@ export const SupplyPage: React.FC = () => {
   };
 
   const handleAddSupply = () => {
+    // console.log('formulario', formulario)
     createSupply(formulario);
     navigate("/init/overview/supply");
     reset();
@@ -93,50 +99,54 @@ export const SupplyPage: React.FC = () => {
           return (
             <DoseForm
               key="doseForm"
+              crops={supplies.filter(s => s.type === SupplyType.Cultivo)} //TODO: cambiar por la tabla de cultivo
               formValues={formulario}
               handleInputChange={handleInputChange}
               handleGenercoChange={handleGenercoChange}
+              handleSelectChange={handleSelectChange}
             />
           );
         case 2:
           return (
-              <StockForm
+            <StockForm
               key="stockForm"
               formValues={formulario}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
-              />
+            />
           );
-          
+
         default:
           throw new Error("Unknown step");
-      } 
+      }
     },
     [
       [formulario,
-       handleInputChange,
-       handleSelectChange,
-       handleCheckboxChange,
-       setFormulario]
+        handleInputChange,
+        handleSelectChange,
+        handleCheckboxChange,
+        setFormulario]
     ]
   );
 
   const handleNext = () => {
-    
+
     if (!formulario.name.trim()) {
       setSupplyError(true);
-      
+
     } else {
       setSupplyError(false);
       setActiveStep(activeStep + 1);
     }
   };
- 
-
 
   const handleBack = () => {
     setActiveStep(activeStep - 1);
   };
+
+  useEffect(() => {
+    getSupplies();
+  }, []);
 
   useEffect(() => {
     if (supplyActive) setFormulario(supplyActive);

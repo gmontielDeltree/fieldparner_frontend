@@ -183,7 +183,7 @@ export interface Supply extends Document {
     replenishmentPoint: string;
     labors: string[];
     generico: string;
-
+    cropId?: string;
     isUserDefined ?: boolean;
     replacementId ?: string;
     countryId ?: string;
