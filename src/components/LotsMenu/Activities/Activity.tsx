@@ -83,6 +83,7 @@ function Activity({
             activity={activity}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
+            handleEditActivity={handleEditActivity}
           />
         );
       case "aplicacion":

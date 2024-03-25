@@ -9,7 +9,12 @@ import NotePoints from "../TabsContent/Points";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 
-function Note({ activity, complementaryColor, handleDeleteActivity }) {
+function Note({
+  activity,
+  complementaryColor,
+  handleDeleteActivity,
+  handleEditActivity
+}) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -87,7 +92,11 @@ function Note({ activity, complementaryColor, handleDeleteActivity }) {
 
       {/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-        <MenuItem onClick={handleMenuClose}>Editar</MenuItem>
+        <MenuItem
+          onClick={() => handleEditActivity(activity.actividad, false, "note")}
+        >
+          Editar
+        </MenuItem>
 
         {/* <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem> */}
         {/* <MenuItem onClick={handleMenuClose}>

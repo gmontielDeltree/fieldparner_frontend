@@ -59,7 +59,7 @@ interface LotsMenuProps {
 const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const dispatch = useAppDispatch();
   const [selectedCategory, setSelectedCategory] = useState<null | string>(null);
-  const db = dbContext.fields; //new PouchDB("campos_randyv7");
+  const db = dbContext.fields;
   const [activities, setActivities] = useState(null);
   const { t } = useTranslation();
   const [editingActivityInfo, setEditingActivityInfo] = useState<{
@@ -112,8 +112,17 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     borderRadius: "50%",
     margin: "0 15px",
     cursor: "pointer",
-    opacity: 1,
-    filter: selectedCampaign ? "none" : "grayscale(100%)",
+    // Update these lines to conditionally apply styles for "Vista de Satelite" and "Recorrido"
+    opacity:
+      selectedCampaign ||
+      ["Vista de Satelite", "Recorrido"].includes(categoryId)
+        ? 1
+        : 0.5,
+    filter:
+      selectedCampaign ||
+      ["Vista de Satelite", "Recorrido"].includes(categoryId)
+        ? "none"
+        : "grayscale(100%)",
     "&:hover": {
       transform: "scale(1.2)",
       boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
@@ -189,13 +198,30 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         return result;
       });
   };
-  const handleEditActivity = (activity, isExecuting = false) => {
-    if (isExecuting) {
-      setSelectedCategory("Execute Activity");
-    } else {
-      setSelectedCategory("Edit Activity");
+  const handleEditActivity = (
+    activity,
+    isExecuting = false,
+    type = "activity"
+  ) => {
+    switch (type) {
+      case "activity":
+        setSelectedCategory(isExecuting ? "Execute Activity" : "Edit Activity");
+        console.log("Editando actividad", activity, isExecuting);
+        break;
+      case "note":
+        setSelectedCategory("Edit Note");
+        console.log("Editando nota", activity, isExecuting);
+        break;
+      default:
+        console.error("Invalid edit type");
+        return;
     }
-    console.log("Editando actividad", activity, isExecuting);
+    setEditingActivityInfo({ activity, isExecuting });
+  };
+  const handleEditNote = (activity, isExecuting = false) => {
+    setSelectedCategory("Edit Note");
+
+    console.log("Editando nota", activity, isExecuting);
     setEditingActivityInfo({ activity, isExecuting });
   };
 
@@ -215,18 +241,16 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     }
   }, [lot, selectedCategory, dispatch]);
 
-  // useEffect(() => {
-  //   if (lot && lot.id) {
-  //     getActivities(lot.id).then((res) => setActivities(res));
-  //   }
-  // }, [lot, selectedCategory]);
-
   const renderFormContent = () => {
-    if (!selectedCampaign) {
+    const isAccessibleWithoutCampaign = [
+      "Vista de Satelite",
+      "Recorrido"
+    ].includes(selectedCategory);
+
+    if (!selectedCampaign && !isAccessibleWithoutCampaign) {
       return (
         <Fade in={true} timeout={1000}>
           <Box textAlign="center" marginTop="20px">
-            {/* <CampaignIcon sx={{ fontSize: 60, color: "rgba(0, 0, 0, 0.54)" }} /> */}
             <Typography variant="h5" component="h2" gutterBottom>
               {t("choose_a_campaign")}
             </Typography>
@@ -237,6 +261,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         </Fade>
       );
     }
+
     if (!selectedCategory) {
       return activities && activities.length > 0 ? (
         <Activities
@@ -320,6 +345,17 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             existingActivity={editingActivityInfo.activity}
           />
         );
+      case "Edit Note":
+        return (
+          <Tour
+            lot={lot}
+            db={db}
+            fieldName={field.nombre}
+            backToActivites={backToActivites}
+            existingNote={editingActivityInfo.activity}
+          />
+        );
+
       case "Execute Activity":
         return (
           <ExecuteActivity
