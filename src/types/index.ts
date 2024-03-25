@@ -186,7 +186,7 @@ export interface Supply extends Document {
     labors: string[];
 }
 
-export interface Users extends Document {
+export interface UserByAccount extends Document {
     accountId: string;
     name: string;
     email: string;
@@ -195,10 +195,11 @@ export interface Users extends Document {
     admin:boolean;
     lastName: string;
     language: string;
+    photoFile?: File | null;
 }
 export interface UsersState {
-    usersActive: Users | null;
-    Users: Users [];
+    usersActive: UserByAccount | null;
+    Users: UserByAccount [];
 }
 
 export interface OriginDestinationsState {

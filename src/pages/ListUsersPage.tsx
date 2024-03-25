@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { ColumnProps, Users } from "../types";
+import { ColumnProps, UserByAccount } from "../types";
 import React, { useEffect } from "react";
-import { useAppDispatch, useForm, useUsers } from "../hooks";
+import { useAppDispatch, useForm, useUsers, useAppSelector } from "../hooks";
 import {
   DataTable,
   ItemRow,
@@ -30,12 +30,19 @@ import {
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import { setUsersActive } from "../redux/users/userSlice";
+// import { User } from "@auth0/auth0-spa-js";
+// import { User } from "@auth0/auth0-spa-js";
+// import Swal from 'sweetalert2';
+
+
+
 
 
 export const ListUsersPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const {t} = useTranslation();
+ 
 
   const { isLoading, users, getUsers, removeUsers } = useUsers();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
@@ -47,12 +54,16 @@ export const ListUsersPage: React.FC = () => {
     { text: "Admin", align: "center" },
     { text: "", align: "center" },
   ];
+
+  const { user } = useAppSelector((state) => state.auth);
+
   
-  const onClickUpdateUser = (item: Users) => {
-    navigate(`/init/overview/users${item._id}`);
+  const onClickUpdateUser = (item: UserByAccount): void => {
     dispatch(setUsersActive(item));
+    navigate(`/init/overview/users/${item._id}`);
+    getUsers();
   };
-  const handleDeleteUser = (item: Users) => {
+  const handleDeleteUser = (item: UserByAccount) => {
     if (item._id && item._rev) {
       removeUsers(item._id, item._rev);
       getUsers();
@@ -67,7 +78,9 @@ export const ListUsersPage: React.FC = () => {
     throw new Error("Function not implemented.");
   }
 
-  return (
+
+  if (user && user.isAdmin) {
+    return (
     <TemplateLayout key="overview-users" viewMap={false}>
       {isLoading && <Loading loading />}
       <Container maxWidth="md" sx={{ ml: 0 }}>
@@ -130,10 +143,11 @@ export const ListUsersPage: React.FC = () => {
                 <ItemRow key={row._id} hover>
                   <TableCellStyled align="left">{row.name}</TableCellStyled>
                   <TableCellStyled align="center">{row.email}</TableCellStyled>
-                  <TableCellStyled align="center">{row.state}</TableCellStyled>
-                 
                   <TableCellStyled align="center">
-                    {row.accountId}
+                    {row.state ? "Activo" : "Inactivo"}
+                  </TableCellStyled>
+                  <TableCellStyled align="center">
+                    {row.admin ? "Admin" : "User"}
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     <Tooltip title={t("icon_edit")}>
@@ -161,4 +175,7 @@ export const ListUsersPage: React.FC = () => {
       </Container>
     </TemplateLayout>
   );
+} else {
+  return null;
+}
 };

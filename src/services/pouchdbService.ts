@@ -15,7 +15,7 @@ import {
     Campaign,
     Field,
     OriginDestinations,
-    Users,
+    UserByAccount,
 } from '../types';
 import uuid4 from 'uuid4';
 
@@ -55,7 +55,7 @@ export const dbContext = Object.freeze({
     campaigns: new PouchDB<Campaign>(dbNames.campaigns),
     fields: new PouchDB<Field>(dbNames.fields), //TODO: revisar db
     originsDestinations: new PouchDB<OriginDestinations>(dbNames.originsDestinations),
-    users: new PouchDB<Users>(dbNames.users)
+    users: new PouchDB<UserByAccount>(dbNames.users)
 });
 
 dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);

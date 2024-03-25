@@ -85,6 +85,7 @@ export const OverviewRoutes: React.FC = () => {
 
         <Route path="/overview/users" element={<ListUsersPage />} />
         <Route path="/overview/users/new" element={<NewUserPage />} />
+        <Route path="/overview/users/:id" element={<NewUserPage />} />
 
         
 

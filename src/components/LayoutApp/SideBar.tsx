@@ -40,6 +40,7 @@ import { SideBarProps } from "../../types";
 import { Typography } from "@mui/material";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAppSelector } from "../../hooks";
 
 const keysCollapse = ["seguridad", "configuracion", "general", "agricultura", "stock", "cosecha", "gestion", "reporting", "wiki", "erp"];
 
@@ -57,6 +58,9 @@ export const SideBar: React.FC<SideBarProps> = ({
   const {t} = useTranslation();
 
   const onClickMenu = (collapse: string) => setOpenCollapse(collapse === openCollapse ? "" : collapse);
+
+  const { user } = useAppSelector((state) => state.auth);
+  
 
   return (
     <Box
@@ -484,12 +488,19 @@ export const SideBar: React.FC<SideBarProps> = ({
             timeout="auto"
             unmountOnExit>
             <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("users_and_permissions")} />
-              </ListItemButton>
+            {user && user.isAdmin && (
+                <ListItemButton
+                  sx={{ pl: 4 }}
+                  component={RouterLink}
+                  to="/init/overview/users"
+                  selected={pathname.includes("/init/overview/users")}
+                >
+                  <ListItemIcon>
+                    <PersonAddIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={t("users_and_permissions")} />
+                </ListItemButton>
+              )}
             </List>
           </Collapse>
           <ListItem key="Configuracion" disablePadding>
@@ -516,7 +527,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("crop_colors")} />
               </ListItemButton>
-              <ListItemButton
+              {/* <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}
                 to="/init/overview/users"
@@ -526,7 +537,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                   <PersonAddIcon />
                 </ListItemIcon>
                 <ListItemText primary="Usuarios" />
-              </ListItemButton>
+              </ListItemButton> */}
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                 </ListItemIcon>
