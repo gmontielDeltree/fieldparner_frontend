@@ -100,7 +100,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label={t("_detail")}
+          label={t("_description")}
           name="description"
           value={description}
           onChange={handleInputChange}
