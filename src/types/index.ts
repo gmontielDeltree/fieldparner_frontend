@@ -188,6 +188,7 @@ export interface Supply extends Document {
 
 export interface UserByAccount extends Document {
     accountId: string;
+    userId: string;
     name: string;
     email: string;
     password: string;

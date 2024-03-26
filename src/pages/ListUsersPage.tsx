@@ -57,6 +57,11 @@ export const ListUsersPage: React.FC = () => {
 
   const { user } = useAppSelector((state) => state.auth);
 
+  useEffect(() => {
+    // Cargar los datos de los usuarios una vez que el componente esté montado
+    getUsers();
+}, []);
+
   
   const onClickUpdateUser = (item: UserByAccount): void => {
     dispatch(setUsersActive(item));
@@ -77,7 +82,7 @@ export const ListUsersPage: React.FC = () => {
   function onClickSearch(): void {
     throw new Error("Function not implemented.");
   }
-
+  console.log("Datos de usuarios:", users)
 
   if (user && user.isAdmin) {
     return (

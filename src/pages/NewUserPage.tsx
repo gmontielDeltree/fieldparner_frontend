@@ -27,13 +27,15 @@ import { Loading } from '../components';
 import { UserByAccount } from '@types';
 import { v4 as uuidv4 } from 'uuid';
 import { removeUsersActive } from '../redux/users';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import BrokenImageIcon from '@mui/icons-material/BrokenImage';
-import CancelIcon from '@mui/icons-material/Cancel';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import { 
+AddCircle as AddCircleIcon,
+BrokenImage as BrokenImageIcon,
+Cancel as CancelIcon,
+PersonAdd as PersonAddIcon,
+PhotoCamera as PhotoCameraIcon,
+Schedule as ScheduleIcon,
+VpnKey as VpnKeyIcon } from '@mui/icons-material';
+
 
 
 
@@ -52,16 +54,18 @@ export const NewUserPage = () => {
   const { user } = useAppSelector((state) => state.auth);
   const [passwordError, setPasswordError] = useState<string>('');
   const initialForm: UserByAccount = {
-    accountId: '',
+    userId: '',
     name: '',
     lastName: '',
     email: '',
     password: '',
     state: true,
-    language: (''),
+    language: '',
     photoFile: null,
-    admin: false
-  };
+    admin: false,
+    accountId: '', // Aquí inicializas accountId con una cadena vacía
+};
+
 
   const {usersActive } = useAppSelector((state) => state.users);
   const {
@@ -124,18 +128,19 @@ export const NewUserPage = () => {
     try {
      
       await updatePasswordUsers({
-        accountId: '',
-        password: newPassword, 
+        userId: '',
+        password: newPassword, // Aquí cambia de accountId a password
         name: '',
         email: '',
         state: false,
         admin: false,
         lastName: '',
-        language: ''
+        language: '',
+        accountId: ''
       }, oldPassword);
     } catch (error) {
       console.error('Error al actualizar la contraseña:', error);
-      
+      // Manejar el error según sea necesario
     }
   };
 
@@ -173,12 +178,11 @@ export const NewUserPage = () => {
 
   const handleAddUser = () => {
     const newUserId = uuidv4(); 
-    const newUser = { ...formulario, accountId: newUserId };
+    const newUser = { ...formulario, userId: newUserId, accountId: user ? user.accountId : '' };
     createUsers(newUser);
     navigate("/init/overview/users");
     reset();
-  };
-
+};
 
 
 

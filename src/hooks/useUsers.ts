@@ -10,6 +10,8 @@ import { clearErrorMessage, finishLoading} from '../redux/auth';
 import { fieldpartnerAPI } from '../config';
 import { AxiosError, HttpStatusCode } from 'axios';
 
+
+
 export const useUsers = () => {
   const navigate = useNavigate();
   useAppSelector(state => state.auth);
@@ -20,37 +22,38 @@ export const useUsers = () => {
   const {t} = useTranslation();
   const dispatch = useDispatch();
   const controller = "/auth";
+  const { user } = useAppSelector((state) => state.auth);
+  // const currentAccountId = useAppSelector(state => state.auth);
 
-  const startConfirm = async (confirmationCode: string) => {
+  // const startConfirm = async (confirmationCode: string) => {
     
-    try {
-      const email = localStorage.getItem("username_temp");
-      // if (!email) return dispatch(onLogout(""));
+  //   try {
+  //     const email = localStorage.getItem("username_temp");
+  //     // if (!email) return dispatch(onLogout(""));
   
-      const response = await fieldpartnerAPI.post(`${controller}/confirm`, {
-        email,
-        confirmationCode
-      });
+  //     const response = await fieldpartnerAPI.post(`${controller}/confirm`, {
+  //       email,
+  //       confirmationCode
+  //     });
   
-      if (response.status === HttpStatusCode.Created) {
-        localStorage.removeItem("username_temp");
-        // Eliminar la siguiente línea para evitar cerrar la sesión
-        // dispatch(onLogout(""));
-        navigate("/init/overview/users");
-        return dispatch(finishLoading());
-      }
-    } catch (error) {
-      // dispatch(onLogout("Por favor volve a intentar en unos minutos."));
-      dispatch(clearErrorMessage());
-      localStorage.removeItem("username_temp");
-      dispatch(finishLoading());
-    }
-  };
+  //     if (response.status === HttpStatusCode.Created) {
+  //       localStorage.removeItem("username_temp");
+  //       // Eliminar la siguiente línea para evitar cerrar la sesión
+  //       // dispatch(onLogout(""));
+  //       navigate("/init/overview/users");
+  //       return dispatch(finishLoading());
+  //     }
+  //   } catch (error) {
+  //     // dispatch(onLogout("Por favor volve a intentar en unos minutos."));
+  //     dispatch(clearErrorMessage());
+  //     localStorage.removeItem("username_temp");
+  //     dispatch(finishLoading());
+  //   }
+  // };
 
   const startRegister = async ({ email, password, name }: UserByAccount) => {
     console.log("Iniciando registro...");
-    // // dispatch(onChecking());
-    // dispatch(startLoading());
+    
     try {
         console.log("Enviando solicitud de registro...");
         const response = await fieldpartnerAPI.post(`${controller}/register`, {
@@ -62,12 +65,11 @@ export const useUsers = () => {
 
         if (response.status === HttpStatusCode.Created) {
             console.log("Registro exitoso.");
-            //Seteamos el email del usuario
-            localStorage.setItem("username_temp", email);
-            //Luego redireccionamos a pagina de confirmar email
-            navigate("/init/overview/users");
-            console.log("Redirigiendo a la página de confirmación de email.");
-            return dispatch(finishLoading());
+            Swal.fire({
+              icon: 'success',
+              title: 'Creación exitosa',
+              text: 'Usuario pendiente de validación'
+          });
         }
     } catch (error: AxiosError<ErrorResponseAuth> | any) {
         console.error("Error durante el registro:", error);
@@ -75,7 +77,10 @@ export const useUsers = () => {
             const responseError: ErrorResponseAuth = error.response.data;
             console.log("Error de respuesta:", responseError);
 
-            if (responseError.message) {
+            if (responseError.code === "UsernameExistsException") {
+                console.log("Correo electrónico ya registrado.");
+                Swal.fire('Error', 'Correo electrónico ya registrado.', 'error');
+            } else if (responseError.message) {
                 console.log("Error durante el registro:", responseError.message);
                 Swal.fire('Error', responseError.message, 'error');
             } else {
@@ -91,52 +96,98 @@ export const useUsers = () => {
 };
 
 
+// const createUsers = async (newUsers: UserByAccount) => {
+//   console.log("La función createUsers se está ejecutando");
 
+//   setIsLoading(true);
 
-  const createUsers = async (newUsers: UserByAccount) => {
-    console.log("La función createUsers se está ejecutando");
-  
-    setIsLoading(true);
-  
-    if (!newUsers.name.trim()) {
-      console.log("Nombre de usuario no válido:", newUsers.name);
-      setConceptoError(true);
-      setIsLoading(false);
-      return; 
+//   if (!newUsers.name.trim()) {
+//       console.log("Nombre de usuario no válido:", newUsers.name);
+//       setConceptoError(true);
+//       setIsLoading(false);
+//       return;
+//   }
+
+//   try {
+//       // Aquí extraemos los datos necesarios de newUsers para llamar a startRegister
+//       const { name, email, password, lastName, language, admin, userId: accountId, state, photoFile } = newUsers;
+
+//       console.log("Datos extraídos:", { name, email, password, lastName, language, admin, accountId, state, photoFile });
+
+//       // Llamamos a la función startRegister con los datos extraídos
+//       await startRegister({ email, password, lastName, userId: accountId, admin, name, language, state, photoFile });
+
+//       console.log("Registro exitoso");
+//       navigate('/init/overview/users');
+//   } catch (error: any) {
+//       console.log("Error durante el registro:", error);
+//       if (error.response && error.response.data) {
+//           const responseError: ErrorResponseAuth = error.response.data;
+//           console.log("Error de respuesta:", responseError);
+
+//           if (responseError.code === "UsernameExistsException") {
+//               console.log("Correo electrónico ya registrado.");
+//               Swal.fire('Error', 'Correo electrónico ya registrado.', 'error');
+//           } else if (responseError.message) {
+//               console.log("Error durante el registro:", responseError.message);
+//               Swal.fire('Error', responseError.message, 'error');
+//           } else {
+//               console.log("Error desconocido durante el registro.");
+//               Swal.fire('Error', 'Ha ocurrido un error durante el registro.', 'error');
+//           }
+//       } else {
+//           console.log("Error desconocido durante el registro.");
+//           Swal.fire('Error', 'Ha ocurrido un error durante el registro.', 'error');
+//       }
+//       setIsLoading(false);
+//       if (error) setError(error);
+//   }
+// };
+
+const createUsers = async (newUsers: UserByAccount) => {
+  console.log("La función createUsers se está ejecutando");
+
+  setIsLoading(true);
+
+  if (!newUsers.name.trim()) {
+    console.log("Nombre de usuario no válido:", newUsers.name);
+    setConceptoError(true);
+    setIsLoading(false);
+    return;
+  }
+
+  try {
+    
+    const { name, email, password, lastName, language, admin, userId, state, photoFile } = newUsers;
+    console.log("Datos extraídos:", { name, email, password, lastName, language, admin, userId, state, photoFile, accountId: user?.accountId || '' });
+    const userAccountId = user ? user.accountId : '';
+    const userWithAccountId = { ...newUsers, accountId: userAccountId };
+    await startRegister(userWithAccountId);
+    console.log("Registro exitoso");
+    navigate('/init/overview/users');
+} catch (error: any) {
+    console.log("Error durante el registro:", error);
+    if (error.response && error.response.data) {
+      const responseError: ErrorResponseAuth = error.response.data;
+      console.log("Error de respuesta:", responseError);
+      if (responseError.code === "UsernameExistsException") {
+        console.log("Correo electrónico ya registrado.");
+        Swal.fire('Error', 'Correo electrónico ya registrado.', 'error');
+      } else if (responseError.message) {
+        console.log("Error durante el registro:", responseError.message);
+        Swal.fire('Error', responseError.message, 'error');
+      } else {
+        console.log("Error desconocido durante el registro.");
+        Swal.fire('Error', 'Ha ocurrido un error durante el registro.', 'error');
+      }
+    } else {
+      console.log("Error desconocido durante el registro.");
+      Swal.fire('Error', 'Ha ocurrido un error durante el registro.', 'error');
     }
-  
-    try {
-      // Aquí extraemos los datos necesarios de newUsers para llamar a startRegister
-      const { name, email, password, lastName, language, admin, accountId, state, photoFile} = newUsers;
-  
-      console.log("Datos extraídos:", { name, email, password, lastName, language, admin, accountId, state, photoFile});
-  
-      // Llamamos a la función startRegister con los datos extraídos
-      await startRegister({ email, password, lastName, accountId, admin, name, language, state, photoFile });
-  
-      console.log("Registro exitoso");
-  
-      // Aquí llamamos a startConfirm una vez que el registro ha sido exitoso
-      const confirmationCode = 'tuCodigo'; // Puedes obtener este código del correo electrónico
-      console.log("Código de confirmación:", confirmationCode);
-      await startConfirm(confirmationCode); // Llama a startConfirm con el código de confirmación
-  
-      console.log("Confirmación exitosa");
-  
-      setIsLoading(false);
-      // Aquí puedes agregar lógica adicional si es necesario después del registro
-      console.log("Redireccionando...");
-      navigate('/init/overview/users');
-    } catch (error) {
-      console.log("Error durante el registro:", error);
-      Swal.fire('Ups', t("unexpected_error"), 'error');
-      setIsLoading(false);
-      if (error) setError(error);
-    }
+    setIsLoading(false);
+    if (error) setError(error);
+  }
 };
-
-
-  
 
   const getUsers = async () => {
     setIsLoading(true);
