@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { DoseForm, LaborsForm, Loading, StockForm } from "../components";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector, useForm, useSupply } from "../hooks";
+import { useAppDispatch, useAppSelector, useCrops, useForm, useSupply } from "../hooks";
 import {
   Button,
   Container,
@@ -60,8 +60,7 @@ export const SupplyPage: React.FC = () => {
   } = useForm(initialForm);
 
   const { isLoading, supplyError, supplies, createSupply, updateSupply, setSupplyError, getSupplies } = useSupply();
-
-
+  const { isLoading: loadingCrops, dataCrops, getCrops } = useCrops();
 
   const onClickCancel = () => navigate("/init/overview/supply");
 
@@ -99,7 +98,7 @@ export const SupplyPage: React.FC = () => {
           return (
             <DoseForm
               key="doseForm"
-              crops={supplies.filter(s => s.type === SupplyType.Cultivo)} //TODO: cambiar por la tabla de cultivo
+              crops={dataCrops} //TODO: cambiar por la tabla de cultivo
               formValues={formulario}
               handleInputChange={handleInputChange}
               handleGenercoChange={handleGenercoChange}
@@ -146,6 +145,7 @@ export const SupplyPage: React.FC = () => {
 
   useEffect(() => {
     getSupplies();
+    getCrops();
   }, []);
 
   useEffect(() => {
@@ -161,7 +161,7 @@ export const SupplyPage: React.FC = () => {
 
   return (
     <Container maxWidth="md" className="pepe">
-      <Loading key="loading-supply" loading={isLoading} />
+      <Loading key="loading-supply" loading={isLoading || loadingCrops} />
       <Paper
         variant="outlined"
         sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}

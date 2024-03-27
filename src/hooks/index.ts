@@ -12,3 +12,5 @@ export * from './useVehicle';
 export * from './useCampaign';
 export * from './useOriginDestinations';
 export * from './useOrder';
+export * from './useCrops';
+export * from './useField';

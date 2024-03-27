@@ -1,4 +1,4 @@
-import { Navigate, Link as RouterLink, useLocation } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import {
   Box,
   Collapse,
@@ -55,7 +55,7 @@ export const SideBar: React.FC<SideBarProps> = ({
 
   const { pathname } = useLocation();
   const version = getEnvVariables().VITE_VERSION;
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const onClickMenu = (collapse: string) => setOpenCollapse(collapse === openCollapse ? "" : collapse);
 
@@ -223,11 +223,11 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("fields_lots_hectares")} />
               </ListItemButton> */}
-              <ListItemButton 
+              <ListItemButton
                 component={RouterLink}
                 to="/init/overview/fields/planification"
                 selected={pathname.includes("/init/overview/fields/planification")}
-                >
+              >
                 <ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={t("annual_campaign_projection")} />
@@ -324,8 +324,8 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}
-                to="/init/overview/transform"
-                selected={pathname.includes("/init/overview/transform")}>
+                to="/init/overview/value-transform"
+                selected={pathname.includes("/init/overview/value-transform")}>
                 <ListItemIcon>
                   <TransformIcon />
                 </ListItemIcon>

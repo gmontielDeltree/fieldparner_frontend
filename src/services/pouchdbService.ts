@@ -20,6 +20,7 @@ import {
     DepositSupplyOrder,
     WithdrawalsByDepositSupply,
     MovementType,
+    Crops,
 } from '../types';
 import uuid4 from 'uuid4';
 
@@ -51,7 +52,8 @@ const dbNames = Object.freeze({
     withdrawalsByDepositSupply: "withdrawals-deposit-supply",
     movementsType: "movements-type",
     platform: "platform",
-    platformSupplies:"test-supplies"
+    platformSupplies:"test-supplies",
+    crops: "crops",
 });
 
 export const dbContext = Object.freeze({
@@ -76,6 +78,7 @@ export const dbContext = Object.freeze({
     movementsType: new PouchDB<MovementType>(dbNames.movementsType),
     platform: new PouchDB<any>(dbNames.platform),
     platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
+    crops: new PouchDB<Crops>(dbNames.crops),
 });
 
 dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
@@ -100,6 +103,7 @@ dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`);
 
 dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
 dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
+dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, { live: true, retry: true, });
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {

@@ -26,7 +26,8 @@ import {
   PlanificationPage,
   ListWithdrawalOrdersPage,
   WithdrawalOrdersPage,
-  ConfirmWithdrawalOrderPage
+  ConfirmWithdrawalOrderPage,
+  ListTransformPage
 } from "../pages";
 import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
@@ -44,7 +45,7 @@ export const OverviewRoutes: React.FC = () => {
       <Routes>
         <Route path="/overview/fields/:campoId?/:loteId?" element={<FieldsPage />} >
           <Route path="planification" element={<PlanificationPage />} />
-          <Route path="device/:deviceId/:date" element={<DevicePage/>}/>
+          <Route path="device/:deviceId/:date" element={<DevicePage />} />
           <Route path="integrations" element={<IntegrationsPage />} />
           <Route path="john-deere" element={<JohnDeereIntegration />} />
           <Route path="magris/:id" element={<MagrisReportIntegration />} />
@@ -80,7 +81,8 @@ export const OverviewRoutes: React.FC = () => {
           element={<NewStockMovementPage />}
         />
         <Route path="/overview/list-stock" element={<ListStockPage />} />
-        <Route path="/overview/transform" element={<TransformPage />} />
+        <Route path="/overview/value-transform" element={<ListTransformPage />} />
+        <Route path="/overview/value-transform/new" element={<TransformPage />} />
 
         <Route path="/overview/exit-field" element={<ListExitFieldPage />} />
         <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />

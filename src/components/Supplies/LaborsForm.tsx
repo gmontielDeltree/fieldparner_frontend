@@ -108,6 +108,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
             startAdornment: <InputAdornment position="start" />,
           }}
           fullWidth
+          multiline
         />
       </Grid>
       <Grid item xs={12} sm={6}>

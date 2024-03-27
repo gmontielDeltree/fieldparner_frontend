@@ -25,6 +25,12 @@ export * from './PlanificationPage';
 export * from './WithdrawalOrdersPage';
 export * from './ListWithdrawalOrdersPage';
 export * from './ConfirmWithdrawalOrderPage';
+export * from './ListTransformPage';
+
+
+
+
+
 
 //Paginas publicas
 export * from "./LoginPage";
