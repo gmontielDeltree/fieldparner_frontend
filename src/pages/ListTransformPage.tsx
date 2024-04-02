@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
 import { Box, Button, Collapse, Container, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import { Add as AddIcon, Transform as TransformIcon } from "@mui/icons-material";
 import { Loading, CloseButtonPage, TableCellStyled } from "../components";
-import { useStockMovement, useTransformStock } from "../hooks";
+import { useTransformStock } from "../hooks";
 import { useTranslation } from "react-i18next";
 import { KeyboardArrowDown as KeyboardArrowDownIcon, KeyboardArrowUp as KeyboardArrowUpIcon } from '@mui/icons-material';
 import { StockMovementItem } from "../types";
@@ -116,31 +115,15 @@ export const ListTransformPage: React.FC = () => {
     const { isLoading, transformMovements, getTransformationMovements } = useTransformStock();
     const { t } = useTranslation();
 
-    const columns: GridColDef[] = [
-        // { field: "id", hide: true },
-        { field: "date", headerName: t("_date"), width: 150 },
-        { field: "supply", headerName: t("type_supply"), width: 150 },
-        { field: "deposit", headerName: t("_warehouse"), width: 150 },
-        { field: "isIncome", headerName: t("income_outcome"), width: 120 },
-        { field: "um", headerName: "UM", width: 150 },
-        { field: "amount", headerName: t("_quantity"), width: 150 },
-    ];
-
-    // const rows = useMemo(() => {
-    //     return stockMovements.map((sm) => {
-    //         return {
-    //             id: sm._id,
-    //             date: sm.creationDate,
-    //             movement: sm.movement,
-    //             supply: `${sm.supply?.type}/${sm.supply?.name}`,
-    //             deposit: sm.deposit?.description,
-    //             movementType: sm.typeMovement,
-    //             isIncome: sm.isIncome ? t("_income") : t("_outcome"),
-    //             um: sm.supply?.unitMeasurement,
-    //             amount: sm.amount,
-    //         } as RowStockMovementItem;
-    //     });
-    // }, [transformMovements]);
+    // const columns: GridColDef[] = [
+    //     // { field: "id", hide: true },
+    //     { field: "date", headerName: t("_date"), width: 150 },
+    //     { field: "supply", headerName: t("type_supply"), width: 150 },
+    //     { field: "deposit", headerName: t("_warehouse"), width: 150 },
+    //     { field: "isIncome", headerName: t("income_outcome"), width: 120 },
+    //     { field: "um", headerName: "UM", width: 150 },
+    //     { field: "amount", headerName: t("_quantity"), width: 150 },
+    // ];
 
     // const onClickSearch = (): void => {
     //   if (filterText === "") {
