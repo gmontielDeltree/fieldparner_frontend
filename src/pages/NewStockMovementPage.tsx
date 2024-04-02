@@ -177,24 +177,13 @@ export const NewStockMovementPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // if (
-    //   typeMovement.toString() !== "" &&
-    //   movementsShowSwitch.includes(typeMovement.toString())
-    // )
-    //   setShowSwitch(true);
-    // else {
-    //   setFormulario((prevState) => ({
-    //     ...prevState,
-    //     isIncome: typeMovement.includes(TypeMovement.Compra.toString()),
-    //   }));
-    //   setShowSwitch(false);
-    // }
-    if (movementTypeSelected && movementTypeSelected.sumaStock === "both")
+    
+    if (movementTypeSelected && movementTypeSelected.sumaStock === "Ambas")
       setShowSwitch(true)
     else {
       setFormulario((prevState) => ({
         ...prevState,
-        isIncome: (movementTypeSelected?.sumaStock === "suma")
+        isIncome: (movementTypeSelected?.sumaStock === "Suma")
       }));
       setShowSwitch(false);
     }
