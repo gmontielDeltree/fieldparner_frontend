@@ -134,16 +134,16 @@ export const useTransformStock = () => {
                 docItem.deposit = deposits.find(d => d._id === doc.depositId);
                 docItem.supply = supplies.find(s => s._id === doc.supplyId);
 
-                if (docItem.operationDate in movementsGroup) {
+                if (docItem.creationDate in movementsGroup) {
                     if (docItem.isIncome)
-                        movementsGroup[docItem.operationDate].income.push(docItem);
+                        movementsGroup[docItem.creationDate].income.push(docItem);
                     else
-                        movementsGroup[docItem.operationDate].output.push(docItem);
+                        movementsGroup[docItem.creationDate].output.push(docItem);
                 }
                 else {
                     let movementIncome: StockMovementItem[] = [];
                     let movementOutput: StockMovementItem[] = [];
-                    movementsGroup[docItem.operationDate] = {
+                    movementsGroup[docItem.creationDate] = {
                         income: docItem.isIncome ? movementIncome.concat(docItem) : movementIncome,
                         output: !docItem.isIncome ? movementOutput.concat(docItem) : movementOutput,
                     }

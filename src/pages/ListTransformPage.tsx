@@ -5,7 +5,11 @@ import { Add as AddIcon, Transform as TransformIcon } from "@mui/icons-material"
 import { Loading, CloseButtonPage, TableCellStyled } from "../components";
 import { useTransformStock } from "../hooks";
 import { useTranslation } from "react-i18next";
-import { KeyboardArrowDown as KeyboardArrowDownIcon, KeyboardArrowUp as KeyboardArrowUpIcon } from '@mui/icons-material';
+import {
+    KeyboardArrowDown as KeyboardArrowDownIcon,
+    KeyboardArrowUp as KeyboardArrowUpIcon,
+    // Search as SearchIcon
+} from '@mui/icons-material';
 import { StockMovementItem } from "../types";
 
 
@@ -18,6 +22,7 @@ interface RowProps {
 
 function Row(props: RowProps) {
     const { row } = props;
+    const { t } = useTranslation();
     const [open, setOpen] = React.useState(false);
 
     const totalIncome = row.income.reduce((total, row) => total + row.amount, 0);
@@ -49,15 +54,15 @@ function Row(props: RowProps) {
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1 }}>
                             <Typography variant="h6" gutterBottom component="div">
-                                Insumo Origen
+                                {t("source_supplies")}
                             </Typography>
                             <Table size="small" aria-label="purchases">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCellStyled align="center">Insumo</TableCellStyled>
-                                        <TableCellStyled align="center">Deposito</TableCellStyled>
+                                        <TableCellStyled align="center">{t("_supply")}</TableCellStyled>
+                                        <TableCellStyled align="center">{t("_warehouse")}</TableCellStyled>
                                         <TableCellStyled align="right">UM</TableCellStyled>
-                                        <TableCellStyled align="right">Cantidad</TableCellStyled>
+                                        <TableCellStyled align="right">{t("_quantity")}</TableCellStyled>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -76,15 +81,15 @@ function Row(props: RowProps) {
                                 </TableBody>
                             </Table>
                             <Typography variant="h6" gutterBottom component="div" sx={{ mt: 1 }}>
-                                Insumo Destino
+                                {t("new_supply_destination")}
                             </Typography>
                             <Table size="small" aria-label="purchases">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCellStyled align="center">Insumo</TableCellStyled>
-                                        <TableCellStyled align="center">Deposito</TableCellStyled>
+                                        <TableCellStyled align="center">{t("_supply")}</TableCellStyled>
+                                        <TableCellStyled align="center">{t("_warehouse")}</TableCellStyled>
                                         <TableCellStyled align="right">UM</TableCellStyled>
-                                        <TableCellStyled align="right">Cantidad</TableCellStyled>
+                                        <TableCellStyled align="right">{t("_quantity")}</TableCellStyled>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -113,24 +118,10 @@ function Row(props: RowProps) {
 export const ListTransformPage: React.FC = () => {
     const navigate = useNavigate();
     const { isLoading, transformMovements, getTransformationMovements } = useTransformStock();
+    // const { filterText, handleInputChange } = useForm({ filterText: "" })
     const { t } = useTranslation();
 
-    // const columns: GridColDef[] = [
-    //     // { field: "id", hide: true },
-    //     { field: "date", headerName: t("_date"), width: 150 },
-    //     { field: "supply", headerName: t("type_supply"), width: 150 },
-    //     { field: "deposit", headerName: t("_warehouse"), width: 150 },
-    //     { field: "isIncome", headerName: t("income_outcome"), width: 120 },
-    //     { field: "um", headerName: "UM", width: 150 },
-    //     { field: "amount", headerName: t("_quantity"), width: 150 },
-    // ];
-
-    // const onClickSearch = (): void => {
-    //   if (filterText === "") {
-    //     getStockMovements();
-    //     return;
-    //   }
-    // };
+    // const onClickSearch = (): void => setSearch(filterText);
 
     const onClickNewTransform = () =>
         navigate("/init/overview/value-transform/new");
@@ -176,15 +167,52 @@ export const ListTransformPage: React.FC = () => {
                             {t("add_new")}
                         </Button>
                     </Grid>
+                    {/* <Grid item xs={12} sm={10}>
+                        <Grid container justifyContent="flex-end">
+                            <Grid item xs={8} sm={3}>
+                                <TextField
+                                    variant="outlined"
+                                    type="text"
+                                    size="small"
+                                    autoComplete="off"
+                                    name="filterText"
+                                    value={filterText}
+                                    onChange={handleInputChange}
+                                    InputProps={{
+                                        startAdornment: <InputAdornment position="start" />,
+                                    }}
+                                    fullWidth
+                                />
+                            </Grid>
+                            <Grid item xs={4} sm={3}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    size="medium"
+                                    fullWidth
+                                    sx={{
+                                        height: "98%",
+                                        margin: "auto",
+                                        borderTopLeftRadius: 0,
+                                        borderBottomLeftRadius: 0,
+                                    }}
+                                    onClick={() => onClickSearch()}
+                                    startIcon={<SearchIcon />}
+                                >
+                                    {t("icon_search")}
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Grid> */}
                 </Grid>
                 <Box component="div" sx={{ p: 1 }}>
-                    <TableContainer component={Paper}>
+                    <TableContainer component={Paper} sx={{ maxHeight: "700px" }}>
                         <Table aria-label="collapsible table">
                             <TableHead>
                                 <TableRow>
                                     <TableCell />
                                     <TableCellStyled>Fecha</TableCellStyled>
-                                    <TableCellStyled align="center">Detalle</TableCellStyled>
+                                    <TableCellStyled align="center">{t("_detail")}</TableCellStyled>
                                     <TableCellStyled align="right">Total Ingreso</TableCellStyled>
                                     <TableCellStyled align="right">Total Salida</TableCellStyled>
                                 </TableRow>

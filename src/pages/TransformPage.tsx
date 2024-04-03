@@ -29,7 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 
-const today = getShortDate(true);
+const today = getShortDate();
 
 type SupplyRowProps = {
     row: TransformSupply;
@@ -258,7 +258,7 @@ export const TransformPage: React.FC = () => {
             destinationSupplies, //Movimientos de entrada
             stockBySupplies, //Tabla auxiliar de stock
             detail,
-            today
+            operationDate
         );
         reset();
         navigate("/init/overview/value-transform");
