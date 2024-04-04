@@ -1,4 +1,3 @@
-import * as React from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
@@ -10,17 +9,26 @@ import DateRangePicker from "./DateRangePicker";
 import { Autocomplete } from "@mui/material";
 import { useCiclo } from "../../hooks/usePlanifications";
 import { CultivoContext } from "./contexts/CultivosContext";
+import { CultivoItem } from "../../hooks";
+import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, onSave}) {
 
   const [ciclo,saveCiclo] = useCiclo({ campaingId: campanaId , loteId: loteId, cicloId: cicloId } )
 
+  const { i18n } = useTranslation();
+
   const [open, setOpen] = React.useState(false);
-  const [cultivo, setCultivo] = React.useState(top100Films[0])
+  const [cultivo, setCultivo] = React.useState<CultivoItem>()
   const [startDate, setStartDate] = React.useState(new Date())
   const [endDate, setEndDate] = React.useState(new Date())
 
-  const {crops} = React.useContext(CultivoContext)
+  const {crops,getCrops} = React.useContext(CultivoContext)
+
+  useEffect(()=>{
+    getCrops()
+  },[])
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -64,8 +72,9 @@ export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, o
             value={cultivo}
             id="combo-box-demo"
             options={crops}
+            getOptionLabel={(option) => option.descriptionEN}
             sx={{ width: 300 }}
-            isOptionEqualToValue={(option,value)=>option.cultivoId ===value.cultivoId}
+            isOptionEqualToValue={(option,value)=>option._id ===value._id}
             onChange={(event: any, newValue: string | null)=>setCultivo(newValue)}
             renderInput={(params) => <TextField {...params} label="Cultivo" />}
           />
@@ -79,17 +88,14 @@ export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, o
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>
           <Button type="submit" disabled={!cultivo} onClick={()=>{
-            saveCiclo(campanaId,loteId,cultivo.cultivoId,startDate,endDate)
-            onSave()
+            console.log(cultivo)
+            if(cultivo){
+              saveCiclo(campanaId,loteId,cultivo._id,startDate,endDate)
+              onSave()
+            }
           }}>Aceptar</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
   );
 }
-
-const top100Films = [
-  { label: "Soja", cultivoId: 1994 },
-  { label: "Trigo", cultivoId: 1972 },
-  { label: "Maíz", cultivoId: 1974 },
-];

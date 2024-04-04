@@ -133,8 +133,8 @@ export const ActividadEditorBase = ({
             )}
             <Typography sx={{ mt: 2, mb: 1, py: 1 }}></Typography>
 
-            <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
-              <Button
+            <Box sx={{ display: "flex", flexDirection: "row", pt: 2, justifyContent:"flex-end" }}>
+              {/* <Button
                 color="inherit"
                 disabled={activeStep === 0}
                 onClick={handleBack}
@@ -145,7 +145,7 @@ export const ActividadEditorBase = ({
               <Box sx={{ flex: "1 1 auto" }} />
               <Button onClick={handleNext} sx={{ mr: 1 }}>
                 Siguiente
-              </Button>
+              </Button> */}
 
               {/* <Button
                 variant="contained"

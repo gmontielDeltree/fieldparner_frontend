@@ -3,6 +3,7 @@ import TextField from '@mui/material/TextField';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { es } from 'date-fns/locale';
 
 export default function DateRangePicker({startDate, endDate, onRangeChange}) {
   // State variables for the start and end dates
@@ -18,7 +19,7 @@ export default function DateRangePicker({startDate, endDate, onRangeChange}) {
 
   // Return two date picker components with the minDate and onChange props
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
       <DatePicker
         sx={{marginRight:"10px"}}
         label="Start Date"

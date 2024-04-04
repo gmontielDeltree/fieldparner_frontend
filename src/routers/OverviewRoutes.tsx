@@ -44,7 +44,9 @@ export const OverviewRoutes: React.FC = () => {
     <AppLayout key="app-layout">
       <Routes>
         <Route path="/overview/fields/:campoId?/:loteId?" element={<FieldsPage />} >
+          <Route path="planification/:loteId" element={<PlanificationPage />} />
           <Route path="planification" element={<PlanificationPage />} />
+
           <Route path="device/:deviceId/:date" element={<DevicePage />} />
           <Route path="integrations" element={<IntegrationsPage />} />
           <Route path="john-deere" element={<JohnDeereIntegration />} />

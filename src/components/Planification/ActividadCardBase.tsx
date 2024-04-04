@@ -56,6 +56,7 @@ export const ActividadCardBase: React.FC = ({
     totalCosto,
     tipo,
     area,
+    contratistaId,
     rindeEstimado,
     precioEstimadoCosecha,
     lineasInsumos,
@@ -114,6 +115,14 @@ export const ActividadCardBase: React.FC = ({
           defaultCollapseIcon={<ExpandMoreIcon />}
           defaultExpandIcon={<ChevronRightIcon />}
         >
+          
+          <TreeItem nodeId="10" label="Contratista">
+            {!contratistaId && (
+              <p>No contractor</p>
+            )}
+           {contratistaId}
+          </TreeItem>
+
           <TreeItem nodeId="1" label="Insumos">
             {lineasInsumos?.length === 0 && (
               <p>La actividad no tiene insumos</p>

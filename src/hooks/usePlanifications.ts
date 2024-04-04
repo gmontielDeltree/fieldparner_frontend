@@ -193,7 +193,7 @@ export const useCiclo = ({
 
   const saveCiclo = 
     (campanaId, lotePId,cultivoId, startDate, endDate) => {
-      console.log("ACAAAAAAAAAAAAAAAA",campanaId)
+      console.log("Saving Cycle",campanaId,cultivoId)
       let c = { ...ciclo };
 
       if (!cicloId) {

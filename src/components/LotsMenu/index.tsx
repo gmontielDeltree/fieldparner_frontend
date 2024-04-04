@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import planAnualIcon from "../../images/icons/sembradora_act.webp";
+
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
 import categoryIcon2 from "../../images/icons/pulverizadora_act.webp";
 import categoryIcon3 from "../../images/icons/cosechadora_act.webp";
@@ -74,6 +76,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
 
   console.log("Lot seleccionado: ", lot);
   const categories = [
+    {id:"Planificacion Anual de Campaña", icon:planAnualIcon, link:`/init/overview/fields/planification/${lot.id}`},
     { id: "Planificar Siembra", icon: categoryIcon1 },
     { id: "Planificar Aplicacion", icon: categoryIcon2 },
     { id: "Planificar Cosecha", icon: categoryIcon3 },

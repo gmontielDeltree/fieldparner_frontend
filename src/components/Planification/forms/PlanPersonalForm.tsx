@@ -18,6 +18,7 @@ import { styled } from "@mui/material/styles";
 import uuid4 from "uuid4";
 import { formatISO, parseISO } from "date-fns";
 import { TTipoActividadPlanificada } from "../../../interfaces/planification";
+import { es } from 'date-fns/locale';
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -95,7 +96,7 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
       <FormControl fullWidth>
         <Grid container spacing={2} sx={{justifyContent:"center"}}>
           <Grid item xs={12} sm={4}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}  adapterLocale={es}>
               <DatePicker
                 label="Fecha"
                 size="small"
