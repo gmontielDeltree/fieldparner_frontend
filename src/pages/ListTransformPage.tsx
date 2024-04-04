@@ -25,8 +25,8 @@ function Row(props: RowProps) {
     const { t } = useTranslation();
     const [open, setOpen] = React.useState(false);
 
-    const totalIncome = row.income.reduce((total, row) => total + row.amount, 0);
-    const totalOutput = row.output.reduce((total, row) => total + row.amount, 0);
+    const totalIncome = row.income?.reduce((total, row) => total + row.amount, 0);
+    const totalOutput = row.output?.reduce((total, row) => total + row.amount, 0);
 
     return (
         <React.Fragment>
@@ -41,10 +41,10 @@ function Row(props: RowProps) {
                     </IconButton>
                 </TableCell>
                 <TableCell component="th" scope="row">
-                    {row.income[0].operationDate}
+                    {row.income[0]?.operationDate}
                 </TableCell>
                 <TableCell component="th" scope="row">
-                    {row.income[0].detail}
+                    {row.income[0]?.detail}
                 </TableCell>
                 <TableCell align="right">{totalIncome}</TableCell>
                 <TableCell align="right">{totalOutput}</TableCell>
@@ -66,7 +66,7 @@ function Row(props: RowProps) {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {row.income.map((rowIn, i) => (
+                                    {row.income?.map((rowIn, i) => (
                                         <TableRow key={i}>
                                             <TableCell align="center" component="th" scope="row">
                                                 {rowIn.supply?.name}
@@ -93,7 +93,7 @@ function Row(props: RowProps) {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {row.output.map((rowOut, i) => (
+                                    {row.output?.map((rowOut, i) => (
                                         <TableRow key={i}>
                                             <TableCell align="center" component="th" scope="row">
                                                 {rowOut.supply?.name}
@@ -212,7 +212,7 @@ export const ListTransformPage: React.FC = () => {
                                 <TableRow>
                                     <TableCell />
                                     <TableCellStyled>Fecha</TableCellStyled>
-                                    <TableCellStyled align="center">{t("_detail")}</TableCellStyled>
+                                    <TableCellStyled align="left">{t("_detail")}</TableCellStyled>
                                     <TableCellStyled align="right">Total Ingreso</TableCellStyled>
                                     <TableCellStyled align="right">Total Salida</TableCellStyled>
                                 </TableRow>
