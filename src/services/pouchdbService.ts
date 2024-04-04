@@ -52,7 +52,7 @@ const dbNames = Object.freeze({
     withdrawalsByDepositSupply: "withdrawals-deposit-supply",
     movementsType: "movements-type",
     platform: "platform",
-    platformSupplies:"test-supplies",
+    platformSupplies: "test-supplies",
     crops: "crops",
 });
 
@@ -94,16 +94,16 @@ dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, op
 dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
 dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
 dbContext.campaigns.sync(`${remoteCouchDBUrl}${dbNames.campaigns}`, opts);
-dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`);
-dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`);
-dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`);
-dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`);
-dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`);
-dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`);
+dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
+dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`, opts);
+dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`, opts);
+dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`, opts);
+dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`, opts);
+dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`, opts);
 
 dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
 dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
-dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, { live: true, retry: true, });
+dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
