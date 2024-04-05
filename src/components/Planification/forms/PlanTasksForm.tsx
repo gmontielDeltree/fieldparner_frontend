@@ -101,7 +101,7 @@ function EditToolbar(props: EditToolbarProps) {
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-        Nueva Labor
+        Nuevo Servicio
       </Button>
     </GridToolbarContainer>
   );
@@ -202,7 +202,7 @@ function PlanTasksForm({
   const columns: GridColDef[] = [
     {
       field: "labor",
-      headerName: "Labor",
+      headerName: "Servicio",
       width: 180,
       editable: true,
       renderEditCell: (params) => (

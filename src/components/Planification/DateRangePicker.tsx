@@ -5,6 +5,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { es } from "date-fns/locale";
 import { isWithinInterval } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 export default function DateRangePicker({
   startDate,
@@ -14,6 +15,7 @@ export default function DateRangePicker({
 }: {
   invalidRanges: Date[][];
 }) {
+  const {t} = useTranslation()
   // State variables for the start and end dates
   const [_startDate, setStartDate] = React.useState(startDate); //new Date());
   const [_endDate, setEndDate] = React.useState(endDate); //new Date());
@@ -46,7 +48,7 @@ export default function DateRangePicker({
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
       <DatePicker
         sx={{ marginRight: "10px" }}
-        label="Start Date"
+        label={t("start_date")}
         value={_startDate}
         maxDate={_endDate}
         shouldDisableDate={isValidDate}
@@ -55,12 +57,11 @@ export default function DateRangePicker({
         inputFormat="dd/MM/yyyy"
       />
       <DatePicker
-        label="End Date"
+        label={t("end_date")}
         value={_endDate}
         minDate={_startDate} // Set the minDate to the start date
         onChange={(date) => setEndDate(date)}
         shouldDisableDate={isValidDate}
-
         renderInput={(params) => <TextField {...params} />}
         inputFormat="dd/MM/yyyy"
       />

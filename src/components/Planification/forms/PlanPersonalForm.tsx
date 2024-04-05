@@ -9,6 +9,7 @@ import {
   Paper,
   Typography,
   InputAdornment,
+  Autocomplete,
 } from "@mui/material";
 import { useBusiness } from "../../../hooks";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -18,7 +19,8 @@ import { styled } from "@mui/material/styles";
 import uuid4 from "uuid4";
 import { formatISO, parseISO } from "date-fns";
 import { TTipoActividadPlanificada } from "../../../interfaces/planification";
-import { es } from 'date-fns/locale';
+import { es } from "date-fns/locale";
+import { AutocompleteContratista } from "../../LotsMenu/components/AutocompleteContratista";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -36,8 +38,8 @@ const Title = styled(Typography)({
 function PlanPersonalForm({ formData, setFormData, tipo }) {
   const { businesses, getBusinesses } = useBusiness();
 
-  const [interPrecio, setInterPrecio] = useState("0")
-  const [interRinde, setInterRinde] = useState("0")
+  const [interPrecio, setInterPrecio] = useState("0");
+  const [interRinde, setInterRinde] = useState("0");
 
   useEffect(() => {
     getBusinesses();
@@ -46,14 +48,14 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
 
   const onFieldChange = (fieldName, value) => {
     if (fieldName === "contratista") {
-      const selectedBusiness = businesses.find(
-        (business) => business._id === value
-      );
-      console.log("selectedBusiness", selectedBusiness);
+      // const selectedBusiness = businesses.find(
+      //   (business) => business._id === value
+      // );
+      // console.log("selectedBusiness", selectedBusiness);
 
       setFormData({
         ...formData,
-        contratistaId: selectedBusiness?._id,
+        contratista: value,
       });
     } else if (fieldName === "fecha") {
       setFormData({
@@ -66,27 +68,21 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
         area: value,
       });
     } else if (fieldName === "rindeEstimado") {
-
       if (/^\d*\.?\d*$/.test(value)) {
-        setInterRinde(value); 
+        setInterRinde(value);
         setFormData({
           ...formData,
           rindeEstimado: +value,
         });
       }
-
-    
     } else if (fieldName === "precioEstimadoCosecha") {
-
       if (/^\d*\.?\d*$/.test(value)) {
-        setInterPrecio(value); 
+        setInterPrecio(value);
         setFormData({
           ...formData,
           precioEstimadoCosecha: +value,
         });
       }
-
-     
     }
   };
 
@@ -94,9 +90,12 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
     <CustomPaper elevation={3}>
       {/* <Title>Datos Generales</Title> */}
       <FormControl fullWidth>
-        <Grid container spacing={2} sx={{justifyContent:"center"}}>
+        <Grid container spacing={2} sx={{ justifyContent: "center" }}>
           <Grid item xs={12} sm={4}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}  adapterLocale={es}>
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              adapterLocale={es}
+            >
               <DatePicker
                 label="Fecha"
                 size="small"
@@ -107,6 +106,11 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
           </Grid>
 
           <Grid item xs={12} sm={6}>
+            <AutocompleteContratista
+              value={formData.contratista || ""}
+              onChange={(e) => onFieldChange("contratista", e)}
+            ></AutocompleteContratista>
+{/* 
             <FormControl fullWidth>
               <InputLabel id="contratista-label">Contratista</InputLabel>
               <Select
@@ -123,7 +127,7 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
                   </MenuItem>
                 ))}
               </Select>
-            </FormControl>
+            </FormControl> */}
           </Grid>
 
           <Grid item xs={4}>
@@ -189,11 +193,10 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
                     ),
                   }}
                   value={interPrecio || 0}
-                  onChange={(e) =>{
-                    console.log("dsds")
-                    onFieldChange("precioEstimadoCosecha", e.target.value)
-                  }
-                  }
+                  onChange={(e) => {
+                    console.log("dsds");
+                    onFieldChange("precioEstimadoCosecha", e.target.value);
+                  }}
                 />
               </Grid>
             </Grid>

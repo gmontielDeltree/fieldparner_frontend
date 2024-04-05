@@ -2,7 +2,7 @@ import React from "react";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import { MoreVert } from "@mui/icons-material";
 
-export const ActividadMoreButton = ({onEdit, onDelete}) => {
+export const ActividadMoreButton = ({onEdit, onDelete, onProgramar}) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -35,12 +35,12 @@ export const ActividadMoreButton = ({onEdit, onDelete}) => {
       >
          <MenuItem onClick={()=>{
             handleClose()
-            onEdit()
+            onProgramar()
             }}>Programar</MenuItem> 
             
         <MenuItem onClick={()=>{
             handleClose()
-            onDelete()
+            onEdit()
             }}>Editar</MenuItem>
         
         <MenuItem onClick={()=>{

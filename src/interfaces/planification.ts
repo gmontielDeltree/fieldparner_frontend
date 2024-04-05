@@ -1,5 +1,6 @@
 import PouchDB from 'pouchdb';
 import { CreatedTag, LastUpdateTag } from './activity';
+import { Business } from '@types';
 
 export enum TTipoActividadPlanificada {
     SIEMBRA = "siembra",
@@ -43,7 +44,7 @@ export interface IActividadPlanificacion extends FPDocument {
     area: number,
     rindeEstimado ?: number,
     precioEstimadoCosecha ? :number, 
-    contratistaId?: string,
+    contratista?: Business,
     cicloId: string,
     campanaId:string,
     campoId:string,

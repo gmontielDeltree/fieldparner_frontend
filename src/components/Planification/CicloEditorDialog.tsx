@@ -6,7 +6,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import DateRangePicker from "./DateRangePicker";
-import { Autocomplete, Typography } from "@mui/material";
+import { Autocomplete, Box, Typography } from "@mui/material";
 import { useCiclo } from "../../hooks/usePlanifications";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { CultivoItem } from "../../hooks";
@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ICiclosPlanificacion } from "../../interfaces/planification";
 import { add, isWithinInterval } from "date-fns";
+import { AutocompleteCultivo } from "../LotsMenu/components/AutocompleteCultivo";
 
 export default function CicloEditorDialog({
   campanaId,
@@ -107,7 +108,17 @@ export default function CicloEditorDialog({
         <DialogContent>
           <DialogContentText></DialogContentText>
 
-          <Autocomplete
+
+        <Box             style={{ marginBottom: "1rem", marginTop: "1rem" }}
+>
+            <AutocompleteCultivo
+           onChange={(value) =>
+            setCultivo(value)
+          }
+          ></AutocompleteCultivo>
+        </Box>
+        
+          {/* <Autocomplete
             style={{ marginBottom: "1rem", marginTop: "1rem" }}
             disablePortal
             value={cultivo}
@@ -120,7 +131,7 @@ export default function CicloEditorDialog({
               setCultivo(newValue)
             }
             renderInput={(params) => <TextField {...params} label="Cultivo" />}
-          />
+          /> */}
 
           <DateRangePicker
             invalidRanges={invalidRanges}
