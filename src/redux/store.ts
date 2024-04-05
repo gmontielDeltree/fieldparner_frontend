@@ -9,9 +9,11 @@ import { depositSlice } from "./deposit";
 import { mapSlice } from "./map";
 import { drawSlice } from "./draw";
 import { fieldListSlice } from "./fieldsList";
+import { campaignSlice } from "./campaign";
 
 import { originsDestinationsSlice } from "./originsdestinatons/originDestiantionsSlice";
 import { usersSlice } from "./users/userSlice";
+import { withdrawalOrderSlice } from "./withdrawalOrder";
 
 const store = configureStore({
   reducer: {
@@ -25,7 +27,9 @@ const store = configureStore({
     draw: drawSlice.reducer,
     ordesti: originsDestinationsSlice.reducer,
     fieldList: fieldListSlice.reducer,
-    users: usersSlice.reducer
+    users: usersSlice.reducer,
+    campaign: campaignSlice.reducer,
+    order: withdrawalOrderSlice.reducer
   }
 });
 

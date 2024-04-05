@@ -24,6 +24,16 @@ import { useTheme } from "@mui/material/styles";
 import Badge from "@mui/material/Badge";
 import { Actividad } from "../../interfaces/activity";
 import { exit } from "process";
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert, { AlertProps } from "@mui/material/Alert";
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
+  function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  }
+);
 
 const activityTypeTranslations = {
   sowing: "Siembra",
@@ -39,11 +49,12 @@ const activityIcons = {
 
 interface PlanActivityProps {
   activityType: string;
+  fieldName: string;
   lot: any;
   db: any;
+  field: any;
   backToActivites: () => void;
   existingActivity: Actividad;
-  isExecuting?: boolean;
 }
 
 const PlanActivity: React.FC<PlanActivityProps> = ({
@@ -51,17 +62,20 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   lot,
   db,
   backToActivites,
-  existingActivity,
-  isExecuting = false
+  fieldName,
+  existingActivity
 }) => {
   if (!lot) return null;
   const [formData, setFormData] = useState(
     existingActivity || getEmptyActivity()
   );
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const [activeStep, setActiveStep] = useState(0);
   const translatedActivityType = activityTypeTranslations[activityType];
   const [maxStepReached, setMaxStepReached] = useState(0);
   const theme = useTheme();
+  const lotName = lot?.properties.name;
   const isEditing =
     existingActivity && Object.keys(existingActivity).length > 0;
 
@@ -74,14 +88,17 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   const titleBg = isEditing
     ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
     : `linear-gradient(45deg, #a0a0a0, #626262)`;
-  const steps = [
-    "Personal",
-    "Insumos",
-    "Otros Datos",
-    "Labores",
-    "Condiciones",
-    "Observaciones"
-  ];
+  const steps =
+    activityType === "sowing"
+      ? [
+          "General",
+          "Insumos",
+          "Otros Datos",
+          "Labores",
+          "Condiciones",
+          "Observaciones"
+        ]
+      : ["General", "Insumos", "Labores", "Condiciones", "Observaciones"];
 
   useEffect(() => {
     setFormData((prevFormData) => ({
@@ -119,12 +136,30 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     }
   }, [lot, translatedActivityType, existingActivity]);
 
+  const handleCloseSnackbar = (
+    event?: React.SyntheticEvent,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpenSnackbar(false);
+  };
+
   const countMissingFields = (formData, step) => {
     let missingFields = 0;
+
+    if (activityType !== "sowing" && step > 1) {
+      step = step + 1;
+    }
 
     switch (step) {
       case 0: // PersonalForm
         if (!formData.detalles.fecha_ejecucion_tentativa) {
+          missingFields++;
+        }
+        if (!formData.detalles.cultivo) {
           missingFields++;
         }
         if (!formData.contratista) {
@@ -148,12 +183,12 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         if (!details.densidad_objetivo) {
           missingFields++;
         }
-        if (!details.formacion_inoculado) {
-          missingFields++;
-        }
-        if (!details.marca_inoculado) {
-          missingFields++;
-        }
+        // if (!details.formacion_inoculado) {
+        //   missingFields++;
+        // }
+        // if (!details.marca_inoculado) {
+        //   missingFields++;
+        // }
         if (!details.peso_1000) {
           missingFields++;
         }
@@ -205,6 +240,9 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   };
 
   const getStepContent = (step: number) => {
+    if (activityType !== "sowing" && step > 1) {
+      step = step + 1;
+    }
     switch (step) {
       case 0:
         return (
@@ -231,6 +269,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             setFormData={setFormData}
           />
         );
+
       case 3:
         return (
           <TasksForm lot={lot} formData={formData} setFormData={setFormData} />
@@ -276,11 +315,22 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     setActiveStep(step);
     setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, step));
   };
+
   const handleSave = () => {
-    let actividad = { ...formData };
-    if (isExecuting) {
-      actividad.fecha_ejecucion = new Date();
+    for (let step = 0; step < steps.length; step++) {
+      const missingFields = countMissingFields(formData, step);
+      if (missingFields > 0) {
+        setSnackbarMessage(
+          `Por favor completa todos los campos requeridos en el paso: ${steps[step]}`
+        );
+        setOpenSnackbar(true);
+        setActiveStep(step);
+        return;
+      }
     }
+
+    let actividad = { ...formData };
+
     if (!isEditing) {
       try {
         const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
@@ -318,7 +368,6 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             });
         } else if (error.name === "conflict") {
           console.error("Conflict detected. Trying to save again.");
-          // Implement a better conflict resolution strategy here
         } else {
           console.error("Error saving actividad:", error);
         }
@@ -352,9 +401,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
               : "none"
           }}
         >
-          {isExecuting ? (
-            `Ejecutar ${translatedActivityType}`
-          ) : isEditing ? (
+          {isEditing ? (
             <>
               <EditIcon
                 sx={{
@@ -411,6 +458,19 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         ))}
       </Stepper>
       <div style={{ marginTop: "10px" }}>{getStepContent(activeStep)}</div>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity="warning"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
       <div
         style={{
           display: "flex",

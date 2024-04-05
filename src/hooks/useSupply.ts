@@ -143,7 +143,7 @@ export const useSupply = () => {
             //Agrupar los id de insumo 
             let supplyIds = stockBySupplies.docs.map(m => m.supplyId);
             const groupSupplyIds = Array.from(new Set(supplyIds));
-            
+
             deposits.docs.forEach(depositDto => {
                 //Movimientos del deposito 
                 // const depositMovements = movements.docs.filter(m => m.depositId === depositDto._id);
@@ -195,32 +195,33 @@ export const useSupply = () => {
     }
     const createSupply = async (newSupply: Supply) => {
         setIsLoading(true);
-    
+
         try {
-          if (!newSupply.name.trim()) {
-            throw new Error("Por favor, ingrese un nombre para el insumo.");
-          }
-    
-          if (!user) {
-            throw new Error("Usuario no encontrado.");
-          }
-    
-          const response = await dbContext.supplies.post({
-            ...newSupply,
-            accountId: user.accountId,
-          });
-    
-          setIsLoading(false);
-    
-          if (response.ok) {
-            Swal.fire("Insumo", "Agregado con éxito.", "success");
-          }
+            if (!newSupply.name.trim()) {
+                throw new Error("Por favor, ingrese un nombre para el insumo.");
+            }
+
+            if (!user) {
+                throw new Error("Usuario no encontrado.");
+            }
+
+            const response = await dbContext.supplies.post({
+                ...newSupply,
+                accountId: user.accountId,
+                countryId: user.countryId,
+            });
+
+            setIsLoading(false);
+
+            if (response.ok) {
+                Swal.fire("Insumo", "Agregado con éxito.", "success");
+            }
         } catch (error) {
-          console.log("Error al crear el documento: ", error);
-          Swal.fire("Ups", "Ocurrió un error inesperado", "error");
-          setIsLoading(false);
+            console.log("Error al crear el documento: ", error);
+            Swal.fire("Ups", "Ocurrió un error inesperado", "error");
+            setIsLoading(false);
         }
-      };
+    };
 
     const updateSupply = async (updateSupply: Supply) => {
         setIsLoading(true);
@@ -243,19 +244,19 @@ export const useSupply = () => {
     const deleteSupply = async (supplyId: string, removeSupply: string) => {
 
         try {
-          const response = await dbContext.supplies.remove(supplyId, removeSupply);
-          setIsLoading(false);
-    
-          if (response.ok)
-            Swal.fire('Insumo', 'Eliminado.', 'success');
-    
-          navigate('/init/overview/supply');
+            const response = await dbContext.supplies.remove(supplyId, removeSupply);
+            setIsLoading(false);
+
+            if (response.ok)
+                Swal.fire('Insumo', 'Eliminado.', 'success');
+
+            navigate('/init/overview/supply');
         } catch (error) {
             console.log('Error al actualizar el documento: ', error);
             Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
             setIsLoading(false);
         }
-      } 
+    }
 
     // const removeSupply = async () => {
 

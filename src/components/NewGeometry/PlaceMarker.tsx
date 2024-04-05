@@ -8,7 +8,8 @@ function PlaceMarker({
   selectedLot,
   setCoordinates,
   isDraggable,
-  onRemoveMarkers
+  onRemoveMarkers,
+  moveToUserLocation = true 
 }) {
   const [lastKnownPosition, setLastKnownPosition] = useState(null);
   const map = useSelector(selectMap);
@@ -36,10 +37,7 @@ function PlaceMarker({
           .addTo(map);
 
         newMarker.on("dragend", () => {
-          const newPosition = newMarker.getLngLat().toArray() as [
-            number,
-            number
-          ];
+          const newPosition = newMarker.getLngLat().toArray();
           setCoordinates(newPosition);
           setLastKnownPosition(newPosition);
         });
@@ -59,12 +57,47 @@ function PlaceMarker({
     if (onRemoveMarkers) {
       onRemoveMarkers(removeMarker);
     }
+  }, [map, selectedLot, isDraggable, onRemoveMarkers, lastKnownPosition]);
 
-    // Clean-up function
-    return () => {
-      // removeMarker();
-    };
-  }, [map, selectedLot, isDraggable, onRemoveMarkers]);
+  // New useEffect hook to move marker to user's location
+  useEffect(() => {
+    if (moveToUserLocation && navigator.geolocation) {
+      console.log("Getting user's location...");
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLocation = [
+            position.coords.longitude,
+            position.coords.latitude
+          ];
+          if (markerRef.current) {
+            markerRef.current.setLngLat(userLocation);
+            setCoordinates(userLocation);
+            setLastKnownPosition(userLocation);
+          } else {
+            // If marker doesn't exist, create a new one at user's location
+            const markerColor = isDraggable ? "#40b1ce" : "#db5935";
+            const newMarker = new Marker({
+              draggable: isDraggable,
+              color: markerColor
+            })
+              .setLngLat(userLocation)
+              .addTo(map);
+
+            newMarker.on("dragend", () => {
+              const newPosition = newMarker.getLngLat().toArray();
+              setCoordinates(newPosition);
+              setLastKnownPosition(newPosition);
+            });
+
+            markerRef.current = newMarker;
+          }
+        },
+        (error) => {
+          console.error("Error getting user's location:", error);
+        }
+      );
+    }
+  }, [moveToUserLocation, isDraggable, map, setCoordinates]);
 
   return <></>;
 }

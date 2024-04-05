@@ -34,7 +34,6 @@ function LaboratoryForm({ lot, formData, setFormData }) {
 
   useEffect(() => {
     getBusinesses();
-    console.log("businesses", businesses);
   }, []);
 
   const onFieldChange = (fieldName, value) => {
@@ -43,7 +42,6 @@ function LaboratoryForm({ lot, formData, setFormData }) {
         (business) =>
           business.nombreCompleto === value || business.razonSocial === value
       );
-      console.log("selectedBusiness", selectedBusiness);
       setFormData({
         ...formData,
         contratista: {

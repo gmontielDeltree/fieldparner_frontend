@@ -36,7 +36,7 @@ export const useExitField = () => {
                 const documents: ExitFieldItem[] = exitFields.map((row) => {
                     return {
                         ...row,
-                        supply: supplies.find(s => s._id === row.supplyId),
+                        supply: supplies.find(s => s._id === row.cropId),
                         transport: socialEntities.find(s => s._id === row.transportId),
                         field: fields.find(s => s._id === row.fieldId),
                     } as ExitFieldItem
@@ -62,7 +62,7 @@ export const useExitField = () => {
             if (!newExitField.deposit || !newExitField.supply) throw new Error();
 
             let stockOfSupply = await getStock(
-                newExitField.supplyId,
+                newExitField.cropId,
                 newExitField.depositId,
                 newExitField.deposit.locations[0],
                 ""
@@ -79,7 +79,7 @@ export const useExitField = () => {
                 userId,
                 amount: newExitField.netWeight,
                 depositId: newExitField.depositId,
-                supplyId: newExitField.supplyId,
+                supplyId: newExitField.cropId,
                 location: newExitField.deposit.locations[0],
                 creationDate: newExitField.creationDate,
                 campaignId: newExitField.campaignId,

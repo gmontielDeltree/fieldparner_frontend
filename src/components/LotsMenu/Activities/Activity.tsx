@@ -6,23 +6,31 @@ import Sowing from "./ActivityTypes/Sowing/Sowing";
 import Note from "./ActivityTypes/Note/Note";
 import Harvest from "./ActivityTypes/Harvest/Harvest";
 import Application from "./ActivityTypes/Application/Application";
+import WeatherForecast from "./../../WeatherForecast";
+import ReplicateActivityMenu from "./ReplicateActivityMenu";
 
 function Activity({
   activity,
+  fieldDoc,
+  lotDoc,
   complementaryColor,
   icon,
   handleDeleteActivity,
   handleEditActivity,
-  handleDownloadPDF
+  handleDownloadPDF,
+  handleConfirmExecution
 }) {
   const [gradientAngle, setGradientAngle] = useState(0);
+  const [showReplicateActivityMenu, setShowReplicateActivityMenu] =
+    useState(false);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
+  // LANZA DEMASIADOS RENDERIZADOS
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
+  //   }, 100);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const gradientBackground = `linear-gradient(${gradientAngle}deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
 
@@ -35,26 +43,38 @@ function Activity({
     boxShadow: "0 4px 8px 0 rgba(0,0,0,0.2)"
   };
 
+  const handleReplicateActivity = () => {
+    setShowReplicateActivityMenu(!showReplicateActivityMenu);
+  };
+
   const renderActivityContent = () => {
     switch (activity.actividad.tipo) {
       case "siembra":
         return (
           <Sowing
             activity={activity}
+            fieldName={fieldDoc.nombre}
+            lotName={lotDoc.properties.nombre}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
+            handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
           />
         );
       case "cosecha":
         return (
           <Harvest
             activity={activity}
+            lotDoc={lotDoc}
+            fieldName={fieldDoc.nombre}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
+            handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
           />
         );
       case "nota":
@@ -63,16 +83,21 @@ function Activity({
             activity={activity}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
+            handleEditActivity={handleEditActivity}
           />
         );
       case "aplicacion":
         return (
           <Application
             activity={activity}
+            fieldName={fieldDoc.nombre}
             complementaryColor={complementaryColor}
             handleDeleteActivity={handleDeleteActivity}
             handleEditActivity={handleEditActivity}
             handleDownloadPDF={handleDownloadPDF}
+            handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
+            lotDoc={lotDoc}
           />
         );
       case "analisis de suelo":
@@ -81,6 +106,7 @@ function Activity({
         return <Typography>Unknown Activity Type</Typography>;
     }
   };
+
   return (
     <div
       style={{ display: "flex", marginBottom: "32px", position: "relative" }}
@@ -119,7 +145,19 @@ function Activity({
         }}
       ></div>
       <Card sx={cardStyle}>
-        <CardContent>{renderActivityContent()}</CardContent>
+        <CardContent>
+          {showReplicateActivityMenu ? (
+            <ReplicateActivityMenu
+              originalActivity={activity.actividad}
+              handleReplicateActivity={handleReplicateActivity}
+            />
+          ) : (
+            <>
+              {renderActivityContent()}
+              <WeatherForecast />{" "}
+            </>
+          )}
+        </CardContent>
       </Card>
     </div>
   );

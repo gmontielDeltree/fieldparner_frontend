@@ -18,14 +18,16 @@ import {
 } from "@mui/material";
 import { SyncAlt as SyncAltIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import {  useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
+import { useCampaign, useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
 import {
   CurrencyCode,
   Deposit,
+  Movement,
+  MovementType,
   StockMovement,
   Supply,
   TypeMovement,
-  TypeMovements,
+  // TypeMovements,
 } from "../types";
 import { getShortDate } from "../helpers/dates";
 import { useTranslation } from "react-i18next";
@@ -35,14 +37,14 @@ const initialForm: StockMovement = {
   amount: 0,
   nroLot: "",
   creationDate: new Date().toLocaleString(),
-  campaignId: 0,
+  campaignId: "0",
   currency: "",
   depositId: "",
   location: "",
   detail: "",
   dueDate: getShortDate(),
   hours: "",
-  movement: "Manual",
+  movement: Movement.Manual,
   operationDate: getShortDate(),
   supplyId: "",
   totalValue: 0,
@@ -52,18 +54,29 @@ const initialForm: StockMovement = {
   userId: ""
 };
 
-const movementsShowSwitch = [
-  TypeMovement.Ajustes.toString(),
-  TypeMovement.Prestamos.toString(),
-  TypeMovement.TransferenciaDeposito.toString(),
-];
-
+// const movementsShowSwitch = [
+//   TypeMovement.Ajustes.toString(),
+//   TypeMovement.Prestamos.toString(),
+//   TypeMovement.TransferenciaDeposito.toString(),
+// ];
+//TODO: mostrar los tipo de movimientos y ocultar el switch (ingreso / salida).
+/*
+  TODO: 
+    -validar si el tipo de movimiento es transferencia entre depositos, para mostrar ciertos campos
+*/
 export const NewStockMovementPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isLoading, stockByLots, addNewStockMovement, getNroLotsBySupplyAndDeposit } = useStockMovement();
+  const {
+    isLoading,
+    stockByLots,
+    movementsType,
+    addNewStockMovement,
+    getNroLotsBySupplyAndDeposit,
+    getMovementsType } = useStockMovement();
   const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
   const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
-const {t} = useTranslation();
+  const { isLoading: loadCampaigns, campaigns, getCampaigns } = useCampaign();
+  const { t } = useTranslation();
 
   const {
     formulario,
@@ -78,7 +91,8 @@ const {t} = useTranslation();
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
   const [depositDestinationSelected, setDepositDestinationSelected] = useState<Deposit | null>(null);
   const [locationDestinationSelected, setLocationDestinationSelected] = useState("");
-  const { typeMovement, depositId: depositOrigin, supplyId, location } = formulario;
+  const [movementTypeSelected, setMovementTypeSelected] = useState<MovementType | null>(null);
+  const { depositId: depositOrigin, supplyId, location } = formulario;
 
   const depositsToBeAllocated = useMemo(() => {
     return deposits.filter(
@@ -95,11 +109,22 @@ const {t} = useTranslation();
       location: locationDestinationSelected
     } : undefined;
 
-    if (supplySelected && depositSelected) {
-      addNewStockMovement(formulario, supplySelected, destination);
+    if (supplySelected && depositSelected && movementTypeSelected) {
+      addNewStockMovement({
+        ...formulario,
+        typeMovement: movementTypeSelected.name
+      }, supplySelected, destination);
       reset();
     }
   };
+
+  const onChangeMovementType = ({ target }: SelectChangeEvent) => {
+    const { value } = target;
+    const movementTypeSelected = movementsType.find(x => x._id === value);
+    if (movementTypeSelected)
+      setMovementTypeSelected(movementTypeSelected);
+    setFormulario(prevState => ({ ...prevState, typeMovement: value }));
+  }
 
   const onChangeSupply = ({ target }: SelectChangeEvent) => {
     const { value } = target;
@@ -147,22 +172,23 @@ const {t} = useTranslation();
   useEffect(() => {
     getSupplies();
     getDeposits();
+    getMovementsType();
+    getCampaigns();
   }, []);
 
   useEffect(() => {
-    if (
-      typeMovement.toString() !== "" &&
-      movementsShowSwitch.includes(typeMovement.toString())
-    )
-      setShowSwitch(true);
+    
+    if (movementTypeSelected && movementTypeSelected.sumaStock === "Ambas")
+      setShowSwitch(true)
     else {
       setFormulario((prevState) => ({
         ...prevState,
-        isIncome: typeMovement.includes(TypeMovement.Compra.toString()),
+        isIncome: (movementTypeSelected?.sumaStock === "Suma")
       }));
       setShowSwitch(false);
     }
-  }, [typeMovement]);
+
+  }, [movementTypeSelected]);
 
   useEffect(() => {
     if (supplyId !== "" && depositOrigin !== "" && location !== "") {
@@ -175,7 +201,7 @@ const {t} = useTranslation();
     <Container maxWidth="lg">
       <Loading
         key="loading-new-stockmovement"
-        loading={isLoading || isLoadingSupplies || isLoadingDeposits}
+        loading={isLoading || isLoadingSupplies || isLoadingDeposits || loadCampaigns}
       />
       <Paper
         variant="outlined"
@@ -206,11 +232,11 @@ const {t} = useTranslation();
                 name="typeMovement"
                 value={formulario.typeMovement}
                 label={t("movement_type")}
-                onChange={handleSelectChange}
+                onChange={onChangeMovementType}
               >
-                {TypeMovements().map((movement) => (
-                  <MenuItem key={movement} value={movement}>
-                    {movement}
+                {movementsType.map((movement) => (
+                  <MenuItem key={movement.name} value={movement._id}>
+                    {movement.name}
                   </MenuItem>
                 ))}
               </Select>
@@ -247,7 +273,7 @@ const {t} = useTranslation();
               fullWidth
             />
           </Grid>
-          {typeMovement.includes(TypeMovement.TransferenciaDeposito) ? (
+          {movementsType.filter(x => x.name === TypeMovement.TransferenciaDeposito).length ? (
             <>
               <Grid key="supply-transfer-deposit" item xs={6} sm={3}>
                 <FormControl fullWidth>
@@ -612,18 +638,34 @@ const {t} = useTranslation();
                 />
               </Grid>
               <Grid item xs={6} sm={4}>
-                <TextField
+                {/* <TextField
                   variant="outlined"
                   type="number"
                   label={t("_campaign")}
-                  name="campaign"
+                  name="campaignId"
                   value={formulario.campaignId}
                   onChange={handleInputChange}
                   InputProps={{
                     startAdornment: <InputAdornment position="start" />,
                   }}
                   fullWidth
-                />
+                /> */}
+                <FormControl key="campaign-select" fullWidth>
+                  <InputLabel id="campaign">{t("_campaign")}</InputLabel>
+                  <Select
+                    labelId="campaign"
+                    name="campaignId"
+                    value={formulario.campaignId}
+                    label={t("_campaign")}
+                    onChange={handleSelectChange}
+                  >
+                    {campaigns?.map((c) => (
+                      <MenuItem key={c.campaignId} value={c.campaignId}>
+                        {c.campaignId}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
             </>
           )}

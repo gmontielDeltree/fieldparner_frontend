@@ -1,5 +1,5 @@
-import React from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import React, { useMemo } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import {
   ListVehiclesPage,
   VehiclePage,
@@ -19,29 +19,39 @@ import {
   ListOriginsDestinationsPage,
   NewOriginsDestinationsPage,
   ListUsersPage,
+  SatellitePage,
+  DevicePage,
+  PricesPage,
+  ZoningPage,
+  IntegrationsPage,
+  PlanificationPage,
+  ListWithdrawalOrdersPage,
+  WithdrawalOrdersPage,
+  ConfirmWithdrawalOrderPage,
+  ListTransformPage
 } from "../pages";
 import { AppLayout } from "../components";
-import { SatellitePage } from "../pages/SatellitePage";
-import { DevicePage } from "../pages/DevicePage";
-import { PricesPage } from "../pages/PricesPage";
-import { ZoningPage } from "../pages/ZoningPage";
-import { IntegrationsPage } from "../pages/IntegrationsPage";
-import { PlanificationPage } from "../pages/PlanificationPage";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
 import { NewUserPage } from "../pages/NewUserPage";
+import { ComponentTestBed } from '../pages/ComponentTestBed';
 
 export const OverviewRoutes: React.FC = () => {
+  const { pathname, search } = useLocation();
+
+  const lastPath = useMemo(() => pathname + search, [pathname, search]);
+  localStorage.setItem('lastPath', lastPath);
+
   return (
     <AppLayout key="app-layout">
       <Routes>
         <Route path="/overview/fields/:campoId?/:loteId?" element={<FieldsPage />} >
           <Route path="planification" element={<PlanificationPage />} />
-          <Route path="device/:deviceId/:date" element={<DevicePage/>}/>
+          <Route path="device/:deviceId/:date" element={<DevicePage />} />
           <Route path="integrations" element={<IntegrationsPage />} />
-          <Route path="john-deere" element={<JohnDeereIntegration/>}/>
-          <Route path="magris/:id" element={<MagrisReportIntegration/>}/>
-          <Route path="magris" element={<MagrisIntegration/>}/>
+          <Route path="john-deere" element={<JohnDeereIntegration />} />
+          <Route path="magris/:id" element={<MagrisReportIntegration />} />
+          <Route path="magris" element={<MagrisIntegration />} />
         </Route>
 
         <Route path="/overview/vehicle" element={<ListVehiclesPage />} />
@@ -73,13 +83,14 @@ export const OverviewRoutes: React.FC = () => {
           element={<NewStockMovementPage />}
         />
         <Route path="/overview/list-stock" element={<ListStockPage />} />
-        <Route path="/overview/transform" element={<TransformPage />} />
+        <Route path="/overview/value-transform" element={<ListTransformPage />} />
+        <Route path="/overview/value-transform/new" element={<TransformPage />} />
 
         <Route path="/overview/exit-field" element={<ListExitFieldPage />} />
         <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />
 
 
-        <Route path="/overview/satellite/:loteId" element={<SatellitePage />}  />
+        <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
         <Route path="/overview/zoning/:baseImageName" element={<ZoningPage />} />
         <Route path="/overview/prices" element={<PricesPage />} />
 
@@ -88,6 +99,11 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/users/:id" element={<NewUserPage />} />
 
         
+        <Route path="/overview/list-orders" element={<ListWithdrawalOrdersPage />} />
+        <Route path="/overview/order" element={<WithdrawalOrdersPage />} />
+        <Route path="/overview/order/:orderId" element={<ConfirmWithdrawalOrderPage />} />
+
+        <Route path="/overview/component-test-bed" element={<ComponentTestBed />} />
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

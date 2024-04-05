@@ -3,7 +3,7 @@
 const pdf_line = (linea, hectareas) => {
   return [
     {
-      text: linea.insumo.marca_comercial.toUpperCase(),
+      text: linea.insumo.name?.toUpperCase() || "----",
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
       alignment: "left"
@@ -39,7 +39,7 @@ const pdf_line = (linea, hectareas) => {
 const pdf_linea_siembra = (siembra, hectareas) => {
   return [
     {
-      text: siembra.insumo.marca_comercial.toUpperCase(),
+      text: siembra.insumo.name?.toUpperCase() || "----",
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
       alignment: "left"
@@ -204,7 +204,7 @@ const ordenDefinition = (
               alignment: "left"
             },
             {
-              text: "Tel: " + aplicacion.contratista.datos_generales.telefono,
+              text: "Tel: " + aplicacion.contratista?.datos_generales?.telefono,
               fontSize: 10,
               color: "#333333",
               alignment: "left"

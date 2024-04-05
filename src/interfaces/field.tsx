@@ -20,6 +20,7 @@ interface Field {
   lotes: Lot[];
   _id: string;
   _rev: string;
+  accountId?: string;
 }
 
 export type { Lot, Field };

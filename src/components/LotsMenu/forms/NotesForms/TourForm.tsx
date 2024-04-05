@@ -31,6 +31,7 @@ import PointForm from "./PointForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AudioPlayer } from "./PointFormStyles";
 import { dbContext } from "../../../../services";
+import { parseISO } from "date-fns";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -73,9 +74,8 @@ const FeatureAccordion = styled(Accordion)({
 });
 
 function TourForm({ lot, formData, setFormData, tourSave }) {
-  const db = dbContext.fields//new PouchDB("campos_randyv7");
+  const db = dbContext.fields;
   const [isPointMode, setIsPointMode] = useState(false);
-  const [point, setPoint] = useState({ properties: { nombre: "", notas: "" } });
   const [imageUrls, setImageUrls] = useState({});
   const [audioUrls, setAudioUrls] = useState({});
 
@@ -183,18 +183,22 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     ));
   };
 
-  const handlePointChange = (field, value) => {
-    setPoint({ ...point, properties: { ...point.properties, [field]: value } });
-  };
-
   const handleAddPoint = () => {
     setIsPointMode(true);
   };
 
-  const handleSavePoint = () => {
-    const newFeatures = [...(formData.features || []), point];
-    setFormData({ ...formData, features: newFeatures });
-    setIsPointMode(false);
+  const safeParseDate = (dateStr: string) => {
+    console.log("Parsing date:", dateStr);
+    try {
+      if (dateStr) {
+        return parseISO(dateStr);
+      } else {
+        return new Date();
+      }
+    } catch (e) {
+      console.error("Error parsing date:", e);
+      return new Date();
+    }
   };
 
   return (
@@ -240,7 +244,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || new Date()}
+                      value={safeParseDate(formData.fecha) || new Date()}
                       onChange={(newValue) => onFieldChange("fecha", newValue)}
                       renderInput={(params) => (
                         <TextField {...params} fullWidth />
@@ -253,7 +257,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <TimePicker
                       label="Hora"
-                      value={formData.fecha || new Date()}
+                      value={safeParseDate(formData.fecha) || new Date()}
                       onChange={(newValue) => onFieldChange("fecha", newValue)}
                       renderInput={(params) => (
                         <TextField {...params} fullWidth />
@@ -266,7 +270,9 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Próxima Visita"
-                      value={formData.proxima_visita || new Date()}
+                      value={
+                        safeParseDate(formData.proxima_visita) || new Date()
+                      }
                       onChange={(newValue) =>
                         onFieldChange("proxima_visita", newValue)
                       }

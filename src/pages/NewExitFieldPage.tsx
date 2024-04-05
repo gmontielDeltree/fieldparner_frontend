@@ -6,10 +6,11 @@ import {
     Agriculture as AgricultureIcon,
     ArrowRightAlt as ArrowRightAltIcon
 } from '@mui/icons-material';
-import { useBusiness, useCampaign, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../hooks';
-import { ExitField, SupplyType } from '../types';
+import { useBusiness, useCampaign, useCrops, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../hooks';
+import { ExitField } from '../types';
 import { getShortDate } from '../helpers/dates';
 import { useTranslation } from 'react-i18next';
+import { useField } from '../hooks/useField';
 
 
 
@@ -31,7 +32,7 @@ const initialState: ExitField = {
     truckerId: "",
     truckTrailerId: "",
     harvesterId: "",
-    supplyId: "",
+    cropId: "",
     grossWeight: 0,
     humidityPercentage: 0,
     kgNet: 0,
@@ -48,7 +49,7 @@ export const NewExitFieldPage: React.FC = () => {
     // const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
-const {t} = useTranslation();
+    const { t } = useTranslation();
     const {
         formulario: formValues,
         handleInputChange,
@@ -59,10 +60,13 @@ const {t} = useTranslation();
 
     const { supplies, getSupplies } = useSupply();
     const { businesses: socialEntities, getBusinesses } = useBusiness();
+    const { campaigns, getCampaigns } = useCampaign();
     const { vehicles, getVehicles } = useVehicle();
     const { deposits, getDeposits } = useDeposit();
     const { isLoading, createExitField } = useExitField();
-    
+    const { dataCrops, getCrops } = useCrops();
+    const { fields, getFields } = useField();
+
 
     const steps = [
         t("transport_destiny"),
@@ -77,8 +81,9 @@ const {t} = useTranslation();
                         <GeneralData
                             key="general-data-exit-field"
                             formValues={formValues}
-                            crops={supplies.filter(s => s.type === SupplyType.Cultivo)}
+                            crops={dataCrops}
                             campaigns={campaigns}
+                            listFields={fields}
                             handleInputChange={handleInputChange}
                             handleSelectChange={handleSelectChange}
                             setFormValues={setFormValues}
@@ -111,7 +116,9 @@ const {t} = useTranslation();
             deposits,
             vehicles,
             socialEntities,
-            campaigns
+            campaigns,
+            dataCrops,
+            fields,
         ]
     );
 
@@ -142,6 +149,8 @@ const {t} = useTranslation();
         getVehicles();
         getDeposits();
         getCampaigns();
+        getCrops();
+        getFields();
     }, [])
 
 

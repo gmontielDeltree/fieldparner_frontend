@@ -41,6 +41,7 @@ interface ExecuteActivityProps {
   activityType: string;
   lot: any;
   db: any;
+  fieldName: string;
   backToActivites: () => void;
   existingActivity: Actividad;
 }
@@ -49,13 +50,12 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   activityType,
   lot,
   db,
+  fieldName,
   backToActivites,
   existingActivity
 }) => {
   if (!lot) return null;
-  console.log("Lot: ", lot);
-  console.log("EXISTING ACTIVITY: ", existingActivity);
-  console.log("EXISTING ACTIVITY type: ", activityType);
+  const lotName = lot.properties.name;
   const [formData, setFormData] = useState(
     existingActivity || getEmptyExecution()
   );
@@ -75,14 +75,20 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const titleBg = isEditing
     ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
     : `linear-gradient(45deg, #a0a0a0, #626262)`;
-  const steps = [
-    "Personal",
+  const steps = activityType === 'sowing' ? [
+    "General",
     "Insumos",
     "Otros Datos",
     "Labores",
     "Condiciones",
     "Observaciones"
-  ];
+  ] : [
+    "General",
+    "Insumos",
+    "Labores",
+    "Condiciones",
+    "Observaciones"
+  ] ;
 
   useEffect(() => {
     setFormData((prevFormData) => ({
@@ -121,7 +127,9 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
   const countMissingFields = (formData, step) => {
     let missingFields = 0;
-
+    if(activityType !== "sowing" && step>1){
+      step = step+1;
+      } 
     switch (step) {
       case 0: // PersonalExecutionForm
         if (!formData.detalles.fecha_ejecucion_tentativa) {
@@ -148,12 +156,12 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         if (!details.densidad_objetivo) {
           missingFields++;
         }
-        if (!details.formacion_inoculado) {
-          missingFields++;
-        }
-        if (!details.marca_inoculado) {
-          missingFields++;
-        }
+        // if (!details.formacion_inoculado) {
+        //   missingFields++;
+        // }
+        // if (!details.marca_inoculado) {
+        //   missingFields++;
+        // }
         if (!details.peso_1000) {
           missingFields++;
         }
@@ -205,6 +213,9 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   };
 
   const getStepContent = (step: number) => {
+    if(activityType !== "sowing" && step>1){
+      step = step+1;
+      } 
     switch (step) {
       case 0:
         return (
@@ -233,7 +244,12 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         );
       case 3:
         return (
-          <TasksForm lot={lot} formData={formData} setFormData={setFormData} />
+          <TasksForm
+            lot={lot}
+            formData={formData}
+            setFormData={setFormData}
+            isExecution={true}
+          />
         );
       case 4:
         return (
@@ -277,12 +293,28 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, step));
   };
 
+  const updateActivityStateToCompleted = (activityId) => {
+    return db
+      .get(activityId)
+      .then((activityDoc) => {
+        activityDoc.estado = "completada";
+        return db.put(activityDoc);
+      })
+      .then(() => {
+        console.log("Activity state updated to completed successfully");
+      })
+      .catch((error) => {
+        console.error("Error updating activity state to completed:", error);
+      });
+  };
+
   const handleSave = () => {
     let executionDetails = { ...formData };
-    console.log("Execution details: ", executionDetails);
+    executionDetails.detalles.fecha_ejecucion = new Date().toISOString();
+    executionDetails.estado = "completada";
     try {
       const formattedDate = format(
-        executionDetails.detalles.fecha_ejecucion,
+        new Date(executionDetails.detalles.fecha_ejecucion_tentativa),
         "yyyy-MM-dd"
       );
       executionDetails._id =
@@ -293,6 +325,9 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     }
 
     db.get(executionDetails._id)
+      .then(() => {
+        return updateActivityStateToCompleted(executionDetails.actividad_uuid);
+      })
       .then((doc) => {
         executionDetails._rev = doc._rev;
         return db.put(executionDetails);
@@ -301,8 +336,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         if (error.name === "conflict") {
           console.error("Conflict detected, saving execution details:", error);
         } else if (error.name === "not_found") {
-          console.log("Document not found. Creating a new one.");
-          delete executionDetails._rev; // Important: Remove _rev before creating a new document
+          delete executionDetails._rev;
           db.put(executionDetails)
             .then(() => {
               console.log("New document created", "success");
@@ -316,10 +350,6 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         }
       });
   };
-
-  useEffect(() => {
-    console.log("FORM DATA: ", formData);
-  });
 
   const ActivityIcon = activityIcons["sowing"];
 

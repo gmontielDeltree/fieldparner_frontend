@@ -3,17 +3,17 @@ import {
     FolderOpen as FolderOpenIcon,
 } from '@mui/icons-material';
 import React, { ChangeEvent, useState } from 'react';
-import { Campaign, ExitField, Field, Lot, Supply } from '../../types';
+import { Campaign, Crops, ExitField, Field, Lot } from '../../types';
 import { getShortDate } from '../../helpers/dates';
-import uuid4 from 'uuid4';
-import { uuidv4 } from 'uuidv7';
+
 import { useTranslation } from 'react-i18next';
 
-
+//TODO: validar q descripcion mostrar del cultivo
 interface GeneralDataProps {
     formValues: ExitField;
-    crops: Supply[];
+    crops: Crops[];
     campaigns: Campaign[];
+    listFields: Field[];
     setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
@@ -21,88 +21,89 @@ interface GeneralDataProps {
 
 // const fields = ["Campo 1", "Campo 2", "Campo 3"]; //TODO: tabla campo-lote
 // const lots = ["Lote 1", "Lote 2", "Lote 3"]; //TODO: tabla campo-lote
-const listFields: Field[] = [
-    {
+// const listFields: Field[] = [
+//     {
 
-        _id: "campo-norte-1",
-        accountId: "user-1",
-        nombre: "Campo Norte",
-        campo_geojson: [],
-        lotes: [
-            {
-                _id: uuidv4(),
-                type: "Siembra",
-                geometry: {
-                    type: "type",
-                    coordinates: [],
-                },
-                properties: {
-                    nombre: "lote 1",
-                    hectareas: 80,
-                    uuid: uuid4(),
-                    campo_parent_id: "C-1"
-                },
-            },
-            {
-                _id: uuidv4(),
-                type: "Maiz",
-                geometry: {
-                    type: "type",
-                    coordinates: [],
-                },
-                properties: {
-                    nombre: "lote 2",
-                    hectareas: 100,
-                    uuid: uuid4(),
-                    campo_parent_id: "C-1"
-                },
-            }
-        ],
-        uuid: uuid4()
-    },
-    {
-        _id: "campo-sur-1",
-        accountId: "user-1",
-        nombre: "Campo Sur",
-        campo_geojson: [],
-        lotes: [
-            {
-                _id: uuidv4(),
-                type: "test",
-                geometry: {
-                    type: "type",
-                    coordinates: [],
-                },
-                properties: {
-                    nombre: "lote 10",
-                    hectareas: 5,
-                    uuid: uuid4(),
-                    campo_parent_id: "C-1"
-                },
-            },
-            {
-                _id: uuidv4(),
-                type: "test-2",
-                geometry: {
-                    type: "type",
-                    coordinates: [],
-                },
-                properties: {
-                    nombre: "lote 90",
-                    hectareas: 200,
-                    uuid: uuid4(),
-                    campo_parent_id: "C-1"
-                },
-            }
-        ],
-        uuid: uuid4()
-    }
-];
+//         _id: "campo-norte-1",
+//         accountId: "user-1",
+//         nombre: "Campo Norte",
+//         campo_geojson: [],
+//         lotes: [
+//             {
+//                 _id: uuidv4(),
+//                 type: "Siembra",
+//                 geometry: {
+//                     type: "type",
+//                     coordinates: [],
+//                 },
+//                 properties: {
+//                     nombre: "lote 1",
+//                     hectareas: 80,
+//                     uuid: uuid4(),
+//                     campo_parent_id: "C-1"
+//                 },
+//             },
+//             {
+//                 _id: uuidv4(),
+//                 type: "Maiz",
+//                 geometry: {
+//                     type: "type",
+//                     coordinates: [],
+//                 },
+//                 properties: {
+//                     nombre: "lote 2",
+//                     hectareas: 100,
+//                     uuid: uuid4(),
+//                     campo_parent_id: "C-1"
+//                 },
+//             }
+//         ],
+//         uuid: uuid4()
+//     },
+//     {
+//         _id: "campo-sur-1",
+//         accountId: "user-1",
+//         nombre: "Campo Sur",
+//         campo_geojson: [],
+//         lotes: [
+//             {
+//                 _id: uuidv4(),
+//                 type: "test",
+//                 geometry: {
+//                     type: "type",
+//                     coordinates: [],
+//                 },
+//                 properties: {
+//                     nombre: "lote 10",
+//                     hectareas: 5,
+//                     uuid: uuid4(),
+//                     campo_parent_id: "C-1"
+//                 },
+//             },
+//             {
+//                 _id: uuidv4(),
+//                 type: "test-2",
+//                 geometry: {
+//                     type: "type",
+//                     coordinates: [],
+//                 },
+//                 properties: {
+//                     nombre: "lote 90",
+//                     hectareas: 200,
+//                     uuid: uuid4(),
+//                     campo_parent_id: "C-1"
+//                 },
+//             }
+//         ],
+//         uuid: uuid4()
+//     }
+// ];
 
 export const GeneralData: React.FC<GeneralDataProps> = ({
     formValues,
     crops,
     campaigns,
+    listFields,
     handleInputChange,
     handleSelectChange,
     setFormValues
@@ -136,16 +137,16 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
         const { value } = target;
         const cropSelected = crops.find((crop) => crop._id === value);
 
-        if (cropSelected) {
+        if (cropSelected?._id) {
             setFormValues((prevState) => ({
                 ...prevState,
-                supplyId: value,
-                cultive: cropSelected.name,
+                cropId: value,
+                cultive: cropSelected.descriptionEN || "",
                 supply: cropSelected
             }));
         }
     };
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     return (
         <Grid
@@ -216,34 +217,12 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                 {
                     (fieldSelected) && (
                         <FormControl key="lot-select" fullWidth>
-                            <InputLabel id="lot">Lote</InputLabel>
-                            <Select
-                                labelId="lot"
-                                name="lotId"
-                                value={formValues.lotId}
-                                label="Lote"
-                                onChange={onChangeLot}
-                            >
-                                {fieldSelected?.lotes.map((lot) => (
-                                    <MenuItem key={lot._id} value={lot._id}>
-                                        {lot.properties.nombre}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    )
-                }
-            </Grid>
-            <Grid item xs={12} sm={3}>
-                {
-                    (fieldSelected) && (
-                        <FormControl key="lot-select" fullWidth>
                             <InputLabel id="lot">{t("_lot")}</InputLabel>
                             <Select
                                 labelId="lot"
                                 name="lotId"
                                 value={formValues.lotId}
-                                label={t("_lot")} 
+                                label={t("_lot")}
                                 onChange={onChangeLot}
                             >
                                 {fieldSelected?.lotes.map((lot) => (
@@ -264,27 +243,20 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                         </Typography>
                     )
                 }
-                {
-                    lotSelected && (
-                        <Typography variant="body1">
-                            <b>Hectareas: </b> {lotSelected?.properties.hectareas}
-                        </Typography>
-                    )
-                }
             </Grid>
             <Grid item xs={12} sm={4}>
-                <FormControl key="lot-select" fullWidth>
-                    <InputLabel id="lot">{t("_crop")}</InputLabel>
+                <FormControl key="crop-select" fullWidth>
+                    <InputLabel id="crop">{t("_crop")}</InputLabel>
                     <Select
-                        labelId="lot"
-                        name="supplyId"
-                        value={formValues.supplyId}
+                        labelId="crop"
+                        name="cropId"
+                        value={formValues.cropId}
                         label={t("_crop")}
                         onChange={onChangeCrop}
                     >
                         {crops?.map((crop) => (
                             <MenuItem key={crop._id} value={crop._id}>
-                                {crop.name}
+                                {crop.descriptionES}
                             </MenuItem>
                         ))}
                     </Select>

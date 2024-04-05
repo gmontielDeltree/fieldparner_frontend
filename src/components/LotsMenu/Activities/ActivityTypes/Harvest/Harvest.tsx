@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Typography from "@mui/material/Typography";
 import {
   List,
@@ -22,17 +22,51 @@ import ExecutionContent from "./../TabsContent/Execution";
 import AttachedContent from "./../TabsContent/Attached";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import ActivityActionsBar from "../../../components/ActivityActionsBar";
+import { ComparisonReportPdf } from "../helper";
+import { dbContext } from "../../../../../services";
 
 function Harvest({
   activity,
+  lotDoc,
   complementaryColor,
   handleDeleteActivity,
   handleEditActivity,
-  handleDownloadPDF
+  handleDownloadPDF,
+  handleConfirmExecution,
+  handleReplicateActivity
 }) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
+  const [execution, setExecution] = useState(null);
+
+  console.log("RENDER HARVEST", lotDoc);
+
+  const db = dbContext.fields;
+
+  useEffect(() => {
+    const fetchExecution = async () => {
+      try {
+        const response = await db.find({
+          selector: { actividad_uuid: activity.actividad.uuid }
+        });
+        if (response.docs.length > 0) {
+          setExecution(response.docs[0]);
+        } else {
+          setExecution(null);
+        }
+      } catch (error) {
+        console.error("Error fetching executions:", error);
+        setExecution(null);
+      }
+    };
+
+    if (activity.actividad.uuid) {
+      fetchExecution();
+    }
+  }, [activity.uuid, db]);
 
   const formattedPlanificadaDate = activity.actividad.detalles
     ?.fecha_ejecucion_tentativa
@@ -42,6 +76,9 @@ function Harvest({
         { locale: es }
       )
     : "Fecha no definida";
+
+  const formattedDate = (date?: string) =>
+    date ? format(parseISO(date), "PPPP", { locale: es }) : "Fecha no definida";
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
@@ -76,27 +113,59 @@ function Harvest({
         >
           <EventNoteIcon
             sx={{ marginRight: "4px", color: complementaryColor }}
-          />
+          />{" "}
           <Typography
-            sx={{ fontSize: 16, fontWeight: "bold" }}
-            color="text.primary"
+            sx={{ fontSize: 16, flexGrow: 2, textAlign: "left" }}
+            color="text.secondary"
           >
-            Planificada para: {formattedPlanificadaDate}
+            {activity.actividad.tipo.toUpperCase()} en{" "}
+            {activity.actividad.detalles?.hectareas} has.{" "}
+            {execution ? (
+              <Typography
+                sx={{ fontSize: 16, fontWeight: "bold" }}
+                color="green"
+              >
+                Ejecutada: {formattedDate(execution.detalles.fecha_ejecucion)}
+              </Typography>
+            ) : (
+              <Typography
+                sx={{ fontSize: 16, fontWeight: "bold" }}
+                color="text.primary"
+              >
+                Programada para: {formattedPlanificadaDate}
+              </Typography>
+            )}
           </Typography>
         </Box>
-        <Typography
-          sx={{ fontSize: 16, flexGrow: 2, textAlign: "right" }}
-          color="text.secondary"
-        >
-          {activity.actividad.tipo} en {activity.actividad.detalles?.hectareas}{" "}
-          has.
-        </Typography>
-        <IconButton onClick={handleMenuClick} sx={{ marginLeft: "8px" }}>
+
+        <ActivityActionsBar
+          sx={{ marginLeft: "8px" }}
+          onEditActivity={() => handleEditActivity(activity.actividad)}
+          onDeleteActivity={() => handleDeleteActivity(activity.actividad._id)}
+          onMeteo={() => alert("Proximamente - En Construcción")}
+          onDownloadOT={() => handleDownloadPDF(activity.actividad)}
+          onRepeatOT={() => handleReplicateActivity()}
+          onShareOT={() => alert("Proximamente - En Construcción")}
+          onDownloadCompare={() => {
+            if (!execution) {
+              alert("Debe ejecutar primero para generar el informe!!!");
+              return;
+            }
+            ComparisonReportPdf(
+              activity.actividad,
+              execution,
+              lotDoc?.properties?.nombre,
+              lotDoc?.properties?.nombre
+            );
+          }}
+        />
+
+        {/* <IconButton onClick={handleMenuClick} sx={{ marginLeft: "8px" }}>
           <MoreVertIcon />
-        </IconButton>
+        </IconButton> */}
       </Box>
 
-{/* LGO Comento los items que no estan implementados aún */}
+      {/* LGO Comento los items que no estan implementados aún */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={() => handleEditActivity(activity.actividad)}>
           Editar
@@ -117,7 +186,7 @@ function Harvest({
         scrollButtons="auto"
         sx={{ marginBottom: "16px" }}
       >
-        <Tab label="Planificacion" />
+        <Tab label="Programacion" />
         <Tab label="Orden de trabajo" />
         <Tab label="Ejecucion" />
         <Tab label="Adjuntos" />
@@ -129,7 +198,9 @@ function Harvest({
       {selectedTab === 1 && (
         <LaborOrderContent
           activity={activity.actividad}
+          lotDoc={lotDoc}
           handleDownloadPDF={handleDownloadPDF}
+          handleConfirmExecution={handleConfirmExecution}
         />
       )}
       {selectedTab === 2 && (

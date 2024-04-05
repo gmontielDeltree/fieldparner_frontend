@@ -1,4 +1,4 @@
-import { Navigate, Link as RouterLink, useLocation } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import {
   Box,
   Collapse,
@@ -9,7 +9,8 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Typography
 } from "@mui/material";
 import {
   // Cabin as CabinIcon,
@@ -34,13 +35,14 @@ import {
   Gite as GiteIcon,
   Work as WorkIcon,
   Person as PersonAddIcon,
+  Assignment as AssignmentIcon,
   // Flag as FlagIcon,
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
-import { Typography } from "@mui/material";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "../../hooks";
+import { getEnvVariables } from "../../helpers/getEnvVariables";
 
 const keysCollapse = ["seguridad", "configuracion", "general", "agricultura", "stock", "cosecha", "gestion", "reporting", "wiki", "erp"];
 
@@ -54,8 +56,8 @@ export const SideBar: React.FC<SideBarProps> = ({
   const [openCollapse, setOpenCollapse] = useState('');
 
   const { pathname } = useLocation();
-  const version = "2.23.1";
-  const {t} = useTranslation();
+  const version = getEnvVariables().VITE_VERSION;
+  const { t } = useTranslation();
 
   const onClickMenu = (collapse: string) => setOpenCollapse(collapse === openCollapse ? "" : collapse);
 
@@ -185,9 +187,9 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemText primary={t("zones_groups")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}
-                              component={RouterLink}
-                              to="/init/overview/prices"
-                              selected={pathname.includes("/init/overview/prices")}
+                component={RouterLink}
+                to="/init/overview/prices"
+                selected={pathname.includes("/init/overview/prices")}
               >
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
@@ -221,25 +223,25 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("campaign_definition")} />
               </ListItemButton>
-              <ListItemButton >
+              {/* <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={t("fields_lots_hectares")} />
-              </ListItemButton>
-              <ListItemButton 
+              </ListItemButton> */}
+              <ListItemButton
                 component={RouterLink}
                 to="/init/overview/fields/planification"
                 selected={pathname.includes("/init/overview/fields/planification")}
-                >
+              >
                 <ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={t("annual_campaign_projection")} />
               </ListItemButton>
-              <ListItemButton >
+              {/* <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={t("_waybill")} />
-              </ListItemButton>
+              </ListItemButton> */}
               <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
@@ -314,17 +316,21 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("stock_query")} />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/list-orders"
+                selected={pathname.includes("/init/overview/list-orders")}>
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
+                  <AssignmentIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("withdrawal_orders")} />
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}
-                to="/init/overview/transform"
-                selected={pathname.includes("/init/overview/transform")}>
+                to="/init/overview/value-transform"
+                selected={pathname.includes("/init/overview/value-transform")}>
                 <ListItemIcon>
                   <TransformIcon />
                 </ListItemIcon>

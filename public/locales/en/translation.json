@@ -55,6 +55,10 @@
   "_adjustments": "Adjustments",
   "_type": "Type",
   "_description": "Description",
+  "_detail": "Detail",
+  "_senasa": "Official Health Code",
+  "_formulationDenomination": "Formulation Denomination",
+  "_toxicityClass": "Toxicity Class",
   "_geolocation": "Geolocation",
   "_destination": "Destination",
   "_origin": "Origin",
@@ -270,6 +274,18 @@
     "_security": "Security",
     "users_and_permissions": "Users and Permissions",
     "_configuration": "Configuration",
-    "crop_colors": "Crop Colors"
+    "crop_colors": "Crop Colors",
+    "add_new_campaign":"Add New Campaign",
+    "campaign_name":"Campaign Name",
+    "description":"Description",
+    "zone_id":"Zone ID",
+    "start_date":"Start Date",
+    "end_date":"End Date",
+    "state":"State",
+    "cancel":"Cancel",
+    "create":"Create",
+    "choose_a_campaign":"Choose a Campaign",
+    "select_a_campaign_from_the_top_row": "Select a Campaign from the top row",
+    "create_new_campaign": "Create New Campaign"
 }
   

@@ -141,7 +141,10 @@ export const SupplyByDepositsModal: React.FC = () => {
       scroll="paper"
       onClose={onCloseModal}
     >
-      <DialogTitle variant="h5">Depositos</DialogTitle>
+      <DialogTitle variant="h5">
+        Depositos <hr />
+        Insumo:  <Typography display="inline-block" variant="h6">{supplyActive?.name}</Typography> / Tipo: <Typography display="inline-block" variant="h6">{supplyActive?.type}</Typography>
+      </DialogTitle>
       <DialogContent>
         <DataTable
           key="detail-deposits-datable"

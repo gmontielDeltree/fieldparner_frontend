@@ -1,14 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Typography,
-  Button,
   Card,
   CardContent,
-  CardActions,
   Box,
   Chip,
-  useTheme,
-  styled
+  styled,
+  Button,
+  CardActions
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
@@ -17,8 +16,10 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import BusinessIcon from "@mui/icons-material/Business";
 import EcoIcon from "@mui/icons-material/Nature";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
-import PouchDB from "pouchdb";
 import PlanificationContent from "./Planification";
+import { dbContext } from "../../../../../services";
+import { Ejecucion } from "../../../../../interfaces/activity";
+import { format } from "date-fns";
 
 const FrostedGlassButton = styled(Button)(({ theme }) => ({
   borderRadius: "20px",
@@ -55,24 +56,8 @@ const FrostedGlassButton = styled(Button)(({ theme }) => ({
 
 function ExecutionContent(props) {
   const { activity, handleEditActivity } = props;
-  const [execution, setExecution] = useState(null);
-  const db = useMemo(() => new PouchDB("campos_randyv7"), []);
-  const executedStyle = {
-    color: "green",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    justifyContent: "space-between"
-  };
-
-  const pendingStyle = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "orange",
-    width: "100%"
-  };
-  const backgroundColor = `rgba(255, 255, 255, 0.6)`;
+  const [execution, setExecution] = useState<Ejecucion>(null);
+  const db = dbContext.fields;
 
   useEffect(() => {
     const fetchExecution = async () => {
@@ -80,7 +65,6 @@ function ExecutionContent(props) {
         const response = await db.find({
           selector: { actividad_uuid: activity.uuid }
         });
-
         if (response.docs.length > 0) {
           setExecution(response.docs[0]);
         } else {
@@ -97,13 +81,29 @@ function ExecutionContent(props) {
     }
   }, [activity.uuid, db]);
 
+  const executedStyle = {
+    color: "green",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    justifyContent: "space-between"
+  };
+
+  const pendingStyle = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "orange",
+    width: "100%"
+  };
+
   return (
     <>
       <Card
         elevation={4}
         sx={{
           mt: 2,
-          backgroundColor,
+          backgroundColor: "rgba(255, 255, 255, 0.6)",
           backdropFilter: "blur(10px)",
           border: "1px solid rgba(255, 255, 255, 0.3)",
           backgroundImage:
@@ -113,68 +113,82 @@ function ExecutionContent(props) {
       >
         <CardContent>
           {execution ? (
-            <Box sx={executedStyle}>
-              <Box>
+            <>
+              <Box sx={executedStyle}>
                 <CheckCircleOutlineIcon color="success" />
                 <Typography variant="body1">
-                  Ejecutada:{" "}
-                  {execution.detalles &&
-                    new Date(
-                      execution.detalles.fecha_ejecucion
-                    ).toLocaleDateString()}
+                  {execution.estado === "completada" ||
+                  execution.estado === "ejecutada"
+                    ? `Ejecutada: ${format(new Date(
+                        execution.detalles.fecha_ejecucion
+                      ),"dd/MM/yyyy")}`
+                    : "Actividad aún no ejecutada"}
                 </Typography>
+                <Box>
+                  {execution.estado !== "pendiente" && (
+                    <>
+                      {/* <Chip
+                        icon={<LocationOnIcon />}
+                        label={`Lote: ${execution.lote_uuid || "N/A"}`}
+                        style={{ margin: "5px" }}
+                      /> */}
+                      <Chip
+                        icon={<BusinessIcon />}
+                        label={`Contratista: ${
+                          execution.contratista
+                            ? execution.contratista.nombreCompleto + "-" + execution.contratista.razonSocial
+                            : "N/A"
+                        }`}
+                        style={{ margin: "5px" }}
+                      />
+                      {execution.ingeniero && (
+                        <Chip
+                          icon={<EcoIcon />}
+                          label={`Ingeniero: ${execution.ingeniero.nombre}`}
+                          style={{ margin: "5px" }}
+                        />
+                      )}
+                      {/* <Chip
+                        icon={<EventIcon />}
+                        label={`Tipo: ${execution.tipo || "N/A"}`}
+                      /> */}
+                    </>
+                  )}
+                </Box>
               </Box>
-              <Box>
-                <Chip
-                  icon={<LocationOnIcon />}
-                  label={`Lote: ${execution.lote_uuid || "N/A"}`}
-                  style={{ margin: "5px" }}
-                />
-                <Chip
-                  icon={<BusinessIcon />}
-                  label={`Contratista: ${
-                    execution.contratista ? execution.contratista.nombre : "N/A"
-                  }`}
-                  style={{ margin: "5px" }}
-                />
-                {execution.ingeniero && (
-                  <Chip
-                    icon={<EcoIcon />}
-                    label={`Ingeniero: ${execution.ingeniero.nombre}`}
-                    style={{ margin: "5px" }}
-                  />
-                )}
-                <Chip
-                  icon={<EventIcon />}
-                  label={`Tipo: ${execution.tipo || "N/A"}`}
-                />
-              </Box>
-            </Box>
+              {execution.estado === "ejecutada" && (
+                <Typography variant="body1" sx={{ mt: 2 }}>
+                  Actividad ejecutada pero no completada
+                </Typography>
+              )}
+            </>
           ) : (
             <Box sx={pendingStyle}>
-              <HourglassEmptyIcon color="warning" sx={{ marginRight: 1 }} />
-              <Typography variant="body1">
+              <HourglassEmptyIcon color="warning" />
+              <Typography variant="body1" sx={{ ml: 1 }}>
                 Actividad aún no ejecutada
               </Typography>
             </Box>
           )}
         </CardContent>
-        {!execution && (
+        {(execution?.estado === "ejecutada" || !execution) && (
           <CardActions>
-            {!execution && (
-              <FrostedGlassButton
-                variant="contained"
-                startIcon={<PlayCircleOutlineIcon />}
-                onClick={() => handleEditActivity(activity, true)}
-                sx={{ margin: "auto", marginTop: "10px" }}
-              >
-                Ejecutar Actividad
-              </FrostedGlassButton>
-            )}
+            <FrostedGlassButton
+              variant="contained"
+              startIcon={<PlayCircleOutlineIcon />}
+              onClick={() =>
+                handleEditActivity(activity, true)//execution?.estado === "ejecutada")
+              }
+              sx={{ margin: "auto", marginTop: "10px", marginBottom: "20px" }}
+            >
+              {execution?.estado === "ejecutada"
+                ? "Completar Actividad"
+                : "Ejecutar Actividad"}
+            </FrostedGlassButton>
           </CardActions>
         )}
       </Card>
-      {execution && (
+      {execution?.estado === "completada" && (
         <PlanificationContent
           activity={execution}
           showEstimatedApplicationDate={false}

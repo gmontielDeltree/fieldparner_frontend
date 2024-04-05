@@ -15,19 +15,23 @@ import SoilCharacteristicsForm from "./forms/GroundSampleForms/SoilCharacteristi
 import VariablesForm from "./forms/GroundSampleForms/VariablesForm";
 import AttachmentsForm from "./forms/GroundSampleForms/AttachmentsForm";
 
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
+
 interface GroundSampleProps {
   lot: any;
   db: any;
+  fieldName: string;
   backToActivites: () => void;
 }
 
 const GroundSample: React.FC<GroundSampleProps> = ({
   lot,
   db,
+  fieldName,
   backToActivites
 }) => {
   if (!lot) return null;
-  console.log("Lot: ", lot);
   const [formData, setFormData] = useState(getEmptyActivity());
   const [activeStep, setActiveStep] = useState(0);
   const steps = [
@@ -106,7 +110,6 @@ const GroundSample: React.FC<GroundSampleProps> = ({
     let actividad = formData;
     try {
       const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
-      console.log("FECHA EJECUCION: ", fechaEjecucion);
 
       const parsedDate = new Date(fechaEjecucion);
 
@@ -116,7 +119,6 @@ const GroundSample: React.FC<GroundSampleProps> = ({
       console.error("Error in handleSave:", error);
     }
 
-    console.log("ACTIVIDAD ID: ", actividad._id);
     db.get(actividad._id)
       .then((doc) => {
         actividad._rev = doc._rev;

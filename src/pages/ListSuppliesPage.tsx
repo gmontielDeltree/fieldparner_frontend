@@ -10,7 +10,7 @@ import {
   SearchInput,
   TableCellStyled,
   TemplateLayout,
-  CloseButtonPage,
+  CloseButtonPage
 } from "../components";
 import {
   Box,
@@ -19,47 +19,48 @@ import {
   Grid,
   IconButton,
   Tooltip,
-  Typography,
+  Typography
 } from "@mui/material";
-import 'semantic-ui-css/semantic.min.css';
-import {Icon} from "semantic-ui-react";
+import "semantic-ui-css/semantic.min.css";
+import { Icon } from "semantic-ui-react";
 import {
   Inventory as InventoryIcon,
   Add as AddIcon,
-  Edit as EditIcon,
+  Edit as EditIcon
 } from "@mui/icons-material";
 import { setSupplyActive } from "../redux/supply";
 import { useTranslation } from "react-i18next";
 
-
 export const ListSuppliesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-const {t} = useTranslation();
+  const { t } = useTranslation();
 
-  const { isLoading, supplies, getSupplies, setSupplies, deleteSupply } = useSupply();
+  const { isLoading, supplies, getSupplies, setSupplies, deleteSupply } =
+    useSupply();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const columns: ColumnProps[] = [
     { text: t("_type"), align: "left" },
     { text: t("_supply"), align: "center" },
     { text: t("unit_of_measure"), align: "center" },
-    { text: "", align: "center" },
+    { text: "", align: "center" }
     // { text: "Stock Reservado", align: "center" },
     // { text: "Stock Disponible", align: "center" },
   ];
-  
 
   const onClickSearch = () => {
     if (filterText === "") {
       getSupplies();
       return;
     }
-    const filteredSupplies = supplies.filter(({ name: insumo, description: descripcion }) => {
-      (insumo && insumo.toLowerCase().includes(filterText.toLowerCase())) ||
-        (descripcion &&
-          descripcion.toLowerCase().includes(filterText.toLowerCase()));
-    });
+    const filteredSupplies = supplies.filter(
+      ({ name: insumo, description: descripcion }) => {
+        (insumo && insumo.toLowerCase().includes(filterText.toLowerCase())) ||
+          (descripcion &&
+            descripcion.toLowerCase().includes(filterText.toLowerCase()));
+      }
+    );
     setSupplies(filteredSupplies);
   };
   const onClickUpdateSupply = (item: Supply) => {
@@ -81,21 +82,21 @@ const {t} = useTranslation();
     <TemplateLayout key="overview-supplies" viewMap={false}>
       {isLoading && <Loading loading />}
       <Container maxWidth="md" sx={{ ml: 0 }}>
-      <Box
-        component="div"
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
-      >
-        <Box display="flex" alignItems="center">
-          <InventoryIcon sx={{ marginRight: '8px' }} />
-          <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-            {t("_supplies")}
-          </Typography>
+        <Box
+          component="div"
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
+        >
+          <Box display="flex" alignItems="center">
+            <InventoryIcon sx={{ marginRight: "8px" }} />
+            <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
+              {t("_supplies")}
+            </Typography>
+          </Box>
+          <CloseButtonPage />
         </Box>
-        <CloseButtonPage />
-      </Box>
         <Box component="div" sx={{ mt: 7 }}>
           <Grid
             container
@@ -125,7 +126,10 @@ const {t} = useTranslation();
                   />
                 </Grid>
                 <Grid item xs={4} sm={3}>
-                  <SearchButton text={t("icon_search")} onClick={() => onClickSearch()} />
+                  <SearchButton
+                    text={t("icon_search")}
+                    onClick={() => onClickSearch()}
+                  />
                 </Grid>
               </Grid>
             </Grid>
@@ -163,8 +167,8 @@ const {t} = useTranslation();
                     </Tooltip>
                     <Tooltip title={t("icon_delete")}>
                       <IconButton
-                        onClick={() =>  handleDeleteSupply (row)}
-                        style={{ fontSize: '1rem' }}
+                        onClick={() => handleDeleteSupply(row)}
+                        style={{ fontSize: "1rem" }}
                       >
                         <Icon name="trash alternate" />
                       </IconButton>

@@ -10,6 +10,7 @@ import {
   Button,
   IconButton
 } from "@mui/material";
+import { MyLocation as MyLocationIcon } from "@mui/icons-material";
 import { PhotoCamera, Mic, Stop, Delete } from "@mui/icons-material";
 import PouchDB from "pouchdb";
 import { v4 as uuidv4 } from "uuid";
@@ -33,9 +34,27 @@ import {
 import PlaceMarker from "../../../NewGeometry/PlaceMarker";
 import { set } from "date-fns";
 import { dbContext } from "../../../../services";
+import { useTranslation } from "react-i18next";
+
+const customButtonStyle = {
+  marginTop: "10px",
+  backgroundColor: "#4CAF50", // A green shade for the button
+  color: "#ffffff",
+  "&:hover": {
+    backgroundColor: "#45a049" // A slightly darker green on hover
+  },
+  borderRadius: "20px",
+  boxShadow: "0px 2px 2px rgba(0,0,0,0.2)",
+  textTransform: "none", // Prevent uppercase transform
+  fontSize: "16px",
+  padding: "10px 20px",
+  transition: "background-color 0.3s ease" // Smooth transition for hover effect
+};
 
 function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
-  const db = dbContext.fields //new PouchDB("campos_randyv7");
+  console.log("PointForm props: ", formData);
+  const { t } = useTranslation();
+  const db = dbContext.fields; //new PouchDB("campos_randyv7");
   const [point, setPoint] = useState({
     properties: {
       nombre: "",
@@ -52,6 +71,10 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   const [imageUrls, setImageUrls] = useState([]);
   const [audioUrl, setAudioUrl] = useState(null);
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
+  const [moveToCurrentLocation, setMoveToCurrentLocation] = useState(false);
+  const [externalCoordinates, setExternalCoordinates] = useState<
+    [number, number] | null
+  >(null);
 
   const fieldOptions = ["Muestra #", "Plaga", "Enfermedad", "Anomalia"];
 
@@ -80,9 +103,9 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
     }
   };
 
-  useEffect(() => {
-    console.log("point", point);
-  }, [point]);
+  const moveMarkerToCurrentPosition = () => {
+    setMoveToCurrentLocation(true);
+  };
 
   const handleDetailChange = (index, value) => {
     const newDetalles = [...point.properties.detalles];
@@ -217,7 +240,6 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   const [markerSaved, setMarkerSaved] = useState(false);
 
   const handleSaveMarker = () => {
-    console.log(" COORDINATES: ", coordinates);
     setPoint({
       ...point,
       properties: {
@@ -255,13 +277,23 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
           >
             Guardar
           </Button>
+          <Button
+            variant="contained"
+            onClick={moveMarkerToCurrentPosition}
+            sx={customButtonStyle}
+            startIcon={<MyLocationIcon />}
+          >
+            {t("Mover marcador a mi ubicacion")}
+          </Button>
         </div>
       )}
+
       <PlaceMarker
         selectedLot={lot}
         setCoordinates={setCoordinates}
         isDraggable={!markerSaved}
         onRemoveMarkers={onTourSave}
+        moveToUserLocation={moveToCurrentLocation}
       />
 
       <div style={formStyle}>
@@ -411,6 +443,3 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
 }
 
 export default PointForm;
-function useTranslation(): { t: any } {
-  throw new Error("Function not implemented.");
-}

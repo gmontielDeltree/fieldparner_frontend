@@ -21,16 +21,15 @@ import {
     Delete as DeleteIcon
 } from '@mui/icons-material'
 import React, { useEffect, useState } from 'react';
-import { useAppSelector, useDeposit, useForm, useStockMovement, useSupply } from '../hooks';
+import { useAppSelector, useDeposit, useForm, useStockMovement, useSupply, useTransformStock } from '../hooks';
 import { getShortDate } from '../helpers/dates';
 import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack } from '../components';
-import { ColumnProps, StockByLot, TransformSupply } from '../types';
+import { ColumnProps, StockByLot, Supply, TransformSupply } from '../types';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 
 const today = getShortDate();
-
-
 
 type SupplyRowProps = {
     row: TransformSupply;
@@ -109,21 +108,22 @@ const initialStateTransform = {
 };
 
 export const TransformPage: React.FC = () => {
-
+    const navigate = useNavigate();
     const { user } = useAppSelector(state => state.auth);
     const [originSupplies, setOriginSupplies] = useState<TransformSupply[]>([]);
     const [destinationSupplies, setDestinationSupplies] = useState<TransformSupply[]>([]);
     const [stockBySupplies, setStockBySupplies] = useState<StockByLot[]>([]);
     const { isLoading, supplies, getSupplies } = useSupply();
-    const { deposits, getDeposits } = useDeposit();
-const {t} = useTranslation();
+    const { isLoading: depositLoading, deposits, getDeposits, getDepositsBySupply } = useDeposit();
+    const { t } = useTranslation();
     const {
         operationDate,
         detail,
         handleInputChange,
         reset,
     } = useForm(initialStateTransform);
-    const { isLoading: loadingTransform, transformStock, getStock } = useStockMovement();
+    const { isLoading: loadingTransform, getStock } = useStockMovement();
+    const { transformStock } = useTransformStock();
 
     const originColumns: ColumnProps[] = [
         { text: t("supply_crop"), align: "left" },
@@ -249,16 +249,29 @@ const {t} = useTranslation();
         setDestinationSupplies([]);
         setStockBySupplies([]);
         reset();
+        navigate("/init/overview/value-transform");
     }
 
-    const saveTransformStock = () => {
-        transformStock(
+    const createTransform = async () => {
+        await transformStock(
             originSupplies, //Movimientos de salida
             destinationSupplies, //Movimientos de entrada
             stockBySupplies, //Tabla auxiliar de stock
             detail,
             operationDate
         );
+        reset();
+        navigate("/init/overview/value-transform");
+    }
+
+    const saveTransformStock = () => createTransform();
+
+    const onChangeSupply = (item: Supply) => {
+        getDepositsBySupply(item);
+    };
+
+    const onChangeSupplyDestination = (_item: Supply) => {
+        getDeposits();
     }
 
     useEffect(() => {
@@ -267,7 +280,7 @@ const {t} = useTranslation();
 
     return (
         <Box ml={2}>
-            {(isLoading || loadingTransform) && <Loading loading={true} />}
+            {(isLoading || loadingTransform || depositLoading) && <Loading loading={true} />}
             <Box
                 component="div"
                 display="flex"
@@ -324,13 +337,22 @@ const {t} = useTranslation();
                     </Grid>
                 </Grid>
                 <BorderContainer key="supplies-origin">
+                    <Box sx={{ mb: 3, mt: 1 }}>
+                        <NewSupplyRow
+                            key="new-supply-to-origin"
+                            supplies={supplies}
+                            deposits={deposits}
+                            showDueDate
+                            addNewSupply={handleAddSupplyOrigin}
+                            onChangeSupply={onChangeSupply} />
+                    </Box>
                     <TableContainer
                         key="table-supply-origin"
                         sx={{
                             minHeight: "120px",
                             maxHeight: "440",
                             overflow: "scroll",
-                            mb: 5
+                            // mb: 5
                         }}
                         component={Paper}
                     >
@@ -359,16 +381,22 @@ const {t} = useTranslation();
                             </TableBody>
                         </Table>
                     </TableContainer>
-                    <NewSupplyRow
-                        key="new-supply-to-origin"
-                        supplies={supplies}
-                        deposits={deposits}
-                        addNewSupply={handleAddSupplyOrigin} />
+
                 </BorderContainer>
                 <Typography variant="h5" sx={{ my: 3 }}>
                     {t("new_supply_destination")}
                 </Typography>
                 <BorderContainer key="supplies-destination">
+                    <Box sx={{ mb: 3, mt: 1 }}>
+                        <NewSupplyRow
+                            key="new-supply-to-destination"
+                            supplies={supplies}
+                            deposits={deposits}
+                            showDueDate
+                            addNewSupply={handleAddSupplyDestination}
+                            onChangeSupply={onChangeSupplyDestination}
+                        />
+                    </Box>
                     <TableContainer
                         key="table-supply-destination"
                         sx={{
@@ -404,11 +432,6 @@ const {t} = useTranslation();
                             </TableBody>
                         </Table>
                     </TableContainer>
-                    <NewSupplyRow
-                        key="new-supply-to-destination"
-                        supplies={supplies}
-                        deposits={deposits}
-                        addNewSupply={handleAddSupplyDestination} />
                 </BorderContainer>
                 <Grid container justifyContent="end" spacing={3} mt={2}>
                     <Grid item xs={12} sm={2}>

@@ -29,6 +29,7 @@ export interface LaborsFormProps {
   ) => void;
 }
 
+
 export const LaborsForm: React.FC<LaborsFormProps> = ({
   formValues,
   supplyError,
@@ -37,7 +38,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
   // handleCheckboxChange,
   setFormValues,
 }) => {
-  const { type, name, description, barCode, stockByLot, labors } = formValues;
+  const { type, name, description, barCode, stockByLot, labors, brand, senasaId } = formValues;
 
   const handleChangeLabors = (
     { target }: ChangeEvent<HTMLInputElement>,
@@ -57,7 +58,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
     }
   };
 
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
@@ -107,6 +108,35 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
             startAdornment: <InputAdornment position="start" />,
           }}
           fullWidth
+          multiline
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          variant="outlined"
+          type="text"
+          label={t("_brand")}
+          name="brand"
+          value={brand}
+          onChange={handleInputChange}
+          InputProps={{
+            startAdornment: <InputAdornment position="start" />,
+          }}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          variant="outlined"
+          type="text"
+          label={t("_senasa")}
+          name="senasaId"
+          value={senasaId}
+          onChange={handleInputChange}
+          InputProps={{
+            startAdornment: <InputAdornment position="start" />,
+          }}
+          fullWidth
         />
       </Grid>
       <Grid item xs={12} sm={6}>
@@ -132,7 +162,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
               <Checkbox
                 name="yes"
                 checked={stockByLot}
-                onChange={() => setFormValues(prevState=> ({...prevState, stockByLot: true}))}
+                onChange={() => setFormValues(prevState => ({ ...prevState, stockByLot: true }))}
               />
             }
             label={t("_yes")}
@@ -144,7 +174,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
               <Checkbox
                 name="not"
                 checked={!stockByLot}
-                onChange={() => setFormValues(prevState=> ({...prevState, stockByLot: false}))}
+                onChange={() => setFormValues(prevState => ({ ...prevState, stockByLot: false }))}
               />
             }
             label={t("_no")}
