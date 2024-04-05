@@ -12,96 +12,128 @@ import { capitalizeText } from "../../../helpers/helper";
 import { CultivoItem, useCrops } from "../../../hooks/useCrops";
 import { Cultivo } from "../../../interfaces/insumos";
 import { Crop, CropsRepository } from "../../../classes/Crops";
+import { Crops } from "@types";
+import i18next from "i18next";
 
-const filter = createFilterOptions<CropOptionType>();
-
-interface CropOptionType {
-  inputValue?: string;
-  label: string;
-  color?: number;
+let labelInLang = (c : Crops, lang : string)=>{
+  if(lang === "es"){
+    return c.descriptionES
+  } else if(lang === "en"){
+    return c.descriptionEN
+  } else if(lang === "pt"){
+    return c.descriptionPT
+  }else{
+    return c.descriptionES
+  }
 }
+const filter = createFilterOptions<Crops>({stringify:(option)=>{
+  let lang = i18next.language;
+        let label = labelInLang(option,lang);
+        return label
+}});
+
+// interface CropOptionType extends Crops {
+//   inputValue?: string;
+//   label: string;
+//   color?: number;
+// }
 
 export const AutocompleteCultivo = ({ value, onChange }) => {
-  const { t } = useTranslation();
-  const [crops, setCrops] = useState<any[]>([]);
+  const { t, i18n } = useTranslation();
+  const [crops, setCrops] = useState<Crops[]>([]);
 
   const [cropsRepo, _] = useState(new CropsRepository());
 
   useEffect(() => {
     cropsRepo.getAll().then((cropsFromDB) => {
+      console.log("CORPS",cropsFromDB)
       setCrops(cropsFromDB);
     });
 
-    cropsRepo.attachObserver((cropsFromDB) => {
-      // console.log("Settin Crops Again");
-      setCrops(cropsFromDB);
-    });
+    // cropsRepo.attachObserver((cropsFromDB) => {
+    //   console.log("Settin Crops Again");
+    //   setCrops(cropsFromDB);
+    // });
   }, []);
 
-  const [_value, setValue] = React.useState<CropOptionType | null>(value || null);
+  const [_value, setValue] = React.useState<Crops | null>(
+    value || null
+  );
 
-  useEffect(()=>{
+  useEffect(() => {
     // console.log("_value",_value)
-    onChange(_value)
-  },[_value])
+    onChange(_value);
+  }, [_value]);
 
+  
   return (
     <Autocomplete
       value={_value}
       onChange={(event, newValue) => {
-        if (typeof newValue === "string") {
-          setValue({
-            label: `${newValue}`,
-          });
-        } else if (newValue && newValue.inputValue) {
-          // Create a new value from the user input
-          cropsRepo
-            .add({ label: newValue.inputValue })
-            .then((c) => setValue(c));
-        } else {
-          setValue(newValue);
-        }
-      }}
-      filterOptions={(options, params) => {
-        const filtered = filter(options, params);
+        // if (typeof newValue === "string") {
+        //   // setValue({
+        //   //   label: `${newValue}`,
+        //   // });
+        // } else if (newValue && newValue.inputValue) {
+        //   // Create a new value from the user input
 
-        const { inputValue } = params;
-        // Suggest the creation of a new value
-        const isExisting = options.some(
-          (option) => inputValue === option.label
-        );
-        if (inputValue !== "" && !isExisting) {
-          filtered.push({
-            inputValue,
-            label: `${t("_add")} "${inputValue}"`,
-          });
-        }
+        //   // NOTA: NO QUIEREN QUE SE PUEDAN AGREGAR CULTIVOS
+        //   // cropsRepo
+        //   //   .add({ label: newValue.inputValue })
+        //   //   .then((c) => setValue(c));
+        // } else {
+          if(newValue){
+            setValue(newValue);
 
-        return filtered;
+          }
+        // }
       }}
+      // filterOptions={(options, params) => {
+      //    const filtered = filter(options, params);
+
+      // //   const { inputValue } = params;
+      // //   // Suggest the creation of a new value
+      // //   const isExisting = options.some(
+      // //     (option) => inputValue === option.label
+      // //   );
+      // //   if (inputValue !== "" && !isExisting) {
+      // //     filtered.push({
+      // //       inputValue,
+      // //       label: `${t("_add")} "${inputValue}"`,
+      // //     });
+      // //   }
+
+      //    return filtered;
+      //  }}
       selectOnFocus
       clearOnBlur
       handleHomeEndKeys
       id="free-solo-with-text-demo"
       options={crops}
+      isOptionEqualToValue={(option,value)=>option._id ===value._id}
       getOptionLabel={(option) => {
         // Value selected with enter, right from the input
-        if (typeof option === "string") {
-          return option;
-        }
+        //  if (typeof option === "string") {
+        //    return option;
+        //  }
         // Add "xxx" option created dynamically
-        if (option.label) {
-          return option.label;
-        }
+        // if (option.label) {
+        //   return option.label;
+        // }
         // Regular option
-        return option.label;
+        let lang = i18n.language;
+        let label = labelInLang(option,lang);
+        return option.descriptionES;
+        
       }}
-      renderOption={(props, option) => <li {...props}>{option.label}</li>}
+      // renderOption={(props, option) => {
+      //   let lang = i18n.language;
+      //   let label = labelInLang(option,lang);
+      //   return <li {...props}>{label}</li>;
+      // }}
       sx={{ width: 300 }}
-      freeSolo
-      renderInput={(params) => (
-        <TextField {...params} label={t("Crop")} />
-      )}
+      // freeSolo
+      renderInput={(params) => <TextField {...params} label={t("Crop")} />}
     />
   );
 };

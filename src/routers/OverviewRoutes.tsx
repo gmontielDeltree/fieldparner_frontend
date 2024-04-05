@@ -33,6 +33,7 @@ import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
 import { ComponentTestBed } from '../pages/ComponentTestBed';
+import { PlanificationByLotPage } from "../pages/PlanificationByLotPage";
 
 export const OverviewRoutes: React.FC = () => {
   const { pathname, search } = useLocation();
@@ -44,7 +45,9 @@ export const OverviewRoutes: React.FC = () => {
     <AppLayout key="app-layout">
       <Routes>
         <Route path="/overview/fields/:campoId?/:loteId?" element={<FieldsPage />} >
+          <Route path="planification-by-lot/:parentId/:loteId2" element={<PlanificationByLotPage />} />
           <Route path="planification" element={<PlanificationPage />} />
+
           <Route path="device/:deviceId/:date" element={<DevicePage />} />
           <Route path="integrations" element={<IntegrationsPage />} />
           <Route path="john-deere" element={<JohnDeereIntegration />} />

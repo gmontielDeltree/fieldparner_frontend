@@ -31,6 +31,70 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
+export const ActividadEditorDialogNoButton = ({
+  open,
+  handleClose,
+  actividad,
+  refreshCiclos,
+  editing,
+}: {
+  editing: boolean;
+  open: boolean;
+  handleClose: () => any;
+  actividad: IActividadPlanificacion;
+  refreshCiclos: () => any;
+}) => {
+  return (
+    <Dialog
+      open={open}
+      TransitionComponent={Transition}
+      keepMounted
+      onClose={handleClose}
+      maxWidth={"lg"}
+      aria-describedby="alert-dialog-slide-description"
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingX: "1rem",
+        }}
+      >
+        {editing ? (
+          <DialogTitle>
+            Editando plan de {actividad.tipo.toLocaleUpperCase()}
+          </DialogTitle>
+        ) : (
+          <DialogTitle>
+            Nuevo plan de {actividad.tipo.toLocaleUpperCase()}
+          </DialogTitle>
+        )}
+        <IconButton onClick={handleClose}>
+          <CancelIcon />
+        </IconButton>
+      </Box>
+
+      <DialogContent>
+        <ActividadEditorBase
+          tipo={actividad.tipo}
+          actividadDoc={actividad}
+          onClose={handleClose}
+          onSave={() => {
+            refreshCiclos();
+            handleClose();
+          }}
+          editing={editing}
+        />
+      </DialogContent>
+      {/* <DialogActions>
+    <Button onClick={handleClose}>Disagree</Button>
+    <Button onClick={handleClose}>Agree</Button>
+  </DialogActions> */}
+    </Dialog>
+  );
+};
+
 export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
   const [open, setOpen] = React.useState(false);
 
@@ -130,39 +194,9 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
         </MenuItem>
       </Menu>
 
-      <Dialog
-        open={open}
-        TransitionComponent={Transition}
-        keepMounted
-        onClose={handleClose}
-        maxWidth={"lg"}
-        aria-describedby="alert-dialog-slide-description"
-      >
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems:"center", paddingX:"1rem" }}>
-          <DialogTitle>
-            Nuevo plan de {actividad.tipo.toLocaleUpperCase()}
-          </DialogTitle>
-          <IconButton onClick={handleClose}>
-            <CancelIcon />
-          </IconButton>
-        </Box>
-
-        <DialogContent>
-          <ActividadEditorBase
-            tipo={actividad.tipo}
-            actividadDoc={actividad}
-            onClose={handleClose}
-            onSave={() => {
-              refreshCiclos();
-              handleClose();
-            }}
-          />
-        </DialogContent>
-        {/* <DialogActions>
-          <Button onClick={handleClose}>Disagree</Button>
-          <Button onClick={handleClose}>Agree</Button>
-        </DialogActions> */}
-      </Dialog>
+      <ActividadEditorDialogNoButton
+        {...{ open, handleClose, actividad, refreshCiclos, editing: false }}
+      />
     </React.Fragment>
   );
 }

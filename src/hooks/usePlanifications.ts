@@ -15,6 +15,7 @@ import { Ciclo } from "../components/Planification/Ciclo";
 import { Row } from "reactstrap";
 import { Loading } from "../components/Loading/index";
 import async from "../../netlify/edge-functions/geo";
+import { ILaboresPlanificacion } from '../interfaces/planification';
 
 export const usePlanActividad = () => {
   let db =
@@ -33,7 +34,7 @@ export const usePlanActividad = () => {
     });
     if (lineasInsumos) {
       await db.bulkDocs(lineasInsumos).then(() =>
-        console.log("Lineas Guardadas", lineasInsumos)
+        console.log("Lineas Insumos Guardadas", lineasInsumos)
       );
     }
     if (lineasLabores) {
@@ -43,6 +44,19 @@ export const usePlanActividad = () => {
     }
   };
 
+  const getLineasInsumos = async (lineasIds:string[])=>{
+    let d = await db.allDocs({keys:lineasIds,include_docs:true})
+    let docs = d.rows.map((r)=>r.doc)
+    return docs as IInsumosPlanificacion[]
+
+  }
+
+  const getLineasServicios = async (lineasIds:string[])=>{
+    let d = await db.allDocs({keys:lineasIds,include_docs:true})
+    let docs = d.rows.map((r)=>r.doc)
+    return docs as ILaboresPlanificacion[]
+
+  }
   const getActividadesByCiclo = (cicloId) => {};
 
   const removeActividad = async (actividadId) => {
@@ -81,6 +95,8 @@ export const usePlanActividad = () => {
   return {
     saveActividad,
     removeActividad,
+    getLineasServicios,
+    getLineasInsumos,
   };
 };
 
@@ -110,6 +126,7 @@ export const usePlanificationActividad = (actividadId: string) => {
   const [actividad, setAct] = useState<IActividadPlanificacion>();
   const [lineasInsumos, setLineasInsumos] = useState([]);
   const [lineasLabores, setLineasLabores] = useState([]);
+  
 
   const [loading, setLoading] = useState(true);
 
@@ -126,6 +143,8 @@ export const usePlanificationActividad = (actividadId: string) => {
       );
       console.log(a, db, actividad.insumosLineasIds);
       setLineasInsumos(a);
+    }else if(actividad?.insumosLineasIds.length === 0){
+      setLineasInsumos([]);
     }
   };
 
@@ -139,6 +158,8 @@ export const usePlanificationActividad = (actividadId: string) => {
       );
       console.log("LINEAS LABORES ", a, actividad.laboresLineasIds);
       setLineasLabores(a);
+    }else if(actividad?.laboresLineasIds.length === 0){
+      setLineasLabores([]);
     }
   };
 
@@ -160,7 +181,13 @@ export const usePlanificationActividad = (actividadId: string) => {
     });
   }, []);
 
-  return { ...actividad, lineasInsumos, lineasLabores, loading };
+  const refreshActividad = ()=>{
+    db.get(actividad?._id).then((a) => {
+      setAct(a);
+    });
+  }
+
+  return { ...actividad, lineasInsumos, lineasLabores, loading, actividad, refreshActividad };
 };
 
 export const useCiclo = ({
@@ -193,7 +220,7 @@ export const useCiclo = ({
 
   const saveCiclo = 
     (campanaId, lotePId,cultivoId, startDate, endDate) => {
-      console.log("ACAAAAAAAAAAAAAAAA",campanaId)
+      console.log("Saving Cycle",campanaId,cultivoId)
       let c = { ...ciclo };
 
       if (!cicloId) {
@@ -276,6 +303,7 @@ export const useListaDeCiclos = () => {
 
   useEffect(() => {
     getCiclos();
+    console.count("usePlanHook")
   }, []);
 
   return { ciclos, refreshCiclos, removeCiclo, getCiclosFromCampanaAndLote };
