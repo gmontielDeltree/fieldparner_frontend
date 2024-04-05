@@ -7,7 +7,7 @@ export const  useListaCampanas = ()=>{
     const getCampanaDesc = (id)=>{
         let c =  campaigns.find(c=>c._id===id)
         if(c){
-            return c.description
+            return c.campaignId
         }else{
             return id
         }

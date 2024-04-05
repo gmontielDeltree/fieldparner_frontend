@@ -12,7 +12,9 @@ import {
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import planAnualIcon from "../../images/icons/sembradora_act.webp";
+import planAnualIcon from "../../images/icons/plan.png";
+import preparadoIcon from "../../images/icons/prepare.png";
+
 
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
 import categoryIcon2 from "../../images/icons/pulverizadora_act.webp";
@@ -24,7 +26,7 @@ import { Activities } from "./Activities/index";
 import { Actividad } from "../../interfaces/activity";
 import { isBefore, parseISO } from "date-fns";
 import GroundSample from "./GroundSample";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExecuteActivity from "./ExecuteActivity";
 import { dbContext } from "../../services";
@@ -73,18 +75,22 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   );
 
   const navigate = useNavigate();
+  let location = useLocation();
+
 
   console.log("Lot seleccionado: ", lot);
+  let backUrl  =location.pathname
   const categories = [
-    {id:"Planificacion Anual de Campaña", icon:planAnualIcon, link:`/init/overview/fields/planification/${lot.id}`},
-    { id: "Planificar Siembra", icon: categoryIcon1 },
-    { id: "Planificar Aplicacion", icon: categoryIcon2 },
-    { id: "Planificar Cosecha", icon: categoryIcon3 },
+    // {id:"Planificación del lote", icon:planAnualIcon, link:`planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`},
+    // {id: "Programar Preparado", icon:preparadoIcon},
+    { id: "Programar Siembra", icon: categoryIcon1 },
+    { id: "Programar Aplicacion", icon: categoryIcon2 },
+    { id: "Programar Cosecha", icon: categoryIcon3 },
     { id: "Recorrido", icon: categoryIcon4 },
     {
       id: "Vista de Satelite",
       icon: categoryIcon5,
-      link: `/init/overview/satellite/${lot.id}`
+      link: `/init/overview/satellite/${lot.id}?backUrl=${backUrl}`
     },
     { id: "Muestra de suelo", icon: categoryIcon6 }
   ];
@@ -283,7 +289,17 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     }
 
     switch (selectedCategory) {
-      case "Planificar Siembra":
+      // case "Programar Preparado":
+      //   return (
+      //     <PlanActivity
+      //       activityType={"preparation"}
+      //       lot={lot}
+      //       fieldName={field.nombre}
+      //       db={db}
+      //       backToActivites={backToActivites}
+      //     />
+      //   );
+      case "Programar Siembra":
         return (
           <PlanActivity
             activityType={"sowing"}
@@ -293,7 +309,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             backToActivites={backToActivites}
           />
         );
-      case "Planificar Cosecha":
+      case "Programar Cosecha":
         return (
           <PlanActivity
             activityType={"harvesting"}
@@ -303,7 +319,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             backToActivites={backToActivites}
           />
         );
-      case "Planificar Aplicacion":
+      case "Programar Aplicacion":
         return (
           <PlanActivity
             activityType={"application"}

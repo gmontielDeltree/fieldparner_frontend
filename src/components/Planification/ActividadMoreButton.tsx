@@ -33,10 +33,16 @@ export const ActividadMoreButton = ({onEdit, onDelete}) => {
           "aria-labelledby": "basic-button",
         }}
       >
-        {/* <MenuItem onClick={()=>{
+         <MenuItem onClick={()=>{
             handleClose()
             onEdit()
-            }}>Editar</MenuItem> */}
+            }}>Programar</MenuItem> 
+            
+        <MenuItem onClick={()=>{
+            handleClose()
+            onDelete()
+            }}>Editar</MenuItem>
+        
         <MenuItem onClick={()=>{
             handleClose()
             onDelete()

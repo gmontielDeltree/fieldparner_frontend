@@ -116,7 +116,7 @@ const LoteAccordion: React.FC = ({ lote, campanaId, expanded, cicloSelected }) =
     </Accordion>
   );
 };
-export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloSelected, onClose }) => {
+export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloSelected, onClose, onlyLoteSelected }) => {
   // Lista de Campañas
   // Planificaciones por campaña
   //

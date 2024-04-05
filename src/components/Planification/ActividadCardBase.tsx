@@ -37,8 +37,10 @@ const calcTotal =(linInsumos : IInsumosPlanificacion[], linLabores : ILaboresPla
 
 export const ActividadCardBase: React.FC = ({
   actividadId,
+  selectionMode
 }: {
-  actividadId: string;
+  actividadId: string,
+  selectionMode? : boolean
 }) => {
   // const actividad = usePlanificationActividad(actividadId)
   const { removeActividad } = usePlanActividad();
