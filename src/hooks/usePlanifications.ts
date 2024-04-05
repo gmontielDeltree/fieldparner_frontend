@@ -276,6 +276,7 @@ export const useListaDeCiclos = () => {
 
   useEffect(() => {
     getCiclos();
+    console.count("usePlanHook")
   }, []);
 
   return { ciclos, refreshCiclos, removeCiclo, getCiclosFromCampanaAndLote };
