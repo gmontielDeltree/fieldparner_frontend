@@ -107,13 +107,13 @@ export const PlanificationPage: React.FC = () => {
                         </Typography>
                       </Box>
 
-                      <IconButton
+                      {/* <IconButton
                         onClick={() => {
                           ReporteDeCampanas(ciclos.ciclos, campaigns, crops);
                         }}
                       >
                         <MoreVertIcon />
-                      </IconButton>
+                      </IconButton> */}
                     </Box>
                     <Divider variant="middle" component={"div"}></Divider>
                     <Box

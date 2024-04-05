@@ -6,29 +6,73 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import DateRangePicker from "./DateRangePicker";
-import { Autocomplete } from "@mui/material";
+import { Autocomplete, Typography } from "@mui/material";
 import { useCiclo } from "../../hooks/usePlanifications";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { CultivoItem } from "../../hooks";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { ICiclosPlanificacion } from "../../interfaces/planification";
+import { add, isWithinInterval } from "date-fns";
 
-export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, onSave}) {
+export default function CicloEditorDialog({
+  campanaId,
+  loteId,
+  editor,
+  cicloId,
+  onSave,
+  otrosCiclos,
+}: {
+  otrosCiclos: ICiclosPlanificacion[];
+}) {
+  const [ciclo, saveCiclo] = useCiclo({
+    campaingId: campanaId,
+    loteId: loteId,
+    cicloId: cicloId,
+  });
 
-  const [ciclo,saveCiclo] = useCiclo({ campaingId: campanaId , loteId: loteId, cicloId: cicloId } )
-
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [open, setOpen] = React.useState(false);
-  const [cultivo, setCultivo] = React.useState<CultivoItem>()
-  const [startDate, setStartDate] = React.useState(new Date())
-  const [endDate, setEndDate] = React.useState(new Date())
+  const [cultivo, setCultivo] = React.useState<CultivoItem>();
+  const [startDate, setStartDate] = React.useState(new Date());
+  const [endDate, setEndDate] = React.useState(add(new Date(), { months: 5 }));
 
-  const {crops,getCrops} = React.useContext(CultivoContext)
+  const { crops, getCrops } = React.useContext(CultivoContext);
 
-  useEffect(()=>{
-    getCrops()
-  },[])
+  const [maxDate, invalidRanges] = useMemo(() => {
+    if (otrosCiclos?.length) {
+      console.log("OTROS CICLOS", otrosCiclos);
+      let dates = otrosCiclos.map((c) => new Date(c.fechaFin));
+      let maxDate = new Date(Math.max(...dates));
+      let invalidRanges = otrosCiclos.map((c) => [
+        new Date(c.fechaInicio),
+        new Date(c.fechaFin),
+      ]);
+
+      console.log("MAX DATE", maxDate, "invalidRanges", invalidRanges);
+      setStartDate(add(maxDate, { days: 1 }));
+      setEndDate(add(maxDate, { months: 5 }));
+      return [maxDate, invalidRanges];
+    } else {
+      return [undefined, []];
+    }
+  }, [otrosCiclos]);
+
+  const checkRangeIsValid = useCallback((sd,ed) => {
+    
+    if(!invalidRanges){
+      return true;
+    }
+    return !invalidRanges.some((r) =>
+      isWithinInterval(r[0], { start: sd, end: ed })
+    );
+
+  }, [invalidRanges]);
+
+  useEffect(() => {
+    getCrops();
+  }, []);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -40,16 +84,15 @@ export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, o
 
   return (
     <React.Fragment>
-      <Button variant="contained"  onClick={handleClickOpen}>
+      <Button variant="contained" onClick={handleClickOpen}>
         + Ciclo
       </Button>
       <Dialog
-      
         open={open}
         onClose={handleClose}
         PaperProps={{
           component: "form",
-          onClick: e => e.stopPropagation(),
+          onClick: (e) => e.stopPropagation(),
           onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
@@ -62,38 +105,57 @@ export default function CicloEditorDialog({campanaId, loteId, editor, cicloId, o
       >
         <DialogTitle>Nuevo Ciclo {campanaId}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-          </DialogContentText>
-
+          <DialogContentText></DialogContentText>
 
           <Autocomplete
-          style={{marginBottom:"1rem",marginTop:"1rem"}}
+            style={{ marginBottom: "1rem", marginTop: "1rem" }}
             disablePortal
             value={cultivo}
             id="combo-box-demo"
             options={crops}
             getOptionLabel={(option) => option.descriptionEN}
             sx={{ width: 300 }}
-            isOptionEqualToValue={(option,value)=>option._id ===value._id}
-            onChange={(event: any, newValue: string | null)=>setCultivo(newValue)}
+            isOptionEqualToValue={(option, value) => option._id === value._id}
+            onChange={(event: any, newValue: string | null) =>
+              setCultivo(newValue)
+            }
             renderInput={(params) => <TextField {...params} label="Cultivo" />}
           />
 
-          <DateRangePicker  startDate={startDate} endDate={endDate} onRangeChange={(s,e)=>{
-            console.log(s,e)
-            setStartDate(s)
-            setEndDate(e)
-          }} />
+          <DateRangePicker
+            invalidRanges={invalidRanges}
+            startDate={startDate}
+            endDate={endDate}
+            onRangeChange={(s, e) => {
+              console.log(s, e);
+              setStartDate(s);
+              setEndDate(e);
+            }}
+          />
+
+          {!checkRangeIsValid(startDate,endDate) && (
+            <Typography>
+              {t("El rango seleccionado incluye uno o mas ciclos")}
+            </Typography>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>
-          <Button type="submit" disabled={!cultivo} onClick={()=>{
-            console.log(cultivo)
-            if(cultivo){
-              saveCiclo(campanaId,loteId,cultivo._id,startDate,endDate)
-              onSave()
-            }
-          }}>Aceptar</Button>
+          <Button
+            type="submit"
+            disabled={!cultivo || !checkRangeIsValid(startDate,endDate)}
+            onClick={() => {
+              console.log(cultivo);
+              if (cultivo) {
+                if (checkRangeIsValid(startDate,endDate)) {
+                  saveCiclo(campanaId, loteId, cultivo._id, startDate, endDate);
+                  onSave();
+                }
+              }
+            }}
+          >
+            Aceptar
+          </Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
