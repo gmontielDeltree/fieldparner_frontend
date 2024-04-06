@@ -158,7 +158,7 @@ export const PlanificationPage: React.FC = () => {
                   </Paper>
                 </Grid>
 
-                {selCampanaId && selCampoId && selLoteId && selCicloId && (
+                {selCampanaId && selCampoId && selLoteId && selCicloId && crops.crops?.length && (
                   <Grid item xs={6}>
                     <Paper sx={{ marginTop: "4rem" }}>
                       <PlanificationByField
