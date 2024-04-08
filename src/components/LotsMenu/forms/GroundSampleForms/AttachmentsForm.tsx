@@ -2,6 +2,8 @@ import React, { useState, useCallback } from "react";
 import { Paper, Typography, Grid, Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useDropzone } from "react-dropzone";
+import { dbContext } from "../../../../services";
+import { uuidv4 } from "uuidv7";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -31,19 +33,36 @@ const StyledDropzone = styled("div")(({ theme }) => ({
 
 function AttachmentsForm({ formData, setFormData }) {
   const [file, setFile] = useState(null);
-
+  const db = dbContext.fields;
   const onDrop = useCallback(
-    (acceptedFiles) => {
+    async (acceptedFiles) => {
       const uploadedFile = acceptedFiles[0];
       setFile(uploadedFile);
-      // TODO: set the file id in formData here
+
+      if (uploadedFile) {
+        const imageId = uuidv4();
+        try {
+          await db.putAttachment(
+            imageId,
+            "image",
+            uploadedFile,
+            uploadedFile.type
+          );
+          setFormData({
+            ...formData,
+            attachedFileId: imageId
+          });
+        } catch (error) {
+          console.error("Error uploading file to DB:", error);
+        }
+      }
     },
-    [setFormData, formData]
+    [setFormData, formData, db]
   );
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    accept: "image/*", // TODO: change to accept all files
+    accept: "image/*,application/pdf", // To accept all files, you can remove the accept attribute
     multiple: false
   });
 

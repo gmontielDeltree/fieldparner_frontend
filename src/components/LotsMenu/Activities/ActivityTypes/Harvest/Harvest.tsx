@@ -158,6 +158,7 @@ function Harvest({
               lotDoc?.properties?.nombre
             );
           }}
+          disabledActions={{ edit: !!execution }}
         />
 
         {/* <IconButton onClick={handleMenuClick} sx={{ marginLeft: "8px" }}>

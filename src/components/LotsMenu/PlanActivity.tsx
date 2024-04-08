@@ -486,16 +486,15 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             Siguiente
           </Button>
         )}
-        {activeStep === steps.length - 1 && (
-          <Button
-            color="success"
-            onClick={() => {
-              handleSave();
-            }}
-          >
-            Guardar
-          </Button>
-        )}
+
+        <Button
+          color="success"
+          onClick={() => {
+            handleSave();
+          }}
+        >
+          Guardar
+        </Button>
       </div>
     </div>
   );
