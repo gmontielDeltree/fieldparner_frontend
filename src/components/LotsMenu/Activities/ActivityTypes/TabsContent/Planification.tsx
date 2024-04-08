@@ -253,7 +253,6 @@ const PlanificationContent = React.memo(function PlanificationContent({
                 <Box
                   sx={{ display: "flex", alignItems: "center", gap: "10px" }}
                 >
-                  {/* Aquí puedes reemplazar 'InsumoIcon' con el icono correspondiente basado en el tipo de insumo */}
                   <Typography variant="body1">
                     <strong>{lineaInsumo.insumo.name}</strong> -{" "}
                     {lineaInsumo.insumo.brand}

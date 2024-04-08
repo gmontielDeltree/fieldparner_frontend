@@ -301,7 +301,6 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                 )}
               </Paper>
             </Grid>
-            {/* Deposito Autocomplete alongside Insumo */}
             <Grid item xs={4}>
               <AutocompleteDeposito
                 value={deposito}
@@ -310,7 +309,6 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
             </Grid>
           </Grid>
 
-          {/* Other fields - Ensure their xs values sum up to 12 for each row */}
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={3}>
               <NumberFieldWithUnits

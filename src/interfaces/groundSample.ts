@@ -14,8 +14,8 @@ export interface AnalisisSuelo {
   referencia_laboratorio: string;
   nombre_responsable: string;
   matricula_responsable: string;
-  caracterizacion?: string; //CaracterizacionSuelo
-  textura?: string; //TexturaSuelo
+  caracterizacion?: string;
+  textura?: string;
   profundidad?: number;
   carbono_organico?: number;
   materia_organica?: number;

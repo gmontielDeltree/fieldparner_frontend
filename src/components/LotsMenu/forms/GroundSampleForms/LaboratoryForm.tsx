@@ -54,7 +54,7 @@ function LaboratoryForm({ lot, formData, setFormData }) {
       <Title>Laboratorio</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
-          {/* ID Input - Now unmodifiable */}
+          {/* ID Input - unmodifiable */}
           <Grid item xs={12} sm={6}>
             <TextField
               id="id"

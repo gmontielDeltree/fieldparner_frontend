@@ -101,8 +101,8 @@ function DataSection({ data }) {
       elevation={3}
       sx={{
         padding: "16px",
-        backgroundColor: "rgba(25, 118, 210, 0.1)", // Adjust alpha for transparency
-        backdropFilter: "blur(10px)", // Apply blur effect
+        backgroundColor: "rgba(25, 118, 210, 0.1)",
+        backdropFilter: "blur(10px)",
         marginTop: "16px"
       }}
     >

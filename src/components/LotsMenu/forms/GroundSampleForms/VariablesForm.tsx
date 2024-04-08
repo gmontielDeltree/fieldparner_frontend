@@ -52,7 +52,7 @@ function VariablesForm({ formData, setFormData }) {
                 id={field}
                 label={field
                   .replace(/_/g, " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase())} // Also capitalize labels for a better user interface
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}
                 fullWidth
                 type="number"
                 value={formData.soilVariables?.[field] || 0}

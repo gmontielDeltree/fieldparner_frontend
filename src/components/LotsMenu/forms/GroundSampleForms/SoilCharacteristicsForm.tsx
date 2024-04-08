@@ -17,7 +17,6 @@ const Title = styled(Typography)({
 
 function SoilCharacteristicsForm({ formData, setFormData }) {
   const onFieldChange = (fieldName, value) => {
-    // Ensure characteristics object exists
     const updatedCharacteristics = {
       ...formData.characteristics,
       [fieldName]: value
