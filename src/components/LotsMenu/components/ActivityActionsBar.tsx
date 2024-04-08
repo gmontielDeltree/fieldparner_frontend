@@ -19,77 +19,73 @@ const ActivityActionsBar = ({
   onDownloadCompare,
   onMeteo,
   onDeleteActivity,
+  disabledActions
 }) => {
   const actions = [
     {
       icon: edicion_icon,
       text: "Editar Actividad",
       action: onEditActivity,
+      disabled: disabledActions.edit ? disabledActions.edit : false
     },
     {
       icon: repetir_icon,
       text: "Repetir Actividad en otro Lote",
       action: onRepeatOT,
+      disabled: disabledActions.repeat ? disabledActions.repeat : false
     },
     {
       icon: ot_icon,
       text: "Crear Orden de Trabajo",
       action: onDownloadOT,
+      disabled: disabledActions.ot ? disabledActions.ot : false
     },
     {
       icon: compartir_ot_icon,
       text: "Compartir Orden de Trabajo",
       action: onShareOT,
+      disabled: disabledActions.share ? disabledActions.share : false
     },
     {
       icon: comparativa_icon,
       text: "Comparativa entre Programa y Ejecucion",
       action: onDownloadCompare,
+      disabled: disabledActions.compare ? disabledActions.compare : false
     },
     {
       icon: metereologia_icon,
       text: "Meteorologia",
       action: onMeteo,
+      disabled: disabledActions.meteo ? disabledActions.meteo : false
     },
     {
       icon: basura_icon,
       text: "Eliminar Actividad",
       action: onDeleteActivity,
-    },
+      disabled: disabledActions.delete ? disabledActions.delete : false
+    }
   ];
 
   return (
     <Toolbar variant="dense">
       {actions.map((a) => (
-        <Tooltip
-          title={a.text}
-          arrow
-          placement="top"
-          sx={{
-            tooltip: {
-              backgroundColor: "#333",
-              color: "white",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-              fontSize: "1em",
-            },
-            arrow: {
-              color: "#333",
-            },
-          }}
-        >
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-            onClick={a.action}
-          >
-            <img src={a.icon} width="32" height="32" alt={a.text} />
-          </IconButton>
+        <Tooltip key={a.text} title={a.text} arrow placement="top">
+          <span>
+            {" "}
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              sx={{ mr: 2 }}
+              onClick={a.action}
+              disabled={a.disabled}
+            >
+              <img src={a.icon} width="32" height="32" alt={a.text} />
+            </IconButton>
+          </span>
         </Tooltip>
       ))}
     </Toolbar>
   );
 };
-
 export default ActivityActionsBar;

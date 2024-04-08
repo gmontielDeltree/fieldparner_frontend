@@ -32,7 +32,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
   backToActivites
 }) => {
   if (!lot) return null;
-  const [formData, setFormData] = useState(getEmptyActivity());
+  const [formData, setFormData] = useState({});
   const [activeStep, setActiveStep] = useState(0);
   const steps = [
     "Laboratorio",
@@ -46,7 +46,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
       ...prevFormData,
       lote_uuid: lot.id,
       ts_generacion: 0,
-      tipo: "aplicacion",
+      tipo: "analisis_suelo",
       detalles: {
         ...prevFormData.detalles,
         hectareas: lot.properties.hectareas
@@ -109,7 +109,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
   const handleSave = () => {
     let actividad = formData;
     try {
-      const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
+      const fechaEjecucion = actividad.fecha;
 
       const parsedDate = new Date(fechaEjecucion);
 
@@ -217,16 +217,15 @@ const GroundSample: React.FC<GroundSampleProps> = ({
             Siguiente
           </Button>
         )}
-        {activeStep === steps.length - 1 && (
-          <Button
-            color="success"
-            onClick={() => {
-              handleSave();
-            }}
-          >
-            Guardar
-          </Button>
-        )}
+
+        <Button
+          color="success"
+          onClick={() => {
+            handleSave();
+          }}
+        >
+          Guardar
+        </Button>
       </div>
     </div>
   );

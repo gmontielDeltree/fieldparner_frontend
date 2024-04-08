@@ -13,7 +13,7 @@ import {
   Typography,
   Box,
   Paper,
-  Link,
+  Link
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -36,7 +36,7 @@ const TypeBadge = styled(Chip)(({ theme }) => ({
   marginLeft: theme.spacing(1),
   fontSize: "0.75rem",
   height: "auto",
-  padding: "0 6px",
+  padding: "0 6px"
 }));
 
 const flashFadeAnimation = keyframes`
@@ -56,20 +56,20 @@ const CustomListItem = styled(Card)(({ deleting }) => ({
   margin: "10px 0",
   backgroundColor: "#f9f9f9",
   borderRadius: "8px",
-  animation: deleting ? `${flashFadeAnimation} 1s forwards` : "none",
+  animation: deleting ? `${flashFadeAnimation} 1s forwards` : "none"
 }));
 
 const Title = styled(Typography)({
   fontSize: "1.5em",
   fontWeight: "bold",
   color: "#333",
-  marginBottom: "20px",
+  marginBottom: "20px"
 });
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
   margin: "20px 0",
-  backgroundColor: "#f7f7f7",
+  backgroundColor: "#f7f7f7"
 });
 
 function SuppliesForm({ lot, db, formData, setFormData }) {
@@ -90,7 +90,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     dosificacion: "",
     total: "",
     deposito: {},
-    precio: "",
+    precio: ""
   });
 
   const findInsumoByOption = (option) => {
@@ -106,12 +106,12 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       uuid: uuid4(),
       total: total,
       deposito: deposito,
-      precio_estimado: precio,
+      precio_estimado: precio
     };
     const newDetalles = [...formData.detalles.dosis, newRow];
     setFormData({
       ...formData,
-      detalles: { ...formData.detalles, dosis: newDetalles },
+      detalles: { ...formData.detalles, dosis: newDetalles }
     });
     console.log("NUEVA FILA", newRow);
     setSelectedSupply("");
@@ -133,13 +133,13 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       uuid: rows[editIndex].uuid,
       deposito: editData.deposito,
       total: editData.total,
-      precio_estimado: editData.precio,
+      precio_estimado: editData.precio
     };
     const updatedDetalles = [...formData.detalles.dosis];
     updatedDetalles[editIndex] = updatedRow;
     setFormData({
       ...formData,
-      detalles: { ...formData.detalles, dosis: updatedDetalles },
+      detalles: { ...formData.detalles, dosis: updatedDetalles }
     });
     setEditIndex(-1);
   };
@@ -152,8 +152,9 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   const handleDosificacionChange = (event) => {
     setDosificacion(event.target.value);
     setTotal((+event.target.value * formData.detalles.hectareas).toFixed(2));
-    setCostoTotal((+event.target.value * formData.detalles.hectareas * +precio).toFixed(2));
-
+    setCostoTotal(
+      (+event.target.value * formData.detalles.hectareas * +precio).toFixed(2)
+    );
   };
 
   const handleDepositoChange = (event) => {
@@ -166,7 +167,6 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       (+event.target.value / formData.detalles.hectareas).toFixed(2)
     );
     setCostoTotal((+event.target.value * +precio).toFixed(2));
-
   };
 
   const handlePrecioChange = (event) => {
@@ -199,7 +199,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       );
       setFormData({
         ...formData,
-        detalles: { ...formData.detalles, dosis: updatedDetalles },
+        detalles: { ...formData.detalles, dosis: updatedDetalles }
       });
     }, 1000);
   };
@@ -221,28 +221,38 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       ...editData,
       dosificacion: event.target.value,
       total: (+event.target.value * formData.detalles.hectareas).toFixed(2),
-      costo_total: (+event.target.value * formData.detalles.hectareas * editData.precio).toFixed(2),
+      costo_total: (
+        +event.target.value *
+        formData.detalles.hectareas *
+        editData.precio
+      ).toFixed(2)
     });
   };
 
   const handleEditCantidadTotalChange = (event) => {
-    setEditData({ ...editData, total: event.target.value ,
+    setEditData({
+      ...editData,
+      total: event.target.value,
       dosificacion: (+event.target.value / formData.detalles.hectareas).toFixed(
         2
       ),
-      costo_total: (+event.target.value * editData.precio).toFixed(2),
+      costo_total: (+event.target.value * editData.precio).toFixed(2)
     });
   };
 
   const handleEditCostoTotalChange = (event) => {
-    setEditData({ ...editData, costo_total: event.target.value ,
-      precio: (+editData.total / +event.target.value).toFixed(2),
+    setEditData({
+      ...editData,
+      costo_total: event.target.value,
+      precio: (+editData.total / +event.target.value).toFixed(2)
     });
   };
 
   const handleEditPrecioUnitarioChange = (event) => {
-    setEditData({ ...editData, precio: event.target.value,
-      costo_total: (+editData.total / +event.target.value).toFixed(2),
+    setEditData({
+      ...editData,
+      precio: event.target.value,
+      costo_total: (+editData.total / +event.target.value).toFixed(2)
     });
   };
 
@@ -260,7 +270,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           total: dosis.total,
           deposito: dosis.deposito,
           precio: dosis.precio_estimado,
-          uuid: dosis.uuid,
+          uuid: dosis.uuid
         }))
       );
     }
@@ -273,74 +283,34 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       <Title>Insumos</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
-          {/* Fila 1 */}
+          {/* Assuming "Insumo" is the first field in a new row */}
           <Grid container item xs={12} spacing={1}>
+            {/* Insumo Autocomplete */}
             <Grid item xs={4}>
-              <FormControl fullWidth>
-                <AutocompleteSupplies
-                  value={selectedSupply}
-                  onChange={handleSelectChange}
-                />
-              </FormControl>
+              <AutocompleteSupplies
+                value={selectedSupply}
+                onChange={handleSelectChange}
+              />
             </Grid>
-            <Grid container item xs={8}>
-              <Paper sx={{ width: "100%", padding: "5px" }}>
+            <Grid item xs={4}>
+              <Paper sx={{ width: "100%", padding: "17px" }}>
                 {selectedSupply?.description && (
                   <Typography variant="body2" gutterBottom>
                     {selectedSupply?.description}
                   </Typography>
                 )}
-                <Grid item xs={12}>
-                  {selectedSupply?.brand && (
-                    <Typography variant="subtitle2" gutterBottom>
-                      Marca: {selectedSupply?.brand}
-                    </Typography>
-                  )}
-                  {selectedSupply?.activePrincipal && (
-                    <Typography variant="body2" gutterBottom>
-                      Principio Activo: {selectedSupply?.activePrincipal}
-                    </Typography>
-                  )}
-                  {selectedSupply?.formulationDenomination && (
-                    <Typography variant="body2" gutterBottom>
-                      Denominación Formulado:{" "}
-                      {selectedSupply?.formulationDenomination}
-                    </Typography>
-                  )}
-                  {selectedSupply?.toxicityClass && (
-                    <Typography variant="body2" gutterBottom>
-                      Clase de Toxicidad: {selectedSupply?.toxicityClass}
-                    </Typography>
-                  )}
-                  {selectedSupply?.chemicalComposition && (
-                    <Typography variant="body2" gutterBottom>
-                      Composicion Química: {selectedSupply?.chemicalComposition}
-                    </Typography>
-                  )}
-                  {selectedSupply?.productUrl && (
-                    <Link
-                      href={selectedSupply?.productUrl}
-                      target="_blank"
-                      variant="body2"
-                    >
-                      Website del Producto
-                    </Link>
-                  )}
-                  {/* {selectedSupply?._id} */}
-                </Grid>
               </Paper>
             </Grid>
-          </Grid>
-
-          {/* Fila 2 */}
-          <Grid container item xs={12} spacing={1}>
-            <Grid item xs={3}>
+            <Grid item xs={4}>
               <AutocompleteDeposito
                 value={deposito}
                 onChange={handleDepositoChange}
               />
             </Grid>
-            <Grid item xs={2}>
+          </Grid>
+
+          <Grid container item xs={12} spacing={1}>
+            <Grid item xs={3}>
               <NumberFieldWithUnits
                 fullWidth
                 label={t("_quantity_per_hectare")}
@@ -352,7 +322,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                 }
               />
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={3}>
               <NumberFieldWithUnits
                 fullWidth
                 label={t("_total_quantity")}
@@ -361,7 +331,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                 unit={selectedSupply?.unitMeasurement || "unit"}
               />
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={3}>
               <NumberFieldWithUnits
                 fullWidth
                 label={t("_unit_price")}
@@ -480,12 +450,6 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                         </Grid>
                       </Grid>
                       <Grid container item xs={10}>
-                        <Grid item xs={3}>
-                          <Typography variant="caption">
-                            <strong> Deposito:</strong>
-                            {row.deposito?.description || "Si deposito"}
-                          </Typography>
-                        </Grid>
                         <Grid item xs={2}>
                           <Typography
                             variant="caption"
@@ -573,7 +537,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
 }
 
 function abrUnit(unit: string) {
-  if(!unit) return "unit"
+  if (!unit) return "unit";
 
   let splited = unit.split("/");
   if (splited.length > 0) {

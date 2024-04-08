@@ -149,6 +149,7 @@ function Sowing({
               lotName
             );
           }}
+          disabledActions={{ edit: !!execution }}
         />
 
         {/* <IconButton onClick={handleMenuClick} sx={{ marginLeft: "8px" }}>
