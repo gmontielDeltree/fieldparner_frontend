@@ -24,7 +24,7 @@ const LotDetailsModal: React.FC<LotDetailsModalProps> = ({
 
   const [activeStep, setActiveStep] = useState(0);
   const steps = [
-    "Personal",
+    "General",
     "Insumos",
     "Otros Datos",
     "Labores",
@@ -131,12 +131,7 @@ const LotDetailsModal: React.FC<LotDetailsModalProps> = ({
           </Button>
         )}
         {activeStep === steps.length - 1 && (
-          <Button
-            color="success"
-            onClick={() => {
-              /* save code here */
-            }}
-          >
+          <Button color="success" onClick={() => {}}>
             Guardar
           </Button>
         )}

@@ -1,89 +1,97 @@
 // import agrotools_logo_b64 from './agrotools_logo_b64.js'
 
-import { Actividad, DetallesAplicacion, LineaDosis, DetallesSiembra } from "../depositos/depositos-types";
+import {
+  Actividad,
+  DetallesAplicacion,
+  LineaDosis,
+  DetallesSiembra
+} from "../depositos/depositos-types";
 import { Insumo } from "../insumos/insumos-types";
 
-const pdf_line = (linea : LineaDosis, hectareas) => {
+const pdf_line = (linea: LineaDosis, hectareas) => {
   return [
     {
       text: linea.insumo.marca_comercial.toUpperCase(),
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
-      alignment: "left",
+      alignment: "left"
     },
     {
       text: linea.dosis,
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
-      alignment: "left",
+      alignment: "left"
     },
     {
       text: linea.insumo.unidad,
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
-      alignment: "left",
+      alignment: "left"
     },
     {
       text: hectareas,
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
-      alignment: "left",
+      alignment: "left"
     },
     {
       border: [false, false, false, true],
-      text: linea.total.toFixed(2),
+      text: 2,
       fillColor: "#f5f5f5",
       alignment: "right",
-      margin: [0, 5, 0, 5],
-    },
+      margin: [0, 5, 0, 5]
+    }
   ];
 };
 
-const pdf_linea_siembra = (siembra : DetallesSiembra, hectareas) => {
+const pdf_linea_siembra = (siembra: DetallesSiembra, hectareas) => {
   return [
     {
       text: siembra.insumo.marca_comercial.toUpperCase(),
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
-      alignment: "left",
+      alignment: "left"
     },
     {
       text: siembra.densidad_objetivo,
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
-      alignment: "left",
+      alignment: "left"
     },
     {
       text: "kg",
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
-      alignment: "left",
+      alignment: "left"
     },
     {
       text: siembra.hectareas,
       border: [false, false, false, true],
       margin: [0, 5, 0, 5],
-      alignment: "left",
+      alignment: "left"
     },
     {
       border: [false, false, false, true],
       text: siembra.densidad_objetivo * siembra.hectareas,
       fillColor: "#f5f5f5",
       alignment: "right",
-      margin: [0, 5, 0, 5],
-    },
+      margin: [0, 5, 0, 5]
+    }
   ];
 };
 
 const orden_definition = (
-  aplicacion : Actividad,
+  aplicacion: Actividad,
   nombre_campo,
   nombre_lote,
   campos_url,
   google_map_link
 ) => {
-
-  let titulos = {"aplicacion": "Orden de Trabajo", "siembra":"Orden de Siembra", "cosecha":"Orden de Cosecha"}
+  let titulos = {
+    aplicacion: "Orden de Trabajo",
+    siembra: "Orden de Siembra",
+    cosecha: "Orden de Cosecha"
+  };
   let tipo = aplicacion.tipo;
 
   let titulo = titulos[tipo];
@@ -91,12 +99,8 @@ const orden_definition = (
 
   let insumos;
   let insumos_tabla;
-    insumos = (aplicacion.detalles as DetallesAplicacion).dosis || [];
-    insumos_tabla = insumos.map((e)=>pdf_line(e,hectareas));
-  
-
-
-
+  insumos = (aplicacion.detalles as DetallesAplicacion).dosis || [];
+  insumos_tabla = insumos.map((e) => pdf_line(e, hectareas));
 
   return {
     content: [
@@ -107,7 +111,7 @@ const orden_definition = (
             width: 200,
             color: "#16a825",
             bold: true,
-            fontSize: 28,
+            fontSize: 28
           },
           [
             {
@@ -117,32 +121,32 @@ const orden_definition = (
               fontSize: 20,
               bold: true,
               alignment: "right",
-              margin: [0, 0, 0, 15],
+              margin: [0, 0, 0, 15]
             },
             {
-              "stack":[
-                 {
-                    "columns":[
-                       {
-                          "text":"Orden N°",
-                          "color":"#aaaaab",
-                          "bold":true,
-                          "width":"*",
-                          "fontSize":12,
-                          "alignment":"right"
-                       },
-                       {
-                          "text":"000120",
-                          "bold":true,
-                          "color":"#333333",
-                          "fontSize":12,
-                          "alignment":"right",
-                          "width":100
-                       }
-                    ]
-                 }
+              stack: [
+                {
+                  columns: [
+                    {
+                      text: "Orden N°",
+                      color: "#aaaaab",
+                      bold: true,
+                      width: "*",
+                      fontSize: 12,
+                      alignment: "right"
+                    },
+                    {
+                      text: "000120",
+                      bold: true,
+                      color: "#333333",
+                      fontSize: 12,
+                      alignment: "right",
+                      width: 100
+                    }
+                  ]
+                }
               ]
-           },
+            },
             {
               stack: [
                 {
@@ -153,7 +157,7 @@ const orden_definition = (
                       bold: true,
                       width: "*",
                       fontSize: 12,
-                      alignment: "right",
+                      alignment: "right"
                     },
                     {
                       text: aplicacion.detalles.fecha_ejecucion_tentativa,
@@ -161,14 +165,14 @@ const orden_definition = (
                       color: "#333333",
                       fontSize: 12,
                       alignment: "right",
-                      width: 100,
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        ],
+                      width: 100
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        ]
       },
       {
         columns: [
@@ -179,44 +183,40 @@ const orden_definition = (
               bold: true,
               fontSize: 14,
               alignment: "left",
-              margin: [0, 20, 0, 5],
+              margin: [0, 20, 0, 5]
             },
             {
               text: nombre_campo,
               bold: true,
               color: "#333333",
+              alignment: "left"
+            },
+            {
+              text: "Aplicador",
+              color: "#aaaaab",
+              bold: true,
+              fontSize: 12,
               alignment: "left",
+              margin: [0, 20, 0, 5]
             },
             {
-               "text":"Aplicador",
-               "color":"#aaaaab",
-               "bold":true,
-               "fontSize":12,
-               "alignment":"left",
-               "margin":[
-                  0,
-                  20,
-                  0,
-                  5
-               ]
+              text: aplicacion.contratista?.nombre,
+              bold: true,
+              color: "#333333",
+              alignment: "left"
             },
             {
-               "text":aplicacion.contratista?.nombre,
-               "bold":true,
-               "color":"#333333",
-               "alignment":"left"
-            },{
-               "text":aplicacion.contratista?.cuit,
-               "bold":true,
-               "color":"#333333",
-               "alignment":"left"
-            },{
-               "text":"Tel: " + aplicacion.contratista.datos_generales.telefono,
-               "fontSize":10,
-               "color":"#333333",
-               "alignment":"left"
+              text: aplicacion.contratista?.cuit,
+              bold: true,
+              color: "#333333",
+              alignment: "left"
             },
-
+            {
+              text: "Tel: " + aplicacion.contratista.datos_generales.telefono,
+              fontSize: 10,
+              color: "#333333",
+              alignment: "left"
+            }
           ],
           [
             {
@@ -225,21 +225,21 @@ const orden_definition = (
               bold: true,
               fontSize: 14,
               alignment: "left",
-              margin: [0, 20, 0, 5],
+              margin: [0, 20, 0, 5]
             },
             {
               text: nombre_lote,
               bold: true,
               color: "#333333",
-              alignment: "left",
-            },
+              alignment: "left"
+            }
           ],
           {
             image: "camposImg",
             width: 300,
-            margin: [0, 10, 0, 5],
-          },
-        ],
+            margin: [0, 10, 0, 5]
+          }
+        ]
       },
       {
         columns: [
@@ -247,27 +247,27 @@ const orden_definition = (
             text: "",
             color: "#aaaaab",
             bold: true,
-            margin: [0, 7, 0, 3],
+            margin: [0, 7, 0, 3]
           },
           {
             text: "",
             color: "#aaaaab",
             bold: true,
-            margin: [0, 7, 0, 3],
-          },
-        ],
+            margin: [0, 7, 0, 3]
+          }
+        ]
       },
       {
         columns: [
           {
             text: "",
-            style: "invoiceBillingAddress",
+            style: "invoiceBillingAddress"
           },
           {
-            "text":"Ver Localización en Google Maps",
-            link: google_map_link,
-          },
-        ],
+            text: "Ver Localización en Google Maps",
+            link: google_map_link
+          }
+        ]
       },
       "\n\n",
       {
@@ -276,7 +276,7 @@ const orden_definition = (
         text: "",
         bold: true,
         margin: [0, 10, 0, 10],
-        fontSize: 15,
+        fontSize: 15
       },
       {
         layout: {
@@ -316,7 +316,7 @@ const orden_definition = (
           },
           fillColor: function (rowIndex, node, columnIndex) {
             return "#fff";
-          },
+          }
         },
         table: {
           headerRows: 1,
@@ -328,28 +328,28 @@ const orden_definition = (
                 fillColor: "#eaf2f5",
                 border: [false, true, false, true],
                 margin: [0, 5, 0, 5],
-                textTransform: "uppercase",
+                textTransform: "uppercase"
               },
               {
-                text: tipo === 'Aplicacion' ? "Dosis" : "Densidad",
+                text: tipo === "Aplicacion" ? "Dosis" : "Densidad",
                 fillColor: "#eaf2f5",
                 border: [false, true, false, true],
                 margin: [0, 5, 0, 5],
-                textTransform: "uppercase",
+                textTransform: "uppercase"
               },
               {
                 text: "Unidad",
                 fillColor: "#eaf2f5",
                 border: [false, true, false, true],
                 margin: [0, 5, 0, 5],
-                textTransform: "uppercase",
+                textTransform: "uppercase"
               },
               {
                 text: "Ha.",
                 fillColor: "#eaf2f5",
                 border: [false, true, false, true],
                 margin: [0, 5, 0, 5],
-                textTransform: "uppercase",
+                textTransform: "uppercase"
               },
               {
                 text: "Total Insumo",
@@ -357,41 +357,41 @@ const orden_definition = (
                 alignment: "right",
                 fillColor: "#eaf2f5",
                 margin: [0, 5, 0, 5],
-                textTransform: "uppercase",
-              },
+                textTransform: "uppercase"
+              }
             ],
-            ...insumos_tabla,
-          ],
-        },
+            ...insumos_tabla
+          ]
+        }
       },
       "\n",
       "\n\n",
       {
         text: "Comentarios",
-        style: "notesTitle",
+        style: "notesTitle"
       },
       {
         text: aplicacion.comentario,
-        style: "notesText",
-      },
+        style: "notesText"
+      }
     ],
     styles: {
       notesTitle: {
         fontSize: 10,
         bold: true,
-        margin: [0, 50, 0, 3],
+        margin: [0, 50, 0, 3]
       },
       notesText: {
-        fontSize: 10,
-      },
+        fontSize: 10
+      }
     },
     defaultStyle: {
-      columnGap: 20,
+      columnGap: 20
       //font: 'Quicksand',
     },
     images: {
-      camposImg: campos_url,
-    },
+      camposImg: campos_url
+    }
   };
 };
 

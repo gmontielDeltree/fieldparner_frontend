@@ -8,7 +8,7 @@ import { LitElement, html, PropertyValueMap } from "lit";
 import { interpret } from "xstate";
 import { news_bar_machine } from "./news-bar.machine";
 import { news_bar_css } from "./news-bar-style";
-import { SelectorController } from "xstate-lit/dist/select-controller";
+import { SelectorController } from "xstate-lit";
 
 class Newsbar extends LitElement {
   private machine = interpret(news_bar_machine).start();

@@ -32,7 +32,7 @@ import bbox from "@turf/bbox";
 import { Campo } from "../tipos/campos";
 import { uuidv7 } from "uuidv7";
 import { showNotification } from "../helpers/notificaciones";
-import { Vehicle } from "@types";
+import { Vehiculo } from "@types";
 import area from '@turf/area';
 
 const base_url = import.meta.env.VITE_INTEGRACIONES_SERVER_URL;
@@ -240,27 +240,27 @@ export class JohnDeereIntegracion extends LitElement {
   }
 
   copiar_equipo_a_fp = (machine: JDMachine) => {
-    let new_vehiculo: Vehicle = {
+    let new_vehiculo: Vehiculo = {
       _id: "vehiculo:" + uuidv7(),
-      vehicleType: machine.equipmentType.name,
-      make: machine.equipmentMake.name,
-      model: machine.equipmentModel.name,
-      modelYear: machine.modelYear ?? "",
-      patent: "",
+      tipoVehiculo: machine.equipmentType.name,
+      marca: machine.equipmentMake.name,
+      modelo: machine.equipmentModel.name,
+      año: machine.modelYear ?? "",
+      patente: "",
       tara: 0,
-      net: 0,
-      gross: 0,
-      fuelType: "Diesel",
-      fuelCapacity: 0,
-      unitMeasurement: "",
-      insurence: "",
-      coverageType: "",
-      policyNumber: "",
-      insurenceStartDate: "",
-      insurenceDueDate: "",
-      location: "",
-      maintenances: [],
-      technialSpecifications: [],
+      neto: 0,
+      bruto: 0,
+      tipoCombustible: "Diesel",
+      capacidadCombustible: 0,
+      unidadMedida: "",
+      seguro: "",
+      tipoCobertura: "",
+      nroPoliza: "",
+      seguroFechaInicio: "",
+      seguroFechaVencimiento: "",
+      ubicacion: "",
+      mantenimientos: [],
+      especificacionesTecnicas: [],
     };
 
   

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { DoseForm, LaborsForm, Loading, StockForm } from "../components";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector, useForm, useSupply } from "../hooks";
+import { useAppDispatch, useAppSelector, useCrops, useForm, useSupply } from "../hooks";
 import {
   Button,
   Container,
@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { Supply } from "../types";
 import { removeSupplyActive } from "../redux/supply";
+import { useTranslation } from "react-i18next";
 
 
 const initialForm: Supply = {
@@ -33,6 +34,12 @@ const initialForm: Supply = {
   replenishmentPoint: "",
   currentStock: 0,
   reservedStock: 0,
+  generico: "",
+  cropId: "",
+  brand: "",
+  senasaId: "",
+  formulationDenomination: "",
+  toxicityClass: ""
 };
 
 export const SupplyPage: React.FC = () => {
@@ -40,19 +47,20 @@ export const SupplyPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { supplyActive } = useAppSelector((state) => state.supply);
   const [activeStep, setActiveStep] = useState(0);
-  const [steps] = useState<string[]>(["Insumos", "Dosis", "Stock"]);
+  const { t } = useTranslation();
+  const [steps] = useState<string[]>([t("_supplies"), t("_dose"), t("_stock")]);
   const {
     formulario,
     setFormulario,
     handleInputChange,
     handleSelectChange,
     handleCheckboxChange,
+    handleGenercoChange,
     reset,
   } = useForm(initialForm);
 
-  const {  isLoading, supplyError, createSupply, updateSupply, setSupplyError} = useSupply();
- 
-
+  const { isLoading, supplyError, createSupply, updateSupply, setSupplyError, getSupplies } = useSupply();
+  const { isLoading: loadingCrops, dataCrops, getCrops } = useCrops();
 
   const onClickCancel = () => navigate("/init/overview/supply");
 
@@ -65,6 +73,7 @@ export const SupplyPage: React.FC = () => {
   };
 
   const handleAddSupply = () => {
+    // console.log('formulario', formulario)
     createSupply(formulario);
     navigate("/init/overview/supply");
     reset();
@@ -89,49 +98,55 @@ export const SupplyPage: React.FC = () => {
           return (
             <DoseForm
               key="doseForm"
+              crops={dataCrops} //TODO: cambiar por la tabla de cultivo
               formValues={formulario}
               handleInputChange={handleInputChange}
+              handleGenercoChange={handleGenercoChange}
+              handleSelectChange={handleSelectChange}
             />
           );
         case 2:
           return (
-              <StockForm
+            <StockForm
               key="stockForm"
               formValues={formulario}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
-              />
+            />
           );
-          
+
         default:
           throw new Error("Unknown step");
-      } 
+      }
     },
     [
       [formulario,
-       handleInputChange,
-       handleSelectChange,
-       handleCheckboxChange,
-       setFormulario]
+        handleInputChange,
+        handleSelectChange,
+        handleCheckboxChange,
+        setFormulario]
     ]
   );
 
   const handleNext = () => {
-    
+
     if (!formulario.name.trim()) {
       setSupplyError(true);
-      
+
     } else {
       setSupplyError(false);
       setActiveStep(activeStep + 1);
     }
   };
- 
-
 
   const handleBack = () => {
     setActiveStep(activeStep - 1);
   };
+
+  useEffect(() => {
+    getSupplies();
+    getCrops();
+  }, []);
 
   useEffect(() => {
     if (supplyActive) setFormulario(supplyActive);
@@ -146,13 +161,14 @@ export const SupplyPage: React.FC = () => {
 
   return (
     <Container maxWidth="md" className="pepe">
-      <Loading key="loading-supply" loading={isLoading} />
+      <Loading key="loading-supply" loading={isLoading || loadingCrops} />
       <Paper
         variant="outlined"
         sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}
       >
         <Typography component="h1" variant="h4" align="center" sx={{ mb: 3 }}>
-          {supplyActive ? "Editar" : "Nuevo"} Insumo
+          {supplyActive ? t("icon_edit") : t("new_masculine")} {' '}
+          {t("_supplies")}
         </Typography>
         <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 3, mb: 2 }}>
           {steps.map((label) => (
@@ -172,13 +188,13 @@ export const SupplyPage: React.FC = () => {
           >
             <Grid item xs={12} sm={3}>
               <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
-                {activeStep !== 0 ? "Volver" : "Cancelar"}
+                {activeStep !== 0 ? t("id_back") : t("id_cancel")}
               </Button>
             </Grid>
             <Grid item xs={12} sm={3} key="grid-next">
               {!(activeStep === steps.length - 1) && (
                 <Button variant="outlined" color="primary" onClick={handleNext}>
-                  Siguiente
+                  {t("id_next")}
                 </Button>
               )}
             </Grid>
@@ -188,7 +204,7 @@ export const SupplyPage: React.FC = () => {
                 color="primary"
                 onClick={supplyActive ? handleUpdateSupply : handleAddSupply}
               >
-                {!supplyActive ? "Agregar" : "Actualizar"}
+                {!supplyActive ? t("_add") : t("id_update")}
               </Button>
             </Grid>
           </Grid>

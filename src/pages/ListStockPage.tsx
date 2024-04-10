@@ -28,26 +28,10 @@ import { useAppDispatch, useSupply } from "../hooks";
 import { uiOpenModal } from "../redux/ui";
 import { SupplyByDepositsModal } from "../components/Modals/SupplyByDeposits/index";
 import { setSupplyActive } from "../redux/supply";
+import { useTranslation } from "react-i18next";
 
-const columnsBySupply: ColumnProps[] = [
-  //   { text: "", align: "left" },
-  { text: "Tipo", align: "left" },
-  { text: "Insumo/Descripcion", align: "center" },
-  { text: "UM", align: "center" },
-  { text: "Stock Actual", align: "center" },
-  { text: "Stock Reservado", align: "center" },
-  { text: "Stock Disponible", align: "center" },
-];
 
-const columnsByDeposit: ColumnProps[] = [
-  { text: "Deposito", align: "left" },
-  { text: "Tipo", align: "left" },
-  { text: "Insumo/Descripcion", align: "center" },
-  { text: "UM", align: "center" },
-  { text: "Stock Actual", align: "center" },
-  { text: "Stock Reservado", align: "center" },
-  { text: "Stock Disponible", align: "center" },
-];
+
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -93,6 +77,30 @@ export const ListStockPage: React.FC = () => {
   } = useSupply();
   const [tabValue, setTabValue] = React.useState(0);
   const [showStockValueZero, setShowStockValueZero] = React.useState(false);
+const {t} = useTranslation();
+
+  const columnsBySupply: ColumnProps[]  = [
+  
+  
+    //   { text: "", align: "left" },
+    { text: t("_type"), align: "left" },
+    { text: t("supply_description"), align: "center" },
+    { text: "UM", align: "center" },
+    { text: t("current_stock"), align: "center" },
+    { text: t("reserved_stock"), align: "center" },
+    { text: t("available_stock"), align: "center" },
+  ];
+
+
+const columnsByDeposit: ColumnProps[] = [
+  { text: t("_warehouse"), align: "left" },
+  { text: t("_type"), align: "left" },
+  { text: t("supply_description"), align: "center" },
+  { text: "UM", align: "center" },
+  { text: t("current_stock"), align: "center" },
+  { text: t("reserved_stock"), align: "center" },
+  { text: t("available_stock"), align: "center" },
+];
 
   const [selectedSupplyDeposit, setSelectedSupplyDeposit] =
     useState<SupplyByDeposits | null>(null);
@@ -129,7 +137,7 @@ export const ListStockPage: React.FC = () => {
         <Box display="flex" alignItems="center">
           <QueryStatsIcon sx={{ marginRight: '8px' }} />
           <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
-            Consulta de Stock
+            {t("stock_query")}
           </Typography>
         </Box>
         <CloseButtonPage />
@@ -152,7 +160,7 @@ export const ListStockPage: React.FC = () => {
               <Tab
                 label={
                   <Box>
-                    Por Insumo <InventoryIcon sx={{ ml: 1 }} />
+                    {t("by_supply")} <InventoryIcon sx={{ ml: 1 }} />
                   </Box>
                 }
                 {...a11yProps(0)}
@@ -160,7 +168,7 @@ export const ListStockPage: React.FC = () => {
               <Tab
                 label={
                   <Box>
-                    Por Deposito <WarehouseIcon sx={{ ml: 1 }} />
+                    {t("by_warehouse")} <WarehouseIcon sx={{ ml: 1 }} />
                   </Box>
                 }
                 {...a11yProps(1)}
@@ -176,7 +184,7 @@ export const ListStockPage: React.FC = () => {
                   }
                 />
               }
-              label="Mostrar Stock en 0"
+              label={t("show_zero_stock")}
               labelPlacement="start"
             />
           </Box>

@@ -2,25 +2,15 @@ import React, { useState } from "react";
 import GeometryPromptModal from "./GeometryPromptModal";
 import DrawGeometry from "./DrawGeometry";
 import UploadGeometry from "./UploadGeometry";
-import { Map } from "mapbox-gl";
 import { GeoJsonObject } from "geojson";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
 interface NewGeometryProps {
-  map: Map;
-  draw: MapboxDraw;
   handleSaveGeometry?: (detail: any) => void;
   onClose: () => void;
   type: "field" | "lot";
 }
 
-function NewGeometry({
-  map,
-  draw,
-  handleSaveGeometry,
-  onClose,
-  type
-}: NewGeometryProps) {
+function NewGeometry({ handleSaveGeometry, onClose, type }: NewGeometryProps) {
   const [activeComponent, setActiveComponent] = useState<
     "draw" | "upload" | null
   >(null);
@@ -39,7 +29,6 @@ function NewGeometry({
   };
 
   const handleGeoJSONProcessed = (geoJSON: GeoJsonObject) => {
-    console.log("geoJSON (handleGeoJSONProcessed): ", geoJSON);
     handleSaveGeometry?.(geoJSON);
   };
 
@@ -56,12 +45,7 @@ function NewGeometry({
     switch (activeComponent) {
       case "draw":
         return (
-          <DrawGeometry
-            map={map}
-            draw={draw}
-            handleSaveGeometry={handleSaveGeometry}
-            type={type}
-          />
+          <DrawGeometry handleSaveGeometry={handleSaveGeometry} type={type} />
         );
       case "upload":
         return (

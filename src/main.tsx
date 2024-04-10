@@ -2,6 +2,7 @@ import ReactDOM from "react-dom/client";
 import "../owncomponents/loader";
 // import { AppRouter } from "./routers/AppRouter";
 import store from "./redux/store";
+import "./i18n"; //TODO: chequear middleware 
 import { Provider } from "react-redux";
 import FieldPartnerApp from "./FieldPartnerApp";
 

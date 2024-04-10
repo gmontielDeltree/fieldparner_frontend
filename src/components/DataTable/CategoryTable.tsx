@@ -19,6 +19,7 @@ import {
 } from "@mui/icons-material";
 import { ColumnProps } from "../../types";
 import { useCategory, useForm } from "../../hooks";
+import { useTranslation } from "react-i18next";
 
 const columns: ColumnProps[] = [{ text: "Categoría", align: "left" }];
 
@@ -52,6 +53,8 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
     getCategories();
   }, []);
 
+  const { t } =useTranslation ();
+
   return (
     <Box component="div" sx={{ p: 1 }}>
       {isLoading && <Loading loading />}
@@ -64,12 +67,12 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
       >
         <Grid item xs={4}>
           <FormControl fullWidth>
-            <InputLabel id="category">Categorias</InputLabel>
+            <InputLabel id="category">{t("_categories")}</InputLabel>
             <Select
               labelId="category"
               name="category"
               value={category}
-              label="Categorias"
+              label={t("_categories")}
               onChange={handleSelectChange}
             >
               {optionsCategories.map((option) => (
@@ -100,7 +103,7 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
             padding={4}
           >
             <Typography variant="h6" sx={{ paddingRight: 1 }}>
-              No hay registros
+            {t("no_records")}
             </Typography>
             <CloudOffIcon fontSize="large" />
           </Box>
@@ -109,7 +112,7 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
           <ItemRow key={category} hover>
             <TableCellStyled align="left">{category}</TableCellStyled>
             <TableCellStyled align="center">
-              <Tooltip title="Eliminar">
+              <Tooltip title={t("icon_delete")}>
                 <IconButton
                   onClick={() => handleDeleteCategory(category)}
                   color="error"

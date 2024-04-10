@@ -29,15 +29,11 @@ import {
 } from "@mui/icons-material";
 import { useForm, useAppDispatch, useBusiness } from "../hooks";
 import { setBusinessActive } from "../redux/business";
+import { useTranslation } from "react-i18next";
 
-const columns: ColumnProps[] = [
-  { text: "Tipo Entidad", align: "left" },
-  { text: "Nombre/Razon social", align: "center" },
-  { text: "Cuit/Dni", align: "center" },
-  { text: "Email", align: "left" },
-  { text: "Pais", align: "center" },
-  { text: "", align: "center" },
-];
+
+
+
 
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -45,6 +41,16 @@ export const ListBusinessesPage: React.FC = () => {
   // const { isLoading } = useAppSelector((state) => state.ui);
   const { isLoading, businesses, getBusinesses, setBusinesses, deleteBusiness} = useBusiness();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
+const { t } = useTranslation();
+
+  const columns: ColumnProps[] = [
+    { text: t("entity_type"), align: "center" },
+    { text: t("name_negal_name"), align: "center" },
+    { text: t("tax_id_identification_number"), align: "center" },
+    { text: t("Email"), align: "left" },
+    { text: t("id_country"), align: "center" },
+    { text: "", align: "center" },
+  ];
 
   const onClickSearch = (): void => {
     if (filterText === "") {
@@ -93,7 +99,7 @@ export const ListBusinessesPage: React.FC = () => {
         <Box display="flex" alignItems="center">
           <BusinessIcon sx={{ marginRight: '8px' }} />
           <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
-            Entidades Sociales
+            {t("social_entities")}
           </Typography>
         </Box>
         <CloseButtonPage />
@@ -114,7 +120,7 @@ export const ListBusinessesPage: React.FC = () => {
                 startIcon={<AddIcon />}
                 onClick={onClickAddBusiness}
               >
-                Nuevo
+                {t("add_new")}
               </Button>
             </Grid>
             <Grid item xs={12} sm={10}>
@@ -122,12 +128,12 @@ export const ListBusinessesPage: React.FC = () => {
                 <Grid item xs={8} sm={7}>
                   <SearchInput
                     value={filterText}
-                    placeholder="Razon social / Nombre"
+                    placeholder={t("company_name_/name")}
                     handleInputChange={handleInputChange}
                   />
                 </Grid>
                 <Grid item xs={4} sm={3}>
-                  <SearchButton text="Buscar" onClick={() => onClickSearch()} />
+                  <SearchButton text={t("icon_search")} onClick={() => onClickSearch()} />
                 </Grid>
               </Grid>
             </Grid>
@@ -152,15 +158,15 @@ export const ListBusinessesPage: React.FC = () => {
                   <TableCellStyled>{row.email}</TableCellStyled>
                   <TableCellStyled align="center">{row.pais}</TableCellStyled>
                   <TableCellStyled align="center">
-                    <Tooltip title="Editar">
+                    <Tooltip title={t("icon_edit")}>
                       <IconButton
-                        aria-label="Editar"
+                        aria-label={t("icon_edit")}
                         onClick={() => onClickUpdateBusiness(row)}
                       >
                         <EditIcon />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Eliminar">
+                    <Tooltip title={t("icon_delete")}>
                       <IconButton
                         onClick={() => handleDeleteBusiness(row)}
                         style={{ fontSize: '1rem' }}

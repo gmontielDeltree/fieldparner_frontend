@@ -236,20 +236,22 @@ interface Actividad {
   contratista: Contratista;
   ingeniero: Ingeniero;
   comentario: string;
-  estado: number;
+  estado: string;
   detalles: Detalles;
-  fecha?: string;
+  fecha?: Date;
   color?: string;
   texto?: string;
   posicion?: number[];
   condiciones?: Condiciones;
   attachments?: Attachment[];
   motivos_nota?: any;
+  fecha_ejecucion?: Date;
 }
 
 interface Ejecucion {
   _id: string;
   _rev?: string;
+  actividad_uuid: string;
   uuid: string;
   contratista: Contratista;
   ingeniero: Ingeniero;
@@ -314,7 +316,7 @@ const getEmptyNote = () => {
       created: "",
       created_by: ""
     },
-    features: [getEmptyFeature()],
+    features: [],
     _id: "",
     _rev: ""
   };
@@ -323,6 +325,7 @@ const getEmptyNote = () => {
 };
 
 const getEmptyActivity = () => {
+  const now = new Date();
   const a: Actividad = {
     _id: "",
     uuid: uuid4(),
@@ -332,9 +335,9 @@ const getEmptyActivity = () => {
     contratista: { ...empty_contratista },
     ingeniero: null,
     comentario: "",
-    estado: 0,
+    estado: "pendiente",
     detalles: {
-      fecha_ejecucion_tentativa: "",
+      fecha_ejecucion_tentativa: now,
       hectareas: 0,
       motivos: "",
       dosis: [],
@@ -357,15 +360,16 @@ const deepcopy = (obj: Ejecucion) => {
   return JSON.parse(JSON.stringify(obj));
 };
 
-const get_empty_ejecucion = () => {
+const getEmptyExecution = () => {
   const a: Ejecucion = {
     _id: "",
     uuid: uuid4(),
+    actividad_uuid: "",
     ts_generacion: "0",
     tipo: "aplicacion",
     lote_uuid: "",
     comentario: "",
-    contratista: null,
+    contratista: { ...empty_contratista },
     ingeniero: null,
     estado: "pendiente",
     detalles: {
@@ -377,23 +381,11 @@ const get_empty_ejecucion = () => {
       costo_labor: []
     },
     condiciones: {
-      temperatura: { device: null, value: 0, planificado: { min: 25, max: 0 } },
-      humedad: { device: null, value: 0, planificado: { min: 45, max: 65 } },
-      velocidad: { device: null, value: 0, planificado: { min: 5, max: 15 } },
-      humedad_suelo: {
-        device: null,
-        value: 0,
-        planificado: { min: 10, max: 45 }
-      },
-
       temperatura_max: 25,
-      temperatura_promedio: 0,
       temperatura_min: 0,
       humedad_min: 45,
-      humedad_promedio: 0,
       humedad_max: 65,
       velocidad_min: 5,
-      velocidad_promedio: 0,
       velocidad_max: 15
     }
   };
@@ -424,7 +416,7 @@ export {
   get_empty_entrada,
   getEmptyActivity,
   getEmptyNote,
-  get_empty_ejecucion
+  getEmptyExecution
 };
 export type {
   Deposito,

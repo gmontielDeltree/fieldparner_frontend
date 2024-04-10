@@ -18,30 +18,33 @@ import {
 } from "@mui/material";
 import { SyncAlt as SyncAltIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import {  useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
+import { useCampaign, useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
 import {
   CurrencyCode,
   Deposit,
+  Movement,
+  MovementType,
   StockMovement,
   Supply,
   TypeMovement,
-  TypeMovements,
+  // TypeMovements,
 } from "../types";
 import { getShortDate } from "../helpers/dates";
+import { useTranslation } from "react-i18next";
 
 const initialForm: StockMovement = {
   typeMovement: TypeMovement.Ajustes,
   amount: 0,
   nroLot: "",
   creationDate: new Date().toLocaleString(),
-  campaign: 0,
+  campaignId: "0",
   currency: "",
   depositId: "",
   location: "",
   detail: "",
   dueDate: getShortDate(),
   hours: "",
-  movement: "Manual",
+  movement: Movement.Manual,
   operationDate: getShortDate(),
   supplyId: "",
   totalValue: 0,
@@ -51,17 +54,29 @@ const initialForm: StockMovement = {
   userId: ""
 };
 
-const movementsShowSwitch = [
-  TypeMovement.Ajustes.toString(),
-  TypeMovement.Prestamos.toString(),
-  TypeMovement.TransferenciaDeposito.toString(),
-];
-
+// const movementsShowSwitch = [
+//   TypeMovement.Ajustes.toString(),
+//   TypeMovement.Prestamos.toString(),
+//   TypeMovement.TransferenciaDeposito.toString(),
+// ];
+//TODO: mostrar los tipo de movimientos y ocultar el switch (ingreso / salida).
+/*
+  TODO: 
+    -validar si el tipo de movimiento es transferencia entre depositos, para mostrar ciertos campos
+*/
 export const NewStockMovementPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isLoading, stockByLots, addNewStockMovement, getNroLotsBySupplyAndDeposit } = useStockMovement();
+  const {
+    isLoading,
+    stockByLots,
+    movementsType,
+    addNewStockMovement,
+    getNroLotsBySupplyAndDeposit,
+    getMovementsType } = useStockMovement();
   const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
   const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
+  const { isLoading: loadCampaigns, campaigns, getCampaigns } = useCampaign();
+  const { t } = useTranslation();
 
   const {
     formulario,
@@ -76,7 +91,8 @@ export const NewStockMovementPage: React.FC = () => {
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
   const [depositDestinationSelected, setDepositDestinationSelected] = useState<Deposit | null>(null);
   const [locationDestinationSelected, setLocationDestinationSelected] = useState("");
-  const { typeMovement, depositId: depositOrigin, supplyId, location } = formulario;
+  const [movementTypeSelected, setMovementTypeSelected] = useState<MovementType | null>(null);
+  const { depositId: depositOrigin, supplyId, location } = formulario;
 
   const depositsToBeAllocated = useMemo(() => {
     return deposits.filter(
@@ -93,11 +109,22 @@ export const NewStockMovementPage: React.FC = () => {
       location: locationDestinationSelected
     } : undefined;
 
-    if (supplySelected && depositSelected) {
-      addNewStockMovement(formulario, supplySelected, destination);
+    if (supplySelected && depositSelected && movementTypeSelected) {
+      addNewStockMovement({
+        ...formulario,
+        typeMovement: movementTypeSelected.name
+      }, supplySelected, destination);
       reset();
     }
   };
+
+  const onChangeMovementType = ({ target }: SelectChangeEvent) => {
+    const { value } = target;
+    const movementTypeSelected = movementsType.find(x => x._id === value);
+    if (movementTypeSelected)
+      setMovementTypeSelected(movementTypeSelected);
+    setFormulario(prevState => ({ ...prevState, typeMovement: value }));
+  }
 
   const onChangeSupply = ({ target }: SelectChangeEvent) => {
     const { value } = target;
@@ -145,22 +172,23 @@ export const NewStockMovementPage: React.FC = () => {
   useEffect(() => {
     getSupplies();
     getDeposits();
+    getMovementsType();
+    getCampaigns();
   }, []);
 
   useEffect(() => {
-    if (
-      typeMovement.toString() !== "" &&
-      movementsShowSwitch.includes(typeMovement.toString())
-    )
-      setShowSwitch(true);
+    
+    if (movementTypeSelected && movementTypeSelected.sumaStock === "Ambas")
+      setShowSwitch(true)
     else {
       setFormulario((prevState) => ({
         ...prevState,
-        isIncome: typeMovement.includes(TypeMovement.Compra.toString()),
+        isIncome: (movementTypeSelected?.sumaStock === "Suma")
       }));
       setShowSwitch(false);
     }
-  }, [typeMovement]);
+
+  }, [movementTypeSelected]);
 
   useEffect(() => {
     if (supplyId !== "" && depositOrigin !== "" && location !== "") {
@@ -173,7 +201,7 @@ export const NewStockMovementPage: React.FC = () => {
     <Container maxWidth="lg">
       <Loading
         key="loading-new-stockmovement"
-        loading={isLoading || isLoadingSupplies || isLoadingDeposits}
+        loading={isLoading || isLoadingSupplies || isLoadingDeposits || loadCampaigns}
       />
       <Paper
         variant="outlined"
@@ -188,7 +216,7 @@ export const NewStockMovementPage: React.FC = () => {
           align="center"
           sx={{ mt: 1, mb: 7 }}
         >
-          Nuevo Movimiento de Stock
+          {t("new_stock_movement")}
         </Typography>
         <Grid
           container
@@ -198,17 +226,17 @@ export const NewStockMovementPage: React.FC = () => {
         >
           <Grid item xs={12} sm={3}>
             <FormControl fullWidth>
-              <InputLabel id="typeMovement">Tipo de Movimiento</InputLabel>
+              <InputLabel id="typeMovement">{t("movement_type")}</InputLabel>
               <Select
                 labelId="typeMovement"
                 name="typeMovement"
                 value={formulario.typeMovement}
-                label="Tipo de Movimiento"
-                onChange={handleSelectChange}
+                label={t("movement_type")}
+                onChange={onChangeMovementType}
               >
-                {TypeMovements.map((movement) => (
-                  <MenuItem key={movement} value={movement}>
-                    {movement}
+                {movementsType.map((movement) => (
+                  <MenuItem key={movement.name} value={movement._id}>
+                    {movement.name}
                   </MenuItem>
                 ))}
               </Select>
@@ -218,7 +246,7 @@ export const NewStockMovementPage: React.FC = () => {
             <TextField
               variant="outlined"
               type="text"
-              label="Motivo"
+              label={t("_reason")}
               name="detail"
               value={formulario.detail}
               onChange={handleInputChange}
@@ -232,7 +260,7 @@ export const NewStockMovementPage: React.FC = () => {
             <TextField
               variant="outlined"
               type="date"
-              label="Fecha"
+              label={t("_date")}
               name="operationDate"
               value={formulario.operationDate}
               onChange={handleInputChange}
@@ -245,17 +273,17 @@ export const NewStockMovementPage: React.FC = () => {
               fullWidth
             />
           </Grid>
-          {typeMovement.includes(TypeMovement.TransferenciaDeposito) ? (
+          {movementsType.filter(x => x.name === TypeMovement.TransferenciaDeposito).length ? (
             <>
               <Grid key="supply-transfer-deposit" item xs={6} sm={3}>
                 <FormControl fullWidth>
-                  <InputLabel id="supply">Insumo</InputLabel>
+                  <InputLabel id="supply">{t("_supply")}</InputLabel>
                   <Select
                     key="select-supply-tranferencia"
                     labelId="supply"
                     // name="supply"
                     value={formulario.supplyId}
-                    label="Insumo"
+                    label={t("_supply")}
                     onChange={onChangeSupply}
                   >
                     {supplies.map((supply) => (
@@ -278,17 +306,17 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={12}>
                 <Typography variant="h5" align="left">
-                  Origen
+                  {t("_origin")}
                 </Typography>
               </Grid>
               <Grid key="deposit-origin" item xs={6} sm={4}>
                 <FormControl fullWidth>
-                  <InputLabel id="deposit">Deposito</InputLabel>
+                  <InputLabel id="deposit">{t("_warehouse")}</InputLabel>
                   <Select
                     labelId="deposit"
                     name="origin"
                     value={formulario.depositId}
-                    label="Deposito"
+                    label={t("_warehouse")}
                     onChange={onChangeDeposit}
                   >
                     {deposits.map((deposit) => (
@@ -301,12 +329,12 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={6} sm={4}>
                 <FormControl fullWidth>
-                  <InputLabel id="location">Ubicacion</InputLabel>
+                  <InputLabel id="location">{t("_location")}</InputLabel>
                   <Select
                     labelId="location"
                     name="origin"
                     value={formulario.location}
-                    label="Ubicacion"
+                    label={t("_location")}
                     onChange={onChangeLocation}
                   >
                     {depositSelected?.locations.map((l) => (
@@ -321,12 +349,12 @@ export const NewStockMovementPage: React.FC = () => {
                 {supplySelected?.stockByLot && (
                   <FormControl fullWidth>
                     {/* Cambiar esto a un mapeo de lots (depositId, supplyId, location) */}
-                    <InputLabel id="lot">Nro Lote</InputLabel>
+                    <InputLabel id="lot">{t("lot_number")}</InputLabel>
                     <Select
                       labelId="lot"
                       name="nroLot"
                       value={formulario.nroLot}
-                      label="Nro Lote"
+                      label={t("lot_number")}
                       onChange={onChangeNroLot}
                     >
                       {stockByLots.map(({ nroLot }) => (
@@ -342,7 +370,7 @@ export const NewStockMovementPage: React.FC = () => {
                 <TextField
                   variant="outlined"
                   type="number"
-                  label="Cantidad"
+                  label={t("_quantity")}
                   name="amount"
                   value={formulario.amount}
                   onChange={handleInputChange}
@@ -359,17 +387,17 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={12}>
                 <Typography variant="h5" align="left">
-                  Destino
+                  {t("_destination")}
                 </Typography>
               </Grid>
               <Grid key="deposit-destination" item xs={6} sm={4}>
                 <FormControl fullWidth>
-                  <InputLabel id="deposit-dest">Deposito</InputLabel>
+                  <InputLabel id="deposit-dest">{t("_warehouse")}</InputLabel>
                   <Select
                     labelId="deposit-dest"
                     name="destination"
                     value={depositDestinationSelected?._id}
-                    label="Deposito"
+                    label={t("_warehouse")}
                     onChange={onChangeDeposit}
                   >
                     {depositsToBeAllocated.map((deposit) => (
@@ -382,12 +410,12 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={6} sm={4}>
                 <FormControl fullWidth>
-                  <InputLabel id="location-dest">Ubicacion</InputLabel>
+                  <InputLabel id="location-dest">{t("_location")}</InputLabel>
                   <Select
                     labelId="location-dest"
                     name="destination"
                     value={locationDestinationSelected}
-                    label="Ubicacion"
+                    label={t("_location")}
                     onChange={onChangeLocation}
                   >
                     {depositDestinationSelected?.locations.map((l) => (
@@ -409,7 +437,7 @@ export const NewStockMovementPage: React.FC = () => {
                     alignItems="center"
                   >
                     <Typography variant="body1" display="inline-block">
-                      Salida
+                      {t("_output")}
                     </Typography>
                     <Switch
                       name="isIncome"
@@ -417,19 +445,19 @@ export const NewStockMovementPage: React.FC = () => {
                       onChange={handleCheckboxChange}
                     />
                     <Typography variant="body1" display="inline-block">
-                      Entrada
+                      {t("_input")}
                     </Typography>
                   </Box>
                 )}
               </Grid>
               <Grid key="supply-movement" item xs={6} sm={3}>
                 <FormControl fullWidth>
-                  <InputLabel id="supply">Insumo</InputLabel>
+                  <InputLabel id="supply">{t("_supply")}</InputLabel>
                   <Select
                     key="select-supply-movement"
                     labelId="supply"
                     value={formulario.supplyId}
-                    label="Insumo"
+                    label={t("_supply")}
                     onChange={onChangeSupply}
                   >
                     {supplies.map((supply) => (
@@ -447,12 +475,12 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={6} sm={3}>
                 <FormControl fullWidth>
-                  <InputLabel id="deposit">Deposito</InputLabel>
+                  <InputLabel id="deposit">{t("_warehouse")}</InputLabel>
                   <Select
                     labelId="deposit"
                     name="origin"
                     value={formulario.depositId}
-                    label="Deposito"
+                    label={t("_warehouse")}
                     onChange={onChangeDeposit}
                   >
                     {deposits.map((deposit) => (
@@ -465,12 +493,12 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={6} sm={4}>
                 <FormControl fullWidth>
-                  <InputLabel id="location">Ubicacion</InputLabel>
+                  <InputLabel id="location">{t("id_location")}</InputLabel>
                   <Select
                     labelId="location"
                     name="origin"
                     value={formulario.location}
-                    label="Ubicacion"
+                    label={t("id_location")}
                     onChange={onChangeLocation}
                   >
                     {depositSelected?.locations.map((loc) => (
@@ -557,7 +585,7 @@ export const NewStockMovementPage: React.FC = () => {
                 <TextField
                   variant="outlined"
                   type="text"
-                  label="Comprobante"
+                  label={t("_receipt")}
                   name="voucher"
                   value={formulario.voucher}
                   onChange={handleInputChange}
@@ -569,12 +597,12 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={2}>
                 <FormControl fullWidth>
-                  <InputLabel id="currency">Moneda</InputLabel>
+                  <InputLabel id="currency">{t("_currency")}</InputLabel>
                   <Select
                     labelId="currency"
                     name="currency"
                     value={formulario.currency}
-                    label="Moneda"
+                    label={t("_currency")}
                     onChange={handleSelectChange}
                   >
                     <MenuItem key={CurrencyCode.ARG} value={CurrencyCode.ARG}>
@@ -599,7 +627,7 @@ export const NewStockMovementPage: React.FC = () => {
                 <TextField
                   variant="outlined"
                   type="number"
-                  label="Valor Total"
+                  label={t("total_value")}
                   name="totalValue"
                   value={formulario.totalValue}
                   onChange={handleInputChange}
@@ -610,18 +638,34 @@ export const NewStockMovementPage: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={6} sm={4}>
-                <TextField
+                {/* <TextField
                   variant="outlined"
                   type="number"
-                  label="Campaña"
-                  name="campaign"
-                  value={formulario.campaign}
+                  label={t("_campaign")}
+                  name="campaignId"
+                  value={formulario.campaignId}
                   onChange={handleInputChange}
                   InputProps={{
                     startAdornment: <InputAdornment position="start" />,
                   }}
                   fullWidth
-                />
+                /> */}
+                <FormControl key="campaign-select" fullWidth>
+                  <InputLabel id="campaign">{t("_campaign")}</InputLabel>
+                  <Select
+                    labelId="campaign"
+                    name="campaignId"
+                    value={formulario.campaignId}
+                    label={t("_campaign")}
+                    onChange={handleSelectChange}
+                  >
+                    {campaigns?.map((c) => (
+                      <MenuItem key={c.campaignId} value={c.campaignId}>
+                        {c.campaignId}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
             </>
           )}
@@ -634,11 +678,11 @@ export const NewStockMovementPage: React.FC = () => {
           sx={{ mt: 3 }}
         >
           <Grid item xs={12} sm={3}>
-            <Button onClick={onClickCancel}>Cancelar</Button>
+            <Button onClick={onClickCancel}>{t("id_cancel")}</Button>
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button variant="contained" color="primary" onClick={onClickSave}>
-              Agregar
+              {t("_add")}
             </Button>
           </Grid>
         </Grid>

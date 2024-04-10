@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   TextField,
   FormControl,
@@ -8,7 +8,7 @@ import {
   Typography
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import id from "date-fns/locale/id";
+import { NumberFieldWithUnits } from "../../components/NumberField";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -36,7 +36,7 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
 }) => {
   const handleInputChange = (field) => (event) => {
     const { value } = event.target;
-    console.log("Field: ", field);
+
     setFormData({
       ...formData,
       detalles: {
@@ -71,63 +71,47 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
             </TextField>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField
-              id="densidad_objetivo"
-              label="Densidad Objetivo"
-              type="number"
+            <NumberFieldWithUnits 
               value={formData.detalles.densidad_objetivo}
-              onChange={handleInputChange}
-              fullWidth
-            />
+              onChange={handleInputChange("densidad_objetivo")}
+              unit="plantas/ha"
+              label="Densidad Objetivo" />
           </Grid>
+          
           <Grid item xs={12} sm={6}>
-            <TextField
-              id="marca-inoculado"
-              label="Marca Inoculado"
-              value={formData.marca_inoculado || ""}
-              onChange={handleInputChange}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
+            <NumberFieldWithUnits
               id="profundidad"
               label="Profundidad"
               type="number"
               value={formData.detalles.profundidad || ""}
-              onChange={handleInputChange}
+              onChange={handleInputChange("profundidad")}
               fullWidth
+              unit="cm"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField
+            <NumberFieldWithUnits
               id="distancia"
               label="Distancia entre surcos"
               type="number"
               value={formData.detalles.distancia}
-              onChange={handleInputChange}
+              onChange={handleInputChange("distancia")}
               fullWidth
+              unit="cm"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField
+            <NumberFieldWithUnits
               id="peso_1000"
               label="Peso 1000 semillas"
               type="number"
-              value={formData.detalles.peso1000}
-              onChange={handleInputChange}
+              value={formData.detalles.peso_1000}
+              onChange={handleInputChange("peso_1000")}
+              unit="grs"
               fullWidth
             />
           </Grid>
-          <Grid item xs={12}>
-            <TextField
-              id="formacion-inoculado"
-              label="Formacion Inoculado"
-              value={formData.formacionInoculado}
-              onChange={handleInputChange}
-              fullWidth
-            />
-          </Grid>
+         
         </Grid>
       </FormControl>
     </CustomPaper>

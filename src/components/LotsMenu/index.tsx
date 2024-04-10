@@ -1,41 +1,98 @@
 import React, { useEffect, useState } from "react";
-import PlanSowing from "./PlanSowing";
-import PlanHarvest from "./PlanHarvest";
-import PlanAplication from "./PlanAplication";
+import PlanActivity from "./PlanActivity";
 import Tour from "./Tour";
-import { Avatar, ButtonBase, Paper } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  ButtonBase,
+  Fade,
+  Paper,
+  Tooltip,
+  Typography
+} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import planAnualIcon from "../../images/icons/plan.png";
+import preparadoIcon from "../../images/icons/prepare.png";
+
+
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
 import categoryIcon2 from "../../images/icons/pulverizadora_act.webp";
 import categoryIcon3 from "../../images/icons/cosechadora_act.webp";
 import categoryIcon4 from "../../images/icons/iconodenotas_act.webp";
 import categoryIcon5 from "../../images/icons/iconosatelite.webp";
 import categoryIcon6 from "../../images/icons/suelo_act.webp";
-import PouchDB from "pouchdb";
 import { Activities } from "./Activities/index";
 import { Actividad } from "../../interfaces/activity";
-import { isBefore, isWithinInterval, parseISO } from "date-fns";
-import activitiesData from "./test.json";
+import { isBefore, parseISO } from "date-fns";
+import GroundSample from "./GroundSample";
+import { useLocation, useNavigate } from "react-router-dom";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ExecuteActivity from "./ExecuteActivity";
+import { dbContext } from "../../services";
+import { styled } from "@mui/material/styles";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { useTranslation } from "react-i18next";
+import { useAppDispatch } from "../../hooks";
+import { setLotActive } from "../../redux/map";
+
+const Header = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  textAlign: "center",
+  color: theme.palette.text.secondary,
+  background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`,
+  boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
+  borderRadius: "8px",
+  margin: theme.spacing(2, 0)
+}));
+
+const FieldInfo = styled("div")(({ theme }) => ({
+  fontWeight: "bold",
+  fontSize: "1.2rem",
+  color: theme.palette.primary.contrastText
+}));
 
 interface LotsMenuProps {
   lot: any;
+  field: any;
   isOpen: () => void;
   toggle: () => void;
 }
 
-const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
-  const db = new PouchDB("campos_randyv7");
-  const [selectedCategory, setSelectedCategory] = useState(null);
+const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
+  const dispatch = useAppDispatch();
+  const [selectedCategory, setSelectedCategory] = useState<null | string>(null);
+  const db = dbContext.fields;
   const [activities, setActivities] = useState(null);
+  const { t } = useTranslation();
+  const [editingActivityInfo, setEditingActivityInfo] = useState<{
+    activity: Actividad | null;
+    isExecuting: boolean;
+  }>({ activity: null, isExecuting: false });
+  const selectedCampaign = useSelector(
+    (state: RootState) => state.campaign.selectedCampaign
+  );
 
+  const navigate = useNavigate();
+  let location = useLocation();
+
+
+  console.log("Lot seleccionado: ", lot);
+  let backUrl  =location.pathname
   const categories = [
-    { id: "Planificar Siembra", icon: categoryIcon1 },
-    { id: "Planificar Aplicacion", icon: categoryIcon2 },
-    { id: "Planificar Cosecha", icon: categoryIcon3 },
-    { id: "Tour", icon: categoryIcon4 },
-    { id: "Category 5", icon: categoryIcon5 },
-    { id: "Category 6", icon: categoryIcon6 }
+    // {id:"Planificación del lote", icon:planAnualIcon, link:`planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`},
+    // {id: "Programar Preparado", icon:preparadoIcon},
+    { id: "Programar Siembra", icon: categoryIcon1 },
+    { id: "Programar Aplicacion", icon: categoryIcon2 },
+    { id: "Programar Cosecha", icon: categoryIcon3 },
+    { id: "Recorrido", icon: categoryIcon4 },
+    {
+      id: "Vista de Satelite",
+      icon: categoryIcon5,
+      link: `/init/overview/satellite/${lot.id}?backUrl=${backUrl}`
+    },
+    { id: "Muestra de suelo", icon: categoryIcon6 }
   ];
 
   const selectCategory = (categoryId: any) => {
@@ -49,6 +106,11 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     }
   };
 
+  const activityTypeTranslations = {
+    siembra: "sowing",
+    cosecha: "harvesting",
+    aplicacion: "application"
+  };
   const avatarStyle = (categoryId: any) => ({
     width: 50,
     height: 50,
@@ -59,6 +121,17 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     borderRadius: "50%",
     margin: "0 15px",
     cursor: "pointer",
+    // Update these lines to conditionally apply styles for "Vista de Satelite" and "Recorrido"
+    opacity:
+      selectedCampaign ||
+      ["Vista de Satelite", "Recorrido"].includes(categoryId)
+        ? 1
+        : 0.5,
+    filter:
+      selectedCampaign ||
+      ["Vista de Satelite", "Recorrido"].includes(categoryId)
+        ? "none"
+        : "grayscale(100%)",
     "&:hover": {
       transform: "scale(1.2)",
       boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
@@ -87,16 +160,12 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
 
     if (result.rows) {
-      // Iter 1: Actividades
       _actividades_docs.forEach((actividad) => {
         let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid));
         respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
       });
 
-      console.log("Respuesta actividades y ejecuciones preorden", respuesta);
-      // Ordenar respuesta teniendo en cuenta la ejecución.
       respuesta.sort((a, b) => {
-        // Si tiene ejecucion usar la fecha de ejecucion
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
           : parseISO(
@@ -138,6 +207,32 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
         return result;
       });
   };
+  const handleEditActivity = (
+    activity,
+    isExecuting = false,
+    type = "activity"
+  ) => {
+    switch (type) {
+      case "activity":
+        setSelectedCategory(isExecuting ? "Execute Activity" : "Edit Activity");
+        console.log("Editando actividad", activity, isExecuting);
+        break;
+      case "note":
+        setSelectedCategory("Edit Note");
+        console.log("Editando nota", activity, isExecuting);
+        break;
+      default:
+        console.error("Invalid edit type");
+        return;
+    }
+    setEditingActivityInfo({ activity, isExecuting });
+  };
+  const handleEditNote = (activity, isExecuting = false) => {
+    setSelectedCategory("Edit Note");
+
+    console.log("Editando nota", activity, isExecuting);
+    setEditingActivityInfo({ activity, isExecuting });
+  };
 
   const only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
     if (alldocs.rows.length > 0) {
@@ -151,19 +246,40 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
   useEffect(() => {
     if (lot && lot.id) {
       getActivities(lot.id).then((res) => setActivities(res));
+      dispatch(setLotActive(lot));
     }
-  }, [lot, selectedCategory]);
-
-  useEffect(() => {
-    if (lot && lot.id) {
-      getActivities(lot.id).then((res) => setActivities(res));
-    }
-  }, [lot, selectedCategory]);
+  }, [lot, selectedCategory, dispatch]);
 
   const renderFormContent = () => {
+    const isAccessibleWithoutCampaign = [
+      "Vista de Satelite",
+      "Recorrido"
+    ].includes(selectedCategory);
+
+    if (!selectedCampaign && !isAccessibleWithoutCampaign) {
+      return (
+        <Fade in={true} timeout={1000}>
+          <Box textAlign="center" marginTop="20px">
+            <Typography variant="h5" component="h2" gutterBottom>
+              {t("choose_a_campaign")}
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              {t("select_a_campaign_from_the_top_row")}
+            </Typography>
+          </Box>
+        </Fade>
+      );
+    }
+
     if (!selectedCategory) {
       return activities && activities.length > 0 ? (
-        <Activities activitiesData={activities} />
+        <Activities
+          activitiesData={activities}
+          setActivitiesData={setActivities}
+          lotDoc={lot}
+          fieldDoc={field}
+          handleEditActivity={handleEditActivity}
+        />
       ) : (
         <div style={{ textAlign: "center" }}>
           <p>No hay actividades.</p>
@@ -173,24 +289,109 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
     }
 
     switch (selectedCategory) {
-      case "Planificar Siembra":
+      // case "Programar Preparado":
+      //   return (
+      //     <PlanActivity
+      //       activityType={"preparation"}
+      //       lot={lot}
+      //       fieldName={field.nombre}
+      //       db={db}
+      //       backToActivites={backToActivites}
+      //     />
+      //   );
+      case "Programar Siembra":
         return (
-          <PlanSowing lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"sowing"}
+            lot={lot}
+            fieldName={field.nombre}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
-      case "Planificar Cosecha":
+      case "Programar Cosecha":
         return (
-          <PlanHarvest lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"harvesting"}
+            lot={lot}
+            fieldName={field.nombre}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
-      case "Planificar Aplicacion":
+      case "Programar Aplicacion":
         return (
-          <PlanAplication lot={lot} db={db} backToActivites={backToActivites} />
+          <PlanActivity
+            activityType={"application"}
+            lot={lot}
+            fieldName={field.nombre}
+            db={db}
+            backToActivites={backToActivites}
+          />
         );
-      case "Tour":
-        return <Tour lot={lot} db={db} backToActivites={backToActivites} />;
+      case "Recorrido":
+        return (
+          <Tour
+            lot={lot}
+            db={db}
+            fieldName={field.nombre}
+            backToActivites={backToActivites}
+          />
+        );
       case "Category 5":
         return <div>Category 5</div>;
-      case "Category 6":
-        return <Activities activitiesData={activities} />;
+      case "Muestra de suelo":
+        return (
+          <GroundSample
+            lot={lot}
+            db={db}
+            fieldName={field.nombre}
+            backToActivites={backToActivites}
+          />
+        );
+      case "Edit Activity":
+        return (
+          <PlanActivity
+            activityType={
+              activityTypeTranslations[
+                editingActivityInfo.activity.tipo.toLowerCase()
+              ]
+            }
+            lot={lot}
+            fieldName={field.nombre}
+            db={db}
+            backToActivites={backToActivites}
+            existingActivity={editingActivityInfo.activity}
+          />
+        );
+      case "Edit Note":
+        return (
+          <Tour
+            lot={lot}
+            db={db}
+            fieldName={field.nombre}
+            backToActivites={backToActivites}
+            existingNote={editingActivityInfo.activity}
+          />
+        );
+
+      case "Execute Activity":
+        return (
+          <ExecuteActivity
+            activityType={
+              activityTypeTranslations[
+                editingActivityInfo.activity.tipo.toLowerCase()
+              ]
+            }
+            lot={lot}
+            db={db}
+            fieldName={field.nombre}
+            backToActivites={backToActivites}
+            existingActivity={editingActivityInfo.activity}
+            isExecuting={editingActivityInfo.isExecuting}
+          />
+        );
+
       default:
         return <div>Select a category to view its forms</div>;
     }
@@ -230,17 +431,54 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, isOpen, toggle }) => {
         }}
       >
         <div>
-          {categories.map(({ id, icon }) => (
-            <ButtonBase key={id} onClick={() => selectCategory(id)}>
-              <Avatar alt={id} src={icon} sx={avatarStyle(id)} />
-            </ButtonBase>
-          ))}
+          <div>
+            {categories.map(({ id, icon, link }) => (
+              <Tooltip
+                title={id}
+                arrow
+                placement="top"
+                sx={{
+                  tooltip: {
+                    backgroundColor: "#333",
+                    color: "white",
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+                    fontSize: "1em"
+                  },
+                  arrow: {
+                    color: "#333"
+                  }
+                }}
+              >
+                <ButtonBase
+                  key={id}
+                  onClick={() => (link ? navigate(link) : selectCategory(id))}
+                >
+                  <Avatar alt={id} src={icon} sx={avatarStyle(id)} />
+                </ButtonBase>
+              </Tooltip>
+            ))}
+          </div>
         </div>
-        <IconButton aria-label="close" onClick={toggle}>
-          <CloseIcon />
-        </IconButton>
+        <div>
+          {selectedCategory && (
+            <IconButton
+              aria-label="back to activities"
+              onClick={backToActivites}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+          )}
+          <IconButton aria-label="close" onClick={toggle}>
+            <CloseIcon />
+          </IconButton>
+        </div>
       </div>
       <hr style={hrStyle} />
+
+      <Header>
+        <FieldInfo>Lote: {lot.properties.nombre}</FieldInfo>
+        <FieldInfo>Campo: {field.nombre}</FieldInfo>
+      </Header>
       <div>{renderFormContent()}</div>
     </Paper>
   );

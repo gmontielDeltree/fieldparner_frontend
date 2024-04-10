@@ -1,15 +1,25 @@
-import { Grid, InputAdornment, TextField } from "@mui/material";
-import { Supply } from "@types";
+import { FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import { Crops, Supply } from "@types";
 import React, { ChangeEvent } from "react";
+import { useTranslation } from "react-i18next";
+import { IsSeed } from "../../utils/helper";
 
+
+//TODO: validar que descripcion de cultivo mostramos de acuerdo a la traduccion.
 export interface DoseFormProps {
   formValues: Supply;
+  crops: Crops[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
+  handleGenercoChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
+  handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
 
 export const DoseForm: React.FC<DoseFormProps> = ({
   formValues,
+  crops,
+  handleSelectChange,
   handleInputChange,
+  handleGenercoChange,
 }) => {
   const {
     type,
@@ -19,15 +29,22 @@ export const DoseForm: React.FC<DoseFormProps> = ({
     recommendedDose,
     activePrincipal,
     mermaVolatile,
+    generico,
+    formulationDenomination,
+    toxicityClass
   } = formValues;
 
+  const { t } = useTranslation();
+
+  const isSeedType = React.useMemo(() => IsSeed(type), [type]);
+
   return (
-    <Grid container spacing={2} alignItems="center" justifyContent="center">
+    <Grid container spacing={2} alignItems="center" justifyContent="start">
       <Grid item xs={12} sm={6}>
         <TextField
           variant="outlined"
           type="text"
-          label="Tipo"
+          label={t("_type")}
           name="type"
           value={type}
           disabled
@@ -45,7 +62,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Insumo"
+          label={t("_supply")}
           name="name"
           value={name}
           disabled
@@ -63,7 +80,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Principio Activo"
+          label={t("active_principle")}
           name="activePrincipal"
           onChange={handleInputChange}
           value={activePrincipal}
@@ -77,7 +94,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Merma Volatil"
+          label={t("volatile_shrinkage")}
           name="mermaVolatile"
           value={mermaVolatile}
           onChange={handleInputChange}
@@ -91,7 +108,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Dosis Min."
+          label={t("min_dose")}
           name="minimumDose"
           value={minimumDose}
           onChange={handleInputChange}
@@ -105,7 +122,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Dosis Max."
+          label={t("max_dose")}
           name="maximumDose"
           value={maximumDose}
           onChange={handleInputChange}
@@ -119,10 +136,74 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label="Dosis Recomendada"
+          label={t("recommended_dose")}
           name="recommendedDose"
           value={recommendedDose}
           onChange={handleInputChange}
+          InputProps={{
+            startAdornment: <InputAdornment position="start" />,
+          }}
+          fullWidth
+        />
+      </Grid>
+      {
+        isSeedType && (
+          <Grid item xs={12} sm={4}>
+            <FormControl key="crop-select" fullWidth>
+              <InputLabel id="crop">{t("_crop")}</InputLabel>
+              <Select
+                labelId="crop"
+                name="cropId"
+                value={formValues.cropId}
+                label={t("_crop")}
+                onChange={handleSelectChange}
+              >
+                {crops?.map((crop) => (
+                  <MenuItem key={crop._id} value={crop._id}>
+                    {crop.descriptionES}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        )
+      }
+      <Grid item xs={12} sm={4}>
+        <TextField
+          variant="outlined"
+          type="text"
+          label="Genérico"
+          name="generico"
+          value={generico}
+          onChange={handleGenercoChange}
+          InputProps={{
+            startAdornment: <InputAdornment position="start" />,
+          }}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          variant="outlined"
+          type="text"
+          label={t("_formulationDenomination")}
+          name="formulationDenomination"
+          value={formulationDenomination}
+          onChange={handleGenercoChange}
+          InputProps={{
+            startAdornment: <InputAdornment position="start" />,
+          }}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12} sm={4}>
+        <TextField
+          variant="outlined"
+          type="text"
+          label={t("toxicityClass")}
+          name="toxicityClass"
+          value={toxicityClass}
+          onChange={handleGenercoChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}

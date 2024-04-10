@@ -1,11 +1,13 @@
-import { get } from 'lit-translate';
+import { get } from "lit-translate";
 import { Feature } from "@turf/helpers";
 import { Router } from "@vaadin/router";
 import mapboxgl from "mapbox-gl";
 import { listar_depositos } from "../depositos/depositos-funciones";
 import { touchEvent } from "../helpers";
+import { Deposit } from "../../src/types/index";
 
-export const depositos_layer_init = (map) => {
+export const depositos_layer_init = (map, clickCallback) => {
+  if (!map.getSource("depositos-src")) {
     map.addSource("depositos-src", {
       type: "geojson",
       data: {
@@ -13,6 +15,9 @@ export const depositos_layer_init = (map) => {
         features: [],
       },
     });
+  }
+
+  if (!map.getLayer("depositos-layer")) {
     // Add a circle layer
     map.addLayer({
       id: "depositos-layer",
@@ -60,36 +65,75 @@ export const depositos_layer_init = (map) => {
     map.on(touchEvent, "depositos-layer", (e) => {
       map.getCanvas().style.cursor = "";
       popup.remove();
-      Router.go(e.features[0].properties.url);
+      if (clickCallback) {
+        clickCallback(e.features[0].properties.url);
+      } else {
+        Router.go(e.features[0].properties.url);
+      }
     });
   }
+};
 
+export const depositos_update = (map) => {
+  return listar_depositos().then((des) => {
+    // Filtrar solo los que tengan posicion
+    let conpos = des.filter((d) => {
+      return d.posicion != null;
+    });
 
-export const depositos_update = (map)=>{
-    return listar_depositos().then((des) => {
-        // Filtrar solo los que tengan posicion
-        let conpos = des.filter((d) => {
-          return d.posicion != null;
-        });
+    let features = conpos.map((d) => {
+      let feature: Feature = {
+        type: "Feature",
+        properties: {
+          item: d,
+          url: "/deposito/" + d.uuid,
+          description: `<strong style='font-size:16px'>${
+            d.nombre
+          }</strong><br><div>${get("deposito")}</div>`,
+        },
+        geometry: {
+          type: "Point",
+          coordinates: [d.posicion.lng, d.posicion.lat],
+        },
+      };
+      return feature;
+    });
+    let src = map.getSource("depositos-src").setData({
+      type: "FeatureCollection",
+      features: features,
+    });
+  });
+};
+
+export const addDepositosToMap = (map, depos: Deposit[], clickCallback ) => {
+  depositos_layer_init(map, clickCallback);
+
   
-        let features = conpos.map((d) => {
-          let feature: Feature = {
-            type: "Feature",
-            properties: {
-              item: d,
-              url: "/deposito/" + d.uuid,
-              description: `<strong style='font-size:16px'>${d.nombre}</strong><br><div>${get("deposito")}</div>`,
-            },
-            geometry: {
-              type: "Point",
-              coordinates: [d.posicion.lng, d.posicion.lat],
-            },
-          };
-          return feature;
-        });
-        let src = map.getSource("depositos-src").setData({
-          type: "FeatureCollection",
-          features: features,
-        });
-      });
-}
+    // Filtrar solo los que tengan posicion
+    let conpos = depos.filter((d) => {
+      return d.geolocation != null;
+    });
+
+    let features = conpos.map((d) => {
+      let feature: Feature = {
+        type: "Feature",
+        properties: {
+          item: d,
+          url: "/init/overview/list-stock?depositId=" + d._id,
+          description: `<strong style='font-size:16px'>${
+            d.description
+          }</strong><br><div>${"Deposito"}</div>`,
+        },
+        geometry: {
+          type: "Point",
+          coordinates: [d.geolocation.lng, d.geolocation.lat],
+        },
+      };
+      return feature;
+    });
+    let src = map.getSource("depositos-src").setData({
+      type: "FeatureCollection",
+      features: features,
+    });
+  ;
+};

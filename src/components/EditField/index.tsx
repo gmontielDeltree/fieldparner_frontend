@@ -1,17 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardHeader, CardBody, Button } from "reactstrap";
+import LocationOnIcon from "@mui/icons-material/LocationOn"; // Import the LocationOn icon
 
 interface EditFieldProps {
   isOpen: boolean;
   field: any;
   onClose: () => void;
   onDelete: () => void;
-  onLocate: () => void;
-  map: any;
-  draw: any;
-  onSaveLot: (lotGeometry: any) => void;
+  onLocate: (field: any) => void;
   handleCreateLot: () => void;
-  handleCloseNewLot: () => void;
+  handleCreateUniqueLot: (field: any) => void;
 }
 
 const EditField: React.FC<EditFieldProps> = ({
@@ -20,11 +18,8 @@ const EditField: React.FC<EditFieldProps> = ({
   onClose,
   onDelete,
   onLocate,
-  map,
-  draw,
-  onSaveLot,
   handleCreateLot,
-  handleCloseNewLot
+  handleCreateUniqueLot
 }) => {
   const cardStyle: React.CSSProperties = {
     position: "fixed",
@@ -44,7 +39,7 @@ const EditField: React.FC<EditFieldProps> = ({
   };
 
   const handleLocateField = () => {
-    onLocate();
+    onLocate(field);
   };
 
   const handleDeleteField = () => {
@@ -52,20 +47,28 @@ const EditField: React.FC<EditFieldProps> = ({
       onDelete();
     }
   };
+  const cardHeaderStyle: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
+  };
 
   return (
     <Card style={cardStyle}>
-      <CardHeader>
-        {field?.nombre}
-        <Button
-          color="primary"
-          size="sm"
-          onClick={handleLocateField}
-          style={buttonStyle}
-        >
-          <i className="bi bi-geo-alt" />
-        </Button>
-        <Button close onClick={onClose} />
+      <CardHeader style={cardHeaderStyle}>
+        <span>{field?.nombre}</span>
+        <div>
+          <Button
+            color="primary"
+            size="sm"
+            onClick={handleLocateField}
+            style={buttonStyle}
+          >
+            <LocationOnIcon />
+          </Button>
+
+          <Button close onClick={onClose} />
+        </div>
       </CardHeader>
       <CardBody>
         <p style={{ fontWeight: "bold" }}>
@@ -79,16 +82,26 @@ const EditField: React.FC<EditFieldProps> = ({
             ? "Toque en un lote del mapa para ver detalles"
             : "Sin Lotes - Agregue uno!!!"}
         </p>
-        {
+        {field?.lotes?.length === 0 && (
           <Button
             color="success"
             size="sm"
-            onClick={handleCreateLot}
+            onClick={() => handleCreateUniqueLot(field)}
             style={buttonStyle}
           >
-            Añadir Lote
+            Crear Lote Unico
           </Button>
-        }
+        )}
+
+        <Button
+          color="success"
+          size="sm"
+          onClick={handleCreateLot}
+          style={buttonStyle}
+        >
+          Añadir Lote
+        </Button>
+
         <Button
           color="danger"
           size="sm"

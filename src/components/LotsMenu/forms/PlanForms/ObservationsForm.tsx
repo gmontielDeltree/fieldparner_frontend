@@ -45,11 +45,10 @@ const ObservationsForm: React.FC<ObservationsFormProps> = ({
             </Typography>
             <TextField
               id="comment"
-              label="Observaciones"
               fullWidth
               multiline
               rows={4}
-              value={formData.comment}
+              value={formData.comentario}
               onChange={handleInputChange}
               variant="outlined"
             />

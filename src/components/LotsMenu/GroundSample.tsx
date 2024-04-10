@@ -7,39 +7,38 @@ import {
   Stepper,
   Typography
 } from "@mui/material";
-import PersonalForm from "./forms/PlanForms/PersonalForm";
-import SuppliesForm from "./forms/PlanForms/SuppliesForm";
-import OtherDetailsForm from "./forms/PlanForms/OtherDetailsForm";
-import TasksForm from "./forms/PlanForms/TasksForm";
-import ConditionsForm from "./forms/PlanForms/ConditionsForm";
-import ObservationsForm from "./forms/PlanForms/ObservationsForm";
 import { getEmptyActivity } from "../../interfaces/activity";
 import { format, parse } from "date-fns";
-import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
-import uuid4 from "uuid4";
+import GrassIcon from "@mui/icons-material/Science";
+import LaboratoryForm from "./forms/GroundSampleForms/LaboratoryForm";
+import SoilCharacteristicsForm from "./forms/GroundSampleForms/SoilCharacteristicsForm";
+import VariablesForm from "./forms/GroundSampleForms/VariablesForm";
+import AttachmentsForm from "./forms/GroundSampleForms/AttachmentsForm";
 
-interface PlanSowingProps {
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
+
+interface GroundSampleProps {
   lot: any;
   db: any;
+  fieldName: string;
   backToActivites: () => void;
 }
 
-const PlanSowing: React.FC<PlanSowingProps> = ({
+const GroundSample: React.FC<GroundSampleProps> = ({
   lot,
   db,
+  fieldName,
   backToActivites
 }) => {
   if (!lot) return null;
-  console.log("Lot: ", lot);
-  const [formData, setFormData] = useState(getEmptyActivity());
+  const [formData, setFormData] = useState({});
   const [activeStep, setActiveStep] = useState(0);
   const steps = [
-    "Personal",
-    "Insumos",
-    "Otros Datos",
-    "Labores",
-    "Condiciones",
-    "Observaciones"
+    "Laboratorio",
+    "Características del Suelo",
+    "Variables",
+    "Adjuntos"
   ];
 
   useEffect(() => {
@@ -47,7 +46,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
       ...prevFormData,
       lote_uuid: lot.id,
       ts_generacion: 0,
-      tipo: "siembra",
+      tipo: "analisis_suelo",
       detalles: {
         ...prevFormData.detalles,
         hectareas: lot.properties.hectareas
@@ -59,7 +58,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
     switch (step) {
       case 0:
         return (
-          <PersonalForm
+          <LaboratoryForm
             lot={lot}
             formData={formData}
             setFormData={setFormData}
@@ -67,16 +66,15 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
         );
       case 1:
         return (
-          <SuppliesForm
+          <SoilCharacteristicsForm
             lot={lot}
-            db={db}
             formData={formData}
             setFormData={setFormData}
           />
         );
       case 2:
         return (
-          <OtherDetailsForm
+          <VariablesForm
             lot={lot}
             formData={formData}
             setFormData={setFormData}
@@ -84,19 +82,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
         );
       case 3:
         return (
-          <TasksForm lot={lot} formData={formData} setFormData={setFormData} />
-        );
-      case 4:
-        return (
-          <ConditionsForm
-            lot={lot}
-            formData={formData}
-            setFormData={setFormData}
-          />
-        );
-      case 5:
-        return (
-          <ObservationsForm
+          <AttachmentsForm
             lot={lot}
             formData={formData}
             setFormData={setFormData}
@@ -106,7 +92,6 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
         return <div>Unknown Step</div>;
     }
   };
-
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
@@ -124,20 +109,16 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
   const handleSave = () => {
     let actividad = formData;
     try {
-      const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
-      console.log("FECHA EJECUCION: ", fechaEjecucion);
+      const fechaEjecucion = actividad.fecha;
 
-      // Parse the ISO string into a Date object
       const parsedDate = new Date(fechaEjecucion);
 
-      // Format the Date object into 'yyyy-MM-dd' format
       const formattedDate = format(parsedDate, "yyyy-MM-dd");
       actividad._id = "actividad:" + formattedDate + ":" + actividad.uuid;
     } catch (error) {
       console.error("Error in handleSave:", error);
     }
 
-    console.log("ACTIVIDAD ID: ", actividad._id);
     db.get(actividad._id)
       .then((doc) => {
         actividad._rev = doc._rev;
@@ -175,7 +156,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
   return (
     <div>
       <Box sx={{ textAlign: "center", mt: 2, mb: 4 }}>
-        <LocalFloristIcon sx={{ fontSize: 50, color: "green" }} />
+        <GrassIcon sx={{ fontSize: 50, color: "green" }} />
         <Typography
           variant="h5"
           component="h1"
@@ -196,7 +177,7 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
             }
           }}
         >
-          Planificar Siembra
+          Muestra de suelo
         </Typography>
       </Box>
       <Stepper
@@ -236,19 +217,18 @@ const PlanSowing: React.FC<PlanSowingProps> = ({
             Siguiente
           </Button>
         )}
-        {activeStep === steps.length - 1 && (
-          <Button
-            color="success"
-            onClick={() => {
-              handleSave();
-            }}
-          >
-            Guardar
-          </Button>
-        )}
+
+        <Button
+          color="success"
+          onClick={() => {
+            handleSave();
+          }}
+        >
+          Guardar
+        </Button>
       </div>
     </div>
   );
 };
 
-export default PlanSowing;
+export default GroundSample;

@@ -15,7 +15,7 @@ var img_bucket_url =
 
 const emptyGJ = {
   type: "FeatureCollection",
-  features: [],
+  features: []
 };
 
 let touchEvent = "ontouchstart" in window ? "touchstart" : "click";
@@ -34,7 +34,7 @@ const layer_visibility = (map, layer_id, status) => {
   map.setLayoutProperty(layer_id, "visibility", status ? "visible" : "none");
 };
 
-const base_url = import.meta.env.VITE_COUCHDB_URL
+const base_url = import.meta.env.VITE_COUCHDB_URL;
 
 export const base_url_tele = import.meta.env.VITE_TELEMETRIA_URL;
 
@@ -46,7 +46,7 @@ const sendEvent = (name, details) => {
   let event = new CustomEvent(name, {
     detail: details,
     bubbles: true,
-    composed: true,
+    composed: true
   });
   this.dispatchEvent(event);
 };
@@ -60,14 +60,14 @@ const get_lote_doc = async (db: PouchDB.Database, uuid: string) => {
   let campos_result = await db.allDocs({
     include_docs: true,
     startkey: "campos_",
-    endkey: "campos_\ufff0",
+    endkey: "campos_\ufff0"
   });
 
   let campos_docs = campos_result.rows;
 
   let result = undefined;
   campos_docs.forEach(({ doc }) => {
-    console.log(doc);
+    // console.log(doc);
     let _lote_doc = doc.lotes.find((lote) => lote.properties.uuid === uuid);
 
     if (_lote_doc) {
@@ -112,7 +112,7 @@ const get_lote_by_names = async (
   return result;
 };
 
-const get_actividad_by_uuid = async (uuid) => { };
+const get_actividad_by_uuid = async (uuid) => {};
 
 export const gbl_docs_starting = async (
   key: string,
@@ -126,7 +126,7 @@ export const gbl_docs_starting = async (
       attachments: attachments,
       binary: binary,
       startkey: key,
-      endkey: key + "\ufff0",
+      endkey: key + "\ufff0"
     })
     .then((result) => {
       return result;
@@ -144,8 +144,12 @@ export const only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
 };
 
 export const actividades_y_ejecuciones = async (uuid_del_lote) => {
-
-  let acts: Actividad[] = await gbl_docs_starting("actividad", true, true, true).then(only_docs);
+  let acts: Actividad[] = await gbl_docs_starting(
+    "actividad",
+    true,
+    true,
+    true
+  ).then(only_docs);
 
   let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote);
 
@@ -153,105 +157,44 @@ export const actividades_y_ejecuciones = async (uuid_del_lote) => {
 
   console.log("ACTIVIDADES", _actividades_docs, acts);
 
-  let result = await gbl_state.db.allDocs({ startkey: "ejecucion:", endkey: "ejecucion:\ufff0" });
+  let result = await gbl_state.db.allDocs({
+    startkey: "ejecucion:",
+    endkey: "ejecucion:\ufff0"
+  });
 
   let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
 
   if (result.rows) {
     // Iter 1: Actividades
     _actividades_docs.forEach((actividad) => {
-      let midoc = result.rows.find((doc) =>
-        doc.id.includes(actividad.uuid)
-      );
+      let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid));
       respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
     });
 
-    console.log(
-      "Respuesta actividades y ejecuciones preorden",
-      respuesta
-    );
     // Ordenar respuesta teniendo en cuenta la ejecución.
     respuesta.sort((a, b) => {
       // Si tiene ejecucion usar la fecha de ejecucion
       let fecha_1 = a.ejecucion_id
         ? parseISO(a.ejecucion_id.split(":")[1])
         : parseISO(
-          a.actividad.tipo === "nota"
-            ? a.actividad.fecha
-            : a.actividad.detalles.fecha_ejecucion_tentativa
-        );
+            a.actividad.tipo === "nota"
+              ? a.actividad.fecha
+              : a.actividad.detalles.fecha_ejecucion_tentativa
+          );
       let fecha_2 = b.ejecucion_id
         ? parseISO(b.ejecucion_id.split(":")[1])
         : parseISO(
-          b.actividad.tipo === "nota"
-            ? b.actividad.fecha
-            : b.actividad.detalles.fecha_ejecucion_tentativa
-        );
+            b.actividad.tipo === "nota"
+              ? b.actividad.fecha
+              : b.actividad.detalles.fecha_ejecucion_tentativa
+          );
       return isBefore(fecha_1, fecha_2) ? 1 : -1;
     });
   }
 
-  console.log(
-    "Respuesta actividades y ejecuciones post orden",
-    respuesta
-  );
+  console.log("Respuesta actividades y ejecuciones post orden", respuesta);
 
   return respuesta;
-
-
-  // return gbl_docs_starting("actividad", true, true, true)
-  //   .then(only_docs)
-  //   .then((acts: Actividad[]) => {
-  //     let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote);
-
-  //     let _actividades_docs = filtro_esta_temporada(s.reverse());
-
-  //     return gbl_state.db
-  //       .allDocs({ startkey: "ejecucion:", endkey: "ejecucion:\ufff0" })
-  //       .then((result) => {
-  //         let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
-  //         if (result.rows) {
-  //           // Iter 1: Actividades
-  //           _actividades_docs.forEach((actividad) => {
-  //             let midoc = result.rows.find((doc) =>
-  //               doc.id.includes(actividad.uuid)
-  //             );
-  //             respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
-  //           });
-
-  //           console.log(
-  //             "Respuesta actividades y ejecuciones preorden",
-  //             respuesta
-  //           );
-  //           // Ordenar respuesta teniendo en cuenta la ejecución.
-  //           respuesta.sort((a, b) => {
-  //             // Si tiene ejecucion usar la fecha de ejecucion
-  //             let fecha_1 = a.ejecucion_id
-  //               ? parseISO(a.ejecucion_id.split(":")[1])
-  //               : parseISO(
-  //                   a.actividad.tipo === "nota"
-  //                     ? a.actividad.fecha
-  //                     : a.actividad.detalles.fecha_ejecucion_tentativa
-  //                 );
-  //             let fecha_2 = b.ejecucion_id
-  //               ? parseISO(b.ejecucion_id.split(":")[1])
-  //               : parseISO(
-  //                   b.actividad.tipo === "nota"
-  //                     ? b.actividad.fecha
-  //                     : b.actividad.detalles.fecha_ejecucion_tentativa
-  //                 );
-  //             return isBefore(fecha_1, fecha_2) ? 1 : -1;
-  //           });
-  //         }
-
-  //         console.log(
-  //           "Respuesta actividades y ejecuciones post orden",
-  //           respuesta
-  //         );
-
-  //         return respuesta;
-  //       });
-  //   });
 };
 
 const filtro_esta_temporada = (actividades: Actividad[]) => {
@@ -273,11 +216,11 @@ export const es_esta_campana = (isofecha) => {
   return isWithinInterval(fecha, { start: start, end: end });
 };
 
-const crearWorkspaceDB = (nombre, user, pass) => { };
+const crearWorkspaceDB = (nombre, user, pass) => {};
 
-const setPermisosWorkspaceDB = (nombre, user, pass) => { };
+const setPermisosWorkspaceDB = (nombre, user, pass) => {};
 
-const getPermisosWorkspaceDB = (nombre, user, pass) => { };
+const getPermisosWorkspaceDB = (nombre, user, pass) => {};
 
 /** la fecha/hora en utc */
 export const format_iso_c = (date) => format(date, "yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -285,7 +228,7 @@ export const format_min = (date) => format(date, "yyyy-MM-dd'T'HH:mm");
 
 export const createMenuDots = (iconName: string) => {
   const item = document.createElement("vaadin-context-menu-item");
-  item.setAttribute("style", "padding:0px;")
+  item.setAttribute("style", "padding:0px;");
   const icon = document.createElement("vaadin-icon");
   icon.setAttribute("icon", `vaadin:${iconName}`);
   item.appendChild(icon);
@@ -372,7 +315,7 @@ export const tabla_de_colores = async () => {
     .allDocs({
       include_docs: true,
       startkey: "cultivo_color",
-      endkey: "cultivo_color\ufff0",
+      endkey: "cultivo_color\ufff0"
     })
     .then((doc) => {
       if (doc.rows.length > 0) {
@@ -399,43 +342,43 @@ export const upload_file = async (fileblob: File) => {
 
   return fetch("/attachments", {
     method: "post",
-    body: formData,
+    body: formData
   });
 };
 
-
 export const empty_feature_collection = () => {
   return {
-    "type": "FeatureCollection",
-    "features": [
+    type: "FeatureCollection",
+    features: [
       {
-        "type": "Feature",
-        "properties": {},
-        "geometry": {
-          "coordinates": [],
-          "type": "Polygon"
+        type: "Feature",
+        properties: {},
+        geometry: {
+          coordinates: [],
+          type: "Polygon"
         }
       }
     ]
-  }
-}
+  };
+};
 
 export const r2 = (d: number) => {
-  return parseFloat(d.toFixed(2))
-}
+  return parseFloat(d.toFixed(2));
+};
 
 export const fp_platform_files = async (doc: string) => {
-  let url = "https://agrotools.qts-ar.com.ar/couchdb/" + "fieldpartner-platform/" + doc;
+  let url =
+    "https://agrotools.qts-ar.com.ar/couchdb/" + "fieldpartner-platform/" + doc;
 
-  console.log("URL", url)
+  console.log("URL", url);
   let r = await axios.get(url, {
     auth: {
-      username: 'appreader',
-      password: 'fieldpartner'
-    },
-  })
+      username: "appreader",
+      password: "fieldpartner"
+    }
+  });
   return r.data;
-}
+};
 
 export {
   emptyGJ,
@@ -450,5 +393,5 @@ export {
   crearWorkspaceDB,
   setPermisosWorkspaceDB,
   getPermisosWorkspaceDB,
-  get_lote_by_names,
+  get_lote_by_names
 };

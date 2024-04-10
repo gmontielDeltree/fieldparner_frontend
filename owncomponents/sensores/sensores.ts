@@ -1,5 +1,3 @@
-import { format_iso_c } from "./../helpers";
-import { tr } from "date-fns/locale";
 import PouchDB from "pouchdb";
 import { base_url_tele, touchEvent } from "../helpers";
 import format from "date-fns/format";
@@ -224,6 +222,86 @@ class Devices {
           });
           marker.getElement().addEventListener("mouseleave", () => {
             marker.togglePopup();
+          });
+        }
+      } catch (e) {
+        console.info("Error Al hacer el marcador de dispositivo");
+      }
+    });
+  }
+
+  async add_markers_to_map_react(map: Map, onClick) {
+    let devices_last_telemetry = await this.devices_publicos_get();
+    let detalles = await this.get_all_details();
+
+    //console.log("LAST TELEMETRY", devices_last_telemetry);
+
+    devices_last_telemetry.map((telemetria: DailyTelemetryCard) => {
+      try {
+        let latitud = extract_tele("latitud", telemetria).value;
+        let longitud = extract_tele("longitud", telemetria).value;
+
+        // if (telemetria.device_id === "f008d1ffffd30a6c") {
+        //   latitud = -35.1579821;
+        //   longitud = -59.09232;
+        // }
+
+        let temperatura = extract_tele("temperatura", telemetria).value;
+        let humedad = extract_tele("humedad", telemetria).value;
+        let presion = extract_tele("presion", telemetria).value;
+
+        const el = document.createElement("div");
+        el.className = "marker";
+
+        el.style.backgroundImage = `url('/centralmeteorologica70_90.webp')`;
+        el.style.backgroundSize = "cover";
+
+        el.style.width = `35px`;
+        el.style.height = `45px`;
+        //el.style.backgroundSize = '100%';
+        el.style.cursor = "pointer";
+
+        let detalles_de_este = detalles.find(
+          (d) => d.device_id === telemetria.device_id
+        );
+        if (detalles_de_este) {
+          // Popup que no se cierra ni tiene boton de cerrar
+          const popup = new Popup({ closeOnClick: false, closeButton: false });
+          popup.setHTML(`<div style:'display:flex'>
+          <div style='font-weight:bold'>${detalles_de_este.nombre}</div>
+          <div style='font-size:10px;font-weight: lighter;'>${formatISO(
+            fromUnixTime(telemetria.ts_last)
+          )}</div>
+            <ul style='padding-left:2em'>
+              <li>Temperatura: ${temperatura}ºC</li>
+              <li>Humedad: ${humedad}%</li>
+              <li>Presión: ${presion}hPa.</li>
+            </ul>
+            </div>
+          `);
+          popup.setOffset([0, -45]);
+          //popup.setLngLat([longitud, latitud])
+          // popup.addTo(map)
+
+          //console.info("LATLON", latitud, longitud);
+          //
+          const marker = new Marker({ element: el, anchor: "bottom" })
+            .setLngLat([longitud, latitud])
+            .setPopup(popup)
+            .addTo(map);
+
+          marker.getPopup().remove();
+          /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
+          marker.getElement().addEventListener(touchEvent, () => {
+            onClick(telemetria.device_id, telemetria._id.split(":")[2]);
+          });
+
+          marker.getElement().addEventListener("mouseenter", () => {
+            marker.togglePopup();
+          });
+          marker.getElement().addEventListener("mouseleave", () => {
+            //marker.togglePopup();
+            marker.getPopup().remove();
           });
         }
       } catch (e) {

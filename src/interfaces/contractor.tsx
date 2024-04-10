@@ -16,10 +16,10 @@ interface Contratista {
 const empty_contratista: Contratista = {
   _id: "contratista:",
   labores: [],
-  uuid: "12",
-  nombre: "23",
-  cuit: "124",
-  datos_generales: { email: "124", direccion: "124", telefono: "124" }
+  uuid: "",
+  nombre: "",
+  cuit: "",
+  datos_generales: { email: "", direccion: "", telefono: "" }
 };
 
 const getContratistas = async (db: PouchDB.Database) => {
