@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   AppBar,
   Grid,
@@ -10,15 +11,6 @@ import {
   Menu,
   MenuItem
 } from "@mui/material";
-import React, { useState } from "react";
-import { NavBarProps } from "../../types";
-import iconoCampo from "../../images/icons/iconodecampo2D.webp";
-import deposito from "../../images/icons/deposito_2.webp";
-import insumos from "../../images/icons/icono de insumos.webp";
-import spanishFlagIcon from "../../images/icons/spain_flag.png";
-import englishFlagIcon from "../../images/icons/usa_flag.png";
-import brazilFlagIcon from "../../images/icons/brazil_flag.png";
-
 import {
   Notifications,
   NotificationsActive,
@@ -26,22 +18,26 @@ import {
   ExitToApp
 } from "@mui/icons-material";
 import { Badge, Tooltip } from "@mui/material";
+import { useDispatch } from 'react-redux';
+import { onLogout } from "../../redux/auth";
+import { NavBarProps } from "../../types";
+import iconoCampo from "../../images/icons/iconodecampo2D.webp";
+import spanishFlagIcon from "../../images/icons/spain_flag.png";
+import englishFlagIcon from "../../images/icons/usa_flag.png";
+import brazilFlagIcon from "../../images/icons/brazil_flag.png";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
   open,
   handleSideBarOpen
 }) => {
-  const navigateTo = (path: string) => {
-    window.location.replace(path);
-  };
-
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
   const [language, setLanguage] = useState("spanish");
-
-  const [languageAnchorEl, setLanguageAnchorEl] = React.useState(null);
+  const [languageAnchorEl, setLanguageAnchorEl] = useState(null);
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const dispatch = useDispatch();
 
   const handleLanguageMenu = (event) => {
     setLanguageAnchorEl(event.currentTarget);
@@ -75,13 +71,10 @@ export const NavBar: React.FC<NavBarProps> = ({
       }
     }
   };
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const openDropdown = Boolean(anchorEl);
-  const handleLogout = () => {
-    // Implement your logout logic here, e.g., clearing user data, tokens, and redirecting
-    console.log("Logout clicked");
-  };
-  // 3. Handler functions for dropdown menu
+
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -95,6 +88,7 @@ export const NavBar: React.FC<NavBarProps> = ({
   const selectAvatar = (avatar: string) => {
     setSelectedAvatar(avatar);
   };
+
   const avatarStyle = (avatar: string) => ({
     width: 30,
     height: 30,
@@ -109,6 +103,24 @@ export const NavBar: React.FC<NavBarProps> = ({
     backgroundColor:
       selectedAvatar === avatar ? "rgba(25, 118, 210, 0.1)" : "transparent"
   });
+
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('token_expiration');
+    localStorage.removeItem('user_session');
+    dispatch(onLogout(""));
+    console.log("Logout clicked");
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
+  };
 
   return (
     <AppBar
@@ -163,22 +175,6 @@ export const NavBar: React.FC<NavBarProps> = ({
                 sx={avatarStyle("avatar1")}
               />
             </ButtonBase>
-            {/* <ButtonBase
-              onClick={() => selectAvatar("avatar2")}
-              sx={{ borderRadius: "50%", marginRight: "18px" }}
-            >
-              <Avatar
-                alt="Deposito"
-                src={deposito}
-                sx={avatarStyle("avatar2")}
-              />
-            </ButtonBase>
-            <ButtonBase
-              onClick={() => selectAvatar("avatar3")}
-              sx={{ borderRadius: "50%", marginRight: "25px" }}
-            >
-              <Avatar alt="Insumos" src={insumos} sx={avatarStyle("avatar3")} />
-            </ButtonBase> */}
 
             <Tooltip title="Notifications" enterDelay={500} leaveDelay={200}>
               <IconButton
@@ -248,7 +244,6 @@ export const NavBar: React.FC<NavBarProps> = ({
               />
             </IconButton>
 
-            {/* Language Menu */}
             <Menu
               anchorEl={languageAnchorEl}
               anchorOrigin={{
@@ -293,6 +288,13 @@ export const NavBar: React.FC<NavBarProps> = ({
             >
               <ExitToApp />
             </IconButton>
+            {showLogoutModal && (
+              <div className="modal">
+                <p>¿Estás seguro que quieres salir?</p>
+                <button onClick={confirmLogout}>Sí</button>
+                <button onClick={cancelLogout}>No</button>
+              </div>
+            )}
           </Grid>
         </Grid>
       </Toolbar>

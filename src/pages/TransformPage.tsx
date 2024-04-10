@@ -23,7 +23,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { useAppSelector, useDeposit, useForm, useStockMovement, useSupply } from '../hooks';
 import { getShortDate } from '../helpers/dates';
-import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack } from '../components';
+import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack,CloseButtonPage, } from '../components';
 import { ColumnProps, StockByLot, TransformSupply } from '../types';
 
 
@@ -263,18 +263,20 @@ export const TransformPage: React.FC = () => {
     }, [])
 
     return (
-        <Box ml={2}>
+            <Box ml={2}>
             {(isLoading || loadingTransform) && <Loading loading={true} />}
             <Box
-                component="div"
-                display="flex"
-                alignItems="center"
-                sx={{ ml: { sm: 2 }, pt: 3 }}
+            component="div"
+            display="flex"
+            alignItems="center"
+            sx={{ ml: { sm: 2 }, pt: 3 }}
             >
-                <TransformIcon />
-                <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
-                    Transformarción - Valor Agregado
-                </Typography>
+            <TransformIcon />
+            <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
+                Transformación - Valor Agregado
+            </Typography>
+            <Box sx={{ ml: 'auto' }}></Box> 
+            <CloseButtonPage />
             </Box>
             <Paper variant="outlined"
                 sx={{
@@ -283,7 +285,7 @@ export const TransformPage: React.FC = () => {
                     p: { xs: 2, md: 3 },
                     maxHeight: "calc(100vh - 150px)",
                     overflow: "scroll"
-                }}>
+                }}> 
                 <Typography variant="h5" sx={{ mb: 3 }}>
                     Insumos Origen
                 </Typography>
