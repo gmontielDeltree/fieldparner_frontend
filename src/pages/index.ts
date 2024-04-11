@@ -26,6 +26,8 @@ export * from './WithdrawalOrdersPage';
 export * from './ListWithdrawalOrdersPage';
 export * from './ConfirmWithdrawalOrderPage';
 export * from './ListTransformPage';
+export * from './ListZonesPage';
+export * from './NewZonesPage';
 
 
 

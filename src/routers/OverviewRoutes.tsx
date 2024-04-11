@@ -27,7 +27,9 @@ import {
   ListWithdrawalOrdersPage,
   WithdrawalOrdersPage,
   ConfirmWithdrawalOrderPage,
-  ListTransformPage
+  ListTransformPage,
+  ListZonesPage,
+  NewZonePage
 } from "../pages";
 import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
@@ -100,6 +102,13 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/order/:orderId" element={<ConfirmWithdrawalOrderPage />} />
 
         <Route path="/overview/component-test-bed" element={<ComponentTestBed />} />
+
+        <Route path="/overview/zones" element={<ListZonesPage />} />
+        <Route path="/overview/zones/new" element={<NewZonePage />} />
+        <Route path="/overview/zones/:id" element={<NewZonePage />} />
+
+
+
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

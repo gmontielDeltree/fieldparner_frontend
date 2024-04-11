@@ -35,12 +35,14 @@ import {
   Gite as GiteIcon,
   Work as WorkIcon,
   Assignment as AssignmentIcon,
+  Map as MapIcon
   // Flag as FlagIcon,
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getEnvVariables } from "../../helpers/getEnvVariables";
+
 
 const keysCollapse = ["seguridad", "configuracion", "general", "agricultura", "stock", "cosecha", "gestion", "reporting", "wiki", "erp"];
 
@@ -175,9 +177,14 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("concepts_categories")} />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/zones"
+                selected={pathname.includes("/init/overview/zones")}
+              >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
+                  <MapIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("zones_groups")} />
               </ListItemButton>

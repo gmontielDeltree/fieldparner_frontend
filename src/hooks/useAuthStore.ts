@@ -174,7 +174,10 @@ export const useAuthStore = () => {
 
   //     const lastPath = localStorage.getItem("lastPath") || "/";
 
-  //     dispatch(onLogin({ isAdmin: true, firstName: 'test', accountId: "test", id: "asd123", lastName: "pepe" }));
+  //     dispatch(onLogin({
+  //       isAdmin: true, firstName: 'test', accountId: "test", id: "asd123", lastName: "pepe",
+  //       countryId: "Argentina"
+  //     }));
   //     navigate(lastPath, { replace: true });
 
   //   } catch (error) {
@@ -182,6 +185,7 @@ export const useAuthStore = () => {
   //     dispatch(onLogout(""));
   //   }
   // }
+  
   const startLogout = () => {
     dispatch(startLoading());
     try {

@@ -165,24 +165,6 @@ export const NavBar: React.FC<NavBarProps> = ({
     backgroundColor: isVisible ? "rgba(25, 118, 210, 0.1)" : "transparent"
   });
 
-  const handleLogout = () => {
-    setShowLogoutModal(true);
-  };
-
-  const confirmLogout = () => {
-    setShowLogoutModal(false);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('token_expiration');
-    localStorage.removeItem('user_session');
-    dispatch(onLogout(""));
-    console.log("Logout clicked");
-  };
-
-  const cancelLogout = () => {
-    setShowLogoutModal(false);
-  };
-
   return (
     <AppBar
       position="fixed"
@@ -342,6 +324,7 @@ export const NavBar: React.FC<NavBarProps> = ({
               />
             </IconButton>
 
+            {/* Language Menu */}
             <Menu
               anchorEl={languageAnchorEl}
               anchorOrigin={{
@@ -386,13 +369,6 @@ export const NavBar: React.FC<NavBarProps> = ({
             >
               <ExitToApp />
             </IconButton>
-            {showLogoutModal && (
-              <div className="modal">
-                <p>¿Estás seguro que quieres salir?</p>
-                <button onClick={confirmLogout}>Sí</button>
-                <button onClick={cancelLogout}>No</button>
-              </div>
-            )}
           </Grid>
         </Grid>
       </Toolbar>

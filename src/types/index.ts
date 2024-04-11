@@ -65,6 +65,17 @@ export interface Vehicle extends Document {
   technialSpecifications: RowData[];
 }
 
+export interface Zones extends Document {
+  zone: string;
+  description: string;
+}
+
+export interface ZoneState {
+  zoneActive: Zones | null;
+  zones: Zones[];
+}
+
+
 export interface ColumnProps {
   text: string;
   align: "inherit" | "left" | "center" | "right" | "justify";

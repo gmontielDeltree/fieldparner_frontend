@@ -15,3 +15,4 @@ export * from './useOrder';
 export * from './useCrops';
 export * from './useField';
 export * from './useTransformStock';
+export * from './useZones';
