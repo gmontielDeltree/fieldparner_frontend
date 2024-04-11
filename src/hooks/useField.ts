@@ -12,6 +12,7 @@ export const useField = () => {
     const [fields, setFields] = useState<Field[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [field,setField] =useState<Field>()
 
     const getFields = async () => {
         setIsLoading(true);
@@ -41,14 +42,32 @@ export const useField = () => {
         }
     }
 
+    const getField = async (id:string)=>{
+        return dbContext.fields.get(id).then((d)=>setField(d))
+    }
+
+    const saveField = async (doc:Field) =>{
+
+        doc.accountId = user?.accountId || "test"
+        return dbContext.fields.put(doc)
+    }
+
+    const deleteField = async (doc:Field) =>{
+        return dbContext.fields.remove(doc)
+    }
+
     return {
         //* Props
         fields,
         error,
+        field,
         isLoading,
 
         //*Methods
         getFields,
+        getField,
+        saveField,
+        deleteField,
     }
 
 }
