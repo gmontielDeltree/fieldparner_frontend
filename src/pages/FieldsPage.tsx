@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+
 import { Box, Button, Grid } from "@mui/material";
 
 import centroid from "@turf/centroid";
@@ -32,6 +34,7 @@ import { useTranslation } from "react-i18next";
 import { Actividad } from "../interfaces/activity";
 import { format, isBefore, isToday, parseISO } from "date-fns";
 import { hideFieldList } from "../redux/fieldsList";
+import "../classes/engine/Engine"
 
 export const FieldsPage: React.FC = () => {
   const [showNewField, setShowNewField] = useState(false);
@@ -45,6 +48,8 @@ export const FieldsPage: React.FC = () => {
   const draw = useSelector(selectDraw);
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const location = useLocation();
+
 
   const isVisible = useSelector(
     (state: RootState) => state.fieldList.isVisible
@@ -171,7 +176,7 @@ export const FieldsPage: React.FC = () => {
           const longitudeAdjustment = 0.005;
           const adjustedCoordinates = [
             centroidCoordinates[0] - longitudeAdjustment,
-            centroidCoordinates[1]
+            centroidCoordinates[1],
           ];
 
           map.flyTo({ center: adjustedCoordinates, zoom: 16, pitch: 45 });
@@ -212,7 +217,7 @@ export const FieldsPage: React.FC = () => {
       nombre: name,
       campo_geojson: campoGeojson,
       uuid,
-      lotes
+      lotes,
     };
 
     dbPut(campoData, (err, result) => {
@@ -238,7 +243,7 @@ export const FieldsPage: React.FC = () => {
         uuid: uuid4(),
         campo_parent_id: "campos_" + name,
         hectareas: roundArea(lote),
-        actividades: []
+        actividades: [],
       };
       lote.id = lote.properties.uuid;
       return lote;
@@ -300,9 +305,9 @@ export const FieldsPage: React.FC = () => {
         nombre: lotName,
         campo_parent_id: fieldId,
         uuid: lotUuid,
-        hectareas: lotAreaHectares
+        hectareas: lotAreaHectares,
       },
-      geometry: lotGeometry
+      geometry: lotGeometry,
     };
   }
 
@@ -347,27 +352,23 @@ export const FieldsPage: React.FC = () => {
       tooltip.style.transition = "opacity 0.3s";
       document.body.appendChild(tooltip);
     }
-
     lots.forEach((lot) => {
       const lotId = lot.id;
       const lotUUID = lot.properties.uuid;
-
       map.on("click", lotId + "-fill", (e) => {
         e.preventDefault();
         handleLotClick(lotId);
       });
-
       if (!map.getSource(lotId)) {
         map.addSource(lotId, {
           type: "geojson",
           data: {
             type: "Feature",
             properties: { ...lot.properties },
-            geometry: lot.geometry
-          }
+            geometry: lot.geometry,
+          },
         });
       }
-
       if (!map.getLayer(`${lotId}-fill`)) {
         map.addLayer({
           id: `${lotId}-fill`,
@@ -376,15 +377,13 @@ export const FieldsPage: React.FC = () => {
           layout: {},
           paint: {
             "fill-color": "#0080ff",
-            "fill-opacity": 0.6
-          }
+            "fill-opacity": 0.6,
+          },
         });
       }
-
       // Mousemove event
       map.on("mousemove", `${lotId}-fill`, async (e) => {
-        map.getCanvas().style.cursor = "pointer";
-
+        // map.getCanvas().style.cursor = "pointer";
         const activities = await getActivities(lotUUID);
         const todayActivities = activities.filter(({ actividad }) =>
           isToday(
@@ -393,7 +392,6 @@ export const FieldsPage: React.FC = () => {
             )
           )
         );
-
         let content = `<strong>No hay actividades programadas para hoy en el lote ${lot.properties.nombre}.</strong>`;
         if (todayActivities.length > 0) {
           content = `<strong>Actividades para hoy en el lote ${lot.properties.nombre}:</strong><ul style="padding-left: 20px;">`;
@@ -406,7 +404,6 @@ export const FieldsPage: React.FC = () => {
           });
           content += `</ul>`;
         }
-
         tooltip.innerHTML = content;
         tooltip.style.opacity = "0";
         tooltip.style.display = "block";
@@ -414,10 +411,9 @@ export const FieldsPage: React.FC = () => {
         tooltip.style.top = `${e.originalEvent.clientY + 15}px`;
         setTimeout(() => (tooltip.style.opacity = "1"), 10);
       });
-
       // Mouseleave event
       map.on("mouseleave", `${lotId}-fill`, () => {
-        map.getCanvas().style.cursor = "";
+        // map.getCanvas().style.cursor = "";
         tooltip.style.opacity = "0";
         setTimeout(() => (tooltip.style.display = "none"), 300); // Delay hiding for animation
       });
@@ -450,7 +446,7 @@ export const FieldsPage: React.FC = () => {
 
     let result = await db.allDocs({
       startkey: "ejecucion:",
-      endkey: "ejecucion:\ufff0"
+      endkey: "ejecucion:\ufff0",
     });
 
     let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
@@ -502,7 +498,7 @@ export const FieldsPage: React.FC = () => {
         attachments: attachments,
         binary: binary,
         startkey: key,
-        endkey: key + "\ufff0"
+        endkey: key + "\ufff0",
       })
       .then((result) => {
         return result;
@@ -531,9 +527,9 @@ export const FieldsPage: React.FC = () => {
     (event: any) => {
       const map = event.target;
       dispatch(setMap(map));
-      if (!map.hasControl(draw)) {
-        map.addControl(draw);
-      }
+      // if (!map.hasControl(draw)) {
+      //   map.addControl(draw);
+      // }
     },
     [dispatch, draw]
   );
@@ -594,9 +590,9 @@ export const FieldsPage: React.FC = () => {
       geometry: [
         {
           type: "FeatureCollection",
-          features: [field.campo_geojson]
-        }
-      ]
+          features: [field.campo_geojson],
+        },
+      ],
     };
     handleSaveGeometryLot(data);
   };
@@ -626,40 +622,47 @@ export const FieldsPage: React.FC = () => {
 
   return (
     <>
+      {/* TODO: si el usuario presiona el boton de la lista de campos mientras esta en otro route, la lista no va a aparecer */}
       <FieldsSideMenu
         open={isVisible}
         fields={fields}
         onSelectField={handleSelectField}
         onSelectLot={handleDirectLotSelection}
       />
-      <Outlet />
+
       <Grid container style={{ position: "relative" }} ref={target}>
         <MapComponent onMapLoad={onMapLoad} />
       </Grid>
 
-      <Button
+     
+     {/* Mostrar el boton de add_field solo en la pantalla "principal" */}
+
+     {(location.pathname === "/init/overview/fields") && <Button
         color="primary"
         variant="contained"
         style={{
           position: "absolute",
           bottom: 30,
-          right: 20
+          right: 20,
         }}
-        onClick={() => setShowNewField(true)}
+        onClick={() =>
+          //setShowNewField(true)
+          navigate("new-field")
+        }
       >
         {t("add_field")}
-      </Button>
+      </Button>}
 
-      {showNewField ? (
+      {/* { showNewField ? (
         <NewField
           saveGeometry={handleSaveGeometry}
           onClose={handleCloseNewField}
         />
-      ) : null}
+      ) : null} */}
 
-      {showNewLot ? (
+      {/* {showNewLot ? (
         <NewLot handleSaveGeometryLot={handleSaveGeometryLot} />
-      ) : null}
+      ) : null} */}
 
       {selectedField && !showNewLot && !selectedLot ? (
         <EditField
@@ -689,6 +692,9 @@ export const FieldsPage: React.FC = () => {
           toggle={() => toggleLotDetailsModal()}
         />
       )}
+
+      <Outlet />
+
       <NewsBar />
     </>
   );
