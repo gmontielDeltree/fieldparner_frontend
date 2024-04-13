@@ -528,7 +528,7 @@ export interface Numerator extends Document {
 
 export interface MovementType extends Document {
   manual: boolean;
-  sumaStock: "both" | "suma" | "descuenta";
+  sumaStock: "Ambas" | "Suma" | "Descuenta";
   name: string;
   description: string;
   typeMovement: string;

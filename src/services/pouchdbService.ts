@@ -32,28 +32,28 @@ const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_Q
 const opts: PouchDB.Replication.SyncOptions = { live: true, retry: true };
 
 const dbNames = Object.freeze({
-  vehicles: "vehicles",
-  deposits: "deposits",
-  typeVehicles: "type-vehicles",
-  zipCodeARG: "zip-code-arg",
-  zipCodePRY: "zip-code-pry",
-  supplies: "supplies",
-  socialEntities: "social-entities",
-  categories: "categories",
-  stockMovements: "stock-movements",
-  stockByLots: "lots-stock",
-  exitFields: "exit-fields",
-  campaigns: "campaigns",
-  fields: "fields",
-  originsDestinations: "origins-destinations",
-  numerators: "numerators",
-  withdrawalOrders: "withdrawal-orders",
-  depositSupplyOrder: "deposit-supply-order",
-  withdrawalsByDepositSupply: "withdrawals-deposit-supply",
-  movementsType: "movements-type",
-  platform: "platform",
-  platformSupplies: "test-supplies",
-  crops: "crops",
+    vehicles: "vehicles",
+    deposits: "deposits",
+    typeVehicles: "type-vehicles",
+    zipCodeARG: "zip-code-arg",
+    zipCodePRY: "zip-code-pry",
+    supplies: "supplies",
+    socialEntities: "social-entities",
+    categories: "categories",
+    stockMovements: "stock-movements",
+    stockByLots: "lots-stock",
+    exitFields: "exit-fields",
+    campaigns: "campaigns",
+    fields: "fields",
+    originsDestinations: "origins-destinations",
+    numerators: "numerators",
+    withdrawalOrders: "withdrawal-orders",
+    depositSupplyOrder: "deposit-supply-order",
+    withdrawalsByDepositSupply: "withdrawals-deposit-supply",
+    movementsType: "movements-type",
+    platform: "platform",
+    platformSupplies: "test-supplies",
+    crops: "crops",
 });
 
 export const dbContext = Object.freeze({
@@ -97,18 +97,16 @@ dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, op
 dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
 dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
 dbContext.campaigns.sync(`${remoteCouchDBUrl}${dbNames.campaigns}`, opts);
-dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`);
-dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`);
-dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`);
-dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`);
-dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`);
-dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`);
+dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
+dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`, opts);
+dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`, opts);
+dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`, opts);
+dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`, opts);
+dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`, opts);
 
-
-// One way replication -  DBs del sistema, no del usuario
-dbContext.platform.replicate.from(`${remoteCouchDBUrl}${dbNames.platform}`, { live: false, retry: true, });
-dbContext.platformSupplies.replicate.from(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, { live: false, retry: true, });
-dbContext.crops.replicate.from(`${remoteCouchDBUrl}${dbNames.crops}`, { live: false, retry: true, });
+dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
+dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
+dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {

@@ -14,7 +14,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { styled } from "@mui/material/styles";
-import uuid4 from "uuid4";
+import { v4 as uuidv4 } from "uuid";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -34,47 +34,19 @@ function LaboratoryForm({ lot, formData, setFormData }) {
 
   useEffect(() => {
     getBusinesses();
-  }, []);
+    if (!formData.id) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        id: uuidv4()
+      }));
+    }
+  }, [getBusinesses, formData.id, setFormData]);
 
   const onFieldChange = (fieldName, value) => {
-    if (fieldName === "contratista") {
-      const selectedBusiness = businesses.find(
-        (business) =>
-          business.nombreCompleto === value || business.razonSocial === value
-      );
-      setFormData({
-        ...formData,
-        contratista: {
-          labores: [],
-          uuid: uuid4(),
-          nombre: selectedBusiness?.razonSocial,
-          cuit: selectedBusiness?.cuit,
-          datos_generales: {
-            email: selectedBusiness?.email,
-            direccion: selectedBusiness?.domicilio,
-            telefono: selectedBusiness?.contactoPrincipal
-          },
-          _id: selectedBusiness?._id,
-          _rev: selectedBusiness?._rev
-        }
-      });
-    } else if (fieldName === "fecha") {
-      setFormData({
-        ...formData,
-        detalles: {
-          ...formData.detalles,
-          fecha_ejecucion_tentativa: value
-        }
-      });
-    } else {
-      setFormData({
-        ...formData,
-        detalles: {
-          ...formData.detalles,
-          hectareas: value
-        }
-      });
-    }
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [fieldName]: value
+    }));
   };
 
   return (
@@ -82,14 +54,16 @@ function LaboratoryForm({ lot, formData, setFormData }) {
       <Title>Laboratorio</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
-          {/* ID Input */}
+          {/* ID Input - unmodifiable */}
           <Grid item xs={12} sm={6}>
             <TextField
               id="id"
               label="ID"
               fullWidth
               value={formData.id || ""}
-              onChange={(e) => onFieldChange("id", e.target.value)}
+              InputProps={{
+                readOnly: true
+              }}
             />
           </Grid>
 

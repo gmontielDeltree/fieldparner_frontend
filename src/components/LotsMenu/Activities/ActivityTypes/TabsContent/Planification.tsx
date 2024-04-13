@@ -7,7 +7,7 @@ import {
   Box,
   Paper,
   Tooltip,
-  LinearProgress,
+  LinearProgress
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EventNoteIcon from "@mui/icons-material/EventNote";
@@ -26,21 +26,21 @@ const CustomAccordion = styled(Accordion)(({ theme }) => ({
   backdropFilter: "blur(10px)",
   boxShadow: `0 4px 8px 0 rgba(0,0,0,0.2)`,
   "&:not(:last-child)": {
-    borderBottom: 0,
+    borderBottom: 0
   },
   "&:before": {
-    display: "none",
+    display: "none"
   },
   "&.Mui-expanded": {
-    margin: theme.spacing(1, 0),
+    margin: theme.spacing(1, 0)
   },
   "& .MuiAccordionSummary-root": {
     backgroundColor: `rgba(255, 255, 255, 0.5)`,
     "&.Mui-expanded": {
-      backgroundColor: `rgba(255, 255, 255, 0.7)`,
-    },
+      backgroundColor: `rgba(255, 255, 255, 0.7)`
+    }
   },
-  color: theme.palette.getContrastText(theme.palette.background.paper),
+  color: theme.palette.getContrastText(theme.palette.background.paper)
 }));
 
 const TemperatureGauge = styled(LinearProgress)(({ theme, value }) => ({
@@ -48,24 +48,24 @@ const TemperatureGauge = styled(LinearProgress)(({ theme, value }) => ({
   borderRadius: 5,
   "& .MuiLinearProgress-bar": {
     backgroundColor:
-      value > 30 ? theme.palette.error.main : theme.palette.info.main,
-  },
+      value > 30 ? theme.palette.error.main : theme.palette.info.main
+  }
 }));
 const HumidityGauge = styled(LinearProgress)(({ theme, value }) => ({
   height: 10,
   borderRadius: 5,
   "& .MuiLinearProgress-bar": {
     backgroundColor:
-      value > 70 ? theme.palette.warning.main : theme.palette.primary.main,
-  },
+      value > 70 ? theme.palette.warning.main : theme.palette.primary.main
+  }
 }));
 
 const WindGauge = styled(LinearProgress)(({ theme, value }) => ({
   height: 10,
   borderRadius: 5,
   "& .MuiLinearProgress-bar": {
-    backgroundColor: theme.palette.secondary.main,
-  },
+    backgroundColor: theme.palette.secondary.main
+  }
 }));
 function TemperatureIndicator({ min, max }) {
   return (
@@ -74,7 +74,7 @@ function TemperatureIndicator({ min, max }) {
         display: "flex",
         alignItems: "center",
         gap: 1,
-        marginBottom: "20px",
+        marginBottom: "20px"
       }}
     >
       <ThermostatIcon color="primary" />
@@ -99,7 +99,7 @@ function HumidityIndicator({ min, max }) {
         display: "flex",
         alignItems: "center",
         gap: 1,
-        marginBottom: "20px",
+        marginBottom: "20px"
       }}
     >
       <WaterDropIcon color="primary" />
@@ -144,41 +144,44 @@ const DateBadge = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1),
   borderRadius: theme.shape.borderRadius,
   boxShadow: `0 4px 8px 0 rgba(0,0,0,0.2)`,
-  backdropFilter: "blur(10px)",
+  backdropFilter: "blur(10px)"
 }));
 
 const StyledEventNoteIcon = styled(EventNoteIcon)(({ theme }) => ({
   fontSize: "2.3rem",
   color: `rgba(255, 255, 255, 0.9)`,
   borderRadius: "50%",
-  padding: "5px",
+  padding: "5px"
 }));
 
 const CustomAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
   "&.Mui-expanded": {
-    minHeight: 48,
+    minHeight: 48
   },
   "& .MuiAccordionSummary-content.Mui-expanded": {
-    margin: "12px 0",
-  },
+    margin: "12px 0"
+  }
 }));
 
 const CustomAccordionDetails = styled(AccordionDetails)({
   flexDirection: "column",
-  padding: "16px",
+  padding: "16px"
 });
 
 const PlanificationContent = React.memo(function PlanificationContent({
   activity,
-  showEstimatedApplicationDate = true,
-}:{activity:Actividad,showEstimatedApplicationDate:boolean}) {
+  showEstimatedApplicationDate = true
+}: {
+  activity: Actividad;
+  showEstimatedApplicationDate: boolean;
+}) {
   const hasDosis =
     activity.detalles &&
     activity.detalles.dosis &&
     activity.detalles.dosis.length > 0;
   const formattedDate = activity.detalles.fecha_ejecucion_tentativa
     ? format(parseISO(activity.detalles.fecha_ejecucion_tentativa), "PPPP", {
-        locale: es,
+        locale: es
       })
     : "No especificada";
 
@@ -190,7 +193,7 @@ const PlanificationContent = React.memo(function PlanificationContent({
             mb: 2,
             display: "flex",
             alignItems: "center",
-            gap: 1,
+            gap: 1
           }}
         >
           <StyledEventNoteIcon
@@ -222,23 +225,62 @@ const PlanificationContent = React.memo(function PlanificationContent({
         </Box>
       )}
 
-      {hasDosis &&
-        activity.detalles.dosis.map((lineaInsumo, index) => (
-          <CustomAccordion key={index}>
-            <CustomAccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Insumo </Typography>
-            </CustomAccordionSummary>
-            <CustomAccordionDetails>
-              <Typography>
-                {lineaInsumo.insumo.type} - {lineaInsumo.insumo.brand} -{" "}
-                {lineaInsumo.insumo.name} - {lineaInsumo.dosis}{" "}
-                {lineaInsumo.insumo.unitMeasurement}/ha - Cantidad Total{" "}
-                {lineaInsumo.total} {lineaInsumo.insumo.unitMeasurement} - Costo
-                Total {lineaInsumo.precio_estimado * lineaInsumo.total} USD
-              </Typography>
-            </CustomAccordionDetails>
-          </CustomAccordion>
-        ))}
+      {hasDosis && (
+        <CustomAccordion>
+          <CustomAccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Insumos</Typography>
+          </CustomAccordionSummary>
+          <CustomAccordionDetails
+            sx={{
+              padding: "16px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px"
+            }}
+          >
+            {activity.detalles.dosis.map((lineaInsumo, index) => (
+              <Paper
+                elevation={3}
+                sx={{
+                  padding: "10px",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between"
+                }}
+                key={index}
+              >
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <Typography variant="body1">
+                    <strong>{lineaInsumo.insumo.name}</strong> -{" "}
+                    {lineaInsumo.insumo.brand}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: "20px" }}
+                >
+                  <Typography variant="body2">
+                    {lineaInsumo.dosis} {lineaInsumo.insumo.unitMeasurement}/ha
+                  </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={(lineaInsumo.total / lineaInsumo.maxTotal) * 100}
+                    sx={{ width: "100px" }}
+                  />
+                  <Typography variant="body2">
+                    {lineaInsumo.total} {lineaInsumo.insumo.unitMeasurement}
+                  </Typography>
+                </Box>
+                <Typography variant="body2" sx={{ fontStyle: "italic" }}>
+                  ${lineaInsumo.precio_estimado * lineaInsumo.total} USD
+                </Typography>
+              </Paper>
+            ))}
+          </CustomAccordionDetails>
+        </CustomAccordion>
+      )}
 
       <CustomAccordion>
         <CustomAccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -246,18 +288,23 @@ const PlanificationContent = React.memo(function PlanificationContent({
         </CustomAccordionSummary>
         <CustomAccordionDetails>
           <Typography>
-            Nombre Completo: {activity.contratista?.nombreCompleto
-              ? (activity.contratista.nombreCompleto.length > 0 ? activity.contratista.nombreCompleto : "No especificado")
+            Nombre Completo:{" "}
+            {activity.contratista?.nombreCompleto
+              ? activity.contratista.nombreCompleto.length > 0
+                ? activity.contratista.nombreCompleto
+                : "No especificado"
               : "No especificado"}
           </Typography>
           <Typography>
-            Razón Social: {activity.contratista
-              ? activity.contratista.razonSocial 
+            Razón Social:{" "}
+            {activity.contratista
+              ? activity.contratista.razonSocial
               : "No especificado"}
           </Typography>
           <Typography>
-            CUIT: {activity.contratista
-              ? activity.contratista.cuit 
+            CUIT:{" "}
+            {activity.contratista
+              ? activity.contratista.cuit
               : "No especificado"}
           </Typography>
         </CustomAccordionDetails>

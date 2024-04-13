@@ -21,16 +21,15 @@ import {
     Delete as DeleteIcon
 } from '@mui/icons-material'
 import React, { useEffect, useState } from 'react';
-import { useAppSelector, useDeposit, useForm, useStockMovement, useSupply } from '../hooks';
+import { useAppSelector, useDeposit, useForm, useStockMovement, useSupply, useTransformStock } from '../hooks';
 import { getShortDate } from '../helpers/dates';
 import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack } from '../components';
 import { ColumnProps, StockByLot, Supply, TransformSupply } from '../types';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 
 const today = getShortDate();
-
-
 
 type SupplyRowProps = {
     row: TransformSupply;
@@ -109,7 +108,7 @@ const initialStateTransform = {
 };
 
 export const TransformPage: React.FC = () => {
-
+    const navigate = useNavigate();
     const { user } = useAppSelector(state => state.auth);
     const [originSupplies, setOriginSupplies] = useState<TransformSupply[]>([]);
     const [destinationSupplies, setDestinationSupplies] = useState<TransformSupply[]>([]);
@@ -123,7 +122,8 @@ export const TransformPage: React.FC = () => {
         handleInputChange,
         reset,
     } = useForm(initialStateTransform);
-    const { isLoading: loadingTransform, transformStock, getStock } = useStockMovement();
+    const { isLoading: loadingTransform, getStock } = useStockMovement();
+    const { transformStock } = useTransformStock();
 
     const originColumns: ColumnProps[] = [
         { text: t("supply_crop"), align: "left" },
@@ -249,17 +249,22 @@ export const TransformPage: React.FC = () => {
         setDestinationSupplies([]);
         setStockBySupplies([]);
         reset();
+        navigate("/init/overview/value-transform");
     }
 
-    const saveTransformStock = () => {
-        transformStock(
+    const createTransform = async () => {
+        await transformStock(
             originSupplies, //Movimientos de salida
             destinationSupplies, //Movimientos de entrada
             stockBySupplies, //Tabla auxiliar de stock
             detail,
             operationDate
         );
+        reset();
+        navigate("/init/overview/value-transform");
     }
+
+    const saveTransformStock = () => createTransform();
 
     const onChangeSupply = (item: Supply) => {
         getDepositsBySupply(item);

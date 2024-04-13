@@ -138,7 +138,7 @@ export const Activities = ({
 
   const handleDownloadPDF = (activity) => {
     // TODO: Cambiar esto a un POST a server de informes
-    
+
     let campos_url = mapboxStaticImg(fieldDoc, lotDoc);
 
     let google_map_link = googleMapsLinkGoTo(lotDoc);
@@ -183,7 +183,7 @@ export const Activities = ({
         return NoteIcon;
       case "aplicacion":
         return ApplicationIcon;
-      case "analisis de suelo":
+      case "analisis_suelo":
         return SoilAnalysisIcon;
       default:
         return null;
@@ -200,7 +200,7 @@ export const Activities = ({
         return "#FFAB67";
       case "aplicacion":
         return "#67D3FF";
-      case "analisis de suelo":
+      case "analisis_suelo":
         return "#C767FF";
       default:
         return "#AAAAAA";

@@ -1,68 +1,133 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
-import { Box, Button, Container, Grid, Typography } from "@mui/material";
+import { Box, Button, Collapse, Container, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import { Add as AddIcon, Transform as TransformIcon } from "@mui/icons-material";
-import { Loading, CloseButtonPage } from "../components";
-import { useStockMovement } from "../hooks";
+import { Loading, CloseButtonPage, TableCellStyled } from "../components";
+import { useTransformStock } from "../hooks";
 import { useTranslation } from "react-i18next";
+import {
+    KeyboardArrowDown as KeyboardArrowDownIcon,
+    KeyboardArrowUp as KeyboardArrowUpIcon,
+    // Search as SearchIcon
+} from '@mui/icons-material';
+import { StockMovementItem } from "../types";
 
 
-interface RowStockMovementItem {
-    id: string;
-    date: string;
-    movement: string;
-    supply: string;
-    deposit: string;
-    movementType: string;
-    isIncome: string;
-    um: string;
-    amount: number;
+interface RowProps {
+    row: {
+        income: StockMovementItem[],
+        output: StockMovementItem[],
+    }
+};
+
+function Row(props: RowProps) {
+    const { row } = props;
+    const { t } = useTranslation();
+    const [open, setOpen] = React.useState(false);
+
+    const totalIncome = row.income?.reduce((total, row) => total + row.amount, 0);
+    const totalOutput = row.output?.reduce((total, row) => total + row.amount, 0);
+
+    return (
+        <React.Fragment>
+            <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+                <TableCell>
+                    <IconButton
+                        aria-label="expand row"
+                        size="small"
+                        onClick={() => setOpen(!open)}
+                    >
+                        {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                    </IconButton>
+                </TableCell>
+                <TableCell component="th" scope="row">
+                    {row.income[0]?.operationDate}
+                </TableCell>
+                <TableCell component="th" scope="row">
+                    {row.income[0]?.detail}
+                </TableCell>
+                <TableCell align="right">{totalIncome}</TableCell>
+                <TableCell align="right">{totalOutput}</TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                    <Collapse in={open} timeout="auto" unmountOnExit>
+                        <Box sx={{ margin: 1 }}>
+                            <Typography variant="h6" gutterBottom component="div">
+                                {t("source_supplies")}
+                            </Typography>
+                            <Table size="small" aria-label="purchases">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCellStyled align="center">{t("_supply")}</TableCellStyled>
+                                        <TableCellStyled align="center">{t("_warehouse")}</TableCellStyled>
+                                        <TableCellStyled align="right">UM</TableCellStyled>
+                                        <TableCellStyled align="right">{t("_quantity")}</TableCellStyled>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {row.income?.map((rowIn, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell align="center" component="th" scope="row">
+                                                {rowIn.supply?.name}
+                                            </TableCell>
+                                            <TableCell align="center">{rowIn.deposit?.description}</TableCell>
+                                            <TableCell align="right">{rowIn.supply?.unitMeasurement}</TableCell>
+                                            <TableCell align="right">
+                                                {rowIn.amount}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                            <Typography variant="h6" gutterBottom component="div" sx={{ mt: 1 }}>
+                                {t("new_supply_destination")}
+                            </Typography>
+                            <Table size="small" aria-label="purchases">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCellStyled align="center">{t("_supply")}</TableCellStyled>
+                                        <TableCellStyled align="center">{t("_warehouse")}</TableCellStyled>
+                                        <TableCellStyled align="right">UM</TableCellStyled>
+                                        <TableCellStyled align="right">{t("_quantity")}</TableCellStyled>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {row.output?.map((rowOut, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell align="center" component="th" scope="row">
+                                                {rowOut.supply?.name}
+                                            </TableCell>
+                                            <TableCell align="center">{rowOut.deposit?.description}</TableCell>
+                                            <TableCell align="right">{rowOut.supply?.unitMeasurement}</TableCell>
+                                            <TableCell align="right">
+                                                {rowOut.amount}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    </Collapse>
+                </TableCell>
+            </TableRow>
+        </React.Fragment>
+    );
 }
 
 export const ListTransformPage: React.FC = () => {
     const navigate = useNavigate();
-    const { isLoading, stockMovements, getStockMovements } = useStockMovement();
+    const { isLoading, transformMovements, getTransformationMovements } = useTransformStock();
+    // const { filterText, handleInputChange } = useForm({ filterText: "" })
     const { t } = useTranslation();
 
-    const columns: GridColDef[] = [
-        // { field: "id", hide: true },
-        { field: "date", headerName: t("_date"), width: 150 },
-        { field: "supply", headerName: t("type_supply"), width: 150 },
-        { field: "deposit", headerName: t("_warehouse"), width: 150 },
-        { field: "isIncome", headerName: t("income_outcome"), width: 120 },
-        { field: "um", headerName: "UM", width: 150 },
-        { field: "amount", headerName: t("_quantity"), width: 150 },
-    ];
-
-    const rows = useMemo(() => {
-        return stockMovements.map((sm) => {
-            return {
-                id: sm._id,
-                date: sm.creationDate,
-                movement: sm.movement,
-                supply: `${sm.supply?.type}/${sm.supply?.name}`,
-                deposit: sm.deposit?.description,
-                movementType: sm.typeMovement,
-                isIncome: sm.isIncome ? t("_income") : t("_outcome"),
-                um: sm.supply?.unitMeasurement,
-                amount: sm.amount,
-            } as RowStockMovementItem;
-        });
-    }, [stockMovements]);
-
-    // const onClickSearch = (): void => {
-    //   if (filterText === "") {
-    //     getStockMovements();
-    //     return;
-    //   }
-    // };
+    // const onClickSearch = (): void => setSearch(filterText);
 
     const onClickNewTransform = () =>
         navigate("/init/overview/value-transform/new");
 
     useEffect(() => {
-        getStockMovements();
+        getTransformationMovements();
     }, []);
 
     return (
@@ -102,28 +167,63 @@ export const ListTransformPage: React.FC = () => {
                             {t("add_new")}
                         </Button>
                     </Grid>
+                    {/* <Grid item xs={12} sm={10}>
+                        <Grid container justifyContent="flex-end">
+                            <Grid item xs={8} sm={3}>
+                                <TextField
+                                    variant="outlined"
+                                    type="text"
+                                    size="small"
+                                    autoComplete="off"
+                                    name="filterText"
+                                    value={filterText}
+                                    onChange={handleInputChange}
+                                    InputProps={{
+                                        startAdornment: <InputAdornment position="start" />,
+                                    }}
+                                    fullWidth
+                                />
+                            </Grid>
+                            <Grid item xs={4} sm={3}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    size="medium"
+                                    fullWidth
+                                    sx={{
+                                        height: "98%",
+                                        margin: "auto",
+                                        borderTopLeftRadius: 0,
+                                        borderBottomLeftRadius: 0,
+                                    }}
+                                    onClick={() => onClickSearch()}
+                                    startIcon={<SearchIcon />}
+                                >
+                                    {t("icon_search")}
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Grid> */}
                 </Grid>
                 <Box component="div" sx={{ p: 1 }}>
-                    <DataGrid
-                        rows={rows}
-                        columns={columns}
-                        rowSelection={false}
-                        loading={isLoading}
-                        slots={{ toolbar: GridToolbar }}
-                        slotProps={{
-                            toolbar: {
-                                showQuickFilter: true,
-                            },
-                        }}
-                        initialState={{
-                            pagination: {
-                                paginationModel: {
-                                    pageSize: 10,
-                                },
-                            },
-                        }}
-                        pageSizeOptions={[10, 15, 20]}
-                    />
+                    <TableContainer component={Paper} sx={{ maxHeight: "700px" }}>
+                        <Table aria-label="collapsible table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell />
+                                    <TableCellStyled>Fecha</TableCellStyled>
+                                    <TableCellStyled align="left">{t("_detail")}</TableCellStyled>
+                                    <TableCellStyled align="right">Total Ingreso</TableCellStyled>
+                                    <TableCellStyled align="right">Total Salida</TableCellStyled>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {Object.values(transformMovements).map((row, index) => (
+                                    <Row key={index} row={row} />
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </Box>
             </Box>
         </Container>

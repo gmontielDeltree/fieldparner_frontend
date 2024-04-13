@@ -12,7 +12,7 @@ import {
   Stepper,
   Typography,
 } from "@mui/material";
-import { Supply, SupplyType } from "../types";
+import { Supply } from "../types";
 import { removeSupplyActive } from "../redux/supply";
 import { useTranslation } from "react-i18next";
 
@@ -59,7 +59,7 @@ export const SupplyPage: React.FC = () => {
     reset,
   } = useForm(initialForm);
 
-  const { isLoading, supplyError, supplies, createSupply, updateSupply, setSupplyError, getSupplies } = useSupply();
+  const { isLoading, supplyError, createSupply, updateSupply, setSupplyError, getSupplies } = useSupply();
   const { isLoading: loadingCrops, dataCrops, getCrops } = useCrops();
 
   const onClickCancel = () => navigate("/init/overview/supply");

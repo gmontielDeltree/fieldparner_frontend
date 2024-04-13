@@ -1,9 +1,8 @@
 import { CreatedTag, LastUpdateTag } from "./../depositos/depositos-types";
 import { format_min } from "./../helpers";
-import { Campo } from "./campos";
-import { Lote } from "./lotes";
 import { CampoOffcanvas } from "./../campo-offcanvas/campo-offcanvas";
 import { Attachment } from "./attachments";
+
 export interface AnalisisSuelo {
   _id: string;
   _rev?: string;
@@ -15,8 +14,6 @@ export interface AnalisisSuelo {
   referencia_laboratorio: string;
   nombre_responsable: string;
   matricula_responsable: string;
-  campo: Campo;
-  lote: Lote;
   caracterizacion?: string;
   textura?: string;
   profundidad?: number;
