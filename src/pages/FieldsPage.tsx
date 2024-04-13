@@ -30,26 +30,18 @@ import { hideFieldList } from "../redux/fieldsList";
 import "../classes/engine/Engine";
 
 export const FieldsPage: React.FC = () => {
-  const [showNewField, setShowNewField] = useState(false);
-  const [showNewLot, setShowNewLot] = useState(false);
   const map = useSelector(selectMap);
-  const {fields, getFields} = useField()
+  const { fields, getFields } = useField()
 
   const db = dbContext.fields;
 
   const [selectedField, setSelectedField] = useState<any | null>(null);
-  const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
   const selectedFieldRef = useRef<Field | null>(null);
   const draw = useSelector(selectDraw);
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const location = useLocation();
 
-  const updateMapAfterNew = ()=>{
-
-    getFields()
-
-  }
 
 
   const isVisible = useSelector(
@@ -58,9 +50,12 @@ export const FieldsPage: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const { campoId } = useParams();
 
   const { deposits, getDeposits } = useDeposit();
+
+  const updateMapAfterNew = () => {
+    getFields()
+  }
 
   /* Es para forzar el resizing del mapa siempre
     Cuando la pagina de
@@ -78,7 +73,6 @@ export const FieldsPage: React.FC = () => {
   */
   useEffect(() => {
     return () => {
-      console.log("UNMOUNT MAP");
       dispatch(setMap(null));
     };
   }, []);
@@ -108,21 +102,18 @@ export const FieldsPage: React.FC = () => {
   }, [map, draw, fields, deposits]);
 
 
-  useEffect(()=>{
-    // update fields 
-    if(map){
-
-    }
-  },[location])
-
   const handleMapClick = useCallback(
     async (event: any) => {
-      // if (selectedField) {
-      //   return;
-      // }
+
+
+      // Ignorar si location es new-lot o new-field
+      if (location.pathname.includes('new-lot') || location.pathname.includes('new-field')) {
+        return
+      }
 
       const features = map?.queryRenderedFeatures(event.point);
-      console.log(event,features)
+      console.log(event, features)
+
 
 
       if (features.length > 0) {
@@ -131,26 +122,20 @@ export const FieldsPage: React.FC = () => {
 
         if (source === "campos") {
           try {
-            //const fieldDoc: Field = await db.get(fieldId);
-            //setSelectedField(fieldDoc);
-            //console.log("Field selected (setSelectedField called):", fieldDoc);
             // Navegar al campo
             navigate(fieldId);
           } catch (err) {
             console.error("Error fetching field from PouchDB", err);
           }
-        } else if(source === "lotes") {
+        } else if (source === "lotes") {
           let parentId = features[0].properties.campo_parent_id
           let loteId = features[0].properties.uuid
+          // NAvegar al la pantalla de lote
           navigate(parentId + "/" + loteId);
-          // console.error("Field ID is undefined");
         }
-
-
-
       }
     },
-    [map, db, selectedField]
+    [map, db, selectedField, location]
   );
 
   useEffect(() => {
@@ -164,54 +149,16 @@ export const FieldsPage: React.FC = () => {
     };
   }, [map, handleMapClick]);
 
-  
 
- 
 
- 
+
+
+
 
   function roundArea(feature) {
     return Math.round((area(feature) / 10000) * 100) / 100;
   }
 
-  function processLotes(features, name) {
-    return features.map((feature) => {
-      const lote = { ...feature };
-      lote.properties = {
-        ...lote.properties,
-        nombre: lote.properties?.name,
-        uuid: uuid4(),
-        campo_parent_id: "campos_" + name,
-        hectareas: roundArea(lote),
-        actividades: [],
-      };
-      lote.id = lote.properties.uuid;
-      return lote;
-    });
-  }
-
-
-
-
-
-
-  const handleSaveGeometryLot = (data) => {
-    console.log("add_lot_to_field", data);
-
-    const lotGeometry = data.geometry[0].features[0].geometry;
-    const lotName = data.field_name;
-    const fieldId = `campos_${selectedField?.nombre}`;
-
-    getField(fieldId, (err, field) => {
-      if (err) {
-        console.log("Error retrieving field:", err);
-        return;
-      }
-
-      const newLot = createNewLot(lotGeometry, lotName, fieldId);
-      updateFieldWithLot(fieldId, field, newLot);
-    });
-  };
 
   function getField(fieldId, callback) {
     db.get(fieldId, callback);
@@ -384,17 +331,17 @@ export const FieldsPage: React.FC = () => {
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
           : parseISO(
-              a.actividad.tipo === "nota"
-                ? a.actividad.fecha
-                : a.actividad.detalles.fecha_ejecucion_tentativa
-            );
+            a.actividad.tipo === "nota"
+              ? a.actividad.fecha
+              : a.actividad.detalles.fecha_ejecucion_tentativa
+          );
         let fecha_2 = b.ejecucion_id
           ? parseISO(b.ejecucion_id.split(":")[1])
           : parseISO(
-              b.actividad.tipo === "nota"
-                ? b.actividad.fecha
-                : b.actividad.detalles.fecha_ejecucion_tentativa
-            );
+            b.actividad.tipo === "nota"
+              ? b.actividad.fecha
+              : b.actividad.detalles.fecha_ejecucion_tentativa
+          );
         return isBefore(fecha_1, fecha_2) ? 1 : -1;
       });
     }
@@ -447,7 +394,7 @@ export const FieldsPage: React.FC = () => {
   };
 
 
-  
+
   const onMapLoad = useCallback(
     (event: any) => {
       const map = event.target;
@@ -463,19 +410,6 @@ export const FieldsPage: React.FC = () => {
     fetchData();
   };
 
-
-  const handleCreateUniqueLot = (field: any) => {
-    const data = {
-      field_name: "unique_lot",
-      geometry: [
-        {
-          type: "FeatureCollection",
-          features: [field.campo_geojson],
-        },
-      ],
-    };
-    handleSaveGeometryLot(data);
-  };
 
   const fetchData = async () => {
     try {
@@ -514,10 +448,10 @@ export const FieldsPage: React.FC = () => {
         <MapComponent onMapLoad={onMapLoad} />
       </Grid>
 
-     
-     {/* Mostrar el boton de add_field solo en la pantalla "principal" */}
 
-     {(location.pathname === "/init/overview/fields") && <Button
+      {/* Mostrar el boton de add_field solo en la pantalla "principal" */}
+
+      {(location.pathname === "/init/overview/fields") && <Button
         color="primary"
         variant="contained"
         style={{
@@ -533,9 +467,9 @@ export const FieldsPage: React.FC = () => {
         {t("add_field")}
       </Button>}
 
-        {/* Renderizado de subrutas */}
-{map && <Outlet context={{updateMapAfterNew: updateMapAfterNew}}/>}
-      
+      {/* Renderizado de subrutas */}
+      {map && <Outlet context={{ updateMapAfterNew: updateMapAfterNew }} />}
+
 
       <NewsBar />
     </>

@@ -104,14 +104,16 @@ const EditField: React.FC<EditFieldProps> = ({
           Añadir Lote
         </Button>
 
-        <Button
-          color="success"
-          size="sm"
-          onClick={handleEditField}
-          style={buttonStyle}
-        >
-          Editar Campo
-        </Button>
+        {field.lotes.length === 0 &&
+          <Button
+            color="success"
+            size="sm"
+            onClick={handleEditField}
+            style={buttonStyle}
+          >
+            Editar Campo
+          </Button>
+        }
 
         <Button
           color="danger"

@@ -44,6 +44,8 @@ import { Campaign } from "@types";
 import { uuidv7 } from "uuidv7";
 import { ButtonMixin } from "@vaadin/button/src/vaadin-button-mixin";
 import { loadCampaignFromLS, saveCampaignToLS } from "../../helpers/persistence";
+import { selectDraw } from "../../redux/draw";
+import { Slide, toast } from "react-toastify";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
@@ -190,11 +192,22 @@ export const NavBar: React.FC<NavBarProps> = ({
   const handleCampaignMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleCampaignSelect = (campaignId) => {
+  const handleCampaignSelect = (campaignId: string) => {
     const campaign = campaigns.find((c) => c.campaignId === campaignId);
     if (campaign) {
       //setSelectedCampaign(campaignId);
       dispatch(campaignSlice.actions.setSelectedCampaign(campaign));
+      toast.success(t("La campaña") + " " + campaign.name + " " + t("esta seleccionada"), {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
+        progress: undefined,
+        theme: "colored",
+        transition: Slide,
+      });
       handleClose();
     }
   };
@@ -316,7 +329,7 @@ export const NavBar: React.FC<NavBarProps> = ({
             </Tooltip>
 
             <Tooltip
-              title={selectedCampaign?.startDate}
+              title={`${t('Campaña seleccionada')}: ${t("Desde")} ${selectedCampaign?.startDate} ${t("al")} ${selectedCampaign?.endDate} - ${selectedCampaign?.state}}`}
             >
 
 
@@ -378,11 +391,18 @@ export const NavBar: React.FC<NavBarProps> = ({
                 >
 
                   <Grid container>
-                    <Grid item>
+                    <Grid item xs={10}>
                       {campaign.name}
                     </Grid>
-                    <Grid item>
-                      <Button onClick={() => handleEditClick(campaign)}>{t("Editar")}</Button>
+                    <Grid item xs={2}>
+                      <Button color='primary' variant='contained' onClick={() => handleEditClick(campaign)}>{t("Editar")}</Button>
+                    </Grid>
+                    <Grid item xs={12}>
+
+                      <Typography variant='subtitle2'>
+
+                        {`${campaign?.description} - ${campaign?.startDate} ${t("a")} ${campaign?.endDate} - ${campaign?.state} - ${campaign?.zoneId}`}
+                      </Typography>
                     </Grid>
                   </Grid>
 

@@ -4,70 +4,87 @@ import { useState } from "react";
 import { dbContext } from "../services";
 import { useAppSelector } from ".";
 import { filter } from 'jszip';
+import { Lot } from "../interfaces/field";
 
 
 export const useField = () => {
 
-    const { user } = useAppSelector(state => state.auth);
-    const [fields, setFields] = useState<Field[]>([]);
-    const [error, setError] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
-    const [field,setField] =useState<Field>()
+  const { user } = useAppSelector(state => state.auth);
+  const [fields, setFields] = useState<Field[]>([]);
+  const [error, setError] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [field, setField] = useState<Field>()
 
-    const getFields = async () => {
-        setIsLoading(true);
-        try {
-            // if (!user) throw new Error("User not found");
 
-            // const result = await dbContext.fields.allDocs({ include_docs: true });
-            const result = await dbContext.fields.find({
-                 selector: { "accountId": undefined } //user?.accountId }
-            });
+  const db = dbContext.fields;
+  const getFields = async () => {
+    setIsLoading(true);
+    try {
+      // if (!user) throw new Error("User not found");
 
-            // const vehiculos = response.map((v: any) => v.content);
-            if (result.docs.length) {
-                
-                const documents = result.docs.map(doc => doc);
-                const d : Field[]= documents.filter((d)=>d._id.includes("campos_"))
-                // console.log("DSDSDSSDSDSDSDS",d)
-                setFields(d);
-            }
+      // const result = await dbContext.fields.allDocs({ include_docs: true });
+      const result = await db.find({
+        selector: { "accountId": undefined } //user?.accountId }
+      });
 
-            setIsLoading(false);
-        } catch (error) {
-            console.log(error)
-            Swal.fire('Error', 'No hay registro de Campos.', 'error');
-            setIsLoading(false);
-            if (error) setError(error);
-        }
+      // const vehiculos = response.map((v: any) => v.content);
+      if (result.docs.length) {
+
+        const documents = result.docs.map(doc => doc);
+        const d: Field[] = documents.filter((d) => d._id.includes("campos_"))
+        // console.log("DSDSDSSDSDSDSDS",d)
+        setFields(d);
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error)
+      Swal.fire('Error', 'No hay registro de Campos.', 'error');
+      setIsLoading(false);
+      if (error) setError(error);
     }
+  }
 
-    const getField = async (id:string)=>{
-        return dbContext.fields.get(id).then((d)=>setField(d))
-    }
+  const getField = async (id: string) => {
+    return db.get(id).then((d) => setField(d))
+  }
 
-    const saveField = async (doc:Field) =>{
+  const saveField = async (doc: Field) => {
 
-        doc.accountId = user?.accountId || "test"
-        return dbContext.fields.put(doc)
-    }
+    doc.accountId = user?.accountId || "test"
+    return db.put(doc)
+  }
 
-    const deleteField = async (doc:Field) =>{
-        return dbContext.fields.remove(doc)
-    }
+  const deleteField = async (doc: Field) => {
+    return db.remove(doc)
+  }
 
-    return {
-        //* Props
-        fields,
-        error,
-        field,
-        isLoading,
+  const addLotToField = async (field: Field, lot: Lot) => {
+    field.lotes.push(lot)
+    return saveField(field)
+  }
 
-        //*Methods
-        getFields,
-        getField,
-        saveField,
-        deleteField,
-    }
+  const removeLotFromField = async (field: Field, lot: Lot) => {
+    let lotes = field.lotes
+    lotes.filter((l) => l.id !== lot.id)
+    field.lotes = lotes
+    return saveField(field)
+  }
+
+  return {
+    //* Props
+    fields,
+    error,
+    field,
+    isLoading,
+
+    //*Methods
+    getFields,
+    getField,
+    saveField,
+    deleteField,
+    addLotToField,
+    removeLotFromField
+  }
 
 }

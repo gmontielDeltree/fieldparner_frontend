@@ -8,10 +8,11 @@ interface Field {
 }
 
 export const showOnlyFieldBordersAndLotes = (map: MapboxMap, fieldId: string) => {
-  map.setFilter('campos-fill', ["!", [
+  console.log("Please show only the rest of the fields", fieldId)
+  map.setFilter('campos-selected-line', [
     "in",
     "id",
-    fieldId]])
+    fieldId])
   // map.setLayoutProperty(`campos-fill`, 'visibility', 'none');
 }
 
@@ -175,13 +176,13 @@ export const addFieldsToMapSingleLayer = (map: MapboxMap, fields: Field[]) => {
       });
     }
 
-    let fieldId = "campos"
+    let baseName = "campos"
 
-    if (!map.getLayer(`${fieldId}-fill`)) {
+    if (!map.getLayer(`${baseName}-fill`)) {
       map.addLayer({
-        id: `${fieldId}-fill`,
+        id: `${baseName}-fill`,
         type: "fill",
-        source: fieldId,
+        source: baseName,
         layout: {},
         paint: {
           "fill-color": "red",
@@ -191,11 +192,11 @@ export const addFieldsToMapSingleLayer = (map: MapboxMap, fields: Field[]) => {
       });
     }
 
-    if (!map.getLayer(`${fieldId}-line`)) {
+    if (!map.getLayer(`${baseName}-line`)) {
       map.addLayer({
-        id: `${fieldId}-line`,
+        id: `${baseName}-line`,
         type: "line",
-        source: fieldId,
+        source: baseName,
         layout: {},
         paint: {
           "line-color": "red",
@@ -204,11 +205,11 @@ export const addFieldsToMapSingleLayer = (map: MapboxMap, fields: Field[]) => {
       });
     }
 
-    if (!map.getLayer(`${fieldId}-selected-line`)) {
+    if (!map.getLayer(`${baseName}-selected-line`)) {
       map.addLayer({
-        id: `${fieldId}-selected-line`,
+        id: `${baseName}-selected-line`,
         type: "line",
-        source: fieldId,
+        source: baseName,
         layout: {},
         paint: {
           "line-color": "blue",
@@ -219,11 +220,11 @@ export const addFieldsToMapSingleLayer = (map: MapboxMap, fields: Field[]) => {
       });
     }
 
-    if (!map.getLayer(`${fieldId}-label`)) {
+    if (!map.getLayer(`${baseName}-label`)) {
       map.addLayer({
-        id: `${fieldId}-label`,
+        id: `${baseName}-label`,
         type: "symbol",
-        source: fieldId,
+        source: baseName,
         layout: {
           "text-field": [
             "format",

@@ -10,7 +10,9 @@ import { useField } from "../hooks";
 import NewGeometry2 from "../components/NewGeometry/NewGeometry2";
 import { useSelector } from "react-redux";
 import { selectMap } from "../redux/map";
-import { showOnlyFieldBordersAndLotes, showOnlyFieldFillAndLotes } from "../helpers/mapHelpers";
+import { addLotesToMap, setFieldAsSelected, showOnlyFieldBordersAndLotes, showOnlyFieldFillAndLotes } from "../helpers/mapHelpers";
+import { Lot } from "@types";
+import { property } from "lit-element";
 
 function roundArea(feature) {
   return Math.round((area(feature) / 10000) * 100) / 100;
@@ -24,7 +26,7 @@ export const NewLotPage = () => {
   const { updateMapAfterNew } = useOutletContext();
   const { deleteField, saveField } = useField();
 
-  const { field, getField } = useField();
+  const { field, getField, addLotToField, removeLotFromField } = useField();
 
   useEffect(() => {
     getField(campoId);
@@ -32,6 +34,8 @@ export const NewLotPage = () => {
 
   useEffect(() => {
     if (field) {
+      setFieldAsSelected(map, field._id)
+      addLotesToMap(map, field)
       // mostrar solo el perimetro del campo y los otro lotes
       showOnlyFieldBordersAndLotes(map, field._id);
     }
@@ -41,25 +45,34 @@ export const NewLotPage = () => {
     }
   }, [field]);
 
-  const handleSaveLote = (data) => {
+  const handleSaveLote = (data: any) => {
+
+    let geojson_from_editor = data.geometry[0].features[0]
+
     console.log("Save lote", data)
-    // let uuid = uuidv7();
-    // let geojson = data.geometry[0].features[0];
+    let uuid = uuidv7()
+    let lote: Lot = {
+      type: "Feature",
+      id: uuid,
+      geometry: geojson_from_editor.geometry,
+      properties: {
+        nombre: data.field_name,
+        uuid: uuid,
+        campo_parent_id: field?._id || "",
+        hectareas: 0,
+      }
+    }
 
-    // geojson.properties.hectareas = roundArea(geojson);
+    lote.properties.hectareas = roundArea(geojson_from_editor)
 
-    // let newFieldDoc: Field = {
-    //   _id: "campos_" + uuid,
-    //   nombre: data.field_name,
-    //   campo_geojson: geojson,
-    //   lotes: [],
-    //   uuid: uuid,
-    // };
 
-    // saveField(newFieldDoc).then(() => {
-    //   // Trigger Update
-    //   updateMapAfterNew();
-    // });
+
+    // console.log("Save lote", data, lote)
+    addLotToField(field, lote).then(() => {
+      // Trigger Update
+      updateMapAfterNew()
+      handleCloseNewField()
+    })
   };
 
   const handleCloseNewField = () => {
