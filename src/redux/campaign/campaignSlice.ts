@@ -15,6 +15,10 @@ export const campaignSlice = createSlice({
   name: "campaigns",
   initialState,
   reducers: {
+    hydrate: (state, action) => {
+      // do not do state = action.payload it will not update the store
+      return action.payload
+    },
     setSelectedCampaign: (state, action: PayloadAction<Campaign>) => {
       state.selectedCampaign = action.payload;
     },

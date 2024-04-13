@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { showFieldList, hideFieldList } from "../../redux/fieldsList";
-import { useAuthStore } from "../../hooks";
+import { useAppSelector, useAuthStore } from "../../hooks";
 import { useCampaign } from "../../hooks";
 import CreateCampaignModal from "../CreateCampaign";
-import { campaignSlice } from "../../redux/campaign";
+import { campaignSlice, loadCampaigns, setSelectedCampaign } from "../../redux/campaign";
 
 import {
   Badge,
@@ -36,9 +36,14 @@ import {
   Notifications,
   NotificationsActive,
   MenuOutlined,
-  ExitToApp
+  ExitToApp,
+  OnDeviceTrainingOutlined
 } from "@mui/icons-material";
 import { add } from "date-fns";
+import { Campaign } from "@types";
+import { uuidv7 } from "uuidv7";
+import { ButtonMixin } from "@vaadin/button/src/vaadin-button-mixin";
+import { loadCampaignFromLS, saveCampaignToLS } from "../../helpers/persistence";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
@@ -46,10 +51,11 @@ export const NavBar: React.FC<NavBarProps> = ({
   handleSideBarOpen
 }) => {
   const navigate = useNavigate();
-  const { campaigns, getCampaigns, isLoading, error, addCampaign } =
+  const { campaigns, getCampaigns, isLoading, error, addCampaign, updateCampaign, deleteCampaign } =
     useCampaign();
-  const [selectedCampaign, setSelectedCampaign] = useState("");
+  //const [selectedCampaign, setSelectedCampaign] = useState("");
 
+  const { selectedCampaign } = useAppSelector((state) => state.campaign);
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
   const [language, setLanguage] = useState("es"); // Cambiado a código estándar "es" (español)
@@ -61,26 +67,74 @@ export const NavBar: React.FC<NavBarProps> = ({
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const handleCreateCampaign = async (campaignName) => {
-    const campaignData = {
-      campaignId: `campaign_${new Date().getTime()}`,
-      name: campaignName,
-      description: "",
-      zoneId: "defaultZone",
-      startDate: new Date().toISOString(),
-      endDate: new Date().toISOString(),
-      state: "active"
-    };
 
-    await addCampaign(campaignData);
+  const [campaignToEdit, setCampaignToEdit] = useState<Campaign>()
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+
+  const handleCreateAndEditCampaign = async (campaign: Campaign) => {
+
+
+    if (campaign._rev) {
+      // editg
+      await updateCampaign(campaign)
+      dispatch(campaignSlice.actions.setSelectedCampaign(campaign));
+      setIsEditModalOpen(false);
+      getCampaigns();
+      return
+    }
+    // New
+    const uuid = uuidv7()
+
+    campaign.campaignId = `campaign:${uuid}`
+    await addCampaign(campaign);
+    dispatch(campaignSlice.actions.setSelectedCampaign(campaign));
     setIsCreateModalOpen(false);
     getCampaigns();
   };
 
   useEffect(() => {
     getCampaigns();
+    // Hidratar campaña seleccionada
+    const campaign = loadCampaignFromLS()
+    if (campaign) {
+      console.log("Campaña desde localStorage", campaign)
+      dispatch(setSelectedCampaign(campaign))
+    }
+
+
   }, []);
 
+
+  const onDeleteCampaignHandler = async (campaign: Campaign) => {
+    await deleteCampaign(campaign)
+    setIsEditModalOpen(false);
+    getCampaigns();
+  }
+
+
+  useEffect(() => {
+    console.log("UE", selectedCampaign)
+    if (selectedCampaign) {
+      saveCampaignToLS(selectedCampaign)
+    }
+  }, [selectedCampaign])
+
+  useEffect(() => {
+    if (campaigns) {
+      loadCampaigns(campaigns)
+    }
+    if (!campaigns) {
+      // Undefined
+    } else if (campaigns.length === 0) {
+      // No campaigns
+      // Crear una por defecto
+
+      // Guardarla
+      //
+      // Seleccionarla
+    }
+  }, [campaigns])
   const handleLanguageMenu = (event) => {
     setLanguageAnchorEl(event.currentTarget);
   };
@@ -139,7 +193,7 @@ export const NavBar: React.FC<NavBarProps> = ({
   const handleCampaignSelect = (campaignId) => {
     const campaign = campaigns.find((c) => c.campaignId === campaignId);
     if (campaign) {
-      setSelectedCampaign(campaignId);
+      //setSelectedCampaign(campaignId);
       dispatch(campaignSlice.actions.setSelectedCampaign(campaign));
       handleClose();
     }
@@ -164,6 +218,11 @@ export const NavBar: React.FC<NavBarProps> = ({
     borderRadius: "50%",
     backgroundColor: isVisible ? "rgba(25, 118, 210, 0.1)" : "transparent"
   });
+
+  function handleEditClick(campaign_to_edit: Campaign): void {
+    setCampaignToEdit(campaign_to_edit)
+    setIsEditModalOpen(true)
+  }
 
   return (
     <AppBar
@@ -255,30 +314,47 @@ export const NavBar: React.FC<NavBarProps> = ({
                 </Badge>
               </IconButton>
             </Tooltip>
-            <Button
-              aria-label="campaign"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleCampaignMenu}
-              color="inherit"
-              style={{
-                marginLeft: "50px",
-                backgroundColor: "#f5f5f5",
-                color: "#1976d2",
-                borderRadius: "4px",
-                textTransform: "none"
-              }}
+
+            <Tooltip
+              title={selectedCampaign?.startDate}
             >
-              {selectedCampaign || t("no_campaign")}
-            </Button>
+
+
+              <Button
+                aria-label="campaign"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleCampaignMenu}
+                color="inherit"
+                style={{
+                  marginLeft: "50px",
+                  backgroundColor: "#f5f5f5",
+                  color: "#1976d2",
+                  borderRadius: "4px",
+                  textTransform: "none"
+                }}
+              >
+                {selectedCampaign?.name || t("no_campaign")}
+              </Button>
+
+            </Tooltip>
             <CreateCampaignModal
               open={isCreateModalOpen}
               onClose={() => setIsCreateModalOpen(false)}
-              onCreate={handleCreateCampaign}
+              onCreate={handleCreateAndEditCampaign}
+            />
+
+            <CreateCampaignModal
+              open={isEditModalOpen}
+              onClose={() => setIsEditModalOpen(false)}
+              onCreate={handleCreateAndEditCampaign}
+              initialData={campaignToEdit}
+              onDelete={onDeleteCampaignHandler}
+              editMode
             />
 
             <Menu
-              id="menu-appbar"
+              id="menu-campaigns"
               anchorEl={anchorEl}
               anchorOrigin={{
                 vertical: "bottom",
@@ -297,10 +373,19 @@ export const NavBar: React.FC<NavBarProps> = ({
               <Divider />
               {campaigns.map((campaign) => (
                 <MenuItem
-                  key={campaign.campaignId}
+                  key={campaign._id}
                   onClick={() => handleCampaignSelect(campaign.campaignId)}
                 >
-                  {campaign.campaignId}{" "}
+
+                  <Grid container>
+                    <Grid item>
+                      {campaign.name}
+                    </Grid>
+                    <Grid item>
+                      <Button onClick={() => handleEditClick(campaign)}>{t("Editar")}</Button>
+                    </Grid>
+                  </Grid>
+
                 </MenuItem>
               ))}
             </Menu>
@@ -316,8 +401,8 @@ export const NavBar: React.FC<NavBarProps> = ({
                   language === "es"
                     ? spanishFlagIcon
                     : language === "en"
-                    ? englishFlagIcon
-                    : brazilFlagIcon
+                      ? englishFlagIcon
+                      : brazilFlagIcon
                 }
                 alt={language}
                 style={{ width: "24px", height: "24px" }}

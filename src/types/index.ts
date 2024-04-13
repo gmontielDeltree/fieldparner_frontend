@@ -438,6 +438,7 @@ export interface ExitFieldItem extends ExitField {
 export interface Campaign extends Document {
   accountId: string;
   campaignId: string;
+  name: string;
   description: string;
   zoneId: string;
   creationDate: string;

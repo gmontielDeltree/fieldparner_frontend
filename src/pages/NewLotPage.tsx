@@ -33,15 +33,16 @@ export const NewLotPage = () => {
   useEffect(() => {
     if (field) {
       // mostrar solo el perimetro del campo y los otro lotes
-      showOnlyFieldBordersAndLotes(map,field._id);
+      showOnlyFieldBordersAndLotes(map, field._id);
     }
 
-    return ()=>{
+    return () => {
       //showOnlyFieldFillAndLotes(map);
     }
   }, [field]);
 
-  const handleSaveField = (data) => {
+  const handleSaveLote = (data) => {
+    console.log("Save lote", data)
     // let uuid = uuidv7();
     // let geojson = data.geometry[0].features[0];
 
@@ -67,7 +68,7 @@ export const NewLotPage = () => {
   return (
     <Box>
       <NewGeometry2
-        handleSaveGeometry={handleSaveField}
+        handleSaveGeometry={handleSaveLote}
         onClose={handleCloseNewField}
         type="lot"
       />
