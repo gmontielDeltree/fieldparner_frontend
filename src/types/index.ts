@@ -200,20 +200,20 @@ export interface Supply extends Document {
 }
 
 export interface UserByAccount extends Document {
-    accountId: string;
-    userId: string;
+    accountId?: string;
+    username?: string;
     name: string;
     email: string;
-    password: string;
-    state:boolean;
-    admin:boolean;
+    password?: string;
+    isAdmin:boolean;
     lastName: string;
     language: string;
-    photoFile?: File | null;
+    rol: string;
+    state: boolean;
 }
 export interface UsersState {
-    usersActive: UserByAccount | null;
-    Users: UserByAccount [];
+    userActive: UserByAccount | null;
+    users: UserByAccount [];
 }
 
 export interface OriginDestinationsState {
@@ -664,6 +664,11 @@ export enum WithdrawalOrderType {
 export enum NumeratorType {
   Client = "Cliente",
   LaborOrder = "Orden de Trabajo"
+}
+
+export enum UserRols {
+  Administrator = 'ADM',
+  User= "USER"
 }
 
 //#endregion

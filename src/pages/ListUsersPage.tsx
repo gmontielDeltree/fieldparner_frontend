@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ColumnProps, UserByAccount } from "../types";
 import React, { useEffect } from "react";
-import { useAppDispatch, useForm, useUsers, useAppSelector } from "../hooks";
+import { useAppDispatch, useForm, useUser, useAppSelector } from "../hooks";
 import {
   DataTable,
   ItemRow,
@@ -22,14 +22,16 @@ import {
   Typography,
 } from "@mui/material";
 import 'semantic-ui-css/semantic.min.css';
-import {Icon} from "semantic-ui-react";
+import { Icon } from "semantic-ui-react";
 import {
-    PersonAdd as PersonAddAltIcon,
+  PersonAdd as PersonAddAltIcon,
   Add as AddIcon,
   Edit as EditIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  NotInterested as NotInterestedIcon
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import { setUsersActive } from "../redux/users/userSlice";
+import { setUserActive } from "../redux/users/userSlice";
 // import { User } from "@auth0/auth0-spa-js";
 // import { User } from "@auth0/auth0-spa-js";
 // import Swal from 'sweetalert2';
@@ -41,10 +43,8 @@ import { setUsersActive } from "../redux/users/userSlice";
 export const ListUsersPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const {t} = useTranslation();
- 
-
-  const { isLoading, users, getUsers, removeUsers } = useUsers();
+  const { t } = useTranslation();
+  const { isLoading, users, getUsers, removeUsers } = useUser();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const columns: ColumnProps[] = [
@@ -55,16 +55,10 @@ export const ListUsersPage: React.FC = () => {
     { text: "", align: "center" },
   ];
 
-  const { user } = useAppSelector((state) => state.auth);
+  // const { user } = useAppSelector((state) => state.auth);
 
-  useEffect(() => {
-    // Cargar los datos de los usuarios una vez que el componente esté montado
-    getUsers();
-}, []);
-
-  
   const onClickUpdateUser = (item: UserByAccount): void => {
-    dispatch(setUsersActive(item));
+    dispatch(setUserActive(item));
     navigate(`/init/overview/users/${item._id}`);
     getUsers();
   };
@@ -80,30 +74,28 @@ export const ListUsersPage: React.FC = () => {
   }, []);
 
   function onClickSearch(): void {
-    throw new Error("Function not implemented.");
-  }
-  console.log("Datos de usuarios:", users)
 
-  if (user && user.isAdmin) {
-    return (
+  }
+
+  return (
     <TemplateLayout key="overview-users" viewMap={false}>
       {isLoading && <Loading loading />}
       <Container maxWidth="md" sx={{ ml: 0 }}>
-      <Box
-        component="div"
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
-      >
-        <Box display="flex" alignItems="center">
-          < PersonAddAltIcon sx={{ marginRight: '8px' }} />
-          <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-            Usuarios
-          </Typography>
+        <Box
+          component="div"
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
+        >
+          <Box display="flex" alignItems="center">
+            < PersonAddAltIcon sx={{ marginRight: '8px' }} />
+            <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
+              Usuarios
+            </Typography>
+          </Box>
+          <CloseButtonPage />
         </Box>
-        <CloseButtonPage />
-      </Box>
         <Box component="div" sx={{ mt: 7 }}>
           <Grid
             container
@@ -152,7 +144,11 @@ export const ListUsersPage: React.FC = () => {
                     {row.state ? "Activo" : "Inactivo"}
                   </TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.admin ? "Admin" : "User"}
+                    {row.isAdmin
+                      ?
+                      <CheckCircleOutlineIcon color="success" fontSize="large" />
+                      :
+                      <NotInterestedIcon color="warning" fontSize="large" />}
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     <Tooltip title={t("icon_edit")}>
@@ -165,7 +161,7 @@ export const ListUsersPage: React.FC = () => {
                     </Tooltip>
                     <Tooltip title={t("icon_delete")}>
                       <IconButton
-                        onClick={() =>  handleDeleteUser (row)}
+                        onClick={() => handleDeleteUser(row)}
                         style={{ fontSize: '1rem' }}
                       >
                         <Icon name="trash alternate" />
@@ -180,7 +176,4 @@ export const ListUsersPage: React.FC = () => {
       </Container>
     </TemplateLayout>
   );
-} else {
-  return null;
-}
 };

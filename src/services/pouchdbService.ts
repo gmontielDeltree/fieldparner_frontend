@@ -56,6 +56,7 @@ const dbNames = Object.freeze({
     platform: "platform",
     platformSupplies: "test-supplies",
     crops: "crops",
+    fieldpartner: "fieldpartner",
 });
 
 export const dbContext = Object.freeze({
@@ -82,6 +83,7 @@ export const dbContext = Object.freeze({
     platform: new PouchDB<any>(dbNames.platform),
     platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
     crops: new PouchDB<Crops>(dbNames.crops),
+    fieldpartner: new PouchDB(dbNames.fieldpartner),
 });
 
 dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);

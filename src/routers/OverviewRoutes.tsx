@@ -35,8 +35,11 @@ import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegr
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
 import { NewUserPage } from "../pages/NewUserPage";
 import { ComponentTestBed } from '../pages/ComponentTestBed';
+import { useAppSelector } from "../hooks";
 
 export const OverviewRoutes: React.FC = () => {
+  const { user } = useAppSelector(state => state.auth);
+
   const { pathname, search } = useLocation();
 
   const lastPath = useMemo(() => pathname + search, [pathname, search]);
@@ -93,12 +96,16 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
         <Route path="/overview/zoning/:baseImageName" element={<ZoningPage />} />
         <Route path="/overview/prices" element={<PricesPage />} />
+        {
+          (user && user.isAdmin) && (
+            <>
+              <Route path="/overview/users" element={<ListUsersPage />} />
+              <Route path="/overview/users/new" element={<NewUserPage />} />
+              <Route path="/overview/users/:id" element={<NewUserPage />} />
+            </>
+          )
+        }
 
-        <Route path="/overview/users" element={<ListUsersPage />} />
-        <Route path="/overview/users/new" element={<NewUserPage />} />
-        <Route path="/overview/users/:id" element={<NewUserPage />} />
-
-        
         <Route path="/overview/list-orders" element={<ListWithdrawalOrdersPage />} />
         <Route path="/overview/order" element={<WithdrawalOrdersPage />} />
         <Route path="/overview/order/:orderId" element={<ConfirmWithdrawalOrderPage />} />

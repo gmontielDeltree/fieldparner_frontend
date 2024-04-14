@@ -3,25 +3,25 @@ import { UserByAccount, UsersState } from '@types';
 
 
 const initialState: UsersState = {
-    usersActive: null,
-    Users: [],
+    userActive: null,
+    users: [],
 }
 
 export const usersSlice = createSlice({
     name: 'Users',
     initialState: initialState,
     reducers: {
-        setUsersActive: (state, action: PayloadAction<UserByAccount>) => {
-            state.usersActive = action.payload;
+        setUserActive: (state, action: PayloadAction<UserByAccount>) => {
+            state.userActive = action.payload;
         },
         removeUsersActive: (state) => {
-            state.usersActive = null
+            state.userActive = null
         },
         loadUsers: (state, action: PayloadAction<UserByAccount[]>) => {
-            state.Users = action.payload;
+            state.users = action.payload;
         },
         removeUsers: (state) => {
-            state.Users = [];
+            state.users = [];
         }
     }
 });
@@ -31,5 +31,5 @@ export const {
     loadUsers,
     removeUsers,
     removeUsersActive,
-    setUsersActive
+    setUserActive
 } = usersSlice.actions;
