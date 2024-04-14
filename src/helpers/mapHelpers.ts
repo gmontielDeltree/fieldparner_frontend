@@ -1,5 +1,5 @@
 import { Map as MapboxMap } from "mapbox-gl";
-import { featureCollection } from '@turf/helpers';
+import { featureCollection } from "@turf/helpers";
 
 interface Field {
   _id: string;
@@ -7,59 +7,60 @@ interface Field {
   campo_geojson: any;
 }
 
-export const showOnlyFieldBordersAndLotes = (map: MapboxMap, fieldId: string) => {
-  console.log("Please show only the rest of the fields", fieldId)
-  map.setFilter('campos-selected-line', [
-    "in",
-    "id",
-    fieldId])
+export const showOnlyFieldBordersAndLotes = (
+  map: MapboxMap,
+  fieldId: string,
+) => {
+  console.log("Please show only the rest of the fields", fieldId);
+  map.setFilter("campos-selected-line", ["in", "id", fieldId]);
   // map.setLayoutProperty(`campos-fill`, 'visibility', 'none');
-}
+};
 
 export const showOnlyFieldFillAndLotes = (map: MapboxMap) => {
-  map.setLayoutProperty(`campos-fill`, 'visibility', 'visible');
-}
+  map.setLayoutProperty(`campos-fill`, "visibility", "visible");
+};
 
 export const clearLotesFromMap = (map: MapboxMap) => {
-  let baseName = "lotes"
+  let baseName = "lotes";
   if (map.getSource(baseName)) {
     map.getSource(baseName).setData({
       type: "FeatureCollection",
-      features: []
+      features: [],
     });
   } else {
     map.addSource(baseName, {
       type: "geojson",
       data: {
         type: "FeatureCollection",
-        features: []
-      }
+        features: [],
+      },
     });
   }
+};
 
-}
+export const setLoteAsSelected = (map: MapboxMap, loteId: string) => {
+  map.setFilter("lotes-selected-line", ["in", "uuid", loteId]);
+};
+
+export const unsetLoteAsSelected = (map: MapboxMap) => {
+  map.setFilter("lotes-selected-line", ["in", "uuid", ""]);
+};
 
 export const addLotesToMap = (map: MapboxMap, field: Field) => {
-
-
   if (map) {
+    let fc = featureCollection(field.lotes);
 
-    let fc = featureCollection(field.lotes)
-
-
-    let baseName = "lotes"
-    console.log("feature collection", fc)
+    let baseName = "lotes";
+    console.log("feature collection", fc);
 
     if (map.getSource(baseName)) {
       map.getSource(baseName).setData(fc);
     } else {
       map.addSource(baseName, {
         type: "geojson",
-        data: fc
+        data: fc,
       });
     }
-
-
 
     if (!map.getLayer(`${baseName}-fill`)) {
       map.addLayer({
@@ -70,7 +71,7 @@ export const addLotesToMap = (map: MapboxMap, field: Field) => {
         paint: {
           "fill-color": "#0080ff",
           "fill-opacity": 0.6,
-        }
+        },
       });
     }
 
@@ -82,9 +83,8 @@ export const addLotesToMap = (map: MapboxMap, field: Field) => {
         layout: {},
         paint: {
           "line-color": "red",
-          "line-width": 2
-        }
-
+          "line-width": 2,
+        },
       });
     }
 
@@ -95,11 +95,11 @@ export const addLotesToMap = (map: MapboxMap, field: Field) => {
         source: baseName,
         layout: {},
         paint: {
-          "line-color": "blue",
-          "line-width": 6,
-          'line-dasharray': [0, 4, 3]
+          "line-color": "green",
+          "line-width": 5,
+          "line-dasharray": [2, 1],
         },
-        filter: ['in', "id", ""]
+        filter: ["in", "id", ""],
       });
     }
 
@@ -120,63 +120,56 @@ export const addLotesToMap = (map: MapboxMap, field: Field) => {
           ],
           "text-size": 16,
           "text-anchor": "center",
-          "text-offset": [0, 0.5]
+          "text-offset": [0, 0.5],
         },
         paint: {
-          "text-color": "black"
-        }
+          "text-color": "black",
+        },
       });
     }
   }
-
-}
-
+};
 
 export const setFieldAsSelected = (map: MapboxMap, fieldId: string) => {
-  map.setFilter('campos-selected-line', [
-    'in',
-    'id',
-    fieldId
-  ]);
-}
+  map.setFilter("campos-selected-line", ["in", "id", fieldId]);
+};
 
 export const unsetFieldAsSelected = (map: MapboxMap) => {
-  map.setFilter('campos-selected-line', [
-    'in',
-    'id',
-    ""
-  ]);
-}
+  map.setFilter("campos-selected-line", ["in", "id", ""]);
+};
 
 /**
  * Agrega los campos pero usando una sola source y 3 layers (fill, line, label)
- * @param map 
- * @param fields 
+ * @param map
+ * @param fields
  */
 export const addFieldsToMapSingleLayer = (map: MapboxMap, fields: Field[]) => {
-
-
-
   if (map) {
+    let fc = featureCollection(
+      fields.map((f) => {
+        return {
+          ...f.campo_geojson,
+          properties: {
+            ...f.campo_geojson.properties,
+            id: f._id,
+            nombre: f.nombre,
+          },
+        };
+      }),
+    );
 
-    let fc = featureCollection(fields.map((f) => {
-
-      return { ...f.campo_geojson, properties: { ...f.campo_geojson.properties, id: f._id, nombre: f.nombre } }
-    }))
-
-
-    console.log("feature collection", fc)
+    console.log("feature collection", fc);
 
     if (map.getSource("campos")) {
       map.getSource("campos").setData(fc);
     } else {
       map.addSource("campos", {
         type: "geojson",
-        data: fc
+        data: fc,
       });
     }
 
-    let baseName = "campos"
+    let baseName = "campos";
 
     if (!map.getLayer(`${baseName}-fill`)) {
       map.addLayer({
@@ -186,9 +179,9 @@ export const addFieldsToMapSingleLayer = (map: MapboxMap, fields: Field[]) => {
         layout: {},
         paint: {
           "fill-color": "red",
-          "fill-opacity": 0.3
+          "fill-opacity": 0.3,
         },
-        filter: ["!", ['in', "id", ""]]
+        filter: ["!", ["in", "id", ""]],
       });
     }
 
@@ -200,8 +193,8 @@ export const addFieldsToMapSingleLayer = (map: MapboxMap, fields: Field[]) => {
         layout: {},
         paint: {
           "line-color": "red",
-          "line-width": 2
-        }
+          "line-width": 2,
+        },
       });
     }
 
@@ -214,9 +207,9 @@ export const addFieldsToMapSingleLayer = (map: MapboxMap, fields: Field[]) => {
         paint: {
           "line-color": "blue",
           "line-width": 6,
-          'line-dasharray': [0, 4, 3]
+          "line-dasharray": [0, 4, 3],
         },
-        filter: ['in', "id", ""]
+        filter: ["in", "id", ""],
       });
     }
 
@@ -237,15 +230,14 @@ export const addFieldsToMapSingleLayer = (map: MapboxMap, fields: Field[]) => {
           ],
           "text-size": 16,
           "text-anchor": "center",
-          "text-offset": [0, 0.5]
+          "text-offset": [0, 0.5],
         },
         paint: {
-          "text-color": "black"
-        }
+          "text-color": "black",
+        },
       });
     }
   }
-
 };
 
 export const addFieldsToMap = (map: MapboxMap, fields: Field[]) => {
@@ -261,7 +253,7 @@ export const addFieldsToMap = (map: MapboxMap, fields: Field[]) => {
         } else {
           map.addSource(fieldId, {
             type: "geojson",
-            data: fieldGeoJson
+            data: fieldGeoJson,
           });
         }
 
@@ -273,8 +265,8 @@ export const addFieldsToMap = (map: MapboxMap, fields: Field[]) => {
             layout: {},
             paint: {
               "fill-color": "red",
-              "fill-opacity": 0.3
-            }
+              "fill-opacity": 0.3,
+            },
           });
         }
 
@@ -286,8 +278,8 @@ export const addFieldsToMap = (map: MapboxMap, fields: Field[]) => {
             layout: {},
             paint: {
               "line-color": "red",
-              "line-width": 2
-            }
+              "line-width": 2,
+            },
           });
         }
 
@@ -300,11 +292,11 @@ export const addFieldsToMap = (map: MapboxMap, fields: Field[]) => {
               "text-field": fieldName,
               "text-size": 16,
               "text-anchor": "center",
-              "text-offset": [0, 0.5]
+              "text-offset": [0, 0.5],
             },
             paint: {
-              "text-color": "black"
-            }
+              "text-color": "black",
+            },
           });
         }
       }
