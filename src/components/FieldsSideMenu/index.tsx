@@ -17,20 +17,31 @@ import { SearchBar } from "../Planification/SearchBar";
 import { Field } from "../../interfaces/field";
 import { useTranslation } from "react-i18next";
 
-const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }: { fields: Field[] }) => {
-  const { t } = useTranslation()
+const FieldsSideMenu = ({
+  open,
+  fields,
+  onSelectField,
+  onSelectLot,
+}: {
+  fields: Field[];
+}) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [currentField, setCurrentField] = React.useState(null);
   const [pdfContent, setPdfContent] = React.useState("");
-  const [filtrados, setFiltrados] = useState<Field[]>(fields)
+  const [filtrados, setFiltrados] = useState<Field[]>(fields);
 
+  useEffect(() => {
+    if (fields) {
+      setFiltrados(fields);
+    }
+  }, [fields]);
 
   const handleClose = () => {
-    setFiltrados(fields)
+    setFiltrados(fields);
     dispatch(hideFieldList());
     setAnchorEl(null);
-
   };
 
   const handleFieldSelect = (field) => {
@@ -74,7 +85,7 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }: { fields: 
         const pdf = new jsPDF({
           orientation: "portrait",
           unit: "px",
-          format: "a4"
+          format: "a4",
         });
         const imgProps = pdf.getImageProperties(imgData);
         const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -95,7 +106,7 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }: { fields: 
       ["Hectares", field.campo_geojson.properties.hectareas],
       ["UUID", field.uuid],
       ["", ""],
-      ["Lots", "Hectares"]
+      ["Lots", "Hectares"],
     ];
 
     field.lotes.forEach((lot) => {
@@ -118,8 +129,8 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }: { fields: 
         flexShrink: 0,
         "& .MuiDrawer-paper": {
           width: "40%",
-          boxSizing: "border-box"
-        }
+          boxSizing: "border-box",
+        },
       }}
     >
       <div style={{ display: "none" }} id="pdf-content">
@@ -132,7 +143,7 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }: { fields: 
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid #e0e0e0"
+          borderBottom: "1px solid #e0e0e0",
         }}
       >
         <Typography variant="h6" noWrap>
@@ -146,11 +157,10 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }: { fields: 
         onChange={(e: any) => {
           let text = e.target.value.toLowerCase();
           let filtrados = fields.filter((f) =>
-            f.nombre.toLowerCase().includes(text)
+            f.nombre.toLowerCase().includes(text),
           );
           setFiltrados(filtrados);
         }}
-
       ></SearchBar>
       <List sx={{ width: "100%" }}>
         {filtrados === undefined && <li>{t("No hay campos")}</li>}
@@ -171,8 +181,9 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }: { fields: 
                     {field.lotes.map((lote, idx) => (
                       <Chip
                         key={idx}
-                        label={`${lote.properties.nombre
-                          }: ${lote.properties.hectareas.toFixed(2)} ha`}
+                        label={`${
+                          lote.properties.nombre
+                        }: ${lote.properties.hectareas.toFixed(2)} ha`}
                         size="small"
                         variant="outlined"
                         sx={{ margin: "2px" }}
