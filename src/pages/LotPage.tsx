@@ -52,11 +52,18 @@ export const LotPage = () => {
     if (lote && map) {
       const fieldGeoJSON = lote;
       if (fieldGeoJSON && fieldGeoJSON.geometry) {
-        const coordinates = fieldGeoJSON.geometry.coordinates[0][0];
-        const [longitude, latitude] = coordinates;
+        let ancho_del_offcanvas_en_vh = 60 + 5; // en vh
+        let ancho_del_offcanvas_en_px =
+          (ancho_del_offcanvas_en_vh * document.documentElement.clientWidth) /
+          100;
         map.fitBounds(bbox(fieldGeoJSON), {
-          padding: { right: 10, top: 30, bottom: 30 },
-          offset: [300, 0],
+          padding: {
+            left: ancho_del_offcanvas_en_px + 10,
+            right: 10,
+            top: 30,
+            bottom: 30,
+          },
+          pitch: 45,
         });
       }
     }
