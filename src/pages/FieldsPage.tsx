@@ -143,49 +143,6 @@ export const FieldsPage: React.FC = () => {
     };
   }, [map, handleMapClick]);
 
-  function roundArea(feature) {
-    return Math.round((area(feature) / 10000) * 100) / 100;
-  }
-
-  function getField(fieldId, callback) {
-    db.get(fieldId, callback);
-  }
-
-  function createNewLot(lotGeometry, lotName, fieldId) {
-    const lotUuid = uuid4();
-    const lotAreaHectares = roundArea(lotGeometry);
-
-    return {
-      id: lotUuid,
-      type: "Feature",
-      properties: {
-        nombre: lotName,
-        campo_parent_id: fieldId,
-        uuid: lotUuid,
-        hectareas: lotAreaHectares,
-      },
-      geometry: lotGeometry,
-    };
-  }
-
-  function updateFieldWithLot(fieldId, field, newLot) {
-    field.lotes.push(newLot);
-    db.put({ ...field, _id: fieldId }, (error, result) => {
-      if (!error) {
-        console.log("Successfully added a new Lot to Campo!");
-        updateUIAfterAddingLot(field, result);
-      } else {
-        console.log(error);
-      }
-    });
-  }
-
-  function updateUIAfterAddingLot(field, result) {
-    setSelectedField({ ...field, lotes: field.lotes });
-    addLotsToMap(map, field.lotes);
-    handleCloseNewLot();
-  }
-
   const addLotsToMap = (map, lots) => {
     let tooltip = document.getElementById("map-tooltip");
     if (!tooltip) {
@@ -337,11 +294,6 @@ export const FieldsPage: React.FC = () => {
   };
   const handleDirectLotSelection = (lot, field) => {
     navigate(`${field._id}/${lot.id}`);
-    // handleSelectField(field);
-    // dispatch(hideFieldList());
-    // setTimeout(() => {
-    //   handleLotClick(lot.id);
-    // }, 500);
   };
 
   const gbl_docs_starting = async (
@@ -365,9 +317,6 @@ export const FieldsPage: React.FC = () => {
 
   const handleSelectField = (field) => {
     console.log("Field selected from menu:", field);
-    // setSelectedField(field);
-    // addLotsToMap(map, field.lotes);
-    // handleLocateField(field);
     navigate(field._id);
   };
 
@@ -378,11 +327,6 @@ export const FieldsPage: React.FC = () => {
     },
     [dispatch, draw],
   );
-
-  const handleCloseNewLot = () => {
-    setShowNewLot(false);
-    fetchData();
-  };
 
   const fetchData = async () => {
     try {

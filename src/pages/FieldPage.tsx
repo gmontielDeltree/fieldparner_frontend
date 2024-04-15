@@ -42,8 +42,12 @@ export const FieldPage = () => {
 
   useEffect(() => {
     return () => {
-      clearLotesFromMap(map);
-      unsetFieldAsSelected(map);
+      try {
+        clearLotesFromMap(map);
+        unsetFieldAsSelected(map);
+      } catch (e) {
+        console.log("TODO:", e);
+      }
     };
   }, [map]);
 
@@ -51,8 +55,6 @@ export const FieldPage = () => {
     if (field && map) {
       const fieldGeoJSON = field.campo_geojson;
       if (fieldGeoJSON && fieldGeoJSON.geometry) {
-        const coordinates = fieldGeoJSON.geometry.coordinates[0][0];
-        const [longitude, latitude] = coordinates;
         map.fitBounds(bbox(fieldGeoJSON), {
           padding: { left: 50, top: 30, bottom: 30 },
         });
