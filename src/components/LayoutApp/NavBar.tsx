@@ -410,10 +410,10 @@ export const NavBar: React.FC<NavBarProps> = ({
               <Divider />
               {campaigns.map((campaign) => (
                 <MenuItem key={campaign._id}>
-                  <Grid container>
+                  <Grid container sx={{ width: "30rem" }}>
                     <Grid
                       item
-                      xs={8}
+                      xs={10}
                       onClick={() => handleCampaignSelect(campaign.campaignId)}
                     >
                       <Typography variant="subtitle1">
@@ -426,10 +426,16 @@ export const NavBar: React.FC<NavBarProps> = ({
                             : "No desc"
                         } - ${campaign?.startDate} ${t(
                           "a",
-                        )} ${campaign?.endDate} - ${campaign?.state} - ${campaign?.zoneId}`}
+                        )} ${campaign?.endDate} ${
+                          campaign?.state.length ? ` - ${campaign?.state}` : ""
+                        } ${
+                          campaign?.zoneId.length
+                            ? ` - ${campaign?.zoneId}`
+                            : ""
+                        }`}
                       </Typography>
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={2}>
                       <Button
                         color="primary"
                         size="small"
