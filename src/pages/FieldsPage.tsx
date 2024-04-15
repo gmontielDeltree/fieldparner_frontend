@@ -4,7 +4,6 @@ import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 import { Button, Grid } from "@mui/material";
 
-
 import area from "@turf/area";
 import { addFieldsToMapSingleLayer } from "../helpers/mapHelpers";
 import NewsBar from "../components/NewsBar";
@@ -31,7 +30,7 @@ import "../classes/engine/Engine";
 
 export const FieldsPage: React.FC = () => {
   const map = useSelector(selectMap);
-  const { fields, getFields } = useField()
+  const { fields, getFields } = useField();
 
   const db = dbContext.fields;
 
@@ -42,20 +41,17 @@ export const FieldsPage: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
 
-
-
   const isVisible = useSelector(
-    (state: RootState) => state.fieldList.isVisible
+    (state: RootState) => state.fieldList.isVisible,
   );
 
   const navigate = useNavigate();
 
-
   const { deposits, getDeposits } = useDeposit();
 
   const updateMapAfterNew = () => {
-    getFields()
-  }
+    getFields();
+  };
 
   /* Es para forzar el resizing del mapa siempre
     Cuando la pagina de
@@ -82,7 +78,7 @@ export const FieldsPage: React.FC = () => {
   }, [selectedField]);
 
   useEffect(() => {
-    getFields()
+    getFields();
     getDeposits();
   }, []);
 
@@ -92,7 +88,7 @@ export const FieldsPage: React.FC = () => {
 
       let devices = new Devices();
       devices.add_markers_to_map_react(map, (deviceId: string, date: string) =>
-        navigate(`device/${deviceId}/${date}`)
+        navigate(`device/${deviceId}/${date}`),
       );
 
       if (deposits) {
@@ -101,24 +97,22 @@ export const FieldsPage: React.FC = () => {
     }
   }, [map, draw, fields, deposits]);
 
-
   const handleMapClick = useCallback(
     async (event: any) => {
-
-
       // Ignorar si location es new-lot o new-field
-      if (location.pathname.includes('new-lot') || location.pathname.includes('new-field')) {
-        return
+      if (
+        location.pathname.includes("new-lot") ||
+        location.pathname.includes("new-field")
+      ) {
+        return;
       }
 
       const features = map?.queryRenderedFeatures(event.point);
-      console.log(event, features)
-
-
+      console.log(event, features);
 
       if (features.length > 0) {
         const fieldId = features[0].properties.id;
-        const source = features[0].source
+        const source = features[0].source;
 
         if (source === "campos") {
           try {
@@ -128,14 +122,14 @@ export const FieldsPage: React.FC = () => {
             console.error("Error fetching field from PouchDB", err);
           }
         } else if (source === "lotes") {
-          let parentId = features[0].properties.campo_parent_id
-          let loteId = features[0].properties.uuid
+          let parentId = features[0].properties.campo_parent_id;
+          let loteId = features[0].properties.uuid;
           // NAvegar al la pantalla de lote
           navigate(parentId + "/" + loteId);
         }
       }
     },
-    [map, db, selectedField, location]
+    [map, db, selectedField, location],
   );
 
   useEffect(() => {
@@ -149,16 +143,9 @@ export const FieldsPage: React.FC = () => {
     };
   }, [map, handleMapClick]);
 
-
-
-
-
-
-
   function roundArea(feature) {
     return Math.round((area(feature) / 10000) * 100) / 100;
   }
-
 
   function getField(fieldId, callback) {
     db.get(fieldId, callback);
@@ -258,16 +245,16 @@ export const FieldsPage: React.FC = () => {
         const todayActivities = activities.filter(({ actividad }) =>
           isToday(
             new Date(
-              actividad.detalles.fecha_ejecucion_tentativa || actividad.fecha
-            )
-          )
+              actividad.detalles.fecha_ejecucion_tentativa || actividad.fecha,
+            ),
+          ),
         );
         let content = `<strong>No hay actividades programadas para hoy en el lote ${lot.properties.nombre}.</strong>`;
         if (todayActivities.length > 0) {
           content = `<strong>Actividades para hoy en el lote ${lot.properties.nombre}:</strong><ul style="padding-left: 20px;">`;
           todayActivities.forEach(({ actividad }) => {
             const activityDate = new Date(
-              actividad.detalles.fecha_ejecucion_tentativa || actividad.fecha
+              actividad.detalles.fecha_ejecucion_tentativa || actividad.fecha,
             );
             const time = format(activityDate, "p");
             content += `<li>${actividad.tipo}: Horario previsto a las ${time}.</li>`;
@@ -305,7 +292,7 @@ export const FieldsPage: React.FC = () => {
       "actividad",
       true,
       true,
-      true
+      true,
     ).then(only_docs);
 
     let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote);
@@ -331,17 +318,17 @@ export const FieldsPage: React.FC = () => {
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
           : parseISO(
-            a.actividad.tipo === "nota"
-              ? a.actividad.fecha
-              : a.actividad.detalles.fecha_ejecucion_tentativa
-          );
+              a.actividad.tipo === "nota"
+                ? a.actividad.fecha
+                : a.actividad.detalles.fecha_ejecucion_tentativa,
+            );
         let fecha_2 = b.ejecucion_id
           ? parseISO(b.ejecucion_id.split(":")[1])
           : parseISO(
-            b.actividad.tipo === "nota"
-              ? b.actividad.fecha
-              : b.actividad.detalles.fecha_ejecucion_tentativa
-          );
+              b.actividad.tipo === "nota"
+                ? b.actividad.fecha
+                : b.actividad.detalles.fecha_ejecucion_tentativa,
+            );
         return isBefore(fecha_1, fecha_2) ? 1 : -1;
       });
     }
@@ -349,18 +336,19 @@ export const FieldsPage: React.FC = () => {
     return respuesta ? respuesta : null;
   };
   const handleDirectLotSelection = (lot, field) => {
-    handleSelectField(field);
-    dispatch(hideFieldList());
-    setTimeout(() => {
-      handleLotClick(lot.id);
-    }, 500);
+    navigate(`${field._id}/${lot.id}`);
+    // handleSelectField(field);
+    // dispatch(hideFieldList());
+    // setTimeout(() => {
+    //   handleLotClick(lot.id);
+    // }, 500);
   };
 
   const gbl_docs_starting = async (
     key: string,
     devolver_docs: boolean = false,
     attachments: boolean = false,
-    binary: boolean = false
+    binary: boolean = false,
   ) => {
     return db
       .allDocs({
@@ -377,39 +365,24 @@ export const FieldsPage: React.FC = () => {
 
   const handleSelectField = (field) => {
     console.log("Field selected from menu:", field);
-    setSelectedField(field);
-    addLotsToMap(map, field.lotes);
-    handleLocateField(field);
+    // setSelectedField(field);
+    // addLotsToMap(map, field.lotes);
+    // handleLocateField(field);
+    navigate(field._id);
   };
-
-  const handleLocateField = (field) => {
-    if (field && map) {
-      const fieldGeoJSON = field.campo_geojson;
-      if (fieldGeoJSON && fieldGeoJSON.geometry) {
-        const coordinates = fieldGeoJSON.geometry.coordinates[0][0];
-        const [longitude, latitude] = coordinates;
-        map.flyTo({ center: [longitude, latitude], zoom: 15 });
-      }
-    }
-  };
-
-
 
   const onMapLoad = useCallback(
     (event: any) => {
       const map = event.target;
       dispatch(setMap(map));
     },
-    [dispatch, draw]
+    [dispatch, draw],
   );
-
-
 
   const handleCloseNewLot = () => {
     setShowNewLot(false);
     fetchData();
   };
-
 
   const fetchData = async () => {
     try {
@@ -448,28 +421,28 @@ export const FieldsPage: React.FC = () => {
         <MapComponent onMapLoad={onMapLoad} />
       </Grid>
 
-
       {/* Mostrar el boton de add_field solo en la pantalla "principal" */}
 
-      {(location.pathname === "/init/overview/fields") && <Button
-        color="primary"
-        variant="contained"
-        style={{
-          position: "absolute",
-          bottom: 30,
-          right: 20,
-        }}
-        onClick={() =>
-          //setShowNewField(true)
-          navigate("new-field")
-        }
-      >
-        {t("add_field")}
-      </Button>}
+      {location.pathname === "/init/overview/fields" && (
+        <Button
+          color="primary"
+          variant="contained"
+          style={{
+            position: "absolute",
+            bottom: 30,
+            right: 20,
+          }}
+          onClick={() =>
+            //setShowNewField(true)
+            navigate("new-field")
+          }
+        >
+          {t("add_field")}
+        </Button>
+      )}
 
       {/* Renderizado de subrutas */}
       {map && <Outlet context={{ updateMapAfterNew: updateMapAfterNew }} />}
-
 
       <NewsBar />
     </>
