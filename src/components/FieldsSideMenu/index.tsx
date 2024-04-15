@@ -1,28 +1,36 @@
-import React, { useState, useEffect } from "react";
+import CloseIcon from "@mui/icons-material/Close";
+import { Box, Chip, Divider, Menu, MenuItem, Typography } from "@mui/material";
 import Drawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
-import { Box, Typography, Divider, Chip, MenuItem, Menu } from "@mui/material";
-import { useDispatch } from "react-redux";
-import { hideFieldList } from "../../redux/fieldsList";
-import * as XLSX from "xlsx";
-import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import * as XLSX from "xlsx";
+import { hideFieldList } from "../../redux/fieldsList";
 
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { SearchBar } from "../Planification/SearchBar";
+import { Field } from "../../interfaces/field";
+import { useTranslation } from "react-i18next";
 
-const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
+const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }: { fields: Field[] }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [currentField, setCurrentField] = React.useState(null);
   const [pdfContent, setPdfContent] = React.useState("");
+  const [filtrados, setFiltrados] = useState<Field[]>(fields)
+
 
   const handleClose = () => {
+    setFiltrados(fields)
     dispatch(hideFieldList());
     setAnchorEl(null);
+
   };
 
   const handleFieldSelect = (field) => {
@@ -134,8 +142,20 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
           <CloseIcon />
         </IconButton>
       </Box>
+      <SearchBar
+        onChange={(e: any) => {
+          let text = e.target.value.toLowerCase();
+          let filtrados = fields.filter((f) =>
+            f.nombre.toLowerCase().includes(text)
+          );
+          setFiltrados(filtrados);
+        }}
+
+      ></SearchBar>
       <List sx={{ width: "100%" }}>
-        {fields.map((field, index) => (
+        {filtrados === undefined && <li>{t("No hay campos")}</li>}
+        {filtrados?.length === 0 && <li>{t("No hay campos")}</li>}
+        {filtrados.map((field, index) => (
           <React.Fragment key={index}>
             <ListItem button onClick={() => handleFieldSelect(field)}>
               <ListItemText
@@ -151,9 +171,8 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
                     {field.lotes.map((lote, idx) => (
                       <Chip
                         key={idx}
-                        label={`${
-                          lote.properties.nombre
-                        }: ${lote.properties.hectareas.toFixed(2)} ha`}
+                        label={`${lote.properties.nombre
+                          }: ${lote.properties.hectareas.toFixed(2)} ha`}
                         size="small"
                         variant="outlined"
                         sx={{ margin: "2px" }}

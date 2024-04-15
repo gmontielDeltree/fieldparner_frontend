@@ -19,7 +19,7 @@ interface Field {
   uuid: string;
   lotes: Lot[];
   _id: string;
-  _rev: string;
+  _rev?: string;
   accountId?: string;
 }
 

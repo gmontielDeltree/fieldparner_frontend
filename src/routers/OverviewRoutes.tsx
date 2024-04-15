@@ -34,6 +34,10 @@ import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegr
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
 import { ComponentTestBed } from '../pages/ComponentTestBed';
 import { PlanificationByLotPage } from "../pages/PlanificationByLotPage";
+import NewFieldPage from "../pages/NewFieldPage";
+import { FieldPage } from "../pages/FieldPage";
+import { LotPage } from "../pages/LotPage";
+import { NewLotPage } from '../pages/NewLotPage';
 
 export const OverviewRoutes: React.FC = () => {
   const { pathname, search } = useLocation();
@@ -44,7 +48,10 @@ export const OverviewRoutes: React.FC = () => {
   return (
     <AppLayout key="app-layout">
       <Routes>
-        <Route path="/overview/fields/:campoId?/:loteId?" element={<FieldsPage />} >
+        <Route path="/overview/fields" element={<FieldsPage />} >
+
+          <Route path="new-field" element={<NewFieldPage />} />
+
           <Route path="planification-by-lot/:parentId/:loteId2" element={<PlanificationByLotPage />} />
           <Route path="planification" element={<PlanificationPage />} />
 
@@ -53,6 +60,11 @@ export const OverviewRoutes: React.FC = () => {
           <Route path="john-deere" element={<JohnDeereIntegration />} />
           <Route path="magris/:id" element={<MagrisReportIntegration />} />
           <Route path="magris" element={<MagrisIntegration />} />
+          <Route path=":campoId" element={<FieldPage />} />
+          <Route path=":campoId/new-lot" element={<NewLotPage/>} />
+          <Route path=":campoId/:loteId" element={<LotPage />} />
+
+
         </Route>
 
         <Route path="/overview/vehicle" element={<ListVehiclesPage />} />
