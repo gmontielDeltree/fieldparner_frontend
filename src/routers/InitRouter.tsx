@@ -14,7 +14,7 @@ export const InitRouter = () => {
 
   // Original URL
   const [from, setFrom] = useState<string>(
-    "/" + (window.location.pathname + window.location.search).substr(1)
+    "/" + (window.location.pathname + window.location.search).substr(1),
   );
 
   const { status, checkAuthToken } = useAuthStore();
@@ -45,7 +45,7 @@ export const InitRouter = () => {
   //  {/* <OverviewRoutes /> */}
   return (
     <>
-      {status !== "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
+      {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
     </>
   );
 };
