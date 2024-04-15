@@ -190,6 +190,7 @@ const FieldsSideMenu = ({
                         onClick={(event) => {
                           event.stopPropagation();
                           onSelectLot(lote, field);
+                          handleClose();
                         }}
                       />
                     ))}
