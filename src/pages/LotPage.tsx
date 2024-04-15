@@ -8,6 +8,7 @@ import {
   addLotesToMap,
   setFieldAsSelected,
   setLoteAsSelected,
+  unsetLoteAsSelected,
 } from "../helpers/mapHelpers";
 import bbox from "@turf/bbox";
 
@@ -41,6 +42,10 @@ export const LotPage = () => {
       // Mostrar los lotes del campo
       addLotesToMap(map, field);
     }
+
+    return () => {
+      unsetLoteAsSelected(map);
+    };
   }, [field, lote]);
 
   const handleLocateLot = (lote) => {
@@ -64,7 +69,7 @@ export const LotPage = () => {
       lot={lote}
       field={field}
       isOpen={true}
-      toggle={() => navigate(-1)}
+      toggle={() => navigate(`/init/overview/fields/${field?._id}`)}
     />
   );
 };
