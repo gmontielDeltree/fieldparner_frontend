@@ -44,7 +44,11 @@ export const LotPage = () => {
     }
 
     return () => {
-      unsetLoteAsSelected(map);
+      try {
+        unsetLoteAsSelected(map);
+      } catch (e) {
+        console.log("TODO: solve undefined ref", e);
+      }
     };
   }, [field, lote]);
 
