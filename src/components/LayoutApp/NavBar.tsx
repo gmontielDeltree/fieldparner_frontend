@@ -97,7 +97,7 @@ export const NavBar: React.FC<NavBarProps> = ({
     }
     // New
     const uuid = uuidv7();
-
+    campaign._id = `campaign:${uuid}`;
     campaign.campaignId = `campaign:${uuid}`;
     await addCampaign(campaign);
     dispatch(campaignSlice.actions.setSelectedCampaign(campaign));
@@ -119,11 +119,14 @@ export const NavBar: React.FC<NavBarProps> = ({
     await deleteCampaign(campaign);
     setIsEditModalOpen(false);
 
+    console.log("Borrar CAmpaña", campaign, campaigns, selectedCampaign);
+
     // chequear que si la campaña borrada es la seleccionada
     if (campaign._id === selectedCampaign?._id) {
       let nue = campaigns.find((e) => e._id !== campaign._id);
       if (nue) {
-        dispatch(campaignSlice.actions.setSelectedCampaign(nue));
+        console.log("Neva CAMPÑA");
+        dispatch(setSelectedCampaign(nue));
       }
     }
     getCampaigns();
@@ -410,10 +413,10 @@ export const NavBar: React.FC<NavBarProps> = ({
               <Divider />
               {campaigns.map((campaign) => (
                 <MenuItem key={campaign._id}>
-                  <Grid container sx={{ width: "30rem" }}>
+                  <Grid container sx={{ width: "40rem" }}>
                     <Grid
                       item
-                      xs={10}
+                      xs={8}
                       onClick={() => handleCampaignSelect(campaign.campaignId)}
                     >
                       <Typography variant="subtitle1">
@@ -435,7 +438,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                         }`}
                       </Typography>
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid item xs={4}>
                       <Button
                         color="primary"
                         size="small"
@@ -444,6 +447,17 @@ export const NavBar: React.FC<NavBarProps> = ({
                       >
                         {t("Editar")}
                       </Button>
+
+                      {campaigns.length > 1 && (
+                        <Button
+                          variant="contained"
+                          size="small"
+                          color="error"
+                          onClick={() => onDeleteCampaignHandler(campaign)}
+                        >
+                          {t("delete")}
+                        </Button>
+                      )}
                     </Grid>
                   </Grid>
 

@@ -13,6 +13,7 @@ import { campaignSlice } from "./campaign";
 
 import { originsDestinationsSlice } from "./originsdestinatons/originDestiantionsSlice";
 import { withdrawalOrderSlice } from "./withdrawalOrder";
+import { syncStatusSlice } from "./syncStatus";
 
 const store = configureStore({
   reducer: {
@@ -27,8 +28,9 @@ const store = configureStore({
     ordesti: originsDestinationsSlice.reducer,
     fieldList: fieldListSlice.reducer,
     campaign: campaignSlice.reducer,
-    order: withdrawalOrderSlice.reducer
-  }
+    order: withdrawalOrderSlice.reducer,
+    syncStatus: syncStatusSlice.reducer,
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
