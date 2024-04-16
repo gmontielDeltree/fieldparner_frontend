@@ -82,7 +82,11 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   console.log("Lot seleccionado: ", lot);
   let backUrl = location.pathname;
   const categories = [
-    // {id:"Planificación del lote", icon:planAnualIcon, link:`planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`},
+    {
+      id: "Planificación del lote",
+      icon: planAnualIcon,
+      link: `planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`,
+    },
     // {id: "Programar Preparado", icon:preparadoIcon},
     { id: "Programar Siembra", icon: categoryIcon1 },
     { id: "Programar Aplicacion", icon: categoryIcon2 },
