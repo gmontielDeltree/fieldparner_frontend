@@ -10,7 +10,7 @@ import { mapSlice } from "./map";
 import { drawSlice } from "./draw";
 import { fieldListSlice } from "./fieldsList";
 import { campaignSlice } from "./campaign";
-
+import { zoneSlice } from "./zones";
 import { originsDestinationsSlice } from "./originsdestinatons/originDestiantionsSlice";
 import { usersSlice } from "./users/userSlice";
 import { withdrawalOrderSlice } from "./withdrawalOrder";
@@ -29,7 +29,8 @@ const store = configureStore({
     fieldList: fieldListSlice.reducer,
     users: usersSlice.reducer,
     campaign: campaignSlice.reducer,
-    order: withdrawalOrderSlice.reducer
+    order: withdrawalOrderSlice.reducer,
+    zone: zoneSlice.reducer
   }
 });
 

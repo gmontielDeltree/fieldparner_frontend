@@ -22,6 +22,7 @@ import {
     WithdrawalsByDepositSupply,
     MovementType,
     Crops,
+    Zones,
 } from '../types';
 import uuid4 from 'uuid4';
 
@@ -56,6 +57,7 @@ const dbNames = Object.freeze({
     platform: "platform",
     platformSupplies: "test-supplies",
     crops: "crops",
+    zones: "zones",
     fieldpartner: "fieldpartner",
 });
 
@@ -83,6 +85,7 @@ export const dbContext = Object.freeze({
     platform: new PouchDB<any>(dbNames.platform),
     platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
     crops: new PouchDB<Crops>(dbNames.crops),
+    zones: new PouchDB<Zones>(dbNames.zones),
     fieldpartner: new PouchDB(dbNames.fieldpartner),
 });
 
@@ -109,10 +112,10 @@ dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`, opts);
 dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`, opts);
 dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`, opts);
 dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`, opts);
-
 dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
 dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
 dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
+dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
