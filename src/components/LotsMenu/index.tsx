@@ -15,7 +15,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import planAnualIcon from "../../images/icons/plan.png";
 import preparadoIcon from "../../images/icons/prepare.png";
 
-
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
 import categoryIcon2 from "../../images/icons/pulverizadora_act.webp";
 import categoryIcon3 from "../../images/icons/cosechadora_act.webp";
@@ -77,12 +76,11 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const navigate = useNavigate();
   let location = useLocation();
 
-
   console.log("Lot seleccionado: ", lot);
-  let backUrl  =location.pathname
+  let backUrl = location.pathname;
   const categories = [
     // {id:"Planificación del lote", icon:planAnualIcon, link:`planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`},
-    // {id: "Programar Preparado", icon:preparadoIcon},
+    { id: "Programar Preparado", icon: preparadoIcon },
     { id: "Programar Siembra", icon: categoryIcon1 },
     { id: "Programar Aplicacion", icon: categoryIcon2 },
     { id: "Programar Cosecha", icon: categoryIcon3 },
@@ -107,6 +105,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   };
 
   const activityTypeTranslations = {
+    preparacion: "preparation",
     siembra: "sowing",
     cosecha: "harvesting",
     aplicacion: "application"
@@ -289,16 +288,16 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     }
 
     switch (selectedCategory) {
-      // case "Programar Preparado":
-      //   return (
-      //     <PlanActivity
-      //       activityType={"preparation"}
-      //       lot={lot}
-      //       fieldName={field.nombre}
-      //       db={db}
-      //       backToActivites={backToActivites}
-      //     />
-      //   );
+      case "Programar Preparado":
+        return (
+          <PlanActivity
+            activityType={"preparation"}
+            lot={lot}
+            fieldName={field.nombre}
+            db={db}
+            backToActivites={backToActivites}
+          />
+        );
       case "Programar Siembra":
         return (
           <PlanActivity
