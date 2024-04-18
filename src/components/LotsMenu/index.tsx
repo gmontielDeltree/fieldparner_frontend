@@ -8,21 +8,26 @@ import {
   Fade,
   Paper,
   Tooltip,
-  Typography
+  Typography,
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import planAnualIcon from "../../images/icons/plan.png";
+import preparadoIcon from "../../images/icons/prepare.png";
+
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
 import categoryIcon2 from "../../images/icons/pulverizadora_act.webp";
 import categoryIcon3 from "../../images/icons/cosechadora_act.webp";
 import categoryIcon4 from "../../images/icons/iconodenotas_act.webp";
 import categoryIcon5 from "../../images/icons/iconosatelite.webp";
 import categoryIcon6 from "../../images/icons/suelo_act.webp";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import { Activities } from "./Activities/index";
 import { Actividad } from "../../interfaces/activity";
 import { isBefore, parseISO } from "date-fns";
 import GroundSample from "./GroundSample";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExecuteActivity from "./ExecuteActivity";
 import { dbContext } from "../../services";
@@ -30,8 +35,9 @@ import { styled } from "@mui/material/styles";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useTranslation } from "react-i18next";
-import { useAppDispatch } from "../../hooks";
+import { useAppDispatch, useField } from "../../hooks";
 import { setLotActive } from "../../redux/map";
+import Swal from "sweetalert2";
 
 const Header = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -40,13 +46,13 @@ const Header = styled(Paper)(({ theme }) => ({
   background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`,
   boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
   borderRadius: "8px",
-  margin: theme.spacing(2, 0)
+  margin: theme.spacing(2, 0),
 }));
 
 const FieldInfo = styled("div")(({ theme }) => ({
   fontWeight: "bold",
   fontSize: "1.2rem",
-  color: theme.palette.primary.contrastText
+  color: theme.palette.primary.contrastText,
 }));
 
 interface LotsMenuProps {
@@ -67,23 +73,27 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     isExecuting: boolean;
   }>({ activity: null, isExecuting: false });
   const selectedCampaign = useSelector(
-    (state: RootState) => state.campaign.selectedCampaign
+    (state: RootState) => state.campaign.selectedCampaign,
   );
 
   const navigate = useNavigate();
+  let location = useLocation();
 
   console.log("Lot seleccionado: ", lot);
+  let backUrl = location.pathname;
   const categories = [
-    { id: "Planificar Siembra", icon: categoryIcon1 },
-    { id: "Planificar Aplicacion", icon: categoryIcon2 },
-    { id: "Planificar Cosecha", icon: categoryIcon3 },
+    // {id:"Planificación del lote", icon:planAnualIcon, link:`planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`},
+    // {id: "Programar Preparado", icon:preparadoIcon},
+    { id: "Programar Siembra", icon: categoryIcon1 },
+    { id: "Programar Aplicacion", icon: categoryIcon2 },
+    { id: "Programar Cosecha", icon: categoryIcon3 },
     { id: "Recorrido", icon: categoryIcon4 },
     {
       id: "Vista de Satelite",
       icon: categoryIcon5,
-      link: `/init/overview/satellite/${lot.id}`
+      link: `/init/overview/satellite/${lot.id}?backUrl=${backUrl}`,
     },
-    { id: "Muestra de suelo", icon: categoryIcon6 }
+    { id: "Muestra de suelo", icon: categoryIcon6 },
   ];
 
   const selectCategory = (categoryId: any) => {
@@ -100,7 +110,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const activityTypeTranslations = {
     siembra: "sowing",
     cosecha: "harvesting",
-    aplicacion: "application"
+    aplicacion: "application",
   };
   const avatarStyle = (categoryId: any) => ({
     width: 50,
@@ -125,8 +135,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         : "grayscale(100%)",
     "&:hover": {
       transform: "scale(1.2)",
-      boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
-    }
+      boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+    },
   });
 
   const getActivities = async (uuid_del_lote) => {
@@ -134,7 +144,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
       "actividad",
       true,
       true,
-      true
+      true,
     ).then(only_docs);
 
     let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote);
@@ -145,7 +155,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
 
     let result = await db.allDocs({
       startkey: "ejecucion:",
-      endkey: "ejecucion:\ufff0"
+      endkey: "ejecucion:\ufff0",
     });
 
     let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
@@ -162,14 +172,14 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           : parseISO(
               a.actividad.tipo === "nota"
                 ? a.actividad.fecha
-                : a.actividad.detalles.fecha_ejecucion_tentativa
+                : a.actividad.detalles.fecha_ejecucion_tentativa,
             );
         let fecha_2 = b.ejecucion_id
           ? parseISO(b.ejecucion_id.split(":")[1])
           : parseISO(
               b.actividad.tipo === "nota"
                 ? b.actividad.fecha
-                : b.actividad.detalles.fecha_ejecucion_tentativa
+                : b.actividad.detalles.fecha_ejecucion_tentativa,
             );
         return isBefore(fecha_1, fecha_2) ? 1 : -1;
       });
@@ -184,7 +194,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     key: string,
     devolver_docs: boolean = false,
     attachments: boolean = false,
-    binary: boolean = false
+    binary: boolean = false,
   ) => {
     return db
       .allDocs({
@@ -192,7 +202,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         attachments: attachments,
         binary: binary,
         startkey: key,
-        endkey: key + "\ufff0"
+        endkey: key + "\ufff0",
       })
       .then((result) => {
         return result;
@@ -201,7 +211,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const handleEditActivity = (
     activity,
     isExecuting = false,
-    type = "activity"
+    type = "activity",
   ) => {
     switch (type) {
       case "activity":
@@ -244,7 +254,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const renderFormContent = () => {
     const isAccessibleWithoutCampaign = [
       "Vista de Satelite",
-      "Recorrido"
+      "Recorrido",
     ].includes(selectedCategory);
 
     if (!selectedCampaign && !isAccessibleWithoutCampaign) {
@@ -280,7 +290,17 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     }
 
     switch (selectedCategory) {
-      case "Planificar Siembra":
+      // case "Programar Preparado":
+      //   return (
+      //     <PlanActivity
+      //       activityType={"preparation"}
+      //       lot={lot}
+      //       fieldName={field.nombre}
+      //       db={db}
+      //       backToActivites={backToActivites}
+      //     />
+      //   );
+      case "Programar Siembra":
         return (
           <PlanActivity
             activityType={"sowing"}
@@ -290,7 +310,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             backToActivites={backToActivites}
           />
         );
-      case "Planificar Cosecha":
+      case "Programar Cosecha":
         return (
           <PlanActivity
             activityType={"harvesting"}
@@ -300,7 +320,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             backToActivites={backToActivites}
           />
         );
-      case "Planificar Aplicacion":
+      case "Programar Aplicacion":
         return (
           <PlanActivity
             activityType={"application"}
@@ -383,10 +403,36 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     height: "1px",
     backgroundImage:
       "linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0))",
-    margin: "20px 0"
+    margin: "20px 0",
   };
 
   if (!isOpen) return null;
+
+  const { removeLotFromField } = useField();
+
+  const handleDeleteLote = () => {
+    Swal.fire({
+      title: t("¿Esta seguro?"),
+      text: t("No podrá revertir esta acción"),
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: t("Si, eliminar"),
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log(field, lot);
+        removeLotFromField(field, lot).then(() => {
+          Swal.fire({
+            title: t("Eliminado"),
+            text: t("El lote ha sido eliminado"),
+            icon: "success",
+          });
+          toggle();
+        });
+      }
+    });
+  };
 
   return (
     <Paper
@@ -400,7 +446,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         backgroundColor: "#fff",
         padding: "20px",
         zIndex: 1050,
-        boxShadow: "0 6px 15px rgba(0,0,0,0.2)"
+        boxShadow: "0 6px 15px rgba(0,0,0,0.2)",
       }}
     >
       <div
@@ -408,11 +454,11 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           display: "flex",
           marginBottom: "20px",
           alignItems: "center",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
         }}
       >
         <div>
-          <div>
+          <div id="activities-bar">
             {categories.map(({ id, icon, link }) => (
               <Tooltip
                 title={id}
@@ -423,11 +469,11 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
                     backgroundColor: "#333",
                     color: "white",
                     boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-                    fontSize: "1em"
+                    fontSize: "1em",
                   },
                   arrow: {
-                    color: "#333"
-                  }
+                    color: "#333",
+                  },
                 }}
               >
                 <ButtonBase
@@ -448,6 +494,29 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             >
               <ArrowBackIcon />
             </IconButton>
+          )}
+
+          {!selectedCategory && (
+            <Tooltip
+              title={t("Eliminar Lote")}
+              arrow
+              placement="top"
+              sx={{
+                tooltip: {
+                  backgroundColor: "#333",
+                  color: "white",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+                  fontSize: "1em",
+                },
+                arrow: {
+                  color: "#333",
+                },
+              }}
+            >
+              <IconButton onClick={() => handleDeleteLote()}>
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
           )}
           <IconButton aria-label="close" onClick={toggle}>
             <CloseIcon />

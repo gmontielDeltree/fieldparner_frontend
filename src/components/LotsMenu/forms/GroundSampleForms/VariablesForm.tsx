@@ -17,10 +17,11 @@ const Title = styled(Typography)({
 
 function VariablesForm({ formData, setFormData }) {
   const onFieldChange = (fieldName, value) => {
-    setFormData({
-      ...formData,
+    const updatedSoilVariables = {
+      ...formData.soilVariables,
       [fieldName]: parseInt(value, 10) || 0
-    });
+    };
+    setFormData({ ...formData, soilVariables: updatedSoilVariables });
   };
 
   return (
@@ -28,7 +29,6 @@ function VariablesForm({ formData, setFormData }) {
       <Title>Variables</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
-          {/* Multiple TextField components for each input */}
           {[
             "carbono_organico",
             "materia_organica",
@@ -50,10 +50,12 @@ function VariablesForm({ formData, setFormData }) {
             <Grid item xs={12} sm={6} md={4} key={field}>
               <TextField
                 id={field}
-                label={field.replace(/_/g, " ")}
+                label={field
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}
                 fullWidth
                 type="number"
-                value={formData[field] || 0}
+                value={formData.soilVariables?.[field] || 0}
                 onChange={(e) => onFieldChange(field, e.target.value)}
                 inputProps={{ step: "1", min: "0" }}
               />

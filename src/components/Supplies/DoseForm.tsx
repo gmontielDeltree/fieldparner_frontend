@@ -160,7 +160,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
               >
                 {crops?.map((crop) => (
                   <MenuItem key={crop._id} value={crop._id}>
-                    {crop.crop}
+                    {crop.descriptionES}
                   </MenuItem>
                 ))}
               </Select>

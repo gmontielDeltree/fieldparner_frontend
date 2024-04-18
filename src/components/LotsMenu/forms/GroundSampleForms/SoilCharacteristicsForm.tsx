@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { TextField, FormControl, Grid, Paper, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
@@ -17,10 +17,11 @@ const Title = styled(Typography)({
 
 function SoilCharacteristicsForm({ formData, setFormData }) {
   const onFieldChange = (fieldName, value) => {
-    setFormData({
-      ...formData,
+    const updatedCharacteristics = {
+      ...formData.characteristics,
       [fieldName]: value
-    });
+    };
+    setFormData({ ...formData, characteristics: updatedCharacteristics });
   };
 
   return (
@@ -34,26 +35,24 @@ function SoilCharacteristicsForm({ formData, setFormData }) {
               id="caracterizacion1"
               label="Caracterización 1"
               fullWidth
-              value={formData.caracterizacion1 || ""}
+              value={formData.characteristics?.caracterizacion1 || ""}
               onChange={(e) =>
                 onFieldChange("caracterizacion1", e.target.value)
               }
             />
           </Grid>
-
           {/* Caracterización 2 */}
           <Grid item xs={12} md={6}>
             <TextField
               id="caracterizacion2"
               label="Caracterización 2"
               fullWidth
-              value={formData.caracterizacion2 || ""}
+              value={formData.characteristics?.caracterizacion2 || ""}
               onChange={(e) =>
                 onFieldChange("caracterizacion2", e.target.value)
               }
             />
           </Grid>
-
           {/* Profundidad */}
           <Grid item xs={12} md={6}>
             <TextField
@@ -61,7 +60,7 @@ function SoilCharacteristicsForm({ formData, setFormData }) {
               label="Profundidad (cm)"
               fullWidth
               type="number"
-              value={formData.profundidad || ""}
+              value={formData.characteristics?.profundidad || ""}
               onChange={(e) =>
                 onFieldChange("profundidad", parseInt(e.target.value, 10))
               }

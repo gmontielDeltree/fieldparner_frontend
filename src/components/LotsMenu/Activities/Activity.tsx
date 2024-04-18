@@ -8,6 +8,7 @@ import Harvest from "./ActivityTypes/Harvest/Harvest";
 import Application from "./ActivityTypes/Application/Application";
 import WeatherForecast from "./../../WeatherForecast";
 import ReplicateActivityMenu from "./ReplicateActivityMenu";
+import GroundSample from "./ActivityTypes/GroundSample/GroundSample";
 
 function Activity({
   activity,
@@ -100,8 +101,21 @@ function Activity({
             lotDoc={lotDoc}
           />
         );
-      case "analisis de suelo":
-        return <div>todo</div>;
+      case "analisis_suelo":
+        return (
+          <GroundSample
+            activity={activity.actividad}
+            fieldName={fieldDoc.nombre}
+            lotName={lotDoc.properties.nombre}
+            complementaryColor={complementaryColor}
+            handleDeleteActivity={handleDeleteActivity}
+            handleEditActivity={handleEditActivity}
+            handleDownloadPDF={handleDownloadPDF}
+            handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
+          />
+        );
+
       default:
         return <Typography>Unknown Activity Type</Typography>;
     }

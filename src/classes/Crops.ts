@@ -3,35 +3,35 @@ import { only_docs } from "../../owncomponents/helpers";
 import { FPDocument } from "../interfaces/planification";
 import { dbContext } from "../services";
 import { BaseDocRepository } from "./BaseRepository";
+import { Crops } from "@types";
 
-export interface Crop extends FPDocument {
-  label: string;
-  color?: string;
-}
 
 interface CropsRepositoryInterface {
-  add(cropDoc: Crop): Promise<any>;
-  getAll(): Promise<Crop[]>;
+  add(cropDoc: Crops): Promise<any>;
+  getAll(): Promise<Crops[]>;
 }
 
 export class CropsRepository
-  extends BaseDocRepository<Crop>
+  extends BaseDocRepository<Crops>
   implements CropsRepositoryInterface
 {
   
-  private _crops: Crop[];
+  private _crops: Crops[];
 
 
   constructor(){
-    super(dbContext.platform)
+    super(dbContext.crops)
   }
 
   async getAll() {
-    this._crops =  await this.getAllDocs("crop:") as unknown as Crop[];
+    let map = new Map()
+    let data =  await this.getAllDocs("") as unknown as Crops[];
+    data.map((a)=>map.set(a.descriptionES,a))
+    this._crops =[...map.values()]
     return this._crops;
   }
 
-  async add(cropDoc: Crop) {
+  async add(cropDoc: Crops) {
     if (!cropDoc._id) {
       cropDoc._id = "crop:userDefined:" + uuidv7();
     }

@@ -6,7 +6,7 @@ import {
   Chip,
   Typography,
 } from "@mui/material";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { TreeView } from "@mui/x-tree-view/TreeView";
@@ -28,6 +28,8 @@ import {
 import { InsumosContext } from "./contexts/InsumosContext";
 import { LaboresContext } from "./contexts/LaboresContext";
 import { CiclosContext } from "./contexts/CiclosContext";
+import { useTranslation } from "react-i18next";
+import { ActividadEditorDialogNoButton } from "./ActividadEditorDialog";
 
 const calcTotal =(linInsumos : IInsumosPlanificacion[], linLabores : ILaboresPlanificacion[])=>{
   let totalI = linInsumos.reduce((acc,lin)=>lin.totalCosto + acc,0)
@@ -37,9 +39,12 @@ const calcTotal =(linInsumos : IInsumosPlanificacion[], linLabores : ILaboresPla
 
 export const ActividadCardBase: React.FC = ({
   actividadId,
+  selectionMode
 }: {
-  actividadId: string;
+  actividadId: string,
+  selectionMode? : boolean
 }) => {
+  const {t} = useTranslation();
   // const actividad = usePlanificationActividad(actividadId)
   const { removeActividad } = usePlanActividad();
   const { getInsumoFromId } = useContext(InsumosContext);
@@ -47,6 +52,7 @@ export const ActividadCardBase: React.FC = ({
 
   const {refreshCiclos} = useContext(CiclosContext) // useCiclos(ciclo.campanaId,loteId)
 
+  const [editing, setEditing] = useState(false)
 
   let {
     fecha,
@@ -56,11 +62,14 @@ export const ActividadCardBase: React.FC = ({
     totalCosto,
     tipo,
     area,
+    contratista,
     rindeEstimado,
     precioEstimadoCosecha,
     lineasInsumos,
     lineasLabores,
     loading,
+    actividad,
+    refreshActividad
   } = usePlanificationActividad(actividadId);
 
   let cardColor = FieldPartnerColors[tipo as unknown as string];
@@ -71,6 +80,8 @@ export const ActividadCardBase: React.FC = ({
 
   if (loading) return <div>Loading</div>;
   return (
+    <>
+    <ActividadEditorDialogNoButton open={editing} actividad={actividad} handleClose={()=>setEditing(false)} refreshCiclos={()=>{refreshActividad()}} editing={true}/>
     <Card
       sx={{ maxWidth: "100%", minWidth: "50%", backgroundColor: cardColor }}
     >
@@ -101,8 +112,12 @@ export const ActividadCardBase: React.FC = ({
           </div>
 
           <ActividadMoreButton
+            onProgramar = {()=>{
+              alert("TIENEN QUE TERMINAR DE MODIFICAR LAS ACTIVIDADES DE LOTE. Cuando lo terminen lo implemento. Gracias!!!")
+            }}
             onEdit={() => {
               console.log("EDIT ACT");
+              setEditing(true)
             }}
             onDelete={() => {
               console.log("DELETE ACT");
@@ -114,6 +129,14 @@ export const ActividadCardBase: React.FC = ({
           defaultCollapseIcon={<ExpandMoreIcon />}
           defaultExpandIcon={<ChevronRightIcon />}
         >
+          
+          <TreeItem nodeId="10" label="Contratista">
+            {!contratista && (
+              <p>No contractor</p>
+            )}
+           {contratista?.razonSocial?.length ? contratista?.razonSocial : contratista?.nombreCompleto}
+          </TreeItem>
+
           <TreeItem nodeId="1" label="Insumos">
             {lineasInsumos?.length === 0 && (
               <p>La actividad no tiene insumos</p>
@@ -135,9 +158,9 @@ export const ActividadCardBase: React.FC = ({
               );
             })}
           </TreeItem>
-          <TreeItem nodeId="5" label="Labores">
+          <TreeItem nodeId="5" label={t("Servicios")}>
             {lineasLabores?.length === 0 && (
-              <p>La actividad no tiene labores</p>
+              <p>{t("La actividad no tiene servicios")}</p>
             )}
             {lineasLabores?.map((i, indec) => {
               return (
@@ -176,5 +199,7 @@ export const ActividadCardBase: React.FC = ({
         </Box>
       </CardContent>
     </Card>
+    </>
+ 
   );
 };

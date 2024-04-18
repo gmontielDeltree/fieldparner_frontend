@@ -16,14 +16,28 @@ import { PlanSuppliesTableForm } from "./forms/PlanSuppliesTableForm";
 import PlanSuppliesForm from "./forms/PlanSuppliesForm";
 import { usePlanActividad } from "../../hooks/usePlanifications";
 import { ILaboresPlanificacion } from "../../interfaces/planification";
+import { uuidv7 } from "uuidv7";
+import { useSupply } from "../../hooks";
 
-const steps = ["Fecha", "Insumos", "Labores"];
+const steps = ["Fecha", "Insumos", "Servicios"];
+
+const tasksList = [
+  { name: "Siembra", id: "1" },
+  { name: "Cosecha", id: "3" },
+  { name: "Aplicación Aerea", id: "4" },
+  { name: "Aplicación Terrestre", id: "5" },
+  { name: "Cincel", id: "6" },
+  { name: "Disco", id: "7" },
+  { name: "Fertilización al Voleo", id: "8" },
+  { name: "Riego", id: "9" },
+];
 
 export const ActividadEditorBase = ({
   tipo,
   actividadDoc,
   onSave,
   onClose,
+  editing,
 }: {
   actividadDoc: IActividadPlanificacion;
   onSave: () => void;
@@ -32,18 +46,71 @@ export const ActividadEditorBase = ({
   const [rows, setRows] = useState<IInsumosPlanificacion[]>([]);
   const [rowsLab, setRowsLab] = useState<ILaboresPlanificacion[]>([]);
 
+  const { supplies, getSupplies } = useSupply();
+
+  useEffect(() => {
+    getSupplies();
+  }, []);
+
   const [actividad, setActividad] =
     useState<IActividadPlanificacion>(actividadDoc);
 
-  const { saveActividad } = usePlanActividad();
+  const { saveActividad, getLineasServicios, getLineasInsumos } =
+    usePlanActividad();
 
   useEffect(() => {
     setActividad(actividadDoc);
     // Reset rows
     setRows([]);
-    setRowsLab([]);
+
+    if (!editing) {
+      let default_activity = {
+        id: "lineaLabor:" + uuidv7(),
+        labor: { name: "Siembra", id: "1" },
+        costoPorHectarea: 0,
+        hectareas: 0,
+        totalCosto: 0,
+        comentario: "string",
+      };
+
+      if (actividadDoc.tipo === "siembra") {
+        default_activity.labor = { name: "Siembra", id: "1" };
+      } else if (actividadDoc.tipo === "cosecha") {
+        default_activity.labor = { name: "Cosecha", id: "3" };
+      } else if (actividadDoc.tipo === "aplicacion") {
+        default_activity.labor = { name: "Aplicación Aerea", id: "4" };
+      }
+
+      setRowsLab([default_activity]);
+    } else {
+      if (supplies) {
+        // Nuevo
+        getLineasServicios(actividadDoc.laboresLineasIds).then((lineas) => {
+          let rows = lineas.map((linea) => {
+            return {
+              ...linea,
+              id: linea._id,
+              labor: tasksList.find((f) => f.id === linea.laborId),
+            };
+          });
+          setRowsLab(rows);
+        });
+
+        getLineasInsumos(actividadDoc.insumosLineasIds).then((lineas) => {
+          let rows = lineas.map((linea) => {
+            return {
+              ...linea,
+              id: linea._id,
+              insumo: supplies.find((f) => f._id === linea.insumoId),
+            };
+          });
+          setRows(rows);
+        });
+      }
+    }
+
     setActiveStep(0);
-  }, [actividadDoc]);
+  }, [actividadDoc, supplies]);
 
   const [activeStep, setActiveStep] = React.useState(0);
   const [completed, setCompleted] = React.useState<{
@@ -133,8 +200,15 @@ export const ActividadEditorBase = ({
             )}
             <Typography sx={{ mt: 2, mb: 1, py: 1 }}></Typography>
 
-            <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
-              <Button
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                pt: 2,
+                justifyContent: "flex-end",
+              }}
+            >
+              {/* <Button
                 color="inherit"
                 disabled={activeStep === 0}
                 onClick={handleBack}
@@ -145,7 +219,7 @@ export const ActividadEditorBase = ({
               <Box sx={{ flex: "1 1 auto" }} />
               <Button onClick={handleNext} sx={{ mr: 1 }}>
                 Siguiente
-              </Button>
+              </Button> */}
 
               {/* <Button
                 variant="contained"
@@ -162,7 +236,7 @@ export const ActividadEditorBase = ({
                   //
                   let newIds = rows.map((f) => f.id);
                   let newLineasDocs: IInsumosPlanificacion[] = rows.map((f) => {
-                    return {
+                    let a= {
                       _id: f.id,
                       insumoId: f.insumo._id,
                       dosis: f.dosis,
@@ -171,6 +245,10 @@ export const ActividadEditorBase = ({
                       precioUnitario: f.precioUnitario,
                       totalCosto: f.totalCosto,
                     };
+                    if(f._rev){
+                      a._rev = f._rev
+                    }
+                    return a
                   });
 
                   console.log("new insumos lists id", newIds, newLineasDocs);
@@ -179,13 +257,20 @@ export const ActividadEditorBase = ({
                   let newLaboresIds = rowsLab.map((f) => f.id);
                   let newLabLinDocs: ILaboresPlanificacion[] = rowsLab.map(
                     (f) => {
-                      return {
+
+
+                      let a = {
                         _id: f.id,
                         laborId: f.labor.id,
                         costoPorHectarea: f.costoPorHectarea,
                         hectareas: f.hectareas,
                         totalCosto: f.totalCosto,
                       };
+
+                      if(f._rev){
+                        a._rev = f._rev
+                      }
+                      return a
                     }
                   );
 
@@ -199,7 +284,6 @@ export const ActividadEditorBase = ({
                     newLineasDocs,
                     newLabLinDocs
                   ).then(onSave);
-
                 }}
                 sx={{ mr: 1 }}
               >

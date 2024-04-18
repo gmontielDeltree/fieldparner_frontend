@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,9 +12,13 @@ import {
   MenuItem
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { Campaign } from "@types";
+import { es } from 'date-fns/locale'
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 
-const CreateCampaignModal = ({ open, onClose, onCreate }) => {
-  const [campaignName, setCampaignName] = useState("");
+const CreateCampaignModal = ({ open, onClose, onCreate, initialData, editMode, onDelete }: { onDelete?: (e: any) => any, initialData?: Campaign, editMode?: boolean }) => {
+  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [zoneId, setZoneId] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -22,17 +26,48 @@ const CreateCampaignModal = ({ open, onClose, onCreate }) => {
   const [state, setState] = useState("");
   const { t } = useTranslation();
 
+  const title = editMode ? t("Edit_campaign") : t("Create_new_campaign");
+
+  useEffect(() => {
+    if (initialData && editMode) {
+
+      setName(initialData.name)
+      setDescription(initialData.description)
+      setZoneId(initialData.zoneId)
+      setStartDate(initialData.startDate)
+      setEndDate(initialData.endDate)
+      setState(initialData.state)
+
+      // TODO Load data to form
+    }
+  }, [initialData])
+
   const handleCreate = () => {
-    onCreate({
-      campaignId: campaignName,
-      description,
-      zoneId,
-      startDate,
-      endDate,
-      state
-    });
+    if (editMode) {
+      onCreate({
+        ...initialData,
+        campaignId: name,
+        name,
+        description,
+        zoneId,
+        startDate,
+        endDate,
+        state
+      });
+    } else {
+      onCreate({
+        campaignId: name,
+        name,
+        description,
+        zoneId,
+        startDate,
+        endDate,
+        state
+      });
+
+    }
     // Reset form
-    setCampaignName("");
+    setName("");
     setDescription("");
     setZoneId("");
     setStartDate("");
@@ -40,9 +75,14 @@ const CreateCampaignModal = ({ open, onClose, onCreate }) => {
     setState("");
   };
 
+  function onDeleteHandler(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    onDelete(initialData)
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t("create_new_campaign")}</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
@@ -52,8 +92,8 @@ const CreateCampaignModal = ({ open, onClose, onCreate }) => {
           type="text"
           fullWidth
           variant="outlined"
-          value={campaignName}
-          onChange={(e) => setCampaignName(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
         />
         <TextField
           margin="dense"
@@ -75,28 +115,32 @@ const CreateCampaignModal = ({ open, onClose, onCreate }) => {
           value={zoneId}
           onChange={(e) => setZoneId(e.target.value)}
         />
-        <TextField
-          margin="dense"
-          id="startDate"
-          label={t("start_date")}
-          type="date"
-          fullWidth
-          variant="outlined"
-          InputLabelProps={{ shrink: true }}
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-        />
-        <TextField
-          margin="dense"
-          id="endDate"
-          label={t("end_date")}
-          type="date"
-          fullWidth
-          variant="outlined"
-          InputLabelProps={{ shrink: true }}
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-        />
+
+
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es} >
+          <TextField
+            margin="dense"
+            id="startDate"
+            label={t("start_date")}
+            type="date"
+            fullWidth
+            variant="outlined"
+            InputLabelProps={{ shrink: true }}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            id="endDate"
+            label={t("end_date")}
+            type="date"
+            fullWidth
+            variant="outlined"
+            InputLabelProps={{ shrink: true }}
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </LocalizationProvider>
         <FormControl fullWidth margin="dense">
           <InputLabel id="state-label">{t("state")}</InputLabel>
           <Select
@@ -112,8 +156,17 @@ const CreateCampaignModal = ({ open, onClose, onCreate }) => {
         </FormControl>
       </DialogContent>
       <DialogActions>
+        {editMode && onDelete &&
+
+          <Button variant="contained" color="error" onClick={onDeleteHandler}>{t("delete")}</Button>
+        }
+
         <Button onClick={onClose}>{t("cancel")}</Button>
-        <Button onClick={handleCreate}>{t("create")}</Button>
+        {editMode ?
+          <Button onClick={handleCreate}>{t("save")}</Button>
+          :
+          <Button onClick={handleCreate}>{t("create")}</Button>
+        }
       </DialogActions>
     </Dialog>
   );

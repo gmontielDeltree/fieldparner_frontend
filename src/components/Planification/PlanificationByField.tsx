@@ -6,6 +6,7 @@ import {
   Divider,
   Fab,
   IconButton,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
@@ -20,6 +21,7 @@ import { useCiclos } from "../../hooks/usePlanifications";
 import uuid4 from "uuid4";
 import CancelIcon from '@mui/icons-material/Close';
 import { CultivoContext } from "./contexts/CultivosContext";
+import { format } from "date-fns";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -89,14 +91,18 @@ const LoteAccordion: React.FC = ({ lote, campanaId, expanded, cicloSelected }) =
 
         
                      {ciclos?.map((ciclo, i) => (
-                      <Fab key={i} variant="extended" sx={{ borderRadius: "4px", height:"1.9rem", backgroundColor:getCropColorFromId(ciclo.cultivoId) }}>
+                      <Tooltip title={format(new Date(ciclo.fechaInicio), "dd-MM-yyyy") +" / " + format(new Date(ciclo.fechaFin), "dd-MM-yyyy")}>
+                            <Fab key={i} variant="extended" sx={{ borderRadius: "4px", height:"1.9rem", backgroundColor:getCropColorFromId(ciclo.cultivoId) }}>
                         {getCropLabelFromId(ciclo.cultivoId)}
                       </Fab>
+                      </Tooltip>
+                  
                     ))}
             
           </Box>
 
           <CicloEditorDialog
+            otrosCiclos={ciclos}
             campanaId={campanaId}
             loteId={lote.id}
             onSave={() => {
@@ -116,7 +122,7 @@ const LoteAccordion: React.FC = ({ lote, campanaId, expanded, cicloSelected }) =
     </Accordion>
   );
 };
-export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloSelected, onClose }) => {
+export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloSelected, onClose, onlyLoteSelected }) => {
   // Lista de Campañas
   // Planificaciones por campaña
   //
