@@ -40,6 +40,7 @@ const GeometryPromptModal: React.FC<GeometryPromptModalProps> = ({
       toggle={toggle}
       className="add-geometry step"
       style={{ marginTop: "90px" }}
+      keyboard={false}
     >
       <ModalHeader toggle={toggle}>{text.header}</ModalHeader>
       <ModalBody className="mx-auto">

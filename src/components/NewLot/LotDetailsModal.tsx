@@ -5,7 +5,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import PersonalForm from "./Forms/PersonalForm";
 import SuppliesForm from "./Forms/SuppliesForm";
 import OtherDetailsForm from "./Forms/OtherDetailsForm";
-import TasksForm from "./Forms/TasksForm";
+import ServicesForm from "./Forms/ServicesForm";
 import ConditionsForm from "./Forms/ConditionsForm";
 import ObservationsForm from "./Forms/ObservationsForm";
 
@@ -27,7 +27,7 @@ const LotDetailsModal: React.FC<LotDetailsModalProps> = ({
     "General",
     "Insumos",
     "Otros Datos",
-    "Labores",
+    "Servicios",
     "Condiciones",
     "Observaciones"
   ];
@@ -41,7 +41,7 @@ const LotDetailsModal: React.FC<LotDetailsModalProps> = ({
       case 2:
         return <OtherDetailsForm lot={lot} />;
       case 3:
-        return <TasksForm lot={lot} />;
+        return <ServicesForm lot={lot} />;
       case 4:
         return <ConditionsForm lot={lot} />;
       case 5:

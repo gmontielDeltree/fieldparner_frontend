@@ -10,7 +10,7 @@ import {
 import PersonalForm from "./forms/PlanForms/PersonalForm";
 import SuppliesForm from "./forms/PlanForms/SuppliesForm";
 import OtherDetailsForm from "./forms/PlanForms/OtherDetailsForm";
-import TasksForm from "./forms/PlanForms/TasksForm";
+import ServicesForm from "./forms/PlanForms/ServicesForm";
 import ConditionsForm from "./forms/PlanForms/ConditionsForm";
 import ObservationsForm from "./forms/PlanForms/ObservationsForm";
 import { getEmptyActivity } from "../../interfaces/activity";
@@ -36,6 +36,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 );
 
 const activityTypeTranslations = {
+  preparation: "Preparado",
   sowing: "Siembra",
   harvesting: "Cosecha",
   application: "Aplicacion"
@@ -94,11 +95,11 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           "General",
           "Insumos",
           "Otros Datos",
-          "Labores",
+          "Servicios",
           "Condiciones",
           "Observaciones"
         ]
-      : ["General", "Insumos", "Labores", "Condiciones", "Observaciones"];
+      : ["General", "Insumos", "Servicios", "Condiciones", "Observaciones"];
 
   useEffect(() => {
     setFormData((prevFormData) => ({
@@ -202,12 +203,8 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           missingFields++;
         }
         break;
-      case 3: // TasksForm (Labores)
-        if (
-          !formData.detalles ||
-          !formData.detalles.dosis ||
-          formData.detalles.costo_labor.length === 0
-        ) {
+      case 3: // ServicesForm (Labores)
+        if (!formData.detalles || !formData.detalles.servicios) {
           missingFields++;
         }
         break;
@@ -272,7 +269,11 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
 
       case 3:
         return (
-          <TasksForm lot={lot} formData={formData} setFormData={setFormData} />
+          <ServicesForm
+            lot={lot}
+            formData={formData}
+            setFormData={setFormData}
+          />
         );
       case 4:
         return (

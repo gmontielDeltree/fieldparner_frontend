@@ -341,6 +341,7 @@ const getEmptyActivity = () => {
       hectareas: 0,
       motivos: "",
       dosis: [],
+      servicios: [],
       costo_labor: []
     } as Detalles,
     condiciones: {

@@ -9,6 +9,7 @@ import Application from "./ActivityTypes/Application/Application";
 import WeatherForecast from "./../../WeatherForecast";
 import ReplicateActivityMenu from "./ReplicateActivityMenu";
 import GroundSample from "./ActivityTypes/GroundSample/GroundSample";
+import Preparation from "./ActivityTypes/Preparation/Preparation";
 
 function Activity({
   activity,
@@ -50,6 +51,21 @@ function Activity({
 
   const renderActivityContent = () => {
     switch (activity.actividad.tipo) {
+      case "preparado":
+        return (
+          <Preparation
+            activity={activity}
+            fieldName={fieldDoc.nombre}
+            lotName={lotDoc.properties.nombre}
+            complementaryColor={complementaryColor}
+            handleDeleteActivity={handleDeleteActivity}
+            handleEditActivity={handleEditActivity}
+            handleDownloadPDF={handleDownloadPDF}
+            handleConfirmExecution={handleConfirmExecution}
+            handleReplicateActivity={handleReplicateActivity}
+          />
+        );
+
       case "siembra":
         return (
           <Sowing

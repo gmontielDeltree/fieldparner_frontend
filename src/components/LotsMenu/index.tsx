@@ -83,7 +83,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   let backUrl = location.pathname;
   const categories = [
     // {id:"Planificación del lote", icon:planAnualIcon, link:`planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`},
-    // {id: "Programar Preparado", icon:preparadoIcon},
+    { id: "Programar Preparado", icon: preparadoIcon },
     { id: "Programar Siembra", icon: categoryIcon1 },
     { id: "Programar Aplicacion", icon: categoryIcon2 },
     { id: "Programar Cosecha", icon: categoryIcon3 },
@@ -108,6 +108,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   };
 
   const activityTypeTranslations = {
+    preparacion: "preparation",
     siembra: "sowing",
     cosecha: "harvesting",
     aplicacion: "application",
@@ -290,16 +291,16 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     }
 
     switch (selectedCategory) {
-      // case "Programar Preparado":
-      //   return (
-      //     <PlanActivity
-      //       activityType={"preparation"}
-      //       lot={lot}
-      //       fieldName={field.nombre}
-      //       db={db}
-      //       backToActivites={backToActivites}
-      //     />
-      //   );
+      case "Programar Preparado":
+        return (
+          <PlanActivity
+            activityType={"preparation"}
+            lot={lot}
+            fieldName={field.nombre}
+            db={db}
+            backToActivites={backToActivites}
+          />
+        );
       case "Programar Siembra":
         return (
           <PlanActivity
