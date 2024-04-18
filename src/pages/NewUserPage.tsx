@@ -18,14 +18,13 @@ import {
   InputLabel,
   MenuItem,
   Paper,
-  RadioGroup,
   Select,
   TextField,
   Toolbar,
   Tooltip,
   Typography
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, useForm, useUser } from '../hooks';
 import { Loading } from '../components';
 import { UserByAccount, UserRols } from '../types';
@@ -35,7 +34,6 @@ import {
   AddCircle as AddCircleIcon,
   BrokenImage as BrokenImageIcon,
   Cancel as CancelIcon,
-  PersonAdd as PersonAddIcon,
   PhotoCamera as PhotoCameraIcon,
   Schedule as ScheduleIcon,
   VpnKey as VpnKeyIcon,
@@ -43,43 +41,42 @@ import {
   Edit as EditIcon,
   Info as InfoIcon,
 } from '@mui/icons-material';
+import uuid4 from 'uuid4';
+import { uploadFile } from '../helpers/fileUpload';
+import { urlImg } from '../config';
 
-//TODO: No deberia de ser de tipo userByAccount
-//solo debe llevar campo 
+
 const initialForm: UserByAccount = {
   name: '',
   lastName: '',
   email: '',
   password: '',
-  // state: true,
   language: '',
-  // photoFile: null,
   isAdmin: false,
   accountId: '',
   state: false,
-  rol: UserRols.User
+  rol: UserRols.User,
+  photoName: "",
 };
 
-
+//TODO: enviar la actualizacion de usuario, incluido si quiere password nueva .
 const policyPassword = "La contraseña debe contener al menos una letra en mayúscula, un dígito, un carácter especial y tener una longitud mínima de 8 caracteres.";
 
 export const NewUserPage = () => {
+  const { id: userId } = useParams();
   const navigate = useNavigate();
-  const { isLoading, createUser, updateUsers, updatePasswordUsers } = useUser();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { isLoading, createUser, updateUser, getUserById } = useUser();
   const dispatch = useAppDispatch();
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [oldPassword, setOldPassword] = useState<string>('');
-  const [newPassword, setNewPassword] = useState<string>('');
+  // const [oldPassword, setOldPassword] = useState<string>('');
+  // const [newPassword, setNewPassword] = useState<string>('');
   const [showChangePassword, setShowChangePassword] = useState<boolean>(false);
   const [ultimaConexion, setUltimaConexion] = useState(new Date());
   // const { user } = useAppSelector((state) => state.auth);
   const [passwordError, setPasswordError] = useState<string>('');
   const { userActive } = useAppSelector((state) => state.users);
-
-
   const {
+    photoName,
     formulario,
     setFormulario,
     handleInputChange,
@@ -87,99 +84,75 @@ export const NewUserPage = () => {
     reset,
   } = useForm(initialForm);
 
-  // const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = event.target;
-  //   if (name === 'password' && !userActive) {
-  //     if (!/(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}/.test(value))
-  //       setPasswordError('La contraseña no cumple con con los requisitos.');
-  //     else
-  //       setPasswordError('');
-  //     handleFormInputChange(event);
-  //   };
-  // }
-
-  useEffect(() => {
-    if (userActive) {
-      setFormulario(userActive);
-      // if (userActive.photoFile) {
-
-      //   const reader = new FileReader();
-      //   reader.onload = () => {
-      //     setPreviewUrl(reader.result as string);
-      //   };
-      //   reader.readAsDataURL(userActive.photoFile);
-      // } else {
-      //   setPreviewUrl(null);
-      // }
-    } else {
-      setFormulario(initialForm);
-      setPreviewUrl(null);
+  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    if (name === 'password') {
+      handleInputChange(event);
+      if (!/(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}/.test(value)) { setPasswordError('La contraseña no cumple con con los requisitos.'); return; }
+      else
+        setPasswordError('');
+    };
+    if (name === "confirmPassword") {
+      setConfirmPassword(value);
+      if (formulario.password !== value) {
+        setPasswordError("Las contraseñas no coinciden.");
+        return;
+      } else
+        setPasswordError("");
     }
-  }, [userActive, setFormulario]);
-
-  useEffect(() => {
-
-    const fechaActual = new Date();
-    setUltimaConexion(fechaActual);
-  }, []);
+  }
 
   const handleUpdatePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      console.error('Las contraseñas no coinciden');
-      return;
-    }
-
-    try {
-
-      // await updatePasswordUsers({
-      //   userId: '',
-      //   password: newPassword, // Aquí cambia de accountId a password
-      //   name: '',
-      //   email: '',
-      //   state: false,
-      //   admin: false,
-      //   lastName: '',
-      //   language: '',
-      //   accountId: ''
-      // }, oldPassword);
-    } catch (error) {
-      console.error('Error al actualizar la contraseña:', error);
-      // Manejar el error según sea necesario
+    if (formulario._id) {
+      updateUser(formulario);
+      dispatch(removeUsersActive());
+      navigate("/init/overview/users");
     }
   };
 
-  const onChangeConfirmPass = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(e.target.value);
-    if (formulario.password !== e.target.value) {
-      setPasswordError("Las contraseñas no coinciden.");
-      return;
+  // const onChangeConfirmPass = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setConfirmPassword(e.target.value);
+  //   if (formulario.password !== e.target.value) {
+  //     setPasswordError("Las contraseñas no coinciden.");
+  //     return;
+  //   }
+  //   setPasswordError("");
+  // }
+
+  const uploadImgUser = async (fileInput: Blob) => {
+    try {
+      const newFileName = `${uuid4()}.jpeg`; // Nuevo nombre del archivo
+      const renamedFile = new File([fileInput], newFileName, { type: fileInput.type });
+      const response = await uploadFile(renamedFile);
+
+      if (response)
+        setFormulario(({ ...formulario, photoName: newFileName }));
+      else
+        setFormulario(({ ...formulario, photoName: "" }));
+
+    } catch (error) {
+      console.log('error', error)
     }
-    setPasswordError("");
   }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
-    if (file) {
-      setPreviewUrl(URL.createObjectURL(file));
-      setSelectedFile(file);
-    }
+    if (file) uploadImgUser(file);
   };
 
   const handleCancel = () => {
-    setPreviewUrl("");
-    setSelectedFile(null);
+    setFormulario(({ ...formulario, photoName: "" }));
   };
 
   const handleUpdateUsers = () => {
     if (formulario._id) {
-      updateUsers(formulario);
+      updateUser(formulario);
       dispatch(removeUsersActive());
       navigate("/init/overview/users");
     }
   };
 
   const handleAddUser = async () => {
-    console.log('newUser', formulario)
     await createUser(formulario);
     navigate("/init/overview/users");
     reset();
@@ -192,6 +165,32 @@ export const NewUserPage = () => {
     reset();
   };
 
+  const onChangeConfirmNewPassword = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(target.value);
+    if (formulario.newPassword !== target.value)
+      setPasswordError("Las contraseñas no coinciden.");
+    else
+      setPasswordError("");
+  }
+
+  useEffect(() => {
+    if (userActive) {
+      setFormulario(userActive);
+    } else {
+      setFormulario(initialForm);
+    }
+  }, [userActive, setFormulario]);
+
+  useEffect(() => {
+    const fechaActual = new Date();
+    setUltimaConexion(fechaActual);
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      getUserById(userId);
+    }
+  }, [userId])
 
   return (
     <>
@@ -206,7 +205,7 @@ export const NewUserPage = () => {
           component="h1"
           variant="h4"
           align="left"
-          sx={{ mt: 5, mb: 3 }}
+          sx={{ mt: 3, mb: 3 }}
         >
           <PeopleIcon sx={{ marginRight: '8px', fontSize: 'inherit', verticalAlign: 'middle' }} />
           Usuarios
@@ -225,12 +224,11 @@ export const NewUserPage = () => {
           <form>
             <Grid container spacing={1} p={1} mt={1}>
               <Grid container direction="column" xs={7}>
-                <Grid container spacing={1.5}>
+                <Grid container spacing={1.5} sx={{ pt: 6 }}>
                   <Grid item xs={6}>
                     <TextField
                       label="Nombre"
                       type="text"
-                      id="name"
                       name="name"
                       value={formulario.name}
                       onChange={handleInputChange}
@@ -242,7 +240,6 @@ export const NewUserPage = () => {
                     <TextField
                       label="Apellido"
                       type="text"
-                      id="name"
                       name="lastName"
                       value={formulario.lastName}
                       onChange={handleInputChange}
@@ -282,17 +279,18 @@ export const NewUserPage = () => {
                               </Tooltip>
                             </InputAdornment>,
                           }}
-                          onChange={handleInputChange}
+                          onChange={handlePasswordChange}
                           fullWidth />
                       </Grid>
                       <Grid item xs={6}>
                         <TextField
                           label="Repetir contraseña"
                           type="password"
+                          name="confirmPassword"
                           error={!!passwordError}
                           helperText={passwordError}
                           value={confirmPassword}
-                          onChange={onChangeConfirmPass}
+                          onChange={handlePasswordChange}
                           fullWidth />
                       </Grid>
                     </>
@@ -328,7 +326,7 @@ export const NewUserPage = () => {
                       </Select>
                     </FormControl>
                   </Grid>
-                  {/* <Grid item xs={4}>
+                  <Grid item xs={4}>
                     <FormLabel id='user-active'>Usuario Activo</FormLabel>
                     <FormGroup id="user-active" row>
                       <FormControlLabel
@@ -356,7 +354,7 @@ export const NewUserPage = () => {
                         labelPlacement="start"
                       />
                     </FormGroup>
-                  </Grid> */}
+                  </Grid>
                 </Grid>
               </Grid>
               <Grid container direction="column" xs={5}>
@@ -371,17 +369,17 @@ export const NewUserPage = () => {
                     maxWidth: 200,
                     maxHeight: 240
                   }}>
-                    {previewUrl ? (
+                    {photoName ? (
                       <CardMedia
                         key="preview-img"
                         component="img"
                         alt="Vista previa de la imagen"
-                        image={previewUrl}
+                        image={`${urlImg}/${photoName}`}
                         sx={{
                           maxHeight: 150,
                           maxWidth: 150,
                           objectFit: "cover",
-                          borderRadius: "50%"
+                          borderRadius: "60%"
                         }}
                       />
                     ) : (
@@ -404,7 +402,7 @@ export const NewUserPage = () => {
                             onChange={handleFileUpload}
                           />
                         </label>
-                        {previewUrl && (
+                        {photoName && (
                           <IconButton onClick={handleCancel} color="error" sx={{ p: 0, pl: 1 }}>
                             <CancelIcon fontSize="medium" />
                           </IconButton>
@@ -432,16 +430,18 @@ export const NewUserPage = () => {
                           <TextField
                             label="Clave anterior"
                             type="password"
-                            value={oldPassword}
-                            onChange={(e) => setOldPassword(e.target.value)}
+                            name="previousPassword"
+                            value={formulario.previousPassword}
+                            onChange={handleInputChange}
                             fullWidth />
                         </Grid>
                         <Grid item xs={4}>
                           <TextField
                             label="Nueva clave"
                             type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
+                            name="newPassword"
+                            value={formulario.newPassword}
+                            onChange={handleInputChange}
                             fullWidth />
                         </Grid>
                         <Grid item xs={4}>
@@ -449,7 +449,9 @@ export const NewUserPage = () => {
                             label="Repetir nueva clave"
                             type="password"
                             value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            error={!!passwordError}
+                            helperText={passwordError}
+                            onChange={onChangeConfirmNewPassword}
                             fullWidth />
                         </Grid>
                       </Grid><Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>

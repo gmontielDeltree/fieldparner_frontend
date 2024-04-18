@@ -200,20 +200,23 @@ export interface Supply extends Document {
 }
 
 export interface UserByAccount extends Document {
-    accountId?: string;
-    username?: string;
-    name: string;
-    email: string;
-    password?: string;
-    isAdmin:boolean;
-    lastName: string;
-    language: string;
-    rol: string;
-    state: boolean;
+  accountId?: string;
+  username?: string;
+  name: string;
+  email: string;
+  password?: string;
+  isAdmin: boolean;
+  lastName: string;
+  language: string;
+  rol: string;
+  state: boolean;
+  photoName: string;
+  previousPassword?: string;
+  newPassword?: string;
 }
 export interface UsersState {
-    userActive: UserByAccount | null;
-    users: UserByAccount [];
+  userActive: UserByAccount | null;
+  users: UserByAccount[];
 }
 
 export interface OriginDestinationsState {
@@ -668,7 +671,7 @@ export enum NumeratorType {
 
 export enum UserRols {
   Administrator = 'ADM',
-  User= "USER"
+  User = "USER"
 }
 
 //#endregion

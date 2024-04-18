@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ColumnProps, UserByAccount } from "../types";
 import React, { useEffect } from "react";
-import { useAppDispatch, useForm, useUser, useAppSelector } from "../hooks";
+import { useForm, useUser } from "../hooks";
 import {
   DataTable,
   ItemRow,
@@ -22,7 +22,7 @@ import {
   Typography,
 } from "@mui/material";
 import 'semantic-ui-css/semantic.min.css';
-import { Icon } from "semantic-ui-react";
+// import { Icon } from "semantic-ui-react";
 import {
   PersonAdd as PersonAddAltIcon,
   Add as AddIcon,
@@ -31,7 +31,6 @@ import {
   NotInterested as NotInterestedIcon
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import { setUserActive } from "../redux/users/userSlice";
 // import { User } from "@auth0/auth0-spa-js";
 // import { User } from "@auth0/auth0-spa-js";
 // import Swal from 'sweetalert2';
@@ -42,7 +41,7 @@ import { setUserActive } from "../redux/users/userSlice";
 
 export const ListUsersPage: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { isLoading, users, getUsers, removeUsers } = useUser();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
@@ -58,16 +57,16 @@ export const ListUsersPage: React.FC = () => {
   // const { user } = useAppSelector((state) => state.auth);
 
   const onClickUpdateUser = (item: UserByAccount): void => {
-    dispatch(setUserActive(item));
+    // dispatch(setUserActive(item));
     navigate(`/init/overview/users/${item._id}`);
     getUsers();
   };
-  const handleDeleteUser = (item: UserByAccount) => {
-    if (item._id && item._rev) {
-      removeUsers(item._id, item._rev);
-      getUsers();
-    }
-  };
+  // const handleDeleteUser = (item: UserByAccount) => {
+  //   if (item._id && item._rev) {
+  //     removeUsers(item._id, item._rev);
+  //     getUsers();
+  //   }
+  // };
 
   useEffect(() => {
     getUsers();
@@ -120,7 +119,7 @@ export const ListUsersPage: React.FC = () => {
                 <Grid item xs={8} sm={7}>
                   <SearchInput
                     value={filterText}
-                    placeholder={t("supply_description")}
+                    placeholder={"Usuario / Email"}
                     handleInputChange={handleInputChange}
                   />
                 </Grid>
@@ -159,14 +158,14 @@ export const ListUsersPage: React.FC = () => {
                         <EditIcon />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title={t("icon_delete")}>
+                    {/* <Tooltip title={t("icon_delete")}>
                       <IconButton
                         onClick={() => handleDeleteUser(row)}
                         style={{ fontSize: '1rem' }}
                       >
                         <Icon name="trash alternate" />
                       </IconButton>
-                    </Tooltip>
+                    </Tooltip> */}
                   </TableCellStyled>
                 </ItemRow>
               ))}

@@ -7,6 +7,7 @@ import { useAppSelector } from '.';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { fieldpartnerAPI } from '../config';
+import { setUserActive } from '../redux/users';
 
 
 const controller = "/user";
@@ -86,25 +87,28 @@ export const useUser = () => {
     }
   }
 
-  const updateUsers = async (updateUsers: UserByAccount) => {
+  const updateUser = async (upUser: UserByAccount) => {
     setIsLoading(true);
 
-    console.log("La función updateUsers se está ejecutando");
-
-    if (!updateUsers.name.trim()) {
-      setConceptoError(true);
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const response = await dbContext.users.put(updateUsers);
+      const userId = upUser._id;
+      const bodyUser = {
+        name: upUser.name,
+        lastName: upUser.lastName,
+        previousPassword: upUser.previousPassword,
+        newPassword: upUser.newPassword,
+        isAdmin: upUser.isAdmin,
+        photoName: upUser.photoName,
+        rol: upUser.rol,
+        language: upUser.language,
+        state: upUser.state
+      }
+      const response = await fieldpartnerAPI.patch(`${controller}/${userId}`, bodyUser);
       setIsLoading(false);
-
-      if (response.ok)
-        Swal.fire(t("origin_destination"), t("_updated"), 'success');
-
-      navigate('/init/overview/users/');
+      
+      if (response)
+        Swal.fire("Usuario", "Usuario actualizado.", 'success');
+      
     } catch (error) {
       console.log(error);
       Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
@@ -200,6 +204,33 @@ export const useUser = () => {
     }
   };
 
+  const getUserById = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fieldpartnerAPI.get(`${controller}/${userId}`);
+
+      if (response) {
+        // const foundUser: UserByAccount = {
+        //   email: response.data.email,
+        //   isAdmin: response.data.isAdmin,
+        //   name: response.data.name,
+        //   lastName: response.data.lastName,
+        //   language: response.data.language,
+        //   photoName: response.data.photoName,
+        //   state: response.data.state,
+        //   rol: response.data.rol
+        // };
+        const foundUser = response.data as UserByAccount;
+        dispatch(setUserActive(foundUser));
+      }
+
+      setIsLoading(false)
+    } catch (error) {
+      console.log('error', error)
+      setIsLoading(false)
+    }
+  }
+
 
   return {
     //* Propiedades
@@ -212,10 +243,11 @@ export const useUser = () => {
     createUser,
     getUsers,
     setUsers,
-    updateUsers,
+    updateUser,
     removeUsers,
     updatePasswordUsers,
     searchUsers,
+    getUserById
   }
 }
 
