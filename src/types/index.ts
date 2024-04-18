@@ -210,6 +210,26 @@ export interface Supply extends Document {
   senasaId?: string;
 }
 
+export interface UserByAccount extends Document {
+  accountId?: string;
+  username?: string;
+  name: string;
+  email: string;
+  password?: string;
+  isAdmin: boolean;
+  lastName: string;
+  language: string;
+  rol: string;
+  state: boolean;
+  photoName: string;
+  previousPassword?: string;
+  newPassword?: string;
+}
+export interface UsersState {
+  userActive: UserByAccount | null;
+  users: UserByAccount[];
+}
+
 export interface OriginDestinationsState {
   originsDestinationsActive: OriginDestinations | null;
   OriginsDestinations: OriginDestinations[];
@@ -449,6 +469,7 @@ export interface ExitFieldItem extends ExitField {
 export interface Campaign extends Document {
   accountId: string;
   campaignId: string;
+  name: string;
   description: string;
   zoneId: string;
   creationDate: string;
@@ -658,6 +679,11 @@ export enum WithdrawalOrderType {
 export enum NumeratorType {
   Client = "Cliente",
   LaborOrder = "Orden de Trabajo"
+}
+
+export enum UserRols {
+  Administrator = 'ADM',
+  User = "USER"
 }
 
 //#endregion

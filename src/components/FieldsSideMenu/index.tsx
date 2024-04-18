@@ -1,26 +1,45 @@
-import React, { useState, useEffect } from "react";
+import CloseIcon from "@mui/icons-material/Close";
+import { Box, Chip, Divider, Menu, MenuItem, Typography } from "@mui/material";
 import Drawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
-import { Box, Typography, Divider, Chip, MenuItem, Menu } from "@mui/material";
-import { useDispatch } from "react-redux";
-import { hideFieldList } from "../../redux/fieldsList";
-import * as XLSX from "xlsx";
-import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import * as XLSX from "xlsx";
+import { hideFieldList } from "../../redux/fieldsList";
 
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { SearchBar } from "../Planification/SearchBar";
+import { Field } from "../../interfaces/field";
+import { useTranslation } from "react-i18next";
 
-const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
+const FieldsSideMenu = ({
+  open,
+  fields,
+  onSelectField,
+  onSelectLot,
+}: {
+  fields: Field[];
+}) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [currentField, setCurrentField] = React.useState(null);
   const [pdfContent, setPdfContent] = React.useState("");
+  const [filtrados, setFiltrados] = useState<Field[]>(fields);
+
+  useEffect(() => {
+    if (fields) {
+      setFiltrados(fields);
+    }
+  }, [fields]);
 
   const handleClose = () => {
+    setFiltrados(fields);
     dispatch(hideFieldList());
     setAnchorEl(null);
   };
@@ -66,7 +85,7 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
         const pdf = new jsPDF({
           orientation: "portrait",
           unit: "px",
-          format: "a4"
+          format: "a4",
         });
         const imgProps = pdf.getImageProperties(imgData);
         const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -87,7 +106,7 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
       ["Hectares", field.campo_geojson.properties.hectareas],
       ["UUID", field.uuid],
       ["", ""],
-      ["Lots", "Hectares"]
+      ["Lots", "Hectares"],
     ];
 
     field.lotes.forEach((lot) => {
@@ -110,8 +129,8 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
         flexShrink: 0,
         "& .MuiDrawer-paper": {
           width: "40%",
-          boxSizing: "border-box"
-        }
+          boxSizing: "border-box",
+        },
       }}
     >
       <div style={{ display: "none" }} id="pdf-content">
@@ -124,7 +143,7 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid #e0e0e0"
+          borderBottom: "1px solid #e0e0e0",
         }}
       >
         <Typography variant="h6" noWrap>
@@ -134,8 +153,19 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
           <CloseIcon />
         </IconButton>
       </Box>
+      <SearchBar
+        onChange={(e: any) => {
+          let text = e.target.value.toLowerCase();
+          let filtrados = fields.filter((f) =>
+            f.nombre.toLowerCase().includes(text),
+          );
+          setFiltrados(filtrados);
+        }}
+      ></SearchBar>
       <List sx={{ width: "100%" }}>
-        {fields.map((field, index) => (
+        {filtrados === undefined && <li>{t("No hay campos")}</li>}
+        {filtrados?.length === 0 && <li>{t("No hay campos")}</li>}
+        {filtrados.map((field, index) => (
           <React.Fragment key={index}>
             <ListItem button onClick={() => handleFieldSelect(field)}>
               <ListItemText
@@ -160,6 +190,7 @@ const FieldsSideMenu = ({ open, fields, onSelectField, onSelectLot }) => {
                         onClick={(event) => {
                           event.stopPropagation();
                           onSelectLot(lote, field);
+                          handleClose();
                         }}
                       />
                     ))}

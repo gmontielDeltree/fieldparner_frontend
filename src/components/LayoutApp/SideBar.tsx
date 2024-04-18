@@ -34,6 +34,7 @@ import {
   ListAlt as ListAltIcon,
   Gite as GiteIcon,
   Work as WorkIcon,
+  Person as PersonAddIcon,
   Assignment as AssignmentIcon,
   Map as MapIcon
   // Flag as FlagIcon,
@@ -41,6 +42,7 @@ import {
 import { SideBarProps } from "../../types";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAppSelector } from "../../hooks";
 import { getEnvVariables } from "../../helpers/getEnvVariables";
 
 
@@ -60,6 +62,9 @@ export const SideBar: React.FC<SideBarProps> = ({
   const { t } = useTranslation();
 
   const onClickMenu = (collapse: string) => setOpenCollapse(collapse === openCollapse ? "" : collapse);
+
+  const { user } = useAppSelector((state) => state.auth);
+  
 
   return (
     <Box
@@ -496,12 +501,19 @@ export const SideBar: React.FC<SideBarProps> = ({
             timeout="auto"
             unmountOnExit>
             <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("users_and_permissions")} />
-              </ListItemButton>
+            {user && user.isAdmin && (
+                <ListItemButton
+                  sx={{ pl: 4 }}
+                  component={RouterLink}
+                  to="/init/overview/users"
+                  selected={pathname.includes("/init/overview/users")}
+                >
+                  <ListItemIcon>
+                    <PersonAddIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={t("users_and_permissions")} />
+                </ListItemButton>
+              )}
             </List>
           </Collapse>
           <ListItem key="Configuracion" disablePadding>
@@ -528,6 +540,17 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("crop_colors")} />
               </ListItemButton>
+              {/* <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/users"
+                selected={pathname.includes("/init/overview/users")}
+              >
+                <ListItemIcon>
+                  <PersonAddIcon />
+                </ListItemIcon>
+                <ListItemText primary="Usuarios" />
+              </ListItemButton> */}
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                 </ListItemIcon>

@@ -39,7 +39,7 @@ export const depositos_layer_init = (map, clickCallback) => {
 
     map.on("mouseenter", "depositos-layer", (e) => {
       // Change the cursor style as a UI indicator.
-      map.getCanvas().style.cursor = "pointer";
+      // map.getCanvas().style.cursor = "pointer";
 
       // Copy coordinates array.
       const coordinates = e.features[0].geometry.coordinates.slice();
@@ -58,12 +58,12 @@ export const depositos_layer_init = (map, clickCallback) => {
     });
 
     map.on("mouseleave", "depositos-layer", () => {
-      map.getCanvas().style.cursor = "";
+      // map.getCanvas().style.cursor = "";
       popup.remove();
     });
 
     map.on(touchEvent, "depositos-layer", (e) => {
-      map.getCanvas().style.cursor = "";
+      // map.getCanvas().style.cursor = "";
       popup.remove();
       if (clickCallback) {
         clickCallback(e.features[0].properties.url);

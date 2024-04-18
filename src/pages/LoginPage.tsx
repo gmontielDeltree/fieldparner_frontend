@@ -11,6 +11,7 @@ import {
   InputAdornment,
   Container,
   Alert,
+  Grid,
 } from "@mui/material";
 import {
   Visibility as VisibilityIcon,
@@ -18,6 +19,7 @@ import {
 } from "@mui/icons-material";
 import { clearErrorMessage } from "../redux/auth";
 import { Loading } from "../components";
+import { NavLink } from "react-router-dom";
 
 function Copyright(props: any) {
   return (
@@ -28,7 +30,7 @@ function Copyright(props: any) {
       {...props}
     >
       {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
+      <Link color="inherit" href="https://www.qtsagro.net/">
         QTS Agro
       </Link>{" "}
       {new Date().getFullYear()}
@@ -67,6 +69,7 @@ export const LoginPage = () => {
       }));
       return;
     }
+    console.log("Datos de inicio de sesión:", { email, password });
     startLogin({ email, password });
   };
 
@@ -170,7 +173,7 @@ export const LoginPage = () => {
           >
             INGRESAR
           </Button>
-          {/* <Grid container>
+          <Grid container>
                         <Grid item xs>
                             <Link href="#" variant="body2">
                                 Forgot password?
@@ -181,7 +184,7 @@ export const LoginPage = () => {
                                 {"Don't have an account? Sign Up"}
                             </Link>
                         </Grid>
-                    </Grid> */}
+                    </Grid>
           <Copyright sx={{ mt: 5 }} />
         </Box>
       </Box>

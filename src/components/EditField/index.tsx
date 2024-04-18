@@ -10,6 +10,7 @@ interface EditFieldProps {
   onLocate: (field: any) => void;
   handleCreateLot: () => void;
   handleCreateUniqueLot: (field: any) => void;
+  handleEditField: (field: any) => void;
 }
 
 const EditField: React.FC<EditFieldProps> = ({
@@ -19,7 +20,8 @@ const EditField: React.FC<EditFieldProps> = ({
   onDelete,
   onLocate,
   handleCreateLot,
-  handleCreateUniqueLot
+  handleCreateUniqueLot,
+  handleEditField,
 }) => {
   const cardStyle: React.CSSProperties = {
     position: "fixed",
@@ -30,12 +32,12 @@ const EditField: React.FC<EditFieldProps> = ({
     maxWidth: "none",
     width: "30%",
     borderRadius: "10px",
-    display: isOpen ? "block" : "none"
+    display: isOpen ? "block" : "none",
   };
 
   const buttonStyle: React.CSSProperties = {
     marginLeft: "10px",
-    marginRight: "10px"
+    marginRight: "10px",
   };
 
   const handleLocateField = () => {
@@ -50,7 +52,7 @@ const EditField: React.FC<EditFieldProps> = ({
   const cardHeaderStyle: React.CSSProperties = {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   };
 
   return (
@@ -101,6 +103,17 @@ const EditField: React.FC<EditFieldProps> = ({
         >
           Añadir Lote
         </Button>
+
+        {/* {field.lotes.length === 0 && */}
+        {/*   <Button */}
+        {/*     color="success" */}
+        {/*     size="sm" */}
+        {/*     onClick={handleEditField} */}
+        {/*     style={buttonStyle} */}
+        {/*   > */}
+        {/*     Editar Campo */}
+        {/*   </Button> */}
+        {/* } */}
 
         <Button
           color="danger"

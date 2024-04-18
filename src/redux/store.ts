@@ -12,6 +12,7 @@ import { fieldListSlice } from "./fieldsList";
 import { campaignSlice } from "./campaign";
 import { zoneSlice } from "./zones";
 import { originsDestinationsSlice } from "./originsdestinatons/originDestiantionsSlice";
+import { usersSlice } from "./users/userSlice";
 import { withdrawalOrderSlice } from "./withdrawalOrder";
 
 const store = configureStore({
@@ -26,6 +27,7 @@ const store = configureStore({
     draw: drawSlice.reducer,
     ordesti: originsDestinationsSlice.reducer,
     fieldList: fieldListSlice.reducer,
+    users: usersSlice.reducer,
     campaign: campaignSlice.reducer,
     order: withdrawalOrderSlice.reducer,
     zone: zoneSlice.reducer

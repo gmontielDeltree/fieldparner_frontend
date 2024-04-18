@@ -3,8 +3,10 @@ import Map from "react-map-gl";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import { NavigationControl, GeolocateControl } from "mapbox-gl";
 
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import "mapbox-gl/dist/mapbox-gl.css";
+
 import "./MapComponent.css";
 
 interface MapComponentProps {
