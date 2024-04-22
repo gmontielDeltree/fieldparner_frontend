@@ -282,10 +282,10 @@ export const TransformPage: React.FC = () => {
         <Box ml={2}>
             {(isLoading || loadingTransform || depositLoading) && <Loading loading={true} />}
             <Box
-                component="div"
-                display="flex"
-                alignItems="center"
-                sx={{ ml: { sm: 2 }, pt: 3 }}
+            component="div"
+            display="flex"
+            alignItems="center"
+            sx={{ ml: { sm: 2 }, pt: 3 }}
             >
                 <TransformIcon />
                 <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
@@ -299,7 +299,7 @@ export const TransformPage: React.FC = () => {
                     p: { xs: 2, md: 3 },
                     maxHeight: "calc(100vh - 150px)",
                     overflow: "scroll"
-                }}>
+                }}> 
                 <Typography variant="h5" sx={{ mb: 3 }}>
                     {t("source_supplies")}
                 </Typography>

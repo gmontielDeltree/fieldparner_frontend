@@ -1,11 +1,11 @@
 import { Alert, Box, Button, ButtonGroup, Container, Paper, TextField, Typography } from '@mui/material'
 import React from 'react';
 import { useAuthStore, useForm } from '../hooks'
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Loading } from '../components';
 
 export const ConfirmAuthPage: React.FC = () => {
-
+    const navigate = useNavigate();
     const {
         cod1, cod2, cod3, cod4, cod5, cod6, handleInputChange
     } = useForm({
@@ -23,6 +23,11 @@ export const ConfirmAuthPage: React.FC = () => {
         let confirmationCode = '' + cod1 + cod2 + cod3 + cod4 + cod5 + cod6;
         if (confirmationCode !== '')
             startConfirm(confirmationCode);
+    }
+
+    const onCLickCancel = () => {
+        localStorage.removeItem("username_temp");
+        navigate("/init/auth/login");
     }
 
     if (!email) {
@@ -150,9 +155,19 @@ export const ConfirmAuthPage: React.FC = () => {
                     fullWidth
                     variant="contained"
                     onClick={() => handleOnClickConfirm()}
-                    sx={{ mt: 3, mb: 2 }}
+                    sx={{ mt: 5, mb: 2 }}
                 >
                     CONFIRMAR
+                </Button>
+                <Button
+                    type="button"
+                    color='secondary'
+                    fullWidth
+                    variant="outlined"
+                    onClick={() => onCLickCancel()}
+                    sx={{ mt: 1, mb: 2 }}
+                >
+                    Cancelar
                 </Button>
             </Box>
         </Container>

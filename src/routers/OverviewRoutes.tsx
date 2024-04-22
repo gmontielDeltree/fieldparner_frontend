@@ -18,6 +18,7 @@ import {
   NewExitFieldPage,
   ListOriginsDestinationsPage,
   NewOriginsDestinationsPage,
+  ListUsersPage,
   SatellitePage,
   DevicePage,
   PricesPage,
@@ -28,14 +29,15 @@ import {
   WithdrawalOrdersPage,
   ConfirmWithdrawalOrderPage,
   ListTransformPage,
+  ListZonesPage,
+  NewZonePage
 } from "../pages";
 import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
-import {
-  MagrisIntegration,
-  MagrisReportIntegration,
-} from "../components/Integrations/MagrisIntegration";
-import { ComponentTestBed } from "../pages/ComponentTestBed";
+import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
+import { NewUserPage } from "../pages/NewUserPage";
+import { ComponentTestBed } from '../pages/ComponentTestBed';
+import { useAppSelector } from "../hooks";
 import { PlanificationByLotPage } from "../pages/PlanificationByLotPage";
 import NewFieldPage from "../pages/NewFieldPage";
 import { FieldPage } from "../pages/FieldPage";
@@ -43,6 +45,8 @@ import { LotPage } from "../pages/LotPage";
 import { NewLotPage } from "../pages/NewLotPage";
 
 export const OverviewRoutes: React.FC = () => {
+  const { user } = useAppSelector(state => state.auth);
+
   const { pathname, search } = useLocation();
 
   const lastPath = useMemo(() => pathname + search, [pathname, search]);
@@ -127,6 +131,15 @@ export const OverviewRoutes: React.FC = () => {
           element={<ZoningPage />}
         />
         <Route path="/overview/prices" element={<PricesPage />} />
+        {
+          (user && user.isAdmin) && (
+            <>
+              <Route path="/overview/users" element={<ListUsersPage />} />
+              <Route path="/overview/users/new" element={<NewUserPage />} />
+              <Route path="/overview/users/:id" element={<NewUserPage />} />
+            </>
+          )
+        }
 
         <Route
           path="/overview/list-orders"
@@ -142,6 +155,13 @@ export const OverviewRoutes: React.FC = () => {
           path="/overview/component-test-bed"
           element={<ComponentTestBed />}
         />
+
+        <Route path="/overview/zones" element={<ListZonesPage />} />
+        <Route path="/overview/zones/new" element={<NewZonePage />} />
+        <Route path="/overview/zones/:id" element={<NewZonePage />} />
+
+
+
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

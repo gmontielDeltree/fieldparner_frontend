@@ -302,5 +302,8 @@
   "_Cancel": "CANCELAR",
   "_all": "TODOS",
   "_none": "NINGUNO",
-  "_name": "Nombre"
+  "_name": "Nombre",
+  "_zone": "Zona",
+  "zone_description": "Zona/ Descripción",
+  "_zones":"Zonas"
 }

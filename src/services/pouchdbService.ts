@@ -2,25 +2,27 @@ import PouchDB from 'pouchdb';
 import PouchDBFind from 'pouchdb-find'
 import { getEnvVariables } from '../helpers/getEnvVariables';
 import {
-  Business,
-  Category,
-  CountryCode,
-  Deposit,
-  ItemZipCode,
-  Supply,
-  Vehicle,
-  StockMovement,
-  StockByLot,
-  ExitField,
-  Campaign,
-  Field,
-  OriginDestinations,
-  WithdrawalOrder,
-  Numerator,
-  DepositSupplyOrder,
-  WithdrawalsByDepositSupply,
-  MovementType,
-  Crops,
+    Business,
+    Category,
+    CountryCode,
+    Deposit,
+    ItemZipCode,
+    Supply,
+    Vehicle,
+    StockMovement,
+    StockByLot,
+    ExitField,
+    Campaign,
+    Field,
+    OriginDestinations,
+    UserByAccount,
+    WithdrawalOrder,
+    Numerator,
+    DepositSupplyOrder,
+    WithdrawalsByDepositSupply,
+    MovementType,
+    Crops,
+    Zones,
 } from '../types';
 import uuid4 from 'uuid4';
 
@@ -45,7 +47,8 @@ const dbNames = Object.freeze({
     exitFields: "exit-fields",
     campaigns: "campaigns",
     fields: "fields",
-    originsDestinations: "origins-destinations",
+    originsDestinations:"origins-destinations",
+    users: "users",
     numerators: "numerators",
     withdrawalOrders: "withdrawal-orders",
     depositSupplyOrder: "deposit-supply-order",
@@ -54,31 +57,36 @@ const dbNames = Object.freeze({
     platform: "platform",
     platformSupplies: "test-supplies",
     crops: "crops",
+    zones: "zones",
+    fieldpartner: "fieldpartner",
 });
 
 export const dbContext = Object.freeze({
-  vehicles: new PouchDB<Vehicle>(dbNames.vehicles),
-  typeVehicles: new PouchDB(dbNames.typeVehicles),
-  deposits: new PouchDB<Deposit>(dbNames.deposits),
-  zipCodeARG: new PouchDB<ItemZipCode>(dbNames.zipCodeARG),
-  zipCodePRY: new PouchDB<ItemZipCode>(dbNames.zipCodePRY),
-  supplies: new PouchDB<Supply>(dbNames.supplies),
-  socialEntities: new PouchDB<Business>(dbNames.socialEntities),
-  categories: new PouchDB<Category>(dbNames.categories),
-  stockMovements: new PouchDB<StockMovement>(dbNames.stockMovements),
-  stockByLots: new PouchDB<StockByLot>(dbNames.stockByLots),
-  exitFields: new PouchDB<ExitField>(dbNames.exitFields),
-  campaigns: new PouchDB<Campaign>(dbNames.campaigns),
-  fields: new PouchDB<Field>(dbNames.fields), //TODO: revisar db
-  originsDestinations: new PouchDB<OriginDestinations>(dbNames.originsDestinations),
-  withdrawalOrders: new PouchDB<WithdrawalOrder>(dbNames.withdrawalOrders),
-  depositSupplyOrder: new PouchDB<DepositSupplyOrder>(dbNames.depositSupplyOrder),
-  withdrawalsByDepositSupply: new PouchDB<WithdrawalsByDepositSupply>(dbNames.withdrawalsByDepositSupply),
-  numerators: new PouchDB<Numerator>(dbNames.numerators),
-  movementsType: new PouchDB<MovementType>(dbNames.movementsType),
-  platform: new PouchDB<any>(dbNames.platform),
-  platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
-  crops: new PouchDB<Crops>(dbNames.crops),
+    vehicles: new PouchDB<Vehicle>(dbNames.vehicles),
+    typeVehicles: new PouchDB(dbNames.typeVehicles),
+    deposits: new PouchDB<Deposit>(dbNames.deposits),
+    zipCodeARG: new PouchDB<ItemZipCode>(dbNames.zipCodeARG),
+    zipCodePRY: new PouchDB<ItemZipCode>(dbNames.zipCodePRY),
+    supplies: new PouchDB<Supply>(dbNames.supplies),
+    socialEntities: new PouchDB<Business>(dbNames.socialEntities),
+    categories: new PouchDB<Category>(dbNames.categories),
+    stockMovements: new PouchDB<StockMovement>(dbNames.stockMovements),
+    stockByLots: new PouchDB<StockByLot>(dbNames.stockByLots),
+    exitFields: new PouchDB<ExitField>(dbNames.exitFields),
+    campaigns: new PouchDB<Campaign>(dbNames.campaigns),
+    fields: new PouchDB<Field>(dbNames.fields), //TODO: revisar db
+    originsDestinations: new PouchDB<OriginDestinations>(dbNames.originsDestinations),
+    users: new PouchDB<UserByAccount>(dbNames.users),
+    withdrawalOrders: new PouchDB<WithdrawalOrder>(dbNames.withdrawalOrders),
+    depositSupplyOrder: new PouchDB<DepositSupplyOrder>(dbNames.depositSupplyOrder),
+    withdrawalsByDepositSupply: new PouchDB<WithdrawalsByDepositSupply>(dbNames.withdrawalsByDepositSupply),
+    numerators: new PouchDB<Numerator>(dbNames.numerators),
+    movementsType: new PouchDB<MovementType>(dbNames.movementsType),
+    platform: new PouchDB<any>(dbNames.platform),
+    platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
+    crops: new PouchDB<Crops>(dbNames.crops),
+    zones: new PouchDB<Zones>(dbNames.zones),
+    fieldpartner: new PouchDB(dbNames.fieldpartner),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -97,16 +105,17 @@ dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, op
 dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
 dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
 dbContext.campaigns.sync(`${remoteCouchDBUrl}${dbNames.campaigns}`, opts);
+dbContext.users.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
 dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
 dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`, opts);
 dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`, opts);
 dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`, opts);
 dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`, opts);
 dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`, opts);
-
 dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
 dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
 dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
+dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
