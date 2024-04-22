@@ -24,13 +24,14 @@ const EditField: React.FC<EditFieldProps> = ({
   handleEditField,
 }) => {
   const cardStyle: React.CSSProperties = {
-    position: "fixed",
-    bottom: 0,
-    left: "15%",
-    transform: "translateX(-50%)",
+    position: "absolute",
+    bottom: 10,
+    left: "2%",
+    zIndex: 3,
+    // transform: "translateX(-50%)",
     margin: "40px",
     maxWidth: "none",
-    width: "30%",
+    width: "30vw",
     borderRadius: "10px",
     display: isOpen ? "block" : "none",
   };

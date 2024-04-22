@@ -1,6 +1,6 @@
 import { LitElement, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { showNotification, showNotificationTimed } from './helpers/notificaciones';
+//import { showNotification, showNotificationTimed } from './helpers/notificaciones';
 import { VitePWA } from 'vite-plugin-pwa';
 
 @customElement("pwa-update")
@@ -110,7 +110,7 @@ export class pwaupdate extends LitElement {
 
         if(lr === 'true'){
           localStorage.setItem("updated_flg","false")
-          showNotificationTimed("Actualizado a v"+ import.meta.env.VITE_VERSION,"contrast",'bottom-start', 30000)
+          //showNotificationTimed("Actualizado a v"+ import.meta.env.VITE_VERSION,"contrast",'bottom-start', 30000)
         }
 
 
@@ -234,7 +234,7 @@ export class pwaupdate extends LitElement {
   checkUpdate() {
     if (this.swactivated && this.swupdated) {
       console.log("Application was updated refreshing the page...");
-      showNotification("Actualizando a v"+ import.meta.env.VITE_VERSION,"contrast")
+      //showNotification("Actualizando a v"+ import.meta.env.VITE_VERSION,"contrast")
       localStorage.setItem("updated_flg","true");
       if(import.meta.env.PROD){
         window.location.reload();

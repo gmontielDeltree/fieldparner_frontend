@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { PlanificationByField } from "../components/Planification/PlanificationByField";
-import {
-  Grid, Paper
-} from "@mui/material";
+import { Grid, Paper } from "@mui/material";
 import { useField } from "../hooks/useField";
 import { useAppSelector, useCampaign } from "../hooks";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -24,6 +22,7 @@ import { useListaDeCiclos } from "../hooks/usePlanifications";
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import { useTranslation } from "react-i18next";
+import { PlanificationByFieldForLotPage } from "../components/Planification/PlanificationByFieldForLotPage";
 
 function useQuery() {
   const { search } = useLocation();
@@ -56,17 +55,22 @@ export const PlanificationByLotPage: React.FC = () => {
     if (fields?.length) {
       console.log("campos", fields);
 
-      console.log("campoid, loteid, campaña ", loteId2, parentId, selectedCampaign);
+      console.log(
+        "campoid, loteid, campaña ",
+        loteId2,
+        parentId,
+        selectedCampaign,
+      );
     }
   }, [fields, campaigns]);
 
   const navigate = useNavigate();
-  const {t} = useTranslation()
+  const { t } = useTranslation();
 
   const crops = useCrops();
 
   const handleClose = () => {
-    navigate(query.get("backUrl"))
+    navigate(query.get("backUrl"));
   };
 
   return (
@@ -75,23 +79,20 @@ export const PlanificationByLotPage: React.FC = () => {
         <InsumosContext.Provider value={useInsumos()}>
           <LaboresContext.Provider value={useLabores()}>
             <CiclosContext.Provider value={useListaDeCiclos()}>
-
               <Dialog onClose={handleClose} open={true}>
                 {selectedCampaign && parentId && loteId2 && (
-                
-                    <Paper >
-                      <PlanificationByField
-                        campaignId={selectedCampaign?._id}
-                        fieldId={parentId}
-                        loteSelected={loteId2}
-                        onlyLoteSelected
-                        onClose={handleClose}
-                      />
-                    </Paper>
-                
+                  <Paper>
+                    <PlanificationByFieldForLotPage
+                      campaignId={selectedCampaign?._id}
+                      fieldId={parentId}
+                      loteId={loteId2}
+                      loteSelected={loteId2}
+                      onlyLoteSelected
+                      onClose={handleClose}
+                    />
+                  </Paper>
                 )}
               </Dialog>
-              
             </CiclosContext.Provider>
           </LaboresContext.Provider>
         </InsumosContext.Provider>

@@ -61,7 +61,7 @@ function DrawGeometry2({ handleSaveGeometry, type }: DrawGeometryProps) {
       // Set mapbox-gl-draw to draw by default.
       // The user does not have to click the polygon control button first.
       defaultMode: "draw_polygon",
-    })
+    }),
   );
 
   //useSelector(selectDraw);
@@ -82,7 +82,6 @@ function DrawGeometry2({ handleSaveGeometry, type }: DrawGeometryProps) {
     map.off("draw.selectionchange", backToSimpleSelect);
     map.off("draw.modechange", backToSimpleSelect);
     map.off("draw.update", drawUpdate);
-
   }, [map]);
 
   const handleDrawComplete = useCallback((event: any) => {
@@ -134,9 +133,7 @@ function DrawGeometry2({ handleSaveGeometry, type }: DrawGeometryProps) {
 
   /* reestablecer modo, puntero y mapa al unmount */
   useEffect(() => {
-   
-      return onUnmount;
-    
+    return onUnmount;
   }, []);
 
   useEffect(() => {
@@ -171,7 +168,7 @@ function DrawGeometry2({ handleSaveGeometry, type }: DrawGeometryProps) {
   };
 
   const containerStyles: React.CSSProperties = {
-    position: "fixed",
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,

@@ -15,16 +15,33 @@ import { Ciclo } from "../components/Planification/Ciclo";
 import { Row } from "reactstrap";
 import { Loading } from "../components/Loading/index";
 import async from "../../netlify/edge-functions/geo";
-import { ILaboresPlanificacion } from '../interfaces/planification';
+import { ILaboresPlanificacion } from "../interfaces/planification";
+import {
+  Actividad,
+  DetallesAplicacion,
+  LineaDosis,
+  LineaLabor,
+} from "../interfaces/activity";
+import { Contratista } from "../interfaces/contractor";
+import { Crop } from "../interfaces/input";
+import { Insumo } from "../interfaces/insumos";
+import { listar_ejecuciones_por_depo } from "../../owncomponents/depositos/depositos-funciones";
+import { useLabores } from "./useLabores";
+import { useTranslation } from "react-i18next";
 
 export const usePlanActividad = () => {
   let db =
     dbContext.fields as unknown as PouchDB.Database<IActividadPlanificacion>;
 
+  const { user } = useAppSelector((state) => state.auth);
+
+  const { t } = useTranslation();
+  const { getLaborFromId } = useLabores();
+
   const saveActividad = async (
     actividadDoc: IActividadPlanificacion,
     lineasInsumos?,
-    lineasLabores?
+    lineasLabores?,
   ) => {
     await db.put(actividadDoc);
     await db.get(actividadDoc.cicloId).then((doc) => {
@@ -33,44 +50,42 @@ export const usePlanActividad = () => {
       db.put(d);
     });
     if (lineasInsumos) {
-      await db.bulkDocs(lineasInsumos).then(() =>
-        console.log("Lineas Insumos Guardadas", lineasInsumos)
-      );
+      await db
+        .bulkDocs(lineasInsumos)
+        .then(() => console.log("Lineas Insumos Guardadas", lineasInsumos));
     }
     if (lineasLabores) {
-      await db.bulkDocs(lineasLabores).then(() =>
-        console.log("Lineas Labores Guardadas", lineasLabores)
-      );
+      await db
+        .bulkDocs(lineasLabores)
+        .then(() => console.log("Lineas Labores Guardadas", lineasLabores));
     }
   };
 
-  const getLineasInsumos = async (lineasIds:string[])=>{
-    let d = await db.allDocs({keys:lineasIds,include_docs:true})
-    let docs = d.rows.map((r)=>r.doc)
-    return docs as IInsumosPlanificacion[]
+  const getLineasInsumos = async (lineasIds: string[]) => {
+    let d = await db.allDocs({ keys: lineasIds, include_docs: true });
+    let docs = d.rows.map((r) => r.doc);
+    return docs as IInsumosPlanificacion[];
+  };
 
-  }
-
-  const getLineasServicios = async (lineasIds:string[])=>{
-    let d = await db.allDocs({keys:lineasIds,include_docs:true})
-    let docs = d.rows.map((r)=>r.doc)
-    return docs as ILaboresPlanificacion[]
-
-  }
+  const getLineasServicios = async (lineasIds: string[]) => {
+    let d = await db.allDocs({ keys: lineasIds, include_docs: true });
+    let docs = d.rows.map((r) => r.doc);
+    return docs as ILaboresPlanificacion[];
+  };
   const getActividadesByCiclo = (cicloId) => {};
 
   const removeActividad = async (actividadId) => {
     let act: IActividadPlanificacion = await db.get(actividadId);
     let cicloParent: ICiclosPlanificacion = await db.get(act.cicloId);
     cicloParent.actividadesIds = cicloParent.actividadesIds.filter(
-      (id) => id !== actividadId
+      (id) => id !== actividadId,
     );
     // Update cicloParent
     db.put(cicloParent);
 
     // Remove Lineas de insumos
     let lineas = only_docs(
-      await db.allDocs({ include_docs: true, keys: act.insumosLineasIds })
+      await db.allDocs({ include_docs: true, keys: act.insumosLineasIds }),
     );
     lineas = lineas.map((l) => {
       l["_deleted"] = true;
@@ -80,7 +95,7 @@ export const usePlanActividad = () => {
 
     // Remove Lineas de labores
     lineas = only_docs(
-      await db.allDocs({ include_docs: true, keys: act.laboresLineasIds })
+      await db.allDocs({ include_docs: true, keys: act.laboresLineasIds }),
     );
     lineas = lineas.map((l) => {
       l["_deleted"] = true;
@@ -92,11 +107,94 @@ export const usePlanActividad = () => {
     db.remove(act);
   };
 
+  const programarActividadPlanificada = async (
+    actividad: IActividadPlanificacion,
+  ) => {
+    console.log("TODO Programar ESTO", actividad);
+    let uuid = uuidv7();
+
+    let ciclo: ICiclosPlanificacion = await dbContext.fields.get(
+      actividad.cicloId,
+    );
+    let cultivo: Crop = await dbContext.crops.get(ciclo.cultivoId);
+
+    let dosis: LineaDosis = [];
+    let bunch_of_promises = await Promise.all(
+      actividad.insumosLineasIds.map(async (id) => {
+        let linea: IInsumosPlanificacion = await dbContext.fields.get(id);
+        let insumo: Insumo = await dbContext.supplies.get(linea.insumoId);
+
+        let nuevaLinea: LineaDosis = {
+          insumo: insumo,
+          uuid: uuidv7(),
+          dosis: linea.dosis,
+          total: linea.totalCantidad,
+          precio_estimado: linea.precioUnitario,
+          deposito: null,
+        };
+
+        dosis.push(nuevaLinea);
+      }),
+    );
+
+    console.log("LLLLLLLLLLLL");
+    let servicios: LineaLabor = [];
+    let bunch_of_servicios = await Promise.all(
+      actividad.laboresLineasIds.map(async (id) => {
+        let linea: ILaboresPlanificacion = await dbContext.fields.get(id);
+        let labor = getLaborFromId(linea.laborId);
+
+        let nuevaLinea: LineaLabor = {
+          labor: { labor: labor?.name, uuid: labor?.id },
+          costo: linea.totalCosto,
+          observacion: linea.comentario || "",
+          uuid: uuidv7(),
+        };
+
+        servicios.push(nuevaLinea);
+      }),
+    );
+
+    console.log("AASSSS");
+    let detalles: Detalles = {
+      fecha_ejecucion_tentativa: actividad.fecha,
+      dosis: dosis,
+      cultivo: cultivo,
+      costo_labor: servicios,
+      hectareas: actividad.area,
+    };
+
+    let nuevaActividad: Actividad = {
+      _id: `actividad:${uuid}`,
+      lote_uuid: actividad.loteId,
+      contratista: actividad.contratista,
+      uuid: uuid,
+      tipo: actividad.tipo,
+      detalles: detalles,
+      comentario: t("Desde planificacion"),
+      estado: "pendiente",
+      condiciones: {
+        humedad_max: 80,
+        humedad_min: 30,
+        temperatura_max: 25,
+        temperatura_min: 15,
+        velocidad_max: 15,
+        velocidad_min: 0,
+      },
+      accountId: user?.accountId || undefined,
+    };
+    console.log("Nueva Actividad", nuevaActividad);
+
+    dbContext.fields.put(nuevaActividad).then(() => {
+      Promise.resolve("fdfdf");
+    });
+  };
   return {
     saveActividad,
     removeActividad,
     getLineasServicios,
     getLineasInsumos,
+    programarActividadPlanificada,
   };
 };
 
@@ -109,7 +207,7 @@ export const useLineasInsumos = (lineasIds) => {
   const getLineas = useCallback(async () => {
     if (lineasIds?.length > 0) {
       let dr = only_docs(
-        await db.allDocs({ include_docs: true, keys: lineasIds })
+        await db.allDocs({ include_docs: true, keys: lineasIds }),
       );
       setLin(dr);
     }
@@ -126,7 +224,6 @@ export const usePlanificationActividad = (actividadId: string) => {
   const [actividad, setAct] = useState<IActividadPlanificacion>();
   const [lineasInsumos, setLineasInsumos] = useState([]);
   const [lineasLabores, setLineasLabores] = useState([]);
-  
 
   const [loading, setLoading] = useState(true);
 
@@ -139,11 +236,11 @@ export const usePlanificationActividad = (actividadId: string) => {
         await db.allDocs({
           include_docs: true,
           keys: actividad.insumosLineasIds,
-        })
+        }),
       );
       console.log(a, db, actividad.insumosLineasIds);
       setLineasInsumos(a);
-    }else if(actividad?.insumosLineasIds.length === 0){
+    } else if (actividad?.insumosLineasIds.length === 0) {
       setLineasInsumos([]);
     }
   };
@@ -154,11 +251,11 @@ export const usePlanificationActividad = (actividadId: string) => {
         await db.allDocs({
           include_docs: true,
           keys: actividad.laboresLineasIds,
-        })
+        }),
       );
       console.log("LINEAS LABORES ", a, actividad.laboresLineasIds);
       setLineasLabores(a);
-    }else if(actividad?.laboresLineasIds.length === 0){
+    } else if (actividad?.laboresLineasIds.length === 0) {
       setLineasLabores([]);
     }
   };
@@ -181,13 +278,20 @@ export const usePlanificationActividad = (actividadId: string) => {
     });
   }, []);
 
-  const refreshActividad = ()=>{
+  const refreshActividad = () => {
     db.get(actividad?._id).then((a) => {
       setAct(a);
     });
-  }
+  };
 
-  return { ...actividad, lineasInsumos, lineasLabores, loading, actividad, refreshActividad };
+  return {
+    ...actividad,
+    lineasInsumos,
+    lineasLabores,
+    loading,
+    actividad,
+    refreshActividad,
+  };
 };
 
 export const useCiclo = ({
@@ -218,24 +322,23 @@ export const useCiclo = ({
   let db =
     dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
 
-  const saveCiclo = 
-    (campanaId, lotePId,cultivoId, startDate, endDate) => {
-      console.log("Saving Cycle",campanaId,cultivoId)
-      let c = { ...ciclo };
+  const saveCiclo = (campanaId, lotePId, cultivoId, startDate, endDate) => {
+    console.log("Saving Cycle", campanaId, cultivoId);
+    let c = { ...ciclo };
 
-      if (!cicloId) {
-        // Nuevo -> setOtroId
-        c._id = `ciclo:${campanaId}:${lotePId}:${uuidv7()}`;
-      }
+    if (!cicloId) {
+      // Nuevo -> setOtroId
+      c._id = `ciclo:${campanaId}:${lotePId}:${uuidv7()}`;
+    }
 
-      c.loteId= loteId;
-      c.campanaId = campanaId;
-      c.fechaFin = endDate;
-      c.fechaInicio = startDate;
-      c.cultivoId = cultivoId;
-      db.put(c).then(() => console.log("saveCiclo", c, ciclo));
-      setCiclo(c);
-    };
+    c.loteId = loteId;
+    c.campanaId = campanaId;
+    c.fechaFin = endDate;
+    c.fechaInicio = startDate;
+    c.cultivoId = cultivoId;
+    db.put(c).then(() => console.log("saveCiclo", c, ciclo));
+    setCiclo(c);
+  };
 
   return [ciclo, saveCiclo];
 };
@@ -253,7 +356,7 @@ export const useListaDeCiclos = () => {
         include_docs: true,
         startkey: key,
         endkey: key + "\ufff0",
-      })
+      }),
     );
     // console.log("CICLOS", docsResp, campanaId, loteId);
     setCiclos(docsResp);
@@ -266,14 +369,14 @@ export const useListaDeCiclos = () => {
         include_docs: true,
         startkey: key,
         endkey: key + "\ufff0",
-      })
+      }),
     );
     setCiclos(docsResp);
   };
 
   const getCiclosFromCampanaAndLote = (campanaId, loteId) => {
     let fff = ciclos.filter(
-      (c) => c.campanaId === campanaId && c.loteId === loteId
+      (c) => c.campanaId === campanaId && c.loteId === loteId,
     );
     return fff;
   };
@@ -284,7 +387,14 @@ export const useListaDeCiclos = () => {
       .then(getCiclos);
   };
 
-  const saveCiclo = (campanaId, loteId, ciclo, cultivoId, startDate, endDate) => {
+  const saveCiclo = (
+    campanaId,
+    loteId,
+    ciclo,
+    cultivoId,
+    startDate,
+    endDate,
+  ) => {
     // console.log("ACAAAAAAAAAAAAAAAA",campaingId)
     let c = { ...ciclo };
 
@@ -292,7 +402,6 @@ export const useListaDeCiclos = () => {
       // Nuevo -> setOtroId
       c._id = `ciclo:${campanaId}:${loteId}:${uuidv7()}`;
     }
-
 
     c.fechaFin = endDate;
     c.fechaInicio = startDate;
@@ -303,7 +412,7 @@ export const useListaDeCiclos = () => {
 
   useEffect(() => {
     getCiclos();
-    console.count("usePlanHook")
+    console.count("usePlanHook");
   }, []);
 
   return { ciclos, refreshCiclos, removeCiclo, getCiclosFromCampanaAndLote };
@@ -323,7 +432,7 @@ export const useCiclos = (campaingId: string, loteId: string) => {
           include_docs: true,
           startkey: key,
           endkey: key + "\ufff0",
-        })
+        }),
       );
       // console.log("CICLOS", docsResp, campanaId, loteId);
       setCiclos(docsResp);
@@ -337,7 +446,7 @@ export const useCiclos = (campaingId: string, loteId: string) => {
         include_docs: true,
         startkey: key,
         endkey: key + "\ufff0",
-      })
+      }),
     );
     console.log("CICLOS", docsResp, campaingId, loteId);
     setCiclos(docsResp);
@@ -373,7 +482,7 @@ export const usePlanification = (campaingId: string, campoId: string) => {
       setIsLoading(false);
       if (result.docs) {
         const documents: IPlanificacion[] = result.docs.map(
-          (row) => row as IPlanificacion
+          (row) => row as IPlanificacion,
         );
         setPlanifications(documents);
       }
@@ -417,7 +526,7 @@ export const usePlanification = (campaingId: string, campoId: string) => {
 
   const getPlanificationByField = async (
     campaingId: string,
-    fieldId: string
+    fieldId: string,
   ) => {
     setIsLoading(false);
 
@@ -431,7 +540,7 @@ export const usePlanification = (campaingId: string, campoId: string) => {
 
     if (result.rows) {
       const documents: IPlanificacion[] = result.rows.map(
-        (row) => row.doc as IPlanificacion
+        (row) => row.doc as IPlanificacion,
       );
       setPlanificationsByField(documents);
     }

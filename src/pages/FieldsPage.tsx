@@ -27,6 +27,7 @@ import { Actividad } from "../interfaces/activity";
 import { format, isBefore, isToday, parseISO } from "date-fns";
 import { hideFieldList } from "../redux/fieldsList";
 import "../classes/engine/Engine";
+import { selectSyncStatus } from "../redux/syncStatus";
 
 export const FieldsPage: React.FC = () => {
   const map = useSelector(selectMap);
@@ -40,6 +41,8 @@ export const FieldsPage: React.FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const location = useLocation();
+
+  const syncStatus = useSelector(selectSyncStatus);
 
   const isVisible = useSelector(
     (state: RootState) => state.fieldList.isVisible,
@@ -81,6 +84,12 @@ export const FieldsPage: React.FC = () => {
     getFields();
     getDeposits();
   }, []);
+
+  useEffect(() => {
+    getFields();
+    getDeposits();
+    console.log("FieldsPage - Updating by sync");
+  }, [syncStatus]);
 
   useEffect(() => {
     if (map) {

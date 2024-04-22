@@ -31,7 +31,7 @@ import { FeatureCollection } from "@turf/helpers";
 import bbox from "@turf/bbox";
 import { Campo } from "../tipos/campos";
 import { uuidv7 } from "uuidv7";
-import { showNotification } from "../helpers/notificaciones";
+
 import { Vehiculo } from "@types";
 import area from '@turf/area';
 
@@ -333,7 +333,7 @@ export class JohnDeereIntegracion extends LitElement {
     // await campo_guardar(nc);
     alert("TODO CAMPO GUARDAR REACT")
     this.dispatchEvent(new CustomEvent("importarCampo", {detail:nc, bubbles:true, composed:true}))
-    showNotification("Campo agregado", undefined, "top-center");
+
   };
 
   display_in_map = async (machine: JDMachine) => {

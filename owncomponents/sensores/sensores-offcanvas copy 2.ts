@@ -12,7 +12,6 @@ import "@vaadin/grid";
 import bootstrap from "bootstrap/dist/css/bootstrap.min.css?inline";
 import Offcanvas from "bootstrap/js/dist/offcanvas";
 import PouchDB from "pouchdb";
-import "../contratistas/contratista-crud";
 import "@vaadin/icons";
 import { Map } from "mapbox-gl";
 import { Devices, extract_tele } from "./sensores";
@@ -217,7 +216,7 @@ export class SensoresClass extends LitElement {
     console.log("sensores-offcanvas-WillUpdate", props);
     if (props.has("uuid")) {
       this._selected_details = await this._devices.get_details(
-        this._selected_device_card.device_id
+        this._selected_device_card.device_id,
       );
       this.load_data_points();
       // this._offcanvas.show();
@@ -293,7 +292,7 @@ export class SensoresClass extends LitElement {
 
   async load_data_points() {
     let nt = await this._devices.get_raw_data_for_charts_generic(
-      this._selected_device_card.device_id
+      this._selected_device_card.device_id,
     );
     console.log("Data for Charts LDP", nt);
     this._datapoints = nt;
@@ -415,7 +414,7 @@ export class SensoresClass extends LitElement {
     };
 
     let nt = await this._devices.get_raw_data_for_charts(
-      this._selected_device_card.device_id
+      this._selected_device_card.device_id,
     );
     console.log(nt);
 
@@ -426,7 +425,7 @@ export class SensoresClass extends LitElement {
 
     var chart_1 = new ApexCharts(
       this.shadowRoot.getElementById("chart-1"),
-      options
+      options,
     );
 
     let op2 = { ...options };
@@ -448,7 +447,7 @@ export class SensoresClass extends LitElement {
     //options.series[1].data = [...sim1.temperatura];
     var chart_2 = new ApexCharts(
       this.shadowRoot.getElementById("chart-2"),
-      op2
+      op2,
     );
 
     chart_1.render();
@@ -457,7 +456,7 @@ export class SensoresClass extends LitElement {
 
   device_tiene(sensor) {
     return devices_modelos[this._selected_details?.tipo]?.sensores.includes(
-      sensor
+      sensor,
     );
   }
 
@@ -492,7 +491,7 @@ export class SensoresClass extends LitElement {
     // Si no es sensor de humedad suelo no renderiza nada
     if (
       !devices_modelos[this._selected_details?.tipo]?.sensores.includes(
-        "humedad_suelo"
+        "humedad_suelo",
       )
     ) {
       return null;
@@ -581,7 +580,7 @@ export class SensoresClass extends LitElement {
     const ifLoadedShow = (nombre_var) => {
       let a1 =
         devices_modelos[this._selected_details?.tipo]?.sensores.includes(
-          nombre_var
+          nombre_var,
         );
 
       let a2 = this._selected_device_card ? true : false;
