@@ -12,8 +12,8 @@ import {
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import planAnualIcon from "../../images/icons/plan.png";
-import preparadoIcon from "../../images/icons/prepare.png";
+import planAnualIcon from "../../images/icons/iconoplanificacionanual.webp";
+import preparadoIcon from "../../images/icons/iconoplanificaciondesuelo.webp";
 
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
 import categoryIcon2 from "../../images/icons/pulverizadora_act.webp";
