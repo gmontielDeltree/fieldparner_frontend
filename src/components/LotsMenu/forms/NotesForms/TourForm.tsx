@@ -109,7 +109,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       [fieldName]: value
     });
   };
-
   const fetchImageUrl = async (imageId) => {
     try {
       const blob = await db.getAttachment(imageId, "image");
@@ -118,7 +117,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       console.error("Error fetching image:", error);
     }
   };
-
   const fetchAudioUrl = async (audioId) => {
     try {
       const blob = await db.getAttachment(audioId, "audio");
@@ -187,7 +185,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     setIsPointMode(true);
   };
 
-  const safeParseDate = (dateStr) => {
+  const safeParseDate = (dateStr: string) => {
     console.log("Parsing date:", dateStr);
     try {
       if (dateStr) {
@@ -245,12 +243,11 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || fecha}
+                      value={safeParseDate(formData.fecha)}
                       onChange={(newValue) => {
-                        setFecha(newValue);
                         const updatedFormData = {
                           ...formData,
-                          fecha: newValue
+                          fecha: newValue.toISOString()
                         };
                         setFormData(updatedFormData);
                       }}
@@ -265,12 +262,11 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 <Grid item xs={12} sm={4}>
                   <TimePicker
                     label="Hora"
-                    value={formData.hora !== undefined ? formData.hora : hora}
+                    value={safeParseDate(formData.hora)}
                     onChange={(newValue) => {
-                      setHora(newValue);
                       const updatedFormData = {
                         ...formData,
-                        hora: newValue
+                        hora: newValue.toISOString()
                       };
                       setFormData(updatedFormData);
                     }}
@@ -284,16 +280,11 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 <Grid item xs={12} sm={4}>
                   <DatePicker
                     label="Próxima Visita"
-                    value={
-                      formData.proxima_visita !== undefined
-                        ? formData.proxima_visita
-                        : proximaVisita
-                    }
+                    value={safeParseDate(formData.proxima_visita)}
                     onChange={(newValue) => {
-                      setProximaVisita(newValue);
                       const updatedFormData = {
                         ...formData,
-                        proxima_visita: newValue
+                        proxima_visita: newValue.toISOString()
                       };
                       setFormData(updatedFormData);
                     }}
