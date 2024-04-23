@@ -196,7 +196,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
           return date;
         } else {
           console.error("Fecha inválida:", dateStr);
-          return new Date(); 
+          return new Date();
         }
       } else {
         console.log("Fecha vacía. Estableciendo fecha por defecto.");
@@ -204,7 +204,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       }
     } catch (e) {
       console.error("Error parsing date:", e);
-      return new Date(); 
+      return new Date();
     }
   };
 
