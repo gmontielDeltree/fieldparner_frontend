@@ -163,24 +163,26 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   };
 
   const handleImageRemove = async (imageIndex) => {
-    const updatedFotos = [...point.properties.fotos];
-    const removedImageId = updatedFotos.splice(imageIndex, 1)[0];
     try {
+      const updatedFotos = [...point.properties.fotos];
+      const removedImageId = updatedFotos.splice(imageIndex, 1)[0];
       await db.removeAttachment(point._id, removedImageId);
+      setPoint((prevPoint) => ({
+        ...prevPoint,
+        properties: {
+          ...prevPoint.properties,
+          fotos: updatedFotos
+        }
+      }));
+      const updatedImageUrls = await Promise.all(
+        updatedFotos.map(async (imageId) => await fetchImageUrl(imageId))
+      );
+      setImageUrls(updatedImageUrls);
     } catch (error) {
       console.error("Error removing image:", error);
+      console.log("ID del punto:", point._id);
+      console.log("ID de la imagen a eliminar:", removedImageId);
     }
-    setPoint({
-      ...point,
-      properties: {
-        ...point.properties,
-        fotos: updatedFotos
-      }
-    });
-
-    const updatedImageUrls = [...imageUrls];
-    updatedImageUrls.splice(imageIndex, 1);
-    setImageUrls(updatedImageUrls);
   };
 
   const handleAudioRemove = async () => {
