@@ -258,6 +258,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   
               <Grid item xs={12} sm={4}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
+                {console.log("Valor por defecto de la hora:", formData.hora || new Date())}
                   <TimePicker
                     label="Hora"
                     value={formData.hora !== undefined ?formData.hora : new Date()}
