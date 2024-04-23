@@ -9,11 +9,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  CardContent,
   ImageListItem,
   Card,
   ImageList
@@ -23,14 +18,10 @@ import {
   DatePicker,
   TimePicker
 } from "@mui/x-date-pickers";
-import PouchDB from "pouchdb";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { styled } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
-import PointForm from "./PointForm";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { AudioPlayer } from "./PointFormStyles";
-import { dbContext } from "../../../../services";
+import { format } from "date-fns";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -197,6 +188,8 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     setIsPointMode(false);
   };
 
+  console.log("Fecha actual formateada:", new Date().toString());
+
   return (
     <CustomPaper elevation={3}>
       <AnimatePresence mode="wait">
@@ -240,7 +233,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || new Date()}
+                      value={formData.fecha || new Date().toString()}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, fecha: newValue };
                         setFormData(updatedFormData);
