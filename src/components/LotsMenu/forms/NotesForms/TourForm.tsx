@@ -240,16 +240,30 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <Grid item xs={12} sm={4}>
                     <DatePicker
                       label="Fecha"
                       value={formData.fecha || new Date()}
                       onChange={(newValue) => {
-                        const updatedFormData = {
-                          ...formData,
-                          fecha: newValue
-                        };
+                        const updatedFormData = { ...formData, fecha: newValue };
+                        setFormData(updatedFormData);
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} fullWidth />
+                      )}
+                    />
+                  </Grid>
+                </LocalizationProvider>
+
+
+                  <Grid item xs={12} sm={4}>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <TimePicker
+                      label="Hora"
+                      value={formData.hora || new Date()}
+                      onChange={(newValue) => {
+                        const updatedFormData = { ...formData, hora: newValue };
                         setFormData(updatedFormData);
                       }}
                       renderInput={(params) => (
@@ -257,28 +271,9 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                       )}
                     />
                   </LocalizationProvider>
-                </Grid>
+                  </Grid>
 
-                <Grid item xs={12} sm={4}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <TimePicker
-                    label="Hora"
-                    value={formData.hora instanceof Date ? formData.hora : new Date()}
-                    onChange={(newValue) => {
-                      if (newValue instanceof Date && !isNaN(newValue.getTime())) {
-                        const updatedFormData = { ...formData, hora: newValue };
-                        setFormData(updatedFormData);
-                      } else {
-                        console.error('Hora inválida:', newValue);
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} fullWidth />
-                    )}
-                  />
-                </LocalizationProvider>
-              </Grid>
-
+                    
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
