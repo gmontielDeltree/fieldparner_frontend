@@ -29,7 +29,7 @@ import PointForm from "./PointForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AudioPlayer } from "./PointFormStyles";
 import { dbContext } from "../../../../services";
-import { parseISO, isValid, startOfDay } from "date-fns";
+import { parseISO, isValid, format } from "date-fns";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -76,6 +76,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
   const [isPointMode, setIsPointMode] = useState(false);
   const [imageUrls, setImageUrls] = useState({});
   const [audioUrls, setAudioUrls] = useState({});
+  const [currentDate, setCurrentDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
   useEffect(() => {
     const loadMediaUrls = async () => {
@@ -200,7 +201,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
         }
       } else {
         console.log("Fecha vacía. Estableciendo fecha por defecto.");
-        return startOfDay(new Date()); 
+        return new Date(); // Fecha por defecto
       }
     } catch (e) {
       console.error("Error parsing date:", e);
@@ -252,7 +253,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={startOfDay(new Date())}
+                      value={safeParseDate(formData.fecha || currentDate)}
                       onChange={(newValue) => {
                         const updatedFormData = {
                           ...formData,
