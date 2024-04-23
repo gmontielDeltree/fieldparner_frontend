@@ -9,23 +9,20 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  IconButton,
+  Card,
+  ImageList,
+  ImageListItem,
   List,
   ListItem,
-  ListItemText,
   CardContent,
-  ImageListItem,
-  Card,
-  ImageList
 } from "@mui/material";
 import {
   LocalizationProvider,
   DatePicker,
-  TimePicker
-} from "@mui/x-date-pickers";
-import PouchDB from "pouchdb";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { styled } from "@mui/material/styles";
+  TimePicker,
+} from "@mui/lab";
+import { AdapterDateFns } from "@mui/lab/AdapterDateFns";
+import { styled } from "@mui/system";
 import { motion, AnimatePresence } from "framer-motion";
 import PointForm from "./PointForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -36,14 +33,14 @@ import { parseISO } from "date-fns";
 const CustomPaper = styled(Paper)({
   padding: "20px",
   margin: "20px 0",
-  backgroundColor: "#f7f7f7"
+  backgroundColor: "#f7f7f7",
 });
 
 const Title = styled(Typography)({
   fontSize: "1.5em",
   fontWeight: "bold",
   color: "#333",
-  marginBottom: "20px"
+  marginBottom: "20px",
 });
 
 const containerVariants = {
@@ -54,8 +51,8 @@ const containerVariants = {
     transition: {
       type: "tween",
       ease: "anticipate",
-      duration: 0.5
-    }
+      duration: 0.5,
+    },
   },
   exit: {
     opacity: 0,
@@ -63,17 +60,36 @@ const containerVariants = {
     transition: {
       type: "tween",
       ease: "anticipate",
-      duration: 0.5
-    }
-  }
+      duration: 0.5,
+    },
+  },
 };
 
 const FeatureAccordion = styled(Accordion)({
   backgroundColor: "#f0f0f0",
-  margin: "10px 0"
+  margin: "10px 0",
 });
 
-function TourForm({ lot, formData, setFormData, tourSave }) {
+interface FormData {
+  nombre: string;
+  fecha: Date | null;
+  hora: Date | null;
+  proxima_visita: Date | null;
+}
+
+interface TourFormProps {
+  lot: string;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  tourSave: () => void;
+}
+
+const TourForm: React.FC<TourFormProps> = ({
+  lot,
+  formData,
+  setFormData,
+  tourSave,
+}) => {
   const db = dbContext.fields;
   const [isPointMode, setIsPointMode] = useState(false);
   const [imageUrls, setImageUrls] = useState({});
@@ -105,13 +121,14 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     loadMediaUrls();
   }, [formData.features]);
 
-  const onFieldChange = (fieldName, value) => {
+  const onFieldChange = (fieldName: keyof FormData, value: any) => {
     setFormData({
       ...formData,
-      [fieldName]: value
+      [fieldName]: value,
     });
   };
-  const fetchImageUrl = async (imageId) => {
+
+  const fetchImageUrl = async (imageId: string) => {
     try {
       const blob = await db.getAttachment(imageId, "image");
       return URL.createObjectURL(blob);
@@ -119,7 +136,8 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       console.error("Error fetching image:", error);
     }
   };
-  const fetchAudioUrl = async (audioId) => {
+
+  const fetchAudioUrl = async (audioId: string) => {
     try {
       const blob = await db.getAttachment(audioId, "audio");
       return URL.createObjectURL(blob);
@@ -130,18 +148,18 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 
   const DetailCard = styled(Card)({
     marginBottom: "10px",
-    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)"
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
   });
 
   const ImageGrid = styled(ImageList)({
     width: "100%",
-    transform: "translateZ(0)"
+    transform: "translateZ(0)",
   });
 
-  const renderFeatureDetails = (feature) => (
+  const renderFeatureDetails = (feature: any) => (
     <>
       <List>
-        {feature.properties.detalles.map((detail, index) => (
+        {feature.properties.detalles.map((detail: any, index: number) => (
           <DetailCard key={index}>
             <CardContent>
               <Typography variant="body1">{detail.name}</Typography>
@@ -153,7 +171,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
         ))}
       </List>
       <ImageGrid cols={3} gap={8}>
-        {feature.properties.fotos.map((foto, index) => (
+        {feature.properties.fotos.map((foto: string, index: number) => (
           <ImageListItem key={index}>
             <img
               src={imageUrls[foto]}
@@ -203,24 +221,8 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 
   return (
     <CustomPaper elevation={3}>
-      <AnimatePresence mode="wait">
-        {isPointMode ? (
-          <motion.div
-            key="pointForm"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <PointForm
-              lot={lot}
-              formData={formData}
-              setFormData={setFormData}
-              setIsPointMode={setIsPointMode}
-              onTourSave={tourSave}
-            />
-          </motion.div>
-        ) : (
+      <AnimatePresence>
+        {!isPointMode ? (
           <motion.div
             key="mainForm"
             variants={containerVariants}
@@ -231,22 +233,13 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
             <Title>Nota</Title>
             <FormControl fullWidth>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={12}>
-                  <TextField
-                    label="Nombre"
-                    fullWidth
-                    value={formData.nombre || ""}
-                    onChange={(e) => onFieldChange("nombre", e.target.value)}
-                  />
-                </Grid>
-
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
                       value={formData.fecha || new Date()}
                       onChange={(newValue) => {
-                        const updatedFormData = { ...formData, fecha:newValue };
+                        const updatedFormData = { ...formData, fecha: newValue };
                         setFormData(updatedFormData);
                       }}
                       renderInput={(params) => (
@@ -255,12 +248,11 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     />
                   </LocalizationProvider>
                 </Grid>
-                
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <TimePicker
                       label="Hora"
-                      value={formData.hora !== undefined ?formData.hora : new Date()}
+                      value={formData.hora !== undefined ? formData.hora : new Date()}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, hora: newValue };
                         setFormData(updatedFormData);
@@ -271,7 +263,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     />
                   </LocalizationProvider>
                 </Grid>
-                
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
@@ -306,10 +297,26 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
               </Grid>
             ) : null}
           </motion.div>
+        ) : (
+          <motion.div
+            key="pointForm"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <PointForm
+              lot={lot}
+              formData={formData}
+              setFormData={setFormData}
+              setIsPointMode={setIsPointMode}
+              onTourSave={tourSave}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
     </CustomPaper>
   );
-}
+};
 
 export default TourForm;
