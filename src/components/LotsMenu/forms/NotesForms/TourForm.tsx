@@ -73,9 +73,9 @@ const FeatureAccordion = styled(Accordion)({
 
 const defaultFormData = {
   nombre: "",
-  fecha: new Date(),
-  hora: new Date(),
-  proxima_visita: new Date(),
+  fecha: new Date(), // Aquí establecemos la fecha actual como valor predeterminado
+  hora: new Date(),  // Aquí establecemos la hora actual como valor predeterminado
+  proxima_visita: new Date(), // Aquí también establecemos la fecha actual como valor predeterminado
   features: []
 };
 
@@ -191,20 +191,6 @@ function TourForm({ lot, formData = defaultFormData, setFormData, tourSave }) {
 
   const handleAddPoint = () => {
     setIsPointMode(true);
-  };
-
-  const safeParseDate = (dateStr: string) => {
-    console.log("Parsing date:", dateStr);
-    try {
-      if (dateStr) {
-        return parseISO(dateStr);
-      } else {
-        return new Date();
-      }
-    } catch (e) {
-      console.error("Error parsing date:", e);
-      return new Date();
-    }
   };
 
   return (
