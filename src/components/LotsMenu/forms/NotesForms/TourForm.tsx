@@ -260,27 +260,24 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 </Grid>
 
                 <Grid item xs={12} sm={4}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <TimePicker
-                      label="Hora"
-                      value={
-                        formData.hora !== undefined
-                          ? formData.hora
-                          : new Date()
-                      }
-                      onChange={(newValue) => {
-                        const updatedFormData = {
-                          ...formData,
-                          hora: newValue
-                        };
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <TimePicker
+                    label="Hora"
+                    value={formData.hora instanceof Date ? formData.hora : new Date()}
+                    onChange={(newValue) => {
+                      if (newValue instanceof Date && !isNaN(newValue.getTime())) {
+                        const updatedFormData = { ...formData, hora: newValue };
                         setFormData(updatedFormData);
-                      }}
-                      renderInput={(params) => (
-                        <TextField {...params} fullWidth />
-                      )}
-                    />
-                  </LocalizationProvider>
-                </Grid>
+                      } else {
+                        console.error('Hora inválida:', newValue);
+                      }
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                </LocalizationProvider>
+              </Grid>
 
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
