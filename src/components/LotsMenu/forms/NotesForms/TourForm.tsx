@@ -104,6 +104,10 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     loadMediaUrls();
   }, [formData.features]);
 
+  useEffect(() => {
+    setCurrentDate(format(new Date(), "yyyy-MM-dd"));
+  }, []);
+
   const onFieldChange = (fieldName, value) => {
     setFormData({
       ...formData,
@@ -201,7 +205,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
         }
       } else {
         console.log("Fecha vacía. Estableciendo fecha por defecto.");
-        return new Date(); // Fecha por defecto
+        return new Date(); 
       }
     } catch (e) {
       console.error("Error parsing date:", e);
