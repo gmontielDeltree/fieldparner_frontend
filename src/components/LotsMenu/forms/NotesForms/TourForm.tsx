@@ -196,15 +196,15 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
           return date;
         } else {
           console.error("Fecha inválida:", dateStr);
-          return new Date(); // Retorna la fecha actual si la fecha ingresada no es válida
+          return new Date(); 
         }
       } else {
         console.log("Fecha vacía. Estableciendo fecha por defecto.");
-        return new Date(); // Retorna la fecha actual como fecha por defecto
+        return new Date(); 
       }
     } catch (e) {
       console.error("Error parsing date:", e);
-      return new Date(); // Retorna la fecha actual en caso de error
+      return new Date(); 
     }
   };
 
