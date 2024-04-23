@@ -240,7 +240,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || new Date()}
+                      value={formData.fecha || ""}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, fecha: newValue };
                         setFormData(updatedFormData);
