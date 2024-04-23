@@ -1,5 +1,5 @@
 .mapboxgl-ctrl-group.mapboxgl-ctrl > .mapbox-gl-draw_ctrl-draw-btn {
-    display: none;
+ /* display: none; */
 }
 .mapboxgl-ctrl-geocoder {
     z-index: 2; 

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { showFieldList, hideFieldList } from "../../redux/fieldsList";
-import { useAuthStore } from "../../hooks";
+import { useAppSelector, useAuthStore } from "../../hooks";
 import { useCampaign } from "../../hooks";
 import CreateCampaignModal from "../CreateCampaign";
-import { campaignSlice } from "../../redux/campaign";
+import {
+  campaignSlice,
+  loadCampaigns,
+  setSelectedCampaign,
+} from "../../redux/campaign";
 
 import {
   Badge,
@@ -20,7 +24,7 @@ import {
   Menu,
   MenuItem,
   Divider,
-  Box
+  Box,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../redux/store";
@@ -36,20 +40,38 @@ import {
   Notifications,
   NotificationsActive,
   MenuOutlined,
-  ExitToApp
+  ExitToApp,
+  OnDeviceTrainingOutlined,
 } from "@mui/icons-material";
 import { add } from "date-fns";
+import { Campaign } from "@types";
+import { uuidv7 } from "uuidv7";
+import { ButtonMixin } from "@vaadin/button/src/vaadin-button-mixin";
+import {
+  loadCampaignFromLS,
+  saveCampaignToLS,
+} from "../../helpers/persistence";
+import { selectDraw } from "../../redux/draw";
+import { Slide, toast } from "react-toastify";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
   open,
-  handleSideBarOpen
+  handleSideBarOpen,
 }) => {
   const navigate = useNavigate();
-  const { campaigns, getCampaigns, isLoading, error, addCampaign } =
-    useCampaign();
-  const [selectedCampaign, setSelectedCampaign] = useState("");
+  const {
+    campaigns,
+    getCampaigns,
+    isLoading,
+    error,
+    addCampaign,
+    updateCampaign,
+    deleteCampaign,
+  } = useCampaign();
+  //const [selectedCampaign, setSelectedCampaign] = useState("");
 
+  const { selectedCampaign } = useAppSelector((state) => state.campaign);
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
   const [language, setLanguage] = useState("es"); // Cambiado a código estándar "es" (español)
@@ -61,26 +83,91 @@ export const NavBar: React.FC<NavBarProps> = ({
   const isLanguageMenuOpen = Boolean(languageAnchorEl);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const handleCreateCampaign = async (campaignName) => {
-    const campaignData = {
-      campaignId: `campaign_${new Date().getTime()}`,
-      name: campaignName,
-      description: "",
-      zoneId: "defaultZone",
-      startDate: new Date().toISOString(),
-      endDate: new Date().toISOString(),
-      state: "active"
-    };
+  const [campaignToEdit, setCampaignToEdit] = useState<Campaign>();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    await addCampaign(campaignData);
+  const handleCreateAndEditCampaign = async (campaign: Campaign) => {
+    if (campaign._rev) {
+      // editg
+      await updateCampaign(campaign);
+      dispatch(campaignSlice.actions.setSelectedCampaign(campaign));
+      setIsEditModalOpen(false);
+      getCampaigns();
+      return;
+    }
+    // New
+    const uuid = uuidv7();
+
+    campaign.campaignId = `campaign:${uuid}`;
+    await addCampaign(campaign);
+    dispatch(campaignSlice.actions.setSelectedCampaign(campaign));
     setIsCreateModalOpen(false);
     getCampaigns();
   };
 
   useEffect(() => {
     getCampaigns();
+    // Hidratar campaña seleccionada
+    const campaign = loadCampaignFromLS();
+    if (campaign) {
+      console.log("Campaña desde localStorage", campaign);
+      dispatch(setSelectedCampaign(campaign));
+    }
   }, []);
 
+  const onDeleteCampaignHandler = async (campaign: Campaign) => {
+    await deleteCampaign(campaign);
+    setIsEditModalOpen(false);
+
+    // chequear que si la campaña borrada es la seleccionada
+    if (campaign._id === selectedCampaign?._id) {
+      let nue = campaigns.find((e) => e._id !== campaign._id);
+      if (nue) {
+        dispatch(campaignSlice.actions.setSelectedCampaign(nue));
+      }
+    }
+    getCampaigns();
+  };
+
+  useEffect(() => {
+    console.log("UE", selectedCampaign);
+    if (selectedCampaign) {
+      saveCampaignToLS(selectedCampaign);
+      toast.success(
+        t("La campaña") +
+          " " +
+          selectedCampaign.name +
+          " " +
+          t("esta seleccionada"),
+        {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: false,
+          progress: undefined,
+          theme: "colored",
+          transition: Slide,
+        },
+      );
+    }
+  }, [selectedCampaign]);
+
+  useEffect(() => {
+    if (campaigns) {
+      loadCampaigns(campaigns);
+    }
+    if (!campaigns) {
+      // Undefined
+    } else if (campaigns.length === 0) {
+      // No campaigns
+      // Crear una por defecto
+      // Guardarla
+      //
+      // Seleccionarla
+    }
+  }, [campaigns]);
   const handleLanguageMenu = (event) => {
     setLanguageAnchorEl(event.currentTarget);
   };
@@ -104,15 +191,15 @@ export const NavBar: React.FC<NavBarProps> = ({
     animation: "pulse 2s infinite",
     "@keyframes pulse": {
       "0%": {
-        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0.7)"
+        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0.7)",
       },
       "70%": {
-        boxShadow: "0 0 0 10px rgba(0, 123, 255, 0)"
+        boxShadow: "0 0 0 10px rgba(0, 123, 255, 0)",
       },
       "100%": {
-        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0)"
-      }
-    }
+        boxShadow: "0 0 0 0 rgba(0, 123, 255, 0)",
+      },
+    },
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -131,15 +218,15 @@ export const NavBar: React.FC<NavBarProps> = ({
   };
 
   const isVisible = useSelector(
-    (state: RootState) => state.fieldList.isVisible
+    (state: RootState) => state.fieldList.isVisible,
   );
   const handleCampaignMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleCampaignSelect = (campaignId) => {
+  const handleCampaignSelect = (campaignId: string) => {
     const campaign = campaigns.find((c) => c.campaignId === campaignId);
     if (campaign) {
-      setSelectedCampaign(campaignId);
+      //setSelectedCampaign(campaignId);
       dispatch(campaignSlice.actions.setSelectedCampaign(campaign));
       handleClose();
     }
@@ -162,8 +249,13 @@ export const NavBar: React.FC<NavBarProps> = ({
     border: "2px solid",
     borderColor: isVisible ? "#1976d2" : "transparent",
     borderRadius: "50%",
-    backgroundColor: isVisible ? "rgba(25, 118, 210, 0.1)" : "transparent"
+    backgroundColor: isVisible ? "rgba(25, 118, 210, 0.1)" : "transparent",
   });
+
+  function handleEditClick(campaign_to_edit: Campaign): void {
+    setCampaignToEdit(campaign_to_edit);
+    setIsEditModalOpen(true);
+  }
 
   return (
     <AppBar
@@ -173,8 +265,8 @@ export const NavBar: React.FC<NavBarProps> = ({
         color: "black",
         ...(open && {
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` }
-        })
+          ml: { sm: `${drawerWidth}px` },
+        }),
       }}
     >
       <Toolbar>
@@ -212,7 +304,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
-                marginRight: "40px"
+                marginRight: "40px",
               }}
             >
               FieldPartner
@@ -255,38 +347,59 @@ export const NavBar: React.FC<NavBarProps> = ({
                 </Badge>
               </IconButton>
             </Tooltip>
-            <Button
-              aria-label="campaign"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleCampaignMenu}
-              color="inherit"
-              style={{
-                marginLeft: "50px",
-                backgroundColor: "#f5f5f5",
-                color: "#1976d2",
-                borderRadius: "4px",
-                textTransform: "none"
-              }}
+
+            <Tooltip
+              title={`${t("Campaña seleccionada")}: ${t(
+                "Desde",
+              )} ${selectedCampaign?.startDate} ${t(
+                "al",
+              )} ${selectedCampaign?.endDate} - ${selectedCampaign?.state}}`}
             >
-              {selectedCampaign || t("no_campaign")}
-            </Button>
+              <Button
+                aria-label="campaign"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleCampaignMenu}
+                color="inherit"
+                style={{
+                  marginLeft: "50px",
+                  backgroundColor: "#f5f5f5",
+                  color: "#1976d2",
+                  borderRadius: "4px",
+                  textTransform: "none",
+                }}
+              >
+                {selectedCampaign?.name || t("no_campaign")}
+              </Button>
+            </Tooltip>
             <CreateCampaignModal
               open={isCreateModalOpen}
               onClose={() => setIsCreateModalOpen(false)}
-              onCreate={handleCreateCampaign}
+              onCreate={handleCreateAndEditCampaign}
+            />
+
+            {/* no permitir borrar si solo hay 1 campaña */}
+            <CreateCampaignModal
+              open={isEditModalOpen}
+              onClose={() => setIsEditModalOpen(false)}
+              onCreate={handleCreateAndEditCampaign}
+              initialData={campaignToEdit}
+              onDelete={
+                campaigns.length > 1 ? onDeleteCampaignHandler : undefined
+              }
+              editMode
             />
 
             <Menu
-              id="menu-appbar"
+              id="menu-campaigns"
               anchorEl={anchorEl}
               anchorOrigin={{
                 vertical: "bottom",
-                horizontal: "left"
+                horizontal: "left",
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "left"
+                horizontal: "left",
               }}
               open={openDropdown}
               onClose={handleClose}
@@ -296,11 +409,45 @@ export const NavBar: React.FC<NavBarProps> = ({
               </MenuItem>
               <Divider />
               {campaigns.map((campaign) => (
-                <MenuItem
-                  key={campaign.campaignId}
-                  onClick={() => handleCampaignSelect(campaign.campaignId)}
-                >
-                  {campaign.campaignId}{" "}
+                <MenuItem key={campaign._id}>
+                  <Grid container sx={{ width: "30rem" }}>
+                    <Grid
+                      item
+                      xs={10}
+                      onClick={() => handleCampaignSelect(campaign.campaignId)}
+                    >
+                      <Typography variant="subtitle1">
+                        {campaign.name}
+                      </Typography>
+                      <Typography variant="subtitle2">
+                        {`${
+                          campaign?.description.length
+                            ? campaign?.description
+                            : "No desc"
+                        } - ${campaign?.startDate} ${t(
+                          "a",
+                        )} ${campaign?.endDate} ${
+                          campaign?.state.length ? ` - ${campaign?.state}` : ""
+                        } ${
+                          campaign?.zoneId.length
+                            ? ` - ${campaign?.zoneId}`
+                            : ""
+                        }`}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Button
+                        color="primary"
+                        size="small"
+                        variant="contained"
+                        onClick={() => handleEditClick(campaign)}
+                      >
+                        {t("Editar")}
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  <Divider />
                 </MenuItem>
               ))}
             </Menu>
@@ -329,11 +476,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               anchorEl={languageAnchorEl}
               anchorOrigin={{
                 vertical: "top",
-                horizontal: "right"
+                horizontal: "right",
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "right"
+                horizontal: "right",
               }}
               open={isLanguageMenuOpen}
               onClose={handleLanguageMenuClose}

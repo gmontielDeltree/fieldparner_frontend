@@ -36,6 +36,12 @@ import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegr
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
 import { ComponentTestBed } from '../pages/ComponentTestBed';
 import { PlanificationByLotPage } from "../pages/PlanificationByLotPage";
+import NewFieldPage from "../pages/NewFieldPage";
+import { FieldPage } from "../pages/FieldPage";
+import { LotPage } from "../pages/LotPage";
+import { NewLotPage } from '../pages/NewLotPage';
+import { ListLaborsServicesPage } from "../pages/ListLaborsServicesPage";
+import { NewLaborsServicesPage } from "../pages/NewLaborsServicespage";
 
 export const OverviewRoutes: React.FC = () => {
   const { pathname, search } = useLocation();
@@ -46,7 +52,10 @@ export const OverviewRoutes: React.FC = () => {
   return (
     <AppLayout key="app-layout">
       <Routes>
-        <Route path="/overview/fields/:campoId?/:loteId?" element={<FieldsPage />} >
+        <Route path="/overview/fields" element={<FieldsPage />} >
+
+          <Route path="new-field" element={<NewFieldPage />} />
+
           <Route path="planification-by-lot/:parentId/:loteId2" element={<PlanificationByLotPage />} />
           <Route path="planification" element={<PlanificationPage />} />
 
@@ -55,6 +64,11 @@ export const OverviewRoutes: React.FC = () => {
           <Route path="john-deere" element={<JohnDeereIntegration />} />
           <Route path="magris/:id" element={<MagrisReportIntegration />} />
           <Route path="magris" element={<MagrisIntegration />} />
+          <Route path=":campoId" element={<FieldPage />} />
+          <Route path=":campoId/new-lot" element={<NewLotPage/>} />
+          <Route path=":campoId/:loteId" element={<LotPage />} />
+
+
         </Route>
 
         <Route path="/overview/vehicle" element={<ListVehiclesPage />} />
@@ -106,6 +120,10 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/zones" element={<ListZonesPage />} />
         <Route path="/overview/zones/new" element={<NewZonePage />} />
         <Route path="/overview/zones/:id" element={<NewZonePage />} />
+
+        <Route path="/overview/Labors-services" element={<ListLaborsServicesPage />} />
+        <Route path="/overview/Labors-services/new" element={<NewLaborsServicesPage />} />
+        <Route path="/overview/Labors-services/:id" element={<NewLaborsServicesPage />} />
 
 
 

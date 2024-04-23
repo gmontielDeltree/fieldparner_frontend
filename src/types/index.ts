@@ -75,6 +75,16 @@ export interface ZoneState {
   zones: Zones[];
 }
 
+export interface LaborsServices extends Document {
+  service: string;
+  description: string;
+}
+
+export interface LaborsServicesState {
+  LaborsServicesActive: LaborsServices | null;
+  LaborsServices: LaborsServices[];
+}
+
 
 export interface ColumnProps {
   text: string;
@@ -449,6 +459,7 @@ export interface ExitFieldItem extends ExitField {
 export interface Campaign extends Document {
   accountId: string;
   campaignId: string;
+  name: string;
   description: string;
   zoneId: string;
   creationDate: string;

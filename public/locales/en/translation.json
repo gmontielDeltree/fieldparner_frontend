@@ -289,6 +289,9 @@
     "create_new_campaign": "Create New Campaign",
     "_zone": "Zone",
     "zone_description": "Zone/ Description",
-    "_zones":"Zones"
+    "_zones":"Zones",
+    "service_labors": "Labor Service",
+    "_service": "Service",
+    "labors_service": "Labor / Service"
 }
   

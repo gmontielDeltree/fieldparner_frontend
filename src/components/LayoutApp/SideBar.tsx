@@ -35,7 +35,8 @@ import {
   Gite as GiteIcon,
   Work as WorkIcon,
   Assignment as AssignmentIcon,
-  Map as MapIcon
+  Map as MapIcon,
+  BusinessCenter as  BusinessCenterIcon
   // Flag as FlagIcon,
 } from "@mui/icons-material";
 import { SideBarProps } from "../../types";
@@ -184,9 +185,20 @@ export const SideBar: React.FC<SideBarProps> = ({
                 selected={pathname.includes("/init/overview/zones")}
               >
                 <ListItemIcon>
-                  <MapIcon />
+                  < MapIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("zones_groups")} />
+              </ListItemButton>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/Labors-services"
+                selected={pathname.includes("/init/overview/Labors-services")}
+              >
+                <ListItemIcon>
+                  <BusinessCenterIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("service_labors")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}
                 component={RouterLink}

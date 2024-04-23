@@ -65,11 +65,49 @@ export const useCampaign = () => {
     }
   };
 
+  const updateCampaign = async (campaign: Campaign) => {
+    setIsLoading(true);
+    try {
+      if (import.meta.env.PROD && !user) throw new Error("User not found");
+
+      await dbContext.campaigns.put(campaign);
+
+      await getCampaigns();
+      Swal.fire("Success", "Campaign added successfully.", "success");
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Failed to add the campaign.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+
+  }
+
+  const deleteCampaign = async (campaign: Campaign) => {
+    setIsLoading(true);
+    try {
+
+      await dbContext.campaigns.remove(campaign);
+
+      await getCampaigns();
+      Swal.fire("Success", "Campaign deleted successfully.", "success");
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Failed to delete the campaign.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+
+  }
+
+
   return {
     campaigns,
     error,
     isLoading,
     getCampaigns,
-    addCampaign
+    addCampaign,
+    updateCampaign,
+    deleteCampaign,
   };
 };

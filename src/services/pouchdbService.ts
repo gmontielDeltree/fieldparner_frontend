@@ -22,6 +22,7 @@ import {
     MovementType,
     Crops,
     Zones,
+    LaborsServices,
 } from '../types';
 import uuid4 from 'uuid4';
 
@@ -56,6 +57,7 @@ const dbNames = Object.freeze({
     platformSupplies: "test-supplies",
     crops: "crops",
     zones: "zones",
+    LaborsServices:"LaborsServices",
 });
 
 export const dbContext = Object.freeze({
@@ -82,7 +84,11 @@ export const dbContext = Object.freeze({
     platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
     crops: new PouchDB<Crops>(dbNames.crops),
     zones: new PouchDB<Zones>(dbNames.zones),
+    laborsServices: new PouchDB<LaborsServices>(dbNames.LaborsServices),
 });
+
+// TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
+// para no sincronizar todos los docs the TODOS los usuarios (accountId's)
 
 dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
 dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
@@ -107,72 +113,73 @@ dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
 dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
 dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
 dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
+dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.LaborsServices}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
-    try {
-        let result;
-        switch (country) {
-            case CountryCode.ARGENTINA:
-                result = await dbContext.zipCodeARG.find({
-                    selector: { "CP": zipCode },
-                });
-                return result.docs;
-            case CountryCode.PARAGUAY:
-                result = await dbContext.zipCodePRY.find({
-                    selector: { "CP": zipCode },
-                });
-                return result.docs;
-            default:
-                return [];
-        }
-        // if (country === CountryCode.ARGENTINA) {
-        //     const result = await dbContext.zipCodeARG.find({
-        //         selector: { "CP": zipCode },
-        //     });
-        //     return result.docs;
-        // }
-        // if (country === CountryCode.PARAGUAY) {
-        //     const result = await dbContext.zipCodePRY.find({
-        //         selector: { "CP": zipCode },
-        //     });
-        //     return result.docs;
-        // }
-    } catch (error) {
-        console.log(error);
+  try {
+    let result;
+    switch (country) {
+      case CountryCode.ARGENTINA:
+        result = await dbContext.zipCodeARG.find({
+          selector: { "CP": zipCode },
+        });
+        return result.docs;
+      case CountryCode.PARAGUAY:
+        result = await dbContext.zipCodePRY.find({
+          selector: { "CP": zipCode },
+        });
+        return result.docs;
+      default:
         return [];
     }
+    // if (country === CountryCode.ARGENTINA) {
+    //     const result = await dbContext.zipCodeARG.find({
+    //         selector: { "CP": zipCode },
+    //     });
+    //     return result.docs;
+    // }
+    // if (country === CountryCode.PARAGUAY) {
+    //     const result = await dbContext.zipCodePRY.find({
+    //         selector: { "CP": zipCode },
+    //     });
+    //     return result.docs;
+    // }
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
 }
 
 //TODO: remover esta funcion
 // Función para obtener todos los documentos de la base de datos
 export const getTypeVehicles = async () => {
-    try {
-        const result = await dbContext.typeVehicles.allDocs({ include_docs: true });
-        const documents: any = result.rows.map(row => row.doc);
+  try {
+    const result = await dbContext.typeVehicles.allDocs({ include_docs: true });
+    const documents: any = result.rows.map(row => row.doc);
 
-        return documents;
+    return documents;
 
-    } catch (error) {
-        console.error('Error al conectar con DB:', error);
-    }
+  } catch (error) {
+    console.error('Error al conectar con DB:', error);
+  }
 };
 
 //TODO: remover esta funcion
 export const createTypeVehicles = async (type: string) => {
-    try {
-        const newTypeVehicle = {
-            _id: uuid4(),
-            name: type
-        }
-        const response = await dbContext.typeVehicles.put(newTypeVehicle);
-        console.log('document type of vehicle created:', response);
-        return response;
-
-    } catch (error) {
-        console.error('Error creating document type of vehicle:', error);
-        throw error;
+  try {
+    const newTypeVehicle = {
+      _id: uuid4(),
+      name: type
     }
+    const response = await dbContext.typeVehicles.put(newTypeVehicle);
+    console.log('document type of vehicle created:', response);
+    return response;
+
+  } catch (error) {
+    console.error('Error creating document type of vehicle:', error);
+    throw error;
+  }
 }
 
 // Función para crear un nuevo documento
@@ -192,12 +199,12 @@ export const updateDocument = async (_doc: Vehicle) => {
 
 // Función para eliminar un documento
 export const deleteDocument = async (_doc: any) => {
-    // try {
-    //     const response = await db.remove(doc);
-    //     console.log('Document deleted:', response);
-    //     return response;
-    // } catch (error) {
-    //     console.error('Error deleting document:', error);
-    //     throw error;
-    // }
+  // try {
+  //     const response = await db.remove(doc);
+  //     console.log('Document deleted:', response);
+  //     return response;
+  // } catch (error) {
+  //     console.error('Error deleting document:', error);
+  //     throw error;
+  // }
 };
