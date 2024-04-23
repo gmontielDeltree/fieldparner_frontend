@@ -13,6 +13,7 @@ export default {
       '/api': 'http://localhost:9090',
     }
   },
+  assetsInclude: ['**/*.xlsx'],
 
   // config options para pouch
   optimizeDeps: {
