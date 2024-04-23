@@ -241,47 +241,52 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 </Grid>
 
                 <Grid item xs={12} sm={4}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DatePicker
-                      label="Fecha"
-                      value={safeParseDate(formData.fecha) || new Date()}
-                      onChange={(newValue) => onFieldChange("fecha", newValue)}
-                      renderInput={(params) => (
-                        <TextField {...params} fullWidth />
-                      )}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <TimePicker
-                      label="Hora"
-                      value={safeParseDate(formData.fecha) || new Date()}
-                      onChange={(newValue) => onFieldChange("fecha", newValue)}
-                      renderInput={(params) => (
-                        <TextField {...params} fullWidth />
-                      )}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DatePicker
-                      label="Próxima Visita"
-                      value={
-                        safeParseDate(formData.proxima_visita) || new Date()
-                      }
-                      onChange={(newValue) =>
-                        onFieldChange("proxima_visita", newValue)
-                      }
-                      renderInput={(params) => (
-                        <TextField {...params} fullWidth />
-                      )}
-                    />
-                  </LocalizationProvider>
-                </Grid>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    label="Fecha"
+                    value={formData.fecha || new Date()}
+                    onChange={(newValue) => {
+                      const updatedFormData = { ...formData, fecha:newValue };
+                      setFormData(updatedFormData);
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                </LocalizationProvider>
+              </Grid>
+                  
+              <Grid item xs={12} sm={4}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <TimePicker
+                    label="Hora"
+                    value={formData.hora || new Date()}
+                    onChange={(newValue) => {
+                      const updatedFormData = { ...formData, hora: newValue };
+                      setFormData(updatedFormData);
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                </LocalizationProvider>
+              </Grid>
+                  
+              <Grid item xs={12} sm={4}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    label="Próxima Visita"
+                    value={formData.proxima_visita || new Date()}
+                    onChange={(newValue) => {
+                      const updatedFormData = { ...formData, proxima_visita: newValue };
+                      setFormData(updatedFormData);
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                </LocalizationProvider>
+              </Grid>
               </Grid>
             </FormControl>
             <Grid item xs={12}>
