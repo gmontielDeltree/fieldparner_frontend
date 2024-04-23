@@ -249,13 +249,14 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 
                 {/* Componente de selección de fecha */}
                 <Grid item xs={12} sm={4}>
-                    <DatePicker
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
                       label="Fecha"
                       value={safeParseDate(formData.fecha)}
                       onChange={(newValue) => {
                         const updatedFormData = {
                           ...formData,
-                          fecha: newValue.toISOString()
+                          fecha: newValue ? newValue.toISOString() : null
                         };
                         setFormData(updatedFormData);
                       }}
@@ -263,6 +264,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                         <TextField {...params} fullWidth />
                       )}
                     />
+                  </LocalizationProvider>
                 </Grid>
                 
                 {/* Componente de selección de hora */}
@@ -326,3 +328,5 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 }
 
 export default TourForm;
+
+
