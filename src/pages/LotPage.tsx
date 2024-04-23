@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import LotsMenu from "../components/LotsMenu";
-import { useNavigate, useParams } from "react-router-dom";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectMap } from "../redux/map";
 import { useField } from "../hooks";
@@ -11,6 +11,7 @@ import {
   unsetLoteAsSelected,
 } from "../helpers/mapHelpers";
 import bbox from "@turf/bbox";
+import { deepcopy } from "../../owncomponents/helpers";
 
 export const LotPage = () => {
   const { campoId, loteId } = useParams();
@@ -76,11 +77,26 @@ export const LotPage = () => {
   if (!lote) return null;
 
   return (
-    <LotsMenu
-      lot={lote}
-      field={field}
-      isOpen={true}
-      toggle={() => navigate(`/init/overview/fields/${field?._id}`)}
-    />
+    <>
+      <LotsMenu
+        lot={lote}
+        field={field}
+        isOpen={true}
+        toggle={() => navigate(`/init/overview/fields/${field?._id}`)}
+      />
+
+      {field && lote && (
+        <Outlet
+          context={{
+            lote: lote,
+            field: field,
+            refreshCallback: () => {
+              // Reasigno lote para disparar el rerender de LotsMenu
+              setLote(deepcopy(lote));
+            },
+          }}
+        />
+      )}
+    </>
   );
 };

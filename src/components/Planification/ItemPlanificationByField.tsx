@@ -59,7 +59,7 @@ const LineaDeCampana: React.FC = ({ campana, lote, onCampaignClick }) => {
           onCampaignClick(campana, lote);
         }}
       >
-        {campana.description}
+        {campana.name}
       </Fab>
 
       {ciclos?.length > 0 && (

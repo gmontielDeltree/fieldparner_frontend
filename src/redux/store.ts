@@ -14,6 +14,7 @@ import { zoneSlice } from "./zones";
 import { originsDestinationsSlice } from "./originsdestinatons/originDestiantionsSlice";
 import { usersSlice } from "./users/userSlice";
 import { withdrawalOrderSlice } from "./withdrawalOrder";
+import { syncStatusSlice } from "./syncStatus";
 
 const store = configureStore({
   reducer: {
@@ -30,6 +31,7 @@ const store = configureStore({
     users: usersSlice.reducer,
     campaign: campaignSlice.reducer,
     order: withdrawalOrderSlice.reducer,
+    syncStatus: syncStatusSlice.reducer,
     zone: zoneSlice.reducer
   }
 });
