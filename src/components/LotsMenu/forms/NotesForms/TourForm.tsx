@@ -9,6 +9,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  IconButton,
   List,
   ListItem,
   ListItemText,
@@ -22,7 +23,8 @@ import {
   DatePicker,
   TimePicker
 } from "@mui/x-date-pickers";
-import AdapterDateFns from "@mui/x-date-pickers/AdapterDateFns";
+import PouchDB from "pouchdb";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { styled } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
 import PointForm from "./PointForm";
@@ -76,9 +78,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
   const [isPointMode, setIsPointMode] = useState(false);
   const [imageUrls, setImageUrls] = useState({});
   const [audioUrls, setAudioUrls] = useState({});
-
-  const defaultDate = new Date(); // Fecha actual
-  const defaultTime = new Date(); // Hora actual
 
   useEffect(() => {
     const loadMediaUrls = async () => {
@@ -241,14 +240,13 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   />
                 </Grid>
 
-                {/* Componente de selección de fecha */}
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || defaultDate}
+                      value={formData.fecha || new Date()}
                       onChange={(newValue) => {
-                        const updatedFormData = { ...formData, fecha: newValue };
+                        const updatedFormData = { ...formData, fecha:newValue };
                         setFormData(updatedFormData);
                       }}
                       renderInput={(params) => (
@@ -258,27 +256,27 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   </LocalizationProvider>
                 </Grid>
                 
-                {/* Componente de selección de hora */}
                 <Grid item xs={12} sm={4}>
-                  <TimePicker
-                    label="Hora"
-                    value={formData.hora !== undefined ? formData.hora : defaultTime}
-                    onChange={(newValue) => {
-                      const updatedFormData = { ...formData, hora: newValue };
-                      setFormData(updatedFormData);
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} fullWidth />
-                    )}
-                  />
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <TimePicker
+                      label="Hora"
+                      value={formData.hora !== undefined ?formData.hora : new Date()}
+                      onChange={(newValue) => {
+                        const updatedFormData = { ...formData, hora: newValue };
+                        setFormData(updatedFormData);
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} fullWidth />
+                      )}
+                    />
+                  </LocalizationProvider>
                 </Grid>
                 
-                {/* Componente de selección de próxima visita */}
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Próxima Visita"
-                      value={formData.proxima_visita || defaultDate}
+                      value={formData.proxima_visita || new Date()}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, proxima_visita: newValue };
                         setFormData(updatedFormData);
