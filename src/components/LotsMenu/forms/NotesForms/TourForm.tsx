@@ -193,7 +193,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
         if (isValid(date)) {
           return date;
         } else {
-          console.error("Fecha inválida:", dateStr);
+          //console.error("Fecha inválida:", dateStr);
           return new Date();
         }
       } else {
