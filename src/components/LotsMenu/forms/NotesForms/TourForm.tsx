@@ -71,15 +71,7 @@ const FeatureAccordion = styled(Accordion)({
   margin: "10px 0"
 });
 
-const defaultFormData = {
-  nombre: "",
-  fecha: new Date(), // Aquí establecemos la fecha actual como valor predeterminado
-  hora: new Date(),  // Aquí establecemos la hora actual como valor predeterminado
-  proxima_visita: new Date(), // Aquí también establecemos la fecha actual como valor predeterminado
-  features: []
-};
-
-function TourForm({ lot, formData = defaultFormData, setFormData, tourSave }) {
+function TourForm({ lot, formData, setFormData, tourSave }) {
   const db = dbContext.fields;
   const [isPointMode, setIsPointMode] = useState(false);
   const [imageUrls, setImageUrls] = useState({});
@@ -117,6 +109,7 @@ function TourForm({ lot, formData = defaultFormData, setFormData, tourSave }) {
       [fieldName]: value
     });
   };
+
   const fetchImageUrl = async (imageId) => {
     try {
       const blob = await db.getAttachment(imageId, "image");
@@ -125,6 +118,7 @@ function TourForm({ lot, formData = defaultFormData, setFormData, tourSave }) {
       console.error("Error fetching image:", error);
     }
   };
+
   const fetchAudioUrl = async (audioId) => {
     try {
       const blob = await db.getAttachment(audioId, "audio");
@@ -193,6 +187,20 @@ function TourForm({ lot, formData = defaultFormData, setFormData, tourSave }) {
     setIsPointMode(true);
   };
 
+  const safeParseDate = (dateStr) => {
+    console.log("Parsing date:", dateStr);
+    try {
+      if (dateStr) {
+        return parseISO(dateStr);
+      } else {
+        return new Date();
+      }
+    } catch (e) {
+      console.error("Error parsing date:", e);
+      return new Date();
+    }
+  };
+
   return (
     <CustomPaper elevation={3}>
       <AnimatePresence mode="wait">
@@ -237,9 +245,13 @@ function TourForm({ lot, formData = defaultFormData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || new Date()}
+                      value={formData.fecha || fecha}
                       onChange={(newValue) => {
-                        const updatedFormData = { ...formData, fecha: newValue };
+                        setFecha(newValue);
+                        const updatedFormData = {
+                          ...formData,
+                          fecha: newValue
+                        };
                         setFormData(updatedFormData);
                       }}
                       renderInput={(params) => (
@@ -253,9 +265,13 @@ function TourForm({ lot, formData = defaultFormData, setFormData, tourSave }) {
                 <Grid item xs={12} sm={4}>
                   <TimePicker
                     label="Hora"
-                    value={formData.hora !== undefined ? formData.hora : new Date()}
+                    value={formData.hora !== undefined ? formData.hora : hora}
                     onChange={(newValue) => {
-                      const updatedFormData = { ...formData, hora: newValue };
+                      setHora(newValue);
+                      const updatedFormData = {
+                        ...formData,
+                        hora: newValue
+                      };
                       setFormData(updatedFormData);
                     }}
                     renderInput={(params) => (
@@ -268,9 +284,17 @@ function TourForm({ lot, formData = defaultFormData, setFormData, tourSave }) {
                 <Grid item xs={12} sm={4}>
                   <DatePicker
                     label="Próxima Visita"
-                    value={formData.proxima_visita || new Date()}
+                    value={
+                      formData.proxima_visita !== undefined
+                        ? formData.proxima_visita
+                        : proximaVisita
+                    }
                     onChange={(newValue) => {
-                      const updatedFormData = { ...formData, proxima_visita: newValue };
+                      setProximaVisita(newValue);
+                      const updatedFormData = {
+                        ...formData,
+                        proxima_visita: newValue
+                      };
                       setFormData(updatedFormData);
                     }}
                     renderInput={(params) => (
