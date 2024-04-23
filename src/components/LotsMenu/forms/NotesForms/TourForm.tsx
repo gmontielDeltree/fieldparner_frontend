@@ -260,7 +260,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <TimePicker
                     label="Hora"
-                    value={formData.hora || new Date()}
+                    value={formData.hora !== undefined ?formData.hora : new Date()}
                     onChange={(newValue) => {
                       const updatedFormData = { ...formData, hora: newValue };
                       setFormData(updatedFormData);
