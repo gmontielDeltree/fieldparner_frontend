@@ -240,54 +240,52 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <DatePicker
-                    label="Fecha"
-                    value={formData.fecha || new Date()}
-                    onChange={(newValue) => {
-                      const updatedFormData = { ...formData, fecha:newValue };
-                      setFormData(updatedFormData);
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} fullWidth />
-                    )}
-                  />
-                </LocalizationProvider>
-              </Grid>
-                  
-              <Grid item xs={12} sm={4}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                {console.log("Valor por defecto de la hora:", formData.hora || new Date())}
-                  <TimePicker
-                    label="Hora"
-                    value={formData.hora !== undefined ?formData.hora : new Date()}
-                    onChange={(newValue) => {
-                      const updatedFormData = { ...formData, hora: newValue };
-                      setFormData(updatedFormData);
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} fullWidth />
-                    )}
-                  />
-                </LocalizationProvider>
-              </Grid>
-                  
-              <Grid item xs={12} sm={4}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <DatePicker
-                    label="Próxima Visita"
-                    value={formData.proxima_visita || new Date()}
-                    onChange={(newValue) => {
-                      const updatedFormData = { ...formData, proxima_visita: newValue };
-                      setFormData(updatedFormData);
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} fullWidth />
-                    )}
-                  />
-                </LocalizationProvider>
-              </Grid>
+
+        <Grid item xs={12} sm={4}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Fecha"
+              value={formData.fecha || defaultDate}
+              onChange={(newValue) => {
+                const updatedFormData = { ...formData, fecha: newValue };
+                setFormData(updatedFormData);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth />
+              )}
+            />
+          </LocalizationProvider>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <TimePicker
+              label="Hora"
+              value={formData.hora || defaultDate}
+              onChange={(newValue) => {
+                const updatedFormData = { ...formData, hora: newValue };
+                setFormData(updatedFormData);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth />
+              )}
+            />
+          </LocalizationProvider>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Próxima Visita"
+              value={formData.proxima_visita || defaultNextVisitDate}
+              onChange={(newValue) => {
+                const updatedFormData = { ...formData, proxima_visita: newValue };
+                setFormData(updatedFormData);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth />
+              )}
+            />
+          </LocalizationProvider>
+        </Grid>
               </Grid>
             </FormControl>
             <Grid item xs={12}>
