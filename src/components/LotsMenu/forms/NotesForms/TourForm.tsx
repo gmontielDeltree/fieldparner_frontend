@@ -260,7 +260,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     {console.log(
                       "Valor por defecto de la hora:",
-                      formData.hora || new Date()
+                      formData.hora !== undefined ? formData.hora : new Date()
                     )}
                     <TimePicker
                       label="Hora"
@@ -270,10 +270,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                           : new Date()
                       }
                       onChange={(newValue) => {
-                        const updatedFormData = {
-                          ...formData,
-                          hora: newValue
-                        };
+                        const updatedFormData = { ...formData, hora: newValue };
                         setFormData(updatedFormData);
                       }}
                       renderInput={(params) => (
