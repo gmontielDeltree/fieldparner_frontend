@@ -109,6 +109,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       [fieldName]: value
     });
   };
+
   const fetchImageUrl = async (imageId) => {
     try {
       const blob = await db.getAttachment(imageId, "image");
@@ -117,6 +118,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       console.error("Error fetching image:", error);
     }
   };
+
   const fetchAudioUrl = async (audioId) => {
     try {
       const blob = await db.getAttachment(audioId, "audio");
@@ -198,7 +200,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
         }
       } else {
         console.log("Fecha vacía. Estableciendo fecha por defecto.");
-        return new Date(); 
+        return new Date(); // Fecha por defecto
       }
     } catch (e) {
       console.error("Error parsing date:", e);
@@ -247,7 +249,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 
                 {/* Componente de selección de fecha */}
                 <Grid item xs={12} sm={4}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
                       value={safeParseDate(formData.fecha)}
@@ -262,7 +263,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                         <TextField {...params} fullWidth />
                       )}
                     />
-                  </LocalizationProvider>
                 </Grid>
                 
                 {/* Componente de selección de hora */}
