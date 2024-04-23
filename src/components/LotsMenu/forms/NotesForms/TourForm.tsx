@@ -71,7 +71,15 @@ const FeatureAccordion = styled(Accordion)({
   margin: "10px 0"
 });
 
-function TourForm({ lot, formData, setFormData, tourSave }) {
+const defaultFormData = {
+  nombre: "",
+  fecha: new Date(),
+  hora: new Date(),
+  proxima_visita: new Date(),
+  features: []
+};
+
+function TourForm({ lot, formData = defaultFormData, setFormData, tourSave }) {
   const db = dbContext.fields;
   const [isPointMode, setIsPointMode] = useState(false);
   const [imageUrls, setImageUrls] = useState({});
@@ -185,7 +193,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     setIsPointMode(true);
   };
 
-  const safeParseDate = (dateStr) => {
+  const safeParseDate = (dateStr: string) => {
     console.log("Parsing date:", dateStr);
     try {
       if (dateStr) {
@@ -193,9 +201,9 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       } else {
         return new Date();
       }
-    } catch (error) {
-      console.error("Error parsing date:", error);
-      return new Date(); // Otra acción de manejo de errores si es necesario
+    } catch (e) {
+      console.error("Error parsing date:", e);
+      return new Date();
     }
   };
 
