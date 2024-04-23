@@ -193,17 +193,12 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
         if (isValid(date)) {
           return date;
         } else {
-          //console.error("Fecha inválida:", dateStr);
+          console.error("Fecha inválida:", dateStr);
           return new Date();
         }
       } else {
-        const currentDate = new Date();
-        if (isValid(currentDate)) {
-          return currentDate;
-        } else {
-          console.error("Fecha inválida:", currentDate);
-          return new Date();
-        }
+        console.log("Fecha vacía. Estableciendo fecha por defecto.");
+        return new Date(); 
       }
     } catch (e) {
       console.error("Error parsing date:", e);
