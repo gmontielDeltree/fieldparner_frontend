@@ -29,7 +29,7 @@ import PointForm from "./PointForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AudioPlayer } from "./PointFormStyles";
 import { dbContext } from "../../../../services";
-import { parseISO, isValid } from "date-fns"; // Importamos la función isValid
+import { parseISO, isValid } from "date-fns";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -190,11 +190,11 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     try {
       if (dateStr) {
         const date = parseISO(dateStr);
-        if (isValid(date)) { // Verificar si la fecha es válida
+        if (isValid(date)) {
           return date;
         } else {
           console.error("Fecha inválida:", dateStr);
-          return new Date(); // Devolver fecha por defecto
+          return new Date();
         }
       } else {
         return new Date();
@@ -249,7 +249,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={safeParseDate(formData.fecha)} // Utilizar safeParseDate para la fecha
+                      value={safeParseDate(formData.fecha)}
                       onChange={(newValue) => {
                         const updatedFormData = {
                           ...formData,
@@ -268,7 +268,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 <Grid item xs={12} sm={4}>
                   <TimePicker
                     label="Hora"
-                    value={safeParseDate(formData.hora)} // Utilizar safeParseDate para la hora
+                    value={safeParseDate(formData.hora)}
                     onChange={(newValue) => {
                       const updatedFormData = {
                         ...formData,
@@ -286,7 +286,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 <Grid item xs={12} sm={4}>
                   <DatePicker
                     label="Próxima Visita"
-                    value={safeParseDate(formData.proxima_visita)} // Utilizar safeParseDate para la próxima visita
+                    value={safeParseDate(formData.proxima_visita)}
                     onChange={(newValue) => {
                       const updatedFormData = {
                         ...formData,
