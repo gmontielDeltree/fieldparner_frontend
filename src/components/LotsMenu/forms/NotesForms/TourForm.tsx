@@ -29,7 +29,7 @@ import PointForm from "./PointForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AudioPlayer } from "./PointFormStyles";
 import { dbContext } from "../../../../services";
-import { parseISO, isValid } from "date-fns";
+import { parseISO, isValid, startOfDay } from "date-fns";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -200,7 +200,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
         }
       } else {
         console.log("Fecha vacía. Estableciendo fecha por defecto.");
-        return new Date(); // Fecha por defecto
+        return startOfDay(new Date()); 
       }
     } catch (e) {
       console.error("Error parsing date:", e);
@@ -252,7 +252,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={safeParseDate(formData.fecha)}
+                      value={startOfDay(new Date())}
                       onChange={(newValue) => {
                         const updatedFormData = {
                           ...formData,
