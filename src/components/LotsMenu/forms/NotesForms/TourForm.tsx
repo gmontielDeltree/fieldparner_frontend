@@ -77,6 +77,9 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
   const [imageUrls, setImageUrls] = useState({});
   const [audioUrls, setAudioUrls] = useState({});
 
+  const defaultDate = new Date(); // Fecha actual
+  const defaultTime = new Date(); // Hora actual
+
   useEffect(() => {
     const loadMediaUrls = async () => {
       let newImageUrls = {};
@@ -243,7 +246,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || new Date()}
+                      value={formData.fecha || defaultDate}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, fecha: newValue };
                         setFormData(updatedFormData);
@@ -259,7 +262,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 <Grid item xs={12} sm={4}>
                   <TimePicker
                     label="Hora"
-                    value={formData.hora !== undefined ? formData.hora : new Date()}
+                    value={formData.hora !== undefined ? formData.hora : defaultTime}
                     onChange={(newValue) => {
                       const updatedFormData = { ...formData, hora: newValue };
                       setFormData(updatedFormData);
@@ -272,17 +275,19 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 
                 {/* Componente de selección de próxima visita */}
                 <Grid item xs={12} sm={4}>
-                  <DatePicker
-                    label="Próxima Visita"
-                    value={formData.proxima_visita || new Date()}
-                    onChange={(newValue) => {
-                      const updatedFormData = { ...formData, proxima_visita: newValue };
-                      setFormData(updatedFormData);
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} fullWidth />
-                    )}
-                  />
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      label="Próxima Visita"
+                      value={formData.proxima_visita || defaultDate}
+                      onChange={(newValue) => {
+                        const updatedFormData = { ...formData, proxima_visita: newValue };
+                        setFormData(updatedFormData);
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} fullWidth />
+                      )}
+                    />
+                  </LocalizationProvider>
                 </Grid>
               </Grid>
             </FormControl>
