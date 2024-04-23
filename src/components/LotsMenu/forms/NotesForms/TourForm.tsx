@@ -9,6 +9,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  IconButton,
   List,
   ListItem,
   ListItemText,
@@ -22,14 +23,14 @@ import {
   DatePicker,
   TimePicker
 } from "@mui/x-date-pickers";
-import AdapterDateFns from "@mui/x-date-pickers/AdapterDateFns";
+import PouchDB from "pouchdb";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { styled } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
 import PointForm from "./PointForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AudioPlayer } from "./PointFormStyles";
 import { dbContext } from "../../../../services";
-import { parseISO, isValid, format } from "date-fns";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -72,11 +73,11 @@ const FeatureAccordion = styled(Accordion)({
 });
 
 function TourForm({ lot, formData, setFormData, tourSave }) {
-  const db = dbContext.fields;
+  const db = dbContext.fields//new PouchDB("campos_randyv7");
   const [isPointMode, setIsPointMode] = useState(false);
+  const [point, setPoint] = useState({ properties: { nombre: "", notas: "" } });
   const [imageUrls, setImageUrls] = useState({});
   const [audioUrls, setAudioUrls] = useState({});
-  const [currentDate, setCurrentDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
   useEffect(() => {
     const loadMediaUrls = async () => {
@@ -104,17 +105,12 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     loadMediaUrls();
   }, [formData.features]);
 
-  useEffect(() => {
-    setCurrentDate(format(new Date(), "yyyy-MM-dd"));
-  }, []);
-
   const onFieldChange = (fieldName, value) => {
     setFormData({
       ...formData,
       [fieldName]: value
     });
   };
-
   const fetchImageUrl = async (imageId) => {
     try {
       const blob = await db.getAttachment(imageId, "image");
@@ -123,7 +119,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       console.error("Error fetching image:", error);
     }
   };
-
   const fetchAudioUrl = async (audioId) => {
     try {
       const blob = await db.getAttachment(audioId, "audio");
@@ -188,29 +183,18 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     ));
   };
 
+  const handlePointChange = (field, value) => {
+    setPoint({ ...point, properties: { ...point.properties, [field]: value } });
+  };
+
   const handleAddPoint = () => {
     setIsPointMode(true);
   };
 
-  const safeParseDate = (dateStr) => {
-    console.log("Parsing date:", dateStr);
-    try {
-      if (dateStr) {
-        const date = parseISO(dateStr);
-        if (isValid(date)) {
-          return date;
-        } else {
-          console.error("Fecha inválida:", dateStr);
-          return new Date();
-        }
-      } else {
-        console.log("Fecha vacía. Estableciendo fecha por defecto.");
-        return new Date(); 
-      }
-    } catch (e) {
-      console.error("Error parsing date:", e);
-      return new Date();
-    }
+  const handleSavePoint = () => {
+    const newFeatures = [...(formData.features || []), point];
+    setFormData({ ...formData, features: newFeatures });
+    setIsPointMode(false);
   };
 
   return (
@@ -252,61 +236,53 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   />
                 </Grid>
 
-                {/* Componente de selección de fecha */}
                 <Grid item xs={12} sm={4}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DatePicker
-                      label="Fecha"
-                      value={safeParseDate(formData.fecha || currentDate)}
-                      onChange={(newValue) => {
-                        const updatedFormData = {
-                          ...formData,
-                          fecha: newValue.toISOString()
-                        };
-                        setFormData(updatedFormData);
-                      }}
-                      renderInput={(params) => (
-                        <TextField {...params} fullWidth />
-                      )}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-                
-                {/* Componente de selección de hora */}
-                <Grid item xs={12} sm={4}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    label="Fecha"
+                    value={formData.fecha || new Date()}
+                    onChange={(newValue) => {
+                      const updatedFormData = { ...formData, fecha:newValue };
+                      setFormData(updatedFormData);
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                </LocalizationProvider>
+              </Grid>
+                  
+              <Grid item xs={12} sm={4}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <TimePicker
                     label="Hora"
-                    value={safeParseDate(formData.hora)}
+                    value={formData.hora || new Date()}
                     onChange={(newValue) => {
-                      const updatedFormData = {
-                        ...formData,
-                        hora: newValue.toISOString()
-                      };
+                      const updatedFormData = { ...formData, hora: newValue };
                       setFormData(updatedFormData);
                     }}
                     renderInput={(params) => (
                       <TextField {...params} fullWidth />
                     )}
                   />
-                </Grid>
-                
-                {/* Componente de selección de próxima visita */}
-                <Grid item xs={12} sm={4}>
+                </LocalizationProvider>
+              </Grid>
+                  
+              <Grid item xs={12} sm={4}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
                     label="Próxima Visita"
-                    value={safeParseDate(formData.proxima_visita)}
+                    value={formData.proxima_visita || new Date()}
                     onChange={(newValue) => {
-                      const updatedFormData = {
-                        ...formData,
-                        proxima_visita: newValue.toISOString()
-                      };
+                      const updatedFormData = { ...formData, proxima_visita: newValue };
                       setFormData(updatedFormData);
                     }}
                     renderInput={(params) => (
                       <TextField {...params} fullWidth />
                     )}
                   />
-                </Grid>
+                </LocalizationProvider>
+              </Grid>
               </Grid>
             </FormControl>
             <Grid item xs={12}>
