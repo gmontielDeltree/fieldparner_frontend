@@ -200,7 +200,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
         }
       } else {
         console.log("Fecha vacía. Estableciendo fecha por defecto.");
-        return new Date(); 
+        return new Date(); // Fecha por defecto
       }
     } catch (e) {
       console.error("Error parsing date:", e);
