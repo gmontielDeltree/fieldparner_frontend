@@ -196,15 +196,15 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
           return date;
         } else {
           console.error("Fecha inválida:", dateStr);
-          return new Date();
+          return new Date(); // Retorna la fecha actual si la fecha ingresada no es válida
         }
       } else {
         console.log("Fecha vacía. Estableciendo fecha por defecto.");
-        return new Date(); // Fecha por defecto
+        return new Date(); // Retorna la fecha actual como fecha por defecto
       }
     } catch (e) {
       console.error("Error parsing date:", e);
-      return new Date();
+      return new Date(); // Retorna la fecha actual en caso de error
     }
   };
 
@@ -249,9 +249,10 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 
                 {/* Componente de selección de fecha */}
                 <Grid item xs={12} sm={4}>
-                  <DatePicker
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
                       label="Fecha"
-                      value={formData.fecha || ""}
+                      value={safeParseDate(formData.fecha)}
                       onChange={(newValue) => {
                         const updatedFormData = {
                           ...formData,
@@ -263,6 +264,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                         <TextField {...params} fullWidth />
                       )}
                     />
+                  </LocalizationProvider>
                 </Grid>
                 
                 {/* Componente de selección de hora */}
@@ -326,5 +328,3 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 }
 
 export default TourForm;
-
-
