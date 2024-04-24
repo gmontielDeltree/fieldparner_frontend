@@ -51,17 +51,78 @@ const styles_row = StyleSheet.create({
   },
 });
 
-const Row = ({ value }: { value: InformePorCultivoData }) => {
+
+const HeadersRow = ({ headers }: { headers: string[] }) => {
   return (
     <View style={styles_row.row}>
-      <Text>col1</Text>
-      <Text>col2</Text>
+      {/* empty filler */}
+      <Text></Text>
+
+      {headers.map((v)=>{
+        return <Text>{v}</Text>
+      })}
+      
+    </View>
+  );
+};
+
+const Row = ({ value }: { value: (string | number)[] }) => {
+  return (
+    <View style={styles_row.row}>
+      {/* nombre de la fila */}
+
+      <Text>{value[0]}</Text>
+      
+      {/* crops */}
+      {value.slice(1).map((v)=>{
+        return <Text>{v}</Text>
+      })}
     </View>
   );
 };
 //Create Document Component
 export const InformePorCultivoPDF = (data: In) => {
   let title = "Informe de Planificación por cultivo";
+
+
+let keys_for_each_row = [ "cultivoId",
+  "superficie",
+  "nombre",
+  "totalCostoInsumos",
+  "totalCostoLabores",
+  "ingresoCosechado",
+  "cosechado",
+  "rindePromedio",
+  "precioPromedio",
+  "costoInsumosPorHa",
+  "costoLaboresPorHa",
+  "margenBruto",
+  "rendimiento",
+  "rindeEquilibrio",
+  "precioEquilibrio",
+  "ingresoPorHa",]
+
+let crop_column = Object.values(data)
+let headers_crops = crop_column.map((v)=>v.nombre)
+
+let rows : (string | number)[][] = []
+
+keys_for_each_row.map((key)=>{
+
+  let new_row = []
+  new_row.push(key)
+
+  crop_column.map((col)=>{
+    new_row.push(col[key as keyof InformePorCultivoData])
+  })
+
+  rows.push(new_row)
+
+})
+
+console.log(rows)
+
+
 
   return (
     <Document>
@@ -70,9 +131,15 @@ export const InformePorCultivoPDF = (data: In) => {
           <Text>{title}</Text>
         </View>
 
-        {Object.values(data).map((v) => {
+
+<HeadersRow headers={headers_crops} />
+
+        {rows.map((v) => {
+
+
           return <Row value={v}></Row>;
         })}
+
       </Page>
     </Document>
   );
