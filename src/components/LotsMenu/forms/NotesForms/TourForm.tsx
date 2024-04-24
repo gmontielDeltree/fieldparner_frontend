@@ -72,6 +72,10 @@ const FeatureAccordion = styled(Accordion)({
   margin: "10px 0"
 });
 
+const getTodayDate = () => {
+  return new Date();
+};
+
 function TourForm({ lot, formData, setFormData, tourSave }) {
   const db = dbContext.fields;
   const [isPointMode, setIsPointMode] = useState(false);
@@ -240,7 +244,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || new Date()}
+                      value={formData.fecha || getTodayDate()} 
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, fecha: newValue };
                         setFormData(updatedFormData);
