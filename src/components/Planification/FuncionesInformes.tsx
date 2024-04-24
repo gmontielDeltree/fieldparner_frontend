@@ -309,7 +309,7 @@ export const ReporteDeCampanas = async (
     console.log("CCCC", c, d);
 
     if (type === "pdf") {
-      downloadInformePorCultivoPdf();
+      downloadInformePorCultivoPdf(c);
     } else if (type === "xls") {
       downloadInformePorCultivoXLS(c);
     }

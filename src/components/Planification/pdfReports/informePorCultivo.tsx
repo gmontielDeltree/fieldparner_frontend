@@ -28,7 +28,7 @@ interface In {
 // Create styles
 const styles = StyleSheet.create({
   page: {
-    flexDirection: "row",
+    flexDirection: "column",
     backgroundColor: "#E4E4E4",
   },
   section: {
@@ -36,93 +36,122 @@ const styles = StyleSheet.create({
     padding: 10,
     flexGrow: 1,
   },
-});
+  tableContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  nombre: {
+    width: "30%",
+  },
+  cell: {
+    textAlign: "right",
+    backgroundColor: "red",
+    width: "10%",
+  },
 
-const styles_row = StyleSheet.create({
   row: {
     flexDirection: "row",
-    alignItems: "center",
+    width: "100%",
+    gap: "10px",
+   
   },
-  description: {
-    width: "60%",
-  },
-  xyz: {
-    width: "40%",
+  table: {
+    alignSelf: "center",
+    width: "90%",
+    backgroundColor: "green",
+    fontSize :11    
+
   },
 });
-
 
 const HeadersRow = ({ headers }: { headers: string[] }) => {
   return (
-    <View style={styles_row.row}>
+    <View style={styles.row}>
       {/* empty filler */}
-      <Text></Text>
+      <Text style={styles.nombre}></Text>
 
-      {headers.map((v)=>{
-        return <Text>{v}</Text>
+      {headers.map((v) => {
+        return <Text style={styles.cell}>{v}</Text>;
       })}
-      
     </View>
   );
-};
+}
 
 const Row = ({ value }: { value: (string | number)[] }) => {
   return (
-    <View style={styles_row.row}>
+    <View style={styles.row}>
       {/* nombre de la fila */}
 
-      <Text>{value[0]}</Text>
-      
+      <Text style={styles.nombre}>{value[0]}</Text>
+
       {/* crops */}
-      {value.slice(1).map((v)=>{
-        return <Text>{v}</Text>
+      {value.slice(1).map((v) => {
+        return <Text style={styles.cell}>{v}</Text>;
       })}
     </View>
   );
 };
 //Create Document Component
-export const InformePorCultivoPDF = (data: In) => {
-  let title = "Informe de Planificación por cultivo";
+export const InformePorCultivoPDF= ({ data }: { data: In }) => {
+  let title = "Informe de planificación por cultivo";
 
+  let keys_for_each_row = [
+    "superficie",
+    "rindePromedio",
+    "cosechado",
+    "precioPromedio",
+    "ingresoCosechado",
 
-let keys_for_each_row = [ "cultivoId",
-  "superficie",
-  "nombre",
-  "totalCostoInsumos",
-  "totalCostoLabores",
-  "ingresoCosechado",
-  "cosechado",
-  "rindePromedio",
-  "precioPromedio",
-  "costoInsumosPorHa",
-  "costoLaboresPorHa",
-  "margenBruto",
-  "rendimiento",
-  "rindeEquilibrio",
-  "precioEquilibrio",
-  "ingresoPorHa",]
+    "totalCostoInsumos",
+    "totalCostoLabores",
+   
+    "ingresoPorHa",
+    "costoInsumosPorHa",
+    "costoLaboresPorHa",
 
-let crop_column = Object.values(data)
-let headers_crops = crop_column.map((v)=>v.nombre)
+    "margenBruto",
+    "rendimiento",
+    "rindeEquilibrio",
+    "precioEquilibrio",
+  ];
 
-let rows : (string | number)[][] = []
+  let headers_for_each_row : ({[index:string] : string}) = {
+    "superficie": "Superficie (ha)",
+    "rindePromedio": "Rinde Promedio (tn/ha)",
+    "cosechado": "Total Cosechado (tn)",
+    "precioPromedio": "Precio Promedio (USD/tn)",
+    "ingresoCosechado": "Ingreso (USD)",
 
-keys_for_each_row.map((key)=>{
+    "totalCostoInsumos":"Total Insumos (USD)",
+    "totalCostoLabores":"Total Labores (USD)",
+   
+    "ingresoPorHa" : "Ingreso por Ha (USD/ha)",
+    "costoInsumosPorHa": "Costo Insumos por Ha (USD/ha)",
+    "costoLaboresPorHa": "Costo Labores por Ha (USD/ha)",
 
-  let new_row = []
-  new_row.push(key)
+    "margenBruto": "Margen Bruto (USD)",
+    "rendimiento": "Rendimiento (%)",
+    "rindeEquilibrio" : "Rinde Equilibrio (tn/ha)",
+    "precioEquilibrio": "Precio Equilibrio ($/ha)",
+  };
 
-  crop_column.map((col)=>{
-    new_row.push(col[key as keyof InformePorCultivoData])
-  })
+  let crop_column = Object.values(data);
+  let headers_crops = crop_column.map((v) => v.nombre);
 
-  rows.push(new_row)
+  let rows: (string | number)[][] = [];
 
-})
+  keys_for_each_row.map((key) => {
+    let new_row = [];
+    new_row.push(headers_for_each_row[key]);
 
-console.log(rows)
+    crop_column.map((col) => {
+      new_row.push(col[key as keyof InformePorCultivoData]);
+    });
 
+    rows.push(new_row);
+  });
 
+  console.log(rows);
 
   return (
     <Document>
@@ -131,15 +160,14 @@ console.log(rows)
           <Text>{title}</Text>
         </View>
 
-
-<HeadersRow headers={headers_crops} />
-
-        {rows.map((v) => {
-
-
-          return <Row value={v}></Row>;
-        })}
-
+        <View style={styles.table}>
+          <HeadersRow headers={headers_crops} />
+          <View style={styles.tableContainer}>
+            {rows.map((v) => {
+              return <Row value={v}></Row>;
+            })}
+          </View>
+        </View>
       </Page>
     </Document>
   );
