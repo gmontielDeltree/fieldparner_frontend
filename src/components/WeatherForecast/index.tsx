@@ -69,7 +69,10 @@ const StyledEventNoteIcon = styled(ThunderstormIcon)(({ theme }) => ({
   padding: "5px"
 }));
 
-const WeatherForecast = ({ position = [-59.0979, -35.1854] }) => {
+const WeatherForecast = ({
+  position = [-59.0979, -35.1854],
+  date = new Date()
+}) => {
   const { t } = useTranslation();
   const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -80,7 +83,7 @@ const WeatherForecast = ({ position = [-59.0979, -35.1854] }) => {
     const fetchWeather = async () => {
       setLoading(true);
       try {
-        const data = await forecastWeather(position);
+        const data = await forecastWeather(position, date);
         setWeatherData(data);
       } catch (err) {
         setError(err.message);
@@ -90,7 +93,7 @@ const WeatherForecast = ({ position = [-59.0979, -35.1854] }) => {
     };
 
     fetchWeather();
-  }, [JSON.stringify(position)]);
+  }, [JSON.stringify(position), date.toISOString()]);
 
   useEffect(() => {
     console.log(weatherData);
