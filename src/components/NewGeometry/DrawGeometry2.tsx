@@ -12,7 +12,10 @@ import { features } from "process";
 
 interface DrawGeometryProps {
   handleSaveGeometry?: (formattedData: FormattedData) => void;
-  type: "field" | "lot";
+  type: "field" | "lot",
+  initialGeometry ?: FeatureCollection,
+  initialName ?: string,
+  edit ?: boolean
 }
 
 interface FormattedData {
@@ -41,12 +44,12 @@ MapboxDraw.modes.direct_select.onTrash = function (state) {
   }
 };
 
-function DrawGeometry2({ handleSaveGeometry, type }: DrawGeometryProps) {
-  const [geometryName, setGeometryName] = useState("");
+function DrawGeometry2({ handleSaveGeometry, type, initialGeometry, initialName, edit }: DrawGeometryProps) {
+  const [geometryName, setGeometryName] = useState(initialName || "");
   const [geometryData, setGeometryData] = useState<FeatureCollection<
     Geometry,
     GeoJsonProperties
-  > | null>(null);
+  > | null>(initialGeometry || null);
 
   const map: MapboxMap = useSelector(selectMap);
 
@@ -144,6 +147,17 @@ function DrawGeometry2({ handleSaveGeometry, type }: DrawGeometryProps) {
       map.on("draw.modechange", backToSimpleSelect);
       map.on("draw.selectionchange", backToSimpleSelect);
       map.on("draw.update", drawUpdate);
+
+      if(initialGeometry){
+        
+        draw.add(initialGeometry)
+        console.log("initial geom",draw.getAll())
+        draw.changeMode("simple_select", {
+          featureIds: [draw.getAll().features[1].id],
+        });
+      
+        
+      }
     }
   }, [map]);
 
