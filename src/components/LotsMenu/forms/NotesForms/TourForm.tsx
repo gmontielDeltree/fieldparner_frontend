@@ -25,6 +25,7 @@ import PointForm from "./PointForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AudioPlayer } from "./PointFormStyles";
 import { dbContext } from "../../../../services";
+import { parseISO } from "date-fns"; // Importamos la función parseISO de date-fns
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -224,10 +225,9 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || new Date().toISOString().split('T')[0]} // Formato por defecto
+                      value={formData.fecha ? parseISO(formData.fecha) : null}
                       onChange={(newValue) => {
-                        const formattedDate = newValue.toISOString().split('T')[0];
-                        const updatedFormData = { ...formData, fecha: formattedDate };
+                        const updatedFormData = { ...formData, fecha: newValue };
                         setFormData(updatedFormData);
                       }}
                       renderInput={(params) => (
@@ -236,12 +236,12 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     />
                   </LocalizationProvider>
                 </Grid>
-
+                
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <TimePicker
                       label="Hora"
-                      value={formData.hora}
+                      value={formData.hora ? parseISO(formData.hora) : null}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, hora: newValue };
                         setFormData(updatedFormData);
@@ -252,15 +252,14 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     />
                   </LocalizationProvider>
                 </Grid>
-
+                
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Próxima Visita"
-                      value={formData.proxima_visita}
+                      value={formData.proxima_visita ? parseISO(formData.proxima_visita) : null}
                       onChange={(newValue) => {
-                        const formattedDate = newValue.toISOString().split('T')[0];
-                        const updatedFormData = { ...formData, proxima_visita: formattedDate };
+                        const updatedFormData = { ...formData, proxima_visita: newValue };
                         setFormData(updatedFormData);
                       }}
                       renderInput={(params) => (
