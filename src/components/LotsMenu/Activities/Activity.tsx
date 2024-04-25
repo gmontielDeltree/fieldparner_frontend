@@ -22,11 +22,6 @@ function Activity({
   handleDownloadPDF,
   handleConfirmExecution
 }) {
-  console.log("ACTIVIDAD RENDER ACTIVITY", activity);
-  console.log(
-    "Fecha de ejecución",
-    activity.actividad.detalles.fecha_ejecucion_tentativa
-  );
   const [gradientAngle, setGradientAngle] = useState(0);
   const [showReplicateActivityMenu, setShowReplicateActivityMenu] =
     useState(false);
@@ -38,7 +33,7 @@ function Activity({
     ) {
       return new Date(activity.actividad.detalles.fecha_ejecucion_tentativa);
     }
-    return new Date(); // Default to current date if invalid
+    return new Date();
   }, [activity.actividad.detalles.fecha_ejecucion_tentativa]);
 
   useEffect(() => {
@@ -48,7 +43,7 @@ function Activity({
     if (newDate.getTime() !== executionDate.getTime()) {
       setExecutionDate(newDate);
     }
-  }, [activity.fecha_ejecucion]); // Dependency on the original date from props
+  }, [activity.fecha_ejecucion]);
 
   // LANZA DEMASIADOS RENDERIZADOS
   // useEffect(() => {
