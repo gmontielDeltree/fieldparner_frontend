@@ -112,9 +112,9 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
             console.error("Error saving actividad:", error);
           }
         });
-    } //catch (error) {
-      //console.error("Error in handleSave:", error);
-    //}
+    } catch (error) {
+      console.error("Error in handleSave:", error);
+    }
   };
   
   

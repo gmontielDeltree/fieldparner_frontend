@@ -9,11 +9,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  CardContent,
   ImageListItem,
   Card,
   ImageList
@@ -23,7 +18,6 @@ import {
   DatePicker,
   TimePicker
 } from "@mui/x-date-pickers";
-import PouchDB from "pouchdb";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { styled } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
@@ -111,6 +105,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       [fieldName]: value
     });
   };
+
   const fetchImageUrl = async (imageId) => {
     try {
       const blob = await db.getAttachment(imageId, "image");
@@ -119,6 +114,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       console.error("Error fetching image:", error);
     }
   };
+
   const fetchAudioUrl = async (audioId) => {
     try {
       const blob = await db.getAttachment(audioId, "audio");
@@ -140,18 +136,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 
   const renderFeatureDetails = (feature) => (
     <>
-      <List>
-        {feature.properties.detalles.map((detail, index) => (
-          <DetailCard key={index}>
-            <CardContent>
-              <Typography variant="body1">{detail.name}</Typography>
-              <Typography variant="body2" color="textSecondary">
-                {detail.value}
-              </Typography>
-            </CardContent>
-          </DetailCard>
-        ))}
-      </List>
       <ImageGrid cols={3} gap={8}>
         {feature.properties.fotos.map((foto, index) => (
           <ImageListItem key={index}>
@@ -240,9 +224,10 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || new Date()}
+                      value={formData.fecha}
                       onChange={(newValue) => {
-                        const updatedFormData = { ...formData, fecha: newValue };
+                        const formattedDate = newValue.toISOString().split('T')[0];
+                        const updatedFormData = { ...formData, fecha: formattedDate };
                         setFormData(updatedFormData);
                       }}
                       renderInput={(params) => (
@@ -251,12 +236,12 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     />
                   </LocalizationProvider>
                 </Grid>
-                  
+
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <TimePicker
                       label="Hora"
-                      value={formData.hora || new Date()}
+                      value={formData.hora}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, hora: newValue };
                         setFormData(updatedFormData);
@@ -267,14 +252,15 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     />
                   </LocalizationProvider>
                 </Grid>
-                  
+
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Próxima Visita"
-                      value={formData.proxima_visita || new Date()}
+                      value={formData.proxima_visita}
                       onChange={(newValue) => {
-                        const updatedFormData = { ...formData, proxima_visita: newValue };
+                        const formattedDate = newValue.toISOString().split('T')[0];
+                        const updatedFormData = { ...formData, proxima_visita: formattedDate };
                         setFormData(updatedFormData);
                       }}
                       renderInput={(params) => (
@@ -309,4 +295,3 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 }
 
 export default TourForm;
-
