@@ -11,7 +11,11 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { TreeView } from "@mui/x-tree-view/TreeView";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
-import { IActividadPlanificacion, IInsumosPlanificacion, ILaboresPlanificacion } from "../../interfaces/planification";
+import {
+  IActividadPlanificacion,
+  IInsumosPlanificacion,
+  ILaboresPlanificacion,
+} from "../../interfaces/planification";
 import { red } from "@mui/material/colors";
 import { ActividadMoreButton } from "./ActividadMoreButton";
 import { FieldPartnerColors } from "./FieldPartnerColors";
@@ -30,29 +34,35 @@ import { LaboresContext } from "./contexts/LaboresContext";
 import { CiclosContext } from "./contexts/CiclosContext";
 import { useTranslation } from "react-i18next";
 import { ActividadEditorDialogNoButton } from "./ActividadEditorDialog";
+import { Button } from "semantic-ui-react";
+import Swal from "sweetalert2";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
-const calcTotal =(linInsumos : IInsumosPlanificacion[], linLabores : ILaboresPlanificacion[])=>{
-  let totalI = linInsumos.reduce((acc,lin)=>lin.totalCosto + acc,0)
-  let totalL = linLabores.reduce((acc,lin)=>lin.totalCosto + acc,0)
-  return totalI + totalL
-}
+const calcTotal = (
+  linInsumos: IInsumosPlanificacion[],
+  linLabores: ILaboresPlanificacion[],
+) => {
+  let totalI = linInsumos.reduce((acc, lin) => lin.totalCosto + acc, 0);
+  let totalL = linLabores.reduce((acc, lin) => lin.totalCosto + acc, 0);
+  return totalI + totalL;
+};
 
 export const ActividadCardBase: React.FC = ({
   actividadId,
-  selectionMode
+  selectionMode,
 }: {
-  actividadId: string,
-  selectionMode? : boolean
+  actividadId: string;
+  selectionMode?: boolean;
 }) => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   // const actividad = usePlanificationActividad(actividadId)
-  const { removeActividad } = usePlanActividad();
+  const { removeActividad, programarActividadPlanificada } = usePlanActividad();
   const { getInsumoFromId } = useContext(InsumosContext);
   const { getLaborLabelFromId } = useContext(LaboresContext);
 
-  const {refreshCiclos} = useContext(CiclosContext) // useCiclos(ciclo.campanaId,loteId)
+  const { refreshCiclos } = useContext(CiclosContext); // useCiclos(ciclo.campanaId,loteId)
 
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(false);
 
   let {
     fecha,
@@ -69,137 +79,194 @@ export const ActividadCardBase: React.FC = ({
     lineasLabores,
     loading,
     actividad,
-    refreshActividad
+    refreshActividad,
   } = usePlanificationActividad(actividadId);
+
+  const { refreshCallback } = useOutletContext();
 
   let cardColor = FieldPartnerColors[tipo as unknown as string];
 
+  const navigate = useNavigate();
   const fechaString = (fechaa) => format(parseISO(fechaa), "dd MMMM yyyy");
 
   let icon = siembraIcon;
 
+  const programarClickHandler = () => {
+    programarActividadPlanificada(actividad).then(() => {
+      Swal.fire({ title: "Programada" });
+      if (refreshCallback) {
+        refreshCallback();
+      }
+      navigate(-1);
+    });
+  };
+
   if (loading) return <div>Loading</div>;
   return (
     <>
-    <ActividadEditorDialogNoButton open={editing} actividad={actividad} handleClose={()=>setEditing(false)} refreshCiclos={()=>{refreshActividad()}} editing={true}/>
-    <Card
-      sx={{ maxWidth: "100%", minWidth: "50%", backgroundColor: cardColor }}
-    >
-      <CardContent>
-        <Box>
-          {fechaString(fecha)} {ejecutada && "EJECUTADA"}
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "8px",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <Avatar
-              sx={{ bgcolor: red[500] }}
-              aria-label="recipe"
-              src={icon}
-            ></Avatar>
-            <Typography
-              variant="h5"
-              component="div"
-              onClick={() => console.log(actividadId)}
+      <ActividadEditorDialogNoButton
+        open={editing}
+        actividad={actividad}
+        handleClose={() => setEditing(false)}
+        refreshCiclos={() => {
+          refreshActividad();
+        }}
+        editing={true}
+      />
+      <Card
+        sx={{ maxWidth: "100%", minWidth: "50%", backgroundColor: cardColor }}
+      >
+        <CardContent>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            {fechaString(fecha)} {ejecutada && "EJECUTADA"}
+            <Button onClick={programarClickHandler}>{t("Programar")}</Button>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "8px",
+            }}
+          >
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
-              {tipo.toUpperCase()} de {area} has.
-            </Typography>
-          </div>
+              <Avatar
+                sx={{ bgcolor: red[500] }}
+                aria-label="recipe"
+                src={icon}
+              ></Avatar>
+              <Typography
+                variant="h5"
+                component="div"
+                onClick={() => console.log(actividadId)}
+              >
+                {tipo.toUpperCase()} de {area} has.
+              </Typography>
+            </div>
 
-          <ActividadMoreButton
-            onProgramar = {()=>{
-              alert("TIENEN QUE TERMINAR DE MODIFICAR LAS ACTIVIDADES DE LOTE. Cuando lo terminen lo implemento. Gracias!!!")
-            }}
-            onEdit={() => {
-              console.log("EDIT ACT");
-              setEditing(true)
-            }}
-            onDelete={() => {
-              console.log("DELETE ACT");
-              removeActividad(actividadId).then(refreshCiclos);
-            }}
-          />
-        </Box>
-        <TreeView
-          defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpandIcon={<ChevronRightIcon />}
-        >
-          
-          <TreeItem nodeId="10" label="Contratista">
-            {!contratista && (
-              <p>No contractor</p>
-            )}
-           {contratista?.razonSocial?.length ? contratista?.razonSocial : contratista?.nombreCompleto}
-          </TreeItem>
+            <ActividadMoreButton
+              onProgramar={() => {
+                alert(
+                  "TIENEN QUE TERMINAR DE MODIFICAR LAS ACTIVIDADES DE LOTE. Cuando lo terminen lo implemento. Gracias!!!",
+                );
+              }}
+              onEdit={() => {
+                console.log("EDIT ACT");
+                setEditing(true);
+              }}
+              onDelete={() => {
+                console.log("DELETE ACT");
+                removeActividad(actividadId).then(refreshCiclos);
+              }}
+            />
+          </Box>
+          <TreeView
+            defaultCollapseIcon={<ExpandMoreIcon />}
+            defaultExpandIcon={<ChevronRightIcon />}
+          >
+            <TreeItem nodeId="10" label="Contratista">
+              {!contratista && <p>No contractor</p>}
+              {contratista?.razonSocial?.length
+                ? contratista?.razonSocial
+                : contratista?.nombreCompleto}
+            </TreeItem>
 
-          <TreeItem nodeId="1" label="Insumos">
-            {lineasInsumos?.length === 0 && (
-              <p>La actividad no tiene insumos</p>
-            )}
-            {lineasInsumos?.map((i, indec) => {
-              // console.log(i,lineasInsumos)
-              let insumo = getInsumoFromId(i.insumoId)
-              return (
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Box>{insumo?.name}</Box>
+            <TreeItem nodeId="1" label="Insumos">
+              {lineasInsumos?.length === 0 && (
+                <p>La actividad no tiene insumos</p>
+              )}
+              {lineasInsumos?.map((i, indec) => {
+                // console.log(i,lineasInsumos)
+                let insumo = getInsumoFromId(i.insumoId);
+                return (
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Box>{insumo?.name}</Box>
 
-                  <Box sx={{ display: "flex", justifyContent: "space-between", gap:"1rem" }}>
-                    {/* {i.totalCantidad?.toFixed(2)} {insumo?.unitMeasurement} */}
-                    <Box sx={{ fontWeight: "bold" }}>
-                      USD {i.totalCosto?.toFixed(2)}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: "1rem",
+                      }}
+                    >
+                      {/* {i.totalCantidad?.toFixed(2)} {insumo?.unitMeasurement} */}
+                      <Box sx={{ fontWeight: "bold" }}>
+                        USD {i.totalCosto?.toFixed(2)}
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              );
-            })}
-          </TreeItem>
-          <TreeItem nodeId="5" label={t("Servicios")}>
-            {lineasLabores?.length === 0 && (
-              <p>{t("La actividad no tiene servicios")}</p>
-            )}
-            {lineasLabores?.map((i, indec) => {
-              return (
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Box>{getLaborLabelFromId(i.laborId)}</Box>
-                  <Box>
-                    <Box sx={{ fontWeight: "bold" }}>
-                      USD {i.totalCosto?.toFixed(2)}
+                );
+              })}
+            </TreeItem>
+            <TreeItem nodeId="5" label={t("Servicios")}>
+              {lineasLabores?.length === 0 && (
+                <p>{t("La actividad no tiene servicios")}</p>
+              )}
+              {lineasLabores?.map((i, indec) => {
+                return (
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Box>{getLaborLabelFromId(i.laborId)}</Box>
+                    <Box>
+                      <Box sx={{ fontWeight: "bold" }}>
+                        USD {i.totalCosto?.toFixed(2)}
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              );
-            })}
-          </TreeItem>
-        </TreeView>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap:"0.2rem" }}>
+                );
+              })}
+            </TreeItem>
+          </TreeView>
+          <Box
+            sx={{ display: "flex", justifyContent: "flex-end", gap: "0.2rem" }}
+          >
+            {precioEstimadoCosecha && (
+              <Chip
+                label={precioEstimadoCosecha?.toFixed(2) + " USD/tn"}
+                title="Precio Estimado"
+                sx={{
+                  backgroundColor: "#436716",
+                  color: "#FFD567",
+                  fontWeight: "bold",
+                }}
+              />
+            )}
 
-        {precioEstimadoCosecha &&
-        <Chip
-            label={precioEstimadoCosecha?.toFixed(2) + " USD/tn"}
-            title="Precio Estimado"
-            sx={{ backgroundColor: "#436716", color: "#FFD567", fontWeight:"bold" }}
-          />}
-
-          {rindeEstimado &&
-        <Chip
-            label={ rindeEstimado?.toFixed(2) + " tn/ha" }
-            title="Rinde Estimado"
-            sx={{ backgroundColor: "#16672f", color: "#FFD567", fontWeight:"bold" }}
-          />}
-          <Chip
-            title="Costo Total"
-            label={"USD " + calcTotal(lineasInsumos,lineasLabores)?.toFixed(2)}
-            sx={{ backgroundColor: "#01579b", color: "#FFD567", fontWeight:"bold" }}
-          />
-        </Box>
-      </CardContent>
-    </Card>
+            {rindeEstimado && (
+              <Chip
+                label={rindeEstimado?.toFixed(2) + " tn/ha"}
+                title="Rinde Estimado"
+                sx={{
+                  backgroundColor: "#16672f",
+                  color: "#FFD567",
+                  fontWeight: "bold",
+                }}
+              />
+            )}
+            <Chip
+              title="Costo Total"
+              label={
+                "USD " + calcTotal(lineasInsumos, lineasLabores)?.toFixed(2)
+              }
+              sx={{
+                backgroundColor: "#01579b",
+                color: "#FFD567",
+                fontWeight: "bold",
+              }}
+            />
+          </Box>
+        </CardContent>
+      </Card>
     </>
- 
   );
 };

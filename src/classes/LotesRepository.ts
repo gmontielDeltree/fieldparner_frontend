@@ -3,7 +3,6 @@ import { BaseDocRepository } from "./BaseRepository";
 import { dbContext } from "../services";
 import { uuidv7 } from "uuidv7";
 
-
 interface LoteRepositoryInterface {
   add(cropDoc: Business): Promise<any>;
   getAll(): Promise<Business[]>;
@@ -16,7 +15,7 @@ export class LoteRepository
   private _lotes: Lote[];
 
   constructor() {
-    super(dbContext.);
+    super(dbContext.fields);
   }
 
   async getAll() {

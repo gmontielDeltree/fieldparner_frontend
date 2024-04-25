@@ -9,15 +9,26 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { Campaign } from "@types";
-import { es } from 'date-fns/locale'
+import { es } from "date-fns/locale";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 
-const CreateCampaignModal = ({ open, onClose, onCreate, initialData, editMode, onDelete }: { onDelete?: (e: any) => any, initialData?: Campaign, editMode?: boolean }) => {
+const CreateCampaignModal = ({
+  open,
+  onClose,
+  onCreate,
+  initialData,
+  editMode,
+  onDelete,
+}: {
+  onDelete?: (e: any) => any;
+  initialData?: Campaign;
+  editMode?: boolean;
+}) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [zoneId, setZoneId] = useState("");
@@ -30,17 +41,16 @@ const CreateCampaignModal = ({ open, onClose, onCreate, initialData, editMode, o
 
   useEffect(() => {
     if (initialData && editMode) {
-
-      setName(initialData.name)
-      setDescription(initialData.description)
-      setZoneId(initialData.zoneId)
-      setStartDate(initialData.startDate)
-      setEndDate(initialData.endDate)
-      setState(initialData.state)
+      setName(initialData.name);
+      setDescription(initialData.description);
+      setZoneId(initialData.zoneId);
+      setStartDate(initialData.startDate);
+      setEndDate(initialData.endDate);
+      setState(initialData.state);
 
       // TODO Load data to form
     }
-  }, [initialData])
+  }, [initialData]);
 
   const handleCreate = () => {
     if (editMode) {
@@ -52,7 +62,7 @@ const CreateCampaignModal = ({ open, onClose, onCreate, initialData, editMode, o
         zoneId,
         startDate,
         endDate,
-        state
+        state,
       });
     } else {
       onCreate({
@@ -62,9 +72,8 @@ const CreateCampaignModal = ({ open, onClose, onCreate, initialData, editMode, o
         zoneId,
         startDate,
         endDate,
-        state
+        state,
       });
-
     }
     // Reset form
     setName("");
@@ -75,8 +84,10 @@ const CreateCampaignModal = ({ open, onClose, onCreate, initialData, editMode, o
     setState("");
   };
 
-  function onDeleteHandler(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
-    onDelete(initialData)
+  function onDeleteHandler(
+    event: MouseEvent<HTMLButtonElement, MouseEvent>,
+  ): void {
+    onDelete(initialData);
     throw new Error("Function not implemented.");
   }
 
@@ -116,8 +127,7 @@ const CreateCampaignModal = ({ open, onClose, onCreate, initialData, editMode, o
           onChange={(e) => setZoneId(e.target.value)}
         />
 
-
-        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es} >
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
           <TextField
             margin="dense"
             id="startDate"
@@ -156,17 +166,16 @@ const CreateCampaignModal = ({ open, onClose, onCreate, initialData, editMode, o
         </FormControl>
       </DialogContent>
       <DialogActions>
-        {editMode && onDelete &&
-
-          <Button variant="contained" color="error" onClick={onDeleteHandler}>{t("delete")}</Button>
-        }
+        {/* {editMode && onDelete && */}
+        {/*   <Button variant="contained" color="error" onClick={onDeleteHandler}>{t("delete")}</Button> */}
+        {/* } */}
 
         <Button onClick={onClose}>{t("cancel")}</Button>
-        {editMode ?
+        {editMode ? (
           <Button onClick={handleCreate}>{t("save")}</Button>
-          :
+        ) : (
           <Button onClick={handleCreate}>{t("create")}</Button>
-        }
+        )}
       </DialogActions>
     </Dialog>
   );

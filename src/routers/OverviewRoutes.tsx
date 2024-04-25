@@ -18,6 +18,7 @@ import {
   NewExitFieldPage,
   ListOriginsDestinationsPage,
   NewOriginsDestinationsPage,
+  ListUsersPage,
   SatellitePage,
   DevicePage,
   PricesPage,
@@ -29,34 +30,36 @@ import {
   ConfirmWithdrawalOrderPage,
   ListTransformPage,
   ListZonesPage,
-  NewZonePage
+  NewZonePage,
+  NewLaborsServicesPage,
+  ListLaborsServicesPage
 } from "../pages";
 import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
+import { NewUserPage } from "../pages/NewUserPage";
 import { ComponentTestBed } from '../pages/ComponentTestBed';
+import { useAppSelector } from "../hooks";
 import { PlanificationByLotPage } from "../pages/PlanificationByLotPage";
 import NewFieldPage from "../pages/NewFieldPage";
 import { FieldPage } from "../pages/FieldPage";
 import { LotPage } from "../pages/LotPage";
-import { NewLotPage } from '../pages/NewLotPage';
-import { ListLaborsServicesPage } from "../pages/ListLaborsServicesPage";
-import { NewLaborsServicesPage } from "../pages/NewLaborsServicespage";
+import { NewLotPage } from "../pages/NewLotPage";
 
 export const OverviewRoutes: React.FC = () => {
+  const { user } = useAppSelector(state => state.auth);
+
   const { pathname, search } = useLocation();
 
   const lastPath = useMemo(() => pathname + search, [pathname, search]);
-  localStorage.setItem('lastPath', lastPath);
+  localStorage.setItem("lastPath", lastPath);
 
   return (
     <AppLayout key="app-layout">
       <Routes>
-        <Route path="/overview/fields" element={<FieldsPage />} >
-
+        <Route path="/overview/fields" element={<FieldsPage />}>
           <Route path="new-field" element={<NewFieldPage />} />
 
-          <Route path="planification-by-lot/:parentId/:loteId2" element={<PlanificationByLotPage />} />
           <Route path="planification" element={<PlanificationPage />} />
 
           <Route path="device/:deviceId/:date" element={<DevicePage />} />
@@ -65,10 +68,13 @@ export const OverviewRoutes: React.FC = () => {
           <Route path="magris/:id" element={<MagrisReportIntegration />} />
           <Route path="magris" element={<MagrisIntegration />} />
           <Route path=":campoId" element={<FieldPage />} />
-          <Route path=":campoId/new-lot" element={<NewLotPage/>} />
-          <Route path=":campoId/:loteId" element={<LotPage />} />
-
-
+          <Route path=":campoId/new-lot" element={<NewLotPage />} />
+          <Route path=":campoId/:loteId" element={<LotPage />}>
+            <Route
+              path="planification-by-lot/:parentId/:loteId2"
+              element={<PlanificationByLotPage />}
+            />
+          </Route>
         </Route>
 
         <Route path="/overview/vehicle" element={<ListVehiclesPage />} />
@@ -83,9 +89,18 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/deposit/new" element={<DepositPage />} />
         <Route path="/overview/deposit/:id" element={<DepositPage />} />
 
-        <Route path="/overview/origins-destinations" element={<ListOriginsDestinationsPage />} />
-        <Route path="/overview/origins-destinations/new" element={<NewOriginsDestinationsPage />} />
-        <Route path="/overview/origins-destinations/:id" element={<NewOriginsDestinationsPage />} />
+        <Route
+          path="/overview/origins-destinations"
+          element={<ListOriginsDestinationsPage />}
+        />
+        <Route
+          path="/overview/origins-destinations/new"
+          element={<NewOriginsDestinationsPage />}
+        />
+        <Route
+          path="/overview/origins-destinations/:id"
+          element={<NewOriginsDestinationsPage />}
+        />
 
         <Route path="/overview/supply" element={<ListSuppliesPage />} />
         <Route path="/overview/supply/new" element={<SupplyPage />} />
@@ -100,22 +115,48 @@ export const OverviewRoutes: React.FC = () => {
           element={<NewStockMovementPage />}
         />
         <Route path="/overview/list-stock" element={<ListStockPage />} />
-        <Route path="/overview/value-transform" element={<ListTransformPage />} />
-        <Route path="/overview/value-transform/new" element={<TransformPage />} />
+        <Route
+          path="/overview/value-transform"
+          element={<ListTransformPage />}
+        />
+        <Route
+          path="/overview/value-transform/new"
+          element={<TransformPage />}
+        />
 
         <Route path="/overview/exit-field" element={<ListExitFieldPage />} />
         <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />
 
-
         <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
-        <Route path="/overview/zoning/:baseImageName" element={<ZoningPage />} />
+        <Route
+          path="/overview/zoning/:baseImageName"
+          element={<ZoningPage />}
+        />
         <Route path="/overview/prices" element={<PricesPage />} />
+        {
+          (user && user.isAdmin) && (
+            <>
+              <Route path="/overview/users" element={<ListUsersPage />} />
+              <Route path="/overview/users/new" element={<NewUserPage />} />
+              <Route path="/overview/users/:id" element={<NewUserPage />} />
+            </>
+          )
+        }
 
-        <Route path="/overview/list-orders" element={<ListWithdrawalOrdersPage />} />
+        <Route
+          path="/overview/list-orders"
+          element={<ListWithdrawalOrdersPage />}
+        />
         <Route path="/overview/order" element={<WithdrawalOrdersPage />} />
-        <Route path="/overview/order/:orderId" element={<ConfirmWithdrawalOrderPage />} />
+        <Route
+          path="/overview/order/:orderId"
+          element={<ConfirmWithdrawalOrderPage />}
+        />
 
-        <Route path="/overview/component-test-bed" element={<ComponentTestBed />} />
+        <Route
+          path="/overview/component-test-bed"
+          element={<ComponentTestBed />}
+        />
 
         <Route path="/overview/zones" element={<ListZonesPage />} />
         <Route path="/overview/zones/new" element={<NewZonePage />} />

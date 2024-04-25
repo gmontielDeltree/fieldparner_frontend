@@ -8,9 +8,9 @@ import {
   Typography
 } from "@mui/material";
 import PersonalExecutionForm from "./forms/PlanForms/PersonalExecutionForm";
-import SuppliesForm from "./forms/PlanForms/SuppliesForm";
+import SuppliesExecutionForm from "./forms/PlanForms/SuppliesExecutionForm";
 import OtherDetailsForm from "./forms/PlanForms/OtherDetailsForm";
-import TasksForm from "./forms/PlanForms/TasksForm";
+import ServicesForm from "./forms/PlanForms/ServicesForm";
 import ConditionsForm from "./forms/PlanForms/ConditionsForm";
 import ObservationsForm from "./forms/PlanForms/ObservationsForm";
 import { getEmptyActivity, getEmptyExecution } from "../../interfaces/activity";
@@ -26,6 +26,7 @@ import { Ejecucion, Actividad } from "../../interfaces/activity";
 import uuid4 from "uuid4";
 
 const activityTypeTranslations = {
+  preparation: "Preparado",
   sowing: "Siembra",
   harvesting: "Cosecha",
   application: "Aplicacion"
@@ -54,6 +55,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   backToActivites,
   existingActivity
 }) => {
+  console.log("ACTIVITY TYPE: ", activityType);
   if (!lot) return null;
   const lotName = lot.properties.name;
   const [formData, setFormData] = useState(
@@ -75,20 +77,17 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const titleBg = isEditing
     ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
     : `linear-gradient(45deg, #a0a0a0, #626262)`;
-  const steps = activityType === 'sowing' ? [
-    "General",
-    "Insumos",
-    "Otros Datos",
-    "Labores",
-    "Condiciones",
-    "Observaciones"
-  ] : [
-    "General",
-    "Insumos",
-    "Labores",
-    "Condiciones",
-    "Observaciones"
-  ] ;
+  const steps =
+    activityType === "sowing"
+      ? [
+          "General",
+          "Insumos",
+          "Otros Datos",
+          "Servicios",
+          "Condiciones",
+          "Observaciones"
+        ]
+      : ["General", "Insumos", "Servicios", "Condiciones", "Observaciones"];
 
   useEffect(() => {
     setFormData((prevFormData) => ({
@@ -127,9 +126,9 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
   const countMissingFields = (formData, step) => {
     let missingFields = 0;
-    if(activityType !== "sowing" && step>1){
-      step = step+1;
-      } 
+    if (activityType !== "sowing" && step > 1) {
+      step = step + 1;
+    }
     switch (step) {
       case 0: // PersonalExecutionForm
         if (!formData.detalles.fecha_ejecucion_tentativa) {
@@ -142,7 +141,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           missingFields++;
         }
         break;
-      case 1: // SuppliesForm (Insumos)
+      case 1: // SuppliesExecutionForm (Insumos)
         if (
           !formData.detalles ||
           !formData.detalles.dosis ||
@@ -175,7 +174,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           missingFields++;
         }
         break;
-      case 3: // TasksForm (Labores)
+      case 3: // ServicesForm (Labores)
         if (
           !formData.detalles ||
           !formData.detalles.dosis ||
@@ -213,9 +212,9 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   };
 
   const getStepContent = (step: number) => {
-    if(activityType !== "sowing" && step>1){
-      step = step+1;
-      } 
+    if (activityType !== "sowing" && step > 1) {
+      step = step + 1;
+    }
     switch (step) {
       case 0:
         return (
@@ -227,7 +226,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         );
       case 1:
         return (
-          <SuppliesForm
+          <SuppliesExecutionForm
             lot={lot}
             db={db}
             formData={formData}
@@ -244,7 +243,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         );
       case 3:
         return (
-          <TasksForm
+          <ServicesForm
             lot={lot}
             formData={formData}
             setFormData={setFormData}

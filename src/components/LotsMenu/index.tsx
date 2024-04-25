@@ -12,8 +12,8 @@ import {
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import planAnualIcon from "../../images/icons/plan.png";
-import preparadoIcon from "../../images/icons/prepare.png";
+import planAnualIcon from "../../images/icons/iconoplanificacionanual.webp";
+import preparadoIcon from "../../images/icons/IconodePlanificaciondesuelo.png";
 
 import categoryIcon1 from "../../images/icons/sembradora_act.webp";
 import categoryIcon2 from "../../images/icons/pulverizadora_act.webp";
@@ -82,8 +82,14 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   console.log("Lot seleccionado: ", lot);
   let backUrl = location.pathname;
   const categories = [
-    // {id:"Planificación del lote", icon:planAnualIcon, link:`planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`},
+    {
+      id: "Planificación del lote",
+      icon: planAnualIcon,
+      link: `planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`
+    },
     // {id: "Programar Preparado", icon:preparadoIcon},
+    // {id:"Planificación del lote", icon:planAnualIcon, link:`planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`},
+    { id: "Programar Preparado", icon: preparadoIcon },
     { id: "Programar Siembra", icon: categoryIcon1 },
     { id: "Programar Aplicacion", icon: categoryIcon2 },
     { id: "Programar Cosecha", icon: categoryIcon3 },
@@ -108,6 +114,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   };
 
   const activityTypeTranslations = {
+    preparacion: "preparation",
     siembra: "sowing",
     cosecha: "harvesting",
     aplicacion: "application",
@@ -290,16 +297,16 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     }
 
     switch (selectedCategory) {
-      // case "Programar Preparado":
-      //   return (
-      //     <PlanActivity
-      //       activityType={"preparation"}
-      //       lot={lot}
-      //       fieldName={field.nombre}
-      //       db={db}
-      //       backToActivites={backToActivites}
-      //     />
-      //   );
+      case "Programar Preparado":
+        return (
+          <PlanActivity
+            activityType={"preparation"}
+            lot={lot}
+            fieldName={field.nombre}
+            db={db}
+            backToActivites={backToActivites}
+          />
+        );
       case "Programar Siembra":
         return (
           <PlanActivity
@@ -418,7 +425,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: t("Si, eliminar"),
+      confirmButtonText: t("Si, eliminar")
     }).then((result) => {
       if (result.isConfirmed) {
         console.log(field, lot);
@@ -426,7 +433,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           Swal.fire({
             title: t("Eliminado"),
             text: t("El lote ha sido eliminado"),
-            icon: "success",
+            icon: "success"
           });
           toggle();
         });
@@ -506,11 +513,11 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
                   backgroundColor: "#333",
                   color: "white",
                   boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-                  fontSize: "1em",
+                  fontSize: "1em"
                 },
                 arrow: {
-                  color: "#333",
-                },
+                  color: "#333"
+                }
               }}
             >
               <IconButton onClick={() => handleDeleteLote()}>

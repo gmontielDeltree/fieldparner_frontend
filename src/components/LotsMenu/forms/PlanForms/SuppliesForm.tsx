@@ -310,7 +310,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           </Grid>
 
           <Grid container item xs={12} spacing={1}>
-            <Grid item xs={3}>
+            <Grid item xs={5.5}>
               <NumberFieldWithUnits
                 fullWidth
                 label={t("_quantity_per_hectare")}
@@ -322,7 +322,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                 }
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={5.5}>
               <NumberFieldWithUnits
                 fullWidth
                 label={t("_total_quantity")}
@@ -331,24 +331,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                 unit={selectedSupply?.unitMeasurement || "unit"}
               />
             </Grid>
-            <Grid item xs={3}>
-              <NumberFieldWithUnits
-                fullWidth
-                label={t("_unit_price")}
-                value={+precio}
-                onChange={handlePrecioChange}
-                unit={"USD" + "/" + (selectedSupply?.unitMeasurement || "unit")}
-              />
-            </Grid>
-            <Grid item xs={2}>
-              <NumberFieldWithUnits
-                fullWidth
-                label={t("_total_cost")}
-                value={costoTotal}
-                onChange={handleCostoTotalChange}
-                unit="USD"
-              />
-            </Grid>
+
             <Grid item xs={1}>
               <IconButton
                 onClick={handleAddRow}
@@ -373,60 +356,40 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                   {/* Editable fields when in edit mode */}
                   {editIndex === index ? (
                     <>
-                      <Grid item xs={12}>
-                        <AutocompleteSupplies
-                          value={editData.selectedOption}
-                          onChange={handleEditSupplyChange}
-                        />
+                      <Grid container item xs={12} spacing={1}>
+                        <Grid item xs={10}>
+                          <AutocompleteSupplies
+                            value={editData.selectedOption}
+                            onChange={handleEditSupplyChange}
+                          />
+                        </Grid>
+                        <Grid item xs={2}>
+                          <AutocompleteDeposito
+                            value={editData.deposito}
+                            onChange={handleEditDepositoChange}
+                          />
+                        </Grid>
                       </Grid>
-                      <Grid item xs={2}>
-                        <AutocompleteDeposito
-                          value={editData.deposito}
-                          onChange={handleEditDepositoChange}
-                        />
-                      </Grid>
-
-                      <Grid item xs={2}>
-                        <NumberFieldWithUnits
-                          size="small"
-                          fullWidth
-                          label={t("_quantity_per_hectare")}
-                          value={+editData.dosificacion}
-                          onChange={handleEditCantidadPorHaChange}
-                          unit="unit/ha"
-                        />
-                      </Grid>
-                      <Grid item xs={2}>
-                        <NumberFieldWithUnits
-                          fullWidth
-                          label={t("_total_quantity")}
-                          value={+editData.total}
-                          onChange={handleEditCantidadTotalChange}
-                          unit="ha"
-                        />
-                      </Grid>
-                      <Grid item xs={2}>
-                        <NumberFieldWithUnits
-                          fullWidth
-                          label="Precio Unitario"
-                          value={editData.precio}
-                          onChange={handleEditPrecioUnitarioChange}
-                          type="number"
-                          unit={
-                            "USD" +
-                            "/" +
-                            (editData.selectedOption?.unitMeasurement || "unit")
-                          }
-                        />
-                      </Grid>
-                      <Grid item xs={2}>
-                        <NumberFieldWithUnits
-                          fullWidth
-                          label="Costo Total"
-                          value={editData.costo_total || 0}
-                          onChange={handleEditCostoTotalChange}
-                          unit={"USD"}
-                        />
+                      <Grid container item xs={12} spacing={1}>
+                        <Grid item xs={5}>
+                          <NumberFieldWithUnits
+                            size="small"
+                            fullWidth
+                            label={t("_quantity_per_hectare")}
+                            value={+editData.dosificacion}
+                            onChange={handleEditCantidadPorHaChange}
+                            unit="unit/ha"
+                          />
+                        </Grid>
+                        <Grid item xs={5}>
+                          <NumberFieldWithUnits
+                            fullWidth
+                            label={t("_total_quantity")}
+                            value={+editData.total}
+                            onChange={handleEditCantidadTotalChange}
+                            unit="ha"
+                          />
+                        </Grid>
                       </Grid>
                     </>
                   ) : (
@@ -450,7 +413,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                         </Grid>
                       </Grid>
                       <Grid container item xs={10}>
-                        <Grid item xs={2}>
+                        <Grid item xs={5}>
                           <Typography
                             variant="caption"
                             title={row.selectedOption?.unitMeasurement + "/ha"}
@@ -460,30 +423,13 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                             {abrUnit(row.selectedOption?.unitMeasurement)}/ha
                           </Typography>
                         </Grid>
-                        <Grid item xs={2}>
+                        <Grid item xs={5}>
                           <Typography
                             variant="caption"
                             title={row.selectedOption?.unitMeasurement}
                           >
                             <strong>{t("_total_quantity")}:</strong> {row.total}{" "}
                             {abrUnit(row.selectedOption?.unitMeasurement)}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <Typography
-                            variant="caption"
-                            title={"USD/" + row.selectedOption?.unitMeasurement}
-                          >
-                            <strong>{t("_unit_price")}:</strong> {row.precio}{" "}
-                            {abrUnit(
-                              "USD/" + row.selectedOption?.unitMeasurement
-                            )}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={2}>
-                          <Typography variant="caption">
-                            <strong>{t("_total_cost")}:</strong>{" "}
-                            {row.precio * row.total} USD
                           </Typography>
                         </Grid>
                       </Grid>

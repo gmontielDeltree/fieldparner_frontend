@@ -15,6 +15,7 @@ import {
     Campaign,
     Field,
     OriginDestinations,
+    UserByAccount,
     WithdrawalOrder,
     Numerator,
     DepositSupplyOrder,
@@ -47,7 +48,8 @@ const dbNames = Object.freeze({
     exitFields: "exit-fields",
     campaigns: "campaigns",
     fields: "fields",
-    originsDestinations: "origins-destinations",
+    originsDestinations:"origins-destinations",
+    users: "users",
     numerators: "numerators",
     withdrawalOrders: "withdrawal-orders",
     depositSupplyOrder: "deposit-supply-order",
@@ -57,7 +59,7 @@ const dbNames = Object.freeze({
     platformSupplies: "test-supplies",
     crops: "crops",
     zones: "zones",
-    LaborsServices:"LaborsServices",
+    fieldpartner: "fieldpartner",
 });
 
 export const dbContext = Object.freeze({
@@ -75,6 +77,7 @@ export const dbContext = Object.freeze({
     campaigns: new PouchDB<Campaign>(dbNames.campaigns),
     fields: new PouchDB<Field>(dbNames.fields), //TODO: revisar db
     originsDestinations: new PouchDB<OriginDestinations>(dbNames.originsDestinations),
+    users: new PouchDB<UserByAccount>(dbNames.users),
     withdrawalOrders: new PouchDB<WithdrawalOrder>(dbNames.withdrawalOrders),
     depositSupplyOrder: new PouchDB<DepositSupplyOrder>(dbNames.depositSupplyOrder),
     withdrawalsByDepositSupply: new PouchDB<WithdrawalsByDepositSupply>(dbNames.withdrawalsByDepositSupply),
@@ -84,7 +87,7 @@ export const dbContext = Object.freeze({
     platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
     crops: new PouchDB<Crops>(dbNames.crops),
     zones: new PouchDB<Zones>(dbNames.zones),
-    laborsServices: new PouchDB<LaborsServices>(dbNames.LaborsServices),
+    fieldpartner: new PouchDB(dbNames.fieldpartner),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -103,6 +106,7 @@ dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, op
 dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
 dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
 dbContext.campaigns.sync(`${remoteCouchDBUrl}${dbNames.campaigns}`, opts);
+dbContext.users.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
 dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
 dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`, opts);
 dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`, opts);

@@ -2,13 +2,13 @@ import React from "react";
 import { AppTheme } from "./themes";
 import { AppRouter } from "./routers/AppRouter";
 import { LocalizationProvider } from "@mui/x-date-pickers";
-// import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { es } from "date-fns/locale";
 
 const FieldPartnerApp: React.FC = () => {
   return (
     <AppTheme>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
         <AppRouter />
       </LocalizationProvider>
     </AppTheme>

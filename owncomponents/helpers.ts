@@ -8,7 +8,7 @@ import { Lote } from "./tipos/lotes";
 import { RouterLocation } from "@vaadin/router";
 import { Campana } from "./tipos/tipos-varios";
 import { Cultivo, CultivoAplicacion } from "./insumos/insumos-types";
-import cultivos from "./jsons/cultivos";
+
 import axios from "axios";
 var img_bucket_url =
   "https://testbucketgarrapollo.s3.us-south.cloud-object-storage.appdomain.cloud/";
@@ -310,25 +310,7 @@ function hashStringToColor(str) {
   );
 }
 
-export const tabla_de_colores = async () => {
-  return gbl_state.user_db
-    .allDocs({
-      include_docs: true,
-      startkey: "cultivo_color",
-      endkey: "cultivo_color\ufff0"
-    })
-    .then((doc) => {
-      if (doc.rows.length > 0) {
-        return doc.rows[0].doc.colors;
-      } else {
-        let tabla = {};
-        cultivos.forEach((cultivo) => {
-          tabla[cultivo.key] = hashStringToColor(cultivo.key);
-        });
-        return tabla;
-      }
-    });
-};
+
 
 export const campo_guardar = async (campodoc: Campo) => {
   return gbl_state.db.put(campodoc);

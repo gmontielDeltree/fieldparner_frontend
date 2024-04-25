@@ -9,9 +9,10 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { useAppDispatch, useAuthStore, useFormValid } from '../hooks';
 import { NavLink } from 'react-router-dom';
-import { Alert, AlertTitle } from '@mui/material';
+import { Alert, Checkbox, FormControlLabel } from '@mui/material';
 import { onLogout } from '../redux/auth';
 import { Loading } from '../components';
+// import { Copyright } from '@mui/icons-material';
 
 
 
@@ -207,13 +208,13 @@ export const RegisterPage: React.FC = () => {
                             />
                         </Grid>
                         <Grid item xs={12} >
-                            <Alert severity="warning">
+                            {/* <Alert severity="warning">
                                 <AlertTitle>La contraseña debe tener al menos:</AlertTitle>
                                 <strong>-Una minúscula.</strong><br />
                                 <strong>-Una mayúscula.</strong><br />
                                 <strong>-Un carácter especial.</strong><br />
                                 <strong>-Un número.</strong>
-                            </Alert>
+                            </Alert> */}
                         </Grid>
                         <Grid item xs={12}>
                             <TextField
@@ -230,12 +231,12 @@ export const RegisterPage: React.FC = () => {
                                 autoComplete="new-password"
                             />
                         </Grid>
-                        {/* <Grid item xs={12}>
+                        <Grid item xs={12}>
                             <FormControlLabel
                                 control={<Checkbox value="allowExtraEmails" color="primary" />}
                                 label="I want to receive inspiration, marketing promotions and updates via email."
                             />
-                        </Grid> */}
+                        </Grid>
                     </Grid>
                     {
                         errorMessage && (
@@ -259,7 +260,7 @@ export const RegisterPage: React.FC = () => {
                     </Grid>
                 </Box>
             </Box>
-            {/* <Copyright sx={{ mt: 5 }} /> */}
+            {/* <Copyright sx={{ mt: 5 }}>FieldParnert</Copyright> */}
         </Container >
     );
 }

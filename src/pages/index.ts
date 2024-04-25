@@ -16,6 +16,7 @@ export * from './ListExitFieldPage';
 export * from './NewExitFieldPage';
 export * from './ListOriginsDestinationsPage';
 export * from './NewOriginsDestinationsPage';
+export * from './ListUsersPage';
 export * from './SatellitePage';
 export * from './DevicePage';
 export * from './PricesPage';
@@ -28,7 +29,8 @@ export * from './ConfirmWithdrawalOrderPage';
 export * from './ListTransformPage';
 export * from './ListZonesPage';
 export * from './NewZonesPage';
-
+export * from './NewLaborsServicespage';
+export * from './ListLaborsServicesPage';
 
 
 
