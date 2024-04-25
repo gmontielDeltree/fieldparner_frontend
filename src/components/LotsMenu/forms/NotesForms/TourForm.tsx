@@ -79,6 +79,16 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
   const [imageUrls, setImageUrls] = useState({});
   const [audioUrls, setAudioUrls] = useState({});
 
+
+  const getTodayDate = () => {
+    return new Date();
+  };
+
+  useEffect(() => {
+    
+    console.log("Fecha de hoy:", getTodayDate());
+  }, []); 
+
   useEffect(() => {
     const loadMediaUrls = async () => {
       let newImageUrls = {};
@@ -104,18 +114,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 
     loadMediaUrls();
   }, [formData.features]);
-
-  const getTodayDate = () => {
-    console.log(new Date());
-    return new Date();
-  };
-
-  useEffect(() => {
-    if (!formData.fecha) {
-      const updatedFormData = { ...formData, fecha: getTodayDate() };
-      setFormData(updatedFormData);
-    }
-  }, []);
 
   const onFieldChange = (fieldName, value) => {
     setFormData({
@@ -323,3 +321,4 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 }
 
 export default TourForm;
+
