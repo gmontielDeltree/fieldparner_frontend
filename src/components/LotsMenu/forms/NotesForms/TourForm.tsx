@@ -224,7 +224,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha}
+                      value={formData.fecha || new Date().toISOString().split('T')[0]} // Formato por defecto
                       onChange={(newValue) => {
                         const formattedDate = newValue.toISOString().split('T')[0];
                         const updatedFormData = { ...formData, fecha: formattedDate };
