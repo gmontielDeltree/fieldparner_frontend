@@ -79,11 +79,17 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
     let actividad = formData;
     try {
       const fechaEjecucion = actividad.fecha;
-      const parsedDate = new Date(fechaEjecucion);
-      const formattedDate = format(parsedDate, "yyyy-MM-dd");
+      
+
+      if (!(fechaEjecucion instanceof Date)) {
+        throw new Error('Fecha inválida');
+      }
+      
+
+      const formattedDate = format(fechaEjecucion, "yyyy-MM-dd");
       actividad._id =
         actividad._id || "actividad:" + formattedDate + ":" + uuid4();
-
+  
       db.get(actividad._id)
         .then((doc) => {
           actividad._rev = doc._rev;
@@ -114,7 +120,6 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
       console.error("Error in handleSave:", error);
     }
   };
-
   return (
     <div>
       <Box sx={{ textAlign: "center", mt: 2, mb: 4 }}>
