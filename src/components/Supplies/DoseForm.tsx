@@ -1,9 +1,17 @@
-import { FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import {
+  FormControl,
+  Grid,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField
+} from "@mui/material";
 import { Crops, Supply } from "@types";
 import React, { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { IsSeed } from "../../utils/helper";
-
 
 //TODO: validar que descripcion de cultivo mostramos de acuerdo a la traduccion.
 export interface DoseFormProps {
@@ -19,7 +27,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
   crops,
   handleSelectChange,
   handleInputChange,
-  handleGenercoChange,
+  handleGenercoChange
 }) => {
   const {
     type,
@@ -51,7 +59,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
             style: {
-              backgroundColor: '#f5f5f5',
+              backgroundColor: "#f5f5f5",
               fontWeight: 600
             }
           }}
@@ -69,7 +77,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
             style: {
-              backgroundColor: '#f5f5f5',
+              backgroundColor: "#f5f5f5",
               fontWeight: 600
             }
           }}
@@ -85,7 +93,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           onChange={handleInputChange}
           value={activePrincipal}
           InputProps={{
-            startAdornment: <InputAdornment position="start" />,
+            startAdornment: <InputAdornment position="start" />
           }}
           fullWidth
         />
@@ -99,7 +107,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           value={mermaVolatile}
           onChange={handleInputChange}
           InputProps={{
-            startAdornment: <InputAdornment position="start" />,
+            startAdornment: <InputAdornment position="start" />
           }}
           fullWidth
         />
@@ -113,7 +121,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           value={minimumDose}
           onChange={handleInputChange}
           InputProps={{
-            startAdornment: <InputAdornment position="start" />,
+            startAdornment: <InputAdornment position="start" />
           }}
           fullWidth
         />
@@ -127,7 +135,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           value={maximumDose}
           onChange={handleInputChange}
           InputProps={{
-            startAdornment: <InputAdornment position="start" />,
+            startAdornment: <InputAdornment position="start" />
           }}
           fullWidth
         />
@@ -141,33 +149,31 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           value={recommendedDose}
           onChange={handleInputChange}
           InputProps={{
-            startAdornment: <InputAdornment position="start" />,
+            startAdornment: <InputAdornment position="start" />
           }}
           fullWidth
         />
       </Grid>
-      {
-        isSeedType && (
-          <Grid item xs={12} sm={4}>
-            <FormControl key="crop-select" fullWidth>
-              <InputLabel id="crop">{t("_crop")}</InputLabel>
-              <Select
-                labelId="crop"
-                name="cropId"
-                value={formValues.cropId}
-                label={t("_crop")}
-                onChange={handleSelectChange}
-              >
-                {crops?.map((crop) => (
-                  <MenuItem key={crop._id} value={crop._id}>
-                    {crop.descriptionES}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-        )
-      }
+      {isSeedType && (
+        <Grid item xs={12} sm={4}>
+          <FormControl key="crop-select" fullWidth>
+            <InputLabel id="crop">{t("_crop")}</InputLabel>
+            <Select
+              labelId="crop"
+              name="cropId"
+              value={formValues.cropId}
+              label={t("_crop")}
+              onChange={handleSelectChange}
+            >
+              {crops?.map((crop) => (
+                <MenuItem key={crop._id} value={crop._id}>
+                  {crop.descriptionES}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      )}
       <Grid item xs={12} sm={4}>
         <TextField
           variant="outlined"
@@ -177,7 +183,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           value={generico}
           onChange={handleGenercoChange}
           InputProps={{
-            startAdornment: <InputAdornment position="start" />,
+            startAdornment: <InputAdornment position="start" />
           }}
           fullWidth
         />
@@ -191,7 +197,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           value={formulationDenomination}
           onChange={handleGenercoChange}
           InputProps={{
-            startAdornment: <InputAdornment position="start" />,
+            startAdornment: <InputAdornment position="start" />
           }}
           fullWidth
         />
@@ -200,12 +206,12 @@ export const DoseForm: React.FC<DoseFormProps> = ({
         <TextField
           variant="outlined"
           type="text"
-          label={t("toxicityClass")}
+          label={t("_toxicityClass")}
           name="toxicityClass"
           value={toxicityClass}
           onChange={handleGenercoChange}
           InputProps={{
-            startAdornment: <InputAdornment position="start" />,
+            startAdornment: <InputAdornment position="start" />
           }}
           fullWidth
         />
