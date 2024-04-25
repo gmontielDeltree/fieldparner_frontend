@@ -128,63 +128,63 @@ export const useAuthStore = () => {
     }
   };
 
-  // const checkAuthToken = async () => {
-  //   const token = localStorage.getItem("accessToken");
-  //   const refreshToken = localStorage.getItem("refreshToken");
-  //   const userSession = localStorage.getItem("user_session");
-
-  //   if (!token || !refreshToken || !userSession) return dispatch(onLogout(""));
-
-  //   dispatch(onChecking());
-  //   try {
-  //     const expiration = localStorage.getItem("token_expiration");
-
-  //     if (new Date().getTime() > Number(expiration)) {
-  //       dispatch(onLogout(""));
-  //       return;
-  //     }
-
-  //     const lastPath = localStorage.getItem("lastPath") || "/";
-  //     navigate(lastPath, { replace: true });
-  //     const userLogin = JSON.parse(userSession || "") as User;
-  //     dispatch(onLogin(userLogin));
-
-  //     const response = await fieldpartnerAPI.post<ResponseAuthRenew>(
-  //       `${controller}/renew`,
-  //       { refreshToken }
-  //     );
-
-  //     if (response.status === HttpStatusCode.Created) {
-  //       const expiresIn = new Date().getTime() + response.data.ExpiresIn * 1000;
-  //       localStorage.setItem("accessToken", response.data.AccessToken);
-  //       localStorage.setItem("token_expiration", expiresIn.toString());
-  //     }
-  //   } catch (error) {
-  //     localStorage.clear();
-  //     dispatch(onLogout(""));
-  //   }
-  // };
-
   const checkAuthToken = async () => {
+    const token = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+    const userSession = localStorage.getItem("user_session");
 
-    dispatch(onChecking())
+    if (!token || !refreshToken || !userSession) return dispatch(onLogout(""));
+
+    dispatch(onChecking());
     try {
-      localStorage.setItem('accessToken', "");
-      localStorage.setItem('token_expiration', "");
+      const expiration = localStorage.getItem("token_expiration");
+
+      if (new Date().getTime() > Number(expiration)) {
+        dispatch(onLogout(""));
+        return;
+      }
 
       const lastPath = localStorage.getItem("lastPath") || "/";
-
-      dispatch(onLogin({
-        isAdmin: true, firstName: 'test', accountId: "test", id: "asd123", lastName: "pepe",
-        countryId: "Argentina"
-      }));
       navigate(lastPath, { replace: true });
+      const userLogin = JSON.parse(userSession || "") as User;
+      dispatch(onLogin(userLogin));
 
+      const response = await fieldpartnerAPI.post<ResponseAuthRenew>(
+        `${controller}/renew`,
+        { refreshToken }
+      );
+
+      if (response.status === HttpStatusCode.Created) {
+        const expiresIn = new Date().getTime() + response.data.ExpiresIn * 1000;
+        localStorage.setItem("accessToken", response.data.AccessToken);
+        localStorage.setItem("token_expiration", expiresIn.toString());
+      }
     } catch (error) {
       localStorage.clear();
       dispatch(onLogout(""));
     }
-  }
+  };
+
+  // const checkAuthToken = async () => {
+
+  //   dispatch(onChecking())
+  //   try {
+  //     localStorage.setItem('accessToken', "");
+  //     localStorage.setItem('token_expiration', "");
+
+  //     const lastPath = localStorage.getItem("lastPath") || "/";
+
+  //     dispatch(onLogin({
+  //       isAdmin: true, firstName: 'test', accountId: "test", id: "asd123", lastName: "pepe",
+  //       countryId: "Argentina"
+  //     }));
+  //     navigate(lastPath, { replace: true });
+
+  //   } catch (error) {
+  //     localStorage.clear();
+  //     dispatch(onLogout(""));
+  //   }
+  // }
   
 
   const startLogout = () => {
