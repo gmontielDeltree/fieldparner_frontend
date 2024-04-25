@@ -32,10 +32,20 @@ interface DailyUnits {
   precipitation_probability_max: string;
 }
 
-export const forecastWeather = async (posicion: LngLatLike) => {
-  let pos = LngLat.convert(posicion);
-  let res = await axios.get(
-    `https://api.open-meteo.com/v1/forecast?latitude=${pos.lat}&longitude=${pos.lng}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,precipitation_probability_max&timezone=auto`
-  );
+export const forecastWeather = async (
+  position: LngLatLike,
+  date = new Date()
+) => {
+  const startDate = new Date(date);
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 4);
+
+  const startDateString = startDate.toISOString().split("T")[0];
+  const endDateString = endDate.toISOString().split("T")[0];
+
+  let pos = LngLat.convert(position);
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${pos.lat}&longitude=${pos.lng}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,precipitation_probability_max&timezone=auto&start_date=${startDateString}&end_date=${endDateString}`;
+
+  let res = await axios.get(url);
   return res.data as OpenMeteoResponse;
 };
