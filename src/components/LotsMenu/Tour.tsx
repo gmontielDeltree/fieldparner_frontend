@@ -79,10 +79,7 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
     let actividad = formData;
     try {
       const fechaEjecucion = actividad.fecha;
-  
-      if (!fechaEjecucion || isNaN(new Date(fechaEjecucion).getTime())) {
-        throw new Error('Fecha inválida');
-      }
+
       
       const parsedDate = new Date(fechaEjecucion);
       const formattedDate = format(parsedDate, "yyyy-MM-dd");
