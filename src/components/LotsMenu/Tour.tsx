@@ -79,14 +79,14 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
     let actividad = formData;
     try {
       const fechaEjecucion = actividad.fecha;
-      
+  
 
-      if (!(fechaEjecucion instanceof Date)) {
+      if (!fechaEjecucion || isNaN(new Date(fechaEjecucion).getTime())) {
         throw new Error('Fecha inválida');
       }
       
-
-      const formattedDate = format(fechaEjecucion, "yyyy-MM-dd");
+      const parsedDate = new Date(fechaEjecucion);
+      const formattedDate = format(parsedDate, "yyyy-MM-dd");
       actividad._id =
         actividad._id || "actividad:" + formattedDate + ":" + uuid4();
   
@@ -120,6 +120,7 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
       console.error("Error in handleSave:", error);
     }
   };
+  
   return (
     <div>
       <Box sx={{ textAlign: "center", mt: 2, mb: 4 }}>
