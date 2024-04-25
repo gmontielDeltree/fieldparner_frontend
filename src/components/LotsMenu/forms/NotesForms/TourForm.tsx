@@ -106,6 +106,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
   }, [formData.features]);
 
   const getTodayDate = () => {
+    console.log(new Date());
     return new Date();
   };
 
