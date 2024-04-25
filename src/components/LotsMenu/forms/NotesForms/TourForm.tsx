@@ -81,14 +81,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 
 
   const getTodayDate = () => {
-
-    const today = new Date();
-  
-
-    const formattedDate = today.toISOString().split('T')[0];
-  
-
-    return formattedDate;
+    return new Date();
   };
 
   useEffect(() => {
