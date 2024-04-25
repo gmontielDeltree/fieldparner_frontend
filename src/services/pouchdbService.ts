@@ -60,6 +60,8 @@ const dbNames = Object.freeze({
     crops: "crops",
     zones: "zones",
     fieldpartner: "fieldpartner",
+    LaborsServices: "LaborsServices",
+
 });
 
 export const dbContext = Object.freeze({
@@ -88,6 +90,9 @@ export const dbContext = Object.freeze({
     crops: new PouchDB<Crops>(dbNames.crops),
     zones: new PouchDB<Zones>(dbNames.zones),
     fieldpartner: new PouchDB(dbNames.fieldpartner),
+    LaborsServices: new PouchDB<LaborsServices>(dbNames.LaborsServices)
+   
+
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -117,7 +122,7 @@ dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
 dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
 dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
 dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
-dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.LaborsServices}`, opts);
+dbContext.LaborsServices.sync(`${remoteCouchDBUrl}${dbNames.LaborsServices}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
