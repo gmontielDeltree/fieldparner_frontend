@@ -5,7 +5,7 @@ import HarvestIcon from "../../../images/icons/cosechadora_act.webp";
 import NoteIcon from "../../../images/icons/iconodenotas_act.webp";
 import SoilAnalysisIcon from "../../../images/icons/suelo_act.webp";
 import ApplicationIcon from "../../../images/icons/pulverizadora_act.webp";
-import PreparadoIcon from "../../../images/icons/prepare.png";
+import PreparadoIcon from "../../../images/icons/IconodePlanificaciondesuelo.png";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import "./Activities.css";

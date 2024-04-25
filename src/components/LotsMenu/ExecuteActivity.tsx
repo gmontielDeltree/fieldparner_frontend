@@ -8,7 +8,7 @@ import {
   Typography
 } from "@mui/material";
 import PersonalExecutionForm from "./forms/PlanForms/PersonalExecutionForm";
-import SuppliesForm from "./forms/PlanForms/SuppliesForm";
+import SuppliesExecutionForm from "./forms/PlanForms/SuppliesExecutionForm";
 import OtherDetailsForm from "./forms/PlanForms/OtherDetailsForm";
 import ServicesForm from "./forms/PlanForms/ServicesForm";
 import ConditionsForm from "./forms/PlanForms/ConditionsForm";
@@ -141,7 +141,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           missingFields++;
         }
         break;
-      case 1: // SuppliesForm (Insumos)
+      case 1: // SuppliesExecutionForm (Insumos)
         if (
           !formData.detalles ||
           !formData.detalles.dosis ||
@@ -226,7 +226,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         );
       case 1:
         return (
-          <SuppliesForm
+          <SuppliesExecutionForm
             lot={lot}
             db={db}
             formData={formData}
