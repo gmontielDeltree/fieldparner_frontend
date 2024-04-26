@@ -23,6 +23,7 @@ interface FormattedData {
   geometry: FeatureCollection<Geometry, GeoJsonProperties>[];
 }
 
+/* Esto es para evitar salir del Simple Select cuando se cierra un poligono */
 MapboxDraw.modes.direct_select.onTrash = function (state) {
   if (state.selectedCoordPaths.length === 0) {
     this.deleteFeature(state.featureId);
@@ -67,10 +68,16 @@ function DrawGeometry2({ handleSaveGeometry, type, initialGeometry, initialName,
     }),
   );
 
+
+const isValidShape =()=>{
+return true
+}
+
   //useSelector(selectDraw);
-  const isSaveDisabled = !geometryName || !geometryData;
+  const isSaveDisabled = !geometryName || !geometryData || !isValidShape();
 
   const typeName = type === "field" ? "campo" : "lote";
+
 
   const onDelete = useCallback(() => {
     console.log("draw.delete event");
