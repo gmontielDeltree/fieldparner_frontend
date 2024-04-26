@@ -81,10 +81,10 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
       const fechaEjecucion = actividad.fecha;
 
       
-      //const parsedDate = new Date(fechaEjecucion);
-      //const formattedDate = format(parsedDate, "yyyy-MM-dd");
+      const parsedDate = new Date(fechaEjecucion);
+      const formattedDate = format(parsedDate, "yyyy-MM-dd");
       actividad._id =
-        actividad._id || "actividad:" + /*formattedDate*/ + ":" + uuid4();
+        actividad._id || "actividad:" + formattedDate + ":" + uuid4();
   
       db.get(actividad._id)
         .then((doc) => {
