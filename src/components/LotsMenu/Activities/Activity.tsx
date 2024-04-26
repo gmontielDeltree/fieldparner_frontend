@@ -28,7 +28,7 @@ function Activity({
 
   const executionDate = useMemo(() => {
     if (
-      activity.actividad.detalles.fecha_ejecucion_tentativa &&
+      activity?.actividad?.detalles?.fecha_ejecucion_tentativa &&
       !isNaN(Date.parse(activity.actividad.detalles.fecha_ejecucion_tentativa))
     ) {
       return new Date(activity.actividad.detalles.fecha_ejecucion_tentativa);
