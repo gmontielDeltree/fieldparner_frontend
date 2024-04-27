@@ -2,6 +2,10 @@ import React from "react";
 import { Page, Text, View, Document, StyleSheet } from "@react-pdf/renderer";
 import { style } from "@mui/system";
 
+function con2decimales(n : number){
+  return Math.round(n * 100)/100
+}
+
 interface InformePorCultivoData {
   cultivoId: string;
   superficie: number;
@@ -145,7 +149,7 @@ export const InformePorCultivoPDF= ({ data }: { data: In }) => {
     new_row.push(headers_for_each_row[key]);
 
     crop_column.map((col) => {
-      new_row.push(col[key as keyof InformePorCultivoData]);
+      new_row.push(con2decimales(col[key as keyof InformePorCultivoData]));
     });
 
     rows.push(new_row);
