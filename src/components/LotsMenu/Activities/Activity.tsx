@@ -22,21 +22,12 @@ function Activity({
   handleDownloadPDF,
   handleConfirmExecution
 }) {
+  const [executionDate, setExecutionDate] = useState(new Date());
   const [gradientAngle, setGradientAngle] = useState(0);
   const [showReplicateActivityMenu, setShowReplicateActivityMenu] = useState(false);
 
-  const executionDate = useMemo(() => {
-    if (
-      activity?.actividad?.detalles?.fecha_ejecucion_tentativa &&
-      !isNaN(Date.parse(activity.actividad.detalles.fecha_ejecucion_tentativa))
-    ) {
-      return new Date(activity.actividad.detalles.fecha_ejecucion_tentativa);
-    }
-    return new Date();
-  }, [activity.actividad.detalles.fecha_ejecucion_tentativa]);
-
   useEffect(() => {
-    if (activity.actividad && activity.actividad.detalles) {
+    if (activity?.actividad?.detalles?.fecha_ejecucion_tentativa) {
       const newDate = new Date(activity.actividad.detalles.fecha_ejecucion_tentativa);
       if (newDate.getTime() !== executionDate.getTime()) {
         setExecutionDate(newDate);
@@ -45,15 +36,6 @@ function Activity({
   }, [activity.actividad]);
 
   const gradientBackground = `linear-gradient(${gradientAngle}deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
-
-  const cardStyle = {
-    border: `2px solid ${complementaryColor}`,
-    borderRadius: "10px",
-    minWidth: 275,
-    width: "100%",
-    backgroundImage: gradientBackground,
-    boxShadow: "0 4px 8px 0 rgba(0,0,0,0.2)"
-  };
 
   const handleReplicateActivity = () => {
     setShowReplicateActivityMenu(!showReplicateActivityMenu);
@@ -75,6 +57,7 @@ function Activity({
             handleReplicateActivity={handleReplicateActivity}
           />
         );
+
       case "siembra":
         return (
           <Sowing
@@ -140,6 +123,7 @@ function Activity({
             handleReplicateActivity={handleReplicateActivity}
           />
         );
+
       default:
         return <Typography>Unknown Activity Type</Typography>;
     }
@@ -151,7 +135,7 @@ function Activity({
         {icon && (
           <img
             src={icon}
-            alt={activity.actividad.tipo}
+            alt={activity?.actividad?.tipo}
             style={{
               height: "40px",
               width: "40px",
@@ -180,17 +164,24 @@ function Activity({
           zIndex: 1
         }}
       ></div>
-      <Card sx={cardStyle}>
+      <Card sx={{ 
+        border: `2px solid ${complementaryColor}`,
+        borderRadius: "10px",
+        minWidth: 275,
+        width: "100%",
+        backgroundImage: gradientBackground,
+        boxShadow: "0 4px 8px 0 rgba(0,0,0,0.2)"
+      }}>
         <CardContent>
           {showReplicateActivityMenu ? (
             <ReplicateActivityMenu
-              originalActivity={activity.actividad}
+              originalActivity={activity?.actividad}
               handleReplicateActivity={handleReplicateActivity}
             />
           ) : (
             <>
               {renderActivityContent()}
-              <WeatherForecast date={executionDate} />{" "}
+              <WeatherForecast date={executionDate} />
             </>
           )}
         </CardContent>
