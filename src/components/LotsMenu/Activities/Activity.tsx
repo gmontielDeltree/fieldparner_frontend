@@ -23,7 +23,8 @@ function Activity({
   handleConfirmExecution
 }) {
   const [gradientAngle, setGradientAngle] = useState(0);
-  const [showReplicateActivityMenu, setShowReplicateActivityMenu] = useState(false);
+  const [showReplicateActivityMenu, setShowReplicateActivityMenu] =
+    useState(false);
 
   const executionDate = useMemo(() => {
     if (
@@ -33,21 +34,24 @@ function Activity({
       return new Date(activity.actividad.detalles.fecha_ejecucion_tentativa);
     }
     return new Date();
-  }, [activity]);
+  }, [activity.actividad.detalles.fecha_ejecucion_tentativa]);
 
   useEffect(() => {
-    if (
-      activity &&
-      activity.actividad &&
-      activity.actividad.detalles &&
+    const newDate = new Date(
       activity.actividad.detalles.fecha_ejecucion_tentativa
-    ) {
-      const newDate = new Date(activity.actividad.detalles.fecha_ejecucion_tentativa);
-      if (newDate.getTime() !== executionDate.getTime()) {
-        setExecutionDate(newDate);
-      }
+    );
+    if (newDate.getTime() !== executionDate.getTime()) {
+      setExecutionDate(newDate);
     }
-  }, [activity]);
+  }, [activity.fecha_ejecucion]);
+
+  // LANZA DEMASIADOS RENDERIZADOS
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
+  //   }, 100);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const gradientBackground = `linear-gradient(${gradientAngle}deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
 
@@ -65,7 +69,7 @@ function Activity({
   };
 
   const renderActivityContent = () => {
-    switch (activity?.actividad?.tipo) {
+    switch (activity.actividad.tipo) {
       case "preparado":
         return (
           <Preparation
@@ -153,12 +157,14 @@ function Activity({
   };
 
   return (
-    <div style={{ display: "flex", marginBottom: "32px", position: "relative" }}>
+    <div
+      style={{ display: "flex", marginBottom: "32px", position: "relative" }}
+    >
       <div style={{ marginRight: "8px", position: "relative", zIndex: 2 }}>
         {icon && (
           <img
             src={icon}
-            alt={activity?.actividad?.tipo}
+            alt={activity.actividad.tipo}
             style={{
               height: "40px",
               width: "40px",
@@ -191,7 +197,7 @@ function Activity({
         <CardContent>
           {showReplicateActivityMenu ? (
             <ReplicateActivityMenu
-              originalActivity={activity?.actividad}
+              originalActivity={activity.actividad}
               handleReplicateActivity={handleReplicateActivity}
             />
           ) : (
@@ -207,4 +213,3 @@ function Activity({
 }
 
 export default React.memo(Activity);
-
