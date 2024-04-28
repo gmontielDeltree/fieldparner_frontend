@@ -23,8 +23,7 @@ function Activity({
   handleConfirmExecution
 }) {
   const [gradientAngle, setGradientAngle] = useState(0);
-  const [showReplicateActivityMenu, setShowReplicateActivityMenu] =
-    useState(false);
+  const [showReplicateActivityMenu, setShowReplicateActivityMenu] = useState(false);
 
   const executionDate = useMemo(() => {
     if (
@@ -76,7 +75,6 @@ function Activity({
             handleReplicateActivity={handleReplicateActivity}
           />
         );
-
       case "siembra":
         return (
           <Sowing
@@ -142,16 +140,13 @@ function Activity({
             handleReplicateActivity={handleReplicateActivity}
           />
         );
-
       default:
         return <Typography>Unknown Activity Type</Typography>;
     }
   };
 
   return (
-    <div
-      style={{ display: "flex", marginBottom: "32px", position: "relative" }}
-    >
+    <div style={{ display: "flex", marginBottom: "32px", position: "relative" }}>
       <div style={{ marginRight: "8px", position: "relative", zIndex: 2 }}>
         {icon && (
           <img
