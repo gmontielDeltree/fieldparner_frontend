@@ -37,21 +37,13 @@ function Activity({
   }, [activity.actividad.detalles.fecha_ejecucion_tentativa]);
 
   useEffect(() => {
-    const newDate = new Date(
-      activity.actividad.detalles.fecha_ejecucion_tentativa
-    );
-    if (newDate.getTime() !== executionDate.getTime()) {
-      setExecutionDate(newDate);
+    if (activity.actividad && activity.actividad.detalles) {
+      const newDate = new Date(activity.actividad.detalles.fecha_ejecucion_tentativa);
+      if (newDate.getTime() !== executionDate.getTime()) {
+        setExecutionDate(newDate);
+      }
     }
-  }, [activity.fecha_ejecucion]);
-
-  // LANZA DEMASIADOS RENDERIZADOS
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setGradientAngle((prevAngle) => (prevAngle + 1) % 360);
-  //   }, 100);
-  //   return () => clearInterval(interval);
-  // }, []);
+  }, [activity.actividad]);
 
   const gradientBackground = `linear-gradient(${gradientAngle}deg, ${complementaryColor} 30%, #f0f0f0 100%)`;
 
