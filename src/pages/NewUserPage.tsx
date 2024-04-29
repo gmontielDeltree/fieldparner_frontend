@@ -25,7 +25,7 @@ import {
   Typography
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAppDispatch, useAppSelector, useForm, useUser } from '../hooks';
+import { useAppDispatch, useAppSelector, useForm, useFormError, useUser } from '../hooks';
 import { Loading } from '../components';
 import { UserByAccount, UserRols } from '../types';
 // import { v4 as uuidv4 } from 'uuid';
@@ -73,7 +73,12 @@ export const NewUserPage = () => {
   const [showChangePassword, setShowChangePassword] = useState<boolean>(false);
   const [ultimaConexion, setUltimaConexion] = useState(new Date());
   // const { user } = useAppSelector((state) => state.auth);
-  const [passwordError, setPasswordError] = useState<string>('');
+  const { formControlError, handleFormValueChange } = useFormError({
+    password: "",
+    confirmPassword: "",
+    newPassword: "",
+
+  });
   const { userActive } = useAppSelector((state) => state.users);
   const {
     photoName,
@@ -88,17 +93,19 @@ export const NewUserPage = () => {
     const { name, value } = event.target;
     if (name === 'password') {
       handleInputChange(event);
-      if (!/(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}/.test(value)) { setPasswordError('La contraseña no cumple con con los requisitos.'); return; }
+      if (!/(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}/.test(value)) {
+        handleFormValueChange(name, 'La contraseña no cumple con con los requisitos.'); return;
+      }
       else
-        setPasswordError('');
+        handleFormValueChange(name, ""); return;
     };
     if (name === "confirmPassword") {
       setConfirmPassword(value);
       if (formulario.password !== value) {
-        setPasswordError("Las contraseñas no coinciden.");
+        handleFormValueChange(name, "Las contraseñas no coinciden.");
         return;
       } else
-        setPasswordError("");
+        handleFormValueChange(name, "");
     }
   }
 
@@ -109,15 +116,6 @@ export const NewUserPage = () => {
       navigate("/init/overview/users");
     }
   };
-
-  // const onChangeConfirmPass = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setConfirmPassword(e.target.value);
-  //   if (formulario.password !== e.target.value) {
-  //     setPasswordError("Las contraseñas no coinciden.");
-  //     return;
-  //   }
-  //   setPasswordError("");
-  // }
 
   const uploadImgUser = async (fileInput: Blob) => {
     try {
@@ -168,9 +166,24 @@ export const NewUserPage = () => {
   const onChangeConfirmNewPassword = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
     setConfirmPassword(target.value);
     if (formulario.newPassword !== target.value)
-      setPasswordError("Las contraseñas no coinciden.");
+      handleFormValueChange(target.name, "Las contraseñas no coinciden.");
     else
-      setPasswordError("");
+      handleFormValueChange(target.name, "");
+  }
+
+  const validateSave = () => {
+    let errors = Object.values(formControlError);
+    let isError = false;
+    errors.forEach(value => { if (value !== "") isError = true; });
+    return isError;
+  }
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!validateSave()) {
+      userActive ? handleUpdateUsers() : handleAddUser()
+    }
   }
 
   useEffect(() => {
@@ -191,6 +204,12 @@ export const NewUserPage = () => {
       getUserById(userId);
     }
   }, [userId])
+
+  useEffect(() => {
+    return () => {
+      dispatch(removeUsersActive());
+    }
+  }, [dispatch])
 
   return (
     <>
@@ -221,7 +240,7 @@ export const NewUserPage = () => {
               </Typography>
             </Toolbar>
           </AppBar>
-          <form>
+          <form onSubmit={onSubmit}>
             <Grid container spacing={1} p={1} mt={1}>
               <Grid container direction="column" xs={7}>
                 <Grid container spacing={1.5} sx={{ pt: 6 }}>
@@ -270,7 +289,8 @@ export const NewUserPage = () => {
                           label="Contraseña"
                           type="password"
                           name="password"
-                          // error={!!passwordError}
+                          error={!!formControlError["password"]}
+                          helperText={formControlError["password"]}
                           value={formulario.password}
                           InputProps={{
                             endAdornment: <InputAdornment position="end">
@@ -287,8 +307,8 @@ export const NewUserPage = () => {
                           label="Repetir contraseña"
                           type="password"
                           name="confirmPassword"
-                          error={!!passwordError}
-                          helperText={passwordError}
+                          error={!!formControlError["confirmPassword"]}
+                          helperText={formControlError["confirmPassword"]}
                           value={confirmPassword}
                           onChange={handlePasswordChange}
                           fullWidth />
@@ -449,8 +469,8 @@ export const NewUserPage = () => {
                             label="Repetir nueva clave"
                             type="password"
                             value={confirmPassword}
-                            error={!!passwordError}
-                            helperText={passwordError}
+                            error={!!formControlError.password}
+                            helperText={formControlError.password}
                             onChange={onChangeConfirmNewPassword}
                             fullWidth />
                         </Grid>
@@ -482,9 +502,10 @@ export const NewUserPage = () => {
                 Cancelar
               </Button>
               <Button
+                type='submit'
                 variant="contained"
                 color="primary"
-                onClick={userActive ? handleUpdateUsers : handleAddUser}
+              // onClick={userActive ? handleUpdateUsers : handleAddUser}
               >
                 {!userActive ? "Guardar" : "Actualizar"}{' '}
               </Button>

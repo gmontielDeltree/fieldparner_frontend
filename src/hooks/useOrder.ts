@@ -26,7 +26,6 @@ export const useOrder = () => {
                     "$and": [{ "accountId": accountId }, { "numeratorType": type }],
                 }
             });
-            console.log('response', response);
             if (response.docs.length)
                 return response.docs[0] as Numerator;
 
@@ -76,7 +75,7 @@ export const useOrder = () => {
                 numeratorType: NumeratorType.Client,
                 lastNumerator: 1
             };
-
+            
             const lastNumeratorFound = await getLastNumerator(user.accountId, NumeratorType.Client);
 
             if (!lastNumeratorFound) {
@@ -187,25 +186,21 @@ export const useOrder = () => {
 
             if (!response) throw new Error("Supplies not found.");
 
-            const reponseStockFromSupplies = response[0].docs;
+            const responseStockFromSupplies = response[0].docs;
             const responseSupplies = response[1].docs;
-            let updateStockSupplies: StockByLot[] = [];
+            let updateStockSupplies: StockByLot[] = []; // Insumos actualizados con nuevo stock
             let updateSupplies: Supply[] = [];
 
-            reponseStockFromSupplies.forEach(s => {
+            responseStockFromSupplies.forEach(s => {
                 listWithdrawals.forEach(w => {
-                    if (w.deposit._id === s.depositId &&
-                        w.supply._id === s.depositId &&
-                        w.location === s.location &&
-                        w.nroLot === s.nroLot) {
+                    if (w.deposit._id === s.depositId && w.supply._id === s.supplyId &&
+                        w.location === s.location && w.nroLot === s.nroLot) {
                         updateStockSupplies.push({
-                            ...s,
-                            currentStock: Number(s.currentStock - Number(w.amount))
+                            ...s, currentStock: Number(s.currentStock - Number(w.amount))
                         });
                     }
                 });
             });
-
             responseSupplies.forEach(s => {
                 listWithdrawals.forEach(w => {
                     if (s._id === w.supply._id)

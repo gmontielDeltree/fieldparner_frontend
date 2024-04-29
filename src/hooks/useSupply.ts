@@ -113,7 +113,7 @@ export const useSupply = () => {
             const [stockBySuppplies, supplies] = promisesResult;
             supplies.docs.forEach(supplyDto => {
                 const stockBySupply = stockBySuppplies.docs.filter(m => (m.supplyId === supplyDto._id));
-                //Calcular el stock del insumo por deposito
+                //Calcular el stock por insumo
                 let currentStockOfSupply = 0;
                 stockBySupply.forEach(stock => { currentStockOfSupply += stock.currentStock; });
                 stockBySupplies.push({

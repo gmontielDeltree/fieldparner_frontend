@@ -17,3 +17,4 @@ export * from './useCrops';
 export * from './useField';
 export * from './useTransformStock';
 export * from './useZones';
+export * from './useFormError';
