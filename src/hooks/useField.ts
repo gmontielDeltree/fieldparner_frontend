@@ -66,6 +66,16 @@ export const useField = () => {
     return saveField(field);
   };
 
+  const getLotFromField = async (field: Field, lotId: string) => {
+    let lotes = field.lotes;
+    let filtrado = lotes.find((l) => l.id === lotId);
+    if(filtrado){
+      return filtrado
+    }else{
+      return undefined
+    }
+  };
+
   return {
     //* Props
     fields,
@@ -77,6 +87,7 @@ export const useField = () => {
     getFields,
     getField,
     saveField,
+    getLotFromField,
     deleteField,
     addLotToField,
     removeLotFromField,

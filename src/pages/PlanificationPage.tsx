@@ -33,6 +33,7 @@ import { ReporteDeCampanas } from "../components/Planification/FuncionesInformes
 import { CloseButtonPage } from "../components";
 import { SearchBar } from "../components/Planification/SearchBar";
 import { Field } from "@types";
+import { PlanificacionMoreButton } from "../components/Planification/PlanificacionMoreButton";
 
 const ItemMemo = React.memo(ItemPlanificationByField);
 
@@ -53,7 +54,7 @@ export const PlanificationPage: React.FC = () => {
   useEffect(() => {
     getCampaigns();
     getFields();
-    crops.getCrops()
+    crops.getCrops();
   }, []);
 
   useEffect(() => {
@@ -65,7 +66,6 @@ export const PlanificationPage: React.FC = () => {
   }, [fields, campaigns]);
 
   const navigate = useNavigate();
-
 
   return (
     <CultivoContext.Provider value={crops}>
@@ -107,13 +107,24 @@ export const PlanificationPage: React.FC = () => {
                         </Typography>
                       </Box>
 
-                      {/* <IconButton
-                        onClick={() => {
-                          ReporteDeCampanas(ciclos.ciclos, campaigns, crops);
+                      <PlanificacionMoreButton
+                        onReportePorCultivoPDF={() => {
+                          ReporteDeCampanas(
+                            ciclos.ciclos,
+                            campaigns,
+                            crops,
+                            "pdf"
+                          );
                         }}
-                      >
-                        <MoreVertIcon />
-                      </IconButton> */}
+                        onReportePorCultivoXLS={() => {
+                          ReporteDeCampanas(
+                            ciclos.ciclos,
+                            campaigns,
+                            crops,
+                            "xls"
+                          );
+                        }}
+                      />
                     </Box>
                     <Divider variant="middle" component={"div"}></Divider>
                     <Box
@@ -125,7 +136,6 @@ export const PlanificationPage: React.FC = () => {
                       }}
                     >
                       <SearchBar
-                        
                         onChange={(e) => {
                           let text = e.target.value.toLowerCase();
                           let filtrados = fields.filter((f) =>
@@ -158,21 +168,25 @@ export const PlanificationPage: React.FC = () => {
                   </Paper>
                 </Grid>
 
-                {selCampanaId && selCampoId && selLoteId && selCicloId && crops.crops?.length && (
-                  <Grid item xs={6}>
-                    <Paper sx={{ marginTop: "4rem" }}>
-                      <PlanificationByField
-                        campaignId={selCampanaId}
-                        fieldId={selCampoId}
-                        loteSelected={selLoteId}
-                        cicloSelected={selCicloId}
-                        onClose={() => {
-                          setSelCampanaId(undefined);
-                        }}
-                      />
-                    </Paper>
-                  </Grid>
-                )}
+                {selCampanaId &&
+                  selCampoId &&
+                  selLoteId &&
+                  selCicloId &&
+                  crops.crops?.length && (
+                    <Grid item xs={6}>
+                      <Paper sx={{ marginTop: "4rem" }}>
+                        <PlanificationByField
+                          campaignId={selCampanaId}
+                          fieldId={selCampoId}
+                          loteSelected={selLoteId}
+                          cicloSelected={selCicloId}
+                          onClose={() => {
+                            setSelCampanaId(undefined);
+                          }}
+                        />
+                      </Paper>
+                    </Grid>
+                  )}
               </Grid>
             </CiclosContext.Provider>
           </LaboresContext.Provider>
