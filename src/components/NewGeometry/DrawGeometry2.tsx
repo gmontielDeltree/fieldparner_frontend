@@ -156,12 +156,14 @@ return true
       map.on("draw.update", drawUpdate);
 
       if(initialGeometry){
-        
+        draw.delete(draw.getAll().features[0].id)
         draw.add(initialGeometry)
         console.log("initial geom",draw.getAll())
         draw.changeMode("simple_select", {
-          featureIds: [draw.getAll().features[1].id],
+          featureIds: [draw.getAll().features[0].id],
         });
+
+        setGeometryData(draw.getAll())
       
         
       }
