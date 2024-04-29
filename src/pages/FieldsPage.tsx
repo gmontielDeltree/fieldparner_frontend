@@ -111,13 +111,15 @@ export const FieldsPage: React.FC = () => {
       // Ignorar si location es new-lot o new-field
       if (
         location.pathname.includes("new-lot") ||
-        location.pathname.includes("new-field")
+        location.pathname.includes("new-field") || 
+        location.pathname.includes("edit-lot") || 
+        location.pathname.includes("edit-field")
       ) {
         return;
       }
 
       const features = map?.queryRenderedFeatures(event.point);
-      console.log(event, features);
+      console.log("Click on Map",event, features);
 
       if (features.length > 0) {
         const fieldId = features[0].properties.id;
@@ -337,18 +339,7 @@ export const FieldsPage: React.FC = () => {
     [dispatch, draw],
   );
 
-  const fetchData = async () => {
-    try {
-      const allDocs = await db.allDocs({ include_docs: true });
-      const fetchedFields = allDocs.rows
-        .map((row) => row.doc)
-        .filter((doc): doc is Field => doc !== undefined && isField(doc));
-      console.log("fetchedFields from PouchDB...", fetchedFields);
-      setFields(fetchedFields);
-    } catch (err) {
-      console.error("Error fetching data from PouchDB", err);
-    }
-  };
+ 
 
   function isField(doc: any): doc is Field {
     return (

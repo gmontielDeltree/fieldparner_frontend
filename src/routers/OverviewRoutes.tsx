@@ -44,6 +44,7 @@ import { FieldPage } from "../pages/FieldPage";
 import { LotPage } from "../pages/LotPage";
 import { NewLotPage } from "../pages/NewLotPage";
 import EditFieldPage from "../pages/EditFieldPage";
+import EditLotePage from "../pages/EditLotePage";
 
 export const OverviewRoutes: React.FC = () => {
   const { user } = useAppSelector(state => state.auth);
@@ -59,6 +60,7 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/fields" element={<FieldsPage />}>
           <Route path="new-field" element={<NewFieldPage />} />
           <Route path="edit-field/:campoId" element={<EditFieldPage />} />
+          <Route path="edit-lot/:campoId/:loteId" element={<EditLotePage />} />
 
           <Route path="planification" element={<PlanificationPage />} />
 
