@@ -208,6 +208,7 @@ export interface Supply extends Document {
   productUrl?: string;
   eiqValue?: string;
   senasaId?: string;
+  documentFile?: string;
 }
 
 export interface UserByAccount extends Document {
