@@ -38,6 +38,7 @@ import { useTranslation } from "react-i18next";
 import { useAppDispatch, useField } from "../../hooks";
 import { setLotActive } from "../../redux/map";
 import Swal from "sweetalert2";
+import EditIcon from '@mui/icons-material/Edit';
 
 const Header = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -441,6 +442,10 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     });
   };
 
+  const handleEditLote = () => {
+    navigate(`/init/overview/fields/edit-lot/${field._id}/${lot.id}`)
+  }
+
   return (
     <Paper
       elevation={5}
@@ -503,6 +508,29 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             </IconButton>
           )}
 
+
+          {!selectedCategory && (
+            <Tooltip
+              title={t("Editar Lote")}
+              arrow
+              placement="top"
+              sx={{
+                tooltip: {
+                  backgroundColor: "#333",
+                  color: "white",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+                  fontSize: "1em",
+                },
+                arrow: {
+                  color: "#333",
+                },
+              }}
+            >
+              <IconButton onClick={() => handleEditLote()}>
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+          )}
           {!selectedCategory && (
             <Tooltip
               title={t("Eliminar Lote")}

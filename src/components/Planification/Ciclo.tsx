@@ -20,7 +20,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { useCiclos } from "../../hooks/usePlanifications";
 import { CiclosContext } from "./contexts/CiclosContext";
-import { format } from 'date-fns';
+import { format } from "date-fns";
+import { Lot } from "@types";
 
 const ActividadContext = createContext();
 
@@ -28,10 +29,12 @@ export const Ciclo = ({
   ciclo,
   loteId,
   expanded,
+  lote,
 }: {
   ciclo: ICiclosPlanificacion;
   loteId: string;
   expanded: boolean;
+  lote: Lot;
 }) => {
   const [expan, setExpan] = useState(expanded);
 
@@ -55,7 +58,8 @@ export const Ciclo = ({
         <Box>
           <Typography>Ciclo {getCropLabelFromId(ciclo.cultivoId)}</Typography>
           <Typography variant="subtitle2">
-            {format(new Date(ciclo.fechaInicio), "dd-MM-yyyy")} / {format(new Date(ciclo.fechaFin), "dd-MM-yyyy")}
+            {format(new Date(ciclo.fechaInicio), "dd-MM-yyyy")} /{" "}
+            {format(new Date(ciclo.fechaFin), "dd-MM-yyyy")}
           </Typography>
         </Box>
       </AccordionSummary>
@@ -79,6 +83,7 @@ export const Ciclo = ({
             cicloId={ciclo._id}
             campanaId={ciclo.campanaId}
             loteId={loteId}
+            campoId={lote.properties.campo_parent_id}
           />
         </Box>
 

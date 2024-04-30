@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -25,6 +25,25 @@ function Activity({
   const [gradientAngle, setGradientAngle] = useState(0);
   const [showReplicateActivityMenu, setShowReplicateActivityMenu] =
     useState(false);
+
+  const executionDate = useMemo(() => {
+    if (
+      activity?.actividad?.detalles?.fecha_ejecucion_tentativa &&
+      !isNaN(Date.parse(activity.actividad.detalles.fecha_ejecucion_tentativa))
+    ) {
+      return new Date(activity.actividad.detalles.fecha_ejecucion_tentativa);
+    }
+    return new Date();
+  }, [activity.actividad.detalles.fecha_ejecucion_tentativa]);
+
+  useEffect(() => {
+    const newDate = new Date(
+      activity.actividad.detalles.fecha_ejecucion_tentativa
+    );
+    if (newDate.getTime() !== executionDate.getTime()) {
+      setExecutionDate(newDate);
+    }
+  }, [activity.fecha_ejecucion]);
 
   // LANZA DEMASIADOS RENDERIZADOS
   // useEffect(() => {
@@ -184,7 +203,7 @@ function Activity({
           ) : (
             <>
               {renderActivityContent()}
-              <WeatherForecast />{" "}
+              <WeatherForecast date={executionDate} />{" "}
             </>
           )}
         </CardContent>
@@ -193,4 +212,4 @@ function Activity({
   );
 }
 
-export default Activity;
+export default React.memo(Activity);

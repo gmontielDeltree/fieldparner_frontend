@@ -106,15 +106,14 @@ const EditField: React.FC<EditFieldProps> = ({
         </Button>
 
         {/* {field.lotes.length === 0 && */}
-        {/*   <Button */}
-        {/*     color="success" */}
-        {/*     size="sm" */}
-        {/*     onClick={handleEditField} */}
-        {/*     style={buttonStyle} */}
-        {/*   > */}
-        {/*     Editar Campo */}
-        {/*   </Button> */}
-        {/* } */}
+           <Button 
+            color="success" 
+             size="sm" 
+            onClick={handleEditField} 
+           style={buttonStyle} 
+         >
+             Editar Campo 
+         </Button> 
 
         <Button
           color="danger"

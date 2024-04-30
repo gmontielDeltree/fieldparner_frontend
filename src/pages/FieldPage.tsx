@@ -119,6 +119,10 @@ export const FieldPage = () => {
     //   .catch(() => console.log("ERROR"));
   };
 
+  const handleEditField = ()=>{
+    navigate("/init/overview/fields/edit-field/" + campoId)
+  }
+
   if (!field) {
     return null;
   }
@@ -135,6 +139,7 @@ export const FieldPage = () => {
       onDelete={handleDeleteField}
       onLocate={handleLocateField}
       handleCreateLot={handleCreateLot}
+      handleEditField={handleEditField}
       handleCreateUniqueLot={handleCreateUniqueLot}
     />
   );

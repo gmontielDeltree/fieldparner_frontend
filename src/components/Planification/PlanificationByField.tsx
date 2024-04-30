@@ -19,7 +19,7 @@ import { CiclosContext } from "./contexts/CiclosContext";
 import { CampanasContext } from "./contexts/CampanasContext";
 import { useCiclos } from "../../hooks/usePlanifications";
 import uuid4 from "uuid4";
-import CancelIcon from '@mui/icons-material/Close';
+import CancelIcon from "@mui/icons-material/Close";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { format } from "date-fns";
 
@@ -52,20 +52,24 @@ function a11yProps(index: number) {
   };
 }
 
-const LoteAccordion: React.FC = ({ lote, campanaId, expanded, cicloSelected }) => {
+const LoteAccordion: React.FC = ({
+  lote,
+  campanaId,
+  expanded,
+  cicloSelected,
+}) => {
+  const [exp, setExp] = useState(expanded);
 
-  const [exp,setExp] = useState(expanded)
-
-  console.log("LOTEACORDION", lote,campanaId)
+  console.log("LOTEACORDION", lote, campanaId);
   // const [ciclos, setCiclos] = useState([])
-  const {getCiclosFromCampanaAndLote, refreshCiclos } = useContext(CiclosContext)
-  let ciclos = getCiclosFromCampanaAndLote(campanaId, lote.id)
-  const {getCropLabelFromId,getCropColorFromId} = useContext(CultivoContext)
+  const { getCiclosFromCampanaAndLote, refreshCiclos } =
+    useContext(CiclosContext);
+  let ciclos = getCiclosFromCampanaAndLote(campanaId, lote.id);
+  const { getCropLabelFromId, getCropColorFromId } = useContext(CultivoContext);
 
-
-  useEffect(()=>{
-    setExp(expanded)
-  },[expanded])
+  useEffect(() => {
+    setExp(expanded);
+  }, [expanded]);
   // useEffect(()=>{
 
   //   console.log("AVERRR from PlanifByField",ciclosLista,getCiclosFromCampanaAndLote(campanaId, lote.id))
@@ -74,31 +78,46 @@ const LoteAccordion: React.FC = ({ lote, campanaId, expanded, cicloSelected }) =
 
   // const {ciclos, refreshCiclos} = useCiclos(campanaId, lote.id);
 
-
   return (
-    <Accordion expanded={exp} onChange={(_,expa)=>setExp(expa)} >
+    <Accordion expanded={exp} onChange={(_, expa) => setExp(expa)}>
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
-        sx={{backgroundColor:"#e0e5de", height:"2rem"}}
+        sx={{ backgroundColor: "#e0e5de", height: "2rem" }}
         aria-controls="panel1-content"
         id="panel1-header"
       >
-        <Box sx={{display:"flex",justifyContent:"space-around", alignItems:"center", width:"100%"}}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-around",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
           <Typography>{lote.properties.nombre}</Typography>
 
-
-          <Box sx={{display:"flex",gap:"0.4rem"}}>
-
-        
-                     {ciclos?.map((ciclo, i) => (
-                      <Tooltip title={format(new Date(ciclo.fechaInicio), "dd-MM-yyyy") +" / " + format(new Date(ciclo.fechaFin), "dd-MM-yyyy")}>
-                            <Fab key={i} variant="extended" sx={{ borderRadius: "4px", height:"1.9rem", backgroundColor:getCropColorFromId(ciclo.cultivoId) }}>
-                        {getCropLabelFromId(ciclo.cultivoId)}
-                      </Fab>
-                      </Tooltip>
-                  
-                    ))}
-            
+          <Box sx={{ display: "flex", gap: "0.4rem" }}>
+            {ciclos?.map((ciclo, i) => (
+              <Tooltip
+                title={
+                  format(new Date(ciclo.fechaInicio), "dd-MM-yyyy") +
+                  " / " +
+                  format(new Date(ciclo.fechaFin), "dd-MM-yyyy")
+                }
+              >
+                <Fab
+                  key={i}
+                  variant="extended"
+                  sx={{
+                    borderRadius: "4px",
+                    height: "1.9rem",
+                    backgroundColor: getCropColorFromId(ciclo.cultivoId),
+                  }}
+                >
+                  {getCropLabelFromId(ciclo.cultivoId)}
+                </Fab>
+              </Tooltip>
+            ))}
           </Box>
 
           <CicloEditorDialog
@@ -116,18 +135,33 @@ const LoteAccordion: React.FC = ({ lote, campanaId, expanded, cicloSelected }) =
         {ciclos.length === 0 && "No hay ciclos planificados para este lote"}
         {/* por cada ciclo del lote */}
         {ciclos.map((c, i) => {
-          return <Ciclo key={lote.id+uuid4()} ciclo={c} loteId={lote.id} expanded={cicloSelected===c._id}></Ciclo>;
+          return (
+            <Ciclo
+              key={lote.id + uuid4()}
+              ciclo={c}
+              loteId={lote.id}
+              expanded={cicloSelected === c._id}
+              lote={lote}
+            ></Ciclo>
+          );
         })}
       </AccordionDetails>
     </Accordion>
   );
 };
-export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloSelected, onClose, onlyLoteSelected }) => {
+export const PlanificationByField = ({
+  campaignId,
+  fieldId,
+  loteSelected,
+  cicloSelected,
+  onClose,
+  onlyLoteSelected,
+}) => {
   // Lista de Campañas
   // Planificaciones por campaña
   //
 
-  const {getCampanaDesc} = useContext(CampanasContext)
+  const { getCampanaDesc } = useContext(CampanasContext);
   const [campo, setCampo] = useState([]);
   const [lotes, setLotes] = useState([]);
 
@@ -137,10 +171,9 @@ export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloS
     getFields();
   }, []);
 
-
-  const handleClose =()=>{
-    onClose()
-  }
+  const handleClose = () => {
+    onClose();
+  };
 
   useEffect(() => {
     if (fields && fieldId) {
@@ -155,27 +188,45 @@ export const PlanificationByField = ({ campaignId, fieldId, loteSelected, cicloS
   }, [fields, fieldId]);
 
   return (
-    <Box sx={{ width: "100%", height: "100%"}}>
+    <Box sx={{ width: "100%", height: "100%" }}>
       <Box>
-        <Box sx={{ display: "flex", justifyContent: "space-between", paddingX:"1rem" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            paddingX: "1rem",
+          }}
+        >
           <Box>
             <Typography variant="h5">{campo?.nombre}</Typography>
-            <Typography variant="subtitle2">Planificación Campaña {getCampanaDesc(campaignId)}</Typography>
+            <Typography variant="subtitle2">
+              Planificación Campaña {getCampanaDesc(campaignId)}
+            </Typography>
           </Box>
 
           <IconButton onClick={handleClose}>
-            <CancelIcon/>
-             
+            <CancelIcon />
+
             {/* <MoreVert></MoreVert> */}
           </IconButton>
         </Box>
         <Divider component={"div"} variant="middle" />
       </Box>
 
-      <Box sx={{ marginBottom: "0.2rem", maxHeight: "70vh", overflowY:"auto" }}>
+      <Box
+        sx={{ marginBottom: "0.2rem", maxHeight: "70vh", overflowY: "auto" }}
+      >
         {/* Por cada lote */}
         {lotes?.map((lote, i) => {
-          return <LoteAccordion  key={lote.id} lote={lote} campanaId={campaignId} expanded={loteSelected === lote.id} cicloSelected={cicloSelected} />;
+          return (
+            <LoteAccordion
+              key={lote.id}
+              lote={lote}
+              campanaId={campaignId}
+              expanded={loteSelected === lote.id}
+              cicloSelected={cicloSelected}
+            />
+          );
         })}
         {/* fin por cada lote */}
       </Box>
