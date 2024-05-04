@@ -138,10 +138,10 @@ export const NavBar: React.FC<NavBarProps> = ({
       saveCampaignToLS(selectedCampaign);
       toast.success(
         t("La campaña") +
-          " " +
-          selectedCampaign.name +
-          " " +
-          t("esta seleccionada"),
+        " " +
+        selectedCampaign.name +
+        " " +
+        t("esta seleccionada"),
         {
           position: "top-center",
           autoClose: 3000,
@@ -423,19 +423,16 @@ export const NavBar: React.FC<NavBarProps> = ({
                         {campaign.name}
                       </Typography>
                       <Typography variant="subtitle2">
-                        {`${
-                          campaign?.description.length
-                            ? campaign?.description
-                            : "No desc"
-                        } - ${campaign?.startDate} ${t(
-                          "a",
-                        )} ${campaign?.endDate} ${
-                          campaign?.state.length ? ` - ${campaign?.state}` : ""
-                        } ${
-                          campaign?.zoneId.length
+                        {`${campaign?.description.length
+                          ? campaign?.description
+                          : "No desc"
+                          } - ${campaign?.startDate} ${t(
+                            "a",
+                          )} ${campaign?.endDate} ${campaign?.state.length ? ` - ${campaign?.state}` : ""
+                          } ${campaign?.zoneId.length
                             ? ` - ${campaign?.zoneId}`
                             : ""
-                        }`}
+                          }`}
                       </Typography>
                     </Grid>
                     <Grid item xs={4}>
@@ -444,6 +441,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                         size="small"
                         variant="contained"
                         onClick={() => handleEditClick(campaign)}
+                        style={{ marginRight: "8px", marginTop: "8px" }}
                       >
                         {t("Editar")}
                       </Button>
@@ -454,6 +452,8 @@ export const NavBar: React.FC<NavBarProps> = ({
                           size="small"
                           color="error"
                           onClick={() => onDeleteCampaignHandler(campaign)}
+                          style={{ marginTop: "8px" }}
+
                         >
                           {t("delete")}
                         </Button>
@@ -477,8 +477,8 @@ export const NavBar: React.FC<NavBarProps> = ({
                   language === "es"
                     ? spanishFlagIcon
                     : language === "en"
-                    ? englishFlagIcon
-                    : brazilFlagIcon
+                      ? englishFlagIcon
+                      : brazilFlagIcon
                 }
                 alt={language}
                 style={{ width: "24px", height: "24px" }}
@@ -533,6 +533,6 @@ export const NavBar: React.FC<NavBarProps> = ({
           </Grid>
         </Grid>
       </Toolbar>
-    </AppBar>
+    </AppBar >
   );
 };

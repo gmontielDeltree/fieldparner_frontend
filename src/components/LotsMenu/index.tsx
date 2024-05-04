@@ -115,7 +115,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   };
 
   const activityTypeTranslations = {
-    preparacion: "preparation",
+    preparado: "preparation",
     siembra: "sowing",
     cosecha: "harvesting",
     aplicacion: "application",
@@ -130,15 +130,14 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     borderRadius: "50%",
     margin: "0 15px",
     cursor: "pointer",
-    // Update these lines to conditionally apply styles for "Vista de Satelite" and "Recorrido"
     opacity:
       selectedCampaign ||
-      ["Vista de Satelite", "Recorrido"].includes(categoryId)
+        ["Vista de Satelite", "Recorrido"].includes(categoryId)
         ? 1
         : 0.5,
     filter:
       selectedCampaign ||
-      ["Vista de Satelite", "Recorrido"].includes(categoryId)
+        ["Vista de Satelite", "Recorrido"].includes(categoryId)
         ? "none"
         : "grayscale(100%)",
     "&:hover": {
@@ -178,17 +177,17 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(":")[1])
           : parseISO(
-              a.actividad.tipo === "nota"
-                ? a.actividad.fecha
-                : a.actividad.detalles.fecha_ejecucion_tentativa,
-            );
+            a.actividad.tipo === "nota"
+              ? a.actividad.fecha
+              : a.actividad.detalles.fecha_ejecucion_tentativa,
+          );
         let fecha_2 = b.ejecucion_id
           ? parseISO(b.ejecucion_id.split(":")[1])
           : parseISO(
-              b.actividad.tipo === "nota"
-                ? b.actividad.fecha
-                : b.actividad.detalles.fecha_ejecucion_tentativa,
-            );
+            b.actividad.tipo === "nota"
+              ? b.actividad.fecha
+              : b.actividad.detalles.fecha_ejecucion_tentativa,
+          );
         return isBefore(fecha_1, fecha_2) ? 1 : -1;
       });
     }
@@ -281,21 +280,40 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     }
 
     if (!selectedCategory) {
-      return activities && activities.length > 0 ? (
+      if (!activities || activities.length === 0) {
+        return (
+          <div style={{ textAlign: "center" }}>
+            <p>No hay actividades.</p>
+            <p>Agregue alguna utilizando los botones superiores</p>
+          </div>
+        );
+      }
+
+      const filteredActivities = activities.filter(activity => {
+        const campaña = activity.actividad?.campaña;
+        return !campaña || campaña.campaignId === selectedCampaign.campaignId;
+      });
+
+      if (filteredActivities.length === 0) {
+        return (
+          <div style={{ textAlign: "center" }}>
+            <p>No hay actividades para esta campaña.</p>
+            <p>Seleccione otra campaña o agregue actividades a esta.</p>
+          </div>
+        );
+      }
+
+      return (
         <Activities
-          activitiesData={activities}
+          activitiesData={filteredActivities}
           setActivitiesData={setActivities}
           lotDoc={lot}
           fieldDoc={field}
           handleEditActivity={handleEditActivity}
         />
-      ) : (
-        <div style={{ textAlign: "center" }}>
-          <p>No hay actividades.</p>
-          <p>Agregue alguna utilizando los botones superiores</p>
-        </div>
       );
     }
+
 
     switch (selectedCategory) {
       case "Programar Preparado":
@@ -363,7 +381,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <PlanActivity
             activityType={
               activityTypeTranslations[
-                editingActivityInfo.activity.tipo.toLowerCase()
+              editingActivityInfo.activity.tipo.toLowerCase()
               ]
             }
             lot={lot}
@@ -389,7 +407,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           <ExecuteActivity
             activityType={
               activityTypeTranslations[
-                editingActivityInfo.activity.tipo.toLowerCase()
+              editingActivityInfo.activity.tipo.toLowerCase()
               ]
             }
             lot={lot}

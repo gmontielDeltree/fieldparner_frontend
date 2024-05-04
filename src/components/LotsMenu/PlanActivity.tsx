@@ -14,7 +14,7 @@ import ServicesForm from "./forms/PlanForms/ServicesForm";
 import ConditionsForm from "./forms/PlanForms/ConditionsForm";
 import ObservationsForm from "./forms/PlanForms/ObservationsForm";
 import { getEmptyActivity } from "../../interfaces/activity";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
 import GrassIcon from "@mui/icons-material/Grass";
 import AgricultureIcon from "@mui/icons-material/Agriculture";
@@ -23,11 +23,9 @@ import { keyframes } from "@emotion/react";
 import { useTheme } from "@mui/material/styles";
 import Badge from "@mui/material/Badge";
 import { Actividad } from "../../interfaces/activity";
-import { exit } from "process";
-import Paper from "@mui/material/Paper";
-import { styled } from "@mui/material/styles";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
+import { ApplicationType, HarvestType, PreparedType, SowingType } from "../../../src/types";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   function Alert(props, ref) {
@@ -70,13 +68,13 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   const [formData, setFormData] = useState(
     existingActivity || getEmptyActivity()
   );
+
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [activeStep, setActiveStep] = useState(0);
   const translatedActivityType = activityTypeTranslations[activityType];
   const [maxStepReached, setMaxStepReached] = useState(0);
   const theme = useTheme();
-  const lotName = lot?.properties.name;
   const isEditing =
     existingActivity && Object.keys(existingActivity).length > 0;
 
@@ -92,13 +90,13 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   const steps =
     activityType === "sowing"
       ? [
-          "General",
-          "Insumos",
-          "Otros Datos",
-          "Servicios",
-          "Condiciones",
-          "Observaciones"
-        ]
+        "General",
+        "Insumos",
+        "Otros Datos",
+        "Servicios",
+        "Condiciones",
+        "Observaciones"
+      ]
       : ["General", "Insumos", "Servicios", "Condiciones", "Observaciones"];
 
   useEffect(() => {
@@ -332,6 +330,10 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
 
     let actividad = { ...formData };
 
+    if ([SowingType, PreparedType, HarvestType, ApplicationType].includes(actividad.tipo)) {
+      actividad.campaña = selectedCampaign
+    }
+
     if (!isEditing) {
       try {
         const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
@@ -361,7 +363,6 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           db.put(actividad)
             .then(() => {
               console.log("New actividad created", "success");
-
               backToActivites();
             })
             .catch((err) => {
