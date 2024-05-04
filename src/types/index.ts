@@ -253,13 +253,10 @@ export interface OriginDestinations extends Document {
   destino: boolean;
 }
 
-export const LaboresItems = [
-  "Preparado",
-  "Siembra",
-  "Aplicacion",
-  "Arrancado",
-  "Cosecha"
-];
+export const SowingType = "siembra";
+export const HarvestType = "cosecha";
+export const ApplicationType = "aplicacion";
+export const PreparedType = "preparado";
 
 export const UnidadesDeMedida = () => {
   const { t } = useTranslation();
