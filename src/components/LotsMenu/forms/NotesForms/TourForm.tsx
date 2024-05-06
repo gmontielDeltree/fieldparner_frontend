@@ -9,8 +9,10 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  IconButton,
   List,
   ListItem,
+  ListItemText,
   CardContent,
   ImageListItem,
   Card,
@@ -106,6 +108,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       [fieldName]: value
     });
   };
+
   const fetchImageUrl = async (imageId) => {
     try {
       const blob = await db.getAttachment(imageId, "image");
@@ -114,6 +117,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       console.error("Error fetching image:", error);
     }
   };
+
   const fetchAudioUrl = async (audioId) => {
     try {
       const blob = await db.getAttachment(audioId, "audio");
@@ -136,7 +140,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
   const renderFeatureDetails = (feature) => (
     <>
       <List>
-        {/* Detalles de la característica */}
         {feature.properties.detalles.map((detail, index) => (
           <DetailCard key={index}>
             <CardContent>
@@ -148,7 +151,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
           </DetailCard>
         ))}
       </List>
-      {/* Grid de imágenes */}
       <ImageGrid cols={3} gap={8}>
         {feature.properties.fotos.map((foto, index) => (
           <ImageListItem key={index}>
@@ -161,14 +163,13 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
           </ImageListItem>
         ))}
       </ImageGrid>
-      {/* Reproductor de audio */}
-      <List>
-        {feature.properties.audios.map((audioId, index) => (
-          <ListItem key={index}>
-            <AudioPlayer controls src={audioUrls[audioId]} />
-          </ListItem>
-        ))}
-      </List>
+      {feature.properties.audios.map((audioId, audioIndex) => (
+        <AudioPlayer
+          key={audioIndex}
+          controls
+          src={audioUrls[audioId]}
+        />
+      ))}
     </>
   );
 
