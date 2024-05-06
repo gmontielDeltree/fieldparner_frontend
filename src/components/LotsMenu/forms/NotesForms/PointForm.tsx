@@ -187,29 +187,24 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
 
   const handleAudioRemove = async (audioUrl) => {
     try {
-      const updatedAudios = [...point.properties.audios];
-      const removedAudioIndex = updatedAudios.findIndex(url => url === audioUrl);
-      if (removedAudioIndex !== -1) {
-        const removedAudioId = updatedAudios.splice(removedAudioIndex, 1)[0];
-        await db.removeAttachment(point._id, removedAudioId);
-        setPoint((prevPoint) => ({
-          ...prevPoint,
-          properties: {
-            ...prevPoint.properties,
-            audios: updatedAudios
-          }
-        }));
-        const updatedAudioUrls = await Promise.all(
-          updatedAudios.map(async (audioId) => await fetchAudioUrl(audioId))
-        );
-        setAudioUrls(updatedAudioUrls); 
-      }
+      const updatedAudios = point.properties.audios.filter(url => url !== audioUrl);
+      await db.removeAttachment(point._id, audioUrl);
+      setPoint((prevPoint) => ({
+        ...prevPoint,
+        properties: {
+          ...prevPoint.properties,
+          audios: updatedAudios
+        }
+      }));
+      const updatedAudioUrls = await Promise.all(
+        updatedAudios.map(async (audioId) => await fetchAudioUrl(audioId))
+      );
+      setAudioUrls(updatedAudioUrls); 
     } catch (error) {
       console.error("Error removing audio:", error);
     }
   };
   
-
   const startRecording = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
