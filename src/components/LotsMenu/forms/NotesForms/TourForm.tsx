@@ -9,10 +9,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  IconButton,
   List,
   ListItem,
-  ListItemText,
   CardContent,
   ImageListItem,
   Card,
@@ -89,13 +87,10 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
             newImageUrls[foto] = await fetchImageUrl(foto);
           }
         }
-        if (
-          feature.properties.audio &&
-          !newAudioUrls[feature.properties.audio]
-        ) {
-          newAudioUrls[feature.properties.audio] = await fetchAudioUrl(
-            feature.properties.audio
-          );
+        for (const audio of feature.properties.audios) {
+          if (!newAudioUrls[audio]) {
+            newAudioUrls[audio] = await fetchAudioUrl(audio);
+          }
         }
       }
       setImageUrls(newImageUrls);
@@ -141,6 +136,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
   const renderFeatureDetails = (feature) => (
     <>
       <List>
+        {/* Detalles de la característica */}
         {feature.properties.detalles.map((detail, index) => (
           <DetailCard key={index}>
             <CardContent>
@@ -152,6 +148,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
           </DetailCard>
         ))}
       </List>
+      {/* Grid de imágenes */}
       <ImageGrid cols={3} gap={8}>
         {feature.properties.fotos.map((foto, index) => (
           <ImageListItem key={index}>
@@ -164,9 +161,14 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
           </ImageListItem>
         ))}
       </ImageGrid>
-      {feature.properties.audio && audioUrls[feature.properties.audio] && (
-        <AudioPlayer controls src={audioUrls[feature.properties.audio]} />
-      )}
+      {/* Reproductor de audio */}
+      <List>
+        {feature.properties.audios.map((audioId, index) => (
+          <ListItem key={index}>
+            <AudioPlayer controls src={audioUrls[audioId]} />
+          </ListItem>
+        ))}
+      </List>
     </>
   );
 
@@ -309,4 +311,3 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 }
 
 export default TourForm;
-
