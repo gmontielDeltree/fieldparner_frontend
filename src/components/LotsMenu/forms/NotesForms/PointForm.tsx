@@ -32,28 +32,28 @@ import {
   RecordingArea
 } from "./PointFormStyles";
 import PlaceMarker from "../../../NewGeometry/PlaceMarker";
+import { set } from "date-fns";
 import { dbContext } from "../../../../services";
 import { useTranslation } from "react-i18next";
 
 const customButtonStyle = {
   marginTop: "10px",
-  backgroundColor: "#4CAF50", // A green shade for the button
+  backgroundColor: "#4CAF50",
   color: "#ffffff",
   "&:hover": {
-    backgroundColor: "#45a049" // A slightly darker green on hover
+    backgroundColor: "#45a049"
   },
   borderRadius: "20px",
   boxShadow: "0px 2px 2px rgba(0,0,0,0.2)",
-  textTransform: "none", // Prevent uppercase transform
+  textTransform: "none",
   fontSize: "16px",
   padding: "10px 20px",
-  transition: "background-color 0.3s ease" // Smooth transition for hover effect
+  transition: "background-color 0.3s ease"
 };
 
 function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
-  console.log("PointForm props: ", formData);
   const { t } = useTranslation();
-  const db = dbContext.fields; //new PouchDB("campos_randyv7");
+  const db = dbContext.fields;
   const [point, setPoint] = useState({
     properties: {
       nombre: "",
@@ -67,13 +67,22 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   const [selectedField, setSelectedField] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
-  const [imageIds, setImageIds] = useState([]);
-  const [audioIds, setAudioIds] = useState([]);
+  const [imageUrls, setImageUrls] = useState([]);
+  const [audioUrls, setAudioUrls] = useState([]);
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
   const [moveToCurrentLocation, setMoveToCurrentLocation] = useState(false);
-  const [markerSaved, setMarkerSaved] = useState(false);
+  const [externalCoordinates, setExternalCoordinates] = useState<
+    [number, number] | null
+  >(null);
 
   const fieldOptions = ["Muestra #", "Plaga", "Enfermedad", "Anomalia"];
+
+  const onFieldChange = (fieldName, value) => {
+    setFormData({
+      ...formData,
+      [fieldName]: value
+    });
+  };
 
   const handlePointChange = (field, value) => {
     setPoint({ ...point, properties: { ...point.properties, [field]: value } });
@@ -170,34 +179,33 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
       setImageUrls(updatedImageUrls);
     } catch (error) {
       console.error("Error removing image:", error);
-      console.log("ID del punto:", point._id);
-      console.log("ID de la imagen a eliminar:", removedImageId);
     }
   };
 
-  const handleAudioRemove = async (audioIndex) => {
+  const handleAudioRemove = async (audioUrl) => {
     try {
       const updatedAudios = [...point.properties.audios];
-      const removedAudioId = updatedAudios.splice(audioIndex, 1)[0];
-      await db.removeAttachment(point._id, removedAudioId);
-      setPoint((prevPoint) => ({
-        ...prevPoint,
-        properties: {
-          ...prevPoint.properties,
-          audios: updatedAudios
-        }
-      }));
-      const updatedAudioIds = await Promise.all(
-        updatedAudios.map(async (audioId) => await fetchAudioId(audioId))
-      );
-      setAudioIds(updatedAudioIds);
+      const removedAudioIndex = updatedAudios.findIndex(url => url === audioUrl);
+      if (removedAudioIndex !== -1) {
+        const removedAudioId = updatedAudios.splice(removedAudioIndex, 1)[0];
+        await db.removeAttachment(point._id, removedAudioId);
+        setPoint((prevPoint) => ({
+          ...prevPoint,
+          properties: {
+            ...prevPoint.properties,
+            audios: updatedAudios
+          }
+        }));
+        const updatedAudioUrls = await Promise.all(
+          updatedAudios.map(async (audioId) => await fetchAudioUrl(audioId))
+        );
+        setAudioUrls(updatedAudioUrls); 
+      }
     } catch (error) {
       console.error("Error removing audio:", error);
-      console.log("ID del punto:", point._id);
-      console.log("ID del audio a eliminar:", removedAudioId);
     }
   };
-
+  
   const startRecording = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -213,6 +221,12 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
             audios: [...point.properties.audios, audioId]
           }
         });
+
+        const audioBlob = new Blob([e.data], { type: "audio/mp3" });
+        setAudioUrls((prevAudioUrls) => [
+          ...prevAudioUrls,
+          URL.createObjectURL(audioBlob)
+        ]);
       };
 
       recorder.start();
@@ -224,9 +238,11 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   const stopRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.stop();
+
       setIsRecording(false);
     }
   };
+  const [markerSaved, setMarkerSaved] = useState(false);
 
   const handleSaveMarker = () => {
     setPoint({
@@ -315,7 +331,6 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
               </Grid>
             ))}
 
-            {/* Dropdown for new field */}
             <Grid item xs={12} sm={6}>
               <InputLabel id="field-selector-label"></InputLabel>
               <Select
@@ -341,7 +356,6 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
               </Button>
             </Grid>
 
-            {/* Animated Image Upload */}
             <Grid item xs={12}>
               <input
                 accept="image/*"
@@ -362,14 +376,13 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
               </label>
             </Grid>
 
-            {/* Display Uploaded Images */}
             <ImageGrid container>
-              {point.properties.fotos.map((imageId, index) => (
+              {imageUrls.map((url, index) => (
                 <StyledImageCard key={index}>
                   <CardMedia
                     component="img"
                     height="140"
-                    image={fetchImageUrl(imageId)}
+                    image={url}
                     alt="Uploaded Image"
                   />
                   <IconButton
@@ -388,7 +401,6 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
               ))}
             </ImageGrid>
 
-            {/* Audio Recording Section */}
             <RecordingArea>
               <AudioRecordCard>
                 <RecordingIndicator recording={isRecording} />
@@ -404,13 +416,12 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
               </AudioRecordCard>
             </RecordingArea>
 
-            {/* Display Recorded Audio */}
-            {point.properties.audios.map((audioId, index) => (
+            {audioUrls.map((audioUrl, index) => (
               <AudioPlaybackCard key={index}>
                 <PlaybackTitle>Audio Grabado {index + 1}</PlaybackTitle>
-                <AudioPlayer controls src={fetchAudioUrl(audioId)} />
+                <AudioPlayer controls src={audioUrl} />
                 <IconButton
-                  onClick={() => handleAudioRemove(index)}
+                  onClick={() => handleAudioRemove(audioUrl)}
                   style={{ color: "red", marginTop: "10px" }}
                 >
                   <Delete />
@@ -418,7 +429,6 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
               </AudioPlaybackCard>
             ))}
 
-            {/* Save Button */}
             <StyledGrid item xs={12}>
               <CustomButton variant="contained" onClick={handleSavePoint}>
                 Guardar Punto
