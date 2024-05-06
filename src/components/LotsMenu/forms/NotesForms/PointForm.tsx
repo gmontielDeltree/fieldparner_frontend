@@ -185,26 +185,27 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
     }
   };
 
-  const handleAudioRemove = async (audioIndex) => {
+  const handleAudioRemove = async (audioUrl) => {
     try {
       const updatedAudios = [...point.properties.audios];
-      const removedAudioId = updatedAudios.splice(audioIndex, 1)[0];
-      await db.removeAttachment(point._id, removedAudioId);
-      setPoint((prevPoint) => ({
-        ...prevPoint,
-        properties: {
-          ...prevPoint.properties,
-          audios: updatedAudios
-        }
-      }));
-      const updatedAudioUrls = await Promise.all(
-        updatedAudios.map(async (audioId) => await fetchAudioUrl(audioId))
-      );
-      setAudioUrls(updatedAudioUrls);
+      const removedAudioIndex = updatedAudios.findIndex(url => url === audioUrl);
+      if (removedAudioIndex !== -1) {
+        const removedAudioId = updatedAudios.splice(removedAudioIndex, 1)[0];
+        await db.removeAttachment(point._id, removedAudioId);
+        setPoint((prevPoint) => ({
+          ...prevPoint,
+          properties: {
+            ...prevPoint.properties,
+            audios: updatedAudios
+          }
+        }));
+        const updatedAudioUrls = await Promise.all(
+          updatedAudios.map(async (audioId) => await fetchAudioUrl(audioId))
+        );
+        setAudioUrls(updatedAudioUrls);
+      }
     } catch (error) {
       console.error("Error removing audio:", error);
-      console.log("ID del punto:", point._id);
-      console.log("ID del audio a eliminar:", removedAudioId);
     }
   };
 
@@ -428,7 +429,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                 <PlaybackTitle>Audio Grabado {index + 1}</PlaybackTitle>
                 <AudioPlayer controls src={audioUrl} />
                 <IconButton
-                  onClick={() => handleAudioRemove(index)}
+                  onClick={() => handleAudioRemove(audioUrl)}
                   style={{ color: "red", marginTop: "10px" }}
                 >
                   <Delete />
