@@ -67,6 +67,8 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   const [selectedField, setSelectedField] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [imageIds, setImageIds] = useState([]);
+  const [audioIds, setAudioIds] = useState([]);
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
   const [moveToCurrentLocation, setMoveToCurrentLocation] = useState(false);
   const [markerSaved, setMarkerSaved] = useState(false);
@@ -162,6 +164,10 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
           fotos: updatedFotos
         }
       }));
+      const updatedImageUrls = await Promise.all(
+        updatedFotos.map(async (imageId) => await fetchImageUrl(imageId))
+      );
+      setImageUrls(updatedImageUrls);
     } catch (error) {
       console.error("Error removing image:", error);
       console.log("ID del punto:", point._id);
@@ -181,6 +187,10 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
           audios: updatedAudios
         }
       }));
+      const updatedAudioIds = await Promise.all(
+        updatedAudios.map(async (audioId) => await fetchAudioId(audioId))
+      );
+      setAudioIds(updatedAudioIds);
     } catch (error) {
       console.error("Error removing audio:", error);
       console.log("ID del punto:", point._id);
