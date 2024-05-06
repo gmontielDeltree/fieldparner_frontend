@@ -67,7 +67,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [imageUrls, setImageUrls] = useState([]);
-  const [audioUrls, setAudioUrls] = useState([]);
+  const [audioIds, setAudioIds] = useState([]);
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
   const [moveToCurrentLocation, setMoveToCurrentLocation] = useState(false);
 
@@ -178,11 +178,10 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
     }
   };
 
-  const handleAudioRemove = async (audioUrl) => {
+  const handleAudioRemove = async (audioId) => {
     try {
-      const removedAudioIndex = audioUrls.findIndex(url => url === audioUrl);
+      const removedAudioIndex = audioIds.findIndex(id => id === audioId);
       if (removedAudioIndex !== -1) {
-        const removedAudioId = point.properties.audios[removedAudioIndex];
         const updatedAudios = [...point.properties.audios];
         updatedAudios.splice(removedAudioIndex, 1);
         setPoint(prevPoint => ({
@@ -192,8 +191,8 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
             audios: updatedAudios
           }
         }));
-        await db.removeAttachment(point._id, removedAudioId);
-        setAudioUrls(prevAudioUrls => prevAudioUrls.filter(url => url !== audioUrl));
+        await db.removeAttachment(point._id, audioId);
+        setAudioIds(prevAudioIds => prevAudioIds.filter(id => id !== audioId));
       }
     } catch (error) {
       console.error("Error removing audio:", error);
@@ -217,10 +216,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
         });
 
         const audioBlob = new Blob([e.data], { type: "audio/mp3" });
-        setAudioUrls((prevAudioUrls) => [
-          ...prevAudioUrls,
-          URL.createObjectURL(audioBlob)
-        ]);
+        setAudioIds(prevAudioIds => [...prevAudioIds, audioId]);
       };
 
       recorder.start();
@@ -244,12 +240,11 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
         posicion: coordinates
       }
     });
-    setMarkerSaved(true);
   };
 
   const formStyle = {
-    opacity: markerSaved ? 1 : 0.5,
-    filter: markerSaved ? "none" : "blur(3px)"
+    opacity: 1,
+    filter: "none"
   };
 
   const markerMessageStyle = {
@@ -408,12 +403,12 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
               </AudioRecordCard>
             </RecordingArea>
 
-            {audioUrls.map((audioUrl, index) => (
+            {audioIds.map((audioId, index) => (
               <AudioPlaybackCard key={index}>
                 <PlaybackTitle>Audio Grabado {index + 1}</PlaybackTitle>
-                <AudioPlayer controls src={audioUrl} />
+                <AudioPlayer controls src={audioId} />
                 <IconButton
-                  onClick={() => handleAudioRemove(audioUrl)}
+                  onClick={() => handleAudioRemove(audioId)}
                   style={{ color: "red", marginTop: "10px" }}
                 >
                   <Delete />
