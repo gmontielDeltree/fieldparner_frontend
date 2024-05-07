@@ -82,7 +82,7 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
     try {
       actividad.campaña = selectedCampaign
       actividad._id =
-        actividad._id || "actividad:" /*+ formattedDate + ":"*/ + uuid4();
+        actividad._id || "actividad:" + formattedDate + ":" + uuid4();
 
       db.get(actividad._id)
         .then((doc) => {
