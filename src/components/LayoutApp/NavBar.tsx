@@ -447,6 +447,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                         size="small"
                         variant="contained"
                         onClick={() => handleEditClick(campaign)}
+                        style={{ marginRight: "8px", marginTop: "8px" }}
                       >
                         {t("Editar")}
                       </Button>
@@ -457,6 +458,8 @@ export const NavBar: React.FC<NavBarProps> = ({
                           size="small"
                           color="error"
                           onClick={() => onDeleteCampaignHandler(campaign)}
+                          style={{ marginTop: "8px" }}
+
                         >
                           {t("delete")}
                         </Button>
@@ -540,6 +543,6 @@ export const NavBar: React.FC<NavBarProps> = ({
           </Grid>
         </Grid>
       </Toolbar>
-    </AppBar>
+    </AppBar >
   );
 };
