@@ -56,7 +56,7 @@ export const SupplyPage: React.FC = () => {
     handleInputChange,
     handleSelectChange,
     handleCheckboxChange,
-    handleGenercoChange,
+    handleFormValueChange,
     reset,
   } = useForm(initialForm);
 
@@ -123,7 +123,7 @@ export const SupplyPage: React.FC = () => {
               crops={dataCrops} //TODO: cambiar por la tabla de cultivo
               formValues={formulario}
               handleInputChange={handleInputChange}
-              handleGenercoChange={handleGenercoChange}
+              handleFormValueChange={handleFormValueChange}
               handleSelectChange={handleSelectChange}
             />
           );
