@@ -1,8 +1,10 @@
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, SetStateAction } from "react";
 import {
   Box,
+  Button,
   FormControl,
   Grid,
+  IconButton,
   InputAdornment,
   InputLabel,
   MenuItem,
@@ -12,8 +14,9 @@ import {
   Typography,
 } from "@mui/material";
 import { RowData, TipoCombustible, Vehicle } from "../../types";
-import { FolderOpen as FolderOpenIcon } from "@mui/icons-material";
+import { FolderOpen as FolderOpenIcon, CloudUpload as CloudUploadIcon, Cancel as CancelIcon } from "@mui/icons-material";
 import EspecificationTable from "../DataTable/EspecificationTable";
+import uuid4 from "uuid4";
 
 const tipoCombustibles: string[] = Object.keys(TipoCombustible);
 
@@ -24,6 +27,9 @@ export interface EspecificacionesProps {
   setVehiculo: React.Dispatch<React.SetStateAction<Vehicle>>;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
+  handleFormValueChange: (key: string, value: string) => void;
+  setFilesUpload: React.Dispatch<SetStateAction<File[]>>;
+  cancelFile: (indexToRemove: number) => void;
 }
 
 export const Especificaciones: React.FC<EspecificacionesProps> = ({
@@ -31,6 +37,9 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
   handleInputChange,
   handleSelectChange,
   setVehiculo,
+  setFilesUpload,
+  handleFormValueChange,
+  cancelFile
 }) => {
   // const [especificaciones, setEspecificaciones] = useState<RowData[]>([
   //     { name: 'Servicio', description: 'Cambio de aceite cada 10.000km' }
@@ -44,7 +53,8 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
     tara,
     gross,
     net,
-    technialSpecifications
+    technialSpecifications,
+    photoVehicle
   } = vehiculo;
 
   const handleAgregarEspecificacion = (row: RowData) => {
@@ -63,6 +73,25 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
     }));
   };
 
+  const removeFile = (index: number) => {
+    handleFormValueChange("photoVehicle", "");
+    cancelFile(index);
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    if (file) {
+      let fileNameOriginal = file.name;
+      let extensionPos = fileNameOriginal.lastIndexOf(".");
+      let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
+
+      const newFileName = `vehicle-photo_${uuid4()}${fileType}`;
+      const renamedFile = new File([file], newFileName, { type: file.type });
+      setFilesUpload(prevState => [...prevState, renamedFile])
+      handleFormValueChange("photoVehicle", newFileName);
+    }
+  };
+
   return (
     <>
       <Box display="flex" alignItems="center" sx={{ m: 1, mb: 2 }}>
@@ -71,7 +100,7 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
       </Box>
       <Grid
         container
-        spacing={3}
+        spacing={2}
         direction="row"
         alignItems="center"
         justifyContent="space-between"
@@ -177,16 +206,43 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
             fullWidth
           />
         </Grid>
-        {/* <Grid item xs={12} sm={1} justifyContent="flex-start">
-                    <Fab
-                        color="success"
-                        aria-label="add"
-                        size='medium'
-                        onClick={() => handleAgregarEspecificacion()}
-                    >
-                        <AddIcon />
-                    </Fab>
-                </Grid> */}
+        <Grid item xs={6} sm={6} sx={{ display: "flex", alignItems: "center", justifyContent: "start" }} >
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+          >
+            Foto
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleFileUpload} />
+          </Button>
+          {photoVehicle ? (
+            <>
+              <label
+                title={photoVehicle}
+                style={{
+                  margin: "10px",
+                  width: "240px",
+                  display: "inline-block",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap"
+                }}>
+                {photoVehicle}
+              </label>
+              <IconButton onClick={() => removeFile(1)} color="error">
+                <CancelIcon fontSize="medium" />
+              </IconButton>
+            </>
+          ) :
+            <Typography variant="body1" sx={{ ml: 1, display: "inline-block" }}>
+              Ningún archivo seleccionado
+            </Typography>
+          }
+        </Grid>
       </Grid>
       <Box component="div" sx={{ mt: 3 }}>
         <EspecificationTable

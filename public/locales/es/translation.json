@@ -49,6 +49,7 @@
   "_warehouses": "Insumos/Lotes",
   "_warehouse": "Deposito",
   "_vehicles": "Vehículos",
+  "_file": "Archivo",
   "stock_movements": "Movimientos de stock",
   "stock_inquiry": "Consulta de stock",
   "_transformation": "Transformación",

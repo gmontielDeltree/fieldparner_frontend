@@ -22,6 +22,7 @@ import {
   Mantenimientos,
 } from "../components/NuevoVehiculo";
 import { useTranslation } from "react-i18next";
+import { uploadFile } from "../helpers/fileUpload";
 
 const initialState: Vehicle = {
   vehicleType: "",
@@ -47,6 +48,9 @@ const initialState: Vehicle = {
   technialSpecifications: [],
   maintenances: [],
   chassisNumber: "",
+  photoVehicle: "",
+  documentVehicleFile: "",
+  insurencePolicyFile: "",
 };
 
 
@@ -56,7 +60,7 @@ export const VehiclePage: React.FC = () => {
   const navigate = useNavigate();
   const { vehiculoActivo } = useAppSelector((state) => state.vehiculo);
   const [activeStep, setActiveStep] = useState(0);
-const {t} = useTranslation();
+  const { t } = useTranslation();
   const {
     formulario,
     setFormulario,
@@ -66,12 +70,18 @@ const {t} = useTranslation();
     handleFormValueChange,
   } = useForm(initialState);
   const { createVehicle, updateVehicle } = useVehicle();
+  const [vehicleFiles, setVehicleFiles] = useState<File[]>([]);
 
   const steps = [
     t("general_data"),
     t("technical_specifications"),
     t("_maintenance"),
   ];
+
+  const cancelFile = (indexToRemove: number) => {
+    const updateFiles = vehicleFiles.filter((_item, index) => index !== indexToRemove);
+    setVehicleFiles(updateFiles);
+  }
 
   const getStepContent = useMemo(
     () => (step: number) => {
@@ -83,6 +93,8 @@ const {t} = useTranslation();
               handleInputChange={handleInputChange}
               handleFormValueChange={handleFormValueChange}
               handleYearChange={handleYearChange}
+              setFilesUpload={setVehicleFiles}
+              cancelFile={cancelFile}
             />
           );
         case 1:
@@ -92,11 +104,19 @@ const {t} = useTranslation();
               setVehiculo={setFormulario}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
+              handleFormValueChange={handleFormValueChange}
+              setFilesUpload={setVehicleFiles}
+              cancelFile={cancelFile}
             />
           );
         case 2:
           return (
-            <Mantenimientos vehiculo={formulario} setVehiculo={setFormulario} />
+            <Mantenimientos
+              vehiculo={formulario}
+              setVehiculo={setFormulario}
+              handleFormValueChange={handleFormValueChange}
+              setFilesUpload={setVehicleFiles}
+              cancelFile={cancelFile} />
           );
         default:
           throw new Error("Step no encontrado.");
@@ -109,6 +129,7 @@ const {t} = useTranslation();
       handleSelectChange,
       handleYearChange,
       handleFormValueChange,
+      setVehicleFiles
     ]
   );
 
@@ -125,6 +146,7 @@ const {t} = useTranslation();
       if (!tipoVehiculo || !marca || !modelo) return;
 
       createVehicle(formulario);
+      handleUpdateFiles();
 
       navigate("/init/overview/vehicle");
     },
@@ -134,14 +156,25 @@ const {t} = useTranslation();
   const onClickUpdateVehicle = useCallback(
     (e: any) => {
       e.preventDefault();
-      
-      if (formulario._id)
+
+      if (formulario._id) {
         updateVehicle(formulario);
+        handleUpdateFiles()
+      }
 
       navigate("/init/overview/vehicle");
     },
     [formulario, dispatch]
   );
+
+  const handleUpdateFiles = async () => {
+    try {
+      vehicleFiles.forEach(x => { uploadFile(x) });
+    }
+    catch (error) {
+      console.log('upload file error:', error);
+    }
+  }
 
   const handleNext = () => {
     setActiveStep(activeStep + 1);
@@ -152,7 +185,7 @@ const {t} = useTranslation();
   };
 
   useEffect(() => {
-    if (vehiculoActivo) setFormulario(vehiculoActivo);
+    if (vehiculoActivo) {setFormulario(vehiculoActivo); console.log('vehiculoActivo', vehiculoActivo)}
     else setFormulario(initialState);
   }, [vehiculoActivo, setFormulario]);
 
@@ -162,13 +195,14 @@ const {t} = useTranslation();
         maxWidth="lg"
         sx={{
           margin: 0,
-          p: { sm: 0, md: 0 },
+          // p: { sm: 0, md: 0 },
           mb: 1,
         }}
       >
         <Paper
-          variant="outlined"
-          sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 1 } }}
+          variant="elevation"
+          // sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 1 } }}
+          sx={{ p: 4 }}
         >
           <Typography
             component="h2"
@@ -228,7 +262,7 @@ const {t} = useTranslation();
                   }
                   fullWidth
                 >
-                  {!vehiculoActivo ? t("_save"): t("id_update")}
+                  {!vehiculoActivo ? t("_save") : t("id_update")}
                 </Button>
               </Grid>
             </Grid>

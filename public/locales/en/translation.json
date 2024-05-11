@@ -59,6 +59,7 @@
   "_senasa": "Official Health Code",
   "_formulationDenomination": "Formulation Denomination",
   "_toxicityClass": "Toxicity Class",
+  "_file": "File",
   "_geolocation": "Geolocation",
   "_destination": "Destination",
   "_origin": "Origin",
