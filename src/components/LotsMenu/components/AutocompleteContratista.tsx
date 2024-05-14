@@ -10,6 +10,7 @@ import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import { useTranslation } from "react-i18next";
 import { ContractorRepository } from "../../../classes/ContractorRepository";
 import { Business } from "@types";
+import { CuitTextInput } from "../../Basic/CuitTextInput";
 
 const filter = createFilterOptions<FilmOptionType>();
 
@@ -163,8 +164,15 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
               type="text"
               variant="standard"
             />
+            <CuitTextInput  value={dialogValue.cuit}
+              onChange={(event) =>
+                setDialogValue({
+                  ...dialogValue,
+                  cuit: event.target.value
+                })
+              } />
 
-            <TextField
+            {/* <TextField
               autoFocus
               margin="dense"
               id="name"
@@ -178,7 +186,7 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
               label={t("_cuit")}
               type="text"
               variant="standard"
-            />
+            /> */}
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>{t("_Cancel")}</Button>
