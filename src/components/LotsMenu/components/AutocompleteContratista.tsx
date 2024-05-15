@@ -51,6 +51,8 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
     cuit: ""
   });
 
+  const [enabledAdd, setEnabledAdd] = useState(false)
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // Save new contractor
@@ -149,7 +151,28 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
                 "you_can_edit_more_details_later_in_the_contractors_menu_on_the_sidebar"
               )}
             </DialogContentText>
+            <CuitTextInput  value={dialogValue.cuit}
+              onValidCheck={(valid:boolean)=>{
+                setEnabledAdd(valid)
+              }}
+              onOnlineValidation={(e : string)=>{
+                console.log("Setting Validation",e)
+                setDialogValue({
+                  ...dialogValue,
+                  razonSocial:e
+                })
+              }}
+              onChange={(event) =>{
+                console.log("CUIT",event.target.value)
+                setDialogValue({
+                  ...dialogValue,
+                  cuit: event.target.value
+                })
+              }
+              } />
+
             <TextField
+            sx={{minWidth:"75%"}}
               autoFocus
               margin="dense"
               id="name"
@@ -164,13 +187,7 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
               type="text"
               variant="standard"
             />
-            <CuitTextInput  value={dialogValue.cuit}
-              onChange={(event) =>
-                setDialogValue({
-                  ...dialogValue,
-                  cuit: event.target.value
-                })
-              } />
+            
 
             {/* <TextField
               autoFocus
@@ -190,7 +207,7 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>{t("_Cancel")}</Button>
-            <Button type="submit">{t("_Add")}</Button>
+            <Button type="submit" disabled={!enabledAdd}>{t("_Add")}</Button>
           </DialogActions>
         </form>
       </Dialog>
