@@ -125,7 +125,9 @@ interface In {
   [idCultivo: string]: InformePorCultivoData;
 }
 
-async function downloadInformePorCultivoXLS(data: In) {
+async function downloadInformePorCultivoXLS(data: In, campana: Campaign) {
+
+  console.log("Data Informes", data)
   var workbook = XLSX.read(await (await fetch(xlstempalte)).arrayBuffer());
   let worksheet = workbook.Sheets["Hoja1"];
   let counter = 2;
@@ -176,6 +178,8 @@ async function downloadInformePorCultivoXLS(data: In) {
     counter = counter + 1;
   }
 
+
+  addValue(0,0,"Plan de Campaña " + campana.campaignId)
   const COL_WIDTH = 150;
 
   /* Excel column "A" -> SheetJS column index 2 == XLSX.utils.decode_col("C") */
@@ -194,8 +198,8 @@ async function downloadInformePorCultivoXLS(data: In) {
   return "ffff";
 }
 
-async function downloadInformePorCultivoPdf(data : In) {
-  const blob = await pdf(<InformePorCultivoPDF data={data}/>).toBlob();
+async function downloadInformePorCultivoPdf(data : In, campaign: Campaign) {
+  const blob = await pdf(<InformePorCultivoPDF data={data} campaign={campaign}/>).toBlob();
 
   downloadBlob(blob, "untitled.pdf");
 }
@@ -204,7 +208,8 @@ export const ReporteDeCampanas = async (
   ciclos: ICiclosPlanificacion[],
   campaigns: Campaign[],
   cultivosHook,
-  type: "pdf" | "xls"
+  type: "pdf" | "xls",
+  selectedCampaign : Campaign
 ) => {
   console.log("REPORTE CAMPANAS", ciclos, campaigns, cultivosHook);
 
@@ -213,10 +218,12 @@ export const ReporteDeCampanas = async (
   const options = { convertTo: "pdf", lang: "fr-fr" };
 
   if (campaigns.length > 0) {
-    let estaCampana = campaigns[1];
+    let estaCampana = selectedCampaign//(campaigns[1];
     let ciclosDeLaCampana = ciclos.filter(
       (c) => c.campanaId === estaCampana._id
     );
+
+    console.log("ESTA CAMPÑA",estaCampana, ciclosDeLaCampana)
 
     let d = { cultivos: [] };
 
@@ -309,9 +316,9 @@ export const ReporteDeCampanas = async (
     console.log("CCCC", c, d);
 
     if (type === "pdf") {
-      downloadInformePorCultivoPdf(c);
+      downloadInformePorCultivoPdf(c, selectedCampaign);
     } else if (type === "xls") {
-      downloadInformePorCultivoXLS(c);
+      downloadInformePorCultivoXLS(c, selectedCampaign);
     }
     // let t = axios.post(reportServerUrl, {
     //     template: template,
