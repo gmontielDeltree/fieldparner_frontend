@@ -7,6 +7,7 @@ import { Proveedor } from "./proveedores";
 import { Ingeniero } from "./ingenieros";
 import { DeviceDetalles } from "./sensores";
 import { Vehiculo } from "./vehiculos";
+import { Campaign } from "@types";
 
 interface IHash<T> {
   [index: string]: T;
@@ -246,6 +247,7 @@ interface Actividad {
   attachments?: Attachment[];
   motivos_nota?: any;
   fecha_ejecucion?: Date;
+  campaña?: Campaign;
 }
 
 interface Ejecucion {

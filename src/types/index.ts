@@ -75,6 +75,16 @@ export interface ZoneState {
   zones: Zones[];
 }
 
+export interface LaborsServices extends Document {
+  service: string;
+  description: string;
+}
+
+export interface LaborsServicesState {
+  LaborsServicesActive: LaborsServices | null;
+  LaborsServices: LaborsServices[];
+}
+
 
 export interface ColumnProps {
   text: string;
@@ -208,6 +218,7 @@ export interface Supply extends Document {
   productUrl?: string;
   eiqValue?: string;
   senasaId?: string;
+  documentFile?: string;
 }
 
 export interface UserByAccount extends Document {
@@ -242,13 +253,10 @@ export interface OriginDestinations extends Document {
   destino: boolean;
 }
 
-export const LaboresItems = [
-  "Preparado",
-  "Siembra",
-  "Aplicacion",
-  "Arrancado",
-  "Cosecha"
-];
+export const SowingType = "siembra";
+export const HarvestType = "cosecha";
+export const ApplicationType = "aplicacion";
+export const PreparedType = "preparado";
 
 export const UnidadesDeMedida = () => {
   const { t } = useTranslation();

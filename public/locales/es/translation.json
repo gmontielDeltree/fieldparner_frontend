@@ -305,5 +305,8 @@
   "_name": "Nombre",
   "_zone": "Zona",
   "zone_description": "Zona/ Descripción",
-  "_zones":"Zonas"
+  "_zones":"Zonas",
+  "service_labors": "Servicio de Labores",
+  "_service": "Servicio",
+  "labors_service": "Labores / Servicio"
 }

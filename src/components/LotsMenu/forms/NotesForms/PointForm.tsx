@@ -61,7 +61,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
       notas: "",
       detalles: [],
       fotos: [],
-      audio: "",
+      audios: [],
       posicion: []
     }
   });
@@ -69,7 +69,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [imageUrls, setImageUrls] = useState([]);
-  const [audioUrl, setAudioUrl] = useState(null);
+  const [audioUrls, setAudioUrls] = useState([]);
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
   const [moveToCurrentLocation, setMoveToCurrentLocation] = useState(false);
   const [externalCoordinates, setExternalCoordinates] = useState<
@@ -185,27 +185,26 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
     }
   };
 
-  const handleAudioRemove = async () => {
+  const handleAudioRemove = async (audioUrl) => {
     try {
-      const audioId = point.properties.audio;
-      if (audioId) {
-        const doc = await db.get(point._id);
-        await db.removeAttachment(point._id, audioId, doc._rev);
-
-        setPoint((prevPoint) => ({
-          ...prevPoint,
-          properties: {
-            ...prevPoint.properties,
-            audio: ""
-          }
-        }));
-        setAudioUrl(null);
-      }
+      const updatedAudios = point.properties.audios.filter(url => url !== audioUrl);
+      await db.removeAttachment(point._id, audioUrl);
+      setPoint((prevPoint) => ({
+        ...prevPoint,
+        properties: {
+          ...prevPoint.properties,
+          audios: updatedAudios
+        }
+      }));
+      const updatedAudioUrls = await Promise.all(
+        updatedAudios.map(async (audioId) => await fetchAudioUrl(audioId))
+      );
+      setAudioUrls(updatedAudioUrls); 
     } catch (error) {
       console.error("Error removing audio:", error);
     }
   };
-
+  
   const startRecording = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -218,12 +217,15 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
           ...point,
           properties: {
             ...point.properties,
-            audio: audioId
+            audios: [...point.properties.audios, audioId]
           }
         });
 
         const audioBlob = new Blob([e.data], { type: "audio/mp3" });
-        setAudioUrl(URL.createObjectURL(audioBlob));
+        setAudioUrls((prevAudioUrls) => [
+          ...prevAudioUrls,
+          URL.createObjectURL(audioBlob)
+        ]);
       };
 
       recorder.start();
@@ -418,18 +420,18 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
             </RecordingArea>
 
             {/* Display Recorded Audio */}
-            {audioUrl && (
-              <AudioPlaybackCard>
-                <PlaybackTitle>Audio Grabado</PlaybackTitle>
+            {audioUrls.map((audioUrl, index) => (
+              <AudioPlaybackCard key={index}>
+                <PlaybackTitle>Audio Grabado {index + 1}</PlaybackTitle>
                 <AudioPlayer controls src={audioUrl} />
                 <IconButton
-                  onClick={handleAudioRemove}
+                  onClick={() => handleAudioRemove(audioUrl)}
                   style={{ color: "red", marginTop: "10px" }}
                 >
                   <Delete />
                 </IconButton>
               </AudioPlaybackCard>
-            )}
+            ))}
 
             {/* Save Button */}
             <StyledGrid item xs={12}>

@@ -1,9 +1,12 @@
 import {
+  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
   FormGroup,
   Grid,
+  IconButton,
+  Input,
   InputAdornment,
   InputLabel,
   MenuItem,
@@ -16,11 +19,20 @@ import {
 import { Supply, TipoInsumo, TypeSupplies } from "../../types";
 import React, { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  CloudUpload as CloudUploadIcon,
+  Cancel as CancelIcon,
+  // AttachFile as AttachFileIcon,
+  UploadFile as UploadFileIcon
+} from '@mui/icons-material';
+import uuid4 from "uuid4";
+// import { uploadFile } from "../../helpers/fileUpload";
 
 export interface LaborsFormProps {
   formValues: Supply;
   supplyError: boolean;
   setFormValues: React.Dispatch<React.SetStateAction<Supply>>;
+  setFileUpload: React.Dispatch<React.SetStateAction<File | null>>;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleCheckboxChange: (
@@ -35,10 +47,11 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
   supplyError,
   handleSelectChange,
   handleInputChange,
-  // handleCheckboxChange,
+  setFileUpload,
   setFormValues,
 }) => {
-  const { type, name, description, barCode, stockByLot, labors, brand, senasaId } = formValues;
+  const { type, name, description, barCode, stockByLot, labors, brand, senasaId, documentFile } = formValues;
+  
 
   const handleChangeLabors = (
     { target }: ChangeEvent<HTMLInputElement>,
@@ -57,6 +70,27 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
       setFormValues((prevState) => ({ ...prevState, labors: laborsFiltered }));
     }
   };
+
+
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    if (file) {
+      let fileNameOriginal = file.name;
+      let extensionPos = fileNameOriginal.lastIndexOf(".");
+      let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
+
+      const newFileName = `supply_${uuid4()}${fileType}`;
+      const renamedFile = new File([file], newFileName, { type: file.type });
+      setFileUpload(renamedFile);
+      setFormValues(prevState => ({ ...prevState, documentFile: newFileName }));
+    }
+  };
+
+  const cancelFile = () => {
+    setFileUpload(null);
+    setFormValues(prevState => ({ ...prevState, documentFile: "" }));
+  }
 
   const { t } = useTranslation();
 
@@ -181,6 +215,32 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
             labelPlacement="start"
           />
         </FormGroup>
+      </Grid>
+      <Grid item xs={12} >
+        {documentFile ? (
+          <Typography variant="body1" style={{ margin: 10 }}>
+            {documentFile}
+            <IconButton onClick={() => cancelFile()} color="error" sx={{ p: 0, pl: 1 }}>
+              <CancelIcon fontSize="medium" />
+            </IconButton>
+          </Typography>
+        ) :
+          <Typography variant="body1" style={{ margin: 10, marginLeft: 80 }}>
+            <UploadFileIcon fontSize="large" />
+          </Typography>
+        }
+        <Button
+          component="label"
+          variant="contained"
+          tabIndex={-1}
+          startIcon={<CloudUploadIcon />}
+        >
+          Documento Tecnico
+          <Input
+            type="file"
+            hidden
+            onChange={handleFileUpload} />
+        </Button>
       </Grid>
       <Grid item xs={12} sm={12} sx={{ my: 3 }}>
         {type.toLowerCase() === TipoInsumo.CULTIVO.toLowerCase() && (

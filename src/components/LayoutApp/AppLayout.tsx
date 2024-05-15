@@ -61,5 +61,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </Box>
       <ToastContainer />
     </Box>
+
   );
 };

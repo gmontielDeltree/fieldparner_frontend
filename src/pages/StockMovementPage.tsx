@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridToolbar, esES, ptBR, enUS } from "@mui/x-data-grid";
+// import { esES as dateLocale } from '@mui/material/locale';
 import { Box, Button, Container, Grid, Typography } from "@mui/material";
 import { Add as AddIcon, SyncAlt as SyncAltIcon } from "@mui/icons-material";
 import { Loading, CloseButtonPage } from "../components";
@@ -53,6 +54,17 @@ export const StockMovementPage: React.FC = () => {
       } as RowStockMovementItem;
     });
   }, [stockMovements]);
+
+  const localeText = useMemo(() => {
+    const language = localStorage.getItem("language") || "es";
+
+    if (language === "en")
+      return enUS.components.MuiDataGrid.defaultProps.localeText;
+    if (language === "pt")
+      return ptBR.components.MuiDataGrid.defaultProps.localeText;
+
+    return esES.components.MuiDataGrid.defaultProps.localeText;
+  }, []);
 
   // const onClickSearch = (): void => {
   //   if (filterText === "") {
@@ -110,6 +122,7 @@ export const StockMovementPage: React.FC = () => {
           <DataGrid
             rows={rows}
             columns={columns}
+            localeText={localeText}
             rowSelection={false}
             loading={isLoading}
             slots={{ toolbar: GridToolbar }}

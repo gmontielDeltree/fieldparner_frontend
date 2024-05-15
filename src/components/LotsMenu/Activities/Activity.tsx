@@ -26,25 +26,14 @@ function Activity({
   const [showReplicateActivityMenu, setShowReplicateActivityMenu] =
     useState(false);
 
-  const executionDate = useMemo(() => {
-    if (
-      activity?.actividad?.detalles?.fecha_ejecucion_tentativa &&
-      !isNaN(Date.parse(activity.actividad.detalles.fecha_ejecucion_tentativa))
-    ) {
-      return new Date(activity.actividad.detalles.fecha_ejecucion_tentativa);
-    }
-    return new Date();
-  }, [activity.actividad.detalles.fecha_ejecucion_tentativa]);
-
-  useEffect(() => {
-    const newDate = new Date(
-      activity.actividad.detalles.fecha_ejecucion_tentativa
-    );
-    if (newDate.getTime() !== executionDate.getTime()) {
-      setExecutionDate(newDate);
-    }
-  }, [activity.fecha_ejecucion]);
-
+    const executionDate = useMemo(() => {
+      if (activity?.actividad?.detalles?.fecha_ejecucion_tentativa &&
+          !isNaN(Date.parse(activity.actividad.detalles.fecha_ejecucion_tentativa))) {
+        return new Date(activity.actividad.detalles.fecha_ejecucion_tentativa);
+      }
+      return new Date();
+    }, [activity?.actividad?.detalles?.fecha_ejecucion_tentativa]);
+    
   // LANZA DEMASIADOS RENDERIZADOS
   // useEffect(() => {
   //   const interval = setInterval(() => {

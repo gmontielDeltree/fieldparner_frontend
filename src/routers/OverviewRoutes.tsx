@@ -30,7 +30,9 @@ import {
   ConfirmWithdrawalOrderPage,
   ListTransformPage,
   ListZonesPage,
-  NewZonePage
+  NewZonePage,
+  NewLaborsServicesPage,
+  ListLaborsServicesPage
 } from "../pages";
 import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
@@ -164,6 +166,10 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/zones" element={<ListZonesPage />} />
         <Route path="/overview/zones/new" element={<NewZonePage />} />
         <Route path="/overview/zones/:id" element={<NewZonePage />} />
+
+        <Route path="/overview/Labors-services" element={<ListLaborsServicesPage />} />
+        <Route path="/overview/Labors-services/new" element={<NewLaborsServicesPage />} />
+        <Route path="/overview/Labors-services/:id" element={<NewLaborsServicesPage />} />
 
 
 

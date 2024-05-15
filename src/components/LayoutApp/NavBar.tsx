@@ -44,7 +44,7 @@ import {
   OnDeviceTrainingOutlined,
 } from "@mui/icons-material";
 import { add } from "date-fns";
-import { Campaign } from "@types";
+import { Campaign, NavBarProps } from "../../types";
 import { uuidv7 } from "uuidv7";
 import { ButtonMixin } from "@vaadin/button/src/vaadin-button-mixin";
 import {
@@ -70,11 +70,11 @@ export const NavBar: React.FC<NavBarProps> = ({
     deleteCampaign,
   } = useCampaign();
   //const [selectedCampaign, setSelectedCampaign] = useState("");
-
+  const { user } = useAppSelector(state => state.auth);
   const { selectedCampaign } = useAppSelector((state) => state.campaign);
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
-  const [language, setLanguage] = useState("es"); // Cambiado a código estándar "es" (español)
+  const [language, setLanguage] = useState(localStorage.getItem("language") || "es"); // Cambiado a código estándar "es" (español)
   const { startLogout } = useAuthStore();
   const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
@@ -104,6 +104,11 @@ export const NavBar: React.FC<NavBarProps> = ({
     setIsCreateModalOpen(false);
     getCampaigns();
   };
+
+  useEffect(() => {
+    i18n.changeLanguage(localStorage.getItem("language") || "");
+  }, []);
+
 
   useEffect(() => {
     getCampaigns();
@@ -138,10 +143,10 @@ export const NavBar: React.FC<NavBarProps> = ({
       saveCampaignToLS(selectedCampaign);
       toast.success(
         t("La campaña") +
-          " " +
-          selectedCampaign.name +
-          " " +
-          t("esta seleccionada"),
+        " " +
+        selectedCampaign.name +
+        " " +
+        t("esta seleccionada"),
         {
           position: "top-center",
           autoClose: 3000,
@@ -175,10 +180,11 @@ export const NavBar: React.FC<NavBarProps> = ({
     setLanguageAnchorEl(event.currentTarget);
   };
 
-  const handleLanguageChange = (newLanguage) => {
+  const handleLanguageChange = (newLanguage: string) => {
     i18n.changeLanguage(newLanguage);
     setLanguage(newLanguage);
     setLanguageAnchorEl(null);
+    localStorage.setItem("language", newLanguage);
   };
 
   const handleLanguageMenuClose = () => {
@@ -423,19 +429,16 @@ export const NavBar: React.FC<NavBarProps> = ({
                         {campaign.name}
                       </Typography>
                       <Typography variant="subtitle2">
-                        {`${
-                          campaign?.description.length
-                            ? campaign?.description
-                            : "No desc"
-                        } - ${campaign?.startDate} ${t(
-                          "a",
-                        )} ${campaign?.endDate} ${
-                          campaign?.state.length ? ` - ${campaign?.state}` : ""
-                        } ${
-                          campaign?.zoneId.length
+                        {`${campaign?.description.length
+                          ? campaign?.description
+                          : "No desc"
+                          } - ${campaign?.startDate} ${t(
+                            "a",
+                          )} ${campaign?.endDate} ${campaign?.state.length ? ` - ${campaign?.state}` : ""
+                          } ${campaign?.zoneId.length
                             ? ` - ${campaign?.zoneId}`
                             : ""
-                        }`}
+                          }`}
                       </Typography>
                     </Grid>
                     <Grid item xs={4}>
@@ -444,6 +447,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                         size="small"
                         variant="contained"
                         onClick={() => handleEditClick(campaign)}
+                        style={{ marginRight: "8px", marginTop: "8px" }}
                       >
                         {t("Editar")}
                       </Button>
@@ -454,6 +458,8 @@ export const NavBar: React.FC<NavBarProps> = ({
                           size="small"
                           color="error"
                           onClick={() => onDeleteCampaignHandler(campaign)}
+                          style={{ marginTop: "8px" }}
+
                         >
                           {t("delete")}
                         </Button>
@@ -466,7 +472,11 @@ export const NavBar: React.FC<NavBarProps> = ({
               ))}
             </Menu>
           </Grid>
-          <Grid item>
+          <Grid item className="d-flex align-items-center">
+            <Typography variant="h6" display="inline-block" >
+              {user?.firstName}
+            </Typography>
+
             <IconButton
               color="inherit"
               aria-label="change-language"
@@ -477,8 +487,8 @@ export const NavBar: React.FC<NavBarProps> = ({
                   language === "es"
                     ? spanishFlagIcon
                     : language === "en"
-                    ? englishFlagIcon
-                    : brazilFlagIcon
+                      ? englishFlagIcon
+                      : brazilFlagIcon
                 }
                 alt={language}
                 style={{ width: "24px", height: "24px" }}
@@ -533,6 +543,6 @@ export const NavBar: React.FC<NavBarProps> = ({
           </Grid>
         </Grid>
       </Toolbar>
-    </AppBar>
+    </AppBar >
   );
 };
