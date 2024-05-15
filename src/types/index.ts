@@ -63,6 +63,9 @@ export interface Vehicle extends Document {
   location: string;
   maintenances: Mantenimiento[];
   technialSpecifications: RowData[];
+  insurencePolicyFile?: string;
+  photoVehicle?: string;
+  documentVehicleFile?: string;
 }
 
 export interface Zones extends Document {
@@ -372,6 +375,7 @@ export interface StockMovement extends Document {
   totalValue: number;
   hours: string;
   campaignId: string;
+  documentFile?: string;
 }
 
 export interface StockMovementItem extends StockMovement {

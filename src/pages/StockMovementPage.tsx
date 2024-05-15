@@ -8,7 +8,7 @@ import { Loading, CloseButtonPage } from "../components";
 import { useStockMovement } from "../hooks";
 import { useTranslation } from "react-i18next";
 
-
+//TODO: cambiar DataGrid por un DataTable custom
 
 interface RowStockMovementItem {
   id: string;
@@ -20,6 +20,7 @@ interface RowStockMovementItem {
   isIncome: string;
   um: string;
   amount: number;
+  documentFile: string;
 }
 
 export const StockMovementPage: React.FC = () => {
@@ -37,6 +38,7 @@ export const StockMovementPage: React.FC = () => {
     { field: "isIncome", headerName: t("income_outcome"), width: 120 },
     { field: "um", headerName: "UM", width: 150 },
     { field: "amount", headerName: t("_quantity"), width: 150 },
+    { field: "documentFile", headerName: t("_file"), width: 250 },
   ];
 
   const rows = useMemo(() => {
@@ -51,7 +53,8 @@ export const StockMovementPage: React.FC = () => {
         isIncome: sm.isIncome ? t("_income") : t("_outcome"),
         um: sm.supply?.unitMeasurement,
         amount: sm.amount,
-      } as RowStockMovementItem;
+        documentFile: sm.documentFile
+      }
     });
   }, [stockMovements]);
 
@@ -81,7 +84,7 @@ export const StockMovementPage: React.FC = () => {
   }, []);
 
   return (
-    <Container sx={{ paddingLeft: "0px !important" }} maxWidth="lg">
+    <Container sx={{ paddingLeft: "0px !important" }} maxWidth={"lg"}>
       {isLoading && <Loading loading={true} />}
       <Box
         component="div"
