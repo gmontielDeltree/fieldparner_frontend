@@ -22,6 +22,8 @@ import uuid4 from "uuid4";
 import CancelIcon from "@mui/icons-material/Close";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { format } from "date-fns";
+import { filter } from "jszip";
+import { get_ingresos_egresos } from "./FuncionesInformes";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -167,6 +169,11 @@ export const PlanificationByField = ({
 
   const { fields, getFields } = useField();
 
+  const [input, setIn] = useState();
+  const [out, setOut] = useState();
+
+  const { ciclos, getCiclosFromCampanaAndLote } = useContext(CiclosContext);
+
   useEffect(() => {
     getFields();
   }, []);
@@ -181,6 +188,13 @@ export const PlanificationByField = ({
       if (campoEste) {
         setCampo(campoEste);
         setLotes(campoEste.lotes);
+
+        let ids = campoEste.lotes.map((l) => l.id);
+        let ciclos_d = ciclos.filter((c) => ids.includes(c.loteId));
+
+        get_ingresos_egresos(ciclos_d).then((data) => {
+          setIn(data[0]), setOut(data[1]);
+        });
       }
 
       console.log("casdsdd", campo, campoEste);
@@ -216,7 +230,13 @@ export const PlanificationByField = ({
       <Box
         sx={{ marginBottom: "0.2rem", maxHeight: "70vh", overflowY: "auto" }}
       >
+        <Box sx={{padding:"10px"}}>
+          <p>Ingresos (USD): {input}</p>
+          <p>Egresos (USD): {out}</p>
+          <p>Ganancia (USD): {out ? (input-out): 0}</p>
+        </Box>
         {/* Por cada lote */}
+
         {lotes?.map((lote, i) => {
           return (
             <LoteAccordion
