@@ -106,7 +106,7 @@ export const NavBar: React.FC<NavBarProps> = ({
   };
 
   useEffect(() => {
-    i18n.changeLanguage(localStorage.getItem("language") || "");
+    i18n.changeLanguage(localStorage.getItem("language") || "es");
   }, []);
 
 

@@ -177,6 +177,7 @@ export interface Business extends Document {
   legajo?: string;
   matricula?: string;
   categorias: string[];
+  logoBusiness?: string;
 }
 
 export interface BusinessState {
