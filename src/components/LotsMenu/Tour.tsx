@@ -79,6 +79,7 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
 
   const handleSave = () => {
     let actividad = formData;
+    let formattedDate = new Date();
     try {
       actividad.campaña = selectedCampaign
       actividad._id =
