@@ -205,7 +205,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
                 variant="contained"
                 startIcon={<CloudUploadIcon />}
               >
-                Logo
+                {t("_logo")}
                 <input
                   type="file"
                   accept="image/*"

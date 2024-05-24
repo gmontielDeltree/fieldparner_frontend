@@ -5,8 +5,6 @@ import store from "./redux/store";
 import "./i18n"; //TODO: chequear middleware 
 import { Provider } from "react-redux";
 import FieldPartnerApp from "./FieldPartnerApp";
-import { loadCampaignFromLS, saveCampaignToLS } from "./helpers/persistence";
-import { setSelectedCampaign } from "./redux/campaign";
 
 
 

@@ -13,14 +13,10 @@ import {
   Typography
 } from "@mui/material";
 import {
-  // Cabin as CabinIcon,
   ChevronLeft as ChevronLeftIcon,
   LocalShipping as LocalShippingIcon,
-  // AttachMoney as AttachMoneyIcon,
   Settings as SettingsIcon,
   Group as GroupIcon,
-  // Cached as CachedIcon,
-  // List as ListIcon,
   Inventory as InventoryIcon,
   Warehouse as WarehouseIcon,
   SyncAlt as SyncAltIcon,
@@ -37,9 +33,9 @@ import {
   Person as PersonAddIcon,
   Assignment as AssignmentIcon,
   Map as MapIcon,
-  BusinessCenter as  BusinessCenterIcon
-  // Flag as FlagIcon,
+  BusinessCenter as BusinessCenterIcon,
 } from "@mui/icons-material";
+import { Icon } from "semantic-ui-react";
 import { SideBarProps } from "../../types";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -65,7 +61,7 @@ export const SideBar: React.FC<SideBarProps> = ({
   const onClickMenu = (collapse: string) => setOpenCollapse(collapse === openCollapse ? "" : collapse);
 
   const { user } = useAppSelector((state) => state.auth);
-  
+
 
   return (
     <Box
@@ -242,11 +238,6 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("campaign_definition")} />
               </ListItemButton>
-              {/* <ListItemButton >
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("fields_lots_hectares")} />
-              </ListItemButton> */}
               <ListItemButton
                 component={RouterLink}
                 to="/init/overview/fields/planification"
@@ -256,11 +247,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("annual_campaign_projection")} />
               </ListItemButton>
-              {/* <ListItemButton >
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("_waybill")} />
-              </ListItemButton> */}
+
               <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
@@ -287,11 +274,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("_romaneos")} />
               </ListItemButton>
-              {/* <ListItemButton >
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary="Integracion con Maquinas" />
-              </ListItemButton> */}
+
             </List>
           </Collapse>
           <ListItem key="Stock" disablePadding>
@@ -354,6 +337,16 @@ export const SideBar: React.FC<SideBarProps> = ({
                   <TransformIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("transformation_added_value")} />
+              </ListItemButton>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/purchase-order"
+                selected={pathname.includes("/init/overview/purchase-order")}>
+                <ListItemIcon>
+                  <Icon name="list alternate outline" size="large" />
+                </ListItemIcon>
+                <ListItemText primary={t("purchase_order")} />
               </ListItemButton>
             </List>
           </Collapse>
@@ -468,32 +461,6 @@ export const SideBar: React.FC<SideBarProps> = ({
               </ListItemButton>
             </List>
           </Collapse>
-          {/* <ListItem key="Reporting" disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[7])}
-            // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <FlagIcon />
-              </ListItemIcon>
-              <ListItemText primary="Reporting" />
-              {openCollapse === keysCollapse[7] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse key={keysCollapse[7]}
-            in={openCollapse === keysCollapse[7]}
-            timeout="auto"
-            unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary="SmartView" />
-              </ListItemButton>
-            </List>
-          </Collapse> */}
           <ListItem key="Seguridad" disablePadding>
             <ListItemButton
               // component={RouterLink}
@@ -513,7 +480,7 @@ export const SideBar: React.FC<SideBarProps> = ({
             timeout="auto"
             unmountOnExit>
             <List component="div" disablePadding>
-            {user && user.isAdmin && (
+              {user && user.isAdmin && (
                 <ListItemButton
                   sx={{ pl: 4 }}
                   component={RouterLink}
@@ -552,17 +519,6 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("crop_colors")} />
               </ListItemButton>
-              {/* <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to="/init/overview/users"
-                selected={pathname.includes("/init/overview/users")}
-              >
-                <ListItemIcon>
-                  <PersonAddIcon />
-                </ListItemIcon>
-                <ListItemText primary="Usuarios" />
-              </ListItemButton> */}
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                 </ListItemIcon>
@@ -580,233 +536,6 @@ export const SideBar: React.FC<SideBarProps> = ({
               </ListItemButton>
             </List>
           </Collapse>
-          {/* <ListItem key="Wiki" disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[8])}
-            // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <FlagIcon />
-              </ListItemIcon>
-              <ListItemText primary="Wiki" />
-              {openCollapse === keysCollapse[8] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse key={keysCollapse[8]}
-            in={openCollapse === keysCollapse[8]}
-            timeout="auto"
-            unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary="Knoledge Base" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary="Tutorial" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary="Blog Interno" />
-              </ListItemButton>
-            </List>
-          </Collapse> */}
-          {/* <ListItem key="ERP" disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[9])}
-            // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <FlagIcon />
-              </ListItemIcon>
-              <ListItemText primary="ERP" />
-              {openCollapse === keysCollapse[9] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse key={keysCollapse[9]}
-            in={openCollapse === keysCollapse[9]}
-            timeout="auto"
-            unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary="Integracion AR" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary="Integracion BR" />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary="Integracion PY" />
-              </ListItemButton>
-            </List>
-          </Collapse> */}
-
-
-          {/* <ListItem key="campos" disablePadding>
-            <ListItemButton
-              component={RouterLink}
-              to="/init/overview/fields"
-              selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <CabinIcon />
-              </ListItemIcon>
-              <ListItemText primary= {t("_fields")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="recargar" disablePadding>
-            <ListItemButton onClick={() => navigateTo("/")}>
-              <ListItemIcon>
-                <CachedIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("_reload")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="dispositivos" disablePadding>
-            <ListItemButton onClick={() => navigateTo("/device")}>
-              <ListItemIcon>
-                <ListIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("device_list")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="business" disablePadding>
-            <ListItemButton
-              component={RouterLink}
-              to="/init/overview/business"
-              selected={pathname.includes("/init/overview/business")}
-            >
-              <ListItemIcon>
-                <GroupIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("social_entities")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="out-field" disablePadding>
-            <ListItemButton
-              component={RouterLink}
-              to="/init/overview/exit-field"
-              selected={pathname.includes("/init/overview/exit-field")}
-            >
-              <ListItemIcon>
-                <AgricultureIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("field_output")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="origins-destinations" disablePadding>
-            <ListItemButton
-              component={RouterLink}
-              to="/init/overview/origins-destinations"
-              selected={pathname.includes("/init/overview/origins-destinations")}
-            >
-              <ListItemIcon>
-                <AddLocationAltIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("origins_destinations")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="supplies" disablePadding>
-            <ListItemButton
-              component={RouterLink}
-              to="/init/overview/supply"
-              selected={pathname.includes("/init/overview/supply")}
-            >
-              <ListItemIcon>
-                <InventoryIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("_supplies")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="deposits" disablePadding>
-            <ListItemButton
-              component={RouterLink}
-              to="/init/overview/deposit"
-              selected={pathname.includes("/init/overview/deposit")}
-            >
-              <ListItemIcon>
-                <WarehouseIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("_warehouses")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="vehicles" disablePadding>
-            <ListItemButton
-              component={RouterLink}
-              to="/init/overview/vehicle"
-              selected={pathname.includes("/init/overview/vehicle")}
-            >
-              <ListItemIcon>
-                <LocalShippingIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("_vehicles")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="stock-movement" disablePadding>
-            <ListItemButton
-              component={RouterLink}
-              to="/init/overview/stock-movements"
-              selected={pathname.includes("/init/overview/stock-movements")}
-            >
-              <ListItemIcon>
-                <SyncAltIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("stock_movements")}/>
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="list-stock" disablePadding>
-            <ListItemButton
-              component={RouterLink}
-              to="/init/overview/list-stock"
-              selected={pathname.includes("/init/overview/list-stock")}
-            >
-              <ListItemIcon>
-                <QueryStatsIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("stock_inquiry")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="transform" disablePadding>
-            <ListItemButton
-              component={RouterLink}
-              to="/init/overview/transform"
-              selected={pathname.includes("/init/overview/transform")}>
-              <ListItemIcon>
-                <TransformIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("_transformation")} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="ajustes" disablePadding>
-            <ListItemButton onClick={() => navigateTo("/settings")}>
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("_adjustments")} />
-            </ListItemButton>
-          </ListItem> */}
-          {/* {sideBarMenu.map(({ text, icon }) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {icon}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))} */}
         </List>
         <Box
           sx={{

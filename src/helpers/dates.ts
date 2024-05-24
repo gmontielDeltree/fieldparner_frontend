@@ -12,7 +12,7 @@ export const convertTimestampToDate = (unixTimestamp: number) => {
 }
 
 
-export const getShortDate = (withTime: boolean = false) => {
+export const getShortDate = (withTime: boolean = false, character= "/") => {
     let today = new Date();
 
     let year = today.getFullYear();
@@ -27,7 +27,7 @@ export const getShortDate = (withTime: boolean = false) => {
 
     let time = `${hours}:${minutes}`
     // Crear la cadena en el formato "yyyy-MM-dd"
-    let formattedDate = `${year}/${month}/${day}`;
+    let formattedDate = `${year}${character}${month}${character}${day}`;
 
     return withTime ? formattedDate.concat(" " + time) : formattedDate;
 }

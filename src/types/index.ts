@@ -593,6 +593,39 @@ export interface Crops extends Document {
   harvest: boolean;
 }
 
+export interface PurchaseOrder extends Document {
+  accountId: string;
+  businessId: string;
+  nroOrder: string;
+  creationDate: string;
+  address: string;
+  locality: string;
+  businessName: string;
+  zipCode: string;
+  country: string;
+  contact: string;
+  commercialTerms: string;
+  subtotal: number;
+  taxPercentage: number;
+  taxValue: number;
+  anotherPercentage: number;
+  anotherValue: number;
+  totalValue: number;
+  sent: boolean;
+}
+
+export interface DetailPurchaseOrder extends Document {
+  nroOrder: string;
+  supplyId: string;
+  supplyAmount: number;
+  unitMeasurement: string;
+  unitPriceSupply: number;
+}
+
+export interface DetailPurchaseOrderItem extends DetailPurchaseOrder {
+  supply?: Supply;
+}
+
 //#region Enums
 
 export enum TipoCombustible {
@@ -691,7 +724,8 @@ export enum WithdrawalOrderType {
 
 export enum NumeratorType {
   Client = "Cliente",
-  LaborOrder = "Orden de Trabajo"
+  LaborOrder = "Orden de Trabajo",
+  PurchaseOrder = "Orden de Compra"
 }
 
 export enum UserRols {

@@ -24,15 +24,22 @@ import {
     Crops,
     Zones,
     LaborsServices,
+    PurchaseOrder,
+    DetailPurchaseOrder,
 } from '../types';
-import uuid4 from 'uuid4';
+
 
 PouchDB.plugin(PouchDBFind);
 
 const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
 const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
 
-const opts: PouchDB.Replication.SyncOptions = { live: true, retry: true };
+const opts: PouchDB.Replication.SyncOptions = { 
+  live: true,
+   retry: true,
+  //  filter: 'app/by_account',
+  //  query_params: { "agent": agent }
+   };
 
 const dbNames = Object.freeze({
     vehicles: "vehicles",
@@ -60,8 +67,9 @@ const dbNames = Object.freeze({
     crops: "crops",
     zones: "zones",
     fieldpartner: "fieldpartner",
-    LaborsServices: "LaborsServices",
-
+    laborsServices: "LaborsServices",
+    purchaseOrder: "purchase-order",
+    detailPurchaseOrder: "detail-purchase-order",
 });
 
 export const dbContext = Object.freeze({
@@ -90,9 +98,9 @@ export const dbContext = Object.freeze({
     crops: new PouchDB<Crops>(dbNames.crops),
     zones: new PouchDB<Zones>(dbNames.zones),
     fieldpartner: new PouchDB(dbNames.fieldpartner),
-    LaborsServices: new PouchDB<LaborsServices>(dbNames.LaborsServices)
-   
-
+    laborsServices: new PouchDB<LaborsServices>(dbNames.laborsServices),
+    purchaseOrder: new PouchDB<PurchaseOrder>(dbNames.purchaseOrder),
+    detailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.detailPurchaseOrder),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -122,7 +130,10 @@ dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
 dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
 dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
 dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
-dbContext.LaborsServices.sync(`${remoteCouchDBUrl}${dbNames.LaborsServices}`, opts);
+dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, opts);
+dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
+dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
+
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
@@ -160,60 +171,5 @@ export const getLocalityAndStateByZipCode = async (country: string, zipCode: str
   }
 }
 
-//TODO: remover esta funcion
-// Función para obtener todos los documentos de la base de datos
-export const getTypeVehicles = async () => {
-  try {
-    const result = await dbContext.typeVehicles.allDocs({ include_docs: true });
-    const documents: any = result.rows.map(row => row.doc);
 
-    return documents;
 
-  } catch (error) {
-    console.error('Error al conectar con DB:', error);
-  }
-};
-
-//TODO: remover esta funcion
-export const createTypeVehicles = async (type: string) => {
-  try {
-    const newTypeVehicle = {
-      _id: uuid4(),
-      name: type
-    }
-    const response = await dbContext.typeVehicles.put(newTypeVehicle);
-    console.log('document type of vehicle created:', response);
-    return response;
-
-  } catch (error) {
-    console.error('Error creating document type of vehicle:', error);
-    throw error;
-  }
-}
-
-// Función para crear un nuevo documento
-export const createDocument = async (_content: Vehicle) => {
-
-};
-
-// Función para obtener un documento por su ID
-export const getDocumentById = async (_id: string) => {
-
-};
-
-// Función para actualizar un documento
-export const updateDocument = async (_doc: Vehicle) => {
-
-};
-
-// Función para eliminar un documento
-export const deleteDocument = async (_doc: any) => {
-  // try {
-  //     const response = await db.remove(doc);
-  //     console.log('Document deleted:', response);
-  //     return response;
-  // } catch (error) {
-  //     console.error('Error deleting document:', error);
-  //     throw error;
-  // }
-};
