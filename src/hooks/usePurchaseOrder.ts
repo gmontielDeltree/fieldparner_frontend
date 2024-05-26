@@ -1,4 +1,4 @@
-import { Numerator, NumeratorType, PurchaseOrder } from "../types";
+import { DetailPurchaseOrder, DetailPurchaseOrderItem, Numerator, NumeratorType, PurchaseOrder, Supply } from "../types";
 import { useState } from "react"
 import Swal from "sweetalert2";
 import { useAppSelector } from "./useRedux";
@@ -38,7 +38,48 @@ export const userPurchaseOrder = () => {
             setIsLoading(false);
         }
     }
-    const createPurchaseOrder = async (order: PurchaseOrder) => {
+
+    const getPurchaseOrderByOrder = async (order: string) => {
+        setIsLoading(true);
+        try {
+
+            if (!user) throw new Error("User not found.");
+
+            const responseAll = await Promise.all([
+                dbContext.purchaseOrder.find({
+                    selector: {
+                        "$and": [{ "accountId": user.accountId }, { "nroOrder": order }],
+                    }
+                }),
+                dbContext.detailPurchaseOrder.find({
+                    selector: {
+                        "$and": [{ "accountId": user.accountId }, { "nroOrder": order }],
+                    }
+                }),
+                dbContext.supplies.find({
+                    selector: { "accountId": user.accountId }
+                })
+            ]);
+
+            if (responseAll) {
+                const purchaseOrder = responseAll[0].docs[0] as PurchaseOrder;
+                const supplies = responseAll[2].docs.map(doc => doc as Supply);
+                const details = responseAll[1].docs.map(doc => ({ ...doc, supply: supplies.find(x => x._id === doc.supplyId) } as DetailPurchaseOrderItem));
+
+                return {
+                    purchaseOrder, details
+                }
+            }
+
+            setIsLoading(false);
+
+        } catch (error) {
+            setIsLoading(false);
+            console.log('error', error);
+        }
+    }
+
+    const createPurchaseOrder = async (order: PurchaseOrder, details: DetailPurchaseOrder[]) => {
         setIsLoading(true);
         try {
             if (!user) throw new Error("User not found.");
@@ -69,9 +110,10 @@ export const userPurchaseOrder = () => {
                 accountId: user.accountId,
                 nroOrder: newNroOrder.toString()
             }
-
+            let detailsWithNro = details.map(d => ({ ...d, nroOrder: newNroOrder.toString() }));
             const response = await Promise.all([
                 dbContext.purchaseOrder.post(newPurchaseOrder),
+                dbContext.detailPurchaseOrder.bulkDocs(detailsWithNro),
                 putLastNumerator(lastNumerator)
             ]);
             if (response) {
@@ -87,17 +129,21 @@ export const userPurchaseOrder = () => {
     }
 
 
-    const updatePurchaseOrder = async (updatePurchadeOrder: PurchaseOrder) => {
+    const updatePurchaseOrder = async (updatePurchadeOrder: PurchaseOrder, details: DetailPurchaseOrder[]) => {
         setIsLoading(true);
         try {
-            const response = await dbContext.purchaseOrder.put(updatePurchadeOrder);
 
-            if (response.ok)
-                Swal.fire("Orden de Compra", "Actualizado con exito.", "success");
+            const response = await Promise.all([
+                dbContext.purchaseOrder.put(updatePurchadeOrder),
+                dbContext.detailPurchaseOrder.bulkDocs(details),
+            ]);
+            if (response) {
+                Swal.fire("Orden de Compra", `Orden de Compran  ${updatePurchadeOrder.nroOrder} actualizada`, "success");
+            }
 
             setIsLoading(false);
         } catch (error) {
-            console.log("Error al actualizar el documento: ", error, updatePurchadeOrder);
+            console.log("Error al crear el documento: ", error);
             Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
             setIsLoading(false);
         }
@@ -108,6 +154,7 @@ export const userPurchaseOrder = () => {
         isLoading,
 
         getPurchaseOrders,
+        getPurchaseOrderByOrder,
         createPurchaseOrder,
         updatePurchaseOrder
     }

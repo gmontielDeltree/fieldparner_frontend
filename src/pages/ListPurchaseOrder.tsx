@@ -66,8 +66,7 @@ export const ListPurchaseOrder: React.FC = () => {
 
   const onClickUpdatePurchaseOrder = (item: PurchaseOrder): void => {
     // dispatch(setVehiculoActivo(item));
-    // navigate(`/init/overview/vehicle/${item._id}`);
-    console.log('item', item);
+    navigate(`/init/overview/purchase-order/${item._id}`);
   };
 
   useEffect(() => {

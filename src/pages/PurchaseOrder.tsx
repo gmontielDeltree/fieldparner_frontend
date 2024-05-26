@@ -2,23 +2,25 @@ import Swal from 'sweetalert2';
 import { useNavigate, useParams } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import {
-    useAppSelector,
     useBusiness,
     useForm,
-    useOrder,
+    useSupply,
     userPurchaseOrder,
 } from '../hooks';
 import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../components';
 import { Box, Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, TableContainer, TextField, Tooltip, Typography } from '@mui/material';
 import {
-    Assignment as AssignmentIcon,
-    Add as AddIcon
+    Add as AddIcon,
+    Close as CloseIcon,
+    Edit as EditIcon,
+    Save as SaveIcon,
 } from '@mui/icons-material';
 import { Icon } from 'semantic-ui-react';
-import { ColumnProps, DetailPurchaseOrder, DetailPurchaseOrderItem, PurchaseOrder, Supply } from '../types';
+import { ColumnProps, DetailPurchaseOrderItem, PurchaseOrder, Supply } from '../types';
 
 import { getShortDate } from '../helpers/dates';
 import { useTranslation } from 'react-i18next';
+import uuid4 from 'uuid4';
 
 
 const columnsDepositSupply: ColumnProps[] = [
@@ -29,35 +31,29 @@ const columnsDepositSupply: ColumnProps[] = [
     { text: "Precio Total", align: "center" },
     { text: "", align: "center" },
 ];
-// const columnsWithdrawals: ColumnProps[] = [
-//     { text: "Deposito", align: "left" },
-//     { text: "Insumo", align: "left" },
-//     { text: "Lote", align: "center" },
-//     // { text: "UM", align: "center" },
-//     // { text: "Saldo", align: "center" },
-//     { text: "Ubicacion", align: "center" },
-//     { text: "Cantidad", align: "center" },
-//     { text: "", align: "center" },
-// ];
 
 interface NewOrderItemRowProps {
     supplies: Supply[];
     addNewItem: (newItem: DetailPurchaseOrderItem) => void;
 }
 
-export const NewWithdrawalRow = ({ supplies, addNewItem }: NewOrderItemRowProps) => {
+export const NewOrderRow = ({ supplies, addNewItem }: NewOrderItemRowProps) => {
 
     const {
         formulario: formValues,
+        unitPrice,
+        supplyAmount,
         handleInputChange,
         setFormulario: setFormValues,
         reset,
     } = useForm<DetailPurchaseOrderItem>({
+        id: uuid4(),
         nroOrder: "",
         supplyAmount: 0,
         supplyId: "",
         unitMeasurement: "",
-        unitPriceSupply: 0,
+        unitPrice: 0,
+        supply: null
     });
 
     //TODO: continuar aca agregando items en la orden
@@ -65,13 +61,23 @@ export const NewWithdrawalRow = ({ supplies, addNewItem }: NewOrderItemRowProps)
         if (!formValues.supply?._id) throw new Error("Error: item not found.");
         addNewItem({
             ...formValues,
-            supplyAmount: Number(formValues.supplyAmount),
+            supplyAmount: Number(supplyAmount),
+            unitPrice: Number(unitPrice)
         });
         reset();
     }
 
-    const handleOnChangeSupply = () => {
+    const handleOnChangeSupply = ({ target }: SelectChangeEvent) => {
+        const supplyId = target.value;
+        const supplyDto = supplies.find(x => x._id === supplyId);
 
+        if (supplyDto)
+            setFormValues({
+                ...formValues,
+                supplyId,
+                supply: supplyDto,
+                unitMeasurement: supplyDto.unitMeasurement
+            });
     }
 
     return (
@@ -80,7 +86,7 @@ export const NewWithdrawalRow = ({ supplies, addNewItem }: NewOrderItemRowProps)
             container
             alignItems="center"
             spacing={1}
-            borderRadius={2}
+            borderRadius={1}
             pb={1}
             wrap="nowrap"
             sx={{ boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.2)" }}
@@ -106,17 +112,9 @@ export const NewWithdrawalRow = ({ supplies, addNewItem }: NewOrderItemRowProps)
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
-                <TextField
-                    variant="outlined"
-                    type="text"
-                    label="UM"
-                    name="unitMeasurement"
-                    value={formValues.unitMeasurement}
-                    InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                    }}
-                    fullWidth
-                />
+                <Typography variant='body2'>
+                    {formValues.unitMeasurement}
+                </Typography>
             </Grid>
             <Grid item xs={12} sm={2}>
                 <TextField
@@ -130,7 +128,32 @@ export const NewWithdrawalRow = ({ supplies, addNewItem }: NewOrderItemRowProps)
                     fullWidth
                 />
             </Grid>
-         
+            <Grid item xs={12} sm={2}>
+                <TextField
+                    variant="outlined"
+                    type="number"
+                    label="Precio Unitario"
+                    name="unitPrice"
+                    value={formValues.unitPrice}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 15, min: 1 }}
+                    fullWidth
+                />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+                <TextField
+                    variant="outlined"
+                    type="text"
+                    label="Precio Total"
+                    disabled
+                    // name="supplyAmount"
+                    value={(Number(supplyAmount) * Number(unitPrice))}
+                    // onChange={handleInputChange}
+                    inputProps={{ maxLength: 15, min: 1 }}
+                    fullWidth
+                />
+            </Grid>
+
             <Grid item xs={12} sm={1} display="flex" justifyContent="center">
                 <IconButton
                     color="success"
@@ -142,6 +165,109 @@ export const NewWithdrawalRow = ({ supplies, addNewItem }: NewOrderItemRowProps)
                 </IconButton>
             </Grid>
         </Grid>
+    )
+}
+
+interface EditOrderRowProps {
+    order: DetailPurchaseOrderItem;
+    editRowItem: (newItem: DetailPurchaseOrderItem) => void;
+    deleteRowItem: (newItem: DetailPurchaseOrderItem) => void;
+}
+export const EditOrderRow = ({
+    order,
+    editRowItem,
+    deleteRowItem
+}: EditOrderRowProps) => {
+
+    const { formulario: formValues, supplyAmount, unitPrice, handleInputChange } = useForm<DetailPurchaseOrderItem>({ ...order });
+    const totalPrice = (Number(order.unitPrice) * Number(order.supplyAmount));
+    const [isEdit, setIsEdit] = useState(false);
+
+    const onClickEdit = () => {
+        setIsEdit(true);
+    }
+    const handleSaveEdit = () => {
+        editRowItem({
+            ...formValues,
+            supplyAmount: Number(supplyAmount),
+            unitPrice: Number(unitPrice)
+        });
+        setIsEdit(false);
+    }
+    const handleCancelEdit = () => {
+        setIsEdit(false);
+    }
+    return (
+        <ItemRow key={order._id}>
+            <TableCellStyled align="left">{order.supply?.name} </TableCellStyled>
+            <TableCellStyled align="center">{order.supply?.unitMeasurement}</TableCellStyled>
+            <TableCellStyled align='center'>
+                {
+                    isEdit ? (
+                        <TextField
+                            variant="outlined"
+                            type="number"
+                            label="Cantidad"
+                            name="supplyAmount"
+                            value={formValues.supplyAmount}
+                            onChange={handleInputChange}
+                            inputProps={{ maxLength: 15, min: 1 }}
+                            fullWidth
+                        />
+                    ) : order.supplyAmount
+                }
+            </TableCellStyled>
+            <TableCellStyled align='center'>{
+                isEdit ? (
+                    <TextField
+                        variant="outlined"
+                        type="number"
+                        label="Precio Unitario"
+                        name="unitPrice"
+                        value={formValues.unitPrice}
+                        onChange={handleInputChange}
+                        inputProps={{ maxLength: 15, min: 1 }}
+                        fullWidth
+                    />
+                ) : order.unitPrice
+            }</TableCellStyled>
+            <TableCellStyled align='center'>{totalPrice}</TableCellStyled>
+            <TableCellStyled align='center'>
+                {
+                    isEdit ? (
+                        <>
+                            <IconButton
+                                color="primary"
+                                aria-label="save"
+                                onClick={handleSaveEdit}
+                            >
+                                <SaveIcon />
+                            </IconButton>
+                            <IconButton
+                                color="secondary"
+                                aria-label="cancel"
+                                onClick={handleCancelEdit}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                        </>
+                    ) :
+                        <>
+                            <IconButton
+                                onClick={onClickEdit}
+                            >
+                                <EditIcon />
+                            </IconButton>
+                            <IconButton
+                                onClick={() => deleteRowItem(order)}
+                                style={{ fontSize: '1rem' }}
+                            >
+                                <Icon name="trash alternate" />
+                            </IconButton>
+                        </>
+                }
+            </TableCellStyled>
+        </ItemRow>
     )
 }
 
@@ -168,49 +294,64 @@ const initialForm: PurchaseOrder = {
 
 export const PurchaseOrderPage: React.FC = () => {
 
-    // const { order } = useParams();
+    const { order } = useParams();
     const { t } = useTranslation();
     const navigate = useNavigate();
     // const { withdrawalOrderActive } = useAppSelector(state => state.order);
     const [listItemToPurchase, setListItemToPurchase] = useState<DetailPurchaseOrderItem[]>([]);
     const { businesses: socialEntities, getBusinesses } = useBusiness();
+    const { supplies, getSupplies } = useSupply();
     const {
-        isLoading, createPurchaseOrder
+        isLoading,
+         createPurchaseOrder
     } = userPurchaseOrder();
 
     const {
         formulario: formValues,
+        taxPercentage,
+        anotherPercentage,
         handleInputChange,
-        handleSelectChange,
         setFormulario: setFormValues,
     } = useForm(initialForm);
+
+    const subtotal = listItemToPurchase.reduce((accumulator, { supplyAmount, unitPrice }) =>
+        accumulator + (Number(supplyAmount) * Number(unitPrice)), 0);
+    const taxValue = (Number(taxPercentage) * subtotal) / 100;
+    const otherValue = (Number(anotherPercentage) * subtotal) / 100;
+    const totalValue = (subtotal + taxValue + otherValue);
 
     const onClickCancel = () => navigate("/init/overview/purchase-order");
 
 
-    const onClickDelete = (e: any) => {
-        // let existWithdrawal = listWithdrawals.find(w => w._id === newWithdrawal._id);
-        // if (existWithdrawal) {
-        //     Swal.fire('Deposito/Insumo', 'No se puede duplicar deposito/insumo a retirar.', 'error');
-        //     return;
-        // }
+    const deleteRowSupply = (item: DetailPurchaseOrderItem) => {
+        setListItemToPurchase(listItemToPurchase.filter(x => x.id !== item.id));
+    }
 
-        // setListWithdrawals([newWithdrawal, ...listWithdrawals]);
-    };
+    const editRowSupply = (item: DetailPurchaseOrderItem) => {
+        setListItemToPurchase(listItemToPurchase.map(x => x.id === item.id ? item : x));
+    }
 
-    // const handleDeleteWithdrawals = (row: DepositSupplyOrderItem) => {
-    //     setListWithdrawals(listWithdrawals.filter(w => w._id !== row._id));
-    // }
-
-    const onClickSave = () => {
-        console.log("onClickSave");
-        console.log('formValues', formValues);
+    const onClickSave = async () => {
+        if (listItemToPurchase.length) {
+            const details = listItemToPurchase.map(x => {
+                const { supply, ...dto } = x;
+                return { ...dto };
+            });
+            const order: PurchaseOrder = {
+                ...formValues,
+                subtotal,
+                taxValue,
+                anotherValue: otherValue,
+                totalValue
+            }
+            await createPurchaseOrder(order, details);
+            navigate("/init/overview/purchase-order");
+        }
     }
 
     const onChangeProvider = ({ target }: SelectChangeEvent) => {
         const businessId = target.value;
         const providerFound = socialEntities.find(x => x._id === businessId);
-        console.log('proveedor encontrado:', providerFound);
 
         if (providerFound) {
             setFormValues({
@@ -226,9 +367,21 @@ export const PurchaseOrderPage: React.FC = () => {
         }
     }
 
+    const addNewSupply = (item: DetailPurchaseOrderItem) => {
+        setListItemToPurchase(prevState => [item, ...prevState]);
+    }
+
     useEffect(() => {
+        getSupplies();
         getBusinesses();
     }, [])
+
+    // useEffect(() => {
+    //   if(order) {
+    //     getPurchaseOrder();
+    //   }
+    // }, [order])
+    
 
 
     return (
@@ -370,41 +523,87 @@ export const PurchaseOrderPage: React.FC = () => {
                         />
                     </Grid>
                 </Grid>
-                <NewWithdrawalRow
-                    key={row._id}
-                    row={row}
-                    addNewWithdrawal={addNewSupply} />
+                <NewOrderRow
+                    key="new-item-row"
+                    supplies={supplies}
+                    addNewItem={addNewSupply} />
                 <TableContainer
-                    key="taable-orders-1"
+                    key="purchase-orders"
                     sx={{
                         minHeight: "120px",
                         maxHeight: "440",
                         overflow: "scroll",
-                        mb: 3
+                        mb: 3,
+                        mt: 2
                     }}
                     component={Paper}
                 >
-                    <Typography
-                        component="h1"
-                        variant="h6"
-                        align="left"
-                        sx={{ mt: 1, mb: 1 }}
-                    >
-                        Deposito e Insumos de la Orden:
-                    </Typography>
                     <DataTable
                         key="datatable-orders"
                         columns={columnsDepositSupply}
                         isLoading={isLoading}
                     >
-                        {/* {depositsSuppliesOrder.map((row) => (
-                            <NewWithdrawalRow
-                                key={row._id}
-                                row={row}
-                                addNewWithdrawal={addNewSupply} />
-                        ))} */}
+                        {
+                            listItemToPurchase.map(item => (
+                                <EditOrderRow
+                                    key={`${item._id}-${item.supplyId}`}
+                                    order={item}
+                                    deleteRowItem={deleteRowSupply}
+                                    editRowItem={editRowSupply} />
+                            ))
+                        }
                     </DataTable>
                 </TableContainer>
+                <Grid
+                    container
+                    alignItems="center"
+                    justifyContent="flex-end"
+                    sx={{ mt: 2, mb: 1 }}>
+                    <Box width="45%" display="flex" flexDirection="column">
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <Typography variant='body1' textAlign="start">Subtotales:</Typography>
+                            <Typography variant='body1' textAlign="end"> {subtotal}</Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="nowrap">
+                            <Typography variant='body1' display="inline-block" textAlign="start">Impuesto </Typography>
+                            <TextField
+                                variant="outlined"
+                                type="number"
+                                name="taxPercentage"
+                                sx={{ maxWidth: "100px" }}
+                                InputProps={{
+                                    startAdornment: <InputAdornment position="start">%</InputAdornment>,
+                                }}
+                                value={formValues.taxPercentage}
+                                onChange={handleInputChange}
+                                size='small'
+                                inputProps={{ maxLength: 15, min: 1 }}
+                            />
+                            <Typography variant='body1' display="inline-block" >{taxValue}</Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="nowrap">
+                            <Typography variant='body1' display="inline-block" textAlign="start">Otros </Typography>
+                            <TextField
+                                variant="outlined"
+                                type="number"
+                                name="anotherPercentage"
+                                sx={{ maxWidth: "100px" }}
+                                InputProps={{
+                                    startAdornment: <InputAdornment position="start">%</InputAdornment>,
+                                }}
+                                value={formValues.anotherPercentage}
+                                onChange={handleInputChange}
+                                size='small'
+                            // inputProps={{ maxLength: 15, min: 1 }}
+                            />
+                            <Typography variant='body1' display="inline-block" >{otherValue}</Typography>
+                        </Box>
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <Typography variant='body1' textAlign="start">Total:</Typography>
+                            <Typography variant='body1' textAlign="end"> {totalValue}</Typography>
+                        </Box>
+                    </Box>
+                </Grid>
                 <Grid
                     container
                     spacing={1}

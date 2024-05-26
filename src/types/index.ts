@@ -615,15 +615,16 @@ export interface PurchaseOrder extends Document {
 }
 
 export interface DetailPurchaseOrder extends Document {
+  id: string;
   nroOrder: string;
   supplyId: string;
   supplyAmount: number;
   unitMeasurement: string;
-  unitPriceSupply: number;
+  unitPrice: number;
 }
 
 export interface DetailPurchaseOrderItem extends DetailPurchaseOrder {
-  supply?: Supply;
+  supply: Supply | null;
 }
 
 //#region Enums
