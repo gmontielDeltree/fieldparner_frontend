@@ -23,6 +23,7 @@
     "_add": "Adicionar",
     "_physical": "Físico",
     "_legal": "Jurídica",
+    "commercial_terms": "Termos Comerciais",
     "main_contact": "Contato Principal",
     "secondary_contact": "Contato Secundário",
     "_phone": "Telefone",
@@ -38,6 +39,8 @@
     "postal_code": "Código Postal",
     "_state": "Estado",
     "_locality": "Localidade",
+    "_logo": "Logotipo",
+    "purchase_order": "Ordem de Compra",
     "_address": "Endereço",
     "_fields": "Campos",
     "_reload": "Recarregar",
@@ -48,6 +51,8 @@
     "_supplies": "Insumos",
     "_warehouses": "Depósitos",
     "_warehouse": "Deposito",
+    "provider": "Provedor",
+    "total_amount": "Valor Total",
     "_file": "Arquivo",
     "_vehicles": "Veículos",
     "stock_movements": "Movimentos de estoque",
@@ -293,5 +298,6 @@
     "_zones":"Zonas",
     "service_labors": "Serviço de Trabalho",
     "_service": "Serviço",
-    "labors_service": "Trabalho / Serviço"
+    "labors_service": "Trabalho / Serviço",
+    "total_price": "Valor Total"
 }

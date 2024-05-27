@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 // import { useNavigate } from "react-router-dom";
-import { LaborsServices } from "@types";
+import { LaborsServices } from "../types";
 import { useState } from "react";
 import { dbContext } from "../services";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +17,7 @@ export const useLaborsServices = () => {
   const getLaborsServices = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.LaborsServices.allDocs({ include_docs: true });
+      const result = await dbContext.laborsServices.allDocs({ include_docs: true });
       // const vehiculos = response.map((v: any) => v.content);
       if (result.rows.length) {
         const documents: LaborsServices[] = result.rows.map(
@@ -39,7 +39,7 @@ export const useLaborsServices = () => {
   const createLaborsServices = async (newLaborsServices: LaborsServices) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.LaborsServices.post(newLaborsServices);
+      const response = await dbContext.laborsServices.post(newLaborsServices);
       setIsLoading(false);
 
       if (response.ok) Swal.fire("Servicio", "Servicio agregado.", "success");
@@ -56,7 +56,7 @@ export const useLaborsServices = () => {
   const updateLaborsServices = async (updatelaborsServices: LaborsServices) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.LaborsServices.put(updatelaborsServices);
+      const response = await dbContext.laborsServices.put(updatelaborsServices);
 
       if (response.ok) {
         Swal.fire("Servicio", "Actualizado.", "success");
@@ -75,7 +75,7 @@ export const useLaborsServices = () => {
   const removeLaborsServices = async (laborsServicesId: string, removelaborsServices: string) => {
 
     try {
-      const response = await dbContext.LaborsServices.remove(laborsServicesId, removelaborsServices);
+      const response = await dbContext.laborsServices.remove(laborsServicesId, removelaborsServices);
       setIsLoading(false);
 
       if (response.ok)

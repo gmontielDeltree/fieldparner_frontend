@@ -103,12 +103,9 @@ function ServicesForm({ formData, setFormData }) {
     costo_total: 0
   });
 
-  useEffect(() => {
-    getLaborsServices(); 
-  }, []);
-  
 
   useEffect(() => {
+    getLaborsServices();
     getBusinesses();
   }, []);
 
