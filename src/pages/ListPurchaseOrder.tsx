@@ -25,8 +25,9 @@ import {
   Search as SearchIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
-import { useForm, useAppDispatch, useAppSelector, userPurchaseOrder } from "../hooks";
+import { useForm, useAppDispatch, userPurchaseOrder } from "../hooks";
 import { useTranslation } from "react-i18next";
+import { Helper } from "../helpers/helper";
 
 
 
@@ -66,7 +67,7 @@ export const ListPurchaseOrder: React.FC = () => {
 
   const onClickUpdatePurchaseOrder = (item: PurchaseOrder): void => {
     // dispatch(setVehiculoActivo(item));
-    navigate(`/init/overview/purchase-order/${item._id}`);
+    navigate(`/init/overview/purchase-order/${item.nroOrder}`);
   };
 
   useEffect(() => {
@@ -162,7 +163,7 @@ export const ListPurchaseOrder: React.FC = () => {
                 </TableCellStyled>
                 <TableCellStyled align="center">{row.nroOrder} </TableCellStyled>
                 <TableCellStyled align="center">{row.businessName}</TableCellStyled>
-                <TableCellStyled>{row.totalValue}</TableCellStyled>
+                <TableCellStyled align="right">{Helper.parseDecimalPointToComaWithCurrency(row.totalValue, "$", 2)}</TableCellStyled>
                 <TableCellStyled align="center">
                   <Tooltip title={t("icon_edit")}>
                     <IconButton

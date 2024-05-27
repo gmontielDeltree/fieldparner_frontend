@@ -52,26 +52,21 @@ export const userPurchaseOrder = () => {
                     }
                 }),
                 dbContext.detailPurchaseOrder.find({
-                    selector: {
-                        "$and": [{ "accountId": user.accountId }, { "nroOrder": order }],
-                    }
+                    selector: { "nroOrder": order }
                 }),
                 dbContext.supplies.find({
                     selector: { "accountId": user.accountId }
                 })
             ]);
-
+            setIsLoading(false);
+            
             if (responseAll) {
                 const purchaseOrder = responseAll[0].docs[0] as PurchaseOrder;
                 const supplies = responseAll[2].docs.map(doc => doc as Supply);
                 const details = responseAll[1].docs.map(doc => ({ ...doc, supply: supplies.find(x => x._id === doc.supplyId) } as DetailPurchaseOrderItem));
 
-                return {
-                    purchaseOrder, details
-                }
+                return { purchaseOrder, details }
             }
-
-            setIsLoading(false);
 
         } catch (error) {
             setIsLoading(false);
@@ -132,10 +127,10 @@ export const userPurchaseOrder = () => {
     const updatePurchaseOrder = async (updatePurchadeOrder: PurchaseOrder, details: DetailPurchaseOrder[]) => {
         setIsLoading(true);
         try {
-
+            let detailsWithNro = details.map(d => ({ ...d, nroOrder: updatePurchadeOrder.nroOrder }));
             const response = await Promise.all([
                 dbContext.purchaseOrder.put(updatePurchadeOrder),
-                dbContext.detailPurchaseOrder.bulkDocs(details),
+                dbContext.detailPurchaseOrder.bulkDocs(detailsWithNro),
             ]);
             if (response) {
                 Swal.fire("Orden de Compra", `Orden de Compran  ${updatePurchadeOrder.nroOrder} actualizada`, "success");

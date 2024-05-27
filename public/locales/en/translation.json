@@ -298,6 +298,7 @@
     "_zones":"Zones",
     "service_labors": "Labor Service",
     "_service": "Service",
-    "labors_service": "Labor / Service"
+    "labors_service": "Labor / Service",
+    "total_price": "Total Price"
 }
   

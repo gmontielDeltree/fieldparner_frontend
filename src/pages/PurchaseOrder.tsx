@@ -1,4 +1,4 @@
-import Swal from 'sweetalert2';
+
 import { useNavigate, useParams } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import {
@@ -8,7 +8,7 @@ import {
     userPurchaseOrder,
 } from '../hooks';
 import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../components';
-import { Box, Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, TableContainer, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, TableContainer, TextField, Typography } from '@mui/material';
 import {
     Add as AddIcon,
     Close as CloseIcon,
@@ -21,16 +21,14 @@ import { ColumnProps, DetailPurchaseOrderItem, PurchaseOrder, Supply } from '../
 import { getShortDate } from '../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import uuid4 from 'uuid4';
+import { Helper } from '../helpers/helper';
+import { styled } from '@mui/material/styles';
+
+const GridStyled = styled(Grid)`
+    border-bottom: 1px solid;
+`;
 
 
-const columnsDepositSupply: ColumnProps[] = [
-    { text: "Insumo", align: "center" },
-    { text: "UM", align: "center" },
-    { text: "Cantidad", align: "center" },
-    { text: "Precio Unitario", align: "center" },
-    { text: "Precio Total", align: "center" },
-    { text: "", align: "center" },
-];
 
 interface NewOrderItemRowProps {
     supplies: Supply[];
@@ -147,7 +145,7 @@ export const NewOrderRow = ({ supplies, addNewItem }: NewOrderItemRowProps) => {
                     label="Precio Total"
                     disabled
                     // name="supplyAmount"
-                    value={(Number(supplyAmount) * Number(unitPrice))}
+                    value={Helper.parseDecimalPointToComaWithCurrency((Number(supplyAmount) * Number(unitPrice)), "$", 2)}
                     // onChange={handleInputChange}
                     inputProps={{ maxLength: 15, min: 1 }}
                     fullWidth
@@ -229,9 +227,9 @@ export const EditOrderRow = ({
                         inputProps={{ maxLength: 15, min: 1 }}
                         fullWidth
                     />
-                ) : order.unitPrice
+                ) : Helper.parseDecimalPointToComaWithCurrency(order.unitPrice, "$", 2)
             }</TableCellStyled>
-            <TableCellStyled align='center'>{totalPrice}</TableCellStyled>
+            <TableCellStyled align='center'>{Helper.parseDecimalPointToComaWithCurrency(totalPrice, "$", 2)}</TableCellStyled>
             <TableCellStyled align='center'>
                 {
                     isEdit ? (
@@ -292,6 +290,8 @@ const initialForm: PurchaseOrder = {
     anotherValue: 0,
 }
 
+//TODO: Chequear el tipo de moneda
+
 export const PurchaseOrderPage: React.FC = () => {
 
     const { order } = useParams();
@@ -303,7 +303,9 @@ export const PurchaseOrderPage: React.FC = () => {
     const { supplies, getSupplies } = useSupply();
     const {
         isLoading,
-         createPurchaseOrder
+        createPurchaseOrder,
+        getPurchaseOrderByOrder,
+        updatePurchaseOrder
     } = userPurchaseOrder();
 
     const {
@@ -319,6 +321,17 @@ export const PurchaseOrderPage: React.FC = () => {
     const taxValue = (Number(taxPercentage) * subtotal) / 100;
     const otherValue = (Number(anotherPercentage) * subtotal) / 100;
     const totalValue = (subtotal + taxValue + otherValue);
+
+    const columnsDepositSupply: ColumnProps[] = React.useMemo(() => {
+        return [
+            { text: t("_supply"), align: "center" },
+            { text: "UM", align: "center" },
+            { text: t("_quantity"), align: "center" },
+            { text: t("_unit_price"), align: "center" },
+            { text: t("total_price"), align: "center" },
+            { text: "", align: "center" },
+        ]
+    }, [t]);
 
     const onClickCancel = () => navigate("/init/overview/purchase-order");
 
@@ -344,7 +357,12 @@ export const PurchaseOrderPage: React.FC = () => {
                 anotherValue: otherValue,
                 totalValue
             }
-            await createPurchaseOrder(order, details);
+            
+            if (formValues.nroOrder === "")
+                await createPurchaseOrder(order, details);
+            else
+                await updatePurchaseOrder(order, details);
+
             navigate("/init/overview/purchase-order");
         }
     }
@@ -376,12 +394,26 @@ export const PurchaseOrderPage: React.FC = () => {
         getBusinesses();
     }, [])
 
-    // useEffect(() => {
-    //   if(order) {
-    //     getPurchaseOrder();
-    //   }
-    // }, [order])
-    
+    useEffect(() => {
+        const getPurchaseOrder = async (order: string) => {
+            getPurchaseOrderByOrder(order).then(result => {
+                if (result) {
+                    setFormValues(result.purchaseOrder);
+                    setListItemToPurchase(result.details)
+                }
+            }).catch(error => {
+                console.log('error', error)
+                setFormValues(initialForm);
+            })
+        }
+
+        if (order)
+            getPurchaseOrder(order);
+        else
+            setFormValues(initialForm);
+
+    }, [order])
+
 
 
     return (
@@ -400,7 +432,7 @@ export const PurchaseOrderPage: React.FC = () => {
                     align="center"
                     sx={{ mt: 1, mb: 7 }}
                 >
-                    {t("purchase_order")}
+                    {formValues.nroOrder === "" ? t("new_famale") : t("icon_edit")} {t("purchase_order")}
                 </Typography>
                 <Grid container spacing={2} mb={2}>
                     <Grid item xs={12} sm={4}>
@@ -559,50 +591,59 @@ export const PurchaseOrderPage: React.FC = () => {
                     alignItems="center"
                     justifyContent="flex-end"
                     sx={{ mt: 2, mb: 1 }}>
-                    <Box width="45%" display="flex" flexDirection="column">
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Grid spacing={1} container width="45%" alignItems="center">
+                        <GridStyled item xs={4}>
                             <Typography variant='body1' textAlign="start">Subtotales:</Typography>
-                            <Typography variant='body1' textAlign="end"> {subtotal}</Typography>
-                        </Box>
-                        <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="nowrap">
+                        </GridStyled>
+                        <GridStyled item xs={8}>
+                            <Typography variant='body1' textAlign="end"> {Helper.parseDecimalPointToComaWithCurrency(subtotal, "$", 2)}</Typography>
+                        </GridStyled>
+                        <GridStyled item xs={4}>
                             <Typography variant='body1' display="inline-block" textAlign="start">Impuesto </Typography>
+                        </GridStyled>
+                        <GridStyled item xs={3}>
                             <TextField
-                                variant="outlined"
+                                variant="standard"
                                 type="number"
                                 name="taxPercentage"
-                                sx={{ maxWidth: "100px" }}
+                                fullWidth
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start">%</InputAdornment>,
                                 }}
                                 value={formValues.taxPercentage}
                                 onChange={handleInputChange}
-                                size='small'
                                 inputProps={{ maxLength: 15, min: 1 }}
                             />
-                            <Typography variant='body1' display="inline-block" >{taxValue}</Typography>
-                        </Box>
-                        <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="nowrap">
-                            <Typography variant='body1' display="inline-block" textAlign="start">Otros </Typography>
+                        </GridStyled>
+                        <GridStyled item xs={5}>
+                            <Typography variant='body1' textAlign="end" >{Helper.parseDecimalPointToComaWithCurrency(taxValue, "$", 2)}</Typography>
+                        </GridStyled>
+                        <GridStyled item xs={4}>
+                            <Typography variant='body1' textAlign="start">Otros </Typography>
+                        </GridStyled>
+                        <GridStyled item xs={3}>
                             <TextField
-                                variant="outlined"
+                                variant="standard"
                                 type="number"
                                 name="anotherPercentage"
-                                sx={{ maxWidth: "100px" }}
+                                fullWidth
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start">%</InputAdornment>,
                                 }}
                                 value={formValues.anotherPercentage}
                                 onChange={handleInputChange}
-                                size='small'
-                            // inputProps={{ maxLength: 15, min: 1 }}
                             />
-                            <Typography variant='body1' display="inline-block" >{otherValue}</Typography>
-                        </Box>
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                        </GridStyled>
+                        <GridStyled item xs={5}>
+                            <Typography variant='body1' textAlign="end" >{Helper.parseDecimalPointToComaWithCurrency(otherValue, "$", 2)}</Typography>
+                        </GridStyled>
+                        <GridStyled item xs={4}>
                             <Typography variant='body1' textAlign="start">Total:</Typography>
-                            <Typography variant='body1' textAlign="end"> {totalValue}</Typography>
-                        </Box>
-                    </Box>
+                        </GridStyled>
+                        <GridStyled item xs={8}>
+                            <Typography variant='body1' textAlign="end">{Helper.parseDecimalPointToComaWithCurrency(totalValue, "$", 2)}</Typography>
+                        </GridStyled>
+                    </Grid>
                 </Grid>
                 <Grid
                     container

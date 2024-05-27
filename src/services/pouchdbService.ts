@@ -67,7 +67,7 @@ const dbNames = Object.freeze({
     crops: "crops",
     zones: "zones",
     fieldpartner: "fieldpartner",
-    laborsServices: "LaborsServices",
+    laborsServices: "labors-services",
     purchaseOrder: "purchase-order",
     detailPurchaseOrder: "detail-purchase-order",
 });
@@ -130,9 +130,9 @@ dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
 dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
 dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
 dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
-// dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, opts);
-// dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
-// dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
+dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, opts);
+dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
+dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
 
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 

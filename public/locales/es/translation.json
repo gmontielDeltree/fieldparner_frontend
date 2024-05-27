@@ -314,5 +314,6 @@
   "_zones":"Zonas",
   "service_labors": "Servicio de Labores",
   "_service": "Servicio",
-  "labors_service": "Labores / Servicio"
+  "labors_service": "Labores / Servicio",
+  "total_price": "Precio Total"
 }
