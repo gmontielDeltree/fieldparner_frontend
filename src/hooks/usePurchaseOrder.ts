@@ -5,11 +5,15 @@ import { useAppSelector } from "./useRedux";
 import { dbContext } from "../services";
 import { useNumerator } from "./useNumerator";
 
+interface OrderWithDetail {
+    order: PurchaseOrder,
+    details: DetailPurchaseOrderItem[]
+}
 
 export const userPurchaseOrder = () => {
 
     const { user } = useAppSelector(state => state.auth);
-    const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+    const [purchaseOrders, setPurchaseOrders] = useState<OrderWithDetail[]>([]);
     // const [purchaseOrderActive, setPurchaseOrderActive] = useState<PurchaseOrder | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const { getLastNumerator, putLastNumerator } = useNumerator();
@@ -19,13 +23,27 @@ export const userPurchaseOrder = () => {
         try {
             if (!user) throw new Error("User not found.");
 
-            const response = await dbContext.purchaseOrder.find({
-                selector: { "accountId": user.accountId }
-            });
+            const response = await Promise.all([
+                dbContext.purchaseOrder.find({
+                    selector: { "accountId": user.accountId }
+                }),
+                dbContext.detailPurchaseOrder.allDocs({ include_docs: true }),
+                dbContext.supplies.find({
+                    selector: { "accountId": user.accountId }
+                })
+            ]);
 
-            if (response.docs) {
-                const docs: PurchaseOrder[] = response.docs.map(doc => doc as PurchaseOrder);
-                setPurchaseOrders(docs);
+            let orders: OrderWithDetail[] = [];
+            if (response) {
+                const docs: PurchaseOrder[] = response[0].docs.map(doc => doc as PurchaseOrder);
+                const detailDocs = response[1].rows.map(row => row.doc as DetailPurchaseOrder);
+                const supplies = response[2].docs.map(doc => doc as Supply);
+                const detailsWithSupply = detailDocs.map(doc => ({ ...doc, supply: supplies.find(x => x._id === doc.supplyId) } as DetailPurchaseOrderItem));
+
+                docs.forEach(x => {
+                    orders.push({ order: x, details: detailsWithSupply.filter(d => d.nroOrder === x.nroOrder) })
+                });
+                setPurchaseOrders(orders);
             }
             else
                 setPurchaseOrders([]);
@@ -59,7 +77,7 @@ export const userPurchaseOrder = () => {
                 })
             ]);
             setIsLoading(false);
-            
+
             if (responseAll) {
                 const purchaseOrder = responseAll[0].docs[0] as PurchaseOrder;
                 const supplies = responseAll[2].docs.map(doc => doc as Supply);

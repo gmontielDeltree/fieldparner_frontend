@@ -612,6 +612,7 @@ export interface PurchaseOrder extends Document {
   anotherValue: number;
   totalValue: number;
   sent: boolean;
+  businessLogo: string;
 }
 
 export interface DetailPurchaseOrder extends Document {
