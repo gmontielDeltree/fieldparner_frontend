@@ -288,6 +288,7 @@ const initialForm: PurchaseOrder = {
     totalValue: 0,
     anotherPercentage: 0,
     anotherValue: 0,
+    businessLogo: ""
 }
 
 //TODO: Chequear el tipo de moneda
@@ -380,6 +381,7 @@ export const PurchaseOrderPage: React.FC = () => {
                 zipCode: providerFound.cp,
                 locality: providerFound.localidad,
                 address: providerFound.domicilio,
+                businessLogo: providerFound.logoBusiness || ".",
                 contact: providerFound.contactoPrincipal || "-"
             });
         }
