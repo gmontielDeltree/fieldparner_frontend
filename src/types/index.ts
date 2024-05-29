@@ -631,6 +631,7 @@ export enum TypeMovement {
   Transformacion = "Transformacion",
   SalidaDeCampo = "Salida de Campo",
   OrdenRetiro = "Orden de Retiro",
+  Labores = "Labores",
 
 }
 

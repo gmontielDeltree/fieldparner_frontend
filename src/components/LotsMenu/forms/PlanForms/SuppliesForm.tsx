@@ -79,6 +79,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   const [total, setTotal] = useState("");
   const [precio, setPrecio] = useState("");
   const [costoTotal, setCostoTotal] = useState(0);
+  const [nroLote, setNroLote] = useState("");
+  const [ubicacion, setUbicacion] = useState("");
   const [rows, setRows] = useState([]);
   const [editIndex, setEditIndex] = useState(-1);
   const [deposito, setDeposito] = useState<Deposit>();
@@ -88,6 +90,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   const [editData, setEditData] = useState({
     selectedOption: "",
     dosificacion: "",
+    nro_lote: 0,
+    ubicacion: "",
     total: "",
     deposito: {},
     precio: ""
@@ -102,6 +106,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     const newRow = {
       dosis: dosificacion,
       insumo: selectedSupply,
+      nro_lote: nroLote,
+      ubicacion: ubicacion,
       motivos: [],
       uuid: uuid4(),
       total: total,
@@ -118,6 +124,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     setDosificacion("");
     setTotal("");
     setDeposito("");
+    setNroLote("");
+    setUbicacion("");
     setPrecio("");
   };
 
@@ -131,6 +139,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       insumo: editData.selectedOption,
       motivos: [],
       uuid: rows[editIndex].uuid,
+      nro_lote: editData.nro_lote,
+      ubicacion: editData.ubicacion,
       deposito: editData.deposito,
       total: editData.total,
       precio_estimado: editData.precio
@@ -159,6 +169,14 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
 
   const handleDepositoChange = (event) => {
     setDeposito(event);
+  };
+
+  const handleLotNumberChange = (event) => {
+    setNroLote(event.target.value);
+  };
+
+  const handleUbicacionChange = (event) => {
+    setUbicacion(event.target.value);
   };
 
   const handleTotalChange = (event) => {
@@ -240,6 +258,14 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     });
   };
 
+  const handleEditNroLoteChange = (event) => {
+    setEditData({ ...editData, nro_lote: event.target.value });
+  };
+
+  const handleEditUbicacionChange = (event) => {
+    setEditData({ ...editData, ubicacion: event.target.value });
+  };
+
   const handleEditCostoTotalChange = (event) => {
     setEditData({
       ...editData,
@@ -262,6 +288,12 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   }, []);
 
   useEffect(() => {
+    if (supplies.length) {
+      console.log("Fetched supplies:", supplies);
+    }
+  }, [supplies]);
+
+  useEffect(() => {
     if (formData && formData.detalles && formData.detalles.dosis) {
       setRows(
         formData.detalles.dosis.map((dosis) => ({
@@ -269,6 +301,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           dosificacion: dosis.dosis,
           total: dosis.total,
           deposito: dosis.deposito,
+          nro_lote: dosis.nro_lote,
+          ubicacion: dosis.ubicacion,
           precio: dosis.precio_estimado,
           uuid: dosis.uuid
         }))
@@ -283,16 +317,15 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       <Title>Insumos</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
-          {/* Assuming "Insumo" is the first field in a new row */}
+          {/* Línea 1: Insumo, Descripción */}
           <Grid container item xs={12} spacing={1}>
-            {/* Insumo Autocomplete */}
-            <Grid item xs={4}>
+            <Grid item xs={6}>
               <AutocompleteSupplies
                 value={selectedSupply}
                 onChange={handleSelectChange}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={6}>
               <Paper sx={{ width: "100%", padding: "17px" }}>
                 {selectedSupply?.description && (
                   <Typography variant="body2" gutterBottom>
@@ -301,33 +334,51 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                 )}
               </Paper>
             </Grid>
+          </Grid>
+
+          {/* Línea 2: Deposito, Nro de Lote, Ubicacion */}
+          <Grid container item xs={12} spacing={1}>
             <Grid item xs={4}>
               <AutocompleteDeposito
                 value={deposito}
                 onChange={handleDepositoChange}
               />
             </Grid>
-          </Grid>
-
-          <Grid container item xs={12} spacing={1}>
-            <Grid item xs={5.5}>
-              <NumberFieldWithUnits
+            <Grid item xs={4}>
+              <TextField
                 fullWidth
-                label={t("_quantity_per_hectare")}
-                value={+dosificacion}
-                onChange={handleDosificacionChange}
-                unit={
-                  (selectedSupply && selectedSupply?.unitMeasurement + "/ha") ||
-                  "unit/ha"
-                }
+                label="Nro de Lote"
+                value={nroLote}
+                onChange={handleLotNumberChange}
               />
             </Grid>
-            <Grid item xs={5.5}>
+            <Grid item xs={4}>
+              <TextField
+                fullWidth
+                label="Ubicacion"
+                value={ubicacion}
+                onChange={handleUbicacionChange}
+              />
+            </Grid>
+          </Grid>
+
+          {/* Línea 3: Cantidad, Cant Total */}
+          <Grid container item xs={12} spacing={1}>
+            <Grid item xs={6}>
               <NumberFieldWithUnits
                 fullWidth
-                label={t("_total_quantity")}
-                value={+total}
-                onChange={handleTotalChange}
+                label="Cantidad"
+                value={dosificacion}
+                onChange={handleDosificacionChange}
+                unit={selectedSupply?.unitMeasurement || "unit"}
+              />
+            </Grid>
+            <Grid item xs={5}>
+              <NumberFieldWithUnits
+                fullWidth
+                label="Cant Total"
+                value={total}
+                onChange={handleCostoTotalChange}
                 unit={selectedSupply?.unitMeasurement || "unit"}
               />
             </Grid>
@@ -390,6 +441,24 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                             unit="ha"
                           />
                         </Grid>
+
+
+                        <Grid item xs={5}>
+                          <TextField
+                            fullWidth
+                            label="Nro de Lote"
+                            value={editData.nro_lote}
+                            onChange={handleEditNroLoteChange}
+                          />
+                        </Grid>
+                        <Grid item xs={5}>
+                          <TextField
+                            fullWidth
+                            label="Ubicacion"
+                            value={editData.ubicacion}
+                            onChange={handleEditUbicacionChange}
+                          />
+                        </Grid>
                       </Grid>
                     </>
                   ) : (
@@ -412,8 +481,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                           </Typography>
                         </Grid>
                       </Grid>
-                      <Grid container item xs={10}>
-                        <Grid item xs={5}>
+                      <Grid container item xs={12}>
+                        <Grid item xs={3}>
                           <Typography
                             variant="caption"
                             title={row.selectedOption?.unitMeasurement + "/ha"}
@@ -423,7 +492,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                             {abrUnit(row.selectedOption?.unitMeasurement)}/ha
                           </Typography>
                         </Grid>
-                        <Grid item xs={5}>
+                        <Grid item xs={3}>
                           <Typography
                             variant="caption"
                             title={row.selectedOption?.unitMeasurement}
@@ -432,10 +501,22 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                             {abrUnit(row.selectedOption?.unitMeasurement)}
                           </Typography>
                         </Grid>
+                        <Grid item xs={3}>
+                          <Typography variant="caption">
+                            <strong>{t("Ubicacion")}:</strong> {row.ubicacion}
+                          </Typography>
+
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Typography variant="caption">
+                            <strong>{t("Nro lote")}:</strong> {row.nro_lote}
+                          </Typography>
+                        </Grid>
+
                       </Grid>
                     </>
                   )}
-                  <Grid item xs={2} style={{ textAlign: "right" }}>
+                  <Grid item xs={12} style={{ textAlign: "center" }}>
                     {editIndex === index ? (
                       <>
                         <IconButton
@@ -446,7 +527,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                           <SaveIcon />
                         </IconButton>
                         <IconButton
-                          color="secondary"
+                          color="error"
                           aria-label="cancel"
                           onClick={handleCancelEdit}
                         >
@@ -463,7 +544,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                           <EditIcon />
                         </IconButton>
                         <IconButton
-                          color="secondary"
+                          color="error"
                           aria-label="delete"
                           onClick={() => handleDeleteRow(index)}
                         >

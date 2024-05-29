@@ -26,6 +26,7 @@ import { Actividad } from "../../interfaces/activity";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import { ApplicationType, HarvestType, PreparedType, SowingType } from "../../../src/types";
+import { useAppSelector, useSupply } from "../../hooks";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   function Alert(props, ref) {
@@ -74,9 +75,11 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   const [activeStep, setActiveStep] = useState(0);
   const translatedActivityType = activityTypeTranslations[activityType];
   const [maxStepReached, setMaxStepReached] = useState(0);
+  const { addReservedStock, getSupplies } = useSupply();
   const theme = useTheme();
   const isEditing =
     existingActivity && Object.keys(existingActivity).length > 0;
+  const selectedCampaign = useAppSelector((state) => state.campaign.selectedCampaign);
 
   const floating = keyframes`
     0% { transform: translateY(0px); }
@@ -119,6 +122,11 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       setFormData(getEmptyActivity());
     }
   }, [existingActivity]);
+
+  useEffect(() => {
+    getSupplies();
+  }, []);
+
 
   useEffect(() => {
     if (!existingActivity) {
@@ -315,7 +323,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, step));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     for (let step = 0; step < steps.length; step++) {
       const missingFields = countMissingFields(formData, step);
       if (missingFields > 0) {
@@ -333,6 +341,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     if ([SowingType, PreparedType, HarvestType, ApplicationType].includes(actividad.tipo)) {
       actividad.campaña = selectedCampaign
     }
+
 
     if (!isEditing) {
       try {
@@ -361,8 +370,21 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           console.log("Actividad not found. Creating a new one.");
           delete actividad._rev;
           db.put(actividad)
-            .then(() => {
+            .then(async () => {
               console.log("New actividad created", "success");
+
+
+              if (actividad.detalles.dosis) {
+                for (const dosis of actividad.detalles.dosis) {
+                  try {
+                    await addReservedStock(dosis.insumo._id, Number(dosis.dosis));
+                  } catch (error) {
+                    console.error(`Error reserving stock for supply ${dosis.insumo.name}:`, error);
+                    return;
+                  }
+                }
+              }
+
               backToActivites();
             })
             .catch((err) => {

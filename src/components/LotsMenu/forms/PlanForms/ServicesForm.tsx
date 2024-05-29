@@ -91,7 +91,7 @@ function ServicesForm({ formData, setFormData }) {
   const { isLoading, supplies, getSupplies } = useSupply();
   const { businesses, getBusinesses } = useBusiness();
 
-  const services = laborsServices;  
+  const services = laborsServices;
 
   const { getDeposits } = useDeposit();
   const [editData, setEditData] = useState({
@@ -104,9 +104,9 @@ function ServicesForm({ formData, setFormData }) {
   });
 
   useEffect(() => {
-    getLaborsServices(); 
+    getLaborsServices();
   }, []);
-  
+
 
   useEffect(() => {
     getBusinesses();
@@ -203,7 +203,7 @@ function ServicesForm({ formData, setFormData }) {
 
   const handleEditCommentChange = (event) => {
     setEditData({ ...editData, comentario: event.target.value });
-  };  
+  };
 
   const handleEditUnitPriceChange = (event) => {
     setEditData({
@@ -427,7 +427,7 @@ function ServicesForm({ formData, setFormData }) {
                             onChange={handleEditCommentChange}
                           />
                         </Grid>
-                        
+
                       </Grid>
                       <Grid container item xs={12} spacing={1}>
                         <Grid item xs={4}>
@@ -512,7 +512,7 @@ function ServicesForm({ formData, setFormData }) {
                           <SaveIcon />
                         </IconButton>
                         <IconButton
-                          color="secondary"
+                          color="error"
                           aria-label="cancel"
                           onClick={handleCancelEdit}
                         >
@@ -529,7 +529,7 @@ function ServicesForm({ formData, setFormData }) {
                           <EditIcon />
                         </IconButton>
                         <IconButton
-                          color="secondary"
+                          color="error"
                           aria-label="delete"
                           onClick={() => handleDeleteRow(index)}
                         >

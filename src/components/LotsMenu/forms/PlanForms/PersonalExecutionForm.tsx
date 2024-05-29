@@ -40,6 +40,10 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
     }));
   };
 
+  useEffect(() => {
+    console.log(formData);
+  }, [formData]);
+
   return (
     <CustomPaper elevation={3}>
       <Title>General</Title>
