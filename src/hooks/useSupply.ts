@@ -258,9 +258,62 @@ export const useSupply = () => {
         }
     }
 
-    // const removeSupply = async () => {
+    const addReservedStock = async (supplyId: string, quantity: number) => {
+        console.log("SUPPLY ID PROVIDED: ", supplyId);
+        console.log("SUPPLIES AVAILABLE: ", supplies);
+        setIsLoading(true);
+        try {
+            const supply = supplies.find(supply => supply._id === supplyId);
+            if (!supply) {
+                console.error("Supply not found with ID:", supplyId);
+                throw new Error("Insumo no encontrado.");
+            }
 
-    // }
+            const updatedSupply: Supply = {
+                ...supply,
+                reservedStock: supply.reservedStock + quantity
+            };
+
+            const response = await dbContext.supplies.put(updatedSupply);
+            if (response.ok) {
+                setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
+                Swal.fire('Insumo', 'Stock reservado agregado con éxito.', 'success');
+            }
+            setIsLoading(false);
+        } catch (error) {
+            console.log('Error al agregar stock reservado: ', error);
+            Swal.fire('Ups', 'Ocurrió un error inesperado', 'error');
+            setIsLoading(false);
+        }
+    };
+
+
+    const removeReservedStock = async (supplyId: string, quantity: number) => {
+        setIsLoading(true);
+        try {
+            const supply = supplies.find(supply => supply._id === supplyId);
+            if (!supply) throw new Error("Insumo no encontrado.");
+            if (supply.reservedStock < quantity) throw new Error("Stock reservado insuficiente.");
+
+            const updatedSupply: Supply = {
+                ...supply,
+                reservedStock: supply.reservedStock - quantity,
+                currentStock: supply.currentStock - quantity
+            };
+
+            const response = await dbContext.supplies.put(updatedSupply);
+            if (response.ok) {
+                setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
+                Swal.fire('Insumo', 'Stock reservado removido con éxito.', 'success');
+            }
+            setIsLoading(false);
+        } catch (error) {
+            console.log('Error al remover stock reservado: ', error);
+            Swal.fire('Ups', 'Ocurrió un error inesperado', 'error');
+            setIsLoading(false);
+        }
+    };
+
 
     return {
         supplies,
@@ -277,6 +330,8 @@ export const useSupply = () => {
         updateSupply,
         deleteSupply,
         setSupplyError,
+        addReservedStock,
+        removeReservedStock,
         getStockBySupplyAndDeposits,
         getStockBySupplies,
         getStockByDepositAndLocation,

@@ -55,6 +55,7 @@ export const useStockMovement = () => {
     }
 
     const getStock = async (supplyId: string, depositId: string, location: string, nroLot: string) => {
+        console.log(`Fetching stock with Supply ID: ${supplyId}, Deposit ID: ${depositId}, Location: ${location}, Lot Number: ${nroLot}`);
         setIsLoading(true);
         try {
             const existingNroLot = await dbContext.stockByLots.find({
@@ -67,36 +68,62 @@ export const useStockMovement = () => {
                     ],
                 }
             });
+            console.log('Database response:', existingNroLot.docs);
             setIsLoading(false);
             return existingNroLot.docs[0];
         } catch (error) {
+            console.log('Error fetching stock:', error);
             setIsLoading(false);
-            console.log(error)
+            console.log(error);
         }
     }
 
     //Si nroLot es "" , quiere decir q no aplica por stock
     const addNewStockMovement = async (newMovement: StockMovement, supplyDto: Supply, depositDestination?: DepositDestination) => {
+        const user = {
+            accountId: "example-account-id",
+            username: "exampleUsername",
+            name: "John Doe",
+            email: "john.doe@example.com",
+            isAdmin: true,
+            lastName: "Doe",
+            language: "en",
+            rol: "admin",
+            state: true,
+            photoName: "default.jpg"
+        };
+
         setIsLoading(true);
-        let responseAll = null; let promiseStockByLot: Promise<PouchDB.Core.Response> | undefined = undefined;
+        let responseAll = null;
+        let promiseStockByLot: Promise<PouchDB.Core.Response> | undefined = undefined;
+
         try {
-            if (!user || !supplyDto._id) throw new Error();
+            console.log("Inicio de addNewStockMovement", newMovement, supplyDto, depositDestination);
+
+            if (!user || !supplyDto._id) {
+                console.log("Error: Usuario no logueado o ID de suministro no provisto");
+                throw new Error("Usuario no logueado o ID de suministro no provisto");
+            }
 
             const { typeMovement, isIncome, amount, depositId, nroLot, location } = newMovement;
             const accountId = user.accountId;
             const amountValue = Number(amount);
-            //Chequeamos si existe en la tabla auxiliar ese nro de lote
+
+            console.log("Datos procesados de newMovement:", { typeMovement, isIncome, amount, amountValue, depositId, nroLot, location });
+            console.log("Preparing to fetch existing stock with parameters:", supplyDto._id, depositId, location, nroLot);
             let existingStock = await getStock(supplyDto._id, depositId, location, nroLot);
+            console.log("Stock existente:", existingStock);
 
             if (!(typeMovement === TypeMovement.TransferenciaDeposito.toString())) {
                 if (isIncome) {
                     supplyDto.currentStock += amountValue;
-                    //Si existe , le sumamos la cantidad al stock actual
+                    console.log("Actualización de stock de entrada:", supplyDto.currentStock);
+
                     if (existingStock) {
                         existingStock.currentStock += amountValue;
                         promiseStockByLot = dbContext.stockByLots.put(existingStock);
                     } else {
-                        //Si no existe, creamos un nuevo registro.
+                        console.log("Creación de nuevo stock por no existir previamente.");
                         promiseStockByLot = dbContext.stockByLots.post({
                             accountId: user.accountId,
                             supplyId: supplyDto._id,
@@ -107,8 +134,10 @@ export const useStockMovement = () => {
                         });
                     }
                 } else {
-                    //Si es una salida, debe tener stock del insumo en la tabla auxiliar.
-                    if (!existingStock) throw new Error("Stock por insumo no encontrado.");
+                    if (!existingStock) {
+                        console.log("Error: Stock de insumo no encontrado para salida.");
+                        throw new Error("Stock por insumo no encontrado.");
+                    }
                     supplyDto.currentStock -= amountValue;
                     existingStock.currentStock -= amountValue;
                     promiseStockByLot = dbContext.stockByLots.put(existingStock);
@@ -118,13 +147,17 @@ export const useStockMovement = () => {
                     dbContext.supplies.put(supplyDto),
                     dbContext.stockMovements.post({ ...newMovement, accountId, userId: user.id })
                 ]);
-            }
-            else {
-                //Chequeamos que exista destino con deposito y ubicacion
-                if (!depositDestination || !existingStock) throw new Error();
-                //Chequeamos si ya tiene stock  para ese insumo, deposito y ubicacion. 
+                console.log("Respuesta de operaciones asincrónicas:", responseAll);
+            } else {
+                if (!depositDestination || !existingStock) {
+                    console.log("Error: Información de destino no provista o stock inicial no encontrado.");
+                    throw new Error("Información de destino no provista o stock inicial no encontrado");
+                }
+
                 let existingLotInDepositDestination = await getStock(supplyDto._id, depositDestination.depositId, depositDestination.location, existingStock.nroLot);
-                let promiseAll: Promise<PouchDB.Core.Response>[] = [
+                console.log("Stock en destino:", existingLotInDepositDestination);
+
+                let promiseAll = [
                     dbContext.stockByLots.put({ ...existingStock, currentStock: existingStock.currentStock - amountValue }),
                     dbContext.stockMovements.post({ ...newMovement, isIncome: false, accountId, userId: user.id }),
                     dbContext.stockMovements.post({
@@ -136,16 +169,15 @@ export const useStockMovement = () => {
                         userId: user.id
                     })
                 ];
-                // Si existe le actualizamos el stock actual, caso contrario creamos nuevo registro.
+
                 if (existingLotInDepositDestination) {
                     promiseAll.push(dbContext.stockByLots.put({
                         ...existingLotInDepositDestination,
                         depositId: depositDestination.depositId,
                         location: depositDestination.location,
                         currentStock: existingLotInDepositDestination.currentStock + amountValue
-                    }))
-                }
-                else {
+                    }));
+                } else {
                     promiseAll.push(dbContext.stockByLots.post({
                         accountId: user.accountId,
                         nroLot: existingStock.nroLot,
@@ -153,12 +185,14 @@ export const useStockMovement = () => {
                         depositId: depositDestination.depositId,
                         location: depositDestination.location,
                         currentStock: amountValue
-                    }))
+                    }));
                 }
-                responseAll = await Promise.all(promiseAll);
-            }
-            setIsLoading(false);
 
+                responseAll = await Promise.all(promiseAll);
+                console.log("Respuestas de transferencias y movimientos:", responseAll);
+            }
+
+            setIsLoading(false);
             if (responseAll)
                 Swal.fire('Nuevo Movimiento de Stock', 'Agregado.', 'success');
             else
@@ -167,12 +201,13 @@ export const useStockMovement = () => {
             navigate('/init/overview/stock-movements');
 
         } catch (error) {
-            console.log(error)
-            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            console.error("Error en addNewStockMovement:", error);
+            Swal.fire('Ups', String(error), 'error');
             setIsLoading(false);
             if (error) setError(error);
         }
     }
+
 
     const updateMovement = async (updateMovement: StockMovement) => {
         setIsLoading(true);

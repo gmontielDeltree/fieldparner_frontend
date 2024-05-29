@@ -62,7 +62,7 @@ const CustomPaper = styled(Paper)({
 function TasksForm({ lot, formData, setFormData, isExecution = false }) {
 
   const tipo = formData?.tipo || "other"
-  const default_labor = {"siembra":"1", "aplicacion":"5", "cosecha": "3", "other":undefined}
+  const default_labor = { "siembra": "1", "aplicacion": "5", "cosecha": "3", "other": undefined }
 
   const { vehicles, vehicleTypes, getVehicles, getTypeVehicles } = useVehicle();
   const [selectedOption, setSelectedOption] = useState(default_labor[tipo]);
@@ -73,7 +73,7 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
   const [editIndex, setEditIndex] = useState(-1);
   const [editData, setEditData] = useState({
     labor: {},
-    costo_por_ha:0,
+    costo_por_ha: 0,
     costo: "",
     observacion: ""
   });
@@ -163,14 +163,16 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
   };
 
   const handleEditCostoPorHaChange = (event) => {
-    setEditData({ ...editData, costo_por_ha: event.target.value,
-    price: (+event.target.value * +formData.detalles.hectareas).toFixed(2)
+    setEditData({
+      ...editData, costo_por_ha: event.target.value,
+      price: (+event.target.value * +formData.detalles.hectareas).toFixed(2)
     })
   }
 
   const handleEditCostoTotalChange = (event) => {
-      setEditData({ ...editData, price: event.target.value,
-    costo_por_ha: (+event.target.value / +formData.detalles.hectareas).toFixed(2)
+    setEditData({
+      ...editData, price: event.target.value,
+      costo_por_ha: (+event.target.value / +formData.detalles.hectareas).toFixed(2)
     })
   }
 
@@ -228,23 +230,23 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
             </Select>
           </Grid>
           <Grid item xs={2}>
-          <NumberFieldWithUnits
-                           fullWidth
-                           label="Costo/ha"
-                           value={costoPorHa}
-                           onChange={handleCostoPorHaChange}
-                           unit="USD/ha"
-                        />
+            <NumberFieldWithUnits
+              fullWidth
+              label="Costo/ha"
+              value={costoPorHa}
+              onChange={handleCostoPorHaChange}
+              unit="USD/ha"
+            />
           </Grid>
           <Grid item xs={2}>
 
-          <NumberFieldWithUnits
-                           fullWidth
-                           label="Costo Total"
-                           value={price}
-                           onChange={handlePriceChange}
-                           unit="USD"
-                        />
+            <NumberFieldWithUnits
+              fullWidth
+              label="Costo Total"
+              value={price}
+              onChange={handlePriceChange}
+              unit="USD"
+            />
           </Grid>
           <Grid item xs={4}>
             <TextField
@@ -289,21 +291,21 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
                       </Grid>
                       <Grid item xs={2}>
                         <NumberFieldWithUnits
-                           fullWidth
-                           label="Costo/ha"
-                           value={editData.costo_por_ha}
-                           onChange={handleEditCostoPorHaChange}
-                           unit="USD/ha"
+                          fullWidth
+                          label="Costo/ha"
+                          value={editData.costo_por_ha}
+                          onChange={handleEditCostoPorHaChange}
+                          unit="USD/ha"
                         />
 
                       </Grid>
                       <Grid item xs={2}>
                         <NumberFieldWithUnits
-                           fullWidth
-                           label="Costo Total"
-                           value={editData.price}
-                           onChange={handleEditCostoTotalChange}
-                           unit="USD"
+                          fullWidth
+                          label="Costo Total"
+                          value={editData.price}
+                          onChange={handleEditCostoTotalChange}
+                          unit="USD"
                         />
 
                       </Grid>
@@ -325,17 +327,17 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
                       </Grid>
                       <Grid item xs={2}>
                         <Typography variant="subtitle1">
-                        <strong>Costo/ha:</strong> {(row.costo / +formData.detalles.hectareas).toFixed(2)} USD/ha
+                          <strong>Costo/ha:</strong> {(row.costo / +formData.detalles.hectareas).toFixed(2)} USD/ha
                         </Typography>
                       </Grid>
                       <Grid item xs={2}>
                         <Typography variant="subtitle1">
-                        <strong>Costo Total:</strong> {row.costo} USD
+                          <strong>Costo Total:</strong> {row.costo} USD
                         </Typography>
                       </Grid>
                       <Grid item xs={3}>
                         <Typography variant="subtitle1">
-                        <strong>Comentario:</strong> {row.observacion}
+                          <strong>Comentario:</strong> {row.observacion}
                         </Typography>
                       </Grid>
                     </>
@@ -351,7 +353,7 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
                           <SaveIcon />
                         </IconButton>
                         <IconButton
-                          color="secondary"
+                          color="error"
                           aria-label="cancel"
                           onClick={handleCancelEdit}
                         >
@@ -368,7 +370,7 @@ function TasksForm({ lot, formData, setFormData, isExecution = false }) {
                           <EditIcon />
                         </IconButton>
                         <IconButton
-                          color="secondary"
+                          color="error"
                           aria-label="delete"
                           onClick={() => handleDeleteRow(index)}
                         >
