@@ -16,3 +16,33 @@ export const capitalizeText = (text: string, allText: boolean = false): string =
         return text.charAt(0).toUpperCase() + text.slice(1);
     }
 }
+
+export class Helper {
+
+    static parseDecimalPointToComaWithCurrency(
+        value: number,
+        currency: string,
+        maxDecimal: number
+    ): string {
+        if (value === undefined) return '';
+        const valueWithZeroes = value.toLocaleString('en', {
+            useGrouping: false,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: maxDecimal,
+        });
+        let newValue = `${currency} ${valueWithZeroes
+            .toString()
+            .replace('.', ',')}`;
+
+        // if (currency === Currency.Pesos) {
+        //     newValue = `${currency}${valueWithZeroes.toString().replace('.', ',')}`;
+        // }
+        newValue = Helper.numberWithThousandsSeparate(newValue);
+        return newValue;
+    }
+
+    static numberWithThousandsSeparate(value: string): string {
+        return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+}

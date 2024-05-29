@@ -1,6 +1,7 @@
 import React from "react";
 import { Page, Text, View, Document, StyleSheet } from "@react-pdf/renderer";
 import { style } from "@mui/system";
+import { Campaign } from "@types";
 
 function con2decimales(n : number){
   return Math.round(n * 100)/100
@@ -96,7 +97,7 @@ const Row = ({ value }: { value: (string | number)[] }) => {
   );
 };
 //Create Document Component
-export const InformePorCultivoPDF= ({ data }: { data: In }) => {
+export const InformePorCultivoPDF= ({ data, campaign }: { data: In, campaign:Campaign }) => {
   let title = "Informe de planificación por cultivo";
 
   let keys_for_each_row = [

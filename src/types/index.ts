@@ -63,6 +63,9 @@ export interface Vehicle extends Document {
   location: string;
   maintenances: Mantenimiento[];
   technialSpecifications: RowData[];
+  insurencePolicyFile?: string;
+  photoVehicle?: string;
+  documentVehicleFile?: string;
 }
 
 export interface Zones extends Document {
@@ -174,6 +177,7 @@ export interface Business extends Document {
   legajo?: string;
   matricula?: string;
   categorias: string[];
+  logoBusiness?: string;
 }
 
 export interface BusinessState {
@@ -372,6 +376,7 @@ export interface StockMovement extends Document {
   totalValue: number;
   hours: string;
   campaignId: string;
+  documentFile?: string;
 }
 
 export interface StockMovementItem extends StockMovement {
@@ -588,6 +593,41 @@ export interface Crops extends Document {
   harvest: boolean;
 }
 
+export interface PurchaseOrder extends Document {
+  accountId: string;
+  businessId: string;
+  nroOrder: string;
+  creationDate: string;
+  address: string;
+  locality: string;
+  businessName: string;
+  zipCode: string;
+  country: string;
+  contact: string;
+  commercialTerms: string;
+  subtotal: number;
+  taxPercentage: number;
+  taxValue: number;
+  anotherPercentage: number;
+  anotherValue: number;
+  totalValue: number;
+  sent: boolean;
+  businessLogo: string;
+}
+
+export interface DetailPurchaseOrder extends Document {
+  id: string;
+  nroOrder: string;
+  supplyId: string;
+  supplyAmount: number;
+  unitMeasurement: string;
+  unitPrice: number;
+}
+
+export interface DetailPurchaseOrderItem extends DetailPurchaseOrder {
+  supply: Supply | null;
+}
+
 //#region Enums
 
 export enum TipoCombustible {
@@ -687,7 +727,8 @@ export enum WithdrawalOrderType {
 
 export enum NumeratorType {
   Client = "Cliente",
-  LaborOrder = "Orden de Trabajo"
+  LaborOrder = "Orden de Trabajo",
+  PurchaseOrder = "Orden de Compra"
 }
 
 export enum UserRols {

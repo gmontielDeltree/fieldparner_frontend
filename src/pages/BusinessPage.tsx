@@ -22,6 +22,7 @@ import { BusinessForm } from "../components";
 import { removeBusinessActive } from "../redux/business";
 import { getLocalityAndStateByZipCode } from "../services";
 import { useTranslation } from "react-i18next";
+import { uploadFile } from "../helpers/fileUpload";
 
 const initialForm: Business = {
   nombreCompleto: "",
@@ -37,19 +38,20 @@ const initialForm: Business = {
   domicilio: "",
   localidad: "",
   cp: "",
-  zipCode:"",
+  zipCode: "",
   provincia: "",
   pais: "",
   esEmpleado: false,
   legajo: "",
   matricula: "",
   categorias: [],
+  logoBusiness: "",
 };
 
 export const BusinessPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-const { t } =useTranslation ();
+  const { t } = useTranslation();
   const { businessActive } = useAppSelector((state) => state.business);
   const [activeStep, setActiveStep] = useState(0);
   const [nameError, setNameError] = useState(false);
@@ -60,12 +62,10 @@ const { t } =useTranslation ();
   const [razonSocialError, setRazonSocialError] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [loadingZipCode, setLoadingZipCode] = useState(false);
-  const [localities, setLocalities] = useState<string[]>([]);
-  const [steps, setSteps] = useState<string[]>([
-    t("id_information"),
-    t("id_category"),
-    t("id_location"),
-  ]);
+  // const [localities, setLocalities] = useState<string[]>([]);
+  const steps = [t("id_information"), t("id_category"), t("id_location"),
+  ];
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const {
     formulario,
     setFormulario,
@@ -73,6 +73,7 @@ const { t } =useTranslation ();
     handleSelectChange,
     handleCheckboxChange,
     reset,
+    handleFormValueChange,
   } = useForm<Business>(initialForm);
   const {
     isLoading,
@@ -108,7 +109,7 @@ const { t } =useTranslation ();
       );
 
       if (localityAndStates?.length) {
-        setLocalities(localityAndStates.map((x) => x.locality));
+        // setLocalities(localityAndStates.map((x) => x.locality));
         setFormulario((prevState) => ({
           ...prevState,
           province: localityAndStates[0].state,
@@ -153,13 +154,15 @@ const { t } =useTranslation ();
         case 2:
           return (
             <AddressForm
-                key="address-customer"
-                values={formulario}
-                countryError={countryError}
-                handleInputChange={handleInputChange}
-                onChangeZipCode={getLocalityAndState}
-                loading={isLoading || loadingZipCode}
-              />
+              key="address-customer"
+              values={formulario}
+              countryError={countryError}
+              handleInputChange={handleInputChange}
+              onChangeZipCode={getLocalityAndState}
+              loading={isLoading || loadingZipCode}
+              handleFormValueChange={handleFormValueChange}
+              setFile={setLogoFile}
+            />
 
           );
         default:
@@ -178,56 +181,56 @@ const { t } =useTranslation ();
 
   const validateForm = () => {
     if (formulario.tipoEntidad === TipoEntidad.JURIDICA.toString()) {
-      
+
       let hasError = false;
-  
+
       if (formulario.cuit?.trim() === "") {
         setCuitError(true);
         hasError = true;
       } else {
         setCuitError(false);
       }
-  
+
       if (formulario.razonSocial?.trim() === "") {
         setRazonSocialError(true);
         hasError = true;
       } else {
         setRazonSocialError(false);
       }
-  
+
       if (formulario.email?.trim() === "") {
         setEmailError(true);
         hasError = true;
       } else {
         setEmailError(false);
       }
-  
+
       return !hasError;
     } else {
       // Validaciones para otros tipos de entidad
       let hasError = false;
-  
+
       if (formulario.nombreCompleto?.trim() === "") {
         setNameError(true);
         hasError = true;
       } else {
         setNameError(false);
       }
-  
+
       if (formulario.documento?.trim() === "") {
         setDocumentError(true);
         hasError = true;
       } else {
         setDocumentError(false);
       }
-  
+
       if (formulario.esEmpleado && formulario.legajo?.trim() === "") {
         setLegajoError(true);
         hasError = true;
       } else {
         setLegajoError(false);
       }
-  
+
       return !hasError;
     }
   };
@@ -238,7 +241,7 @@ const { t } =useTranslation ();
         return;
       }
     }
-  
+
     setActiveStep(activeStep + 1);
   };
 
@@ -267,6 +270,7 @@ const { t } =useTranslation ();
       } else {
         setCountryError(false);
       }
+      if (logoFile) await uploadFile(logoFile);
       await createBusiness(formulario);
       reset();
     } catch (error) {
@@ -274,12 +278,15 @@ const { t } =useTranslation ();
     }
   };
 
-  const handleUpdateBusiness = () => {
-    
+
+  const handleUpdateBusiness = async () => {
     if (!validateForm()) {
       return;
     }
-    if (formulario._id) updateBusiness(formulario);
+    if (formulario._id) {
+      if (logoFile) await uploadFile(logoFile);
+      updateBusiness(formulario);
+    }
 
   };
 
@@ -315,7 +322,7 @@ const { t } =useTranslation ();
         >
           <Typography component="h1" variant="h4" align="center" gutterBottom>
             {businessActive ? t("icon_edit") : t("new_famale")} {' '}
-          {t("social_entities")}
+            {t("social_entities")}
           </Typography>
           <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 3, mb: 2 }}>
             {steps.map((label) => (

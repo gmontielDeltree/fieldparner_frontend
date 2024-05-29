@@ -60,20 +60,20 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 const locationDefault = "General";
-const initialForm: Deposit = {
-  description: "",
-  zipCode: "",
-  address: "",
-  geolocation: { lng: -35, lat: -34 },
-  locality: "",
-  isNegative: false,
-  isVirtual: false,
-  country: "",
-  owner: "Propio",
-  province: "",
-  accountId: "",
-  locations: [locationDefault],
-};
+// const initialForm: Deposit = {
+//   description: "",
+//   zipCode: "",
+//   address: "",
+//   geolocation: { lng: -35, lat: -34 },
+//   locality: "",
+//   isNegative: false,
+//   isVirtual: false,
+//   country: "",
+//   owner: "Propio",
+//   province: "",
+//   accountId: "",
+//   locations: [locationDefault],
+// };
 
 
 export const DepositPage: React.FC = () => {
@@ -84,25 +84,25 @@ export const DepositPage: React.FC = () => {
   const [descriptionError, setDescriptionError] = useState(false);
   const [countryError, setCountryError] = useState(false);
   const [cpError, setCpError] = useState(false);
-const {t} = useTranslation();
+  const { t } = useTranslation();
 
-const optionsCountry = ["Argentina", "Brasil", "Chile"];
+  const optionsCountry = ["Argentina", "Brasil", "Chile"];
 
-const locationDefault = t("_general");
-const initialForm: Deposit = {
-  description: "",
-  zipCode: "",
-  address: "",
-  geolocation: { lng: -35, lat: -34 },
-  locality: "",
-  isNegative: false,
-  isVirtual: false,
-  country: "",
-  owner: t("_owner"),
-  province: "",
-  accountId: "",
-  locations: [locationDefault],
-};
+  const locationDefault = t("_general");
+  const initialForm: Deposit = {
+    description: "",
+    zipCode: "",
+    address: "",
+    geolocation: { lng: -35, lat: -34 },
+    locality: "",
+    isNegative: false,
+    isVirtual: false,
+    country: "",
+    owner: t("_owner"),
+    province: "",
+    accountId: "",
+    locations: [locationDefault],
+  };
 
 
   const { depositActive } = useAppSelector((state) => state.deposit);
@@ -356,7 +356,7 @@ const initialForm: Deposit = {
                 labelPlacement="start"
               />
             </FormGroup>
-            </Grid>
+          </Grid>
           <Grid item xs={12} sm={4} justifyContent="center">
             <FormGroup row sx={{ alignItems: "center" }}>
               <label htmlFor="">{t("admits_negative_stock")}</label>
@@ -387,36 +387,36 @@ const initialForm: Deposit = {
             </FormGroup>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <FormGroup sx={{position: 'flex', flexDirection:"row", gap:"5px"}}>
+            <FormGroup sx={{ position: 'flex', flexDirection: "row", gap: "5px" }}>
               <TextField
-                sx={{width:"35%"}}
+                sx={{ width: "35%" }}
                 variant="outlined"
                 type="text"
                 size="small"
                 label="Latitud"
                 name="geolocation"
                 value={geolocation.lat?.toFixed(5) || ""}
-                onChange={(e) => handleGeolocationChange({...geolocation, lat:+e.target.value})}
+                onChange={(e) => handleGeolocationChange({ ...geolocation, lat: +e.target.value })}
                 InputProps={{
                   startAdornment: <InputAdornment position="start" />,
                 }}
-                
+
               />
               <TextField
                 variant="outlined"
-                sx={{width:"35%"}}
+                sx={{ width: "35%" }}
                 type="text"
                 size="small"
                 label="Longitud"
                 name="geolocation"
                 value={geolocation.lng?.toFixed(5) || ""}
-                onChange={(e)=>handleGeolocationChange({...geolocation, lng:+e.target.value})}
+                onChange={(e) => handleGeolocationChange({ ...geolocation, lng: +e.target.value })}
                 InputProps={{
                   startAdornment: <InputAdornment position="start" />,
                 }}
-                
+
               />
-              <MapPickerReact posicion={geolocation} onPicked={({detail})=>{handleGeolocationChange(detail)}} />
+              <MapPickerReact posicion={geolocation} onPicked={({ detail }: any) => { handleGeolocationChange(detail) }} />
               {/* <IconButton title="Pick Position"><EditLocation/></IconButton> */}
             </FormGroup>
           </Grid>
@@ -438,8 +438,8 @@ const initialForm: Deposit = {
               </Select>
               {countryError && (
                 <Typography color="error">
-                {t("country_is_mandatory")}
-              </Typography>
+                  {t("country_is_mandatory")}
+                </Typography>
               )}
             </FormControl>
           </Grid>

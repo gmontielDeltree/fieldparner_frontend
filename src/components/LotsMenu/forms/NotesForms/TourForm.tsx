@@ -89,13 +89,10 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
             newImageUrls[foto] = await fetchImageUrl(foto);
           }
         }
-        if (
-          feature.properties.audio &&
-          !newAudioUrls[feature.properties.audio]
-        ) {
-          newAudioUrls[feature.properties.audio] = await fetchAudioUrl(
-            feature.properties.audio
-          );
+        for (const audio of feature.properties.audios) {
+          if (!newAudioUrls[audio]) {
+            newAudioUrls[audio] = await fetchAudioUrl(audio);
+          }
         }
       }
       setImageUrls(newImageUrls);
@@ -111,6 +108,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       [fieldName]: value
     });
   };
+
   const fetchImageUrl = async (imageId) => {
     try {
       const blob = await db.getAttachment(imageId, "image");
@@ -119,6 +117,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       console.error("Error fetching image:", error);
     }
   };
+
   const fetchAudioUrl = async (audioId) => {
     try {
       const blob = await db.getAttachment(audioId, "audio");
@@ -164,9 +163,13 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
           </ImageListItem>
         ))}
       </ImageGrid>
-      {feature.properties.audio && audioUrls[feature.properties.audio] && (
-        <AudioPlayer controls src={audioUrls[feature.properties.audio]} />
-      )}
+      {feature.properties.audios.map((audioId, audioIndex) => (
+        <AudioPlayer
+          key={audioIndex}
+          controls
+          src={audioUrls[audioId]}
+        />
+      ))}
     </>
   );
 
@@ -309,4 +312,3 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 }
 
 export default TourForm;
-

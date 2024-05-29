@@ -31,6 +31,8 @@ export * from './ListZonesPage';
 export * from './NewZonesPage';
 export * from './NewLaborsServicespage';
 export * from './ListLaborsServicesPage';
+export * from './PurchaseOrder';
+export * from './ListPurchaseOrder';
 
 
 

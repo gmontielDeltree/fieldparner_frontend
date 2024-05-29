@@ -381,6 +381,13 @@ export const useListaDeCiclos = () => {
     return fff;
   };
 
+  const getCiclosFromCampanaAndCampo = (campanaId, campoId) => {
+    let fff = ciclos.filter(
+      (c) => c.campanaId === campanaId && c.campoId === campoId,
+    );
+    return fff;
+  };
+
   const removeCiclo = (cicloId) => {
     db.get(cicloId)
       .then((d) => db.remove(d))
@@ -415,7 +422,7 @@ export const useListaDeCiclos = () => {
     console.count("usePlanHook");
   }, []);
 
-  return { ciclos, refreshCiclos, removeCiclo, getCiclosFromCampanaAndLote };
+  return { ciclos, refreshCiclos, removeCiclo, getCiclosFromCampanaAndLote, getCiclosFromCampanaAndCampo };
 };
 
 export const useCiclos = (campaingId: string, loteId: string) => {
