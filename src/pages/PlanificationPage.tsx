@@ -10,7 +10,7 @@ import {
   createFilterOptions,
 } from "@mui/material";
 import { useField } from "../hooks/useField";
-import { useCampaign } from "../hooks";
+import { useAppSelector, useCampaign } from "../hooks";
 import { ItemPlanificationByField } from "../components/Planification/ItemPlanificationByField";
 import { useNavigate } from "react-router-dom";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -51,6 +51,8 @@ export const PlanificationPage: React.FC = () => {
   const ciclos = useListaDeCiclos();
   const crops = useCrops();
 
+  const { selectedCampaign } = useAppSelector((state) => state.campaign);
+
   useEffect(() => {
     getCampaigns();
     getFields();
@@ -72,7 +74,7 @@ export const PlanificationPage: React.FC = () => {
       <CampanasContext.Provider value={useListaCampanas()}>
         <InsumosContext.Provider value={useInsumos()}>
           <LaboresContext.Provider value={useLabores()}>
-            <CiclosContext.Provider value={useListaDeCiclos()}>
+            <CiclosContext.Provider value={ciclos}>
               <Grid
                 container
                 sx={{
@@ -113,7 +115,8 @@ export const PlanificationPage: React.FC = () => {
                             ciclos.ciclos,
                             campaigns,
                             crops,
-                            "pdf"
+                            "pdf",
+                            selectedCampaign
                           );
                         }}
                         onReportePorCultivoXLS={() => {
@@ -121,7 +124,8 @@ export const PlanificationPage: React.FC = () => {
                             ciclos.ciclos,
                             campaigns,
                             crops,
-                            "xls"
+                            "xls",
+                            selectedCampaign
                           );
                         }}
                       />

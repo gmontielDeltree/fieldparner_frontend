@@ -6,15 +6,8 @@ import {
   ILaboresPlanificacion,
   TTipoActividadPlanificada,
 } from "../../interfaces/planification";
-import { Crop } from "../../interfaces/input";
-import {
-  get_lote_detalles_by_uuid,
-  get_lote_doc,
-  only_docs,
-} from "../../../owncomponents/helpers";
-import { usePlanification } from "../../hooks/usePlanifications";
+import { get_lote_doc, only_docs } from "../../../owncomponents/helpers";
 import { dbContext } from "../../services";
-import axios from "axios";
 import * as XLSX from "xlsx";
 
 import xlstempalte from "./templates/InformeCampanas.xlsx";
@@ -125,7 +118,8 @@ interface In {
   [idCultivo: string]: InformePorCultivoData;
 }
 
-async function downloadInformePorCultivoXLS(data: In) {
+async function downloadInformePorCultivoXLS(data: In, campana: Campaign) {
+  console.log("Data Informes", data);
   var workbook = XLSX.read(await (await fetch(xlstempalte)).arrayBuffer());
   let worksheet = workbook.Sheets["Hoja1"];
   let counter = 2;
@@ -176,6 +170,7 @@ async function downloadInformePorCultivoXLS(data: In) {
     counter = counter + 1;
   }
 
+  addValue(0, 0, "Plan de Campaña " + campana.campaignId);
   const COL_WIDTH = 150;
 
   /* Excel column "A" -> SheetJS column index 2 == XLSX.utils.decode_col("C") */
@@ -185,7 +180,8 @@ async function downloadInformePorCultivoXLS(data: In) {
   if (!worksheet["!cols"]) worksheet["!cols"] = [];
 
   /* create column metadata object if it does not exist */
-  if (!worksheet["!cols"][COL_INDEX]) worksheet["!cols"][COL_INDEX] = { wch: 8 };
+  if (!worksheet["!cols"][COL_INDEX])
+    worksheet["!cols"][COL_INDEX] = { wch: 8 };
 
   /* set column width */
   worksheet["!cols"][COL_INDEX].wpx = COL_WIDTH;
@@ -194,8 +190,10 @@ async function downloadInformePorCultivoXLS(data: In) {
   return "ffff";
 }
 
-async function downloadInformePorCultivoPdf(data : In) {
-  const blob = await pdf(<InformePorCultivoPDF data={data}/>).toBlob();
+async function downloadInformePorCultivoPdf(data: In, campaign: Campaign) {
+  const blob = await pdf(
+    <InformePorCultivoPDF data={data} campaign={campaign} />
+  ).toBlob();
 
   downloadBlob(blob, "untitled.pdf");
 }
@@ -204,7 +202,8 @@ export const ReporteDeCampanas = async (
   ciclos: ICiclosPlanificacion[],
   campaigns: Campaign[],
   cultivosHook,
-  type: "pdf" | "xls"
+  type: "pdf" | "xls",
+  selectedCampaign: Campaign
 ) => {
   console.log("REPORTE CAMPANAS", ciclos, campaigns, cultivosHook);
 
@@ -213,10 +212,12 @@ export const ReporteDeCampanas = async (
   const options = { convertTo: "pdf", lang: "fr-fr" };
 
   if (campaigns.length > 0) {
-    let estaCampana = campaigns[1];
+    let estaCampana = selectedCampaign; //(campaigns[1];
     let ciclosDeLaCampana = ciclos.filter(
       (c) => c.campanaId === estaCampana._id
     );
+
+    console.log("ESTA CAMPÑA", estaCampana, ciclosDeLaCampana);
 
     let d = { cultivos: [] };
 
@@ -309,9 +310,9 @@ export const ReporteDeCampanas = async (
     console.log("CCCC", c, d);
 
     if (type === "pdf") {
-      downloadInformePorCultivoPdf(c);
+      downloadInformePorCultivoPdf(c, selectedCampaign);
     } else if (type === "xls") {
-      downloadInformePorCultivoXLS(c);
+      downloadInformePorCultivoXLS(c, selectedCampaign);
     }
     // let t = axios.post(reportServerUrl, {
     //     template: template,
@@ -341,5 +342,39 @@ export const ReporteDeCampanas = async (
     //     window.URL.revokeObjectURL(href);
     // }).catch((e)=>alert(e))
     //
+  }
+};
+
+export const get_ingresos_egresos = async (ciclos: ICiclosPlanificacion[]) => {
+  for (const ciclo of ciclos) {
+    let lote = await get_lote_doc(db, ciclo.loteId);
+    if (!lote) {
+      continue;
+    }
+    let actividadesExpandidasDelCiclo =
+      await get_actividades_expandidas_del_ciclo(ciclo);
+    console.log("AEC", actividadesExpandidasDelCiclo);
+
+    let egresos = 0;
+    let ingresos = 0;
+
+    for (const [key, value] of Object.entries(actividadesExpandidasDelCiclo)) {
+      if (
+        value.tipo === "cosecha" &&
+        value.precioEstimadoCosecha !== undefined &&
+        value.rindeEstimado !== undefined
+      ) {
+        ingresos =
+          ingresos +
+          value.area * value.precioEstimadoCosecha * value.rindeEstimado;
+      }
+
+      egresos =
+        egresos +
+        (value.expTotalCostoInsumos ? value.expTotalCostoInsumos : 0) +
+        (value.expTotalCostoLabores ? value.expTotalCostoLabores : 0);
+    }
+
+    return [ingresos, egresos];
   }
 };

@@ -105,10 +105,6 @@ function ServicesForm({ formData, setFormData }) {
 
   useEffect(() => {
     getLaborsServices();
-  }, []);
-
-
-  useEffect(() => {
     getBusinesses();
   }, []);
 

@@ -6,6 +6,8 @@ import {
   Container,
   FormControl,
   Grid,
+  IconButton,
+  Input,
   InputAdornment,
   InputLabel,
   MenuItem,
@@ -16,7 +18,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { SyncAlt as SyncAltIcon } from "@mui/icons-material";
+import { SyncAlt as SyncAltIcon, Cancel as CancelIcon, CloudUpload as CloudUploadIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useCampaign, useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
 import {
@@ -31,6 +33,8 @@ import {
 } from "../types";
 import { getShortDate } from "../helpers/dates";
 import { useTranslation } from "react-i18next";
+import uuid4 from "uuid4";
+import { uploadFile } from "../helpers/fileUpload";
 
 const initialForm: StockMovement = {
   typeMovement: TypeMovement.Ajustes,
@@ -51,19 +55,11 @@ const initialForm: StockMovement = {
   voucher: "",
   isIncome: false,
   accountId: "",
-  userId: ""
+  userId: "",
+  documentFile: ""
 };
 
-// const movementsShowSwitch = [
-//   TypeMovement.Ajustes.toString(),
-//   TypeMovement.Prestamos.toString(),
-//   TypeMovement.TransferenciaDeposito.toString(),
-// ];
-//TODO: mostrar los tipo de movimientos y ocultar el switch (ingreso / salida).
-/*
-  TODO: 
-    -validar si el tipo de movimiento es transferencia entre depositos, para mostrar ciertos campos
-*/
+
 export const NewStockMovementPage: React.FC = () => {
   const navigate = useNavigate();
   const {
@@ -92,6 +88,7 @@ export const NewStockMovementPage: React.FC = () => {
   const [depositDestinationSelected, setDepositDestinationSelected] = useState<Deposit | null>(null);
   const [locationDestinationSelected, setLocationDestinationSelected] = useState("");
   const [movementTypeSelected, setMovementTypeSelected] = useState<MovementType | null>(null);
+  const [fileUpload, setFileUpload] = React.useState<File | null>(null);
   const { depositId: depositOrigin, supplyId, location } = formulario;
 
   const depositsToBeAllocated = useMemo(() => {
@@ -110,6 +107,7 @@ export const NewStockMovementPage: React.FC = () => {
     } : undefined;
 
     if (supplySelected && depositSelected && movementTypeSelected) {
+      uploadDocumentFile();
       addNewStockMovement({
         ...formulario,
         typeMovement: movementTypeSelected.name
@@ -169,6 +167,36 @@ export const NewStockMovementPage: React.FC = () => {
     setFormulario(prevState => ({ ...prevState, nroLot: value }));
   }
 
+  const uploadDocumentFile = async () => {
+    try {
+      if (fileUpload) {
+        const response = await uploadFile(fileUpload);
+        if (response) console.log("file upload successful.");
+      }
+    } catch (error) {
+      console.log('upload file error:', error);
+    }
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    if (file) {
+      let fileNameOriginal = file.name;
+      let extensionPos = fileNameOriginal.lastIndexOf(".");
+      let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
+
+      const newFileName = `stock-movement_${uuid4()}${fileType}`;
+      const renamedFile = new File([file], newFileName, { type: file.type });
+      setFileUpload(renamedFile);
+      setFormulario(prevState => ({ ...prevState, documentFile: newFileName }));
+    }
+  };
+
+  const cancelFile = () => {
+    setFileUpload(null);
+    setFormulario(prevState => ({ ...prevState, documentFile: "" }));
+  }
+
   useEffect(() => {
     getSupplies();
     getDeposits();
@@ -177,7 +205,7 @@ export const NewStockMovementPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    
+
     if (movementTypeSelected && movementTypeSelected.sumaStock === "Ambas")
       setShowSwitch(true)
     else {
@@ -638,18 +666,6 @@ export const NewStockMovementPage: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={6} sm={4}>
-                {/* <TextField
-                  variant="outlined"
-                  type="number"
-                  label={t("_campaign")}
-                  name="campaignId"
-                  value={formulario.campaignId}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                  fullWidth
-                /> */}
                 <FormControl key="campaign-select" fullWidth>
                   <InputLabel id="campaign">{t("_campaign")}</InputLabel>
                   <Select
@@ -666,6 +682,44 @@ export const NewStockMovementPage: React.FC = () => {
                     ))}
                   </Select>
                 </FormControl>
+              </Grid>
+              <Grid item xs={6} sm={4} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }} >
+                <Button
+                  component="label"
+                  variant="contained"
+                  tabIndex={-1}
+                  // autoCapitalize=""
+                  startIcon={<CloudUploadIcon />}
+                >
+                  Upload
+                  <Input
+                    type="file"
+                    hidden
+                    onChange={handleFileUpload} />
+                </Button>
+                {formulario.documentFile ? (
+                  <>
+                    <label
+                      title={formulario.documentFile}
+                      style={{
+                        margin: "10px",
+                        width: "200px",
+                        display: "inline-block",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap"
+                      }}>
+                      {formulario.documentFile}
+                    </label>
+                    <IconButton onClick={() => cancelFile()} color="error">
+                      <CancelIcon fontSize="medium" />
+                    </IconButton>
+                  </>
+                ) :
+                  <Typography variant="body1" sx={{ margin: 10, display: "inline-block" }}>
+                    Ningún archivo seleccionado
+                  </Typography>
+                }
               </Grid>
             </>
           )}

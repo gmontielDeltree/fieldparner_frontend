@@ -79,10 +79,11 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
 
   const handleSave = () => {
     let actividad = formData;
+    let formattedDate = new Date();
     try {
       actividad.campaña = selectedCampaign
       actividad._id =
-        actividad._id || "actividad:" /*+ formattedDate + ":"*/ + uuid4();
+        actividad._id || "actividad:" + formattedDate + ":" + uuid4();
 
       db.get(actividad._id)
         .then((doc) => {

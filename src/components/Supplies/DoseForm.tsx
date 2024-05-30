@@ -1,4 +1,5 @@
 import {
+  // Autocomplete,
   FormControl,
   Grid,
   InputAdornment,
@@ -18,8 +19,8 @@ export interface DoseFormProps {
   formValues: Supply;
   crops: Crops[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
-  handleGenercoChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
+  handleFormValueChange: (key: string, value: string) => void;
 }
 
 export const DoseForm: React.FC<DoseFormProps> = ({
@@ -27,7 +28,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
   crops,
   handleSelectChange,
   handleInputChange,
-  handleGenercoChange
+  handleFormValueChange
 }) => {
   const {
     type,
@@ -156,22 +157,42 @@ export const DoseForm: React.FC<DoseFormProps> = ({
       </Grid>
       {isSeedType && (
         <Grid item xs={12} sm={4}>
-          <FormControl key="crop-select" fullWidth>
+          <FormControl key="crop-select" fullWidth >
             <InputLabel id="crop">{t("_crop")}</InputLabel>
             <Select
               labelId="crop"
               name="cropId"
+              MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
               value={formValues.cropId}
               label={t("_crop")}
               onChange={handleSelectChange}
             >
               {crops?.map((crop) => (
                 <MenuItem key={crop._id} value={crop._id}>
-                  {crop.descriptionES}
+                  {crop.descriptionEN}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
+
+          {/* <Autocomplete
+            id="crop"
+            value={formValues.cropId}
+            freeSolo
+            options={crops.map(c => ({ id: c._id || "", label: c.descriptionEN }))}
+            // disabled={disabledFields}
+            onChange={(_event: any, newValue: string | null) => {
+              newValue && handleFormValueChange("cropId", newValue);
+            }}
+            // inputValue={formValues.cropId}
+            // onInputChange={(_event, newInputValue) => {
+            //   handleFormValueChange("vehicleType", newInputValue);
+            // }}
+            renderInput={(params) => (
+              <TextField type="search" {...params} label={t("_crop")} required />
+            )}
+          /> */}
+
         </Grid>
       )}
       <Grid item xs={12} sm={4}>
@@ -181,7 +202,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           label="Genérico"
           name="generico"
           value={generico}
-          onChange={handleGenercoChange}
+          onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />
           }}
@@ -195,7 +216,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           label={t("_formulationDenomination")}
           name="formulationDenomination"
           value={formulationDenomination}
-          onChange={handleGenercoChange}
+          onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />
           }}
@@ -209,7 +230,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           label={t("_toxicityClass")}
           name="toxicityClass"
           value={toxicityClass}
-          onChange={handleGenercoChange}
+          onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />
           }}

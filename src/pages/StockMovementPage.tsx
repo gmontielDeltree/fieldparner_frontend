@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridToolbar, esES, ptBR, enUS } from "@mui/x-data-grid";
+// import { esES as dateLocale } from '@mui/material/locale';
 import { Box, Button, Container, Grid, Typography } from "@mui/material";
 import { Add as AddIcon, SyncAlt as SyncAltIcon } from "@mui/icons-material";
 import { Loading, CloseButtonPage } from "../components";
 import { useStockMovement } from "../hooks";
 import { useTranslation } from "react-i18next";
 
-
+//TODO: cambiar DataGrid por un DataTable custom
 
 interface RowStockMovementItem {
   id: string;
@@ -19,6 +20,7 @@ interface RowStockMovementItem {
   isIncome: string;
   um: string;
   amount: number;
+  documentFile: string;
 }
 
 export const StockMovementPage: React.FC = () => {
@@ -36,6 +38,7 @@ export const StockMovementPage: React.FC = () => {
     { field: "isIncome", headerName: t("income_outcome"), width: 120 },
     { field: "um", headerName: "UM", width: 150 },
     { field: "amount", headerName: t("_quantity"), width: 150 },
+    { field: "documentFile", headerName: t("_file"), width: 250 },
   ];
 
   const rows = useMemo(() => {
@@ -50,9 +53,21 @@ export const StockMovementPage: React.FC = () => {
         isIncome: sm.isIncome ? t("_income") : t("_outcome"),
         um: sm.supply?.unitMeasurement,
         amount: sm.amount,
-      } as RowStockMovementItem;
+        documentFile: sm.documentFile
+      }
     });
   }, [stockMovements]);
+
+  const localeText = useMemo(() => {
+    const language = localStorage.getItem("language") || "es";
+
+    if (language === "en")
+      return enUS.components.MuiDataGrid.defaultProps.localeText;
+    if (language === "pt")
+      return ptBR.components.MuiDataGrid.defaultProps.localeText;
+
+    return esES.components.MuiDataGrid.defaultProps.localeText;
+  }, []);
 
   // const onClickSearch = (): void => {
   //   if (filterText === "") {
@@ -69,7 +84,7 @@ export const StockMovementPage: React.FC = () => {
   }, []);
 
   return (
-    <Container sx={{ paddingLeft: "0px !important" }} maxWidth="lg">
+    <Container sx={{ paddingLeft: "0px !important" }} maxWidth={"lg"}>
       {isLoading && <Loading loading={true} />}
       <Box
         component="div"
@@ -110,6 +125,7 @@ export const StockMovementPage: React.FC = () => {
           <DataGrid
             rows={rows}
             columns={columns}
+            localeText={localeText}
             rowSelection={false}
             loading={isLoading}
             slots={{ toolbar: GridToolbar }}
