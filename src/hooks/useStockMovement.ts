@@ -78,21 +78,8 @@ export const useStockMovement = () => {
         }
     }
 
-    //Si nroLot es "" , quiere decir q no aplica por stock
+    // Si nroLot es "" , quiere decir q no aplica por stock
     const addNewStockMovement = async (newMovement: StockMovement, supplyDto: Supply, depositDestination?: DepositDestination) => {
-        const user = {
-            accountId: "example-account-id",
-            username: "exampleUsername",
-            name: "John Doe",
-            email: "john.doe@example.com",
-            isAdmin: true,
-            lastName: "Doe",
-            language: "en",
-            rol: "admin",
-            state: true,
-            photoName: "default.jpg"
-        };
-
         setIsLoading(true);
         let responseAll = null;
         let promiseStockByLot: Promise<PouchDB.Core.Response> | undefined = undefined;
@@ -198,7 +185,9 @@ export const useStockMovement = () => {
             else
                 Swal.fire('Nuevo Movimiento de Stock', 'Verifica los datos ingresados.', 'error');
 
-            navigate('/init/overview/stock-movements');
+            if (newMovement.typeMovement !== TypeMovement.Labores) {
+                navigate('/init/overview/stock-movements');
+            }
 
         } catch (error) {
             console.error("Error en addNewStockMovement:", error);

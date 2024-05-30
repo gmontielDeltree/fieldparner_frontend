@@ -25,8 +25,8 @@ import Badge from "@mui/material/Badge";
 import { Actividad } from "../../interfaces/activity";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
-import { ApplicationType, HarvestType, PreparedType, SowingType } from "../../../src/types";
-import { useAppSelector, useSupply } from "../../hooks";
+import { ApplicationType, HarvestType, PreparedType, SowingType, WithdrawalOrderType } from "../../../src/types";
+import { useAppSelector, useOrder, useSupply } from "../../hooks";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   function Alert(props, ref) {
@@ -73,9 +73,11 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [activeStep, setActiveStep] = useState(0);
+  const { user } = useAppSelector(state => state.auth);
   const translatedActivityType = activityTypeTranslations[activityType];
   const [maxStepReached, setMaxStepReached] = useState(0);
-  const { addReservedStock, getSupplies } = useSupply();
+  const { getSupplies } = useSupply();
+  const { createWithdrawalOrder} = useOrder();
   const theme = useTheme();
   const isEditing =
     existingActivity && Object.keys(existingActivity).length > 0;
@@ -323,26 +325,56 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, step));
   };
 
+  const reserveSupplyStock = async (dosis) => {
+    const newWithdrawalOrder = {
+      accountId: user.accountId,
+      type: WithdrawalOrderType.Labor,
+      creationDate: new Date().toISOString(),
+      order: 0,
+      reason: "Reserva de stock",
+      campaign: selectedCampaign,
+      field: dosis.insumo.campo,
+      state: "pending"
+    };
+  
+    const newDepositSupplyOrder = {
+      order: 0,
+      accountId: user.accountId,
+      deposit: dosis.deposito,
+      location: dosis.ubicacion,
+      supply: dosis.insumo,
+      nroLot: dosis.nro_lote,
+      withdrawalAmount: dosis.total,
+      originalAmount: dosis.total
+    };
+  
+    const success = await createWithdrawalOrder(newWithdrawalOrder, [newDepositSupplyOrder]);
+    if (success) {
+      dosis.orden_de_retiro = newWithdrawalOrder;
+      return newWithdrawalOrder;
+    } else {
+      throw new Error(`Error reserving stock for supply ${dosis.insumo.name}`);
+    }
+  };
+  
+  
   const handleSave = async () => {
     for (let step = 0; step < steps.length; step++) {
       const missingFields = countMissingFields(formData, step);
       if (missingFields > 0) {
-        setSnackbarMessage(
-          `Por favor completa todos los campos requeridos en el paso: ${steps[step]}`
-        );
+        setSnackbarMessage(`Por favor completa todos los campos requeridos en el paso: ${steps[step]}`);
         setOpenSnackbar(true);
         setActiveStep(step);
         return;
       }
     }
-
+  
     let actividad = { ...formData };
-
+  
     if ([SowingType, PreparedType, HarvestType, ApplicationType].includes(actividad.tipo)) {
-      actividad.campaña = selectedCampaign
+      actividad.campaña = selectedCampaign;
     }
-
-
+  
     if (!isEditing) {
       try {
         const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
@@ -354,50 +386,44 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         return;
       }
     }
-
-    db.get(actividad._id)
-      .then((doc) => {
-        actividad._rev = doc._rev;
-        return db.put(actividad);
-      })
-      .then(() => {
-        console.log("Actividad guardada", "success");
-
-        backToActivites();
-      })
-      .catch((error) => {
-        if (error.name === "not_found") {
-          console.log("Actividad not found. Creating a new one.");
-          delete actividad._rev;
-          db.put(actividad)
-            .then(async () => {
-              console.log("New actividad created", "success");
-
-
-              if (actividad.detalles.dosis) {
-                for (const dosis of actividad.detalles.dosis) {
-                  try {
-                    await addReservedStock(dosis.insumo._id, Number(dosis.dosis));
-                  } catch (error) {
-                    console.error(`Error reserving stock for supply ${dosis.insumo.name}:`, error);
-                    return;
-                  }
-                }
+  
+    try {
+      const doc = await db.get(actividad._id);
+      actividad._rev = doc._rev;
+      await db.put(actividad);
+      console.log("Actividad guardada", "success");
+      backToActivites();
+    } catch (error) {
+      if (error.name === "not_found") {
+        console.log("Actividad not found. Creating a new one.");
+        delete actividad._rev;
+        try {
+          await db.put(actividad);
+          console.log("New actividad created", "success");
+  
+          if (actividad.detalles.dosis) {
+            for (const dosis of actividad.detalles.dosis) {
+              try {
+                await reserveSupplyStock(dosis);
+              } catch (error) {
+                console.error(`Error reserving stock for supply ${dosis.insumo.name}:`, error);
+                return;
               }
-
-              backToActivites();
-            })
-            .catch((err) => {
-              console.error("Error creating new actividad:", err);
-            });
-        } else if (error.name === "conflict") {
-          console.error("Conflict detected. Trying to save again.");
-        } else {
-          console.error("Error saving actividad:", error);
+            }
+          }
+  
+          backToActivites();
+        } catch (err) {
+          console.error("Error creating new actividad:", err);
         }
-      });
+      } else if (error.name === "conflict") {
+        console.error("Conflict detected. Trying to save again.");
+      } else {
+        console.error("Error saving actividad:", error);
+      }
+    }
   };
-
+  
   useEffect(() => {
     console.log("FORM DATA: ", formData);
   });
