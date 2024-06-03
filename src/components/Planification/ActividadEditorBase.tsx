@@ -18,6 +18,7 @@ import { usePlanActividad } from "../../hooks/usePlanifications";
 import { ILaboresPlanificacion } from "../../interfaces/planification";
 import { uuidv7 } from "uuidv7";
 import { useSupply } from "../../hooks";
+import { useTranslation } from "react-i18next";
 
 const steps = ["Fecha", "Insumos", "Servicios"];
 
@@ -43,6 +44,8 @@ export const ActividadEditorBase = ({
   onSave: () => void;
   onClose: () => void;
 }) => {
+
+  const {t} = useTranslation();
   const [rows, setRows] = useState<IInsumosPlanificacion[]>([]);
   const [rowsLab, setRowsLab] = useState<ILaboresPlanificacion[]>([]);
 
@@ -208,7 +211,16 @@ export const ActividadEditorBase = ({
                 justifyContent: "flex-end",
               }}
             >
-              {/* <Button
+              <Button
+                variant="contained"
+                color="error"
+                onClick={onClose}
+                sx={{ mr: 1 }}
+              >
+                {t("Cancelar")}
+              </Button>
+
+              <Button
                 color="inherit"
                 disabled={activeStep === 0}
                 onClick={handleBack}
@@ -217,18 +229,13 @@ export const ActividadEditorBase = ({
                 Atras
               </Button>
               <Box sx={{ flex: "1 1 auto" }} />
-              <Button onClick={handleNext} sx={{ mr: 1 }}>
-                Siguiente
-              </Button> */}
-
-              {/* <Button
-                variant="contained"
-                color="error"
-                onClick={onClose}
+              <Button
+                onClick={handleNext}
                 sx={{ mr: 1 }}
+                disabled={activeStep === 2}
               >
-                Cancelar
-              </Button> */}
+                Siguiente
+              </Button>
 
               <Button
                 variant="contained"
@@ -236,7 +243,7 @@ export const ActividadEditorBase = ({
                   //
                   let newIds = rows.map((f) => f.id);
                   let newLineasDocs: IInsumosPlanificacion[] = rows.map((f) => {
-                    let a= {
+                    let a = {
                       _id: f.id,
                       insumoId: f.insumo._id,
                       dosis: f.dosis,
@@ -245,10 +252,10 @@ export const ActividadEditorBase = ({
                       precioUnitario: f.precioUnitario,
                       totalCosto: f.totalCosto,
                     };
-                    if(f._rev){
-                      a._rev = f._rev
+                    if (f._rev) {
+                      a._rev = f._rev;
                     }
-                    return a
+                    return a;
                   });
 
                   console.log("new insumos lists id", newIds, newLineasDocs);
@@ -257,8 +264,6 @@ export const ActividadEditorBase = ({
                   let newLaboresIds = rowsLab.map((f) => f.id);
                   let newLabLinDocs: ILaboresPlanificacion[] = rowsLab.map(
                     (f) => {
-
-
                       let a = {
                         _id: f.id,
                         laborId: f.labor.id,
@@ -267,10 +272,10 @@ export const ActividadEditorBase = ({
                         totalCosto: f.totalCosto,
                       };
 
-                      if(f._rev){
-                        a._rev = f._rev
+                      if (f._rev) {
+                        a._rev = f._rev;
                       }
-                      return a
+                      return a;
                     }
                   );
 
