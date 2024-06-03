@@ -21,6 +21,7 @@ import { usePlanActividad } from "../../hooks/usePlanifications";
 import { CiclosContext } from "./contexts/CiclosContext";
 import { Box, IconButton } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Close";
+import { useTranslation } from "react-i18next";
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -146,10 +147,12 @@ export default function ActividadEditorDialog({
     setAnchorEl(null);
   };
 
+  const {t} = useTranslation();
+
   return (
     <React.Fragment>
       <Button variant={"contained"} color={"success"} onClick={handleMenuClick}>
-        + Actividad
+        + {t("Actividad")}
       </Button>
 
       <Menu
@@ -161,6 +164,20 @@ export default function ActividadEditorDialog({
           "aria-labelledby": "basic-button",
         }}
       >
+
+<MenuItem
+          onClick={() => {
+            handleMenuClose();
+            setActividad({
+              ...cleanAct,
+              tipo: TTipoActividadPlanificada.PREPARACION,
+            });
+            handleClickOpen();
+          }}
+        >
+          {t("Preparación")}
+        </MenuItem>
+
         <MenuItem
           onClick={() => {
             handleMenuClose();
@@ -171,7 +188,7 @@ export default function ActividadEditorDialog({
             handleClickOpen();
           }}
         >
-          Siembra
+          {t("Siembra")}
         </MenuItem>{" "}
         <MenuItem
           onClick={() => {
@@ -183,7 +200,7 @@ export default function ActividadEditorDialog({
             handleClickOpen();
           }}
         >
-          Aplicación
+          {t("Aplicación")}
         </MenuItem>{" "}
         <MenuItem
           onClick={() => {
@@ -195,7 +212,7 @@ export default function ActividadEditorDialog({
             handleClickOpen();
           }}
         >
-          Cosecha
+          {t("Cosecha")}
         </MenuItem>
       </Menu>
 
