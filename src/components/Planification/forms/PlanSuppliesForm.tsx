@@ -224,8 +224,8 @@ function PlanSuppliesForm({
       },
       preProcessEditCellProps: (a) => {
         console.log(a);
-        if(a.props.value !== undefined){
-                  a.row.dosis = a.props.value;
+        if (a.props.value !== undefined) {
+          a.row.dosis = a.props.value;
         }
 
         a.row.totalCantidad = a.row.dosis * formData.area;
@@ -240,7 +240,7 @@ function PlanSuppliesForm({
         } else {
           a.row.unit = "";
         }
-        return a.props
+        return a.props;
       },
     },
     {
@@ -320,10 +320,14 @@ function PlanSuppliesForm({
         if (isInEditMode) {
           return [
             <GridActionsCellItem
-              icon={<SaveIcon />}
+              icon={<AddIcon />}
               label="Save"
               sx={{
-                color: "primary.main",
+                color: "white",
+                backgroundColor: "green",
+                "&:hover": {
+                  backgroundColor: "green",
+                },
               }}
               onClick={handleSaveClick(id)}
             />,
