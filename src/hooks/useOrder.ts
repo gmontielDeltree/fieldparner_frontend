@@ -4,12 +4,9 @@ import { useAppDispatch, useAppSelector } from ".";
 import { dbContext } from "../services";
 import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, NumeratorType, OrderStatus, StockByLot, StockMovement, Supply, TypeMovement, WithdrawalOrder, WithdrawalOrderType, WithdrawalsByDepositSupply } from "../types";
 import { useState } from "react";
-import { setWithdrawalOrderActive } from "../redux/withdrawalOrder";
-
-
+import { setWithdrawalOrderActive } from "../redux/withdrawalOrder"; 
 
 export const useOrder = () => {
-
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
@@ -66,46 +63,79 @@ export const useOrder = () => {
     }
 
     const createWithdrawalOrder = async (newWithdrawalOrder: WithdrawalOrder, newDepositSupplies: DepositSupplyOrder[]) => {
+        console.log('Starting createWithdrawalOrder function');
         setIsLoading(true);
         try {
-
             if (!user) throw new Error("User not found.");
+    
+            console.log('User found:', user);
+    
             let lastNumerator: Numerator = {
                 accountId: user.accountId,
                 numeratorType: NumeratorType.Client,
                 lastNumerator: 1
             };
-            
+    
+            console.log('Initial lastNumerator:', lastNumerator);
+    
             const lastNumeratorFound = await getLastNumerator(user.accountId, NumeratorType.Client);
-
+    
+            console.log('Last numerator found:', lastNumeratorFound);
+    
             if (!lastNumeratorFound) {
+                console.log('No last numerator found, creating a new one');
                 await putLastNumerator(lastNumerator, true);
                 const numeratorFound = await getLastNumerator(user.accountId, NumeratorType.Client);
+                console.log('Numerator found after creation:', numeratorFound);
                 lastNumerator._id = numeratorFound?._id;
                 lastNumerator._rev = numeratorFound?._rev;
-            }
-            else {
+            } else {
+                console.log('Updating last numerator');
                 lastNumerator = { ...lastNumeratorFound };
                 lastNumerator.lastNumerator = (lastNumeratorFound.lastNumerator + 1);
             }
-
+    
+            console.log('Final lastNumerator:', lastNumerator);
+    
             let newOrder: WithdrawalOrder = {
                 ...newWithdrawalOrder,
                 order: lastNumerator.lastNumerator,
                 accountId: user.accountId
             };
             let depositSuppliesOrder = newDepositSupplies.map(s => ({ ...s, order: lastNumerator.lastNumerator }));
-
+    
+            console.log('New withdrawal order:', newOrder);
+            console.log('New deposit supplies order:', depositSuppliesOrder);
+    
+            // Fetch supplies to update reservedStock
+            const responseSupplies = await dbContext.supplies.find({ selector: { "accountId": user.accountId } });
+            const suppliesToUpdate = responseSupplies.docs;
+    
+            console.log('Supplies to update:', suppliesToUpdate);
+    
+            newDepositSupplies.forEach(newSupplyOrder => {
+                const supply = suppliesToUpdate.find(s => s._id === newSupplyOrder.supply._id);
+                if (supply) {
+                    console.log('Updating reserved stock for supply:', supply);
+                    supply.reservedStock += newSupplyOrder.amount;
+                }
+            });
+    
+            console.log('Supplies after reservedStock update:', suppliesToUpdate);
+    
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
                 dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
-                putLastNumerator(lastNumerator)
+                putLastNumerator(lastNumerator),
+                dbContext.supplies.bulkDocs(suppliesToUpdate) 
             ]);
-
+    
+            console.log('Response from database operations:', response);
+    
             setIsLoading(false);
-
+    
             if (response) {
-                Swal.fire('Orden de Retiro', ` N° de orden ${lastNumerator.lastNumerator} creado exitosamente. `, 'success');
+                Swal.fire('Orden de Retiro', `N° de orden ${lastNumerator.lastNumerator} creado exitosamente.`, 'success');
                 return true;
             }
             return false;
@@ -116,7 +146,7 @@ export const useOrder = () => {
             return false;
         }
     }
-
+    
     const getOrderWithDepositsAndSuppliesByOrder = async (order: number) => {
         setIsLoading(true);
         try {
@@ -156,7 +186,7 @@ export const useOrder = () => {
             if (!user) throw new Error("User not found.");
             if (!withdrawalOrderActive) throw new Error("Withdrawal Order not found");
             let isComplete = true;
-
+        
             const newWithdrawals: WithdrawalsByDepositSupply[] = listWithdrawals.map(w => ({
                 accountId: w.accountId,
                 amount: Number(w.amount),
@@ -171,26 +201,26 @@ export const useOrder = () => {
                     ...newObject,
                     withdrawalAmount
                 };
-            });
+            });    
             updateDepositSupplies.forEach(u => {
                 if (u.originalAmount > u.withdrawalAmount) {
                     isComplete = false;
                     return;
                 }
             });
-
+    
             const response = await Promise.all([
                 dbContext.stockByLots.find({ selector: { "accountId": user.accountId } }),
                 dbContext.supplies.find({ selector: { "accountId": user.accountId } }),
             ]);
-
+        
             if (!response) throw new Error("Supplies not found.");
-
+    
             const responseStockFromSupplies = response[0].docs;
             const responseSupplies = response[1].docs;
             let updateStockSupplies: StockByLot[] = []; // Insumos actualizados con nuevo stock
             let updateSupplies: Supply[] = [];
-
+    
             responseStockFromSupplies.forEach(s => {
                 listWithdrawals.forEach(w => {
                     if (w.deposit._id === s.depositId && w.supply._id === s.supplyId &&
@@ -203,11 +233,14 @@ export const useOrder = () => {
             });
             responseSupplies.forEach(s => {
                 listWithdrawals.forEach(w => {
-                    if (s._id === w.supply._id)
-                        updateSupplies.push({ ...s, currentStock: Number(s.currentStock - Number(w.amount)) });
+                    if (s._id === w.supply._id) {
+                        s.currentStock = Number(s.currentStock - Number(w.amount));
+                        s.reservedStock = Number(s.reservedStock - Number(w.amount)); 
+                        updateSupplies.push(s);
+                    }
                 });
             });
-
+        
             let newMovements = listWithdrawals.map(w => ({
                 accountId: user.accountId,
                 amount: w.amount,
@@ -224,7 +257,7 @@ export const useOrder = () => {
                 operationDate: withdrawalDate,
                 typeMovement: TypeMovement.OrdenRetiro,
             } as StockMovement));
-
+        
             let responseAll = await Promise.all([
                 dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
                 dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
@@ -232,23 +265,23 @@ export const useOrder = () => {
                 dbContext.supplies.bulkDocs(updateSupplies),
                 dbContext.stockMovements.bulkDocs(newMovements),
             ]);
-
+        
             if (isComplete) {
                 await dbContext.withdrawalOrders.put({ ...withdrawalOrderActive, state: OrderStatus.Completed });
             }
-
+        
             if (responseAll) {
                 Swal.fire('Orden de Retiro', 'Confirmacion exitosa.', 'success');
             }
             navigate("/init/overview/list-orders");
             setIsLoading(false);
-
+        
         } catch (error) {
-            console.log('error', error);
+            console.log('Error in confirmWithdrawalOrder:', error);
             setIsLoading(false);
             Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
         }
-    }
+    };
 
     const createLaborOrder = async (newLaborOrder: WithdrawalOrder, newDepositSupplies: DepositSupplyOrder[]) => {
         setIsLoading(true);

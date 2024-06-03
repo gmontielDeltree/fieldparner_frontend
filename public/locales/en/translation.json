@@ -24,6 +24,7 @@
   "_physical": "Physical",
   "_legal": "Legal",
   "main_contact": "Main Contact",
+  "commercial_terms": "Commercial Terms",
   "secondary_contact": "Secondary Contact",
   "_phone": "Phone",
   "_document": "Social Security Card",
@@ -40,6 +41,7 @@
   "_locality": "Locality",
   "_address": "Address",
   "_fields": "Fields",
+  "_logo": "Logo",
   "_reload": "Reload",
   "device_list": "Device List",
   "field_output": "Field Output",
@@ -57,8 +59,12 @@
   "_description": "Description",
   "_detail": "Detail",
   "_senasa": "Official Health Code",
+  "purchase_order": "Purchase Order",
+  "provider": "Provider",
+  "total_amount": "Total Amount",
   "_formulationDenomination": "Formulation Denomination",
   "_toxicityClass": "Toxicity Class",
+  "_file": "File",
   "_geolocation": "Geolocation",
   "_destination": "Destination",
   "_origin": "Origin",
@@ -292,6 +298,7 @@
     "_zones":"Zones",
     "service_labors": "Labor Service",
     "_service": "Service",
-    "labors_service": "Labor / Service"
+    "labors_service": "Labor / Service",
+    "total_price": "Total Price"
 }
   

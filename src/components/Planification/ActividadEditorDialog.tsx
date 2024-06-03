@@ -26,7 +26,7 @@ const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<any, any>;
   },
-  ref: React.Ref<unknown>
+  ref: React.Ref<unknown>,
 ) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
@@ -95,7 +95,12 @@ export const ActividadEditorDialogNoButton = ({
   );
 };
 
-export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
+export default function ActividadEditorDialog({
+  campanaId,
+  loteId,
+  cicloId,
+  campoId,
+}) {
   const [open, setOpen] = React.useState(false);
 
   const { refreshCiclos } = useContext(CiclosContext); // useCiclos(ciclo.campanaId,loteId)
@@ -111,7 +116,7 @@ export default function ActividadEditorDialog({ campanaId, loteId, cicloId }) {
     totalCosto: 2344,
     campanaId: campanaId,
     cicloId: cicloId,
-    campoId: "campoId",
+    campoId: campoId,
     loteId: loteId,
     ejecutada: false,
     created: { userId: "dfsdfd", date: "" },

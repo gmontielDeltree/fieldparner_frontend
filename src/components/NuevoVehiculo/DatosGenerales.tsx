@@ -1,7 +1,10 @@
-import React, { ChangeEvent, useEffect, useMemo } from "react";
+import React, { ChangeEvent, SetStateAction, useEffect, useMemo } from "react";
 import {
   Autocomplete,
+  Button,
   Grid,
+  IconButton,
+  Input,
   InputAdornment,
   TextField,
   Typography,
@@ -11,15 +14,20 @@ import { useAppSelector, useBusiness, useVehicle } from "../../hooks";
 import {
   FolderOpen as FolderOpenIcon,
   Security as SecurityIcon,
+  Cancel as CancelIcon,
+  CloudUpload as CloudUploadIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
+import uuid4 from "uuid4";
 
 
 export interface DatosGeneralesProps {
   vehiculo: Vehicle;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
-  handleFormValueChange: (key: string, value: string) => void;
   handleYearChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
+  handleFormValueChange: (key: string, value: string) => void;
+  setFilesUpload: React.Dispatch<SetStateAction<File[]>>;
+  cancelFile: (indexToRemove: number) => void;
 }
 
 export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
@@ -27,13 +35,15 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   handleInputChange,
   handleFormValueChange,
   handleYearChange,
+  setFilesUpload,
+  cancelFile
 }) => {
 
   const { vehicleTypes, getTypeVehicles, createVehicleType } = useVehicle();
   const typeVehicles = vehicleTypes.map(t => t.name);
   const { vehiculoActivo } = useAppSelector((state) => state.vehiculo);
   const disabledFields = !!vehiculoActivo;
-const {t} = useTranslation();
+  const { t } = useTranslation();
   const {
     vehicleType,
     patent,
@@ -48,6 +58,7 @@ const {t} = useTranslation();
     coverageType,
     location,
     chassisNumber,
+    insurencePolicyFile
   } = vehiculo;
   const {
     getBusinesses,
@@ -71,6 +82,25 @@ const {t} = useTranslation();
     }
   };
 
+  const removeFile = (index: number) => {
+    handleFormValueChange("documentFile", "");
+    cancelFile(index);
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    if (file) {
+      let fileNameOriginal = file.name;
+      let extensionPos = fileNameOriginal.lastIndexOf(".");
+      let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
+
+      const newFileName = `insurence-policy_${uuid4()}${fileType}`;
+      const renamedFile = new File([file], newFileName, { type: file.type });
+      setFilesUpload(prevState => [...prevState, renamedFile])
+      handleFormValueChange("insurencePolicyFile", newFileName);
+    }
+  };
+
   useEffect(() => {
     getTypeVehicles();
     getBusinesses();
@@ -80,7 +110,7 @@ const {t} = useTranslation();
     <>
       <Grid
         container
-        spacing={1}
+        spacing={2}
         direction="row"
         alignItems="center"
         justifyContent="space-between"
@@ -177,8 +207,6 @@ const {t} = useTranslation();
             label={t("_chassis")}
             variant="outlined"
             type="text"
-            name="chassisNumber"
-            value={chassisNumber}
             name="chassisNumber"
             value={chassisNumber}
             onChange={handleInputChange}
@@ -296,6 +324,42 @@ const {t} = useTranslation();
             }}
             fullWidth
           />
+        </Grid>
+        <Grid item xs={6} sm={6} sx={{ display: "flex", alignItems: "center", justifyContent: "start" }} >
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+          >
+            Poliza
+            <Input
+              type="file"
+              hidden
+              onChange={handleFileUpload} />
+          </Button>
+          {insurencePolicyFile ? (
+            <>
+              <label
+                title={insurencePolicyFile}
+                style={{
+                  margin: "10px",
+                  width: "240px",
+                  display: "inline-block",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap"
+                }}>
+                {insurencePolicyFile}
+              </label>
+              <IconButton onClick={() => removeFile(0)} color="error">
+                <CancelIcon fontSize="medium" />
+              </IconButton>
+            </>
+          ) :
+            <Typography variant="body1" sx={{ ml: 1, display: "inline-block" }}>
+              Ningún archivo seleccionado
+            </Typography>
+          }
         </Grid>
       </Grid>
     </>

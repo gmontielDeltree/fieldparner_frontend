@@ -23,6 +23,7 @@ import CancelIcon from "@mui/icons-material/Close";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { format } from "date-fns";
 import { useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -142,6 +143,7 @@ const LoteAccordion: React.FC = ({
               key={lote.id + uuid4()}
               ciclo={c}
               loteId={lote.id}
+              lote={lote}
               expanded={true}
             ></Ciclo>
           );
@@ -163,34 +165,16 @@ export const PlanificationByFieldForLotPage = ({
   // Lista de Campañas
   // Planificaciones por campaña
   //
-
+  const { t } = useTranslation();
   const { getCampanaDesc } = useContext(CampanasContext);
   const [campo, setCampo] = useState([]);
   const [lotes, setLotes] = useState([]);
 
   const { lote, field, refreshCallback } = useOutletContext();
 
-  const { fields, getFields } = useField();
-
-  // useEffect(() => {
-  //   getFields();
-  // }, []);
-
   const handleClose = () => {
     onClose();
   };
-
-  // useEffect(() => {
-  //   if (fields && fieldId) {
-  //     let campoEste = fields.find((f) => f._id === fieldId);
-  //     if (campoEste) {
-  //       setCampo(campoEste);
-  //       setLotes(campoEste.lotes);
-  //     }
-  //
-  //     console.log("casdsdd", campo, campoEste);
-  //   }
-  // }, [fields, fieldId]);
 
   return (
     <Box sx={{ width: "100%", height: "100%" }}>
@@ -218,8 +202,10 @@ export const PlanificationByFieldForLotPage = ({
         <Divider component={"div"} variant="middle" />
       </Box>
 
-      <Box>
-        <Typography>sdsdsdsds</Typography>
+      <Box sx={{ margin: "10px" }}>
+        <Typography variant="body2">
+          {t("Click en 'PROGRAMAR' para agregar")}
+        </Typography>
       </Box>
 
       <Box

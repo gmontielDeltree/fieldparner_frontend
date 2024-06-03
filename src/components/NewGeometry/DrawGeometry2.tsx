@@ -12,7 +12,10 @@ import { features } from "process";
 
 interface DrawGeometryProps {
   handleSaveGeometry?: (formattedData: FormattedData) => void;
-  type: "field" | "lot";
+  type: "field" | "lot",
+  initialGeometry ?: FeatureCollection,
+  initialName ?: string,
+  edit ?: boolean
 }
 
 interface FormattedData {
@@ -20,6 +23,7 @@ interface FormattedData {
   geometry: FeatureCollection<Geometry, GeoJsonProperties>[];
 }
 
+/* Esto es para evitar salir del Simple Select cuando se cierra un poligono */
 MapboxDraw.modes.direct_select.onTrash = function (state) {
   if (state.selectedCoordPaths.length === 0) {
     this.deleteFeature(state.featureId);
@@ -41,12 +45,12 @@ MapboxDraw.modes.direct_select.onTrash = function (state) {
   }
 };
 
-function DrawGeometry2({ handleSaveGeometry, type }: DrawGeometryProps) {
-  const [geometryName, setGeometryName] = useState("");
+function DrawGeometry2({ handleSaveGeometry, type, initialGeometry, initialName, edit }: DrawGeometryProps) {
+  const [geometryName, setGeometryName] = useState(initialName || "");
   const [geometryData, setGeometryData] = useState<FeatureCollection<
     Geometry,
     GeoJsonProperties
-  > | null>(null);
+  > | null>(initialGeometry || null);
 
   const map: MapboxMap = useSelector(selectMap);
 
@@ -64,10 +68,16 @@ function DrawGeometry2({ handleSaveGeometry, type }: DrawGeometryProps) {
     }),
   );
 
+
+const isValidShape =()=>{
+return true
+}
+
   //useSelector(selectDraw);
-  const isSaveDisabled = !geometryName || !geometryData;
+  const isSaveDisabled = !geometryName || !geometryData || !isValidShape();
 
   const typeName = type === "field" ? "campo" : "lote";
+
 
   const onDelete = useCallback(() => {
     console.log("draw.delete event");
@@ -144,6 +154,19 @@ function DrawGeometry2({ handleSaveGeometry, type }: DrawGeometryProps) {
       map.on("draw.modechange", backToSimpleSelect);
       map.on("draw.selectionchange", backToSimpleSelect);
       map.on("draw.update", drawUpdate);
+
+      if(initialGeometry){
+        draw.delete(draw.getAll().features[0].id)
+        draw.add(initialGeometry)
+        console.log("initial geom",draw.getAll())
+        draw.changeMode("simple_select", {
+          featureIds: [draw.getAll().features[0].id],
+        });
+
+        setGeometryData(draw.getAll())
+      
+        
+      }
     }
   }, [map]);
 

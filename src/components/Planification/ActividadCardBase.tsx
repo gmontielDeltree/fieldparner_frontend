@@ -71,6 +71,8 @@ export const ActividadCardBase: React.FC = ({
     ejecutada,
     totalCosto,
     tipo,
+    loteId,
+    campoId,
     area,
     contratista,
     rindeEstimado,
@@ -97,7 +99,7 @@ export const ActividadCardBase: React.FC = ({
       if (refreshCallback) {
         refreshCallback();
       }
-      navigate(-1);
+      navigate(`/init/overview/fields/${campoId}/${loteId}`);
     });
   };
 

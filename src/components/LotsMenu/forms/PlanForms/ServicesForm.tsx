@@ -37,6 +37,8 @@ import NumbersIcon from "@mui/icons-material/Numbers";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import set from "date-fns/esm/set/index";
+import { useLaborsServices } from "../../../../hooks/useLaborsServices";
+
 
 const flashFadeAnimation = keyframes`
   0% {
@@ -73,6 +75,11 @@ const CustomPaper = styled(Paper)({
 
 function ServicesForm({ formData, setFormData }) {
   const { t } = useTranslation();
+  const {
+    laborsServices,
+    getLaborsServices,
+  } = useLaborsServices();
+
   const [selectedService, setSelectedService] = useState("");
   const [contractor, setContractor] = useState("");
   const [comment, setComment] = useState("");
@@ -84,13 +91,7 @@ function ServicesForm({ formData, setFormData }) {
   const { isLoading, supplies, getSupplies } = useSupply();
   const { businesses, getBusinesses } = useBusiness();
 
-  const services = [
-    { name: "Soil Analysis", id: 1 },
-    { name: "Crop Rotation Planning", id: 2 },
-    { name: "Pest Control", id: 3 },
-    { name: "Irrigation Optimization", id: 4 },
-    { name: "Harvest Assistance", id: 5 }
-  ];
+  const services = laborsServices;
 
   const { getDeposits } = useDeposit();
   const [editData, setEditData] = useState({
@@ -103,6 +104,7 @@ function ServicesForm({ formData, setFormData }) {
   });
 
   useEffect(() => {
+    getLaborsServices();
     getBusinesses();
   }, []);
 
@@ -146,9 +148,9 @@ function ServicesForm({ formData, setFormData }) {
   };
 
   const handleSelectChange = (event) => {
-    const serviceId = event.target.value;
+    const serviceName = event.target.value;
     const selectedService = services.find(
-      (service) => service.id === serviceId
+      (service) => service.service === serviceName
     );
     setSelectedService(selectedService);
   };
@@ -193,6 +195,10 @@ function ServicesForm({ formData, setFormData }) {
 
   const handleEditDepositoChange = (deposito) => {
     setEditData({ ...editData, deposito: deposito });
+  };
+
+  const handleEditCommentChange = (event) => {
+    setEditData({ ...editData, comentario: event.target.value });
   };
 
   const handleEditUnitPriceChange = (event) => {
@@ -273,17 +279,17 @@ function ServicesForm({ formData, setFormData }) {
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={4}>
               <FormControl fullWidth>
-                <InputLabel id="service-dropdown-label">Service</InputLabel>
+                <InputLabel id="service-dropdown-label">Servicio</InputLabel>
                 <Select
                   labelId="service-dropdown-label"
                   id="service-dropdown"
-                  value={selectedService ? selectedService.id : ""}
+                  value={selectedService ? selectedService.service : ""}
                   label="Servicio"
                   onChange={handleSelectChange}
                 >
                   {services.map((service) => (
-                    <MenuItem key={service.id} value={service.id}>
-                      {service.name}
+                    <MenuItem key={service.service} value={service.service}>
+                      {service.service}
                     </MenuItem>
                   ))}
                 </Select>
@@ -389,14 +395,14 @@ function ServicesForm({ formData, setFormData }) {
                           <Select
                             labelId="service-dropdown-label"
                             id="service-dropdown"
-                            value={editData.servicio.id}
+                            value={editData.servicio.service}
                             label="Servicio"
                             onChange={handleEditServiceChange}
                             width={"100%"}
                           >
                             {services.map((service) => (
-                              <MenuItem key={service.id} value={service.id}>
-                                {service.name}
+                              <MenuItem key={service.service} value={service.service}>
+                                {service.service}
                               </MenuItem>
                             ))}
                           </Select>
@@ -414,9 +420,10 @@ function ServicesForm({ formData, setFormData }) {
                             label="Comentario"
                             variant="outlined"
                             value={editData.comentario}
-                            onChange={handleCommentChange}
+                            onChange={handleEditCommentChange}
                           />
                         </Grid>
+
                       </Grid>
                       <Grid container item xs={12} spacing={1}>
                         <Grid item xs={4}>
@@ -449,7 +456,7 @@ function ServicesForm({ formData, setFormData }) {
                         {" "}
                         <Grid item xs={12}>
                           <Typography variant="subtitle1">
-                            {row.servicio.name}
+                            {row.servicio.service}
                           </Typography>
                         </Grid>
                       </Grid>
@@ -501,7 +508,7 @@ function ServicesForm({ formData, setFormData }) {
                           <SaveIcon />
                         </IconButton>
                         <IconButton
-                          color="secondary"
+                          color="error"
                           aria-label="cancel"
                           onClick={handleCancelEdit}
                         >
@@ -518,7 +525,7 @@ function ServicesForm({ formData, setFormData }) {
                           <EditIcon />
                         </IconButton>
                         <IconButton
-                          color="secondary"
+                          color="error"
                           aria-label="delete"
                           onClick={() => handleDeleteRow(index)}
                         >

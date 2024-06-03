@@ -24,6 +24,8 @@ import { useTheme } from "@mui/material/styles";
 import Badge from "@mui/material/Badge";
 import { Ejecucion, Actividad } from "../../interfaces/activity";
 import uuid4 from "uuid4";
+import { HarvestType, StockMovement, TypeMovement } from "../../types";
+import { useAppSelector, useOrder, useStockMovement, useSupply } from "../../hooks";
 
 const activityTypeTranslations = {
   preparation: "Preparado",
@@ -57,14 +59,17 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 }) => {
   console.log("ACTIVITY TYPE: ", activityType);
   if (!lot) return null;
-  const lotName = lot.properties.name;
   const [formData, setFormData] = useState(
     existingActivity || getEmptyExecution()
   );
+  const { addNewStockMovement } = useStockMovement();
+  const { confirmWithdrawalOrder } = useOrder();
+  const { getSupplies } = useSupply();
   const [activeStep, setActiveStep] = useState(0);
   const translatedActivityType = activityTypeTranslations[activityType];
   const [maxStepReached, setMaxStepReached] = useState(0);
   const theme = useTheme();
+  const { user } = useAppSelector((state) => state.auth);
   const isEditing =
     existingActivity && Object.keys(existingActivity).length > 0;
 
@@ -80,13 +85,13 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const steps =
     activityType === "sowing"
       ? [
-          "General",
-          "Insumos",
-          "Otros Datos",
-          "Servicios",
-          "Condiciones",
-          "Observaciones"
-        ]
+        "General",
+        "Insumos",
+        "Otros Datos",
+        "Servicios",
+        "Condiciones",
+        "Observaciones"
+      ]
       : ["General", "Insumos", "Servicios", "Condiciones", "Observaciones"];
 
   useEffect(() => {
@@ -111,6 +116,10 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   }, [existingActivity]);
 
   useEffect(() => {
+    getSupplies();
+  }, []);
+
+  useEffect(() => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       uuid: uuid4(),
@@ -124,6 +133,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     }));
   }, [lot, translatedActivityType, existingActivity]);
 
+ 
   const countMissingFields = (formData, step) => {
     let missingFields = 0;
     if (activityType !== "sowing" && step > 1) {
@@ -306,23 +316,132 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         console.error("Error updating activity state to completed:", error);
       });
   };
+  const processHarvestStockMovements = async (executionDetails) => {
+    for (const dosis of executionDetails.detalles.dosis) {
+      const newMovement = {
+        movement: "Ingreso por cosecha",
+        accountId: user?.accountId,
+        supplyId: dosis.insumo._id,
+        userId: user?.id,
+        depositId: dosis.deposito._id,
+        location: "",
+        nroLot: "",
+        creationDate: new Date().toISOString(),
+        dueDate: "",
+        typeMovement: TypeMovement.Labores,
+        isIncome: true,
+        detail: "Ingreso por cosecha",
+        operationDate: new Date().toISOString(),
+        amount: Number(dosis.rinde_obtenido),
+        voucher: "",
+        currency: "ARS",
+        totalValue: 0,
+        hours: "0",
+        campaignId: executionDetails.campaña.campaignId
+      };
 
-  const handleSave = () => {
+      try {
+        await addNewStockMovement(newMovement, dosis.insumo, dosis.deposito);
+      } catch (error) {
+        console.error(`Error al realizar movimiento de stock para el insumo ${dosis.insumo.name}:`, error);
+        throw error;
+      }
+    }
+  };
+
+  const removeReservedStock = async (dosis) => {
+    console.log("Removing reserved stock");
+  
+    if (!dosis.orden_de_retiro) {
+      console.error("Withdrawal order not found on dosis object");
+      return;
+    }
+  
+    const withdrawalOrder = dosis.orden_de_retiro;
+    const listWithdrawals = [{
+      accountId: withdrawalOrder.accountId,
+      amount: Number(dosis.total),
+      originalAmount: Number(dosis.total),
+      deposit: dosis.deposito,
+      location: dosis.ubicacion,
+      nroLot: dosis.nro_lote,
+      order: withdrawalOrder.order,
+      supply: dosis.insumo,
+      withdrawalAmount: Number(dosis.total),
+      _id: withdrawalOrder._id,
+    }];
+  
+    try {
+      const withdrawalDate = new Date().toISOString();
+      await confirmWithdrawalOrder(listWithdrawals, withdrawalDate);
+      console.log(`Reserved stock removed for supply ${dosis.insumo.name}`);
+    } catch (error) {
+      console.error(`Error removing reserved stock for supply ${dosis.insumo.name}:`, error);
+    }
+  };
+  
+  const handleSave = async () => {
     let executionDetails = { ...formData };
     executionDetails.detalles.fecha_ejecucion = new Date().toISOString();
     executionDetails.estado = "completada";
+  
+    console.log("EXECUTION DETAILS: ", executionDetails);
+  
+    // Generate new stock movement (out) for each of the supplies used in the execution
+    if (executionDetails.detalles.dosis) {
+      for (const dosis of executionDetails.detalles.dosis) {
+        console.log("DOSIS: ", dosis);
+  
+        const newMovement = {
+          movement: "Salida por ejecución",
+          accountId: user?.accountId,
+          supplyId: dosis.insumo._id,
+          userId: user?.id,
+          depositId: dosis.deposito._id,
+          location: "",
+          nroLot: "",
+          creationDate: new Date().toISOString(),
+          dueDate: "",
+          typeMovement: TypeMovement.Labores,
+          isIncome: false,
+          detail: "Salida por ejecución",
+          operationDate: new Date().toISOString(),
+          amount: Number(dosis.dosis),
+          voucher: "",
+          currency: "ARS",
+          totalValue: 0,
+          hours: "0",
+          campaignId: executionDetails.campaña.campaignId
+        };
+  
+        try {
+          console.log("New stock movement (out) for supply:", newMovement);
+          await addNewStockMovement(newMovement, dosis.insumo, dosis.deposito);
+          await removeReservedStock(dosis); 
+        } catch (error) {
+          console.error(`Error al realizar movimiento de stock para el insumo ${dosis.insumo.name}:`, error);
+          return;
+        }
+      }
+    }
+  
+    if (executionDetails.tipo === HarvestType) {
+      try {
+        await processHarvestStockMovements(executionDetails);
+      } catch (error) {
+        console.error("Error procesando movimientos de stock para cosecha:", error);
+        return;
+      }
+    }
+  
     try {
-      const formattedDate = format(
-        new Date(executionDetails.detalles.fecha_ejecucion_tentativa),
-        "yyyy-MM-dd"
-      );
-      executionDetails._id =
-        "ejecucion:" + formattedDate + ":" + executionDetails.uuid;
+      const formattedDate = format(new Date(executionDetails.detalles.fecha_ejecucion_tentativa), "yyyy-MM-dd");
+      executionDetails._id = "ejecucion:" + formattedDate + ":" + executionDetails.uuid;
     } catch (error) {
       console.error("Error generating new ID for execution:", error);
       return;
     }
-
+  
     db.get(executionDetails._id)
       .then(() => {
         return updateActivityStateToCompleted(executionDetails.actividad_uuid);
@@ -349,7 +468,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         }
       });
   };
-
+  
   const ActivityIcon = activityIcons["sowing"];
 
   return (

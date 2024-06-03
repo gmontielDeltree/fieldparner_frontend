@@ -89,13 +89,10 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
             newImageUrls[foto] = await fetchImageUrl(foto);
           }
         }
-        if (
-          feature.properties.audio &&
-          !newAudioUrls[feature.properties.audio]
-        ) {
-          newAudioUrls[feature.properties.audio] = await fetchAudioUrl(
-            feature.properties.audio
-          );
+        for (const audio of feature.properties.audios) {
+          if (!newAudioUrls[audio]) {
+            newAudioUrls[audio] = await fetchAudioUrl(audio);
+          }
         }
       }
       setImageUrls(newImageUrls);
@@ -104,17 +101,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
 
     loadMediaUrls();
   }, [formData.features]);
-
-  const getTodayDate = () => {
-    return new Date();
-  };
-
-  useEffect(() => {
-    if (!formData.fecha) {
-      const updatedFormData = { ...formData, fecha: getTodayDate() };
-      setFormData(updatedFormData);
-    }
-  }, []);
 
   const onFieldChange = (fieldName, value) => {
     setFormData({
@@ -177,9 +163,13 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
           </ImageListItem>
         ))}
       </ImageGrid>
-      {feature.properties.audio && audioUrls[feature.properties.audio] && (
-        <AudioPlayer controls src={audioUrls[feature.properties.audio]} />
-      )}
+      {feature.properties.audios.map((audioId, audioIndex) => (
+        <AudioPlayer
+          key={audioIndex}
+          controls
+          src={audioUrls[audioId]}
+        />
+      ))}
     </>
   );
 
@@ -253,7 +243,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || getTodayDate()}
+                      value={formData.fecha || new Date()}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, fecha: newValue };
                         setFormData(updatedFormData);
@@ -264,12 +254,12 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     />
                   </LocalizationProvider>
                 </Grid>
-                
+                  
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <TimePicker
                       label="Hora"
-                      value={formData.hora || getTodayDate()}
+                      value={formData.hora || new Date()}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, hora: newValue };
                         setFormData(updatedFormData);
@@ -280,12 +270,12 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     />
                   </LocalizationProvider>
                 </Grid>
-                
+                  
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Próxima Visita"
-                      value={formData.proxima_visita || getTodayDate()}
+                      value={formData.proxima_visita || new Date()}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, proxima_visita: newValue };
                         setFormData(updatedFormData);

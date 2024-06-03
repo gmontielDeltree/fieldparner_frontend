@@ -15,6 +15,7 @@ import {
 import { Supply } from "../types";
 import { removeSupplyActive } from "../redux/supply";
 import { useTranslation } from "react-i18next";
+import { uploadFile } from "../helpers/fileUpload";
 
 
 const initialForm: Supply = {
@@ -55,12 +56,13 @@ export const SupplyPage: React.FC = () => {
     handleInputChange,
     handleSelectChange,
     handleCheckboxChange,
-    handleGenercoChange,
+    handleFormValueChange,
     reset,
   } = useForm(initialForm);
 
   const { isLoading, supplyError, createSupply, updateSupply, setSupplyError, getSupplies } = useSupply();
   const { isLoading: loadingCrops, dataCrops, getCrops } = useCrops();
+  const [fileUpload, setFileUpload] = React.useState<File | null>(null);
 
   const onClickCancel = () => navigate("/init/overview/supply");
 
@@ -72,11 +74,30 @@ export const SupplyPage: React.FC = () => {
     }
   };
 
+  const uploadDocumentFile = async () => {
+    try {
+      if (fileUpload) {
+        const response = await uploadFile(fileUpload);
+        if (response) console.log("file upload successful.");
+      }
+    } catch (error) {
+      console.log('upload file error:', error);
+    }
+  }
+
+  const addNewSupply = async () => {
+    try {
+      await uploadDocumentFile();
+      await createSupply(formulario);
+      navigate("/init/overview/supply");
+      reset();
+    } catch (error) {
+      console.log('error', error)
+    }
+  }
+
   const handleAddSupply = () => {
-    // console.log('formulario', formulario)
-    createSupply(formulario);
-    navigate("/init/overview/supply");
-    reset();
+    addNewSupply();
   };
 
   const getStepContent = useMemo(
@@ -92,6 +113,7 @@ export const SupplyPage: React.FC = () => {
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
+              setFileUpload={setFileUpload}
             />
           );
         case 1:
@@ -101,7 +123,7 @@ export const SupplyPage: React.FC = () => {
               crops={dataCrops} //TODO: cambiar por la tabla de cultivo
               formValues={formulario}
               handleInputChange={handleInputChange}
-              handleGenercoChange={handleGenercoChange}
+              handleFormValueChange={handleFormValueChange}
               handleSelectChange={handleSelectChange}
             />
           );
@@ -124,7 +146,8 @@ export const SupplyPage: React.FC = () => {
         handleInputChange,
         handleSelectChange,
         handleCheckboxChange,
-        setFormulario]
+        setFormulario,
+        setFileUpload]
     ]
   );
 

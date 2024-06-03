@@ -1,10 +1,19 @@
+import { Campaign } from "@types";
+import store from "../redux/store";
+
 export const loadCampaignFromLS = () => {
   try {
     const serialState = localStorage.getItem('selectedCampaign');
     if (serialState === null) {
       return undefined;
     }
-    return JSON.parse(serialState);
+    let campaign : Campaign = JSON.parse(serialState);
+    if(campaign.accountId === store.getState().auth.user?.accountId){
+      return campaign
+    }else{
+      return undefined
+    }
+    
   } catch (err) {
     return undefined;
   }

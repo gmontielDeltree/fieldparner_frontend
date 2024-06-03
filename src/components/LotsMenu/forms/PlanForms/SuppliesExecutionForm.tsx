@@ -107,7 +107,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       dosis: dosificacion,
       insumo: selectedSupply,
       nro_lote: nroLote,
-      ubicacion: "",
+      ubicacion: ubicacion,
       motivos: [],
       uuid: uuid4(),
       total: total,
@@ -295,6 +295,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
           dosificacion: dosis.dosis,
           total: dosis.total,
           deposito: dosis.deposito,
+          nro_lote: dosis.nro_lote,
+          ubicacion: dosis.ubicacion,
           precio: dosis.precio_estimado,
           uuid: dosis.uuid
         }))
@@ -354,41 +356,35 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
             </Grid>
           </Grid>
 
-          {/* Línea 3: Cantidad, Cant Total, Precio unitario, Costo Total */}
+          {/* Línea 3: Cantidad, Cant Total */}
           <Grid container item xs={12} spacing={1}>
-            <Grid item xs={3}>
+            <Grid item xs={6}>
               <NumberFieldWithUnits
                 fullWidth
                 label="Cantidad"
-                value={quantity}
-                onChange={handleQuantityChange}
+                value={dosificacion}
+                onChange={handleDosificacionChange}
                 unit={selectedSupply?.unitMeasurement || "unit"}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={5}>
               <NumberFieldWithUnits
                 fullWidth
                 label="Cant Total"
-                value={totalQuantity}
-                onChange={handleTotalQuantityChange}
+                value={total}
+                onChange={handleCostoTotalChange}
                 unit={selectedSupply?.unitMeasurement || "unit"}
               />
             </Grid>
-            <Grid item xs={3}>
-              <TextField
-                fullWidth
-                label="Precio unitario"
-                value={unitPrice}
-                onChange={handleUnitPriceChange}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <TextField
-                fullWidth
-                label="Costo Total"
-                value={totalCost}
-                onChange={handleTotalCostChange}
-              />
+
+            <Grid item xs={1}>
+              <IconButton
+                onClick={handleAddRow}
+                color="primary"
+                aria-label="add"
+              >
+                <AddIcon />
+              </IconButton>
             </Grid>
           </Grid>
         </Grid>
@@ -439,6 +435,24 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                             unit="ha"
                           />
                         </Grid>
+
+
+                        <Grid item xs={5}>
+                          <TextField
+                            fullWidth
+                            label="Nro de Lote"
+                            value={editData.nro_lote}
+                            onChange={handleEditNroLoteChange}
+                          />
+                        </Grid>
+                        <Grid item xs={5}>
+                          <TextField
+                            fullWidth
+                            label="Ubicacion"
+                            value={editData.ubicacion}
+                            onChange={handleEditUbicacionChange}
+                          />
+                        </Grid>
                       </Grid>
                     </>
                   ) : (
@@ -461,8 +475,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                           </Typography>
                         </Grid>
                       </Grid>
-                      <Grid container item xs={10}>
-                        <Grid item xs={5}>
+                      <Grid container item xs={12}>
+                        <Grid item xs={3}>
                           <Typography
                             variant="caption"
                             title={row.selectedOption?.unitMeasurement + "/ha"}
@@ -472,7 +486,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                             {abrUnit(row.selectedOption?.unitMeasurement)}/ha
                           </Typography>
                         </Grid>
-                        <Grid item xs={5}>
+                        <Grid item xs={3}>
                           <Typography
                             variant="caption"
                             title={row.selectedOption?.unitMeasurement}
@@ -481,10 +495,22 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                             {abrUnit(row.selectedOption?.unitMeasurement)}
                           </Typography>
                         </Grid>
+                        <Grid item xs={3}>
+                          <Typography variant="caption">
+                            <strong>{t("Ubicacion")}:</strong> {row.ubicacion}
+                          </Typography>
+
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Typography variant="caption">
+                            <strong>{t("Nro lote")}:</strong> {row.nro_lote}
+                          </Typography>
+                        </Grid>
+
                       </Grid>
                     </>
                   )}
-                  <Grid item xs={2} style={{ textAlign: "right" }}>
+                  <Grid item xs={12} style={{ textAlign: "center" }}>
                     {editIndex === index ? (
                       <>
                         <IconButton
@@ -495,7 +521,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                           <SaveIcon />
                         </IconButton>
                         <IconButton
-                          color="secondary"
+                          color="error"
                           aria-label="cancel"
                           onClick={handleCancelEdit}
                         >
@@ -512,7 +538,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                           <EditIcon />
                         </IconButton>
                         <IconButton
-                          color="secondary"
+                          color="error"
                           aria-label="delete"
                           onClick={() => handleDeleteRow(index)}
                         >

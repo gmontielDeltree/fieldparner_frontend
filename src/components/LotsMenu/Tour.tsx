@@ -9,6 +9,7 @@ import Paper from "@mui/material/Paper";
 import { keyframes, styled, useTheme } from "@mui/material/styles";
 import EditIcon from "@mui/icons-material/Edit";
 import PlaceMarker from "../NewGeometry/PlaceMarker";
+import { useAppSelector } from "../../hooks";
 
 const floating = keyframes`
 0% { transform: translateY(0px); }
@@ -36,6 +37,7 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
   const titleBg = existingNote
     ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
     : `linear-gradient(45deg, #a0a0a0, #626262)`;
+  const { selectedCampaign } = useAppSelector((state) => state.campaign);
   const removeMarkerFunctionsRef = useRef<(() => void)[]>([]);
   useEffect(() => {
     if (existingNote) {
@@ -77,10 +79,9 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
 
   const handleSave = () => {
     let actividad = formData;
+    let formattedDate = new Date();
     try {
-      const fechaEjecucion = actividad.fecha;
-      const parsedDate = new Date(fechaEjecucion);
-      const formattedDate = format(parsedDate, "yyyy-MM-dd");
+      actividad.campaña = selectedCampaign
       actividad._id =
         actividad._id || "actividad:" + formattedDate + ":" + uuid4();
 
@@ -114,6 +115,7 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
       console.error("Error in handleSave:", error);
     }
   };
+
 
   return (
     <div>

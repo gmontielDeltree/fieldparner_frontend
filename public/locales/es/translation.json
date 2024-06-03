@@ -23,6 +23,7 @@
   "_add": "Agregar",
   "_physical": "Física",
   "_legal": "Juridica",
+  "commercial_terms": "Terminos Comerciales",
   "main_contact": "Contacto principal",
   "secondary_contact": "Contacto secundario",
   "_phone": "Teléfono",
@@ -40,6 +41,8 @@
   "_locality": "Localidad",
   "_address": "Domicilio",
   "_fields": "Campos",
+  "_logo": "Logo",
+  "purchase_order": "Orden de Compra",
   "_reload": "Recargar",
   "device_list": "Lista de dispositivos",
   "field_output": "Salida de campo",
@@ -49,6 +52,7 @@
   "_warehouses": "Insumos/Lotes",
   "_warehouse": "Deposito",
   "_vehicles": "Vehículos",
+  "_file": "Archivo",
   "stock_movements": "Movimientos de stock",
   "stock_inquiry": "Consulta de stock",
   "_transformation": "Transformación",
@@ -71,6 +75,7 @@
   "_deleted": "Eliminado",
   "error_during_search": "Se produjo un error durante la búsqueda",
   "unexpected_error": "Error inesperado",
+  "provider": "Proveedor",
   "this_field_is_mandatory": "Este campo es obligatorio",
   "please_enter_search_term": "Por favor, ingrese un término de búsqueda",
   "_date": "Fecha",
@@ -136,6 +141,7 @@
   "_pair": "PAR",
   "_dozen": "DOCENA",
   "_gram": "GRAMO",
+  "total_amount": "Importe Total",
   "_millimeter": "MILIMETRO",
   "cubic_millimeter": "MMCUBICO",
   "_kilometer": "KILOMETRO",
@@ -308,5 +314,6 @@
   "_zones":"Zonas",
   "service_labors": "Servicio de Labores",
   "_service": "Servicio",
-  "labors_service": "Labores / Servicio"
+  "labors_service": "Labores / Servicio",
+  "total_price": "Precio Total"
 }
