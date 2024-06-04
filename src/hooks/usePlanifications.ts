@@ -21,6 +21,7 @@ import {
   DetallesAplicacion,
   LineaDosis,
   LineaLabor,
+  LineaServicio,
 } from "../interfaces/activity";
 import { Contratista } from "../interfaces/contractor";
 import { Crop } from "../interfaces/input";
@@ -137,18 +138,23 @@ export const usePlanActividad = () => {
       }),
     );
 
-    console.log("LLLLLLLLLLLL");
-    let servicios: LineaLabor = [];
+    let servicios: LineaServicio = [];
     let bunch_of_servicios = await Promise.all(
       actividad.laboresLineasIds.map(async (id) => {
         let linea: ILaboresPlanificacion = await dbContext.fields.get(id);
         let labor = getLaborFromId(linea.laborId);
+        console.log("Linea LABOR",linea);
 
-        let nuevaLinea: LineaLabor = {
-          labor: { labor: labor?.name, uuid: labor?.id },
-          costo: linea.totalCosto,
-          observacion: linea.comentario || "",
+
+     
+        let nuevaLinea: LineaServicio = {
+          servicio: labor?.name || "",
+          contratista:actividad.contratista,
+          costo_total: linea.totalCosto,
+          comentario: linea.comentario || "",
           uuid: uuidv7(),
+          unidades: actividad.area,
+          precio_unidad: linea.costoPorHectarea,
         };
 
         servicios.push(nuevaLinea);
@@ -162,6 +168,7 @@ export const usePlanActividad = () => {
       cultivo: cultivo,
       costo_labor: servicios,
       hectareas: actividad.area,
+      servicios: servicios,
     };
 
     let nuevaActividad: Actividad = {
@@ -189,12 +196,28 @@ export const usePlanActividad = () => {
       Promise.resolve("fdfdf");
     });
   };
+
+
+
+  const  getCicloSortedActivities = async (ciclo : ICiclosPlanificacion)=>{
+    let ids = ciclo.actividadesIds
+    let docs = await db.allDocs<IActividadPlanificacion>({keys:ids,include_docs:true})
+
+    let sorted = docs.rows.sort((a,b)=>(a.doc?.fecha.localeCompare(b.doc?.fecha) ? 1 : -1))
+
+    let soloIds = sorted.map((a) => a.doc?._id)
+
+    console.log("SORTED", docs,sorted,soloIds)
+    return soloIds
+  }
+
   return {
     saveActividad,
     removeActividad,
     getLineasServicios,
     getLineasInsumos,
     programarActividadPlanificada,
+    getCicloSortedActivities,
   };
 };
 
@@ -339,6 +362,8 @@ export const useCiclo = ({
     db.put(c).then(() => console.log("saveCiclo", c, ciclo));
     setCiclo(c);
   };
+  
+
 
   return [ciclo, saveCiclo];
 };

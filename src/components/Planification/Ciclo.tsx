@@ -18,7 +18,7 @@ import { ActividadEditorBase } from "./ActividadEditorBase";
 import ActividadEditorDialog from "./ActividadEditorDialog";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { CultivoContext } from "./contexts/CultivosContext";
-import { useCiclos } from "../../hooks/usePlanifications";
+import { useCiclos, usePlanActividad } from "../../hooks/usePlanifications";
 import { CiclosContext } from "./contexts/CiclosContext";
 import { format } from "date-fns";
 import { Lot } from "@types";
@@ -42,8 +42,16 @@ export const Ciclo = ({
 
   const { getCropLabelFromId, getCropColorFromId } = useContext(CultivoContext);
 
-  const [actividades, setActividades] = useState<IActividadPlanificacion[]>();
+  const [actividades, setActividades] = useState<string[]>([]);
   const { removeCiclo } = useContext(CiclosContext);
+  const {getCicloSortedActivities} = usePlanActividad()
+
+  useEffect( ()=>{
+    if(ciclo.actividadesIds?.length >0){
+      getCicloSortedActivities(ciclo).then((a)=>setActividades(a))
+    }
+  },[ciclo])
+
   return (
     <Accordion
       sx={{ backgroundColor: getCropColorFromId(ciclo.cultivoId) }}
@@ -96,10 +104,10 @@ export const Ciclo = ({
             backgroundColor: "#c7bb27",
             margin: "0.2rem",
             paddingY: "1rem",
-            borderRadius: "1rem",
+            borderRadius: "1rem", 
           }}
         >
-          {ciclo.actividadesIds?.map((a, i) => {
+          {actividades.map((a, i) => {
             return (
               <ActividadCardBase key={a} actividadId={a}></ActividadCardBase>
             );
