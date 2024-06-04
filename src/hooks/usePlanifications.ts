@@ -196,12 +196,28 @@ export const usePlanActividad = () => {
       Promise.resolve("fdfdf");
     });
   };
+
+
+
+  const  getCicloSortedActivities = async (ciclo : ICiclosPlanificacion)=>{
+    let ids = ciclo.actividadesIds
+    let docs = await db.allDocs<IActividadPlanificacion>({keys:ids,include_docs:true})
+
+    let sorted = docs.rows.sort((a,b)=>(a.doc?.fecha.localeCompare(b.doc?.fecha) ? 1 : -1))
+
+    let soloIds = sorted.map((a) => a.doc?._id)
+
+    console.log("SORTED", docs,sorted,soloIds)
+    return soloIds
+  }
+
   return {
     saveActividad,
     removeActividad,
     getLineasServicios,
     getLineasInsumos,
     programarActividadPlanificada,
+    getCicloSortedActivities,
   };
 };
 
@@ -346,6 +362,8 @@ export const useCiclo = ({
     db.put(c).then(() => console.log("saveCiclo", c, ciclo));
     setCiclo(c);
   };
+  
+
 
   return [ciclo, saveCiclo];
 };
