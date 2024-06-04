@@ -100,6 +100,17 @@ type LineaDosis = {
   precio_estimado: number;
 };
 
+type LineaServicio = {
+  uuid: string;
+  servicio : string;
+
+  contratista: Contratista;
+  unidades: number;
+  precio_unidad: number;
+  costo_total: number;
+  comentario: string;
+};
+
 type LineaLabor = {
   uuid: string;
   labor: Labor;
@@ -122,11 +133,14 @@ type DetallesAplicacion = {
   fecha_ejecucion_tentativa: string;
   hectareas: number;
   dosis: LineaDosis[];
+  servicios?: LineaServicio[];
 };
 
 type DetallesCosecha = {
   fecha_ejecucion_tentativa: string;
   dosis?: LineaDosis[];
+  servicios?: LineaServicio[];
+
   hectareas: number;
   rinde: number;
   humedad: number;
@@ -135,6 +149,8 @@ type DetallesCosecha = {
 type DetallesSiembra = {
   fecha_ejecucion_tentativa: string;
   dosis?: LineaDosis[];
+  servicios?: LineaServicio[];
+
   insumo: Insumo;
   peso_1000: number;
   densidad_objetivo: number;
@@ -433,5 +449,6 @@ export type {
   LineaLabor,
   Ejecucion,
   DetallesEjecucion,
-  LineaDosisEjecucion
+  LineaDosisEjecucion,
+  LineaServicio
 };

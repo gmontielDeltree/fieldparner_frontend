@@ -21,6 +21,7 @@ import {
   DetallesAplicacion,
   LineaDosis,
   LineaLabor,
+  LineaServicio,
 } from "../interfaces/activity";
 import { Contratista } from "../interfaces/contractor";
 import { Crop } from "../interfaces/input";
@@ -137,18 +138,23 @@ export const usePlanActividad = () => {
       }),
     );
 
-    console.log("LLLLLLLLLLLL");
-    let servicios: LineaLabor = [];
+    let servicios: LineaServicio = [];
     let bunch_of_servicios = await Promise.all(
       actividad.laboresLineasIds.map(async (id) => {
         let linea: ILaboresPlanificacion = await dbContext.fields.get(id);
         let labor = getLaborFromId(linea.laborId);
+        console.log("Linea LABOR",linea);
 
-        let nuevaLinea: LineaLabor = {
-          labor: { labor: labor?.name, uuid: labor?.id },
-          costo: linea.totalCosto,
-          observacion: linea.comentario || "",
+
+     
+        let nuevaLinea: LineaServicio = {
+          servicio: labor?.name || "",
+          contratista:actividad.contratista,
+          costo_total: linea.totalCosto,
+          comentario: linea.comentario || "",
           uuid: uuidv7(),
+          unidades: actividad.area,
+          precio_unidad: linea.costoPorHectarea,
         };
 
         servicios.push(nuevaLinea);
@@ -162,6 +168,7 @@ export const usePlanActividad = () => {
       cultivo: cultivo,
       costo_labor: servicios,
       hectareas: actividad.area,
+      servicios: servicios,
     };
 
     let nuevaActividad: Actividad = {

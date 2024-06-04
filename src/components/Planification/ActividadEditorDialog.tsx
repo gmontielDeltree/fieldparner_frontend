@@ -170,7 +170,7 @@ export default function ActividadEditorDialog({
             handleMenuClose();
             setActividad({
               ...cleanAct,
-              tipo: TTipoActividadPlanificada.PREPARACION,
+              tipo: TTipoActividadPlanificada.PREPARADO,
             });
             handleClickOpen();
           }}

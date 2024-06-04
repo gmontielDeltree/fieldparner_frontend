@@ -7,7 +7,7 @@ export enum TTipoActividadPlanificada {
     COSECHA = "cosecha",
     APLICACION = "aplicacion",
     OTRO = "otro",
-    PREPARACION = "preparacion"
+    PREPARADO = "preparado"
 }
 
 interface FPAccountBaseDoc {
