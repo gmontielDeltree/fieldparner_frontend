@@ -280,10 +280,14 @@ function PlanTasksForm({
         if (isInEditMode) {
           return [
             <GridActionsCellItem
-              icon={<SaveIcon />}
+              icon={<AddIcon />}
               label="Save"
               sx={{
-                color: "primary.main",
+                color: "white",
+                backgroundColor: "green",
+                "&:hover": {
+                  backgroundColor: "green",
+                },
               }}
               onClick={handleSaveClick(id)}
             />,
