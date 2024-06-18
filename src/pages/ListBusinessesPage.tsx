@@ -21,7 +21,7 @@ import {
   Typography,
 } from "@mui/material";
 import 'semantic-ui-css/semantic.min.css';
-import {Icon} from "semantic-ui-react";
+import { Icon } from "semantic-ui-react";
 import {
   Add as AddIcon,
   Business as BusinessIcon,
@@ -30,18 +30,16 @@ import {
 import { useForm, useAppDispatch, useBusiness } from "../hooks";
 import { setBusinessActive } from "../redux/business";
 import { useTranslation } from "react-i18next";
-
-
-
-
+import { PaisTableCell } from "../components/PaisTableCell";
 
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  // const { isLoading } = useAppSelector((state) => state.ui);
-  const { isLoading, businesses, getBusinesses, setBusinesses, deleteBusiness} = useBusiness();
+  const { isLoading, businesses, getBusinesses, setBusinesses, deleteBusiness } = useBusiness();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
-const { t } = useTranslation();
+  const { t } = useTranslation();
+  
+ 
 
   const columns: ColumnProps[] = [
     { text: t("entity_type"), align: "center" },
@@ -51,6 +49,8 @@ const { t } = useTranslation();
     { text: t("id_country"), align: "center" },
     { text: "", align: "center" },
   ];
+
+  
 
   const onClickSearch = (): void => {
     if (filterText === "") {
@@ -74,6 +74,8 @@ const { t } = useTranslation();
     navigate(`/init/overview/business/${item._id}`);
   };
 
+
+
   const handleDeleteBusiness = (item: Business) => {
     if (item._id && item._rev) {
       deleteBusiness(item._id, item._rev);
@@ -87,24 +89,24 @@ const { t } = useTranslation();
 
   return (
     <TemplateLayout key="overview-business" viewMap={false}>
-    {isLoading && <Loading loading={true} />}
-    <Container maxWidth="lg">
-          <Box
-        component="div"
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
-      >
-        <Box display="flex" alignItems="center">
-          <BusinessIcon sx={{ marginRight: '8px' }} />
-          <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
-            {t("social_entities")}
-          </Typography>
+      {isLoading && <Loading loading={true} />}
+      <Container maxWidth="lg">
+        <Box
+          component="div"
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
+        >
+          <Box display="flex" alignItems="center">
+            <BusinessIcon sx={{ marginRight: '8px' }} />
+            <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
+              {t("social_entities")}
+            </Typography>
+          </Box>
+          <CloseButtonPage />
         </Box>
-        <CloseButtonPage />
-      </Box>
-      <Box component="div" sx={{ mt: 7 }}>
+        <Box component="div" sx={{ mt: 7 }}>
           <Grid
             container
             spacing={0}
@@ -156,7 +158,9 @@ const { t } = useTranslation();
                     {row.cuit || row.documento}
                   </TableCellStyled>
                   <TableCellStyled>{row.email}</TableCellStyled>
-                  <TableCellStyled align="center">{row.pais}</TableCellStyled>
+                  <TableCellStyled align="center">
+                   <PaisTableCell pais={row.pais} mostrarDato="descriptionES" />
+                  </TableCellStyled>
                   <TableCellStyled align="center">
                     <Tooltip title={t("icon_edit")}>
                       <IconButton

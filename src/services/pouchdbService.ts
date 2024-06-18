@@ -26,6 +26,7 @@ import {
     LaborsServices,
     PurchaseOrder,
     DetailPurchaseOrder,
+    Country
 } from '../types';
 
 
@@ -70,6 +71,7 @@ const dbNames = Object.freeze({
     laborsServices: "labors-services",
     purchaseOrder: "purchase-order",
     detailPurchaseOrder: "detail-purchase-order",
+    country: "country",
 });
 
 export const dbContext = Object.freeze({
@@ -101,6 +103,7 @@ export const dbContext = Object.freeze({
     laborsServices: new PouchDB<LaborsServices>(dbNames.laborsServices),
     purchaseOrder: new PouchDB<PurchaseOrder>(dbNames.purchaseOrder),
     detailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.detailPurchaseOrder),
+    country: new PouchDB<Country>(dbNames.country),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html

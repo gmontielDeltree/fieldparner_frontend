@@ -23,6 +23,7 @@ import { removeBusinessActive } from "../redux/business";
 import { getLocalityAndStateByZipCode } from "../services";
 import { useTranslation } from "react-i18next";
 import { uploadFile } from "../helpers/fileUpload";
+import Swal from "sweetalert2";
 
 const initialForm: Business = {
   nombreCompleto: "",
@@ -40,7 +41,7 @@ const initialForm: Business = {
   cp: "",
   zipCode: "",
   provincia: "",
-  pais: "",
+  pais: [],
   esEmpleado: false,
   legajo: "",
   matricula: "",
@@ -181,56 +182,60 @@ export const BusinessPage: React.FC = () => {
 
   const validateForm = () => {
     if (formulario.tipoEntidad === TipoEntidad.JURIDICA.toString()) {
-
       let hasError = false;
-
+  
       if (formulario.cuit?.trim() === "") {
         setCuitError(true);
         hasError = true;
+        console.log("Error de validación: CUIT está vacío");
       } else {
         setCuitError(false);
       }
-
+  
       if (formulario.razonSocial?.trim() === "") {
         setRazonSocialError(true);
         hasError = true;
+        console.log("Error de validación: Razón Social está vacía");
       } else {
         setRazonSocialError(false);
       }
-
+  
       if (formulario.email?.trim() === "") {
         setEmailError(true);
         hasError = true;
+        console.log("Error de validación: Email está vacío");
       } else {
         setEmailError(false);
       }
-
+  
       return !hasError;
     } else {
-      // Validaciones para otros tipos de entidad
       let hasError = false;
-
+  
       if (formulario.nombreCompleto?.trim() === "") {
         setNameError(true);
         hasError = true;
+        console.log("Error de validación: Nombre Completo está vacío");
       } else {
         setNameError(false);
       }
-
+  
       if (formulario.documento?.trim() === "") {
         setDocumentError(true);
         hasError = true;
+        console.log("Error de validación: Documento está vacío");
       } else {
         setDocumentError(false);
       }
-
+  
       if (formulario.esEmpleado && formulario.legajo?.trim() === "") {
         setLegajoError(true);
         hasError = true;
+        console.log("Error de validación: Legajo está vacío");
       } else {
         setLegajoError(false);
       }
-
+  
       return !hasError;
     }
   };
@@ -255,30 +260,64 @@ export const BusinessPage: React.FC = () => {
   };
 
   const addNewBusiness = async () => {
+    console.log("Agregando nuevo negocio con los siguientes datos del formulario:", formulario);
     try {
-
       if (formulario.zipCode?.trim() !== "") {
+        console.log("Obteniendo localidad y estado...");
         await getLocalityAndState();
+        console.log("Localidad y estado obtenidos.");
       }
-
+  
       if (!validateForm()) {
+        console.log("La validación del formulario falló.");
         return;
       }
-      if (formulario.pais?.trim() === "") {
-        setCountryError(true);
-        return;
-      } else {
-        setCountryError(false);
+  
+      console.log("La validación del formulario pasó.");
+  
+      // if (formulario.pais?.trim() === "") {
+      //   setCountryError(true);
+      //   console.log("La validación del país falló.");
+      //   return;
+      // } else {
+      //   setCountryError(false);
+      // }
+  
+      if (logoFile) {
+        console.log("Subiendo archivo de logo:", logoFile);
+        await uploadFile(logoFile);
+        console.log("Archivo de logo subido.");
       }
-      if (logoFile) await uploadFile(logoFile);
-      await createBusiness(formulario);
+  
+      console.log("Creando negocio...");
+      const response = await createBusiness(formulario);
+      console.log("Respuesta de creación de negocio:", response);
+  
+      // Mostrar un mensaje de éxito usando Swal
+      Swal.fire({
+        title: 'Entidad Social',
+        text: 'Agregaste una entidad con éxito',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+  
       reset();
+  
     } catch (error) {
       console.error("Error al agregar el negocio:", error);
+  
+      // Mostrar un mensaje de error usando Swal
+      Swal.fire({
+        title: 'Error',
+        text: 'Error al agregar una entidad',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
-
-
+  
+  
+  
   const handleUpdateBusiness = async () => {
     if (!validateForm()) {
       return;

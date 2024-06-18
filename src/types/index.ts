@@ -171,7 +171,7 @@ export interface Business extends Document {
   cp: string;
   zipCode: string;
   provincia: string;
-  pais: string;
+  pais: string[];
   estado?: boolean;
   esEmpleado?: boolean;
   legajo?: string;
@@ -591,6 +591,17 @@ export interface Crops extends Document {
   application: boolean;
   germination: boolean;
   harvest: boolean;
+}
+
+export interface Country extends Document {
+  code: string
+  descriptionES: string;
+  descriptionPT:string;
+  descriptionEN:string;
+  leguaje: string;
+  currency: string;
+  taxKey: string;
+  taxKeyFormat: string;
 }
 
 export interface PurchaseOrder extends Document {

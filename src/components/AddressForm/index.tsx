@@ -1,5 +1,5 @@
 import React, { ChangeEvent, SetStateAction, useState } from "react";
-import { Grid, TextField, InputAdornment, Button, Input, Card, CardMedia, Box, Paper, IconButton } from "@mui/material";
+import { Grid, TextField, InputAdornment, Button, Card, CardMedia, Box, Paper, IconButton, FormControl, FormHelperText } from "@mui/material";
 import { getLocalityAndStateByZipCode } from "../../services";
 import { Autocomplete } from "@mui/material";
 import { Loading } from "../../components";
@@ -8,14 +8,7 @@ import { CloudUpload as CloudUploadIcon, DoDisturb as DoDisturbIcon, Cancel as C
 import { Business } from "../../types";
 import uuid4 from "uuid4";
 import { urlImg } from "../../config";
-
-// export interface Address {
-//   domicilio: string;
-//   localidad: string;
-//   cp: string;
-//   provincia: string;
-//   pais: string;
-// }
+import { AutocompleteCountry } from "../LotsMenu/components/AutocompleteCountry";
 
 export interface AddressFormProps {
   values: Business;
@@ -39,6 +32,12 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   const [localities, setLocalities] = useState<string[]>([]);
   const [urlFile, setUrlFile] = useState('');
   const { t } = useTranslation();
+
+  const [formData, setFormData] = useState({
+    detalles: {
+      country: '',
+    },
+  });
 
   const onBlurZipCode = async () => {
     if (cp !== "") {
@@ -75,7 +74,6 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-
     const file = event.target.files ? event.target.files[0] : null;
     if (file) {
       let fileNameOriginal = file.name;
@@ -98,6 +96,17 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     handleFormValueChange("logoBusiness", "");
   }
 
+  const onFieldChange = (fieldName: string, value: string) => {
+    setFormData({
+      ...formData,
+      detalles: {
+        ...formData.detalles,
+        [fieldName]: value
+      }
+    });
+    handleFormValueChange(fieldName, value);
+  };
+
   return (
     <>
       <Loading key="loading-business" loading={loadingZipCode} />
@@ -110,20 +119,13 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         justifyContent="center"
       >
         <Grid item xs={12} sm={6}>
-          <TextField
-            label={t("id_country")}
-            variant="outlined"
-            type="text"
-            name="pais"
-            value={pais}
-            error={countryError}
-            onChange={handleInputChange}
-            helperText={countryError ? "Este campo es obligatorio" : ""}
-            InputProps={{
-              startAdornment: <InputAdornment position="start" />
-            }}
-            fullWidth
-          />
+          <FormControl fullWidth variant="outlined" error={countryError}>
+            <AutocompleteCountry
+              value={pais || ""}
+              onChange={(value: any) => onFieldChange("pais", value)}
+            />
+            {countryError && <FormHelperText>Mensaje de error!</FormHelperText>}
+          </FormControl>
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField
@@ -133,9 +135,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
             name="cp"
             value={cp}
             onBlur={onBlurZipCode}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              handleInputChange(e)
-            }
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
             InputProps={{
               startAdornment: <InputAdornment position="start" />
             }}
@@ -212,12 +212,12 @@ export const AddressForm: React.FC<AddressFormProps> = ({
                   hidden
                   onChange={handleFileUpload} />
               </Button>
-            ) :
+            ) : (
               <IconButton onClick={handleCancelFile} color="error" sx={{ p: 0, pl: 1 }}>
                 <CancelIcon fontSize="large" />
               </IconButton>
+            )
           }
-
           <Box display="inline-block" component={Paper} sx={{ mb: 1 }}>
             {
               (urlFile || logoBusiness) ? (
@@ -229,10 +229,11 @@ export const AddressForm: React.FC<AddressFormProps> = ({
                     alt="Logo"
                   />
                 </Card>
-              ) :
+              ) : (
                 <Box sx={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <DoDisturbIcon fontSize="large" color="disabled" />
                 </Box>
+              )
             }
           </Box>
         </Grid>

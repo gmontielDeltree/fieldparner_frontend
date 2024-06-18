@@ -329,7 +329,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               <Paper sx={{ width: "100%", padding: "17px" }}>
                 {selectedSupply?.description && (
                   <Typography variant="body2" gutterBottom>
-                    {selectedSupply?.description}
+                    {selectedSupply?.description} {selectedSupply?.type}
                   </Typography>
                 )}
               </Paper>

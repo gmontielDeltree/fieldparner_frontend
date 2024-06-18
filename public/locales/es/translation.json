@@ -60,7 +60,7 @@
   "_type": "Tipo",
   "_description": "Descripción",
   "_detail": "Detalle",
-  "_senasa": "Codigo Sanitario Oficial",
+  "_senasa": "o Sanitario Oficial",
   "_formulationDenomination": "Denominacion Formulado",
   "_toxicityClass": "Clase de Toxicidad",
   "_geolocation": "Geolocalización",
