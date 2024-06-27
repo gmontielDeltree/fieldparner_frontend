@@ -30,7 +30,7 @@ import {
 import { useForm, useAppDispatch, useBusiness } from "../hooks";
 import { setBusinessActive } from "../redux/business";
 import { useTranslation } from "react-i18next";
-import { Business } from "../interfaces/socialEntity";
+import { Business, BusinessItem } from "../interfaces/socialEntity";
 
 
 
@@ -70,8 +70,9 @@ export const ListBusinessesPage: React.FC = () => {
 
   const onClickAddBusiness = () => navigate("/init/overview/business/new");
 
-  const onClickUpdateBusiness = (item: Business) => {
-    dispatch(setBusinessActive(item));
+  const onClickUpdateBusiness = (item: BusinessItem) => {
+    const { country, ...rest } = item;
+    dispatch(setBusinessActive(rest));
     navigate(`/init/overview/business/${item._id}`);
   };
 
