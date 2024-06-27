@@ -6,7 +6,7 @@ import {
   useBusiness,
   useForm,
 } from "../hooks";
-import { Business, TipoEntidad, CountryCode } from "../types";
+import { TipoEntidad, CountryCode } from "../types";
 import { AddressForm, CategoryTable, Loading } from "../components";
 import {
   Button,
@@ -23,8 +23,10 @@ import { removeBusinessActive } from "../redux/business";
 import { getLocalityAndStateByZipCode } from "../services";
 import { useTranslation } from "react-i18next";
 import { uploadFile } from "../helpers/fileUpload";
+import { Business } from "../interfaces/socialEntity";
 
 const initialForm: Business = {
+  accountId: "",
   nombreCompleto: "",
   documento: "",
   telefono: "",

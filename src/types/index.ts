@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Business } from "../interfaces/socialEntity";
 
 export interface NavBarProps {
   drawerWidth: number;
@@ -116,9 +117,8 @@ export interface Authenticate {
 }
 
 export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
+  // id: string;
+  username: string;
   accountId: string;
   isAdmin: boolean;
   countryId: string;
@@ -154,31 +154,7 @@ export interface AuthState {
   isLoading: boolean;
 }
 
-export interface Business extends Document {
-  // id?: string;
-  nombreCompleto?: string;
-  documento?: string;
-  telefono: string;
-  email: string;
-  tipoEntidad: string;
-  razonSocial?: string;
-  cuit?: string;
-  contactoPrincipal?: string;
-  contactoSecundario?: string;
-  sitioWeb?: string;
-  domicilio: string;
-  localidad: string;
-  cp: string;
-  zipCode: string;
-  provincia: string;
-  pais: string;
-  estado?: boolean;
-  esEmpleado?: boolean;
-  legajo?: string;
-  matricula?: string;
-  categorias: string[];
-  logoBusiness?: string;
-}
+
 
 export interface BusinessState {
   businessActive: Business | null;

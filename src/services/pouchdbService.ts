@@ -2,7 +2,6 @@ import PouchDB from 'pouchdb';
 import PouchDBFind from 'pouchdb-find'
 import { getEnvVariables } from '../helpers/getEnvVariables';
 import {
-    Business,
     Category,
     CountryCode,
     Deposit,
@@ -27,6 +26,8 @@ import {
     PurchaseOrder,
     DetailPurchaseOrder,
 } from '../types';
+import { Country } from '../interfaces/country';
+import { Business } from '../interfaces/socialEntity';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -70,6 +71,7 @@ const dbNames = Object.freeze({
     laborsServices: "labors-services",
     purchaseOrder: "purchase-order",
     detailPurchaseOrder: "detail-purchase-order",
+    countries: "countries",
 });
 
 export const dbContext = Object.freeze({
@@ -101,6 +103,7 @@ export const dbContext = Object.freeze({
     laborsServices: new PouchDB<LaborsServices>(dbNames.laborsServices),
     purchaseOrder: new PouchDB<PurchaseOrder>(dbNames.purchaseOrder),
     detailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.detailPurchaseOrder),
+    countries: new PouchDB<Country>(dbNames.countries),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -133,6 +136,7 @@ dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
 dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, opts);
 dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
 dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
+dbContext.countries.sync(`${remoteCouchDBUrl}${dbNames.countries}`, opts);
 
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
