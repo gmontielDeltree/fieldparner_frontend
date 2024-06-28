@@ -25,3 +25,5 @@ export * from './BorderContainer';
 export * from './NewSupplyRow';
 export * from './ExitField/GeneralData';
 export * from './ExitField/TransportDestination';
+export * from './PaisTableCell/PaisTableCell';
+// export * from './CompatibilityValidator/CompatibilityValidator';

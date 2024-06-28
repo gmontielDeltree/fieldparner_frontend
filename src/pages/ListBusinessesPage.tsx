@@ -9,6 +9,7 @@ import {
   ItemRow,
   TableCellStyled,
   CloseButtonPage,
+  PaisTableCell,
 } from "../components";
 import { Business, ColumnProps } from "../types";
 import {
@@ -30,7 +31,6 @@ import {
 import { useForm, useAppDispatch, useBusiness } from "../hooks";
 import { setBusinessActive } from "../redux/business";
 import { useTranslation } from "react-i18next";
-import { PaisTableCell } from "../components/PaisTableCell";
 
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();

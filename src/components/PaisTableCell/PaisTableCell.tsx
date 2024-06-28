@@ -17,51 +17,60 @@ interface Pais {
 }
 
 interface PaisTableCellProps {
-  pais: Pais | undefined; // Hacemos opcional el objeto Pais
-  mostrarDato: keyof Pais; // Clave de Pais que queremos mostrar inicialmente
+  pais: Pais | undefined; 
+  mostrarDato: keyof Pais; 
 }
 
 export const PaisTableCell: React.FC<PaisTableCellProps> = ({ pais, mostrarDato }) => {
 
   const handleButtonClick = () => {
     if (!pais) {
-      // Si pais es undefined, no hacemos nada
       return;
       
     }
 
-    // Definimos las claves que queremos mostrar en el SweetAlert
+
     const mostrarDatos = [
-      'Codigo',
-      'Moneda',
+      'code',
+      'currency',
       'descriptionEN',
       'descriptionES',
       'descriptionPT',
-      'lenguaje',
+      'leguaje',
       'taxKey',
       'taxKeyFormat',
       
     ];
-
+    let mensaje = '';
     console.log("datos de pais", pais)
 
-    let mensaje = '';
+   
 
-    // Construimos el mensaje basado en las claves seleccionadas
     mostrarDatos.forEach((key) => {
-      mensaje += `${key}: ${pais[key as keyof Pais]}\n`;
+      mensaje += `<strong>${key}:</strong> ${pais[key as keyof Pais]}<br>`;
     });
 
     Swal.fire({
       title: 'Datos del país',
-      html: `<pre style="text-align: left; white-space: pre-wrap;">${mensaje}</pre>`,
+      html: mensaje,
+      icon: 'info',
+      showCloseButton: true,
+      showCancelButton: false,
+      focusConfirm: false,
       confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#3085d6',
+      customClass: {
+        container: 'swal2-container',
+        popup: 'swal2-popup',
+        title: 'swal2-title',
+        confirmButton: 'swal2-confirm-button',
+        closeButton: 'swal2-close',
+      },
     });
     
   };
 
   if (!pais) {
-    // Si pais es undefined, podemos renderizar un mensaje indicando que no hay datos disponibles
     return (
       <Button disabled>
         Datos no disponibles
