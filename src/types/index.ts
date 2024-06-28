@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Business } from "../interfaces/socialEntity";
 
 export interface NavBarProps {
   drawerWidth: number;
@@ -116,9 +117,8 @@ export interface Authenticate {
 }
 
 export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
+  // id: string;
+  username: string;
   accountId: string;
   isAdmin: boolean;
   countryId: string;

@@ -474,7 +474,7 @@ export const NavBar: React.FC<NavBarProps> = ({
           </Grid>
           <Grid item className="d-flex align-items-center">
             <Typography variant="h6" display="inline-block" >
-              {user?.firstName}
+              {user?.username}
             </Typography>
 
             <IconButton

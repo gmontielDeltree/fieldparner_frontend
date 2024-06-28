@@ -1,25 +1,42 @@
 import Swal from 'sweetalert2';
-import { Business } from "../types";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
+import { useAppSelector } from './useRedux';
+import { Country } from '../interfaces/country';
+import { Business, BusinessItem } from '../interfaces/socialEntity';
 
 export const useBusiness = () => {
     const navigate = useNavigate();
-    const [businesses, setBusinesses] = useState<Business[]>([]);
+    const { user } = useAppSelector(state => state.auth);
+    const [businesses, setBusinesses] = useState<BusinessItem[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
-   
+
 
     const getBusinesses = async () => {
         setIsLoading(true);
         try {
-            const result = await dbContext.socialEntities.allDocs({ include_docs: true });
+            const result = await Promise.all([
+                dbContext.socialEntities.find({
+                    selector: { accountId: user?.accountId }
+                }),
+                dbContext.countries.allDocs({ include_docs: true })
+            ]);
+            const socialEntities = result[0].docs.map(d => d as Business);
+            const countries = result[1].rows.map(row => row.doc as Country);
             setIsLoading(false);
+            if (socialEntities.length) {
+                // const documents: Business[] = result.docs.map(row => row as Business);
+                let list = socialEntities.map((s) => {
+                    let country = countries.find(c => c.code === s.pais);
+                    return {
+                        ...s,
+                        country
+                    } as BusinessItem
 
-            if (result.rows.length) {
-                const documents: Business[] = result.rows.map(row => row.doc as Business);
-                setBusinesses(documents);
+                });
+                setBusinesses(list);
             } else {
                 setBusinesses([]);
             }
@@ -35,8 +52,12 @@ export const useBusiness = () => {
     const createBusiness = async (newBusiness: Business) => {
         setIsLoading(true);
 
+        if (!user) throw new Error("Business error:  User not found");
+
+        let createBusiness: Business = { ...newBusiness, accountId: user.accountId }
+
         try {
-            const response = await dbContext.socialEntities.post(newBusiness);
+            const response = await dbContext.socialEntities.post(createBusiness);
             setIsLoading(false);
 
             if (response.ok) {
@@ -69,7 +90,7 @@ export const useBusiness = () => {
     const updateBusiness = async (updateBusiness: Business) => {
         setIsLoading(true);
         try {
-             // const response = await fieldpartnerAPI.patch(`${controller}/${businessId}`, updateBusiness);
+            // const response = await fieldpartnerAPI.patch(`${controller}/${businessId}`, updateBusiness);
             const response = await dbContext.socialEntities.put(updateBusiness);
             setIsLoading(false);
 
@@ -126,7 +147,7 @@ export const useBusiness = () => {
         businesses,
         error,
         isLoading,
-   
+
 
         //* Methods
         setBusinesses,

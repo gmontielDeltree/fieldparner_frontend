@@ -11,7 +11,7 @@ import {
   CloseButtonPage,
   PaisTableCell,
 } from "../components";
-import { Business, ColumnProps } from "../types";
+import { ColumnProps } from "../types";
 import {
   Box,
   Button,
@@ -22,7 +22,7 @@ import {
   Typography,
 } from "@mui/material";
 import 'semantic-ui-css/semantic.min.css';
-import { Icon } from "semantic-ui-react";
+import {  Icon  } from "semantic-ui-react";
 import {
   Add as AddIcon,
   Business as BusinessIcon,
@@ -35,11 +35,10 @@ import { useTranslation } from "react-i18next";
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isLoading, businesses, getBusinesses, setBusinesses, deleteBusiness } = useBusiness();
+  // const { isLoading } = useAppSelector((state) => state.ui);
+  const { isLoading, businesses, getBusinesses, setBusinesses, deleteBusiness} = useBusiness();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
   const { t } = useTranslation();
-  
- 
 
   const columns: ColumnProps[] = [
     { text: t("entity_type"), align: "center" },
@@ -69,8 +68,9 @@ export const ListBusinessesPage: React.FC = () => {
 
   const onClickAddBusiness = () => navigate("/init/overview/business/new");
 
-  const onClickUpdateBusiness = (item: Business) => {
-    dispatch(setBusinessActive(item));
+  const onClickUpdateBusiness = (item: BusinessItem) => {
+    const { country, ...rest } = item;
+    dispatch(setBusinessActive(rest));
     navigate(`/init/overview/business/${item._id}`);
   };
 
