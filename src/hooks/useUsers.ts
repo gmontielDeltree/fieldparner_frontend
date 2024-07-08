@@ -10,7 +10,7 @@ import { fieldpartnerAPI } from '../config';
 import { setUserActive } from '../redux/users';
 
 
-const controller = "/user";
+const controller = "/user-licence";
 
 export const useUser = () => {
   const navigate = useNavigate();
@@ -81,7 +81,7 @@ export const useUser = () => {
       setIsLoading(false);
     } catch (error) {
       console.log(error)
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      Swal.fire('Error', t("users_not_found"), 'error');
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -93,8 +93,8 @@ export const useUser = () => {
     try {
       const userId = upUser._id;
       const bodyUser = {
-        name: upUser.name,
-        lastName: upUser.lastName,
+        // name: upUser.name,
+        // lastName: upUser.lastName,
         previousPassword: upUser.previousPassword,
         newPassword: upUser.newPassword,
         isAdmin: upUser.isAdmin,
@@ -111,7 +111,7 @@ export const useUser = () => {
       
     } catch (error) {
       console.log(error);
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      Swal.fire('Error', "No se pudo actualizar el usuario.", 'error');
       setIsLoading(false);
       if (error) setError(error);
     }

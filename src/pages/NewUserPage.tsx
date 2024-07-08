@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { SyntheticEvent, useEffect, useState } from 'react';
 import {
   AppBar,
+  Autocomplete,
   Box,
   Button,
   Card,
   CardContent,
   CardMedia,
-  Checkbox,
   Container,
   FormControl,
-  FormControlLabel,
-  FormGroup,
-  FormLabel,
   Grid,
   IconButton,
   InputAdornment,
@@ -27,7 +24,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, useForm, useFormError, useUser } from '../hooks';
 import { Loading } from '../components';
-import { UserByAccount, UserRols } from '../types';
+import { EnumStatusUser, UserByAccount, UserRols } from '../types';
 // import { v4 as uuidv4 } from 'uuid';
 import { removeUsersActive } from '../redux/users';
 import {
@@ -35,7 +32,7 @@ import {
   BrokenImage as BrokenImageIcon,
   Cancel as CancelIcon,
   PhotoCamera as PhotoCameraIcon,
-  Schedule as ScheduleIcon,
+  // Schedule as ScheduleIcon,
   VpnKey as VpnKeyIcon,
   People as PeopleIcon,
   Edit as EditIcon,
@@ -47,20 +44,21 @@ import { urlImg } from '../config';
 
 
 const initialForm: UserByAccount = {
-  name: '',
-  lastName: '',
+  username: '',
+  // lastName: '',
   email: '',
   password: '',
   language: '',
   isAdmin: false,
   accountId: '',
-  state: false,
+  state: EnumStatusUser.Inactiva,
   rol: UserRols.User,
   photoName: "",
 };
 
 //TODO: enviar la actualizacion de usuario, incluido si quiere password nueva .
 const policyPassword = "La contraseña debe contener al menos una letra en mayúscula, un dígito, un carácter especial y tener una longitud mínima de 8 caracteres.";
+const statusOptions = Object.values(EnumStatusUser).map(x => x as string);
 
 export const NewUserPage = () => {
   const { id: userId } = useParams();
@@ -68,16 +66,11 @@ export const NewUserPage = () => {
   const { isLoading, createUser, updateUser, getUserById } = useUser();
   const dispatch = useAppDispatch();
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  // const [oldPassword, setOldPassword] = useState<string>('');
-  // const [newPassword, setNewPassword] = useState<string>('');
   const [showChangePassword, setShowChangePassword] = useState<boolean>(false);
-  const [ultimaConexion, setUltimaConexion] = useState(new Date());
-  // const { user } = useAppSelector((state) => state.auth);
   const { formControlError, handleFormValueChange } = useFormError({
     password: "",
     confirmPassword: "",
     newPassword: "",
-
   });
   const { userActive } = useAppSelector((state) => state.users);
   const {
@@ -186,6 +179,12 @@ export const NewUserPage = () => {
     }
   }
 
+  const onChangeStatus = (_event: SyntheticEvent, value: string | null) => {
+    if (value)
+      setFormulario(prevState => ({ ...prevState, state: value }));
+  }
+
+
   useEffect(() => {
     if (userActive) {
       setFormulario(userActive);
@@ -194,10 +193,6 @@ export const NewUserPage = () => {
     }
   }, [userActive, setFormulario]);
 
-  useEffect(() => {
-    const fechaActual = new Date();
-    setUltimaConexion(fechaActual);
-  }, []);
 
   useEffect(() => {
     if (userId) {
@@ -244,23 +239,12 @@ export const NewUserPage = () => {
             <Grid container spacing={1} p={1} mt={1}>
               <Grid container direction="column" xs={7}>
                 <Grid container spacing={1.5} sx={{ pt: 6 }}>
-                  <Grid item xs={6}>
+                  <Grid item xs={12}>
                     <TextField
                       label="Nombre"
                       type="text"
-                      name="name"
-                      value={formulario.name}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Apellido"
-                      type="text"
-                      name="lastName"
-                      value={formulario.lastName}
+                      name="username"
+                      value={formulario.username}
                       onChange={handleInputChange}
                       required
                       fullWidth
@@ -347,33 +331,16 @@ export const NewUserPage = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={4}>
-                    <FormLabel id='user-active'>Usuario Activo</FormLabel>
-                    <FormGroup id="user-active" row>
-                      <FormControlLabel
-                        key="yes"
-                        control={
-                          <Checkbox
-                            name="yes"
-                            checked={formulario.state}
-                            onChange={() => setFormulario({ ...formulario, state: true })}
-                          />
-                        }
-                        label={"Si"}
-                        labelPlacement="start"
-                      />
-                      <FormControlLabel
-                        key="not"
-                        control={
-                          <Checkbox
-                            name="not"
-                            checked={!formulario.state}
-                            onChange={() => setFormulario({ ...formulario, state: false })}
-                          />
-                        }
-                        label={"No"}
-                        labelPlacement="start"
-                      />
-                    </FormGroup>
+                    <Autocomplete
+                      value={formulario.state}
+                      onChange={onChangeStatus}
+                      options={statusOptions}
+                      // getOptionLabel={(option) => option.label}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Estado" variant="outlined" />
+                      )}
+                      fullWidth
+                    />
                   </Grid>
                 </Grid>
               </Grid>
@@ -399,7 +366,7 @@ export const NewUserPage = () => {
                           maxHeight: 150,
                           maxWidth: 150,
                           objectFit: "cover",
-                          borderRadius: "60%"
+                          borderRadius: "50%"
                         }}
                       />
                     ) : (
@@ -485,13 +452,13 @@ export const NewUserPage = () => {
                     </>
                   )}
                 </Box>}
-                <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center', mb: 2 }}>
+                {/* <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center', mb: 2 }}>
                   <ScheduleIcon sx={{ mr: 1 }} />
                   <Typography variant="body1">Última sesión:</Typography>
                   {ultimaConexion && (
                     <Typography variant="body1" sx={{ ml: 1 }}>{ultimaConexion.toLocaleString()}</Typography>
                   )}
-                </Box>
+                </Box> */}
               </Grid>
             </Grid>
             <Box sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', mt: 2 }}>

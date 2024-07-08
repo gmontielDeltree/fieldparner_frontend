@@ -35,7 +35,7 @@ const initialForm: Supply = {
   replenishmentPoint: "",
   currentStock: 0,
   reservedStock: 0,
-  generico: "",
+  generico: false,
   cropId: "",
   brand: "",
   senasaId: "",

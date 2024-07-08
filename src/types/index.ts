@@ -184,7 +184,7 @@ export interface Supply extends Document {
   recommendedDose: string;
   replenishmentPoint: string;
   labors: string[];
-  generico: string;
+  generico: boolean;
   cropId?: string;
   isUserDefined?: boolean;
   replacementId?: string;
@@ -204,14 +204,14 @@ export interface Supply extends Document {
 export interface UserByAccount extends Document {
   accountId?: string;
   username?: string;
-  name: string;
+  // name: string;
   email: string;
   password?: string;
   isAdmin: boolean;
-  lastName: string;
+  // lastName: string;
   language: string;
   rol: string;
-  state: boolean;
+  state: string;
   photoName: string;
   previousPassword?: string;
   newPassword?: string;
@@ -710,6 +710,13 @@ export enum NumeratorType {
 export enum UserRols {
   Administrator = 'ADM',
   User = "USER"
+}
+
+export enum EnumStatusUser {
+  Activa = "Activa",
+  Inactiva = "Inactiva",
+  Suspendida = "Suspendida",
+  Cancelada = "Cancelada",
 }
 
 //#endregion

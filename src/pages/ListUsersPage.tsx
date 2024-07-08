@@ -43,7 +43,7 @@ export const ListUsersPage: React.FC = () => {
   const navigate = useNavigate();
   // const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const { isLoading, users, getUsers, removeUsers } = useUser();
+  const { isLoading, users, getUsers } = useUser();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
 
   const columns: ColumnProps[] = [
@@ -137,10 +137,10 @@ export const ListUsersPage: React.FC = () => {
             >
               {users.map((row) => (
                 <ItemRow key={row._id} hover>
-                  <TableCellStyled align="left">{row.name}</TableCellStyled>
+                  <TableCellStyled align="left">{row.username}</TableCellStyled>
                   <TableCellStyled align="center">{row.email}</TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.state ? "Activo" : "Inactivo"}
+                    {row.state}
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     {row.isAdmin

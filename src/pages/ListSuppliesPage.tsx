@@ -160,6 +160,7 @@ export const ListSuppliesPage: React.FC = () => {
                     <Tooltip title={t("icon_edit")}>
                       <IconButton
                         aria-label={t("icon_edit")}
+                        disabled={row.generico}
                         onClick={() => onClickUpdateSupply(row)}
                       >
                         <EditIcon />
@@ -168,6 +169,7 @@ export const ListSuppliesPage: React.FC = () => {
                     <Tooltip title={t("icon_delete")}>
                       <IconButton
                         onClick={() => handleDeleteSupply(row)}
+                        disabled={row.generico}
                         style={{ fontSize: "1rem" }}
                       >
                         <Icon name="trash alternate" />
