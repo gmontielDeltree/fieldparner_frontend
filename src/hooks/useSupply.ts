@@ -24,7 +24,12 @@ export const useSupply = () => {
             // if (!user) throw new Error("Usuario no encontrado.");
 
             const result = await dbContext.supplies.find({
-                selector: { "accountId": user?.accountId, },
+                selector: {
+                    $or: [
+                        { "accountId": user?.accountId },
+                        { "generico": true }
+                    ]
+                },
             });
 
             setIsLoading(false);
@@ -108,7 +113,14 @@ export const useSupply = () => {
             const promisesResult = await Promise.all([
                 // dbContext.stockMovements.find({ selector: { "accountId": user.accountId } }),
                 dbContext.stockByLots.find({ selector: { "accountId": user.accountId } }),
-                dbContext.supplies.find({ selector: { "accountId": user.accountId } })
+                dbContext.supplies.find({
+                    selector: {
+                        $or: [
+                            { "accountId": user?.accountId },
+                            { "generico": true }
+                        ]
+                    }
+                })
             ]);
             const [stockBySuppplies, supplies] = promisesResult;
             supplies.docs.forEach(supplyDto => {

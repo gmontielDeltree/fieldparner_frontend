@@ -299,5 +299,6 @@
     "service_labors": "Serviço de Trabalho",
     "_service": "Serviço",
     "labors_service": "Trabalho / Serviço",
-    "total_price": "Valor Total"
+    "total_price": "Valor Total",
+    "users_not_found": "Nenhum usuário foi encontrado"
 }
