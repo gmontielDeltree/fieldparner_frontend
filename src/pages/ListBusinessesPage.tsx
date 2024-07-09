@@ -9,6 +9,7 @@ import {
   ItemRow,
   TableCellStyled,
   CloseButtonPage,
+  PaisTableCell,
 } from "../components";
 import { ColumnProps } from "../types";
 import {
@@ -21,7 +22,7 @@ import {
   Typography,
 } from "@mui/material";
 import 'semantic-ui-css/semantic.min.css';
-import { Icon } from "semantic-ui-react";
+import {  Icon  } from "semantic-ui-react";
 import {
   Add as AddIcon,
   Business as BusinessIcon,
@@ -30,17 +31,12 @@ import {
 import { useForm, useAppDispatch, useBusiness } from "../hooks";
 import { setBusinessActive } from "../redux/business";
 import { useTranslation } from "react-i18next";
-import { Business, BusinessItem } from "../interfaces/socialEntity";
-
-
-
-
 
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // const { isLoading } = useAppSelector((state) => state.ui);
-  const { isLoading, businesses, getBusinesses, setBusinesses, deleteBusiness } = useBusiness();
+  const { isLoading, businesses, getBusinesses, setBusinesses, deleteBusiness} = useBusiness();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
   const { t } = useTranslation();
 
@@ -52,6 +48,8 @@ export const ListBusinessesPage: React.FC = () => {
     { text: t("id_country"), align: "center" },
     { text: "", align: "center" },
   ];
+
+  
 
   const onClickSearch = (): void => {
     if (filterText === "") {
@@ -75,6 +73,8 @@ export const ListBusinessesPage: React.FC = () => {
     dispatch(setBusinessActive(rest));
     navigate(`/init/overview/business/${item._id}`);
   };
+
+
 
   const handleDeleteBusiness = (item: Business) => {
     if (item._id && item._rev) {
@@ -158,7 +158,9 @@ export const ListBusinessesPage: React.FC = () => {
                     {row.cuit || row.documento}
                   </TableCellStyled>
                   <TableCellStyled>{row.email}</TableCellStyled>
-                  <TableCellStyled align="center">{row.country.descriptionEN}</TableCellStyled>
+                  <TableCellStyled align="center">
+                   <PaisTableCell pais={row.pais} mostrarDato="descriptionES" />
+                  </TableCellStyled>
                   <TableCellStyled align="center">
                     <Tooltip title={t("icon_edit")}>
                       <IconButton

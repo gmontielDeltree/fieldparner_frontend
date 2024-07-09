@@ -42,7 +42,7 @@ function PersonalForm({ lot, formData, setFormData }) {
 
   const onFieldChange = (fieldName, value) => {
     if (fieldName === "contratista") {
-      console.log("contratista",value)
+      //console.log("contratista",value)
       // Set 
       setFormData({
         ...formData,

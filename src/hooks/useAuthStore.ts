@@ -214,6 +214,30 @@ export const useAuthStore = () => {
     }
   };
 
+
+
+
+  // const checkAuthToken = async () => {
+
+  //   dispatch(onChecking())
+  //   try {
+  //     localStorage.setItem('accessToken', "");
+  //     localStorage.setItem('token_expiration', "");
+
+  //     const lastPath = localStorage.getItem("lastPath") || "/";
+
+  //     dispatch(onLogin({
+  //       isAdmin: true, firstName: 'Rodrigo', accountId: "test", id: "asd123", lastName: "pepe",
+  //       countryId: "Argentina"
+  //     }));
+  //     navigate(lastPath, { replace: true });
+
+  //   } catch (error) {
+  //     localStorage.clear();
+  //     dispatch(onLogout(""));
+  //   }
+  // }
+
   return {
     errorMessage,
     status,

@@ -25,6 +25,7 @@ import {
     LaborsServices,
     PurchaseOrder,
     DetailPurchaseOrder,
+    Country
 } from '../types';
 import { Country } from '../interfaces/country';
 import { Business } from '../interfaces/socialEntity';
@@ -72,6 +73,7 @@ const dbNames = Object.freeze({
     purchaseOrder: "purchase-order",
     detailPurchaseOrder: "detail-purchase-order",
     countries: "countries",
+    country: "country",
 });
 
 export const dbContext = Object.freeze({
@@ -104,6 +106,7 @@ export const dbContext = Object.freeze({
     purchaseOrder: new PouchDB<PurchaseOrder>(dbNames.purchaseOrder),
     detailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.detailPurchaseOrder),
     countries: new PouchDB<Country>(dbNames.countries),
+    country: new PouchDB<Country>(dbNames.country),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html

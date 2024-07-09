@@ -154,7 +154,31 @@ export interface AuthState {
   isLoading: boolean;
 }
 
-
+export interface Business extends Document {
+  // id?: string;
+  nombreCompleto?: string;
+  documento?: string;
+  telefono: string;
+  email: string;
+  tipoEntidad: string;
+  razonSocial?: string;
+  cuit?: string;
+  contactoPrincipal?: string;
+  contactoSecundario?: string;
+  sitioWeb?: string;
+  domicilio: string;
+  localidad: string;
+  cp: string;
+  zipCode: string;
+  provincia: string;
+  pais: string[];
+  estado?: boolean;
+  esEmpleado?: boolean;
+  legajo?: string;
+  matricula?: string;
+  categorias: string[];
+  logoBusiness?: string;
+}
 
 export interface BusinessState {
   businessActive: Business | null;
@@ -567,6 +591,17 @@ export interface Crops extends Document {
   harvest: boolean;
 }
 
+export interface Country extends Document {
+  code: string
+  descriptionES: string;
+  descriptionPT:string;
+  descriptionEN:string;
+  leguaje: string;
+  currency: string;
+  taxKey: string;
+  taxKeyFormat: string;
+}
+
 export interface PurchaseOrder extends Document {
   accountId: string;
   businessId: string;
@@ -600,6 +635,17 @@ export interface DetailPurchaseOrder extends Document {
 
 export interface DetailPurchaseOrderItem extends DetailPurchaseOrder {
   supply: Supply | null;
+}
+
+export interface Country extends Document {
+  code: string
+  descriptionES: string;
+  descriptionPT:string;
+  descriptionEN:string;
+  leguaje: string;
+  currency: string;
+  taxKey: string;
+  taxKeyFormat: string;
 }
 
 //#region Enums
