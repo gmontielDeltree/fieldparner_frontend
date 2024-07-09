@@ -44,6 +44,7 @@ export const ListSuppliesPage: React.FC = () => {
     { text: t("_type"), align: "left" },
     { text: t("_supply"), align: "center" },
     { text: t("unit_of_measure"), align: "center" },
+    // { text: "Generico", align: "center" },
     { text: "", align: "center" }
     // { text: "Stock Reservado", align: "center" },
     // { text: "Stock Disponible", align: "center" },
@@ -134,7 +135,11 @@ export const ListSuppliesPage: React.FC = () => {
               </Grid>
             </Grid>
           </Grid>
-          <Box component="div" sx={{ p: 1 }}>
+          <Box component="div" sx={{
+            p: 1,
+            maxHeight: "540px",
+            overflow: "scroll",
+          }}>
             <DataTable
               key="datatable-supplies"
               columns={columns}
@@ -147,6 +152,9 @@ export const ListSuppliesPage: React.FC = () => {
                   <TableCellStyled align="center">
                     {row.unitMeasurement}
                   </TableCellStyled>
+                  {/* <TableCellStyled align="center">
+                    {row.generico ? "Si" : "No"}
+                  </TableCellStyled> */}
                   {/* <TableCellStyled align="center">
                     {row.stockActual}
                   </TableCellStyled>

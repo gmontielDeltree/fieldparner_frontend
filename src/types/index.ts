@@ -175,7 +175,6 @@ export interface Supply extends Document {
   unitMeasurement: string;
   currentStock: number;
   reservedStock: number;
-  // stockDisponible: number;
   stockByLot: boolean;
   activePrincipal: string;
   mermaVolatile: string;
@@ -189,7 +188,6 @@ export interface Supply extends Document {
   isUserDefined?: boolean;
   replacementId?: string;
   countryId?: string;
-
   brand?: string;
   applyToCropsIds?: string[];
   chemicalComposition?: string;

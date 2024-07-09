@@ -49,7 +49,7 @@
   "origins_destinations": "Procedencias/Destinos",
   "origin_destination": "Procedencia/Destino",
   "_supplies": "Insumos",
-  "_warehouses": "Insumos/Lotes",
+  "_warehouses": "Depositos",
   "_warehouse": "Deposito",
   "_vehicles": "Vehículos",
   "_file": "Archivo",
