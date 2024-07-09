@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Business, BusinessState } from '@types';
+import { BusinessState } from '@types';
+import {  Business } from '../../interfaces/socialEntity';
 
 
 const initialState: BusinessState = {

@@ -9,7 +9,7 @@ import {
   ItemRow,
   TableCellStyled,
   CloseButtonPage,
-  PaisTableCell,
+  // PaisTableCell,
 } from "../components";
 import { ColumnProps } from "../types";
 import {
@@ -31,6 +31,7 @@ import {
 import { useForm, useAppDispatch, useBusiness } from "../hooks";
 import { setBusinessActive } from "../redux/business";
 import { useTranslation } from "react-i18next";
+import { Business, BusinessItem } from "../interfaces/socialEntity";
 
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -159,7 +160,7 @@ export const ListBusinessesPage: React.FC = () => {
                   </TableCellStyled>
                   <TableCellStyled>{row.email}</TableCellStyled>
                   <TableCellStyled align="center">
-                   <PaisTableCell pais={row.pais} mostrarDato="descriptionES" />
+                   {/* <PaisTableCell pais={row.pais} mostrarDato="descriptionES" /> */}
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     <Tooltip title={t("icon_edit")}>

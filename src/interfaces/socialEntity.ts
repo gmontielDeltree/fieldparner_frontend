@@ -18,7 +18,7 @@ export interface Business extends Document {
     cp: string;
     zipCode: string;
     provincia: string;
-    pais: string[];
+    pais: string;
     estado?: boolean;
     esEmpleado?: boolean;
     legajo?: string;
