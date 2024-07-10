@@ -9,7 +9,7 @@ import {
   ItemRow,
   TableCellStyled,
   CloseButtonPage,
-  // PaisTableCell,
+  PaisTableCell,
 } from "../components";
 import { ColumnProps } from "../types";
 import {
@@ -160,7 +160,7 @@ export const ListBusinessesPage: React.FC = () => {
                   </TableCellStyled>
                   <TableCellStyled>{row.email}</TableCellStyled>
                   <TableCellStyled align="center">
-                   {/* <PaisTableCell pais={row.pais} mostrarDato="descriptionES" /> */}
+                   <PaisTableCell pais={row.country} mostrarDato="descriptionES" />
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     <Tooltip title={t("icon_edit")}>

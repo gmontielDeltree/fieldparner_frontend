@@ -10,10 +10,11 @@ import {
   Switch,
   TextField,
 } from "@mui/material";
-import { Business, TipoEntidad } from "../../types";
+import { TipoEntidad } from "../../types";
 import React, { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Phone as PhoneIcon } from "@mui/icons-material";
+import { Business } from "../../interfaces/socialEntity";
 
 export interface BusinessFormProps {
   values: Business;
@@ -59,7 +60,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
     legajo,
   } = values;
 
-  const { t } =useTranslation ();
+  const { t } = useTranslation();
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
@@ -75,7 +76,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           >
             <MenuItem value={TipoEntidad.FISICA.toString()}>{t("_physical")}</MenuItem>
             <MenuItem value={TipoEntidad.JURIDICA.toString()}>
-            {t("_legal")}
+              {t("_legal")}
             </MenuItem>
           </Select>
         </FormControl>

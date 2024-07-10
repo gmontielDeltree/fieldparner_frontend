@@ -11,26 +11,29 @@ import { useTranslation } from "react-i18next";
 import { capitalizeText } from "../../../helpers/helper";
 import { CountryItem, useCountry } from "../../../hooks/useCountry";
 import { Cultivo } from "../../../interfaces/insumos";
-import { Country, CountryRepository } from "../../../classes/Country";
+import { CountryRepository } from "../../../classes/Country";
 //import { Country } from "@types";
 import i18next from "i18next";
+import { Country } from "../../../interfaces/country";
 
-let labelInLang = (c : Country, lang : string)=>{
-  if(lang === "es"){
+let labelInLang = (c: Country, lang: string) => {
+  if (lang === "es") {
     return c.descriptionES
-  } else if(lang === "en"){
+  } else if (lang === "en") {
     return c.descriptionEN
-  } else if(lang === "pt"){
+  } else if (lang === "pt") {
     return c.descriptionPT
-  }else{
+  } else {
     return c.descriptionES
   }
 }
-const filter = createFilterOptions<Country>({stringify:(option)=>{
-  let lang = i18next.language;
-        let label = labelInLang(option,lang);
-        return label
-}});
+const filter = createFilterOptions<Country>({
+  stringify: (option) => {
+    let lang = i18next.language;
+    let label = labelInLang(option, lang);
+    return label
+  }
+});
 
 // interface CropOptionType extends Crops {
 //   inputValue?: string;
@@ -46,7 +49,7 @@ export const AutocompleteCountry = ({ value, onChange }) => {
 
   useEffect(() => {
     countryRepo.getAll().then((countryFromDB) => {
-      console.log("CORPS",countryFromDB)
+      console.log("CORPS", countryFromDB)
       setCountry(countryFromDB);
     });
 
@@ -65,7 +68,7 @@ export const AutocompleteCountry = ({ value, onChange }) => {
     onChange(_value);
   }, [_value]);
 
-  
+
   return (
     <Autocomplete
       value={_value}
@@ -82,10 +85,10 @@ export const AutocompleteCountry = ({ value, onChange }) => {
         //   //   .add({ label: newValue.inputValue })
         //   //   .then((c) => setValue(c));
         // } else {
-          if(newValue){
-            setValue(newValue);
+        if (newValue) {
+          setValue(newValue);
 
-          }
+        }
         // }
       }}
       // filterOptions={(options, params) => {
@@ -110,21 +113,14 @@ export const AutocompleteCountry = ({ value, onChange }) => {
       handleHomeEndKeys
       id="free-solo-with-text-demo"
       options={country}
-      isOptionEqualToValue={(option,value)=>option._id ===value._id}
+      isOptionEqualToValue={(option, value) => option._id === value._id}
       getOptionLabel={(option) => {
-        // Value selected with enter, right from the input
-        //  if (typeof option === "string") {
-        //    return option;
-        //  }
-        // Add "xxx" option created dynamically
-        // if (option.label) {
-        //   return option.label;
-        // }
-        // Regular option
+        // let opt = country.find(c => c.code === option.code)
+        // if ( !opt) return "";
         let lang = i18n.language;
-        let label = labelInLang(option,lang);
+        let label = labelInLang(option, lang);
         return option.descriptionES;
-        
+
       }}
       // renderOption={(props, option) => {
       //   let lang = i18n.language;

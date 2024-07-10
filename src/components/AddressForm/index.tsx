@@ -1,17 +1,19 @@
-import React, { ChangeEvent, SetStateAction, useState } from "react";
+import React, { ChangeEvent, SetStateAction, SyntheticEvent, useState } from "react";
 import { Grid, TextField, InputAdornment, Button, Card, CardMedia, Box, Paper, IconButton, FormControl, FormHelperText } from "@mui/material";
 import { getLocalityAndStateByZipCode } from "../../services";
 import { Autocomplete } from "@mui/material";
 import { Loading } from "../../components";
 import { useTranslation } from "react-i18next";
 import { CloudUpload as CloudUploadIcon, DoDisturb as DoDisturbIcon, Cancel as CancelIcon } from "@mui/icons-material";
-import { Business } from "../../types";
 import uuid4 from "uuid4";
 import { urlImg } from "../../config";
-import { AutocompleteCountry } from "../LotsMenu/components/AutocompleteCountry";
+// import { AutocompleteCountry } from "../LotsMenu/components/AutocompleteCountry";
+import { Business } from "../../interfaces/socialEntity";
+import { Country } from "../../interfaces/country";
 
 export interface AddressFormProps {
   values: Business;
+  countries: Country[];
   countryError: boolean;
   loading: boolean;
   onChangeZipCode: () => Promise<void>;
@@ -22,6 +24,7 @@ export interface AddressFormProps {
 
 export const AddressForm: React.FC<AddressFormProps> = ({
   values,
+  countries,
   handleInputChange,
   countryError,
   setFile,
@@ -32,12 +35,13 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   const [localities, setLocalities] = useState<string[]>([]);
   const [urlFile, setUrlFile] = useState('');
   const { t } = useTranslation();
+  const countryOptions = countries.map(c => ({ code: c.code, label: c.descriptionEN }));
 
-  const [formData, setFormData] = useState({
-    detalles: {
-      country: '',
-    },
-  });
+  // const [formData, setFormData] = useState({
+  //   detalles: {
+  //     country: '',
+  //   },
+  // });
 
   const onBlurZipCode = async () => {
     if (cp !== "") {
@@ -96,16 +100,22 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     handleFormValueChange("logoBusiness", "");
   }
 
-  const onFieldChange = (fieldName: string, value: string) => {
-    setFormData({
-      ...formData,
-      detalles: {
-        ...formData.detalles,
-        [fieldName]: value
-      }
-    });
-    handleFormValueChange(fieldName, value);
-  };
+  // const onFieldChange = (fieldName: string, value: string) => {
+  //   setFormData({
+  //     ...formData,
+  //     detalles: {
+  //       ...formData.detalles,
+  //       [fieldName]: value
+  //     }
+  //   });
+  //   console.log('value', value)
+  //   handleFormValueChange(fieldName, value);
+  // };
+
+  const onChangeCountry = (_event: SyntheticEvent, value: { code: string; label: string } | null) => {
+    if (value)
+      handleFormValueChange("pais", value.code);
+  }
 
   return (
     <>
@@ -120,9 +130,19 @@ export const AddressForm: React.FC<AddressFormProps> = ({
       >
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth variant="outlined" error={countryError}>
-            <AutocompleteCountry
+            {/* <AutocompleteCountry
               value={pais || ""}
-              onChange={(value: any) => onFieldChange("pais", value)}
+              onChange={(value: Country) => onFieldChange("pais", value.code)}
+            /> */}
+            <Autocomplete
+              value={countryOptions.find(opts => opts.code === pais) || null}
+              onChange={onChangeCountry}
+              options={countryOptions}
+              getOptionLabel={(option) => option.label}
+              renderInput={(params) => (
+                <TextField {...params} label="Pais" variant="outlined" />
+              )}
+              fullWidth
             />
             {countryError && <FormHelperText>Mensaje de error!</FormHelperText>}
           </FormControl>

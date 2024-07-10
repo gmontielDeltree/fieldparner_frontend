@@ -154,32 +154,6 @@ export interface AuthState {
   isLoading: boolean;
 }
 
-export interface Business extends Document {
-  // id?: string;
-  nombreCompleto?: string;
-  documento?: string;
-  telefono: string;
-  email: string;
-  tipoEntidad: string;
-  razonSocial?: string;
-  cuit?: string;
-  contactoPrincipal?: string;
-  contactoSecundario?: string;
-  sitioWeb?: string;
-  domicilio: string;
-  localidad: string;
-  cp: string;
-  zipCode: string;
-  provincia: string;
-  pais: string[];
-  estado?: boolean;
-  esEmpleado?: boolean;
-  legajo?: string;
-  matricula?: string;
-  categorias: string[];
-  logoBusiness?: string;
-}
-
 export interface BusinessState {
   businessActive: Business | null;
   businesses: Business[];

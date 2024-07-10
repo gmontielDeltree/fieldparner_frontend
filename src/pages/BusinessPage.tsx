@@ -4,6 +4,7 @@ import {
   useAppDispatch,
   useAppSelector,
   useBusiness,
+  useCountry,
   useForm,
 } from "../hooks";
 import { TipoEntidad, CountryCode } from "../types";
@@ -43,7 +44,7 @@ const initialForm: Business = {
   cp: "",
   zipCode: "",
   provincia: "",
-  pais: [],
+  pais: "",
   esEmpleado: false,
   legajo: "",
   matricula: "",
@@ -59,7 +60,7 @@ export const BusinessPage: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [nameError, setNameError] = useState(false);
   const [documentError, setDocumentError] = useState(false);
-  const [countryError, setCountryError] = useState(false);
+  const [countryError, _] = useState(false);
   const [legajoError, setLegajoError] = useState(false);
   const [cuitError, setCuitError] = useState(false);
   const [razonSocialError, setRazonSocialError] = useState(false);
@@ -85,6 +86,7 @@ export const BusinessPage: React.FC = () => {
     deleteBusiness,
     getBusinesses,
   } = useBusiness();
+  const {dataCountry, getCountries} = useCountry();
 
   const { zipCode } = formulario;
 
@@ -159,6 +161,7 @@ export const BusinessPage: React.FC = () => {
             <AddressForm
               key="address-customer"
               values={formulario}
+              countries={dataCountry}
               countryError={countryError}
               handleInputChange={handleInputChange}
               onChangeZipCode={getLocalityAndState}
@@ -340,6 +343,7 @@ export const BusinessPage: React.FC = () => {
 
   useEffect(() => {
     getBusinesses();
+    getCountries();
   }, []);
 
   useEffect(() => {

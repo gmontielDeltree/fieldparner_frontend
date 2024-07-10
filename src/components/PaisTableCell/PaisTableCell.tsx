@@ -1,24 +1,25 @@
 import React from 'react';
 import { Button } from '@mui/material';
 import Swal from 'sweetalert2';
+import { Country } from '../../interfaces/country';
 
 
-interface Pais {
-  code: string;
-  descriptionES: string;
-  descriptionPT: string;
-  descriptionEN: string;
-  language: string;
-  currency: string;
-  taxKey: string;
-  taxKeyFormat: string;
-  _id: string;
-  _rev: string;
-}
+// interface Pais {
+//   code: string;
+//   descriptionES: string;
+//   descriptionPT: string;
+//   descriptionEN: string;
+//   language: string;
+//   currency: string;
+//   taxKey: string;
+//   taxKeyFormat: string;
+//   _id: string;
+//   _rev: string;
+// }
 
 interface PaisTableCellProps {
-  pais: Pais | undefined; 
-  mostrarDato: keyof Pais; 
+  pais: Country | undefined; 
+  mostrarDato: keyof Country; 
 }
 
 export const PaisTableCell: React.FC<PaisTableCellProps> = ({ pais, mostrarDato }) => {
@@ -47,7 +48,7 @@ export const PaisTableCell: React.FC<PaisTableCellProps> = ({ pais, mostrarDato 
    
 
     mostrarDatos.forEach((key) => {
-      mensaje += `<strong>${key}:</strong> ${pais[key as keyof Pais]}<br>`;
+      mensaje += `<strong>${key}:</strong> ${pais[key as keyof Country]}<br>`;
     });
 
     Swal.fire({

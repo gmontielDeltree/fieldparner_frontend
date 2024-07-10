@@ -1,6 +1,6 @@
 import { uuidv7 } from "uuidv7";
-import { only_docs } from "../../owncomponents/helpers";
-import { FPDocument } from "../interfaces/planification";
+// import { only_docs } from "../../owncomponents/helpers";
+// import { FPDocument } from "../interfaces/planification";
 import { dbContext } from "../services";
 import { BaseDocRepository } from "./BaseRepository";
 import { Country } from "@types";
@@ -18,7 +18,7 @@ export class CountryRepository
   private _country: Country[];
 
   constructor(){
-    super(dbContext.country);
+    super(dbContext.countries);
   }
 
   async getAll() {
