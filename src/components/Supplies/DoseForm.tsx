@@ -183,7 +183,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
             onChange={handleSelectChange}
           >
             {crops?.map((crop) => (
-              <MenuItem key={crop._id} value={getDescription(crop)}>
+              <MenuItem key={crop._id} value={crop._id}>
                 {getDescription(crop)} 
               </MenuItem>
             ))}
