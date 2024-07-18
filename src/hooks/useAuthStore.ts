@@ -228,7 +228,7 @@ export const useAuthStore = () => {
 
   //     dispatch(onLogin({
   //       isAdmin: true, firstName: 'Rodrigo', accountId: "test", id: "asd123", lastName: "pepe",
-  //       countryId: "Argentina"
+  //       countryId: "AR"
   //     }));
   //     navigate(lastPath, { replace: true });
 
