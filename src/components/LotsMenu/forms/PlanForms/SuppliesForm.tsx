@@ -22,15 +22,17 @@ import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import { styled, keyframes } from "@mui/material/styles";
 import uuid4 from "uuid4";
-import { useAppDispatch, useForm, useSupply } from "../../../../hooks";
+import { useAppDispatch, useCrops, useForm, useSupply } from "../../../../hooks";
 import Chip from "@mui/material/Chip";
 import { useDeposit } from "../../../../hooks";
 import { useTranslation } from "react-i18next";
 import { NumberFieldWithUnits } from "../../components/NumberField";
 import { AutocompleteSupplies } from "../../components/AutocompleteSupplies";
-import { Deposit, Supply } from "@types";
+import { Deposit, Supply, Crops } from "@types";
 import { AutocompleteDeposito } from "../../components/AutocompleteDeposito";
 import { TTipoActividadPlanificada } from "../../../../interfaces/planification";
+import { log } from "xstate";
+import Swal from "sweetalert2";
 
 const TypeBadge = styled(Chip)(({ theme }) => ({
   marginLeft: theme.spacing(1),
@@ -75,6 +77,7 @@ const CustomPaper = styled(Paper)({
 function SuppliesForm({ lot, db, formData, setFormData }) {
   const { t } = useTranslation();
   const [selectedSupply, setSelectedSupply] = useState<Supply>();
+  const [selectedCrops, setSelectedCrops] = useState<Crops>();
   const [dosificacion, setDosificacion] = useState("");
   const [total, setTotal] = useState("");
   const [precio, setPrecio] = useState("");
@@ -84,8 +87,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   const [rows, setRows] = useState([]);
   const [editIndex, setEditIndex] = useState(-1);
   const [deposito, setDeposito] = useState<Deposit>();
-  const { isLoading, supplies, getSupplies, setSupplies, deleteSupply } =
-    useSupply();
+  const { isLoading, supplies, getSupplies, setSupplies, deleteSupply } = useSupply();
+  const {getCrops,crops }  = useCrops();
   const { deposits, getDeposits } = useDeposit();
   const [editData, setEditData] = useState({
     selectedOption: "",
@@ -100,9 +103,22 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   const findInsumoByOption = (option) => {
     return supplies.find((supply) => supply.name === option);
   };
-
   const handleAddRow = () => {
-    // const supply = findInsumoByOption(selectedSupply);
+    const supply = selectedSupply;
+    const { _id } = formData.detalles.cultivo;
+    if (supply && supply.type === "Semillas") {
+      const cropId = supply?.cropId;
+      if (cropId && cropId !== _id) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Insumo incompatible',
+          text: 'El insumo seleccionado no es compatible con el cultivo'
+        });
+        return; 
+      }
+    }
+  
+
     const newRow = {
       dosis: dosificacion,
       insumo: selectedSupply,
@@ -114,11 +130,13 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       deposito: deposito,
       precio_estimado: precio
     };
+  
     const newDetalles = [...formData.detalles.dosis, newRow];
     setFormData({
       ...formData,
       detalles: { ...formData.detalles, dosis: newDetalles }
     });
+  
     console.log("NUEVA FILA", newRow);
     setSelectedSupply("");
     setDosificacion("");
@@ -127,6 +145,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     setNroLote("");
     setUbicacion("");
     setPrecio("");
+    setSelectedCrops("");
   };
 
   const handleSaveEdit = () => {
@@ -285,6 +304,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   useEffect(() => {
     getSupplies();
     getDeposits();
+    getCrops();
   }, []);
 
   useEffect(() => {
@@ -292,6 +312,12 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       console.log("Fetched supplies:", supplies);
     }
   }, [supplies]);
+
+  useEffect(() => {
+    if (crops.length) {
+      console.log("Fetched supplies:", crops);
+    }
+  }, [crops]);
 
   useEffect(() => {
     if (formData && formData.detalles && formData.detalles.dosis) {
