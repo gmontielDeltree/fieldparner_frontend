@@ -568,8 +568,8 @@ export interface Crops extends Document {
 export interface Country extends Document {
   code: string
   descriptionES: string;
-  descriptionPT:string;
-  descriptionEN:string;
+  descriptionPT: string;
+  descriptionEN: string;
   leguaje: string;
   currency: string;
   taxKey: string;
@@ -614,8 +614,8 @@ export interface DetailPurchaseOrderItem extends DetailPurchaseOrder {
 export interface Country extends Document {
   code: string
   descriptionES: string;
-  descriptionPT:string;
-  descriptionEN:string;
+  descriptionPT: string;
+  descriptionEN: string;
   leguaje: string;
   currency: string;
   taxKey: string;
@@ -675,11 +675,10 @@ export enum Movement {
 }
 
 export enum DisplayModals {
-
   SupplyByDeposits = "SupplyByDeposits",
   SupplyByLots = "SupplyByLots",
   LaborOrder = "LaborOrder",
-
+  UserPermissions = "UserPermissions",
 }
 
 export enum VehicleType {

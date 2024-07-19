@@ -27,3 +27,4 @@ export * from './ExitField/GeneralData';
 export * from './ExitField/TransportDestination';
 export * from './PaisTableCell/PaisTableCell';
 // export * from './CompatibilityValidator/CompatibilityValidator';
+export { default as UserPermissionsModal } from './Modals/UserPermissionsModal';
