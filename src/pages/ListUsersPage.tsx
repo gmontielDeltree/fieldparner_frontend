@@ -65,10 +65,10 @@ export const ListUsersPage: React.FC = () => {
   const onClickUpdateUser = (item: UserByAccount): void => {
     // dispatch(setUserActive(item));
     navigate(`/init/overview/users/${item._id}`);
-    getUsers();
+    // getUsers();
   };
 
-  const onClickOpenModal = (row: UserByAccount) => {
+  const onClickUserPermissions = (row: UserByAccount) => {
     console.log('row', row);
     dispatch(setUserActive(row));
     dispatch(uiOpenModal(DisplayModals.UserPermissions));
@@ -162,7 +162,7 @@ export const ListUsersPage: React.FC = () => {
                     <IconButton
                       aria-label="Permisos"
                       disabled={!userActive?.isAdmin}
-                      onClick={() => onClickOpenModal(row)}
+                      onClick={() => onClickUserPermissions(row)}
                     >
                       <ListAltIcon />
                     </IconButton>
