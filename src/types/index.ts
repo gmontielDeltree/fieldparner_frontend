@@ -197,6 +197,26 @@ export interface Supply extends Document {
   documentFile?: string;
 }
 
+export interface CorporateCompanies extends Document {
+  accountId: string;
+  countryId: string;
+  companyId: string;
+  cp: string;
+  licenceId: string;
+  taxKey: string;
+  fantasyName: string;
+  businessName: string;
+  postalCode: string;
+  location: string;
+  state: string;
+  photoName: string;
+  domicile: string;
+  phoneNumber: string;
+  secondaryContact: string;
+  web: string;
+  observations: string;
+}
+
 export interface UserByAccount extends Document {
   accountId?: string;
   username?: string;

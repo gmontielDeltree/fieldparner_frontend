@@ -33,7 +33,8 @@ export * from './NewLaborsServicespage';
 export * from './ListLaborsServicesPage';
 export * from './PurchaseOrder';
 export * from './ListPurchaseOrder';
-
+export * from './NewCorporateCompaniesPage';
+export * from './ListCorporateCompaniesPage';
 
 
 

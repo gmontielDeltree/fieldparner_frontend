@@ -34,6 +34,7 @@ import {
   Assignment as AssignmentIcon,
   Map as MapIcon,
   BusinessCenter as BusinessCenterIcon,
+  CorporateFare as CorporateFareIcon,
 } from "@mui/icons-material";
 import { Icon } from "semantic-ui-react";
 import { SideBarProps } from "../../types";
@@ -369,11 +370,17 @@ export const SideBar: React.FC<SideBarProps> = ({
             timeout="auto"
             unmountOnExit>
             <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
+                
+                <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/corporate-companies"
+                selected={pathname.includes("/init/overview/corporate-companies")}
+              >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
+                  <CorporateFareIcon />
                 </ListItemIcon>
-                <ListItemText primary={t("_societies")} />
+                <ListItemText primary={"Compañías Societarias"} />      
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
