@@ -140,7 +140,7 @@ export const dbContext = Object.freeze({
 // dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
 // dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
 // dbContext.countries.sync(`${remoteCouchDBUrl}${dbNames.countries}`, opts);
-// dbContext.menuModules.sync(`${remoteCouchDBUrl}${dbNames.menuModules}`, opts);
+dbContext.menuModules.sync(`${remoteCouchDBUrl}${dbNames.menuModules}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {

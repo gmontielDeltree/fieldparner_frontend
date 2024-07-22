@@ -1,9 +1,9 @@
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, Paper, TextField } from '@mui/material';
+import { Autocomplete, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, Paper, TableCell, TextField } from '@mui/material';
 import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector, useMenuModules } from '../../../hooks';
 import { ColumnProps, DisplayModals } from '../../../types';
 import { uiCloseModal } from '../../../redux/ui';
-import { DataTable } from '../../DataTable';
+import { DataTable, ItemRow } from '../../DataTable';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 
@@ -13,18 +13,23 @@ const columns: ColumnProps[] = [
     { text: "Permiso", align: "center" },
 ];
 
-
+//TODO: hacer el listado de menu modules con la prop isChecked, aplicaria para un nuevo listado o un listado de un usuario con permisos
 const UserPermissionsModal: React.FC = () => {
 
     const dispatch = useAppDispatch();
     const { showModal } = useAppSelector(state => state.ui);
     const { userActive, users } = useAppSelector(state => state.users);
-    // const { getMenuModules, menuModules } = useMenuModules();
+    const { getMenuModules, menuModules, isLoading } = useMenuModules();
     const [selectedPerfil, setSelectedPerfil] = useState(null);
 
     const optionUsers = users.map(u => ({ value: u || "-", label: u.username || "-" }));
 
     const onCloseModal = () => dispatch(uiCloseModal());
+
+    const onClickGetModules = () => {
+        console.log('onClickGetModules');
+        getMenuModules();
+    }
 
     return (
         <Dialog
@@ -66,27 +71,39 @@ const UserPermissionsModal: React.FC = () => {
                             />
                         </Grid>
                         <Grid item xs={6} sm={6} display="flex" alignItems="center">
-                            <Fab size="small" color="success" aria-label="add">
+                            <Fab size="small" color="success" aria-label="add" onClick={() => onClickGetModules()}>
                                 <PlayArrowIcon />
                             </Fab>
                         </Grid>
                     </Grid>
                 </Paper>
-
-                <DataTable
-                    key="detail-deposits-datable"
-                    columns={columns}
-                    isLoading={false}
-                >
-
-                    {/* {[""].map((lotStock) => (
-                        <ItemRow key={lotStock.nroLot} hover>
-                            <TableCellStyled align="left">
-                                {lotStock.location}
-                            </TableCellStyled>
-                        </ItemRow>
-                    ))} */}
-                </DataTable>
+                <Paper elevation={1} sx={{
+                    width: "100%", overflow: "hidden"
+                }}>
+                    <DataTable
+                        key="table-user-permissions"
+                        columns={columns}
+                        isLoading={isLoading}
+                    >
+                        {menuModules.map((moduleDto) => (
+                            <ItemRow key={moduleDto._id} hover>
+                                <TableCell align="left">
+                                    {moduleDto.module}
+                                </TableCell>
+                                <TableCell align="center">
+                                    {moduleDto.menuOption}
+                                </TableCell>
+                                <TableCell align="center">
+                                    <Checkbox
+                                        // name="Siembra"
+                                        checked={false}
+                                        onChange={(_e, checked) => { console.log(checked) }}
+                                    />
+                                </TableCell>
+                            </ItemRow>
+                        ))}
+                    </DataTable>
+                </Paper>
             </DialogContent>
             <DialogActions>
                 <Button variant="contained" color="primary" onClick={() => onCloseModal()}>
