@@ -1,11 +1,12 @@
 import { Autocomplete, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, Paper, TableCell, TextField } from '@mui/material';
 import React, { useState } from 'react';
-import { useAppDispatch, useAppSelector, useMenuModules } from '../../../hooks';
+import { useAppDispatch, useAppSelector, useModulesPermission } from '../../../hooks';
 import { ColumnProps, DisplayModals } from '../../../types';
 import { uiCloseModal } from '../../../redux/ui';
 import { DataTable, ItemRow } from '../../DataTable';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { UserByAccount } from '../../../types';
+import { MenuModulesPermission } from '../../../interfaces/menuModules';
 
 
 const columns: ColumnProps[] = [
@@ -14,24 +15,60 @@ const columns: ColumnProps[] = [
     { text: "Permiso", align: "center" },
 ];
 
-//TODO: hacer el listado de menu modules con la prop isChecked, aplicaria para un nuevo listado o un listado de un usuario con permisos
+interface SelectedUser {
+    value: UserByAccount | null;
+    label: string;
+}
+const initialSelectedUser: SelectedUser = { value: null, label: "" };
+
 const UserPermissionsModal: React.FC = () => {
 
     const dispatch = useAppDispatch();
     const { showModal } = useAppSelector(state => state.ui);
     const { userActive, users } = useAppSelector(state => state.users);
-    const { getMenuModulesByUserId, modulesPermissions, isLoading } = useMenuModules();
-    const [selectedPerfil, setSelectedPerfil] = useState<UserByAccount | null>(null);
-
+    const { getModulesByUserId,
+        setModulesPermissions,
+        putModulesUserByUserId,
+        modulesPermissions,
+        isLoading, } = useModulesPermission();
+    const [selectedPerfil, setSelectedPerfil] = useState(initialSelectedUser);
     const optionUsers = users.map(u => ({ value: u || "-", label: u.username || "-" }));
+    const [userPermissions, setUserPermissions] = useState<MenuModulesPermission[]>([]);// listado de permisos a agregar o actualizar del usuario
 
-    const onCloseModal = () => dispatch(uiCloseModal());
+    const onCloseModal = () => {
+        dispatch(uiCloseModal());
+        setUserPermissions([]);
+        setModulesPermissions([]);
+    }
 
     const onClickGetModules = () => {
-        console.log('onClickGetModules');
-        let userId = selectedPerfil ? selectedPerfil._id : userActive?._id;
-        if (typeof (userId) === "string") getMenuModulesByUserId(userId);
+        let userId = selectedPerfil.value ? selectedPerfil.value._id : userActive?._id;
+        if (typeof (userId) === "string") getModulesByUserId(userId);
+    }
 
+    const onClickCheckPermission = (moduleDto: MenuModulesPermission, checked: boolean) => {
+        //Actualizamos solamente el campo permission para visualizarlo 
+        setModulesPermissions(modulesPermissions.map(m => {
+            if (m.id === moduleDto.id) return { ...m, permission: checked };
+            else return m
+        }));
+        //Agregamos en el listado solo los modulos que agrega/edita
+        if (userPermissions.find(x => x.id === moduleDto.id)) {
+            setUserPermissions(userPermissions.map(m => {
+                if (m.id === moduleDto.id) return { ...m, permission: checked };
+                else return m
+            }));
+        } else
+            setUserPermissions([...userPermissions,
+            { ...moduleDto, permission: checked }]);
+    }
+
+    const onClickConfirm = () => {
+        let selectedUser = selectedPerfil.value ? selectedPerfil.value : userActive;
+        if (selectedUser && selectedUser._id) {
+            putModulesUserByUserId(selectedUser._id, userPermissions);
+            onCloseModal();
+        }
     }
 
     return (
@@ -63,9 +100,9 @@ const UserPermissionsModal: React.FC = () => {
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <Autocomplete
-                                value={!selectedPerfil ? { value: null, label: "" } : { value: selectedPerfil, label: selectedPerfil.username || "" }}
+                                value={selectedPerfil}
                                 onChange={(_e, value, _reason, _details) => {
-                                    if (value) setSelectedPerfil(value.value);
+                                    if (value) setSelectedPerfil({ value: value.value, label: value.value?.username || "" });
                                 }}
                                 options={optionUsers}
                                 getOptionLabel={(option) => option.label}
@@ -100,9 +137,8 @@ const UserPermissionsModal: React.FC = () => {
                                 </TableCell>
                                 <TableCell align="center">
                                     <Checkbox
-                                        // name="Siembra"
                                         checked={moduleDto.permission}
-                                        onChange={(_e, checked) => { console.log(checked) }}
+                                        onChange={(_e, checked) => onClickCheckPermission(moduleDto, checked)}
                                     />
                                 </TableCell>
                             </ItemRow>
@@ -111,9 +147,22 @@ const UserPermissionsModal: React.FC = () => {
                 </Paper>
             </DialogContent>
             <DialogActions>
-                <Button variant="contained" color="primary" onClick={() => onCloseModal()}>
-                    Cerrar
-                </Button>
+                <Grid container sx={{ px: 2 }}>
+                    <Grid item xs={12} sm={6} display="flex" justifyContent="center">
+                        <Button variant="outlined" color="secondary" onClick={() => onCloseModal()}>
+                            Cerrar
+                        </Button>
+                    </Grid>
+                    <Grid item xs={12} sm={6} display="flex" justifyContent="center">
+                        <Button
+                            variant="contained"
+                            color="success"
+                            disabled={userPermissions.length === 0}
+                            onClick={() => onClickConfirm()}>
+                            Confirmar
+                        </Button>
+                    </Grid>
+                </Grid>
             </DialogActions>
         </Dialog>
     )
