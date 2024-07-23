@@ -1,16 +1,20 @@
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react"
-import { MenuModules } from "../interfaces/menuModules";
+import { MenuModules, MenuModulesPermission, ModulesUsers } from '../interfaces/menuModules';
 import { dbContext } from "../services/pouchdbService";
+// import { useAppSelector } from './useRedux';
+// import { UserByAccount } from '../types';
 
 
 export const useMenuModules = () => {
 
+    // const { user } = useAppSelector(state => state.auth);
     const navigate = useNavigate();
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [menuModules, setMenuModule] = useState<MenuModules[]>([]);
+    const [modulesPermissions, setModulesPermissions] = useState<MenuModulesPermission[]>([]);
 
 
 
@@ -54,6 +58,38 @@ export const useMenuModules = () => {
             setIsLoading(false);
             if (error) setError(error);
         }
+    }
+
+    const getMenuModulesByUserId = async (userId: string) => {
+        setIsLoading(true);
+        try {
+            const response = await Promise.all([
+                dbContext.menuModules.allDocs({ include_docs: true }),
+                dbContext.modulesUsers.find({
+                    selector: { "userId": userId }
+                })
+            ]);
+            const modules = response[0].rows.map(row => row.doc as MenuModules);
+            const menuesIdByUser = response[1].docs.filter(doc => doc.permission).map(x => x.menuId);
+
+            let modulosUsuario: MenuModulesPermission[] = [];
+
+            modules.forEach(module => {
+                modulosUsuario.push({
+                    ...module,
+                    permission: menuesIdByUser.includes(module.id)
+                })
+            });
+            setModulesPermissions(modulosUsuario);
+            setIsLoading(false);
+
+        } catch (error) {
+            console.log(error)
+            Swal.fire('Error', 'Error al obtener los modulos de menu.', 'error');
+            setIsLoading(false);
+            if (error) setError(error);
+        }
+
     }
 
     const updateMenuModules = async (updateMenuModules: MenuModules) => {
@@ -101,6 +137,7 @@ export const useMenuModules = () => {
         error,
         isLoading,
         menuModules,
+        modulesPermissions,
 
         //* Métodos
         createMenuModules,
@@ -108,5 +145,6 @@ export const useMenuModules = () => {
         setMenuModule,
         updateMenuModules,
         removeMenuModules,
+        getMenuModulesByUserId
     };
 };

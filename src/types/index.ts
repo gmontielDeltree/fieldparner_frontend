@@ -117,7 +117,7 @@ export interface Authenticate {
 }
 
 export interface User {
-  // id: string;
+  id: string;
   username: string;
   accountId: string;
   isAdmin: boolean;

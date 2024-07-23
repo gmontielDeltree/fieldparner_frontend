@@ -5,6 +5,7 @@ import { ColumnProps, DisplayModals } from '../../../types';
 import { uiCloseModal } from '../../../redux/ui';
 import { DataTable, ItemRow } from '../../DataTable';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { UserByAccount } from '../../../types';
 
 
 const columns: ColumnProps[] = [
@@ -19,8 +20,8 @@ const UserPermissionsModal: React.FC = () => {
     const dispatch = useAppDispatch();
     const { showModal } = useAppSelector(state => state.ui);
     const { userActive, users } = useAppSelector(state => state.users);
-    const { getMenuModules, menuModules, isLoading } = useMenuModules();
-    const [selectedPerfil, setSelectedPerfil] = useState(null);
+    const { getMenuModulesByUserId, modulesPermissions, isLoading } = useMenuModules();
+    const [selectedPerfil, setSelectedPerfil] = useState<UserByAccount | null>(null);
 
     const optionUsers = users.map(u => ({ value: u || "-", label: u.username || "-" }));
 
@@ -28,7 +29,9 @@ const UserPermissionsModal: React.FC = () => {
 
     const onClickGetModules = () => {
         console.log('onClickGetModules');
-        getMenuModules();
+        let userId = selectedPerfil ? selectedPerfil._id : userActive?._id;
+        if (typeof (userId) === "string") getMenuModulesByUserId(userId);
+
     }
 
     return (
@@ -60,8 +63,10 @@ const UserPermissionsModal: React.FC = () => {
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <Autocomplete
-                                value={selectedPerfil}
-                                onChange={(e, value, reason, details) => console.log({ e, value, reason, details })}
+                                value={!selectedPerfil ? { value: null, label: "" } : { value: selectedPerfil, label: selectedPerfil.username || "" }}
+                                onChange={(_e, value, _reason, _details) => {
+                                    if (value) setSelectedPerfil(value.value);
+                                }}
                                 options={optionUsers}
                                 getOptionLabel={(option) => option.label}
                                 renderInput={(params) => (
@@ -85,7 +90,7 @@ const UserPermissionsModal: React.FC = () => {
                         columns={columns}
                         isLoading={isLoading}
                     >
-                        {menuModules.map((moduleDto) => (
+                        {modulesPermissions.map((moduleDto) => (
                             <ItemRow key={moduleDto._id} hover>
                                 <TableCell align="left">
                                     {moduleDto.module}
@@ -96,7 +101,7 @@ const UserPermissionsModal: React.FC = () => {
                                 <TableCell align="center">
                                     <Checkbox
                                         // name="Siembra"
-                                        checked={false}
+                                        checked={moduleDto.permission}
                                         onChange={(_e, checked) => { console.log(checked) }}
                                     />
                                 </TableCell>

@@ -28,7 +28,7 @@ import {
 } from '../types';
 import { Country } from '../interfaces/country';
 import { Business } from '../interfaces/socialEntity';
-import { MenuModules } from '../interfaces/menuModules';
+import { MenuModules, ModulesUsers } from '../interfaces/menuModules';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -74,6 +74,7 @@ const dbNames = Object.freeze({
   detailPurchaseOrder: "detail-purchase-order",
   countries: "countries",
   menuModules: "menu-modules",
+  modulesUsers: "modules-users",
 });
 
 export const dbContext = Object.freeze({
@@ -106,7 +107,8 @@ export const dbContext = Object.freeze({
   purchaseOrder: new PouchDB<PurchaseOrder>(dbNames.purchaseOrder),
   detailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.detailPurchaseOrder),
   countries: new PouchDB<Country>(dbNames.countries),
-  menuModules: new PouchDB<MenuModules>(dbNames.menuModules)
+  menuModules: new PouchDB<MenuModules>(dbNames.menuModules),
+  modulesUsers: new PouchDB<ModulesUsers>(dbNames.modulesUsers),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -141,6 +143,7 @@ export const dbContext = Object.freeze({
 // dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
 // dbContext.countries.sync(`${remoteCouchDBUrl}${dbNames.countries}`, opts);
 dbContext.menuModules.sync(`${remoteCouchDBUrl}${dbNames.menuModules}`, opts);
+dbContext.modulesUsers.sync(`${remoteCouchDBUrl}${dbNames.modulesUsers}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
