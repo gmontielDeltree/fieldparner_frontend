@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import { CloudUpload as CloudUploadIcon, DoDisturb as DoDisturbIcon, Cancel as CancelIcon } from "@mui/icons-material";
 import uuid4 from "uuid4";
 import { urlImg } from "../../config";
-// import { AutocompleteCountry } from "../LotsMenu/components/AutocompleteCountry";
 import { Business } from "../../interfaces/socialEntity";
 import { Country } from "../../interfaces/country";
 
@@ -37,45 +36,80 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   const { t } = useTranslation();
   const countryOptions = countries.map(c => ({ code: c.code, label: c.descriptionEN }));
 
-  // const [formData, setFormData] = useState({
-  //   detalles: {
-  //     country: '',
-  //   },
-  // });
+  const fetchBrazilZipCode = async (zipCode: string) => {
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${zipCode}/json/`);
+      if (!response.ok) throw new Error("Network response was not ok");
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch Brazil zip code data:", error);
+      return null;
+    }
+  };
 
   const onBlurZipCode = async () => {
     if (cp !== "") {
       setLoadingZipCode(true);
       try {
-        const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
-
-        if (localityAndStates?.length) {
-          const firstLocality = localityAndStates[0].locality;
-          const firstProvince = localityAndStates[0].state;
-
-          setLocalities(localityAndStates.map((x) => x.locality));
-
-          handleInputChange({
-            target: {
-              name: "localidad",
-              value: firstLocality
-            }
-          } as React.ChangeEvent<HTMLInputElement>);
-
-          handleInputChange({
-            target: {
-              name: "provincia",
-              value: firstProvince
-            }
-          } as React.ChangeEvent<HTMLInputElement>);
+        if (pais === "ARG") {
+          const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
+  
+          if (localityAndStates?.length) {
+            const firstLocality = localityAndStates[0].locality;
+            const firstProvince = localityAndStates[0].state;
+  
+            setLocalities(localityAndStates.map((x) => x.locality));
+  
+            handleInputChange({
+              target: {
+                name: "localidad",
+                value: firstLocality,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+  
+            handleInputChange({
+              target: {
+                name: "provincia",
+                value: firstProvince,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+          }
+        } else if (pais === "BR") {
+          const brazilData = await fetchBrazilZipCode(cp);
+          if (brazilData) {
+  
+            handleInputChange({
+              target: {
+                name: "localidad",
+                value: brazilData.localidade || brazilData.logradouro,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+  
+            handleInputChange({
+              target: {
+                name: "provincia",
+                value: brazilData.uf,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+  
+            handleInputChange({
+              target: {
+                name: "domicilio",
+                value: `${brazilData.logradouro}, ${brazilData.bairro}`,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+  
+          }
         }
-
         setLoadingZipCode(false);
       } catch (error) {
+        console.error("Error in onBlurZipCode:", error);
         setLoadingZipCode(false);
       }
     }
   };
+  
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
@@ -100,18 +134,6 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     handleFormValueChange("logoBusiness", "");
   }
 
-  // const onFieldChange = (fieldName: string, value: string) => {
-  //   setFormData({
-  //     ...formData,
-  //     detalles: {
-  //       ...formData.detalles,
-  //       [fieldName]: value
-  //     }
-  //   });
-  //   console.log('value', value)
-  //   handleFormValueChange(fieldName, value);
-  // };
-
   const onChangeCountry = (_event: SyntheticEvent, value: { code: string; label: string } | null) => {
     if (value)
       handleFormValueChange("pais", value.code);
@@ -130,10 +152,6 @@ export const AddressForm: React.FC<AddressFormProps> = ({
       >
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth variant="outlined" error={countryError}>
-            {/* <AutocompleteCountry
-              value={pais || ""}
-              onChange={(value: Country) => onFieldChange("pais", value.code)}
-            /> */}
             <Autocomplete
               value={countryOptions.find(opts => opts.code === pais) || null}
               onChange={onChangeCountry}
@@ -177,24 +195,17 @@ export const AddressForm: React.FC<AddressFormProps> = ({
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <Autocomplete
-            options={localities}
-            getOptionLabel={(option) => option}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label={t("_locality")}
-                variant="outlined"
-                name="localidad"
-                value={localidad}
-                onChange={handleInputChange}
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: <InputAdornment position="start" />
-                }}
-                fullWidth
-              />
-            )}
+          <TextField
+            label={t("_locality")}
+            variant="outlined"
+            type="text"
+            name="localidad"
+            value={localidad}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />
+            }}
+            fullWidth
           />
         </Grid>
         <Grid item xs={12} sm={12}>
