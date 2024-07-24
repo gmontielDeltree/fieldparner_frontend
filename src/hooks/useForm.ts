@@ -7,11 +7,13 @@ export const useForm = <T extends Object>(initialState: T) => {
 
     const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = target;
-        setFormulario({
-            ...formulario,
-            [name]: value
-        });
-    };
+        console.log(`Updating field ${name} with value ${value}`);
+        setFormulario((prevState) => ({
+          ...prevState,
+          [name]: value,
+        }));
+      };
+      
 
     const handleSelectChange = ({ target }: SelectChangeEvent) => {
         const { name, value } = target;
