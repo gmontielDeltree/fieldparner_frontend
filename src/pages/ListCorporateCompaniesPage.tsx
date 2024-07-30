@@ -28,16 +28,16 @@ import {
   Business as BusinessIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
-import { useForm, useAppDispatch, useBusiness } from "../hooks";
-import { setBusinessActive } from "../redux/business";
+import { useForm, useAppDispatch, useCorporateCompanies } from "../hooks";
+import { setCorporateCompaniesActive } from "../redux/corporateCompanies";
 import { useTranslation } from "react-i18next";
-import { Business, BusinessItem } from "../interfaces/socialEntity";
+import { CorporateCompanies } from "../types";
 
 export const ListCorporateCompaniesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // const { isLoading } = useAppSelector((state) => state.ui);
-  const { isLoading, businesses, getBusinesses, setBusinesses, deleteBusiness} = useBusiness();
+  const { isLoading, corporateCompanies, getCorporateCompanies, setCorporateCompanies, removeCorporateCompanies} =  useCorporateCompanies();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
   const { t } = useTranslation();
 
@@ -54,38 +54,37 @@ export const ListCorporateCompaniesPage: React.FC = () => {
 
   const onClickSearch = (): void => {
     if (filterText === "") {
-      getBusinesses();
+      getCorporateCompanies();
       return;
     }
-    const filteredBusinesses = businesses.filter(
-      ({ razonSocial, nombreCompleto }) =>
-        (razonSocial &&
-          razonSocial.toLowerCase().includes(filterText.toLowerCase())) ||
-        (nombreCompleto &&
-          nombreCompleto.toLowerCase().includes(filterText.toLowerCase()))
+    const filteredCorporate = corporateCompanies.filter(
+      ({ businessName, fantasyName }) =>
+        (businessName &&
+          businessName.toLowerCase().includes(filterText.toLowerCase())) ||
+        (fantasyName &&
+          fantasyName.toLowerCase().includes(filterText.toLowerCase()))
     );
-    setBusinesses(filteredBusinesses);
+    setCorporateCompanies(filteredCorporate);
   };
 
   const onClickAddBusiness = () => navigate("/init/overview/corporate-companies/new");
 
-  const onClickUpdateBusiness = (item: BusinessItem) => {
-    const { country, ...rest } = item;
-    dispatch(setBusinessActive(rest));
+  const onClickUpdateCorporateCompanies = (item: CorporateCompanies): void => {
+    dispatch(setCorporateCompaniesActive(item));
     navigate(`/init/overview/corporate-companies/${item._id}`);
   };
 
 
 
-  const handleDeleteBusiness = (item: Business) => {
+  const handleDeleteBusiness = (item: CorporateCompanies) => {
     if (item._id && item._rev) {
-      deleteBusiness(item._id, item._rev);
-      getBusinesses();
+      removeCorporateCompanies(item._id, item._rev);
+      getCorporateCompanies();
     }
   };
 
   useEffect(() => {
-    getBusinesses();
+    getCorporateCompanies();
   }, []);
 
   return (
@@ -147,26 +146,26 @@ export const ListCorporateCompaniesPage: React.FC = () => {
               columns={columns}
               isLoading={isLoading}
             >
-              {businesses.map((row) => (
+              {corporateCompanies.map((row) => (
                 <ItemRow key={row._id} hover>
                   <TableCellStyled align="center">
-                    {row.tipoEntidad}
+                    {row.taxKey}
                   </TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.razonSocial || row.nombreCompleto}
+                    {row.businessName|| row.fantasyName}
                   </TableCellStyled>
                   <TableCellStyled align="center">
-                    {row.cuit || row.documento}
+                    {row.location || row.domicile}
                   </TableCellStyled>
-                  <TableCellStyled>{row.email}</TableCellStyled>
+                  <TableCellStyled>{row.state}</TableCellStyled>
                   <TableCellStyled align="center">
-                   <PaisTableCell pais={row.country} mostrarDato="descriptionES" />
+                   <PaisTableCell pais={row.countryId}  />
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     <Tooltip title={t("icon_edit")}>
                       <IconButton
                         aria-label={t("icon_edit")}
-                        onClick={() => onClickUpdateBusiness(row)}
+                        onClick={() => onClickUpdateCorporateCompanies(row)}
                       >
                         <EditIcon />
                       </IconButton>

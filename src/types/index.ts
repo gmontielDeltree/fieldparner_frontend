@@ -198,6 +198,7 @@ export interface Supply extends Document {
 }
 
 export interface CorporateCompanies extends Document {
+  values: string;
   accountId: string;
   countryId: string;
   companyId: string;
@@ -206,7 +207,6 @@ export interface CorporateCompanies extends Document {
   taxKey: string;
   fantasyName: string;
   businessName: string;
-  postalCode: string;
   location: string;
   state: string;
   photoName: string;
@@ -215,6 +215,11 @@ export interface CorporateCompanies extends Document {
   secondaryContact: string;
   web: string;
   observations: string;
+}
+
+export interface CorporateCompaniesState {
+  corporateCompaniesActive: CorporateCompanies | null;
+  CorporateCompanies: CorporateCompanies[];
 }
 
 export interface UserByAccount extends Document {

@@ -1,4 +1,4 @@
-import React, { SyntheticEvent, useEffect, useState } from 'react';
+import { getLocalityAndStateByZipCode } from '../services';
 import {
   Autocomplete,
   Box,
@@ -7,35 +7,31 @@ import {
   CardContent,
   CardMedia,
   Container,
-  FormControl,
   Grid,
   IconButton,
   InputAdornment,
-  InputLabel,
-  MenuItem,
   Paper,
-  Select,
   TextField,
-  Tooltip,
-  Typography
+  Typography,
 } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAppDispatch, useAppSelector, useForm, useFormError, useUser } from '../hooks';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch,  useForm, useCorporateCompanies, useAppSelector ,useBusiness} from '../hooks';
 import { Loading } from '../components';
-import { CorporateCompanies, EnumStatusUser,  UserRols } from '../types';
-import { removeUsersActive } from '../redux/users';
+import { CorporateCompanies } from '../types';
+import { removeCorporateCompaniesActive } from '../redux/corporateCompanies';
 import {
- 
   BrokenImage as BrokenImageIcon,
   Cancel as CancelIcon,
   PhotoCamera as PhotoCameraIcon,
-  VpnKey as VpnKeyIcon,
   People as PeopleIcon,
-  Info as InfoIcon,
 } from '@mui/icons-material';
 import uuid4 from 'uuid4';
 import { uploadFile } from '../helpers/fileUpload';
 import { urlImg } from '../config';
+import { SyntheticEvent, useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
+
+
 
 
 const initialForm: CorporateCompanies = {
@@ -46,7 +42,6 @@ const initialForm: CorporateCompanies = {
   licenceId: '',
   taxKey: '',
   fantasyName: '',
-  postalCode: '',
   location: '',
   state: '',
   photoName: '',
@@ -55,32 +50,37 @@ const initialForm: CorporateCompanies = {
   secondaryContact: '',
   web: '',
   observations: '',
-  businessName: ''
+  businessName: '',
+  values: ''
 };
 
 
 export const NewCoporateCompaniesPage = () => {
   const navigate = useNavigate();
-  const { isLoading, createUser, updateUser, getUserById } = useUser();
+  const { isLoading, createCorporateCompanies, updateCorporateCompanies, getCorporateCompanies } = useCorporateCompanies();
   const dispatch = useAppDispatch();
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [showChangePassword, setShowChangePassword] = useState<boolean>(false);
-  const { formControlError, handleFormValueChange } = useFormError({
-    password: "",
-    confirmPassword: "",
-    newPassword: "",
-  });
-  const { userActive } = useAppSelector((state) => state.users);
+  const {businesses,getBusinesses} = useBusiness();
+  //const {users, getUsers} = useUser();
+  const { corporateCompaniesActive } = useAppSelector((state) => state.corporateCompanies);
+  const [loadingZipCode, setLoadingZipCode] = useState(false);
+  const [localities, setLocalities] = useState<string[]>([]);
+  const [locality, setLocality] = useState<string | null>(null);
+  const { businessActive } = useAppSelector((state) => state.business);
+  const { user } = useAppSelector(state => state.auth);
+
+
+ 
+
+
   const {
     photoName,
+    values,
     accountId,
     countryId,
-    companyId,
     cp,
     licenceId,
     taxKey,
     fantasyName,
-    postalCode,
     location,
     state,
     domicile,
@@ -92,17 +92,33 @@ export const NewCoporateCompaniesPage = () => {
     formulario,
     setFormulario,
     handleInputChange,
-    handleSelectChange,
+    //handleSelectChange,
     reset,
-  } = useForm(initialForm);
+  } = useForm<CorporateCompanies>(initialForm);
+
+  const {    } = values;
+
+  useEffect(() => {
+    getBusinesses();
+ }, []);
+
+ useEffect(() => {
+  if (businessActive) {
+    setFormulario(initialForm);
+  } else {
+    setFormulario(initialForm);
+  }
+}, [businessActive, setFormulario]);
+
 
 
 
   const uploadImgUser = async (fileInput: Blob) => {
     try {
-      const newFileName = `${uuid4()}.jpeg`; // Nuevo nombre del archivo
+      const newFileName = `${uuid4()}.jpeg`; 
       const renamedFile = new File([fileInput], newFileName, { type: fileInput.type });
       const response = await uploadFile(renamedFile);
+      
 
       if (response)
         setFormulario(({ ...formulario, photoName: newFileName }));
@@ -125,71 +141,172 @@ export const NewCoporateCompaniesPage = () => {
 
   const handleUpdate = () => {
     if (formulario._id) {
-      updateUser(formulario);
-      dispatch(removeUsersActive());
-      navigate("/init/overview/users");
+      updateCorporateCompanies(formulario);
+      dispatch(removeCorporateCompaniesActive ());
+      navigate("/init/overview/corporate-companies");
     }
   };
 
   const handleAdd = async () => {
-    await createUser(formulario);
-    navigate("/init/overview/users");
+    await createCorporateCompanies(formulario);
+    navigate("/init/overview/corporate-companies");
     reset();
   };
 
   const onClickCancel = () => {
-    dispatch(removeUsersActive());
-    navigate("/init/overview/users");
+    dispatch(removeCorporateCompaniesActive ());
+    navigate("/init/overview/corporate-companies");
     // setIsLoading(true);
     reset();
   };
 
 
 
-  const validateSave = () => {
-    let errors = Object.values(formControlError);
-    let isError = false;
-    errors.forEach(value => { if (value !== "") isError = true; });
-    return isError;
-  }
-
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (!validateSave()) {
-      userActive ? handleUpdate() : handleAdd()
+  const handleClick = () => {
+    if (user) {
+      const { isAdmin, accountId, username, countryId } = user;
+      
+      console.log("Admin:", isAdmin);
+      console.log("Account ID:", accountId);
+      console.log("Username:", username);
+      console.log("Country ID:", countryId);
+    } else {
+      console.log("No user data available");
     }
-  }
+  };
 
-  const onChangeStatus = (_event: SyntheticEvent, value: string | null) => {
-    if (value)
-      setFormulario(prevState => ({ ...prevState, state: value }));
-  }
+  const handleVerifyId = () => {
+    const existingBusiness = businesses.find(business => business.cuit === taxKey);
+    
+    if (existingBusiness) {
+      Swal.fire({
+        icon: 'question',
+        title: 'Cuit ya existe',
+        text: 'El CUIT ya existe, ¿desea autocompletar?',
+        showCancelButton: true,
+        confirmButtonText: 'Sí',
+        cancelButtonText: 'No'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setFormulario(prevForm => ({
+            ...prevForm,
+            taxKey: existingBusiness.cuit || prevForm.taxKey,
+            businessName: existingBusiness.razonSocial || prevForm.businessName,
+            fantasyName: existingBusiness.razonSocial || prevForm.fantasyName,
+            cp: existingBusiness.cp || prevForm.cp,
+            location: existingBusiness.localidad || prevForm.location,
+            state: existingBusiness.provincia || prevForm.state,
+            domicile: existingBusiness.domicilio || prevForm.domicile,
+            secondaryContact: existingBusiness.contactoSecundario || prevForm.secondaryContact,
+            web: existingBusiness.sitioWeb || prevForm.web,
+            photoName: existingBusiness.logoBusiness || prevForm.photoName,
+          }));
+        } else {
+          setFormulario(prevForm => ({
+            ...prevForm,
+            id: 0
+          }));
+        }
+      });
+    }
+    
+    return !!existingBusiness;
+  };
 
 
-  // useEffect(() => {
-  //   if (userActive) {
-  //     setFormulario(userActive);
-  //   } else {
-  //     setFormulario(initialForm);
-  //   }
-  // }, [userActive, setFormulario]);
+  const fetchBrazilZipCode = async (zipCode: string) => {
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${zipCode}/json/`);
+      if (!response.ok) throw new Error("Network response was not ok");
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch Brazil zip code data:", error);
+      return null;
+    }
+  };
 
-
-  // useEffect(() => {
-  //   if (userId) {
-  //     getUserById(userId);
-  //   }
-  // }, [userId])
+  const onBlurZipCode = async () => {
+    
+    if (cp !== "") {
+      
+      setLoadingZipCode(true);
+      try {
+        if (countryId === "ARG") {
+          const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
+          console.log("onBlurZipCode triggered");
+          if (localityAndStates?.length) {
+            const firstLocality = localityAndStates[0].locality;
+            const firstProvince = localityAndStates[0].state;
+  
+            setLocalities(localityAndStates.map((x) => x.locality));
+  
+            handleInputChange({
+              target: {
+                name: "localidad",
+                value: firstLocality,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+  
+            handleInputChange({
+              target: {
+                name: "provincia",
+                value: firstProvince,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+          }
+        } else if (countryId === "BR") {
+          const brazilData = await fetchBrazilZipCode(cp);
+          if (brazilData) {
+  
+            handleInputChange({
+              target: {
+                name: "localidad",
+                value: brazilData.localidade || brazilData.logradouro,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+  
+            handleInputChange({
+              target: {
+                name: "provincia",
+                value: brazilData.uf,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+  
+            handleInputChange({
+              target: {
+                name: "domicilio",
+                value: `${brazilData.logradouro}, ${brazilData.bairro}`,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+  
+          }
+        }
+        setLoadingZipCode(false);
+      } catch (error) {
+        console.error("Error in onBlurZipCode:", error);
+        setLoadingZipCode(false);
+      }
+    }
+  };
+  
+  useEffect(() => {
+    if (corporateCompaniesActive) setFormulario(corporateCompaniesActive);
+    else setFormulario(initialForm);
+  }, [corporateCompaniesActive, setFormulario]);
 
   useEffect(() => {
     return () => {
-      dispatch(removeUsersActive());
-    }
-  }, [dispatch])
+      dispatch((removeCorporateCompaniesActive));
+    };
+  }, [dispatch]);
+
+
+
 
   return (
     <>
+    <Loading key="loading-business" loading={loadingZipCode }  />
       <Container maxWidth="md" sx={{
         mt: 4,
         p: { sm: 1, md: 1 },
@@ -206,6 +323,7 @@ export const NewCoporateCompaniesPage = () => {
           <PeopleIcon sx={{ marginRight: '8px', fontSize: 'inherit', verticalAlign: 'middle' }} />
           Compañías Societarias
         </Typography>
+        <button onClick={handleClick}> Vereficar</button>
         <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
         <Typography
             component="h1"
@@ -213,175 +331,166 @@ export const NewCoporateCompaniesPage = () => {
             align="center"
             sx={{ my: 3, mb: 5 }}
           >
-            { userActive ?  "Editar" : "Nueva"} {' '}
+            { corporateCompaniesActive ?  "Editar" : "Nueva"} {' '}
             Compañías Societarias
           </Typography>
-          <form onSubmit={onSubmit}>
+
             <Grid container spacing={1} p={1} mt={1}>
               <Grid container direction="column" xs={7}>
                 <Grid container spacing={1.5} sx={{ pt: 6 }}>
-                  <Grid item xs={12}>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Clave Tributaria"
+                    type="text"
+                    name="taxKey"
+                    value={taxKey}
+                    onBlur={handleVerifyId}
+                    onChange={handleInputChange}
+                    required
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Razón Social"
+                    type="text"
+                    id="businessName"
+                    name="businessName"
+                    value={businessName}
+                    onChange={handleInputChange}
+                    required
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Nombre Fantasía"
+                    type="text"
+                    id="fantasyName"
+                    name="fantasyName"
+                    value={fantasyName}
+                    onChange={handleInputChange}
+                    required
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                <TextField
+                    variant="outlined"
+                    type="text"
+                    label="Codigo Postal"
+                    name="cp"
+                    value={cp}
+                    onBlur={onBlurZipCode}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start" />
+                    }}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                <Autocomplete
+                  options={localities}
+                  getOptionLabel={(option) => option}
+                  value={locality}
+                  onChange={(_event, newValue) => {
+                    setLocality(newValue);
+                    handleInputChange({
+                      target: {
+                        name: "localidad",
+                        value: newValue || "" // Asegurar que no pase `null` en `handleInputChange`
+                      }
+                    } as React.ChangeEvent<HTMLInputElement>);
+                  }}
+                  renderInput={(params) => (
                     <TextField
-                      label="Clave Tributaria"
-                      type="text"
-                      name="taxKey"
-                      value={formulario.taxKey}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Razon Social"
-                      type="text"
-                      id="businessName"
-                      name="businessName"
-                      value={formulario.businessName}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Nombre Fantasia"
-                      type="text"
-                      id="fantasyName"
-                      name="fantasyName"
-                      value={formulario.fantasyName}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Codigo Postal"
-                      type="text"
-                      id="cp"
-                      name="cp"
-                      value={formulario.cp}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
+                      {...params}
                       label="Localidad"
-                      type="text"
-                      id="location"
-                      name="location"
-                      value={formulario.location}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
+                      variant="outlined"
+                      name="localidad"
                       InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
+                        ...params.InputProps,
+                        startAdornment: <InputAdornment position="start" />
                       }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Domicilio"
-                      type="text"
-                      id="domicile"
-                      name="domicile"
-                      value={formulario.domicile}
-                      onChange={handleInputChange}
-                      required
                       fullWidth
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
                     />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Estado"
-                      type="text"
-                      id="state"
-                      name="state"
-                      value={formulario.state}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Telefono"
-                      type="text"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={formulario.phoneNumber}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Contacto Secundario"
-                      type="text"
-                      id="secondaryContact"
-                      name="secondaryContact"
-                      value={formulario.secondaryContact}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Web"
-                      type="text"
-                      id="web"
-                      name="web"
-                      value={formulario.web}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Observaciones"
-                      type="text"
-                      id="observations"
-                      name="observations"
-                      value={formulario.observations}
-                      onChange={handleInputChange}
-                      required
-                      fullWidth
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
-                    />
-                  </Grid>
-                  {!userActive &&
+                  )}
+                />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Domicilio"
+                    type="text"
+                    id="domicile"
+                    name="domicile"
+                    value={domicile}
+                    onChange={handleInputChange}
+                    required
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Estado"
+                    type="text"
+                    id="state"
+                    name="state"
+                    value={state}
+                    onChange={handleInputChange}
+                    required
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Teléfono"
+                    type="text"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    value={phoneNumber}
+                    onChange={handleInputChange}
+                    required
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Contacto Secundario"
+                    type="text"
+                    id="secondaryContact"
+                    name="secondaryContact"
+                    value={secondaryContact}
+                    onChange={handleInputChange}
+                    required
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Web"
+                    type="text"
+                    id="web"
+                    name="web"
+                    value={web}
+                    onChange={handleInputChange}
+                    required
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Observaciones"
+                    type="text"
+                    id="observations"
+                    name="observations"
+                    value={observations}
+                    onChange={handleInputChange}
+                    required
+                    fullWidth
+                  />
+                </Grid>
+                  {!corporateCompaniesActive &&
                     <>
                       <Grid item xs={6}>
                         {/* <TextField
@@ -513,19 +622,9 @@ export const NewCoporateCompaniesPage = () => {
                     </CardContent>
                   </Card>
                 </Box>
-                {userActive && <Box sx={{ mb: 2 }}>
+                {corporateCompaniesActive && <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center' }} >
-                    <Button
-                      variant="text"
-                      color="secondary"
-                      onClick={() => setShowChangePassword(!showChangePassword)}
-                      startIcon={<VpnKeyIcon />}
-                      sx={{ border: '1px solid', borderColor: '-moz-initial', borderRadius: '5px', padding: '8px 16px' }}
-                    >
-                      Cambiar clave
-                    </Button>
                   </Box>
-                  {showChangePassword && (
                     <>
                       <Grid container direction="column" sx={{ mt: 1 }} spacing={1}>
                          <Grid item xs={4}>
@@ -561,12 +660,11 @@ export const NewCoporateCompaniesPage = () => {
                       <Button variant="contained" color="primary" onClick={() => console.log("Clic")}>
                         Confirmar
                       </Button>
-                        <Button variant="outlined" color="secondary" onClick={() => setShowChangePassword(!showChangePassword)}>
+                        <Button variant="outlined" color="secondary" onClick={() => console.log("Clic")}>
                           Cancelar
                         </Button>
                       </Box>
                     </>
-                  )}
                 </Box>}
                 {/* <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center', mb: 2 }}>
                   <ScheduleIcon sx={{ mr: 1 }} />
@@ -588,12 +686,13 @@ export const NewCoporateCompaniesPage = () => {
                 type='submit'
                 variant="contained"
                 color="primary"
-              // onClick={userActive ? handleUpdateUsers : handleAddUser}
+                onClick={
+                  corporateCompaniesActive ? handleUpdate: handleAdd
+                }
               >
-                {!userActive ? "Guardar" : "Actualizar"}{' '}
+                {!corporateCompaniesActive ? "Guardar" : "Actualizar"}{' '}
               </Button>
             </Box>
-          </form>
         </Paper>
       </Container>
     </>

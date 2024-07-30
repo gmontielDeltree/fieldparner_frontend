@@ -22,3 +22,4 @@ export * from './useLaborsServices';
 export * from './useNumerator';
 export * from './usePurchaseOrder';
 export * from './useCountry';
+export * from './useCorporateCompanies';

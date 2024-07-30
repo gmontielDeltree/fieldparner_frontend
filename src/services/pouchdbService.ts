@@ -25,6 +25,7 @@ import {
     LaborsServices,
     PurchaseOrder,
     DetailPurchaseOrder,
+    CorporateCompanies,
 } from '../types';
 import { Country } from '../interfaces/country';
 import { Business } from '../interfaces/socialEntity';
@@ -72,7 +73,7 @@ const dbNames = Object.freeze({
     purchaseOrder: "purchase-order",
     detailPurchaseOrder: "detail-purchase-order",
     countries: "countries",
-    // country: "country",
+    corporateCompanies: "corporateCompanies",
 });
 
 export const dbContext = Object.freeze({
@@ -105,7 +106,7 @@ export const dbContext = Object.freeze({
     purchaseOrder: new PouchDB<PurchaseOrder>(dbNames.purchaseOrder),
     detailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.detailPurchaseOrder),
     countries: new PouchDB<Country>(dbNames.countries),
-    // country: new PouchDB<Country>(dbNames.country),
+    corporateCompanies: new PouchDB<CorporateCompanies>(dbNames.corporateCompanies),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -139,6 +140,7 @@ dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, op
 dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
 dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
 dbContext.countries.sync(`${remoteCouchDBUrl}${dbNames.countries}`, opts);
+dbContext.corporateCompanies.sync(`${remoteCouchDBUrl}${dbNames.corporateCompanies}`, opts);
 
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
