@@ -7,7 +7,7 @@ export const useForm = <T extends Object>(initialState: T) => {
 
     const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = target;
-        console.log(`Updating field ${name} with value ${value}`);
+        
         setFormulario((prevState) => ({
           ...prevState,
           [name]: value,
