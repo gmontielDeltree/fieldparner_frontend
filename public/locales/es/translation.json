@@ -117,6 +117,7 @@
   "unit_of_measure": "Unidad de Medida",
   "brand":"Marca",
   "supply_description": "Insumo / Descripción",
+  "export":"Exportar",
   "_dose": "Dosis",
   "_stock": "Stock",
   "_barcode": "Código de Barras",
