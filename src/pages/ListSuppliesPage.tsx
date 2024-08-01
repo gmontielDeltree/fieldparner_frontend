@@ -1,73 +1,67 @@
 import { useNavigate } from "react-router-dom";
-import { ColumnProps, Supply } from "../types";
-import React, { useEffect } from "react";
-import { useAppDispatch, useForm, useSupply } from "../hooks";
+import React, { useEffect, useState } from "react";
+import { useAppDispatch, useSupply } from "../hooks";
 import {
-  DataTable,
-  ItemRow,
-  Loading,
-  SearchButton,
-  SearchInput,
-  TableCellStyled,
-  TemplateLayout,
-  CloseButtonPage
-} from "../components";
-import {
+  Container,
   Box,
   Button,
-  Container,
-  Grid,
+  Typography,
   IconButton,
   Tooltip,
-  Typography
+  TextField,
+  Grid,
+  Card,
+  CardContent,
 } from "@mui/material";
-import "semantic-ui-css/semantic.min.css";
-import { Icon } from "semantic-ui-react";
 import {
   Inventory as InventoryIcon,
   Add as AddIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
+import { DataGrid, GridColDef, GridRenderCellParams, esES } from "@mui/x-data-grid";
 import { setSupplyActive } from "../redux/supply";
 import { useTranslation } from "react-i18next";
+import { TemplateLayout, Loading, CloseButtonPage } from "../components";
+import { Supply } from "@types";
 
 export const ListSuppliesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
-  const { isLoading, supplies, getSupplies, setSupplies, deleteSupply } =
-    useSupply();
-  const { filterText, handleInputChange } = useForm({ filterText: "" });
+  const { isLoading, supplies, getSupplies, deleteSupply } = useSupply();
+  const [filterText, setFilterText] = useState("");
+  const [filteredSupplies, setFilteredSupplies] = useState(supplies);
 
-  const columns: ColumnProps[] = [
-    { text: t("_type"), align: "left" },
-    { text: t("_supply"), align: "center" },
-    { text: t("unit_of_measure"), align: "center" },
-    // { text: "Generico", align: "center" },
-    { text: "", align: "center" }
-    // { text: "Stock Reservado", align: "center" },
-    // { text: "Stock Disponible", align: "center" },
-  ];
+  useEffect(() => {
+    getSupplies();
+  }, []);
 
-  const onClickSearch = () => {
-    if (filterText === "") {
-      getSupplies();
-      return;
-    }
-    const filteredSupplies = supplies.filter(
-      ({ name: insumo, description: descripcion }) => {
-        (insumo && insumo.toLowerCase().includes(filterText.toLowerCase())) ||
-          (descripcion &&
-            descripcion.toLowerCase().includes(filterText.toLowerCase()));
-      }
-    );
-    setSupplies(filteredSupplies);
+  useEffect(() => {
+    setFilteredSupplies(supplies);
+  }, [supplies]);
+
+  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setFilterText(value);
+    handleSearch(value);
   };
-  const onClickUpdateSupply = (item: Supply) => {
+
+  const handleSearch = (searchText: string) => {
+    const filtered = supplies.filter((supply) =>
+      Object.values(supply).some((value) =>
+        value !== null && value !== undefined && value.toString().toLowerCase().includes(searchText.toLowerCase())
+      )
+    );
+    setFilteredSupplies(filtered);
+  };
+
+  const handleUpdateSupply = (item: Supply) => {
     navigate(`/init/overview/supply/${item._id}`);
     dispatch(setSupplyActive(item));
   };
+
   const handleDeleteSupply = (item: Supply) => {
     if (item._id && item._rev) {
       deleteSupply(item._id, item._rev);
@@ -75,120 +69,124 @@ export const ListSuppliesPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    getSupplies();
-  }, []);
+  const columns: GridColDef[] = [
+    { field: "type", headerName: t("_type"), flex: 1 },
+    { field: "name", headerName: t("_supply"), flex: 1 },
+    { field: "unitMeasurement", headerName: t("unit_of_measure"), flex: 1 },
+    { field: "currentStock", headerName: t("current_stock"), flex: 1 },
+    { field: "reservedStock", headerName: t("reserved_stock"), flex: 1 },
+    { field: "brand", headerName: t("brand"), flex: 1 },
+    {
+      field: "actions",
+      headerName: "",
+      flex: 1,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => (
+        <Box display="flex" justifyContent="center">
+          <Tooltip title={t("icon_edit")}>
+            <IconButton
+              aria-label={t("icon_edit")}
+              onClick={() => handleUpdateSupply(params.row)}
+              sx={{
+                transition: "transform 0.2s",
+                "&:hover": { transform: "scale(1.2)" },
+              }}
+            >
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t("icon_delete")}>
+            <IconButton
+              aria-label={t("icon_delete")}
+              onClick={() => handleDeleteSupply(params.row)}
+              sx={{
+                transition: "transform 0.2s",
+                "&:hover": { transform: "scale(1.2)" },
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
 
   return (
     <TemplateLayout key="overview-supplies" viewMap={false}>
       {isLoading && <Loading loading />}
-      <Container maxWidth="md" sx={{ ml: 0 }}>
-        <Box
-          component="div"
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
-        >
-          <Box display="flex" alignItems="center">
-            <InventoryIcon sx={{ marginRight: "8px" }} />
-            <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-              {t("_supplies")}
-            </Typography>
-          </Box>
-          <CloseButtonPage />
-        </Box>
-        <Box component="div" sx={{ mt: 7 }}>
-          <Grid
-            container
-            spacing={0}
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{ p: 2, mt: { sm: 2 } }}
-          >
-            <Grid item xs={6} sm={2}>
-              <Button
-                variant="contained"
-                color="success"
-                startIcon={<AddIcon />}
-                onClick={() => navigate("/init/overview/supply/new")}
-              >
-                {t("new_masculine")}
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={10}>
-              <Grid container justifyContent="flex-end">
-                <Grid item xs={8} sm={7}>
-                  <SearchInput
-                    value={filterText}
-                    placeholder={t("supply_description")}
-                    handleInputChange={handleInputChange}
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Card elevation={3} sx={{ p: 2, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+          <CardContent>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} md={8}>
+                <Box display="flex" alignItems="center">
+                  <InventoryIcon sx={{ marginRight: "8px", fontSize: 32, color: "#388e3c" }} />
+                  <Typography component="h2" variant="h4" sx={{ fontWeight: 'bold', color: "#388e3c" }}>
+                    {t("_supplies")}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={4} textAlign={{ xs: "right", md: "right" }}>
+                <CloseButtonPage />
+              </Grid>
+              <Grid item xs={12} md={8}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<AddIcon />}
+                  onClick={() => navigate("/init/overview/supply/new")}
+                  sx={{ borderRadius: "20px", fontWeight: 'bold' }}
+                >
+                  {t("new_masculine")}
+                </Button>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label={t("supply_description")}
+                  value={filterText}
+                  onChange={handleFilterChange}
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  sx={{ backgroundColor: 'white', borderRadius: '4px' }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Box sx={{ height: 600, width: "100%", mt: 2 }}>
+                  <DataGrid
+                    rows={filteredSupplies}
+                    columns={columns}
+                    pageSize={10}
+                    rowsPerPageOptions={[10]}
+                    disableSelectionOnClick
+                    loading={isLoading}
+                    getRowId={(row) => row._id}
+                    localeText={esES.components.MuiDataGrid.defaultProps.localeText}
+                    sx={{
+                      "& .MuiDataGrid-columnHeaders": {
+                        backgroundColor: "#388e3c",
+                        color: "#fff",
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                      },
+                      "& .MuiDataGrid-cell": {
+                        borderBottom: "none",
+                        color: '#333',
+                      },
+                      "& .MuiDataGrid-row:nth-of-type(odd)": {
+                        backgroundColor: "#f9f9f9",
+                      },
+                      "& .MuiDataGrid-row:hover": {
+                        backgroundColor: "#e8f5e9",
+                      },
+                    }}
                   />
-                </Grid>
-                <Grid item xs={4} sm={3}>
-                  <SearchButton
-                    text={t("icon_search")}
-                    onClick={() => onClickSearch()}
-                  />
-                </Grid>
+                </Box>
               </Grid>
             </Grid>
-          </Grid>
-          <Box component="div" sx={{
-            p: 1,
-            maxHeight: "540px",
-            overflow: "scroll",
-          }}>
-            <DataTable
-              key="datatable-supplies"
-              columns={columns}
-              isLoading={isLoading}
-            >
-              {supplies.map((row) => (
-                <ItemRow key={row._id} hover>
-                  <TableCellStyled align="left">{row.type}</TableCellStyled>
-                  <TableCellStyled align="center">{row.name}</TableCellStyled>
-                  <TableCellStyled align="center">
-                    {row.unitMeasurement}
-                  </TableCellStyled>
-                  {/* <TableCellStyled align="center">
-                    {row.generico ? "Si" : "No"}
-                  </TableCellStyled> */}
-                  {/* <TableCellStyled align="center">
-                    {row.stockActual}
-                  </TableCellStyled>
-                  <TableCellStyled align="center">
-                    {row.stockReservado}
-                  </TableCellStyled>
-                  <TableCellStyled align="center">
-                    {row.stockDisponible}
-                  </TableCellStyled> */}
-                  <TableCellStyled align="center">
-                    <Tooltip title={t("icon_edit")}>
-                      <IconButton
-                        aria-label={t("icon_edit")}
-                        disabled={row.generico}
-                        onClick={() => onClickUpdateSupply(row)}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={t("icon_delete")}>
-                      <IconButton
-                        onClick={() => handleDeleteSupply(row)}
-                        disabled={row.generico}
-                        style={{ fontSize: "1rem" }}
-                      >
-                        <Icon name="trash alternate" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCellStyled>
-                </ItemRow>
-              ))}
-            </DataTable>
-          </Box>
-        </Box>
+          </CardContent>
+        </Card>
       </Container>
     </TemplateLayout>
   );

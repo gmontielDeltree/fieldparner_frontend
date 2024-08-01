@@ -116,6 +116,7 @@
   "additional_information": "Additional Information",
   "transport_destiny": "Transportation / Destination",
   "unit_of_measure": "Unit of Measure",
+  "brand":"Brand",
   "supply_description": "Supply / Description",
   "_dose": "Dose",
   "_stock": "Stock",
