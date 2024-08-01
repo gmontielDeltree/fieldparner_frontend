@@ -118,6 +118,7 @@
   "unit_of_measure": "Unit of Measure",
   "brand":"Brand",
   "supply_description": "Supply / Description",
+  "export":"Export",
   "_dose": "Dose",
   "_stock": "Stock",
   "_barcode": "Barcode",

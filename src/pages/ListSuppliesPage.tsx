@@ -12,18 +12,21 @@ import {
   Grid,
   Card,
   CardContent,
+  CardHeader,
 } from "@mui/material";
 import {
   Inventory as InventoryIcon,
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Download as DownloadIcon,
 } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridRenderCellParams, esES } from "@mui/x-data-grid";
 import { setSupplyActive } from "../redux/supply";
 import { useTranslation } from "react-i18next";
 import { TemplateLayout, Loading, CloseButtonPage } from "../components";
 import { Supply } from "@types";
+import * as XLSX from 'xlsx';
 
 export const ListSuppliesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -67,6 +70,13 @@ export const ListSuppliesPage: React.FC = () => {
       deleteSupply(item._id, item._rev);
       getSupplies();
     }
+  };
+
+  const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredSupplies);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Supplies");
+    XLSX.writeFile(workbook, "supplies.xlsx");
   };
 
   const columns: GridColDef[] = [
@@ -116,32 +126,38 @@ export const ListSuppliesPage: React.FC = () => {
     <TemplateLayout key="overview-supplies" viewMap={false}>
       {isLoading && <Loading loading />}
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Card elevation={3} sx={{ p: 2, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+        <Card elevation={5} sx={{ p: 2, boxShadow: '0 10px 20px rgba(0,0,0,0.2)', borderRadius: '16px' }}>
+          <CardHeader
+            avatar={<InventoryIcon sx={{ fontSize: 40, color: "#388e3c" }} />}
+            title={
+              <Typography component="h2" variant="h4" sx={{ fontWeight: 'bold', color: "#388e3c" }}>
+                {t("_supplies")}
+              </Typography>
+            }
+            action={<CloseButtonPage />}
+          />
           <CardContent>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={8}>
-                <Box display="flex" alignItems="center">
-                  <InventoryIcon sx={{ marginRight: "8px", fontSize: 32, color: "#388e3c" }} />
-                  <Typography component="h2" variant="h4" sx={{ fontWeight: 'bold', color: "#388e3c" }}>
-                    {t("_supplies")}
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={4} textAlign={{ xs: "right", md: "right" }}>
-                <CloseButtonPage />
-              </Grid>
-              <Grid item xs={12} md={8}>
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={12} md={3}>
                 <Button
                   variant="contained"
                   color="success"
                   startIcon={<AddIcon />}
                   onClick={() => navigate("/init/overview/supply/new")}
-                  sx={{ borderRadius: "20px", fontWeight: 'bold' }}
+                  sx={{
+                    borderRadius: "30px",
+                    fontWeight: 'bold',
+                    background: 'linear-gradient(45deg, #388e3c 30%, #66bb6a 90%)',
+                    transition: 'background 0.3s ease-in-out',
+                    "&:hover": {
+                      background: 'linear-gradient(45deg, #66bb6a 30%, #388e3c 90%)',
+                    },
+                  }}
                 >
                   {t("new_masculine")}
                 </Button>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   label={t("supply_description")}
                   value={filterText}
@@ -149,8 +165,38 @@ export const ListSuppliesPage: React.FC = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  sx={{ backgroundColor: 'white', borderRadius: '4px' }}
+                  sx={{
+                    backgroundColor: 'white',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderRadius: '8px',
+                      },
+                    },
+                  }}
                 />
+              </Grid>
+              <Grid item xs={12} md={3} display="flex" justifyContent="flex-end">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<DownloadIcon />}
+                  onClick={handleExport}
+                  sx={{
+                    borderRadius: "30px",
+                    paddingLeft: "30px",
+                    paddingRight: "30px",
+                    fontWeight: 'bold',
+                    background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
+                    transition: 'background 0.3s ease-in-out',
+                    "&:hover": {
+                      background: 'linear-gradient(45deg, #42a5f5 30%, #1976d2 90%)',
+                    },
+                  }}
+                >
+                  {t("export")}
+                </Button>
               </Grid>
               <Grid item xs={12}>
                 <Box sx={{ height: 600, width: "100%", mt: 2 }}>
@@ -165,7 +211,7 @@ export const ListSuppliesPage: React.FC = () => {
                     localeText={esES.components.MuiDataGrid.defaultProps.localeText}
                     sx={{
                       "& .MuiDataGrid-columnHeaders": {
-                        backgroundColor: "#388e3c",
+                        backgroundColor: "#424242", // Strong gray
                         color: "#fff",
                         fontSize: '16px',
                         fontWeight: 'bold',
