@@ -128,9 +128,9 @@ export const ListSuppliesPage: React.FC = () => {
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Card elevation={5} sx={{ p: 2, boxShadow: '0 10px 20px rgba(0,0,0,0.2)', borderRadius: '16px' }}>
           <CardHeader
-            avatar={<InventoryIcon sx={{ fontSize: 40, color: "#388e3c" }} />}
+            avatar={<InventoryIcon sx={{ fontSize: 40, color: "#424242" }} />}
             title={
-              <Typography component="h2" variant="h4" sx={{ fontWeight: 'bold', color: "#388e3c" }}>
+              <Typography component="h2" variant="h4" sx={{ fontWeight: 'bold', color: "#424242" }}>
                 {t("_supplies")}
               </Typography>
             }
@@ -211,10 +211,18 @@ export const ListSuppliesPage: React.FC = () => {
                     localeText={esES.components.MuiDataGrid.defaultProps.localeText}
                     sx={{
                       "& .MuiDataGrid-columnHeaders": {
-                        backgroundColor: "#424242", // Strong gray
+                        backgroundColor: "#424242", // Lighter gray
                         color: "#fff",
                         fontSize: '16px',
                         fontWeight: 'bold',
+                      },
+                      "& .MuiDataGrid-columnHeader:focus-within .MuiDataGrid-sortIcon": {
+                        color: "#fff", // Arrow color when focused
+                      },
+                      "& .MuiDataGrid-sortIcon": {
+                        color: "#fff", // Arrow color
+                        fontSize: '1.5rem', // Increase arrow size
+                        textShadow: '0px 0px 5px rgba(0,0,0,0.5)', // Add shadow to make it stand out
                       },
                       "& .MuiDataGrid-cell": {
                         borderBottom: "none",
