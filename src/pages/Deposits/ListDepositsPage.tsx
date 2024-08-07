@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { ColumnProps, Deposit } from "../types";
+import { ColumnProps, Deposit } from "../../types";
 import React, { useEffect } from "react";
-import { useAppDispatch, useDeposit, useForm } from "../hooks";
+import { useAppDispatch, useDeposit, useForm } from "../../hooks";
 import {
   DataTable,
   ItemRow,
@@ -11,7 +11,7 @@ import {
   TableCellStyled,
   TemplateLayout,
   CloseButtonPage,
-} from "../components";
+} from "../../components";
 import {
   Box,
   Button,
@@ -29,7 +29,7 @@ import {
   Edit as EditIcon,
   Warehouse as WarehouseIcon,
 } from "@mui/icons-material";
-import { setDepositActive } from "../redux/deposit";
+import { setDepositActive } from "../../redux/deposit";
 import { useTranslation } from "react-i18next";
 
 

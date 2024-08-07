@@ -736,4 +736,25 @@ export enum EnumStatusUser {
   Cancelada = "Cancelada",
 }
 
+export enum EnumTipoFlete {
+  PAGO =  "Pago",
+  APAGAR = "A Pagar",
+}
+
+export enum EnumEnvoltura {
+  EMBOLSADO = "Embolsado",
+  GRANEL = "Granel",
+}
+
+export enum EnumCalidad {
+  CONFORME = "Conforme",
+  CONDICIONAL = "Condicional",
+}
+
+export enum EnumStatusCartaPorte {
+  GENERADA = "Generada",
+  ENTREGADA = "Entregada",
+  EMITIDA = "Emitida" 
+}
+
 //#endregion

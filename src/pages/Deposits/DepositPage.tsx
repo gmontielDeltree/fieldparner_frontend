@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { Loading, TemplateLayout } from "../components";
+import { Loading, TemplateLayout } from "../../components";
 import {
   Autocomplete,
   Box,
@@ -41,11 +41,11 @@ import {
   useBusiness,
   useDeposit,
   useForm,
-} from "../hooks";
-import { CountryCode, Deposit, TipoEntidad } from "../types";
-import { removeDepositActive } from "../redux/deposit";
-import { getLocalityAndStateByZipCode } from "../services";
-import { MapPickerReact } from '../../owncomponents/map-picker/react-port/MapPicker';
+} from "../../hooks";
+import { CountryCode, Deposit, TipoEntidad } from "../../types";
+import { removeDepositActive } from "../../redux/deposit";
+import { getLocalityAndStateByZipCode } from "../../services";
+import { MapPickerReact } from '../../../owncomponents/map-picker/react-port/MapPicker';
 import { useTranslation } from "react-i18next";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -58,22 +58,6 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     fontSize: 14,
   },
 }));
-
-const locationDefault = "General";
-// const initialForm: Deposit = {
-//   description: "",
-//   zipCode: "",
-//   address: "",
-//   geolocation: { lng: -35, lat: -34 },
-//   locality: "",
-//   isNegative: false,
-//   isVirtual: false,
-//   country: "",
-//   owner: "Propio",
-//   province: "",
-//   accountId: "",
-//   locations: [locationDefault],
-// };
 
 
 export const DepositPage: React.FC = () => {

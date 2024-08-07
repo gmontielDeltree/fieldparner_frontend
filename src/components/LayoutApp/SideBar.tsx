@@ -34,6 +34,7 @@ import {
   Assignment as AssignmentIcon,
   Map as MapIcon,
   BusinessCenter as BusinessCenterIcon,
+  FireTruck as FireTruckIcon,
 } from "@mui/icons-material";
 import { Icon } from "semantic-ui-react";
 import { SideBarProps } from "../../types";
@@ -268,6 +269,17 @@ export const SideBar: React.FC<SideBarProps> = ({
                   <AgricultureIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("field_exits")} />
+              </ListItemButton>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/transport-documents"
+                selected={pathname.includes("/init/overview/transport-documents")}
+              >
+                <ListItemIcon>
+                  <FireTruckIcon />
+                </ListItemIcon>
+                <ListItemText primary="Carta de Porte" />
               </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
