@@ -45,7 +45,7 @@ export const useModulesPermission = () => {
                 }
             });
             const putResponse = await dbContext.modulesUsers.bulkDocs(putModules);
-            
+
             setIsLoading(false);
             if (putResponse)
                 Swal.fire('Permiso-Modulos', 'Los permisos de los modulos fueron agregados/actualizados.', 'success');
@@ -70,12 +70,17 @@ export const useModulesPermission = () => {
                 }),
             ]);
             const modules = response[0].rows.map(row => row.doc as MenuModules);
+            const modulesOrdAsc = modules.sort((a, b) => {
+                const orderA = a.order !== undefined ? Number(a.order) : Infinity;
+                const orderB = b.order !== undefined ? Number(b.order) : Infinity;
+                return orderA - orderB;
+            });
             const modulesUsers = response[1].docs.map(doc => doc as ModulesUsers);
             const menuesIdByUser = response[1].docs.filter(doc => doc.permission).map(x => x.menuId);
 
             let modulosUsuario: MenuModulesPermission[] = [];
 
-            modules.forEach(module => {
+            modulesOrdAsc.forEach(module => {
                 modulosUsuario.push({
                     ...module,
                     permission: menuesIdByUser.includes(module.id)
