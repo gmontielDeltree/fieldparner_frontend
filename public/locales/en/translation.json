@@ -300,6 +300,19 @@
     "_service": "Service",
     "labors_service": "Labor / Service",
     "total_price": "Total Price",
-    "users_not_found": "Users not found"
+    "users_not_found": "Users not found",
+    "_quick_add": "Quick Add",
+    "you_can_edit_more_details_later_in_the_contractors_menu_on_the_sidebar": "You can edit more details later in the 'Contractors' menu on the sidebar",
+    "you_can_edit_more_details_later_in_the_supplies_menu_on_the_sidebar": "You can edit more details later in the 'Supplies' menu on the sidebar",
+    "_cuit": "CUIT",
+    "_Add": "ADD",
+    "_Cancel": "CANCEL",
+    "_all": "ALL",
+    "_none": "NONE",
+    "_name": "Name",
+    "corporate_companies": "Corporate Companies",
+    "tax_key": "Tax Key",
+    "fantasy_name": "Fantasy Name",
+    "upload_photo": "Upload Photo"
 }
   

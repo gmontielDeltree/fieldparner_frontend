@@ -45,7 +45,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
 
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language; 
-  console.log(i18n.language);
+  
 
   const isSeedType = React.useMemo(() => IsSeed(type), [type]);
 
@@ -183,7 +183,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
             onChange={handleSelectChange}
           >
             {crops?.map((crop) => (
-              <MenuItem key={crop._id} value={getDescription(crop)}>
+              <MenuItem key={crop._id} value={crop._id}>
                 {getDescription(crop)} 
               </MenuItem>
             ))}

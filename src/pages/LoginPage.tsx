@@ -69,7 +69,6 @@ export const LoginPage = () => {
       }));
       return;
     }
-    console.log("Datos de inicio de sesión:", { email, password });
     startLogin({ email, password });
   };
 

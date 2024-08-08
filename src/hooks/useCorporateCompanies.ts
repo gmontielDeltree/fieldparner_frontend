@@ -13,58 +13,50 @@ export const useCorporateCompanies = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [corporateCompanies, setCorporateCompanies] = useState<CorporateCompanies[]>([]);
   const [conceptoError] = useState(false);
-const {t} = useTranslation();
+  const {t} = useTranslation();
 
-
-
-  const createCorporateCompanies = async (newCorporateCompanies: CorporateCompanies) => {
-    setIsLoading(true);
-
-    // if (!newCorporateCompanies.name.trim()) {
-    //   setConceptoError(true);
-    //   setIsLoading(false);
-    //   return;
-    // }
-
-    try {
-      const response = await dbContext.corporateCompanies.post(newCorporateCompanies);
-
-      setIsLoading(false);
-      if (response.ok)
-        Swal.fire(t("origin_destination"), t("new_origin_destination"), 'success');
-      else
-        Swal.fire(t("origin_destination"), t("verify_mandatory_fields"), 'error');
-
-      navigate('/init/overview/origins-destinations/');
-    } catch (error) {
-      console.log(error);
-      Swal.fire('Ups',  t("unexpected_error"), 'error');
-      setIsLoading(false);
-      if (error) setError(error);
-    }
+  const handleDatabaseError = (error: any) => {
+    console.error('Database error:', error);
+    Swal.fire('Error', `Database error: ${error.message || 'Unexpected error'}`, 'error');
+    setIsLoading(false);
+    setError(error);
   };
+
+const createCorporateCompanies = async (newCorporateCompanies: CorporateCompanies) => {
+  setIsLoading(true);
+
+  try {
+    const response = await dbContext.corporateCompanies.post(newCorporateCompanies);
+    if (response.ok) {
+      Swal.fire(t("origin_destination"), t("new_origin_destination"), 'success');
+    } else {
+      Swal.fire(t("origin_destination"), "Error1", 'error');
+    }
+    navigate('/init/overview/corporate-companies/');
+  } catch (error) {
+    handleDatabaseError(error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const getCorporateCompanies = async () => {
     setIsLoading(true);
     try {
       const response = await dbContext.corporateCompanies.allDocs({ include_docs: true });
-
-      setIsLoading(false);
-
       if (response.rows.length) {
         const documents: CorporateCompanies[] = response.rows.map(row => row.doc as CorporateCompanies);
         setCorporateCompanies(documents);
+      } else {
+        setCorporateCompanies([]);
       }
-      else
-      setCorporateCompanies([]);
-
     } catch (error) {
-      console.log(error)
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      console.error('Error during getCorporateCompanies:', error);
+      Swal.fire('Error', "Error2", 'error');
+    } finally {
       setIsLoading(false);
-      if (error) setError(error);
     }
-  }
+  };
 
   const updateCorporateCompanies = async (updateCorporateCompanies: CorporateCompanies) => {
     setIsLoading(true);
@@ -82,7 +74,7 @@ const {t} = useTranslation();
       if (response.ok)
         Swal.fire(t("origin_destination"), t("_updated"), 'success');
 
-      navigate('/init/overview/origins-destinations/');
+      navigate('/init/overview/corporate-companies/');
     } catch (error) {
       console.log(error);
       Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
@@ -100,7 +92,7 @@ const {t} = useTranslation();
       if (response.ok)
         Swal.fire(t("origin_destination"), t("_deleted"), 'success');
 
-      navigate('/init/overview/origins-destinations/');
+      navigate('/init/overview/corporate-companies/');
     } catch (error) {
       console.log(error)
       Swal.fire('Error', t("no_destinations_procedences_found"), 'error');

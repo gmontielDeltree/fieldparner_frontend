@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { ColumnProps, UserByAccount } from "../types";
+import { ColumnProps, DisplayModals, UserByAccount } from "../types";
 import React, { useEffect } from "react";
-import { useForm, useUser } from "../hooks";
+import { useAppDispatch, useAppSelector, useForm, useUser } from "../hooks";
 import {
   DataTable,
   ItemRow,
@@ -11,6 +11,7 @@ import {
   TableCellStyled,
   TemplateLayout,
   CloseButtonPage,
+  UserPermissionsModal,
 } from "../components";
 import {
   Box,
@@ -28,9 +29,12 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   CheckCircleOutline as CheckCircleOutlineIcon,
-  NotInterested as NotInterestedIcon
+  NotInterested as NotInterestedIcon,
+  ListAlt as ListAltIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
+import { setUserActive } from "../redux/users";
+import { uiOpenModal } from "../redux/ui";
 // import { User } from "@auth0/auth0-spa-js";
 // import { User } from "@auth0/auth0-spa-js";
 // import Swal from 'sweetalert2';
@@ -40,8 +44,9 @@ import { useTranslation } from "react-i18next";
 
 
 export const ListUsersPage: React.FC = () => {
+  const { user: userActive } = useAppSelector(state => state.auth);
   const navigate = useNavigate();
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { isLoading, users, getUsers } = useUser();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
@@ -51,6 +56,7 @@ export const ListUsersPage: React.FC = () => {
     { text: "Email", align: "center" },
     { text: "Estado", align: "center" },
     { text: "Admin", align: "center" },
+    { text: "Permiso", align: "center" },
     { text: "", align: "center" },
   ];
 
@@ -59,14 +65,15 @@ export const ListUsersPage: React.FC = () => {
   const onClickUpdateUser = (item: UserByAccount): void => {
     // dispatch(setUserActive(item));
     navigate(`/init/overview/users/${item._id}`);
-    getUsers();
+    // getUsers();
   };
-  // const handleDeleteUser = (item: UserByAccount) => {
-  //   if (item._id && item._rev) {
-  //     removeUsers(item._id, item._rev);
-  //     getUsers();
-  //   }
-  // };
+
+  const onClickUserPermissions = (row: UserByAccount) => {
+    console.log('row', row);
+    dispatch(setUserActive(row));
+    dispatch(uiOpenModal(DisplayModals.UserPermissions));
+  }
+
 
   useEffect(() => {
     getUsers();
@@ -95,6 +102,7 @@ export const ListUsersPage: React.FC = () => {
           </Box>
           <CloseButtonPage />
         </Box>
+        <UserPermissionsModal />
         <Box component="div" sx={{ mt: 7 }}>
           <Grid
             container
@@ -147,7 +155,17 @@ export const ListUsersPage: React.FC = () => {
                       ?
                       <CheckCircleOutlineIcon color="success" fontSize="large" />
                       :
-                      <NotInterestedIcon color="warning" fontSize="large" />}
+                      <NotInterestedIcon color="warning" fontSize="large" />
+                    }
+                  </TableCellStyled>
+                  <TableCellStyled align="center">
+                    <IconButton
+                      aria-label="Permisos"
+                      disabled={!userActive?.isAdmin}
+                      onClick={() => onClickUserPermissions(row)}
+                    >
+                      <ListAltIcon />
+                    </IconButton>
                   </TableCellStyled>
                   <TableCellStyled align="center">
                     <Tooltip title={t("icon_edit")}>
@@ -158,14 +176,6 @@ export const ListUsersPage: React.FC = () => {
                         <EditIcon />
                       </IconButton>
                     </Tooltip>
-                    {/* <Tooltip title={t("icon_delete")}>
-                      <IconButton
-                        onClick={() => handleDeleteUser(row)}
-                        style={{ fontSize: '1rem' }}
-                      >
-                        <Icon name="trash alternate" />
-                      </IconButton>
-                    </Tooltip> */}
                   </TableCellStyled>
                 </ItemRow>
               ))}

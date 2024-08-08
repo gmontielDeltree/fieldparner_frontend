@@ -227,8 +227,9 @@ export const useAuthStore = () => {
       const lastPath = localStorage.getItem("lastPath") || "/";
 
       dispatch(onLogin({
-        isAdmin: true,  accountId: "test",  username: "Rodrigo",
-        countryId: "AR"
+        isAdmin: true, accountId: "test", username: "Rodrigo",
+        countryId: "ARG",
+        id: "12354"
       }));
       navigate(lastPath, { replace: true });
 

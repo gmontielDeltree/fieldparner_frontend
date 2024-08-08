@@ -105,10 +105,10 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
   };
   const handleAddRow = () => {
     const supply = selectedSupply;
-    const { descriptionES } = formData.detalles.cultivo;
+    const { _id } = formData.detalles.cultivo;
     if (supply && supply.type === "Semillas") {
       const cropId = supply?.cropId;
-      if (cropId && cropId !== descriptionES) {
+      if (cropId && cropId !== _id) {
         Swal.fire({
           icon: 'error',
           title: 'Insumo incompatible',

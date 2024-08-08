@@ -1,12 +1,13 @@
 import { getLocalityAndStateByZipCode } from '../services';
 import {
-  Autocomplete,
   Box,
   Button,
   Card,
   CardContent,
   CardMedia,
   Container,
+  FormControl,
+  FormHelperText,
   Grid,
   IconButton,
   InputAdornment,
@@ -28,11 +29,23 @@ import {
 import uuid4 from 'uuid4';
 import { uploadFile } from '../helpers/fileUpload';
 import { urlImg } from '../config';
-import { SyntheticEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { Country } from '../interfaces/country';
 
 
 
+export interface AddressFormProps {
+  countries: Country[];
+  countryError: boolean;
+  handleFormValueChange: (key: string, value: string) => void;
+}
+const initialAddressFormProps: AddressFormProps = {
+  countries: [], 
+  countryError: false,
+  handleFormValueChange: () => {},
+};
 
 const initialForm: CorporateCompanies = {
   accountId: '',
@@ -51,67 +64,117 @@ const initialForm: CorporateCompanies = {
   web: '',
   observations: '',
   businessName: '',
-  values: ''
+  pais: '',
+  taxSituation: ''
 };
 
 
 export const NewCoporateCompaniesPage = () => {
   const navigate = useNavigate();
-  const { isLoading, createCorporateCompanies, updateCorporateCompanies, getCorporateCompanies } = useCorporateCompanies();
+  const { isLoading, createCorporateCompanies, updateCorporateCompanies} = useCorporateCompanies();
   const dispatch = useAppDispatch();
   const {businesses,getBusinesses} = useBusiness();
-  //const {users, getUsers} = useUser();
   const { corporateCompaniesActive } = useAppSelector((state) => state.corporateCompanies);
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [localities, setLocalities] = useState<string[]>([]);
-  const [locality, setLocality] = useState<string | null>(null);
-  const { businessActive } = useAppSelector((state) => state.business);
   const { user } = useAppSelector(state => state.auth);
+  const [pais, setPais] = useState<string | null>(null);
+  const [countryName, setCountryName] = useState<string>('');
+  const { t } = useTranslation();
 
+  const countries: Country[] = [
+    {
+      code: 'ARG', descriptionEN: 'Argentina',
+      descriptionES: '',
+      descriptionPT: '',
+      language: '',
+      currency: '',
+      taxKey: '',
+      taxKeyFormat: ''
+    },
+    {
+      code: 'BR', descriptionEN: 'Brasil',
+      descriptionES: '',
+      descriptionPT: '',
+      language: '',
+      currency: '',
+      taxKey: '',
+      taxKeyFormat: ''
+    },
+    {
+      code: 'PY',
+      descriptionES: 'Paraguay',
+      descriptionPT: '',
+      descriptionEN: '',
+      language: '',
+      currency: '',
+      taxKey: '',
+      taxKeyFormat: ''
+    }
+  ];
 
- 
+  useEffect(() => {
+    // Configura el código del país inicial aquí
+    const initialCountryCode = '';
+    setPais(initialCountryCode);
+
+    // Encuentra el país correspondiente y establece el nombre del país
+    const selectedCountry = countries.find(country => country.code === initialCountryCode);
+    if (selectedCountry) {
+      setCountryName(selectedCountry.descriptionEN);
+    }
+  }, []);
+
+  const selectedCountry = countries.find(country => country.code === pais);
+  
 
 
   const {
     photoName,
-    values,
-    accountId,
-    countryId,
+    //accountId,
+    //countryId,
     cp,
-    licenceId,
+    //licenceId,
+    //countries,
     taxKey,
     fantasyName,
-    location,
     state,
     domicile,
+    location,
     phoneNumber,
     secondaryContact,
     web,
     businessName,
     observations,
+    countryError,
     formulario,
+    taxSituation,
     setFormulario,
     handleInputChange,
-    //handleSelectChange,
     reset,
-  } = useForm<CorporateCompanies>(initialForm);
-
-  const {    } = values;
-
-  useEffect(() => {
-    getBusinesses();
- }, []);
-
- useEffect(() => {
-  if (businessActive) {
-    setFormulario(initialForm);
-  } else {
-    setFormulario(initialForm);
-  }
-}, [businessActive, setFormulario]);
+  } = useForm<CorporateCompanies & AddressFormProps>({ ...initialForm, ...initialAddressFormProps });;
 
 
 
+
+
+// const handleClick = () => {
+//   if (user ) {
+//     const { accountId } = user;
+    
+    
+//     setFormulario(prevForm => ({
+//       ...prevForm,
+//       accountId,
+//     }));
+
+//     console.log("Datos del formulario:", formulario);
+//     console.log("Account ID:", accountId);
+//     console.log("Country ID:", countries);
+//   } else {
+//     console.log("No user data available");
+//   }
+// };
 
   const uploadImgUser = async (fileInput: Blob) => {
     try {
@@ -144,13 +207,19 @@ export const NewCoporateCompaniesPage = () => {
       updateCorporateCompanies(formulario);
       dispatch(removeCorporateCompaniesActive ());
       navigate("/init/overview/corporate-companies");
+      reset();
     }
   };
 
   const handleAdd = async () => {
+    //handleClick();
+    console.log("EJECUCIO1");
     await createCorporateCompanies(formulario);
-    navigate("/init/overview/corporate-companies");
-    reset();
+    console.log("EJECUCIO2");
+   // navigate("/init/overview/corporate-companies");
+    console.log("EJECUCIO4");
+    //reset();
+
   };
 
   const onClickCancel = () => {
@@ -160,20 +229,17 @@ export const NewCoporateCompaniesPage = () => {
     reset();
   };
 
+  // const onChangeCountry = (_event: SyntheticEvent, value: { code: string; label: string } | null) => {
+  //   console.log("Country selected:", value); // Agregado para mostrar los datos seleccionados en la consola
+  //   if (value) {
+  //     handleFormValueChange("country", value.code);
+  //     setPais(value.code); // Actualiza el estado `pais` con el nuevo valor
+  //   }
+  // }
 
 
-  const handleClick = () => {
-    if (user) {
-      const { isAdmin, accountId, username, countryId } = user;
-      
-      console.log("Admin:", isAdmin);
-      console.log("Account ID:", accountId);
-      console.log("Username:", username);
-      console.log("Country ID:", countryId);
-    } else {
-      console.log("No user data available");
-    }
-  };
+
+//const clicButton = () => {console.log("Clickeando Country:", mostrarDatos);}
 
   const handleVerifyId = () => {
     const existingBusiness = businesses.find(business => business.cuit === taxKey);
@@ -181,7 +247,7 @@ export const NewCoporateCompaniesPage = () => {
     if (existingBusiness) {
       Swal.fire({
         icon: 'question',
-        title: 'Cuit ya existe',
+        title: 'Cuit ya existe en "Proveedores"',
         text: 'El CUIT ya existe, ¿desea autocompletar?',
         showCancelButton: true,
         confirmButtonText: 'Sí',
@@ -200,6 +266,7 @@ export const NewCoporateCompaniesPage = () => {
             secondaryContact: existingBusiness.contactoSecundario || prevForm.secondaryContact,
             web: existingBusiness.sitioWeb || prevForm.web,
             photoName: existingBusiness.logoBusiness || prevForm.photoName,
+            phoneNumber:existingBusiness.contactoPrincipal || prevForm.phoneNumber,
           }));
         } else {
           setFormulario(prevForm => ({
@@ -232,7 +299,7 @@ export const NewCoporateCompaniesPage = () => {
       
       setLoadingZipCode(true);
       try {
-        if (countryId === "ARG") {
+        if (pais === "ARG") {
           const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
           console.log("onBlurZipCode triggered");
           if (localityAndStates?.length) {
@@ -243,39 +310,40 @@ export const NewCoporateCompaniesPage = () => {
   
             handleInputChange({
               target: {
-                name: "localidad",
+                name: "location",
                 value: firstLocality,
               },
             } as React.ChangeEvent<HTMLInputElement>);
   
             handleInputChange({
               target: {
-                name: "provincia",
+                name: "state",
                 value: firstProvince,
               },
             } as React.ChangeEvent<HTMLInputElement>);
           }
-        } else if (countryId === "BR") {
+        } else if (pais === "BR") {
+          
           const brazilData = await fetchBrazilZipCode(cp);
           if (brazilData) {
   
             handleInputChange({
               target: {
-                name: "localidad",
+                name: "location",
                 value: brazilData.localidade || brazilData.logradouro,
               },
             } as React.ChangeEvent<HTMLInputElement>);
   
             handleInputChange({
               target: {
-                name: "provincia",
+                name: "state",
                 value: brazilData.uf,
               },
             } as React.ChangeEvent<HTMLInputElement>);
   
             handleInputChange({
               target: {
-                name: "domicilio",
+                name: "domicile",
                 value: `${brazilData.logradouro}, ${brazilData.bairro}`,
               },
             } as React.ChangeEvent<HTMLInputElement>);
@@ -290,10 +358,7 @@ export const NewCoporateCompaniesPage = () => {
     }
   };
   
-  useEffect(() => {
-    if (corporateCompaniesActive) setFormulario(corporateCompaniesActive);
-    else setFormulario(initialForm);
-  }, [corporateCompaniesActive, setFormulario]);
+
 
   useEffect(() => {
     return () => {
@@ -301,18 +366,60 @@ export const NewCoporateCompaniesPage = () => {
     };
   }, [dispatch]);
 
+ 
+
+
+  useEffect(() => {
+    if (user) {
+      setPais(user.countryId); 
+      setFormulario((prevForm) => ({
+        ...prevForm,
+        accountId: user.accountId || prevForm.accountId,
+        countryId: user.countryId || prevForm.countryId,
+        pais: user.countryId || prevForm.countryId
+      }));
+    }
+  }, [user, setFormulario]);  
+
+  useEffect(() => {
+    getBusinesses();
+ }, []);
+
+
+
+
+  useEffect(() => {
+    if (user) {
+      setPais(user.countryId); 
+    }
+  }, [user]); 
+
+  
+
+
+
+
+
+  useEffect(() => {
+    console.log('countries:', countries);
+    console.log('pais:', pais);
+  }, [countries, pais]);
+
 
 
 
   return (
     <>
-    <Loading key="loading-business" loading={loadingZipCode }  />
-      <Container maxWidth="md" sx={{
-        mt: 4,
-        p: { sm: 1, md: 1 },
-        mb: 1,
-        ml: 5
-      }}>
+      <Loading key="loading-business" loading={loadingZipCode} />
+      <Container
+        maxWidth="md"
+        sx={{
+          mt: 4,
+          p: { sm: 1, md: 1 },
+          mb: 1,
+          ml: 5
+        }}
+      >
         <Loading key="loading-users" loading={isLoading} />
         <Typography
           component="h1"
@@ -320,381 +427,276 @@ export const NewCoporateCompaniesPage = () => {
           align="left"
           sx={{ mt: 3, mb: 3 }}
         >
-          <PeopleIcon sx={{ marginRight: '8px', fontSize: 'inherit', verticalAlign: 'middle' }} />
-          Compañías Societarias
-        </Typography>
-        <button onClick={handleClick}> Vereficar</button>
-        <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
-        <Typography
+          <PeopleIcon
+            sx={{ marginRight: "8px", fontSize: "inherit", verticalAlign: "middle" }}
+          />
+          {t("corporate_companies")}
+        </Typography><button>Verificar</button>
+        <Paper
+          variant="outlined"
+          sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
+        >
+          <Typography
             component="h1"
             variant="h4"
             align="center"
             sx={{ my: 3, mb: 5 }}
           >
-            { corporateCompaniesActive ?  "Editar" : "Nueva"} {' '}
-            Compañías Societarias
+            {corporateCompaniesActive ? t("icon_edit") : t("new_famale")} {' '} {t("corporate_companies")}
           </Typography>
-
-            <Grid container spacing={1} p={1} mt={1}>
-              <Grid container direction="column" xs={7}>
-                <Grid container spacing={1.5} sx={{ pt: 6 }}>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Clave Tributaria"
-                    type="text"
-                    name="taxKey"
-                    value={taxKey}
-                    onBlur={handleVerifyId}
-                    onChange={handleInputChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Razón Social"
-                    type="text"
-                    id="businessName"
-                    name="businessName"
-                    value={businessName}
-                    onChange={handleInputChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Nombre Fantasía"
-                    type="text"
-                    id="fantasyName"
-                    name="fantasyName"
-                    value={fantasyName}
-                    onChange={handleInputChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                <TextField
-                    variant="outlined"
-                    type="text"
-                    label="Codigo Postal"
-                    name="cp"
-                    value={cp}
-                    onBlur={onBlurZipCode}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start" />
-                    }}
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                <Autocomplete
-                  options={localities}
-                  getOptionLabel={(option) => option}
-                  value={locality}
-                  onChange={(_event, newValue) => {
-                    setLocality(newValue);
-                    handleInputChange({
-                      target: {
-                        name: "localidad",
-                        value: newValue || "" // Asegurar que no pase `null` en `handleInputChange`
-                      }
-                    } as React.ChangeEvent<HTMLInputElement>);
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Localidad"
-                      variant="outlined"
-                      name="localidad"
-                      InputProps={{
-                        ...params.InputProps,
-                        startAdornment: <InputAdornment position="start" />
-                      }}
-                      fullWidth
-                    />
-                  )}
-                />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Domicilio"
-                    type="text"
-                    id="domicile"
-                    name="domicile"
-                    value={domicile}
-                    onChange={handleInputChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Estado"
-                    type="text"
-                    id="state"
-                    name="state"
-                    value={state}
-                    onChange={handleInputChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Teléfono"
-                    type="text"
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={phoneNumber}
-                    onChange={handleInputChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Contacto Secundario"
-                    type="text"
-                    id="secondaryContact"
-                    name="secondaryContact"
-                    value={secondaryContact}
-                    onChange={handleInputChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Web"
-                    type="text"
-                    id="web"
-                    name="web"
-                    value={web}
-                    onChange={handleInputChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Observaciones"
-                    type="text"
-                    id="observations"
-                    name="observations"
-                    value={observations}
-                    onChange={handleInputChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                  {!corporateCompaniesActive &&
-                    <>
-                      <Grid item xs={6}>
-                        {/* <TextField
-                          label="Contraseña"
-                          type="password"
-                          name="password"
-                          error={!!formControlError["password"]}
-                          helperText={formControlError["password"]}
-                          value={formulario.password}
-                          InputProps={{
-                            endAdornment: <InputAdornment position="end">
-                              <Tooltip title={policyPassword}>
-                                <InfoIcon />
-                              </Tooltip>
-                            </InputAdornment>,
-                          }}
-                          onChange={handlePasswordChange}
-                          fullWidth /> */}
-                      </Grid>
-                      <Grid item xs={6}>
-                        {/* <TextField
-                          label="Repetir contraseña"
-                          type="password"
-                          name="confirmPassword"
-                          error={!!formControlError["confirmPassword"]}
-                          helperText={formControlError["confirmPassword"]}
-                          value={confirmPassword}
-                          onChange={handlePasswordChange}
-                          fullWidth /> */}
-                      </Grid>
-                    </>
-                  }
-                  <Grid item xs={4}>
-                    {/* <FormControl fullWidth >
-                      <InputLabel>Idioma</InputLabel>
-                      <Select
-                        id="language"
-                        name="language"
-                        label="Idioma"
-                        value={formulario.language}
-                        onChange={handleSelectChange}
-                      >
-                        <MenuItem value="Español">Español</MenuItem>
-                        <MenuItem value="Portugués">Portugués</MenuItem>
-                        <MenuItem value="Inglés">Inglés</MenuItem>
-                      </Select>
-                    </FormControl> */}
-                  </Grid>
-                  <Grid item xs={4}>
-                    {/* <FormControl fullWidth >
-                      <InputLabel>Rol</InputLabel>
-                      {/* <Select
-                        id="admin"
-                        name="rol"
-                        label="Rol"
-                        value={formulario.rol}
-                        onChange={handleSelectChange}
-                      > 
-                        <MenuItem value={UserRols.User}>Usuario</MenuItem>
-                        <MenuItem value={UserRols.Administrator}>Administrador</MenuItem>
-                      </Select>
-                    </FormControl> */}
-                  </Grid>
-                  <Grid item xs={4}>
-                    {/* <Autocomplete
-                      value={formulario.state}
-                      onChange={onChangeStatus}
-                      options={statusOptions}
-                      // getOptionLabel={(option) => option.label}
-                      renderInput={(params) => (
-                        <TextField {...params} label="Estado" variant="outlined" />
-                      )}
-                      fullWidth
-                    /> */}
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid container direction="column" xs={5}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: "center", alignItems: 'center', mb: 2 }}>
-                  <Card sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    width: 200,
-                    height: 240,
-                    maxWidth: 200,
-                    maxHeight: 240
-                  }}>
-                    {photoName ? (
-                      <CardMedia
-                        key="preview-img"
-                        component="img"
-                        alt="Vista previa de la imagen"
-                        image={`${urlImg}/${photoName}`}
-                        sx={{
-                          maxHeight: 150,
-                          maxWidth: 150,
-                          objectFit: "cover",
-                          borderRadius: "50%"
-                        }}
-                      />
-                    ) : (
-                      <Box sx={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <BrokenImageIcon fontSize="large" color="disabled" />
-                      </Box>
-                    )}
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-                        <label htmlFor="file-upload" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                          <PhotoCameraIcon sx={{ mr: 1 }} />
-                          <Typography variant="body1" sx={{ p: 0 }}>Subir foto</Typography>
-                          <input
-                            id="file-upload"
-                            key="file-user"
-                            accept="image/*"
-                            name="file"
-                            type="file"
-                            style={{ display: 'none' }}
-                            onChange={handleFileUpload}
-                          />
-                        </label>
-                        {photoName && (
-                          <IconButton onClick={handleCancel} color="error" sx={{ p: 0, pl: 1 }}>
-                            <CancelIcon fontSize="medium" />
-                          </IconButton>
-                        )}
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Box>
-                {corporateCompaniesActive && <Box sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center' }} >
-                  </Box>
-                    <>
-                      <Grid container direction="column" sx={{ mt: 1 }} spacing={1}>
-                         <Grid item xs={4}>
-                         {/* <TextField
-                            label="Clave anterior"
-                            type="password"
-                            name="previousPassword"
-                            value={formulario.previousPassword}
-                            onChange={handleInputChange}
-                            fullWidth /> */}
-                        </Grid>
-                        <Grid item xs={4}>
-                          {/* <TextField
-                            label="Nueva clave"
-                            type="password"
-                            name="newPassword"
-                            value={formulario.newPassword}
-                            onChange={handleInputChange}
-                            fullWidth /> */}
-                        </Grid>
-                        <Grid item xs={4}>
-                          {/* <TextField
-                            label="Repetir nueva clave"
-                            type="password"
-                            value={confirmPassword}
-                            error={!!formControlError.password}
-                            helperText={formControlError.password}
-                            onChange={onChangeConfirmNewPassword}
-                            fullWidth /> */}
-                        </Grid>
-                      </Grid>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                      <Button variant="contained" color="primary" onClick={() => console.log("Clic")}>
-                        Confirmar
-                      </Button>
-                        <Button variant="outlined" color="secondary" onClick={() => console.log("Clic")}>
-                          Cancelar
-                        </Button>
-                      </Box>
-                    </>
-                </Box>}
-                {/* <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center', mb: 2 }}>
-                  <ScheduleIcon sx={{ mr: 1 }} />
-                  <Typography variant="body1">Última sesión:</Typography>
-                  {ultimaConexion && (
-                    <Typography variant="body1" sx={{ ml: 1 }}>{ultimaConexion.toLocaleString()}</Typography>
-                  )}
-                </Box> */}
-              </Grid>
+          <Grid container spacing={2} p={2} mt={2}>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label={t("tax_key")}
+                type="text"
+                name="taxKey"
+                value={taxKey}
+                onBlur={handleVerifyId}
+                onChange={handleInputChange}
+                required
+                fullWidth
+              />
             </Grid>
-            <Box sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', mt: 2 }}>
-              <Button
+            <Grid item xs={12} md={4.5}>
+              <TextField
+                label={t("name_negal_name")}
+                type="text"
+                id="businessName"
+                name="businessName"
+                value={businessName}
+                onChange={handleInputChange}
+                required
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={4.5}>
+              <TextField
+                label={t("fantasy_name")}
+                type="text"
+                id="fantasyName"
+                name="fantasyName"
+                value={fantasyName}
+                onChange={handleInputChange}
+                required
+                fullWidth
+              />
+               
+            </Grid>
+            <Grid item xs={12} md={2}>
+            
+              <TextField
                 variant="outlined"
-                color="secondary"
-                onClick={onClickCancel}>
-                Cancelar
-              </Button>
-              <Button
-                type='submit'
-                variant="contained"
-                color="primary"
-                onClick={
-                  corporateCompaniesActive ? handleUpdate: handleAdd
-                }
-              >
-                {!corporateCompaniesActive ? "Guardar" : "Actualizar"}{' '}
-              </Button>
-            </Box>
+                type="text"
+                label={t("postal_code")}
+                name="cp"
+                value={cp}
+                onBlur={onBlurZipCode}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" />
+                }}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+            <TextField
+            label={t("_locality")}
+            variant="outlined"
+            type="text"
+            name="location"
+            value={location}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />
+            }}
+            fullWidth
+          />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label={t("_address")}
+                type="text"
+                id="domicile"
+                name="domicile"
+                value={domicile}
+                onChange={handleInputChange}
+                required
+                fullWidth
+              />
+              
+            </Grid>
+            <Grid item xs={12} md={4}>
+            <FormControl fullWidth variant="outlined" error={countryError}>
+              <TextField
+                  label={t("id_country")}
+                  type="text"
+                  id="pais"
+                  name="pais"
+                  value={selectedCountry ? selectedCountry.descriptionEN : ''}
+                  onChange={() => {}}
+                  required
+                  fullWidth
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+            {countryError && <FormHelperText>Mensaje de error!</FormHelperText>}
+          </FormControl>
+          </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label={t("_state")}
+                type="text"
+                id="state"
+                name="state"
+                value={state}
+                onChange={handleInputChange}
+                required
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label={t("_phone")}
+                type="text"
+                id="phoneNumber"
+                name="phoneNumber"
+                value={phoneNumber}
+                onChange={handleInputChange}
+                required
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label="Situacion Fiscal"
+                type="text"
+                id="taxSituation"
+                name="taxSituation"
+                value={taxSituation}
+                onChange={handleInputChange}
+                required
+                fullWidth
+              />
+              
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label={t("secondary_contact")}
+                type="text"
+                id="secondaryContact"
+                name="secondaryContact"
+                value={secondaryContact}
+                onChange={handleInputChange}
+                required
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={1} md={4}>
+              <TextField
+                label="Web"
+                type="text"
+                id="web"
+                name="web"
+                value={web}
+                onChange={handleInputChange}
+                required
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={1} md={8}>
+            <TextField
+              label={t("_observations")}
+              type="text"
+              id="observations"
+              name="observations"
+              value={observations}
+              onChange={handleInputChange}
+              required
+              fullWidth
+            />
+          </Grid>
+            <Grid item xs={1} md={4}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: "center", alignItems: 'center', mb: 2 }}>
+              <Card sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                width: 200,
+                height: 240,
+                maxWidth: 200,
+                maxHeight: 240
+              }}>
+                {photoName ? (
+                  <CardMedia
+                    key="preview-img"
+                    component="img"
+                    alt="Vista previa de la imagen"
+                    image={`${urlImg}/${photoName}`}
+                    sx={{
+                      maxHeight: 150,
+                      maxWidth: 150,
+                      objectFit: "cover",
+                      borderRadius: "50%"
+                    }}
+                  />
+                ) : (
+                  <Box sx={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <BrokenImageIcon fontSize="large" color="disabled" />
+                  </Box>
+                )}
+
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'right', justifyContent: 'space-around' }}>
+                    <label htmlFor="file-upload" style={{ display: 'flex', alignItems: 'right', cursor: 'pointer' }}>
+                      <PhotoCameraIcon sx={{ mr: 1 }} />
+                      <Typography variant="body1" sx={{ p: 0 }}>{t("upload_photo")}</Typography>
+                      <input
+                        id="file-upload"
+                        key="file-user"
+                        accept="image/*"
+                        name="file"
+                        type="file"
+                        style={{ display: 'none' }}
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                    {photoName && (
+                      <IconButton onClick={handleCancel} color="error" sx={{ p: 0, pl: 1 }}>
+                        <CancelIcon fontSize="medium" />
+                      </IconButton>
+                    )}
+                  </Box>
+                </CardContent>
+                  
+                </Card>
+                
+              </Box>
+            </Grid>
+          
+          </Grid>
+          <Box sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', mt: 2 }}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={onClickCancel}>
+              {t("id_cancel")}
+            </Button>
+            <Button
+              type='submit'
+              variant="contained"
+              color="success"
+              onClick={
+                corporateCompaniesActive ? handleUpdate : handleAdd
+              }
+            >
+              {!corporateCompaniesActive ? t("_add") : t("id_update")} {' '}
+            </Button>
+          </Box>
         </Paper>
       </Container>
     </>
   );
+  
 };

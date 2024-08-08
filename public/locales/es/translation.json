@@ -316,5 +316,10 @@
   "_service": "Servicio",
   "labors_service": "Labores / Servicio",
   "total_price": "Precio Total",
-  "users_not_found": "No se encontraron usuarios."
+  "users_not_found": "No se encontraron usuarios.",
+  "corporate_companies": "Compañías Societarias",
+  "tax_key": "Clave Tributaria",
+  "fantasy_name": "Nombre Fantasia",
+  "upload_photo": "Subir Foto"
+  
 }

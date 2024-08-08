@@ -22,7 +22,7 @@ export const TableCellStyled = styled(TableCell)(() => ({
     padding: "16px 10px",
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
+    fontSize: 12,
   },
 }));
 
@@ -31,10 +31,11 @@ export const TableCellStyledBlack = styled(TableCell)(({ theme }) => ({
     backgroundColor: theme.palette.common.black,
     color: theme.palette.common.white,
     padding: "16px 10px",
+    fontSize: 14
   },
   [`&.${tableCellClasses.body}`]: {
     // padding: '5px',
-    fontSize: 14,
+    fontSize: 12,
   },
 }));
 
@@ -56,7 +57,9 @@ export const DataTable: React.FC<DataTableProps> = ({
   children,
 }) => {
   return (
-    <TableContainer component={Paper}>
+    <TableContainer
+      component={Paper}
+      sx={{ maxHeight: 440 }}>
       {isLoading ? (
         <Box sx={{ p: 1 }}>
           <Skeleton variant="rounded" sx={{ width: "100%", height: 60 }} />
@@ -65,13 +68,16 @@ export const DataTable: React.FC<DataTableProps> = ({
           <Skeleton variant="text" sx={{ width: "100%", height: 30 }} />
         </Box>
       ) : (
-        <Table sx={{ minWidth: 500 }} aria-label="customized table">
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "rgb(0 0 0 / 25%)" }}>
+        <Table stickyHeader sx={{ minWidth: 300 }} aria-label="customized table" >
+          <TableHead sx={{ height: "70px", }}>
+            <TableRow >
               {columns.map(({ text, align }) => (
-                <TableCellStyled key={text} align={align}>
+                <TableCellStyledBlack
+                  sx={{ backgroundColor: "rgb(0 0 0 / 25%)" }}
+                  key={text}
+                  align={align}>
                   {text}
-                </TableCellStyled>
+                </TableCellStyledBlack>
               ))}
             </TableRow>
           </TableHead>

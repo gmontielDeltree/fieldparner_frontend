@@ -9,7 +9,6 @@ import {
   ItemRow,
   TableCellStyled,
   CloseButtonPage,
-  PaisTableCell,
 } from "../components";
 import { ColumnProps } from "../types";
 import {
@@ -42,10 +41,10 @@ export const ListCorporateCompaniesPage: React.FC = () => {
   const { t } = useTranslation();
 
   const columns: ColumnProps[] = [
-    { text: t("entity_type"), align: "center" },
-    { text: t("name_negal_name"), align: "center" },
     { text: t("tax_id_identification_number"), align: "center" },
-    { text: t("Email"), align: "left" },
+    { text: t("name_negal_name"), align: "center" },
+    { text: t("_address"), align: "center" },
+    { text: t("_state"), align: "center" },
     { text: t("id_country"), align: "center" },
     { text: "", align: "center" },
   ];
@@ -101,7 +100,7 @@ export const ListCorporateCompaniesPage: React.FC = () => {
           <Box display="flex" alignItems="center">
             <BusinessIcon sx={{ marginRight: '8px' }} />
             <Typography component="h4" variant="h5" sx={{ ml: { sm: 2 } }}>
-              {t("social_entities")}
+              {t("corporate_companies")}
             </Typography>
           </Box>
           <CloseButtonPage />
@@ -157,10 +156,8 @@ export const ListCorporateCompaniesPage: React.FC = () => {
                   <TableCellStyled align="center">
                     {row.location || row.domicile}
                   </TableCellStyled>
-                  <TableCellStyled>{row.state}</TableCellStyled>
-                  <TableCellStyled align="center">
-                   <PaisTableCell pais={row.countryId}  />
-                  </TableCellStyled>
+                  <TableCellStyled align="center">{row.state}</TableCellStyled>
+                  <TableCellStyled align="center" >{row.countryId}</TableCellStyled>
                   <TableCellStyled align="center">
                     <Tooltip title={t("icon_edit")}>
                       <IconButton

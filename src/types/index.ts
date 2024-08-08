@@ -117,7 +117,7 @@ export interface Authenticate {
 }
 
 export interface User {
-  // id: string;
+  id: string;
   username: string;
   accountId: string;
   isAdmin: boolean;
@@ -198,7 +198,7 @@ export interface Supply extends Document {
 }
 
 export interface CorporateCompanies extends Document {
-  values: string;
+  pais: string;
   accountId: string;
   countryId: string;
   companyId: string;
@@ -215,6 +215,7 @@ export interface CorporateCompanies extends Document {
   secondaryContact: string;
   web: string;
   observations: string;
+  taxSituation: string;
 }
 
 export interface CorporateCompaniesState {
@@ -593,8 +594,8 @@ export interface Crops extends Document {
 export interface Country extends Document {
   code: string
   descriptionES: string;
-  descriptionPT:string;
-  descriptionEN:string;
+  descriptionPT: string;
+  descriptionEN: string;
   leguaje: string;
   currency: string;
   taxKey: string;
@@ -639,8 +640,8 @@ export interface DetailPurchaseOrderItem extends DetailPurchaseOrder {
 export interface Country extends Document {
   code: string
   descriptionES: string;
-  descriptionPT:string;
-  descriptionEN:string;
+  descriptionPT: string;
+  descriptionEN: string;
   leguaje: string;
   currency: string;
   taxKey: string;
@@ -700,11 +701,10 @@ export enum Movement {
 }
 
 export enum DisplayModals {
-
   SupplyByDeposits = "SupplyByDeposits",
   SupplyByLots = "SupplyByLots",
   LaborOrder = "LaborOrder",
-
+  UserPermissions = "UserPermissions",
 }
 
 export enum VehicleType {

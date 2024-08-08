@@ -300,5 +300,18 @@
     "_service": "Serviço",
     "labors_service": "Trabalho / Serviço",
     "total_price": "Valor Total",
-    "users_not_found": "Nenhum usuário foi encontrado"
+    "users_not_found": "Nenhum usuário foi encontrado",
+    "_quick_add": "Adição Rápida",
+  "you_can_edit_more_details_later_in_the_contractors_menu_on_the_sidebar": "Você pode editar mais detalhes depois no menu 'Contratistas' na barra lateral",
+  "you_can_edit_more_details_later_in_the_supplies_menu_on_the_sidebar": "Você pode editar mais detalhes depois no menu 'Insumos' na barra lateral",
+  "_cuit": "CNPJ",
+  "_Add": "ADICIONAR",
+  "_Cancel": "CANCELAR",
+  "_all": "TODOS",
+  "_none": "NENHUM",
+  "_name": "Nome",
+  "corporate_companies": "Empresas Corporativas",
+  "tax_key": "Chave Tributária",
+  "fantasy_name": "Nome Fantasia",
+  "upload_photo": "Carregar Foto"
 }

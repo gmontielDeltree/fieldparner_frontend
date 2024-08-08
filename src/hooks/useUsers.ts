@@ -7,7 +7,7 @@ import { useAppSelector } from '.';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { fieldpartnerAPI } from '../config';
-import { setUserActive } from '../redux/users';
+import { loadUsers, setUserActive } from '../redux/users';
 
 
 const controller = "/user-licence";
@@ -72,8 +72,8 @@ export const useUser = () => {
 
       if (response) {
         const documents: UserByAccount[] = response.data.map((row: any) => row as UserByAccount);
-        console.log('documents', documents)
         setUsers(documents);
+        dispatch(loadUsers(documents));
       }
       else
         setUsers([]);
@@ -105,10 +105,10 @@ export const useUser = () => {
       }
       const response = await fieldpartnerAPI.patch(`${controller}/${userId}`, bodyUser);
       setIsLoading(false);
-      
+
       if (response)
         Swal.fire("Usuario", "Usuario actualizado.", 'success');
-      
+
     } catch (error) {
       console.log(error);
       Swal.fire('Error', "No se pudo actualizar el usuario.", 'error');
