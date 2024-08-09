@@ -6,7 +6,7 @@ export const useNumerator = () => {
 
     const getLastNumerator = async (accountId: string, type: NumeratorType) => {
         try {
-            const response = await dbContext.numerators.find({
+            const response = await dbContext.Numerators.find({
                 selector: {
                     "$and": [{ "accountId": accountId }, { "numeratorType": type }],
                 }
@@ -23,9 +23,9 @@ export const useNumerator = () => {
     const putLastNumerator = async (doc: Numerator, create = false) => {
         try {
             if (create)
-                await dbContext.numerators.post(doc);
+                await dbContext.Numerators.post(doc);
             else
-                await dbContext.numerators.put(doc);
+                await dbContext.Numerators.put(doc);
         } catch (error) {
             console.log('error', error);
         }

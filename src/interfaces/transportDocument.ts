@@ -1,14 +1,14 @@
-import { EnumCalidad, EnumEnvoltura, EnumStatusCartaPorte, EnumTipoFlete } from "@types";
+import { Document, EnumCalidad, EnumEnvoltura, EnumStatusCartaPorte, EnumTipoFlete } from "@types";
 
 //TODO: chequear de renombrar los campos en ingles
-export interface TransportDocument {
+export interface TransportDocument extends Document {
     accountId: string;
     licenceId: string;
     contractId: string;
     nroCartaPorte: string;
     fechaEmision: string;
     fechaVencimiento: string;
-    CTGNro: string;
+    nroCTG: string;
     arancel: string;
     cuitGenerador: string;
     razonSocial: string;

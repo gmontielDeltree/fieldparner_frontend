@@ -16,7 +16,7 @@ export class WarehouseRepository
   private _warehouse: Deposit[];
 
   constructor() {
-    super(dbContext.deposits);
+    super(dbContext.Deposits);
   }
 
   async getAll() {

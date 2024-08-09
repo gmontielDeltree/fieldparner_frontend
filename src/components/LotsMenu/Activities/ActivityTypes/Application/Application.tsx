@@ -56,7 +56,7 @@ function Application({
 
   const [execution, setExecution] = useState(null);
 
-  const db = dbContext.fields;
+  const db = dbContext.Fields;
 
   useEffect(() => {
     const fetchExecution = async () => {

@@ -15,7 +15,7 @@ export class LoteRepository
   private _lotes: Lote[];
 
   constructor() {
-    super(dbContext.fields);
+    super(dbContext.Fields);
   }
 
   async getAll() {

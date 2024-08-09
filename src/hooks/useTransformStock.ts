@@ -88,8 +88,8 @@ export const useTransformStock = () => {
             //Previamente validado
             // Actualizar en la tabla auxiliar para ese insumo/deposito/ubicacion/lote.
             let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
-                dbContext.stockMovements.bulkDocs(newMovements),
-                dbContext.stockByLots.bulkDocs(stockBySupplies),
+                dbContext.StockMovements.bulkDocs(newMovements),
+                dbContext.StockByLots.bulkDocs(stockBySupplies),
             ];
             const responseAll = await Promise.all(promisesAll);
 
@@ -112,7 +112,7 @@ export const useTransformStock = () => {
         try {
 
             const promisesResult = await Promise.all([
-                dbContext.stockMovements.find({
+                dbContext.StockMovements.find({
                     selector: {
                         "$and": [
                             { "accountId": user.accountId },
@@ -120,8 +120,8 @@ export const useTransformStock = () => {
                         ],
                     }
                 }),
-                dbContext.deposits.find({ selector: { "accountId": user.accountId } }),
-                dbContext.supplies.find({ selector: { "accountId": user.accountId } })
+                dbContext.Deposits.find({ selector: { "accountId": user.accountId } }),
+                dbContext.Supplies.find({ selector: { "accountId": user.accountId } })
             ]);
             const transformMovements = promisesResult[0].docs;
             const deposits = promisesResult[1].docs;

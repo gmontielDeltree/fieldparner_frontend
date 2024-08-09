@@ -32,7 +32,7 @@ import { useTranslation } from "react-i18next";
 
 export const usePlanActividad = () => {
   let db =
-    dbContext.fields as unknown as PouchDB.Database<IActividadPlanificacion>;
+    dbContext.Fields as unknown as PouchDB.Database<IActividadPlanificacion>;
 
   const { user } = useAppSelector((state) => state.auth);
 
@@ -114,16 +114,16 @@ export const usePlanActividad = () => {
     console.log("TODO Programar ESTO", actividad);
     let uuid = uuidv7();
 
-    let ciclo: ICiclosPlanificacion = await dbContext.fields.get(
+    let ciclo: ICiclosPlanificacion = await dbContext.Fields.get(
       actividad.cicloId,
     );
-    let cultivo: Crop = await dbContext.crops.get(ciclo.cultivoId);
+    let cultivo: Crop = await dbContext.Crops.get(ciclo.cultivoId);
 
     let dosis: LineaDosis = [];
     let bunch_of_promises = await Promise.all(
       actividad.insumosLineasIds.map(async (id) => {
-        let linea: IInsumosPlanificacion = await dbContext.fields.get(id);
-        let insumo: Insumo = await dbContext.supplies.get(linea.insumoId);
+        let linea: IInsumosPlanificacion = await dbContext.Fields.get(id);
+        let insumo: Insumo = await dbContext.Supplies.get(linea.insumoId);
 
         let nuevaLinea: LineaDosis = {
           insumo: insumo,
@@ -141,7 +141,7 @@ export const usePlanActividad = () => {
     let servicios: LineaServicio = [];
     let bunch_of_servicios = await Promise.all(
       actividad.laboresLineasIds.map(async (id) => {
-        let linea: ILaboresPlanificacion = await dbContext.fields.get(id);
+        let linea: ILaboresPlanificacion = await dbContext.Fields.get(id);
         let labor = getLaborFromId(linea.laborId);
         console.log("Linea LABOR",linea);
 
@@ -192,7 +192,7 @@ export const usePlanActividad = () => {
     };
     console.log("Nueva Actividad", nuevaActividad);
 
-    dbContext.fields.put(nuevaActividad).then(() => {
+    dbContext.Fields.put(nuevaActividad).then(() => {
       Promise.resolve("fdfdf");
     });
   };
@@ -225,7 +225,7 @@ export const useLineasInsumos = (lineasIds) => {
   const [lin, setLin] = useState();
 
   let db =
-    dbContext.fields as unknown as PouchDB.Database<IActividadPlanificacion>;
+    dbContext.Fields as unknown as PouchDB.Database<IActividadPlanificacion>;
 
   const getLineas = useCallback(async () => {
     if (lineasIds?.length > 0) {
@@ -251,7 +251,7 @@ export const usePlanificationActividad = (actividadId: string) => {
   const [loading, setLoading] = useState(true);
 
   let db =
-    dbContext.fields as unknown as PouchDB.Database<IActividadPlanificacion>;
+    dbContext.Fields as unknown as PouchDB.Database<IActividadPlanificacion>;
 
   const getLineasInsumos = async () => {
     if (actividad?.insumosLineasIds.length) {
@@ -343,7 +343,7 @@ export const useCiclo = ({
   });
 
   let db =
-    dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
+    dbContext.Fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
 
   const saveCiclo = (campanaId, lotePId, cultivoId, startDate, endDate) => {
     console.log("Saving Cycle", campanaId, cultivoId);
@@ -372,7 +372,7 @@ export const useListaDeCiclos = () => {
   const [ciclos, setCiclos] = useState<ICiclosPlanificacion[]>([]);
 
   let db =
-    dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
+    dbContext.Fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
 
   const getCiclos = async () => {
     let key = "ciclo:";
@@ -454,7 +454,7 @@ export const useCiclos = (campaingId: string, loteId: string) => {
   const [ciclos, setCiclos] = useState([]);
 
   let db =
-    dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
+    dbContext.Fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
 
   const getCiclos = async (campanaId, loteId) => {
     if (campanaId && loteId) {
@@ -502,7 +502,7 @@ export const usePlanification = (campaingId: string, campoId: string) => {
   >([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  let db = dbContext.fields as unknown as PouchDB.Database<IPlanificacion>;
+  let db = dbContext.Fields as unknown as PouchDB.Database<IPlanificacion>;
 
   const getPlanifications = async () => {
     setIsLoading(true);

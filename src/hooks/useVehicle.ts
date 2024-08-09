@@ -14,7 +14,7 @@ export const useVehicle = () => {
   const getVehicles = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.vehicles.allDocs({ include_docs: true });
+      const result = await dbContext.Vehicles.allDocs({ include_docs: true });
       // const vehiculos = response.map((v: any) => v.content);
       if (result.rows.length) {
         const documents: Vehicle[] = result.rows.map(
@@ -35,7 +35,7 @@ export const useVehicle = () => {
   const getTypeVehicles = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.typeVehicles.allDocs({
+      const result = await dbContext.TypeVehicles.allDocs({
         include_docs: true
       });
       // const vehiculos = response.map((v: any) => v.content);
@@ -58,7 +58,7 @@ export const useVehicle = () => {
   const createVehicleType = async (newVehicleType: TypeVehicle) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.typeVehicles.post(newVehicleType);
+      const response = await dbContext.TypeVehicles.post(newVehicleType);
       setIsLoading(false);
 
       if (response.ok)
@@ -75,7 +75,7 @@ export const useVehicle = () => {
   const createVehicle = async (newVehicle: Vehicle) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.vehicles.post(newVehicle);
+      const response = await dbContext.Vehicles.post(newVehicle);
       setIsLoading(false);
 
       if (response.ok) Swal.fire("Vehiculo", "Vehiculo agregado.", "success");
@@ -91,7 +91,7 @@ export const useVehicle = () => {
   const updateVehicle = async (updateVehicle: Vehicle) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.vehicles.put(updateVehicle);
+      const response = await dbContext.Vehicles.put(updateVehicle);
 
       if (response.ok) {
         Swal.fire("Vehiculo", "Actualizado.", "success");

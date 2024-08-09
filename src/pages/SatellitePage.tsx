@@ -13,7 +13,7 @@ import { dbContext } from "../services";
 
 export const SatellitePage: React.FC = () => {
   const database_name = "campos_randyv7";
-  const db = dbContext.fields // new PouchDB(database_name); 
+  const db = dbContext.Fields // new PouchDB(database_name); 
   let { loteId } = useParams();
 
   const [lote, setLote] = useState();

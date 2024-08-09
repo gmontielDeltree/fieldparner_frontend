@@ -120,6 +120,7 @@ export interface User {
   id: string;
   username: string;
   accountId: string;
+  licenceId: string;
   isAdmin: boolean;
   countryId: string;
 }

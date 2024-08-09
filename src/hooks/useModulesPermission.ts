@@ -20,7 +20,7 @@ export const useModulesPermission = () => {
         try {
             if (!user) throw new Error("User not found.");
 
-            const responseLicenceUse = await dbContext.licencesUse.find({
+            const responseLicenceUse = await dbContext.LicencesUse.find({
                 selector: { "accountId": user.accountId }
             });
             const licenceUse = responseLicenceUse.docs[0];
@@ -44,7 +44,7 @@ export const useModulesPermission = () => {
                     putModules.push(newModuleUser);
                 }
             });
-            const putResponse = await dbContext.modulesUsers.bulkDocs(putModules);
+            const putResponse = await dbContext.ModulesUsers.bulkDocs(putModules);
 
             setIsLoading(false);
             if (putResponse)
@@ -64,8 +64,8 @@ export const useModulesPermission = () => {
         setIsLoading(true);
         try {
             const response = await Promise.all([
-                dbContext.menuModules.allDocs({ include_docs: true }),
-                dbContext.modulesUsers.find({
+                dbContext.MenuModules.allDocs({ include_docs: true }),
+                dbContext.ModulesUsers.find({
                     selector: { "userId": userId }
                 }),
             ]);

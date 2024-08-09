@@ -23,7 +23,7 @@ export const useSupply = () => {
         try {
             // if (!user) throw new Error("Usuario no encontrado.");
 
-            const result = await dbContext.supplies.find({
+            const result = await dbContext.Supplies.find({
                 selector: {
                     $or: [
                         { "accountId": user?.accountId },
@@ -49,7 +49,7 @@ export const useSupply = () => {
         try {
             if (!supplyActive) throw new Error("Insumo no encontrado.");
             const promisesResult = await Promise.all([
-                dbContext.stockByLots.find({
+                dbContext.StockByLots.find({
                     selector: {
                         "$and": [
                             { "supplyId": supplyActive._id },
@@ -57,8 +57,8 @@ export const useSupply = () => {
                         ],
                     }
                 }),
-                dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
-                dbContext.stockMovements.find({
+                dbContext.Deposits.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.StockMovements.find({
                     selector: {
                         "$and": [
                             { "supplyId": supplyActive._id },
@@ -112,8 +112,8 @@ export const useSupply = () => {
             if (!user) throw new Error("User not found.");
             const promisesResult = await Promise.all([
                 // dbContext.stockMovements.find({ selector: { "accountId": user.accountId } }),
-                dbContext.stockByLots.find({ selector: { "accountId": user.accountId } }),
-                dbContext.supplies.find({
+                dbContext.StockByLots.find({ selector: { "accountId": user.accountId } }),
+                dbContext.Supplies.find({
                     selector: {
                         $or: [
                             { "accountId": user?.accountId },
@@ -147,9 +147,9 @@ export const useSupply = () => {
         try {
             let supplyByDeposits: SupplyByDeposits[] = [];
             const promisesResult = await Promise.all([
-                dbContext.stockByLots.find({ selector: { "accountId": user?.accountId } }),
-                dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
-                dbContext.supplies.find({ selector: { "accountId": user?.accountId } })
+                dbContext.StockByLots.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.Deposits.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.Supplies.find({ selector: { "accountId": user?.accountId } })
             ]);
             const [stockBySupplies, deposits, supplies] = promisesResult;
             //Agrupar los id de insumo 
@@ -217,7 +217,7 @@ export const useSupply = () => {
                 throw new Error("Usuario no encontrado.");
             }
 
-            const response = await dbContext.supplies.post({
+            const response = await dbContext.Supplies.post({
                 ...newSupply,
                 accountId: user.accountId,
                 countryId: user.countryId,
@@ -239,7 +239,7 @@ export const useSupply = () => {
         setIsLoading(true);
 
         try {
-            const response = await dbContext.supplies.put(updateSupply);
+            const response = await dbContext.Supplies.put(updateSupply);
             setIsLoading(false);
 
             if (response.ok) {
@@ -256,7 +256,7 @@ export const useSupply = () => {
     const deleteSupply = async (supplyId: string, removeSupply: string) => {
 
         try {
-            const response = await dbContext.supplies.remove(supplyId, removeSupply);
+            const response = await dbContext.Supplies.remove(supplyId, removeSupply);
             setIsLoading(false);
 
             if (response.ok)
@@ -286,7 +286,7 @@ export const useSupply = () => {
                 reservedStock: supply.reservedStock + quantity
             };
 
-            const response = await dbContext.supplies.put(updatedSupply);
+            const response = await dbContext.Supplies.put(updatedSupply);
             if (response.ok) {
                 setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
                 Swal.fire('Insumo', 'Stock reservado agregado con éxito.', 'success');
@@ -313,7 +313,7 @@ export const useSupply = () => {
                 currentStock: supply.currentStock - quantity
             };
 
-            const response = await dbContext.supplies.put(updatedSupply);
+            const response = await dbContext.Supplies.put(updatedSupply);
             if (response.ok) {
                 setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
                 Swal.fire('Insumo', 'Stock reservado removido con éxito.', 'success');

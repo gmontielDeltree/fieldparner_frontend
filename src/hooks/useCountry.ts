@@ -67,7 +67,7 @@ export const useCountry = () => {
     console.count("getCountry")
     setIsLoading(true);
     try {
-      const response = await dbContext.countries.allDocs({ include_docs: true });
+      const response = await dbContext.Countries.allDocs({ include_docs: true });
 
       setIsLoading(false);
 

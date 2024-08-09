@@ -30,6 +30,7 @@ import { Country } from '../interfaces/country';
 import { Business } from '../interfaces/socialEntity';
 import { MenuModules, ModulesUsers } from '../interfaces/menuModules';
 import { LicenceUse } from '../interfaces/licencesUse';
+import { TransportDocument } from '../interfaces/transportDocument';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -45,73 +46,75 @@ const opts: PouchDB.Replication.SyncOptions = {
 };
 
 const dbNames = Object.freeze({
-  vehicles: "vehicles",
-  deposits: "deposits",
-  typeVehicles: "type-vehicles",
-  zipCodeARG: "zip-code-arg",
-  zipCodePRY: "zip-code-pry",
-  supplies: "supplies",
-  socialEntities: "social-entities",
-  categories: "categories",
-  stockMovements: "stock-movements",
-  stockByLots: "lots-stock",
-  exitFields: "exit-fields",
-  campaigns: "campaigns",
-  fields: "fields",
-  originsDestinations: "origins-destinations",
-  users: "users",
-  numerators: "numerators",
-  withdrawalOrders: "withdrawal-orders",
-  depositSupplyOrder: "deposit-supply-order",
-  withdrawalsByDepositSupply: "withdrawals-deposit-supply",
-  movementsType: "movements-type",
-  platform: "platform",
-  platformSupplies: "test-supplies",
-  crops: "crops",
-  zones: "zones",
-  fieldpartner: "fieldpartner",
-  laborsServices: "labors-services",
-  purchaseOrder: "purchase-order",
-  detailPurchaseOrder: "detail-purchase-order",
-  countries: "countries",
-  menuModules: "menu-modules",
-  modulesUsers: "modules-users",
-  licencesUse: "licences-use",
+  Vehicles: "vehicles",
+  Deposits: "deposits",
+  TypeVehicles: "type-vehicles",
+  ZipCodeARG: "zip-code-arg",
+  ZipCodePRY: "zip-code-pry",
+  Supplies: "supplies",
+  SocialEntities: "social-entities",
+  Categories: "categories",
+  StockMovements: "stock-movements",
+  StockByLots: "lots-stock",
+  ExitFields: "exit-fields",
+  Campaigns: "campaigns",
+  Fields: "fields",
+  OriginsDestinations: "origins-destinations",
+  Users: "users",
+  Numerators: "numerators",
+  WithdrawalOrders: "withdrawal-orders",
+  DepositSupplyOrder: "deposit-supply-order",
+  WithdrawalsByDepositSupply: "withdrawals-deposit-supply",
+  MovementsType: "movements-type",
+  Platform: "platform",
+  PlatformSupplies: "test-supplies",
+  Crops: "crops",
+  Zones: "zones",
+  Fieldpartner: "fieldpartner",
+  LaborsServices: "labors-services",
+  PurchaseOrder: "purchase-order",
+  DetailPurchaseOrder: "detail-purchase-order",
+  Countries: "countries",
+  MenuModules: "menu-modules",
+  ModulesUsers: "modules-users",
+  LicencesUse: "licences-use",
+  TransportDocument: "transport-documents",
 });
 
 export const dbContext = Object.freeze({
-  vehicles: new PouchDB<Vehicle>(dbNames.vehicles),
-  typeVehicles: new PouchDB(dbNames.typeVehicles),
-  deposits: new PouchDB<Deposit>(dbNames.deposits),
-  zipCodeARG: new PouchDB<ItemZipCode>(dbNames.zipCodeARG),
-  zipCodePRY: new PouchDB<ItemZipCode>(dbNames.zipCodePRY),
-  supplies: new PouchDB<Supply>(dbNames.supplies),
-  socialEntities: new PouchDB<Business>(dbNames.socialEntities),
-  categories: new PouchDB<Category>(dbNames.categories),
-  stockMovements: new PouchDB<StockMovement>(dbNames.stockMovements),
-  stockByLots: new PouchDB<StockByLot>(dbNames.stockByLots),
-  exitFields: new PouchDB<ExitField>(dbNames.exitFields),
-  campaigns: new PouchDB<Campaign>(dbNames.campaigns),
-  fields: new PouchDB<Field>(dbNames.fields), //TODO: revisar db
-  originsDestinations: new PouchDB<OriginDestinations>(dbNames.originsDestinations),
-  users: new PouchDB<UserByAccount>(dbNames.users),
-  withdrawalOrders: new PouchDB<WithdrawalOrder>(dbNames.withdrawalOrders),
-  depositSupplyOrder: new PouchDB<DepositSupplyOrder>(dbNames.depositSupplyOrder),
-  withdrawalsByDepositSupply: new PouchDB<WithdrawalsByDepositSupply>(dbNames.withdrawalsByDepositSupply),
-  numerators: new PouchDB<Numerator>(dbNames.numerators),
-  movementsType: new PouchDB<MovementType>(dbNames.movementsType),
-  platform: new PouchDB<any>(dbNames.platform),
-  platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
-  crops: new PouchDB<Crops>(dbNames.crops),
-  zones: new PouchDB<Zones>(dbNames.zones),
-  fieldpartner: new PouchDB(dbNames.fieldpartner),
-  laborsServices: new PouchDB<LaborsServices>(dbNames.laborsServices),
-  purchaseOrder: new PouchDB<PurchaseOrder>(dbNames.purchaseOrder),
-  detailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.detailPurchaseOrder),
-  countries: new PouchDB<Country>(dbNames.countries),
-  menuModules: new PouchDB<MenuModules>(dbNames.menuModules),
-  modulesUsers: new PouchDB<ModulesUsers>(dbNames.modulesUsers),
-  licencesUse: new PouchDB<LicenceUse>(dbNames.licencesUse),
+  Vehicles: new PouchDB<Vehicle>(dbNames.Vehicles),
+  TypeVehicles: new PouchDB(dbNames.TypeVehicles),
+  Deposits: new PouchDB<Deposit>(dbNames.Deposits),
+  ZipCodeARG: new PouchDB<ItemZipCode>(dbNames.ZipCodeARG),
+  ZipCodePRY: new PouchDB<ItemZipCode>(dbNames.ZipCodePRY),
+  Supplies: new PouchDB<Supply>(dbNames.Supplies),
+  SocialEntities: new PouchDB<Business>(dbNames.SocialEntities),
+  Categories: new PouchDB<Category>(dbNames.Categories),
+  StockMovements: new PouchDB<StockMovement>(dbNames.StockMovements),
+  StockByLots: new PouchDB<StockByLot>(dbNames.StockByLots),
+  ExitFields: new PouchDB<ExitField>(dbNames.ExitFields),
+  Campaigns: new PouchDB<Campaign>(dbNames.Campaigns),
+  Fields: new PouchDB<Field>(dbNames.Fields), //TODO: revisar db
+  OriginsDestinations: new PouchDB<OriginDestinations>(dbNames.OriginsDestinations),
+  Users: new PouchDB<UserByAccount>(dbNames.Users),
+  WithdrawalOrders: new PouchDB<WithdrawalOrder>(dbNames.WithdrawalOrders),
+  DepositSupplyOrder: new PouchDB<DepositSupplyOrder>(dbNames.DepositSupplyOrder),
+  WithdrawalsByDepositSupply: new PouchDB<WithdrawalsByDepositSupply>(dbNames.WithdrawalsByDepositSupply),
+  Numerators: new PouchDB<Numerator>(dbNames.Numerators),
+  MovementsType: new PouchDB<MovementType>(dbNames.MovementsType),
+  Platform: new PouchDB<any>(dbNames.Platform),
+  PlatformSupplies: new PouchDB<Supply>(`${dbNames.PlatformSupplies}`),
+  Crops: new PouchDB<Crops>(dbNames.Crops),
+  Zones: new PouchDB<Zones>(dbNames.Zones),
+  Fieldpartner: new PouchDB(dbNames.Fieldpartner),
+  LaborsServices: new PouchDB<LaborsServices>(dbNames.LaborsServices),
+  PurchaseOrder: new PouchDB<PurchaseOrder>(dbNames.PurchaseOrder),
+  DetailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.DetailPurchaseOrder),
+  Countries: new PouchDB<Country>(dbNames.Countries),
+  MenuModules: new PouchDB<MenuModules>(dbNames.MenuModules),
+  ModulesUsers: new PouchDB<ModulesUsers>(dbNames.ModulesUsers),
+  LicencesUse: new PouchDB<LicenceUse>(dbNames.LicencesUse),
+  TransportDocument: new PouchDB<TransportDocument>(dbNames.TransportDocument),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -148,6 +151,7 @@ export const dbContext = Object.freeze({
 // dbContext.menuModules.sync(`${remoteCouchDBUrl}${dbNames.menuModules}`, opts);
 // dbContext.modulesUsers.sync(`${remoteCouchDBUrl}${dbNames.modulesUsers}`, opts);
 // dbContext.licencesUse.sync(`${remoteCouchDBUrl}${dbNames.licencesUse}`, opts);
+dbContext.TransportDocument.sync(`${remoteCouchDBUrl}${dbNames.TransportDocument}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
@@ -155,12 +159,12 @@ export const getLocalityAndStateByZipCode = async (country: string, zipCode: str
     let result;
     switch (country) {
       case CountryCode.ARGENTINA:
-        result = await dbContext.zipCodeARG.find({
+        result = await dbContext.ZipCodeARG.find({
           selector: { "CP": zipCode },
         });
         return result.docs;
       case CountryCode.PARAGUAY:
-        result = await dbContext.zipCodePRY.find({
+        result = await dbContext.ZipCodePRY.find({
           selector: { "CP": zipCode },
         });
         return result.docs;

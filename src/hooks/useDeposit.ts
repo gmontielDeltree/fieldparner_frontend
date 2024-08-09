@@ -23,7 +23,7 @@ export const useDeposit = () => {
   const getDeposits = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.deposits.find({
+      const result = await dbContext.Deposits.find({
         selector: { accountId: user?.accountId }
       });
 
@@ -43,7 +43,7 @@ export const useDeposit = () => {
     try {
       if (!user) throw new Error("There is no user!!!!");
 
-      const response = await dbContext.deposits.post({
+      const response = await dbContext.Deposits.post({
         ...newDeposit,
         accountId: user.accountId
       });
@@ -63,7 +63,7 @@ export const useDeposit = () => {
   const updateDeposit = async (updateDeposit: Deposit) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.deposits.put(updateDeposit);
+      const response = await dbContext.Deposits.put(updateDeposit);
       setIsLoading(false);
 
       if (response.ok) {
@@ -82,7 +82,7 @@ export const useDeposit = () => {
     setIsLoading(true);
     try {
       // const response = await fieldpartnerAPI.patch(`${controller}/${businessId}`, updateBusiness);
-      const response = await dbContext.deposits.remove(
+      const response = await dbContext.Deposits.remove(
         deleteDepositId,
         revDeposit
       );
@@ -102,7 +102,7 @@ export const useDeposit = () => {
   const findDepositsByAccountId = async (accountId: string) => {
     setIsLoading(true);
     try {
-      const result = await dbContext.deposits.find({
+      const result = await dbContext.Deposits.find({
         selector: { accountId: accountId }
       });
 
@@ -130,12 +130,12 @@ export const useDeposit = () => {
 
       //Consultar en la tabla de stock, todo los q tengan el id de insumo e id de cuenta
       const promisesResult = await Promise.all([
-        dbContext.stockByLots.find({
+        dbContext.StockByLots.find({
           selector: {
             "$and": [{ "supplyId": supply._id }, { "accountId": accountId }]
           }
         }),
-        dbContext.deposits.find({
+        dbContext.Deposits.find({
           selector: { accountId: accountId }
         })
       ]);

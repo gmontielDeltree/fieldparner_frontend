@@ -25,7 +25,7 @@ function Preparation({
   handleConfirmExecution,
   handleReplicateActivity
 }) {
-  const db = dbContext.fields;
+  const db = dbContext.Fields;
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const [execution, setExecution] = useState<Ejecucion>(null);

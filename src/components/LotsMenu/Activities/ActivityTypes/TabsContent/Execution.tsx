@@ -57,7 +57,7 @@ const FrostedGlassButton = styled(Button)(({ theme }) => ({
 function ExecutionContent(props) {
   const { activity, handleEditActivity } = props;
   const [execution, setExecution] = useState<Ejecucion>(null);
-  const db = dbContext.fields;
+  const db = dbContext.Fields;
 
   useEffect(() => {
     const fetchExecution = async () => {

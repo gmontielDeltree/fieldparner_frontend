@@ -13,7 +13,7 @@ export const useField = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [field, setField] = useState<Field>();
 
-  const db = dbContext.fields;
+  const db = dbContext.Fields;
   const getFields = async () => {
     setIsLoading(true);
     try {

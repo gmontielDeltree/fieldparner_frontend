@@ -18,7 +18,7 @@ export class CountryRepository
   private _country: Country[];
 
   constructor(){
-    super(dbContext.countries);
+    super(dbContext.Countries);
   }
 
   async getAll() {

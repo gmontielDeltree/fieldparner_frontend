@@ -33,7 +33,7 @@ export const FieldsPage: React.FC = () => {
   const map = useSelector(selectMap);
   const { fields, getFields } = useField();
 
-  const db = dbContext.fields;
+  const db = dbContext.Fields;
 
   const [selectedField, setSelectedField] = useState<any | null>(null);
   const selectedFieldRef = useRef<Field | null>(null);

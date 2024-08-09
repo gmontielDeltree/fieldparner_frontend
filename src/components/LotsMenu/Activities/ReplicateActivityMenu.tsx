@@ -117,7 +117,7 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
   >([]);
   const [selectedLots, setSelectedLots] = useState<string[]>([]);
 
-  const db = dbContext.fields;
+  const db = dbContext.Fields;
 
   useEffect(() => {
     fetchData();

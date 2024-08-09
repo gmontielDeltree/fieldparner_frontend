@@ -64,7 +64,7 @@ export const useCrops = () => {
     console.count("getCrops")
     setIsLoading(true);
     try {
-      const response = await dbContext.crops.allDocs({ include_docs: true });
+      const response = await dbContext.Crops.allDocs({ include_docs: true });
 
       setIsLoading(false);
 

@@ -18,10 +18,10 @@ export const useBusiness = () => {
         setIsLoading(true);
         try {
             const result = await Promise.all([
-                dbContext.socialEntities.find({
+                dbContext.SocialEntities.find({
                     selector: { accountId: user?.accountId }
                 }),
-                dbContext.countries.allDocs({ include_docs: true })
+                dbContext.Countries.allDocs({ include_docs: true })
             ]);
             const socialEntities = result[0].docs.map(d => d as Business);
             const countries = result[1].rows.map(row => row.doc as Country);
@@ -57,7 +57,7 @@ export const useBusiness = () => {
         let createBusiness: Business = { ...newBusiness, accountId: user.accountId }
 
         try {
-            const response = await dbContext.socialEntities.post(createBusiness);
+            const response = await dbContext.SocialEntities.post(createBusiness);
             setIsLoading(false);
 
             if (response.ok) {
@@ -91,7 +91,7 @@ export const useBusiness = () => {
         setIsLoading(true);
         try {
             // const response = await fieldpartnerAPI.patch(`${controller}/${businessId}`, updateBusiness);
-            const response = await dbContext.socialEntities.put(updateBusiness);
+            const response = await dbContext.SocialEntities.put(updateBusiness);
             setIsLoading(false);
 
             if (response.ok) {
@@ -118,7 +118,7 @@ export const useBusiness = () => {
     const deleteBusiness = async (businessId: string, revBusiness: string) => {
         setIsLoading(true);
         try {
-            const response = await dbContext.socialEntities.remove(businessId, revBusiness);
+            const response = await dbContext.SocialEntities.remove(businessId, revBusiness);
             setIsLoading(false);
 
             if (response.ok) {

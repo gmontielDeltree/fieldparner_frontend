@@ -85,7 +85,7 @@ export const JohnDeereIntegration: React.FC = () => {
       <JohnDeereIntegracionReact
         map={map}
         token={token.access_token}
-        onImportarCampo={(e : CustomEvent)=> dbContext.fields.put(e.detail)}
+        onImportarCampo={(e : CustomEvent)=> dbContext.Fields.put(e.detail)}
         onClose={()=>{
           navigate("/init/overview/fields")
           map.resize()
