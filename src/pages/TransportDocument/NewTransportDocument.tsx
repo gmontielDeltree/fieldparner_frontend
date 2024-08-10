@@ -1,23 +1,90 @@
 
 
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Loading } from '../../components';
-import { useAppDispatch, useForm } from '../../hooks';
+import { useAppDispatch, useBusiness, useCampaign, useCompany, useCrops, useForm, useVehicle } from '../../hooks';
 import { TransportDocument } from '../../interfaces/transportDocument';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { RemitenteForm } from '../../components/TransportDocument';
+import { getShortDate } from '../../helpers/dates';
 
 
 const steps = ["Remitente", "Granos Transportados", "Comercio Granos", "Destinatario", "Transportista"];
 const transportDocumentActive = null;
-const initialForm = {
-
+const initialForm: TransportDocument = {
+  accountId: "",
+  licenceId: "",
+  contractId: "",
+  nroCartaPorte: "",
+  fechaEmision: getShortDate(false, "-"),
+  fechaVencimiento: getShortDate(false, "-"),
+  nroCTG: "",
+  arancel: "",
+  cuitGenerador: "",
+  razonSocial: "",
+  categoriaEntidad: "",
+  campoCarta: "",
+  nroOperadorONCCA: "",
+  nroPlantaONCCA: "",
+  cuitRemitenteComercialPrimario: "",
+  cuitRemitenteComercialSecundario: "",
+  cuitRemitenteComercialSecundario2: "",
+  cuitMAT: "",
+  cuitComercialVentaPrimaria: "",
+  cuitComercialVentaSecundaria: "",
+  cuitRepresentanteEntrega: "",
+  cuitRepresentanteRecibidor: "",
+  companiaId: "",
+  cultivoId: "",
+  salidaCampoId: "",
+  cpGenerador: "",
+  kgEstimado: 0,
+  kgBruto: 0,
+  kgTara: 0,
+  kgNeto: 0,
+  cuitComprador: "",
+  cuitCupo: "",
+  nroCupo: "",
+  fechaCupo: "",
+  cuitDestinatario: "",
+  esCampo: false,
+  campoDestinatarios: "",
+  loteDestinatario: "",
+  cuitDestino: "",
+  domicilioDestino: "",
+  localidadDestino: "",
+  cpDestino: "",
+  provinciaDestino: "",
+  cuitTransportista: "",
+  razonSocialTransportista: "",
+  cuitChofer: "",
+  razonSocialChofer: "",
+  dominio1: "",
+  dominio2: "",
+  dominio3: "",
+  kmARecorrer: 0,
+  tipoFlete: "",
+  tarifaRef: 0,
+  tarifaTT: 0,
+  calidadEnvoltura: "",
+  calidad: "",
+  fechaPartida: "",
+  cuitPagadorFlete: "",
+  cuitIntermediarioFlete: "",
+  status: "",
+  observaciones: "",
+  pdf: "",
 };
 
 export const NewTransportDocument: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { businesses: socialEntities, getBusinesses } = useBusiness();
+  const { companies, getCompanies } = useCompany();
+  const { dataCrops: crops, getCrops } = useCrops();
+  const { vehicles, getVehicles } = useVehicle();
   const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
   const {
@@ -28,7 +95,7 @@ export const NewTransportDocument: React.FC = () => {
     handleCheckboxChange,
     reset,
     handleFormValueChange,
-  } = useForm(initialForm);
+  } = useForm<TransportDocument>(initialForm);
 
   const handleNext = () => {
     setActiveStep(activeStep + 1);
@@ -48,7 +115,11 @@ export const NewTransportDocument: React.FC = () => {
       switch (step) {
         case 0:
           return (
-            <></>
+            <RemitenteForm
+              formValues={formulario}
+              companies={companies}
+              handleInputChange={handleInputChange}
+              handleSelectChange={handleSelectChange} />
           );
         case 1:
           return (
@@ -75,9 +146,19 @@ export const NewTransportDocument: React.FC = () => {
       handleInputChange,
       handleSelectChange,
       handleCheckboxChange,
+      companies,
+      socialEntities,
+      vehicles,
+      crops
     ]
   );
 
+  useEffect(() => {
+    getBusinesses();
+    getCompanies();
+    getCrops();
+    getVehicles();
+  }, [])
 
 
   return (

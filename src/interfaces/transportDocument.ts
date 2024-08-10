@@ -1,4 +1,4 @@
-import { Document, EnumCalidad, EnumEnvoltura, EnumStatusCartaPorte, EnumTipoFlete } from "@types";
+import { Document } from "@types";
 
 //TODO: chequear de renombrar los campos en ingles
 export interface TransportDocument extends Document {
@@ -43,7 +43,7 @@ export interface TransportDocument extends Document {
     cuitDestino: string;
     domicilioDestino: string;
     localidadDestino: string;
-    cpDestino: string;    
+    cpDestino: string;
     provinciaDestino: string;
     cuitTransportista: string;
     razonSocialTransportista: string;
@@ -53,15 +53,15 @@ export interface TransportDocument extends Document {
     dominio2: string;
     dominio3: string;
     kmARecorrer: number;
-    tipoFlete: EnumTipoFlete;
+    tipoFlete: string;
     tarifaRef: number;
     tarifaTT: number;
-    calidadEnvoltura: EnumEnvoltura;
-    calidad: EnumCalidad;
+    calidadEnvoltura: string;
+    calidad: string;
     fechaPartida: string;
     cuitPagadorFlete: string;
     cuitIntermediarioFlete: string;
-    status: EnumStatusCartaPorte;
+    status: string;
     observaciones: string;
     pdf: string;
 }

@@ -29,4 +29,4 @@ export * from './PaisTableCell/PaisTableCell';
 // export * from './CompatibilityValidator/CompatibilityValidator';
 export { default as UserPermissionsModal } from './Modals/UserPermissionsModal';
 
-export * from './TopBar/TopbarCustom';
+export * from './TopBar/TopBarCustom';
