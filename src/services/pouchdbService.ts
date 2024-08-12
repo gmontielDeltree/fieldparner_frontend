@@ -78,7 +78,7 @@ const dbNames = Object.freeze({
     menuModules: "menu-modules",
     modulesUsers: "modules-users",
     licencesUse: "licences-use",
-    corporateCompanies: "corporateCompanies",
+    corporateCompanies: "corporate-companies",
 });
 
 export const dbContext = Object.freeze({

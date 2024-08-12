@@ -12,7 +12,7 @@ export const useCorporateCompanies = () => {
   const [error, setError] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [corporateCompanies, setCorporateCompanies] = useState<CorporateCompanies[]>([]);
-  const [conceptoError] = useState(false);
+  const [conceptoError, setConceptoError] = useState(false);
   const {t} = useTranslation();
 
   const handleDatabaseError = (error: any) => {
@@ -28,9 +28,9 @@ const createCorporateCompanies = async (newCorporateCompanies: CorporateCompanie
   try {
     const response = await dbContext.corporateCompanies.post(newCorporateCompanies);
     if (response.ok) {
-      Swal.fire(t("origin_destination"), t("new_origin_destination"), 'success');
+      Swal.fire('Compañia Societaria', 'Agregada', 'success');
     } else {
-      Swal.fire(t("origin_destination"), "Error1", 'error');
+      Swal.fire('Compañia Societaria', "Error", 'error');
     }
     navigate('/init/overview/corporate-companies/');
   } catch (error) {
@@ -60,28 +60,43 @@ const createCorporateCompanies = async (newCorporateCompanies: CorporateCompanie
 
   const updateCorporateCompanies = async (updateCorporateCompanies: CorporateCompanies) => {
     setIsLoading(true);
+   
 
-    // if (!updateOriginDestinations.name.trim()) {
-    //   setConceptoError(true);
-    //   setIsLoading(false);
-    //   return;
-    // }
-
-    try {
-      const response = await dbContext.corporateCompanies.put(updateCorporateCompanies);
+    if (!updateCorporateCompanies._id?.trim()) {
+      console.error('El objeto updateCorporateCompanies no tiene un _id. No se puede actualizar.');
+      Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
+      setConceptoError(true);
       setIsLoading(false);
+      return;
+    }
 
-      if (response.ok)
-        Swal.fire(t("origin_destination"), t("_updated"), 'success');
-
-      navigate('/init/overview/corporate-companies/');
+  
+    try {
+     
+      const response = await dbContext.corporateCompanies.put(updateCorporateCompanies);
+     
+  
+      setIsLoading(false);
+  
+      if (response.ok) {
+      
+        Swal.fire('Compañia Societaria', t("_updated"), 'success');
+        navigate('/init/overview/corporate-companies/');
+      } else {
+       
+        Swal.fire('Compañia Societaria', "Error en la actualización", 'error');
+      }
     } catch (error) {
-      console.log(error);
+     
       Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
       setIsLoading(false);
       if (error) setError(error);
+    } finally {
+      setIsLoading(false);
+     
     }
   };
+  
 
   const removeCorporateCompanies = async (CorporateCompaniesId: string, removeCorporateCompanies: string) => {
 
@@ -90,7 +105,7 @@ const createCorporateCompanies = async (newCorporateCompanies: CorporateCompanie
       setIsLoading(false);
 
       if (response.ok)
-        Swal.fire(t("origin_destination"), t("_deleted"), 'success');
+        Swal.fire('Compañia Societaria', t("_deleted"), 'success');
 
       navigate('/init/overview/corporate-companies/');
     } catch (error) {
@@ -101,31 +116,7 @@ const createCorporateCompanies = async (newCorporateCompanies: CorporateCompanie
     }
   } 
 
-//   const searchOriginDestinations = async (searchTerm: string) => {
-//     setIsLoading(true);
-  
-//     try {
-//       const response = await dbContext.corporateCompanies.query('origins-destinations-search-view', {
-//         startkey: searchTerm,
-//         endkey: searchTerm + '\uffff',
-//         include_docs: true,
-//       });
-  
-//       setIsLoading(false);
-  
-//       if (response.rows.length) {
-//         const searchResults: OriginDestinations[] = response.rows.map(row => row.doc as OriginDestinations);
-//         setOriginDestinations(searchResults);
-//       } else {
-//         setOriginDestinations([]);
-//       }
-//     } catch (error) {
-//       console.error(error);
-//       Swal.fire('Error', t("error_during_search"), 'error');
-//       setIsLoading(false);
-//       if (error) setError(error);
-//     }
-//   };
+
    
 
     return {
@@ -141,7 +132,6 @@ const createCorporateCompanies = async (newCorporateCompanies: CorporateCompanie
         setCorporateCompanies,
         updateCorporateCompanies, 
         removeCorporateCompanies,
-        //searchOriginDestinations,
     }
 }
 

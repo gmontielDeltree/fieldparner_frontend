@@ -6,8 +6,6 @@ import {
   CardContent,
   CardMedia,
   Container,
-  FormControl,
-  FormHelperText,
   Grid,
   IconButton,
   InputAdornment,
@@ -19,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch,  useForm, useCorporateCompanies, useAppSelector ,useBusiness} from '../hooks';
 import { Loading } from '../components';
 import { CorporateCompanies } from '../types';
-import { removeCorporateCompaniesActive } from '../redux/corporateCompanies';
+import { removeCorporateCompanies, removeCorporateCompaniesActive } from '../redux/corporateCompanies';
 import {
   BrokenImage as BrokenImageIcon,
   Cancel as CancelIcon,
@@ -41,11 +39,6 @@ export interface AddressFormProps {
   countryError: boolean;
   handleFormValueChange: (key: string, value: string) => void;
 }
-const initialAddressFormProps: AddressFormProps = {
-  countries: [], 
-  countryError: false,
-  handleFormValueChange: () => {},
-};
 
 const initialForm: CorporateCompanies = {
   accountId: '',
@@ -71,7 +64,7 @@ const initialForm: CorporateCompanies = {
 
 export const NewCoporateCompaniesPage = () => {
   const navigate = useNavigate();
-  const { isLoading, createCorporateCompanies, updateCorporateCompanies} = useCorporateCompanies();
+  const { isLoading, createCorporateCompanies, updateCorporateCompanies,corporateCompanies,getCorporateCompanies} = useCorporateCompanies();
   const dispatch = useAppDispatch();
   const {businesses,getBusinesses} = useBusiness();
   const { corporateCompaniesActive } = useAppSelector((state) => state.corporateCompanies);
@@ -81,6 +74,7 @@ export const NewCoporateCompaniesPage = () => {
   const [pais, setPais] = useState<string | null>(null);
   const [countryName, setCountryName] = useState<string>('');
   const { t } = useTranslation();
+ 
 
   const countries: Country[] = [
     {
@@ -113,22 +107,9 @@ export const NewCoporateCompaniesPage = () => {
     }
   ];
 
-  useEffect(() => {
-    // Configura el código del país inicial aquí
-    const initialCountryCode = '';
-    setPais(initialCountryCode);
-
-    // Encuentra el país correspondiente y establece el nombre del país
-    const selectedCountry = countries.find(country => country.code === initialCountryCode);
-    if (selectedCountry) {
-      setCountryName(selectedCountry.descriptionEN);
-    }
-  }, []);
 
   const selectedCountry = countries.find(country => country.code === pais);
   
-
-
   const {
     photoName,
     //accountId,
@@ -146,35 +127,43 @@ export const NewCoporateCompaniesPage = () => {
     web,
     businessName,
     observations,
-    countryError,
+   // countryError,
     formulario,
     taxSituation,
     setFormulario,
     handleInputChange,
     reset,
-  } = useForm<CorporateCompanies & AddressFormProps>({ ...initialForm, ...initialAddressFormProps });;
+  } = useForm<CorporateCompanies >(initialForm);
 
+  useEffect(() => {
+    getCorporateCompanies();
+  }, []);
 
+  useEffect(() => {
+    if (corporateCompaniesActive) setFormulario(corporateCompaniesActive);
+    else setFormulario(initialForm);
+  }, [corporateCompaniesActive, setFormulario]);
 
+  useEffect(() => {
+    return () => {
+      dispatch((removeCorporateCompanies));
+    };
+  }, [dispatch]);
 
+  
+  useEffect(() => {
+  
+    const initialCountryCode = '';
+    setPais(initialCountryCode);
 
-// const handleClick = () => {
-//   if (user ) {
-//     const { accountId } = user;
     
-    
-//     setFormulario(prevForm => ({
-//       ...prevForm,
-//       accountId,
-//     }));
+    const selectedCountry = countries.find(country => country.code === initialCountryCode);
+    if (selectedCountry) {
+      setCountryName(selectedCountry.descriptionEN);
+    }
+  }, []);
 
-//     console.log("Datos del formulario:", formulario);
-//     console.log("Account ID:", accountId);
-//     console.log("Country ID:", countries);
-//   } else {
-//     console.log("No user data available");
-//   }
-// };
+ 
 
   const uploadImgUser = async (fileInput: Blob) => {
     try {
@@ -203,52 +192,71 @@ export const NewCoporateCompaniesPage = () => {
   };
 
   const handleUpdate = () => {
-    if (formulario._id) {
-      updateCorporateCompanies(formulario);
-      dispatch(removeCorporateCompaniesActive ());
-      navigate("/init/overview/corporate-companies");
-      reset();
+    
+    if (!formulario._id?.trim()) {
+      Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
+      return;
     }
+  
+    updateCorporateCompanies(formulario);
+    reset();
   };
+ 
 
   const handleAdd = async () => {
-    //handleClick();
-    console.log("EJECUCIO1");
-    await createCorporateCompanies(formulario);
-    console.log("EJECUCIO2");
-   // navigate("/init/overview/corporate-companies");
-    console.log("EJECUCIO4");
-    //reset();
-
+     await createCorporateCompanies(formulario);
+      reset();
   };
+
 
   const onClickCancel = () => {
     dispatch(removeCorporateCompaniesActive ());
     navigate("/init/overview/corporate-companies");
-    // setIsLoading(true);
     reset();
   };
 
-  // const onChangeCountry = (_event: SyntheticEvent, value: { code: string; label: string } | null) => {
-  //   console.log("Country selected:", value); // Agregado para mostrar los datos seleccionados en la consola
-  //   if (value) {
-  //     handleFormValueChange("country", value.code);
-  //     setPais(value.code); // Actualiza el estado `pais` con el nuevo valor
+  // const handleVerifyTaxKey = () => {
+  //   const idExists = corporateCompanies	.some(module => module.taxKey === taxKey);
+  //   if (idExists) {
+  //     Swal.fire({
+  //       icon: 'error',
+  //       title: 'Error',
+  //       text: 'El ID ya existe',
+  //     }).then(() => {
+  //       setFormValues(prevForm => ({
+  //         ...prevForm,
+  //         id: 0
+  //       }));
+  //     });
   //   }
-  // }
+  //   return idExists;
+  // };
 
-
-
-//const clicButton = () => {console.log("Clickeando Country:", mostrarDatos);}
 
   const handleVerifyId = () => {
     const existingBusiness = businesses.find(business => business.cuit === taxKey);
+    const taxIdExists = corporateCompanies.find(corporate => corporate.taxKey === taxKey);
+
+    if ( taxIdExists) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'La Clave tributaria ya existe',
+      }).then(() => {
+        setFormulario(prevForm => ({
+          ...prevForm,
+          taxKey: '',
+          id: 0
+        }));
+      });
+      return true; // O puedes devolver idExists si deseas mantener consistencia con el retorno
+    }
     
     if (existingBusiness) {
       Swal.fire({
         icon: 'question',
         title: 'Cuit ya existe en "Proveedores"',
-        text: 'El CUIT ya existe, ¿desea autocompletar?',
+        text: '¿Desea autocompletar?',
         showCancelButton: true,
         confirmButtonText: 'Sí',
         cancelButtonText: 'No'
@@ -301,7 +309,7 @@ export const NewCoporateCompaniesPage = () => {
       try {
         if (pais === "ARG") {
           const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
-          console.log("onBlurZipCode triggered");
+         
           if (localityAndStates?.length) {
             const firstLocality = localityAndStates[0].locality;
             const firstProvince = localityAndStates[0].state;
@@ -395,19 +403,6 @@ export const NewCoporateCompaniesPage = () => {
   }, [user]); 
 
   
-
-
-
-
-
-  useEffect(() => {
-    console.log('countries:', countries);
-    console.log('pais:', pais);
-  }, [countries, pais]);
-
-
-
-
   return (
     <>
       <Loading key="loading-business" loading={loadingZipCode} />
@@ -431,7 +426,7 @@ export const NewCoporateCompaniesPage = () => {
             sx={{ marginRight: "8px", fontSize: "inherit", verticalAlign: "middle" }}
           />
           {t("corporate_companies")}
-        </Typography><button>Verificar</button>
+        </Typography>
         <Paper
           variant="outlined"
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
@@ -483,7 +478,6 @@ export const NewCoporateCompaniesPage = () => {
                
             </Grid>
             <Grid item xs={12} md={2}>
-            
               <TextField
                 variant="outlined"
                 type="text"
@@ -522,11 +516,9 @@ export const NewCoporateCompaniesPage = () => {
                 onChange={handleInputChange}
                 required
                 fullWidth
-              />
-              
+              />  
             </Grid>
             <Grid item xs={12} md={4}>
-            <FormControl fullWidth variant="outlined" error={countryError}>
               <TextField
                   label={t("id_country")}
                   type="text"
@@ -540,8 +532,6 @@ export const NewCoporateCompaniesPage = () => {
                     readOnly: true,
                   }}
                 />
-            {countryError && <FormHelperText>Mensaje de error!</FormHelperText>}
-          </FormControl>
           </Grid>
             <Grid item xs={12} md={4}>
               <TextField
@@ -669,12 +659,9 @@ export const NewCoporateCompaniesPage = () => {
                     )}
                   </Box>
                 </CardContent>
-                  
                 </Card>
-                
               </Box>
             </Grid>
-          
           </Grid>
           <Box sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', mt: 2 }}>
             <Button
