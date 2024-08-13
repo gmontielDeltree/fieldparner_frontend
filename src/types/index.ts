@@ -325,8 +325,10 @@ export interface ItemZipCode extends Document {
 }
 
 export interface Category extends Document {
-  name: string;
+  idCategory: string;
   description: string;
+  descriptionPt: string;
+  descriptionEn: string;
 }
 
 export interface StockMovement extends Document {

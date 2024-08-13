@@ -3,6 +3,7 @@ import React, { useState, ChangeEvent } from 'react';
 import { TransportDocument } from '../../interfaces/transportDocument';
 import { getShortDate } from '../../helpers/dates';
 import { Company } from '../../interfaces/company';
+import { Category, ExitFieldItem } from '@types';
 
 
 // const TextFieldCustom = styled(TextField)(() => ({
@@ -11,9 +12,11 @@ import { Company } from '../../interfaces/company';
 // }));
 
 
-interface RemitenteFormProps {
+export interface RemitenteFormProps {
     formValues: TransportDocument;
     companies: Company[];
+    categories: Category[];
+    fields: ExitFieldItem[];
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
@@ -21,6 +24,8 @@ interface RemitenteFormProps {
 export const RemitenteForm: React.FC<RemitenteFormProps> = ({
     formValues,
     companies,
+    categories,
+    fields,
     handleInputChange,
     handleSelectChange
 }) => {
@@ -28,7 +33,7 @@ export const RemitenteForm: React.FC<RemitenteFormProps> = ({
 
     const onChangeCompany = (e: SelectChangeEvent) => {
         const value = e.target.value;
-        const foundCompany = companies.find(x => x.socialReason.toLowerCase() === value.toLowerCase());
+        const foundCompany = companies.find(x => x.companyId === value);
         if (foundCompany)
             setSelectedCompany(foundCompany);
 
@@ -36,7 +41,7 @@ export const RemitenteForm: React.FC<RemitenteFormProps> = ({
     }
 
     return (
-        <Grid container spacing={1}>
+        <Grid className="remitente-form" container spacing={1}>
             <Grid item xs={12} sm={3}>
                 <TextField
                     variant="outlined"
@@ -119,17 +124,17 @@ export const RemitenteForm: React.FC<RemitenteFormProps> = ({
             </Grid>
             <Grid item xs={12} sm={4}>
                 <FormControl key="razon-social-select" fullWidth>
-                    <InputLabel id="company">Campaña</InputLabel>
+                    <InputLabel id="company" required>Razon Social</InputLabel>
                     <Select
                         labelId="company"
-                        name="razonSocial"
+                        name="companiaId"
                         required
-                        value={formValues.razonSocial}
+                        value={formValues.companiaId} //ID COMPAÑIA
                         label="Razon Social"
                         onChange={onChangeCompany}
                     >
                         {companies?.map((c) => (
-                            <MenuItem key={c._id} value={c.socialReason}>
+                            <MenuItem key={c._id} value={c.companyId}>
                                 {c.socialReason}
                             </MenuItem>
                         ))}
@@ -179,6 +184,72 @@ export const RemitenteForm: React.FC<RemitenteFormProps> = ({
                             </Typography>}
                     />
                 </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+                <FormControl key="razon-social-select" fullWidth>
+                    <InputLabel id="category" required>Categoria</InputLabel>
+                    <Select
+                        labelId="category"
+                        name="categoriaEntidad"
+                        required
+                        value={formValues.categoriaEntidad}
+                        label="Categoria"
+                        onChange={handleSelectChange}
+                    >
+                        {categories?.map((c) => (
+                            <MenuItem key={c.idCategory} value={c.idCategory}>
+                                {c.description}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+                <FormControl key="razon-social-select" fullWidth>
+                    <InputLabel id="field" required>Campo</InputLabel>
+                    <Select
+                        labelId="field"
+                        name="campoCarta"
+                        required
+                        value={formValues.campoCarta}
+                        label="Campo"
+                        onChange={onChangeCompany}
+                    >
+                        {fields?.map((c) => (
+                            <MenuItem key={c._id} value={c.fieldId}>
+                                {c.field?.nombre}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+                <TextField
+                    variant="outlined"
+                    type="text"
+                    label="N° Operador ONCCA"
+                    name="nroOperadorONCCA"
+                    value={formValues.nroOperadorONCCA}
+                    onChange={handleInputChange}
+                    InputProps={{
+                        startAdornment: <InputAdornment position="start" />,
+                    }}
+                    fullWidth
+                />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+                <TextField
+                    variant="outlined"
+                    type="text"
+                    label="N° Planta ONCCA"
+                    name="nroPlantaONCCA"
+                    value={formValues.nroPlantaONCCA}
+                    onChange={handleInputChange}
+                    InputProps={{
+                        startAdornment: <InputAdornment position="start" />,
+                    }}
+                    fullWidth
+                />
             </Grid>
         </Grid>
     )

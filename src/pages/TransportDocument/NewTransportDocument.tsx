@@ -3,7 +3,7 @@
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Loading } from '../../components';
-import { useAppDispatch, useBusiness, useCampaign, useCompany, useCrops, useForm, useVehicle } from '../../hooks';
+import { useAppDispatch, useBusiness, useCampaign, useCategory, useCompany, useCrops, useExitField, useForm, useVehicle } from '../../hooks';
 import { TransportDocument } from '../../interfaces/transportDocument';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -81,10 +81,12 @@ const initialForm: TransportDocument = {
 export const NewTransportDocument: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { businesses: socialEntities, getBusinesses } = useBusiness();
-  const { companies, getCompanies } = useCompany();
-  const { dataCrops: crops, getCrops } = useCrops();
-  const { vehicles, getVehicles } = useVehicle();
+  const { businesses: socialEntities, getBusinesses } = useBusiness(); // Proveedores/Empleados
+  const { companies, getCompanies } = useCompany(); //Compañia
+  const { dataCrops: crops, getCrops } = useCrops(); // Cultivo
+  const { vehicles, getVehicles } = useVehicle(); //Vehiculo
+  const { categories, getCategories } = useCategory(); //Categoria Entidades
+  const { exitFields: fields, getExitFields } = useExitField(); // Campo
   const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
   const {
@@ -118,6 +120,8 @@ export const NewTransportDocument: React.FC = () => {
             <RemitenteForm
               formValues={formulario}
               companies={companies}
+              categories={categories}
+              fields={fields}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange} />
           );
@@ -149,7 +153,9 @@ export const NewTransportDocument: React.FC = () => {
       companies,
       socialEntities,
       vehicles,
-      crops
+      crops,
+      categories,
+      fields,
     ]
   );
 
@@ -158,6 +164,8 @@ export const NewTransportDocument: React.FC = () => {
     getCompanies();
     getCrops();
     getVehicles();
+    getCategories();
+    getExitFields();
   }, [])
 
 
@@ -169,10 +177,10 @@ export const NewTransportDocument: React.FC = () => {
         variant="outlined"
         sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
       >
-        <Typography component="h1" variant="h4" align="left" gutterBottom>
+        <Typography component="h1" variant="h4" align="left" sx={{ mb: 3 }}>
           Carta de Porte - {steps[activeStep]}
         </Typography>
-        <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 3, mb: 2 }}>
+        <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 3, mb: 4 }}>
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -186,7 +194,7 @@ export const NewTransportDocument: React.FC = () => {
             spacing={1}
             alignItems="center"
             justifyContent="space-around"
-            sx={{ mt: { sm: 5 } }}
+            sx={{ mt: 5 }}
           >
             <Grid item xs={12} sm={3} key="grid-back">
               <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
