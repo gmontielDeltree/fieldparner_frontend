@@ -3,11 +3,11 @@
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Loading } from '../../components';
-import { useAppDispatch, useBusiness, useCampaign, useCategory, useCompany, useCrops, useExitField, useForm, useVehicle } from '../../hooks';
+import { useAppDispatch, useBusiness, useCategory, useCompany, useCrops, useExitField, useField, useForm, useVehicle } from '../../hooks';
 import { TransportDocument } from '../../interfaces/transportDocument';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { RemitenteForm } from '../../components/TransportDocument';
+import { GranoTransportadoForm, RemitenteForm } from '../../components/TransportDocument';
 import { getShortDate } from '../../helpers/dates';
 
 
@@ -22,6 +22,7 @@ const initialForm: TransportDocument = {
   fechaVencimiento: getShortDate(false, "-"),
   nroCTG: "",
   arancel: "",
+  contratoId: "",
   cuitGenerador: "",
   razonSocial: "",
   categoriaEntidad: "",
@@ -36,7 +37,7 @@ const initialForm: TransportDocument = {
   cuitComercialVentaSecundaria: "",
   cuitRepresentanteEntrega: "",
   cuitRepresentanteRecibidor: "",
-  companiaId: "",
+  campaniaId: "",
   cultivoId: "",
   salidaCampoId: "",
   cpGenerador: "",
@@ -86,7 +87,8 @@ export const NewTransportDocument: React.FC = () => {
   const { dataCrops: crops, getCrops } = useCrops(); // Cultivo
   const { vehicles, getVehicles } = useVehicle(); //Vehiculo
   const { categories, getCategories } = useCategory(); //Categoria Entidades
-  const { exitFields: fields, getExitFields } = useExitField(); // Campo
+  const { fields, getFields } = useField(); // Campo
+  const { exitFields, getExitFields } = useExitField();
   const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
   const {
@@ -112,6 +114,14 @@ export const NewTransportDocument: React.FC = () => {
     navigate("/init/overview/transport-documents");
   };
 
+  const onClickNewTransportDocument = () => {
+    console.log(formulario);
+  }
+
+  const onClickUpdateTransportDocument = () => {
+    console.log(formulario);
+  }
+
   const getStepContent = useMemo(
     () => (step: number) => {
       switch (step) {
@@ -121,13 +131,21 @@ export const NewTransportDocument: React.FC = () => {
               formValues={formulario}
               companies={companies}
               categories={categories}
-              fields={fields}
+              fields={exitFields}
+              providers={socialEntities}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange} />
           );
         case 1:
           return (
-            <></>
+            <GranoTransportadoForm
+              formValues={formulario}
+              companies={companies}
+              categories={categories}
+              fields={exitFields}
+              providers={socialEntities}
+              handleInputChange={handleInputChange}
+              handleSelectChange={handleSelectChange} />
           );
         case 2:
           return (
@@ -156,6 +174,7 @@ export const NewTransportDocument: React.FC = () => {
       crops,
       categories,
       fields,
+      exitFields,
     ]
   );
 
@@ -165,6 +184,7 @@ export const NewTransportDocument: React.FC = () => {
     getCrops();
     getVehicles();
     getCategories();
+    getFields();
     getExitFields();
   }, [])
 
@@ -217,7 +237,7 @@ export const NewTransportDocument: React.FC = () => {
                 variant="contained"
                 color="success"
                 onClick={
-                  transportDocumentActive ? () => console.log("update") : () => console.log("add")
+                  transportDocumentActive ? () => onClickUpdateTransportDocument() : () => onClickNewTransportDocument()
                 }
               >
                 {!transportDocumentActive ? t("_add") : t("id_update")} {' '}

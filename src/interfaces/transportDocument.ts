@@ -24,8 +24,9 @@ export interface TransportDocument extends Document {
     cuitComercialVentaSecundaria: string;
     cuitRepresentanteEntrega: string;
     cuitRepresentanteRecibidor: string;
-    companiaId: string;
+    campaniaId: string;
     cultivoId: string;
+    contratoId: string;
     salidaCampoId: string;
     cpGenerador: string;
     kgEstimado: number;
