@@ -22,12 +22,12 @@ export const useStockMovement = () => {
     const getStockMovements = async () => {
         setIsLoading(true);
         try {
-            const result = await dbContext.StockMovements.find({
+            const result = await dbContext.stockMovements.find({
                 selector: { "accountId": user?.accountId }
             });
             const promisesResult = await Promise.all([
-                dbContext.Deposits.find({ selector: { "accountId": user?.accountId } }),
-                dbContext.Supplies.find({ selector: { "accountId": user?.accountId } })
+                dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.supplies.find({ selector: { "accountId": user?.accountId } })
             ]);
             const deposits = promisesResult[0].docs;
             const supplies = promisesResult[1].docs;
@@ -58,7 +58,7 @@ export const useStockMovement = () => {
         console.log(`Fetching stock with Supply ID: ${supplyId}, Deposit ID: ${depositId}, Location: ${location}, Lot Number: ${nroLot}`);
         setIsLoading(true);
         try {
-            const existingNroLot = await dbContext.StockByLots.find({
+            const existingNroLot = await dbContext.stockByLots.find({
                 selector: {
                     "$and": [
                         { "supplyId": supplyId },
@@ -108,10 +108,10 @@ export const useStockMovement = () => {
 
                     if (existingStock) {
                         existingStock.currentStock += amountValue;
-                        promiseStockByLot = dbContext.StockByLots.put(existingStock);
+                        promiseStockByLot = dbContext.stockByLots.put(existingStock);
                     } else {
                         console.log("Creación de nuevo stock por no existir previamente.");
-                        promiseStockByLot = dbContext.StockByLots.post({
+                        promiseStockByLot = dbContext.stockByLots.post({
                             accountId: user.accountId,
                             supplyId: supplyDto._id,
                             nroLot,
@@ -127,12 +127,12 @@ export const useStockMovement = () => {
                     }
                     supplyDto.currentStock -= amountValue;
                     existingStock.currentStock -= amountValue;
-                    promiseStockByLot = dbContext.StockByLots.put(existingStock);
+                    promiseStockByLot = dbContext.stockByLots.put(existingStock);
                 }
                 responseAll = await Promise.all([
                     promiseStockByLot,
-                    dbContext.Supplies.put(supplyDto),
-                    dbContext.StockMovements.post({ ...newMovement, accountId, userId: user.id })
+                    dbContext.supplies.put(supplyDto),
+                    dbContext.stockMovements.post({ ...newMovement, accountId, userId: user.id })
                 ]);
                 console.log("Respuesta de operaciones asincrónicas:", responseAll);
             } else {
@@ -145,9 +145,9 @@ export const useStockMovement = () => {
                 console.log("Stock en destino:", existingLotInDepositDestination);
 
                 let promiseAll = [
-                    dbContext.StockByLots.put({ ...existingStock, currentStock: existingStock.currentStock - amountValue }),
-                    dbContext.StockMovements.post({ ...newMovement, isIncome: false, accountId, userId: user.id }),
-                    dbContext.StockMovements.post({
+                    dbContext.stockByLots.put({ ...existingStock, currentStock: existingStock.currentStock - amountValue }),
+                    dbContext.stockMovements.post({ ...newMovement, isIncome: false, accountId, userId: user.id }),
+                    dbContext.stockMovements.post({
                         ...newMovement,
                         depositId: depositDestination.depositId,
                         location: depositDestination.location,
@@ -158,14 +158,14 @@ export const useStockMovement = () => {
                 ];
 
                 if (existingLotInDepositDestination) {
-                    promiseAll.push(dbContext.StockByLots.put({
+                    promiseAll.push(dbContext.stockByLots.put({
                         ...existingLotInDepositDestination,
                         depositId: depositDestination.depositId,
                         location: depositDestination.location,
                         currentStock: existingLotInDepositDestination.currentStock + amountValue
                     }));
                 } else {
-                    promiseAll.push(dbContext.StockByLots.post({
+                    promiseAll.push(dbContext.stockByLots.post({
                         accountId: user.accountId,
                         nroLot: existingStock.nroLot,
                         supplyId: existingStock.supplyId,
@@ -201,7 +201,7 @@ export const useStockMovement = () => {
     const updateMovement = async (updateMovement: StockMovement) => {
         setIsLoading(true);
         try {
-            const response = await dbContext.StockMovements.put(updateMovement);
+            const response = await dbContext.stockMovements.put(updateMovement);
             setIsLoading(false);
 
             if (response.ok)
@@ -220,7 +220,7 @@ export const useStockMovement = () => {
         setIsLoading(true);
 
         try {
-            const result = await dbContext.StockByLots.find({
+            const result = await dbContext.stockByLots.find({
                 selector: {
                     "$and": [
                         { "supplyId": supplyId },
@@ -309,8 +309,8 @@ export const useStockMovement = () => {
             //Previamente validado
             // Actualizar en la tabla auxiliar para ese insumo/deposito/ubicacion/lote.
             let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
-                dbContext.StockMovements.bulkDocs(newMovements),
-                dbContext.StockByLots.bulkDocs(stockBySupplies),
+                dbContext.stockMovements.bulkDocs(newMovements),
+                dbContext.stockByLots.bulkDocs(stockBySupplies),
             ];
             const responseAll = await Promise.all(promisesAll);
 
@@ -330,7 +330,7 @@ export const useStockMovement = () => {
     const getMovementsType = async () => {
         try {
             setIsLoading(true);
-            const response = await dbContext.MovementsType.allDocs({ include_docs: true });
+            const response = await dbContext.movementsType.allDocs({ include_docs: true });
 
             if (response)
                 setMovementsType(response.rows.map(row => row.doc as MovementType));

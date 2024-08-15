@@ -13,7 +13,7 @@ export const useCategory = () => {
     const getCategories = async () => {
         setIsLoading(true);
         try {
-            const response = await dbContext.Categories.allDocs({ include_docs: true });
+            const response = await dbContext.categories.allDocs({ include_docs: true });
 
             setIsLoading(false);
 

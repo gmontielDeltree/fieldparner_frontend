@@ -17,7 +17,7 @@ export const useCampaign = () => {
         if (!user) throw new Error("User not found");
       }
 
-      const result = await dbContext.Campaigns.find({
+      const result = await dbContext.campaigns.find({
         selector: {
           accountId: import.meta.env.PROD
             ? user.accountId
@@ -53,7 +53,7 @@ export const useCampaign = () => {
         creationDate: new Date().toISOString()
       };
 
-      await dbContext.Campaigns.put(newCampaign);
+      await dbContext.campaigns.put(newCampaign);
 
       await getCampaigns();
       Swal.fire("Success", "Campaign added successfully.", "success");
@@ -70,7 +70,7 @@ export const useCampaign = () => {
     try {
       if (import.meta.env.PROD && !user) throw new Error("User not found");
 
-      await dbContext.Campaigns.put(campaign);
+      await dbContext.campaigns.put(campaign);
 
       await getCampaigns();
       Swal.fire("Success", "Campaign added successfully.", "success");
@@ -87,7 +87,7 @@ export const useCampaign = () => {
     setIsLoading(true);
     try {
 
-      await dbContext.Campaigns.remove(campaign);
+      await dbContext.campaigns.remove(campaign);
 
       await getCampaigns();
       Swal.fire("Success", "Campaign deleted successfully.", "success");

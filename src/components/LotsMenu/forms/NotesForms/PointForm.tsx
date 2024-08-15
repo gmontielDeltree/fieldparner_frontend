@@ -54,7 +54,7 @@ const customButtonStyle = {
 function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
   console.log("PointForm props: ", formData);
   const { t } = useTranslation();
-  const db = dbContext.Fields; //new PouchDB("campos_randyv7");
+  const db = dbContext.fields; //new PouchDB("campos_randyv7");
   const [point, setPoint] = useState({
     properties: {
       nombre: "",

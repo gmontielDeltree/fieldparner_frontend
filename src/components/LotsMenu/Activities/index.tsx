@@ -39,7 +39,7 @@ export const Activities = ({
   handleEditActivity
 }) => {
   const [userMessage, setUserMessage] = useState("");
-  const db = dbContext.Fields;
+  const db = dbContext.fields;
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 

@@ -66,7 +66,7 @@ interface LotsMenuProps {
 const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const dispatch = useAppDispatch();
   const [selectedCategory, setSelectedCategory] = useState<null | string>(null);
-  const db = dbContext.Fields;
+  const db = dbContext.fields;
   const [activities, setActivities] = useState(null);
   const { t } = useTranslation();
   const [editingActivityInfo, setEditingActivityInfo] = useState<{

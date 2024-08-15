@@ -3,40 +3,36 @@ import React, { useState } from 'react';
 import { getShortDate } from '../../helpers/dates';
 import { Company } from '../../interfaces/company';
 import { TransportDocumentFormProps } from './type';
+import { ExitFieldItem } from '../../types';
 
 
-// const TextFieldCustom = styled(TextField)(() => ({
-//     backgroundColor: "#f5f5f5",
-//     fontWeight: 600
-// }));
+interface RemitenteFormProps {
+    changeExitField: (item: ExitFieldItem) => void;
+}
 
-// export interface RemitenteFormProps {
-//     formValues: TransportDocument;
-//     companies: Company[];
-//     categories: Category[];
-//     fields: Field[];
-//     providers: BusinessItem[];
-//     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
-//     handleSelectChange: ({ target }: SelectChangeEvent) => void;
-// }
-
-export const RemitenteForm: React.FC<TransportDocumentFormProps> = ({
+export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormProps> = ({
     formValues,
     companies,
     categories,
-    fields,
+    exitFields,
     providers,
     handleInputChange,
-    handleSelectChange
+    handleSelectChange,
+    changeExitField,
 }) => {
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
     const onChangeCompany = (e: SelectChangeEvent) => {
-        const value = e.target.value;
-        const foundCompany = companies.find(x => x.trybutaryCode === value);
-        if (foundCompany)
-            setSelectedCompany(foundCompany);
+        const tributaryCode = e.target.value;
+        const foundCompany = companies?.find(x => x.trybutaryCode === tributaryCode);
+        if (foundCompany) setSelectedCompany(foundCompany);
+        handleSelectChange(e);
+    }
 
+    const onChangeField = (e: SelectChangeEvent) => {
+        const salidaCampoId = e.target.value;
+        const foundExitField = exitFields?.find(x => x._id === salidaCampoId);
+        if (foundExitField) changeExitField(foundExitField);
         handleSelectChange(e);
     }
 
@@ -127,9 +123,9 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps> = ({
                     <InputLabel id="razonSocial" required>Razon Social</InputLabel>
                     <Select
                         labelId="razonSocial"
-                        name="razonSocial"
+                        name="cuitCompania"
                         required
-                        value={formValues.razonSocial} //CUIT 
+                        value={formValues.cuitCompania} //CUIT 
                         label="Razon Social"
                         onChange={onChangeCompany}
                     >
@@ -190,13 +186,13 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps> = ({
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
-                <FormControl key="razon-social-select" fullWidth>
+                <FormControl key="category-select" fullWidth>
                     <InputLabel id="category" required>Categoria</InputLabel>
                     <Select
                         labelId="category"
-                        name="categoriaEntidad"
+                        name="categoriaEntidadId"
                         required
-                        value={formValues.categoriaEntidad}
+                        value={formValues.categoriaEntidadId}
                         label="Categoria"
                         MenuProps={{
                             PaperProps: {
@@ -214,18 +210,18 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps> = ({
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
-                <FormControl key="razon-social-select" fullWidth>
+                <FormControl key="field-select" fullWidth>
                     <InputLabel id="field" required>Campo</InputLabel>
                     <Select
                         labelId="field"
-                        name="campoCarta"
+                        name="salidaCampoId"
                         required
-                        value={formValues.campoCarta}
+                        value={formValues.salidaCampoId}
                         label="Campo"
-                        onChange={handleSelectChange}
+                        onChange={onChangeField}
                     >
-                        {fields?.map((c) => (
-                            <MenuItem key={c._id} value={c.fieldId}>
+                        {exitFields?.map((c) => (
+                            <MenuItem key={c._id} value={c._id}>
                                 {c.field?.nombre}
                             </MenuItem>
                         ))}
@@ -272,7 +268,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps> = ({
                     >
                         {providers?.map((x) => (
                             <MenuItem key={x._id} value={x.cuit}>
-                                {x.razonSocial || x.nombreCompleto}
+                                {x.razonSocial}
                             </MenuItem>
                         ))}
                     </Select>
@@ -303,7 +299,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps> = ({
                     >
                         {providers?.map((x) => (
                             <MenuItem key={x._id} value={x.cuit}>
-                                {x.razonSocial || x.nombreCompleto}
+                                {x.razonSocial}
                             </MenuItem>
                         ))}
                     </Select>
@@ -334,7 +330,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps> = ({
                     >
                         {providers?.map((x) => (
                             <MenuItem key={x._id} value={x.cuit}>
-                                {x.razonSocial || x.nombreCompleto}
+                                {x.razonSocial}
                             </MenuItem>
                         ))}
                     </Select>
@@ -365,7 +361,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps> = ({
                     >
                         {providers?.map((x) => (
                             <MenuItem key={x._id} value={x.cuit}>
-                                {x.razonSocial || x.nombreCompleto}
+                                {x.razonSocial}
                             </MenuItem>
                         ))}
                     </Select>
@@ -396,7 +392,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps> = ({
                     >
                         {providers?.map((x) => (
                             <MenuItem key={x._id} value={x.cuit}>
-                                {x.razonSocial || x.nombreCompleto}
+                                {x.razonSocial}
                             </MenuItem>
                         ))}
                     </Select>
@@ -427,7 +423,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps> = ({
                     >
                         {providers?.map((x) => (
                             <MenuItem key={x._id} value={x.cuit}>
-                                {x.razonSocial || x.nombreCompleto}
+                                {x.razonSocial}
                             </MenuItem>
                         ))}
                     </Select>

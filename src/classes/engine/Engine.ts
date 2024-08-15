@@ -62,7 +62,7 @@ const campomachine = (id) =>
   setup({
     actors: {
       loadfromdb: fromPromise(({ input }) => {
-        return dbContext.Fields.get(id);
+        return dbContext.fields.get(id);
       }),
     },
   }).createMachine({
@@ -93,7 +93,7 @@ const campomachine = (id) =>
 const EngineMachine = setup({
   actors: {
     loadcampos: fromPromise(({ input }) => {
-      return dbContext.Fields.allDocs();
+      return dbContext.fields.allDocs();
     }),
   },
 }).createMachine({

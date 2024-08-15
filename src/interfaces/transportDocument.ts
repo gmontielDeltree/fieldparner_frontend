@@ -1,6 +1,116 @@
 import { Document } from "@types";
 
-//TODO: chequear de renombrar los campos en ingles
+
+/*
+----COMERCIO GRANO FORM 
+cuitComprador,
+cuitAsignadorCupo,
+nroCupo,
+fechaCupo,
+
+-----DESTINATARIO FORM
+domicilioDestino,
+cuitDestinatario
+esCampo,
+campoDestinatario,
+loteDestinatario,
+cuitDestino,
+domicilioDestino,
+cpDestino,
+
+--- GRANO TRANSPORTADO FORM
+contrato,
+cpSalidaCampo,
+kgEstimado,
+kgBruto,
+kgTara,
+observaciones,
+
+--- REMITENTE FORM
+nroCartaPorte,
+fechaEmision,
+fechaVencimiento,
+nroCTG,
+cuitCompania,
+categoriaEntidadId,
+salidaCampoId,
+nroOperadorONCCA,
+nroPlantaONCCA,
+cuitRemitenteComercialPrimario,
+cuitRemitenteComercialSecundario,
+cuitRemitenteComercialSecundario2,
+cuitMAT,
+cuitRepresentanteEntrega,
+cuitRepresentanteRecibidor,
+
+---- TRANPORTISTA FORM
+cuitTransportista,
+cuitChofer,
+vehiculoIdChasis,
+vehiculoIdAcoplado1,
+vehiculoIdAcoplado2,
+kmARecorrer,
+tipoFlete,
+tarifaRef,
+tarifaTT,
+fechaPartida,
+calidadEnvoltura,
+calidad,
+cuitPagadorFlete,
+cuitIntermediarioFlete,
+
+
+DE ACA PARA BAJO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
 export interface TransportDocument extends Document {
     accountId: string;
     licenceId: string;
@@ -11,9 +121,10 @@ export interface TransportDocument extends Document {
     nroCTG: string;
     arancel: string;
     cuitGenerador: string;
-    razonSocial: string;
-    categoriaEntidad: string;
-    campoCarta: string;
+    cuitCompania: string;
+    categoriaEntidadId: string;
+    salidaCampoId: string;
+    cpSalidaCampo: string;
     nroOperadorONCCA: string;
     nroPlantaONCCA: string;
     cuitRemitenteComercialPrimario: string;
@@ -24,17 +135,14 @@ export interface TransportDocument extends Document {
     cuitComercialVentaSecundaria: string;
     cuitRepresentanteEntrega: string;
     cuitRepresentanteRecibidor: string;
-    campaniaId: string;
-    cultivoId: string;
-    contratoId: string;
-    salidaCampoId: string;
+    contrato: string;
     cpGenerador: string;
     kgEstimado: number;
     kgBruto: number;
     kgTara: number;
     kgNeto: number;
     cuitComprador: string;
-    cuitCupo: string;
+    cuitAsignadorCupo: string;
     nroCupo: string;
     fechaCupo: string;
     cuitDestinatario: string;
@@ -53,9 +161,6 @@ export interface TransportDocument extends Document {
     razonSocialTransportista: string;
     cuitChofer: string;
     razonSocialChofer: string;
-    dominio1: string;
-    dominio2: string;
-    dominio3: string;
     kmARecorrer: number;
     tipoFlete: string;
     tarifaRef: number;
@@ -65,7 +170,7 @@ export interface TransportDocument extends Document {
     fechaPartida: string;
     cuitPagadorFlete: string;
     cuitIntermediarioFlete: string;
-    status: string;
     observaciones: string;
-    pdf: string;
+    status: string;
+    fileName: string;
 }

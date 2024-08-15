@@ -25,7 +25,7 @@ function Sowing({
   handleConfirmExecution,
   handleReplicateActivity
 }) {
-  const db = dbContext.Fields;
+  const db = dbContext.fields;
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const [execution, setExecution] = useState<Ejecucion>(null);

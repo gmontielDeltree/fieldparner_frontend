@@ -20,7 +20,7 @@ export class CropsRepository
 
 
   constructor(){
-    super(dbContext.Crops)
+    super(dbContext.crops)
   }
 
   async getAll() {

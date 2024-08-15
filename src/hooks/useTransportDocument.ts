@@ -19,7 +19,7 @@ export const useTransportDocument = () => {
         try {
             if (!user) throw new Error("User not logged.");
 
-            const response = await dbContext.TransportDocument.find({
+            const response = await dbContext.transportDocument.find({
                 selector: { accountId: user?.accountId }
             });
 
@@ -38,9 +38,10 @@ export const useTransportDocument = () => {
         try {
             if (!user) throw new Error("User not logged.");
 
-            const response = await dbContext.TransportDocument.post({
+            const response = await dbContext.transportDocument.post({
                 ...newDocument,
-                accountId: user.accountId
+                accountId: user.accountId,
+                licenceId: user.licenceId
             });
             setIsLoading(false);
 

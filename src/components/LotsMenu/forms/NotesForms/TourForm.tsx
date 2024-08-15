@@ -73,7 +73,7 @@ const FeatureAccordion = styled(Accordion)({
 });
 
 function TourForm({ lot, formData, setFormData, tourSave }) {
-  const db = dbContext.Fields;
+  const db = dbContext.fields;
   const [isPointMode, setIsPointMode] = useState(false);
   const [point, setPoint] = useState({ properties: { nombre: "", notas: "" } });
   const [imageUrls, setImageUrls] = useState({});

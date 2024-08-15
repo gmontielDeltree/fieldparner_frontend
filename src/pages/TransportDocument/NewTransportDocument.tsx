@@ -9,7 +9,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ComercioGranoForm, DestinatarioForm, GranoTransportadoForm, RemitenteForm, TransportistaForm } from '../../components/TransportDocument';
 import { getShortDate } from '../../helpers/dates';
-import { EnumTipoFlete, TipoEntidad } from '../../types';
+import { EnumTipoFlete, ExitFieldItem, TipoEntidad } from '../../types';
+import { uploadFile } from '../../helpers/fileUpload';
 
 
 const steps = ["Remitente", "Granos Transportados", "Comercio Granos", "Destinatario", "Transportista"];
@@ -23,12 +24,13 @@ const initialForm: TransportDocument = {
   fechaVencimiento: getShortDate(false, "-"),
   nroCTG: "",
   arancel: "",
-  contratoId: "",
+  contrato: "",
   cuitGenerador: "",
-  razonSocial: "",
-  categoriaEntidad: "",
-  campoCarta: "",
+  cuitCompania: "",
+  categoriaEntidadId: "",
+  salidaCampoId: "",
   nroOperadorONCCA: "",
+  cpSalidaCampo: "",
   nroPlantaONCCA: "",
   cuitRemitenteComercialPrimario: "",
   cuitRemitenteComercialSecundario: "",
@@ -38,16 +40,13 @@ const initialForm: TransportDocument = {
   cuitComercialVentaSecundaria: "",
   cuitRepresentanteEntrega: "",
   cuitRepresentanteRecibidor: "",
-  campaniaId: "",
-  cultivoId: "",
-  salidaCampoId: "",
   cpGenerador: "",
   kgEstimado: 0,
   kgBruto: 0,
   kgTara: 0,
   kgNeto: 0,
   cuitComprador: "",
-  cuitCupo: "",
+  cuitAsignadorCupo: "",
   nroCupo: "",
   fechaCupo: "",
   cuitDestinatario: "",
@@ -66,9 +65,6 @@ const initialForm: TransportDocument = {
   vehiculoIdAcoplado1: "",
   vehiculoIdAcoplado2: "",
   razonSocialChofer: "",
-  dominio1: "",
-  dominio2: "",
-  dominio3: "",
   kmARecorrer: 0,
   tipoFlete: EnumTipoFlete.APAGAR,
   tarifaRef: 0,
@@ -80,7 +76,7 @@ const initialForm: TransportDocument = {
   cuitIntermediarioFlete: "",
   status: "",
   observaciones: "",
-  pdf: "",
+  fileName: "",
 };
 
 export const NewTransportDocument: React.FC = () => {
@@ -94,7 +90,10 @@ export const NewTransportDocument: React.FC = () => {
   const { fields, getFields } = useField(); // Campo
   const { exitFields, getExitFields } = useExitField();
   const { t } = useTranslation();
+  const [selectedFieldOutput, setSelectedFieldOutput] = useState<ExitFieldItem | null>(null);
+  console.log('selectedFieldOutput', selectedFieldOutput)
   const [activeStep, setActiveStep] = useState(0);
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
   const {
     formulario,
     setFormulario,
@@ -113,6 +112,12 @@ export const NewTransportDocument: React.FC = () => {
     setActiveStep(activeStep - 1);
   };
 
+  const handleUploadDocumentFile = async () => {
+    if (documentFile) {
+      await uploadFile(documentFile);
+    }
+  }
+
   const onClickCancel = () => {
     // dispatch(removeCustomerActive());
     navigate("/init/overview/transport-documents");
@@ -126,6 +131,15 @@ export const NewTransportDocument: React.FC = () => {
     console.log(formulario);
   }
 
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log(e.target);
+    
+  }
+
+  const changeSelectedExitField = (item: ExitFieldItem) => setSelectedFieldOutput(item);
+
   const getStepContent = useMemo(
     () => (step: number) => {
       switch (step) {
@@ -135,10 +149,11 @@ export const NewTransportDocument: React.FC = () => {
               formValues={formulario}
               companies={companies}
               categories={categories}
-              fields={exitFields}
+              exitFields={exitFields}
               providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
               handleInputChange={handleInputChange}
-              handleSelectChange={handleSelectChange} />
+              handleSelectChange={handleSelectChange}
+              changeExitField={changeSelectedExitField} />
           );
         case 1:
           return (
@@ -146,8 +161,9 @@ export const NewTransportDocument: React.FC = () => {
               formValues={formulario}
               companies={companies}
               categories={categories}
-              fields={exitFields}
+              exitFields={exitFields}
               providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
+              selectedFieldOutput={selectedFieldOutput}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange} />
           );
@@ -157,8 +173,9 @@ export const NewTransportDocument: React.FC = () => {
               formValues={formulario}
               companies={companies}
               categories={categories}
-              fields={exitFields}
+              exitFields={exitFields}
               providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
+              selectedFieldOutput={selectedFieldOutput}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange} />
           );
@@ -168,8 +185,9 @@ export const NewTransportDocument: React.FC = () => {
               formValues={formulario}
               companies={companies}
               categories={categories}
-              fields={exitFields}
+              exitFields={exitFields}
               providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
+              selectedFieldOutput={selectedFieldOutput}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
@@ -180,12 +198,16 @@ export const NewTransportDocument: React.FC = () => {
             <TransportistaForm
               formValues={formulario}
               vehicles={vehicles}
-              fields={exitFields}
+              exitFields={exitFields}
               providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
+              selectedFieldOutput={selectedFieldOutput}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
-              handleFormValueChange={handleFormValueChange} />
+              handleFormValueChange={handleFormValueChange}
+              deleteFile={() => setDocumentFile(null)}
+              fileUpload={(file) => setDocumentFile(file)}
+            />
           );
         default:
           throw new Error("Unknown step");
@@ -203,6 +225,7 @@ export const NewTransportDocument: React.FC = () => {
       categories,
       fields,
       exitFields,
+      selectedFieldOutput
     ]
   );
 
@@ -236,53 +259,56 @@ export const NewTransportDocument: React.FC = () => {
           ))}
         </Stepper>
         <>
-          {getStepContent(activeStep)}
-          <Grid
-            container
-            spacing={1}
-            alignItems="center"
-            justifyContent="space-around"
-            sx={{ mt: 5 }}
-          >
-            <Grid item xs={12} sm={3} key="grid-back">
-              <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
-                {activeStep !== 0 ? t("id_back") : t("id_cancel")}
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={3} key="grid-next">
-              {!(activeStep === steps.length - 1) && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleNext}
-                >
-                  {t("id_next")}
-                </Button>
-              )}
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <Button
-                variant="contained"
-                color="success"
-                onClick={
-                  transportDocumentActive ? () => onClickUpdateTransportDocument() : () => onClickNewTransportDocument()
-                }
-              >
-                {!transportDocumentActive ? t("_add") : t("id_update")} {' '}
-              </Button>
-            </Grid>
-            {transportDocumentActive && (
-              <Grid item xs={12} sm={3}>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => console.log}
-                >
-                  {t("icon_delete")}
+          <form onSubmit={onSubmit}>
+            {getStepContent(activeStep)}
+            <Grid
+              container
+              spacing={1}
+              alignItems="center"
+              justifyContent="space-around"
+              sx={{ mt: 5 }}
+            >
+              <Grid item xs={12} sm={3} key="grid-back">
+                <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
+                  {activeStep !== 0 ? t("id_back") : t("id_cancel")}
                 </Button>
               </Grid>
-            )}
-          </Grid>
+              <Grid item xs={12} sm={3} key="grid-next">
+                {!(activeStep === steps.length - 1) && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleNext}
+                  >
+                    {t("id_next")}
+                  </Button>
+                )}
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <Button
+                  type='submit'
+                  variant="contained"
+                  color="success"
+                  // onClick={
+                  //   transportDocumentActive ? () => onClickUpdateTransportDocument() : () => onClickNewTransportDocument()
+                  // }
+                >
+                  {!transportDocumentActive ? t("_add") : t("id_update")} {' '}
+                </Button>
+              </Grid>
+              {transportDocumentActive && (
+                <Grid item xs={12} sm={3}>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => console.log}
+                  >
+                    {t("icon_delete")}
+                  </Button>
+                </Grid>
+              )}
+            </Grid>
+          </form>
         </>
       </Paper>
     </Container>

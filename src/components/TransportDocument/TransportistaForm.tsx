@@ -4,11 +4,14 @@ import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, Grid, IconB
 import { getShortDate } from '../../helpers/dates';
 import { EnumCalidad, EnumEnvoltura, EnumTipoFlete } from '../../types';
 import { Cancel as CancelIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
+import uuid4 from 'uuid4';
 
 
 interface TransportistaFormProps {
   handleCheckboxChange: (e: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
   handleFormValueChange: (key: string, value: string) => void;
+  fileUpload: (file: File) => void;
+  deleteFile: () => void;
 }
 
 export const TransportistaForm: React.FC<TransportDocumentFormProps & TransportistaFormProps> = ({
@@ -18,7 +21,28 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
   handleInputChange,
   handleSelectChange,
   handleFormValueChange,
+  fileUpload,
+  deleteFile
 }) => {
+
+  const removeFile = () => {
+    handleFormValueChange("fileName", "");
+    deleteFile();
+  }
+
+  const onChangeFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    if (file) {
+      let fileNameOriginal = file.name;
+      let extensionPos = fileNameOriginal.lastIndexOf(".");
+      let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
+
+      const newFileName = `carta-porte_${formValues.nroCartaPorte}.${fileType}`;
+      const renamedFile = new File([file], newFileName, { type: file.type });
+      fileUpload(renamedFile);
+      handleFormValueChange("fileName", newFileName);
+    }
+  };
 
   return (
     <Grid container spacing={1}>
@@ -378,12 +402,13 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           <Input
             type="file"
             hidden
-            onChange={() => console.log("handleFileUpload")} />
+            inputProps={{ accept: 'application/pdf' }}
+            onChange={onChangeFile} />
         </Button>
-        {false ? (
+        {formValues.fileName ? (
           <>
             <label
-              title={""}
+              title={formValues.fileName}
               style={{
                 margin: "10px",
                 width: "240px",
@@ -392,9 +417,9 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap"
               }}>
-              {""}
+              {formValues.fileName}
             </label>
-            <IconButton onClick={() => console.log("removeFile")} color="error">
+            <IconButton onClick={() => removeFile()} color="error">
               <CancelIcon fontSize="medium" />
             </IconButton>
           </>

@@ -18,7 +18,7 @@ export const useOrder = () => {
 
     const getLastNumerator = async (accountId: string, type: NumeratorType) => {
         try {
-            const response = await dbContext.Numerators.find({
+            const response = await dbContext.numerators.find({
                 selector: {
                     "$and": [{ "accountId": accountId }, { "numeratorType": type }],
                 }
@@ -35,9 +35,9 @@ export const useOrder = () => {
     const putLastNumerator = async (doc: Numerator, create = false) => {
         try {
             if (create)
-                await dbContext.Numerators.post(doc);
+                await dbContext.numerators.post(doc);
             else
-                await dbContext.Numerators.put(doc);
+                await dbContext.numerators.put(doc);
         } catch (error) {
             console.log('error', error);
         }
@@ -48,7 +48,7 @@ export const useOrder = () => {
         try {
             if (!user) throw new Error("User not found.");
 
-            const response = await dbContext.WithdrawalOrders.find({ selector: { "accountId": user?.accountId } });
+            const response = await dbContext.withdrawalOrders.find({ selector: { "accountId": user?.accountId } });
 
             if (response) {
                 const orders = response.docs.map(doc => doc as WithdrawalOrder);
@@ -108,7 +108,7 @@ export const useOrder = () => {
             console.log('New deposit supplies order:', depositSuppliesOrder);
     
             // Fetch supplies to update reservedStock
-            const responseSupplies = await dbContext.Supplies.find({ selector: { "accountId": user.accountId } });
+            const responseSupplies = await dbContext.supplies.find({ selector: { "accountId": user.accountId } });
             const suppliesToUpdate = responseSupplies.docs;
     
             console.log('Supplies to update:', suppliesToUpdate);
@@ -124,10 +124,10 @@ export const useOrder = () => {
             console.log('Supplies after reservedStock update:', suppliesToUpdate);
     
             const response = await Promise.all([
-                dbContext.WithdrawalOrders.post(newOrder),
-                dbContext.DepositSupplyOrder.bulkDocs(depositSuppliesOrder),
+                dbContext.withdrawalOrders.post(newOrder),
+                dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
                 putLastNumerator(lastNumerator),
-                dbContext.Supplies.bulkDocs(suppliesToUpdate) 
+                dbContext.supplies.bulkDocs(suppliesToUpdate) 
             ]);
     
             console.log('Response from database operations:', response);
@@ -154,12 +154,12 @@ export const useOrder = () => {
             if (!user) throw new Error("User not found.");
 
             const responseAll = await Promise.all([
-                dbContext.WithdrawalOrders.find({
+                dbContext.withdrawalOrders.find({
                     selector: {
                         "$and": [{ "accountId": user.accountId }, { "order": order }],
                     }
                 }),
-                dbContext.DepositSupplyOrder.find({
+                dbContext.depositSupplyOrder.find({
                     selector: {
                         "$and": [{ "accountId": user.accountId }, { "order": order }],
                     }
@@ -210,8 +210,8 @@ export const useOrder = () => {
             });
     
             const response = await Promise.all([
-                dbContext.StockByLots.find({ selector: { "accountId": user.accountId } }),
-                dbContext.Supplies.find({ selector: { "accountId": user.accountId } }),
+                dbContext.stockByLots.find({ selector: { "accountId": user.accountId } }),
+                dbContext.supplies.find({ selector: { "accountId": user.accountId } }),
             ]);
         
             if (!response) throw new Error("Supplies not found.");
@@ -259,15 +259,15 @@ export const useOrder = () => {
             } as StockMovement));
         
             let responseAll = await Promise.all([
-                dbContext.WithdrawalsByDepositSupply.bulkDocs(newWithdrawals),
-                dbContext.DepositSupplyOrder.bulkDocs(updateDepositSupplies),
-                dbContext.StockByLots.bulkDocs(updateStockSupplies),
-                dbContext.Supplies.bulkDocs(updateSupplies),
-                dbContext.StockMovements.bulkDocs(newMovements),
+                dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
+                dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
+                dbContext.stockByLots.bulkDocs(updateStockSupplies),
+                dbContext.supplies.bulkDocs(updateSupplies),
+                dbContext.stockMovements.bulkDocs(newMovements),
             ]);
         
             if (isComplete) {
-                await dbContext.WithdrawalOrders.put({ ...withdrawalOrderActive, state: OrderStatus.Completed });
+                await dbContext.withdrawalOrders.put({ ...withdrawalOrderActive, state: OrderStatus.Completed });
             }
         
             if (responseAll) {
@@ -316,8 +316,8 @@ export const useOrder = () => {
             let depositSuppliesOrder = newDepositSupplies.map(s => ({ ...s, order: lastNumerator.lastNumerator }));
 
             const response = await Promise.all([
-                dbContext.WithdrawalOrders.post(newOrder),
-                dbContext.DepositSupplyOrder.bulkDocs(depositSuppliesOrder),
+                dbContext.withdrawalOrders.post(newOrder),
+                dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
                 putLastNumerator(lastNumerator)
             ]);
 
@@ -361,8 +361,8 @@ export const useOrder = () => {
             });
 
             let responseAll = await Promise.all([
-                dbContext.WithdrawalsByDepositSupply.bulkDocs(newWithdrawals),
-                dbContext.DepositSupplyOrder.bulkDocs(updateDepositSupplies),
+                dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
+                dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
             ]);
 
             setIsLoading(false);
@@ -386,7 +386,7 @@ export const useOrder = () => {
         try {
             if (!user) throw new Error("User not found.");
 
-            const response = await dbContext.WithdrawalOrders.find({
+            const response = await dbContext.withdrawalOrders.find({
                 selector: {
                     "$and": [
                         { "accountId": user.accountId },

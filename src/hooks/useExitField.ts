@@ -19,12 +19,12 @@ export const useExitField = () => {
 
             if (!user) throw new Error("User not found");
             const promisesResult = await Promise.all([
-                dbContext.ExitFields.find({
+                dbContext.exitFields.find({
                     selector: { "accountId": user?.accountId }
                 }),
-                dbContext.Supplies.find({ selector: { "accountId": user?.accountId } }),
-                dbContext.SocialEntities.find({ selector: { "accountId": user?.accountId } }),
-                dbContext.Fields.find({ selector: { "accountId": user?.accountId } })
+                dbContext.supplies.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.socialEntities.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.fields.find({ selector: { "accountId": user?.accountId } })
             ]);
             const exitFields = promisesResult[0].docs;
             const supplies = promisesResult[1].docs;
@@ -102,10 +102,10 @@ export const useExitField = () => {
             // delete newExitField.harvester;
 
             const promisesAll = [
-                dbContext.ExitFields.post(newExitField),
-                dbContext.StockMovements.post(newStockMovement),
-                dbContext.StockByLots.put(stockOfSupply),
-                dbContext.Supplies.put(updateSupply)
+                dbContext.exitFields.post(newExitField),
+                dbContext.stockMovements.post(newStockMovement),
+                dbContext.stockByLots.put(stockOfSupply),
+                dbContext.supplies.put(updateSupply)
             ]
 
             const responseAll = await Promise.all(promisesAll);

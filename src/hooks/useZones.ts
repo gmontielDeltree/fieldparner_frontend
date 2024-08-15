@@ -17,7 +17,7 @@ export const useZones = () => {
   const getZones = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.Zones.allDocs({ include_docs: true });
+      const result = await dbContext.zones.allDocs({ include_docs: true });
       // const vehiculos = response.map((v: any) => v.content);
       if (result.rows.length) {
         const documents: Zones[] = result.rows.map(
@@ -39,7 +39,7 @@ export const useZones = () => {
   const createZone = async (newZone: Zones) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.Zones.post(newZone);
+      const response = await dbContext.zones.post(newZone);
       setIsLoading(false);
 
       if (response.ok) Swal.fire("Zona", "Zona agregada.", "success");
@@ -56,7 +56,7 @@ export const useZones = () => {
   const updateZone = async (updateZone: Zones) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.Zones.put(updateZone);
+      const response = await dbContext.zones.put(updateZone);
 
       if (response.ok) {
         Swal.fire("Zona", "Actualizada.", "success");
@@ -75,7 +75,7 @@ export const useZones = () => {
   const removeZone = async (ZoneId: string, removeZone: string) => {
 
     try {
-      const response = await dbContext.Zones.remove(ZoneId, removeZone);
+      const response = await dbContext.zones.remove(ZoneId, removeZone);
       setIsLoading(false);
 
       if (response.ok)

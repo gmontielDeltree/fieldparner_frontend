@@ -16,7 +16,7 @@ export class ContractorRepository
   private _businnes: Business[];
 
   constructor() {
-    super(dbContext.SocialEntities);
+    super(dbContext.socialEntities);
   }
 
   async getAll() {

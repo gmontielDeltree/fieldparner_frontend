@@ -4,31 +4,23 @@ import { FormControl, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, 
 import { BusinessItem } from '../../interfaces/socialEntity';
 import { getShortDate } from '../../helpers/dates';
 
-//TODO: CONTRATO / salidaCampoId chequear con campo de primera pantalla?
+
 
 export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
   formValues,
-  companies,
-  categories,
-  fields,
   providers,
   handleInputChange,
   handleSelectChange
 }) => {
 
   const [selectedBuyer, setSelectedBuyer] = useState<BusinessItem | null>(null);
-  const [selectedCupo, setSelectedCupo] = useState<BusinessItem | null>(null)
 
   const onChangeComprador = (e: SelectChangeEvent) => {
-    const value = e.target.value;
-    const foundBuyer = providers.find(x => x.cuit === value);
-
-    if (foundBuyer)
-      setSelectedBuyer(foundBuyer);
-
+    const cuit = e.target.value;
+    const foundBuyer = providers?.find(x => x.cuit === cuit);
+    if (foundBuyer) setSelectedBuyer(foundBuyer);
     handleSelectChange(e);
   }
-
 
   return (
     <Grid container spacing={1}>
@@ -45,7 +37,7 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
           >
             {providers?.map((c) => (
               <MenuItem key={c._id} value={c.cuit}>
-                {c.razonSocial || c.nombreCompleto}
+                {c.razonSocial}
               </MenuItem>
             ))}
           </Select>
@@ -80,14 +72,14 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
           <InputLabel id="cuit-cupo" >Razon Social que asigno Cupo</InputLabel>
           <Select
             labelId="cuit-cupo"
-            name="cuitCupo"
-            value={formValues.cuitCupo}
+            name="cuitAsignadorCupo"
+            value={formValues.cuitAsignadorCupo}
             label="Razon Social que asigno Cupo"
             onChange={handleSelectChange}
           >
             {providers?.map((c) => (
               <MenuItem key={c._id} value={c.cuit}>
-                {c.razonSocial || c.nombreCompleto}
+                {c.razonSocial}
               </MenuItem>
             ))}
           </Select>

@@ -44,7 +44,7 @@ function Harvest({
 
   console.log("RENDER HARVEST", lotDoc);
 
-  const db = dbContext.Fields;
+  const db = dbContext.fields;
 
   useEffect(() => {
     const fetchExecution = async () => {

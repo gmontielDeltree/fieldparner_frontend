@@ -33,7 +33,7 @@ const StyledDropzone = styled("div")(({ theme }) => ({
 
 function AttachmentsForm({ formData, setFormData }) {
   const [file, setFile] = useState(null);
-  const db = dbContext.Fields;
+  const db = dbContext.fields;
   const onDrop = useCallback(
     async (acceptedFiles) => {
       const uploadedFile = acceptedFiles[0];

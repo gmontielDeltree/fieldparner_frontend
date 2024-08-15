@@ -14,7 +14,7 @@ import xlstempalte from "./templates/InformeCampanas.xlsx";
 import { pdf } from "@react-pdf/renderer";
 import { InformePorCultivoPDF } from "./pdfReports/informePorCultivo";
 
-const db = dbContext.Fields as unknown as PouchDB.Database;
+const db = dbContext.fields as unknown as PouchDB.Database;
 
 const downloadBlob = (blob: any, name = "file.txt") => {
   // Convert your blob into a Blob URL (a special url that points to an object in the browser's memory)

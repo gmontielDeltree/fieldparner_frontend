@@ -24,7 +24,7 @@ const {t} = useTranslation();
     }
 
     try {
-      const response = await dbContext.OriginsDestinations.post(newSOriginDestinations);
+      const response = await dbContext.originsDestinations.post(newSOriginDestinations);
 
       setIsLoading(false);
       if (response.ok)
@@ -44,7 +44,7 @@ const {t} = useTranslation();
   const getOriginDestinations = async () => {
     setIsLoading(true);
     try {
-      const response = await dbContext.OriginsDestinations.allDocs({ include_docs: true });
+      const response = await dbContext.originsDestinations.allDocs({ include_docs: true });
 
       setIsLoading(false);
 
@@ -73,7 +73,7 @@ const {t} = useTranslation();
     }
 
     try {
-      const response = await dbContext.OriginsDestinations.put(updateOriginDestinations);
+      const response = await dbContext.originsDestinations.put(updateOriginDestinations);
       setIsLoading(false);
 
       if (response.ok)
@@ -91,7 +91,7 @@ const {t} = useTranslation();
   const removeOriginDestinations = async (OriginDestinationsId: string, removeOriginDestinations: string) => {
 
     try {
-      const response = await dbContext.OriginsDestinations.remove(OriginDestinationsId, removeOriginDestinations);
+      const response = await dbContext.originsDestinations.remove(OriginDestinationsId, removeOriginDestinations);
       setIsLoading(false);
 
       if (response.ok)
@@ -110,7 +110,7 @@ const {t} = useTranslation();
     setIsLoading(true);
   
     try {
-      const response = await dbContext.OriginsDestinations.query('origins-destinations-search-view', {
+      const response = await dbContext.originsDestinations.query('origins-destinations-search-view', {
         startkey: searchTerm,
         endkey: searchTerm + '\uffff',
         include_docs: true,

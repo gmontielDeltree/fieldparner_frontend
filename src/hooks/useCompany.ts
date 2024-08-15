@@ -14,7 +14,7 @@ export const useCompany = () => {
         try {
             if (!user) throw new Error("User not logged.");
 
-            const response = await dbContext.Companies.find({
+            const response = await dbContext.companies.find({
                 selector: { accountId: user.accountId }
             });
 

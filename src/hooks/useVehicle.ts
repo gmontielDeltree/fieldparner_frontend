@@ -12,7 +12,7 @@ export const useVehicle = () => {
   const getVehicles = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.Vehicles.allDocs({ include_docs: true });
+      const result = await dbContext.vehicles.allDocs({ include_docs: true });
       if (result.rows.length) {
         const documents: Vehicle[] = result.rows.map(
           (row) => row.doc as Vehicle
@@ -31,7 +31,7 @@ export const useVehicle = () => {
   const getTypeVehicles = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.TypeVehicles.allDocs({
+      const result = await dbContext.typeVehicles.allDocs({
         include_docs: true
       });
       // const vehiculos = response.map((v: any) => v.content);
@@ -53,7 +53,7 @@ export const useVehicle = () => {
   const createVehicleType = async (newVehicleType: TypeVehicle) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.TypeVehicles.post(newVehicleType);
+      const response = await dbContext.typeVehicles.post(newVehicleType);
       setIsLoading(false);
 
       if (response.ok)
@@ -70,7 +70,7 @@ export const useVehicle = () => {
   const createVehicle = async (newVehicle: Vehicle) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.Vehicles.post(newVehicle);
+      const response = await dbContext.vehicles.post(newVehicle);
       setIsLoading(false);
 
       if (response.ok) Swal.fire("Vehiculo", "Vehiculo agregado.", "success");
@@ -86,7 +86,7 @@ export const useVehicle = () => {
   const updateVehicle = async (updateVehicle: Vehicle) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.Vehicles.put(updateVehicle);
+      const response = await dbContext.vehicles.put(updateVehicle);
 
       if (response.ok) {
         Swal.fire("Vehiculo", "Actualizado.", "success");
@@ -104,7 +104,7 @@ export const useVehicle = () => {
   const deleteVehicle = async (id: string, rev: string) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.Vehicles.remove(id, rev);
+      const response = await dbContext.vehicles.remove(id, rev);
       if (response.ok) {
         Swal.fire("Vehiculo", "Vehiculo eliminado.", "success");
         getVehicles(); // Actualizar la lista de vehículos

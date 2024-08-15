@@ -1,68 +1,70 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { TransportDocumentFormProps } from './type';
-import { Box, FormControl, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Box, FormControl, Grid, InputAdornment, ListItemText, styled, TextField, Typography } from '@mui/material';
+import { Loading } from '../Loading';
+import { getLocalityAndStateByZipCode } from '../../utils/getDataZipCode';
+import { CountryCode, ItemZipCode } from '../../types';
 
-//TODO: CONTRATO / salidaCampoId chequear con campo de primera pantalla?
+
+const TextFieldGray = styled(TextField)(() => ({
+  backgroundColor: "#f5f5f5",
+  fontWeight: 600
+}));
 
 export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
   formValues,
-  companies,
-  categories,
-  fields,
-  providers,
+  selectedFieldOutput,
   handleInputChange,
-  handleSelectChange
 }) => {
+
+  const [loadingZipCode, setLoadingZipCode] = useState(false);
+  const [dataZipCode, setDataZipCode] = useState<ItemZipCode | null>(null);
+
+  const getLocalityAndState = async (zipCode: string) => {
+    setLoadingZipCode(true);
+    try {
+      const localityAndStates = await getLocalityAndStateByZipCode(
+        CountryCode.ARGENTINA,
+        zipCode
+      );
+
+      if (localityAndStates?.length) setDataZipCode(localityAndStates[0]);
+
+      setLoadingZipCode(false);
+    } catch (error) {
+      setLoadingZipCode(false);
+      console.log(error);
+    }
+  };
 
 
   return (
     <Box className="grano-transportado-form">
+      <Loading loading={loadingZipCode} />
       <Grid container spacing={1}>
         <Grid item xs={12} sm={3}>
-          <FormControl key="campaign-select" fullWidth>
-            <InputLabel id="campaign" required>Campaña</InputLabel>
-            <Select
-              labelId="campaign"
-              name="campaniaId"
-              required
-              value={formValues.campaniaId}
-              label="Campaña"
-              onChange={handleSelectChange}
-            >
-              {fields?.map((c) => (
-                <MenuItem key={c._id} value={c.campaignId}>
-                  {c.campaignId}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <TextFieldGray
+            variant='outlined'
+            label="Campaña"
+            value={selectedFieldOutput?.campaignId || "-"}
+            fullWidth
+          />
         </Grid>
         <Grid item xs={12} sm={2}>
-          <FormControl key="cultivo-select" fullWidth>
-            <InputLabel id="cultive" required>Cultivo</InputLabel>
-            <Select
-              labelId="cultive"
-              name="cultivoId"
-              required
-              value={formValues.cultivoId}
-              label="Cultivo"
-              onChange={handleSelectChange}
-            >
-              {fields?.map((c) => (
-                <MenuItem key={c._id} value={c.cropId}>
-                  {c.cultive}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <TextFieldGray
+            variant='outlined'
+            label="Cultivo"
+            value={selectedFieldOutput?.cultive || "-"}
+            fullWidth
+          />
         </Grid>
         <Grid item xs={12} sm={2}>
           <TextField
             variant="outlined"
             type="text"
             label="Contrato"
-            name="contratoId"
-            value={formValues.contratoId}
+            name="contrato"
+            value={formValues.contrato}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -71,23 +73,12 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
           />
         </Grid>
         <Grid item xs={12} sm={3}>
-          <FormControl key="exit-field-select" fullWidth>
-            <InputLabel id="salida" required>Salida de Campo</InputLabel>
-            <Select
-              labelId="salida"
-              name="salidaCampoId"
-              required
-              value={formValues.salidaCampoId}
-              label="Salida de Campo"
-              onChange={handleSelectChange}
-            >
-              {fields?.map((c) => (
-                <MenuItem key={c._id} value={c.campaignId}>
-                  {c.cultive}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <TextFieldGray
+            variant='outlined'
+            label="Salida de Campo"
+            value={selectedFieldOutput?.field?.nombre || "-"}
+            fullWidth
+          />
         </Grid>
         <Grid item xs={12} sm={2}>
           <FormControl fullWidth>
@@ -96,7 +87,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
-                  {213000}
+                  {selectedFieldOutput?.kgNet || "-"}
                 </Typography>}
             />
           </FormControl>
@@ -106,10 +97,14 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             variant="outlined"
             type="text"
             label="Codigo Postal"
-            name="cpGenerador"
+            name="cpSalidaCampo"
             required
-            value={formValues.cpGenerador}
+            value={formValues.cpSalidaCampo}
             onChange={handleInputChange}
+            onBlur={(e) => {
+              const zipCode = e.target.value;
+              zipCode && getLocalityAndState(zipCode)
+            }}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
             }}
@@ -123,7 +118,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
-                  -
+                  {dataZipCode ? dataZipCode.locality : "-"}
                 </Typography>}
             />
           </FormControl>
@@ -135,7 +130,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
-                  -
+                  {"-"}
                 </Typography>}
             />
           </FormControl>
@@ -147,14 +142,13 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
-                  -
+                  {dataZipCode ? dataZipCode.state : "-"}
                 </Typography>}
             />
           </FormControl>
         </Grid>
       </Grid>
       <Typography variant='h6' sx={{ my: 3 }}>La carga sera pesada en Destino*</Typography>
-
       <Grid container spacing={1}>
         <Grid item xs={12} sm={3}>
           <TextField

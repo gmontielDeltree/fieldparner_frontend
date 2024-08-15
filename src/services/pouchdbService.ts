@@ -47,115 +47,115 @@ const opts: PouchDB.Replication.SyncOptions = {
 };
 
 const dbNames = Object.freeze({
-  Vehicles: "vehicles",
-  Deposits: "deposits",
-  TypeVehicles: "type-vehicles",
-  ZipCodeARG: "zip-code-arg",
-  ZipCodePRY: "zip-code-pry",
-  Supplies: "supplies",
-  SocialEntities: "social-entities",
-  Categories: "categories",
-  StockMovements: "stock-movements",
-  StockByLots: "lots-stock",
-  ExitFields: "exit-fields",
-  Campaigns: "campaigns",
-  Fields: "fields",
-  OriginsDestinations: "origins-destinations",
-  Users: "users",
-  Numerators: "numerators",
-  WithdrawalOrders: "withdrawal-orders",
-  DepositSupplyOrder: "deposit-supply-order",
-  WithdrawalsByDepositSupply: "withdrawals-deposit-supply",
-  MovementsType: "movements-type",
-  Platform: "platform",
-  PlatformSupplies: "test-supplies",
-  Crops: "crops",
-  Zones: "zones",
-  Fieldpartner: "fieldpartner",
-  LaborsServices: "labors-services",
-  PurchaseOrder: "purchase-order",
-  DetailPurchaseOrder: "detail-purchase-order",
-  Countries: "countries",
-  MenuModules: "menu-modules",
-  ModulesUsers: "modules-users",
-  LicencesUse: "licences-use",
-  TransportDocument: "transport-documents",
-  Companies: "companies",
+  vehicles: "vehicles",
+  deposits: "deposits",
+  typeVehicles: "type-vehicles",
+  zipCodeARG: "zip-code-arg",
+  zipCodePRY: "zip-code-pry",
+  supplies: "supplies",
+  socialEntities: "social-entities",
+  categories: "categories",
+  stockMovements: "stock-movements",
+  stockByLots: "lots-stock",
+  exitFields: "exit-fields",
+  campaigns: "campaigns",
+  fields: "fields",
+  originsDestinations: "origins-destinations",
+  users: "users",
+  numerators: "numerators",
+  withdrawalOrders: "withdrawal-orders",
+  depositSupplyOrder: "deposit-supply-order",
+  withdrawalsByDepositSupply: "withdrawals-deposit-supply",
+  movementsType: "movements-type",
+  platform: "platform",
+  platformSupplies: "test-supplies",
+  crops: "crops",
+  zones: "zones",
+  fieldpartner: "fieldpartner",
+  laborsServices: "labors-services",
+  purchaseOrder: "purchase-order",
+  detailPurchaseOrder: "detail-purchase-order",
+  countries: "countries",
+  menuModules: "menu-modules",
+  modulesUsers: "modules-users",
+  licencesUse: "licences-use",
+  transportDocument: "transport-documents",
+  companies: "companies",
 });
 
 export const dbContext = Object.freeze({
-  Vehicles: new PouchDB<Vehicle>(dbNames.Vehicles),
-  TypeVehicles: new PouchDB(dbNames.TypeVehicles),
-  Deposits: new PouchDB<Deposit>(dbNames.Deposits),
-  ZipCodeARG: new PouchDB<ItemZipCode>(dbNames.ZipCodeARG),
-  ZipCodePRY: new PouchDB<ItemZipCode>(dbNames.ZipCodePRY),
-  Supplies: new PouchDB<Supply>(dbNames.Supplies),
-  SocialEntities: new PouchDB<Business>(dbNames.SocialEntities),
-  Categories: new PouchDB<Category>(dbNames.Categories),
-  StockMovements: new PouchDB<StockMovement>(dbNames.StockMovements),
-  StockByLots: new PouchDB<StockByLot>(dbNames.StockByLots),
-  ExitFields: new PouchDB<ExitField>(dbNames.ExitFields),
-  Campaigns: new PouchDB<Campaign>(dbNames.Campaigns),
-  Fields: new PouchDB<Field>(dbNames.Fields), //TODO: revisar db
-  OriginsDestinations: new PouchDB<OriginDestinations>(dbNames.OriginsDestinations),
-  Users: new PouchDB<UserByAccount>(dbNames.Users),
-  WithdrawalOrders: new PouchDB<WithdrawalOrder>(dbNames.WithdrawalOrders),
-  DepositSupplyOrder: new PouchDB<DepositSupplyOrder>(dbNames.DepositSupplyOrder),
-  WithdrawalsByDepositSupply: new PouchDB<WithdrawalsByDepositSupply>(dbNames.WithdrawalsByDepositSupply),
-  Numerators: new PouchDB<Numerator>(dbNames.Numerators),
-  MovementsType: new PouchDB<MovementType>(dbNames.MovementsType),
-  Platform: new PouchDB<any>(dbNames.Platform),
-  PlatformSupplies: new PouchDB<Supply>(`${dbNames.PlatformSupplies}`),
-  Crops: new PouchDB<Crops>(dbNames.Crops),
-  Zones: new PouchDB<Zones>(dbNames.Zones),
-  Fieldpartner: new PouchDB(dbNames.Fieldpartner),
-  LaborsServices: new PouchDB<LaborsServices>(dbNames.LaborsServices),
-  PurchaseOrder: new PouchDB<PurchaseOrder>(dbNames.PurchaseOrder),
-  DetailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.DetailPurchaseOrder),
-  Countries: new PouchDB<Country>(dbNames.Countries),
-  MenuModules: new PouchDB<MenuModules>(dbNames.MenuModules),
-  ModulesUsers: new PouchDB<ModulesUsers>(dbNames.ModulesUsers),
-  LicencesUse: new PouchDB<LicenceUse>(dbNames.LicencesUse),
-  TransportDocument: new PouchDB<TransportDocument>(dbNames.TransportDocument),
-  Companies: new PouchDB<Company>(dbNames.Companies),
+  vehicles: new PouchDB<Vehicle>(dbNames.vehicles),
+  typeVehicles: new PouchDB(dbNames.typeVehicles),
+  deposits: new PouchDB<Deposit>(dbNames.deposits),
+  zipCodeARG: new PouchDB<ItemZipCode>(dbNames.zipCodeARG),
+  zipCodePRY: new PouchDB<ItemZipCode>(dbNames.zipCodePRY),
+  supplies: new PouchDB<Supply>(dbNames.supplies),
+  socialEntities: new PouchDB<Business>(dbNames.socialEntities),
+  categories: new PouchDB<Category>(dbNames.categories),
+  stockMovements: new PouchDB<StockMovement>(dbNames.stockMovements),
+  stockByLots: new PouchDB<StockByLot>(dbNames.stockByLots),
+  exitFields: new PouchDB<ExitField>(dbNames.exitFields),
+  campaigns: new PouchDB<Campaign>(dbNames.campaigns),
+  fields: new PouchDB<Field>(dbNames.fields), //TODO: revisar db
+  originsDestinations: new PouchDB<OriginDestinations>(dbNames.originsDestinations),
+  users: new PouchDB<UserByAccount>(dbNames.users),
+  withdrawalOrders: new PouchDB<WithdrawalOrder>(dbNames.withdrawalOrders),
+  depositSupplyOrder: new PouchDB<DepositSupplyOrder>(dbNames.depositSupplyOrder),
+  withdrawalsByDepositSupply: new PouchDB<WithdrawalsByDepositSupply>(dbNames.withdrawalsByDepositSupply),
+  numerators: new PouchDB<Numerator>(dbNames.numerators),
+  movementsType: new PouchDB<MovementType>(dbNames.movementsType),
+  platform: new PouchDB<any>(dbNames.platform),
+  platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
+  crops: new PouchDB<Crops>(dbNames.crops),
+  zones: new PouchDB<Zones>(dbNames.zones),
+  fieldpartner: new PouchDB(dbNames.fieldpartner),
+  laborsServices: new PouchDB<LaborsServices>(dbNames.laborsServices),
+  purchaseOrder: new PouchDB<PurchaseOrder>(dbNames.purchaseOrder),
+  detailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.detailPurchaseOrder),
+  countries: new PouchDB<Country>(dbNames.countries),
+  menuModules: new PouchDB<MenuModules>(dbNames.menuModules),
+  modulesUsers: new PouchDB<ModulesUsers>(dbNames.modulesUsers),
+  licencesUse: new PouchDB<LicenceUse>(dbNames.licencesUse),
+  transportDocument: new PouchDB<TransportDocument>(dbNames.transportDocument),
+  companies: new PouchDB<Company>(dbNames.companies),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
 // para no sincronizar todos los docs the TODOS los usuarios (accountId's)
 
-// dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
-// dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
-// dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
-// dbContext.zipCodeARG.sync(`${remoteCouchDBUrl}${dbNames.zipCodeARG}`, opts);
-// dbContext.zipCodePRY.sync(`${remoteCouchDBUrl}${dbNames.zipCodePRY}`, opts);
-// dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, opts);
-// dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, opts);
-// dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, opts);
-// dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, opts);
-// dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, opts);
-// dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
-// dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
-// dbContext.campaigns.sync(`${remoteCouchDBUrl}${dbNames.campaigns}`, opts);
-// dbContext.users.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
-// dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
-// dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`, opts);
-// dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`, opts);
-// dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`, opts);
-// dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`, opts);
-// dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`, opts);
-// dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
-// dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
-// dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
-// dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
-// dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, opts);
-// dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
-// dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
-// dbContext.countries.sync(`${remoteCouchDBUrl}${dbNames.countries}`, opts);
-// dbContext.menuModules.sync(`${remoteCouchDBUrl}${dbNames.menuModules}`, opts);
-// dbContext.modulesUsers.sync(`${remoteCouchDBUrl}${dbNames.modulesUsers}`, opts);
-// dbContext.licencesUse.sync(`${remoteCouchDBUrl}${dbNames.licencesUse}`, opts);
-dbContext.TransportDocument.sync(`${remoteCouchDBUrl}${dbNames.TransportDocument}`, opts);
-dbContext.Companies.sync(`${remoteCouchDBUrl}${dbNames.Companies}`, opts);
+dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
+dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
+dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
+dbContext.zipCodeARG.sync(`${remoteCouchDBUrl}${dbNames.zipCodeARG}`, opts);
+dbContext.zipCodePRY.sync(`${remoteCouchDBUrl}${dbNames.zipCodePRY}`, opts);
+dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, opts);
+dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, opts);
+dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, opts);
+dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, opts);
+dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, opts);
+dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
+dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
+dbContext.campaigns.sync(`${remoteCouchDBUrl}${dbNames.campaigns}`, opts);
+dbContext.users.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
+dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
+dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`, opts);
+dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`, opts);
+dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`, opts);
+dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`, opts);
+dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`, opts);
+dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
+dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
+dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
+dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
+dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, opts);
+dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
+dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
+dbContext.countries.sync(`${remoteCouchDBUrl}${dbNames.countries}`, opts);
+dbContext.menuModules.sync(`${remoteCouchDBUrl}${dbNames.menuModules}`, opts);
+dbContext.modulesUsers.sync(`${remoteCouchDBUrl}${dbNames.modulesUsers}`, opts);
+dbContext.licencesUse.sync(`${remoteCouchDBUrl}${dbNames.licencesUse}`, opts);
+dbContext.transportDocument.sync(`${remoteCouchDBUrl}${dbNames.transportDocument}`, opts);
+dbContext.companies.sync(`${remoteCouchDBUrl}${dbNames.companies}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
@@ -163,12 +163,12 @@ export const getLocalityAndStateByZipCode = async (country: string, zipCode: str
     let result;
     switch (country) {
       case CountryCode.ARGENTINA:
-        result = await dbContext.ZipCodeARG.find({
+        result = await dbContext.zipCodeARG.find({
           selector: { "CP": zipCode },
         });
         return result.docs;
       case CountryCode.PARAGUAY:
-        result = await dbContext.ZipCodePRY.find({
+        result = await dbContext.zipCodePRY.find({
           selector: { "CP": zipCode },
         });
         return result.docs;

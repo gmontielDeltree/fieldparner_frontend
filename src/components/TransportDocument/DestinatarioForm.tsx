@@ -2,7 +2,10 @@ import React, { ChangeEvent, useState } from 'react'
 import { TransportDocumentFormProps } from './type';
 import { Checkbox, FormControl, FormControlLabel, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { BusinessItem } from '../../interfaces/socialEntity';
-import { getShortDate } from '../../helpers/dates';
+import { CountryCode, ItemZipCode } from '../../types';
+import { getLocalityAndStateByZipCode } from '../../utils/getDataZipCode';
+import { Loading } from '../Loading';
+
 
 interface DestinatarioFormProps {
   handleCheckboxChange: (e: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
@@ -11,9 +14,6 @@ interface DestinatarioFormProps {
 
 export const DestinatarioForm: React.FC<TransportDocumentFormProps & DestinatarioFormProps> = ({
   formValues,
-  companies,
-  categories,
-  fields,
   providers,
   handleInputChange,
   handleSelectChange,
@@ -22,13 +22,13 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
 }) => {
 
   const [selectedDestinatario, setSelectedDestinatario] = useState<BusinessItem | null>(null);
+  const [loadingZipCode, setLoadingZipCode] = useState(false);
+  const [dataZipCode, setDataZipCode] = useState<ItemZipCode | null>(null);
 
   const onChangeDestinatario = (e: SelectChangeEvent) => {
-    const value = e.target.value;
-    const foundDest = providers?.find(x => x.cuit === value);
-    if (foundDest)
-      setSelectedDestinatario(foundDest);
-
+    const cuit = e.target.value;
+    const foundDest = providers?.find(x => x.cuit === cuit);
+    if (foundDest) setSelectedDestinatario(foundDest);
     handleSelectChange(e);
   }
 
@@ -41,9 +41,27 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
     handleSelectChange(e);
   }
 
+  const getLocalityAndState = async (zipCode: string) => {
+    setLoadingZipCode(true);
+    try {
+      const localityAndStates = await getLocalityAndStateByZipCode(
+        CountryCode.ARGENTINA,
+        zipCode
+      );
+
+      if (localityAndStates?.length) setDataZipCode(localityAndStates[0]);
+
+      setLoadingZipCode(false);
+    } catch (error) {
+      setLoadingZipCode(false);
+      console.log(error);
+    }
+  };
+
 
   return (
     <Grid container spacing={1}>
+      <Loading loading={loadingZipCode} />
       <Grid item xs={12} sm={4}>
         <FormControl key="destinatario-select" fullWidth>
           <InputLabel id="destinatario" required>Destinatario</InputLabel>
@@ -57,7 +75,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           >
             {providers?.map((c) => (
               <MenuItem key={c._id} value={c.cuit}>
-                {c.razonSocial || c.nombreCompleto}
+                {c.razonSocial}
               </MenuItem>
             ))}
           </Select>
@@ -142,7 +160,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           >
             {providers?.map((c) => (
               <MenuItem key={c._id} value={c.cuit}>
-                {c.razonSocial || c.nombreCompleto}
+                {c.razonSocial}
               </MenuItem>
             ))}
           </Select>
@@ -179,10 +197,14 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           variant="outlined"
           type="text"
           label="Codigo Postal"
-          name="cpGenerador"
+          name="cpDestino"
           required
-          value={formValues.cpGenerador}
+          value={formValues.cpDestino}
           onChange={handleInputChange}
+          onBlur={(e) => {
+            const zipCode = e.target.value;
+            zipCode && getLocalityAndState(zipCode)
+          }}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
@@ -196,7 +218,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                -
+                {dataZipCode ? dataZipCode.locality : "-"}
               </Typography>}
           />
         </FormControl>
@@ -220,7 +242,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                -
+                {dataZipCode ? dataZipCode.state : "-"}
               </Typography>}
           />
         </FormControl>

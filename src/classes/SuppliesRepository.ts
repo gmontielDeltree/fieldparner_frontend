@@ -19,9 +19,9 @@ export class SuppliesRepository
   private __platformSuppliesRepo;
 
   constructor() {
-    super(dbContext.Supplies);
+    super(dbContext.supplies);
 
-    this.__platformSuppliesRepo = new BaseDocRepository(dbContext.PlatformSupplies)
+    this.__platformSuppliesRepo = new BaseDocRepository(dbContext.platformSupplies)
   }
 
   async getAll() {

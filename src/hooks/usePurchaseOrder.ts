@@ -24,11 +24,11 @@ export const userPurchaseOrder = () => {
             if (!user) throw new Error("User not found.");
 
             const response = await Promise.all([
-                dbContext.PurchaseOrder.find({
+                dbContext.purchaseOrder.find({
                     selector: { "accountId": user.accountId }
                 }),
-                dbContext.DetailPurchaseOrder.allDocs({ include_docs: true }),
-                dbContext.Supplies.find({
+                dbContext.detailPurchaseOrder.allDocs({ include_docs: true }),
+                dbContext.supplies.find({
                     selector: { "accountId": user.accountId }
                 })
             ]);
@@ -64,15 +64,15 @@ export const userPurchaseOrder = () => {
             if (!user) throw new Error("User not found.");
 
             const responseAll = await Promise.all([
-                dbContext.PurchaseOrder.find({
+                dbContext.purchaseOrder.find({
                     selector: {
                         "$and": [{ "accountId": user.accountId }, { "nroOrder": order }],
                     }
                 }),
-                dbContext.DetailPurchaseOrder.find({
+                dbContext.detailPurchaseOrder.find({
                     selector: { "nroOrder": order }
                 }),
-                dbContext.Supplies.find({
+                dbContext.supplies.find({
                     selector: { "accountId": user.accountId }
                 })
             ]);
@@ -125,8 +125,8 @@ export const userPurchaseOrder = () => {
             }
             let detailsWithNro = details.map(d => ({ ...d, nroOrder: newNroOrder.toString() }));
             const response = await Promise.all([
-                dbContext.PurchaseOrder.post(newPurchaseOrder),
-                dbContext.DetailPurchaseOrder.bulkDocs(detailsWithNro),
+                dbContext.purchaseOrder.post(newPurchaseOrder),
+                dbContext.detailPurchaseOrder.bulkDocs(detailsWithNro),
                 putLastNumerator(lastNumerator)
             ]);
             if (response) {
@@ -147,8 +147,8 @@ export const userPurchaseOrder = () => {
         try {
             let detailsWithNro = details.map(d => ({ ...d, nroOrder: updatePurchadeOrder.nroOrder }));
             const response = await Promise.all([
-                dbContext.PurchaseOrder.put(updatePurchadeOrder),
-                dbContext.DetailPurchaseOrder.bulkDocs(detailsWithNro),
+                dbContext.purchaseOrder.put(updatePurchadeOrder),
+                dbContext.detailPurchaseOrder.bulkDocs(detailsWithNro),
             ]);
             if (response) {
                 Swal.fire("Orden de Compra", `Orden de Compran  ${updatePurchadeOrder.nroOrder} actualizada`, "success");

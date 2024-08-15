@@ -9,9 +9,11 @@ export interface TransportDocumentFormProps {
     formValues: TransportDocument;
     companies?: Company[];
     categories?: Category[];
-    fields?: ExitFieldItem[];
+    exitFields?: ExitFieldItem[];
     providers?: BusinessItem[];
     vehicles?: Vehicle[];
+    selectedFieldOutput?: ExitFieldItem | null;
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
+    handleFormValueChange?: (key: string, value: string) => void;
 }

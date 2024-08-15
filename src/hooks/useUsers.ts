@@ -130,7 +130,7 @@ export const useUser = () => {
 
     try {
       // Obtener el usuario actual de la base de datos
-      const currentUser = await dbContext.Users.get(updateUsers.password);
+      const currentUser = await dbContext.users.get(updateUsers.password);
       if (!currentUser) {
         setIsLoading(false);
         Swal.fire('Error', 'Usuario no encontrado', 'error');
@@ -145,7 +145,7 @@ export const useUser = () => {
       }
 
       // Actualizar la contraseña
-      const response = await dbContext.Users.put(updateUsers);
+      const response = await dbContext.users.put(updateUsers);
       setIsLoading(false);
 
       if (response.ok)
@@ -163,7 +163,7 @@ export const useUser = () => {
   const removeUsers = async (UsersId: string, removeUsers: string) => {
 
     try {
-      const response = await dbContext.Users.remove(UsersId, removeUsers);
+      const response = await dbContext.users.remove(UsersId, removeUsers);
       setIsLoading(false);
 
       if (response.ok)
@@ -182,7 +182,7 @@ export const useUser = () => {
     setIsLoading(true);
 
     try {
-      const response = await dbContext.Users.query('users-search-view', {
+      const response = await dbContext.users.query('users-search-view', {
         startkey: searchTerm,
         endkey: searchTerm + '\uffff',
         include_docs: true,
