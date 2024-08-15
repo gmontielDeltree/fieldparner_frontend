@@ -1,11 +1,9 @@
 import Swal from "sweetalert2";
-// import { useNavigate } from "react-router-dom";
-import { TypeVehicle, Vehicle } from "@types";
 import { useState } from "react";
+import { TypeVehicle, Vehicle } from "@types";
 import { dbContext } from "../services";
 
 export const useVehicle = () => {
-  // const navigate = useNavigate();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [vehicleTypes, setVehicleTypes] = useState<TypeVehicle[]>([]);
   const [error, setError] = useState({});
@@ -15,14 +13,12 @@ export const useVehicle = () => {
     setIsLoading(true);
     try {
       const result = await dbContext.Vehicles.allDocs({ include_docs: true });
-      // const vehiculos = response.map((v: any) => v.content);
       if (result.rows.length) {
         const documents: Vehicle[] = result.rows.map(
           (row) => row.doc as Vehicle
         );
         setVehicles(documents);
       }
-
       setIsLoading(false);
     } catch (error) {
       console.log(error);
@@ -45,7 +41,6 @@ export const useVehicle = () => {
         );
         setVehicleTypes(documents);
       }
-
       setIsLoading(false);
     } catch (error) {
       console.log(error);
@@ -106,6 +101,25 @@ export const useVehicle = () => {
     }
   };
 
+  const deleteVehicle = async (id: string, rev: string) => {
+    setIsLoading(true);
+    try {
+      const response = await dbContext.Vehicles.remove(id, rev);
+      if (response.ok) {
+        Swal.fire("Vehiculo", "Vehiculo eliminado.", "success");
+        getVehicles(); // Actualizar la lista de vehículos
+      } else {
+        Swal.fire("Error", "No se pudo eliminar el vehiculo.", "error");
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      Swal.fire("Error", "Ocurrio un error inesperado.", "error");
+      setIsLoading(false);
+      if (error) setError(error);
+    }
+  };
+
   return {
     //* Props
     vehicles,
@@ -113,11 +127,12 @@ export const useVehicle = () => {
     error,
     isLoading,
 
-    //*Methods
+    //* Methods
     getVehicles,
     getTypeVehicles,
     createVehicle,
     createVehicleType,
-    updateVehicle
+    updateVehicle,
+    deleteVehicle
   };
 };

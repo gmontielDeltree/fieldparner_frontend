@@ -740,8 +740,8 @@ export enum EnumStatusUser {
 }
 
 export enum EnumTipoFlete {
-  PAGO =  "Pago",
-  APAGAR = "A Pagar",
+  PAGO =  "Flete Pago",
+  APAGAR = "Flete a Pagar",
 }
 
 export enum EnumEnvoltura {

@@ -1,4 +1,4 @@
-import { Category, ExitField, ExitFieldItem, Field } from "@types";
+import { Category, ExitFieldItem, Vehicle } from "@types";
 import { Company } from "../../interfaces/company";
 import { TransportDocument } from "../../interfaces/transportDocument";
 import { BusinessItem } from "../../interfaces/socialEntity";
@@ -7,10 +7,11 @@ import { SelectChangeEvent } from "@mui/material";
 
 export interface TransportDocumentFormProps {
     formValues: TransportDocument;
-    companies: Company[];
-    categories: Category[];
-    fields: ExitFieldItem[];
-    providers: BusinessItem[];
+    companies?: Company[];
+    categories?: Category[];
+    fields?: ExitFieldItem[];
+    providers?: BusinessItem[];
+    vehicles?: Vehicle[];
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }

@@ -7,8 +7,9 @@ import { useAppDispatch, useBusiness, useCategory, useCompany, useCrops, useExit
 import { TransportDocument } from '../../interfaces/transportDocument';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { GranoTransportadoForm, RemitenteForm } from '../../components/TransportDocument';
+import { ComercioGranoForm, DestinatarioForm, GranoTransportadoForm, RemitenteForm, TransportistaForm } from '../../components/TransportDocument';
 import { getShortDate } from '../../helpers/dates';
+import { EnumTipoFlete, TipoEntidad } from '../../types';
 
 
 const steps = ["Remitente", "Granos Transportados", "Comercio Granos", "Destinatario", "Transportista"];
@@ -51,7 +52,7 @@ const initialForm: TransportDocument = {
   fechaCupo: "",
   cuitDestinatario: "",
   esCampo: false,
-  campoDestinatarios: "",
+  campoDestinatario: "",
   loteDestinatario: "",
   cuitDestino: "",
   domicilioDestino: "",
@@ -61,12 +62,15 @@ const initialForm: TransportDocument = {
   cuitTransportista: "",
   razonSocialTransportista: "",
   cuitChofer: "",
+  vehiculoIdChasis: "",
+  vehiculoIdAcoplado1: "",
+  vehiculoIdAcoplado2: "",
   razonSocialChofer: "",
   dominio1: "",
   dominio2: "",
   dominio3: "",
   kmARecorrer: 0,
-  tipoFlete: "",
+  tipoFlete: EnumTipoFlete.APAGAR,
   tarifaRef: 0,
   tarifaTT: 0,
   calidadEnvoltura: "",
@@ -132,7 +136,7 @@ export const NewTransportDocument: React.FC = () => {
               companies={companies}
               categories={categories}
               fields={exitFields}
-              providers={socialEntities}
+              providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange} />
           );
@@ -143,21 +147,45 @@ export const NewTransportDocument: React.FC = () => {
               companies={companies}
               categories={categories}
               fields={exitFields}
-              providers={socialEntities}
+              providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange} />
           );
         case 2:
           return (
-            <></>
+            <ComercioGranoForm
+              formValues={formulario}
+              companies={companies}
+              categories={categories}
+              fields={exitFields}
+              providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
+              handleInputChange={handleInputChange}
+              handleSelectChange={handleSelectChange} />
           );
         case 3:
           return (
-            <></>
+            <DestinatarioForm
+              formValues={formulario}
+              companies={companies}
+              categories={categories}
+              fields={exitFields}
+              providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
+              handleInputChange={handleInputChange}
+              handleSelectChange={handleSelectChange}
+              handleCheckboxChange={handleCheckboxChange}
+              handleFormValueChange={handleFormValueChange} />
           );
         case 4:
           return (
-            <></>
+            <TransportistaForm
+              formValues={formulario}
+              vehicles={vehicles}
+              fields={exitFields}
+              providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
+              handleInputChange={handleInputChange}
+              handleSelectChange={handleSelectChange}
+              handleCheckboxChange={handleCheckboxChange}
+              handleFormValueChange={handleFormValueChange} />
           );
         default:
           throw new Error("Unknown step");

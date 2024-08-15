@@ -39,7 +39,10 @@ export interface TransportDocument extends Document {
     fechaCupo: string;
     cuitDestinatario: string;
     esCampo: boolean;
-    campoDestinatarios: string;
+    campoDestinatario: string;
+    vehiculoIdChasis: string;
+    vehiculoIdAcoplado1: string;
+    vehiculoIdAcoplado2: string;
     loteDestinatario: string;
     cuitDestino: string;
     domicilioDestino: string;
