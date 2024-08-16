@@ -309,14 +309,18 @@ export const NewStockMovementPage: React.FC = () => {
                   <Select
                     key="select-supply-tranferencia"
                     labelId="supply"
-                    // name="supply"
+                    MenuProps={{
+                      PaperProps: {
+                        style: { maxHeight: 248 }
+                      }
+                    }}
                     value={formulario.supplyId}
                     label={t("_supply")}
                     onChange={onChangeSupply}
                   >
                     {supplies.map((supply) => (
                       <MenuItem key={supply._id} value={supply._id}>
-                        {supply.name}
+                        {`${supply.name} - ${supply.type}`}
                       </MenuItem>
                     ))}
                   </Select>
@@ -484,13 +488,18 @@ export const NewStockMovementPage: React.FC = () => {
                   <Select
                     key="select-supply-movement"
                     labelId="supply"
+                    MenuProps={{
+                      PaperProps: {
+                        style: { maxHeight: 248 }
+                      }
+                    }}
                     value={formulario.supplyId}
                     label={t("_supply")}
                     onChange={onChangeSupply}
                   >
                     {supplies.map((supply) => (
                       <MenuItem key={supply._id} value={supply._id}>
-                        {supply.name}
+                        {`${supply.name} - ${supply.type}`}
                       </MenuItem>
                     ))}
                   </Select>

@@ -22,7 +22,14 @@ export const useExitField = () => {
                 dbContext.exitFields.find({
                     selector: { "accountId": user?.accountId }
                 }),
-                dbContext.supplies.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.supplies.find({
+                    selector: {
+                        $or: [
+                            { "accountId": user?.accountId },
+                            { "generico": true }
+                        ]
+                    },
+                }),
                 dbContext.socialEntities.find({ selector: { "accountId": user?.accountId } }),
                 dbContext.fields.find({ selector: { "accountId": user?.accountId } })
             ]);
@@ -60,7 +67,7 @@ export const useExitField = () => {
             const { accountId, id: userId } = user;
 
             if (!newExitField.deposit || !newExitField.supply) throw new Error();
-
+            debugger
             let stockOfSupply = await getStock(
                 newExitField.cropId,
                 newExitField.depositId,

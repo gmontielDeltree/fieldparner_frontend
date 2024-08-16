@@ -27,7 +27,14 @@ export const useStockMovement = () => {
             });
             const promisesResult = await Promise.all([
                 dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
-                dbContext.supplies.find({ selector: { "accountId": user?.accountId } })
+                dbContext.supplies.find({
+                    selector: {
+                        $or: [
+                            { "accountId": user?.accountId },
+                            { "generico": true }
+                        ]
+                    },
+                })
             ]);
             const deposits = promisesResult[0].docs;
             const supplies = promisesResult[1].docs;

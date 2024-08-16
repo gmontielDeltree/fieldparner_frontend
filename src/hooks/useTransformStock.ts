@@ -121,7 +121,14 @@ export const useTransformStock = () => {
                     }
                 }),
                 dbContext.deposits.find({ selector: { "accountId": user.accountId } }),
-                dbContext.supplies.find({ selector: { "accountId": user.accountId } })
+                dbContext.supplies.find({
+                    selector: {
+                        $or: [
+                            { "accountId": user?.accountId },
+                            { "generico": true }
+                        ]
+                    },
+                })
             ]);
             const transformMovements = promisesResult[0].docs;
             const deposits = promisesResult[1].docs;

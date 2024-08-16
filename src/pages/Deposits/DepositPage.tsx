@@ -82,7 +82,7 @@ export const DepositPage: React.FC = () => {
     isNegative: false,
     isVirtual: false,
     country: "",
-    owner: t("_owner"),
+    owner: "",
     province: "",
     accountId: "",
     locations: [locationDefault],
@@ -296,7 +296,7 @@ export const DepositPage: React.FC = () => {
               onInputChange={(_event, newInputValue) => {
                 handleFormValueChange("owner", newInputValue);
               }}
-              options={["Propio", ...optionsPropietario]}
+              options={[...optionsPropietario]}
               fullWidth
               renderInput={(params) => (
                 <TextField {...params} name="owner" label={t("_owner")} />
