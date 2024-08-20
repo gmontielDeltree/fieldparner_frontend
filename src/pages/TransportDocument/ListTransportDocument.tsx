@@ -1,28 +1,47 @@
-import { useNavigate } from "react-router-dom";
-import React, { useEffect } from "react";
-import { useAppDispatch, useTransportDocument } from "../../hooks";
+// import { useNavigate } from "react-router-dom";
+import React from "react";
+import { useTransportDocument } from "../../hooks";
 
 import {
     FireTruck as FireTruckIcon,
 } from "@mui/icons-material";
-// import { setDepositActive } from "../../redux/deposit";
-// import { useTranslation } from "react-i18next";
 import { GenericListPage } from "../GenericListPage";
 import { GridRenderCellParams } from "@mui/x-data-grid";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import {
     Edit as EditIcon,
     Delete as DeleteIcon,
+    PictureAsPdf as PictureAsPdfIcon,
 } from "@mui/icons-material";
-import { render } from "react-dom";
+import { urlImg } from "../../config";
 
+
+const renderPdfIcon = (params: GridRenderCellParams) => (
+    <Tooltip title="View PDF">
+        <IconButton
+            aria-label="View PDF"
+            onClick={() => {
+                console.log('PDF file:', params.row.fileName);
+                const url = `${urlImg}${params.row.fileName}`;
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('target', "_blank");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }}
+        >
+            <PictureAsPdfIcon />
+        </IconButton>
+    </Tooltip>
+);
 
 export const ListTransportDocument: React.FC = () => {
-    const navigate = useNavigate();
-    const dispatch = useAppDispatch();
+    // const navigate = useNavigate();
+    // const dispatch = useAppDispatch();
     // const { t } = useTranslation();
     const { transportDocumentsItem, getTransportDocuments } = useTransportDocument();
-    console.log('transportDocuments', transportDocumentsItem);
+
 
     const columns = [
         { field: "nroCartaPorte", headerName: "Nro Carta Porte", flex: 1 },
@@ -34,7 +53,7 @@ export const ListTransportDocument: React.FC = () => {
             renderCell: (params: GridRenderCellParams) => (
                 params.row?.company?.socialReason || "-"
             ),
-        }, 
+        },
         {
             field: "cultive",
             headerName: "Cultivo",
@@ -45,7 +64,12 @@ export const ListTransportDocument: React.FC = () => {
         },
         { field: "kgEstimado", headerName: "Kg Estimados", flex: 1 }, //salidaCampoId
         { field: "status", headerName: "Status", flex: 1 },
-        { field: "fileName", headerName: "PDF", flex: 1 },//TODO: renderizar un icono de pdf
+        {
+            field: "fileName",
+            headerName: "PDF",
+            flex: 1,
+            renderCell: renderPdfIcon
+        },
         {
             field: "actions",
             headerName: "",

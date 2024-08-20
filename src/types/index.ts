@@ -754,7 +754,7 @@ export enum EnumCalidad {
   CONDICIONAL = "Condicional",
 }
 
-export enum EnumStatusCartaPorte {
+export enum EnumTransportDocumentStatus {
   GENERADA = "Generada",
   ENTREGADA = "Entregada",
   EMITIDA = "Emitida" 

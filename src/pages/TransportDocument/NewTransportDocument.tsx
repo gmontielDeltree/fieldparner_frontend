@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ComercioGranoForm, DestinatarioForm, GranoTransportadoForm, RemitenteForm, TransportistaForm } from '../../components/TransportDocument';
 import { getShortDate } from '../../helpers/dates';
-import { EnumTipoFlete, ExitFieldItem, TipoEntidad } from '../../types';
+import { EnumTipoFlete, EnumTransportDocumentStatus, ExitFieldItem, TipoEntidad } from '../../types';
 import { uploadFile } from '../../helpers/fileUpload';
 import { uiFinishLoading, uiStartLoading } from '../../redux/ui';
 
@@ -75,7 +75,7 @@ const initialForm: TransportDocument = {
   fechaPartida: "",
   cuitPagadorFlete: "",
   cuitIntermediarioFlete: "",
-  status: "",
+  status: EnumTransportDocumentStatus.GENERADA,
   observaciones: "",
   fileName: "",
 };

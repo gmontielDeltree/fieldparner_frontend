@@ -4,7 +4,6 @@ import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, Grid, IconB
 import { getShortDate } from '../../helpers/dates';
 import { EnumCalidad, EnumEnvoltura, EnumTipoFlete } from '../../types';
 import { Cancel as CancelIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
-import uuid4 from 'uuid4';
 
 
 interface TransportistaFormProps {
@@ -37,7 +36,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
       let extensionPos = fileNameOriginal.lastIndexOf(".");
       let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
 
-      const newFileName = `carta-porte_${formValues.nroCartaPorte}.${fileType}`;
+      const newFileName = `carta-porte_${formValues.nroCartaPorte}${fileType}`;
       const renamedFile = new File([file], newFileName, { type: file.type });
       fileUpload(renamedFile);
       handleFormValueChange("fileName", newFileName);
