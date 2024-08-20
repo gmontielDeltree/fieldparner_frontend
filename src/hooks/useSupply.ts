@@ -326,24 +326,24 @@ export const useSupply = () => {
         }
     };
 
-    useEffect(() => {
+    // useEffect(() => {
         // Inicia la sincronización con la base de datos remota
-        const syncHandler = dbContext.supplies.sync(remoteCouchDBUrl, {
-            live: true,
-            retry: true
-        }).on('change', (info) => {
-            console.log('Sync change:', info);
-        }).on('paused', (err) => {
-            console.log('Sync paused:', err);
-        }).on('active', () => {
-            console.log('Sync resumed');
-        }).on('denied', (err) => {
-            console.error('Sync denied:', err);
-        }).on('complete', (info) => {
-            console.log('Sync complete:', info);
-        }).on('error', (err) => {
-            console.error('Sync error:', err);
-        });
+        // const syncHandler = dbContext.supplies.sync(remoteCouchDBUrl, {
+        //     live: true,
+        //     retry: true
+        // }).on('change', (info) => {
+        //     console.log('Sync change:', info);
+        // }).on('paused', (err) => {
+        //     console.log('Sync paused:', err);
+        // }).on('active', () => {
+        //     console.log('Sync resumed');
+        // }).on('denied', (err) => {
+        //     console.error('Sync denied:', err);
+        // }).on('complete', (info) => {
+        //     console.log('Sync complete:', info);
+        // }).on('error', (err) => {
+        //     console.error('Sync error:', err);
+        // });
 
         // return () => {
         //     // Detiene la sincronización y cierra la conexión a la base de datos cuando el componente se desmonte
@@ -356,14 +356,14 @@ export const useSupply = () => {
         //             console.error("Error al cerrar la conexión a la base de datos:", error);
         //         });
         // };
-    }, []);
+    // }, []);
 
-    useEffect(() => {
-        console.log("se monto useSupply")
-        return () => {
-            console.log("desmonte del hook useSupply")
-        }
-    }, [])
+    // useEffect(() => {
+    //     console.log("se monto useSupply")
+    //     return () => {
+    //         console.log("desmonte del hook useSupply")
+    //     }
+    // }, [])
 
 
     return {

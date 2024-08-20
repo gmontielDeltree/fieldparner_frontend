@@ -1,15 +1,17 @@
 import { useAppSelector } from "./useRedux";
 import { useState } from "react";
-import { TransportDocument } from "../interfaces/transportDocument";
+import { TransportDocument, TransportDocumentItem } from "../interfaces/transportDocument";
 import { dbContext } from "../services";
 import Swal from "sweetalert2";
+import { ExitField } from "../types";
+import { Company } from "../interfaces/company";
 
 
 export const useTransportDocument = () => {
 
     // const navigate = useNavigate();
     const { user } = useAppSelector((state) => state.auth);
-    const [transportDocuments, setTransportDocuments] = useState<TransportDocument[]>([]);
+    const [transportDocumentsItem, setTransportDocumentsItem] = useState<TransportDocumentItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
 
@@ -19,12 +21,32 @@ export const useTransportDocument = () => {
         try {
             if (!user) throw new Error("User not logged.");
 
-            const response = await dbContext.transportDocument.find({
-                selector: { accountId: user?.accountId }
-            });
+            const response = await Promise.all([
+                dbContext.transportDocument.find({
+                    selector: { accountId: user?.accountId }
+                }),
+                dbContext.exitFields.find({
+                    selector: { accountId: user?.accountId }
+                }),
+                dbContext.companies.find({
+                    selector: { accountId: user?.accountId }
+                })
+            ]);
+            const transportDocuments = response[0].docs.map(doc => doc as TransportDocument);
+            const exitFields = response[1].docs.map(doc => doc as ExitField);
+            const companies = response[2].docs.map(doc => doc as Company);
 
-            if (response.docs.length)
-                setTransportDocuments(response.docs.map(doc => doc as TransportDocument));
+            if (transportDocuments.length) {
+                setTransportDocumentsItem(transportDocuments.map(doc => {
+                    const exitField = exitFields.find(exit => exit._id === doc.salidaCampoId);
+                    const company = companies.find(company => company.trybutaryCode === doc.cuitCompania);
+                    return {
+                        ...doc,
+                        exitField,
+                        company
+                    }
+                }));
+            }
 
             setIsLoading(false);
         } catch (error) {
@@ -56,7 +78,7 @@ export const useTransportDocument = () => {
 
 
     return {
-        transportDocuments,
+        transportDocumentsItem,
         isLoading,
 
         getTransportDocuments,

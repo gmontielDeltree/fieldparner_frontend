@@ -1,116 +1,6 @@
-import { Document } from "@types";
+import { Document, ExitField } from "../types";
+import { Company } from "./company";
 
-
-/*
-----COMERCIO GRANO FORM 
-cuitComprador,
-cuitAsignadorCupo,
-nroCupo,
-fechaCupo,
-
------DESTINATARIO FORM
-domicilioDestino,
-cuitDestinatario
-esCampo,
-campoDestinatario,
-loteDestinatario,
-cuitDestino,
-domicilioDestino,
-cpDestino,
-
---- GRANO TRANSPORTADO FORM
-contrato,
-cpSalidaCampo,
-kgEstimado,
-kgBruto,
-kgTara,
-observaciones,
-
---- REMITENTE FORM
-nroCartaPorte,
-fechaEmision,
-fechaVencimiento,
-nroCTG,
-cuitCompania,
-categoriaEntidadId,
-salidaCampoId,
-nroOperadorONCCA,
-nroPlantaONCCA,
-cuitRemitenteComercialPrimario,
-cuitRemitenteComercialSecundario,
-cuitRemitenteComercialSecundario2,
-cuitMAT,
-cuitRepresentanteEntrega,
-cuitRepresentanteRecibidor,
-
----- TRANPORTISTA FORM
-cuitTransportista,
-cuitChofer,
-vehiculoIdChasis,
-vehiculoIdAcoplado1,
-vehiculoIdAcoplado2,
-kmARecorrer,
-tipoFlete,
-tarifaRef,
-tarifaTT,
-fechaPartida,
-calidadEnvoltura,
-calidad,
-cuitPagadorFlete,
-cuitIntermediarioFlete,
-
-
-DE ACA PARA BAJO
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
 export interface TransportDocument extends Document {
     accountId: string;
     licenceId: string;
@@ -173,4 +63,9 @@ export interface TransportDocument extends Document {
     observaciones: string;
     status: string;
     fileName: string;
+}
+
+export interface TransportDocumentItem extends TransportDocument {
+    exitField?: ExitField;
+    company?: Company
 }

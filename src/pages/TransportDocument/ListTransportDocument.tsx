@@ -1,69 +1,99 @@
 import { useNavigate } from "react-router-dom";
-import { ColumnProps, Deposit } from "../../types";
 import React, { useEffect } from "react";
-import { useAppDispatch, useDeposit, useForm } from "../../hooks";
+import { useAppDispatch, useTransportDocument } from "../../hooks";
+
 import {
-    DataTable,
-    ItemRow,
-    Loading,
-    SearchButton,
-    SearchInput,
-    TableCellStyled,
-    TemplateLayout,
-    TopbarCustom,
-} from "../../components";
-import {
-    Box,
-    Button,
-    Chip,
-    Container,
-    Grid,
-    IconButton,
-    Paper,
-    Tooltip,
-} from "@mui/material";
-import 'semantic-ui-css/semantic.min.css';
-import { Icon } from "semantic-ui-react";
-import {
-    Add as AddIcon,
-    Edit as EditIcon,
     FireTruck as FireTruckIcon,
-
 } from "@mui/icons-material";
-import { setDepositActive } from "../../redux/deposit";
-import { useTranslation } from "react-i18next";
+// import { setDepositActive } from "../../redux/deposit";
+// import { useTranslation } from "react-i18next";
 import { GenericListPage } from "../GenericListPage";
-
+import { GridRenderCellParams } from "@mui/x-data-grid";
+import { Box, IconButton, Tooltip } from "@mui/material";
+import {
+    Edit as EditIcon,
+    Delete as DeleteIcon,
+} from "@mui/icons-material";
+import { render } from "react-dom";
 
 
 export const ListTransportDocument: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const { t } = useTranslation();
+    // const { t } = useTranslation();
+    const { transportDocumentsItem, getTransportDocuments } = useTransportDocument();
+    console.log('transportDocuments', transportDocumentsItem);
+
     const columns = [
         { field: "nroCartaPorte", headerName: "Nro Carta Porte", flex: 1 },
-        { field: "fechaEmitida", headerName: "Fecha Emitida", flex: 1 },
-        { field: "razonSocial", headerName: "Razon Social", flex: 1 },
-        { field: "cultive", headerName: "Cultivo", flex: 1 },
-        { field: "kgEstimado", headerName: "Kg Estimados", flex: 1 },
+        { field: "fechaEmision", headerName: "Fecha Emitida", flex: 1 },
+        {
+            field: "razonSocial",
+            headerName: "Razon Social",
+            flex: 1,
+            renderCell: (params: GridRenderCellParams) => (
+                params.row?.company?.socialReason || "-"
+            ),
+        }, 
+        {
+            field: "cultive",
+            headerName: "Cultivo",
+            flex: 1,
+            renderCell: (params: GridRenderCellParams) => (
+                params.row?.exitField?.cultive || "-"
+            ),
+        },
+        { field: "kgEstimado", headerName: "Kg Estimados", flex: 1 }, //salidaCampoId
         { field: "status", headerName: "Status", flex: 1 },
-        { field: "archivo", headerName: "PDF", flex: 1 },
-        { field: "actions", headerName: "", flex: 1 },
+        { field: "fileName", headerName: "PDF", flex: 1 },//TODO: renderizar un icono de pdf
+        {
+            field: "actions",
+            headerName: "",
+            flex: 1,
+            sorteable: false,
+            renderCell: (params: GridRenderCellParams) => (
+                <Box display="flex" justifyContent="center">
+                    <Tooltip title="Edit">
+                        <IconButton
+                            aria-label="Edit"
+                            onClick={() => {
+                                console.log('param.row', params.row);
+                                // navigate(`/init/overview/supply/${params.row._id}`);
+                            }}
+                            sx={{
+                                transition: "transform 0.2s",
+                                "&:hover": { transform: "scale(1.2)" },
+                            }}
+                        >
+                            <EditIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                        <IconButton
+                            aria-label="Delete"
+                            onClick={() => console.log(params.row._id, params.row._rev)}
+                            sx={{
+                                transition: "transform 0.2s",
+                                "&:hover": { transform: "scale(1.2)" },
+                            }}
+                        >
+                            <DeleteIcon />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            ),
+        },
     ];
-
-    useEffect(() => {
-        // getDeposits();
-    }, []);
 
     return (
         <GenericListPage
             title="Carta de Porte (Argentina)"
             icon={<FireTruckIcon fontSize="large" sx={{ mr: 1 }} />}
-            data={[]}
+            data={transportDocumentsItem}
             columns={columns}
-            getData={() => []} //TODO: getTransportDocuments
+            getData={getTransportDocuments}
             deleteData={() => console.log("delete")}
-            setActiveItem={setDepositActive}
+            setActiveItem={(item) => console.log("setActiveItem", item)}
             newItemPath="/init/overview/transport-documents/new"
             editItemPath={(id) => `/init/overview/deposit/${id}`}
 

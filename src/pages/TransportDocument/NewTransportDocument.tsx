@@ -3,7 +3,7 @@
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Loading } from '../../components';
-import { useAppDispatch, useBusiness, useCategory, useCompany, useCrops, useExitField, useField, useForm, useVehicle } from '../../hooks';
+import { useAppDispatch, useAppSelector, useBusiness, useCategory, useCompany, useCrops, useExitField, useField, useForm, useTransportDocument, useVehicle } from '../../hooks';
 import { TransportDocument } from '../../interfaces/transportDocument';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -11,16 +11,17 @@ import { ComercioGranoForm, DestinatarioForm, GranoTransportadoForm, RemitenteFo
 import { getShortDate } from '../../helpers/dates';
 import { EnumTipoFlete, ExitFieldItem, TipoEntidad } from '../../types';
 import { uploadFile } from '../../helpers/fileUpload';
+import { uiFinishLoading, uiStartLoading } from '../../redux/ui';
 
 
 const steps = ["Remitente", "Granos Transportados", "Comercio Granos", "Destinatario", "Transportista"];
-const transportDocumentActive = null;
+
 const initialForm: TransportDocument = {
   accountId: "",
   licenceId: "",
   contractId: "",
   nroCartaPorte: "",
-  fechaEmision: getShortDate(false, "-"),
+  fechaEmision: getShortDate(true, "-"),
   fechaVencimiento: getShortDate(false, "-"),
   nroCTG: "",
   arancel: "",
@@ -82,6 +83,7 @@ const initialForm: TransportDocument = {
 export const NewTransportDocument: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { isLoading } = useAppSelector((state) => state.ui);
   const { businesses: socialEntities, getBusinesses } = useBusiness(); // Proveedores/Empleados
   const { companies, getCompanies } = useCompany(); //Compañia
   const { dataCrops: crops, getCrops } = useCrops(); // Cultivo
@@ -90,13 +92,14 @@ export const NewTransportDocument: React.FC = () => {
   const { fields, getFields } = useField(); // Campo
   const { exitFields, getExitFields } = useExitField();
   const { t } = useTranslation();
+  const { addTransportDocument } = useTransportDocument();
   const [selectedFieldOutput, setSelectedFieldOutput] = useState<ExitFieldItem | null>(null);
-  console.log('selectedFieldOutput', selectedFieldOutput)
+
   const [activeStep, setActiveStep] = useState(0);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const {
     formulario,
-    setFormulario,
+    // setFormulario,
     handleInputChange,
     handleSelectChange,
     handleCheckboxChange,
@@ -123,19 +126,22 @@ export const NewTransportDocument: React.FC = () => {
     navigate("/init/overview/transport-documents");
   };
 
-  const onClickNewTransportDocument = () => {
-    console.log(formulario);
+  const onClickNewTransportDocument = async () => {
+    try {
+      dispatch(uiStartLoading());
+      await addTransportDocument(formulario);
+      await handleUploadDocumentFile();
+      dispatch(uiFinishLoading());
+      reset();
+      navigate("/init/overview/transport-documents");
+    } catch (error) {
+      console.log('error', error);
+      dispatch(uiFinishLoading());
+    }
   }
 
   const onClickUpdateTransportDocument = () => {
     console.log(formulario);
-  }
-
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-    console.log(e.target);
-    
   }
 
   const changeSelectedExitField = (item: ExitFieldItem) => setSelectedFieldOutput(item);
@@ -243,7 +249,7 @@ export const NewTransportDocument: React.FC = () => {
   return (
 
     <Container maxWidth="lg" sx={{ ml: 0, borderRadius: "10px" }}>
-      <Loading loading={false} />
+      <Loading loading={isLoading} />
       <Paper
         variant="outlined"
         sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
@@ -259,7 +265,7 @@ export const NewTransportDocument: React.FC = () => {
           ))}
         </Stepper>
         <>
-          <form onSubmit={onSubmit}>
+          <form>
             {getStepContent(activeStep)}
             <Grid
               container
@@ -286,17 +292,17 @@ export const NewTransportDocument: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={3}>
                 <Button
-                  type='submit'
                   variant="contained"
+                  hidden={activeStep !== steps.length - 1}
                   color="success"
-                  // onClick={
-                  //   transportDocumentActive ? () => onClickUpdateTransportDocument() : () => onClickNewTransportDocument()
-                  // }
+                  onClick={
+                    formulario._id ? () => onClickUpdateTransportDocument() : () => onClickNewTransportDocument()
+                  }
                 >
-                  {!transportDocumentActive ? t("_add") : t("id_update")} {' '}
+                  {!formulario._id ? t("_add") : t("id_update")} {' '}
                 </Button>
               </Grid>
-              {transportDocumentActive && (
+              {/* {formulario._id && (
                 <Grid item xs={12} sm={3}>
                   <Button
                     variant="contained"
@@ -306,7 +312,7 @@ export const NewTransportDocument: React.FC = () => {
                     {t("icon_delete")}
                   </Button>
                 </Grid>
-              )}
+              )} */}
             </Grid>
           </form>
         </>

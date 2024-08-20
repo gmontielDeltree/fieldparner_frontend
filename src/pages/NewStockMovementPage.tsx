@@ -40,7 +40,7 @@ const initialForm: StockMovement = {
   typeMovement: TypeMovement.Ajustes,
   amount: 0,
   nroLot: "",
-  creationDate: new Date().toLocaleString(),
+  creationDate: getShortDate(),
   campaignId: "0",
   currency: "",
   depositId: "",
@@ -49,7 +49,7 @@ const initialForm: StockMovement = {
   dueDate: getShortDate(),
   hours: "",
   movement: Movement.Manual,
-  operationDate: getShortDate(),
+  operationDate: getShortDate(false, "-"),
   supplyId: "",
   totalValue: 0,
   voucher: "",
@@ -126,7 +126,7 @@ export const NewStockMovementPage: React.FC = () => {
 
   const onChangeSupply = ({ target }: SelectChangeEvent) => {
     const { value } = target;
-    // const supplySelected = JSON.parse(value) as Supply;
+    
     const supplySelected = supplies.find((supply) => supply._id === value);
     if (supplySelected && supplySelected._id) {
       setFormulario((prevState) => ({
@@ -692,13 +692,14 @@ export const NewStockMovementPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6} sm={4} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }} >
+              <Grid item xs={6} sm={4} sx={{ display: "flex", alignItems: "center", justifyContent: "start" }} >
                 <Button
                   component="label"
                   variant="contained"
-                  tabIndex={-1}
+                  // tabIndex={-1}
                   // autoCapitalize=""
                   startIcon={<CloudUploadIcon />}
+                // fullWidth
                 >
                   Upload
                   <Input
@@ -725,7 +726,10 @@ export const NewStockMovementPage: React.FC = () => {
                     </IconButton>
                   </>
                 ) :
-                  <Typography variant="body1" sx={{ margin: 10, display: "inline-block" }}>
+                  <Typography variant="body1" sx={{
+                    pl: 1,
+                    display: "inline-block"
+                  }}>
                     Ningún archivo seleccionado
                   </Typography>
                 }

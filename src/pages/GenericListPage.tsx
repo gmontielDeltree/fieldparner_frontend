@@ -36,7 +36,7 @@ interface GenericListPageProps<T> {
   editItemPath: (id: string) => string;
 }
 
-export const GenericListPage = <T extends { _id: string; _rev: string }>({
+export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
   title,
   icon,
   data,

@@ -65,9 +65,10 @@ export const useExitField = () => {
 
             if (!user) throw new Error("User not found");
             const { accountId, id: userId } = user;
-
+            newExitField.accountId = accountId;
+            
             if (!newExitField.deposit || !newExitField.supply) throw new Error();
-            debugger
+            
             let stockOfSupply = await getStock(
                 newExitField.cropId,
                 newExitField.depositId,
@@ -106,8 +107,7 @@ export const useExitField = () => {
             delete newExitField.supply;
             delete newExitField.deposit;
             delete newExitField.transport;
-            // delete newExitField.harvester;
-
+            
             const promisesAll = [
                 dbContext.exitFields.post(newExitField),
                 dbContext.stockMovements.post(newStockMovement),
@@ -123,7 +123,6 @@ export const useExitField = () => {
                 Swal.fire('Salida de Campo', 'Verificar campos.', 'error');
 
             setIsLoading(false);
-            // navigate('/init/overview/business');
         } catch (error) {
             console.log(error)
             Swal.fire('Ups', 'Ocurrio un error inesperado: ' + error, 'error');

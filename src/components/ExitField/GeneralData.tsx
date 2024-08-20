@@ -3,7 +3,7 @@ import {
     FolderOpen as FolderOpenIcon,
 } from '@mui/icons-material';
 import React, { ChangeEvent, useState } from 'react';
-import { Campaign, Crops, ExitField, Field, Lot } from '../../types';
+import { Campaign, ExitField, Field, Lot, Supply } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 //TODO: validar q descripcion mostrar del cultivo
 interface GeneralDataProps {
     formValues: ExitField;
-    crops: Crops[];
+    crops: Supply[];
     campaigns: Campaign[];
     listFields: Field[];
     setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;
@@ -29,7 +29,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
     handleSelectChange,
     setFormValues
 }) => {
-
+    console.log('crops', crops)
     const [fieldSelected, setFieldSelected] = useState<Field | null>(null);
     const [lotSelected, setLotSelected] = useState<Lot | null>(null);
 
@@ -61,8 +61,8 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
         if (cropSelected?._id) {
             setFormValues((prevState) => ({
                 ...prevState,
-                cropId: value,
-                cultive: cropSelected.descriptionEN || "",
+                cropId: value, //Insumo id
+                cultive: cropSelected.name || "",
                 supply: cropSelected
             }));
         }
@@ -166,6 +166,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                 }
             </Grid>
             <Grid item xs={12} sm={4}>
+                {/* Insumos de tipo "Cultivo" */}
                 <FormControl key="crop-select" fullWidth>
                     <InputLabel id="crop">{t("_crop")}</InputLabel>
                     <Select
@@ -177,7 +178,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                     >
                         {crops?.map((crop) => (
                             <MenuItem key={crop._id} value={crop._id}>
-                                {crop.descriptionES}
+                                {crop.name}
                             </MenuItem>
                         ))}
                     </Select>
