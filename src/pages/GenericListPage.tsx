@@ -29,6 +29,7 @@ interface GenericListPageProps<T> {
   icon: React.ReactNode;
   data: T[];
   columns: GridColDef[];
+  showAddButton?: boolean;
   getData: () => void;
   deleteData: (id: string, rev: string) => void;
   setActiveItem: (item: T) => void;
@@ -43,6 +44,7 @@ export const GenericListPage = <T extends { _id: string; _rev: string }>({
   columns,
   getData,
   deleteData,
+  showAddButton = true,
   setActiveItem,
   newItemPath,
   editItemPath,
@@ -112,6 +114,7 @@ export const GenericListPage = <T extends { _id: string; _rev: string }>({
           <CardContent>
             <Grid container spacing={3} alignItems="center">
               <Grid item xs={12} md={3}>
+              {showAddButton && newItemPath && (
                 <Button
                   variant="contained"
                   color="success"
@@ -129,6 +132,7 @@ export const GenericListPage = <T extends { _id: string; _rev: string }>({
                 >
                   {t("add_new")}
                 </Button>
+              )}
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
