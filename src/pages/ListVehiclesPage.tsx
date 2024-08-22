@@ -10,16 +10,18 @@ import {
 } from "@mui/icons-material";
 import { GridRenderCellParams } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export const ListVehiclesPage: React.FC = () => {
   const { vehicles, getVehicles, deleteVehicle } = useVehicle();
   const navigate = useNavigate();
+  const {t} = useTranslation();
   const columns = [
-    { field: "vehicleType", headerName: "Vehicle Type", flex: 1 },
-    { field: "make", headerName: "Brand", flex: 1 },
-    { field: "model", headerName: "Model", flex: 1 },
-    { field: "patent", headerName: "Patent", flex: 1 },
-    { field: "modelYear", headerName: "Year", flex: 1 },
+    { field: "vehicleType", headerName: t("vehicle_type"), flex: 1 },
+    { field: "make", headerName: t("brand"), flex: 1 },
+    { field: "model", headerName: t("model"), flex: 1 },
+    { field: "patent", headerName: t("patent"), flex: 1 },
+    { field: "modelYear", headerName: t("_year"), flex: 1 },
     {
       field: "actions",
       headerName: "",
@@ -61,7 +63,7 @@ export const ListVehiclesPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title="Vehicles"
+      title={t("_vehicles")}
       icon={<LocalShippingIcon sx={{ fontSize: 40, color: "#424242" }} />}
       data={vehicles}
       columns={columns}
