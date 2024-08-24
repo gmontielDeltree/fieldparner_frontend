@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Box, Paper, FormControlLabel, Switch, Tabs, Tab, Chip, Container, Typography } from "@mui/material";
 import { QueryStats as QueryStatsIcon, Inventory as InventoryIcon, Warehouse as WarehouseIcon } from "@mui/icons-material";
 import { useAppDispatch, useSupply } from "../hooks";
@@ -49,20 +49,27 @@ export const ListStockPage: React.FC = () => {
     )},
   ], [t]);
 
-  const onClickSupply = (supplySelected: Supply) => {
+  const onClickSupply = useCallback((supplySelected: Supply) => {
     dispatch(setSupplyActive(supplySelected));
     dispatch(uiOpenModal("SupplyByDeposits"));
-  };
+  }, [dispatch]);
 
-  const onClickDeposit = (item: SupplyByDeposits) => {
+  const onClickDeposit = useCallback((item: SupplyByDeposits) => {
     setSelectedSupplyDeposit(item);
     dispatch(uiOpenModal("SupplyByLots"));
-  };
+  }, [dispatch]);
+
+  const getData = useCallback(() => {
+    if (tabValue === 0) {
+      getStockBySupplies();
+    } else {
+      getStockByDepositAndLocation();
+    }
+  }, [tabValue, getStockBySupplies, getStockByDepositAndLocation]);
 
   useEffect(() => {
-    if (tabValue === 0) getStockBySupplies();
-    else getStockByDepositAndLocation();
-  }, [tabValue]);
+    getData();
+  }, [getData]);
 
   const filteredData = useMemo(() => {
     const data = tabValue === 0 ? stockBySupplies : supplyByDeposits;
@@ -103,11 +110,13 @@ export const ListStockPage: React.FC = () => {
             icon={null}
             data={filteredData}
             columns={tabValue === 0 ? columnsBySupply : columnsByDeposit}
-            getData={tabValue === 0 ? getStockBySupplies : getStockByDepositAndLocation}
+            getData={getData}
             deleteData={() => {}}
             setActiveItem={() => {}}
             showAddButton={false} 
             isLoading={isLoading}
+            newItemPath=""
+            editItemPath={() => ""}
           />
         </Box>
       </Paper>
@@ -115,5 +124,4 @@ export const ListStockPage: React.FC = () => {
       {tabValue === 1 && selectedSupplyDeposit && <SupplyByLotsModal key="supply-lot-modal" supplyByDeposit={selectedSupplyDeposit} />}
     </Container>
   );
-
 };
