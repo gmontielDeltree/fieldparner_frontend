@@ -45,7 +45,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     label="Carta Porte Nro"
                     required
                     name="nroCartaPorte"
-                    value={formValues.nroCartaPorte}
+                    value={formValues.nroCartaPorte.value}
                     onChange={handleInputChange}
                     disabled={!!formValues._id} //readonly si existe
                     InputProps={{
@@ -61,7 +61,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     label={"Fecha Emision"}
                     required
                     name="fechaEmision"
-                    value={formValues.fechaEmision}
+                    value={formValues.fechaEmision.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -79,7 +79,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     label={"Fecha Vencimiento"}
                     required
                     name="fechaVencimiento"
-                    value={formValues.fechaVencimiento}
+                    value={formValues.fechaVencimiento.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -96,7 +96,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     type="text"
                     label="C.T.G Nro"
                     name="nroCTG"
-                    value={formValues.nroCTG}
+                    value={formValues.nroCTG.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -110,7 +110,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     type="text"
                     label="Arancel"
                     name="arancel"
-                    value={formValues.arancel}
+                    value={formValues.arancel.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -125,7 +125,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         labelId="razonSocial"
                         name="cuitCompania"
                         required
-                        value={formValues.cuitCompania} //CUIT 
+                        value={formValues.cuitCompania.value} //CUIT 
                         label="Razon Social"
                         onChange={onChangeCompany}
                     >
@@ -192,7 +192,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         labelId="category"
                         name="categoriaEntidadId"
                         required
-                        value={formValues.categoriaEntidadId}
+                        value={formValues.categoriaEntidadId.value}
                         label="Categoria"
                         MenuProps={{
                             PaperProps: {
@@ -216,7 +216,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         labelId="field"
                         name="salidaCampoId"
                         required
-                        value={formValues.salidaCampoId}
+                        value={formValues.salidaCampoId.value}
                         label="Campo"
                         onChange={onChangeField}
                     >
@@ -234,7 +234,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     type="text"
                     label="N° Operador ONCCA"
                     name="nroOperadorONCCA"
-                    value={formValues.nroOperadorONCCA}
+                    value={formValues.nroOperadorONCCA.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -248,7 +248,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     type="text"
                     label="N° Planta ONCCA"
                     name="nroPlantaONCCA"
-                    value={formValues.nroPlantaONCCA}
+                    value={formValues.nroPlantaONCCA.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -262,7 +262,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="comercial-primario"
                         name="cuitRemitenteComercialPrimario"
-                        value={formValues.cuitRemitenteComercialPrimario}
+                        value={formValues.cuitRemitenteComercialPrimario.value}
                         label="Remitente Comercial Venta Primario"
                         onChange={handleSelectChange}
                     >
@@ -282,7 +282,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitRemitenteComercialPrimario ? formValues.cuitRemitenteComercialPrimario : "-"}
+                                {formValues.cuitRemitenteComercialPrimario.value ? formValues.cuitRemitenteComercialPrimario.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
@@ -293,7 +293,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="comercial-secundario"
                         name="cuitRemitenteComercialSecundario"
-                        value={formValues.cuitRemitenteComercialSecundario}
+                        value={formValues.cuitRemitenteComercialSecundario.value}
                         label="Remitente Comercial Venta Secundario"
                         onChange={handleSelectChange}
                     >
@@ -313,7 +313,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitRemitenteComercialSecundario ? formValues.cuitRemitenteComercialSecundario : "-"}
+                                {formValues.cuitRemitenteComercialSecundario.value ? formValues.cuitRemitenteComercialSecundario.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
@@ -324,7 +324,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="comercial-2"
                         name="cuitRemitenteComercialSecundario2"
-                        value={formValues.cuitRemitenteComercialSecundario2}
+                        value={formValues.cuitRemitenteComercialSecundario2.value}
                         label="Remitente Comercial Venta Secundario 2"
                         onChange={handleSelectChange}
                     >
@@ -344,7 +344,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitRemitenteComercialSecundario2 ? formValues.cuitRemitenteComercialSecundario2 : "-"}
+                                {formValues.cuitRemitenteComercialSecundario2.value ? formValues.cuitRemitenteComercialSecundario2.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
@@ -355,7 +355,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="mat"
                         name="cuitMAT"
-                        value={formValues.cuitMAT}
+                        value={formValues.cuitMAT.value}
                         label="M.A.T"
                         onChange={handleSelectChange}
                     >
@@ -375,7 +375,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitMAT ? formValues.cuitMAT : "-"}
+                                {formValues.cuitMAT.value ? formValues.cuitMAT.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
@@ -386,7 +386,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="representante"
                         name="cuitRepresentanteEntrega"
-                        value={formValues.cuitRepresentanteEntrega}
+                        value={formValues.cuitRepresentanteEntrega.value}
                         label="Representante Entrega"
                         onChange={handleSelectChange}
                     >
@@ -406,7 +406,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitRepresentanteEntrega ? formValues.cuitRepresentanteEntrega : "-"}
+                                {formValues.cuitRepresentanteEntrega.value ? formValues.cuitRepresentanteEntrega.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
@@ -417,7 +417,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="recibidor"
                         name="cuitRepresentanteRecibidor"
-                        value={formValues.cuitRepresentanteRecibidor}
+                        value={formValues.cuitRepresentanteRecibidor.value}
                         label="Representante Recibidor"
                         onChange={handleSelectChange}
                     >
@@ -437,7 +437,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitRepresentanteRecibidor ? formValues.cuitRepresentanteRecibidor : "-"}
+                                {formValues.cuitRepresentanteRecibidor.value ? formValues.cuitRepresentanteRecibidor.value : "-"}
                             </Typography>}
                     />
                 </FormControl>

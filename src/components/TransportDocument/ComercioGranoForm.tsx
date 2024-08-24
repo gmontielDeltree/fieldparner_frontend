@@ -31,7 +31,7 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
             labelId="comprador"
             name="cuitComprador"
             required
-            value={formValues.cuitComprador}
+            value={formValues.cuitComprador.value}
             label="Comprador"
             onChange={onChangeComprador}
           >
@@ -73,7 +73,7 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
           <Select
             labelId="cuit-cupo"
             name="cuitAsignadorCupo"
-            value={formValues.cuitAsignadorCupo}
+            value={formValues.cuitAsignadorCupo.value}
             label="Razon Social que asigno Cupo"
             onChange={handleSelectChange}
           >
@@ -103,7 +103,7 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
           type="text"
           label="Cupo N°"
           name="nroCupo"
-          value={formValues.nroCupo}
+          value={formValues.nroCupo.value}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -118,7 +118,7 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
           label={"Fecha Cupo"}
           required
           name="fechaCupo"
-          value={formValues.fechaCupo}
+          value={formValues.fechaCupo.value}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,

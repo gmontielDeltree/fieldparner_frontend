@@ -64,7 +64,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             type="text"
             label="Contrato"
             name="contrato"
-            value={formValues.contrato}
+            value={formValues.contrato.value}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -99,7 +99,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             label="Codigo Postal"
             name="cpSalidaCampo"
             required
-            value={formValues.cpSalidaCampo}
+            value={formValues.cpSalidaCampo.value}
             onChange={handleInputChange}
             onBlur={(e) => {
               const zipCode = e.target.value;
@@ -162,7 +162,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
               // step: 1, // Permitir solo números enteros
               // inputMode: 'numeric', // Mostrar teclado numérico en dispositivos móviles
             }}
-            value={formValues.kgEstimado}
+            value={formValues.kgEstimado.value}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -178,7 +178,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             name="kgBruto"
             required
             inputProps={{ min: 0 }}
-            value={formValues.kgBruto}
+            value={formValues.kgBruto.value}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -194,7 +194,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             name="kgTara"
             required
             inputProps={{ min: 0 }}
-            value={formValues.kgTara}
+            value={formValues.kgTara.value}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -209,7 +209,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
-                  {(formValues.kgBruto - formValues.kgTara)}
+                  {(formValues.kgBruto.value - formValues.kgTara.value) || "-"}
                 </Typography>}
             />
           </FormControl>
@@ -221,7 +221,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             label="Observaciones"
             name="observaciones"
             multiline
-            value={formValues.observaciones}
+            value={formValues.observaciones.value}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,

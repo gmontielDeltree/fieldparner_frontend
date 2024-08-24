@@ -69,7 +69,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
             labelId="destinatario"
             name="cuitDestinatario"
             required
-            value={formValues.cuitDestinatario}
+            value={formValues.cuitDestinatario.value}
             label="Destinatario"
             onChange={onChangeDestinatario}
           >
@@ -88,7 +88,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                {formValues.cuitDestinatario || "-"}
+                {formValues.cuitDestinatario.value || "-"}
               </Typography>}
           />
         </FormControl>
@@ -111,7 +111,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           control={
             <Checkbox
               name="esCampo"
-              checked={formValues.esCampo}
+              checked={formValues.esCampo.value}
               onChange={handleCheckboxChange}
             />
           }
@@ -125,7 +125,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           type="text"
           label="Campo"
           name="campoDestinatario"
-          value={formValues.campoDestinatario}
+          value={formValues.campoDestinatario.value}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -139,7 +139,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           type="text"
           label="Lote"
           name="loteDestinatario"
-          value={formValues.loteDestinatario}
+          value={formValues.loteDestinatario.value}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -154,7 +154,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
             labelId="Destino"
             name="cuitDestino"
             required
-            value={formValues.cuitDestino}
+            value={formValues.cuitDestino.value}
             label="Destino"
             onChange={onChangeDestino}
           >
@@ -173,7 +173,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                {formValues.cuitDestino || "-"}
+                {formValues.cuitDestino.value || "-"}
               </Typography>}
           />
         </FormControl>
@@ -184,7 +184,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           type="text"
           label="Domicilio Fiscal"
           name="domicilioDestino"
-          value={formValues.domicilioDestino}
+          value={formValues.domicilioDestino.value}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -199,7 +199,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           label="Codigo Postal"
           name="cpDestino"
           required
-          value={formValues.cpDestino}
+          value={formValues.cpDestino.value}
           onChange={handleInputChange}
           onBlur={(e) => {
             const zipCode = e.target.value;

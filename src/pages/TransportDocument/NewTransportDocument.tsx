@@ -3,7 +3,7 @@
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Loading } from '../../components';
-import { useAppDispatch, useAppSelector, useBusiness, useCategory, useCompany, useCrops, useExitField, useField, useForm, useTransportDocument, useVehicle } from '../../hooks';
+import { FormValueState, useAppDispatch, useAppSelector, useBusiness, useCategory, useCompany, useCrops, useExitField, useField, useFormValue, useTransportDocument, useVehicle } from '../../hooks';
 import { TransportDocument } from '../../interfaces/transportDocument';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -16,69 +16,70 @@ import { uiFinishLoading, uiStartLoading } from '../../redux/ui';
 
 const steps = ["Remitente", "Granos Transportados", "Comercio Granos", "Destinatario", "Transportista"];
 
-const initialForm: TransportDocument = {
-  accountId: "",
-  licenceId: "",
-  contractId: "",
-  nroCartaPorte: "",
-  fechaEmision: getShortDate(true, "-"),
-  fechaVencimiento: getShortDate(false, "-"),
-  nroCTG: "",
-  arancel: "",
-  contrato: "",
-  cuitGenerador: "",
-  cuitCompania: "",
-  categoriaEntidadId: "",
-  salidaCampoId: "",
-  nroOperadorONCCA: "",
-  cpSalidaCampo: "",
-  nroPlantaONCCA: "",
-  cuitRemitenteComercialPrimario: "",
-  cuitRemitenteComercialSecundario: "",
-  cuitRemitenteComercialSecundario2: "",
-  cuitMAT: "",
-  cuitComercialVentaPrimaria: "",
-  cuitComercialVentaSecundaria: "",
-  cuitRepresentanteEntrega: "",
-  cuitRepresentanteRecibidor: "",
-  cpGenerador: "",
-  kgEstimado: 0,
-  kgBruto: 0,
-  kgTara: 0,
-  kgNeto: 0,
-  cuitComprador: "",
-  cuitAsignadorCupo: "",
-  nroCupo: "",
-  fechaCupo: "",
-  cuitDestinatario: "",
-  esCampo: false,
-  campoDestinatario: "",
-  loteDestinatario: "",
-  cuitDestino: "",
-  domicilioDestino: "",
-  localidadDestino: "",
-  cpDestino: "",
-  provinciaDestino: "",
-  cuitTransportista: "",
-  razonSocialTransportista: "",
-  cuitChofer: "",
-  vehiculoIdChasis: "",
-  vehiculoIdAcoplado1: "",
-  vehiculoIdAcoplado2: "",
-  razonSocialChofer: "",
-  kmARecorrer: 0,
-  tipoFlete: EnumTipoFlete.APAGAR,
-  tarifaRef: 0,
-  tarifaTT: 0,
-  calidadEnvoltura: "",
-  calidad: "",
-  fechaPartida: "",
-  cuitPagadorFlete: "",
-  cuitIntermediarioFlete: "",
-  status: EnumTransportDocumentStatus.GENERADA,
-  observaciones: "",
-  fileName: "",
+const initialForm: FormValueState<TransportDocument> = {
+  accountId: { value: "", required: true, isError: false, message: "" },
+  licenceId: { value: "", required: true, isError: false, message: "" },
+  contractId: { value: "", required: true, isError: false, message: "" },
+  nroCartaPorte: { value: "", required: true, isError: false, message: "" },
+  fechaEmision: { value: getShortDate(true, "-"), required: true, isError: false, message: "" },
+  fechaVencimiento: { value: getShortDate(false, "-"), required: true, isError: false, message: "" },
+  nroCTG: { value: "", required: true, isError: false, message: "" },
+  arancel: { value: "", required: false, isError: false, message: "" },
+  contrato: { value: "", required: false, isError: false, message: "" },
+  cuitGenerador: { value: "", required: true, isError: false, message: "" },
+  cuitCompania: { value: "", required: true, isError: false, message: "" },
+  categoriaEntidadId: { value: "", required: true, isError: false, message: "" },
+  salidaCampoId: { value: "", required: true, isError: false, message: "" },
+  nroOperadorONCCA: { value: "", required: false, isError: false, message: "" },
+  cpSalidaCampo: { value: "", required: false, isError: false, message: "" },
+  nroPlantaONCCA: { value: "", required: false, isError: false, message: "" },
+  cuitRemitenteComercialPrimario: { value: "", required: false, isError: false, message: "" },
+  cuitRemitenteComercialSecundario: { value: "", required: false, isError: false, message: "" },
+  cuitRemitenteComercialSecundario2: { value: "", required: false, isError: false, message: "" },
+  cuitMAT: { value: "", required: false, isError: false, message: "" },
+  cuitComercialVentaPrimaria: { value: "", required: false, isError: false, message: "" },
+  cuitComercialVentaSecundaria: { value: "", required: false, isError: false, message: "" },
+  cuitRepresentanteEntrega: { value: "", required: false, isError: false, message: "" },
+  cuitRepresentanteRecibidor: { value: "", required: false, isError: false, message: "" },
+  cpGenerador: { value: "", required: false, isError: false, message: "" },
+  kgEstimado: { value: 0, required: false, isError: false, message: "" },
+  kgBruto: { value: 0, required: false, isError: false, message: "" },
+  kgTara: { value: 0, required: false, isError: false, message: "" },
+  kgNeto: { value: 0, required: false, isError: false, message: "" },
+  cuitComprador: { value: "", required: false, isError: false, message: "" },
+  cuitAsignadorCupo: { value: "", required: false, isError: false, message: "" },
+  nroCupo: { value: "", required: false, isError: false, message: "" },
+  fechaCupo: { value: "", required: false, isError: false, message: "" },
+  cuitDestinatario: { value: "", required: false, isError: false, message: "" },
+  esCampo: { value: false, required: false, isError: false, message: "" },
+  campoDestinatario: { value: "", required: false, isError: false, message: "" },
+  loteDestinatario: { value: "", required: false, isError: false, message: "" },
+  cuitDestino: { value: "", required: false, isError: false, message: "" },
+  domicilioDestino: { value: "", required: false, isError: false, message: "" },
+  localidadDestino: { value: "", required: false, isError: false, message: "" },
+  cpDestino: { value: "", required: false, isError: false, message: "" },
+  provinciaDestino: { value: "", required: false, isError: false, message: "" },
+  cuitTransportista: { value: "", required: false, isError: false, message: "" },
+  razonSocialTransportista: { value: "", required: false, isError: false, message: "" },
+  cuitChofer: { value: "", required: false, isError: false, message: "" },
+  vehiculoIdChasis: { value: "", required: false, isError: false, message: "" },
+  vehiculoIdAcoplado1: { value: "", required: false, isError: false, message: "" },
+  vehiculoIdAcoplado2: { value: "", required: false, isError: false, message: "" },
+  razonSocialChofer: { value: "", required: false, isError: false, message: "" },
+  kmARecorrer: { value: 0, required: false, isError: false, message: "" },
+  tipoFlete: { value: EnumTipoFlete.APAGAR, required: false, isError: false, message: "" },
+  tarifaRef: { value: 0, required: false, isError: false, message: "" },
+  tarifaTT: { value: 0, required: false, isError: false, message: "" },
+  calidadEnvoltura: { value: "", required: false, isError: false, message: "" },
+  calidad: { value: "", required: false, isError: false, message: "" },
+  fechaPartida: { value: "", required: false, isError: false, message: "" },
+  cuitPagadorFlete: { value: "", required: false, isError: false, message: "" },
+  cuitIntermediarioFlete: { value: "", required: false, isError: false, message: "" },
+  status: { value: EnumTransportDocumentStatus.GENERADA, required: false, isError: false, message: "" },
+  observaciones: { value: "", required: false, isError: false, message: "" },
+  fileName: { value: "", required: false, isError: false, message: "" },
 };
+
 
 export const NewTransportDocument: React.FC = () => {
   const navigate = useNavigate();
@@ -98,14 +99,14 @@ export const NewTransportDocument: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const {
-    formulario,
+    formValue,
     // setFormulario,
     handleInputChange,
     handleSelectChange,
     handleCheckboxChange,
     reset,
     handleFormValueChange,
-  } = useForm<TransportDocument>(initialForm);
+  } = useFormValue<TransportDocument>(initialForm);
 
   const handleNext = () => {
     setActiveStep(activeStep + 1);
@@ -129,11 +130,12 @@ export const NewTransportDocument: React.FC = () => {
   const onClickNewTransportDocument = async () => {
     try {
       dispatch(uiStartLoading());
-      await addTransportDocument(formulario);
-      await handleUploadDocumentFile();
-      dispatch(uiFinishLoading());
-      reset();
-      navigate("/init/overview/transport-documents");
+      console.log('formValue', formValue);
+      // await addTransportDocument(formValue);
+      // await handleUploadDocumentFile();
+      // dispatch(uiFinishLoading());
+      // reset();
+      // navigate("/init/overview/transport-documents");
     } catch (error) {
       console.log('error', error);
       dispatch(uiFinishLoading());
@@ -141,7 +143,7 @@ export const NewTransportDocument: React.FC = () => {
   }
 
   const onClickUpdateTransportDocument = () => {
-    console.log(formulario);
+    console.log(formValue);
   }
 
   const changeSelectedExitField = (item: ExitFieldItem) => setSelectedFieldOutput(item);
@@ -152,7 +154,7 @@ export const NewTransportDocument: React.FC = () => {
         case 0:
           return (
             <RemitenteForm
-              formValues={formulario}
+              formValues={formValue}
               companies={companies}
               categories={categories}
               exitFields={exitFields}
@@ -164,7 +166,7 @@ export const NewTransportDocument: React.FC = () => {
         case 1:
           return (
             <GranoTransportadoForm
-              formValues={formulario}
+              formValues={formValue}
               companies={companies}
               categories={categories}
               exitFields={exitFields}
@@ -176,7 +178,7 @@ export const NewTransportDocument: React.FC = () => {
         case 2:
           return (
             <ComercioGranoForm
-              formValues={formulario}
+              formValues={formValue}
               companies={companies}
               categories={categories}
               exitFields={exitFields}
@@ -188,7 +190,7 @@ export const NewTransportDocument: React.FC = () => {
         case 3:
           return (
             <DestinatarioForm
-              formValues={formulario}
+              formValues={formValue}
               companies={companies}
               categories={categories}
               exitFields={exitFields}
@@ -202,7 +204,7 @@ export const NewTransportDocument: React.FC = () => {
         case 4:
           return (
             <TransportistaForm
-              formValues={formulario}
+              formValues={formValue}
               vehicles={vehicles}
               exitFields={exitFields}
               providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
@@ -220,7 +222,7 @@ export const NewTransportDocument: React.FC = () => {
       }
     },
     [
-      formulario,
+      formValue,
       handleInputChange,
       handleSelectChange,
       handleCheckboxChange,
@@ -296,10 +298,10 @@ export const NewTransportDocument: React.FC = () => {
                   hidden={activeStep !== steps.length - 1}
                   color="success"
                   onClick={
-                    formulario._id ? () => onClickUpdateTransportDocument() : () => onClickNewTransportDocument()
+                    formValue._id ? () => onClickUpdateTransportDocument() : () => onClickNewTransportDocument()
                   }
                 >
-                  {!formulario._id ? t("_add") : t("id_update")} {' '}
+                  {!formValue._id ? t("_add") : t("id_update")} {' '}
                 </Button>
               </Grid>
               {/* {formulario._id && (

@@ -36,7 +36,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
       let extensionPos = fileNameOriginal.lastIndexOf(".");
       let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
 
-      const newFileName = `carta-porte_${formValues.nroCartaPorte}${fileType}`;
+      const newFileName = `carta-porte_${formValues.nroCartaPorte.value}${fileType}`;
       const renamedFile = new File([file], newFileName, { type: file.type });
       fileUpload(renamedFile);
       handleFormValueChange("fileName", newFileName);
@@ -52,7 +52,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             labelId="transportista"
             name="cuitTransportista"
             required
-            value={formValues.cuitTransportista}
+            value={formValues.cuitTransportista.value}
             label="Transportista"
             onChange={handleSelectChange}
           >
@@ -71,7 +71,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                {formValues.cuitTransportista || "-"}
+                {formValues.cuitTransportista.value || "-"}
               </Typography>}
           />
         </FormControl>
@@ -83,7 +83,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             labelId="chofer"
             name="cuitChofer"
             required
-            value={formValues.cuitChofer}
+            value={formValues.cuitChofer.value}
             label="Chofer"
             onChange={handleSelectChange}
           >
@@ -102,7 +102,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                {formValues.cuitChofer || "-"}
+                {formValues.cuitChofer.value || "-"}
               </Typography>}
           />
         </FormControl>
@@ -113,7 +113,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           <Select
             labelId="chasis"
             name="vehiculoIdChasis"
-            value={formValues.vehiculoIdChasis}
+            value={formValues.vehiculoIdChasis.value}
             label="Chasis"
             required
             MenuProps={{
@@ -137,7 +137,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           <Select
             labelId="acoplado1"
             name="vehiculoIdAcoplado1"
-            value={formValues.vehiculoIdAcoplado1}
+            value={formValues.vehiculoIdAcoplado1.value}
             label="Acoplado 1"
             MenuProps={{
               PaperProps: {
@@ -160,7 +160,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           <Select
             labelId="acoplado2"
             name="vehiculoIdAcoplado2"
-            value={formValues.vehiculoIdAcoplado2}
+            value={formValues.vehiculoIdAcoplado2.value}
             label="Acoplado 2"
             MenuProps={{
               PaperProps: {
@@ -183,7 +183,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           type="text"
           label="Kms"
           name="kmARecorrer"
-          value={formValues.kmARecorrer}
+          value={formValues.kmARecorrer.value}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -198,7 +198,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             control={
               <Checkbox
                 name="tipoFlete"
-                checked={formValues.tipoFlete === EnumTipoFlete.PAGO}
+                checked={formValues.tipoFlete.value === EnumTipoFlete.PAGO}
                 onChange={() => handleFormValueChange("tipoFlete", EnumTipoFlete.PAGO)}
               />
             }
@@ -210,7 +210,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             control={
               <Checkbox
                 name="APAGAR"
-                checked={formValues.tipoFlete === EnumTipoFlete.APAGAR}
+                checked={formValues.tipoFlete.value === EnumTipoFlete.APAGAR}
                 onChange={() => handleFormValueChange("tipoFlete", EnumTipoFlete.APAGAR)}
               />
             }
@@ -280,7 +280,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             control={
               <Checkbox
                 name="calidadEnvoltura"
-                checked={formValues.calidadEnvoltura === EnumEnvoltura.EMBOLSADO}
+                checked={formValues.calidadEnvoltura.value === EnumEnvoltura.EMBOLSADO}
                 onChange={() => handleFormValueChange("calidadEnvoltura", EnumEnvoltura.EMBOLSADO)}
               />
             }
@@ -292,7 +292,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             control={
               <Checkbox
                 name="GRANEL"
-                checked={formValues.calidadEnvoltura === EnumEnvoltura.GRANEL}
+                checked={formValues.calidadEnvoltura.value === EnumEnvoltura.GRANEL}
                 onChange={() => handleFormValueChange("calidadEnvoltura", EnumEnvoltura.GRANEL)}
               />
             }
@@ -308,7 +308,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             control={
               <Checkbox
                 name="CONFORME"
-                checked={formValues.calidad === EnumCalidad.CONFORME}
+                checked={formValues.calidad.value === EnumCalidad.CONFORME}
                 onChange={() => handleFormValueChange("calidad", EnumCalidad.CONFORME)}
               />
             }
@@ -320,7 +320,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             control={
               <Checkbox
                 name="CONDICIONAL"
-                checked={formValues.calidad === EnumCalidad.CONDICIONAL}
+                checked={formValues.calidad.value === EnumCalidad.CONDICIONAL}
                 onChange={() => handleFormValueChange("calidad", EnumCalidad.CONDICIONAL)}
               />
             }
@@ -337,7 +337,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             labelId="cuitPagadorFlete"
             name="cuitPagadorFlete"
             required
-            value={formValues.cuitPagadorFlete}
+            value={formValues.cuitPagadorFlete.value}
             label="Pagador Flete"
             onChange={handleSelectChange}
           >
@@ -356,7 +356,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                {formValues.cuitPagadorFlete || "-"}
+                {formValues.cuitPagadorFlete.value || "-"}
               </Typography>}
           />
         </FormControl>
@@ -367,7 +367,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           <Select
             labelId="cuitIntermediarioFlete"
             name="cuitIntermediarioFlete"
-            value={formValues.cuitIntermediarioFlete}
+            value={formValues.cuitIntermediarioFlete.value}
             label="Intermediario Flete"
             onChange={handleSelectChange}
           >
@@ -386,7 +386,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                {formValues.cuitIntermediarioFlete || "-"}
+                {formValues.cuitIntermediarioFlete.value || "-"}
               </Typography>}
           />
         </FormControl>
@@ -404,10 +404,10 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
             inputProps={{ accept: 'application/pdf' }}
             onChange={onChangeFile} />
         </Button>
-        {formValues.fileName ? (
+        {formValues.fileName.value ? (
           <>
             <label
-              title={formValues.fileName}
+              title={formValues.fileName.value}
               style={{
                 margin: "10px",
                 width: "240px",
@@ -416,7 +416,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap"
               }}>
-              {formValues.fileName}
+              {formValues.fileName.value}
             </label>
             <IconButton onClick={() => removeFile()} color="error">
               <CancelIcon fontSize="medium" />
