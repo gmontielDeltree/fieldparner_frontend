@@ -1,5 +1,14 @@
 import React, { useEffect } from "react";
-import { TextField, FormControl, Grid, Paper, Typography } from "@mui/material";
+import {
+  TextField,
+  FormControl,
+  Grid,
+  Paper,
+  Typography,
+  Select,
+  MenuItem,
+  InputLabel
+} from "@mui/material";
 import { useBusiness } from "../../../../hooks";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
@@ -49,6 +58,24 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
       <Title>General</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
+
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel id="ing-agronomo-label">Ing Agronomo</InputLabel>
+              <Select
+                labelId="ing-agronomo-label"
+                id="ing-agronomo"
+                value={formData.detalles.ingAgronomo || ""}
+                label="Ing Agronomo"
+                onChange={(e) => onFieldChange("ingAgronomo", e.target.value)}
+              >
+                <MenuItem value="Ing Agronomo 1">Ing Agronomo 1</MenuItem>
+                <MenuItem value="Ing Agronomo 2">Ing Agronomo 2</MenuItem>
+                <MenuItem value="Ing Agronomo 3">Ing Agronomo 3</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
           <Grid item xs={12}>
             <AutocompleteContratista
               value={formData.contratista}
