@@ -177,42 +177,42 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
               </Grid>
               <Grid item xs={12}>
                 <Box sx={{ height: 600, width: "100%", mt: 2 }}>
-                  <DataGrid
-                    rows={filteredData}
-                    columns={columns}
-                    pageSize={10}
-                    rowsPerPageOptions={[10]}
-                    disableSelectionOnClick
-                    loading={isLoading}
-                    getRowId={(row) => row._id}
-                    localeText={esES.components.MuiDataGrid.defaultProps.localeText}
-                    sx={{
-                      "& .MuiDataGrid-columnHeaders": {
-                        backgroundColor: "#424242",
-                        color: "#fff",
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                      },
-                      "& .MuiDataGrid-columnHeader:focus-within .MuiDataGrid-sortIcon": {
-                        color: "#fff",
-                      },
-                      "& .MuiDataGrid-sortIcon": {
-                        color: "#fff",
-                        fontSize: '1.5rem',
-                        textShadow: '0px 0px 5px rgba(0,0,0,0.5)',
-                      },
-                      "& .MuiDataGrid-cell": {
-                        borderBottom: "none",
-                        color: '#333',
-                      },
-                      "& .MuiDataGrid-row:nth-of-type(odd)": {
-                        backgroundColor: "#f9f9f9",
-                      },
-                      "& .MuiDataGrid-row:hover": {
-                        backgroundColor: "#e8f5e9",
-                      },
-                    }}
-                  />
+                <DataGrid
+  rows={filteredData}
+  columns={columns}
+  pageSize={10}
+  rowsPerPageOptions={[10]}
+  disableSelectionOnClick
+  loading={isLoading}
+  getRowId={(row) => row._id || row.id}  // Usa _id o id como identificador único
+  localeText={esES.components.MuiDataGrid.defaultProps.localeText}
+  sx={{
+    "& .MuiDataGrid-columnHeaders": {
+      backgroundColor: "#424242",
+      color: "#fff",
+      fontSize: '16px',
+      fontWeight: 'bold',
+    },
+    "& .MuiDataGrid-columnHeader:focus-within .MuiDataGrid-sortIcon": {
+      color: "#fff",
+    },
+    "& .MuiDataGrid-sortIcon": {
+      color: "#fff",
+      fontSize: '1.5rem',
+      textShadow: '0px 0px 5px rgba(0,0,0,0.5)',
+    },
+    "& .MuiDataGrid-cell": {
+      borderBottom: "none",
+      color: '#333',
+    },
+    "& .MuiDataGrid-row:nth-of-type(odd)": {
+      backgroundColor: "#f9f9f9",
+    },
+    "& .MuiDataGrid-row:hover": {
+      backgroundColor: "#e8f5e9",
+    },
+  }}
+/>
                 </Box>
               </Grid>
             </Grid>

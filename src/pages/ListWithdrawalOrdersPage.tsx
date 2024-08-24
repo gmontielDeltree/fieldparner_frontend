@@ -84,7 +84,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
 
     return (
         <GenericListPage
-            title={t('Withdrawal Orders')}
+            title={t('withdrawal_orders')}
             icon={<AssignmentIcon />}
             data={listWithdrawal}
             columns={columns}
