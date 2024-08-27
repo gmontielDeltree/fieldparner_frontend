@@ -90,6 +90,19 @@ export interface LaborsServicesState {
 }
 
 
+export interface CorporateContract extends Document {
+  idContract: string;
+  description: string;
+  status: string;
+  companie: string;
+  percentageOfParticipation: string;
+  activity:string;
+}
+export interface CorporateContractState {
+  corporateContractActive: CorporateContract| null;
+  CorporateContract: CorporateContract[];
+}
+
 export interface ColumnProps {
   text: string;
   align: "inherit" | "left" | "center" | "right" | "justify";
@@ -760,6 +773,11 @@ export enum EnumStatusUser {
   Inactiva = "Inactiva",
   Suspendida = "Suspendida",
   Cancelada = "Cancelada",
+}
+
+export enum EnumStatusContract {
+  Activo = "Activo",
+  Inactivo = "Inactivo",
 }
 
 //#endregion

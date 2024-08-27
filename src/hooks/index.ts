@@ -24,4 +24,4 @@ export * from './usePurchaseOrder';
 export * from './useCountry';
 export * from './useModulesPermission';
 export * from './useCorporateCompanies';
-export * from './useCorporateCompanies';
+export * from './useCorporateContract';

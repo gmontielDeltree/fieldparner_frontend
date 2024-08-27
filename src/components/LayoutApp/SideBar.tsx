@@ -369,8 +369,7 @@ export const SideBar: React.FC<SideBarProps> = ({
             in={openCollapse === keysCollapse[6]}
             timeout="auto"
             unmountOnExit>
-            <List component="div" disablePadding>
-                
+            <List component="div" disablePadding> 
                 <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}
@@ -382,11 +381,16 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={"Compañías Societarias"} />      
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/corporate-contract"
+                selected={pathname.includes("/init/overview/corporate-contract")}
+              >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
+                  <CorporateFareIcon />
                 </ListItemIcon>
-                <ListItemText primary={t("_contracts")} />
+                <ListItemText primary={"corporate contract"} />      
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
