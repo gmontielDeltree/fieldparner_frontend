@@ -1,4 +1,4 @@
-import { FormControl, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { FormControl, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { getShortDate } from '../../helpers/dates';
 import { Company } from '../../interfaces/company';
@@ -43,7 +43,8 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     variant="outlined"
                     type="text"
                     label="Carta Porte Nro"
-                    required
+                    error={formValues.nroCartaPorte.isError}
+                    helperText={formValues.nroCartaPorte.message}
                     name="nroCartaPorte"
                     value={formValues.nroCartaPorte.value}
                     onChange={handleInputChange}
@@ -59,8 +60,9 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     variant="outlined"
                     type="date"
                     label={"Fecha Emision"}
-                    required
                     name="fechaEmision"
+                    error={formValues.fechaEmision.isError}
+                    helperText={formValues.fechaEmision.message}
                     value={formValues.fechaEmision.value}
                     onChange={handleInputChange}
                     InputProps={{
@@ -77,8 +79,10 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     variant="outlined"
                     type="date"
                     label={"Fecha Vencimiento"}
-                    required
+                    aria-pepe="pepe"
                     name="fechaVencimiento"
+                    error={formValues.fechaVencimiento.isError}
+                    helperText={formValues.fechaVencimiento.message}
                     value={formValues.fechaVencimiento.value}
                     onChange={handleInputChange}
                     InputProps={{
@@ -119,12 +123,14 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                 />
             </Grid>
             <Grid item xs={12} sm={4}>
-                <FormControl key="razon-social-select" fullWidth>
-                    <InputLabel id="razonSocial" required>Razon Social</InputLabel>
+                <FormControl
+                    key="razon-social-select"
+                    error={formValues.cuitCompania.isError}
+                    fullWidth>
+                    <InputLabel id="razonSocial" >Razon Social</InputLabel>
                     <Select
                         labelId="razonSocial"
                         name="cuitCompania"
-                        required
                         value={formValues.cuitCompania.value} //CUIT 
                         label="Razon Social"
                         onChange={onChangeCompany}
@@ -135,6 +141,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                             </MenuItem>
                         ))}
                     </Select>
+                    <FormHelperText>{formValues.cuitCompania.message}</FormHelperText>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={2}>
@@ -186,12 +193,14 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
-                <FormControl key="category-select" fullWidth>
-                    <InputLabel id="category" required>Categoria</InputLabel>
+                <FormControl
+                    key="category-select"
+                    fullWidth
+                    error={formValues.categoriaEntidadId.isError}>
+                    <InputLabel id="category" >Categoria</InputLabel>
                     <Select
                         labelId="category"
                         name="categoriaEntidadId"
-                        required
                         value={formValues.categoriaEntidadId.value}
                         label="Categoria"
                         MenuProps={{
@@ -207,15 +216,19 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                             </MenuItem>
                         ))}
                     </Select>
+                    <FormHelperText>{formValues.categoriaEntidadId.message}</FormHelperText>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
-                <FormControl key="field-select" fullWidth>
-                    <InputLabel id="field" required>Campo</InputLabel>
+                <FormControl
+                    key="field-select"
+                    fullWidth
+                    error={formValues.salidaCampoId.isError}
+                >
+                    <InputLabel id="field" >Campo</InputLabel>
                     <Select
                         labelId="field"
                         name="salidaCampoId"
-                        required
                         value={formValues.salidaCampoId.value}
                         label="Campo"
                         onChange={onChangeField}
@@ -226,6 +239,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                             </MenuItem>
                         ))}
                     </Select>
+                    <FormHelperText>{formValues.salidaCampoId.message}</FormHelperText>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>

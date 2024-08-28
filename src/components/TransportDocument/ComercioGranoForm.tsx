@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { TransportDocumentFormProps } from './type';
-import { FormControl, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { FormControl, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { BusinessItem } from '../../interfaces/socialEntity';
 import { getShortDate } from '../../helpers/dates';
 
@@ -25,12 +25,15 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
   return (
     <Grid container spacing={1}>
       <Grid item xs={12} sm={4}>
-        <FormControl key="comprador-select" fullWidth>
+        <FormControl
+          key="comprador-select"
+          fullWidth
+          error={formValues.cuitComprador.isError}
+        >
           <InputLabel id="comprador" required>Comprador</InputLabel>
           <Select
             labelId="comprador"
             name="cuitComprador"
-            required
             value={formValues.cuitComprador.value}
             label="Comprador"
             onChange={onChangeComprador}
@@ -41,6 +44,7 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
               </MenuItem>
             ))}
           </Select>
+          <FormHelperText>{formValues.cuitComprador.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={4}>
@@ -116,7 +120,6 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
           variant="outlined"
           type="date"
           label={"Fecha Cupo"}
-          required
           name="fechaCupo"
           value={formValues.fechaCupo.value}
           onChange={handleInputChange}

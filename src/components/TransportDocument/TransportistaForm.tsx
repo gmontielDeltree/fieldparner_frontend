@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from 'react'
 import { TransportDocumentFormProps } from './type';
-import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, Grid, IconButton, Input, InputAdornment, InputLabel, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Button, Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText, Grid, IconButton, Input, InputAdornment, InputLabel, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { getShortDate } from '../../helpers/dates';
 import { EnumCalidad, EnumEnvoltura, EnumTipoFlete } from '../../types';
 import { Cancel as CancelIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
@@ -46,12 +46,14 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
   return (
     <Grid container spacing={1}>
       <Grid item xs={12} sm={4}>
-        <FormControl key="transportista-select" fullWidth>
+        <FormControl
+          key="transportista-select"
+          error={formValues.cuitTransportista.isError}
+          fullWidth>
           <InputLabel id="transportista" required>Transportista</InputLabel>
           <Select
             labelId="transportista"
             name="cuitTransportista"
-            required
             value={formValues.cuitTransportista.value}
             label="Transportista"
             onChange={handleSelectChange}
@@ -62,6 +64,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
               </MenuItem>
             ))}
           </Select>
+          <FormHelperText>{formValues.cuitTransportista.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={2}>
@@ -77,12 +80,14 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={4}>
-        <FormControl key="chofer-select" fullWidth>
+        <FormControl
+          key="chofer-select"
+          error={formValues.cuitChofer.isError}
+          fullWidth>
           <InputLabel id="chofer" required>Chofer</InputLabel>
           <Select
             labelId="chofer"
             name="cuitChofer"
-            required
             value={formValues.cuitChofer.value}
             label="Chofer"
             onChange={handleSelectChange}
@@ -93,6 +98,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
               </MenuItem>
             ))}
           </Select>
+          <FormHelperText>{formValues.cuitChofer.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={2}>
@@ -108,14 +114,17 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={3}>
-        <FormControl key="chasis-select" fullWidth>
+        <FormControl
+          key="chasis-select"
+          error={formValues.vehiculoIdChasis.isError}
+          fullWidth
+        >
           <InputLabel id="chasis" required>Chasis</InputLabel>
           <Select
             labelId="chasis"
             name="vehiculoIdChasis"
             value={formValues.vehiculoIdChasis.value}
             label="Chasis"
-            required
             MenuProps={{
               PaperProps: {
                 style: { maxHeight: 248 }//Tamaño para 5 opciones
@@ -129,6 +138,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
               </MenuItem>
             ))}
           </Select>
+          <FormHelperText>{formValues.vehiculoIdChasis.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={2}>
@@ -331,12 +341,14 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
       </Grid>
       <Grid item xs={12} sm={6} />
       <Grid item xs={12} sm={4}>
-        <FormControl key="cuitPagadorFlete-select" fullWidth>
+        <FormControl
+          key="cuitPagadorFlete-select"
+          error={formValues.cuitPagadorFlete.isError}
+          fullWidth>
           <InputLabel id="cuitPagadorFlete" required>Pagador Flete</InputLabel>
           <Select
             labelId="cuitPagadorFlete"
             name="cuitPagadorFlete"
-            required
             value={formValues.cuitPagadorFlete.value}
             label="Pagador Flete"
             onChange={handleSelectChange}
@@ -347,6 +359,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
               </MenuItem>
             ))}
           </Select>
+          <FormHelperText>{formValues.cuitPagadorFlete.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={2}>

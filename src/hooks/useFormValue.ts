@@ -1,4 +1,5 @@
 import { SelectChangeEvent } from '@mui/material';
+import { is } from 'date-fns/locale';
 import { ChangeEvent, useState } from 'react';
 
 
@@ -25,6 +26,8 @@ export const useFormValue = <T extends Object>(initialState: FormValueState<T>) 
             ...prevState,
             [name]: {
                 ...prevState[name],
+                isError: false,
+                message: '',
                 value,
             },
         }));
@@ -36,6 +39,8 @@ export const useFormValue = <T extends Object>(initialState: FormValueState<T>) 
             ...prevState,
             [name]: {
                 ...prevState[name],
+                isError: false,
+                message: '',
                 value,
             },
         }));
@@ -50,6 +55,8 @@ export const useFormValue = <T extends Object>(initialState: FormValueState<T>) 
             ...prevState,
             [key]: {
                 ...prevState[key],
+                isError: false,
+                message: '',
                 value,
             },
         }));
@@ -94,7 +101,7 @@ export const useFormValue = <T extends Object>(initialState: FormValueState<T>) 
         reset,
         handleFormValueChange,
         handleCheckboxChange,
-        // validateFormRequired,
+        validateFormRequired,
         ...formValue
     }
 };

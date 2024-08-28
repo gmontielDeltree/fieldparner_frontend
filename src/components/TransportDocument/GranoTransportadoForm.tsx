@@ -98,7 +98,8 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             type="text"
             label="Codigo Postal"
             name="cpSalidaCampo"
-            required
+            error={formValues.cpSalidaCampo.isError}
+            helperText={formValues.cpSalidaCampo.message}
             value={formValues.cpSalidaCampo.value}
             onChange={handleInputChange}
             onBlur={(e) => {
@@ -156,7 +157,8 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             type="number"
             label="Kgs Estimados"
             name="kgEstimado"
-            required
+            error={formValues.kgEstimado.isError}
+            helperText={formValues.kgEstimado.message}
             inputProps={{
               min: 0, // Valor mínimo permitido
               // step: 1, // Permitir solo números enteros
@@ -176,7 +178,8 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             type="number"
             label="Kgs Bruto"
             name="kgBruto"
-            required
+            error={formValues.kgBruto.isError}
+            helperText={formValues.kgBruto.message}
             inputProps={{ min: 0 }}
             value={formValues.kgBruto.value}
             onChange={handleInputChange}
@@ -192,7 +195,8 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             type="number"
             label="Kgs Tara"
             name="kgTara"
-            required
+            error={formValues.kgTara.isError}
+            helperText={formValues.kgTara.message}
             inputProps={{ min: 0 }}
             value={formValues.kgTara.value}
             onChange={handleInputChange}

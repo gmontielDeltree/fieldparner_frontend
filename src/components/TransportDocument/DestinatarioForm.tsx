@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useState } from 'react'
 import { TransportDocumentFormProps } from './type';
-import { Checkbox, FormControl, FormControlLabel, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { BusinessItem } from '../../interfaces/socialEntity';
 import { CountryCode, ItemZipCode } from '../../types';
 import { getLocalityAndStateByZipCode } from '../../utils/getDataZipCode';
@@ -63,12 +63,14 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
     <Grid container spacing={1}>
       <Loading loading={loadingZipCode} />
       <Grid item xs={12} sm={4}>
-        <FormControl key="destinatario-select" fullWidth>
+        <FormControl
+          key="destinatario-select"
+          error={formValues.cuitDestinatario.isError}
+          fullWidth>
           <InputLabel id="destinatario" required>Destinatario</InputLabel>
           <Select
             labelId="destinatario"
             name="cuitDestinatario"
-            required
             value={formValues.cuitDestinatario.value}
             label="Destinatario"
             onChange={onChangeDestinatario}
@@ -79,6 +81,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
               </MenuItem>
             ))}
           </Select>
+          <FormHelperText>{formValues.cuitDestinatario.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={4}>
@@ -148,12 +151,14 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
         />
       </Grid>
       <Grid item xs={12} sm={4}>
-        <FormControl key="Destino-select" fullWidth>
+        <FormControl
+          key="Destino-select"
+          error={formValues.cuitDestino.isError}
+          fullWidth>
           <InputLabel id="Destino" required>Destino</InputLabel>
           <Select
             labelId="Destino"
             name="cuitDestino"
-            required
             value={formValues.cuitDestino.value}
             label="Destino"
             onChange={onChangeDestino}
@@ -164,6 +169,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
               </MenuItem>
             ))}
           </Select>
+          <FormHelperText>{formValues.cuitDestino.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={4}>
@@ -198,7 +204,6 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           type="text"
           label="Codigo Postal"
           name="cpDestino"
-          required
           value={formValues.cpDestino.value}
           onChange={handleInputChange}
           onBlur={(e) => {

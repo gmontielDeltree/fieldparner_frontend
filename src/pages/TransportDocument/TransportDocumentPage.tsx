@@ -8,22 +8,26 @@ import { TransportDocument } from '../../interfaces/transportDocument';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ComercioGranoForm, DestinatarioForm, GranoTransportadoForm, RemitenteForm, TransportistaForm } from '../../components/TransportDocument';
-import { getShortDate } from '../../helpers/dates';
+// import { getShortDate } from '../../helpers/dates';
 import { EnumTipoFlete, EnumTransportDocumentStatus, ExitFieldItem, TipoEntidad } from '../../types';
 import { uploadFile } from '../../helpers/fileUpload';
 import { uiFinishLoading, uiStartLoading } from '../../redux/ui';
 
+type LabelProps = {
+  text: string;
+  error?: boolean;
+  optional?: React.ReactNode;
+};
 
-const steps = ["Remitente", "Granos Transportados", "Comercio Granos", "Destinatario", "Transportista"];
 
 const initialForm: FormValueState<TransportDocument> = {
   accountId: { value: "", required: true, isError: false, message: "" },
   licenceId: { value: "", required: true, isError: false, message: "" },
   contractId: { value: "", required: true, isError: false, message: "" },
   nroCartaPorte: { value: "", required: true, isError: false, message: "" },
-  fechaEmision: { value: getShortDate(true, "-"), required: true, isError: false, message: "" },
-  fechaVencimiento: { value: getShortDate(false, "-"), required: true, isError: false, message: "" },
-  nroCTG: { value: "", required: true, isError: false, message: "" },
+  fechaEmision: { value: "", required: true, isError: false, message: "" },
+  fechaVencimiento: { value: "", required: true, isError: false, message: "" },
+  nroCTG: { value: "", required: false, isError: false, message: "" },
   arancel: { value: "", required: false, isError: false, message: "" },
   contrato: { value: "", required: false, isError: false, message: "" },
   cuitGenerador: { value: "", required: true, isError: false, message: "" },
@@ -31,7 +35,7 @@ const initialForm: FormValueState<TransportDocument> = {
   categoriaEntidadId: { value: "", required: true, isError: false, message: "" },
   salidaCampoId: { value: "", required: true, isError: false, message: "" },
   nroOperadorONCCA: { value: "", required: false, isError: false, message: "" },
-  cpSalidaCampo: { value: "", required: false, isError: false, message: "" },
+  cpSalidaCampo: { value: "", required: true, isError: false, message: "" },
   nroPlantaONCCA: { value: "", required: false, isError: false, message: "" },
   cuitRemitenteComercialPrimario: { value: "", required: false, isError: false, message: "" },
   cuitRemitenteComercialSecundario: { value: "", required: false, isError: false, message: "" },
@@ -42,27 +46,27 @@ const initialForm: FormValueState<TransportDocument> = {
   cuitRepresentanteEntrega: { value: "", required: false, isError: false, message: "" },
   cuitRepresentanteRecibidor: { value: "", required: false, isError: false, message: "" },
   cpGenerador: { value: "", required: false, isError: false, message: "" },
-  kgEstimado: { value: 0, required: false, isError: false, message: "" },
-  kgBruto: { value: 0, required: false, isError: false, message: "" },
-  kgTara: { value: 0, required: false, isError: false, message: "" },
+  kgEstimado: { value: 0, required: true, isError: false, message: "" },
+  kgBruto: { value: 0, required: true, isError: false, message: "" },
+  kgTara: { value: 0, required: true, isError: false, message: "" },
   kgNeto: { value: 0, required: false, isError: false, message: "" },
-  cuitComprador: { value: "", required: false, isError: false, message: "" },
+  cuitComprador: { value: "", required: true, isError: false, message: "" },
   cuitAsignadorCupo: { value: "", required: false, isError: false, message: "" },
   nroCupo: { value: "", required: false, isError: false, message: "" },
   fechaCupo: { value: "", required: false, isError: false, message: "" },
-  cuitDestinatario: { value: "", required: false, isError: false, message: "" },
+  cuitDestinatario: { value: "", required: true, isError: false, message: "" },
   esCampo: { value: false, required: false, isError: false, message: "" },
   campoDestinatario: { value: "", required: false, isError: false, message: "" },
   loteDestinatario: { value: "", required: false, isError: false, message: "" },
-  cuitDestino: { value: "", required: false, isError: false, message: "" },
+  cuitDestino: { value: "", required: true, isError: false, message: "" },
   domicilioDestino: { value: "", required: false, isError: false, message: "" },
   localidadDestino: { value: "", required: false, isError: false, message: "" },
   cpDestino: { value: "", required: false, isError: false, message: "" },
   provinciaDestino: { value: "", required: false, isError: false, message: "" },
-  cuitTransportista: { value: "", required: false, isError: false, message: "" },
+  cuitTransportista: { value: "", required: true, isError: false, message: "" },
   razonSocialTransportista: { value: "", required: false, isError: false, message: "" },
-  cuitChofer: { value: "", required: false, isError: false, message: "" },
-  vehiculoIdChasis: { value: "", required: false, isError: false, message: "" },
+  cuitChofer: { value: "", required: true, isError: false, message: "" },
+  vehiculoIdChasis: { value: "", required: true, isError: false, message: "" },
   vehiculoIdAcoplado1: { value: "", required: false, isError: false, message: "" },
   vehiculoIdAcoplado2: { value: "", required: false, isError: false, message: "" },
   razonSocialChofer: { value: "", required: false, isError: false, message: "" },
@@ -73,7 +77,7 @@ const initialForm: FormValueState<TransportDocument> = {
   calidadEnvoltura: { value: "", required: false, isError: false, message: "" },
   calidad: { value: "", required: false, isError: false, message: "" },
   fechaPartida: { value: "", required: false, isError: false, message: "" },
-  cuitPagadorFlete: { value: "", required: false, isError: false, message: "" },
+  cuitPagadorFlete: { value: "", required: true, isError: false, message: "" },
   cuitIntermediarioFlete: { value: "", required: false, isError: false, message: "" },
   status: { value: EnumTransportDocumentStatus.GENERADA, required: false, isError: false, message: "" },
   observaciones: { value: "", required: false, isError: false, message: "" },
@@ -81,7 +85,7 @@ const initialForm: FormValueState<TransportDocument> = {
 };
 
 
-export const NewTransportDocument: React.FC = () => {
+export const TransportDocumentPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.ui);
@@ -97,10 +101,17 @@ export const NewTransportDocument: React.FC = () => {
   const [selectedFieldOutput, setSelectedFieldOutput] = useState<ExitFieldItem | null>(null);
 
   const [activeStep, setActiveStep] = useState(0);
+  const [steps] = useState<LabelProps[]>([
+    { error: false, text: "Remitente" },
+    { error: false, text: "Granos Transportados" },
+    { error: false, text: "Comercio Granos" },
+    { error: false, text: "Destinatario" },
+    { error: false, text: "Transportista" }
+  ]);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const {
     formValue,
-    // setFormulario,
+    setFormValue,
     handleInputChange,
     handleSelectChange,
     handleCheckboxChange,
@@ -130,12 +141,16 @@ export const NewTransportDocument: React.FC = () => {
   const onClickNewTransportDocument = async () => {
     try {
       dispatch(uiStartLoading());
-      console.log('formValue', formValue);
-      // await addTransportDocument(formValue);
-      // await handleUploadDocumentFile();
-      // dispatch(uiFinishLoading());
-      // reset();
-      // navigate("/init/overview/transport-documents");
+      //Mapeo del objeto a 1er nivel para enviarlo
+      const mappedObject = Object.keys(formValue).reduce((acc, key) => {
+        acc[key] = formValue[key].value;
+        return acc;
+      }, {});
+      await addTransportDocument(mappedObject as TransportDocument);
+      await handleUploadDocumentFile();
+      dispatch(uiFinishLoading());
+      reset();
+      navigate("/init/overview/transport-documents");
     } catch (error) {
       console.log('error', error);
       dispatch(uiFinishLoading());
@@ -237,6 +252,38 @@ export const NewTransportDocument: React.FC = () => {
     ]
   );
 
+  const validateForm = (form: EventTarget & HTMLFormElement): boolean => {
+    let isValid = true;
+    let updatedFormValue = { ...formValue };
+    const elements = form.elements as HTMLFormControlsCollection;
+
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i] as HTMLInputElement;
+      const fieldName = element.name as keyof FormValueState<TransportDocument>;
+      const field = formValue[fieldName];
+      if (field && field.required && !element.value) {
+        updatedFormValue[fieldName] = {
+          ...field,
+          isError: true,
+          message: "Campo requerido",
+        };
+        isValid = false;
+      }
+    }
+
+    if (!isValid) setFormValue(updatedFormValue);
+
+    return isValid;
+  }
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    if (validateForm(form)) handleNext();
+  };
+
+
   useEffect(() => {
     getBusinesses();
     getCompanies();
@@ -245,6 +292,7 @@ export const NewTransportDocument: React.FC = () => {
     getCategories();
     getFields();
     getExitFields();
+    
   }, [])
 
 
@@ -257,17 +305,19 @@ export const NewTransportDocument: React.FC = () => {
         sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
       >
         <Typography component="h1" variant="h4" align="left" sx={{ mb: 3 }}>
-          Carta de Porte - {steps[activeStep]}
+          Carta de Porte - {steps[activeStep].text}
         </Typography>
         <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 3, mb: 4 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
+          {steps.map((itemStep) =>
+          (
+            <Step key={itemStep.text}>
+              <StepLabel {...itemStep}>{itemStep.text}</StepLabel>
             </Step>
-          ))}
+          ))
+          }
         </Stepper>
         <>
-          <form>
+          <form onSubmit={onSubmit}>
             {getStepContent(activeStep)}
             <Grid
               container
@@ -284,9 +334,10 @@ export const NewTransportDocument: React.FC = () => {
               <Grid item xs={12} sm={3} key="grid-next">
                 {!(activeStep === steps.length - 1) && (
                   <Button
+                    type='submit'
                     variant="contained"
                     color="primary"
-                    onClick={handleNext}
+                  // onClick={handleNext}
                   >
                     {t("id_next")}
                   </Button>
