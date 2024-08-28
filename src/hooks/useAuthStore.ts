@@ -229,7 +229,8 @@ export const useAuthStore = () => {
       dispatch(onLogin({
         isAdmin: true, accountId: "test", username: "Rodrigo",
         countryId: "ARG",
-        id: "12354"
+        id: "12354",
+        licenceId: "1234"
       }));
       navigate(lastPath, { replace: true });
 

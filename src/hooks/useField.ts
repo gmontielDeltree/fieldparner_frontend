@@ -3,7 +3,6 @@ import { Field } from "@types";
 import { useState } from "react";
 import { dbContext } from "../services";
 import { useAppSelector } from ".";
-import { filter } from "jszip";
 import { Lot } from "../interfaces/field";
 
 export const useField = () => {
@@ -17,11 +16,11 @@ export const useField = () => {
   const getFields = async () => {
     setIsLoading(true);
     try {
-      // if (!user) throw new Error("User not found");
+      if (!user) throw new Error("User not found");
 
       // const result = await dbContext.fields.allDocs({ include_docs: true });
       const result = await db.find({
-        selector: { accountId: undefined }, //user?.accountId }
+        selector: { accountId: user.accountId }, //user?.accountId }
       });
 
       // const vehiculos = response.map((v: any) => v.content);

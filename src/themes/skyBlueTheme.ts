@@ -12,4 +12,7 @@ export const skyBlueTheme: Theme = createTheme({
             main: '#ef5350',
         },
     },
+    typography: {
+        fontFamily: "Roboto, Arial"
+    }
 });

@@ -16,11 +16,11 @@ import {
   Edit as EditIcon,
   Warehouse as WarehouseIcon,
 } from "@mui/icons-material";
-import { useForm, useAppDispatch, useDeposit } from "../hooks";
-import { setDepositActive } from "../redux/deposit";
+import { useForm, useAppDispatch, useDeposit } from "../../hooks";
+import { setDepositActive } from "../../redux/deposit";
 import { useTranslation } from "react-i18next";
-import { Deposit } from "../types";
-import { GenericListPage } from "./GenericListPage";
+import { Deposit } from "../../types";
+import { GenericListPage } from "../GenericListPage";
 
 export const ListDepositsPage: React.FC = () => {
   const navigate = useNavigate();

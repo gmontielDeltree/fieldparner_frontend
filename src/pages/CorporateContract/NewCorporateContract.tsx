@@ -1,9 +1,9 @@
 import React, { SyntheticEvent, useEffect, useState } from 'react';
-import { TextField, IconButton, Container,  Typography, Paper, Tooltip, Grid, Button, Select, MenuItem, Box, FormControl, InputLabel, SelectChangeEvent, Autocomplete } from '@mui/material';
+import { TextField, IconButton, Container,  Typography, Paper, Tooltip, Grid, Button, Box, FormControl,  Autocomplete } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { DataTable, ItemRow, TableCellStyled, Loading } from '../../components';
-import { CorporateContract, ColumnProps } from '@types';
+import { CorporateContract, ColumnProps, ListCorporateContract } from '@types';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector, useForm , useCorporateContract, useBusiness} from '../../hooks';
 import { useNavigate } from 'react-router-dom';
@@ -15,15 +15,24 @@ const initialForm: CorporateContract = {
   idContract: '',
   description: '',
   status: EnumStatusContract.Inactivo,
-  companie: '',
-  percentageOfParticipation: '',
-  activity: ''
+  contractsList: [],
 };
 
 export const NewCorporateContractPage: React.FC = () => {
-  const [newContract, setNewContract] = useState<CorporateContract>(initialForm);
+  const [newContract, setNewContract] = useState<ListCorporateContract>({
+    id:"",
+    companie: '',
+    percentageOfParticipation: '',
+    activity: '',
+  });
   const { corporateContractActive } = useAppSelector((state) => state.corporateContract);
-  const { isLoading, createCorporateContract, setCorporateContract ,updateCorporateContract,corporateContract, getCorporateContract} = useCorporateContract();
+  const { isLoading, listCorporateContract,
+          createCorporateContract,
+          updateCorporateContract,
+          getCorporateContract,
+          getListCorporateContract, addListCorporateContract,
+          removeListCorporateContract
+        } = useCorporateContract();
   const {businesses, getBusinesses} = useBusiness();
 
 
@@ -43,15 +52,15 @@ export const NewCorporateContractPage: React.FC = () => {
   const {
     idContract,
     description,
-    //status,
-    companie,
-    percentageOfParticipation,
-    activity,
     formulario,
     setFormulario,
     handleInputChange,
     reset,
-  } = useForm<CorporateContract >(initialForm);
+  } = useForm<CorporateContract>(initialForm);
+
+  useEffect(() => {
+    console.log("List of corporate contracts:", listCorporateContract);
+  }, [listCorporateContract]);
 
   useEffect(() => {
     getBusinesses();
@@ -63,6 +72,10 @@ export const NewCorporateContractPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    getListCorporateContract();
+  }, []);
+
+  useEffect(() => {
     if (corporateContractActive) setFormulario(corporateContractActive);
     else setFormulario(initialForm);
   }, [corporateContractActive, setFormulario]);
@@ -71,27 +84,14 @@ export const NewCorporateContractPage: React.FC = () => {
  
  
 
-  const onChangeCompanie = (event: React.SyntheticEvent, value: { cuit: string; label: string } | null) => {
+  const onChangeCompanie = (_event: React.SyntheticEvent, value: { cuit: string; label: string } | null) => {
     setNewContract(prevState => ({
       ...prevState,
       companie: value ? value.label : ''
     }));
   };
 
-  const handleAddContract = () => {
-    const newContractWithId: CorporateContract = {
-      ...newContract,
-      _id: Date.now().toString()
-    };
-  
-    // Agregar el nuevo contrato a la lista
-    const updatedContracts = [...corporateContract, newContractWithId];
-    setCorporateContract(updatedContracts);
-  
-    // Resetear el formulario después de agregar
-    setNewContract(initialForm);
-  };
-  
+ 
 
 
 
@@ -105,23 +105,97 @@ export const NewCorporateContractPage: React.FC = () => {
 
   const handleAdd = async () => {
    await createCorporateContract(formulario);
-   console.log("Datos Contrato:",formulario)
+   console.log("Datos Contrato:",formulario);
      reset();
  };
 
-  const handleUpdate = () => {
+ const handleUpdate = () => {
     
-    if (!formulario._id?.trim()) {
-      Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
-      return;
-    }
-    updateCorporateContract(formulario);
-    reset();
-  };
+  if (!formulario.idContract?.trim()) {
+    Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
+    return;
+  }
+  updateCorporateContract(formulario);
+  reset();
+};
 
-  const handleDeleteContract = (id: string) => {
-    setCorporateContract(corporateContract.filter(contract => contract._id !== id));
-  };
+const handleAddContract = () => {
+  if (corporateContractActive) {
+    // Agregar el nuevo contrato a la lista del contrato activo
+    const newContractWithId = { ...newContract, _id: Date.now().toString() };
+
+    setFormulario(prevState => {
+      const contractsList: ListCorporateContract[] = Array.isArray(prevState.contractsList) ? prevState.contractsList : [];
+      return {
+        ...prevState,
+        contractsList: [...contractsList, { ...newContract, _id: Date.now().toString() }]
+      };
+    });
+  
+    updateCorporateContract({
+      ...corporateContractActive,
+      contractsList: [...corporateContractActive.contractsList, newContractWithId],
+    });
+    setNewContract({
+      id:'',
+      companie: '',
+      percentageOfParticipation: '',
+      activity: '',
+    });
+  
+    addListCorporateContract(newContract); 
+    getListCorporateContract();
+  }
+};
+
+
+// const handleAddContract = async () => {
+//   if (corporateContractActive) {
+//     // Agrega el nuevo contrato a la lista del contrato activo
+//     const newContractWithId = { ...newContract, _id: Date.now().toString() };
+
+//     try {
+//       // Actualiza el estado local
+//       setFormulario(prevState => {
+//         const contractsList: ListCorporateContract[] = Array.isArray(prevState.contractsList) ? prevState.contractsList : [];
+//         return {
+//           ...prevState,
+//           contractsList: [...contractsList, newContractWithId]
+//         };
+//       });
+  
+//       // Actualiza el contrato corporativo activo en la base de datos
+//       await updateCorporateContract({
+//         ...corporateContractActive,
+//         contractsList: [...corporateContractActive.contractsList, newContractWithId]
+//       });
+
+//       // Agrega el nuevo contrato a la base de datos de contratos
+//       await addListCorporateContract(newContractWithId);
+
+//       // Limpia el estado del nuevo contrato
+//       setNewContract({
+//         id: '',
+//         companie: '',
+//         percentageOfParticipation: '',
+//         activity: ''
+//       });
+
+//       // Vuelve a obtener la lista actualizada de contratos corporativos
+//       getListCorporateContract();
+//     } catch (error) {
+//       console.log("Error",error)
+//     }
+//   }
+// };
+  
+const handleDeleteListContract = (item: ListCorporateContract) => {
+  if (item._id && item._rev) {
+    removeListCorporateContract(item._id, item._rev);
+    getListCorporateContract();
+  }
+};
+
   const handlePercentageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     setNewContract(prevState => ({
@@ -140,10 +214,21 @@ export const NewCorporateContractPage: React.FC = () => {
 
   const onChangeStatus = (_event: SyntheticEvent, value: string | null) => {
     if (value !== null) {
-      setFormulario(prevState => ({ ...prevState, status: value }));
-      setNewContract(prevState => ({ ...prevState, status: value }));
+      
+      const statusEnum = value as EnumStatusContract;
+  
+      
+      setFormulario(prevState => ({
+        ...prevState,
+        status: statusEnum
+      }));
+  
+      setNewContract(prevState => ({
+        ...prevState,
+        status: statusEnum
+      }));
     }
-  }
+  };
 
   const columns: ColumnProps[] = [
     { text: "Compañía",  align: "center" },
@@ -250,7 +335,7 @@ export const NewCorporateContractPage: React.FC = () => {
           columns={columns}
           isLoading={false}
         >
-          {corporateContract.map((row) => (
+          {listCorporateContract.map((row) => (
             <ItemRow key={row._id}>
               <TableCellStyled align="center">{row.companie}</TableCellStyled>
               <TableCellStyled align="center">{row.percentageOfParticipation}</TableCellStyled>
@@ -261,8 +346,8 @@ export const NewCorporateContractPage: React.FC = () => {
                     aria-label="Eliminar"
                     color="default"
                     onClick={() => {
-                      if (row._id) {
-                        handleDeleteContract(row._id);
+                      if (row) {
+                        handleDeleteListContract(row);
                       }
                     } }
                   >
@@ -292,7 +377,8 @@ export const NewCorporateContractPage: React.FC = () => {
           </Box>
         </Grid>
       </Paper>
-    </Container></>
+    </Container>
+    </>
   );
 };
 

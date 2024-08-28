@@ -89,19 +89,30 @@ export interface LaborsServicesState {
   LaborsServices: LaborsServices[];
 }
 
-
-export interface CorporateContract extends Document {
-  idContract: string;
-  description: string;
-  status: string;
+export interface ListCorporateContract extends Document {
+  id: string,
   companie: string;
   percentageOfParticipation: string;
   activity:string;
+  
+}
+export interface CorporateContract {
+  idContract: string;
+  description: string;
+  status: EnumStatusContract;
+  contractsList: ListCorporateContract[];  
 }
 export interface CorporateContractState {
   corporateContractActive: CorporateContract| null;
   CorporateContract: CorporateContract[];
 }
+
+export interface ListCorporateContractState {
+  listCorporateContractActive: ListCorporateContract| null;
+  ListCorporateContract: ListCorporateContract[];
+}
+
+
 
 export interface ColumnProps {
   text: string;
@@ -133,6 +144,7 @@ export interface User {
   id: string;
   username: string;
   accountId: string;
+  licenceId: string;
   isAdmin: boolean;
   countryId: string;
 }
@@ -363,8 +375,10 @@ export interface ItemZipCode extends Document {
 }
 
 export interface Category extends Document {
-  name: string;
+  idCategory: string;
   description: string;
+  descriptionPt: string;
+  descriptionEn: string;
 }
 
 export interface StockMovement extends Document {
@@ -775,9 +789,29 @@ export enum EnumStatusUser {
   Cancelada = "Cancelada",
 }
 
+export enum EnumTipoFlete {
+  PAGO =  "Flete Pago",
+  APAGAR = "Flete a Pagar",
+}
+
+export enum EnumEnvoltura {
+  EMBOLSADO = "Embolsado",
+  GRANEL = "Granel",
+}
+
+export enum EnumCalidad {
+  CONFORME = "Conforme",
+  CONDICIONAL = "Condicional",
+}
+
+export enum EnumTransportDocumentStatus {
+  GENERADA = "Generada",
+  ENTREGADA = "Entregada",
+  EMITIDA = "Emitida" 
+}
+
 export enum EnumStatusContract {
   Activo = "Activo",
   Inactivo = "Inactivo",
 }
-
 //#endregion

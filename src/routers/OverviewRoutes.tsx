@@ -35,10 +35,13 @@ import {
   ListLaborsServicesPage,
   ListPurchaseOrder,
   PurchaseOrderPage,
+  ListTransportDocument,
+  NewTransportDocument,
   NewCoporateCompaniesPage,
   ListCorporateCompaniesPage,
   NewCorporateContractPage,
   ListCorporateContractPage,
+  
 } from "../pages";
 import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
@@ -181,6 +184,8 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/purchase-order/:order" element={<PurchaseOrderPage />} />
         <Route path="/overview/purchase-order/new" element={<PurchaseOrderPage />} />
 
+        <Route path="/overview/transport-documents" element={<ListTransportDocument />} />
+        <Route path="/overview/transport-documents/new" element={<NewTransportDocument />} />
         <Route path="/overview/corporate-companies/new" element={< NewCoporateCompaniesPage />} />
         <Route path="/overview/corporate-companies" element={< ListCorporateCompaniesPage />} />
         <Route path="/overview/corporate-companies/:id" element={< NewCoporateCompaniesPage />} />

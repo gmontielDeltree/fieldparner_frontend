@@ -31,7 +31,10 @@ export const useVehicle = () => {
   const getTypeVehicles = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.typeVehicles.allDocs({ include_docs: true });
+      const result = await dbContext.typeVehicles.allDocs({
+        include_docs: true
+      });
+      // const vehiculos = response.map((v: any) => v.content);
       if (result.rows.length) {
         const documents: TypeVehicle[] = result.rows.map(
           (row) => row.doc as TypeVehicle

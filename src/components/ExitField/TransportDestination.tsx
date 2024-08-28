@@ -12,15 +12,16 @@ import {
     Divider,
     Box
 } from '@mui/material';
-import { Business, Deposit, ExitField, TipoEntidad, Vehicle, VehicleType } from '../../types';
+import { Deposit, ExitField, TipoEntidad, Vehicle, VehicleType } from '../../types';
 import { LocalShipping as LocalShippingIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import { BusinessItem } from '../../interfaces/socialEntity';
 
 
 interface TransportDestinationProps {
     formValues: ExitField;
     deposits: Deposit[];
-    socialEntities: Business[];
+    socialEntities: BusinessItem[];
     vehicles: Vehicle[];
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
     setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;
@@ -42,7 +43,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
     const netWeight = Number(grossWeight - tareWeight);
     const kgNet = (netWeight - ((netWeight * totalMerma) / 100));
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     const onChangeDeposit = ({ target }: SelectChangeEvent) => {
         const { value } = target;

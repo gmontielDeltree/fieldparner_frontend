@@ -4,8 +4,6 @@ import {
   Box,
   Button,
   Typography,
-  IconButton,
-  Tooltip,
   TextField,
   Grid,
   Card,
@@ -15,11 +13,9 @@ import {
 } from "@mui/material";
 import {
   Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   Download as DownloadIcon,
 } from "@mui/icons-material";
-import { DataGrid, GridColDef, GridRenderCellParams, esES } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, esES } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import { TemplateLayout, Loading, CloseButtonPage } from "../components";
 import * as XLSX from 'xlsx';
@@ -29,38 +25,48 @@ interface GenericListPageProps<T> {
   icon: React.ReactNode;
   data: T[];
   columns: GridColDef[];
+  showAddButton?: boolean;
   getData: () => void;
   deleteData: (id: string, rev: string) => void;
   setActiveItem: (item: T) => void;
   newItemPath: string;
   editItemPath: (id: string) => string;
+  isLoading: boolean;
 }
 
-export const GenericListPage = <T extends { _id: string; _rev: string }>({
+export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
   title,
   icon,
   data,
   columns,
   getData,
   deleteData,
+  showAddButton = true,
   setActiveItem,
   newItemPath,
   editItemPath,
+  isLoading,
 }: GenericListPageProps<T>) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [filterText, setFilterText] = useState("");
-  const [filteredData, setFilteredData] = useState(data);
-  const [isLoading, setIsLoading] = useState(false);
+  const [filteredData, setFilteredData] = useState<(T & { id: string })[]>([]);
+
+  // Función para asignar IDs únicos a las filas
+  const assignUniqueIds = (items: T[]): (T & { id: string })[] => {
+    return items.map((item, index) => ({
+      ...item,
+      id: item._id || `generated-id-${index}`,
+    }));
+  };
 
   useEffect(() => {
-    setIsLoading(true);
     getData();
-    setIsLoading(false);
   }, [getData]);
 
   useEffect(() => {
-    setFilteredData(data);
+    const dataWithIds = assignUniqueIds(data);
+    setFilteredData(dataWithIds);
   }, [data]);
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,17 +81,7 @@ export const GenericListPage = <T extends { _id: string; _rev: string }>({
         value !== null && value !== undefined && value.toString().toLowerCase().includes(searchText.toLowerCase())
       )
     );
-    setFilteredData(filtered);
-  };
-
-  const handleUpdateItem = (item: T) => {
-    setActiveItem(item);
-    navigate(editItemPath(item._id));
-  };
-
-  const handleDeleteItem = (item: T) => {
-    deleteData(item._id, item._rev);
-    getData();
+    setFilteredData(assignUniqueIds(filtered));
   };
 
   const handleExport = () => {
@@ -112,6 +108,7 @@ export const GenericListPage = <T extends { _id: string; _rev: string }>({
           <CardContent>
             <Grid container spacing={3} alignItems="center">
               <Grid item xs={12} md={3}>
+              {showAddButton && newItemPath && (
                 <Button
                   variant="contained"
                   color="success"
@@ -129,6 +126,7 @@ export const GenericListPage = <T extends { _id: string; _rev: string }>({
                 >
                   {t("add_new")}
                 </Button>
+              )}
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
@@ -180,7 +178,6 @@ export const GenericListPage = <T extends { _id: string; _rev: string }>({
                     rowsPerPageOptions={[10]}
                     disableSelectionOnClick
                     loading={isLoading}
-                    getRowId={(row) => row._id}
                     localeText={esES.components.MuiDataGrid.defaultProps.localeText}
                     sx={{
                       "& .MuiDataGrid-columnHeaders": {

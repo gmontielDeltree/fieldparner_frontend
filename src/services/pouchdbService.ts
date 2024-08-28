@@ -27,21 +27,24 @@ import {
   DetailPurchaseOrder,
   CorporateCompanies,
   CorporateContract,
+  ListCorporateContract,
 } from '../types';
 import { Country } from '../interfaces/country';
 import { Business } from '../interfaces/socialEntity';
 import { MenuModules, ModulesUsers } from '../interfaces/menuModules';
 import { LicenceUse } from '../interfaces/licencesUse';
+import { TransportDocument } from '../interfaces/transportDocument';
+import { Company } from '../interfaces/company';
 
 
 PouchDB.plugin(PouchDBFind);
 
-const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
+export const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
 const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
 
-const opts: PouchDB.Replication.SyncOptions = {
+export const opts: PouchDB.Replication.SyncOptions = {
   live: true,
-  retry: true,
+  retry: false,
   //  filter: 'app/by_account',
   //  query_params: { "agent": agent }
 };
@@ -79,8 +82,11 @@ const dbNames = Object.freeze({
     menuModules: "menu-modules",
     modulesUsers: "modules-users",
     licencesUse: "licences-use",
+  transportDocument: "transport-documents",
+  companies: "companies",
     corporateCompanies: "corporate-companies",
     corporateContract: "corporate-contract",
+    listCorporateContract: "list-corporate-contract",
 });
 
 export const dbContext = Object.freeze({
@@ -116,46 +122,52 @@ export const dbContext = Object.freeze({
   menuModules: new PouchDB<MenuModules>(dbNames.menuModules),
   modulesUsers: new PouchDB<ModulesUsers>(dbNames.modulesUsers),
   licencesUse: new PouchDB<LicenceUse>(dbNames.licencesUse),
+  transportDocument: new PouchDB<TransportDocument>(dbNames.transportDocument),
+  companies: new PouchDB<Company>(dbNames.companies),
   corporateCompanies: new PouchDB<CorporateCompanies>(dbNames.corporateCompanies),
   corporateContract: new PouchDB<CorporateContract>(dbNames.corporateContract),
+  listCorporateContract: new PouchDB<ListCorporateContract>(dbNames.listCorporateContract),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
 // para no sincronizar todos los docs the TODOS los usuarios (accountId's)
 
-dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
-dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
-dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
-dbContext.zipCodeARG.sync(`${remoteCouchDBUrl}${dbNames.zipCodeARG}`, opts);
-dbContext.zipCodePRY.sync(`${remoteCouchDBUrl}${dbNames.zipCodePRY}`, opts);
-dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, opts);
-dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, opts);
-dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, opts);
-dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, opts);
-dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, opts);
-dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
-dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
-dbContext.campaigns.sync(`${remoteCouchDBUrl}${dbNames.campaigns}`, opts);
-dbContext.users.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
-dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
-dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`, opts);
-dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`, opts);
-dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`, opts);
-dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`, opts);
-dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`, opts);
-dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
-dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
-dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
-dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
-dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, opts);
-dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
-dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
-dbContext.countries.sync(`${remoteCouchDBUrl}${dbNames.countries}`, opts);
-dbContext.menuModules.sync(`${remoteCouchDBUrl}${dbNames.menuModules}`, opts);
-dbContext.modulesUsers.sync(`${remoteCouchDBUrl}${dbNames.modulesUsers}`, opts);
-dbContext.licencesUse.sync(`${remoteCouchDBUrl}${dbNames.licencesUse}`, opts);
-dbContext.corporateCompanies.sync(`${remoteCouchDBUrl}${dbNames.corporateCompanies}`, opts);
+// dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
+// dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
+// dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
+// dbContext.zipCodeARG.sync(`${remoteCouchDBUrl}${dbNames.zipCodeARG}`, opts);
+// dbContext.zipCodePRY.sync(`${remoteCouchDBUrl}${dbNames.zipCodePRY}`, opts);
+// dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, opts);
+// dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, opts);
+// dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, opts);
+// dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, opts);
+// dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, opts);
+// dbContext.stockByLots.sync(`${remoteCouchDBUrl}${dbNames.stockByLots}`, opts);
+// dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
+// dbContext.campaigns.sync(`${remoteCouchDBUrl}${dbNames.campaigns}`, opts);
+// dbContext.users.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
+// dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
+// dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`, opts);
+// dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`, opts);
+// dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`, opts);
+// dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`, opts);
+// dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`, opts);
+// dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
+// dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
+// dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
+// dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
+// dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, opts);
+// dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
+// dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
+// dbContext.countries.sync(`${remoteCouchDBUrl}${dbNames.countries}`, opts);
+// dbContext.menuModules.sync(`${remoteCouchDBUrl}${dbNames.menuModules}`, opts);
+// dbContext.modulesUsers.sync(`${remoteCouchDBUrl}${dbNames.modulesUsers}`, opts);
+// dbContext.licencesUse.sync(`${remoteCouchDBUrl}${dbNames.licencesUse}`, opts);
+// dbContext.transportDocument.sync(`${remoteCouchDBUrl}${dbNames.transportDocument}`, opts);
+// dbContext.companies.sync(`${remoteCouchDBUrl}${dbNames.companies}`, opts);
+// dbContext.corporateCompanies.sync(`${remoteCouchDBUrl}${dbNames.corporateCompanies}`, opts);
 dbContext.corporateContract.sync(`${remoteCouchDBUrl}${dbNames.corporateContract}`, opts);
+dbContext.listCorporateContract.sync(`${remoteCouchDBUrl}${dbNames.listCorporateContract}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {

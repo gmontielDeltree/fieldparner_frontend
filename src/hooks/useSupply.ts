@@ -1,7 +1,7 @@
 import Swal from 'sweetalert2';
 import { Supply, SupplyByDeposits, StockByNroLot, StockBySupply } from "../types";
-import { useState } from "react";
-import { dbContext } from '../services';
+import { useEffect, useState } from "react";
+import { dbContext, remoteCouchDBUrl } from '../services';
 import { useAppSelector } from '.';
 import { useNavigate } from 'react-router-dom';
 
@@ -325,6 +325,45 @@ export const useSupply = () => {
             setIsLoading(false);
         }
     };
+
+    // useEffect(() => {
+        // Inicia la sincronización con la base de datos remota
+        // const syncHandler = dbContext.supplies.sync(remoteCouchDBUrl, {
+        //     live: true,
+        //     retry: true
+        // }).on('change', (info) => {
+        //     console.log('Sync change:', info);
+        // }).on('paused', (err) => {
+        //     console.log('Sync paused:', err);
+        // }).on('active', () => {
+        //     console.log('Sync resumed');
+        // }).on('denied', (err) => {
+        //     console.error('Sync denied:', err);
+        // }).on('complete', (info) => {
+        //     console.log('Sync complete:', info);
+        // }).on('error', (err) => {
+        //     console.error('Sync error:', err);
+        // });
+
+        // return () => {
+        //     // Detiene la sincronización y cierra la conexión a la base de datos cuando el componente se desmonte
+        //     syncHandler.cancel();
+        //     dbContext.supplies.close()
+        //         .then(() => {
+        //             console.log("successful close supplies db");
+        //         })
+        //         .catch(error => {
+        //             console.error("Error al cerrar la conexión a la base de datos:", error);
+        //         });
+        // };
+    // }, []);
+
+    // useEffect(() => {
+    //     console.log("se monto useSupply")
+    //     return () => {
+    //         console.log("desmonte del hook useSupply")
+    //     }
+    // }, [])
 
 
     return {
