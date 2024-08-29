@@ -1,6 +1,6 @@
-import { FormControl, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import React, { useState } from 'react';
-import { getShortDate } from '../../helpers/dates';
+import { FormControl, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+// import { getShortDate } from '../../helpers/dates';
 import { Company } from '../../interfaces/company';
 import { TransportDocumentFormProps } from './type';
 import { ExitFieldItem } from '../../types';
@@ -20,21 +20,37 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
     handleSelectChange,
     changeExitField,
 }) => {
+    const { cuitCompania, salidaCampoId } = formValues;
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
-    const onChangeCompany = (e: SelectChangeEvent) => {
-        const tributaryCode = e.target.value;
-        const foundCompany = companies?.find(x => x.trybutaryCode === tributaryCode);
-        if (foundCompany) setSelectedCompany(foundCompany);
-        handleSelectChange(e);
-    }
+    useEffect(() => {
+        if (cuitCompania.value !== "" && companies) {
+            const foundCompany = companies.find(x => x.trybutaryCode === cuitCompania.value);
+            if (foundCompany) setSelectedCompany(foundCompany);
+        }
+    }, [cuitCompania, companies])
 
-    const onChangeField = (e: SelectChangeEvent) => {
-        const salidaCampoId = e.target.value;
-        const foundExitField = exitFields?.find(x => x._id === salidaCampoId);
-        if (foundExitField) changeExitField(foundExitField);
-        handleSelectChange(e);
-    }
+    useEffect(() => {
+        if (salidaCampoId.value !== "" && exitFields) {
+            const foundExitField = exitFields.find(x => x._id === salidaCampoId.value);
+            if (foundExitField) changeExitField(foundExitField);
+        }
+    }, [salidaCampoId, exitFields])
+
+
+    // const onChangeCompany = (e: SelectChangeEvent) => {
+    //     const tributaryCode = e.target.value;
+    //     const foundCompany = companies?.find(x => x.trybutaryCode === tributaryCode);
+    //     if (foundCompany) setSelectedCompany(foundCompany);
+    //     handleSelectChange(e);
+    // }
+
+    // const onChangeField = (e: SelectChangeEvent) => {
+    //     const salidaCampoId = e.target.value;
+    //     const foundExitField = exitFields?.find(x => x._id === salidaCampoId);
+    //     if (foundExitField) changeExitField(foundExitField);
+    //     handleSelectChange(e);
+    // }
 
     return (
         <Grid className="remitente-form" container spacing={1}>
@@ -88,9 +104,9 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
                     }}
-                    inputProps={{
-                        min: getShortDate(false, "-"), // Establece la fecha mínima permitida como la fecha actual
-                    }}
+                    // inputProps={{
+                    //     min: getShortDate(false, "-"), // Establece la fecha mínima permitida como la fecha actual
+                    // }}
                     fullWidth
                 />
             </Grid>
@@ -133,7 +149,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         name="cuitCompania"
                         value={formValues.cuitCompania.value} //CUIT 
                         label="Razon Social"
-                        onChange={onChangeCompany}
+                        onChange={handleSelectChange}
                     >
                         {companies?.map((c) => (
                             <MenuItem key={c._id} value={c.trybutaryCode}>
@@ -231,7 +247,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         name="salidaCampoId"
                         value={formValues.salidaCampoId.value}
                         label="Campo"
-                        onChange={onChangeField}
+                        onChange={handleSelectChange}
                     >
                         {exitFields?.map((c) => (
                             <MenuItem key={c._id} value={c._id}>

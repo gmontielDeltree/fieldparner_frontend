@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ComercioGranoForm, DestinatarioForm, GranoTransportadoForm, RemitenteForm, TransportistaForm } from '../../components/TransportDocument';
 // import { getShortDate } from '../../helpers/dates';
-import { EnumTipoFlete, EnumTransportDocumentStatus, ExitFieldItem, TipoEntidad } from '../../types';
+import { Document, EnumTipoFlete, EnumTransportDocumentStatus, ExitFieldItem, TipoEntidad } from '../../types';
 import { uploadFile } from '../../helpers/fileUpload';
 import { uiFinishLoading, uiStartLoading } from '../../redux/ui';
 
@@ -87,7 +87,7 @@ const initialForm: FormValueState<TransportDocument> = {
 
 export const TransportDocumentPage: React.FC = () => {
   const { id: transportDocumentId } = useParams();
-  console.log('transportDocumentId', transportDocumentId);
+
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.ui);
@@ -99,8 +99,9 @@ export const TransportDocumentPage: React.FC = () => {
   const { fields, getFields } = useField(); // Campo
   const { exitFields, getExitFields } = useExitField();
   const { t } = useTranslation();
-  const { addTransportDocument, getTransporDocumentById } = useTransportDocument();
+  const { addTransportDocument, getTransporDocumentById, updateTransportDocument } = useTransportDocument();
   const [selectedFieldOutput, setSelectedFieldOutput] = useState<ExitFieldItem | null>(null);
+  const [documentToEdit, setDocumentToEdit] = useState<Document>({ _id: "", _rev: "" });
 
   const [activeStep, setActiveStep] = useState(0);
   const [steps] = useState<LabelProps[]>([
@@ -136,18 +137,22 @@ export const TransportDocumentPage: React.FC = () => {
   }
 
   const onClickCancel = () => {
-    // dispatch(removeCustomerActive());
+    reset();
     navigate("/init/overview/transport-documents");
   };
+
+  //Mapeo del objeto a 1er nivel para enviarlo
+  const mappedTransportDocument = () => {
+    return Object.keys(formValue).reduce((acc, key) => {
+      acc[key] = formValue[key].value;
+      return acc;
+    }, {});
+  }
 
   const onClickNewTransportDocument = async () => {
     try {
       dispatch(uiStartLoading());
-      //Mapeo del objeto a 1er nivel para enviarlo
-      const mappedObject = Object.keys(formValue).reduce((acc, key) => {
-        acc[key] = formValue[key].value;
-        return acc;
-      }, {});
+      const mappedObject = mappedTransportDocument();
       await addTransportDocument(mappedObject as TransportDocument);
       await handleUploadDocumentFile();
       dispatch(uiFinishLoading());
@@ -159,8 +164,22 @@ export const TransportDocumentPage: React.FC = () => {
     }
   }
 
-  const onClickUpdateTransportDocument = () => {
-    console.log(formValue);
+  const onClickUpdateTransportDocument = async () => {
+    try {
+      dispatch(uiStartLoading());
+      //Mapeo del objeto a 1er nivel para enviarlo
+      let mappedObject = mappedTransportDocument();
+      mappedObject = { ...mappedObject, _id: documentToEdit._id, _rev: documentToEdit._rev };
+
+      await updateTransportDocument(mappedObject as TransportDocument);
+      await handleUploadDocumentFile();
+      dispatch(uiFinishLoading());
+      reset();
+      navigate("/init/overview/transport-documents");
+    } catch (error) {
+      console.log('error', error);
+      dispatch(uiFinishLoading());
+    }
   }
 
   const changeSelectedExitField = (item: ExitFieldItem) => setSelectedFieldOutput(item);
@@ -285,7 +304,6 @@ export const TransportDocumentPage: React.FC = () => {
     if (validateForm(form)) handleNext();
   };
 
-
   useEffect(() => {
     getBusinesses();
     getCompanies();
@@ -305,6 +323,7 @@ export const TransportDocumentPage: React.FC = () => {
           newFormValue[key].value = doc[key];
         });
         setFormValue(newFormValue);
+        setDocumentToEdit({ _id: doc._id, _rev: doc._rev });
       }
     }
 
@@ -312,7 +331,6 @@ export const TransportDocumentPage: React.FC = () => {
       getTransportDocumentIdService(transportDocumentId);
     }
   }, [transportDocumentId]);
-
 
 
   return (
@@ -323,8 +341,11 @@ export const TransportDocumentPage: React.FC = () => {
         variant="outlined"
         sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
       >
-        <Typography component="h1" variant="h4" align="left" sx={{ mb: 3 }}>
-          Carta de Porte - {steps[activeStep].text}
+        <Typography component="h2" variant="h4" align="left" sx={{ mb: 1 }}>
+          {`${documentToEdit ? "Modificacion" : "Nueva"}`} Carta de Porte
+        </Typography>
+        <Typography variant="h5" align='left' sx={{ mb: 3 }}>
+          {steps[activeStep].text}
         </Typography>
         <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 3, mb: 4 }}>
           {steps.map((itemStep) =>
@@ -356,7 +377,6 @@ export const TransportDocumentPage: React.FC = () => {
                     type='submit'
                     variant="contained"
                     color="primary"
-                  // onClick={handleNext}
                   >
                     {t("id_next")}
                   </Button>
@@ -368,23 +388,12 @@ export const TransportDocumentPage: React.FC = () => {
                   hidden={activeStep !== steps.length - 1}
                   color="success"
                   onClick={
-                    formValue._id ? () => onClickUpdateTransportDocument() : () => onClickNewTransportDocument()
+                    documentToEdit._id ? () => onClickUpdateTransportDocument() : () => onClickNewTransportDocument()
                   }
                 >
-                  {!formValue._id ? t("_add") : t("id_update")} {' '}
+                  {documentToEdit._id ? t("id_update") : t("_add")}
                 </Button>
               </Grid>
-              {/* {formulario._id && (
-                <Grid item xs={12} sm={3}>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={() => console.log}
-                  >
-                    {t("icon_delete")}
-                  </Button>
-                </Grid>
-              )} */}
             </Grid>
           </form>
         </>

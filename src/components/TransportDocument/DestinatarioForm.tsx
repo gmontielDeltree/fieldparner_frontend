@@ -1,6 +1,6 @@
-import React, { ChangeEvent, useState } from 'react'
+import React, { useEffect, ChangeEvent, useState } from 'react'
 import { TransportDocumentFormProps } from './type';
-import { Checkbox, FormControl, FormControlLabel, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { BusinessItem } from '../../interfaces/socialEntity';
 import { CountryCode, ItemZipCode } from '../../types';
 import { getLocalityAndStateByZipCode } from '../../utils/getDataZipCode';
@@ -21,25 +21,26 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
   handleFormValueChange,
 }) => {
 
+  const { cuitDestinatario, cuitDestino, cpDestino } = formValues;
   const [selectedDestinatario, setSelectedDestinatario] = useState<BusinessItem | null>(null);
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [dataZipCode, setDataZipCode] = useState<ItemZipCode | null>(null);
 
-  const onChangeDestinatario = (e: SelectChangeEvent) => {
-    const cuit = e.target.value;
-    const foundDest = providers?.find(x => x.cuit === cuit);
-    if (foundDest) setSelectedDestinatario(foundDest);
-    handleSelectChange(e);
-  }
+  // const onChangeDestinatario = (e: SelectChangeEvent) => {
+  //   const cuit = e.target.value;
+  //   const foundDest = providers?.find(x => x.cuit === cuit);
+  //   if (foundDest) setSelectedDestinatario(foundDest);
+  //   handleSelectChange(e);
+  // }
 
-  const onChangeDestino = (e: SelectChangeEvent) => {
-    const value = e.target.value;
-    const foundDest = providers?.find(x => x.cuit === value);
-    if (foundDest) {
-      handleFormValueChange("domicilioDestino", foundDest.domicilio);
-    }
-    handleSelectChange(e);
-  }
+  // const onChangeDestino = (e: SelectChangeEvent) => {
+  //   const value = e.target.value;
+  //   const foundDest = providers?.find(x => x.cuit === value);
+  //   if (foundDest) {
+  //     handleFormValueChange("domicilioDestino", foundDest.domicilio);
+  //   }
+  //   handleSelectChange(e);
+  // }
 
   const getLocalityAndState = async (zipCode: string) => {
     setLoadingZipCode(true);
@@ -58,6 +59,32 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
     }
   };
 
+  useEffect(() => {
+    if (cuitDestinatario.value !== "" && providers) {
+      const foundDest = providers?.find(x => x.cuit === cuitDestinatario.value);
+      if (foundDest) setSelectedDestinatario(foundDest);
+    }
+  }, [cuitDestinatario, providers]);
+
+  useEffect(() => {
+    if (cuitDestino.value !== "" && providers) {
+      const foundDest = providers?.find(x => x.cuit === cuitDestino.value);
+      if (foundDest) handleFormValueChange("domicilioDestino", foundDest.domicilio);
+    }
+  }, [cuitDestino, providers]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (cpDestino.value !== "")
+        getLocalityAndState(cpDestino.value);
+      else
+        setDataZipCode(null);
+
+    }, 1000); // 1000 ms = 1 segundo
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [cpDestino]);
+
 
   return (
     <Grid container spacing={1}>
@@ -73,7 +100,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
             name="cuitDestinatario"
             value={formValues.cuitDestinatario.value}
             label="Destinatario"
-            onChange={onChangeDestinatario}
+            onChange={handleSelectChange}
           >
             {providers?.map((c) => (
               <MenuItem key={c._id} value={c.cuit}>
@@ -161,7 +188,7 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
             name="cuitDestino"
             value={formValues.cuitDestino.value}
             label="Destino"
-            onChange={onChangeDestino}
+            onChange={handleSelectChange}
           >
             {providers?.map((c) => (
               <MenuItem key={c._id} value={c.cuit}>
@@ -206,10 +233,10 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           name="cpDestino"
           value={formValues.cpDestino.value}
           onChange={handleInputChange}
-          onBlur={(e) => {
-            const zipCode = e.target.value;
-            zipCode && getLocalityAndState(zipCode)
-          }}
+          // onBlur={(e) => {
+          //   const zipCode = e.target.value;
+          //   zipCode && getLocalityAndState(zipCode)
+          // }}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}

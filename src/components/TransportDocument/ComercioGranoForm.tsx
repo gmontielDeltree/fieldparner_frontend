@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TransportDocumentFormProps } from './type';
-import { FormControl, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { FormControl, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { BusinessItem } from '../../interfaces/socialEntity';
-import { getShortDate } from '../../helpers/dates';
+// import { getShortDate } from '../../helpers/dates';
 
 
 
@@ -12,15 +12,23 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
   handleInputChange,
   handleSelectChange
 }) => {
-
+  const { cuitComprador } = formValues;
   const [selectedBuyer, setSelectedBuyer] = useState<BusinessItem | null>(null);
 
-  const onChangeComprador = (e: SelectChangeEvent) => {
-    const cuit = e.target.value;
-    const foundBuyer = providers?.find(x => x.cuit === cuit);
-    if (foundBuyer) setSelectedBuyer(foundBuyer);
-    handleSelectChange(e);
-  }
+  // const onChangeComprador = (e: SelectChangeEvent) => {
+  //   const cuit = e.target.value;
+  //   const foundBuyer = providers?.find(x => x.cuit === cuit);
+  //   if (foundBuyer) setSelectedBuyer(foundBuyer);
+  //   handleSelectChange(e);
+  // }
+
+  useEffect(() => {
+    if (cuitComprador.value !== "" && providers) {
+      const foundBuyer = providers?.find(x => x.cuit === cuitComprador.value);
+      if (foundBuyer) setSelectedBuyer(foundBuyer);
+    }
+  }, [cuitComprador, providers]);
+
 
   return (
     <Grid container spacing={1}>
@@ -36,7 +44,7 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
             name="cuitComprador"
             value={formValues.cuitComprador.value}
             label="Comprador"
-            onChange={onChangeComprador}
+            onChange={handleSelectChange}
           >
             {providers?.map((c) => (
               <MenuItem key={c._id} value={c.cuit}>
@@ -96,7 +104,7 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                {selectedBuyer ? selectedBuyer.cuit : "-"}
+                {formValues.cuitAsignadorCupo.value ? formValues.cuitAsignadorCupo.value : "-"}
               </Typography>}
           />
         </FormControl>
@@ -126,7 +134,7 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
-          inputProps={{ min: getShortDate(false, "-") }}
+          // inputProps={{ min: getShortDate(false, "-") }} 
           fullWidth
         />
       </Grid>

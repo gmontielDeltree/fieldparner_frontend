@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TransportDocumentFormProps } from './type';
 import { Box, FormControl, Grid, InputAdornment, ListItemText, styled, TextField, Typography } from '@mui/material';
 import { Loading } from '../Loading';
@@ -17,6 +17,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
   handleInputChange,
 }) => {
 
+  const { cpSalidaCampo } = formValues;
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [dataZipCode, setDataZipCode] = useState<ItemZipCode | null>(null);
 
@@ -36,6 +37,18 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (cpSalidaCampo.value !== "")
+        getLocalityAndState(cpSalidaCampo.value);
+      else
+        setDataZipCode(null);
+
+    }, 1000); // 1000 ms = 1 segundo
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [cpSalidaCampo]);
 
 
   return (
@@ -102,10 +115,10 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             helperText={formValues.cpSalidaCampo.message}
             value={formValues.cpSalidaCampo.value}
             onChange={handleInputChange}
-            onBlur={(e) => {
-              const zipCode = e.target.value;
-              zipCode && getLocalityAndState(zipCode)
-            }}
+            // onBlur={(e) => {
+            //   const zipCode = e.target.value;
+            //   zipCode && getLocalityAndState(zipCode)
+            // }}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
             }}
