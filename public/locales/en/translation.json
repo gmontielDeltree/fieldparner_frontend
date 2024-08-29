@@ -316,6 +316,12 @@
     "corporate_companies": "Corporate Companies",
     "tax_key": "Tax Key",
     "fantasy_name": "Fantasy Name",
-    "upload_photo": "Upload Photo"
+    "upload_photo": "Upload Photo",
+    "added_contracts": "Added Contracts",
+    "_activity": "Activity",
+    "percentage_of_participation": "Percentage of Participation",
+    "_company": "Company",
+    "contract_id": "Contract ID",
+    "corporate_contracts": "Corporate Contracts"
 }
   

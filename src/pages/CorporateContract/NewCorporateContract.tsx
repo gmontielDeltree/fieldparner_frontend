@@ -1,21 +1,26 @@
 import React, { SyntheticEvent, useEffect, useState } from 'react';
 import { TextField, IconButton, Container,  Typography, Paper, Tooltip, Grid, Button, Box, FormControl,  Autocomplete } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { DataTable, ItemRow, TableCellStyled, Loading } from '../../components';
-import { CorporateContract, ColumnProps, ListCorporateContract } from '@types';
+import {ColumnProps } from '@types';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector, useForm , useCorporateContract, useBusiness} from '../../hooks';
 import { useNavigate } from 'react-router-dom';
 import { removeCorporateContractActive } from '../../redux/corporateContract';
 import Swal from 'sweetalert2';
-import {EnumStatusContract} from '../../types';
+import { EnumStatusContract } from '../../interfaces/corporateContract';
+import { CorporateContract, ListCorporateContract } from '../../interfaces/corporateContract';
+import {
+Add as AddIcon,
+Delete as DeleteIcon,
+Handshake as HandshakeIcon,
+Description as DescriptionIcon } from '@mui/icons-material/';
 
 const initialForm: CorporateContract = {
   idContract: '',
   description: '',
   status: EnumStatusContract.Inactivo,
   contractsList: [],
+  totalCompany: 0
 };
 
 export const NewCorporateContractPage: React.FC = () => {
@@ -29,9 +34,8 @@ export const NewCorporateContractPage: React.FC = () => {
   const { isLoading, listCorporateContract,
           createCorporateContract,
           updateCorporateContract,
-          getCorporateContract,
-          getListCorporateContract, addListCorporateContract,
-          removeListCorporateContract
+          getCorporateContract, 
+          corporateContract,
         } = useCorporateContract();
   const {businesses, getBusinesses} = useBusiness();
 
@@ -59,29 +63,47 @@ export const NewCorporateContractPage: React.FC = () => {
   } = useForm<CorporateContract>(initialForm);
 
   useEffect(() => {
-    console.log("List of corporate contracts:", listCorporateContract);
   }, [listCorporateContract]);
 
   useEffect(() => {
     getBusinesses();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    getCorporateContract();
-  }, []);
+  // useEffect(() => {
+  //   getCorporateContract();
+  // }, []);
 
-  useEffect(() => {
-    getListCorporateContract();
-  }, []);
+  // useEffect(() => {
+  //   getListCorporateContract();
+  // }, []);
 
   useEffect(() => {
     if (corporateContractActive) setFormulario(corporateContractActive);
     else setFormulario(initialForm);
   }, [corporateContractActive, setFormulario]);
 
+  useEffect(() => {
+    getCorporateContract ();
+  }, []);
  
- 
+  const handleVerifyId = () => {
+    const IdContrtactExists = corporateContract.find(corporate => corporate.idContract === idContract);
+
+    if (IdContrtactExists) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El ID contrato ya existe',
+      }).then(() => {
+        setFormulario(prevForm => ({
+          ...prevForm,
+          idContract: '',
+        }));
+      });
+      return true; 
+    }
+  
+  };
  
 
   const onChangeCompanie = (_event: React.SyntheticEvent, value: { cuit: string; label: string } | null) => {
@@ -90,8 +112,6 @@ export const NewCorporateContractPage: React.FC = () => {
       companie: value ? value.label : ''
     }));
   };
-
- 
 
 
 
@@ -103,11 +123,11 @@ export const NewCorporateContractPage: React.FC = () => {
 
 
 
-  const handleAdd = async () => {
+  const handleAddContract = async () => {
    await createCorporateContract(formulario);
    console.log("Datos Contrato:",formulario);
      reset();
- };
+  };
 
  const handleUpdate = () => {
     
@@ -119,82 +139,52 @@ export const NewCorporateContractPage: React.FC = () => {
   reset();
 };
 
-const handleAddContract = () => {
-  if (corporateContractActive) {
-    // Agregar el nuevo contrato a la lista del contrato activo
-    const newContractWithId = { ...newContract, _id: Date.now().toString() };
 
-    setFormulario(prevState => {
-      const contractsList: ListCorporateContract[] = Array.isArray(prevState.contractsList) ? prevState.contractsList : [];
-      return {
-        ...prevState,
-        contractsList: [...contractsList, { ...newContract, _id: Date.now().toString() }]
-      };
-    });
+
+const handleAddListContract = () => {
+  const newListContract: ListCorporateContract = {
+    id: Date.now().toString(), 
+    companie: newContract.companie,
+    percentageOfParticipation: newContract.percentageOfParticipation,
+    activity: newContract.activity,
+  };
+
   
-    updateCorporateContract({
-      ...corporateContractActive,
-      contractsList: [...corporateContractActive.contractsList, newContractWithId],
-    });
-    setNewContract({
-      id:'',
-      companie: '',
-      percentageOfParticipation: '',
-      activity: '',
-    });
+  setFormulario((prevState) => ({
+    ...prevState,
+    contractsList: [...prevState.contractsList, newListContract],
+    totalCompany: prevState.contractsList.length + 1, 
+  }));
+
   
-    addListCorporateContract(newContract); 
-    getListCorporateContract();
-  }
+  setNewContract({
+    id:'',
+    companie: '',
+    percentageOfParticipation: '',
+    activity: '',
+  });
+
+  console.log("Nuevo contrato agregado a contractsList:", newListContract);
 };
 
 
-// const handleAddContract = async () => {
-//   if (corporateContractActive) {
-//     // Agrega el nuevo contrato a la lista del contrato activo
-//     const newContractWithId = { ...newContract, _id: Date.now().toString() };
 
-//     try {
-//       // Actualiza el estado local
-//       setFormulario(prevState => {
-//         const contractsList: ListCorporateContract[] = Array.isArray(prevState.contractsList) ? prevState.contractsList : [];
-//         return {
-//           ...prevState,
-//           contractsList: [...contractsList, newContractWithId]
-//         };
-//       });
-  
-//       // Actualiza el contrato corporativo activo en la base de datos
-//       await updateCorporateContract({
-//         ...corporateContractActive,
-//         contractsList: [...corporateContractActive.contractsList, newContractWithId]
-//       });
 
-//       // Agrega el nuevo contrato a la base de datos de contratos
-//       await addListCorporateContract(newContractWithId);
+const handleDeleteListContract = (contractToDelete: ListCorporateContract) => {
+  const updatedContractsList = formulario.contractsList.filter(
+    (contract) => contract.id !== contractToDelete.id
+  );
 
-//       // Limpia el estado del nuevo contrato
-//       setNewContract({
-//         id: '',
-//         companie: '',
-//         percentageOfParticipation: '',
-//         activity: ''
-//       });
+  setFormulario((prevState) => ({
+    ...prevState,
+    contractsList: updatedContractsList,
+    totalCompany: updatedContractsList.length,
+  }));
 
-//       // Vuelve a obtener la lista actualizada de contratos corporativos
-//       getListCorporateContract();
-//     } catch (error) {
-//       console.log("Error",error)
-//     }
-//   }
-// };
-  
-const handleDeleteListContract = (item: ListCorporateContract) => {
-  if (item._id && item._rev) {
-    removeListCorporateContract(item._id, item._rev);
-    getListCorporateContract();
-  }
+  Swal.fire('Eliminado', 'El contrato ha sido eliminado exitosamente.', 'success');
 };
+
+
 
   const handlePercentageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
@@ -231,14 +221,13 @@ const handleDeleteListContract = (item: ListCorporateContract) => {
   };
 
   const columns: ColumnProps[] = [
-    { text: "Compañía",  align: "center" },
-    { text: "Porcent Participación",  align: "center" },
-    { text: "Actividad",  align: "center" },
+    { text: t("_company"),  align: "center" },
+    { text: t("percentage_of_participation"),  align: "center" },
+    { text: t("_activity"),  align: "center" },
     { text: "", align: "center" },
   ];
 
   return (
-
     <>
     <Loading key="loading-users" loading={isLoading} />
     <Container
@@ -251,7 +240,9 @@ const handleDeleteListContract = (item: ListCorporateContract) => {
       }}
     >
       <Typography variant="h4" sx={{ mb: 3 }}>
-        Contratos Societarios
+        <DescriptionIcon   sx={{ marginRight: "-5px", fontSize: "inherit", verticalAlign: "middle" }}/>
+      <HandshakeIcon sx={{ marginRight: "28px"}}/>
+        {t("corporate_contracts")}
       </Typography>
       <Paper
         variant="outlined"
@@ -260,15 +251,16 @@ const handleDeleteListContract = (item: ListCorporateContract) => {
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
             <TextField
-              label="ID Contrato"
+              label={t("contract_id")}
               name="idContract"
               value={idContract}
+              onBlur={handleVerifyId}
               onChange={handleInputChange}
               fullWidth />
           </Grid>
           <Grid item xs={12} md={8}>
             <TextField
-              label="Descripción"
+              label={t("_description")}
               name="description"
               value={description}
               onChange={handleInputChange}
@@ -286,7 +278,7 @@ const handleDeleteListContract = (item: ListCorporateContract) => {
             )}
             fullWidth
           />
-    </FormControl>
+          </FormControl>
           </Grid>
         </Grid>
         <Grid container spacing={2} sx={{ mt: 3 }}>
@@ -298,7 +290,7 @@ const handleDeleteListContract = (item: ListCorporateContract) => {
                   options={companieOptions}
                   getOptionLabel={(option) => option.label || ''}
                   renderInput={(params) => (
-                    <TextField {...params} label="Compañía" variant="outlined" />
+                    <TextField {...params} label={t("_company")} variant="outlined" />
                   )}
                   fullWidth
                 />
@@ -306,7 +298,7 @@ const handleDeleteListContract = (item: ListCorporateContract) => {
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
-              label="Porcent Participación"
+              label={t("percentage_of_participation")}
               name="percentageOfParticipation"
               value={newContract.percentageOfParticipation}
               onChange={handlePercentageChange}
@@ -315,67 +307,64 @@ const handleDeleteListContract = (item: ListCorporateContract) => {
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
-              label="Actividad"
+              label={t("_activity")}
               name="activity"
               value={newContract.activity}
               onChange={handleActivityChange}
               fullWidth />
           </Grid>
           <Grid item xs={12} sx={{ textAlign: 'right' }}>
-            <IconButton onClick={handleAddContract}>
+            <Tooltip title={t("_add")}>
+            <IconButton onClick={handleAddListContract}>
               <AddIcon color='primary' />
             </IconButton>
+            </Tooltip>
           </Grid>
         </Grid>
         <Typography variant="h6" sx={{ mt: 4 }}>
-          Contratos agregados
+          {t("added_contracts")}
         </Typography>
-        <DataTable
-          key="datatable-contracts"
-          columns={columns}
-          isLoading={false}
-        >
-          {listCorporateContract.map((row) => (
-            <ItemRow key={row._id}>
-              <TableCellStyled align="center">{row.companie}</TableCellStyled>
-              <TableCellStyled align="center">{row.percentageOfParticipation}</TableCellStyled>
-              <TableCellStyled align="center">{row.activity}</TableCellStyled>
-              <TableCellStyled align="center">
-                <Tooltip title="Eliminar">
-                  <IconButton
-                    aria-label="Eliminar"
-                    color="default"
-                    onClick={() => {
-                      if (row) {
+        <DataTable key="datatable-contracts" columns={columns} isLoading={false}>
+            {formulario.contractsList.map((row) => (
+              <ItemRow key={row.id}>
+                <TableCellStyled align="center">{row.companie}</TableCellStyled>
+                <TableCellStyled align="center">{row.percentageOfParticipation}</TableCellStyled>
+                <TableCellStyled align="center">{row.activity}</TableCellStyled>
+                <TableCellStyled align="center">
+                  <Tooltip title="Eliminar">
+                    <IconButton
+                      aria-label="Eliminar"
+                      color="default"
+                      onClick={() => {
                         handleDeleteListContract(row);
-                      }
-                    } }
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              </TableCellStyled>
-            </ItemRow>
-          ))}
-        </DataTable>
-        <Grid container justifyContent="flex-end" sx={{ mt: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', mt: 2 }}>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={onClickCancel}>
-              {t("id_cancel")}
-            </Button>
-            <Button
-              type='submit'
-              variant="contained"
-              color="success"
-              onClick={corporateContractActive ? handleUpdate : handleAdd}
-            >
-              {!corporateContractActive ? t("_add") : t("id_update")} {' '}
-            </Button>
-          </Box>
-        </Grid>
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </TableCellStyled>
+              </ItemRow>
+            ))}
+          </DataTable>  
+          <Grid container spacing={2} sx={{ mt: 4, justifyContent: 'center' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 25 }}>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={onClickCancel}
+                >
+                  {t("id_cancel")}
+                </Button>
+                <Button
+                  type='submit'
+                  variant="contained"
+                  color="success"
+                  onClick={corporateContractActive ? handleUpdate : handleAddContract}
+                >
+                  {!corporateContractActive ? t("_add") : t("id_update")} {' '}
+                </Button>
+              </Box>
+            </Grid>
       </Paper>
     </Container>
     </>

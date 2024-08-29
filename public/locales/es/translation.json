@@ -323,6 +323,12 @@
   "corporate_companies": "Compañías Societarias",
   "tax_key": "Clave Tributaria",
   "fantasy_name": "Nombre Fantasia",
-  "upload_photo": "Subir Foto"
+  "upload_photo": "Subir Foto",
+  "added_contracts": "Contratos Agregados",
+  "_activity": "Actividad",
+  "percentage_of_participation": "Porcentaje de Participación",
+  "_company": "Compañía",
+  "contract_id": "ID Contrato",
+  "corporate_contracts": "Contratos Societarios"
   
 }

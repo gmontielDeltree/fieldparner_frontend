@@ -316,5 +316,11 @@
   "corporate_companies": "Empresas Corporativas",
   "tax_key": "Chave Tributária",
   "fantasy_name": "Nome Fantasia",
-  "upload_photo": "Carregar Foto"
+  "upload_photo": "Carregar Foto",
+  "added_contracts": "Contratos Adicionados",
+  "_activity": "Atividade",
+  "percentage_of_participation": "Porcentagem de Participação",
+  "_company": "Companhia",
+  "contract_id": "ID Contrato",
+  "corporate_contracts": "Contratos Societários"
 }

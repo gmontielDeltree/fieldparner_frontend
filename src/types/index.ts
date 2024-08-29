@@ -89,18 +89,19 @@ export interface LaborsServicesState {
   LaborsServices: LaborsServices[];
 }
 
-export interface ListCorporateContract extends Document {
+export interface ListCorporateContract  {
   id: string,
   companie: string;
   percentageOfParticipation: string;
   activity:string;
   
 }
-export interface CorporateContract {
+export interface CorporateContract extends Document {
   idContract: string;
   description: string;
   status: EnumStatusContract;
   contractsList: ListCorporateContract[];  
+  totalCompany: number;
 }
 export interface CorporateContractState {
   corporateContractActive: CorporateContract| null;

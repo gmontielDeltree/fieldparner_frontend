@@ -8,21 +8,22 @@ import {
 } from "@mui/material";
 import 'semantic-ui-css/semantic.min.css';
 import {
-  Business as BusinessIcon,
+  Handshake as HandshakeIcon,
+  Description as DescriptionIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-import { useForm, useAppDispatch, useCorporateContract } from "../../hooks";
+import {  useAppDispatch, useCorporateContract } from "../../hooks";
 import { setCorporateContractActive } from "../../redux/corporateContract";
 import { useTranslation } from "react-i18next";
-import { CorporateContract } from "../../types";
+import { CorporateContract } from "../../interfaces/corporateContract";
 import { GenericListPage } from "../GenericListPage";
 
 export const ListCorporateContractPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // const { isLoading } = useAppSelector((state) => state.ui);
-  const { isLoading, corporateContract, getCorporateContract, setCorporateContract, removeCorporateContract} =  useCorporateContract();
+  const { corporateContract, getCorporateContract, removeCorporateContract} =  useCorporateContract();
  // const { filterText, handleInputChange } = useForm({ filterText: "" });
   const { t } = useTranslation();
 
@@ -36,11 +37,10 @@ export const ListCorporateContractPage: React.FC = () => {
   // ];
 
   const columns = [
-    {field: "idContract", headerName: t("tax_id_identification_number"), flex: 1},
-    { field: "status", headerName: t("name_negal_name"), flex: 1 },
-    { field: "description", headerName: t("_address"), flex: 1 },
-    { field: "companie", headerName: t("_state") , flex: 1 },
-    { field: "countryId", headerName: t("id_country") , flex: 1 },
+    {field: "idContract", headerName: t("contract_id"), flex: 1},
+    { field: "description", headerName: t("_description"), flex: 1 },
+    { field: "totalCompany", headerName: t("_company") , flex: 1 },
+    { field: "status", headerName: "Status", flex: 1 },
     {
       field: "actions",
       headerName: "",
@@ -100,10 +100,11 @@ export const ListCorporateContractPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t("corporate_companies")}
+      title={t("corporate_contracts")}
       icon={
         <Box display="flex" alignItems="center">
-          <BusinessIcon sx={{ marginRight: '8px' }} />
+          <DescriptionIcon/>
+            <HandshakeIcon sx={{ marginRight: "8px"}}/>
         </Box>
       }
       data={corporateContract}
@@ -113,6 +114,7 @@ export const ListCorporateContractPage: React.FC = () => {
       setActiveItem={setCorporateContractActive}
       newItemPath="/init/overview/corporate-contract/new"
       editItemPath={(id) => `/init/overview/corporate-contract/${id}`}
+      isLoading={false}
     />
   );
 

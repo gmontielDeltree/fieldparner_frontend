@@ -36,6 +36,7 @@ import {
   BusinessCenter as BusinessCenterIcon,
   FireTruck as FireTruckIcon,
   CorporateFare as CorporateFareIcon,
+  Description as DescriptionIcon,
 } from "@mui/icons-material";
 import { Icon } from "semantic-ui-react";
 import { SideBarProps } from "../../types";
@@ -391,7 +392,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemIcon>
                   <CorporateFareIcon />
                 </ListItemIcon>
-                <ListItemText primary={"Compañías Societarias"} />      
+                <ListItemText primary={t("corporate_companies")} />      
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
@@ -400,9 +401,9 @@ export const SideBar: React.FC<SideBarProps> = ({
                 selected={pathname.includes("/init/overview/corporate-contract")}
               >
                 <ListItemIcon>
-                  <CorporateFareIcon />
+                  <DescriptionIcon  />
                 </ListItemIcon>
-                <ListItemText primary={"corporate contract"} />      
+                <ListItemText primary={t("corporate_contracts")} />      
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>

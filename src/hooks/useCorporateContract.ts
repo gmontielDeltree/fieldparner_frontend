@@ -1,7 +1,7 @@
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
-import { CorporateContract, ListCorporateContract } from "../types";
+import { CorporateContract, ListCorporateContract} from "../interfaces/corporateContract";
 import { dbContext} from "../services/pouchdbService";
 import { useAppSelector } from '.';
 import { useTranslation } from 'react-i18next';
@@ -29,21 +29,10 @@ export const useCorporateContract = () => {
     try {
       const response = await dbContext.corporateContract.post(newCorporateContract);
       if (response.ok) {
-        Swal.fire('Compañia Societaria', 'Agregada', 'success');
-        
-       
-        const createdContractId = response.id;
-   
-        const newContractList: ListCorporateContract = {
-          companie: '', 
-          percentageOfParticipation: '',
-          activity: '',
-          id: createdContractId,
-        };
-  
-        await addListCorporateContract(newContractList); // Llamada a la función separada
+        Swal.fire('Contrato Societario', 'Agregada', 'success');
+ 
       } else {
-        Swal.fire('Compañia Societaria', "Error", 'error');
+        Swal.fire('Contrato Societario', "Error", 'error');
       }
       
       navigate('/init/overview/corporate-contract/');
@@ -54,40 +43,40 @@ export const useCorporateContract = () => {
     }
   };
 
-  const addListCorporateContract = async (newContractList: ListCorporateContract) => {
-    setIsLoading(true);
+  // const addListCorporateContract = async (newContractList: ListCorporateContract) => {
+  //   setIsLoading(true);
   
-    try {
-      const response = await dbContext.listCorporateContract.post(newContractList);
-      if (response.ok) {
-        Swal.fire('Contrato Societario', 'Agregado', 'success');
-      } else {
-        Swal.fire('Contrato Societario', "Error", 'error');
-      }
-    } catch (error) {
-      handleDatabaseError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //   try {
+  //     const response = await dbContext.listCorporateContract.post(newContractList);
+  //     if (response.ok) {
+  //       Swal.fire('Contrato Societario', 'Agregado', 'success');
+  //     } else {
+  //       Swal.fire('Contrato Societario', "Error", 'error');
+  //     }
+  //   } catch (error) {
+  //     handleDatabaseError(error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
-const getListCorporateContract = async () => {
-  setIsLoading(true);
-  try {
-    const response = await dbContext.listCorporateContract.allDocs({ include_docs: true });
-    if (response.rows.length) {
-      const documents: ListCorporateContract[] = response.rows.map(row => row.doc as ListCorporateContract);
-      setListCorporateContract(documents);
-    } else {
-      setListCorporateContract([]);
-    }
-  } catch (error) {
-    console.error('Error during getCorporateContract:', error);
-    Swal.fire('Error', "Error2", 'error');
-  } finally {
-    setIsLoading(false);
-  }
-};
+// const getListCorporateContract = async () => {
+//   setIsLoading(true);
+//   try {
+//     const response = await dbContext.listCorporateContract.allDocs({ include_docs: true });
+//     if (response.rows.length) {
+//       const documents: ListCorporateContract[] = response.rows.map(row => row.doc as ListCorporateContract);
+//       setListCorporateContract(documents);
+//     } else {
+//       setListCorporateContract([]);
+//     }
+//   } catch (error) {
+//     console.error('Error during getCorporateContract:', error);
+//     Swal.fire('Error', "Error2", 'error');
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
 
 
   const getCorporateContract = async () => {
@@ -130,11 +119,11 @@ const getListCorporateContract = async () => {
   
       if (response.ok) {
       
-        Swal.fire('Compañia Contract', t("_updated"), 'success');
+        Swal.fire('Contrato Societario', t("_updated"), 'success');
         navigate('/init/overview/corporate-contract/');
       } else {
        
-        Swal.fire('Compañia Societaria', "Error en la actualización", 'error');
+        Swal.fire('Contrato Societario', "Error en la actualización", 'error');
       }
     } catch (error) {
      
@@ -155,7 +144,7 @@ const getListCorporateContract = async () => {
       setIsLoading(false);
 
       if (response.ok)
-        Swal.fire('Compañia Societaria', t("_deleted"), 'success');
+        Swal.fire('Contrato Societario', t("_deleted"), 'success');
 
       navigate('/init/overview/corporate-contract/');
     } catch (error) {
@@ -167,19 +156,7 @@ const getListCorporateContract = async () => {
   } 
 
 
-  const removeListCorporateContract = async (contractId: string, removeCorporateContract: string) => {
-    setIsLoading(true);
-  
-    try {
-      await dbContext.listCorporateContract.remove(contractId,removeCorporateContract);
-      Swal.fire('Contrato Societario', 'Eliminado con éxito', 'success');
-    } catch (error) {
-      Swal.fire('Contrato Societario', 'Error al eliminar', 'error');
-      handleDatabaseError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
   
   
   
@@ -192,14 +169,11 @@ const getListCorporateContract = async () => {
         conceptoError, 
 
         //* Métodos
-        addListCorporateContract,
         createCorporateContract, 
         getCorporateContract, 
-        getListCorporateContract,
         setCorporateContract,
         updateCorporateContract, 
         removeCorporateContract,
-        removeListCorporateContract,
     }
 }
 
