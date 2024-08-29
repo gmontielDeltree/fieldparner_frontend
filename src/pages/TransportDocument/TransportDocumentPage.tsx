@@ -6,7 +6,7 @@ import { Loading } from '../../components';
 import { FormValueState, useAppDispatch, useAppSelector, useBusiness, useCategory, useCompany, useCrops, useExitField, useField, useFormValue, useTransportDocument, useVehicle } from '../../hooks';
 import { TransportDocument } from '../../interfaces/transportDocument';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ComercioGranoForm, DestinatarioForm, GranoTransportadoForm, RemitenteForm, TransportistaForm } from '../../components/TransportDocument';
 // import { getShortDate } from '../../helpers/dates';
 import { EnumTipoFlete, EnumTransportDocumentStatus, ExitFieldItem, TipoEntidad } from '../../types';
@@ -86,6 +86,8 @@ const initialForm: FormValueState<TransportDocument> = {
 
 
 export const TransportDocumentPage: React.FC = () => {
+  const { id: transportDocumentId } = useParams();
+  console.log('transportDocumentId', transportDocumentId);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.ui);
@@ -97,7 +99,7 @@ export const TransportDocumentPage: React.FC = () => {
   const { fields, getFields } = useField(); // Campo
   const { exitFields, getExitFields } = useExitField();
   const { t } = useTranslation();
-  const { addTransportDocument } = useTransportDocument();
+  const { addTransportDocument, getTransporDocumentById } = useTransportDocument();
   const [selectedFieldOutput, setSelectedFieldOutput] = useState<ExitFieldItem | null>(null);
 
   const [activeStep, setActiveStep] = useState(0);
@@ -292,8 +294,25 @@ export const TransportDocumentPage: React.FC = () => {
     getCategories();
     getFields();
     getExitFields();
-    
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    const getTransportDocumentIdService = async (id: string) => {
+      const doc = await getTransporDocumentById(id);
+      if (doc) {
+        let newFormValue = structuredClone(initialForm);
+        Object.keys(newFormValue).forEach((key) => {
+          newFormValue[key].value = doc[key];
+        });
+        setFormValue(newFormValue);
+      }
+    }
+
+    if (transportDocumentId) {
+      getTransportDocumentIdService(transportDocumentId);
+    }
+  }, [transportDocumentId]);
+
 
 
   return (

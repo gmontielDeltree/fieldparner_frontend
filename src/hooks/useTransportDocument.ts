@@ -76,12 +76,21 @@ export const useTransportDocument = () => {
         }
     }
 
+    const getTransporDocumentById = async (id: string) => {
+        return dbContext.transportDocument.get(id).then((doc) => {
+            return doc as TransportDocument;
+        }).catch((error) => {
+            console.log('error', error);
+            return null;
+        });
+    }
 
     return {
         transportDocumentsItem,
         isLoading,
 
         getTransportDocuments,
-        addTransportDocument
+        addTransportDocument,
+        getTransporDocumentById
     }
 }

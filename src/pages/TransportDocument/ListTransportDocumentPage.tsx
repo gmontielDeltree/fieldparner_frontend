@@ -40,7 +40,7 @@ export const ListTransportDocumentPage: React.FC = () => {
     const navigate = useNavigate();
     // const dispatch = useAppDispatch();
     // const { t } = useTranslation();
-    const { transportDocumentsItem, getTransportDocuments } = useTransportDocument();
+    const { transportDocumentsItem, getTransportDocuments, getTransporDocumentById } = useTransportDocument();
 
 
     const columns = [
@@ -81,8 +81,8 @@ export const ListTransportDocumentPage: React.FC = () => {
                         <IconButton
                             aria-label="Edit"
                             onClick={() => {
-                                console.log('param.row', params.row);
-                                // navigate(`/overview/transport-documents/edit${params.row._id}`);
+                                // if (params.row._id) getTransporDocumentById(params.row._id);
+                                navigate(`/init/overview/transport-documents/edit/${params.row._id}`);
                             }}
                             sx={{
                                 transition: "transform 0.2s",

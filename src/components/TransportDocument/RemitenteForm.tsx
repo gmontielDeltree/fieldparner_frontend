@@ -68,9 +68,9 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
                     }}
-                    inputProps={{
-                        min: getShortDate(false, "-"), // Establece la fecha mínima permitida como la fecha actual
-                    }}
+                    // inputProps={{
+                    //     min: getShortDate(false, "-"), // Establece la fecha mínima permitida como la fecha actual
+                    // }}
                     fullWidth
                 />
             </Grid>
