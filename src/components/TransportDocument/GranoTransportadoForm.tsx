@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TransportDocumentFormProps } from './type';
 import { Box, FormControl, Grid, InputAdornment, ListItemText, styled, TextField, Typography } from '@mui/material';
 import { Loading } from '../Loading';
@@ -17,6 +17,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
   handleInputChange,
 }) => {
 
+  const { cpSalidaCampo } = formValues;
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [dataZipCode, setDataZipCode] = useState<ItemZipCode | null>(null);
 
@@ -36,6 +37,18 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (cpSalidaCampo.value !== "")
+        getLocalityAndState(cpSalidaCampo.value);
+      else
+        setDataZipCode(null);
+
+    }, 1000); // 1000 ms = 1 segundo
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [cpSalidaCampo]);
 
 
   return (
@@ -64,7 +77,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             type="text"
             label="Contrato"
             name="contrato"
-            value={formValues.contrato}
+            value={formValues.contrato.value}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -98,13 +111,14 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             type="text"
             label="Codigo Postal"
             name="cpSalidaCampo"
-            required
-            value={formValues.cpSalidaCampo}
+            error={formValues.cpSalidaCampo.isError}
+            helperText={formValues.cpSalidaCampo.message}
+            value={formValues.cpSalidaCampo.value}
             onChange={handleInputChange}
-            onBlur={(e) => {
-              const zipCode = e.target.value;
-              zipCode && getLocalityAndState(zipCode)
-            }}
+            // onBlur={(e) => {
+            //   const zipCode = e.target.value;
+            //   zipCode && getLocalityAndState(zipCode)
+            // }}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
             }}
@@ -156,13 +170,14 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             type="number"
             label="Kgs Estimados"
             name="kgEstimado"
-            required
+            error={formValues.kgEstimado.isError}
+            helperText={formValues.kgEstimado.message}
             inputProps={{
               min: 0, // Valor mínimo permitido
               // step: 1, // Permitir solo números enteros
               // inputMode: 'numeric', // Mostrar teclado numérico en dispositivos móviles
             }}
-            value={formValues.kgEstimado}
+            value={formValues.kgEstimado.value}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -176,9 +191,10 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             type="number"
             label="Kgs Bruto"
             name="kgBruto"
-            required
+            error={formValues.kgBruto.isError}
+            helperText={formValues.kgBruto.message}
             inputProps={{ min: 0 }}
-            value={formValues.kgBruto}
+            value={formValues.kgBruto.value}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -192,9 +208,10 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             type="number"
             label="Kgs Tara"
             name="kgTara"
-            required
+            error={formValues.kgTara.isError}
+            helperText={formValues.kgTara.message}
             inputProps={{ min: 0 }}
-            value={formValues.kgTara}
+            value={formValues.kgTara.value}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
@@ -209,7 +226,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
-                  {(formValues.kgBruto - formValues.kgTara)}
+                  {(formValues.kgBruto.value - formValues.kgTara.value) || "-"}
                 </Typography>}
             />
           </FormControl>
@@ -221,7 +238,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             label="Observaciones"
             name="observaciones"
             multiline
-            value={formValues.observaciones}
+            value={formValues.observaciones.value}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,

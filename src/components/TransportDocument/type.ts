@@ -4,9 +4,10 @@ import { TransportDocument } from "../../interfaces/transportDocument";
 import { BusinessItem } from "../../interfaces/socialEntity";
 import { ChangeEvent } from "react";
 import { SelectChangeEvent } from "@mui/material";
+import { FormValueState } from "../../hooks";
 
 export interface TransportDocumentFormProps {
-    formValues: TransportDocument;
+    formValues: FormValueState<TransportDocument>;
     companies?: Company[];
     categories?: Category[];
     exitFields?: ExitFieldItem[];

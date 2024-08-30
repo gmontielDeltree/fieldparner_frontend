@@ -1,4 +1,4 @@
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import React from "react";
 import { useTransportDocument } from "../../hooks";
 
@@ -36,11 +36,11 @@ const renderPdfIcon = (params: GridRenderCellParams) => (
     </Tooltip>
 );
 
-export const ListTransportDocument: React.FC = () => {
-    // const navigate = useNavigate();
+export const ListTransportDocumentPage: React.FC = () => {
+    const navigate = useNavigate();
     // const dispatch = useAppDispatch();
     // const { t } = useTranslation();
-    const { transportDocumentsItem, getTransportDocuments } = useTransportDocument();
+    const { transportDocumentsItem, getTransportDocuments, getTransporDocumentById } = useTransportDocument();
 
 
     const columns = [
@@ -81,8 +81,8 @@ export const ListTransportDocument: React.FC = () => {
                         <IconButton
                             aria-label="Edit"
                             onClick={() => {
-                                console.log('param.row', params.row);
-                                // navigate(`/init/overview/supply/${params.row._id}`);
+                                // if (params.row._id) getTransporDocumentById(params.row._id);
+                                navigate(`/init/overview/transport-documents/edit/${params.row._id}`);
                             }}
                             sx={{
                                 transition: "transform 0.2s",
@@ -95,6 +95,7 @@ export const ListTransportDocument: React.FC = () => {
                     <Tooltip title="Delete">
                         <IconButton
                             aria-label="Delete"
+                            disabled
                             onClick={() => console.log(params.row._id, params.row._rev)}
                             sx={{
                                 transition: "transform 0.2s",

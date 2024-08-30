@@ -33,8 +33,8 @@ export * from './NewLaborsServicespage';
 export * from './ListLaborsServicesPage';
 export * from './PurchaseOrder';
 export * from './ListPurchaseOrder';
-export * from './TransportDocument/ListTransportDocument';
-export * from './TransportDocument/NewTransportDocument'
+export * from './TransportDocument/ListTransportDocumentPage';
+export * from './TransportDocument/TransportDocumentPage';
 export * from './NewCorporateCompaniesPage';
 export * from './ListCorporateCompaniesPage';
 export * from "./CorporateContract/NewCorporateContract";

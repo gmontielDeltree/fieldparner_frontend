@@ -76,12 +76,43 @@ export const useTransportDocument = () => {
         }
     }
 
+    const getTransporDocumentById = async (id: string) => {
+        return dbContext.transportDocument.get(id).then((doc) => {
+            return doc as TransportDocument;
+        }).catch((error) => {
+            console.log('error', error);
+            return null;
+        });
+    }
+
+    const updateTransportDocument = async (updateDoc: TransportDocument) => {
+        setIsLoading(true);
+        try {
+            if (!user) throw new Error("User not logged.");
+
+            const response = await dbContext.transportDocument.put({
+                ...updateDoc,
+                accountId: user.accountId,
+                licenceId: user.licenceId
+            });
+            setIsLoading(false);
+
+            if (response.ok)
+                Swal.fire("Carta de Porte", "Actualizado con exito.", "success");
+        } catch (error) {
+            Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+            setIsLoading(false);
+            console.error("Error al cargar documentos:", error);
+        }
+    }
 
     return {
         transportDocumentsItem,
         isLoading,
 
         getTransportDocuments,
-        addTransportDocument
+        addTransportDocument,
+        getTransporDocumentById,
+        updateTransportDocument
     }
 }

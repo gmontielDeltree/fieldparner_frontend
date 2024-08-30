@@ -1,6 +1,6 @@
-import { FormControl, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import React, { useState } from 'react';
-import { getShortDate } from '../../helpers/dates';
+import { FormControl, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+// import { getShortDate } from '../../helpers/dates';
 import { Company } from '../../interfaces/company';
 import { TransportDocumentFormProps } from './type';
 import { ExitFieldItem } from '../../types';
@@ -20,21 +20,37 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
     handleSelectChange,
     changeExitField,
 }) => {
+    const { cuitCompania, salidaCampoId } = formValues;
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
-    const onChangeCompany = (e: SelectChangeEvent) => {
-        const tributaryCode = e.target.value;
-        const foundCompany = companies?.find(x => x.trybutaryCode === tributaryCode);
-        if (foundCompany) setSelectedCompany(foundCompany);
-        handleSelectChange(e);
-    }
+    useEffect(() => {
+        if (cuitCompania.value !== "" && companies) {
+            const foundCompany = companies.find(x => x.trybutaryCode === cuitCompania.value);
+            if (foundCompany) setSelectedCompany(foundCompany);
+        }
+    }, [cuitCompania, companies])
 
-    const onChangeField = (e: SelectChangeEvent) => {
-        const salidaCampoId = e.target.value;
-        const foundExitField = exitFields?.find(x => x._id === salidaCampoId);
-        if (foundExitField) changeExitField(foundExitField);
-        handleSelectChange(e);
-    }
+    useEffect(() => {
+        if (salidaCampoId.value !== "" && exitFields) {
+            const foundExitField = exitFields.find(x => x._id === salidaCampoId.value);
+            if (foundExitField) changeExitField(foundExitField);
+        }
+    }, [salidaCampoId, exitFields])
+
+
+    // const onChangeCompany = (e: SelectChangeEvent) => {
+    //     const tributaryCode = e.target.value;
+    //     const foundCompany = companies?.find(x => x.trybutaryCode === tributaryCode);
+    //     if (foundCompany) setSelectedCompany(foundCompany);
+    //     handleSelectChange(e);
+    // }
+
+    // const onChangeField = (e: SelectChangeEvent) => {
+    //     const salidaCampoId = e.target.value;
+    //     const foundExitField = exitFields?.find(x => x._id === salidaCampoId);
+    //     if (foundExitField) changeExitField(foundExitField);
+    //     handleSelectChange(e);
+    // }
 
     return (
         <Grid className="remitente-form" container spacing={1}>
@@ -43,9 +59,10 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     variant="outlined"
                     type="text"
                     label="Carta Porte Nro"
-                    required
+                    error={formValues.nroCartaPorte.isError}
+                    helperText={formValues.nroCartaPorte.message}
                     name="nroCartaPorte"
-                    value={formValues.nroCartaPorte}
+                    value={formValues.nroCartaPorte.value}
                     onChange={handleInputChange}
                     disabled={!!formValues._id} //readonly si existe
                     InputProps={{
@@ -59,16 +76,17 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     variant="outlined"
                     type="date"
                     label={"Fecha Emision"}
-                    required
                     name="fechaEmision"
-                    value={formValues.fechaEmision}
+                    error={formValues.fechaEmision.isError}
+                    helperText={formValues.fechaEmision.message}
+                    value={formValues.fechaEmision.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
                     }}
-                    inputProps={{
-                        min: getShortDate(false, "-"), // Establece la fecha mínima permitida como la fecha actual
-                    }}
+                    // inputProps={{
+                    //     min: getShortDate(false, "-"), // Establece la fecha mínima permitida como la fecha actual
+                    // }}
                     fullWidth
                 />
             </Grid>
@@ -77,16 +95,18 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     variant="outlined"
                     type="date"
                     label={"Fecha Vencimiento"}
-                    required
+                    aria-pepe="pepe"
                     name="fechaVencimiento"
-                    value={formValues.fechaVencimiento}
+                    error={formValues.fechaVencimiento.isError}
+                    helperText={formValues.fechaVencimiento.message}
+                    value={formValues.fechaVencimiento.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
                     }}
-                    inputProps={{
-                        min: getShortDate(false, "-"), // Establece la fecha mínima permitida como la fecha actual
-                    }}
+                    // inputProps={{
+                    //     min: getShortDate(false, "-"), // Establece la fecha mínima permitida como la fecha actual
+                    // }}
                     fullWidth
                 />
             </Grid>
@@ -96,7 +116,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     type="text"
                     label="C.T.G Nro"
                     name="nroCTG"
-                    value={formValues.nroCTG}
+                    value={formValues.nroCTG.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -110,7 +130,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     type="text"
                     label="Arancel"
                     name="arancel"
-                    value={formValues.arancel}
+                    value={formValues.arancel.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -119,15 +139,17 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                 />
             </Grid>
             <Grid item xs={12} sm={4}>
-                <FormControl key="razon-social-select" fullWidth>
-                    <InputLabel id="razonSocial" required>Razon Social</InputLabel>
+                <FormControl
+                    key="razon-social-select"
+                    error={formValues.cuitCompania.isError}
+                    fullWidth>
+                    <InputLabel id="razonSocial" >Razon Social</InputLabel>
                     <Select
                         labelId="razonSocial"
                         name="cuitCompania"
-                        required
-                        value={formValues.cuitCompania} //CUIT 
+                        value={formValues.cuitCompania.value} //CUIT 
                         label="Razon Social"
-                        onChange={onChangeCompany}
+                        onChange={handleSelectChange}
                     >
                         {companies?.map((c) => (
                             <MenuItem key={c._id} value={c.trybutaryCode}>
@@ -135,6 +157,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                             </MenuItem>
                         ))}
                     </Select>
+                    <FormHelperText>{formValues.cuitCompania.message}</FormHelperText>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={2}>
@@ -186,13 +209,15 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
-                <FormControl key="category-select" fullWidth>
-                    <InputLabel id="category" required>Categoria</InputLabel>
+                <FormControl
+                    key="category-select"
+                    fullWidth
+                    error={formValues.categoriaEntidadId.isError}>
+                    <InputLabel id="category" >Categoria</InputLabel>
                     <Select
                         labelId="category"
                         name="categoriaEntidadId"
-                        required
-                        value={formValues.categoriaEntidadId}
+                        value={formValues.categoriaEntidadId.value}
                         label="Categoria"
                         MenuProps={{
                             PaperProps: {
@@ -207,18 +232,22 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                             </MenuItem>
                         ))}
                     </Select>
+                    <FormHelperText>{formValues.categoriaEntidadId.message}</FormHelperText>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
-                <FormControl key="field-select" fullWidth>
-                    <InputLabel id="field" required>Campo</InputLabel>
+                <FormControl
+                    key="field-select"
+                    fullWidth
+                    error={formValues.salidaCampoId.isError}
+                >
+                    <InputLabel id="field" >Campo</InputLabel>
                     <Select
                         labelId="field"
                         name="salidaCampoId"
-                        required
-                        value={formValues.salidaCampoId}
+                        value={formValues.salidaCampoId.value}
                         label="Campo"
-                        onChange={onChangeField}
+                        onChange={handleSelectChange}
                     >
                         {exitFields?.map((c) => (
                             <MenuItem key={c._id} value={c._id}>
@@ -226,6 +255,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                             </MenuItem>
                         ))}
                     </Select>
+                    <FormHelperText>{formValues.salidaCampoId.message}</FormHelperText>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
@@ -234,7 +264,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     type="text"
                     label="N° Operador ONCCA"
                     name="nroOperadorONCCA"
-                    value={formValues.nroOperadorONCCA}
+                    value={formValues.nroOperadorONCCA.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -248,7 +278,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     type="text"
                     label="N° Planta ONCCA"
                     name="nroPlantaONCCA"
-                    value={formValues.nroPlantaONCCA}
+                    value={formValues.nroPlantaONCCA.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -262,7 +292,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="comercial-primario"
                         name="cuitRemitenteComercialPrimario"
-                        value={formValues.cuitRemitenteComercialPrimario}
+                        value={formValues.cuitRemitenteComercialPrimario.value}
                         label="Remitente Comercial Venta Primario"
                         onChange={handleSelectChange}
                     >
@@ -282,7 +312,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitRemitenteComercialPrimario ? formValues.cuitRemitenteComercialPrimario : "-"}
+                                {formValues.cuitRemitenteComercialPrimario.value ? formValues.cuitRemitenteComercialPrimario.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
@@ -293,7 +323,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="comercial-secundario"
                         name="cuitRemitenteComercialSecundario"
-                        value={formValues.cuitRemitenteComercialSecundario}
+                        value={formValues.cuitRemitenteComercialSecundario.value}
                         label="Remitente Comercial Venta Secundario"
                         onChange={handleSelectChange}
                     >
@@ -313,7 +343,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitRemitenteComercialSecundario ? formValues.cuitRemitenteComercialSecundario : "-"}
+                                {formValues.cuitRemitenteComercialSecundario.value ? formValues.cuitRemitenteComercialSecundario.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
@@ -324,7 +354,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="comercial-2"
                         name="cuitRemitenteComercialSecundario2"
-                        value={formValues.cuitRemitenteComercialSecundario2}
+                        value={formValues.cuitRemitenteComercialSecundario2.value}
                         label="Remitente Comercial Venta Secundario 2"
                         onChange={handleSelectChange}
                     >
@@ -344,7 +374,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitRemitenteComercialSecundario2 ? formValues.cuitRemitenteComercialSecundario2 : "-"}
+                                {formValues.cuitRemitenteComercialSecundario2.value ? formValues.cuitRemitenteComercialSecundario2.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
@@ -355,7 +385,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="mat"
                         name="cuitMAT"
-                        value={formValues.cuitMAT}
+                        value={formValues.cuitMAT.value}
                         label="M.A.T"
                         onChange={handleSelectChange}
                     >
@@ -375,7 +405,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitMAT ? formValues.cuitMAT : "-"}
+                                {formValues.cuitMAT.value ? formValues.cuitMAT.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
@@ -386,7 +416,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="representante"
                         name="cuitRepresentanteEntrega"
-                        value={formValues.cuitRepresentanteEntrega}
+                        value={formValues.cuitRepresentanteEntrega.value}
                         label="Representante Entrega"
                         onChange={handleSelectChange}
                     >
@@ -406,7 +436,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitRepresentanteEntrega ? formValues.cuitRepresentanteEntrega : "-"}
+                                {formValues.cuitRepresentanteEntrega.value ? formValues.cuitRepresentanteEntrega.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
@@ -417,7 +447,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                     <Select
                         labelId="recibidor"
                         name="cuitRepresentanteRecibidor"
-                        value={formValues.cuitRepresentanteRecibidor}
+                        value={formValues.cuitRepresentanteRecibidor.value}
                         label="Representante Recibidor"
                         onChange={handleSelectChange}
                     >
@@ -437,7 +467,7 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         primary={<Typography variant='subtitle2'>CUIT</Typography>}
                         secondary={
                             <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.cuitRepresentanteRecibidor ? formValues.cuitRepresentanteRecibidor : "-"}
+                                {formValues.cuitRepresentanteRecibidor.value ? formValues.cuitRepresentanteRecibidor.value : "-"}
                             </Typography>}
                     />
                 </FormControl>
