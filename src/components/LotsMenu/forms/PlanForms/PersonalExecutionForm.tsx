@@ -1,5 +1,18 @@
-import React, { useEffect } from "react";
-import { TextField, FormControl, Grid, Paper, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  TextField,
+  FormControl,
+  Grid,
+  Paper,
+  Typography,
+  Select,
+  MenuItem,
+  InputLabel,
+  Switch,
+  FormControlLabel,
+  Card,
+  CardContent
+} from "@mui/material";
 import { useBusiness } from "../../../../hooks";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
@@ -23,8 +36,10 @@ const Title = styled(Typography)({
   marginBottom: "20px"
 });
 
-function PersonalExecutionForm({ lot, formData, setFormData }) {
+function PersonalExecutionForm({ lot, formData, setFormData, showActivityType = false }) {
   const { businesses, getBusinesses } = useBusiness();
+  const [fertilizacionChecked, setFertilizacionChecked] = useState(formData.detalles.fertilizacion || false);
+  const [fitosanitariaChecked, setFitosanitariaChecked] = useState(formData.detalles.fitosanitaria || false);
 
   useEffect(() => {
     getBusinesses();
@@ -40,6 +55,16 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
     }));
   };
 
+  const handleCheckboxChange = (field) => (event) => {
+    const isChecked = event.target.checked;
+    if (field === 'fertilizacion') {
+      setFertilizacionChecked(isChecked);
+    } else {
+      setFitosanitariaChecked(isChecked);
+    }
+    onFieldChange(field, isChecked);
+  };
+
   useEffect(() => {
     console.log(formData);
   }, [formData]);
@@ -49,6 +74,58 @@ function PersonalExecutionForm({ lot, formData, setFormData }) {
       <Title>General</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel id="business-label">Negocio</InputLabel>
+              <Select
+                labelId="business-label"
+                id="business"
+                value={formData.detalles.business || ""}
+                label="Negocio"
+                onChange={(e) => onFieldChange("business", e.target.value)}
+              >
+                {businesses.map((business) => (
+                  <MenuItem key={business._id} value={business._id}>
+                    {business.razonSocial}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {showActivityType && (
+            <Grid item xs={12}>
+              <Card variant="outlined">
+                <CardContent>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Tipo de Actividad:
+                  </Typography>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={fertilizacionChecked}
+                        onChange={handleCheckboxChange('fertilizacion')}
+                        color="primary"
+                      />
+                    }
+                    label="Fertilización"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={fitosanitariaChecked}
+                        onChange={handleCheckboxChange('fitosanitaria')}
+                        color="primary"
+                      />
+                    }
+                    label="Fitosanitaria"
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+          
+          )}
+
           <Grid item xs={12}>
             <AutocompleteContratista
               value={formData.contratista}
