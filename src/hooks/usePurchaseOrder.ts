@@ -29,7 +29,12 @@ export const userPurchaseOrder = () => {
                 }),
                 dbContext.detailPurchaseOrder.allDocs({ include_docs: true }),
                 dbContext.supplies.find({
-                    selector: { "accountId": user.accountId }
+                    selector: {
+                        $or: [
+                            { "accountId": user?.accountId },
+                            { "generico": true }
+                        ]
+                    },
                 })
             ]);
 
@@ -73,7 +78,12 @@ export const userPurchaseOrder = () => {
                     selector: { "nroOrder": order }
                 }),
                 dbContext.supplies.find({
-                    selector: { "accountId": user.accountId }
+                    selector: {
+                        $or: [
+                            { "accountId": user?.accountId },
+                            { "generico": true }
+                        ]
+                    },
                 })
             ]);
             setIsLoading(false);

@@ -89,6 +89,31 @@ export interface LaborsServicesState {
   LaborsServices: LaborsServices[];
 }
 
+export interface ListCorporateContract  {
+  id: string,
+  companie: string;
+  percentageOfParticipation: string;
+  activity:string;
+  
+}
+export interface CorporateContract extends Document {
+  idContract: string;
+  description: string;
+  status: EnumStatusContract;
+  contractsList: ListCorporateContract[];  
+  totalCompany: number;
+}
+export interface CorporateContractState {
+  corporateContractActive: CorporateContract| null;
+  CorporateContract: CorporateContract[];
+}
+
+export interface ListCorporateContractState {
+  listCorporateContractActive: ListCorporateContract| null;
+  ListCorporateContract: ListCorporateContract[];
+}
+
+
 
 export interface ColumnProps {
   text: string;
@@ -120,6 +145,7 @@ export interface User {
   id: string;
   username: string;
   accountId: string;
+  licenceId: string;
   isAdmin: boolean;
   countryId: string;
 }
@@ -195,6 +221,32 @@ export interface Supply extends Document {
   eiqValue?: string;
   senasaId?: string;
   documentFile?: string;
+}
+
+export interface CorporateCompanies extends Document {
+  pais: string;
+  accountId: string;
+  countryId: string;
+  companyId: string;
+  cp: string;
+  licenceId: string;
+  taxKey: string;
+  fantasyName: string;
+  businessName: string;
+  location: string;
+  state: string;
+  photoName: string;
+  domicile: string;
+  phoneNumber: string;
+  secondaryContact: string;
+  web: string;
+  observations: string;
+  taxSituation: string;
+}
+
+export interface CorporateCompaniesState {
+  corporateCompaniesActive: CorporateCompanies | null;
+  CorporateCompanies: CorporateCompanies[];
 }
 
 export interface UserByAccount extends Document {
@@ -324,8 +376,10 @@ export interface ItemZipCode extends Document {
 }
 
 export interface Category extends Document {
-  name: string;
+  idCategory: string;
   description: string;
+  descriptionPt: string;
+  descriptionEn: string;
 }
 
 export interface StockMovement extends Document {
@@ -736,4 +790,29 @@ export enum EnumStatusUser {
   Cancelada = "Cancelada",
 }
 
+export enum EnumTipoFlete {
+  PAGO =  "Flete Pago",
+  APAGAR = "Flete a Pagar",
+}
+
+export enum EnumEnvoltura {
+  EMBOLSADO = "Embolsado",
+  GRANEL = "Granel",
+}
+
+export enum EnumCalidad {
+  CONFORME = "Conforme",
+  CONDICIONAL = "Condicional",
+}
+
+export enum EnumTransportDocumentStatus {
+  GENERADA = "Generada",
+  ENTREGADA = "Entregada",
+  EMITIDA = "Emitida" 
+}
+
+export enum EnumStatusContract {
+  Activo = "Activo",
+  Inactivo = "Inactivo",
+}
 //#endregion

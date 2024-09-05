@@ -6,9 +6,9 @@ import {
   useBusiness,
   useCountry,
   useForm,
-} from "../hooks";
-import { TipoEntidad, CountryCode } from "../types";
-import { AddressForm, CategoryTable, Loading } from "../components";
+} from "../../hooks";
+import { TipoEntidad, CountryCode } from "../../types";
+import { AddressForm, CategoryTable, Loading } from "../../components";
 import {
   Button,
   Container,
@@ -19,13 +19,13 @@ import {
   Stepper,
   Typography,
 } from "@mui/material";
-import { BusinessForm } from "../components";
-import { removeBusinessActive } from "../redux/business";
-import { getLocalityAndStateByZipCode } from "../services";
+import { BusinessForm } from "../../components";
+import { removeBusinessActive } from "../../redux/business";
+import { getLocalityAndStateByZipCode } from "../../services";
 import { useTranslation } from "react-i18next";
-import { uploadFile } from "../helpers/fileUpload";
+import { uploadFile } from "../../helpers/fileUpload";
 import Swal from "sweetalert2";
-import { Business } from "../interfaces/socialEntity";
+import { Business } from "../../interfaces/socialEntity";
 
 const initialForm: Business = {
   accountId: "",

@@ -34,6 +34,9 @@ import {
   Assignment as AssignmentIcon,
   Map as MapIcon,
   BusinessCenter as BusinessCenterIcon,
+  FireTruck as FireTruckIcon,
+  CorporateFare as CorporateFareIcon,
+  Description as DescriptionIcon,
 } from "@mui/icons-material";
 import { Icon } from "semantic-ui-react";
 import { SideBarProps } from "../../types";
@@ -269,6 +272,17 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("field_exits")} />
               </ListItemButton>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/transport-documents"
+                selected={pathname.includes("/init/overview/transport-documents")}
+              >
+                <ListItemIcon>
+                  <FireTruckIcon />
+                </ListItemIcon>
+                <ListItemText primary="Carta de Porte" />
+              </ListItemButton>
               <ListItemButton >
                 <ListItemIcon>
                 </ListItemIcon>
@@ -368,18 +382,28 @@ export const SideBar: React.FC<SideBarProps> = ({
             in={openCollapse === keysCollapse[6]}
             timeout="auto"
             unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
+            <List component="div" disablePadding> 
+                <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/corporate-companies"
+                selected={pathname.includes("/init/overview/corporate-companies")}
+              >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
+                  <CorporateFareIcon />
                 </ListItemIcon>
-                <ListItemText primary={t("_societies")} />
+                <ListItemText primary={t("corporate_companies")} />      
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/corporate-contract"
+                selected={pathname.includes("/init/overview/corporate-contract")}
+              >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
+                  <DescriptionIcon  />
                 </ListItemIcon>
-                <ListItemText primary={t("_contracts")} />
+                <ListItemText primary={t("corporate_contracts")} />      
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>

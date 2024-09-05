@@ -51,7 +51,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
   setFormValues,
 }) => {
   const { type, name, description, barCode, stockByLot, labors, brand, senasaId, documentFile } = formValues;
-  
+
 
   const handleChangeLabors = (
     { target }: ChangeEvent<HTMLInputElement>,

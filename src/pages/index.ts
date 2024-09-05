@@ -2,10 +2,10 @@
 export * from "./ListVehiclesPage";
 export * from "./VehiclePage";
 export * from "./FieldsPage";
-export * from "./BusinessPage";
-export * from "./ListBusinessesPage";
-export * from "./ListDepositsPage";
-export * from "./DepositPage";
+export * from "./Business/BusinessPage";
+export * from "./Business/ListBusinessesPage";
+export * from "./Deposits/ListDepositsPage";
+export * from "./Deposits/DepositPage";
 export * from "./SupplyPage";
 export * from "./ListSuppliesPage";
 export * from './StockMovementPage';
@@ -33,7 +33,12 @@ export * from './NewLaborsServicespage';
 export * from './ListLaborsServicesPage';
 export * from './PurchaseOrder';
 export * from './ListPurchaseOrder';
-
+export * from './TransportDocument/ListTransportDocumentPage';
+export * from './TransportDocument/TransportDocumentPage';
+export * from './NewCorporateCompaniesPage';
+export * from './ListCorporateCompaniesPage';
+export * from "./CorporateContract/NewCorporateContract";
+export * from "./CorporateContract/ListCorporateContract";
 
 
 

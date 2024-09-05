@@ -1,8 +1,7 @@
 
-import Button from '@mui/material/Button';
-import Icon from '@mui/material/Icon';
-import CancelIcon from '@mui/icons-material/Cancel';
+import HighlightOffRoundedIcon from '@mui/icons-material/HighlightOffRounded';
 import { useNavigate } from 'react-router-dom';
+import { IconButton } from '@mui/material';
 
 export const CloseButtonPage = () => {
   const navigate = useNavigate();
@@ -12,7 +11,10 @@ export const CloseButtonPage = () => {
   };
 
   return (
-    <Button onClick={handleNavigateToFields} startIcon={<Icon component={CancelIcon} />} color="secondary">
-    </Button>
+    <IconButton
+      onClick={handleNavigateToFields}
+      color="secondary" >
+      <HighlightOffRoundedIcon fontSize='medium' />
+    </IconButton>
   );
 };

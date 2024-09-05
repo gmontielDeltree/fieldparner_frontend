@@ -1,0 +1,252 @@
+import React, { useState, useEffect } from 'react'
+import { TransportDocumentFormProps } from './type';
+import { Box, FormControl, Grid, InputAdornment, ListItemText, styled, TextField, Typography } from '@mui/material';
+import { Loading } from '../Loading';
+import { getLocalityAndStateByZipCode } from '../../utils/getDataZipCode';
+import { CountryCode, ItemZipCode } from '../../types';
+
+
+const TextFieldGray = styled(TextField)(() => ({
+  backgroundColor: "#f5f5f5",
+  fontWeight: 600
+}));
+
+export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
+  formValues,
+  selectedFieldOutput,
+  handleInputChange,
+}) => {
+
+  const { cpSalidaCampo } = formValues;
+  const [loadingZipCode, setLoadingZipCode] = useState(false);
+  const [dataZipCode, setDataZipCode] = useState<ItemZipCode | null>(null);
+
+  const getLocalityAndState = async (zipCode: string) => {
+    setLoadingZipCode(true);
+    try {
+      const localityAndStates = await getLocalityAndStateByZipCode(
+        CountryCode.ARGENTINA,
+        zipCode
+      );
+
+      if (localityAndStates?.length) setDataZipCode(localityAndStates[0]);
+
+      setLoadingZipCode(false);
+    } catch (error) {
+      setLoadingZipCode(false);
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (cpSalidaCampo.value !== "")
+        getLocalityAndState(cpSalidaCampo.value);
+      else
+        setDataZipCode(null);
+
+    }, 1000); // 1000 ms = 1 segundo
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [cpSalidaCampo]);
+
+
+  return (
+    <Box className="grano-transportado-form">
+      <Loading loading={loadingZipCode} />
+      <Grid container spacing={1}>
+        <Grid item xs={12} sm={3}>
+          <TextFieldGray
+            variant='outlined'
+            label="Campaña"
+            value={selectedFieldOutput?.campaignId || "-"}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={2}>
+          <TextFieldGray
+            variant='outlined'
+            label="Cultivo"
+            value={selectedFieldOutput?.cultive || "-"}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={2}>
+          <TextField
+            variant="outlined"
+            type="text"
+            label="Contrato"
+            name="contrato"
+            value={formValues.contrato.value}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <TextFieldGray
+            variant='outlined'
+            label="Salida de Campo"
+            value={selectedFieldOutput?.field?.nombre || "-"}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={2}>
+          <FormControl fullWidth>
+            <ListItemText
+              primary={<Typography variant='subtitle2'>Kgs</Typography>}
+              sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+              secondary={
+                <Typography letterSpacing={1} variant='subtitle1'>
+                  {selectedFieldOutput?.kgNet || "-"}
+                </Typography>}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <TextField
+            variant="outlined"
+            type="text"
+            label="Codigo Postal"
+            name="cpSalidaCampo"
+            error={formValues.cpSalidaCampo.isError}
+            helperText={formValues.cpSalidaCampo.message}
+            value={formValues.cpSalidaCampo.value}
+            onChange={handleInputChange}
+            // onBlur={(e) => {
+            //   const zipCode = e.target.value;
+            //   zipCode && getLocalityAndState(zipCode)
+            // }}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <FormControl fullWidth>
+            <ListItemText
+              primary={<Typography variant='subtitle2'>Localidad</Typography>}
+              sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+              secondary={
+                <Typography letterSpacing={1} variant='subtitle1'>
+                  {dataZipCode ? dataZipCode.locality : "-"}
+                </Typography>}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <FormControl fullWidth>
+            <ListItemText
+              primary={<Typography variant='subtitle2'>Partido/Departamento</Typography>}
+              sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+              secondary={
+                <Typography letterSpacing={1} variant='subtitle1'>
+                  {"-"}
+                </Typography>}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={2}>
+          <FormControl fullWidth>
+            <ListItemText
+              primary={<Typography variant='subtitle2'>Provincia</Typography>}
+              sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+              secondary={
+                <Typography letterSpacing={1} variant='subtitle1'>
+                  {dataZipCode ? dataZipCode.state : "-"}
+                </Typography>}
+            />
+          </FormControl>
+        </Grid>
+      </Grid>
+      <Typography variant='h6' sx={{ my: 3 }}>La carga sera pesada en Destino*</Typography>
+      <Grid container spacing={1}>
+        <Grid item xs={12} sm={3}>
+          <TextField
+            variant="outlined"
+            type="number"
+            label="Kgs Estimados"
+            name="kgEstimado"
+            error={formValues.kgEstimado.isError}
+            helperText={formValues.kgEstimado.message}
+            inputProps={{
+              min: 0, // Valor mínimo permitido
+              // step: 1, // Permitir solo números enteros
+              // inputMode: 'numeric', // Mostrar teclado numérico en dispositivos móviles
+            }}
+            value={formValues.kgEstimado.value}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <TextField
+            variant="outlined"
+            type="number"
+            label="Kgs Bruto"
+            name="kgBruto"
+            error={formValues.kgBruto.isError}
+            helperText={formValues.kgBruto.message}
+            inputProps={{ min: 0 }}
+            value={formValues.kgBruto.value}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <TextField
+            variant="outlined"
+            type="number"
+            label="Kgs Tara"
+            name="kgTara"
+            error={formValues.kgTara.isError}
+            helperText={formValues.kgTara.message}
+            inputProps={{ min: 0 }}
+            value={formValues.kgTara.value}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <FormControl fullWidth>
+            <ListItemText
+              primary={<Typography variant='subtitle2'>Neto</Typography>}
+              sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+              secondary={
+                <Typography letterSpacing={1} variant='subtitle1'>
+                  {(formValues.kgBruto.value - formValues.kgTara.value) || "-"}
+                </Typography>}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={12}>
+          <TextField
+            variant="outlined"
+            type="text"
+            label="Observaciones"
+            name="observaciones"
+            multiline
+            value={formValues.observaciones.value}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+      </Grid>
+    </Box>
+  )
+}

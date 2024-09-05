@@ -16,6 +16,9 @@ import { usersSlice } from "./users/userSlice";
 import { withdrawalOrderSlice } from "./withdrawalOrder";
 import { laborsServicesSlice } from "./laborsService";
 import { syncStatusSlice } from "./syncStatus";
+import {corporateCompaniesSlice} from "./corporateCompanies";
+import { corporateContractSlice } from "./corporateContract";
+
 
 const store = configureStore({
   reducer: {
@@ -34,7 +37,9 @@ const store = configureStore({
     order: withdrawalOrderSlice.reducer,
     syncStatus: syncStatusSlice.reducer,
     zone: zoneSlice.reducer,
-    laborsServices:laborsServicesSlice.reducer
+    laborsServices:laborsServicesSlice.reducer,
+    corporateCompanies:corporateCompaniesSlice.reducer,
+    corporateContract:corporateContractSlice.reducer,
   }
 });
 
