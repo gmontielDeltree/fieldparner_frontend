@@ -23,6 +23,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { styled, keyframes } from "@mui/material/styles";
 import uuid4 from "uuid4";
 import { useAppDispatch, useForm, useSupply } from "../../../../hooks";
+import { useAppSelector } from '../../../../hooks/useRedux';
 import Chip from "@mui/material/Chip";
 import { useDeposit } from "../../../../hooks";
 import { useTranslation } from "react-i18next";
@@ -89,7 +90,11 @@ function ServicesForm({ formData, setFormData }) {
   const [rows, setRows] = useState([]);
   const [editIndex, setEditIndex] = useState(-1);
   const { isLoading, supplies, getSupplies } = useSupply();
+  const [art, setArt] = useState("");
   const { businesses, getBusinesses } = useBusiness();
+  const { user } = useAppSelector(state => state.auth);
+  const isBrazil = user?.countryId === "BR";
+  const isFitosanitaria = formData.detalles.fitosanitaria;
 
   const services = laborsServices;
 
@@ -108,6 +113,9 @@ function ServicesForm({ formData, setFormData }) {
     getBusinesses();
   }, []);
 
+  const handleArtChange = (event) => {
+    setArt(event.target.value);
+  };
   const handleAddRow = () => {
     const newRow = {
       servicio: selectedService,
@@ -115,6 +123,7 @@ function ServicesForm({ formData, setFormData }) {
       comentario: comment,
       unidades: units,
       precio_unidad: unitPrice,
+      art: isBrazil && isFitosanitaria ? art : undefined,
       costo_total: totalCost
     };
     console.log("NEW ROW", newRow);
@@ -124,6 +133,7 @@ function ServicesForm({ formData, setFormData }) {
       detalles: { ...formData.detalles, servicios: newDetalles }
     });
     setSelectedService("");
+    
     setContractor("");
     setComment("");
     setUnits(0);
@@ -276,6 +286,19 @@ function ServicesForm({ formData, setFormData }) {
       <FormControl fullWidth>
         <Grid container spacing={2}>
           {/* input row */}
+          {isBrazil && isFitosanitaria && (
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="ART (Anotação de Responsabilidade Tecnica)"
+                variant="outlined"
+                value={formData.detalles.art || ""}
+                onChange={handleArtChange}
+                helperText="Nro de Autorizacion del ministerio de Salud para la aplicación Fitosanitaria"
+              />
+            </Grid>
+          )}
+ 
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={4}>
               <FormControl fullWidth>
@@ -453,6 +476,13 @@ function ServicesForm({ formData, setFormData }) {
                   ) : (
                     <>
                       <Grid container item xs={12}>
+                      {isBrazil && isFitosanitaria && (
+  <Grid item xs={12}>
+    <Typography variant="subtitle2">
+      <strong>ART:</strong> {row.art}
+    </Typography>
+  </Grid>
+)}
                         {" "}
                         <Grid item xs={12}>
                           <Typography variant="subtitle1">

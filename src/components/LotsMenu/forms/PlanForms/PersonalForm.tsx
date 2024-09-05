@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   FormControl,
@@ -21,6 +21,7 @@ import { es } from 'date-fns/locale';
 import { NumberFieldWithUnits } from "../../components/NumberField";
 import { AutocompleteCultivo } from "../../components/AutocompleteCultivo";
 import { AutocompleteContratista } from "../../components/AutocompleteContratista";
+import { useBusiness } from "../../../../hooks";
 
 const CustomPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -35,9 +36,14 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(1),
 }));
 
-function PersonalForm({ formData, setFormData }) {
-  const [fertilizacionChecked, setFertilizacionChecked] = useState(false);
-  const [fitosanitariaChecked, setFitosanitariaChecked] = useState(false);
+function PersonalForm({ formData, setFormData, showActivityType = false }) {
+  const [fertilizacionChecked, setFertilizacionChecked] = useState(formData.detalles.fertilizacion || false);
+  const [fitosanitariaChecked, setFitosanitariaChecked] = useState(formData.detalles.fitosanitaria || false);
+  const { businesses, getBusinesses } = useBusiness();
+
+  useEffect(() => {
+    getBusinesses();
+  }, []);
 
   const onFieldChange = (fieldName, value) => {
     setFormData(prevData => ({
@@ -50,11 +56,13 @@ function PersonalForm({ formData, setFormData }) {
   };
 
   const handleCheckboxChange = (field) => (event) => {
+    const isChecked = event.target.checked;
     if (field === 'fertilizacion') {
-      setFertilizacionChecked(event.target.checked);
+      setFertilizacionChecked(isChecked);
     } else {
-      setFitosanitariaChecked(event.target.checked);
+      setFitosanitariaChecked(isChecked);
     }
+    onFieldChange(field, isChecked);
   };
 
   return (
@@ -65,17 +73,19 @@ function PersonalForm({ formData, setFormData }) {
         </Grid>
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
-            <InputLabel id="ing-agronomo-label">Ing. Agrónomo</InputLabel>
+            <InputLabel id="business-label">Ing. Agronomo</InputLabel>
             <Select
-              labelId="ing-agronomo-label"
-              id="ing-agronomo"
-              value={formData.detalles.ingAgronomo || ""}
-              label="Ing. Agrónomo"
-              onChange={(e) => onFieldChange("ingAgronomo", e.target.value)}
+              labelId="business-label"
+              id="business"
+              value={formData.detalles.business || ""}
+              label="Ing. Agronomo"
+              onChange={(e) => onFieldChange("business", e.target.value)}
             >
-              <MenuItem value="Ing Agronomo 1">Ing. Agrónomo 1</MenuItem>
-              <MenuItem value="Ing Agronomo 2">Ing. Agrónomo 2</MenuItem>
-              <MenuItem value="Ing Agronomo 3">Ing. Agrónomo 3</MenuItem>
+              {businesses.map((business) => (
+                <MenuItem key={business._id} value={business._id}>
+                  {business.razonSocial}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Grid>
@@ -86,38 +96,43 @@ function PersonalForm({ formData, setFormData }) {
           />
         </Grid>
 
-        <Grid item xs={12}>
-          <SectionTitle>Detalles de la Actividad</SectionTitle>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="subtitle2" gutterBottom>
-                Tipo de Actividad:
-              </Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={fertilizacionChecked}
-                    onChange={handleCheckboxChange('fertilizacion')}
-                    color="primary"
+        {showActivityType && (
+          <>
+            <Grid item xs={12}>
+              <SectionTitle>Detalles de la Actividad</SectionTitle>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Card variant="outlined">
+                <CardContent>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Tipo de Actividad:
+                  </Typography>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={fertilizacionChecked}
+                        onChange={handleCheckboxChange('fertilizacion')}
+                        color="primary"
+                      />
+                    }
+                    label="Fertilización"
                   />
-                }
-                label="Fertilización"
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={fitosanitariaChecked}
-                    onChange={handleCheckboxChange('fitosanitaria')}
-                    color="primary"
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={fitosanitariaChecked}
+                        onChange={handleCheckboxChange('fitosanitaria')}
+                        color="primary"
+                      />
+                    }
+                    label="Fitosanitaria"
                   />
-                }
-                label="Fitosanitaria"
-              />
-            </CardContent>
-          </Card>
-        </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          </>
+        )}
+        
         <Grid item xs={12} sm={6}>
           <AutocompleteContratista
             value={formData.contratista || ""}
