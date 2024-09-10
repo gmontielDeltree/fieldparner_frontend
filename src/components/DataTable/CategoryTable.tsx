@@ -21,7 +21,7 @@ import { ColumnProps } from "../../types";
 import { useCategory, useForm } from "../../hooks";
 import { useTranslation } from "react-i18next";
 
-const columns: ColumnProps[] = [{ text: "Categoría", align: "left" }];
+const columns: ColumnProps[] = [{ text: "Categoría", align: "center" }, { text: "", align: "left" }];
 
 // const optionsCategory = ["Cliente", "Proveedor", "Ingeniero"];
 
@@ -76,7 +76,7 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
               onChange={handleSelectChange}
             >
               {optionsCategories.map((option) => (
-                <MenuItem value={option.name}>{option.name}</MenuItem>
+                <MenuItem value={option.description}>{option.description}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -110,7 +110,7 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
         )}
         {categories.map((category) => (
           <ItemRow key={category} hover>
-            <TableCellStyled align="left">{category}</TableCellStyled>
+            <TableCellStyled align="center">{category}</TableCellStyled>
             <TableCellStyled align="center">
               <Tooltip title={t("icon_delete")}>
                 <IconButton

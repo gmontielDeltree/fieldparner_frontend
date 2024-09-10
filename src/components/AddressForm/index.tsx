@@ -1,19 +1,19 @@
-import React, { ChangeEvent, SetStateAction, SyntheticEvent, useState } from "react";
-import { Grid, TextField, InputAdornment, Button, Card, CardMedia, Box, Paper, IconButton, FormControl, FormHelperText } from "@mui/material";
+import React, { ChangeEvent, SetStateAction,  useState } from "react";
+import { Grid, TextField, InputAdornment, Button, Card, CardMedia, Box, Paper, IconButton } from "@mui/material";
 import { getLocalityAndStateByZipCode } from "../../services";
-import { Autocomplete } from "@mui/material";
+import { Phone as PhoneIcon } from "@mui/icons-material";
 import { Loading } from "../../components";
 import { useTranslation } from "react-i18next";
 import { CloudUpload as CloudUploadIcon, DoDisturb as DoDisturbIcon, Cancel as CancelIcon } from "@mui/icons-material";
 import uuid4 from "uuid4";
 import { urlImg } from "../../config";
 import { Business } from "../../interfaces/socialEntity";
-import { Country } from "../../interfaces/country";
+import Swal from "sweetalert2";
 
 export interface AddressFormProps {
   values: Business;
-  countries: Country[];
-  countryError: boolean;
+  //countries: Country[];
+  //countryError: boolean;
   loading: boolean;
   onChangeZipCode: () => Promise<void>;
   handleInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -23,18 +23,15 @@ export interface AddressFormProps {
 
 export const AddressForm: React.FC<AddressFormProps> = ({
   values,
-  countries,
   handleInputChange,
-  countryError,
   setFile,
   handleFormValueChange,
 }) => {
-  const { domicilio, localidad, cp, provincia, pais, logoBusiness } = values;
+  const { domicilio, localidad, cp, provincia, pais, logoBusiness, telefono } = values;
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [localities, setLocalities] = useState<string[]>([]);
   const [urlFile, setUrlFile] = useState('');
   const { t } = useTranslation();
-  const countryOptions = countries.map(c => ({ code: c.code, label: c.descriptionEN }));
 
   const fetchBrazilZipCode = async (zipCode: string) => {
     try {
@@ -48,11 +45,161 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     }
   };
 
+  // const onBlurZipCode = async () => {
+  //   if (cp !== "") {
+  //     setLoadingZipCode(true);
+  //     try {
+  //       console.log ("Ejecutando", pais)
+  //       if (pais === "ARG") {
+  //         const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
+  
+  //         if (localityAndStates?.length) {
+  //           const firstLocality = localityAndStates[0].locality;
+  //           const firstProvince = localityAndStates[0].state;
+  
+  //           setLocalities(localityAndStates.map((x) => x.locality));
+  
+  //           handleInputChange({
+  //             target: {
+  //               name: "localidad",
+  //               value: firstLocality,
+  //             },
+  //           } as React.ChangeEvent<HTMLInputElement>);
+  
+  //           handleInputChange({
+  //             target: {
+  //               name: "provincia",
+  //               value: firstProvince,
+  //             },
+  //           } as React.ChangeEvent<HTMLInputElement>);
+  //         }
+  //       } else if (pais === "BR") {
+  //         const brazilData = await fetchBrazilZipCode(cp);
+  //         if (brazilData) {
+  
+  //           handleInputChange({
+  //             target: {
+  //               name: "localidad",
+  //               value: brazilData.localidade || brazilData.logradouro,
+  //             },
+  //           } as React.ChangeEvent<HTMLInputElement>);
+  
+  //           handleInputChange({
+  //             target: {
+  //               name: "provincia",
+  //               value: brazilData.uf,
+  //             },
+  //           } as React.ChangeEvent<HTMLInputElement>);
+  
+  //           handleInputChange({
+  //             target: {
+  //               name: "domicilio",
+  //               value: `${brazilData.logradouro}, ${brazilData.bairro}`,
+  //             },
+  //           } as React.ChangeEvent<HTMLInputElement>);
+  
+  //         }
+  //       }
+  //       setLoadingZipCode(false);
+  //     } catch (error) {
+  //       console.log(error)
+  //           Swal.fire({
+  //               title: 'Error',
+  //               text: '$error$',
+  //               icon: 'error',
+  //           });
+  //       setLoadingZipCode(false);
+  //     }
+  //   }
+  // };
+  
+
+  // const onBlurZipCode = async () => {
+  //   if (cp !== "") {
+  //     setLoadingZipCode(true);
+  //     try {
+        
+  //       if (pais === "ARG" || pais === "AR") {
+         
+  //         const localityAndStates = await getLocalityAndStateByZipCode("ARG",cp);
+  
+  //         if (localityAndStates?.length) {
+  //           const firstLocality = localityAndStates[0].locality;
+  //           const firstProvince = localityAndStates[0].state;
+  
+  //           setLocalities(localityAndStates.map((x) => x.locality));
+  
+  //           handleInputChange({
+  //             target: {
+  //               name: "localidad",
+  //               value: firstLocality,
+  //             },
+  //           } as React.ChangeEvent<HTMLInputElement>);
+  //           console.log("Ejecutando2", pais);
+  
+  //           handleInputChange({
+  //             target: {
+  //               name: "provincia",
+  //               value: firstProvince,
+  //             },
+  //           } as React.ChangeEvent<HTMLInputElement>);
+  //         } else {
+  //           throw new Error("El código postal no coincide con ningún registro en Argentina.");
+  //         }
+  //       } else if (pais === "BR") {
+  //         const brazilData = await fetchBrazilZipCode(cp);
+          
+  //         if (brazilData) {
+  //           handleInputChange({
+  //             target: {
+  //               name: "localidad",
+  //               value: brazilData.localidade || brazilData.logradouro,
+  //             },
+  //           } as React.ChangeEvent<HTMLInputElement>);
+  
+  //           handleInputChange({
+  //             target: {
+  //               name: "provincia",
+  //               value: brazilData.uf,
+  //             },
+  //           } as React.ChangeEvent<HTMLInputElement>);
+  
+  //           handleInputChange({
+  //             target: {
+  //               name: "domicilio",
+  //               value: `${brazilData.logradouro}, ${brazilData.bairro}`,
+  //             },
+  //           } as React.ChangeEvent<HTMLInputElement>);
+  //         } else {
+  //           throw new Error("El código postal no coincide con ningún registro en Brasil.");
+  //         }
+  //       } else {
+  //         throw new Error("El país seleccionado no es válido o no está soportado.");
+  //       }
+  
+  //       setLoadingZipCode(false);
+  //     } catch (error) {
+  //       console.error(error);
+  
+  //       Swal.fire({
+  //         title: "Error",
+  //         text:  "Revisa que el Codigo postal sea correspondiente al pais.",
+  //         icon: "error",
+  //       });
+  
+  //       setLoadingZipCode(false);
+  //     }
+  //   }
+  // };
+
   const onBlurZipCode = async () => {
     if (cp !== "") {
       setLoadingZipCode(true);
       try {
-        if (pais === "ARG") {
+        console.log("Ejecutando1", pais);
+  
+        if (pais === "ARG" || pais === "AR") {
+          console.log("Ejecutando2", pais);
           const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
   
           if (localityAndStates?.length) {
@@ -74,11 +221,13 @@ export const AddressForm: React.FC<AddressFormProps> = ({
                 value: firstProvince,
               },
             } as React.ChangeEvent<HTMLInputElement>);
+          } else {
+            throw new Error("El código postal no coincide con ningún registro en Argentina.");
           }
         } else if (pais === "BR") {
           const brazilData = await fetchBrazilZipCode(cp);
-          if (brazilData) {
   
+          if (brazilData) {
             handleInputChange({
               target: {
                 name: "localidad",
@@ -99,16 +248,54 @@ export const AddressForm: React.FC<AddressFormProps> = ({
                 value: `${brazilData.logradouro}, ${brazilData.bairro}`,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+          } else {
+            throw new Error("El código postal no coincide con ningún registro en Brasil.");
           }
+        } else if (pais === "PY" || pais === "PRY") {
+          console.log("Ejecutando3", pais);
+          const localityAndStates = await getLocalityAndStateByZipCode("PRY", cp);
+  
+          if (localityAndStates?.length) {
+            const firstLocality = localityAndStates[0].locality;
+            const firstProvince = localityAndStates[0].state;
+  
+            setLocalities(localityAndStates.map((x) => x.locality));
+  
+            handleInputChange({
+              target: {
+                name: "localidad",
+                value: firstLocality,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+  
+            handleInputChange({
+              target: {
+                name: "provincia",
+                value: firstProvince,
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+          } else {
+            throw new Error("El código postal no coincide con ningún registro en Paraguay.");
+          }
+        } else {
+          throw new Error("El país seleccionado no es válido o no está soportado.");
         }
+  
         setLoadingZipCode(false);
       } catch (error) {
-        console.error("Error in onBlurZipCode:", error);
+        console.error(error);
+  
+        Swal.fire({
+          title: "Error",
+          text: "Revisa que el Código Postal sea correspondiente al país.",
+          icon: "error",
+        });
+  
         setLoadingZipCode(false);
       }
     }
   };
+  
   
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,10 +321,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     handleFormValueChange("logoBusiness", "");
   }
 
-  const onChangeCountry = (_event: SyntheticEvent, value: { code: string; label: string } | null) => {
-    if (value)
-      handleFormValueChange("pais", value.code);
-  }
+
 
   return (
     <>
@@ -151,19 +335,24 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         justifyContent="center"
       >
         <Grid item xs={12} sm={6}>
-          <FormControl fullWidth variant="outlined" error={countryError}>
-            <Autocomplete
-              value={countryOptions.find(opts => opts.code === pais) || null}
-              onChange={onChangeCountry}
-              options={countryOptions}
-              getOptionLabel={(option) => option.label}
-              renderInput={(params) => (
-                <TextField {...params} label="Pais" variant="outlined" />
-              )}
-              fullWidth
-            />
-            {countryError && <FormHelperText>Mensaje de error!</FormHelperText>}
-          </FormControl>
+        <TextField
+          label={t("_phone")}
+          variant="outlined"
+          // disabled={disabledFields}
+          type="text"
+          name="telefono"
+          value={telefono}
+          onChange={handleInputChange}
+          InputProps={{
+            // startAdornment: <InputAdornment position="start" />,
+            endAdornment: (
+              <InputAdornment position="end">
+                <PhoneIcon />
+              </InputAdornment>
+            ),
+          }}
+          fullWidth
+        />
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField

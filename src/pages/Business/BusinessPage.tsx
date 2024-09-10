@@ -27,6 +27,7 @@ import { uploadFile } from "../../helpers/fileUpload";
 import Swal from "sweetalert2";
 import { Business } from "../../interfaces/socialEntity";
 
+
 const initialForm: Business = {
   accountId: "",
   nombreCompleto: "",
@@ -50,6 +51,7 @@ const initialForm: Business = {
   matricula: "",
   categorias: [],
   logoBusiness: "",
+  taxSituation: ""
 };
 
 export const BusinessPage: React.FC = () => {
@@ -145,7 +147,9 @@ export const BusinessPage: React.FC = () => {
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
-            />
+              countries={dataCountry}
+              countryError={countryError}  
+              handleFormValueChange={handleFormValueChange}  />
           );
         case 1:
           return (
@@ -161,15 +165,14 @@ export const BusinessPage: React.FC = () => {
             <AddressForm
               key="address-customer"
               values={formulario}
-              countries={dataCountry}
-              countryError={countryError}
+              // countries={dataCountry}
+              // countryError={countryError}
               handleInputChange={handleInputChange}
               onChangeZipCode={getLocalityAndState}
               loading={isLoading || loadingZipCode}
               handleFormValueChange={handleFormValueChange}
-              setFile={setLogoFile}
-            />
-
+              setFile={setLogoFile} 
+              />
           );
         default:
           throw new Error("Unknown step");
@@ -386,14 +389,17 @@ export const BusinessPage: React.FC = () => {
               sx={{ mt: { sm: 5 } }}
             >
               <Grid item xs={12} sm={3} key="grid-back">
-                <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
+                <Button 
+                  variant="contained"
+                  color="inherit"
+                   onClick={activeStep !== 0 ? handleBack : onClickCancel}>
                   {activeStep !== 0 ? t("id_back") : t("id_cancel")}
                 </Button>
               </Grid>
               <Grid item xs={12} sm={3} key="grid-next">
                 {!(activeStep === steps.length - 1) && (
                   <Button
-                    variant="outlined"
+                    variant="contained"
                     color="primary"
                     onClick={handleNext}
                   >
@@ -404,7 +410,7 @@ export const BusinessPage: React.FC = () => {
               <Grid item xs={12} sm={3}>
                 <Button
                   variant="contained"
-                  color="primary"
+                  color="success"
                   onClick={
                     businessActive ? handleUpdateBusiness : addNewBusiness
                   }

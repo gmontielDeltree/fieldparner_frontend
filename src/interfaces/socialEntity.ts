@@ -6,6 +6,7 @@ export interface Business extends Document {
     nombreCompleto?: string;
     documento?: string;
     telefono: string;
+    taxSituation: string;
     email: string;
     tipoEntidad: string;
     razonSocial?: string;

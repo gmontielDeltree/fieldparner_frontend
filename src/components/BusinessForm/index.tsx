@@ -1,6 +1,8 @@
 import {
+  Autocomplete,
   FormControl,
   FormControlLabel,
+  FormHelperText,
   Grid,
   InputAdornment,
   InputLabel,
@@ -11,10 +13,15 @@ import {
   TextField,
 } from "@mui/material";
 import { TipoEntidad } from "../../types";
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, SyntheticEvent, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Phone as PhoneIcon } from "@mui/icons-material";
+// import { Phone as PhoneIcon } from "@mui/icons-material";
+import { Country } from "../../interfaces/country";
 import { Business } from "../../interfaces/socialEntity";
+import { useBusiness } from "../../hooks";
+import Swal from "sweetalert2";
+
+
 
 export interface BusinessFormProps {
   values: Business;
@@ -24,23 +31,31 @@ export interface BusinessFormProps {
   cuitError: boolean;
   razonSocialError: boolean;
   emailError: boolean;
-  // setFormValues: React.Dispatch<React.SetStateAction<Business>>;
+  countries: Country[];
+  countryError: boolean;
+//  setFormValues: React.Dispatch<React.SetStateAction<Business>>;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
+  handleFormValueChange: (key: string, value: string) => void;
   handleCheckboxChange: (
     { target }: ChangeEvent<HTMLInputElement>,
     checked: boolean
   ) => void;
 }
 
+
+
 export const BusinessForm: React.FC<BusinessFormProps> = ({
   values,
   nameError,
   documentError,
   legajoError,
+  countries,
   cuitError,
   emailError,
   razonSocialError,
+  countryError,
+  handleFormValueChange,
   handleInputChange,
   handleSelectChange,
   handleCheckboxChange,
@@ -50,17 +65,150 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
     documento,
     nombreCompleto,
     cuit,
+    taxSituation,
     razonSocial,
     email,
-    telefono,
     contactoPrincipal,
     contactoSecundario,
     esEmpleado,
     matricula,
     legajo,
+    pais,
   } = values;
 
+  const {businesses, getBusinesses} = useBusiness();
+ 
   const { t } = useTranslation();
+  const countryOptions = countries ? countries.map(c => ({ code: c.code, label: c.descriptionEN })) : [];
+
+
+  useEffect(() => {
+    getBusinesses();
+  }, []);
+
+  // useEffect(() => {
+  //   countries
+  //   console.log("Datos:",)
+  // }, []);
+ 
+  // const handleVerifyTaxId = () => {
+
+  //   const cuitValue = cuit ?? "";
+  //   const documentoValue = documento ?? "";
+
+  //   if (cuitValue.trim() === "") {
+  //     return false;
+  //   }
+
+  //   if (documentoValue.trim() === "") {
+  //     return false;
+  //   }
+  //   const TaxIdExists = businesses.find((business) => business.cuit === cuit);
+  //   const documentoExists = businesses.find((business) => business.documento === documento);
+  //   const documentoAndTaxIdExists = businesses.find((business) => business.documento === documento);
+
+  //   if (TaxIdExists) {
+  //     Swal.fire({
+  //       icon: 'error',
+  //       title: 'Error',
+  //       text: 'La Clave Tributaria ya existe',
+  //     }).then(() => {
+  //       handleSelectChange({
+  //         target: {
+  //           name: "cuit",
+  //           value: "",
+  //         },
+  //       } as ChangeEvent<HTMLInputElement>);
+  //     });
+  //     return true; 
+  //   }
+    
+  //   if (documentoExists) {
+  //     Swal.fire({
+  //       icon: 'error',
+  //       title: 'Error',
+  //       text: 'El Documento ya existe',
+  //     }).then(() => {
+  //       handleSelectChange({
+  //         target: {
+  //           name: "documento",
+  //           value: "",
+  //         },
+  //       } as ChangeEvent<HTMLInputElement>);
+  //     });
+  //     return true; 
+  //   } if (documentoAndTaxIdExists) {
+  //     Swal.fire({
+  //       icon: 'error',
+  //       title: 'Error',
+  //       text: 'El Documento ya existe',
+  //     }).then(() => {
+  //       handleSelectChange({
+  //         target: {
+  //           name: "documento",
+  //           value: "",
+  //         },
+  //       } as ChangeEvent<HTMLInputElement>);
+  //     });
+  //     return true; 
+  //   }
+    
+  //   return false;
+  // };
+ 
+  const handleVerifyTaxId = () => {
+    const cuitValue = cuit ?? "";
+    const documentoValue = documento ?? "";
+  
+   
+    if (cuitValue.trim() === "" && documentoValue.trim() === "") {
+      return false;
+    }
+  
+    
+    const TaxIdExists = businesses.find((business) => business.cuit === cuitValue);
+    const documentoExists = businesses.find((business) => business.documento === documentoValue);
+  
+    if (TaxIdExists) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'La Clave Tributaria ya existe',
+      }).then(() => {
+        handleInputChange({
+          target: {
+            name: "cuit",
+            value: "",
+          },
+        } as ChangeEvent<HTMLInputElement>);
+      });
+      return true;
+    }
+  
+    if (documentoExists) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El Documento ya existe',
+      }).then(() => {
+        handleInputChange({
+          target: {
+            name: "documento",
+            value: "",
+          },
+        } as ChangeEvent<HTMLInputElement>);
+      });
+      return true;
+    }
+  
+    return false;
+  };
+  
+  const onChangeCountry = (_event: SyntheticEvent, value: { code: string; label: string } | null) => {
+    if (value)
+      handleFormValueChange("pais", value.code);
+  }
+  
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
@@ -91,6 +239,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               name="documento"
               value={documento}
               error={documentError}
+              onBlur={handleVerifyTaxId}
               onChange={handleInputChange}
               helperText={documentError ? "Este campo es obligatorio" : ""}
               InputProps={{
@@ -166,9 +315,10 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
         </>
       ) : (
         <>
+        
           <Grid item xs={12} sm={4}>
             <TextField
-              label={t("tax_id_cuit_cnpj")}
+              label={t("tax_key")}
               variant="outlined"
               // disabled={disabledFields}
               type="text"
@@ -176,6 +326,24 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               value={cuit}
               error={cuitError}
               onChange={handleInputChange}
+              onBlur={handleVerifyTaxId}
+              helperText={cuitError ? "Este campo es obligatorio" : ""}
+              InputProps={{
+                startAdornment: <InputAdornment position="start" />,
+              }}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Situacion fiscal"
+              variant="outlined"
+              type="text"
+              name="taxSituation"
+              value={taxSituation}
+              error={cuitError}
+              onChange={handleInputChange}
+              onBlur={handleVerifyTaxId}
               helperText={cuitError ? "Este campo es obligatorio" : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
@@ -200,6 +368,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               fullWidth
             />
           </Grid>
+          
         </>
       )}
       <Grid item xs={12} sm={6}>
@@ -220,25 +389,20 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           fullWidth
         />
       </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          label={t("_phone")}
-          variant="outlined"
-          // disabled={disabledFields}
-          type="text"
-          name="telefono"
-          value={telefono}
-          onChange={handleInputChange}
-          InputProps={{
-            // startAdornment: <InputAdornment position="start" />,
-            endAdornment: (
-              <InputAdornment position="end">
-                <PhoneIcon />
-              </InputAdornment>
-            ),
-          }}
-          fullWidth
-        />
+      <Grid item xs={12} sm={5}>
+        <FormControl fullWidth variant="outlined" error={countryError}>
+                <Autocomplete
+                  value={countryOptions.find(opts => opts.code === pais) || null}
+                  onChange={onChangeCountry}
+                  options={countryOptions}
+                  getOptionLabel={(option) => option.label}
+                  renderInput={(params) => (
+                    <TextField {...params} label={t("id_country")} variant="outlined" />
+                  )}
+                  fullWidth
+                />
+            {countryError && <FormHelperText>Mensaje de error!</FormHelperText>}
+          </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>
         <TextField
@@ -255,7 +419,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           fullWidth
         />
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={12} sm={5} >
         <TextField
           label={t("secondary_contact")}
           variant="outlined"
@@ -269,6 +433,8 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           }}
           fullWidth
         />
+      </Grid>
+      <Grid item xs={1} sm={6} >
       </Grid>
     </Grid>
   );
