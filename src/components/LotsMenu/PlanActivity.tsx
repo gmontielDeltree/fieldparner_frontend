@@ -252,10 +252,12 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       case 0:
         return (
           <PersonalForm
-            lot={lot}
-            formData={formData}
-            setFormData={setFormData}
-          />
+          lot={lot}
+          formData={formData}
+          setFormData={setFormData}
+          showActivityType={activityType === "application"}
+        />
+      
         );
       case 1:
         return (

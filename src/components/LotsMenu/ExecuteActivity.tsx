@@ -229,10 +229,11 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       case 0:
         return (
           <PersonalExecutionForm
-            lot={lot}
-            formData={formData}
-            setFormData={setFormData}
-          />
+          lot={lot}
+          formData={formData}
+          setFormData={setFormData}
+          showActivityType={activityType === "application"}
+        />
         );
       case 1:
         return (
