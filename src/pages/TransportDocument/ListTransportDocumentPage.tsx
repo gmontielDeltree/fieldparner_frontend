@@ -40,7 +40,7 @@ export const ListTransportDocumentPage: React.FC = () => {
     const navigate = useNavigate();
     // const dispatch = useAppDispatch();
     // const { t } = useTranslation();
-    const { transportDocumentsItem, getTransportDocuments, getTransporDocumentById } = useTransportDocument();
+    const { transportDocumentsItem, getTransportDocuments } = useTransportDocument();
 
 
     const columns = [
@@ -113,6 +113,7 @@ export const ListTransportDocumentPage: React.FC = () => {
     return (
         <GenericListPage
             title="Carta de Porte (Argentina)"
+            isLoading={false}
             icon={<FireTruckIcon fontSize="large" sx={{ mr: 1 }} />}
             data={transportDocumentsItem}
             columns={columns}

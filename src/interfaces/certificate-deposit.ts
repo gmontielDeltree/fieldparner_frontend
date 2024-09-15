@@ -3,10 +3,16 @@ import { Document } from "@types";
 
 export interface CertificateDeposit extends Document {
     certificateNumber: string;
-    date: string;
-    business: string;
-    vehicle: string;
-    driver: string;
+    emissionDate: string;
+    campaignId: string;
+    // business: string;
+    cultiveId: string;
+    certificateType: string;
+    cuitDepositary: string;
+    cuitDepositors: string;
+    floor: string;
+    analysisNumber: string;
+    fileCertificate: string;
     product: string;
     quantity: number;
     origin: string;
