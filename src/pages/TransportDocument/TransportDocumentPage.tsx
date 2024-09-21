@@ -152,7 +152,8 @@ export const TransportDocumentPage: React.FC = () => {
   const onClickNewTransportDocument = async () => {
     try {
       dispatch(uiStartLoading());
-      const mappedObject = mappedTransportDocument();
+      let mappedObject = mappedTransportDocument() as TransportDocument;
+      mappedObject.kgNeto = (mappedObject.kgBruto - mappedObject.kgTara);
       await addTransportDocument(mappedObject as TransportDocument);
       await handleUploadDocumentFile();
       dispatch(uiFinishLoading());

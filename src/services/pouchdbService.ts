@@ -34,6 +34,7 @@ import { MenuModules, ModulesUsers } from '../interfaces/menuModules';
 import { LicenceUse } from '../interfaces/licencesUse';
 import { TransportDocument } from '../interfaces/transportDocument';
 import { Company } from '../interfaces/company';
+import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../interfaces/certificate-deposit';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -49,42 +50,44 @@ export const opts: PouchDB.Replication.SyncOptions = {
 };
 
 const dbNames = Object.freeze({
-    vehicles: "vehicles",
-    deposits: "deposits",
-    typeVehicles: "type-vehicles",
-    zipCodeARG: "zip-code-arg",
-    zipCodePRY: "zip-code-pry",
-    supplies: "supplies",
-    socialEntities: "social-entities",
-    categories: "categories",
-    stockMovements: "stock-movements",
-    stockByLots: "lots-stock",
-    exitFields: "exit-fields",
-    campaigns: "campaigns",
-    fields: "fields",
-    originsDestinations:"origins-destinations",
-    users: "users",
-    numerators: "numerators",
-    withdrawalOrders: "withdrawal-orders",
-    depositSupplyOrder: "deposit-supply-order",
-    withdrawalsByDepositSupply: "withdrawals-deposit-supply",
-    movementsType: "movements-type",
-    platform: "platform",
-    platformSupplies: "test-supplies",
-    crops: "crops",
-    zones: "zones",
-    fieldpartner: "fieldpartner",
-    laborsServices: "labors-services",
-    purchaseOrder: "purchase-order",
-    detailPurchaseOrder: "detail-purchase-order",
-    countries: "countries",
-    menuModules: "menu-modules",
-    modulesUsers: "modules-users",
-    licencesUse: "licences-use",
+  vehicles: "vehicles",
+  deposits: "deposits",
+  typeVehicles: "type-vehicles",
+  zipCodeARG: "zip-code-arg",
+  zipCodePRY: "zip-code-pry",
+  supplies: "supplies",
+  socialEntities: "social-entities",
+  categories: "categories",
+  stockMovements: "stock-movements",
+  stockByLots: "lots-stock",
+  exitFields: "exit-fields",
+  campaigns: "campaigns",
+  fields: "fields",
+  originsDestinations: "origins-destinations",
+  users: "users",
+  numerators: "numerators",
+  withdrawalOrders: "withdrawal-orders",
+  depositSupplyOrder: "deposit-supply-order",
+  withdrawalsByDepositSupply: "withdrawals-deposit-supply",
+  movementsType: "movements-type",
+  platform: "platform",
+  platformSupplies: "test-supplies",
+  crops: "crops",
+  zones: "zones",
+  fieldpartner: "fieldpartner",
+  laborsServices: "labors-services",
+  purchaseOrder: "purchase-order",
+  detailPurchaseOrder: "detail-purchase-order",
+  countries: "countries",
+  menuModules: "menu-modules",
+  modulesUsers: "modules-users",
+  licencesUse: "licences-use",
   transportDocument: "transport-documents",
   companies: "companies",
-    corporateCompanies: "corporate-companies",
-    corporateContract: "corporate-contract",
+  corporateCompanies: "corporate-companies",
+  corporateContract: "corporate-contract",
+  certificateDeposit: "certificate-deposit",
+  transportDocumentCertificateDeposit: "transport-document-certificate-deposit",
 });
 
 export const dbContext = Object.freeze({
@@ -124,6 +127,8 @@ export const dbContext = Object.freeze({
   companies: new PouchDB<Company>(dbNames.companies),
   corporateCompanies: new PouchDB<CorporateCompanies>(dbNames.corporateCompanies),
   corporateContract: new PouchDB<CorporateContract>(dbNames.corporateContract),
+  certificateDeposit: new PouchDB<CertificateDeposit>(dbNames.certificateDeposit),
+  transportDocumentCertificateDeposit: new PouchDB<TransportDocumentByCertificateDeposit>(dbNames.transportDocumentCertificateDeposit),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -164,6 +169,8 @@ dbContext.transportDocument.sync(`${remoteCouchDBUrl}${dbNames.transportDocument
 dbContext.companies.sync(`${remoteCouchDBUrl}${dbNames.companies}`, opts);
 dbContext.corporateCompanies.sync(`${remoteCouchDBUrl}${dbNames.corporateCompanies}`, opts);
 dbContext.corporateContract.sync(`${remoteCouchDBUrl}${dbNames.corporateContract}`, opts);
+dbContext.certificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.certificateDeposit}`, opts);
+dbContext.transportDocumentCertificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.transportDocumentCertificateDeposit}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {

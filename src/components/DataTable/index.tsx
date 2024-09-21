@@ -49,12 +49,14 @@ export interface DataTableProps {
   isLoading: boolean;
   columns: ColumnProps[];
   children?: ReactNode | ReactNode[];
+  columnGroups?: ColumnProps[];
 }
 
 export const DataTable: React.FC<DataTableProps> = ({
   isLoading,
   columns,
   children,
+  columnGroups
 }) => {
   return (
     <TableContainer
@@ -70,11 +72,24 @@ export const DataTable: React.FC<DataTableProps> = ({
       ) : (
         <Table stickyHeader sx={{ minWidth: 300 }} aria-label="customized table" >
           <TableHead sx={{ height: "70px", }}>
+            {
+              columnGroups && (
+                <TableRow>
+                  {columnGroups.map(({ text, align, colSpan, rowSpan }) => (
+                    <TableCellStyledBlack
+                      colSpan={colSpan}
+                      rowSpan={rowSpan}
+                      align={align}>
+                      {text}
+                    </TableCellStyledBlack>
+                  ))}
+                </TableRow>
+              )
+            }
             <TableRow >
-              {columns.map(({ text, align }) => (
+              {columns.map(({ text, align }, index) => (
                 <TableCellStyledBlack
-                  sx={{ backgroundColor: "rgb(0 0 0 / 25%)" }}
-                  key={text}
+                  key={index}
                   align={align}>
                   {text}
                 </TableCellStyledBlack>
