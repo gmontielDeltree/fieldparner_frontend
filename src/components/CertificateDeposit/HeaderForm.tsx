@@ -18,6 +18,8 @@ interface HeaderFormProps {
     companies: Company[];
     deleteFile: () => void;
     fileUpload: (file: File) => void;
+    changeDepositary: (depositary: Business) => void;
+    changeDepositors: (depositors: Company) => void;
 }
 //TODO: REVISAR LOS CAMPOS POS IVA (DEPOSITARIO Y DEPOSITANTE)
 export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps> = ({
@@ -30,14 +32,16 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
     handleSelectChange,
     handleFormValueChange,
     deleteFile,
-    fileUpload
+    fileUpload,
+    changeDepositary,
+    changeDepositors
 }) => {
-    const { cuitDepositary: cuitDepositario, cuitDepositors: cuitDepositante } = formValues;
+    const { cuitDepositario: cuitDepositario, cuitDepositor: cuitDepositante } = formValues;
     const [selectedDepositary, setSelectedDepositary] = useState<Business | null>(null);
     const [selectedDepositors, setSelectedDepositors] = useState<Company | null>(null);
 
     const removeFile = () => {
-        handleFormValueChange && handleFormValueChange("fileCertificate", "");
+        handleFormValueChange && handleFormValueChange("archivoCertificado", "");
         deleteFile();
     }
 
@@ -48,41 +52,47 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
             let extensionPos = fileNameOriginal.lastIndexOf(".");
             let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
 
-            const newFileName = `certificado-deposito_${formValues.fileCertificate.value}${fileType}`;
+            const newFileName = `certificado-deposito_${formValues.archivoCertificado.value}${fileType}`;
             const renamedFile = new File([file], newFileName, { type: file.type });
             fileUpload(renamedFile);
-            handleFormValueChange && handleFormValueChange("fileCertificate", newFileName);
+            handleFormValueChange && handleFormValueChange("archivoCertificado", newFileName);
         }
     };
 
 
     useEffect(() => {
         if (cuitDepositario.value !== "" && providers) {
-            const foundDepositario = providers.find(x => x.cuit === cuitDepositario.value);
-            if (foundDepositario) setSelectedDepositary(foundDepositario);
+            const foundDepositary = providers.find(x => x.cuit === cuitDepositario.value);
+            if (foundDepositary) {
+                setSelectedDepositary(foundDepositary);
+                changeDepositary(foundDepositary);
+            }
         }
     }, [cuitDepositario, providers])
 
     useEffect(() => {
         if (cuitDepositante.value !== "" && companies) {
             const foundCompany = companies.find(x => x.trybutaryCode === cuitDepositante.value);
-            if (foundCompany) setSelectedDepositors(foundCompany);
+            if (foundCompany) {
+                changeDepositors(foundCompany);
+                setSelectedDepositors(foundCompany);
+            }
         }
     }, [cuitDepositante, companies])
 
 
 
     return (
-        <Grid className="remitente-form" container spacing={1} sx={{ px: 1 }}>
+        <Grid key="header-form" container spacing={1} sx={{ px: 1 }}>
             <Grid item xs={12} sm={2}>
                 <TextField
                     variant="outlined"
                     type="text"
                     label="Certificado Deposito Nro"
-                    error={formValues.certificateNumber.isError}
-                    helperText={formValues.certificateNumber.message}
-                    name="certificateNumber"
-                    value={formValues.certificateNumber.value}
+                    error={formValues.numeroCertificado.isError}
+                    helperText={formValues.numeroCertificado.message}
+                    name="numeroCertificado"
+                    value={formValues.numeroCertificado.value}
                     onChange={handleInputChange}
                     // disabled={!!formValues._id} //readonly si existe
                     InputProps={{
@@ -96,10 +106,10 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                     variant="outlined"
                     type="date"
                     label={"Fecha Emision"}
-                    name="emissionDate"
-                    error={formValues.emissionDate.isError}
-                    helperText={formValues.emissionDate.message}
-                    value={formValues.emissionDate.value}
+                    name="fechaEmision"
+                    error={formValues.fechaEmision.isError}
+                    helperText={formValues.fechaEmision.message}
+                    value={formValues.fechaEmision.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -113,13 +123,13 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
             <Grid item xs={12} sm={3}>
                 <FormControl
                     key="campaign-select"
-                    error={formValues.campaignId.isError}
+                    error={formValues.campaniaId.isError}
                     fullWidth>
                     <InputLabel id="campaign">Campaña</InputLabel>
                     <Select
                         labelId="campaign"
-                        name="campaignId"
-                        value={formValues.campaignId.value} //CUIT 
+                        name="campaniaId"
+                        value={formValues.campaniaId.value} //CUIT 
                         label="Campaña"
                         onChange={handleSelectChange}
                     >
@@ -129,19 +139,19 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                             </MenuItem>
                         ))}
                     </Select>
-                    <FormHelperText>{formValues.campaignId.message}</FormHelperText>
+                    <FormHelperText>{formValues.campaniaId.message}</FormHelperText>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
                 <FormControl
                     key="cultive-select"
-                    error={formValues.cultiveId.isError}
+                    error={formValues.cultivoId.isError}
                     fullWidth>
                     <InputLabel id="cultive">Cultivo</InputLabel>
                     <Select
                         labelId="cultive"
-                        name="cultiveId"
-                        value={formValues.cultiveId.value} //CUIT 
+                        name="cultivoId"
+                        value={formValues.cultivoId.value} //CUIT 
                         label="Cultivo"
                         onChange={handleSelectChange}
                     >
@@ -151,7 +161,7 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                             </MenuItem>
                         ))}
                     </Select>
-                    <FormHelperText>{formValues.cultiveId.message}</FormHelperText>
+                    <FormHelperText>{formValues.cultivoId.message}</FormHelperText>
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={2}>
@@ -159,9 +169,9 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                     variant="outlined"
                     type="text"
                     label="Tipo Certificado"
-                    name="certificateType"
-                    value={formValues.certificateType.value}
-                    helperText={formValues.certificateType.message}
+                    name="tipoCertificado"
+                    value={formValues.tipoCertificado.value}
+                    helperText={formValues.tipoCertificado.message}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -185,13 +195,13 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                         <Grid item xs={12} sm={8}>
                             <FormControl
                                 key="depositario-select"
-                                error={formValues.cuitDepositary.isError}
+                                error={formValues.cuitDepositario.isError}
                                 fullWidth>
                                 <InputLabel id="depositario">Razon Social</InputLabel>
                                 <Select
                                     labelId="depositario"
-                                    name="cuitDepositary"
-                                    value={formValues.cuitDepositary.value}
+                                    name="cuitDepositario"
+                                    value={formValues.cuitDepositario.value}
                                     label="Razon Social"
                                     onChange={handleSelectChange}
                                 >
@@ -201,7 +211,7 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                                         </MenuItem>
                                     ))}
                                 </Select>
-                                <FormHelperText>{formValues.cuitDepositary.message}</FormHelperText>
+                                <FormHelperText>{formValues.cuitDepositario.message}</FormHelperText>
                             </FormControl>
                         </Grid>
                         <Grid item xs={12} sm={4}>
@@ -212,7 +222,7 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                                     primary={<Typography variant='subtitle2'>CUIT</Typography>}
                                     secondary={
                                         <Typography letterSpacing={1} variant='subtitle1'>
-                                            {formValues.cuitDepositary.value ? formValues.cuitDepositary.value : "-"}
+                                            {formValues.cuitDepositario.value ? formValues.cuitDepositario.value : "-"}
                                         </Typography>}
                                 />
                             </FormControl>
@@ -282,13 +292,13 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                         <Grid item xs={12} sm={8}>
                             <FormControl
                                 key="depositante-select"
-                                error={formValues.cuitDepositors.isError}
+                                error={formValues.cuitDepositor.isError}
                                 fullWidth>
                                 <InputLabel id="depositante">Razon Social</InputLabel>
                                 <Select
                                     labelId="depositante"
-                                    name="cuitDepositors"
-                                    value={formValues.cuitDepositors.value}
+                                    name="cuitDepositor"
+                                    value={formValues.cuitDepositor.value}
                                     label="Razon Social"
                                     onChange={handleSelectChange}
                                 >
@@ -298,7 +308,7 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                                         </MenuItem>
                                     ))}
                                 </Select>
-                                <FormHelperText>{formValues.cuitDepositors.message}</FormHelperText>
+                                <FormHelperText>{formValues.cuitDepositor.message}</FormHelperText>
                             </FormControl>
                         </Grid>
                         <Grid item xs={12} sm={4}>
@@ -309,7 +319,7 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                                     primary={<Typography variant='subtitle2'>CUIT</Typography>}
                                     secondary={
                                         <Typography letterSpacing={1} variant='subtitle1'>
-                                            {formValues.cuitDepositors.value ? formValues.cuitDepositors.value : "-"}
+                                            {formValues.cuitDepositor.value ? formValues.cuitDepositor.value : "-"}
                                         </Typography>}
                                 />
                             </FormControl>
@@ -386,10 +396,10 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                     variant="outlined"
                     type="number"
                     label="Rubro %"
-                    error={formValues.rubroPercentage.isError}
-                    helperText={formValues.rubroPercentage.message}
-                    name="rubroPercentage"
-                    value={formValues.rubroPercentage.value}
+                    error={formValues.porcentajeRubro.isError}
+                    helperText={formValues.porcentajeRubro.message}
+                    name="porcentajeRubro"
+                    value={formValues.porcentajeRubro.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -402,10 +412,10 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                     variant="outlined"
                     type="text"
                     label="Tipo"
-                    error={formValues.rubroType.isError}
-                    helperText={formValues.rubroType.message}
-                    name="rubroType"
-                    value={formValues.rubroType.value}
+                    error={formValues.tipoRubro.isError}
+                    helperText={formValues.tipoRubro.message}
+                    name="tipoRubro"
+                    value={formValues.tipoRubro.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -418,10 +428,10 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                     variant="outlined"
                     type="number"
                     label="Valor"
-                    error={formValues.value.isError}
-                    helperText={formValues.value.message}
-                    name="value"
-                    value={formValues.value.value}
+                    error={formValues.valor.isError}
+                    helperText={formValues.valor.message}
+                    name="valor"
+                    value={formValues.valor.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" >$</InputAdornment>,
@@ -434,10 +444,10 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                     variant="outlined"
                     type="text"
                     label="Planta"
-                    error={formValues.floor.isError}
-                    helperText={formValues.floor.message}
-                    name="floor"
-                    value={formValues.floor.value}
+                    error={formValues.planta.isError}
+                    helperText={formValues.planta.message}
+                    name="planta"
+                    value={formValues.planta.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -450,10 +460,10 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                     variant="outlined"
                     type="text"
                     label="Analisis N°"
-                    error={formValues.analysisNumber.isError}
-                    helperText={formValues.analysisNumber.message}
-                    name="analysisNumber"
-                    value={formValues.analysisNumber.value}
+                    error={formValues.numeroAnalisis.isError}
+                    helperText={formValues.numeroAnalisis.message}
+                    name="numeroAnalisis"
+                    value={formValues.numeroAnalisis.value}
                     onChange={handleInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
@@ -474,10 +484,10 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                         inputProps={{ accept: 'application/pdf' }}
                         onChange={onChangeFile} />
                 </Button>
-                {formValues.fileCertificate.value ? (
+                {formValues.archivoCertificado.value ? (
                     <>
                         <label
-                            title={formValues.fileCertificate.value}
+                            title={formValues.archivoCertificado.value}
                             style={{
                                 margin: "10px",
                                 width: "240px",
@@ -486,7 +496,7 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap"
                             }}>
-                            {formValues.fileCertificate.value}
+                            {formValues.archivoCertificado.value}
                         </label>
                         <IconButton onClick={() => removeFile()} color="error">
                             <CancelIcon fontSize="medium" />

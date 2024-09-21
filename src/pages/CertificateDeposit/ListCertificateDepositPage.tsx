@@ -1,10 +1,7 @@
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import React from "react";
-import { useTransportDocument } from "../../hooks";
+import { useCertificateDeposit } from "../../hooks";
 
-import {
-  FireTruck as FireTruckIcon,
-} from "@mui/icons-material";
 import { GenericListPage } from "../GenericListPage";
 import { GridRenderCellParams } from "@mui/x-data-grid";
 import { Box, IconButton, Tooltip } from "@mui/material";
@@ -23,8 +20,8 @@ const renderPdfIcon = (params: GridRenderCellParams) => (
     <IconButton
       aria-label="View PDF"
       onClick={() => {
-        console.log('PDF file:', params.row.fileName);
-        const url = `${urlImg}${params.row.fileName}`;
+        console.log('PDF file:', params.row.archivoCertificado);
+        const url = `${urlImg}${params.row.archivoCertificado}`;
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('target', "_blank");
@@ -39,35 +36,21 @@ const renderPdfIcon = (params: GridRenderCellParams) => (
 );
 
 export const ListCertificateDepositPage: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   // const dispatch = useAppDispatch();
   // const { t } = useTranslation();
-  const { transportDocumentsItem, isLoading, getTransportDocuments } = useTransportDocument();
+  const { certificateDepositsItem, getCertificateDeposits } = useCertificateDeposit();
 
 
   const columns = [
-    { field: "nroCartaPorte", headerName: "Nro Cert. Porte", flex: 1 },
+    { field: "numeroCertificado", headerName: "Nro Cert. Porte", flex: 1 },
     { field: "fechaEmision", headerName: "Fecha Emitida", flex: 1 },
+    { field: "planta", headerName: "Planta Destino", flex: 1 },
+    { field: "campania", headerName: "Campaña", flex: 1 },
+    { field: "cultivo", headerName: "Cultivo", flex: 1 },
+    { field: "kgConfirmados", headerName: "KG Confirmados", flex: 1 },
     {
-      field: "razonSocial",
-      headerName: "Planta Destino",
-      flex: 1,
-      renderCell: (params: GridRenderCellParams) => (
-        params.row?.company?.socialReason || "-"
-      ),
-    },
-    {
-      field: "campaign",
-      headerName: "Campaña",
-      flex: 1,
-      renderCell: (params: GridRenderCellParams) => (
-        params.row?.exitField?.cultive || "-"
-      ),
-    },
-    { field: "cultivo", headerName: "Cultivo", flex: 1 }, //salidaCampoId
-    { field: "KG Confirmados", headerName: "Status", flex: 1 },
-    {
-      field: "fileName",
+      field: "archivoCertificado",
       headerName: "PDF",
       flex: 1,
       renderCell: renderPdfIcon
@@ -82,9 +65,10 @@ export const ListCertificateDepositPage: React.FC = () => {
           <Tooltip title="Edit">
             <IconButton
               aria-label="Edit"
+              disabled
               onClick={() => {
                 // if (params.row._id) getTransporDocumentById(params.row._id);
-                navigate(`/init/overview/transport-documents/edit/${params.row._id}`);
+                // navigate(`/init/overview/transport-documents/edit/${params.row._id}`);
               }}
               sx={{
                 transition: "transform 0.2s",
@@ -117,9 +101,9 @@ export const ListCertificateDepositPage: React.FC = () => {
       title="Certificado Deposito Granos (Argentina)"
       isLoading={false}
       icon={<ForwardToInboxIcon fontSize="large" sx={{ mr: 1 }} />}
-      data={transportDocumentsItem}
+      data={certificateDepositsItem}
       columns={columns}
-      getData={getTransportDocuments}
+      getData={getCertificateDeposits}
       deleteData={() => console.log("delete")}
       setActiveItem={(item) => console.log("setActiveItem", item)}
       newItemPath="/init/overview/certificate-deposits/new"

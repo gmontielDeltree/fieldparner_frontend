@@ -34,6 +34,7 @@ import { MenuModules, ModulesUsers } from '../interfaces/menuModules';
 import { LicenceUse } from '../interfaces/licencesUse';
 import { TransportDocument } from '../interfaces/transportDocument';
 import { Company } from '../interfaces/company';
+import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../interfaces/certificate-deposit';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -86,6 +87,7 @@ const dbNames = Object.freeze({
   corporateCompanies: "corporate-companies",
   corporateContract: "corporate-contract",
   certificateDeposit: "certificate-deposit",
+  transportDocumentCertificateDeposit: "transport-document-certificate-deposit",
 });
 
 export const dbContext = Object.freeze({
@@ -125,7 +127,8 @@ export const dbContext = Object.freeze({
   companies: new PouchDB<Company>(dbNames.companies),
   corporateCompanies: new PouchDB<CorporateCompanies>(dbNames.corporateCompanies),
   corporateContract: new PouchDB<CorporateContract>(dbNames.corporateContract),
-  certificateDeposit: new PouchDB(dbNames.certificateDeposit),
+  certificateDeposit: new PouchDB<CertificateDeposit>(dbNames.certificateDeposit),
+  transportDocumentCertificateDeposit: new PouchDB<TransportDocumentByCertificateDeposit>(dbNames.transportDocumentCertificateDeposit),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -166,6 +169,8 @@ export const dbContext = Object.freeze({
 // dbContext.companies.sync(`${remoteCouchDBUrl}${dbNames.companies}`, opts);
 // dbContext.corporateCompanies.sync(`${remoteCouchDBUrl}${dbNames.corporateCompanies}`, opts);
 // dbContext.corporateContract.sync(`${remoteCouchDBUrl}${dbNames.corporateContract}`, opts);
+dbContext.certificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.certificateDeposit}`, opts);
+dbContext.transportDocumentCertificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.transportDocumentCertificateDeposit}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
