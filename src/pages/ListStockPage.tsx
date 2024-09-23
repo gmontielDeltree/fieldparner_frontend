@@ -65,11 +65,11 @@ export const ListStockPage: React.FC = () => {
     } else {
       getStockByDepositAndLocation();
     }
-  }, [tabValue, getStockBySupplies, getStockByDepositAndLocation]);
+  }, []);
 
-  useEffect(() => {
-    getData();
-  }, [getData]);
+  // useEffect(() => {
+  //   getData();
+  // }, [getData]);
 
   const filteredData = useMemo(() => {
     const data = tabValue === 0 ? stockBySupplies : supplyByDeposits;

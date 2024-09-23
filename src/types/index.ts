@@ -365,8 +365,13 @@ export interface Deposit extends Document {
   zipCode: string;
   locality: string;
   province: string;
-  country: string;
+  pais: string;
   locations: string[];
+  siloBag: boolean;
+  hopper: boolean;
+  silo:boolean;
+  deposit: boolean;
+  siloBagId: string;
 }
 
 export interface ItemZipCode extends Document {

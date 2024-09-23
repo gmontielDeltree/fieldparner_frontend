@@ -329,6 +329,7 @@
   "percentage_of_participation": "Porcentaje de Participación",
   "_company": "Compañía",
   "contract_id": "ID Contrato",
-  "corporate_contracts": "Contratos Societarios"
+  "corporate_contracts": "Contratos Societarios",
+ "locations_within_the_depot": "Ubicaciones dentro del Depósito"
   
 }
