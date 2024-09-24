@@ -28,3 +28,4 @@ export * from './useTransportDocument';
 export * from './useCorporateCompanies';
 export * from './useCorporateContract';
 export * from './useFormValue'
+export * from './useCertificateDeposit';

@@ -118,6 +118,8 @@ export interface ListCorporateContractState {
 export interface ColumnProps {
   text: string;
   align: "inherit" | "left" | "center" | "right" | "justify";
+  colSpan?: number;
+  rowSpan?: number;
 }
 
 export interface RowData {

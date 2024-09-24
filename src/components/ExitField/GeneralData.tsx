@@ -29,7 +29,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
     handleSelectChange,
     setFormValues
 }) => {
-    console.log('crops', crops)
+    
     const [fieldSelected, setFieldSelected] = useState<Field | null>(null);
     const [lotSelected, setLotSelected] = useState<Lot | null>(null);
 
