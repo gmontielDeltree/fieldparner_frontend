@@ -323,5 +323,7 @@
   "_company": "Companhia",
   "contract_id": "ID Contrato",
   "corporate_contracts": "Contratos Societários",
-  "locations_within_the_depot": "Locais dentro do armazém"
+  "locations_within_the_depot": "Locais dentro do armazém",
+  "_hopper": "Tremonha",
+  "_silobag": "Silobolsa"
 }

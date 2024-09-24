@@ -330,6 +330,8 @@
   "_company": "Compañía",
   "contract_id": "ID Contrato",
   "corporate_contracts": "Contratos Societarios",
- "locations_within_the_depot": "Ubicaciones dentro del Depósito"
+ "locations_within_the_depot": "Ubicaciones dentro del Depósito",
+ "_hopper": "Tolva",
+ "_silobag": "Silobolsa"
   
 }

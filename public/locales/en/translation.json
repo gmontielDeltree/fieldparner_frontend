@@ -323,6 +323,8 @@
     "_company": "Company",
     "contract_id": "Contract ID",
     "corporate_contracts": "Corporate Contracts",
-    "locations_within_the_depot": "Locations within the Depot"
+    "locations_within_the_depot": "Locations within the Depot",
+    "_hopper": "Hopper",
+    "_silobag": "Silobag"
 }
   

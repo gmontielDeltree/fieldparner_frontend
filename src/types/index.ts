@@ -372,6 +372,7 @@ export interface Deposit extends Document {
   silo:boolean;
   deposit: boolean;
   siloBagId: string;
+  status: EnumStatusContract;
 }
 
 export interface ItemZipCode extends Document {

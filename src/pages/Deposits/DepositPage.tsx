@@ -436,8 +436,18 @@ export const DepositPage: React.FC = () => {
         >
           {depositActive ? `${t("icon_edit")} ${t("new_masculine")} ${t("_warehouse")}` : `${t("_add")} ${t("new_masculine")} ${t("_warehouse")}`}
         </Typography>
-        <Grid container spacing={2} alignItems="center" justifyContent="center">
-          <Grid item xs={12} sm={6}>
+        <Grid 
+              container 
+              spacing={1} 
+              alignItems="flex-start" 
+              justifyContent="flex-start" 
+              sx={{ 
+                //border: '1px solid red', 
+                padding: '16px', 
+               // backgroundColor: 'rgba(255, 0, 0, 0.1)' 
+              }}
+            >
+        <Grid item xs={12} sm={6} sx={{padding: '16px', }}>
             <TextField
               variant="outlined"
               type="text"
@@ -453,7 +463,7 @@ export const DepositPage: React.FC = () => {
               helperText={descriptionError ? t("this_field_is_mandatory") : ""}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={6}sx={{  padding: '16px',  }}>
             <Autocomplete
               id="owner"
               freeSolo
@@ -473,7 +483,20 @@ export const DepositPage: React.FC = () => {
               )}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={4}  sx={{ marginLeft: '-50px' }} >
+          <Grid 
+              item 
+              xs={12} 
+              sm={6} // Cambiar de 6 a 8 para hacerlo más ancho
+              md={4} // Cambiar de 4 a 6 para hacerlo más ancho
+              sx={{ 
+               // border: '1px solid blue', 
+                padding: '16px', 
+               // backgroundColor: 'rgba(0, 0, 255, 0.1)', 
+                marginRight: '0px' 
+                // marginLeft: 'auto'
+              }} 
+            >
+
             <Box >
             <FormGroup row>
               <FormControlLabel
@@ -523,21 +546,8 @@ export const DepositPage: React.FC = () => {
             fullWidth
           />
           </FormControl>
-          {/* <FormControl fullWidth>
-          <Autocomplete
-            value={formulario.status}
-            onChange={(event, newValue) => onChangeStatus(event, newValue)}
-            options={statusOptions}
-            getOptionLabel={(option) => option}
-            renderInput={(params) => (
-              <TextField {...params} label="Status" variant="outlined" />
-            )}
-            fullWidth
-          />
-          </FormControl> */}
             </Box>
-            
-            <FormGroup row>
+            <FormGroup row sx={{ marginTop: '15px' }}>
               <FormControlLabel
                 key="checkbox-true"
                 control={
@@ -555,7 +565,7 @@ export const DepositPage: React.FC = () => {
                     }
                   />
                 }
-                label="Deposito"
+                label={t("_warehouse")}
                 labelPlacement="start"
               />
               <FormControlLabel
@@ -575,7 +585,7 @@ export const DepositPage: React.FC = () => {
                     }
                   />
                 }
-                label="Silobolsa"
+                label={t("_silobag")}
                 labelPlacement="start"
               />
               {siloBag && (
@@ -598,7 +608,13 @@ export const DepositPage: React.FC = () => {
                 )}
             </FormGroup>
           </Grid>
-          <Grid item xs={12} sm={3.5} md={3}  sx={{ marginLeft: '0px' }} >
+          <Grid item xs={1} sm={1} md={2.7}  sx={{ 
+                //border: '1px solid blue', 
+                padding: '0px', 
+                //backgroundColor: 'rgba(0, 0, 255, 0.1)', 
+                marginRight: '0px', 
+               marginLeft: '0px'
+              }}  >
             <FormGroup row sx={{ alignItems: "left" }}>
               <label htmlFor="">{t("admits_negative_stock")}</label>
               <FormControlLabel
@@ -627,7 +643,7 @@ export const DepositPage: React.FC = () => {
               />
             </FormGroup>
             
-            <FormGroup row>
+            <FormGroup row sx={{ marginTop: '45px' }}>
               <FormControlLabel
                 key="checkbox-true"
                 control={
@@ -664,15 +680,20 @@ export const DepositPage: React.FC = () => {
                     }
                   />
                 }
-                label="Tolva"
+                label={t("_hopper")}
                 labelPlacement="start"
               />
             </FormGroup>
-          
           </Grid>
-          
-          <Grid item xs={12} sm={4}>
-            <FormGroup sx={{ position: 'flex', flexDirection: "row", gap: "5px" }}>
+          <Grid item xs={12} sm={6} md={4} sx={{ 
+                //border: '1px solid blue', 
+                padding: '0px', 
+               // backgroundColor: 'rgba(0, 0, 255, 0.1)', 
+                marginRight: '0px', 
+                marginLeft: '0px',
+                textAlign: 'center'
+              }}  >
+            <FormGroup sx={{ position: 'right', flexDirection: "row", gap: "5px" }}>
               <TextField
                 sx={{ width: "35%" }}
                 variant="outlined"
@@ -685,6 +706,7 @@ export const DepositPage: React.FC = () => {
                 InputProps={{
                   startAdornment: <InputAdornment position="start" />,
                 }}
+               // helperText={descriptionError ? t("this_field_is_mandatory") : ""}
 
               />
               <TextField
@@ -699,11 +721,10 @@ export const DepositPage: React.FC = () => {
                 InputProps={{
                   startAdornment: <InputAdornment position="start" />,
                 }}
+                //helperText={descriptionError ? t("this_field_is_mandatory") : ""}
 
               />
               <MapPickerReact posicion={geolocation} onPicked={({ detail }: any) => { handleGeolocationChange(detail) }} />
-           
-              
             </FormGroup>
           </Grid>
           <Grid item xs={6} sm={4}>
@@ -883,6 +904,7 @@ export const DepositPage: React.FC = () => {
     </TemplateLayout>
   );
 
-
+ 
+  
   
 };
