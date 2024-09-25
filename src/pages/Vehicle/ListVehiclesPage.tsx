@@ -1,8 +1,8 @@
 import React from "react";
 import { LocalShipping as LocalShippingIcon } from "@mui/icons-material";
-import { useVehicle } from "../hooks";
-import { setVehiculoActivo } from "../redux/vehicle";
-import { GenericListPage } from "./GenericListPage";
+import { useVehicle } from "../../hooks";
+import { setVehiculoActivo } from "../../redux/vehicle";
+import { GenericListPage } from "../GenericListPage";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next";
 export const ListVehiclesPage: React.FC = () => {
   const { vehicles, getVehicles, deleteVehicle } = useVehicle();
   const navigate = useNavigate();
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const columns = [
     { field: "vehicleType", headerName: t("vehicle_type"), flex: 1 },
     { field: "make", headerName: t("brand"), flex: 1 },
@@ -63,6 +63,7 @@ export const ListVehiclesPage: React.FC = () => {
 
   return (
     <GenericListPage
+      isLoading={false}
       title={t("_vehicles")}
       icon={<LocalShippingIcon sx={{ fontSize: 40, color: "#424242" }} />}
       data={vehicles}

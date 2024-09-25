@@ -2,8 +2,12 @@ import Swal from "sweetalert2";
 import { useState } from "react";
 import { TypeVehicle, Vehicle } from "@types";
 import { dbContext } from "../services";
+import { useAppDispatch, useAppSelector } from "./useRedux";
+import { onLogout } from "../redux/auth";
 
 export const useVehicle = () => {
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector(state => state.auth);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [vehicleTypes, setVehicleTypes] = useState<TypeVehicle[]>([]);
   const [error, setError] = useState({});
@@ -12,13 +16,23 @@ export const useVehicle = () => {
   const getVehicles = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.vehicles.allDocs({ include_docs: true });
-      if (result.rows.length) {
-        const documents: Vehicle[] = result.rows.map(
-          (row) => row.doc as Vehicle
-        );
-        setVehicles(documents);
+
+      if (!user) {
+        dispatch(onLogout("Ocurrio un error inesperado."));
+        return;
       }
+
+      const result = await dbContext.vehicles.find({
+        selector: { accountId: user.accountId, licenceId: user.licenceId }
+      });
+      const documents = result.docs as Vehicle[];
+      setVehicles(documents);
+
+      // if (result.rows.length) {
+      //   const documents: Vehicle[] = result.rows.map(
+      //     (row) => row.doc as Vehicle
+      //   );
+      // }
       setIsLoading(false);
     } catch (error) {
       console.log(error);
@@ -70,6 +84,11 @@ export const useVehicle = () => {
   const createVehicle = async (newVehicle: Vehicle) => {
     setIsLoading(true);
     try {
+
+      if (!user) throw new Error("Usuario no encontrado.");
+      newVehicle.accountId = user.accountId;
+      newVehicle.licenceId = user.licenceId;
+
       const response = await dbContext.vehicles.post(newVehicle);
       setIsLoading(false);
 
