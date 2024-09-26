@@ -41,6 +41,8 @@ export interface EspecificacionTecnica {
 }
 
 export interface Vehicle extends Document {
+  accountId: string;
+  licenceId: string;
   vehicleType: string;
   make: string;
   model: string;

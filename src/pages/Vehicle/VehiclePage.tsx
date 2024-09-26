@@ -10,21 +10,23 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { TemplateLayout } from "../components";
+import { TemplateLayout } from "../../components";
 import { Vehicle } from "@types";
-import { useAppDispatch, useAppSelector, useForm, useVehicle } from "../hooks";
+import { useAppDispatch, useAppSelector, useForm, useVehicle } from "../../hooks";
 import {
   removerVehiculoActivo,
-} from "../redux/vehicle";
+} from "../../redux/vehicle";
 import {
   DatosGenerales,
   Especificaciones,
   Mantenimientos,
-} from "../components/NuevoVehiculo";
+} from "../../components/NuevoVehiculo";
 import { useTranslation } from "react-i18next";
-import { uploadFile } from "../helpers/fileUpload";
+import { uploadFile } from "../../helpers/fileUpload";
 
 const initialState: Vehicle = {
+  accountId: "",
+  licenceId: "",
   vehicleType: "",
   patent: "",
   make: "",
@@ -93,6 +95,7 @@ export const VehiclePage: React.FC = () => {
               handleInputChange={handleInputChange}
               handleFormValueChange={handleFormValueChange}
               handleYearChange={handleYearChange}
+              handleSelectChange={handleSelectChange}
               setFilesUpload={setVehicleFiles}
               cancelFile={cancelFile}
             />
@@ -138,20 +141,17 @@ export const VehiclePage: React.FC = () => {
     navigate("/init/overview/vehicle");
   }, []);
 
-  const onClickAddVehiculo = useCallback(
-    (e: any) => {
-      e.preventDefault();
+  const onClickAddVehiculo = (e: any) => {
+    e.preventDefault();
+    console.log('formulario', formulario);
+    const { vehicleType: tipoVehiculo, make: marca, model: modelo } = formulario;
+    if (!tipoVehiculo || !marca || !modelo) return;
 
-      const { vehicleType: tipoVehiculo, make: marca, model: modelo } = formulario;
-      if (!tipoVehiculo || !marca || !modelo) return;
+    createVehicle(formulario);
+    handleUpdateFiles();
 
-      createVehicle(formulario);
-      handleUpdateFiles();
-
-      navigate("/init/overview/vehicle");
-    },
-    [formulario, dispatch]
-  );
+    navigate("/init/overview/vehicle");
+  }
 
   const onClickUpdateVehicle = useCallback(
     (e: any) => {
@@ -185,7 +185,7 @@ export const VehiclePage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (vehiculoActivo) {setFormulario(vehiculoActivo); console.log('vehiculoActivo', vehiculoActivo)}
+    if (vehiculoActivo) { setFormulario(vehiculoActivo); console.log('vehiculoActivo', vehiculoActivo) }
     else setFormulario(initialState);
   }, [vehiculoActivo, setFormulario]);
 

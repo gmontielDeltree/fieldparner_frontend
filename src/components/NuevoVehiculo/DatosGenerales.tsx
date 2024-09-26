@@ -2,10 +2,15 @@ import React, { ChangeEvent, SetStateAction, useEffect, useMemo } from "react";
 import {
   Autocomplete,
   Button,
+  FormControl,
   Grid,
   IconButton,
   Input,
   InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
   TextField,
   Typography,
 } from "@mui/material";
@@ -28,6 +33,7 @@ export interface DatosGeneralesProps {
   handleFormValueChange: (key: string, value: string) => void;
   setFilesUpload: React.Dispatch<SetStateAction<File[]>>;
   cancelFile: (indexToRemove: number) => void;
+  handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
 
 export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
@@ -36,7 +42,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   handleFormValueChange,
   handleYearChange,
   setFilesUpload,
-  cancelFile
+  cancelFile,
+  handleSelectChange
 }) => {
 
   const { vehicleTypes, getTypeVehicles, createVehicleType } = useVehicle();
@@ -256,6 +263,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
           <Typography variant="h5">{t("_insurance")}</Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
+          {/* 
+          TODO: continuar aca
           <TextField
             label={t("insurance_company")}
             variant="outlined"
@@ -267,7 +276,23 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
             }}
-          />
+          /> */}
+          <FormControl key="insurence-select" fullWidth>
+            <InputLabel id="insurence" >{t("insurance_company")}</InputLabel>
+            <Select
+              labelId="insurence"
+              name="insurence"
+              value={insurence}
+              label={t("insurance_company")}
+              onChange={handleSelectChange}
+            >
+              {businesses?.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA).map((c) => (
+                <MenuItem key={c._id} value={c._id}>
+                  {c.razonSocial}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Grid>
         <Grid item xs={12} sm={3}>
           <TextField

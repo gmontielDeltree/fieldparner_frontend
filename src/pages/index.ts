@@ -1,6 +1,6 @@
 //Paginas privadas
-export * from "./ListVehiclesPage";
-export * from "./VehiclePage";
+export * from "./Vehicle/ListVehiclesPage";
+export * from "./Vehicle/VehiclePage";
 export * from "./FieldsPage";
 export * from "./Business/BusinessPage";
 export * from "./Business/ListBusinessesPage";
