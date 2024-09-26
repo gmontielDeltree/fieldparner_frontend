@@ -1,14 +1,20 @@
-import React, { SyntheticEvent, useEffect, useState } from 'react';
+import React, {  SyntheticEvent, useEffect, useState } from 'react';
 import { TextField, IconButton, Container,  Typography, Paper, Tooltip, Grid, Button, Box, FormControl,  Autocomplete } from '@mui/material';
 import { DataTable, ItemRow, TableCellStyled, Loading } from '../../components';
 import {ColumnProps } from '@types';
 import { useTranslation } from 'react-i18next';
-import { useAppDispatch, useAppSelector, useForm , useCorporateContract, useBusiness} from '../../hooks';
+import { useAppDispatch, useAppSelector, useForm , useCorporateContract, useBusiness, useCampaign} from '../../hooks';
 import { useNavigate } from 'react-router-dom';
 import { removeCorporateContractActive } from '../../redux/corporateContract';
 import Swal from 'sweetalert2';
 import { EnumStatusContract } from '../../interfaces/corporateContract';
 import { CorporateContract, ListCorporateContract } from '../../interfaces/corporateContract';
+import {
+  setSelectedCampaign,
+} from "../../redux/campaign";
+import {
+  loadCampaignFromLS
+} from "../../helpers/persistence";
 import {
 Add as AddIcon,
 Delete as DeleteIcon,
@@ -20,7 +26,8 @@ const initialForm: CorporateContract = {
   description: '',
   status: EnumStatusContract.Inactivo,
   contractsList: [],
-  totalCompany: 0
+  totalCompany: 0,
+  campaignSelect: ''
 };
 
 export const NewCorporateContractPage: React.FC = () => {
@@ -30,6 +37,8 @@ export const NewCorporateContractPage: React.FC = () => {
     percentageOfParticipation: '',
     activity: '',
   });
+
+  //const { selectedCampaign } = useAppSelector((state) => state.campaign);
   const { corporateContractActive } = useAppSelector((state) => state.corporateContract);
   const { isLoading, listCorporateContract,
           createCorporateContract,
@@ -38,6 +47,10 @@ export const NewCorporateContractPage: React.FC = () => {
           corporateContract,
         } = useCorporateContract();
   const {businesses, getBusinesses} = useBusiness();
+  const {
+    campaigns,
+    getCampaigns,
+  } = useCampaign();
 
 
 
@@ -69,13 +82,13 @@ export const NewCorporateContractPage: React.FC = () => {
     getBusinesses();
   }, []);
 
-  // useEffect(() => {
-  //   getCorporateContract();
-  // }, []);
-
-  // useEffect(() => {
-  //   getListCorporateContract();
-  // }, []);
+  useEffect(() => {
+    getCampaigns();
+    const campaign = loadCampaignFromLS();
+    if (campaign) {
+      dispatch(setSelectedCampaign(campaign));
+    }
+  }, []);
 
   useEffect(() => {
     if (corporateContractActive) setFormulario(corporateContractActive);
@@ -117,15 +130,15 @@ export const NewCorporateContractPage: React.FC = () => {
 
   const onClickCancel = () => {
     dispatch(removeCorporateContractActive ());
-    navigate("/init/overview/corporate-contract");
     reset();
+    navigate("/init/overview/corporate-contract");
+    
   };
 
 
 
   const handleAddContract = async () => {
    await createCorporateContract(formulario);
-   console.log("Datos Contrato:",formulario);
      reset();
   };
 
@@ -168,6 +181,15 @@ const handleAddListContract = () => {
 };
 
 
+// const handleCampaignChange = (event: SelectChangeEvent<unknown>) => {
+//   const selectedCampaignId = event.target.value as string; // Convierte el valor a string
+
+//   // Actualiza el estado del formulario con la campaña seleccionada
+//   setFormulario({
+//     ...formulario,
+//     campaignSelect: selectedCampaignId // Actualiza campaignSelect
+//   });
+// };
 
 
 const handleDeleteListContract = (contractToDelete: ListCorporateContract) => {
@@ -249,6 +271,7 @@ const handleDeleteListContract = (contractToDelete: ListCorporateContract) => {
         sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
       >
         <Grid container spacing={2}>
+        
           <Grid item xs={12} md={3}>
             <TextField
               label={t("contract_id")}
@@ -280,6 +303,25 @@ const handleDeleteListContract = (contractToDelete: ListCorporateContract) => {
           />
           </FormControl>
           </Grid>
+          <Grid item xs={12} md={1}>
+          <FormControl style={{ marginLeft: "50px", minWidth: 200 }}>
+          <Autocomplete
+        value={campaigns.find(campaign => campaign.campaignId === formulario.campaignSelect) || null}
+        onChange={(_event, newValue) => {
+          setFormulario({
+            ...formulario,
+            campaignSelect: newValue ? newValue.campaignId : '', 
+          });
+        }}
+        options={campaigns} 
+        getOptionLabel={(option) => option.name || ''} 
+        renderInput={(params) => (
+          <TextField {...params} label="Campaña" variant="outlined" />
+        )}
+        style={{ marginLeft: "-10px", minWidth: 200 }} 
+      />
+        </FormControl>
+        </Grid>
         </Grid>
         <Grid container spacing={2} sx={{ mt: 3 }}>
           <Grid item xs={12} md={3}>

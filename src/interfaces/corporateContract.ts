@@ -13,6 +13,7 @@ export interface ListCorporateContract  {
     status: EnumStatusContract;
     contractsList: ListCorporateContract[];  
     totalCompany: number;
+    campaignSelect?: string;
   }
   export interface CorporateContractState {
     corporateContractActive: CorporateContract| null;
