@@ -37,7 +37,8 @@ import {
   FireTruck as FireTruckIcon,
   CorporateFare as CorporateFareIcon,
   Description as DescriptionIcon,
-  ForwardToInbox as ForwardToInboxIcon
+  ForwardToInbox as ForwardToInboxIcon,
+  LocationOn as LocationOnIcon,
 } from "@mui/icons-material";
 import { Icon } from "semantic-ui-react";
 import { SideBarProps } from "../../types";
@@ -417,11 +418,17 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("corporate_contracts")} />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/productive-units"
+                selected={pathname.includes("init/overview/productive-units")}
+              >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
+                <MapIcon  sx={{ marginRight: "-5px",  }}/>
+                <LocationOnIcon sx={{ marginRight: "28px",fontSize: "inherit", verticalAlign: "middle"}}/>
                 </ListItemIcon>
-                <ListItemText primary={t("_expenses")} />
+                <ListItemText primary="Unidades Productivas"/>
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>

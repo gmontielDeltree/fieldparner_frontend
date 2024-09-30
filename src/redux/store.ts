@@ -18,6 +18,7 @@ import { laborsServicesSlice } from "./laborsService";
 import { syncStatusSlice } from "./syncStatus";
 import {corporateCompaniesSlice} from "./corporateCompanies";
 import { corporateContractSlice } from "./corporateContract";
+import { productiveUnitsSlice } from "./productiveUntis";
 
 
 const store = configureStore({
@@ -40,6 +41,8 @@ const store = configureStore({
     laborsServices:laborsServicesSlice.reducer,
     corporateCompanies:corporateCompaniesSlice.reducer,
     corporateContract:corporateContractSlice.reducer,
+    productiveUnits:productiveUnitsSlice.reducer,
+
   }
 });
 

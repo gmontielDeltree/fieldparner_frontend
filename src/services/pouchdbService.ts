@@ -35,6 +35,7 @@ import { LicenceUse } from '../interfaces/licencesUse';
 import { TransportDocument } from '../interfaces/transportDocument';
 import { Company } from '../interfaces/company';
 import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../interfaces/certificate-deposit';
+import { ProductiveUnits } from '../interfaces/productiveUnits';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -88,6 +89,8 @@ const dbNames = Object.freeze({
   corporateContract: "corporate-contract",
   certificateDeposit: "certificate-deposit",
   transportDocumentCertificateDeposit: "transport-document-certificate-deposit",
+  productiveUnits: "productive-units",
+
 });
 
 export const dbContext = Object.freeze({
@@ -129,6 +132,7 @@ export const dbContext = Object.freeze({
   corporateContract: new PouchDB<CorporateContract>(dbNames.corporateContract),
   certificateDeposit: new PouchDB<CertificateDeposit>(dbNames.certificateDeposit),
   transportDocumentCertificateDeposit: new PouchDB<TransportDocumentByCertificateDeposit>(dbNames.transportDocumentCertificateDeposit),
+ productiveUnits: new PouchDB<ProductiveUnits>(dbNames.productiveUnits),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -171,6 +175,7 @@ dbContext.corporateCompanies.sync(`${remoteCouchDBUrl}${dbNames.corporateCompani
 dbContext.corporateContract.sync(`${remoteCouchDBUrl}${dbNames.corporateContract}`, opts);
 dbContext.certificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.certificateDeposit}`, opts);
 dbContext.transportDocumentCertificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.transportDocumentCertificateDeposit}`, opts);
+ dbContext.productiveUnits.sync(`${remoteCouchDBUrl}${dbNames.productiveUnits}`, opts);
 
 //TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
@@ -190,6 +195,7 @@ export const getLocalityAndStateByZipCode = async (country: string, zipCode: str
       default:
         return [];
     }
+
     // if (country === CountryCode.ARGENTINA) {
     //     const result = await dbContext.zipCodeARG.find({
     //         selector: { "CP": zipCode },
