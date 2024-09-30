@@ -23,7 +23,7 @@ import * as XLSX from "xlsx";
 import { hideFieldList } from "../../redux/fieldsList";
 import { SearchBar } from "../Planification/SearchBar";
 import { Field } from "../../interfaces/field";
-import FieldOutlineIcon from "./FieldOutlineIcon";
+import FieldOutlineIcon from "./fieldoutlineicon";
 
 interface FieldsSideMenuProps {
   open: boolean;
