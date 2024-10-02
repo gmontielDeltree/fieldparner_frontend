@@ -592,7 +592,7 @@ export class SensoresClass extends LitElement {
     // Hay algo seleccionado
     return html`
       <fp-sidebar>
-        <h4 slot="title">Sensores</h4>
+        <h4 slot="title">Sensores asdas</h4>
 
         <div slot="content">
           <!-- Temperatura -->
