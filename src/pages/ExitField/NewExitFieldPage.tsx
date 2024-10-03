@@ -1,16 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
-import { GeneralData, Loading, TemplateLayout, TransportDestination } from '../components';
+import { GeneralData, Loading, TemplateLayout, TransportDestination } from '../../components';
 import {
     Agriculture as AgricultureIcon,
     ArrowRightAlt as ArrowRightAltIcon
 } from '@mui/icons-material';
-import { useBusiness, useCampaign, useCrops, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../hooks';
-import { ExitField, SupplyType } from '../types';
-import { getShortDate } from '../helpers/dates';
+import { useBusiness, useCampaign, useCrops, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../../hooks';
+import { ExitField, SupplyType } from '../../types';
+import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
-import { useField } from '../hooks/useField';
+import { useField } from '../../hooks/useField';
 
 
 

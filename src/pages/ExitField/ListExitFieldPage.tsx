@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout, CloseButtonPage } from '../components';
+import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout, CloseButtonPage } from '../../components';
 import { Box, Button, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import {
   Add as AddIcon,
@@ -8,9 +8,9 @@ import {
   ArrowRightAlt as ArrowRightAltIcon,
   Edit as EditIcon
 } from "@mui/icons-material";
-import { useExitField } from '../hooks';
+import { useExitField } from '../../hooks';
 import { useNavigate } from 'react-router';
-import { ColumnProps } from '../types';
+import { ColumnProps } from '@types';
 import { useTranslation } from 'react-i18next';
 
 

@@ -46,7 +46,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
 
     const onChangeLot = ({ target }: SelectChangeEvent) => {
         const lotId = target.value;
-        const lotSelected = fieldSelected?.lotes.find(l => l._id === lotId);
+        const lotSelected = fieldSelected?.lotes.find(l => l.properties.nombre === lotId);
 
         if (!lotSelected) return;
 
@@ -109,8 +109,8 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                         onChange={handleSelectChange}
                     >
                         {campaigns?.map((c) => (
-                            <MenuItem key={c.campaignId} value={c.campaignId}>
-                                {c.campaignId}
+                            <MenuItem key={c.name} value={c.name}>
+                                {c.name}
                             </MenuItem>
                         ))}
                     </Select>
@@ -147,7 +147,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                                 onChange={onChangeLot}
                             >
                                 {fieldSelected?.lotes.map((lot) => (
-                                    <MenuItem key={lot._id} value={lot._id}>
+                                    <MenuItem key={lot.properties.nombre} value={lot.properties.nombre}>
                                         {lot.properties.nombre}
                                     </MenuItem>
                                 ))}
