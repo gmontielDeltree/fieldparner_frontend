@@ -70,7 +70,7 @@ const {t} = useTranslation();
             labelId="unidadMedida"
             name="unitMeasurement"
             value={unitMeasurement}
-            // autoWidth
+            MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
             label={t("unit_of_measure")}
             onChange={handleSelectChange}
           >

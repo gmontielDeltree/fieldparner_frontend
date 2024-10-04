@@ -207,7 +207,7 @@ export const CertificateDepositPage: React.FC = () => {
         updatedFormValue[fieldName] = {
           ...field,
           isError: true,
-          message: "Campo requerido",
+          message: t("this_field_is_mandatory"),
         };
         isValid = false;
       }

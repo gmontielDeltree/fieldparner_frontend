@@ -1,34 +1,31 @@
 import {
-  // Autocomplete,
-  FormControl,
+  Checkbox,
+  FormControlLabel,
   Grid,
   InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
   SelectChangeEvent,
   TextField
 } from "@mui/material";
-import { Crops, Supply } from "@types";
+import { Supply } from "@types";
 import React, { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { IsSeed } from "../../utils/helper";
 
-//TODO: validar que descripcion de cultivo mostramos de acuerdo a la traduccion.
+
 export interface DoseFormProps {
   formValues: Supply;
-  crops: Crops[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
   handleFormValueChange: (key: string, value: string) => void;
+  handleCheckboxChange: (
+    { target }: ChangeEvent<HTMLInputElement>,
+    checked: boolean
+  ) => void;
 }
 
 export const DoseForm: React.FC<DoseFormProps> = ({
   formValues,
-  crops,
-  handleSelectChange,
   handleInputChange,
-  handleFormValueChange
+  handleCheckboxChange
 }) => {
   const {
     type,
@@ -43,24 +40,7 @@ export const DoseForm: React.FC<DoseFormProps> = ({
     toxicityClass
   } = formValues;
 
-  const { t, i18n } = useTranslation();
-  const currentLanguage = i18n.language; 
-  
-
-  const isSeedType = React.useMemo(() => IsSeed(type), [type]);
-
-  const getDescription = (crop: Crops): string => {
-    switch (currentLanguage) {
-      case 'en':
-        return crop.descriptionEN;
-      case 'es':
-        return crop.descriptionES;
-      case 'pt':
-        return crop.descriptionPT;
-      default:
-        return crop.descriptionEN; 
-    }
-  };
+  const { t } = useTranslation();
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="start">
@@ -170,58 +150,18 @@ export const DoseForm: React.FC<DoseFormProps> = ({
           fullWidth
         />
       </Grid>
-      {isSeedType && (
-        <Grid item xs={12} sm={4}>
-          <FormControl key="crop-select" fullWidth >
-            <InputLabel id="crop">{t("_crop")}</InputLabel>
-            <Select
-            labelId="crop"
-            name="cropId"
-            MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
-            value={formValues.cropId}
-            label={t("_crop")}
-            onChange={handleSelectChange}
-          >
-            {crops?.map((crop) => (
-              <MenuItem key={crop._id} value={crop._id}>
-                {getDescription(crop)} 
-              </MenuItem>
-            ))}
-          </Select>
-          </FormControl>
-
-          {/* <Autocomplete
-            id="crop"
-            value={formValues.cropId}
-            freeSolo
-            options={crops.map(c => ({ id: c._id || "", label: c.descriptionEN }))}
-            // disabled={disabledFields}
-            onChange={(_event: any, newValue: string | null) => {
-              newValue && handleFormValueChange("cropId", newValue);
-            }}
-            // inputValue={formValues.cropId}
-            // onInputChange={(_event, newInputValue) => {
-            //   handleFormValueChange("vehicleType", newInputValue);
-            // }}
-            renderInput={(params) => (
-              <TextField type="search" {...params} label={t("_crop")} required />
-            )}
-          /> */}
-
-        </Grid>
-      )}
       <Grid item xs={12} sm={4}>
-        <TextField
-          variant="outlined"
-          type="text"
-          label="Genérico"
-          name="generico"
-          value={generico}
-          onChange={handleInputChange}
-          InputProps={{
-            startAdornment: <InputAdornment position="start" />
-          }}
-          fullWidth
+        <FormControlLabel
+          key="supply-generic"
+          control={
+            <Checkbox
+              name="generico"
+              checked={generico}
+              onChange={handleCheckboxChange}
+            />
+          }
+          label={"Generico"}
+          labelPlacement="start"
         />
       </Grid>
       <Grid item xs={12} sm={4}>

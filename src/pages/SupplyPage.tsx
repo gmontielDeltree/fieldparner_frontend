@@ -16,6 +16,7 @@ import { Supply } from "../types";
 import { removeSupplyActive } from "../redux/supply";
 import { useTranslation } from "react-i18next";
 import { uploadFile } from "../helpers/fileUpload";
+import { IsSeed } from "../utils/helper";
 
 
 const initialForm: Supply = {
@@ -40,7 +41,8 @@ const initialForm: Supply = {
   brand: "",
   senasaId: "",
   formulationDenomination: "",
-  toxicityClass: ""
+  toxicityClass: "",
+  isDefault: false,
 };
 
 export const SupplyPage: React.FC = () => {
@@ -51,6 +53,7 @@ export const SupplyPage: React.FC = () => {
   const { t } = useTranslation();
   const [steps] = useState<string[]>([t("_supplies"), t("_dose"), t("_stock")]);
   const {
+    type: supplyType,
     formulario,
     setFormulario,
     handleInputChange,
@@ -59,8 +62,12 @@ export const SupplyPage: React.FC = () => {
     handleFormValueChange,
     reset,
   } = useForm(initialForm);
-
-  const { isLoading, supplyError, createSupply, updateSupply, setSupplyError, getSupplies } = useSupply();
+  const [formErrors, setFormErrors] = useState<Record<string, boolean>>({
+    name: false,
+    type: false,
+    cropId: false,
+  })
+  const { isLoading, createSupply, updateSupply, getSupplies } = useSupply();
   const { isLoading: loadingCrops, dataCrops, getCrops } = useCrops();
   const [fileUpload, setFileUpload] = React.useState<File | null>(null);
 
@@ -87,8 +94,8 @@ export const SupplyPage: React.FC = () => {
 
   const addNewSupply = async () => {
     try {
-      await uploadDocumentFile();
       await createSupply(formulario);
+      await uploadDocumentFile();
       navigate("/init/overview/supply");
       reset();
     } catch (error) {
@@ -100,6 +107,8 @@ export const SupplyPage: React.FC = () => {
     addNewSupply();
   };
 
+  const isSeedType = React.useMemo(() => IsSeed(supplyType), [supplyType]);
+
   const getStepContent = useMemo(
     () => (step: number) => {
       switch (step) {
@@ -109,7 +118,8 @@ export const SupplyPage: React.FC = () => {
               key="laborsForm"
               formValues={formulario}
               setFormValues={setFormulario}
-              supplyError={supplyError}
+              crops={dataCrops}
+              formErrors={formErrors}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
@@ -120,11 +130,11 @@ export const SupplyPage: React.FC = () => {
           return (
             <DoseForm
               key="doseForm"
-              crops={dataCrops} //TODO: cambiar por la tabla de cultivo
               formValues={formulario}
               handleInputChange={handleInputChange}
               handleFormValueChange={handleFormValueChange}
               handleSelectChange={handleSelectChange}
+              handleCheckboxChange={handleCheckboxChange}
             />
           );
         case 2:
@@ -152,14 +162,14 @@ export const SupplyPage: React.FC = () => {
   );
 
   const handleNext = () => {
-
-    if (!formulario.name.trim()) {
-      setSupplyError(true);
-
-    } else {
-      setSupplyError(false);
-      setActiveStep(activeStep + 1);
-    }
+    let formErrors = {
+      name: !formulario.name.trim(),
+      type: !formulario.type.trim(),
+      cropId: (isSeedType  && !formulario.cropId?.trim()),
+    };
+    setFormErrors(formErrors);
+    if (Object.values(formErrors).some((error) => error)) return;
+    setActiveStep(activeStep + 1);
   };
 
   const handleBack = () => {
@@ -210,13 +220,16 @@ export const SupplyPage: React.FC = () => {
             sx={{ mt: 3 }}
           >
             <Grid item xs={12} sm={3}>
-              <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={activeStep !== 0 ? handleBack : onClickCancel}>
                 {activeStep !== 0 ? t("id_back") : t("id_cancel")}
               </Button>
             </Grid>
             <Grid item xs={12} sm={3} key="grid-next">
               {!(activeStep === steps.length - 1) && (
-                <Button variant="outlined" color="primary" onClick={handleNext}>
+                <Button variant="contained" color="primary" onClick={handleNext}>
                   {t("id_next")}
                 </Button>
               )}
@@ -224,7 +237,7 @@ export const SupplyPage: React.FC = () => {
             <Grid item xs={12} sm={3}>
               <Button
                 variant="contained"
-                color="primary"
+                color="success"
                 onClick={supplyActive ? handleUpdateSupply : handleAddSupply}
               >
                 {!supplyActive ? t("_add") : t("id_update")}
