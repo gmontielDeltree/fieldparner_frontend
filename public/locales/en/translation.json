@@ -95,6 +95,7 @@
   "general_data": "General Data",
   "operation_date": "Operation Date",
   "_crop": "Crop",
+  "_crop_of": "Crop of",
   "_waybill": "Waybill",
   "ticket_receipt": "Ticket/ Receipt",
   "_hectare": "Hectare",

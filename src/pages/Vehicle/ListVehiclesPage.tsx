@@ -19,8 +19,8 @@ export const ListVehiclesPage: React.FC = () => {
   const columns = [
     { field: "vehicleType", headerName: t("vehicle_type"), flex: 1 },
     { field: "make", headerName: t("brand"), flex: 1 },
-    { field: "model", headerName: t("model"), flex: 1 },
-    { field: "patent", headerName: t("patent"), flex: 1 },
+    { field: "model", headerName: t("_model"), flex: 1 },
+    { field: "patent", headerName: t("_patent"), flex: 1 },
     { field: "modelYear", headerName: t("_year"), flex: 1 },
     {
       field: "actions",

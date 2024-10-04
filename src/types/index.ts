@@ -213,7 +213,7 @@ export interface Supply extends Document {
   labors: string[];
   generico: boolean;
   cropId?: string;
-  isUserDefined?: boolean;
+  // isUserDefined?: boolean;
   replacementId?: string;
   countryId?: string;
   brand?: string;
@@ -225,6 +225,7 @@ export interface Supply extends Document {
   eiqValue?: string;
   senasaId?: string;
   documentFile?: string;
+  isDefault?: boolean;
 }
 
 export interface CorporateCompanies extends Document {

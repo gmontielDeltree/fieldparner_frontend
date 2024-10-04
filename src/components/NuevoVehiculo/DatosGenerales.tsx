@@ -24,6 +24,7 @@ import {
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import uuid4 from "uuid4";
+import Swal from "sweetalert2";
 
 
 export interface DatosGeneralesProps {
@@ -46,7 +47,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   handleSelectChange
 }) => {
 
-  const { vehicleTypes, getTypeVehicles, createVehicleType } = useVehicle();
+  const { vehicleTypes, getTypeVehicles, createVehicleType, getVehicleByPatent } = useVehicle();
   const typeVehicles = vehicleTypes.map(t => t.name);
   const { vehiculoActivo } = useAppSelector((state) => state.vehiculo);
   const disabledFields = !!vehiculoActivo;
@@ -88,6 +89,16 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
       createVehicleType(newVehicleType);
     }
   };
+
+  const handleOnBlurPatent = async () => {
+    if (patent !== "") {
+      const vehicleFound = await getVehicleByPatent(vehiculo.patent);
+      if (vehicleFound) {
+        Swal.fire("Error", "Matricula no disponible.", "error");
+        handleFormValueChange("patent", "");
+      }
+    }
+  }
 
   const removeFile = (index: number) => {
     handleFormValueChange("documentFile", "");
@@ -146,7 +157,6 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             )}
           />
         </Grid>
-
         <Grid item xs={12} sm={6}>
           <TextField
             label={t("_brand")}
@@ -202,6 +212,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             type="text"
             name="patent"
             value={patent}
+            onBlur={handleOnBlurPatent}
             onChange={handleInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,

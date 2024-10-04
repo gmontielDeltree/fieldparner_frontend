@@ -4,6 +4,7 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
+  FormHelperText,
   Grid,
   IconButton,
   Input,
@@ -16,7 +17,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Supply, TipoInsumo, TypeSupplies } from "../../types";
+import { Crops, Supply, TipoInsumo, TypeSupplies } from "../../types";
 import React, { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -26,11 +27,13 @@ import {
   UploadFile as UploadFileIcon
 } from '@mui/icons-material';
 import uuid4 from "uuid4";
+import { IsSeed } from "../../utils/helper";
 // import { uploadFile } from "../../helpers/fileUpload";
 
 export interface LaborsFormProps {
   formValues: Supply;
-  supplyError: boolean;
+  formErrors: Record<string, boolean>;
+  crops: Crops[];
   setFormValues: React.Dispatch<React.SetStateAction<Supply>>;
   setFileUpload: React.Dispatch<React.SetStateAction<File | null>>;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
@@ -44,12 +47,16 @@ export interface LaborsFormProps {
 
 export const LaborsForm: React.FC<LaborsFormProps> = ({
   formValues,
-  supplyError,
+  formErrors,
+  crops,
   handleSelectChange,
   handleInputChange,
   setFileUpload,
   setFormValues,
 }) => {
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language;
+
   const { type, name, description, barCode, stockByLot, labors, brand, senasaId, documentFile } = formValues;
 
 
@@ -71,8 +78,6 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
     }
   };
 
-
-
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
     if (file) {
@@ -92,12 +97,28 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
     setFormValues(prevState => ({ ...prevState, documentFile: "" }));
   }
 
-  const { t } = useTranslation();
+  const isSeedType = React.useMemo(() => IsSeed(type), [type]);
+
+  const getDescription = (crop: Crops): string => {
+    switch (currentLanguage) {
+      case 'en':
+        return crop.descriptionEN;
+      case 'es':
+        return crop.descriptionES;
+      case 'pt':
+        return crop.descriptionPT;
+      default:
+        return crop.descriptionEN;
+    }
+  };
+
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
       <Grid item xs={12} sm={6}>
-        <FormControl fullWidth>
+        <FormControl
+          error={formErrors.type}
+          fullWidth>
           <InputLabel id="tipo-insumo">{t("_type")}</InputLabel>
           <Select
             labelId="tipo-insumo"
@@ -112,16 +133,41 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
               </MenuItem>
             ))}
           </Select>
+          <FormHelperText>{formErrors.type ? t("this_field_is_mandatory") : ""}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>
+        <FormControl
+          key="crop-select"
+          disabled={!isSeedType}
+          fullWidth
+          error={formErrors.cropId}>
+          <InputLabel id="crop">{t("_crop_of")}</InputLabel>
+          <Select
+            labelId="crop"
+            name="cropId"
+            MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
+            value={formValues.cropId}
+            label={t("_crop_of")}
+            onChange={handleSelectChange}
+          >
+            {crops?.map((crop) => (
+              <MenuItem key={crop._id} value={crop._id}>
+                {getDescription(crop)}
+              </MenuItem>
+            ))}
+          </Select>
+          <FormHelperText>{formErrors.cropId ? t("this_field_is_mandatory") : ""}</FormHelperText>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={12}>
         <TextField
           variant="outlined"
           type="text"
           label={t("_supply")}
           name="name"
-          error={supplyError}
-          helperText={supplyError ? t("this_field_is_mandatory") : ""}
+          error={formErrors.name}
+          helperText={formErrors.name ? t("this_field_is_mandatory") : ""}
           value={name}
           onChange={handleInputChange}
           InputProps={{
