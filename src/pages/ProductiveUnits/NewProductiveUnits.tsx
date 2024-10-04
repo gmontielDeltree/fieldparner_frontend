@@ -234,7 +234,7 @@ const handleDeleteListFields = (fieldToDelete: ListProductiveUnits) => {
       <Typography variant="h4" sx={{ mb: 3 }}>
         <MapIcon  sx={{ marginRight: "-5px", fontSize: "inherit", verticalAlign: "middle" }}/>
       <LocationOnIcon sx={{ marginRight: "28px"}}/>
-       Unidades Productivas
+      {t("productive_units")}
       </Typography>
       <Paper
         variant="outlined"
@@ -244,7 +244,7 @@ const handleDeleteListFields = (fieldToDelete: ListProductiveUnits) => {
         
           <Grid item xs={12} md={3}>
             <TextField
-              label="Unidades"
+              label={t("productive_units")}
               name="units"
               value={units}
               //onBlur={handleVerifyId}
@@ -269,7 +269,7 @@ const handleDeleteListFields = (fieldToDelete: ListProductiveUnits) => {
                   options={companieOptions}
                   getOptionLabel={(option) => option.nombre || ''}
                   renderInput={(params) => (
-                    <TextField {...params} label="Campos" variant="outlined" />
+                    <TextField {...params} label={t("_fields")} variant="outlined" />
                   )}
                   fullWidth
                 />
@@ -284,7 +284,7 @@ const handleDeleteListFields = (fieldToDelete: ListProductiveUnits) => {
           </Grid>
         </Grid>
         <Typography variant="h6" sx={{ mt: 4 }}>
-         Campos Agregados
+         {t("added_fields")}
         </Typography>
         <DataTable key="datatable-contracts" columns={columns} isLoading={false}>
             {formulario.fieldList.map((row) => (
@@ -294,9 +294,9 @@ const handleDeleteListFields = (fieldToDelete: ListProductiveUnits) => {
                     {row.campo_geojson?.properties?.hectareas|| 'Sin datos'}
                   </TableCellStyled>
                 <TableCellStyled align="center">
-                  <Tooltip title="Eliminar">
+                  <Tooltip title={t("icon_delete")}>
                     <IconButton
-                      aria-label="Eliminar"
+                      aria-label={t("icon_delete")}
                       color="default"
                       onClick={() => {
                         handleDeleteListFields(row);

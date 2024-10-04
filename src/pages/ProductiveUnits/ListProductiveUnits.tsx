@@ -8,8 +8,8 @@ import {
 } from "@mui/material";
 import 'semantic-ui-css/semantic.min.css';
 import {
-  Handshake as HandshakeIcon,
-  Description as DescriptionIcon,
+  Map as MapIcon,
+LocationOn as LocationOnIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
@@ -37,7 +37,7 @@ export const ListProductiveUnits: React.FC = () => {
   // ];
 
   const columns = [
-    {field: "units", headerName: t("contract_id"), flex: 1},
+    {field: "units", headerName: t("_units"), flex: 1},
     { field: "description", headerName: t("_description"), flex: 1 },
     {
       field: "actions",
@@ -99,11 +99,11 @@ export const ListProductiveUnits: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t("corporate_contracts")}
+      title={t("productive_units")}
       icon={
         <Box display="flex" alignItems="center">
-          <DescriptionIcon/>
-            <HandshakeIcon sx={{ marginRight: "8px"}}/>
+         <MapIcon  sx={{ marginRight: "-5px",  }}/>
+         <LocationOnIcon sx={{ marginRight: "28px",fontSize: "inherit", verticalAlign: "middle"}}/>
         </Box>
       }
       data={productiveUnits}

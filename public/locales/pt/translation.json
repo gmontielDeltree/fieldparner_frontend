@@ -325,5 +325,8 @@
   "corporate_contracts": "Contratos Societários",
   "locations_within_the_depot": "Locais dentro do armazém",
   "_hopper": "Tremonha",
-  "_silobag": "Silobolsa"
+  "_silobag": "Silobolsa",
+   "_units": "Unidades",
+  "productive_units": "Unidades Produtivas",
+   "added_fields": "Campos Adicionados"
 }

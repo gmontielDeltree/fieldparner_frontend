@@ -325,6 +325,10 @@
     "corporate_contracts": "Corporate Contracts",
     "locations_within_the_depot": "Locations within the Depot",
     "_hopper": "Hopper",
-    "_silobag": "Silobag"
+    "_silobag": "Silobag",
+      "_units": "Units",
+      "productive_units": "Productive Units",
+      "added_fields": "Added Fields"
+    
 }
   

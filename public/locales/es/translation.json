@@ -332,6 +332,10 @@
   "corporate_contracts": "Contratos Societarios",
  "locations_within_the_depot": "Ubicaciones dentro del Depósito",
  "_hopper": "Tolva",
- "_silobag": "Silobolsa"
+ "_silobag": "Silobolsa",
+ "_units": "Unidades",
+ "productive_units": "Unidades Productivas",
+ "added_fields": "Campos Agregados"
+
   
 }
