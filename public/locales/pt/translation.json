@@ -95,6 +95,7 @@
     "general_data": "Dados Gerais",
     "operation_date": "Data de Operação",
     "_crop": "Colheita",
+    "_crop_of": "Crop de",
     "_waybill": "Conhecimento de Transporte",
     "ticket_receipt": "Bilhete/Recibo",
     "_hectare": "Hectare",

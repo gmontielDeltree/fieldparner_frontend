@@ -94,6 +94,7 @@
   "general_data": "Datos Generales",
   "operation_date": "Fecha de Operación",
   "_crop": "Cultivo",
+  "_crop_of": "Cultivo de",
   "_waybill": "Guía de Remisión",
   "ticket_receipt": "Ticket/Recibo",
   "_hectare": "Hectárea",

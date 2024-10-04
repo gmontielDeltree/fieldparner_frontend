@@ -1,14 +1,16 @@
 import Swal from 'sweetalert2';
 import { Supply, SupplyByDeposits, StockByNroLot, StockBySupply } from "../types";
-import { useEffect, useState } from "react";
-import { dbContext, remoteCouchDBUrl } from '../services';
-import { useAppSelector } from '.';
+import { useState } from "react";
+import { dbContext } from '../services';
+import { useAppDispatch, useAppSelector } from '.';
 import { useNavigate } from 'react-router-dom';
+import { onLogout } from '../redux/auth';
 
 
 export const useSupply = () => {
 
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
     const { supplyActive } = useAppSelector((state) => state.supply);
     const [supplies, setSupplies] = useState<Supply[]>([]);
@@ -21,13 +23,13 @@ export const useSupply = () => {
     const getSupplies = async () => {
         setIsLoading(true);
         try {
-            // if (!user) throw new Error("Usuario no encontrado.");
+            if (!user) { dispatch(onLogout("Session expired")); return; }
 
             const result = await dbContext.supplies.find({
                 selector: {
                     $or: [
-                        { "accountId": user?.accountId },
-                        { "generico": true }
+                        { accountId: user?.accountId },
+                        { isDefault: true }
                     ]
                 },
             });
@@ -214,16 +216,23 @@ export const useSupply = () => {
     }
     const createSupply = async (newSupply: Supply) => {
         setIsLoading(true);
-
         try {
-            if (!newSupply.name.trim()) {
-                throw new Error("Por favor, ingrese un nombre para el insumo.");
-            }
+            if (!user) { dispatch(onLogout("Session expired")); return; }
 
-            if (!user) {
-                throw new Error("Usuario no encontrado.");
+            const resultFound = await dbContext.supplies.find({
+                selector: {
+                    $and: [
+                        { accountId: user.accountId },
+                        { type: newSupply.type },
+                        { name: newSupply.name }
+                    ]
+                }
+            });
+            if (resultFound.docs.length) {
+                Swal.fire("Insumo", `Ya existe el insumo ${newSupply.name} de tipo ${newSupply.type}`, "warning");
+                setIsLoading(false);
+                return;
             }
-
             const response = await dbContext.supplies.post({
                 ...newSupply,
                 accountId: user.accountId,
