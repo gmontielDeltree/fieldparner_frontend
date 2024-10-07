@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Box, Collapse, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import { Transform as TransformIcon, KeyboardArrowDown as KeyboardArrowDownIcon, KeyboardArrowUp as KeyboardArrowUpIcon } from "@mui/icons-material";
 import { useTransformStock } from "../hooks";
@@ -93,7 +93,7 @@ const ExpandableRow: React.FC<ExpandableRowProps> = ({ row }) => {
 };
 
 export const ListTransformPage: React.FC = () => {
-  const { isLoading, transformMovements, getTransformationMovements } = useTransformStock();
+  const { transformMovements, getTransformationMovements } = useTransformStock();
   const { t } = useTranslation();
 
   const columns: GridColDef[] = useMemo(
@@ -125,9 +125,9 @@ export const ListTransformPage: React.FC = () => {
     }));
   }, [transformMovements]);
 
-  useEffect(() => {
-    getTransformationMovements();
-  }, []);
+  // useEffect(() => {
+  //   getTransformationMovements();
+  // }, []);
 
   return (
     <GenericListPage
@@ -136,11 +136,11 @@ export const ListTransformPage: React.FC = () => {
       data={rows}
       columns={columns}
       getData={getTransformationMovements}
-      deleteData={() => {}}  
-      setActiveItem={() => {}}  
+      deleteData={() => { }}
+      setActiveItem={() => { }}
       newItemPath="/init/overview/value-transform/new"
-      editItemPath={() => ""}  
-      isLoading={isLoading}
+      editItemPath={() => ""}
+    // isLoading={isLoading}
     />
   );
 };

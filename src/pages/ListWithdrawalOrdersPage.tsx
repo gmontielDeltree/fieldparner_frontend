@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 export const ListWithdrawalOrdersPage: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const { isLoading, orders: listWithdrawal, getWithdrawalOrders } = useOrder();
+    const { orders: listWithdrawal, getWithdrawalOrders } = useOrder();
     const { t } = useTranslation();
 
     const onClickEdit = (row: WithdrawalOrder) => {
@@ -40,9 +40,9 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
         { field: 'reason', headerName: t('Reason'), width: 200 },
         { field: 'withdraw', headerName: t('Withdraws'), width: 150, valueGetter: (params) => params.row.withdraw?.nombreCompleto },
         { field: 'campaign', headerName: t('Campaign'), width: 120, valueGetter: (params) => params.row.campaign.campaignId },
-        { 
-            field: 'state', 
-            headerName: t('Status'), 
+        {
+            field: 'state',
+            headerName: t('Status'),
             width: 120,
             renderCell: (params) => (
                 <IconButton onClick={() => onClickStatus(params.row)}>
@@ -89,11 +89,11 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
             data={listWithdrawal}
             columns={columns}
             getData={getWithdrawalOrders}
-            deleteData={() => {}} 
-            setActiveItem={() => {}} 
+            deleteData={() => { }}
+            setActiveItem={() => { }}
             newItemPath="/init/overview/order"
             editItemPath={(id) => `/init/overview/order/${id}`}
-            isLoading={isLoading}
+            isLoading={false}
         />
     );
 }

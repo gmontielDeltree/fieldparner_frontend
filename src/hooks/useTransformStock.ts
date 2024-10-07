@@ -1,9 +1,10 @@
 import { Movement, StockByLot, StockMovement, StockMovementItem, TransformSupply, TypeMovement } from "../types";
-import { useAppSelector } from ".";
+import { useAppDispatch, useAppSelector } from ".";
 import { useState } from "react";
 import { getShortDate } from "../helpers/dates";
 import { dbContext } from "../services";
 import Swal from "sweetalert2";
+import { onLogout } from "../redux/auth";
 
 const today = getShortDate(true);
 
@@ -16,6 +17,7 @@ type TransformMovementGroup = {
 
 export const useTransformStock = () => {
 
+    const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
     const [transformMovements, setTransformMovements] = useState<TransformMovementGroup>({});
     const [error, setError] = useState({});
@@ -32,7 +34,7 @@ export const useTransformStock = () => {
         try {
             let newMovements: StockMovement[] = [];
 
-            if (!user) throw new Error();
+            if (!user) { dispatch(onLogout("Session expired")); return; }
             const { accountId, id: userId } = user;
             //Recorremos cada insumo/deposito/ubicacion/lote para crear su movimiento.
             suppliesToBeDiscounted.forEach(ts => {
@@ -111,12 +113,13 @@ export const useTransformStock = () => {
         if (!user) return;
         try {
 
+            if (!user) { dispatch(onLogout("Session expired")); return; }
             const promisesResult = await Promise.all([
                 dbContext.stockMovements.find({
                     selector: {
                         "$and": [
-                            { "accountId": user.accountId },
-                            { "typeMovement": TypeMovement.Transformacion },
+                            { accountId: user.accountId },
+                            { typeMovement: TypeMovement.Transformacion },
                         ],
                     }
                 }),
@@ -124,8 +127,8 @@ export const useTransformStock = () => {
                 dbContext.supplies.find({
                     selector: {
                         $or: [
-                            { "accountId": user?.accountId },
-                            { "generico": true }
+                            { accountId: user.accountId },
+                            { isDefault: true }
                         ]
                     },
                 })

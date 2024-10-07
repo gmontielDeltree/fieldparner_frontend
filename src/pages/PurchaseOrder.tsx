@@ -291,7 +291,6 @@ const initialForm: PurchaseOrder = {
     businessLogo: ""
 }
 
-//TODO: Chequear el tipo de moneda
 
 export const PurchaseOrderPage: React.FC = () => {
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, {  useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Box, IconButton, Tooltip } from "@mui/material";
@@ -131,9 +131,9 @@ export const ListPurchaseOrder: React.FC = () => {
     navigate(`/init/overview/purchase-order/${item.nroOrder}`);
   };
 
-  useEffect(() => {
-    getPurchaseOrders();
-  }, []);
+  // useEffect(() => {
+  //   getPurchaseOrders();
+  // }, []);
 
   const rows = useMemo(() => 
     purchaseOrders.map(({ order, details }) => ({
@@ -155,7 +155,7 @@ export const ListPurchaseOrder: React.FC = () => {
       setActiveItem={() => {}} 
       newItemPath="/init/overview/purchase-order/new"
       editItemPath={(id) => `/init/overview/purchase-order/${id}`}
-      isLoading={isLoading}
+      isLoading={false}
     />
   );
 };
