@@ -1,6 +1,8 @@
 import { dbContext } from "../services";
 import { CountryCode } from "../types";
 
+//TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
+
 export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
     try {
       let result;

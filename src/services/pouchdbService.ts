@@ -3,7 +3,6 @@ import PouchDBFind from 'pouchdb-find'
 import { getEnvVariables } from '../helpers/getEnvVariables';
 import {
   Category,
-  CountryCode,
   Deposit,
   ItemZipCode,
   Supply,
@@ -132,7 +131,7 @@ export const dbContext = Object.freeze({
   corporateContract: new PouchDB<CorporateContract>(dbNames.corporateContract),
   certificateDeposit: new PouchDB<CertificateDeposit>(dbNames.certificateDeposit),
   transportDocumentCertificateDeposit: new PouchDB<TransportDocumentByCertificateDeposit>(dbNames.transportDocumentCertificateDeposit),
- productiveUnits: new PouchDB<ProductiveUnits>(dbNames.productiveUnits),
+  productiveUnits: new PouchDB<ProductiveUnits>(dbNames.productiveUnits),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -175,44 +174,9 @@ dbContext.corporateCompanies.sync(`${remoteCouchDBUrl}${dbNames.corporateCompani
 dbContext.corporateContract.sync(`${remoteCouchDBUrl}${dbNames.corporateContract}`, opts);
 dbContext.certificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.certificateDeposit}`, opts);
 dbContext.transportDocumentCertificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.transportDocumentCertificateDeposit}`, opts);
- dbContext.productiveUnits.sync(`${remoteCouchDBUrl}${dbNames.productiveUnits}`, opts);
+dbContext.productiveUnits.sync(`${remoteCouchDBUrl}${dbNames.productiveUnits}`, opts);
 
-//TODO: Agregar codigo postal de Brasil,Chile,Paraguay 
-export const getLocalityAndStateByZipCode = async (country: string, zipCode: string) => {
-  try {
-    let result;
-    switch (country) {
-      case CountryCode.ARGENTINA:
-        result = await dbContext.zipCodeARG.find({
-          selector: { "CP": zipCode },
-        });
-        return result.docs;
-      case CountryCode.PARAGUAY:
-        result = await dbContext.zipCodePRY.find({
-          selector: { "CP": zipCode },
-        });
-        return result.docs;
-      default:
-        return [];
-    }
 
-    // if (country === CountryCode.ARGENTINA) {
-    //     const result = await dbContext.zipCodeARG.find({
-    //         selector: { "CP": zipCode },
-    //     });
-    //     return result.docs;
-    // }
-    // if (country === CountryCode.PARAGUAY) {
-    //     const result = await dbContext.zipCodePRY.find({
-    //         selector: { "CP": zipCode },
-    //     });
-    //     return result.docs;
-    // }
-  } catch (error) {
-    console.log(error);
-    return [];
-  }
-}
 
 
 

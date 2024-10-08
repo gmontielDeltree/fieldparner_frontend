@@ -64,7 +64,6 @@ export const useCountry = () => {
 
 
   const getCountries = async () => {
-    console.count("getCountry")
     setIsLoading(true);
     try {
       const response = await dbContext.countries.allDocs({ include_docs: true });
@@ -74,7 +73,6 @@ export const useCountry = () => {
       if (response.rows.length) {
         const documents: Country[] = response.rows.map(row => row.doc as Country);
         setDataCountry(documents);
-        setCountry(documents);
       }
       else
         setCountry([]);

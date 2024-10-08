@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import { BusinessForm } from "../../components";
 import { removeBusinessActive } from "../../redux/business";
-import { getLocalityAndStateByZipCode } from "../../services";
+import { getLocalityAndStateByZipCode } from "../../utils/getDataZipCode";
 import { useTranslation } from "react-i18next";
 import { uploadFile } from "../../helpers/fileUpload";
 import Swal from "sweetalert2";

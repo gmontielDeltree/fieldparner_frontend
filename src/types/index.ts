@@ -231,17 +231,17 @@ export interface Supply extends Document {
 export interface CorporateCompanies extends Document {
   pais: string;
   accountId: string;
+  licenceId: string;
   countryId: string;
   companyId: string;
   cp: string;
-  licenceId: string;
   taxKey: string;
   fantasyName: string;
   businessName: string;
   location: string;
   state: string;
   photoName: string;
-  domicile: string;
+  address: string;
   phoneNumber: string;
   secondaryContact: string;
   web: string;

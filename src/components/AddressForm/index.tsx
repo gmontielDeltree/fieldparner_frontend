@@ -1,6 +1,6 @@
-import React, { ChangeEvent, SetStateAction,  useState } from "react";
+import React, { ChangeEvent, SetStateAction, useState } from "react";
 import { Grid, TextField, InputAdornment, Button, Card, CardMedia, Box, Paper, IconButton } from "@mui/material";
-import { getLocalityAndStateByZipCode } from "../../services";
+import { getLocalityAndStateByZipCode } from "../../utils/getDataZipCode";
 import { Phone as PhoneIcon } from "@mui/icons-material";
 import { Loading } from "../../components";
 import { useTranslation } from "react-i18next";
@@ -52,20 +52,20 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   //       console.log ("Ejecutando", pais)
   //       if (pais === "ARG") {
   //         const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
-  
+
   //         if (localityAndStates?.length) {
   //           const firstLocality = localityAndStates[0].locality;
   //           const firstProvince = localityAndStates[0].state;
-  
+
   //           setLocalities(localityAndStates.map((x) => x.locality));
-  
+
   //           handleInputChange({
   //             target: {
   //               name: "localidad",
   //               value: firstLocality,
   //             },
   //           } as React.ChangeEvent<HTMLInputElement>);
-  
+
   //           handleInputChange({
   //             target: {
   //               name: "provincia",
@@ -76,28 +76,28 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   //       } else if (pais === "BR") {
   //         const brazilData = await fetchBrazilZipCode(cp);
   //         if (brazilData) {
-  
+
   //           handleInputChange({
   //             target: {
   //               name: "localidad",
   //               value: brazilData.localidade || brazilData.logradouro,
   //             },
   //           } as React.ChangeEvent<HTMLInputElement>);
-  
+
   //           handleInputChange({
   //             target: {
   //               name: "provincia",
   //               value: brazilData.uf,
   //             },
   //           } as React.ChangeEvent<HTMLInputElement>);
-  
+
   //           handleInputChange({
   //             target: {
   //               name: "domicilio",
   //               value: `${brazilData.logradouro}, ${brazilData.bairro}`,
   //             },
   //           } as React.ChangeEvent<HTMLInputElement>);
-  
+
   //         }
   //       }
   //       setLoadingZipCode(false);
@@ -112,23 +112,23 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   //     }
   //   }
   // };
-  
+
 
   // const onBlurZipCode = async () => {
   //   if (cp !== "") {
   //     setLoadingZipCode(true);
   //     try {
-        
+
   //       if (pais === "ARG" || pais === "AR") {
-         
+
   //         const localityAndStates = await getLocalityAndStateByZipCode("ARG",cp);
-  
+
   //         if (localityAndStates?.length) {
   //           const firstLocality = localityAndStates[0].locality;
   //           const firstProvince = localityAndStates[0].state;
-  
+
   //           setLocalities(localityAndStates.map((x) => x.locality));
-  
+
   //           handleInputChange({
   //             target: {
   //               name: "localidad",
@@ -136,7 +136,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   //             },
   //           } as React.ChangeEvent<HTMLInputElement>);
   //           console.log("Ejecutando2", pais);
-  
+
   //           handleInputChange({
   //             target: {
   //               name: "provincia",
@@ -148,7 +148,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   //         }
   //       } else if (pais === "BR") {
   //         const brazilData = await fetchBrazilZipCode(cp);
-          
+
   //         if (brazilData) {
   //           handleInputChange({
   //             target: {
@@ -156,14 +156,14 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   //               value: brazilData.localidade || brazilData.logradouro,
   //             },
   //           } as React.ChangeEvent<HTMLInputElement>);
-  
+
   //           handleInputChange({
   //             target: {
   //               name: "provincia",
   //               value: brazilData.uf,
   //             },
   //           } as React.ChangeEvent<HTMLInputElement>);
-  
+
   //           handleInputChange({
   //             target: {
   //               name: "domicilio",
@@ -176,17 +176,17 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   //       } else {
   //         throw new Error("El país seleccionado no es válido o no está soportado.");
   //       }
-  
+
   //       setLoadingZipCode(false);
   //     } catch (error) {
   //       console.error(error);
-  
+
   //       Swal.fire({
   //         title: "Error",
   //         text:  "Revisa que el Codigo postal sea correspondiente al pais.",
   //         icon: "error",
   //       });
-  
+
   //       setLoadingZipCode(false);
   //     }
   //   }
@@ -197,24 +197,24 @@ export const AddressForm: React.FC<AddressFormProps> = ({
       setLoadingZipCode(true);
       try {
         console.log("Ejecutando1", pais);
-  
+
         if (pais === "ARG" || pais === "AR") {
           console.log("Ejecutando2", pais);
           const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
-  
+
           if (localityAndStates?.length) {
             const firstLocality = localityAndStates[0].locality;
             const firstProvince = localityAndStates[0].state;
-  
+
             setLocalities(localityAndStates.map((x) => x.locality));
-  
+
             handleInputChange({
               target: {
                 name: "localidad",
                 value: firstLocality,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "provincia",
@@ -226,7 +226,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
           }
         } else if (pais === "BR") {
           const brazilData = await fetchBrazilZipCode(cp);
-  
+
           if (brazilData) {
             handleInputChange({
               target: {
@@ -234,14 +234,14 @@ export const AddressForm: React.FC<AddressFormProps> = ({
                 value: brazilData.localidade || brazilData.logradouro,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "provincia",
                 value: brazilData.uf,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "domicilio",
@@ -254,20 +254,20 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         } else if (pais === "PY" || pais === "PRY") {
           console.log("Ejecutando3", pais);
           const localityAndStates = await getLocalityAndStateByZipCode("PRY", cp);
-  
+
           if (localityAndStates?.length) {
             const firstLocality = localityAndStates[0].locality;
             const firstProvince = localityAndStates[0].state;
-  
+
             setLocalities(localityAndStates.map((x) => x.locality));
-  
+
             handleInputChange({
               target: {
                 name: "localidad",
                 value: firstLocality,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "provincia",
@@ -280,23 +280,23 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         } else {
           throw new Error("El país seleccionado no es válido o no está soportado.");
         }
-  
+
         setLoadingZipCode(false);
       } catch (error) {
         console.error(error);
-  
+
         Swal.fire({
           title: "Error",
           text: "Revisa que el Código Postal sea correspondiente al país.",
           icon: "error",
         });
-  
+
         setLoadingZipCode(false);
       }
     }
   };
-  
-  
+
+
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
@@ -335,24 +335,24 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         justifyContent="center"
       >
         <Grid item xs={12} sm={6}>
-        <TextField
-          label={t("_phone")}
-          variant="outlined"
-          // disabled={disabledFields}
-          type="text"
-          name="telefono"
-          value={telefono}
-          onChange={handleInputChange}
-          InputProps={{
-            // startAdornment: <InputAdornment position="start" />,
-            endAdornment: (
-              <InputAdornment position="end">
-                <PhoneIcon />
-              </InputAdornment>
-            ),
-          }}
-          fullWidth
-        />
+          <TextField
+            label={t("_phone")}
+            variant="outlined"
+            // disabled={disabledFields}
+            type="text"
+            name="telefono"
+            value={telefono}
+            onChange={handleInputChange}
+            InputProps={{
+              // startAdornment: <InputAdornment position="start" />,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <PhoneIcon />
+                </InputAdornment>
+              ),
+            }}
+            fullWidth
+          />
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField

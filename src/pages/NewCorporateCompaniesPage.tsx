@@ -1,4 +1,4 @@
-import { getLocalityAndStateByZipCode } from '../services';
+
 import {
   Box,
   Button,
@@ -14,10 +14,10 @@ import {
   Typography,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch,  useForm, useCorporateCompanies, useAppSelector ,useBusiness} from '../hooks';
+import { useAppDispatch, useForm, useCorporateCompanies, useAppSelector, useBusiness, useCountry } from '../hooks';
 import { Loading } from '../components';
 import { CorporateCompanies } from '../types';
-import { removeCorporateCompanies, removeCorporateCompaniesActive } from '../redux/corporateCompanies';
+import { removeCorporateCompaniesActive } from '../redux/corporateCompanies';
 import {
   BrokenImage as BrokenImageIcon,
   Cancel as CancelIcon,
@@ -31,6 +31,7 @@ import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { useTranslation } from 'react-i18next';
 import { Country } from '../interfaces/country';
+import { getLocalityAndStateByZipCode } from '../utils/getDataZipCode';
 
 
 
@@ -42,16 +43,16 @@ export interface AddressFormProps {
 
 const initialForm: CorporateCompanies = {
   accountId: '',
+  licenceId: '',
   countryId: '',
   companyId: '',
   cp: '',
-  licenceId: '',
   taxKey: '',
   fantasyName: '',
   location: '',
   state: '',
   photoName: '',
-  domicile: '',
+  address: '',
   phoneNumber: '',
   secondaryContact: '',
   web: '',
@@ -64,113 +65,50 @@ const initialForm: CorporateCompanies = {
 
 export const NewCoporateCompaniesPage = () => {
   const navigate = useNavigate();
-  const { isLoading, createCorporateCompanies, updateCorporateCompanies,corporateCompanies,getCorporateCompanies} = useCorporateCompanies();
   const dispatch = useAppDispatch();
-  const {businesses,getBusinesses} = useBusiness();
-  const { corporateCompaniesActive } = useAppSelector((state) => state.corporateCompanies);
-  const [loadingZipCode, setLoadingZipCode] = useState(false);
-  const [localities, setLocalities] = useState<string[]>([]);
-  const { user } = useAppSelector(state => state.auth);
-  const [pais, setPais] = useState<string | null>(null);
-  const [countryName, setCountryName] = useState<string>('');
   const { t } = useTranslation();
- 
+  const { user } = useAppSelector(state => state.auth);
+  const { corporateCompaniesActive } = useAppSelector((state) => state.corporateCompanies);
+  const { isLoading, createCorporateCompanies, updateCorporateCompanies, corporateCompanies, getCorporateCompanies } = useCorporateCompanies();
+  const { getCountries, dataCountry: countries } = useCountry();
+  const { businesses, getBusinesses } = useBusiness();
+  const [loadingZipCode, setLoadingZipCode] = useState(false);
+  const [_localities, setLocalities] = useState<string[]>([]);
+  const countryUser = countries.find(country => country.code === user?.countryId);
 
-  const countries: Country[] = [
-    {
-      code: 'ARG', descriptionEN: 'Argentina',
-      descriptionES: '',
-      descriptionPT: '',
-      language: '',
-      currency: '',
-      taxKey: '',
-      taxKeyFormat: ''
-    },
-    {
-      code: 'BR', descriptionEN: 'Brasil',
-      descriptionES: '',
-      descriptionPT: '',
-      language: '',
-      currency: '',
-      taxKey: '',
-      taxKeyFormat: ''
-    },
-    {
-      code: 'PY',
-      descriptionES: 'Paraguay',
-      descriptionPT: '',
-      descriptionEN: '',
-      language: '',
-      currency: '',
-      taxKey: '',
-      taxKeyFormat: ''
-    }
-  ];
-
-
-  const selectedCountry = countries.find(country => country.code === pais);
-  
   const {
     photoName,
-    //accountId,
-    //countryId,
     cp,
-    //licenceId,
-    //countries,
     taxKey,
     fantasyName,
     state,
-    domicile,
+    address,
     location,
     phoneNumber,
     secondaryContact,
     web,
     businessName,
     observations,
-   // countryError,
     formulario,
     taxSituation,
     setFormulario,
     handleInputChange,
     reset,
-  } = useForm<CorporateCompanies >(initialForm);
+  } = useForm<CorporateCompanies>(initialForm);
 
-  useEffect(() => {
-    getCorporateCompanies();
-  }, []);
 
   useEffect(() => {
     if (corporateCompaniesActive) setFormulario(corporateCompaniesActive);
     else setFormulario(initialForm);
   }, [corporateCompaniesActive, setFormulario]);
 
-  useEffect(() => {
-    return () => {
-      dispatch((removeCorporateCompanies));
-    };
-  }, [dispatch]);
-
-  
-  useEffect(() => {
-  
-    const initialCountryCode = '';
-    setPais(initialCountryCode);
-
-    
-    const selectedCountry = countries.find(country => country.code === initialCountryCode);
-    if (selectedCountry) {
-      setCountryName(selectedCountry.descriptionEN);
-    }
-  }, []);
-
- 
 
   const uploadImgUser = async (fileInput: Blob) => {
     try {
-      const newFileName = `${uuid4()}.jpeg`; 
+      const newFileName = `${uuid4()}.jpeg`;
       const renamedFile = new File([fileInput], newFileName, { type: fileInput.type });
       const response = await uploadFile(renamedFile);
-      
+
 
       if (response)
         setFormulario(({ ...formulario, photoName: newFileName }));
@@ -192,52 +130,34 @@ export const NewCoporateCompaniesPage = () => {
   };
 
   const handleUpdate = () => {
-    
+
     if (!formulario._id?.trim()) {
       Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
       return;
     }
-  
+
     updateCorporateCompanies(formulario);
     reset();
   };
- 
+
 
   const handleAdd = async () => {
-     await createCorporateCompanies(formulario);
-      reset();
+    await createCorporateCompanies(formulario);
+    reset();
   };
 
 
   const onClickCancel = () => {
-    dispatch(removeCorporateCompaniesActive ());
+    dispatch(removeCorporateCompaniesActive());
     navigate("/init/overview/corporate-companies");
     reset();
   };
-
-  // const handleVerifyTaxKey = () => {
-  //   const idExists = corporateCompanies	.some(module => module.taxKey === taxKey);
-  //   if (idExists) {
-  //     Swal.fire({
-  //       icon: 'error',
-  //       title: 'Error',
-  //       text: 'El ID ya existe',
-  //     }).then(() => {
-  //       setFormValues(prevForm => ({
-  //         ...prevForm,
-  //         id: 0
-  //       }));
-  //     });
-  //   }
-  //   return idExists;
-  // };
-
 
   const handleVerifyId = () => {
     const existingBusiness = businesses.find(business => business.cuit === taxKey);
     const taxIdExists = corporateCompanies.find(corporate => corporate.taxKey === taxKey);
 
-    if ( taxIdExists) {
+    if (taxIdExists) {
       Swal.fire({
         icon: 'error',
         title: 'Error',
@@ -251,7 +171,7 @@ export const NewCoporateCompaniesPage = () => {
       });
       return true; // O puedes devolver idExists si deseas mantener consistencia con el retorno
     }
-    
+
     if (existingBusiness) {
       Swal.fire({
         icon: 'question',
@@ -270,11 +190,11 @@ export const NewCoporateCompaniesPage = () => {
             cp: existingBusiness.cp || prevForm.cp,
             location: existingBusiness.localidad || prevForm.location,
             state: existingBusiness.provincia || prevForm.state,
-            domicile: existingBusiness.domicilio || prevForm.domicile,
+            address: existingBusiness.domicilio || prevForm.address,
             secondaryContact: existingBusiness.contactoSecundario || prevForm.secondaryContact,
             web: existingBusiness.sitioWeb || prevForm.web,
             photoName: existingBusiness.logoBusiness || prevForm.photoName,
-            phoneNumber:existingBusiness.contactoPrincipal || prevForm.phoneNumber,
+            phoneNumber: existingBusiness.contactoPrincipal || prevForm.phoneNumber,
           }));
         } else {
           setFormulario(prevForm => ({
@@ -284,7 +204,7 @@ export const NewCoporateCompaniesPage = () => {
         }
       });
     }
-    
+
     return !!existingBusiness;
   };
 
@@ -302,27 +222,27 @@ export const NewCoporateCompaniesPage = () => {
   };
 
   const onBlurZipCode = async () => {
-    
+
     if (cp !== "") {
-      
+
       setLoadingZipCode(true);
       try {
-        if (pais === "ARG") {
+        if (countryUser?.code === "AR") {
           const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
-         
+
           if (localityAndStates?.length) {
             const firstLocality = localityAndStates[0].locality;
             const firstProvince = localityAndStates[0].state;
-  
+
             setLocalities(localityAndStates.map((x) => x.locality));
-  
+
             handleInputChange({
               target: {
                 name: "location",
                 value: firstLocality,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "state",
@@ -330,32 +250,32 @@ export const NewCoporateCompaniesPage = () => {
               },
             } as React.ChangeEvent<HTMLInputElement>);
           }
-        } else if (pais === "BR") {
-          
+        } else if (countryUser?.code === "BR") {
+
           const brazilData = await fetchBrazilZipCode(cp);
           if (brazilData) {
-  
+
             handleInputChange({
               target: {
                 name: "location",
                 value: brazilData.localidade || brazilData.logradouro,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "state",
                 value: brazilData.uf,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "domicile",
                 value: `${brazilData.logradouro}, ${brazilData.bairro}`,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
           }
         }
         setLoadingZipCode(false);
@@ -365,44 +285,20 @@ export const NewCoporateCompaniesPage = () => {
       }
     }
   };
-  
-
 
   useEffect(() => {
     return () => {
-      dispatch((removeCorporateCompaniesActive));
+      dispatch(removeCorporateCompaniesActive());
     };
   }, [dispatch]);
 
- 
-
-
-  useEffect(() => {
-    if (user) {
-      setPais(user.countryId); 
-      setFormulario((prevForm) => ({
-        ...prevForm,
-        accountId: user.accountId || prevForm.accountId,
-        countryId: user.countryId || prevForm.countryId,
-        pais: user.countryId || prevForm.countryId
-      }));
-    }
-  }, [user, setFormulario]);  
-
   useEffect(() => {
     getBusinesses();
- }, []);
+    getCorporateCompanies();
+    getCountries();
 
+  }, []);
 
-
-
-  useEffect(() => {
-    if (user) {
-      setPais(user.countryId); 
-    }
-  }, [user]); 
-
-  
   return (
     <>
       <Loading key="loading-business" loading={loadingZipCode} />
@@ -475,7 +371,7 @@ export const NewCoporateCompaniesPage = () => {
                 required
                 fullWidth
               />
-               
+
             </Grid>
             <Grid item xs={12} md={2}>
               <TextField
@@ -492,47 +388,43 @@ export const NewCoporateCompaniesPage = () => {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
-            <TextField
-            label={t("_locality")}
-            variant="outlined"
-            type="text"
-            name="location"
-            value={location}
-            onChange={handleInputChange}
-            InputProps={{
-              startAdornment: <InputAdornment position="start" />
-            }}
-            fullWidth
-          />
-            </Grid>
             <Grid item xs={12} md={4}>
+              <TextField
+                label={t("_locality")}
+                variant="outlined"
+                type="text"
+                name="location"
+                value={location}
+                onChange={handleInputChange}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" />
+                }}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
               <TextField
                 label={t("_address")}
                 type="text"
-                id="domicile"
-                name="domicile"
-                value={domicile}
+                id="address"
+                name="address"
+                value={address}
                 onChange={handleInputChange}
                 required
                 fullWidth
-              />  
+              />
             </Grid>
             <Grid item xs={12} md={4}>
               <TextField
-                  label={t("id_country")}
-                  type="text"
-                  id="pais"
-                  name="pais"
-                  value={selectedCountry ? selectedCountry.descriptionEN : ''}
-                  onChange={() => {}}
-                  required
-                  fullWidth
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
-          </Grid>
+                label={t("id_country")}
+                type="text"
+                value={countryUser ? countryUser.descriptionEN : ''}
+                fullWidth
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
             <Grid item xs={12} md={4}>
               <TextField
                 label={t("_state")}
@@ -557,7 +449,7 @@ export const NewCoporateCompaniesPage = () => {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={4}>
               <TextField
                 label="Situacion Fiscal"
                 type="text"
@@ -568,9 +460,9 @@ export const NewCoporateCompaniesPage = () => {
                 required
                 fullWidth
               />
-              
+
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={4}>
               <TextField
                 label={t("secondary_contact")}
                 type="text"
@@ -595,70 +487,70 @@ export const NewCoporateCompaniesPage = () => {
               />
             </Grid>
             <Grid item xs={1} md={8}>
-            <TextField
-              label={t("_observations")}
-              type="text"
-              id="observations"
-              name="observations"
-              value={observations}
-              onChange={handleInputChange}
-              required
-              fullWidth
-            />
-          </Grid>
+              <TextField
+                label={t("_observations")}
+                type="text"
+                id="observations"
+                name="observations"
+                value={observations}
+                onChange={handleInputChange}
+                required
+                fullWidth
+              />
+            </Grid>
             <Grid item xs={1} md={4}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: "center", alignItems: 'center', mb: 2 }}>
-              <Card sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                width: 200,
-                height: 240,
-                maxWidth: 200,
-                maxHeight: 240
-              }}>
-                {photoName ? (
-                  <CardMedia
-                    key="preview-img"
-                    component="img"
-                    alt="Vista previa de la imagen"
-                    image={`${urlImg}/${photoName}`}
-                    sx={{
-                      maxHeight: 150,
-                      maxWidth: 150,
-                      objectFit: "cover",
-                      borderRadius: "50%"
-                    }}
-                  />
-                ) : (
-                  <Box sx={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <BrokenImageIcon fontSize="large" color="disabled" />
-                  </Box>
-                )}
+              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: "center", alignItems: 'center', mb: 2 }}>
+                <Card sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: 200,
+                  height: 240,
+                  maxWidth: 200,
+                  maxHeight: 240
+                }}>
+                  {photoName ? (
+                    <CardMedia
+                      key="preview-img"
+                      component="img"
+                      alt="Vista previa de la imagen"
+                      image={`${urlImg}/${photoName}`}
+                      sx={{
+                        maxHeight: 150,
+                        maxWidth: 150,
+                        objectFit: "cover",
+                        borderRadius: "50%"
+                      }}
+                    />
+                  ) : (
+                    <Box sx={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <BrokenImageIcon fontSize="large" color="disabled" />
+                    </Box>
+                  )}
 
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'right', justifyContent: 'space-around' }}>
-                    <label htmlFor="file-upload" style={{ display: 'flex', alignItems: 'right', cursor: 'pointer' }}>
-                      <PhotoCameraIcon sx={{ mr: 1 }} />
-                      <Typography variant="body1" sx={{ p: 0 }}>{t("upload_photo")}</Typography>
-                      <input
-                        id="file-upload"
-                        key="file-user"
-                        accept="image/*"
-                        name="file"
-                        type="file"
-                        style={{ display: 'none' }}
-                        onChange={handleFileUpload}
-                      />
-                    </label>
-                    {photoName && (
-                      <IconButton onClick={handleCancel} color="error" sx={{ p: 0, pl: 1 }}>
-                        <CancelIcon fontSize="medium" />
-                      </IconButton>
-                    )}
-                  </Box>
-                </CardContent>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'right', justifyContent: 'space-around' }}>
+                      <label htmlFor="file-upload" style={{ display: 'flex', alignItems: 'right', cursor: 'pointer' }}>
+                        <PhotoCameraIcon sx={{ mr: 1 }} />
+                        <Typography variant="body1" sx={{ p: 0 }}>{t("upload_photo")}</Typography>
+                        <input
+                          id="file-upload"
+                          key="file-user"
+                          accept="image/*"
+                          name="file"
+                          type="file"
+                          style={{ display: 'none' }}
+                          onChange={handleFileUpload}
+                        />
+                      </label>
+                      {photoName && (
+                        <IconButton onClick={handleCancel} color="error" sx={{ p: 0, pl: 1 }}>
+                          <CancelIcon fontSize="medium" />
+                        </IconButton>
+                      )}
+                    </Box>
+                  </CardContent>
                 </Card>
               </Box>
             </Grid>
@@ -685,5 +577,5 @@ export const NewCoporateCompaniesPage = () => {
       </Container>
     </>
   );
-  
+
 };

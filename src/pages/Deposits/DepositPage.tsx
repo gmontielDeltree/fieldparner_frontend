@@ -43,7 +43,7 @@ import {
 } from "../../hooks";
 import {  Deposit, EnumStatusContract, TipoEntidad } from "../../types";
 import { removeDepositActive } from "../../redux/deposit";
-import { getLocalityAndStateByZipCode } from "../../services";
+import { getLocalityAndStateByZipCode } from "../../utils/getDataZipCode";
 import { MapPickerReact } from '../../../owncomponents/map-picker/react-port/MapPicker';
 import { useTranslation } from "react-i18next";
 import Swal from "sweetalert2";
