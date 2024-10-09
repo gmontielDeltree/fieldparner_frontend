@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "apexcharts/dist/apexcharts.css";
 import { DailyTelemetryCard } from "../sensores-types";
 import ChartComponent from "../chart-component";
 import { Devices } from "../sensores";
+import {
+  Card,
+  CardContent,
+  Typography,
+  IconButton,
+  Grid,
+  Box,
+  useTheme,
+} from "@mui/material";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import { motion } from "framer-motion";
 
 const variable = "inversion_termica_chacabuco_baja";
 const titulo = "Inv. Térmica";
@@ -25,6 +35,7 @@ const InversionTermicaChacabucoBajaCard: React.FC<InversionTermicaChacabucoBajaC
   const [max, setMax] = useState<number>(0);
   const [lastValue, setLastValue] = useState<number>(0);
   const devices = new Devices();
+  const theme = useTheme();
 
   useEffect(() => {
     if (data) {
@@ -58,58 +69,140 @@ const InversionTermicaChacabucoBajaCard: React.FC<InversionTermicaChacabucoBajaC
   };
 
   return (
-    <div className="container-fluid row border-primary border-top p-1 mx-auto">
-      <div
-        className="row btn btn-primary d-block d-sm-none mx-auto my-1"
-        onClick={toggleChartView}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card
+        sx={{
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          borderRadius: 2,
+          padding: 2,
+          boxShadow: theme.shadows[2],
+        }}
       >
-        {!showChartOnly ? "Gráfico" : "Datos"}
-      </div>
-      {!showChartOnly && (
-        <div className="col-11 col-sm-11 my-auto" id="datadiv">
-          <div className="row">
-            <h5>
-              <img src={icono} width="50" height="50" alt="Inversión Térmica" />
-              <span className="fw-bolder">
-                {titulo} {lastValue} {unidad}
-              </span>
-            </h5>
-          </div>
-          <div className="row">
-            <div className="col-4 fw-bolder">
-              <div className="fw-strong">
-                {min} {unidad}
+        <CardContent sx={{ padding: "8px !important" }}>
+          <Grid container spacing={1} alignItems="center">
+            <Grid item xs={11}>
+              {!showChartOnly ? (
+                <Typography
+                  variant="h6"
+                  component="div"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontWeight: 500,
+                  }}
+                >
+                  <img
+                    src={icono}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      marginRight: "10px", 
+                      filter: "drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2))",
+                      transition: "transform 0.3s ease-in-out",
+                    }}
+                    alt="Inversión Térmica"
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.transform = "scale(1.1)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
+                  />
+                  {titulo} {lastValue} {unidad}
+                </Typography>
+              ) : (
+                <Typography
+                  variant="h6"
+                  component="div"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontWeight: 500,
+                  }}
+                >
+                  <img
+                    src={icono}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      marginRight: "10px",
+                      filter: "drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2))",
+                      transition: "transform 0.3s ease-in-out",
+                    }}
+                    alt="Inversión Térmica"
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.transform = "scale(1.1)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
+                  />
+                  Gráfico de {titulo}
+                </Typography>
+              )}
+            </Grid>
+            <Grid item xs={1} sx={{ textAlign: "right" }}>
+              <IconButton
+                onClick={toggleChartView}
+                sx={{ color: theme.palette.text.primary }}
+              >
+                {showChartOnly ? (
+                  <ArrowBackIosIcon />
+                ) : (
+                  <ArrowForwardIosIcon />
+                )}
+              </IconButton>
+            </Grid>
+          </Grid>
+
+          {!showChartOnly && (
+            <Grid container spacing={1} mt={1}>
+              <Grid item xs={4}>
+                <Typography variant="body2" color="textSecondary">
+                  Min
+                </Typography>
+                <Typography variant="subtitle1">
+                  {min} {unidad}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography variant="body2" color="textSecondary">
+                  Promedio
+                </Typography>
+                <Typography variant="subtitle1">
+                  {avg} {unidad}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography variant="body2" color="textSecondary">
+                  Max
+                </Typography>
+                <Typography variant="subtitle1">
+                  {max} {unidad}
+                </Typography>
+              </Grid>
+            </Grid>
+          )}
+
+          {showChartOnly && (
+            <Box mt={2}>
+              <div className="chart">
+                <ChartComponent
+                  variable_name={variable}
+                  data={data}
+                  show_chart_only={showChartOnly}
+                />
               </div>
-              <div className="fw-light">Min</div>
-            </div>
-            <div className="col-4 fw-bolder">
-              <div className="fw-strong">
-                {avg} {unidad}
-              </div>
-              <div className="fw-light">Promedio</div>
-            </div>
-            <div className="col-4 fw-bolder">
-              <div className="fw-strong">
-                {max} {unidad}
-              </div>
-              <div className="fw-light">Max</div>
-            </div>
-          </div>
-        </div>
-      )}
-      {showChartOnly && (
-        <div className="col-11 col-sm-11 chart">
-          <ChartComponent
-            variable_name={variable}
-            data={data}
-            show_chart_only={showChartOnly}
-          />
-        </div>
-      )}
-      <div className="col-1 my-1 d-flex align-items-center" onClick={toggleChartView}>
-        <span className="btn btn-warning mx-auto">{!showChartOnly ? ">" : "<"}</span>
-      </div>
-    </div>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 

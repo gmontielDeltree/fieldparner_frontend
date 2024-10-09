@@ -1,13 +1,7 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { Map } from 'mapbox-gl';
-import { format } from 'date-fns';
-import ApexCharts from 'apexcharts';
-import PouchDB from 'pouchdb';
-import { Devices, extract_tele } from './sensores';
+import React, { useState, useEffect } from 'react';
+import { Devices } from './sensores';
 import devices_modelos from './devices_modelos';
-import { DailyTelemetryCard } from './sensores-types';
 
-// Importa los componentes de medición
 import TemperaturaCard from './mediciones-cards/temperatura';
 import PresionCard from './mediciones-cards/presion';
 import HumedadCard from './mediciones-cards/humedad';
@@ -20,48 +14,46 @@ import InversionTermicaChacabucoBajaCard from './mediciones-cards/inversion_term
 import StressTermicoCard from './mediciones-cards/stress_termico';
 import PluviometroCard from './mediciones-cards/pluviometro';
 
-import FpSidebar from '../john-deere/fp-sidebar';
+import {
+  Drawer,
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Box,
+  Grid,
+  CircularProgress,
+  useTheme,
+  Avatar,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import SensorsIcon from '@mui/icons-material/Sensors';
 
-import './SensoresClass.css';
+const drawerWidth = 400;
 
-const SensoresClass = forwardRef(({ onClose, map, uuid }, ref) => {
-  const [selectedDeviceCard, setSelectedDeviceCard] = useState(null);
+const SensoresClass = ({ onClose, map, uuid, selectedDeviceCard: initialDeviceCard }) => {
+  const [selectedDeviceCard, setSelectedDeviceCard] = useState(initialDeviceCard);
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [devices] = useState(new Devices());
   const [datapoints, setDatapoints] = useState(null);
-  const [showChartOnly, setShowChartOnly] = useState(false);
+  const theme = useTheme();
 
-  useImperativeHandle(ref, () => ({
-    async show(card) {
-      if (card) {
-        setSelectedDeviceCard(card);
-        const details = await devices.get_details(card.device_id);
-        setSelectedDetails(details);
-        loadDataPoints(card.device_id);
-      }
+  useEffect(() => {
+    if (initialDeviceCard) {
+      setSelectedDeviceCard(initialDeviceCard);
     }
-  }));
+  }, [initialDeviceCard]);
 
   useEffect(() => {
     if (selectedDeviceCard) {
       const fetchDetails = async () => {
         const details = await devices.get_details(selectedDeviceCard.device_id);
-        if (details) {
-          setSelectedDetails(details);
-        } else {
-          console.error("Failed to fetch device details.");
-          setSelectedDetails({});
-        }
+        setSelectedDetails(details || {});
         loadDataPoints(selectedDeviceCard.device_id);
       };
       fetchDetails();
     }
   }, [selectedDeviceCard]);
-  const valor = (key) => {
-    return selectedDeviceCard
-      ? extract_tele(key, selectedDeviceCard).value || 'N/A'
-      : 'N/A';
-  };
 
   const loadDataPoints = async (deviceId) => {
     const nt = await devices.get_raw_data_for_charts_generic(deviceId);
@@ -69,75 +61,126 @@ const SensoresClass = forwardRef(({ onClose, map, uuid }, ref) => {
   };
 
   const deviceTiene = (sensor) => {
-    console.log("SELECTED DEVICE: ",selectedDetails)
-    if (!selectedDetails || !selectedDetails.tipo) {
-      return false;
-    }
+    if (!selectedDetails?.tipo) return false;
     const tipo = selectedDetails.tipo;
-    console.log("TIPO> ", tipo);
     return devices_modelos[tipo]?.sensores.includes(sensor) || false;
   };
-  
 
   const ifLoadedShow = (nombre_var) => {
-    if (!selectedDetails || !selectedDetails.tipo) {
-      return false;
-    }
-    const hasSensor = deviceTiene(nombre_var);
-    console.log("HAS SENSOR PARA ", nombre_var, ":\n", hasSensor);
-    const hasCard = selectedDeviceCard ? true : false;
-    return hasSensor && hasCard;
+    if (!selectedDetails?.tipo) return false;
+    return deviceTiene(nombre_var) && !!selectedDeviceCard;
   };
-  
 
-if (!selectedDetails) {
-  return <div>Loading...</div>;
-}
+  if (!selectedDetails) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <>
-    <FpSidebar onClose={onClose}>
-      <h4 slot="title">Sensores</h4>
-      <div slot="content">
-        {ifLoadedShow('temperatura') && (
-          <TemperaturaCard card={selectedDeviceCard} data={datapoints} />
-        )}
+<Drawer
+  variant="persistent"
+  anchor="right"
+  open={true}
+  sx={{
+    width: drawerWidth,
+    flexShrink: 0,
+    '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box', margin: 0 }, // Aseguramos que no tenga margen
+  }}
+>
 
-{ifLoadedShow('humedad') && (
-          <HumedadCard card={selectedDeviceCard} data={datapoints} />
-        )}
-        {ifLoadedShow('presion') && (
-          <PresionCard card={selectedDeviceCard} data={datapoints} />
-        )}
-        {ifLoadedShow('radiacion_solar') && (
-          <RadiacionCard card={selectedDeviceCard} data={datapoints} />
-        )}
-        {ifLoadedShow('viento_velocidad') && (
-          <VientoVelocidadCard card={selectedDeviceCard} data={datapoints} />
-        )}
-        {ifLoadedShow('viento_direccion') && (
-          <VientoDireccionCard card={selectedDeviceCard} data={datapoints} />
-        )}
-        {ifLoadedShow('pluviometro') && selectedDeviceCard && (
-          <PluviometroCard deveui={selectedDeviceCard.device_id} />
-        )}
-        {ifLoadedShow('sensacion_termica') && (
-          <SensacionTermicaCard card={selectedDeviceCard} data={datapoints} />
-        )}
-        {ifLoadedShow('punto_de_rocio') && (
-          <PuntoDeRocioCard card={selectedDeviceCard} data={datapoints} />
-        )}
-        {ifLoadedShow('inversion_termica_chacabuco_baja') && (
-          <InversionTermicaChacabucoBajaCard card={selectedDeviceCard} data={datapoints} />
-        )}
-        {ifLoadedShow('stress_termico') && (
-          <StressTermicoCard card={selectedDeviceCard} data={datapoints} />
-        )}
-        
-      </div>
-    </FpSidebar>
-    </>
+  
+      <AppBar
+        position="relative"
+        elevation={0}
+        sx={{
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Toolbar>
+          <Avatar sx={{ bgcolor: theme.palette.primary.main, marginRight: 1 }}>
+            <SensorsIcon />
+          </Avatar>
+          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600 }}>
+            Sensores
+          </Typography>
+          <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
+            <CloseIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+      <Box
+        p={2}
+        sx={{
+          backgroundColor: theme.palette.background.default,
+          minHeight: '100vh',
+          overflowY: 'auto',
+        }}
+      >
+        <Grid container spacing={2}>
+          {ifLoadedShow('temperatura') && (
+            <Grid item xs={12}>
+              <TemperaturaCard card={selectedDeviceCard} data={datapoints} />
+            </Grid>
+          )}
+          {ifLoadedShow('humedad') && (
+            <Grid item xs={12}>
+              <HumedadCard card={selectedDeviceCard} data={datapoints} />
+            </Grid>
+          )}
+          {ifLoadedShow('presion') && (
+            <Grid item xs={12}>
+              <PresionCard card={selectedDeviceCard} data={datapoints} />
+            </Grid>
+          )}
+          {ifLoadedShow('radiacion_solar') && (
+            <Grid item xs={12}>
+              <RadiacionCard card={selectedDeviceCard} data={datapoints} />
+            </Grid>
+          )}
+          {ifLoadedShow('viento_velocidad') && (
+            <Grid item xs={12}>
+              <VientoVelocidadCard card={selectedDeviceCard} data={datapoints} />
+            </Grid>
+          )}
+          {ifLoadedShow('viento_direccion') && (
+            <Grid item xs={12}>
+              <VientoDireccionCard card={selectedDeviceCard} data={datapoints} />
+            </Grid>
+          )}
+          {ifLoadedShow('pluviometro') && selectedDeviceCard && (
+            <Grid item xs={12}>
+              <PluviometroCard deveui={selectedDeviceCard.device_id} />
+            </Grid>
+          )}
+          {ifLoadedShow('sensacion_termica') && (
+            <Grid item xs={12}>
+              <SensacionTermicaCard card={selectedDeviceCard} data={datapoints} />
+            </Grid>
+          )}
+          {ifLoadedShow('punto_de_rocio') && (
+            <Grid item xs={12}>
+              <PuntoDeRocioCard card={selectedDeviceCard} data={datapoints} />
+            </Grid>
+          )}
+          {ifLoadedShow('inversion_termica_chacabuco_baja') && (
+            <Grid item xs={12}>
+              <InversionTermicaChacabucoBajaCard card={selectedDeviceCard} data={datapoints} />
+            </Grid>
+          )}
+          {ifLoadedShow('stress_termico') && (
+            <Grid item xs={12}>
+              <StressTermicoCard card={selectedDeviceCard} data={datapoints} />
+            </Grid>
+          )}
+        </Grid>
+      </Box>
+    </Drawer>
   );
-});
+};
 
 export default SensoresClass;

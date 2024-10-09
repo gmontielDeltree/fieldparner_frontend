@@ -1,29 +1,43 @@
 import React, { useEffect, useState } from "react";
 import ApexCharts from "apexcharts";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "apexcharts/dist/apexcharts.css";
 import { DailyTelemetryCard } from "../sensores-types";
 import { valor } from "../sensores";
 import { add_download_xls_button } from "../excel_boton";
 import RosaDeVientos from "../rosad3"; // Asumo que este componente existe como parte de tu proyecto
+import {
+  Card,
+  CardContent,
+  Typography,
+  IconButton,
+  Grid,
+  CircularProgress,
+  Box,
+  useTheme,
+} from "@mui/material";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import { motion } from "framer-motion";
+
+// Ícono de la Rosa de los Vientos, personalizado
+const WindRoseIcon = () => (
+  <img
+    src="/windrose-svgrepo-com.svg"
+    style={{
+      width: "40px",
+      height: "40px",
+      marginRight: "10px", // Ajustamos el margen derecho
+      filter: "drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2))",
+      transition: "transform 0.3s ease-in-out",
+    }}
+    alt="Wind Rose Icon"
+    onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+  />
+);
 
 const puntosCardinales = [
-  "    N",
-  "    NNE",
-  "    NE",
-  "    ENE",
-  "    E",
-  "    ESE",
-  "    SE",
-  "    SSE",
-  "    S",
-  "    SSW",
-  "    SW",
-  "    WSW",
-  "    W",
-  "    WNW",
-  "    NW",
-  "    NNW",
+  "    N", "    NNE", "    NE", "    ENE", "    E", "    ESE", "    SE", "    SSE", 
+  "    S", "    SSW", "    SW", "    WSW", "    W", "    WNW", "    NW", "    NNW"
 ];
 
 const matrizDeVientos = (ts: any, dir: number[], vel: number[]) => {
@@ -73,6 +87,7 @@ interface VientoDireccionCardProps {
 const VientoDireccionCard: React.FC<VientoDireccionCardProps> = ({ card, data }) => {
   const [showChartOnly, setShowChartOnly] = useState(false);
   const [matrizDeVientos, setMatrizDeVientos] = useState<any>(null);
+  const theme = useTheme();
 
   useEffect(() => {
     if (data) {
@@ -113,7 +128,7 @@ const VientoDireccionCard: React.FC<VientoDireccionCardProps> = ({ card, data })
       chart: {
         type: "scatter",
         height: "180px",
-        foreColor: "#ffffff",
+        foreColor: theme.palette.text.primary,
         animations: { enabled: false },
       },
       title: {
@@ -121,7 +136,7 @@ const VientoDireccionCard: React.FC<VientoDireccionCardProps> = ({ card, data })
         align: "left",
         margin: 10,
         floating: false,
-        style: { fontSize: "14px", fontWeight: "bold", color: "#ffffff" },
+        style: { fontSize: "14px", fontWeight: "bold", color: theme.palette.text.primary },
       },
     };
 
@@ -149,49 +164,108 @@ const VientoDireccionCard: React.FC<VientoDireccionCardProps> = ({ card, data })
   };
 
   return (
-    <div className="container-fluid row border-primary border-top p-1 mx-auto">
-      {!showChartOnly && (
-        <div className="col-11 col-sm-11 my-auto" id="datadiv">
-          <div className="row">
-            <h5>
-              <img src="/windrose-svgrepo-com.svg" width="50" height="50" alt="Wind Rose Icon" />
-              <span className="fw-bolder">
-                {valor(card, "direccion") === "N/A"
-                  ? valor(card, "viento_direccion")
-                  : valor(card, "direccion")}{" "}
-                º
-              </span>
-            </h5>
-          </div>
-          <div className="row">
-            <div className="col-4 fw-bolder">
-              <div className="fw-strong">{valor(card, "viento_direccion_min")} º</div>
-              <div className="fw-light">Min</div>
-            </div>
-            <div className="col-4 fw-bolder">
-              <div className="fw-strong">{valor(card, "viento_direccion_mean")} º</div>
-              <div className="fw-light">Promedio</div>
-            </div>
-            <div className="col-4 fw-bolder">
-              <div className="fw-strong">{valor(card, "viento_direccion_max")} º</div>
-              <div className="fw-light">Max</div>
-            </div>
-          </div>
-        </div>
-      )}
-      {!data && (
-        <div className={showChartOnly ? "col-11 col-sm-11 d-flex align-items-center" : "d-none"}>
-          <strong>Cargando Datos...</strong>
-          <div className="spinner-grow text-danger ms-auto" role="status" aria-hidden="true"></div>
-        </div>
-      )}
-      <div className={showChartOnly ? "col-11 col-sm-11" : "d-none"} id="chart">
-        {matrizDeVientos && <RosaDeVientos data={matrizDeVientos} className="mx-auto" />}
-      </div>
-      <div className="col-1 my-1 d-flex align-items-center" onClick={toggleChartView}>
-        <span className="btn btn-warning mx-auto">{!showChartOnly ? ">" : "<"}</span>
-      </div>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card
+        sx={{
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          borderRadius: 2,
+          padding: 2,
+          boxShadow: theme.shadows[2],
+        }}
+      >
+        <CardContent sx={{ padding: "8px !important" }}>
+          <Grid container spacing={1} alignItems="center">
+            <Grid item xs={11}>
+              {!showChartOnly ? (
+                <Typography
+                  variant="h6"
+                  component="div"
+                  sx={{ display: "flex", alignItems: "center", fontWeight: 500 }}
+                >
+                  <WindRoseIcon />
+                  {valor(card, "direccion") === "N/A"
+                    ? valor(card, "viento_direccion")
+                    : valor(card, "direccion")}{" "}
+                  º
+                </Typography>
+              ) : (
+                <Typography
+                  variant="h6"
+                  component="div"
+                  sx={{ display: "flex", alignItems: "center", fontWeight: 500 }}
+                >
+                  <WindRoseIcon />
+                  Gráfico de Viento - Dirección
+                </Typography>
+              )}
+            </Grid>
+            <Grid item xs={1} sx={{ textAlign: "right" }}>
+              <IconButton
+                onClick={toggleChartView}
+                sx={{ color: theme.palette.text.primary }}
+              >
+                {showChartOnly ? (
+                  <ArrowBackIosIcon />
+                ) : (
+                  <ArrowForwardIosIcon />
+                )}
+              </IconButton>
+            </Grid>
+          </Grid>
+
+          {!data && (
+            <Grid container justifyContent="center" alignItems="center">
+              <CircularProgress color="secondary" />
+              <Typography variant="body1" sx={{ ml: 2 }}>
+                Cargando Datos...
+              </Typography>
+            </Grid>
+          )}
+
+          {!showChartOnly && (
+            <Grid container spacing={1} mt={1}>
+              <Grid item xs={4}>
+                <Typography variant="body2" color="textSecondary">
+                  Min
+                </Typography>
+                <Typography variant="subtitle1">
+                  {valor(card, "viento_direccion_min")} º
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography variant="body2" color="textSecondary">
+                  Promedio
+                </Typography>
+                <Typography variant="subtitle1">
+                  {valor(card, "viento_direccion_mean")} º
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography variant="body2" color="textSecondary">
+                  Max
+                </Typography>
+                <Typography variant="subtitle1">
+                  {valor(card, "viento_direccion_max")} º
+                </Typography>
+              </Grid>
+            </Grid>
+          )}
+
+          {showChartOnly && (
+            <Box mt={2}>
+              <div id="chart">
+                {matrizDeVientos && <RosaDeVientos data={matrizDeVientos} />}
+              </div>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 

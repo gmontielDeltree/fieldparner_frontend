@@ -30,18 +30,19 @@ export const DevicePage: React.FC = () => {
 
   return (
     <>
-      <div id="device-sidebar-container" style={{position: "relative", width:"25%"}}>
-        {loading ? (
-          <Splash />
-        ) : (
-          <DeviceSidebar
-            onClose={()=>navigate("/init/overview/fields")}
-            map={map}
-            uuid={deviceId}
-            _selected_device_card={deviceCard}
-          />
-        )}
-      </div>
+   <div id="device-sidebar-container" style={{position: "absolute", right: 0, top: 0, bottom: 0, width:"25%"}}>
+  {loading ? (
+    <Splash />
+  ) : (
+    <DeviceSidebar
+      onClose={() => navigate("/init/overview/fields")}
+      map={map}
+      uuid={deviceId}
+      _selected_device_card={deviceCard}
+    />
+  )}
+</div>
+
     </>
   );
 };
