@@ -1,15 +1,18 @@
 import { filter } from "jszip";
 import distance from "@turf/distance";
-import { gbl_state } from "../state";
+import { gbl_state } from "../../../owncomponents/state";
 import { DailyTelemetryCard, DeviceDetalles } from "./sensores-types";
 import devices_modelos from "./devices_modelos";
 import { parse, parseISO, toDate } from "date-fns";
 import { LngLatLike } from "mapbox-gl";
-import { get_lote_detalles_by_uuid, only_docs } from "../helpers";
+import {
+  get_lote_detalles_by_uuid,
+  only_docs,
+} from "../../../owncomponents/helpers";
 import centroid from "@turf/centroid";
 import format from "date-fns/format";
-import ApexCharts from 'apexcharts';
-import {rollup, sum} from 'd3-array';
+import ApexCharts from "apexcharts";
+import { rollup, sum } from "d3-array";
 
 /**
  *
@@ -87,78 +90,114 @@ export const get_timeseries_by_name = async (uuid, tsname, start, end) => {
     .query("telemetria/ts_by_name", { startkey: key, endkey: endkey })
     .then((r) => {
       console.log("ESTO ES COOL", r);
-      if(r.rows.length>0){
-        
-        let cts = r.rows as CouchDBTimeSeriesPoint[]
-        let ts = cts.map((c)=>{
-          return [c.key[2],c.value]
-        }) 
-        console.log("Timeseries",tsname, ts);
-        
-        return ts as TimeSeriesPoint[]
-      }else{
-        return [] as TimeSeriesPoint[]
+      if (r.rows.length > 0) {
+        let cts = r.rows as CouchDBTimeSeriesPoint[];
+        let ts = cts.map((c) => {
+          return [c.key[2], c.value];
+        });
+        console.log("Timeseries", tsname, ts);
+
+        return ts as TimeSeriesPoint[];
+      } else {
+        return [] as TimeSeriesPoint[];
       }
     });
 };
 
-
 interface CouchDBTimeSeriesPoint {
-  id:string,
-  key:[string,string,number],
-  value:number
+  id: string;
+  key: [string, string, number];
+  value: number;
 }
 
 interface TimeSeriesPoint {
-  [index:number]:number
+  [index: number]: number;
 }
 
 interface ApexChartsDataPoint {
-  x : any,
-  y : number
+  x: any;
+  y: number;
 }
 
-export const get_pluviometro_daily_value = async (uuid : string,fecha:string) => {
+export const get_pluviometro_daily_value = async (
+  uuid: string,
+  fecha: string
+) => {
   // fecha yyyymmdd
-  let hoy_como_date = parse(fecha,'yyyyMMdd',new Date())
+  let hoy_como_date = parse(fecha, "yyyyMMdd", new Date());
   let ts_start = hoy_como_date.getTime() / 1000;
-  let ts_end = hoy_como_date.getTime() /1000 +(24*3600) 
-  let data_de_hoy = await get_timeseries_by_name_agregated(uuid,'pluviometro',ts_start,ts_end,'dia');
-  return data_de_hoy[0].data[0].y ?? 0
-}
+  let ts_end = hoy_como_date.getTime() / 1000 + 24 * 3600;
+  let data_de_hoy = await get_timeseries_by_name_agregated(
+    uuid,
+    "pluviometro",
+    ts_start,
+    ts_end,
+    "dia"
+  );
+  return data_de_hoy[0].data[0].y ?? 0;
+};
 
-export const get_timeseries_by_name_agregated = async (uuid, tsname, start, end, tipo) => {
-  console.log("TIPO", tipo)
-  let ts = await get_timeseries_by_name(uuid,tsname, start, end)
+export const get_timeseries_by_name_agregated = async (
+  uuid,
+  tsname,
+  start,
+  end,
+  tipo
+) => {
+  console.log("TIPO", tipo);
+  let ts = await get_timeseries_by_name(uuid, tsname, start, end);
   let etiquetado;
   let grouped;
-  let data_proper : ApexChartsDataPoint[] = []
-  if(tipo === 'hora'){
-    etiquetado = ts.map((p)=>[format(new Date(p[0] * 1000), 'yyyyMMdd HH'),p[1]])
-    grouped = rollup(etiquetado,v => parseFloat(sum(v, d => d[1]).toFixed(2)),p=>p[0])
-  }else if(tipo === 'dia'){
-    etiquetado = ts.map((p)=>[format(new Date(p[0] * 1000), 'yyyyMMdd'),p[1]])
+  let data_proper: ApexChartsDataPoint[] = [];
+  if (tipo === "hora") {
+    etiquetado = ts.map((p) => [
+      format(new Date(p[0] * 1000), "yyyyMMdd HH"),
+      p[1],
+    ]);
+    grouped = rollup(
+      etiquetado,
+      (v) => parseFloat(sum(v, (d) => d[1]).toFixed(2)),
+      (p) => p[0]
+    );
+  } else if (tipo === "dia") {
+    etiquetado = ts.map((p) => [
+      format(new Date(p[0] * 1000), "yyyyMMdd"),
+      p[1],
+    ]);
     // console.log("GROUPED DIA",grouped)
-    grouped = rollup(etiquetado,v => parseFloat(sum(v, d => d[1]).toFixed(2)),p=>p[0])
-  }else if(tipo === 'mes'){
-    etiquetado = ts.map((p)=>[format(new Date(p[0] * 1000), 'yyyyMM'),p[1]])
-    grouped = rollup(etiquetado,v =>parseFloat( sum(v, d => d[1]).toFixed(2)),p=>p[0])
-  }else if(tipo === 'ano'){
-    etiquetado = ts.map((p)=>[format(new Date(p[0] * 1000), 'yyyy'),p[1]])
-    grouped = rollup(etiquetado,v => parseFloat(sum(v, d => d[1]).toFixed(2)),p=>p[0])
-
+    grouped = rollup(
+      etiquetado,
+      (v) => parseFloat(sum(v, (d) => d[1]).toFixed(2)),
+      (p) => p[0]
+    );
+  } else if (tipo === "mes") {
+    etiquetado = ts.map((p) => [format(new Date(p[0] * 1000), "yyyyMM"), p[1]]);
+    grouped = rollup(
+      etiquetado,
+      (v) => parseFloat(sum(v, (d) => d[1]).toFixed(2)),
+      (p) => p[0]
+    );
+  } else if (tipo === "ano") {
+    etiquetado = ts.map((p) => [format(new Date(p[0] * 1000), "yyyy"), p[1]]);
+    grouped = rollup(
+      etiquetado,
+      (v) => parseFloat(sum(v, (d) => d[1]).toFixed(2)),
+      (p) => p[0]
+    );
   }
 
   // map to array de ApexChartsDataPoint
-  let array_form = Array.from(grouped,([key, value]) => ({x:key, y:value}));
-  console.log("Pluviometro por dia",grouped, array_form);
-  data_proper = array_form as ApexChartsDataPoint[]
-  
+  let array_form = Array.from(grouped, ([key, value]) => ({
+    x: key,
+    y: value,
+  }));
+  console.log("Pluviometro por dia", grouped, array_form);
+  data_proper = array_form as ApexChartsDataPoint[];
+
   // https://apexcharts.com/docs/series/
   // 2.3) Category paired values
-  return [{data:data_proper}] // el resultado se puede usar en series de apexCharts
-
-}
+  return [{ data: data_proper }]; // el resultado se puede usar en series de apexCharts
+};
 
 export const get_timeseries_avg_by_name = async (uuid, tsname, start, end) => {
   let key = [uuid, tsname, start];
@@ -281,7 +320,7 @@ export const sensores_posiciones = async (
     .then(only_docs)
     .then((tes) => {
       return tes.map((dt) => {
-        let d = dt as unknown as DailyTelemetryCard
+        let d = dt as unknown as DailyTelemetryCard;
         let lat = d.data.find((mags) => mags.mag === "latitud")?.value;
         let lng = d.data.find((mags) => mags.mag === "longitud")?.value;
         console.log("lng,lat", lng, lat, d, tes);

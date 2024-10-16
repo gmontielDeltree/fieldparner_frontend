@@ -1,5 +1,5 @@
 import PouchDB from "pouchdb";
-import { base_url_tele, touchEvent } from "../helpers";
+import { base_url_tele, touchEvent } from "../../../owncomponents/helpers";
 import format from "date-fns/format";
 import {
   DataPoints,
@@ -293,8 +293,8 @@ class Devices {
           marker.getPopup().remove();
           /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
           marker.getElement().addEventListener(touchEvent, (e) => {
-            console.log("Marker E",e)
-            e.stopPropagation()
+            console.log("Marker E", e);
+            e.stopPropagation();
             onClick(telemetria.device_id, telemetria._id.split(":")[2]);
           });
 

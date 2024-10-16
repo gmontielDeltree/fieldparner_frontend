@@ -13,29 +13,36 @@ import "@vaadin/text-field";
 import "@vaadin/vertical-layout";
 import "../map-picker/map-picker";
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
-import { add_download_xls_button } from "../sensores/excel_boton";
+import { add_download_xls_button } from "../../src/components/Sensors/excel_boton";
 import ApexCharts from "apexcharts";
 import { createRef, ref } from "lit/directives/ref.js";
 
 import gridcss from "flexboxgrid2/flexboxgrid2.css?inline";
-import endOfYear from 'date-fns/endOfYear';
-import startOfYear from 'date-fns/startOfYear';
-import getYear from 'date-fns/getYear'
-import subYears from 'date-fns/subYears'
+import endOfYear from "date-fns/endOfYear";
+import startOfYear from "date-fns/startOfYear";
+import getYear from "date-fns/getYear";
+import subYears from "date-fns/subYears";
 import { PriceQuote } from "./precios-types";
 
-const filter_by_year = (data : [number,number][], y : number, add_1_year : boolean=false) =>{
-  let start = startOfYear(new Date(y, 8, 2, 11, 55, 0)).getTime()
+const filter_by_year = (
+  data: [number, number][],
+  y: number,
+  add_1_year: boolean = false
+) => {
+  let start = startOfYear(new Date(y, 8, 2, 11, 55, 0)).getTime();
   let end = endOfYear(new Date(y, 8, 2, 11, 55, 0)).getTime();
-let filtered = data.filter((p : [number,number])=> (p[0]< end  && p[0]>start))
+  let filtered = data.filter(
+    (p: [number, number]) => p[0] < end && p[0] > start
+  );
 
-let to_return = add_1_year ?  filtered.map((m)=>[m[0] + (1000*60*60*24*365),m[1]]) : filtered;
-return  to_return
-}
+  let to_return = add_1_year
+    ? filtered.map((m) => [m[0] + 1000 * 60 * 60 * 24 * 365, m[1]])
+    : filtered;
+  return to_return;
+};
 
 @customElement("char-comparacion-interanual")
 export class ChartComparacionInteranual extends LitElement {
-  
   static override styles: CSSResultGroup = [
     unsafeCSS(apex_css),
     unsafeCSS(gridcss),
@@ -76,24 +83,24 @@ export class ChartComparacionInteranual extends LitElement {
       series: [
         {
           name: "This Year",
-          data: filter_by_year(this.data,getYear(new Date()))
+          data: filter_by_year(this.data, getYear(new Date())),
         },
         {
           name: "Prev Year",
-          data: filter_by_year(this.data,getYear(new Date()) - 1,true),
+          data: filter_by_year(this.data, getYear(new Date()) - 1, true),
         },
       ],
       chart: {
         id: "area-datetime",
         type: "area",
-        height: '100%',
+        height: "100%",
         // height: 200,
         zoom: {
           autoScaleYaxis: true,
         },
         animations: {
           enabled: false,
-      },
+        },
       },
       dataLabels: {
         enabled: false,
@@ -108,8 +115,8 @@ export class ChartComparacionInteranual extends LitElement {
         tickAmount: 6,
         categories: [],
         labels: {
-          format: 'dd MMM'
-          }
+          format: "dd MMM",
+        },
       },
       tooltip: {
         x: {
@@ -117,18 +124,18 @@ export class ChartComparacionInteranual extends LitElement {
         },
       },
       fill: {
-        type: 'gradient',
+        type: "gradient",
         gradient: {
           shadeIntensity: 1,
           inverseColors: false,
           opacityFrom: 0.5,
           opacityTo: 0,
-          stops: [0, 90, 100]
+          stops: [0, 90, 100],
         },
       },
       yaxis: [
         {
-          decimalsInFloat:2,
+          decimalsInFloat: 2,
           title: {
             text: "Price",
           },
@@ -142,18 +149,18 @@ export class ChartComparacionInteranual extends LitElement {
       },
       title: {
         text: "Año actual y anterior",
-        align: 'left',
+        align: "left",
         margin: 10,
         offsetX: 0,
         offsetY: 0,
         floating: false,
         style: {
-          fontSize:  '14px',
-          fontWeight:  'bold',
-          fontFamily:  undefined,
-          color:  '#263238'
+          fontSize: "14px",
+          fontWeight: "bold",
+          fontFamily: undefined,
+          color: "#263238",
         },
-    }
+      },
     };
 
     this.chart = new ApexCharts(
@@ -164,7 +171,7 @@ export class ChartComparacionInteranual extends LitElement {
     await this.chart.render();
   }
 
-  updateChart(data : PriceQuote[]) {
+  updateChart(data: PriceQuote[]) {
     if (this.chart === undefined) {
       return;
     }
@@ -172,15 +179,18 @@ export class ChartComparacionInteranual extends LitElement {
     this.chart.updateSeries([
       {
         name: "This Year",
-        data: filter_by_year(this.data,getYear(new Date()))
+        data: filter_by_year(this.data, getYear(new Date())),
       },
       {
         name: "Prev Year",
-        data: filter_by_year(this.data,getYear(new Date()) - 1,true),
+        data: filter_by_year(this.data, getYear(new Date()) - 1, true),
       },
     ]);
 
-    this.chart.zoomX(startOfYear(new Date().getTime()).getTime(), new Date().getTime());
+    this.chart.zoomX(
+      startOfYear(new Date().getTime()).getTime(),
+      new Date().getTime()
+    );
 
     add_download_xls_button(this.shadowRoot, [], data, "Precios");
   }
