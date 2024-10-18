@@ -91,27 +91,27 @@ export interface LaborsServicesState {
   LaborsServices: LaborsServices[];
 }
 
-export interface ListCorporateContract  {
+export interface ListCorporateContract {
   id: string,
   companie: string;
   percentageOfParticipation: string;
-  activity:string;
-  
+  activity: string;
+
 }
 export interface CorporateContract extends Document {
   idContract: string;
   description: string;
   status: EnumStatusContract;
-  contractsList: ListCorporateContract[];  
+  contractsList: ListCorporateContract[];
   totalCompany: number;
 }
 export interface CorporateContractState {
-  corporateContractActive: CorporateContract| null;
+  corporateContractActive: CorporateContract | null;
   CorporateContract: CorporateContract[];
 }
 
 export interface ListCorporateContractState {
-  listCorporateContractActive: ListCorporateContract| null;
+  listCorporateContractActive: ListCorporateContract | null;
   ListCorporateContract: ListCorporateContract[];
 }
 
@@ -152,6 +152,7 @@ export interface User {
   licenceId: string;
   isAdmin: boolean;
   countryId: string;
+  email: string;
 }
 
 export interface ResponseAuthLogin {
@@ -374,7 +375,7 @@ export interface Deposit extends Document {
   locations: string[];
   siloBag: boolean;
   hopper: boolean;
-  silo:boolean;
+  silo: boolean;
   deposit: boolean;
   siloBagId: string;
   status: EnumStatusContract;
@@ -802,7 +803,7 @@ export enum EnumStatusUser {
 }
 
 export enum EnumTipoFlete {
-  PAGO =  "Flete Pago",
+  PAGO = "Flete Pago",
   APAGAR = "Flete a Pagar",
 }
 
@@ -819,7 +820,7 @@ export enum EnumCalidad {
 export enum EnumTransportDocumentStatus {
   GENERADA = "Generada",
   ENTREGADA = "Entregada",
-  EMITIDA = "Emitida" 
+  EMITIDA = "Emitida"
 }
 
 export enum EnumStatusContract {

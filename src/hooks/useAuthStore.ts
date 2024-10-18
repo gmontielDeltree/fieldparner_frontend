@@ -66,7 +66,7 @@ export const useAuthStore = () => {
       // dispatch(clearErrorMessage());
 
       // Original code
-      
+
       const response = await fieldpartnerAPI.post<ResponseAuthLogin>(
         `${controller}/login`,
         {
@@ -88,7 +88,7 @@ export const useAuthStore = () => {
       }
       dispatch(finishLoading());
       dispatch(clearErrorMessage());
-      
+
     } catch (error: AxiosError<ErrorResponseAuth> | any) {
       if (error.response && error.response.data) {
         const responseError: ErrorResponseAuth = error.response.data;

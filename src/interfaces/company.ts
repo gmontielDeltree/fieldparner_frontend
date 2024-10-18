@@ -2,6 +2,7 @@ import { Document } from "@types";
 
 export interface Company extends Document {
     accountId: string;
+    licenceId: string;
     country: string;
     companyId: string;
     email: string;

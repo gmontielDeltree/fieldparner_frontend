@@ -24,7 +24,9 @@ import {
   Menu,
   MenuItem,
   Divider,
+  Select,
   Box,
+  Paper,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../redux/store";
@@ -41,18 +43,15 @@ import {
   NotificationsActive,
   MenuOutlined,
   ExitToApp,
-  OnDeviceTrainingOutlined,
 } from "@mui/icons-material";
-import { add } from "date-fns";
 import { Campaign, NavBarProps } from "../../types";
 import { uuidv7 } from "uuidv7";
-import { ButtonMixin } from "@vaadin/button/src/vaadin-button-mixin";
 import {
   loadCampaignFromLS,
   saveCampaignToLS,
 } from "../../helpers/persistence";
-import { selectDraw } from "../../redux/draw";
 import { Slide, toast } from "react-toastify";
+import CompanyNavBar from "../CompanyNavBar";
 
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
@@ -63,13 +62,10 @@ export const NavBar: React.FC<NavBarProps> = ({
   const {
     campaigns,
     getCampaigns,
-    isLoading,
-    error,
     addCampaign,
     updateCampaign,
     deleteCampaign,
   } = useCampaign();
-  //const [selectedCampaign, setSelectedCampaign] = useState("");
   const { user } = useAppSelector(state => state.auth);
   const { selectedCampaign } = useAppSelector((state) => state.campaign);
   const [hasNotifications, setHasNotifications] = useState(true);
@@ -471,6 +467,9 @@ export const NavBar: React.FC<NavBarProps> = ({
                 </MenuItem>
               ))}
             </Menu>
+          </Grid>
+          <Grid item sm={4} >
+            <CompanyNavBar key="combobox-companies" />
           </Grid>
           <Grid item className="d-flex align-items-center">
             <Typography variant="h6" display="inline-block" >

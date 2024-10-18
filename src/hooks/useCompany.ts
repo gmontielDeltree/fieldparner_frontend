@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useAppSelector } from './useRedux';
+import { useAppDispatch, useAppSelector } from './useRedux';
 import { dbContext } from '../services';
 import { Company } from '../interfaces/company';
+import { onLogout } from '../redux/auth';
 
 export const useCompany = () => {
 
+    const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
     const [companies, setCompanies] = useState<Company[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -12,12 +14,29 @@ export const useCompany = () => {
     const getCompanies = async () => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not logged.");
+            if (!user) { dispatch(onLogout("Session expired")); return; }
 
             const response = await dbContext.companies.find({
-                selector: { accountId: user.accountId }
+                selector: { $and: [{ accountId: user.accountId }, { licenceId: user.licenceId }] }
+
             });
 
+            if (response.docs.length)
+                setCompanies(response.docs.map(doc => doc as Company));
+
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+            console.log('error', error)
+        }
+    }
+    const getCompaniesByEmail = async () => {
+        setIsLoading(true);
+        try {
+            if (!user) { dispatch(onLogout("Session expired")); return; }
+            const response = await dbContext.companies.find({
+                selector: { email: user.email }
+            });
             if (response.docs.length)
                 setCompanies(response.docs.map(doc => doc as Company));
 
@@ -31,6 +50,7 @@ export const useCompany = () => {
     return {
         companies,
         isLoading,
-        getCompanies
+        getCompanies,
+        getCompaniesByEmail
     }
 }

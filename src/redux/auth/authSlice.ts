@@ -28,6 +28,9 @@ export const authSlice = createSlice({
             state.user = null;
             state.errorMessage = action.payload;
         },
+        setAuthUser: (state, action: PayloadAction<User>) => {
+            state.user = action.payload;
+        },
         clearErrorMessage: (state) => {
             state.errorMessage = '';
         },
@@ -49,4 +52,5 @@ export const {
     clearErrorMessage,
     startLoading,
     finishLoading,
+    setAuthUser,
 } = authSlice.actions;
