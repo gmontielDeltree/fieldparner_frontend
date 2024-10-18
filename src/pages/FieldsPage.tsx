@@ -1,311 +1,309 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
-import "mapbox-gl/dist/mapbox-gl.css";
-import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+import React, { useState, useCallback, useEffect, useRef } from 'react'
+import 'mapbox-gl/dist/mapbox-gl.css'
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 
-import { Button, Grid } from "@mui/material";
+import { Button, Grid } from '@mui/material'
 
-import area from "@turf/area";
-import { addFieldsToMapSingleLayer } from "../helpers/mapHelpers";
-import NewsBar from "../components/NewsBar";
-import MapComponent from "../components/Map";
-import uuid4 from "uuid4";
-import { Field, Lot } from "../interfaces/field";
-import { useDispatch, useSelector } from "react-redux";
-import { setMap, selectMap } from "../redux/map/mapSlice";
-import { selectDraw } from "../redux/draw/drawSlice";
-import { RootState } from "../redux/store";
-import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
-import { Devices } from "../../owncomponents/sensores/sensores";
-import { addDepositosToMap } from "../../owncomponents/mapa-principal/depositos-layer";
-import { useDeposit, useField } from "../hooks";
-import useResizeObserver from "@react-hook/resize-observer";
-import { dbContext } from "../services";
-import { touchEvent } from "../../owncomponents/helpers";
-import FieldsSideMenu from "../components/FieldsSideMenu";
-import { useTranslation } from "react-i18next";
-import { Actividad } from "../interfaces/activity";
-import { format, isBefore, isToday, parseISO } from "date-fns";
-import { hideFieldList } from "../redux/fieldsList";
-import "../classes/engine/Engine";
-import { selectSyncStatus } from "../redux/syncStatus";
+import area from '@turf/area'
+import { addFieldsToMapSingleLayer } from '../helpers/mapHelpers'
+import NewsBar from '../components/NewsBar'
+import MapComponent from '../components/Map'
+import uuid4 from 'uuid4'
+import { Field, Lot } from '../interfaces/field'
+import { useDispatch, useSelector } from 'react-redux'
+import { setMap, selectMap } from '../redux/map/mapSlice'
+import { selectDraw } from '../redux/draw/drawSlice'
+import { RootState } from '../redux/store'
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Devices } from '../components/Sensors/sensores'
+import { addDepositosToMap } from '../../owncomponents/mapa-principal/depositos-layer'
+import { useDeposit, useField } from '../hooks'
+import useResizeObserver from '@react-hook/resize-observer'
+import { dbContext } from '../services'
+import { touchEvent } from '../../owncomponents/helpers'
+import FieldsSideMenu from '../components/FieldsSideMenu'
+import { useTranslation } from 'react-i18next'
+import { Actividad } from '../interfaces/activity'
+import { format, isBefore, isToday, parseISO } from 'date-fns'
+import { hideFieldList } from '../redux/fieldsList'
+import '../classes/engine/Engine'
+import { selectSyncStatus } from '../redux/syncStatus'
 
 export const FieldsPage: React.FC = () => {
-  const map = useSelector(selectMap);
-  const { fields, getFields } = useField();
+  const map = useSelector(selectMap)
+  const { fields, getFields } = useField()
 
-  const db = dbContext.fields;
+  const db = dbContext.fields
 
-  const [selectedField, setSelectedField] = useState<any | null>(null);
-  const selectedFieldRef = useRef<Field | null>(null);
-  const draw = useSelector(selectDraw);
-  const dispatch = useDispatch();
-  const { t } = useTranslation();
-  const location = useLocation();
+  const [selectedField, setSelectedField] = useState<any | null>(null)
+  const selectedFieldRef = useRef<Field | null>(null)
+  const draw = useSelector(selectDraw)
+  const dispatch = useDispatch()
+  const { t } = useTranslation()
+  const location = useLocation()
 
-  const syncStatus = useSelector(selectSyncStatus);
+  const syncStatus = useSelector(selectSyncStatus)
 
-  const isVisible = useSelector(
-    (state: RootState) => state.fieldList.isVisible,
-  );
+  const isVisible = useSelector((state: RootState) => state.fieldList.isVisible)
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const { deposits, getDeposits } = useDeposit();
+  const { deposits, getDeposits } = useDeposit()
 
   const updateMapAfterNew = () => {
-    getFields();
-  };
+    getFields()
+  }
 
   /* Es para forzar el resizing del mapa siempre
     Cuando la pagina de
   */
-  const target = useRef(null);
+  const target = useRef(null)
   useResizeObserver(target, (entry) => {
     if (map) {
-      console.count("map resize obs");
-      map.resize();
+      console.count('map resize obs')
+      map.resize()
     }
-  });
+  })
 
   /* null al map del store cuando se desmonta para evitar bug de reading undefined
     al regresar
   */
   useEffect(() => {
     return () => {
-      dispatch(setMap(null));
-    };
-  }, []);
+      dispatch(setMap(null))
+    }
+  }, [])
 
   useEffect(() => {
-    selectedFieldRef.current = selectedField;
-  }, [selectedField]);
+    selectedFieldRef.current = selectedField
+  }, [selectedField])
 
   useEffect(() => {
-    getFields();
-    getDeposits();
-  }, []);
+    getFields()
+    getDeposits()
+  }, [])
 
   useEffect(() => {
-    getFields();
-    getDeposits();
-    console.log("FieldsPage - Updating by sync");
-  }, [syncStatus]);
+    getFields()
+    getDeposits()
+    console.log('FieldsPage - Updating by sync')
+  }, [syncStatus])
 
   useEffect(() => {
     if (map) {
-      addFieldsToMapSingleLayer(map, fields);
+      addFieldsToMapSingleLayer(map, fields)
 
-      let devices = new Devices();
+      let devices = new Devices()
       devices.add_markers_to_map_react(map, (deviceId: string, date: string) =>
         navigate(`device/${deviceId}/${date}`),
-      );
+      )
 
       if (deposits) {
-        addDepositosToMap(map, deposits, (e: string) => navigate(e));
+        addDepositosToMap(map, deposits, (e: string) => navigate(e))
       }
     }
-  }, [map, draw, fields, deposits]);
+  }, [map, draw, fields, deposits])
 
   const handleMapClick = useCallback(
     async (event: any) => {
       // Ignorar si location es new-lot o new-field
       if (
-        location.pathname.includes("new-lot") ||
-        location.pathname.includes("new-field") || 
-        location.pathname.includes("edit-lot") || 
-        location.pathname.includes("edit-field")
+        location.pathname.includes('new-lot') ||
+        location.pathname.includes('new-field') ||
+        location.pathname.includes('edit-lot') ||
+        location.pathname.includes('edit-field')
       ) {
-        return;
+        return
       }
 
-      const features = map?.queryRenderedFeatures(event.point);
-      console.log("Click on Map",event, features);
+      const features = map?.queryRenderedFeatures(event.point)
+      console.log('Click on Map', event, features)
 
       if (features.length > 0) {
-        const fieldId = features[0].properties.id;
-        const source = features[0].source;
+        const fieldId = features[0].properties.id
+        const source = features[0].source
 
-        if (source === "campos") {
+        if (source === 'campos') {
           try {
             // Navegar al campo
-            navigate(fieldId);
+            navigate(fieldId)
           } catch (err) {
-            console.error("Error fetching field from PouchDB", err);
+            console.error('Error fetching field from PouchDB', err)
           }
-        } else if (source === "lotes") {
-          let parentId = features[0].properties.campo_parent_id;
-          let loteId = features[0].properties.uuid;
+        } else if (source === 'lotes') {
+          let parentId = features[0].properties.campo_parent_id
+          let loteId = features[0].properties.uuid
           // NAvegar al la pantalla de lote
-          navigate(parentId + "/" + loteId);
+          navigate(parentId + '/' + loteId)
         }
       }
     },
     [map, db, selectedField, location],
-  );
+  )
 
   useEffect(() => {
     if (map) {
-      map.on(touchEvent, handleMapClick);
+      map.on(touchEvent, handleMapClick)
     }
     return () => {
       if (map) {
-        map.off(touchEvent, handleMapClick);
+        map.off(touchEvent, handleMapClick)
       }
-    };
-  }, [map, handleMapClick]);
+    }
+  }, [map, handleMapClick])
 
   const addLotsToMap = (map, lots) => {
-    let tooltip = document.getElementById("map-tooltip");
+    let tooltip = document.getElementById('map-tooltip')
     if (!tooltip) {
-      tooltip = document.createElement("div");
-      tooltip.setAttribute("id", "map-tooltip");
-      tooltip.style.position = "absolute";
-      tooltip.style.minWidth = "200px";
-      tooltip.style.maxWidth = "350px";
-      tooltip.style.background = "#2a3f54";
-      tooltip.style.color = "#fff";
-      tooltip.style.padding = "10px";
-      tooltip.style.borderRadius = "8px";
-      tooltip.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.3)";
-      tooltip.style.display = "none";
-      tooltip.style.pointerEvents = "none";
-      tooltip.style.zIndex = "9999";
+      tooltip = document.createElement('div')
+      tooltip.setAttribute('id', 'map-tooltip')
+      tooltip.style.position = 'absolute'
+      tooltip.style.minWidth = '200px'
+      tooltip.style.maxWidth = '350px'
+      tooltip.style.background = '#2a3f54'
+      tooltip.style.color = '#fff'
+      tooltip.style.padding = '10px'
+      tooltip.style.borderRadius = '8px'
+      tooltip.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)'
+      tooltip.style.display = 'none'
+      tooltip.style.pointerEvents = 'none'
+      tooltip.style.zIndex = '9999'
       tooltip.style.fontFamily =
-        "'Helvetica Neue', Helvetica, Arial, sans-serif";
-      tooltip.style.fontSize = "14px";
-      tooltip.style.lineHeight = "1.4";
-      tooltip.style.transition = "opacity 0.3s";
-      document.body.appendChild(tooltip);
+        "'Helvetica Neue', Helvetica, Arial, sans-serif"
+      tooltip.style.fontSize = '14px'
+      tooltip.style.lineHeight = '1.4'
+      tooltip.style.transition = 'opacity 0.3s'
+      document.body.appendChild(tooltip)
     }
     lots.forEach((lot) => {
-      const lotId = lot.id;
-      const lotUUID = lot.properties.uuid;
-      map.on("click", lotId + "-fill", (e) => {
-        e.preventDefault();
-        handleLotClick(lotId);
-      });
+      const lotId = lot.id
+      const lotUUID = lot.properties.uuid
+      map.on('click', lotId + '-fill', (e) => {
+        e.preventDefault()
+        handleLotClick(lotId)
+      })
       if (!map.getSource(lotId)) {
         map.addSource(lotId, {
-          type: "geojson",
+          type: 'geojson',
           data: {
-            type: "Feature",
+            type: 'Feature',
             properties: { ...lot.properties },
             geometry: lot.geometry,
           },
-        });
+        })
       }
       if (!map.getLayer(`${lotId}-fill`)) {
         map.addLayer({
           id: `${lotId}-fill`,
-          type: "fill",
+          type: 'fill',
           source: lotId,
           layout: {},
           paint: {
-            "fill-color": "#0080ff",
-            "fill-opacity": 0.6,
+            'fill-color': '#0080ff',
+            'fill-opacity': 0.6,
           },
-        });
+        })
       }
       // Mousemove event
-      map.on("mousemove", `${lotId}-fill`, async (e) => {
+      map.on('mousemove', `${lotId}-fill`, async (e) => {
         // map.getCanvas().style.cursor = "pointer";
-        const activities = await getActivities(lotUUID);
+        const activities = await getActivities(lotUUID)
         const todayActivities = activities.filter(({ actividad }) =>
           isToday(
             new Date(
               actividad.detalles.fecha_ejecucion_tentativa || actividad.fecha,
             ),
           ),
-        );
-        let content = `<strong>No hay actividades programadas para hoy en el lote ${lot.properties.nombre}.</strong>`;
+        )
+        let content = `<strong>No hay actividades programadas para hoy en el lote ${lot.properties.nombre}.</strong>`
         if (todayActivities.length > 0) {
-          content = `<strong>Actividades para hoy en el lote ${lot.properties.nombre}:</strong><ul style="padding-left: 20px;">`;
+          content = `<strong>Actividades para hoy en el lote ${lot.properties.nombre}:</strong><ul style="padding-left: 20px;">`
           todayActivities.forEach(({ actividad }) => {
             const activityDate = new Date(
               actividad.detalles.fecha_ejecucion_tentativa || actividad.fecha,
-            );
-            const time = format(activityDate, "p");
-            content += `<li>${actividad.tipo}: Horario previsto a las ${time}.</li>`;
-          });
-          content += `</ul>`;
+            )
+            const time = format(activityDate, 'p')
+            content += `<li>${actividad.tipo}: Horario previsto a las ${time}.</li>`
+          })
+          content += `</ul>`
         }
-        tooltip.innerHTML = content;
-        tooltip.style.opacity = "0";
-        tooltip.style.display = "block";
-        tooltip.style.left = `${e.originalEvent.clientX + 15}px`;
-        tooltip.style.top = `${e.originalEvent.clientY + 15}px`;
-        setTimeout(() => (tooltip.style.opacity = "1"), 10);
-      });
+        tooltip.innerHTML = content
+        tooltip.style.opacity = '0'
+        tooltip.style.display = 'block'
+        tooltip.style.left = `${e.originalEvent.clientX + 15}px`
+        tooltip.style.top = `${e.originalEvent.clientY + 15}px`
+        setTimeout(() => (tooltip.style.opacity = '1'), 10)
+      })
       // Mouseleave event
-      map.on("mouseleave", `${lotId}-fill`, () => {
+      map.on('mouseleave', `${lotId}-fill`, () => {
         // map.getCanvas().style.cursor = "";
-        tooltip.style.opacity = "0";
-        setTimeout(() => (tooltip.style.display = "none"), 300); // Delay hiding for animation
-      });
-    });
-  };
+        tooltip.style.opacity = '0'
+        setTimeout(() => (tooltip.style.display = 'none'), 300) // Delay hiding for animation
+      })
+    })
+  }
 
   const only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
     if (alldocs.rows.length > 0) {
       return alldocs.rows.map((row) => {
-        return row.doc;
-      });
+        return row.doc
+      })
     } else {
-      return [];
+      return []
     }
-  };
+  }
 
   const getActivities = async (uuid_del_lote) => {
     let acts: Actividad[] = await gbl_docs_starting(
-      "actividad",
+      'actividad',
       true,
       true,
       true,
-    ).then(only_docs);
+    ).then(only_docs)
 
-    let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote);
+    let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote)
 
-    let _actividades_docs = s.reverse();
+    let _actividades_docs = s.reverse()
 
-    console.log("ACTIVIDADES", _actividades_docs, acts);
+    console.log('ACTIVIDADES', _actividades_docs, acts)
 
     let result = await db.allDocs({
-      startkey: "ejecucion:",
-      endkey: "ejecucion:\ufff0",
-    });
+      startkey: 'ejecucion:',
+      endkey: 'ejecucion:\ufff0',
+    })
 
-    let respuesta: { actividad: Actividad; ejecucion_id: string }[] = [];
+    let respuesta: { actividad: Actividad; ejecucion_id: string }[] = []
 
     if (result.rows) {
       _actividades_docs.forEach((actividad) => {
-        let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid));
-        respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id });
-      });
+        let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid))
+        respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id })
+      })
 
       respuesta.sort((a, b) => {
         let fecha_1 = a.ejecucion_id
-          ? parseISO(a.ejecucion_id.split(":")[1])
+          ? parseISO(a.ejecucion_id.split(':')[1])
           : parseISO(
-              a.actividad.tipo === "nota"
+              a.actividad.tipo === 'nota'
                 ? a.actividad.fecha
                 : a.actividad.detalles.fecha_ejecucion_tentativa,
-            );
+            )
         let fecha_2 = b.ejecucion_id
-          ? parseISO(b.ejecucion_id.split(":")[1])
+          ? parseISO(b.ejecucion_id.split(':')[1])
           : parseISO(
-              b.actividad.tipo === "nota"
+              b.actividad.tipo === 'nota'
                 ? b.actividad.fecha
                 : b.actividad.detalles.fecha_ejecucion_tentativa,
-            );
-        return isBefore(fecha_1, fecha_2) ? 1 : -1;
-      });
+            )
+        return isBefore(fecha_1, fecha_2) ? 1 : -1
+      })
     }
 
-    return respuesta ? respuesta : null;
-  };
+    return respuesta ? respuesta : null
+  }
   const handleDirectLotSelection = (lot, field) => {
-    navigate(`${field._id}/${lot.id}`);
-  };
+    navigate(`${field._id}/${lot.id}`)
+  }
 
   const gbl_docs_starting = async (
     key: string,
@@ -319,36 +317,34 @@ export const FieldsPage: React.FC = () => {
         attachments: attachments,
         binary: binary,
         startkey: key,
-        endkey: key + "\ufff0",
+        endkey: key + '\ufff0',
       })
       .then((result) => {
-        return result;
-      });
-  };
+        return result
+      })
+  }
 
   const handleSelectField = (field) => {
-    console.log("Field selected from menu:", field);
-    navigate(field._id);
-  };
+    console.log('Field selected from menu:', field)
+    navigate(field._id)
+  }
 
   const onMapLoad = useCallback(
     (event: any) => {
-      const map = event.target;
-      dispatch(setMap(map));
+      const map = event.target
+      dispatch(setMap(map))
     },
     [dispatch, draw],
-  );
-
- 
+  )
 
   function isField(doc: any): doc is Field {
     return (
       doc &&
-      typeof doc === "object" &&
-      "_id" in doc &&
-      "nombre" in doc &&
-      "campo_geojson" in doc
-    );
+      typeof doc === 'object' &&
+      '_id' in doc &&
+      'nombre' in doc &&
+      'campo_geojson' in doc
+    )
   }
 
   return (
@@ -361,27 +357,27 @@ export const FieldsPage: React.FC = () => {
         onSelectLot={handleDirectLotSelection}
       />
 
-      <Grid container style={{ position: "relative" }} ref={target}>
+      <Grid container style={{ position: 'relative' }} ref={target}>
         <MapComponent onMapLoad={onMapLoad} />
       </Grid>
 
       {/* Mostrar el boton de add_field solo en la pantalla "principal" */}
 
-      {location.pathname === "/init/overview/fields" && (
+      {location.pathname === '/init/overview/fields' && (
         <Button
           color="primary"
           variant="contained"
           style={{
-            position: "absolute",
+            position: 'absolute',
             bottom: 30,
             right: 20,
           }}
           onClick={() =>
             //setShowNewField(true)
-            navigate("new-field")
+            navigate('new-field')
           }
         >
-          {t("add_field")}
+          {t('add_field')}
         </Button>
       )}
 
@@ -390,5 +386,5 @@ export const FieldsPage: React.FC = () => {
 
       <NewsBar />
     </>
-  );
-};
+  )
+}

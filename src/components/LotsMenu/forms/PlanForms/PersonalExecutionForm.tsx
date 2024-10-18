@@ -197,17 +197,19 @@ function PersonalExecutionForm({ lot, formData, setFormData, showActivityType = 
               />
             </LocalizationProvider>
           </Grid>
+          {formData.tipo === "cosecha" && (
+  <Grid item xs={12}>
+    <NumberFieldWithUnits
+      size="small"
+      fullWidth
+      label="Rinde Obtenido (ton/ha)"
+      value={+formData.detalles.rinde_obtenido || 0}
+      onChange={(e) => onFieldChange("rinde_obtenido", e.target.value)}
+      unit="ton/ha"
+    />
+  </Grid>
+)}
 
-          <Grid item xs={12}>
-            <NumberFieldWithUnits
-              size="small"
-              fullWidth
-              label="Rinde Obtenido (ton/ha)"
-              value={+formData.detalles.rinde_obtenido || 0}
-              onChange={(e) => onFieldChange("rinde_obtenido", e.target.value)}
-              unit="ton/ha"
-            />
-          </Grid>
         </Grid>
       </FormControl>
     </CustomPaper>

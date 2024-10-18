@@ -13,18 +13,17 @@ import "@vaadin/text-field";
 import "@vaadin/vertical-layout";
 import "../map-picker/map-picker";
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
-import { add_download_xls_button } from "../sensores/excel_boton";
+import { add_download_xls_button } from "../../src/components/Sensors/excel_boton";
 import ApexCharts from "apexcharts";
 import { createRef, ref } from "lit/directives/ref.js";
 
 import gridcss from "flexboxgrid2/flexboxgrid2.css?inline";
 import { PriceQuote } from "./precios-types";
-import startOfYear from 'date-fns/startOfYear';
-import subYears from 'date-fns/subYears';
+import startOfYear from "date-fns/startOfYear";
+import subYears from "date-fns/subYears";
 
 @customElement("chart-comparacion-dual")
 export class ChartComparacionDual extends LitElement {
-
   static override styles: CSSResultGroup = [
     unsafeCSS(apex_css),
     unsafeCSS(gridcss),
@@ -32,7 +31,7 @@ export class ChartComparacionDual extends LitElement {
 
   @property()
   data_1: PriceQuote[] = [];
-  
+
   @property()
   data_2: PriceQuote[] = [];
 
@@ -65,15 +64,14 @@ export class ChartComparacionDual extends LitElement {
     }
 
     var options = {
-
       series: [
         {
           name: "A",
-          data: this.data_1
+          data: this.data_1,
         },
         {
           name: "B",
-          data: this.data_2
+          data: this.data_2,
         },
       ],
       chart: {
@@ -87,7 +85,7 @@ export class ChartComparacionDual extends LitElement {
           autoScaleYaxis: true,
         },
       },
-      colors: ['#77B6EA', '#545454'],
+      colors: ["#77B6EA", "#545454"],
       dataLabels: {
         enabled: false,
       },
@@ -97,12 +95,12 @@ export class ChartComparacionDual extends LitElement {
       },
       xaxis: {
         type: "datetime",
-        min:startOfYear(new Date().getTime()).getTime(),
+        min: startOfYear(new Date().getTime()).getTime(),
         tickAmount: 6,
         categories: [],
         labels: {
-          format: 'dd MMM'
-          }
+          format: "dd MMM",
+        },
       },
       tooltip: {
         x: {
@@ -120,7 +118,7 @@ export class ChartComparacionDual extends LitElement {
       },
       yaxis: [
         {
-          decimalsInFloat:2,
+          decimalsInFloat: 2,
           title: {
             text: "Price",
           },
@@ -137,18 +135,18 @@ export class ChartComparacionDual extends LitElement {
       },
       title: {
         text: "Precio en Rosario y Chicago",
-        align: 'left',
+        align: "left",
         margin: 10,
         offsetX: 0,
         offsetY: 0,
         floating: false,
         style: {
-          fontSize:  '14px',
-          fontWeight:  'bold',
-          fontFamily:  undefined,
-          color:  '#263238'
+          fontSize: "14px",
+          fontWeight: "bold",
+          fontFamily: undefined,
+          color: "#263238",
         },
-    }
+      },
     };
 
     this.chart = new ApexCharts(
@@ -159,24 +157,26 @@ export class ChartComparacionDual extends LitElement {
     await this.chart.render();
   }
 
-  updateChart(data_1 : PriceQuote[],data_2 : PriceQuote[]) {
+  updateChart(data_1: PriceQuote[], data_2: PriceQuote[]) {
     if (this.chart === undefined) {
       return;
     }
 
-
     this.chart.updateSeries([
       {
         name: "A",
-        data: data_1
+        data: data_1,
       },
       {
         name: "B",
-        data: data_2
+        data: data_2,
       },
     ]);
 
-    this.chart.zoomX(startOfYear(new Date().getTime()).getTime(), new Date().getTime());
+    this.chart.zoomX(
+      startOfYear(new Date().getTime()).getTime(),
+      new Date().getTime()
+    );
 
     add_download_xls_button(this.shadowRoot, [], data_1, "Precios");
   }

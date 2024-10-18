@@ -13,13 +13,13 @@ import "@vaadin/text-field";
 import "@vaadin/vertical-layout";
 import "../map-picker/map-picker";
 import apex_css from "apexcharts/dist/apexcharts.css?inline";
-import { add_download_xls_button } from "../sensores/excel_boton";
+import { add_download_xls_button } from "../../src/components/Sensors/excel_boton";
 import ApexCharts from "apexcharts";
 import { createRef, ref } from "lit/directives/ref.js";
 
 import gridcss from "flexboxgrid2/flexboxgrid2.css?inline";
 import { PriceQuote } from "./precios-types";
-import subYears from 'date-fns/subYears'
+import subYears from "date-fns/subYears";
 
 @customElement("chart-precio")
 export class ChartPrecio extends LitElement {
@@ -32,7 +32,7 @@ export class ChartPrecio extends LitElement {
   data: PriceQuote[] = [];
 
   @property()
-  title: string
+  title: string;
 
   private chart: ApexCharts;
   chartRef = createRef();
@@ -63,7 +63,6 @@ export class ChartPrecio extends LitElement {
     }
 
     var options = {
-
       series: [
         {
           data: this.data,
@@ -72,13 +71,13 @@ export class ChartPrecio extends LitElement {
       chart: {
         id: "area-datetime",
         type: "area",
-        height: '100%',
+        height: "100%",
         zoom: {
           autoScaleYaxis: true,
         },
         animations: {
           enabled: false,
-      },
+        },
       },
       dataLabels: {
         enabled: false,
@@ -109,7 +108,7 @@ export class ChartPrecio extends LitElement {
       },
       yaxis: [
         {
-          decimalsInFloat:2,
+          decimalsInFloat: 2,
           title: {
             text: this.title ?? "Price",
           },
@@ -131,7 +130,7 @@ export class ChartPrecio extends LitElement {
     await this.chart.render();
   }
 
-  updateChart(data : PriceQuote[]) {
+  updateChart(data: PriceQuote[]) {
     if (this.chart === undefined) {
       return;
     }
@@ -143,7 +142,10 @@ export class ChartPrecio extends LitElement {
       },
     ]);
 
-    this.chart.zoomX(subYears(new Date().getTime(), 1).getTime(), new Date().getTime());
+    this.chart.zoomX(
+      subYears(new Date().getTime(), 1).getTime(),
+      new Date().getTime()
+    );
 
     add_download_xls_button(this.shadowRoot, [], data, "Precios");
   }
