@@ -39,6 +39,7 @@ import {
   Description as DescriptionIcon,
   ForwardToInbox as ForwardToInboxIcon,
   LocationOn as LocationOnIcon,
+  Handshake as HandshakeIcon
 } from "@mui/icons-material";
 import { Icon } from "semantic-ui-react";
 import { SideBarProps } from "../../types";
@@ -301,7 +302,17 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("_romaneos")} />
               </ListItemButton>
-
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/sales-cereals"
+                selected={pathname.includes("/init/overview/sales-cereals")}
+              >
+                <ListItemIcon>
+                  <HandshakeIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("title_sale_cereal")} />
+              </ListItemButton>
             </List>
           </Collapse>
           <ListItem key="Stock" disablePadding>
@@ -425,10 +436,10 @@ export const SideBar: React.FC<SideBarProps> = ({
                 selected={pathname.includes("init/overview/productive-units")}
               >
                 <ListItemIcon>
-                <MapIcon  sx={{ marginRight: "-5px",  }}/>
-                <LocationOnIcon sx={{ marginRight: "28px",fontSize: "inherit", verticalAlign: "middle"}}/>
+                  <MapIcon sx={{ marginRight: "-5px", }} />
+                  <LocationOnIcon sx={{ marginRight: "28px", fontSize: "inherit", verticalAlign: "middle" }} />
                 </ListItemIcon>
-                <ListItemText primary="Unidades Productivas"/>
+                <ListItemText primary="Unidades Productivas" />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
