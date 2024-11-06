@@ -1,5 +1,4 @@
 import { SelectChangeEvent } from '@mui/material';
-import { is } from 'date-fns/locale';
 import { ChangeEvent, useState } from 'react';
 
 
@@ -14,15 +13,16 @@ export type FormValueState<T> = {
     [K in keyof T]: FormField;
 };
 
+//Hook para manejar los valores de un formulario y sus validaciones
 
-export const useFormValue = <T extends Object>(initialState: FormValueState<T>) => {
+export const useFormValues = <T extends Object>(initialState: FormValueState<T>) => {
 
-    const [formValue, setFormValue] = useState(initialState);
+    const [formValues, setFormValues] = useState(initialState);
 
     const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = target;
 
-        setFormValue((prevState) => ({
+        setFormValues((prevState) => ({
             ...prevState,
             [name]: {
                 ...prevState[name],
@@ -35,7 +35,7 @@ export const useFormValue = <T extends Object>(initialState: FormValueState<T>) 
 
     const handleSelectChange = ({ target }: SelectChangeEvent) => {
         const { name, value } = target;
-        setFormValue((prevState) => ({
+        setFormValues((prevState) => ({
             ...prevState,
             [name]: {
                 ...prevState[name],
@@ -47,11 +47,11 @@ export const useFormValue = <T extends Object>(initialState: FormValueState<T>) 
     };
 
     const reset = () => {
-        setFormValue(initialState);
+        setFormValues(initialState);
     }
 
     const handleFormValueChange = (key: string, value: string) => {
-        setFormValue((prevState) => ({
+        setFormValues((prevState) => ({
             ...prevState,
             [key]: {
                 ...prevState[key],
@@ -64,7 +64,7 @@ export const useFormValue = <T extends Object>(initialState: FormValueState<T>) 
 
     const handleCheckboxChange = ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => {
         const { name } = target;
-        setFormValue((prevState) => ({
+        setFormValues((prevState) => ({
             ...prevState,
             [name]: {
                 ...prevState[name],
@@ -75,10 +75,10 @@ export const useFormValue = <T extends Object>(initialState: FormValueState<T>) 
 
     const validateFormRequired = (): boolean => {
         let isValid = true;
-        const updatedFormValue = { ...formValue };
+        const updatedFormValue = { ...formValues };
 
-        Object.keys(formValue).forEach((key) => {
-            const field = formValue[key as keyof T];
+        Object.keys(formValues).forEach((key) => {
+            const field = formValues[key as keyof T];
             if (field.required && !field.value) {
                 updatedFormValue[key as keyof T] = {
                     ...field,
@@ -89,19 +89,19 @@ export const useFormValue = <T extends Object>(initialState: FormValueState<T>) 
             }
         });
 
-        setFormValue(updatedFormValue);
+        setFormValues(updatedFormValue);
         return isValid;
     };
 
     return {
-        formValue,
+        formValues,
         handleInputChange,
         handleSelectChange,
-        setFormValue,
+        setFormValues,
         reset,
         handleFormValueChange,
         handleCheckboxChange,
         validateFormRequired,
-        ...formValue
+        ...formValues
     }
 };

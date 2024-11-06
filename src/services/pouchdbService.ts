@@ -35,6 +35,7 @@ import { TransportDocument } from '../interfaces/transportDocument';
 import { Company } from '../interfaces/company';
 import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../interfaces/certificate-deposit';
 import { ProductiveUnits } from '../interfaces/productiveUnits';
+import { ContractSaleCereals } from '../interfaces/contract-sale-cereals';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -43,7 +44,7 @@ export const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL
 const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
 
 export const opts: PouchDB.Replication.SyncOptions = {
-  live: true,
+  live: false,
   retry: false,
   //  filter: 'app/by_account',
   //  query_params: { "agent": agent }
@@ -89,7 +90,7 @@ const dbNames = Object.freeze({
   certificateDeposit: "certificate-deposit",
   transportDocumentCertificateDeposit: "transport-document-certificate-deposit",
   productiveUnits: "productive-units",
-
+  contractSaleCereals: "contract-sale-cereals",
 });
 
 export const dbContext = Object.freeze({
@@ -132,6 +133,7 @@ export const dbContext = Object.freeze({
   certificateDeposit: new PouchDB<CertificateDeposit>(dbNames.certificateDeposit),
   transportDocumentCertificateDeposit: new PouchDB<TransportDocumentByCertificateDeposit>(dbNames.transportDocumentCertificateDeposit),
   productiveUnits: new PouchDB<ProductiveUnits>(dbNames.productiveUnits),
+  contractSaleCereals: new PouchDB<ContractSaleCereals>(dbNames.contractSaleCereals),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -175,6 +177,7 @@ dbContext.corporateContract.sync(`${remoteCouchDBUrl}${dbNames.corporateContract
 dbContext.certificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.certificateDeposit}`, opts);
 dbContext.transportDocumentCertificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.transportDocumentCertificateDeposit}`, opts);
 dbContext.productiveUnits.sync(`${remoteCouchDBUrl}${dbNames.productiveUnits}`, opts);
+dbContext.contractSaleCereals.sync(`${remoteCouchDBUrl}${dbNames.contractSaleCereals}`, opts);
 
 
 

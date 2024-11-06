@@ -1,7 +1,7 @@
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Loading } from '../../components'
-import { FormValueState, useAppDispatch, useBusiness, useCampaign, useCertificateDeposit, useCompany, useFormValue, useSupply } from '../../hooks';
+import { FormValueState, useAppDispatch, useBusiness, useCampaign, useCertificateDeposit, useCompany, useFormValues, useSupply } from '../../hooks';
 import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../../interfaces/certificate-deposit';
 import { GrainsForm, HeaderForm, RatesForm } from '../../components/CertificateDeposit';
 import { useTranslation } from 'react-i18next';
@@ -76,13 +76,13 @@ export const CertificateDepositPage: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const {
-    formValue,
+     formValues,
     handleInputChange,
     handleSelectChange,
     reset,
     handleFormValueChange,
-    setFormValue,
-  } = useFormValue<CertificateDeposit>(initialForm);
+    setFormValues,
+  } = useFormValues<CertificateDeposit>(initialForm);
   const { campaigns, getCampaigns } = useCampaign();
   const { supplies, getSupplies } = useSupply();
   const { businesses: socialEntities, getBusinesses } = useBusiness();
@@ -97,7 +97,7 @@ export const CertificateDepositPage: React.FC = () => {
       case 0:
         return (
           <HeaderForm
-            formValues={formValue}
+            formValues={formValues}
             campaigns={campaigns}
             cultives={supplies.filter(supply => supply.type.toLowerCase() === SupplyType.Cultivo.toLowerCase())}
             providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
@@ -114,7 +114,7 @@ export const CertificateDepositPage: React.FC = () => {
       case 1:
         return (
           <GrainsForm
-            formValues={formValue}
+            formValues={formValues}
             depositary={selectedDepositary}
             depositors={selectedDepositors}
             handleInputChange={handleInputChange}
@@ -126,7 +126,7 @@ export const CertificateDepositPage: React.FC = () => {
       case 2:
         return (
           <RatesForm
-            formValues={formValue}
+            formValues={formValues}
             depositary={selectedDepositary}
             depositors={selectedDepositors}
             listTransportDocument={listTransportByCertificate}
@@ -139,7 +139,7 @@ export const CertificateDepositPage: React.FC = () => {
         return "Unknown step";
     }
   }, [
-    formValue,
+    formValues,
     campaigns,
     supplies,
     socialEntities,
@@ -171,8 +171,8 @@ export const CertificateDepositPage: React.FC = () => {
   }
 
   const mappedCertificateDeposit = () => {
-    return Object.keys(formValue).reduce((acc, key) => {
-      acc[key] = formValue[key].value;
+    return Object.keys(formValues).reduce((acc, key) => {
+      acc[key] = formValues[key].value;
       return acc;
     }, {});
   }
@@ -196,13 +196,13 @@ export const CertificateDepositPage: React.FC = () => {
   //TODO: revisar para agregar al hook
   const validateForm = (form: EventTarget & HTMLFormElement): boolean => {
     let isValid = true;
-    let updatedFormValue = { ...formValue };
+    let updatedFormValue = { ...formValues };
     const elements = form.elements as HTMLFormControlsCollection;
 
     for (let i = 0; i < elements.length; i++) {
       const element = elements[i] as HTMLInputElement;
       const fieldName = element.name as keyof FormValueState<CertificateDeposit>;
-      const field = formValue[fieldName];
+      const field = formValues[fieldName];
       if (field && field.required && !element.value) {
         updatedFormValue[fieldName] = {
           ...field,
@@ -213,7 +213,7 @@ export const CertificateDepositPage: React.FC = () => {
       }
     }
 
-    if (!isValid) setFormValue(updatedFormValue);
+    if (!isValid) setFormValues(updatedFormValue);
 
     return isValid;
   }

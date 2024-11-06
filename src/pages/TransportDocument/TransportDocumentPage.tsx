@@ -3,7 +3,7 @@
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Loading } from '../../components';
-import { FormValueState, useAppDispatch, useAppSelector, useBusiness, useCategory, useCompany, useCrops, useExitField, useField, useFormValue, useTransportDocument, useVehicle } from '../../hooks';
+import { FormValueState, useAppDispatch, useAppSelector, useBusiness, useCategory, useCompany, useCrops, useExitField, useField, useFormValues, useTransportDocument, useVehicle } from '../../hooks';
 import { TransportDocument } from '../../interfaces/transportDocument';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -113,14 +113,14 @@ export const TransportDocumentPage: React.FC = () => {
   ]);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const {
-    formValue,
-    setFormValue,
+    formValues,
+    setFormValues,
     handleInputChange,
     handleSelectChange,
     handleCheckboxChange,
     reset,
     handleFormValueChange,
-  } = useFormValue<TransportDocument>(initialForm);
+  } = useFormValues<TransportDocument>(initialForm);
 
   const handleNext = () => {
     setActiveStep(activeStep + 1);
@@ -143,8 +143,8 @@ export const TransportDocumentPage: React.FC = () => {
 
   //Mapeo del objeto a 1er nivel para enviarlo
   const mappedTransportDocument = () => {
-    return Object.keys(formValue).reduce((acc, key) => {
-      acc[key] = formValue[key].value;
+    return Object.keys(formValues).reduce((acc, key) => {
+      acc[key] = formValues[key].value;
       return acc;
     }, {});
   }
@@ -191,7 +191,7 @@ export const TransportDocumentPage: React.FC = () => {
         case 0:
           return (
             <RemitenteForm
-              formValues={formValue}
+              formValues={formValues}
               companies={companies}
               categories={categories}
               exitFields={exitFields}
@@ -203,7 +203,7 @@ export const TransportDocumentPage: React.FC = () => {
         case 1:
           return (
             <GranoTransportadoForm
-              formValues={formValue}
+              formValues={formValues}
               companies={companies}
               categories={categories}
               exitFields={exitFields}
@@ -215,7 +215,7 @@ export const TransportDocumentPage: React.FC = () => {
         case 2:
           return (
             <ComercioGranoForm
-              formValues={formValue}
+              formValues={formValues}
               companies={companies}
               categories={categories}
               exitFields={exitFields}
@@ -227,7 +227,7 @@ export const TransportDocumentPage: React.FC = () => {
         case 3:
           return (
             <DestinatarioForm
-              formValues={formValue}
+              formValues={formValues}
               companies={companies}
               categories={categories}
               exitFields={exitFields}
@@ -241,7 +241,7 @@ export const TransportDocumentPage: React.FC = () => {
         case 4:
           return (
             <TransportistaForm
-              formValues={formValue}
+              formValues={formValues}
               vehicles={vehicles}
               exitFields={exitFields}
               providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
@@ -259,7 +259,7 @@ export const TransportDocumentPage: React.FC = () => {
       }
     },
     [
-      formValue,
+      formValues,
       handleInputChange,
       handleSelectChange,
       handleCheckboxChange,
@@ -276,13 +276,13 @@ export const TransportDocumentPage: React.FC = () => {
 
   const validateForm = (form: EventTarget & HTMLFormElement): boolean => {
     let isValid = true;
-    let updatedFormValue = { ...formValue };
+    let updatedFormValue = { ...formValues };
     const elements = form.elements as HTMLFormControlsCollection;
 
     for (let i = 0; i < elements.length; i++) {
       const element = elements[i] as HTMLInputElement;
       const fieldName = element.name as keyof FormValueState<TransportDocument>;
-      const field = formValue[fieldName];
+      const field = formValues[fieldName];
       if (field && field.required && !element.value) {
         updatedFormValue[fieldName] = {
           ...field,
@@ -293,7 +293,7 @@ export const TransportDocumentPage: React.FC = () => {
       }
     }
 
-    if (!isValid) setFormValue(updatedFormValue);
+    if (!isValid) setFormValues(updatedFormValue);
 
     return isValid;
   }
@@ -323,7 +323,7 @@ export const TransportDocumentPage: React.FC = () => {
         Object.keys(newFormValue).forEach((key) => {
           newFormValue[key].value = doc[key];
         });
-        setFormValue(newFormValue);
+        setFormValues(newFormValue);
         setDocumentToEdit({ _id: doc._id, _rev: doc._rev });
       }
     }

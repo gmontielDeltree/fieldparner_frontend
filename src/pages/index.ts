@@ -43,7 +43,7 @@ export * from "./CertificateDeposit/ListCertificateDepositPage";
 export * from './CertificateDeposit/CertificateDepositPage';
 export * from './ProductiveUnits/NewProductiveUnits';
 export * from './ProductiveUnits/ListProductiveUnits';
-export * from './SalesCereals/SalesCerealsPage';
+export * from './SalesCereals/ContractSaleCerealsPage';
 export * from './SalesCereals/ListSalesCerealsPage';
 
 
