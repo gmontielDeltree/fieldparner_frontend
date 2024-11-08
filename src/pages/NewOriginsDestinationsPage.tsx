@@ -29,7 +29,7 @@ import { useTranslation } from "react-i18next";
 
 const initialForm: OriginDestinations = {
   name: "",
-  description: "",
+  geolocation: "",
   destino: true,
   procedencia: false,
 };
@@ -42,7 +42,7 @@ const {t} = useTranslation();
 
   const {
     name,
-    description,
+    geolocation,
     formulario,
     setFormulario,
     handleInputChange,
@@ -131,8 +131,8 @@ const {t} = useTranslation();
                 label={t("_geolocation")}
                 variant="outlined"
                 type="text"
-                name="description"
-                value={description}
+                name="geolocation"
+                value={geolocation}
                 onChange={handleInputChange}
                 InputProps={{
                   startAdornment: <InputAdornment position="start" />,

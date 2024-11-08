@@ -282,7 +282,7 @@ export interface OriginDestinationsState {
 
 export interface OriginDestinations extends Document {
   name: string;
-  description: string;
+  geolocation: string;
   procedencia: boolean;
   destino: boolean;
 }

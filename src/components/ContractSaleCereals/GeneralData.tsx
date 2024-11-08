@@ -1,8 +1,8 @@
-import { Checkbox, FormControl, FormControlLabel, FormHelperText, Grid, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import {
   FolderOpen as FolderOpenIcon,
 } from '@mui/icons-material';
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useMemo, useState } from 'react';
 
 import { getShortDate } from '../../helpers/dates';
 
@@ -32,41 +32,21 @@ export const GeneralData: React.FC<Props> = ({
   handleCheckboxChange
 }) => {
 
-  // const onChangeField = ({ target }: SelectChangeEvent) => {
-  //     const fieldId = target.value;
-  //     const fieldSelected = listFields.find(f => f._id === fieldId);
-
-  //     if (!fieldSelected) return;
-
-  //     setFormValues((prevState) => ({ ...prevState, fieldId }));
-  //     setFieldSelected(fieldSelected);
-  //     setLotSelected(null);
-  // }
-
-  // const onChangeLot = ({ target }: SelectChangeEvent) => {
-  //     const lotId = target.value;
-  //     const lotSelected = fieldSelected?.lotes.find(l => l.properties.nombre === lotId);
-
-  //     if (!lotSelected) return;
-
-  //     setLotSelected(lotSelected);
-  //     setFormValues((prevState) => ({ ...prevState, lotId }));
-  // }
-
-  // const onChangeCrop = ({ target }: SelectChangeEvent) => {
-  //     const { value } = target;
-  //     const cropSelected = crops.find((crop) => crop._id === value);
-
-  //     if (cropSelected?._id) {
-  //         setFormValues((prevState) => ({
-  //             ...prevState,
-  //             cropId: value, //Insumo id
-  //             cultive: cropSelected.name || "",
-  //             supply: cropSelected
-  //         }));
-  //     }
-  // };
   const { t } = useTranslation();
+
+  const valueCurrency = useMemo(() => {
+    if (formValues.kg.value && formValues.quintalQuote.value) {
+      return Number(formValues.kg.value) * Number(formValues.quintalQuote.value) * 100;
+    }
+    return null;
+  }, []);
+
+  const valueUSD = useMemo(() => {
+    if (formValues.kg.value && formValues.USDQuote.value) {
+      return Number(formValues.kg.value) * Number(formValues.USDQuote.value);
+    }
+    return null;
+  }, []);
 
   return (
     <Grid
@@ -133,7 +113,6 @@ export const GeneralData: React.FC<Props> = ({
           <FormHelperText>{formValues.contractCorporateId.message}</FormHelperText>
         </FormControl>
       </Grid>
-
       <Grid item xs={12} sm={3}>
         <FormControl key="crop-select" error={formValues.cropId.isError} fullWidth>
           <InputLabel id="crop">{t("_crop")}</InputLabel>
@@ -156,28 +135,6 @@ export const GeneralData: React.FC<Props> = ({
             ))}
           </Select>
         </FormControl>
-      </Grid>
-      <Grid item xs={12} sm={3}>
-        <TextField
-          variant="outlined"
-          type="fecha"
-          label={"Fecha"}
-          value={formValues.dateCreated.value}
-          fullWidth
-        />
-      </Grid>
-      <Grid item xs={12} sm={3}>
-        <TextField
-          variant="outlined"
-          type="fecha"
-          label={"Tipo Contrato"}
-          name={"contractType"}
-          error={formValues.contractType.isError}
-          helperText={formValues.contractType.message}
-          onChange={handleInputChange}
-          value={formValues.contractType.value}
-          fullWidth
-        />
       </Grid>
       <Grid item xs={12} sm={3}>
         <FormControlLabel
@@ -208,7 +165,30 @@ export const GeneralData: React.FC<Props> = ({
       <Grid item xs={12} sm={3}>
         <TextField
           variant="outlined"
-          type="text"
+          type="fecha"
+          label={"Fecha"}
+          value={formValues.dateCreated.value}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12} sm={3}>
+        <TextField
+          variant="outlined"
+          type="fecha"
+          label={"Tipo Contrato"}
+          name={"contractType"}
+          error={formValues.contractType.isError}
+          helperText={formValues.contractType.message}
+          onChange={handleInputChange}
+          value={formValues.contractType.value}
+          fullWidth
+        />
+      </Grid>
+     
+      <Grid item xs={12} sm={3}>
+        <TextField
+          variant="outlined"
+          type="number"
           label={"Kms"}
           name={"kms"}
           error={formValues.kms.isError}
@@ -218,10 +198,83 @@ export const GeneralData: React.FC<Props> = ({
           fullWidth
         />
       </Grid>
-      <Grid item xs={6} sm={6}>
-
+      <Grid item xs={12} sm={3}>
+        <TextField
+          variant="outlined"
+          type="number"
+          label={"Kilos"}
+          name={"kg"}
+          error={formValues.kg.isError}
+          helperText={formValues.kg.message}
+          value={formValues.kg.value}
+          onChange={handleInputChange}
+          fullWidth
+        />
       </Grid>
-      {/* <Grid item sm={4} /> */}
+      <Grid item xs={12} sm={3}>
+        <TextField
+          variant="outlined"
+          type="text"
+          label={"Moneda"}
+          name={"currency"}
+          error={formValues.currency.isError}
+          helperText={formValues.currency.message}
+          value={formValues.currency.value}
+          onChange={handleInputChange}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12} sm={3}>
+        <TextField
+          variant="outlined"
+          type="text"
+          label={"Cotizacion Quintal"}
+          name={"quintalQuote"}
+          error={formValues.quintalQuote.isError}
+          helperText={formValues.quintalQuote.message}
+          value={formValues.quintalQuote.value}
+          onChange={handleInputChange}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12} sm={3}>
+        <FormControl fullWidth>
+          <ListItemText
+            primary={<Typography variant='subtitle2'>Valor Moneda</Typography>}
+            sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+            secondary={
+              <Typography letterSpacing={1} variant='subtitle1'>
+                {valueCurrency ? valueCurrency : "-"}
+              </Typography>}
+          />
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={3}>
+        <TextField
+          variant="outlined"
+          type="text"
+          label={"Cotizacion U$D/Kg"}
+          name={"USDQuote"}
+          error={formValues.USDQuote.isError}
+          helperText={formValues.USDQuote.message}
+          value={formValues.USDQuote.value}
+          onChange={handleInputChange}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12} sm={3}>
+        <FormControl fullWidth>
+          <ListItemText
+            primary={<Typography variant='subtitle2'>Valor U$D</Typography>}
+            sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+            secondary={
+              <Typography letterSpacing={1} variant='subtitle1'>
+                {valueUSD ? valueUSD : "-"}
+              </Typography>}
+          />
+        </FormControl>
+      </Grid>
+
     </Grid>
   )
 }

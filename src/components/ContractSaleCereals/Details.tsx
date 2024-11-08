@@ -1,16 +1,301 @@
-import React, { ChangeEvent } from 'react'
-import type { ContractSaleCereals } from '../../interfaces/contract-sale-cereals';
-import { SelectChangeEvent } from '@mui/material';
-import { FormValueState } from '../../hooks/useFormValue';
+import {
+  FormControl,
+  FormHelperText,
+  Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField,
+  Typography,
+  List,
+  ListItem,
+  Paper
+} from '@mui/material';
+import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import React, { ChangeEvent } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ContractSaleCereals } from '../../interfaces/contract-sale-cereals';
+import { FormValueState } from '../../hooks';
+import { BusinessItem } from '../../interfaces/socialEntity';
+import { OriginDestinations } from '../../types';
+
+
 
 interface Props {
   formValues: FormValueState<ContractSaleCereals>;
+  providers: BusinessItem[];
+  destinations: OriginDestinations[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
-}
+}  // handleCheckboxChange: ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
 
-export const Details: React.FC<Props> = () => {
+
+
+export const Details: React.FC<Props> = ({
+  formValues,
+  providers,
+  destinations,
+  handleInputChange,
+  handleSelectChange,
+}) => {
+
+  const { t } = useTranslation();
+
+
   return (
-    <div>Details</div>
+    <Grid container spacing={1} >
+      <Grid item xs={12} sm={9.5} px={1}>
+        <Grid container spacing={1} alignItems="center">
+          <Grid item xs={12} sm={3}>
+            <FormControl key="producer-select"
+              error={formValues.campaignId.isError}
+              fullWidth>
+              <InputLabel id="producer">Productor/Vendedor</InputLabel>
+              <Select
+                labelId="producer"
+                name="producerId"
+                value={formValues.producerId.value}
+                label="Productor/Vendedor"
+                onChange={handleSelectChange}
+              >
+                {[{ name: "Productor" }].map((c) => (
+                  <MenuItem key={c.name} value={c.name}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{formValues.producerId.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <FormControl key="buyer-select"
+              error={formValues.buyerId.isError}
+              fullWidth>
+              <InputLabel id="buyer">Comprador/Destinatario</InputLabel>
+              <Select
+                labelId="buyer"
+                name="buyerId"
+                value={formValues.buyerId.value}
+                label="Comprador/Destinatario"
+                onChange={handleSelectChange}
+              >
+                {providers.map((c) => (
+                  <MenuItem key={c._id} value={c._id}>
+                    {c.razonSocial || "-"}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{formValues.buyerId.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <FormControl key="destination-select"
+              error={formValues.destinationId.isError}
+              fullWidth>
+              <InputLabel id="destination">Destino</InputLabel>
+              <Select
+                labelId="destination"
+                name="destinationId"
+                value={formValues.destinationId.value}
+                label="Destino"
+                onChange={handleSelectChange}
+              >
+                {destinations?.map((item) => (
+                  <MenuItem key={item._id} value={item._id}>
+                    {item.name || "-"}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{formValues.destinationId.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <FormControl key="deliverer-select"
+              error={formValues.delivererId.isError}
+              fullWidth>
+              <InputLabel id="deliverer">Entregador</InputLabel>
+              <Select
+                labelId="deliverer"
+                name="delivererId"
+                value={formValues.delivererId.value}
+                label="Entregador"
+                onChange={handleSelectChange}
+              >
+                {providers?.map((item) => (
+                  <MenuItem key={item._id} value={item._id}>
+                    {item.razonSocial || "-"}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{formValues.delivererId.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <FormControl key="broker-select"
+              error={formValues.brokerId.isError}
+              fullWidth>
+              <InputLabel id="broker">Corredor</InputLabel>
+              <Select
+                labelId="broker"
+                name="brokerId"
+                value={formValues.brokerId.value}
+                label="Corredor"
+                onChange={handleSelectChange}
+              >
+                {providers?.map((item) => (
+                  <MenuItem key={item._id} value={item._id}>
+                    {item.razonSocial || "-"}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{formValues.brokerId.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={1}>
+            <TextField
+              type="number"
+              variant="outlined"
+              label="%"
+              name="brokerPercentage"
+              value={formValues.brokerPercentage.value}
+              onChange={handleInputChange}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={2}>
+            <TextField
+              type="number"
+              variant="outlined"
+              label="Importe"
+              name="brokerAmountValue"
+              value={formValues.brokerAmountValue.value}
+              onChange={handleInputChange}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <FormControl key="comission-select"
+              error={formValues.brokerId.isError}
+              fullWidth>
+              <InputLabel id="comission-agent">Comisionista</InputLabel>
+              <Select
+                labelId="comission-agent"
+                name="comissionAgentId"
+                value={formValues.comissionAgentId.value}
+                label="Comisionista"
+                onChange={handleSelectChange}
+              >
+                {providers?.map((item) => (
+                  <MenuItem key={item._id} value={item._id}>
+                    {item.razonSocial || "-"}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{formValues.comissionAgentId.message}</FormHelperText>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={1}>
+            <TextField
+              type="number"
+              variant="outlined"
+              label="%"
+              name="comissionAgentPercentage"
+              value={formValues.comissionAgentPercentage.value}
+              onChange={handleInputChange}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={2}>
+            <TextField
+              type="number"
+              variant="outlined"
+              label="Importe"
+              name="comissionAgentAmountValue"
+              value={formValues.comissionAgentAmountValue.value}
+              onChange={handleInputChange}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={12}>
+            <TextField
+              type="text"
+              variant='outlined'
+              multiline
+              maxRows={4}
+              label="Condicion"
+              name="condition"
+              value={formValues.condition.value}
+              onChange={handleInputChange}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={12}>
+            <TextField
+              type="text"
+              variant='outlined'
+              multiline
+              maxRows={4}
+              label="Forma de Pago"
+              name="mothodPayment"
+              value={formValues.mothodPayment.value}
+              onChange={handleInputChange}
+              fullWidth
+            />
+          </Grid>
+        </Grid>
+      </Grid>
+      <Grid item xs={12} sm={2.5} component={Paper}>
+        <Typography variant="h6" align='center' mb={1} sx={{ letterSpacing: "1px", fontWeight: "600" }}>
+          Entregas
+        </Typography>
+        <Grid container spacing={1} alignItems="center" >
+          <Grid
+            item
+            xs={12}
+            sm={12}
+            mb={1}
+            className='d-flex justify-content-center align-items-center'>
+            <TextField
+              variant="outlined"
+              type="date"
+              label={"Fecha"}
+              value={formValues.dateCreated.value}
+              fullWidth
+            />
+            <IconButton
+              color="success"
+              aria-label="add"
+              size="medium"
+              onClick={() => console.log("new date")}
+            >
+              <AddIcon />
+            </IconButton>
+          </Grid>
+          <Grid item xs={12} sm={12}>
+            <List dense={false}>
+              {["asd", "pepe"].map((item) => (
+                <ListItem
+                  secondaryAction={
+                    <IconButton edge="end" aria-label="delete">
+                      <DeleteIcon />
+                    </IconButton>
+                  }
+                >
+                  <TextField
+                    variant="outlined"
+                    type="date"
+                    value={null}
+                    fullWidth
+                  />
+                </ListItem>)
+              )}
+            </List>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
+
   )
 }

@@ -104,6 +104,7 @@ export const ListOriginsDestinationsPage: React.FC = () => {
   return (
     <GenericListPage
       title={t("origins_destinations")}
+      isLoading={false}
       icon={
         <Box display="flex" alignItems="center">
           <AddLocationAltIcon sx={{ marginRight: '8px' }} />

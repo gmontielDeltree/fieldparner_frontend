@@ -45,7 +45,7 @@ const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_Q
 
 export const opts: PouchDB.Replication.SyncOptions = {
   live: false,
-  retry: false,
+  retry: false,//TODO: Cambiar a true
   //  filter: 'app/by_account',
   //  query_params: { "agent": agent }
 };
@@ -106,7 +106,7 @@ export const dbContext = Object.freeze({
   stockByLots: new PouchDB<StockByLot>(dbNames.stockByLots),
   exitFields: new PouchDB<ExitField>(dbNames.exitFields),
   campaigns: new PouchDB<Campaign>(dbNames.campaigns),
-  fields: new PouchDB<Field>(dbNames.fields), //TODO: revisar db
+  fields: new PouchDB<Field>(dbNames.fields),
   originsDestinations: new PouchDB<OriginDestinations>(dbNames.originsDestinations),
   users: new PouchDB<UserByAccount>(dbNames.users),
   withdrawalOrders: new PouchDB<WithdrawalOrder>(dbNames.withdrawalOrders),

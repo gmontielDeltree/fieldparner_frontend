@@ -4,16 +4,13 @@ import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typograp
 import { Loading, TemplateLayout } from '../../components';
 import { GeneralData, Details } from '../../components/ContractSaleCereals';
 import {
-  Agriculture as AgricultureIcon,
-  ArrowRightAlt as ArrowRightAltIcon,
   Handshake as HandshakeIcon,
 } from '@mui/icons-material';
-import { FormValueState, useBusiness, useCampaign, useCrops, useDeposit, useExitField, useForm, useFormValues, useSupply, useVehicle } from '../../hooks';
-import { ExitField, SupplyType } from '../../types';
+import { FormValueState, useBusiness, useCampaign, useCrops,  useFormValues, useOriginDestinations } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
-import { useField } from '../../hooks/useField';
 import { ContractSaleCereals } from '../../interfaces/contract-sale-cereals';
+import { TipoEntidad } from '../../types';
 
 
 
@@ -28,12 +25,28 @@ const initialState: FormValueState<ContractSaleCereals> = {
   kg: { value: "", isError: false, message: "", required: true },
   currency: { value: "", isError: false, message: "", required: true },
   amountValue: { value: "", isError: false, message: "", required: true },
+  quintalQuote: { value: "", isError: false, message: "", required: true },
   kgDelivered: { value: "", isError: false, message: "", required: true },
   status: { value: "", isError: false, message: "", required: true },
   valueCollected: { value: "", isError: false, message: "", required: true },
   isOpenContract: { value: true, isError: false, message: "", required: false },
   contractType: { value: "", isError: false, message: "", required: false },
   kms: { value: "", isError: false, message: "", required: false },
+  USDQuote: { value: "", isError: false, message: "", required: false },
+  valueQuote: { value: "", isError: false, message: "", required: false },
+  valueUSDQuote: { value: "", isError: false, message: "", required: false },
+  producerId: { value: "", isError: false, message: "", required: true },
+  buyerId: { value: "", isError: false, message: "", required: true },
+  destinationId: { value: "", isError: false, message: "", required: true },
+  delivererId: { value: "", isError: false, message: "", required: true },
+  brokerId: { value: "", isError: false, message: "", required: false },
+  brokerPercentage: { value: 0, isError: false, message: "", required: false },
+  brokerAmountValue: { value: 0, isError: false, message: "", required: false },
+  comissionAgentId: { value: "", isError: false, message: "", required: false },
+  comissionAgentPercentage: { value: 0, isError: false, message: "", required: false },
+  comissionAgentAmountValue: { value: 0, isError: false, message: "", required: false },
+  condition: { value: "", isError: false, message: "", required: false },
+  mothodPayment: { value: "", isError: false, message: "", required: false },
 }
 
 
@@ -57,6 +70,8 @@ export const ContractSaleCerealsPage: React.FC = () => {
   const { businesses: socialEntities, getBusinesses } = useBusiness();
   const { campaigns, getCampaigns } = useCampaign();
   const { dataCrops, getCrops } = useCrops();
+  const { originsDestinations, getOriginDestinations } = useOriginDestinations();
+
 
 
 
@@ -86,6 +101,8 @@ export const ContractSaleCerealsPage: React.FC = () => {
             <Details
               key="sale-cereals-details"
               formValues={formValues}
+              providers={socialEntities.filter(item => item.tipoEntidad === TipoEntidad.JURIDICA)}
+              destinations={originsDestinations}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
             // setFormValues={setFormValues}
@@ -97,12 +114,13 @@ export const ContractSaleCerealsPage: React.FC = () => {
     },
     [
       formValues,
-      handleInputChange,
-      handleSelectChange,
-      handleFormValueChange,
       socialEntities,
       campaigns,
       dataCrops,
+      originsDestinations,
+      handleInputChange,
+      handleSelectChange,
+      handleFormValueChange,
     ]
   );
 
@@ -123,7 +141,12 @@ export const ContractSaleCerealsPage: React.FC = () => {
   useEffect(() => {
     const initGetData = async () => {
       setIsloading(true);
-      await Promise.all([getBusinesses(), getCampaigns(), getCrops(),]);
+      await Promise.all([
+        getBusinesses(),
+        getCampaigns(),
+        getCrops(),
+        getOriginDestinations(),
+      ]);
       setIsloading(false);
     }
 
