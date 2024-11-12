@@ -1,14 +1,9 @@
 import { Checkbox, FormControl, FormControlLabel, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import {
-  FolderOpen as FolderOpenIcon,
-} from '@mui/icons-material';
-import React, { ChangeEvent, useMemo, useState } from 'react';
-
-import { getShortDate } from '../../helpers/dates';
+import React, { ChangeEvent, useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { ContractSaleCereals } from '../../interfaces/contract-sale-cereals';
-import { Campaign, Crops, Supply } from '../../types';
+import { Campaign, Crops } from '../../types';
 import { FormValueState } from '../../hooks';
 
 
@@ -16,7 +11,6 @@ interface Props {
   formValues: FormValueState<ContractSaleCereals>;
   crops: Crops[];
   campaigns: Campaign[];
-  // listFields: Field[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
   handleCheckboxChange: ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
@@ -165,7 +159,7 @@ export const GeneralData: React.FC<Props> = ({
       <Grid item xs={12} sm={3}>
         <TextField
           variant="outlined"
-          type="fecha"
+          type="date"
           label={"Fecha"}
           value={formValues.dateCreated.value}
           fullWidth
@@ -174,7 +168,7 @@ export const GeneralData: React.FC<Props> = ({
       <Grid item xs={12} sm={3}>
         <TextField
           variant="outlined"
-          type="fecha"
+          type="text"
           label={"Tipo Contrato"}
           name={"contractType"}
           error={formValues.contractType.isError}

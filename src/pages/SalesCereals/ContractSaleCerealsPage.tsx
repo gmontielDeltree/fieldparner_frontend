@@ -6,14 +6,11 @@ import { GeneralData, Details } from '../../components/ContractSaleCereals';
 import {
   Handshake as HandshakeIcon,
 } from '@mui/icons-material';
-import { FormValueState, useBusiness, useCampaign, useCrops,  useFormValues, useOriginDestinations } from '../../hooks';
+import { FormValueState, useBusiness, useCampaign, useCrops, useFormValues, useOriginDestinations } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { ContractSaleCereals } from '../../interfaces/contract-sale-cereals';
 import { TipoEntidad } from '../../types';
-
-
-
 
 
 const initialState: FormValueState<ContractSaleCereals> = {
@@ -61,18 +58,24 @@ export const ContractSaleCerealsPage: React.FC = () => {
     handleSelectChange,
     handleFormValueChange,
     handleCheckboxChange,
-    // setFormValues,
+    setFormValues,
     // reset
   } = useFormValues(initialState);
 
   const [isLoading, setIsloading] = useState(false);
-  // const { supplies, getSupplies } = useSupply();
+  const [listDeliveryDates, setListDeliveryDates] = useState<string[]>([]);
   const { businesses: socialEntities, getBusinesses } = useBusiness();
   const { campaigns, getCampaigns } = useCampaign();
   const { dataCrops, getCrops } = useCrops();
   const { originsDestinations, getOriginDestinations } = useOriginDestinations();
 
+  const addDeliveryDate = (date: string) => {
+    setListDeliveryDates([...listDeliveryDates, date]);
+  }
 
+  const deleteDeliveryDate = (date: string) => {
+    setListDeliveryDates(listDeliveryDates.filter(item => item !== date));
+  };
 
 
   const steps = [
@@ -93,7 +96,6 @@ export const ContractSaleCerealsPage: React.FC = () => {
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
-            // setFormValues={setFormValues}
             />
           );
         case 1:
@@ -105,7 +107,9 @@ export const ContractSaleCerealsPage: React.FC = () => {
               destinations={originsDestinations}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
-            // setFormValues={setFormValues}
+              addDeliveryDate={addDeliveryDate}
+              listDeliveryDates={listDeliveryDates}
+              deleteDeliveryDate={deleteDeliveryDate}
             />
           );
         default:
@@ -118,14 +122,17 @@ export const ContractSaleCerealsPage: React.FC = () => {
       campaigns,
       dataCrops,
       originsDestinations,
+      listDeliveryDates,
       handleInputChange,
       handleSelectChange,
       handleFormValueChange,
+      addDeliveryDate,
+      deleteDeliveryDate
     ]
   );
 
   const onClickCancelar = () => {
-    navigate("/init/overview/exit-field");
+    navigate("/init/overview/sales-cereals");
   };
 
   const handleNext = () => {
@@ -134,6 +141,41 @@ export const ContractSaleCerealsPage: React.FC = () => {
 
   const handleBack = () => {
     setActiveStep(activeStep - 1);
+  };
+
+  const onClickSave = () => {
+    console.log("formValues", formValues);
+  }
+  const validateForm = (form: EventTarget & HTMLFormElement): boolean => {
+    let isValid = true;
+    let updatedFormValue = { ...formValues };
+    const elements = form.elements as HTMLFormControlsCollection;
+
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i] as HTMLInputElement;
+      const fieldName = element.name as keyof FormValueState<ContractSaleCereals>;
+      const field = formValues[fieldName];
+      if (field && field.required && !element.value) {
+        updatedFormValue[fieldName] = {
+          ...field,
+          isError: true,
+          message: "Campo requerido",
+        };
+        isValid = false;
+      }
+    }
+
+    if (!isValid) setFormValues(updatedFormValue);
+
+    return isValid;
+  }
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    // if (validateForm(form)) handleNext();
+    handleNext();
   };
 
 
@@ -184,50 +226,67 @@ export const ContractSaleCerealsPage: React.FC = () => {
             ))}
           </Stepper>
           <>
-            {getStepContent(activeStep)}
-            <Grid
-              container
-              spacing={2}
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mt: { sm: 5 } }}
-            >
-              <Grid item xs={12} sm={3}>
-                <Button
-                  variant="contained"
-                  color="inherit"
-                  onClick={activeStep !== 0 ? handleBack : onClickCancelar}
-                  sx={{ ml: 1 }}
-                >
-                  {activeStep !== 0 ? t("id_back") : t("id_cancel")}
-                </Button>
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                {!(activeStep === steps.length - 1) && (
+            <form onSubmit={onSubmit}>
+              {getStepContent(activeStep)}
+              <Grid
+                container
+                spacing={2}
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mt: { sm: 5 } }}
+              >
+                <Grid item xs={12} sm={3}>
                   <Button
-                    type="button"
                     variant="contained"
-                    color="primary"
-                    onClick={handleNext}
-                    fullWidth
+                    color="inherit"
+                    onClick={activeStep !== 0 ? handleBack : onClickCancelar}
+                    sx={{ ml: 1 }}
                   >
-                    {t("id_next")}
+                    {activeStep !== 0 ? t("id_back") : t("id_cancel")}
                   </Button>
-                )}
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  {!(activeStep === steps.length - 1) ? (
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      // onClick={handleNext}
+                      fullWidth
+                    >
+                      {t("id_next")}
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="contained"
+                      color="success"
+                      onClick={() => onClickSave()}
+                      fullWidth
+                    >
+                      {t("_add")}
+                    </Button>
+                  )
+                  }
+                </Grid>
+                {/* {
+                  activeStep === steps.length - 1 && (
+                    <Grid item xs={12} sm={3}>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="success"
+                        onClick={() => onClickSave()}
+                        fullWidth
+                      >
+                        {t("_add")}
+                      </Button>
+                    </Grid>
+                  )
+                } */}
               </Grid>
-              <Grid item xs={12} sm={3}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="success"
-                  onClick={() => console.log("Save")}
-                  fullWidth
-                >
-                  {t("_add")}
-                </Button>
-              </Grid>
-            </Grid>
+            </form>
           </>
         </Paper>
       </Container>

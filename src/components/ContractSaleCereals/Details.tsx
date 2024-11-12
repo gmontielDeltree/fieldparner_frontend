@@ -11,15 +11,17 @@ import {
   Typography,
   List,
   ListItem,
-  Paper
+  Paper,
+  Divider
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import React, { ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ContractSaleCereals } from '../../interfaces/contract-sale-cereals';
 import { FormValueState } from '../../hooks';
 import { BusinessItem } from '../../interfaces/socialEntity';
 import { OriginDestinations } from '../../types';
+import dayjs from 'dayjs';
 
 
 
@@ -29,9 +31,12 @@ interface Props {
   destinations: OriginDestinations[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
+  listDeliveryDates: string[];
+  addDeliveryDate: (date: string) => void;
+  deleteDeliveryDate: (date: string) => void;
 }  // handleCheckboxChange: ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
 
-
+const initialDate = dayjs().add(1, "day").format("YYYY-MM-DD");
 
 export const Details: React.FC<Props> = ({
   formValues,
@@ -39,9 +44,29 @@ export const Details: React.FC<Props> = ({
   destinations,
   handleInputChange,
   handleSelectChange,
+  addDeliveryDate,
+  deleteDeliveryDate,
+  listDeliveryDates,
 }) => {
 
   const { t } = useTranslation();
+
+  const [newDate, setNewDate] = useState<string>(initialDate);
+
+  const minDate = useMemo(() => {
+    let dateMax = initialDate;
+    listDeliveryDates.forEach((date) => {
+      if (dayjs(date).isAfter(dateMax)) dateMax = date;
+    });
+
+    return dayjs(dateMax).add(1, "day").format("YYYY-MM-DD");
+  }, [listDeliveryDates]);
+
+  const handleAddNewDate = () => {
+    addDeliveryDate(newDate);
+    setNewDate("");
+  }
+
 
 
   return (
@@ -260,25 +285,35 @@ export const Details: React.FC<Props> = ({
             <TextField
               variant="outlined"
               type="date"
-              label={"Fecha"}
-              value={formValues.dateCreated.value}
+              value={newDate}
+              inputProps={{ min: minDate }}
+              onChange={(e) => setNewDate(e.target.value)}
               fullWidth
             />
             <IconButton
               color="success"
               aria-label="add"
               size="medium"
-              onClick={() => console.log("new date")}
+              disabled={!newDate}
+              onClick={() => handleAddNewDate()}
             >
               <AddIcon />
             </IconButton>
           </Grid>
-          <Grid item xs={12} sm={12}>
-            <List dense={false}>
-              {["asd", "pepe"].map((item) => (
+          <Grid item xs={12} sm={12} >
+            <Divider />
+            <List dense={false} sx={{
+              maxHeight: "220px",
+              overflow: "auto",
+            }}>
+              {listDeliveryDates.map((item) => (
                 <ListItem
+                  key={item}
                   secondaryAction={
-                    <IconButton edge="end" aria-label="delete">
+                    <IconButton
+                      onClick={() => deleteDeliveryDate(item)}
+                      edge="end"
+                      aria-label="delete">
                       <DeleteIcon />
                     </IconButton>
                   }
@@ -286,7 +321,7 @@ export const Details: React.FC<Props> = ({
                   <TextField
                     variant="outlined"
                     type="date"
-                    value={null}
+                    value={item}
                     fullWidth
                   />
                 </ListItem>)
