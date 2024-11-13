@@ -1,20 +1,22 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { Loading, TemplateLayout } from '../../components';
 import { GeneralData, Details } from '../../components/ContractSaleCereals';
 import {
   Handshake as HandshakeIcon,
 } from '@mui/icons-material';
-import { FormValueState, useBusiness, useCampaign, useCrops, useFormValues, useOriginDestinations } from '../../hooks';
+import { FormValueState, useBusiness, useCampaign, useContractSaleCereals, useCrops, useFormValues, useOriginDestinations } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
-import { ContractSaleCereals } from '../../interfaces/contract-sale-cereals';
+import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
 import { TipoEntidad } from '../../types';
 
 
-const initialState: FormValueState<ContractSaleCereals> = {
-  nroContractSale: { value: "", isError: false, message: "", required: true },
+const initialState: FormValueState<ContractSaleCereal> = {
+  accountId: { value: "", required: true, isError: false, message: "" },
+  licenceId: { value: "", required: true, isError: false, message: "" },
+  contractSaleNumber: { value: "", isError: false, message: "", required: true },
   campaignId: { value: "", isError: false, message: "", required: true },
   contractCorporateId: { value: "", isError: false, message: "", required: true },
   cropId: { value: "", isError: false, message: "", required: true },
@@ -61,6 +63,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
     setFormValues,
     // reset
   } = useFormValues(initialState);
+  const { contract } = useParams();
 
   const [isLoading, setIsloading] = useState(false);
   const [listDeliveryDates, setListDeliveryDates] = useState<string[]>([]);
@@ -68,6 +71,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
   const { campaigns, getCampaigns } = useCampaign();
   const { dataCrops, getCrops } = useCrops();
   const { originsDestinations, getOriginDestinations } = useOriginDestinations();
+  const { getLastContractNumber, getContractSaleCerealByContractNumber } = useContractSaleCereals();
 
   const addDeliveryDate = (date: string) => {
     setListDeliveryDates([...listDeliveryDates, date]);
@@ -146,6 +150,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
   const onClickSave = () => {
     console.log("formValues", formValues);
   }
+
   const validateForm = (form: EventTarget & HTMLFormElement): boolean => {
     let isValid = true;
     let updatedFormValue = { ...formValues };
@@ -153,7 +158,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
 
     for (let i = 0; i < elements.length; i++) {
       const element = elements[i] as HTMLInputElement;
-      const fieldName = element.name as keyof FormValueState<ContractSaleCereals>;
+      const fieldName = element.name as keyof FormValueState<ContractSaleCereal>;
       const field = formValues[fieldName];
       if (field && field.required && !element.value) {
         updatedFormValue[fieldName] = {
@@ -173,16 +178,33 @@ export const ContractSaleCerealsPage: React.FC = () => {
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    const form = event.currentTarget;
+    // const form = event.currentTarget;
     // if (validateForm(form)) handleNext();
     handleNext();
   };
 
-
-
   useEffect(() => {
     const initGetData = async () => {
       setIsloading(true);
+      if (contract) {
+        //EDIT CONTRACT
+        const docFound = await getContractSaleCerealByContractNumber(contract);
+        if (docFound) {
+          let newFormValue = structuredClone(initialState);
+          Object.keys(newFormValue).forEach((key) => {
+            newFormValue[key].value = docFound[key as keyof FormValueState<ContractSaleCereal>];
+          });
+          setFormValues(newFormValue);
+        }
+      }
+      else {
+        //NEW CONTRACT
+        const contractNumber = await getLastContractNumber();
+        setFormValues({
+          ...formValues,
+          contractSaleNumber: { value: contractNumber, isError: false, message: "", required: true }
+        });
+      }
       await Promise.all([
         getBusinesses(),
         getCampaigns(),
@@ -193,7 +215,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
     }
 
     initGetData();
-  }, [])
+  }, [contract])
 
 
   return (

@@ -2,13 +2,13 @@ import { Checkbox, FormControl, FormControlLabel, FormHelperText, Grid, InputAdo
 import React, { ChangeEvent, useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
-import { ContractSaleCereals } from '../../interfaces/contract-sale-cereals';
+import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
 import { Campaign, Crops } from '../../types';
 import { FormValueState } from '../../hooks';
 
 
 interface Props {
-  formValues: FormValueState<ContractSaleCereals>;
+  formValues: FormValueState<ContractSaleCereal>;
   crops: Crops[];
   campaigns: Campaign[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
@@ -16,7 +16,8 @@ interface Props {
   handleCheckboxChange: ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
 }
 
-
+//TODO: Cambiar los textos a idioma seleccionado
+//TODO: Revisar el campo "Sociedad" para cambiar el tipo de dato
 export const GeneralData: React.FC<Props> = ({
   formValues,
   campaigns,
@@ -48,22 +49,27 @@ export const GeneralData: React.FC<Props> = ({
       spacing={2}
       direction="row"
       alignItems="center">
-      {/* <Grid item xs={12} display="flex" alignItems="center" mb={2}>
-        <FolderOpenIcon sx={{ mx: 1 }} />
-        <Typography variant="h5">{t("general_data")}</Typography>
-      </Grid> */}
       <Grid item xs={12} sm={3}>
-        <TextField
+        <FormControl fullWidth>
+          <ListItemText
+            primary={<Typography variant='subtitle1'>Numero de Contrato</Typography>}
+            sx={{ backgroundColor: "#f4f4f4", px: 1, borderRadius: 1 }}
+            secondary={
+              <Typography align='right' letterSpacing={1} variant='subtitle1'>
+                {formValues.contractSaleNumber.value}
+              </Typography>}
+          />
+        </FormControl>
+        {/* <TextField
           variant="outlined"
           type="text"
           label={"Nro de Contrato"}
-          value={formValues.nroContractSale.value}
+          value={formValues.contractSaleNumber.value}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
-          disabled
           fullWidth
-        />
+        /> */}
       </Grid>
       <Grid item xs={12} sm={3}>
         <FormControl key="campaign-select"
@@ -178,7 +184,7 @@ export const GeneralData: React.FC<Props> = ({
           fullWidth
         />
       </Grid>
-     
+
       <Grid item xs={12} sm={3}>
         <TextField
           variant="outlined"

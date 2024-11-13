@@ -35,7 +35,7 @@ import { TransportDocument } from '../interfaces/transportDocument';
 import { Company } from '../interfaces/company';
 import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../interfaces/certificate-deposit';
 import { ProductiveUnits } from '../interfaces/productiveUnits';
-import { ContractSaleCereals } from '../interfaces/contract-sale-cereals';
+import { ContractDeliveyDate, ContractSaleCereal } from '../interfaces/contract-sale-cereals';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -91,6 +91,7 @@ const dbNames = Object.freeze({
   transportDocumentCertificateDeposit: "transport-document-certificate-deposit",
   productiveUnits: "productive-units",
   contractSaleCereals: "contract-sale-cereals",
+  contractDeliveryDates: "contract-delivery-dates",
 });
 
 export const dbContext = Object.freeze({
@@ -133,7 +134,8 @@ export const dbContext = Object.freeze({
   certificateDeposit: new PouchDB<CertificateDeposit>(dbNames.certificateDeposit),
   transportDocumentCertificateDeposit: new PouchDB<TransportDocumentByCertificateDeposit>(dbNames.transportDocumentCertificateDeposit),
   productiveUnits: new PouchDB<ProductiveUnits>(dbNames.productiveUnits),
-  contractSaleCereals: new PouchDB<ContractSaleCereals>(dbNames.contractSaleCereals),
+  contractSaleCereals: new PouchDB<ContractSaleCereal>(dbNames.contractSaleCereals),
+  contractDeliveryDates: new PouchDB<ContractDeliveyDate>(dbNames.contractDeliveryDates),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html

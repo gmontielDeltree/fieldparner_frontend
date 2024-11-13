@@ -1,7 +1,9 @@
 import { Document } from '../types';
 
-export interface ContractSaleCereals extends Document {
-    nroContractSale: string;
+export interface ContractSaleCereal extends Document {
+    accountId: string;
+    licenceId: string;
+    contractSaleNumber: string;
     campaignId: string; //Campaña
     contractCorporateId: string; //Sociedad
     cropId: string; //Cultivo
@@ -15,7 +17,7 @@ export interface ContractSaleCereals extends Document {
     comissionAgentId: string; //Comisionista
     comissionAgentPercentage: number;
     comissionAgentAmountValue: number;
-    condition:string;
+    condition: string;
     mothodPayment: string;
     isOpenContract: boolean;
     dateCreated: string;
@@ -31,4 +33,10 @@ export interface ContractSaleCereals extends Document {
     valueCollected: string;
     contractType: string;
     status: string;
+}
+
+export interface ContractDeliveyDate extends Document {
+    contractSaleNumber: string;
+    deliveryDate: string;
+    dateCreated: string;
 }

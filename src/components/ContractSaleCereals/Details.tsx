@@ -17,7 +17,7 @@ import {
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import React, { useState, ChangeEvent, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ContractSaleCereals } from '../../interfaces/contract-sale-cereals';
+import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
 import { FormValueState } from '../../hooks';
 import { BusinessItem } from '../../interfaces/socialEntity';
 import { OriginDestinations } from '../../types';
@@ -26,7 +26,7 @@ import dayjs from 'dayjs';
 
 
 interface Props {
-  formValues: FormValueState<ContractSaleCereals>;
+  formValues: FormValueState<ContractSaleCereal>;
   providers: BusinessItem[];
   destinations: OriginDestinations[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
@@ -62,7 +62,7 @@ export const Details: React.FC<Props> = ({
     return dayjs(dateMax).add(1, "day").format("YYYY-MM-DD");
   }, [listDeliveryDates]);
 
-  const handleAddNewDate = () => {
+  const handleAddNewDeliveryDate = () => {
     addDeliveryDate(newDate);
     setNewDate("");
   }
@@ -295,7 +295,7 @@ export const Details: React.FC<Props> = ({
               aria-label="add"
               size="medium"
               disabled={!newDate}
-              onClick={() => handleAddNewDate()}
+              onClick={() => handleAddNewDeliveryDate()}
             >
               <AddIcon />
             </IconButton>
