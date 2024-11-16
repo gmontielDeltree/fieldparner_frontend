@@ -152,6 +152,7 @@ export interface User {
   licenceId: string;
   isAdmin: boolean;
   countryId: string;
+  currency: string;
   email: string;
 }
 

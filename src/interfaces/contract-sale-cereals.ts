@@ -1,11 +1,13 @@
-import { Document } from '../types';
+import { Campaign, Crops, Document, OriginDestinations } from '../types';
+import { Company } from './company';
+import { Business } from './socialEntity';
 
 export interface ContractSaleCereal extends Document {
     accountId: string;
     licenceId: string;
     contractSaleNumber: string;
     campaignId: string; //Campaña
-    contractCorporateId: string; //Sociedad
+    companyId: string; //Sociedad
     cropId: string; //Cultivo
     producerId: string //Productor/Vendedor
     buyerId: string; //Comprador/Detinatario
@@ -39,4 +41,16 @@ export interface ContractDeliveyDate extends Document {
     contractSaleNumber: string;
     deliveryDate: string;
     dateCreated: string;
+}
+
+export interface ContractSaleCerealItem extends ContractSaleCereal {
+    campaign: Campaign;
+    company: Company;
+    crop: Crops;
+    producer: Business;
+    buyer: Business;
+    destination: OriginDestinations;
+    deliver: Business;
+    broker: Business;
+    comssionAgent: Business;
 }

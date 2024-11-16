@@ -6,11 +6,12 @@ import { GeneralData, Details } from '../../components/ContractSaleCereals';
 import {
   Handshake as HandshakeIcon,
 } from '@mui/icons-material';
-import { FormValueState, useBusiness, useCampaign, useContractSaleCereals, useCrops, useFormValues, useOriginDestinations } from '../../hooks';
+import { FormValueState, useBusiness, useCampaign, useCompany, useContractSaleCereals, useCrops, useFormValues, useOriginDestinations } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
 import { TipoEntidad } from '../../types';
+import Swal from 'sweetalert2';
 
 
 const initialState: FormValueState<ContractSaleCereal> = {
@@ -18,11 +19,11 @@ const initialState: FormValueState<ContractSaleCereal> = {
   licenceId: { value: "", required: true, isError: false, message: "" },
   contractSaleNumber: { value: "", isError: false, message: "", required: true },
   campaignId: { value: "", isError: false, message: "", required: true },
-  contractCorporateId: { value: "", isError: false, message: "", required: true },
+  companyId: { value: "", isError: false, message: "", required: true },
   cropId: { value: "", isError: false, message: "", required: true },
   dateCreated: { value: getShortDate(false, "-"), isError: false, message: "", required: false },
   kg: { value: "", isError: false, message: "", required: true },
-  currency: { value: "", isError: false, message: "", required: true },
+  currency: { value: "", isError: false, message: "", required: false },
   amountValue: { value: "", isError: false, message: "", required: true },
   quintalQuote: { value: "", isError: false, message: "", required: true },
   kgDelivered: { value: "", isError: false, message: "", required: true },
@@ -61,7 +62,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
     handleFormValueChange,
     handleCheckboxChange,
     setFormValues,
-    // reset
+    reset
   } = useFormValues(initialState);
   const { contract } = useParams();
 
@@ -69,9 +70,10 @@ export const ContractSaleCerealsPage: React.FC = () => {
   const [listDeliveryDates, setListDeliveryDates] = useState<string[]>([]);
   const { businesses: socialEntities, getBusinesses } = useBusiness();
   const { campaigns, getCampaigns } = useCampaign();
+  const { companies, getCompanies } = useCompany();
   const { dataCrops, getCrops } = useCrops();
   const { originsDestinations, getOriginDestinations } = useOriginDestinations();
-  const { getLastContractNumber, getContractSaleCerealByContractNumber } = useContractSaleCereals();
+  const { getLastContractNumber, getContractSaleCerealByContractNumber, addContractSaleCereal, isLoading: loading } = useContractSaleCereals();
 
   const addDeliveryDate = (date: string) => {
     setListDeliveryDates([...listDeliveryDates, date]);
@@ -97,6 +99,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
               formValues={formValues}
               crops={dataCrops}
               campaigns={campaigns}
+              companies={companies}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
@@ -109,6 +112,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
               formValues={formValues}
               providers={socialEntities.filter(item => item.tipoEntidad === TipoEntidad.JURIDICA)}
               destinations={originsDestinations}
+              companies={companies}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               addDeliveryDate={addDeliveryDate}
@@ -127,6 +131,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
       dataCrops,
       originsDestinations,
       listDeliveryDates,
+      companies,
       handleInputChange,
       handleSelectChange,
       handleFormValueChange,
@@ -147,8 +152,28 @@ export const ContractSaleCerealsPage: React.FC = () => {
     setActiveStep(activeStep - 1);
   };
 
-  const onClickSave = () => {
-    console.log("formValues", formValues);
+  //Mapeo del objeto a 1er nivel para enviarlo
+  const mappedContractSaleCereal = () => {
+    return Object.keys(formValues).reduce((acc, key) => {
+      acc[key] = formValues[key].value;
+      return acc;
+    }, {});
+  }
+
+  const onClickSave = async () => {
+    try {
+      const contract = mappedContractSaleCereal() as ContractSaleCereal;
+      console.log("formValues", contract);
+      const result = await addContractSaleCereal(contract, listDeliveryDates);
+      if (result) {
+        Swal.fire('Contrato Venta Cereal', "Contrato guardado correctamente", 'success')
+        navigate("/init/overview/sales-cereals");
+        reset();
+      }
+    } catch (error) {
+      console.error("Error al agregar documento:", error);
+      Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+    }
   }
 
   const validateForm = (form: EventTarget & HTMLFormElement): boolean => {
@@ -178,8 +203,8 @@ export const ContractSaleCerealsPage: React.FC = () => {
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    // const form = event.currentTarget;
-    // if (validateForm(form)) handleNext();
+    const form = event.currentTarget;
+    if (validateForm(form)) handleNext();
     handleNext();
   };
 
@@ -210,6 +235,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
         getCampaigns(),
         getCrops(),
         getOriginDestinations(),
+        getCompanies()
       ]);
       setIsloading(false);
     }
@@ -220,7 +246,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
 
   return (
     <TemplateLayout key="contract-sale-cereals-page" viewMap={false}>
-      {isLoading && <Loading loading={true} />}
+      {isLoading || loading && <Loading loading={true} />}
       <Container
         maxWidth="lg"
         sx={{ margin: 0, p: { sm: 0, md: 0 }, mb: 1, }}

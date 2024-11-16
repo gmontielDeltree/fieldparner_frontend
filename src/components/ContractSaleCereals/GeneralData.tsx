@@ -1,47 +1,67 @@
-import { Checkbox, FormControl, FormControlLabel, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import {
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  Grid,
+
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField,
+  Typography
+} from '@mui/material';
 import React, { ChangeEvent, useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
 import { Campaign, Crops } from '../../types';
-import { FormValueState } from '../../hooks';
+import { FormValueState, useAppSelector } from '../../hooks';
+import { Company } from '../../interfaces/company';
 
 
 interface Props {
   formValues: FormValueState<ContractSaleCereal>;
   crops: Crops[];
   campaigns: Campaign[];
+  companies: Company[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
   handleCheckboxChange: ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
 }
 
 //TODO: Cambiar los textos a idioma seleccionado
-//TODO: Revisar el campo "Sociedad" para cambiar el tipo de dato
+
+
 export const GeneralData: React.FC<Props> = ({
   formValues,
   campaigns,
   crops,
+  companies,
   handleInputChange,
   handleSelectChange,
   handleCheckboxChange
 }) => {
 
   const { t } = useTranslation();
+  const { user } = useAppSelector(state => state.auth);
+  const { kg, quintalQuote, USDQuote } = formValues;
 
   const valueCurrency = useMemo(() => {
     if (formValues.kg.value && formValues.quintalQuote.value) {
       return Number(formValues.kg.value) * Number(formValues.quintalQuote.value) * 100;
     }
     return null;
-  }, []);
+  }, [kg, quintalQuote]);
 
   const valueUSD = useMemo(() => {
     if (formValues.kg.value && formValues.USDQuote.value) {
       return Number(formValues.kg.value) * Number(formValues.USDQuote.value);
     }
     return null;
-  }, []);
+  }, [kg, USDQuote]);
 
   return (
     <Grid
@@ -93,24 +113,24 @@ export const GeneralData: React.FC<Props> = ({
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={3}>
-        <FormControl key="contract-corporate-select"
-          error={formValues.contractCorporateId.isError}
+        <FormControl key="company-select"
+          error={formValues.companyId.isError}
           fullWidth>
           <InputLabel id="contract-corporate">Sociedad</InputLabel>
           <Select
             labelId="contract-corporate"
-            name="contractCorporateId"
-            value={formValues.contractCorporateId.value}
+            name="companyId"
+            value={formValues.companyId.value}
             label="Sociedad"
             onChange={handleSelectChange}
           >
-            {["123", "Pepe"]?.map((item) => (
-              <MenuItem key={item} value={item}>
-                {item}
+            {companies?.map((item) => (
+              <MenuItem key={item._id} value={item._id}>
+                {item.socialReason}
               </MenuItem>
             ))}
           </Select>
-          <FormHelperText>{formValues.contractCorporateId.message}</FormHelperText>
+          <FormHelperText>{formValues.companyId.message}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={3}>
@@ -212,22 +232,21 @@ export const GeneralData: React.FC<Props> = ({
         />
       </Grid>
       <Grid item xs={12} sm={3}>
-        <TextField
-          variant="outlined"
-          type="text"
-          label={"Moneda"}
-          name={"currency"}
-          error={formValues.currency.isError}
-          helperText={formValues.currency.message}
-          value={formValues.currency.value}
-          onChange={handleInputChange}
-          fullWidth
-        />
+        <FormControl fullWidth>
+          <ListItemText
+            primary={<Typography variant='subtitle1'>Moneda</Typography>}
+            sx={{ backgroundColor: "#f4f4f4", px: 1, borderRadius: 1 }}
+            secondary={
+              <Typography letterSpacing={1} variant='subtitle1'>
+                {user?.currency || "-"}
+              </Typography>}
+          />
+        </FormControl>
       </Grid>
       <Grid item xs={12} sm={3}>
         <TextField
           variant="outlined"
-          type="text"
+          type="number"
           label={"Cotizacion Quintal"}
           name={"quintalQuote"}
           error={formValues.quintalQuote.isError}
@@ -252,7 +271,7 @@ export const GeneralData: React.FC<Props> = ({
       <Grid item xs={12} sm={3}>
         <TextField
           variant="outlined"
-          type="text"
+          type="number"
           label={"Cotizacion U$D/Kg"}
           name={"USDQuote"}
           error={formValues.USDQuote.isError}

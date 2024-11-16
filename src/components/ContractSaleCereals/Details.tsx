@@ -22,16 +22,18 @@ import { FormValueState } from '../../hooks';
 import { BusinessItem } from '../../interfaces/socialEntity';
 import { OriginDestinations } from '../../types';
 import dayjs from 'dayjs';
+import { Company } from '../../interfaces/company';
 
-
+//TODO: Cambiar los textos a idioma seleccionado
 
 interface Props {
   formValues: FormValueState<ContractSaleCereal>;
   providers: BusinessItem[];
   destinations: OriginDestinations[];
+  companies: Company[];
+  listDeliveryDates: string[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
-  listDeliveryDates: string[];
   addDeliveryDate: (date: string) => void;
   deleteDeliveryDate: (date: string) => void;
 }  // handleCheckboxChange: ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
@@ -42,15 +44,15 @@ export const Details: React.FC<Props> = ({
   formValues,
   providers,
   destinations,
+  listDeliveryDates,
+  companies,
   handleInputChange,
   handleSelectChange,
   addDeliveryDate,
   deleteDeliveryDate,
-  listDeliveryDates,
 }) => {
 
   const { t } = useTranslation();
-
   const [newDate, setNewDate] = useState<string>(initialDate);
 
   const minDate = useMemo(() => {
@@ -66,8 +68,6 @@ export const Details: React.FC<Props> = ({
     addDeliveryDate(newDate);
     setNewDate("");
   }
-
-
 
   return (
     <Grid container spacing={1} >
@@ -85,9 +85,9 @@ export const Details: React.FC<Props> = ({
                 label="Productor/Vendedor"
                 onChange={handleSelectChange}
               >
-                {[{ name: "Productor" }].map((c) => (
-                  <MenuItem key={c.name} value={c.name}>
-                    {c.name}
+                {companies.map((c) => (
+                  <MenuItem key={c._id} value={c._id}>
+                    {c.socialReason}
                   </MenuItem>
                 ))}
               </Select>

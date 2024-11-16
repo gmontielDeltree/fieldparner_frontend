@@ -5,6 +5,7 @@ import { Handshake as HandshakeIcon, Edit as EditIcon, Delete as DeleteIcon } fr
 import { GridRenderCellParams } from '@mui/x-data-grid';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { useContractSaleCereals } from '../../hooks';
 
 const titleColums = {
     nroContractSale: "Nro Contrato Venta",
@@ -24,6 +25,8 @@ export const ListSalesCerealsPage: React.FC = () => {
     const navigate = useNavigate();
     // const dispatch = useAppDispatch();
     const { t } = useTranslation();
+
+    const { getContractsSaleCereals } = useContractSaleCereals();
 
 
     const columns = [
@@ -132,7 +135,7 @@ export const ListSalesCerealsPage: React.FC = () => {
             icon={<HandshakeIcon fontSize="large" sx={{ mr: 1 }} />}
             data={[]}
             columns={columns}
-            getData={() => console.log("get")}
+            getData={() => getContractsSaleCereals()}
             deleteData={() => console.log("delete")}
             setActiveItem={(item) => console.log("setActiveItem", item)}
             newItemPath="/init/overview/sales-cereals/new"
