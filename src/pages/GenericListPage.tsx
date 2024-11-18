@@ -62,7 +62,7 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
 
   useEffect(() => {
     getData();
-  }, [getData]);
+  }, []);
 
   useEffect(() => {
     const dataWithIds = assignUniqueIds(data);

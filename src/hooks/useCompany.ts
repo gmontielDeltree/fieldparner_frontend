@@ -18,7 +18,6 @@ export const useCompany = () => {
 
             const response = await dbContext.companies.find({
                 selector: { $and: [{ accountId: user.accountId }, { licenceId: user.licenceId }] }
-
             });
 
             if (response.docs.length)

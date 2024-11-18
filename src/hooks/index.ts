@@ -30,3 +30,4 @@ export * from './useCorporateContract';
 export * from './useFormValue'
 export * from './useCertificateDeposit';
 export * from './useProductiveUnits';
+export * from './useContractSaleCereals';

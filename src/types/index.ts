@@ -152,6 +152,7 @@ export interface User {
   licenceId: string;
   isAdmin: boolean;
   countryId: string;
+  currency: string;
   email: string;
 }
 
@@ -282,7 +283,7 @@ export interface OriginDestinationsState {
 
 export interface OriginDestinations extends Document {
   name: string;
-  description: string;
+  geolocation: string;
   procedencia: boolean;
   destino: boolean;
 }

@@ -35,6 +35,7 @@ import { TransportDocument } from '../interfaces/transportDocument';
 import { Company } from '../interfaces/company';
 import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../interfaces/certificate-deposit';
 import { ProductiveUnits } from '../interfaces/productiveUnits';
+import { ContractDeliveyDate, ContractSaleCereal } from '../interfaces/contract-sale-cereals';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -44,7 +45,7 @@ const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_Q
 
 export const opts: PouchDB.Replication.SyncOptions = {
   live: true,
-  retry: false,
+  retry: false,//TODO: Cambiar a true
   //  filter: 'app/by_account',
   //  query_params: { "agent": agent }
 };
@@ -89,7 +90,8 @@ const dbNames = Object.freeze({
   certificateDeposit: "certificate-deposit",
   transportDocumentCertificateDeposit: "transport-document-certificate-deposit",
   productiveUnits: "productive-units",
-
+  contractSaleCereals: "contract-sale-cereals",
+  contractDeliveryDates: "contract-delivery-dates",
 });
 
 export const dbContext = Object.freeze({
@@ -105,7 +107,7 @@ export const dbContext = Object.freeze({
   stockByLots: new PouchDB<StockByLot>(dbNames.stockByLots),
   exitFields: new PouchDB<ExitField>(dbNames.exitFields),
   campaigns: new PouchDB<Campaign>(dbNames.campaigns),
-  fields: new PouchDB<Field>(dbNames.fields), //TODO: revisar db
+  fields: new PouchDB<Field>(dbNames.fields),
   originsDestinations: new PouchDB<OriginDestinations>(dbNames.originsDestinations),
   users: new PouchDB<UserByAccount>(dbNames.users),
   withdrawalOrders: new PouchDB<WithdrawalOrder>(dbNames.withdrawalOrders),
@@ -132,11 +134,15 @@ export const dbContext = Object.freeze({
   certificateDeposit: new PouchDB<CertificateDeposit>(dbNames.certificateDeposit),
   transportDocumentCertificateDeposit: new PouchDB<TransportDocumentByCertificateDeposit>(dbNames.transportDocumentCertificateDeposit),
   productiveUnits: new PouchDB<ProductiveUnits>(dbNames.productiveUnits),
+  contractSaleCereals: new PouchDB<ContractSaleCereal>(dbNames.contractSaleCereals),
+  contractDeliveryDates: new PouchDB<ContractDeliveyDate>(dbNames.contractDeliveryDates),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
 // para no sincronizar todos los docs the TODOS los usuarios (accountId's)
 
+
+//#region SINCRONIZACION DE BASES DE DATOS
 dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
 dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
 dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
@@ -175,8 +181,10 @@ dbContext.corporateContract.sync(`${remoteCouchDBUrl}${dbNames.corporateContract
 dbContext.certificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.certificateDeposit}`, opts);
 dbContext.transportDocumentCertificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.transportDocumentCertificateDeposit}`, opts);
 dbContext.productiveUnits.sync(`${remoteCouchDBUrl}${dbNames.productiveUnits}`, opts);
+dbContext.contractSaleCereals.sync(`${remoteCouchDBUrl}${dbNames.contractSaleCereals}`, opts);
+dbContext.contractDeliveryDates.sync(`${remoteCouchDBUrl}${dbNames.contractDeliveryDates}`, opts);
 
 
-
+//#endregion
 
 
