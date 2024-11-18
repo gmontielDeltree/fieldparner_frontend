@@ -30,6 +30,7 @@ interface Props {
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
   handleCheckboxChange: ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
+  handleFormValueChange: (key: string, value: string) => void;
 }
 
 //TODO: Cambiar los textos a idioma seleccionado
@@ -42,7 +43,8 @@ export const GeneralData: React.FC<Props> = ({
   companies,
   handleInputChange,
   handleSelectChange,
-  handleCheckboxChange
+  handleCheckboxChange,
+  handleFormValueChange
 }) => {
 
   const { t } = useTranslation();
@@ -51,7 +53,9 @@ export const GeneralData: React.FC<Props> = ({
 
   const valueCurrency = useMemo(() => {
     if (formValues.kg.value && formValues.quintalQuote.value) {
-      return Number(formValues.kg.value) * Number(formValues.quintalQuote.value) * 100;
+      const value= Number(formValues.kg.value) * Number(formValues.quintalQuote.value) * 100;
+      handleFormValueChange("amountValue", value.toString());
+      return value;
     }
     return null;
   }, [kg, quintalQuote]);

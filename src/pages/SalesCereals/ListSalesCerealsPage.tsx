@@ -20,43 +20,50 @@ const titleColums = {
     valueCollected: "Valor Cobrado",
     status: "Estado",
 }
-
+//TODO: calcular los kg entregados y el valor cobrado
+//TODO: permitir editar solo si ninguna carta de porte tiene el nro de contrato
 export const ListSalesCerealsPage: React.FC = () => {
     const navigate = useNavigate();
     // const dispatch = useAppDispatch();
     const { t } = useTranslation();
 
-    const { getContractsSaleCereals } = useContractSaleCereals();
+    const { getContractsSaleCereals, contractsSaleCereals } = useContractSaleCereals();
 
 
     const columns = [
         {
-            field: "nroContractSale",
-            headerName: titleColums["nroContractSale"],
+            field: "contractSaleNumber",
+            headerName: "Nro Contrato Venta",
             flex: 1
         },
         {
             field: "dateCreated",
-            headerName: titleColums.dateCreated,
-            flex: 1
-        },
-        {
-            field: "society",
-            headerName: titleColums.society,
+            headerName: "Fecha",
             flex: 1,
         },
         {
-            field: "campaign",
-            headerName: titleColums.campaign,
+            field: "companyId",
+            headerName: "Sociedad",
             flex: 1,
+            renderCell: (params: GridRenderCellParams) => (
+                params.row?.company?.socialReason || "-"
+            ),
         },
         {
-            field: "cultive",
-            headerName: titleColums.cultive,
+            field: "campaignId",
+            headerName: "Campaña",
             flex: 1,
-            // renderCell: (params: GridRenderCellParams) => (
-            //     params.row?.exitField?.cultive || "-"
-            // ),
+            renderCell: (params: GridRenderCellParams) => (
+                params.row?.campaign?.name || "-"
+            ),
+        },
+        {
+            field: "cropId",
+            headerName: "Cultivo",
+            flex: 1,
+            renderCell: (params: GridRenderCellParams) => (
+                params.row?.crop?.descriptionES || "-"
+            ),
         },
         {
             field: "kg",
@@ -64,8 +71,8 @@ export const ListSalesCerealsPage: React.FC = () => {
             flex: 1
         },
         {
-            field: "Moneda",
-            headerName: titleColums.currency,
+            field: "currency",
+            headerName: "Moneda",
             flex: 1
         },
         {
@@ -133,9 +140,9 @@ export const ListSalesCerealsPage: React.FC = () => {
             title={t("title_sale_cereal")}
             isLoading={false}
             icon={<HandshakeIcon fontSize="large" sx={{ mr: 1 }} />}
-            data={[]}
+            data={contractsSaleCereals}
             columns={columns}
-            getData={() => getContractsSaleCereals()}
+            getData={getContractsSaleCereals}
             deleteData={() => console.log("delete")}
             setActiveItem={(item) => console.log("setActiveItem", item)}
             newItemPath="/init/overview/sales-cereals/new"

@@ -62,7 +62,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
     handleFormValueChange,
     handleCheckboxChange,
     setFormValues,
-    reset
+    reset,
   } = useFormValues(initialState);
   const { contract } = useParams();
 
@@ -103,6 +103,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
+              handleFormValueChange={handleFormValueChange}
             />
           );
         case 1:

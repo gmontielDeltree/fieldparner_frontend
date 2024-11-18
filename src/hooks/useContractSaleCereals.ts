@@ -4,6 +4,9 @@ import { onLogout } from '../redux/auth';
 import { dbContext } from '../services';
 import { useAppDispatch, useAppSelector } from './useRedux';
 import { useState } from 'react';
+import { Campaign, Crops, EnumStatusContract, OriginDestinations } from '../types';
+import { Company } from '../interfaces/company';
+import { Business } from '../interfaces/socialEntity';
 
 
 export const useContractSaleCereals = () => {
@@ -26,20 +29,20 @@ export const useContractSaleCereals = () => {
             };
             const selectorWithoutLicence = { selector: { accountId: user.accountId } };
             const responseAll = await Promise.all([
-                dbContext.contractSaleCereals.find({ selector: selectorWithLicence }),
-                dbContext.campaigns.find({ selector: selectorWithoutLicence }),
+                dbContext.contractSaleCereals.find({ selector: { accountId: user.accountId, licenceId: user.licenceId } }),
+                dbContext.campaigns.find(selectorWithoutLicence),
                 dbContext.crops.allDocs({ include_docs: true }),
-                dbContext.companies.find({ selector: selectorWithLicence }),
-                dbContext.socialEntities.find({ selector: selectorWithoutLicence }),
+                dbContext.companies.find(selectorWithLicence),
+                dbContext.socialEntities.find(selectorWithoutLicence),
                 dbContext.originsDestinations.allDocs({ include_docs: true }),
             ])
             if (responseAll) {
-                const contracts = responseAll[0].docs as ContractSaleCereal[];
-                const campaigns = responseAll[1].docs;
-                const crops = responseAll[2].rows.map(row => row.doc);
-                const companies = responseAll[3].docs;
-                const socialEntities = responseAll[4].docs;
-                const originsDestinations = responseAll[5].rows.map(row => row.doc);
+                const contracts = responseAll[0].docs.map(doc => doc as ContractSaleCereal);
+                const campaigns = responseAll[1].docs.map(doc => doc as Campaign);
+                const crops = responseAll[2].rows.map(row => row.doc as Crops);
+                const companies = responseAll[3].docs.map(doc => doc as Company);
+                const socialEntities = responseAll[4].docs.map(doc => doc as Business);
+                const originsDestinations = responseAll[5].rows.map(row => row.doc as OriginDestinations);
 
                 const contractsSaleCerealItem = contracts.map((contract) => {
                     const campaign = campaigns.find((campaign: any) => campaign._id === contract.campaignId);
@@ -144,7 +147,8 @@ export const useContractSaleCereals = () => {
                     contractSaleNumber: contractNumber,
                     accountId: user.accountId,
                     licenceId: user.licenceId,
-                    currency: user.currency
+                    currency: user.currency,
+                    status: EnumStatusContract.Activo
                 }),
                 dbContext.contractDeliveryDates.bulkDocs(newDeliveryDatesData)
             ]);
