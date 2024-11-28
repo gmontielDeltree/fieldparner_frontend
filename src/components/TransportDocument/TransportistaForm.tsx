@@ -235,7 +235,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           type="number"
           label="Tarifa Ref"
           name="tarifaRef"
-          value={formValues.tarifaRef}
+          value={formValues.tarifaRef.value}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
@@ -249,7 +249,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           type="number"
           label="Tarifa TT"
           name="tarifaTT"
-          value={formValues.tarifaTT}
+          value={formValues.tarifaTT.value}
           onChange={handleInputChange}
           inputProps={{
             inputMode: 'numeric', // Modo de entrada solo para números
@@ -269,7 +269,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           type="date"
           label="Fecha Partida"
           name="fechaPartida"
-          value={formValues.fechaPartida}
+          value={formValues.fechaPartida.value}
           onChange={handleInputChange}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,

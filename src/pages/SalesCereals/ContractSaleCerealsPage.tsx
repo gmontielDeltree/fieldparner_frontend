@@ -73,7 +73,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
   const { companies, getCompanies } = useCompany();
   const { dataCrops, getCrops } = useCrops();
   const { originsDestinations, getOriginDestinations } = useOriginDestinations();
-  const { getLastContractNumber, getContractSaleCerealByContractNumber, addContractSaleCereal, isLoading: loading } = useContractSaleCereals();
+  const { getContractNumber, getContractSaleCerealByContractNumber, addContractSaleCereal, isLoading: loading } = useContractSaleCereals();
 
   const addDeliveryDate = (date: string) => {
     setListDeliveryDates([...listDeliveryDates, date]);
@@ -225,7 +225,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
       }
       else {
         //NEW CONTRACT
-        const contractNumber = await getLastContractNumber();
+        const contractNumber = await getContractNumber();
         setFormValues({
           ...formValues,
           contractSaleNumber: { value: contractNumber, isError: false, message: "", required: true }

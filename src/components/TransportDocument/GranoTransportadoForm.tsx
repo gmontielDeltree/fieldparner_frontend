@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { TransportDocumentFormProps } from './type';
-import { Box, FormControl, Grid, InputAdornment, ListItemText, styled, TextField, Typography } from '@mui/material';
+import { Box, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, styled, TextField, Typography } from '@mui/material';
 import { Loading } from '../Loading';
 import { getLocalityAndStateByZipCode } from '../../utils/getDataZipCode';
 import { CountryCode, ItemZipCode } from '../../types';
@@ -14,7 +14,9 @@ const TextFieldGray = styled(TextField)(() => ({
 export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
   formValues,
   selectedFieldOutput,
+  contractSales,
   handleInputChange,
+  handleSelectChange
 }) => {
 
   const { cpSalidaCampo } = formValues;
@@ -72,18 +74,27 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
           />
         </Grid>
         <Grid item xs={12} sm={2}>
-          <TextField
-            variant="outlined"
-            type="text"
-            label="Contrato"
-            name="contrato"
-            value={formValues.contrato.value}
-            onChange={handleInputChange}
-            InputProps={{
-              startAdornment: <InputAdornment position="start" />,
-            }}
+          <FormControl
+            key="contract-select"
             fullWidth
-          />
+            error={formValues.contractSaleNumber.isError}
+          >
+            <InputLabel id="contract">Contrato Venta Cereal</InputLabel>
+            <Select
+              labelId="contract"
+              name="contractSaleNumber"
+              value={formValues.contractSaleNumber.value}
+              label="Contrato Venta Cereal"
+              onChange={handleSelectChange}
+            >
+              {contractSales?.map((x) => (
+                <MenuItem key={x._id} value={x.contractSaleNumber}>
+                  {x.contractSaleNumber}
+                </MenuItem>
+              ))}
+            </Select>
+            <FormHelperText>{formValues.contractSaleNumber.message}</FormHelperText>
+          </FormControl>
         </Grid>
         <Grid item xs={12} sm={3}>
           <TextFieldGray

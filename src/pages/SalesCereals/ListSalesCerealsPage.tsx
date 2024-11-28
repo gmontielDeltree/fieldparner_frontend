@@ -27,7 +27,7 @@ export const ListSalesCerealsPage: React.FC = () => {
     // const dispatch = useAppDispatch();
     const { t } = useTranslation();
 
-    const { getContractsSaleCereals, contractsSaleCereals } = useContractSaleCereals();
+    const { getContractsSaleCereals, contractsSaleCerealsFull } = useContractSaleCereals();
 
 
     const columns = [
@@ -54,7 +54,7 @@ export const ListSalesCerealsPage: React.FC = () => {
             headerName: "Campaña",
             flex: 1,
             renderCell: (params: GridRenderCellParams) => (
-                params.row?.campaign?.name || "-"
+                params.row?.campaign?.campaignId || "-"
             ),
         },
         {
@@ -140,7 +140,7 @@ export const ListSalesCerealsPage: React.FC = () => {
             title={t("title_sale_cereal")}
             isLoading={false}
             icon={<HandshakeIcon fontSize="large" sx={{ mr: 1 }} />}
-            data={contractsSaleCereals}
+            data={contractsSaleCerealsFull}
             columns={columns}
             getData={getContractsSaleCereals}
             deleteData={() => console.log("delete")}

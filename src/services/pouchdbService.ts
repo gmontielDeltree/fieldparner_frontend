@@ -45,7 +45,7 @@ const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_Q
 
 export const opts: PouchDB.Replication.SyncOptions = {
   live: true,
-  retry: false,//TODO: Cambiar a true
+  retry: true,
   //  filter: 'app/by_account',
   //  query_params: { "agent": agent }
 };

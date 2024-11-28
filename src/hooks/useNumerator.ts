@@ -23,9 +23,9 @@ export const useNumerator = () => {
     const putLastNumerator = async (doc: Numerator, create = false) => {
         try {
             if (create)
-                await dbContext.numerators.post(doc);
+               return await dbContext.numerators.post(doc);
             else
-                await dbContext.numerators.put(doc);
+                return await dbContext.numerators.put(doc);
         } catch (error) {
             console.log('error', error);
         }
