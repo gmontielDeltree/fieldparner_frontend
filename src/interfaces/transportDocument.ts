@@ -4,7 +4,6 @@ import { Company } from "./company";
 export interface TransportDocument extends Document {
     accountId: string;
     licenceId: string;
-    contractId: string;
     nroCartaPorte: string;
     fechaEmision: string;
     fechaVencimiento: string;
@@ -25,7 +24,7 @@ export interface TransportDocument extends Document {
     cuitComercialVentaSecundaria: string;
     cuitRepresentanteEntrega: string;
     cuitRepresentanteRecibidor: string;
-    contrato: string;
+    contractSaleNumber: string;
     cpGenerador: string;
     kgEstimado: number;
     kgBruto: number;

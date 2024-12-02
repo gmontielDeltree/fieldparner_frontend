@@ -3,7 +3,7 @@
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Loading } from '../../components';
-import { FormValueState, useAppDispatch, useAppSelector, useBusiness, useCategory, useCompany, useCrops, useExitField, useField, useFormValues, useTransportDocument, useVehicle } from '../../hooks';
+import { FormValueState, useAppDispatch, useAppSelector, useBusiness, useCategory, useCompany, useContractSaleCereals, useCrops, useExitField, useField, useFormValues, useTransportDocument, useVehicle } from '../../hooks';
 import { TransportDocument } from '../../interfaces/transportDocument';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -23,13 +23,12 @@ type LabelProps = {
 const initialForm: FormValueState<TransportDocument> = {
   accountId: { value: "", required: true, isError: false, message: "" },
   licenceId: { value: "", required: true, isError: false, message: "" },
-  contractId: { value: "", required: true, isError: false, message: "" },
   nroCartaPorte: { value: "", required: true, isError: false, message: "" },
   fechaEmision: { value: "", required: true, isError: false, message: "" },
   fechaVencimiento: { value: "", required: true, isError: false, message: "" },
   nroCTG: { value: "", required: false, isError: false, message: "" },
   arancel: { value: "", required: false, isError: false, message: "" },
-  contrato: { value: "", required: false, isError: false, message: "" },
+  contractSaleNumber: { value: "", required: true, isError: false, message: "" },
   cuitGenerador: { value: "", required: true, isError: false, message: "" },
   cuitCompania: { value: "", required: true, isError: false, message: "" },
   categoriaEntidadId: { value: "", required: true, isError: false, message: "" },
@@ -97,7 +96,8 @@ export const TransportDocumentPage: React.FC = () => {
   const { vehicles, getVehicles } = useVehicle(); //Vehiculo
   const { categories, getCategories } = useCategory(); //Categoria Entidades
   const { fields, getFields } = useField(); // Campo
-  const { exitFields, getExitFields } = useExitField();
+  const { exitFields, getExitFields } = useExitField(); //Salidas de campo
+  const { contractsSaleCereals, getContractsSaleCereals } = useContractSaleCereals();
   const { t } = useTranslation();
   const { addTransportDocument, getTransporDocumentById, updateTransportDocument } = useTransportDocument();
   const [selectedFieldOutput, setSelectedFieldOutput] = useState<ExitFieldItem | null>(null);
@@ -204,10 +204,7 @@ export const TransportDocumentPage: React.FC = () => {
           return (
             <GranoTransportadoForm
               formValues={formValues}
-              companies={companies}
-              categories={categories}
-              exitFields={exitFields}
-              providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
+              contractSales={contractsSaleCereals}
               selectedFieldOutput={selectedFieldOutput}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange} />
@@ -270,7 +267,8 @@ export const TransportDocumentPage: React.FC = () => {
       categories,
       fields,
       exitFields,
-      selectedFieldOutput
+      selectedFieldOutput,
+      contractsSaleCereals
     ]
   );
 
@@ -313,6 +311,7 @@ export const TransportDocumentPage: React.FC = () => {
     getCategories();
     getFields();
     getExitFields();
+    getContractsSaleCereals(false)
   }, []);
 
   useEffect(() => {

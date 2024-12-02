@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Business } from "../interfaces/socialEntity";
+import { ContractSaleCereal } from '../interfaces/contract-sale-cereals';
 
 export interface NavBarProps {
   drawerWidth: number;
@@ -788,7 +789,8 @@ export enum WithdrawalOrderType {
 export enum NumeratorType {
   Client = "Cliente",
   LaborOrder = "Orden de Trabajo",
-  PurchaseOrder = "Orden de Compra"
+  PurchaseOrder = "Orden de Compra",
+  ContractSaleCereal = "Contrato de Venta de Cereal",
 }
 
 export enum UserRols {

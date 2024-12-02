@@ -4,19 +4,22 @@ import { onLogout } from '../redux/auth';
 import { dbContext } from '../services';
 import { useAppDispatch, useAppSelector } from './useRedux';
 import { useState } from 'react';
-import { Campaign, Crops, EnumStatusContract, OriginDestinations } from '../types';
+import { Campaign, Crops, EnumStatusContract, Numerator, NumeratorType, OriginDestinations } from '../types';
 import { Company } from '../interfaces/company';
 import { Business } from '../interfaces/socialEntity';
+import { useNumerator } from './useNumerator';
 
 
 export const useContractSaleCereals = () => {
 
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.auth);
-    const [contractsSaleCereals, setContractsSaleCereals] = useState<ContractSaleCerealItem[]>([]);
+    const { getLastNumerator, putLastNumerator } = useNumerator();
+    const [contractsSaleCerealsFull, setContractsSaleCerealsFull] = useState<ContractSaleCerealItem[]>([]);
+    const [contractsSaleCereals, setContractsSaleCereals] = useState<ContractSaleCereal[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const getContractsSaleCereals = async () => {
+    const getContractsSaleCereals = async (withRelations = true) => {
         setIsLoading(true);
         try {
             if (!user) {
@@ -28,14 +31,25 @@ export const useContractSaleCereals = () => {
                 selector: { accountId: user.accountId, licenceId: user.licenceId }
             };
             const selectorWithoutLicence = { selector: { accountId: user.accountId } };
+
+            if (!withRelations) {
+                const response = await Promise.all([dbContext.contractSaleCereals.find(selectorWithLicence)]);
+                if (response) {
+                    const contracts = response[0].docs.map(doc => doc as ContractSaleCereal);
+                    setContractsSaleCereals(contracts);
+                }
+                else { setContractsSaleCereals([]); }
+                return;
+            }
             const responseAll = await Promise.all([
-                dbContext.contractSaleCereals.find({ selector: { accountId: user.accountId, licenceId: user.licenceId } }),
+                dbContext.contractSaleCereals.find(selectorWithLicence),
                 dbContext.campaigns.find(selectorWithoutLicence),
                 dbContext.crops.allDocs({ include_docs: true }),
                 dbContext.companies.find(selectorWithLicence),
                 dbContext.socialEntities.find(selectorWithoutLicence),
                 dbContext.originsDestinations.allDocs({ include_docs: true }),
-            ])
+            ]);
+
             if (responseAll) {
                 const contracts = responseAll[0].docs.map(doc => doc as ContractSaleCereal);
                 const campaigns = responseAll[1].docs.map(doc => doc as Campaign);
@@ -45,7 +59,7 @@ export const useContractSaleCereals = () => {
                 const originsDestinations = responseAll[5].rows.map(row => row.doc as OriginDestinations);
 
                 const contractsSaleCerealItem = contracts.map((contract) => {
-                    const campaign = campaigns.find((campaign: any) => campaign._id === contract.campaignId);
+                    const campaign = campaigns.find((campaign: Campaign) => campaign._id === contract.campaignId);
                     const crop = crops.find((crop: any) => crop._id === contract.cropId);
                     const company = companies.find((company: any) => company._id === contract.companyId);
                     const producer = socialEntities.find((socialEntity: any) => socialEntity._id === contract.producerId);
@@ -68,11 +82,10 @@ export const useContractSaleCereals = () => {
                         comssionAgent,
                     } as ContractSaleCerealItem;
                 });
-                console.log('contractsSaleCerealItem', contractsSaleCerealItem)
-                setContractsSaleCereals(contractsSaleCerealItem);
+                setContractsSaleCerealsFull(contractsSaleCerealItem);
             }
             else
-                setContractsSaleCereals([]);
+                setContractsSaleCerealsFull([]);
         } catch (error) {
             setIsLoading(false);
             console.error("Error al cargar documentos:", error);
@@ -101,27 +114,49 @@ export const useContractSaleCereals = () => {
         }
     };
     //TODO: revisar despues de crear la db remota
-    const getLastContractNumber = async () => {
+    const getContractNumber = async () => {
         try {
             if (!user) {
                 dispatch(onLogout("Session expired."));
                 setIsLoading(false);
                 return null;
             };
-
-            const { docs } = await dbContext.contractSaleCereals.find({
-                selector: {
-                    "$and": [{ "accountId": user.accountId }, { "licenceId": user.licenceId }],
-                },
-                // fields: ['contractSaleNumber'],
-                // sort: ['contractSaleNumber']
-            });
-            if (docs.length === 0) return '1';
-            else return (parseInt(docs[0].contractSaleNumber) + 1).toString();
-
+            const responseContractNumber = await getLastNumerator(user.accountId, NumeratorType.ContractSaleCereal);
+            if (responseContractNumber) return responseContractNumber.lastNumerator + 1;
+            console.log("No se encontró el último número de contrato.");
+            return 1;
         } catch (error) {
             console.log("Error al obtener el último número de contrato:", error);
-            return "-1";
+            return 0;
+        }
+    }
+
+    const putContracSaleNumber = async () => {
+        try {
+            if (!user) {
+                dispatch(onLogout("Session expired."));
+                setIsLoading(false);
+                return null;
+            };
+            let initializeContractCerealNumerator: Numerator = {
+                accountId: user.accountId,
+                numeratorType: NumeratorType.ContractSaleCereal,
+                lastNumerator: 1
+            };
+
+            const contractNumberFound = await getLastNumerator(user.accountId, NumeratorType.ContractSaleCereal);
+
+            if (!contractNumberFound) {
+                await putLastNumerator(initializeContractCerealNumerator, true);
+            } else {
+                let putContractNumber = { ...contractNumberFound };
+                putContractNumber.lastNumerator = (contractNumberFound.lastNumerator + 1);
+                await putLastNumerator(putContractNumber, false);
+            }
+            return true;
+        } catch (error) {
+            console.log("Error al crear/actualizar el contrato venta cereal:", error);
+            return false;
         }
     }
 
@@ -133,6 +168,7 @@ export const useContractSaleCereals = () => {
                 setIsLoading(false);
                 return;
             };
+            await putContracSaleNumber();
             const contractNumber = newContract.contractSaleNumber;
             const newDeliveryDatesData = newDeliveryDates.map((date) => {
                 return {
@@ -168,10 +204,11 @@ export const useContractSaleCereals = () => {
 
 
     return {
+        contractsSaleCerealsFull,
         contractsSaleCereals,
         isLoading,
         getContractsSaleCereals,
-        getLastContractNumber,
+        getContractNumber,
         getContractSaleCerealByContractNumber,
         addContractSaleCereal,
         updateContractSaleCereal,
