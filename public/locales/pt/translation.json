@@ -330,5 +330,10 @@
   "_silobag": "Silobolsa",
    "_units": "Unidades",
   "productive_units": "Unidades Produtivas",
-   "added_fields": "Campos Adicionados"
+   "added_fields": "Campos Adicionados",
+   "costs_expenses": "Custos Contas",
+   "cost_code_field_error": "O campo \"Código de Custo\" não pode ficar vazio.",
+   "cost_update_code_error": "Não é possível atualizar sem um ID válido.",
+"cost_code": "Código de Custo",
+"cost_center": "Centro de Custo"
 }
