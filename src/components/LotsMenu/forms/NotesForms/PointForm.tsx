@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from 'react'
 import {
   FormControl,
   Select,
@@ -8,12 +8,12 @@ import {
   InputLabel,
   TextField,
   Button,
-  IconButton
-} from "@mui/material";
-import { MyLocation as MyLocationIcon } from "@mui/icons-material";
-import { PhotoCamera, Mic, Stop, Delete } from "@mui/icons-material";
-import PouchDB from "pouchdb";
-import { v4 as uuidv4 } from "uuid";
+  IconButton,
+} from '@mui/material'
+import { MyLocation as MyLocationIcon } from '@mui/icons-material'
+import { PhotoCamera, Mic, Stop, Delete } from '@mui/icons-material'
+import PouchDB from 'pouchdb'
+import { v4 as uuidv4 } from 'uuid'
 import {
   Title,
   ImageUploadButton,
@@ -29,266 +29,329 @@ import {
   RecordingStatusLabel,
   AudioPlayer,
   PlaybackTitle,
-  RecordingArea
-} from "./PointFormStyles";
-import PlaceMarker from "../../../NewGeometry/PlaceMarker";
-import { set } from "date-fns";
-import { dbContext } from "../../../../services";
-import { useTranslation } from "react-i18next";
+  RecordingArea,
+} from './PointFormStyles'
+import PlaceMarker from '../../../NewGeometry/PlaceMarker'
+import { set } from 'date-fns'
+import { dbContext } from '../../../../services'
+import { useTranslation } from 'react-i18next'
 
-const customButtonStyle = {
-  marginTop: "10px",
-  backgroundColor: "#4CAF50", // A green shade for the button
-  color: "#ffffff",
-  "&:hover": {
-    backgroundColor: "#45a049" // A slightly darker green on hover
+const markerControlsStyle = {
+  display: 'flex',
+  flexDirection: 'column' as const,
+  gap: '12px',
+  background: 'rgba(255, 255, 255, 0.95)',
+  padding: '20px',
+  borderRadius: '16px',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+  backdropFilter: 'blur(8px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  animation: 'fadeIn 0.3s ease-out',
+}
+
+const saveMarkerButtonStyle = {
+  backgroundColor: '#3b82f6',
+  color: '#ffffff',
+  padding: '12px 24px',
+  borderRadius: '12px',
+  textTransform: 'none' as const,
+  fontSize: '16px',
+  fontWeight: 600,
+  boxShadow:
+    '0 4px 6px -1px rgba(59, 130, 246, 0.2), 0 2px 4px -1px rgba(59, 130, 246, 0.1)',
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    backgroundColor: '#2563eb',
+    transform: 'translateY(-2px)',
+    boxShadow:
+      '0 6px 8px -1px rgba(59, 130, 246, 0.3), 0 4px 6px -1px rgba(59, 130, 246, 0.2)',
   },
-  borderRadius: "20px",
-  boxShadow: "0px 2px 2px rgba(0,0,0,0.2)",
-  textTransform: "none", // Prevent uppercase transform
-  fontSize: "16px",
-  padding: "10px 20px",
-  transition: "background-color 0.3s ease" // Smooth transition for hover effect
-};
+}
 
+const locationButtonStyle = {
+  backgroundColor: '#10b981',
+  color: '#ffffff',
+  padding: '12px 24px',
+  borderRadius: '12px',
+  textTransform: 'none' as const,
+  fontSize: '16px',
+  fontWeight: 600,
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  boxShadow:
+    '0 4px 6px -1px rgba(16, 185, 129, 0.2), 0 2px 4px -1px rgba(16, 185, 129, 0.1)',
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    backgroundColor: '#059669',
+    transform: 'translateY(-2px)',
+    boxShadow:
+      '0 6px 8px -1px rgba(16, 185, 129, 0.3), 0 4px 6px -1px rgba(16, 185, 129, 0.2)',
+  },
+}
+
+const markerMessageTitleStyle = {
+  color: '#1f2937',
+  fontSize: '1.25rem',
+  fontWeight: 600,
+  marginBottom: '16px',
+  textAlign: 'center' as const,
+  textShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+}
 function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
-  console.log("PointForm props: ", formData);
-  const { t } = useTranslation();
-  const db = dbContext.fields; //new PouchDB("campos_randyv7");
+  console.log('PointForm props: ', formData)
+  const { t } = useTranslation()
+  const db = dbContext.fields //new PouchDB("campos_randyv7");
   const [point, setPoint] = useState({
     properties: {
-      nombre: "",
-      notas: "",
+      nombre: '',
+      notas: '',
       detalles: [],
       fotos: [],
       audios: [],
-      posicion: []
-    }
-  });
-  const [selectedField, setSelectedField] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState(null);
-  const [imageUrls, setImageUrls] = useState([]);
-  const [audioUrls, setAudioUrls] = useState([]);
-  const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
-  const [moveToCurrentLocation, setMoveToCurrentLocation] = useState(false);
+      posicion: [],
+    },
+  })
+  const [selectedField, setSelectedField] = useState('')
+  const [isRecording, setIsRecording] = useState(false)
+  const [mediaRecorder, setMediaRecorder] = useState(null)
+  const [imageUrls, setImageUrls] = useState([])
+  const [audioUrls, setAudioUrls] = useState([])
+  const [coordinates, setCoordinates] = useState<[number, number] | null>(null)
+  const [moveToCurrentLocation, setMoveToCurrentLocation] = useState(false)
   const [externalCoordinates, setExternalCoordinates] = useState<
     [number, number] | null
-  >(null);
+  >(null)
 
-  const fieldOptions = ["Muestra #", "Plaga", "Enfermedad", "Anomalia"];
+  const fieldOptions = ['Muestra #', 'Plaga', 'Enfermedad', 'Anomalia']
 
   const onFieldChange = (fieldName, value) => {
     setFormData({
       ...formData,
-      [fieldName]: value
-    });
-  };
+      [fieldName]: value,
+    })
+  }
 
   const handlePointChange = (field, value) => {
-    setPoint({ ...point, properties: { ...point.properties, [field]: value } });
-  };
+    setPoint({ ...point, properties: { ...point.properties, [field]: value } })
+  }
 
   const handleAddField = () => {
     if (selectedField) {
       const newDetalles = [
         ...point.properties.detalles,
-        { name: selectedField, value: "" }
-      ];
+        { name: selectedField, value: '' },
+      ]
       setPoint({
         ...point,
-        properties: { ...point.properties, detalles: newDetalles }
-      });
-      setSelectedField("");
+        properties: { ...point.properties, detalles: newDetalles },
+      })
+      setSelectedField('')
     }
-  };
+  }
 
   const moveMarkerToCurrentPosition = () => {
-    setMoveToCurrentLocation(true);
-  };
+    setMoveToCurrentLocation(true)
+  }
 
   const handleDetailChange = (index, value) => {
-    const newDetalles = [...point.properties.detalles];
-    newDetalles[index].value = value;
+    const newDetalles = [...point.properties.detalles]
+    newDetalles[index].value = value
     setPoint({
       ...point,
-      properties: { ...point.properties, detalles: newDetalles }
-    });
-  };
+      properties: { ...point.properties, detalles: newDetalles },
+    })
+  }
 
   const handleSavePoint = () => {
-    const newFeatures = [...(formData.features || []), point];
-    setFormData({ ...formData, features: newFeatures });
-    setIsPointMode(false);
-  };
+    const newFeatures = [...(formData.features || []), point]
+    setFormData({ ...formData, features: newFeatures })
+    setIsPointMode(false)
+  }
 
   const handleImageUpload = async (event) => {
-    const file = event.target.files[0];
+    const file = event.target.files[0]
     if (file) {
-      const imageId = uuidv4();
-      await db.putAttachment(imageId, "image", file, file.type);
+      const imageId = uuidv4()
+      await db.putAttachment(imageId, 'image', file, file.type)
       setPoint({
         ...point,
         properties: {
           ...point.properties,
-          fotos: [...point.properties.fotos, imageId]
-        }
-      });
+          fotos: [...point.properties.fotos, imageId],
+        },
+      })
     }
-  };
+  }
 
   useEffect(() => {
     const fetchImages = async () => {
       const urls = await Promise.all(
         point.properties.fotos.map(async (imageId) => {
-          return await fetchImageUrl(imageId);
-        })
-      );
-      setImageUrls(urls);
-    };
+          return await fetchImageUrl(imageId)
+        }),
+      )
+      setImageUrls(urls)
+    }
 
     if (point.properties.fotos.length > 0) {
-      fetchImages();
+      fetchImages()
     }
-  }, [point.properties.fotos]);
+  }, [point.properties.fotos])
 
   const fetchImageUrl = async (imageId) => {
     try {
-      const blob = await db.getAttachment(imageId, "image");
-      return URL.createObjectURL(blob);
+      const blob = await db.getAttachment(imageId, 'image')
+      return URL.createObjectURL(blob)
     } catch (error) {
-      console.error("Error fetching image:", error);
-      return null;
+      console.error('Error fetching image:', error)
+      return null
     }
-  };
+  }
 
   const handleImageRemove = async (imageIndex) => {
     try {
-      const updatedFotos = [...point.properties.fotos];
-      const removedImageId = updatedFotos.splice(imageIndex, 1)[0];
-      await db.removeAttachment(point._id, removedImageId);
+      const updatedFotos = [...point.properties.fotos]
+      const removedImageId = updatedFotos.splice(imageIndex, 1)[0]
+      await db.removeAttachment(point._id, removedImageId)
       setPoint((prevPoint) => ({
         ...prevPoint,
         properties: {
           ...prevPoint.properties,
-          fotos: updatedFotos
-        }
-      }));
+          fotos: updatedFotos,
+        },
+      }))
       const updatedImageUrls = await Promise.all(
-        updatedFotos.map(async (imageId) => await fetchImageUrl(imageId))
-      );
-      setImageUrls(updatedImageUrls);
+        updatedFotos.map(async (imageId) => await fetchImageUrl(imageId)),
+      )
+      setImageUrls(updatedImageUrls)
     } catch (error) {
-      console.error("Error removing image:", error);
-      console.log("ID del punto:", point._id);
-      console.log("ID de la imagen a eliminar:", removedImageId);
+      console.error('Error removing image:', error)
+      console.log('ID del punto:', point._id)
+      console.log('ID de la imagen a eliminar:', removedImageId)
     }
-  };
+  }
 
   const handleAudioRemove = async (audioUrl) => {
     try {
-      const updatedAudios = point.properties.audios.filter(url => url !== audioUrl);
-      await db.removeAttachment(point._id, audioUrl);
+      const updatedAudios = point.properties.audios.filter(
+        (url) => url !== audioUrl,
+      )
+      await db.removeAttachment(point._id, audioUrl)
       setPoint((prevPoint) => ({
         ...prevPoint,
         properties: {
           ...prevPoint.properties,
-          audios: updatedAudios
-        }
-      }));
+          audios: updatedAudios,
+        },
+      }))
       const updatedAudioUrls = await Promise.all(
-        updatedAudios.map(async (audioId) => await fetchAudioUrl(audioId))
-      );
-      setAudioUrls(updatedAudioUrls); 
+        updatedAudios.map(async (audioId) => await fetchAudioUrl(audioId)),
+      )
+      setAudioUrls(updatedAudioUrls)
     } catch (error) {
-      console.error("Error removing audio:", error);
+      console.error('Error removing audio:', error)
     }
-  };
-  
+  }
+
   const startRecording = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
 
       recorder.ondataavailable = async (e) => {
-        const audioId = uuidv4();
-        await db.putAttachment(audioId, "audio", e.data, e.data.type);
+        const audioId = uuidv4()
+        await db.putAttachment(audioId, 'audio', e.data, e.data.type)
         setPoint({
           ...point,
           properties: {
             ...point.properties,
-            audios: [...point.properties.audios, audioId]
-          }
-        });
+            audios: [...point.properties.audios, audioId],
+          },
+        })
 
-        const audioBlob = new Blob([e.data], { type: "audio/mp3" });
+        const audioBlob = new Blob([e.data], { type: 'audio/mp3' })
         setAudioUrls((prevAudioUrls) => [
           ...prevAudioUrls,
-          URL.createObjectURL(audioBlob)
-        ]);
-      };
+          URL.createObjectURL(audioBlob),
+        ])
+      }
 
-      recorder.start();
-      setMediaRecorder(recorder);
-      setIsRecording(true);
+      recorder.start()
+      setMediaRecorder(recorder)
+      setIsRecording(true)
     }
-  };
+  }
 
   const stopRecording = () => {
     if (mediaRecorder) {
-      mediaRecorder.stop();
+      mediaRecorder.stop()
 
-      setIsRecording(false);
+      setIsRecording(false)
     }
-  };
-  const [markerSaved, setMarkerSaved] = useState(false);
+  }
+  const [markerSaved, setMarkerSaved] = useState(false)
 
   const handleSaveMarker = () => {
     setPoint({
       ...point,
       properties: {
         ...point.properties,
-        posicion: coordinates
-      }
-    });
-    setMarkerSaved(true);
-  };
+        posicion: coordinates,
+      },
+    })
+    setMarkerSaved(true)
+  }
 
   const formStyle = {
     opacity: markerSaved ? 1 : 0.5,
-    filter: markerSaved ? "none" : "blur(3px)"
-  };
+    filter: markerSaved ? 'none' : 'blur(3px)',
+  }
 
   const markerMessageStyle = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    textAlign: "center",
-    zIndex: 2
-  };
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    textAlign: 'center',
+    zIndex: 2,
+  }
 
   return (
     <>
       <Title>Nuevo Punto</Title>
       {!markerSaved && (
         <div style={markerMessageStyle}>
-          <h4>Coloca el marcador</h4>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSaveMarker}
-          >
-            Guardar
-          </Button>
-          <Button
-            variant="contained"
-            onClick={moveMarkerToCurrentPosition}
-            sx={customButtonStyle}
-            startIcon={<MyLocationIcon />}
-          >
-            {t("Mover marcador a mi ubicacion")}
-          </Button>
+          <div style={markerControlsStyle}>
+            <h4 style={markerMessageTitleStyle}>Coloca el marcador</h4>
+            <Button
+              variant="contained"
+              sx={saveMarkerButtonStyle}
+              onClick={handleSaveMarker}
+            >
+              Guardar marcador
+            </Button>
+            <Button
+              variant="contained"
+              onClick={moveMarkerToCurrentPosition}
+              sx={locationButtonStyle}
+              startIcon={
+                <MyLocationIcon
+                  sx={{
+                    fontSize: '20px',
+                    animation: 'pulse 2s infinite',
+                    '@keyframes pulse': {
+                      '0%': { transform: 'scale(1)' },
+                      '50%': { transform: 'scale(1.1)' },
+                      '100%': { transform: 'scale(1)' },
+                    },
+                  }}
+                />
+              }
+            >
+              {t('Usar mi ubicación')}
+            </Button>
+          </div>
         </div>
       )}
 
@@ -308,7 +371,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                 label="Nombre del Punto"
                 fullWidth
                 value={point.properties.nombre}
-                onChange={(e) => handlePointChange("nombre", e.target.value)}
+                onChange={(e) => handlePointChange('nombre', e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -316,7 +379,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                 label="Nota"
                 fullWidth
                 value={point.properties.notas}
-                onChange={(e) => handlePointChange("notas", e.target.value)}
+                onChange={(e) => handlePointChange('notas', e.target.value)}
               />
             </Grid>
             {point.properties.detalles.map((detalle, index) => (
@@ -360,7 +423,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
             <Grid item xs={12}>
               <input
                 accept="image/*"
-                style={{ display: "none" }}
+                style={{ display: 'none' }}
                 id="raised-button-file"
                 multiple
                 type="file"
@@ -391,10 +454,10 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                     size="small"
                     onClick={() => handleImageRemove(index)}
                     style={{
-                      position: "absolute",
-                      top: "8px",
-                      right: "8px",
-                      color: "red"
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      color: 'red',
                     }}
                   >
                     <Delete />
@@ -408,7 +471,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
               <AudioRecordCard>
                 <RecordingIndicator recording={isRecording} />
                 <RecordingStatusLabel>
-                  {isRecording ? "Grabando..." : "Listo para grabar"}
+                  {isRecording ? 'Grabando...' : 'Listo para grabar'}
                 </RecordingStatusLabel>
                 <RecordingButton
                   recording={isRecording}
@@ -426,7 +489,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                 <AudioPlayer controls src={audioUrl} />
                 <IconButton
                   onClick={() => handleAudioRemove(audioUrl)}
-                  style={{ color: "red", marginTop: "10px" }}
+                  style={{ color: 'red', marginTop: '10px' }}
                 >
                   <Delete />
                 </IconButton>
@@ -443,7 +506,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
         </FormControl>
       </div>
     </>
-  );
+  )
 }
 
-export default PointForm;
+export default PointForm

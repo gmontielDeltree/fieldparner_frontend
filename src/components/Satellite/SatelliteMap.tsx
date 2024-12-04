@@ -1,455 +1,458 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
-import "mapbox-gl/dist/mapbox-gl.css";
-import DeckGL from "@deck.gl/react";
-import { Map, MapRef } from "react-map-gl";
-import { IndiceSelectorReact } from "../../../owncomponents/ndvi-offcanvas/react-port/indice-selector";
-import styles from "./indice-selector.module.css";
-import { BitmapLayer } from "@deck.gl/layers";
-import axios from "axios";
-import bbox from "@turf/bbox";
-import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox/typed";
-import { useControl } from "react-map-gl";
-import { list_of_indexes } from "../../../owncomponents/ndvi-offcanvas/indices-types";
-import {
-  MenuItem,
-  Select,
-  Button,
-  TextField,
-  Grid,
-  Chip,
-  Paper,
-} from "@mui/material";
-import { PropertyValueMap } from "lit";
-import { DatePicker, MobileDatePicker } from "@mui/x-date-pickers";
-import { features } from "process";
-import { format, isEqual, parse, toDate } from "date-fns";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo,
+  Suspense,
+} from 'react'
+import 'mapbox-gl/dist/mapbox-gl.css'
+import DeckGL from '@deck.gl/react'
+import { Map, MapRef, useControl } from 'react-map-gl'
+import { BitmapLayer, GeoJsonLayer } from '@deck.gl/layers'
+import axios from 'axios'
+import bbox from '@turf/bbox'
+import { MapboxOverlay } from '@deck.gl/mapbox/typed'
+import { MaskExtension } from '@deck.gl/extensions'
+import { readPixelsToArray } from '@luma.gl/core'
+import Draggable from 'react-draggable'
+import { MenuItem, Select, Button, Grid, Chip, Paper } from '@mui/material'
+import { format, parse } from 'date-fns'
+import { Splash } from './Splash'
+import { list_of_indexes } from '../../../owncomponents/ndvi-offcanvas/indices-types'
+import { SatelliteCharts } from './SatelliteCharts'
+import { SatelliteResumen } from './SatelliteResumen'
+import { SatelliteDatePicker } from './SatelliteDatePicker'
+import ContrastIcon from '@mui/icons-material/Contrast'
+import ImageIcon from '@mui/icons-material/Image'
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload'
+import { geotiff_to_excel } from '../../../owncomponents/ndvi-offcanvas/geotiff-helpers'
+import { useNavigate } from 'react-router-dom'
+import { GroupWork } from '@mui/icons-material'
+import Close from '@mui/icons-material/Close'
+import ShowChartIcon from '@mui/icons-material/ShowChart'
 
-import { styled } from "@mui/material/styles";
-import { Splash } from "./Splash";
-import { GeoJsonLayer } from "@deck.gl/layers";
-import { MaskExtension } from "@deck.gl/extensions";
-import { readPixelsToArray } from "@luma.gl/core";
-import { IndiceChartsReact } from "../../../owncomponents/ndvi-offcanvas/react-port/indices-charts";
-import { SatelliteCharts } from "./SatelliteCharts";
-import { SatelliteResumen } from "./SatelliteResumen";
-import { SatelliteDatePicker } from "./SatelliteDatePicker";
-import ContrastIcon from "@mui/icons-material/Contrast";
-import ImageIcon from "@mui/icons-material/Image";
-import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import { geotiff_to_excel } from "../../../owncomponents/ndvi-offcanvas/geotiff-helpers";
-import { useNavigate } from "react-router-dom";
-import { GroupWork } from "@mui/icons-material";
-import Close from "@mui/icons-material/Close";
-
-// Set your mapbox access token here
-const MAPBOX_ACCESS_TOKEN =
-  "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
-
-function DeckGLOverlay(
-  props: MapboxOverlayProps & {
-    interleaved?: boolean;
+// LRU Cache implementation
+class LRUCache {
+  constructor(maxSize = 10) {
+    this.cache = {}
+    this.maxSize = maxSize
+    this.keys = []
   }
-) {
-  const overlay = useControl<MapboxOverlay>(() => new MapboxOverlay(props));
-  overlay.setProps(props);
-  return null;
+
+  get(key) {
+    if (!(key in this.cache)) return null
+
+    // Refresh key position
+    const keyIndex = this.keys.indexOf(key)
+    this.keys.splice(keyIndex, 1)
+    this.keys.push(key)
+
+    return this.cache[key]
+  }
+
+  set(key, value) {
+    if (key in this.cache) {
+      // Refresh existing entry
+      const keyIndex = this.keys.indexOf(key)
+      this.keys.splice(keyIndex, 1)
+    } else if (this.keys.length >= this.maxSize) {
+      // Remove oldest entry
+      const oldestKey = this.keys.shift()
+      delete this.cache[oldestKey]
+    }
+
+    this.cache[key] = value
+    this.keys.push(key)
+  }
+
+  clear() {
+    this.cache = {}
+    this.keys = []
+  }
 }
 
-export const SatelliteMap: React.FC = ({
+const indiceCache = new LRUCache(10)
+
+const MAPBOX_ACCESS_TOKEN =
+  'pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw'
+
+function DeckGLOverlay(props) {
+  const overlay = useControl(() => new MapboxOverlay(props))
+  overlay.setProps(props)
+  return null
+}
+
+export const SatelliteMap = ({
   viewState,
   onViewStateChange,
   onDualToggle,
   features,
   lote,
   dualMode,
-}: any) => {
-  const mapRef = useRef<MapRef>();
-
+}) => {
+  const mapRef = useRef(null)
   const navigate = useNavigate()
-  const [origin, setOrigin] = useState(false);
+  const [loading, setLoading] = useState(true)
+  const [hoverInfo, setHoverInfo] = useState(null)
+  const [indice, setIndice] = useState(list_of_indexes[0])
+  const [selectedDate, setSelectedDate] = useState(null)
+  const [indiceRequestResponse, setIndiceRequestResponse] = useState(null)
+  const [showCharts, setShowCharts] = useState(true)
 
-  const onMove = useCallback((evt) => {
-    onViewStateChange({ ...evt });
-  }, []);
+  const borderLayer = useMemo(
+    () =>
+      new GeoJsonLayer({
+        id: 'borde',
+        data: lote,
+        stroked: true,
+        filled: false,
+        lineWidthMinPixels: 3,
+        getLineColor: [254, 176, 25, 255],
+      }),
+    [lote],
+  )
 
-  const onMoveStart = useCallback((evt) => {
-    setOrigin(true);
-  }, []);
+  const layers = useMemo(() => {
+    if (!indiceRequestResponse || !lote) return [borderLayer]
 
-  const onMoveEnd = useCallback((evt) => {
-    setOrigin(false);
-  }, []);
+    const image_url =
+      import.meta.env.VITE_COGS_SERVER_URL + indiceRequestResponse.png_url
+    const greyscale_url = image_url.replace('.png', '_greyscale.png')
 
-  const [hoverInfo, setHoverInfo] = useState();
-  const [loading, setLoading] = useState(true);
+    const mask_layer = new GeoJsonLayer({
+      id: 'geofence',
+      data: lote,
+      operation: 'mask',
+    })
 
-  const [indice, setIndice] = useState(list_of_indexes[0]);
-
-  const [selectedDate, setSelectedDate] = useState();
-
-  const [indiceRequestResponse, setIndiceRequestResponse] = useState();
-
-  // parse(features.features[0].properties.date, "yyyy-MM-dd", new Date())
-
-  const borderLayer = new GeoJsonLayer({
-    id: "borde",
-    data: lote,
-    stroked: true,
-    filled: false,
-    lineWidthMinPixels: 3,
-    getLineColor: [254, 176, 25, 255],
-  });
-
-  const [layers, setLayers] = useState([borderLayer]);
-
-  const newBitmapLayer = (
-    url: string,
-    bbox: Number[],
-    pickable: boolean,
-    maskId: string,
-    id: string
-  ) => {
-    let options = {
-      id: id,
-      bounds: bbox,
-      image: url,
+    const coloredLayer = new BitmapLayer({
+      id: 'bitmap-layer',
+      bounds: bbox(lote),
+      image: image_url,
       extensions: [new MaskExtension()],
-      maskId: maskId,
-    };
+      maskId: 'geofence',
+    })
 
-    if (pickable) {
-      options.pickable = pickable;
-      // Update app state
-      options.onHover = (info) => {
+    const valueLayer = new BitmapLayer({
+      id: 'value-layer',
+      bounds: bbox(lote),
+      image: greyscale_url,
+      extensions: [new MaskExtension()],
+      maskId: 'geofence',
+      pickable: true,
+      onHover: (info) => {
         if (info.bitmap) {
           const pixelColor = readPixelsToArray(info.layer.props.image, {
             sourceX: info.bitmap.pixel[0],
             sourceY: info.bitmap.pixel[1],
             sourceWidth: 1,
             sourceHeight: 1,
-          });
-          console.log("Color at picked pixel:", pixelColor, info);
-          let indexValue = parseFloat(
-            ((pixelColor[0] * 2) / 255 - 1).toFixed(2)
-          );
+          })
+          const indexValue = parseFloat(
+            ((pixelColor[0] * 2) / 255 - 1).toFixed(2),
+          )
           setHoverInfo({
-            x: info.devicePixel[0],
-            y: info.devicePixel[1],
+            x: info.x,
+            y: info.y,
             color: indexValue,
-          });
+          })
         } else {
-          setHoverInfo({ ...info });
+          setHoverInfo(null)
         }
-      };
-    }
-    return new BitmapLayer(options);
-  };
+      },
+    })
+
+    return [mask_layer, valueLayer, coloredLayer, borderLayer]
+  }, [indiceRequestResponse, lote, borderLayer])
 
   useEffect(() => {
     if (selectedDate && indice && lote) {
-      let resourceId = lote.id;
-      let date = format(selectedDate, "yyyy-MM-dd");
-      let histogramOptions = { bins: indice.thresholds };
+      const fetchIndiceData = async () => {
+        const cacheKey = `${lote.id}-${indice.name}-${format(
+          selectedDate,
+          'yyyy-MM-dd',
+        )}`
 
-      // console.log(
-      //   "Fetching Observation Card",
-      //   lote,
-      //   resourceId,
-      //   date,
-      //   histogramOptions,
-      //   indice
-      // );
+        const cachedData = indiceCache.get(cacheKey)
+        if (cachedData) {
+          setIndiceRequestResponse(cachedData)
+          return
+        }
 
-      let body = { resourceId, date, histogramOptions, lote: lote, indice };
-      let baseURL = import.meta.env.VITE_COGS_SERVER_URL + "/indices/request";
-      axios.post(baseURL, body).then((response) => {
-        console.log(response.data);
-        let pngURL = response.data.png_url;
-        setIndiceRequestResponse(response.data);
-        updateImage(
-          import.meta.env.VITE_COGS_SERVER_URL + pngURL,
-          bbox(lote),
-          lote
-        );
-      });
-    }
-  }, [selectedDate, indice]);
+        const body = {
+          resourceId: lote.id,
+          date: format(selectedDate, 'yyyy-MM-dd'),
+          histogramOptions: { bins: indice.thresholds },
+          lote,
+          indice,
+        }
 
-  const updateImage = (image_url: string, bbox: Number[], maskGeojson) => {
-    let mask_layer = new GeoJsonLayer({
-      id: "geofence",
-      data: maskGeojson,
-      operation: "mask",
-    });
-
-    let coloredLayer = newBitmapLayer(
-      image_url,
-      bbox,
-      false,
-      "geofence",
-      "bitmap-layer"
-    );
-    let valueLayer = newBitmapLayer(
-      image_url.replace(".png", "_greyscale.png"),
-      bbox,
-      true,
-      "geofence",
-      "value-layer"
-    );
-
-    let nl: BitmapLayer = [mask_layer, valueLayer, coloredLayer, borderLayer];
-    setLayers(nl);
-  };
-
-  useEffect(
-    (e) => {
-      if (features) {
-        let algoPa = parse(
-          features.features[1].properties.datetime,
-          "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX",
-          new Date()
-        );
-        console.log("una prop cambio",e,features,features.features[1].properties.datetime, algoPa)
-
-        setSelectedDate(algoPa);
+        try {
+          const response = await axios.post(
+            `${import.meta.env.VITE_COGS_SERVER_URL}/indices/request`,
+            body,
+          )
+          setIndiceRequestResponse(response.data)
+          indiceCache.set(cacheKey, response.data)
+        } catch (error) {
+          console.error('Error fetching indice data:', error)
+        }
       }
-    },
-    [features]
-  );
+
+      fetchIndiceData()
+    }
+  }, [selectedDate, indice, lote])
 
   useEffect(() => {
-    if (lote) {
-      const [minLng, minLat, maxLng, maxLat] = bbox(lote);
-      // console.log(
-      //   "FIT TO BOUNDS ? ",
-      //   lote,
-      //   mapRef,
-      //   minLng,
-      //   minLat,
-      //   maxLng,
-      //   maxLat
-      // );
+    if (features) {
+      const dateStr = features.features[1].properties.datetime
+      const parsedDate = parse(
+        dateStr,
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX",
+        new Date(),
+      )
+      setSelectedDate(parsedDate)
+    }
+  }, [features])
 
-      mapRef?.current?.fitBounds(
+  useEffect(() => {
+    if (lote && mapRef.current) {
+      const [minLng, minLat, maxLng, maxLat] = bbox(lote)
+      mapRef.current.fitBounds(
         [
           [minLng, minLat],
           [maxLng, maxLat],
         ],
-        { padding: 40, duration: 1000 }
-      );
+        { padding: 40, duration: 1000 },
+      )
     }
-  }, [lote]);
+  }, [lote, dualMode])
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      indiceCache.clear()
+    }
+  }, [])
 
   const onLoad = useCallback(() => {
-    setLoading(false);
-  }, []);
+    setLoading(false)
+  }, [])
 
-  const handleIndiceChange = (e) => {
-    // console.log("HANDLE INDICE", e);
-    let indice = list_of_indexes.find((i) => i.name === e.target.value);
-    setIndice(indice);
-  };
-
-  const [mousePos, setMousePos] = useState({});
-
-  useEffect(() => {
-    const handleMouseMove = (event) => {
-      setMousePos({ x: event.clientX, y: event.clientY });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
-
-  useEffect(() => {
-    mapRef?.current?.resize()
-    if (dualMode) {
-      
-      if (lote) {
-        const [minLng, minLat, maxLng, maxLat] = bbox(lote);
-
-        mapRef?.current?.fitBounds(
-          [
-            [minLng, minLat],
-            [maxLng, maxLat],
-          ],
-          { padding: 40, duration: 1000 }
-        );
-      }
-    }
-  }, [dualMode]);
+  const handleIndiceChange = useCallback((e) => {
+    const indiceSelected = list_of_indexes.find(
+      (i) => i.name === e.target.value,
+    )
+    setIndice(indiceSelected)
+  }, [])
 
   return (
     <>
-      <Grid container style={{ height: "100%", position: "relative" }}>
-        <Grid item xs={12} style={{ height: "100%" }}>
+      <Grid container style={{ height: '100%', position: 'relative' }}>
+        <Grid item xs={12} style={{ height: '100%' }}>
           <Map
             ref={mapRef}
             mapStyle="mapbox://styles/mapbox/satellite-streets-v12?optimize=true"
             {...viewState}
             mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
             onLoad={onLoad}
-            onMove={onMove}
-   
-            onMoveStart={onMoveStart}
+            onMove={(evt) => onViewStateChange(evt.viewState)}
           >
-            <DeckGLOverlay layers={[layers]} />
+            <DeckGLOverlay layers={layers} />
           </Map>
         </Grid>
 
         <Paper
           style={{
-            position: "absolute",
-            top: "1%",
-            marginLeft: "10px",
-            display: "flex",
-            gap: "10px",
-            backgroundColor: "#1976d2",
-            padding: "10px",
-            color: "white",
+            position: 'absolute',
+            top: '1%',
+            marginLeft: '10px',
+            display: 'flex',
+            gap: '10px',
+            backgroundColor: '#1976d2',
+            padding: '10px',
+            color: 'white',
             zIndex: 2,
           }}
         >
           <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
             value={indice.name}
-            label="Indice"
             onChange={handleIndiceChange}
             sx={{
-              color: "primary.contrastText",
-              "& .MuiOutlinedInput-root": {
-                borderColor: "white",
-                // Change the border color when the select component is focused
-                "&.Mui-focused fieldset": {
-                  borderColor: "white",
+              color: 'primary.contrastText',
+              '& .MuiOutlinedInput-root': {
+                borderColor: 'white',
+                '&.Mui-focused fieldset': {
+                  borderColor: 'white',
                 },
               },
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "white",
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'white',
               },
-              "& .MuiSvgIcon-root": {
-                color: "white",
+              '& .MuiSvgIcon-root': {
+                color: 'white',
               },
             }}
           >
-            {list_of_indexes.map((i) => {
-              return (
-                <MenuItem key={i.name} value={i.name}>
-                  {i.name}
-                </MenuItem>
-              );
-            })}
+            {list_of_indexes.map((i) => (
+              <MenuItem key={i.name} value={i.name}>
+                {i.name}
+              </MenuItem>
+            ))}
           </Select>
 
           {features && (
             <SatelliteDatePicker
               value={selectedDate}
-              onChange={(newValue) => {
-                // console.log(newValue.toDate());
-                setSelectedDate(newValue);
-              }}
+              onChange={(newValue) => setSelectedDate(newValue)}
               features={features}
-            ></SatelliteDatePicker>
+            />
           )}
         </Paper>
 
         <div
           style={{
-            position: "absolute",
+            position: 'absolute',
             zIndex: 2,
-            top: "3%",
-            right: "10px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
+            top: '3%',
+            right: '10px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
           }}
         >
-           <Button variant="contained" sx={{marginBottom:"3rem"}} color="error" onClick={()=>{
-            navigate(-1)
-          }} title="Close">
+          <Button
+            variant="contained"
+            sx={{ marginBottom: '3rem' }}
+            color="error"
+            onClick={() => navigate(-1)}
+            title="Cerrar"
+          >
             <Close />
           </Button>
 
-          <Button variant="contained" onClick={()=>{
-            geotiff_to_excel(import.meta.env.VITE_COGS_SERVER_URL + indiceRequestResponse.tiff_url, indice.name);
-          }} title="Download EXCEL">
-            <CloudDownloadIcon />
-          </Button>
           <Button
             variant="contained"
-            title="Download PNG"
+            onClick={() => {
+              if (indiceRequestResponse?.tiff_url) {
+                geotiff_to_excel(
+                  import.meta.env.VITE_COGS_SERVER_URL +
+                    indiceRequestResponse.tiff_url,
+                  indice.name,
+                )
+              }
+            }}
+            title="Descargar EXCEL"
+          >
+            <CloudDownloadIcon />
+          </Button>
+
+          <Button
+            variant="contained"
+            title="Descargar PNG"
             target="_blank"
             href={
-              import.meta.env.VITE_COGS_SERVER_URL +
               indiceRequestResponse?.png_url
+                ? import.meta.env.VITE_COGS_SERVER_URL +
+                  indiceRequestResponse.png_url
+                : '#'
             }
           >
             <ImageIcon />
           </Button>
+
           <Button
             variant="contained"
             onClick={() => {
-              navigate("/init/overview/zoning/"+ indiceRequestResponse?.png_url.split("/")[3].replace(".png","") )
+              if (indiceRequestResponse?.png_url) {
+                navigate(
+                  '/init/overview/zoning/' +
+                    indiceRequestResponse.png_url
+                      .split('/')[3]
+                      .replace('.png', ''),
+                )
+              }
             }}
             title="Ambientador"
           >
             <GroupWork />
           </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              onDualToggle();
-            }}
-            title="Dual Map"
-          >
+
+          <Button variant="contained" onClick={onDualToggle} title="Mapa Dual">
             <ContrastIcon />
           </Button>
+
+          {!showCharts && (
+            <Button
+              variant="contained"
+              onClick={() => setShowCharts(true)}
+              title="Mostrar Gráficos"
+            >
+              <ShowChartIcon />
+            </Button>
+          )}
         </div>
 
         {selectedDate && indiceRequestResponse && (
           <>
-            <Paper
-              style={{
-                position: "absolute",
-                zIndex: 5,
-                top: "25%",
-                right: "6%",
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-                maxWidth:"17%",
-                backgroundColor: "#1976d299",
-              }}
-            >
-              <SatelliteCharts
-                data={indiceRequestResponse}
-                indice={indice}
-                date={indiceRequestResponse.date}
-                hectareas_del_lote={
-                  indiceRequestResponse.area_mts_squared / 10000
-                }
-              ></SatelliteCharts>
-            </Paper>
+            {showCharts && (
+              <Draggable>
+                <Paper
+                  style={{
+                    position: 'absolute',
+                    zIndex: 5,
+                    top: '10%',
+                    right: '6%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    width: dualMode ? '34%' : '17%',
+                    minWidth: '300px',
+                    maxHeight: '85vh',
+                    overflowY: 'auto',
+                    backgroundColor: '#1976d299',
+                    cursor: 'move',
+                  }}
+                >
+                  <Button
+                    onClick={() => setShowCharts(false)}
+                    style={{ alignSelf: 'flex-end', minWidth: '30px' }}
+                  >
+                    <Close />
+                  </Button>
+
+                  <Suspense fallback={<div>Cargando gráficos...</div>}>
+                    <SatelliteCharts
+                      data={indiceRequestResponse}
+                      indice={indice}
+                      date={indiceRequestResponse.date}
+                      hectareas_del_lote={
+                        indiceRequestResponse.area_mts_squared / 10000
+                      }
+                      dualMode={dualMode}
+                    />
+                  </Suspense>
+                </Paper>
+              </Draggable>
+            )}
+
             <div
               style={{
-                position: "absolute",
+                position: 'absolute',
                 zIndex: 5,
-                top: "15%",
-                left: "3%",
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
+                top: '15%',
+                left: '3%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
               }}
             >
               <SatelliteResumen
                 date={selectedDate}
                 lote={lote}
                 indice={indice}
-              ></SatelliteResumen>
+              />
             </div>
           </>
         )}
@@ -460,16 +463,16 @@ export const SatelliteMap: React.FC = ({
       {hoverInfo && hoverInfo.color && (
         <div
           style={{
-            position: "absolute",
+            position: 'absolute',
             zIndex: 2,
-            pointerEvents: "none",
-            left: mousePos.x,
-            top: mousePos.y - 30,
+            pointerEvents: 'none',
+            left: hoverInfo.x,
+            top: hoverInfo.y - 30,
           }}
         >
           <Chip label={hoverInfo.color} color="primary" />
         </div>
       )}
     </>
-  );
-};
+  )
+}

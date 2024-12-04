@@ -22,10 +22,10 @@ export const listar_sensores = async () => {
   return gbl_state.db_sensores_pro
     .get("lista_public_devices:unico")
     .then((lista) => {
+      console.log("1. Documento lista_public_devices:unico:", lista);
       let public_devices = lista.public_devices as string[];
-      // crear keys y hacer una sola request
+      console.log("2. Array de public_devices:", public_devices);
       return sensores_detalles_single_call(public_devices);
-      //return Promise.all(public_devices.map(sensores_detalles));
     });
 };
 
@@ -34,13 +34,15 @@ export const sensores_detalles = async (uuid: string) => {
     return d as unknown as DeviceDetalles;
   });
 };
-
 export const sensores_detalles_single_call = async (uuids: string[]) => {
   let keys = uuids.map((uuid) => uuid + ":detalles");
+  console.log("3. Keys que se van a buscar:", keys);
+
   return gbl_state.db_sensores_pro
     .allDocs({ include_docs: true, keys: keys })
     .then(only_docs)
     .then((d) => {
+      console.log("4. Detalles completos de los dispositivos:", d);
       return d as unknown as DeviceDetalles[];
     });
 };
