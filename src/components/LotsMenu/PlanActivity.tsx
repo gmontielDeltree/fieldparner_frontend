@@ -225,12 +225,13 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
 
   return (
     <div>
-      {/* Utilizamos el componente ActivityHeader */}
       <ActivityHeader
         isEditing={isEditing}
         translatedActivityType={translatedActivityType}
         ActivityIcon={ActivityIcon}
         titleBg={titleBg}
+        formData={formData} // Agregamos formData
+        activityType={activityType} // Agregamos activityType
       />
 
       {/* Utilizamos el componente PlanActivityStepper */}

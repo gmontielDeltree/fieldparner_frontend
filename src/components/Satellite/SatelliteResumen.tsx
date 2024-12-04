@@ -1,73 +1,81 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react'
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Paper,
   Typography,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import axios from "axios";
-import { format } from "date-fns";
-import { r2 } from "../../../owncomponents/helpers";
+  Button,
+} from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import axios from 'axios'
+import { format } from 'date-fns'
+import { r2 } from '../../../owncomponents/helpers'
+
+import { Bar } from 'react-chartjs-2'
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+} from 'chart.js'
+
+ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip)
 
 function generateArray(range, n) {
-  // range is an array of two numbers representing the lower and upper limits of the range
-  // n is an integer number representing the length of the output array
-  // check if the input is valid
   if (
     !Array.isArray(range) ||
     range.length !== 2 ||
     !Number.isInteger(n) ||
     n < 1
   ) {
-    return null;
+    return null
   }
-  // get the min and max values from the range array
-  let min = Math.min(range[0], range[1]);
-  let max = Math.max(range[0], range[1]);
-  // calculate the step size to get n numbers within the range
-  let step = (max - min) / (n - 1);
-  // use Array.from() with a map function to generate the output array
-  let output = Array.from({ length: n }, (value, index) => min + index * step);
-  return output;
+  let min = Math.min(range[0], range[1])
+  let max = Math.max(range[0], range[1])
+  let step = (max - min) / (n - 1)
+  let output = Array.from({ length: n }, (value, index) => min + index * step)
+  return output
 }
 
-const ranges_to_bin_names = (ranges: number[]) => {
-  let a = ranges.slice(0, -1);
-  let b = ranges.slice(1);
+const ranges_to_bin_names = (ranges) => {
+  let a = ranges.slice(0, -1)
+  let b = ranges.slice(1)
 
-  let bin_names = a.map((v, i) => "" + r2(v) + "..." + r2(b[i]));
-  return bin_names;
-};
+  let bin_names = a.map((v, i) => '' + r2(v) + '...' + r2(b[i]))
+  return bin_names
+}
 
-export const SatelliteResumen: React.FC = ({ date, lote, indice }) => {
+export const SatelliteResumen = ({ date, lote, indice }) => {
   const [meteo, setMeteo] = useState({
     temperature: NaN,
     temperature_min: NaN,
     precipitation_sum: NaN,
-  });
-  const [response, setResponse] = useState();
+  })
+  const [response, setResponse] = useState()
+  const [showChart, setShowChart] = useState(false)
 
   useEffect(() => {
-    let dateStr = format(date, "yyyy-MM-dd");
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lote.geometry.coordinates[0][0][1]}&longitude=${lote.geometry.coordinates[0][0][0]}&start_date=${dateStr}&end_date=${dateStr}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=America%2FNew_York`;
+    let dateStr = format(date, 'yyyy-MM-dd')
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lote.geometry.coordinates[0][0][1]}&longitude=${lote.geometry.coordinates[0][0][0]}&start_date=${dateStr}&end_date=${dateStr}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=America%2FNew_York`
     axios(url).then((response) => {
-      const data = response.data;
-      let temperature = data.daily.temperature_2m_max[0];
-      let temperature_min = data.daily.temperature_2m_min[0];
-      let precipitation_sum = data.daily.precipitation_sum[0];
+      const data = response.data
+      let temperature = data.daily.temperature_2m_max[0]
+      let temperature_min = data.daily.temperature_2m_min[0]
+      let precipitation_sum = data.daily.precipitation_sum[0]
 
-      setMeteo({ temperature, temperature_min, precipitation_sum });
-    });
-  }, [date]);
+      setMeteo({ temperature, temperature_min, precipitation_sum })
+    })
+  }, [date])
 
   useEffect(() => {
-    let resourceId = lote.id;
-    let dateStr = format(date, "yyyy-MM-dd");
+    let resourceId = lote.id
+    let dateStr = format(date, 'yyyy-MM-dd')
     let histogramOptions = {
       bins: generateArray(indice.domain, 10),
-    };
+    }
 
     let body = {
       resourceId,
@@ -75,73 +83,181 @@ export const SatelliteResumen: React.FC = ({ date, lote, indice }) => {
       histogramOptions,
       lote: lote,
       indice,
-    };
-    let baseURL = import.meta.env.VITE_COGS_SERVER_URL + "/indices/request";
+    }
+    let baseURL = import.meta.env.VITE_COGS_SERVER_URL + '/indices/request'
     axios.post(baseURL, body).then((response) => {
-      console.log(response.data);
-      setResponse(response.data);
-    });
-  }, [date]);
+      console.log(response.data)
+      setResponse(response.data)
+    })
+  }, [date])
+
+  let chartData = null
+  let chartOptions = null
+
+  if (response && response.stats.histogram[0]) {
+    const labels = ranges_to_bin_names(response.stats.histogram[1]).reverse()
+    const dataValues = response.stats.histogram[0]
+      .map(
+        (r) =>
+          ((r / response.stats.valid_pixels) * response.area_mts_squared) /
+          10000,
+      )
+      .reverse()
+    const backgroundColors = response.stats.histogram[0]
+      .map((r, i) => {
+        let min_d = indice.domain[0]
+        let k_color = indice.domain[1] - indice.domain[0]
+        return indice.colormap_fn(
+          (response.stats.histogram[1][i + 1] - min_d) / k_color,
+        )
+      })
+      .reverse()
+
+    chartData = {
+      labels,
+      datasets: [
+        {
+          label: 'Área (has)',
+          data: dataValues,
+          backgroundColor: backgroundColors,
+        },
+      ],
+    }
+
+    chartOptions = {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: 'white',
+          },
+        },
+        y: {
+          ticks: {
+            color: 'white',
+          },
+        },
+      },
+    }
+  }
 
   return (
-    <Paper sx={{ backgroundColor: "#2f5ad5", '& .MuiAccordionSummary-root':{
-      minHeight:"1rem"
-    },
-    '& .MuiAccordionSummary-content':{
-      marginTop:"8px",
-      marginBottom:"8px"
-    }
-    }}>
-      <Accordion sx={{ backgroundColor: "#1976d299", color: "white" }} defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ minHeight:"1rem"}}>
+    <Paper
+      sx={{
+        backgroundColor: '#2f5ad5',
+        '& .MuiAccordionSummary-root': {
+          minHeight: '1rem',
+        },
+        '& .MuiAccordionSummary-content': {
+          marginTop: '8px',
+          marginBottom: '8px',
+        },
+      }}
+    >
+      <Accordion
+        sx={{ backgroundColor: '#1976d299', color: 'white' }}
+        defaultExpanded
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          sx={{ minHeight: '1rem' }}
+        >
           Resumen
         </AccordionSummary>
-        <AccordionDetails sx={{marginTop:"5px"}}>
-           Escala de Color
-          {response && response.stats.histogram[0]
-            .map((r, i) => {
-              console.log("punto", r);
-              let min_d = indice.domain[0];
-              let k_color = indice.domain[1] - indice.domain[0];
-              let color = indice.colormap_fn(
-                (response.stats.histogram[1][i + 1] - min_d) / k_color
-              );
-              let area_has =
-                ((r / response.stats.valid_pixels) *
-                  response.area_mts_squared) /
-                10000;
+        <AccordionDetails sx={{ marginTop: '5px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '1rem',
+            }}
+          >
+            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              Escala de Color
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              style={{ marginLeft: '20px' }}
+              onClick={() => setShowChart(!showChart)}
+            >
+              {showChart ? 'Ocultar Gráfico' : 'Ver Gráfico'}
+            </Button>
+          </div>
+          {showChart && chartData && (
+            <div style={{ marginTop: '1rem' }}>
+              <Bar data={chartData} options={chartOptions} />
+            </div>
+          )}
+          {response &&
+            response.stats.histogram[0]
+              .map((r, i) => {
+                let min_d = indice.domain[0]
+                let k_color = indice.domain[1] - indice.domain[0]
+                let color = indice.colormap_fn(
+                  (response.stats.histogram[1][i + 1] - min_d) / k_color,
+                )
+                let area_has =
+                  ((r / response.stats.valid_pixels) *
+                    response.area_mts_squared) /
+                  10000
 
-              return (
-                <div style={{display:"flex",justifyContent: "space-between", alignItems:"center"}}>
-                  <div style={{display:"flex", alignItems:"center"}}>
-                    <div style={{backgroundColor:color,width:"16px",height:"16px"}}></div>
-                    <div style={{marginLeft:"0.8rem",fontSize:"0.8rem"}}>
-                      {ranges_to_bin_names(response.stats.histogram[1])[i]}
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <div
+                        style={{
+                          backgroundColor: color,
+                          width: '16px',
+                          height: '16px',
+                        }}
+                      ></div>
+                      <div style={{ marginLeft: '0.8rem', fontSize: '0.8rem' }}>
+                        {ranges_to_bin_names(response.stats.histogram[1])[i]}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        marginLeft: '1rem',
+                        fontWeight: 'bold',
+                        fontSize: '0.8rem',
+                      }}
+                    >
+                      {r2(area_has)} has.
                     </div>
                   </div>
-                  <div style={{marginLeft:"1rem",fontWeight:"bold",fontSize:"0.8rem"}}>
-                    {r2(area_has)} has.
-                  </div>
-                </div>
-              );
-            }).reverse()}
+                )
+              })
+              .reverse()}
         </AccordionDetails>
       </Accordion>
       <Accordion
         defaultExpanded
-        sx={{ backgroundColor: "#1976d299", color: "white" }}
+        sx={{ backgroundColor: '#1976d299', color: 'white' }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          Clima del Dia
+          Clima del Día
         </AccordionSummary>
         <AccordionDetails>
           {meteo.temperature ? (
             <>
               <Typography variant="body2">
-                Temp min: {meteo.temperature}°C
+                Temp min: {meteo.temperature_min}°C
               </Typography>
               <Typography variant="body2">
-                Temp max: {meteo.temperature_min}°C
+                Temp max: {meteo.temperature}°C
               </Typography>
               <Typography variant="body2">
                 Precipitación: {meteo.precipitation_sum}mm
@@ -154,19 +270,24 @@ export const SatelliteResumen: React.FC = ({ date, lote, indice }) => {
           <Typography variant="caption">Powered by OpenMeteo</Typography>
         </AccordionDetails>
       </Accordion>
-        <Accordion
-        sx={{ backgroundColor: "#1976d299", color: "white"}}
-      >
+      <Accordion sx={{ backgroundColor: '#1976d299', color: 'white' }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           Descripción del índice
         </AccordionSummary>
-        <AccordionDetails >
-          <div style={{maxHeight:"4rem", overflowY:"auto"}}>
-
-            <p style={{ wordWrap: "break-word", overflow: "auto" , maxWidth:"15rem"}}>{indice.descripcion}</p>
+        <AccordionDetails>
+          <div style={{ maxHeight: '4rem', overflowY: 'auto' }}>
+            <p
+              style={{
+                wordWrap: 'break-word',
+                overflow: 'auto',
+                maxWidth: '15rem',
+              }}
+            >
+              {indice.descripcion}
+            </p>
           </div>
         </AccordionDetails>
-      </Accordion>  
+      </Accordion>
     </Paper>
-  );
-};
+  )
+}

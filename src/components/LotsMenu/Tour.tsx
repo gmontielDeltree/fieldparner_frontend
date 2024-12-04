@@ -1,27 +1,26 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Box, Button, Typography } from "@mui/material";
-import TourForm from "./forms/NotesForms/TourForm";
-import { getEmptyNote } from "../../interfaces/activity";
-import { format, parseISO } from "date-fns";
-import AgricultureIcon from "@mui/icons-material/Assignment";
-import uuid4 from "uuid4";
-import Paper from "@mui/material/Paper";
-import { keyframes, styled, useTheme } from "@mui/material/styles";
-import EditIcon from "@mui/icons-material/Edit";
-import PlaceMarker from "../NewGeometry/PlaceMarker";
-import { useAppSelector } from "../../hooks";
+// Tour.tsx
+import React, { useEffect, useRef, useState } from 'react'
+import { Box, Button, Typography } from '@mui/material'
+import TourForm from './forms/NotesForms/TourForm'
+import { getEmptyNote } from '../../interfaces/activity'
+import AgricultureIcon from '@mui/icons-material/Assignment'
+import uuid4 from 'uuid4'
+import { keyframes, useTheme } from '@mui/material/styles'
+import EditIcon from '@mui/icons-material/Edit'
+import PlaceMarker from '../NewGeometry/PlaceMarker'
+import { useAppSelector } from '../../hooks'
 
 const floating = keyframes`
-0% { transform: translateY(0px); }
-50% { transform: translateY(-10px); }
-100% { transform: translateY(0px); }
-`;
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+`
 
 interface TourProps {
-  lot: any;
-  fieldName: string;
-  db: any;
-  backToActivites: () => void;
+  lot: any
+  fieldName: string
+  db: any
+  backToActivites: () => void
 }
 
 const Tour: React.FC<TourProps & { existingNote?: any }> = ({
@@ -29,128 +28,134 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
   db,
   fieldName,
   backToActivites,
-  existingNote
+  existingNote,
 }) => {
-  if (!lot) return null;
-  const theme = useTheme();
-  const [formData, setFormData] = useState(existingNote || getEmptyNote());
+  if (!lot) return null
+  const theme = useTheme()
+  const [formData, setFormData] = useState(existingNote || getEmptyNote())
   const titleBg = existingNote
     ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
-    : `linear-gradient(45deg, #a0a0a0, #626262)`;
-  const { selectedCampaign } = useAppSelector((state) => state.campaign);
-  const removeMarkerFunctionsRef = useRef<(() => void)[]>([]);
+    : `linear-gradient(45deg, #a0a0a0, #626262)`
+  const { selectedCampaign } = useAppSelector((state) => state.campaign)
+  const removeMarkerFunctionsRef = useRef<(() => void)[]>([])
+
   useEffect(() => {
     if (existingNote) {
-      setFormData(existingNote);
+      setFormData(existingNote)
     } else {
-      setFormData(getEmptyNote());
+      setFormData(getEmptyNote())
     }
-  }, [existingNote]);
+  }, [existingNote])
 
   useEffect(() => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       lote_uuid: lot.id,
-      tipo: "nota"
-    }));
-  }, [lot]);
+      tipo: 'nota',
+    }))
+  }, [lot])
 
-  useEffect(() => {
-    console.log(formData);
-  }, [formData]);
-
-  const handleRemoveMarkers = () => {
-    removeMarkerFunctionsRef.current.forEach((removeFunc) => removeFunc());
-    removeMarkerFunctionsRef.current = [];
-    console.log("handle remove markers called !");
-  };
-
+  // Cleanup all markers on unmount
   useEffect(() => {
     return () => {
-      removeMarkerFunctionsRef.current.forEach((func) => func());
-    };
-  }, []);
+      handleRemoveMarkers()
+    }
+  }, [])
 
-  const handleSetCoordinates = (index, newPosition) => {
-    let newFormData = { ...formData };
-    newFormData.features[index].properties.posicion = newPosition;
-    setFormData(newFormData);
-  };
+  const handleRemoveMarkers = () => {
+    removeMarkerFunctionsRef.current.forEach((removeFunc) => {
+      try {
+        removeFunc()
+      } catch (error) {
+        console.error('Error removing marker:', error)
+      }
+    })
+    removeMarkerFunctionsRef.current = []
+  }
+
+  const handleSetCoordinates = (
+    index: number,
+    newPosition: [number, number],
+  ) => {
+    const newFormData = { ...formData }
+    newFormData.features[index].properties.posicion = newPosition
+    setFormData(newFormData)
+  }
 
   const handleSave = () => {
-    let actividad = formData;
-    let formattedDate = new Date();
+    let actividad = formData
+    let formattedDate = new Date()
     try {
       actividad.campaña = selectedCampaign
       actividad._id =
-        actividad._id || "actividad:" + formattedDate + ":" + uuid4();
+        actividad._id || 'actividad:' + formattedDate + ':' + uuid4()
 
       db.get(actividad._id)
         .then((doc) => {
-          actividad._rev = doc._rev;
-          return db.put(actividad);
+          actividad._rev = doc._rev
+          return db.put(actividad)
         })
         .then(() => {
-          console.log("Actividad updated", "success");
-          handleRemoveMarkers();
-          backToActivites();
+          console.log('Actividad updated', 'success')
+          handleRemoveMarkers()
+          backToActivites()
         })
         .catch((error) => {
-          if (error.name === "not_found") {
-            console.log("Actividad not found. Creating a new one.");
-            delete actividad._rev;
+          if (error.name === 'not_found') {
+            console.log('Actividad not found. Creating a new one.')
+            delete actividad._rev
             db.put(actividad)
               .then(() => {
-                console.log("New actividad created", "success");
-                backToActivites();
+                console.log('New actividad created', 'success')
+                handleRemoveMarkers()
+                backToActivites()
               })
               .catch((err) =>
-                console.error("Error creating new actividad:", err)
-              );
+                console.error('Error creating new actividad:', err),
+              )
           } else {
-            console.error("Error saving actividad:", error);
+            console.error('Error saving actividad:', error)
           }
-        });
+        })
     } catch (error) {
-      console.error("Error in handleSave:", error);
+      console.error('Error in handleSave:', error)
     }
-  };
-
+  }
 
   return (
     <div>
-      <Box sx={{ textAlign: "center", mt: 2, mb: 4 }}>
-        <AgricultureIcon sx={{ fontSize: 50, color: "green" }} />
+      <Box sx={{ textAlign: 'center', mt: 2, mb: 4 }}>
+        <AgricultureIcon sx={{ fontSize: 50, color: 'green' }} />
         <Typography
           variant="h5"
           component="h1"
           gutterBottom
           align="center"
           sx={{
-            fontWeight: "bold",
+            fontWeight: 'bold',
             mt: 2,
             background: titleBg,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            textShadow: "1px 1px 4px rgba(0,0,0,0.15)",
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: '1px 1px 4px rgba(0,0,0,0.15)',
             animation: existingNote
               ? `${floating} 3s ease-in-out infinite`
-              : "none"
+              : 'none',
           }}
         >
           {existingNote ? (
             <>
               <EditIcon
                 sx={{
-                  verticalAlign: "middle",
+                  verticalAlign: 'middle',
                   mr: 1,
-                  animation: `${floating} 3s ease-in-out infinite`
+                  animation: `${floating} 3s ease-in-out infinite`,
                 }}
-              />{" "}
+              />
               Editar Recorrido
             </>
           ) : (
-            "Recorrido"
+            'Recorrido'
           )}
         </Typography>
       </Box>
@@ -168,33 +173,31 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
             key={index}
             selectedLot={{
               geometry: {
-                type: "Point",
-                coordinates: feature.properties.posicion
-              }
+                type: 'Point',
+                coordinates: feature.properties.posicion,
+              },
             }}
             setCoordinates={(newPosition) =>
               handleSetCoordinates(index, newPosition)
             }
             isDraggable={true}
             onRemoveMarkers={(removeFunc) => {
-              removeMarkerFunctionsRef.current.push(removeFunc);
+              removeMarkerFunctionsRef.current.push(removeFunc)
             }}
           />
         ))}
 
       <Button
         color="success"
-        onClick={() => {
-          handleSave();
-        }}
+        onClick={handleSave}
         style={{
-          marginTop: "1rem"
+          marginTop: '1rem',
         }}
       >
         Guardar
       </Button>
     </div>
-  );
-};
+  )
+}
 
-export default Tour;
+export default Tour
