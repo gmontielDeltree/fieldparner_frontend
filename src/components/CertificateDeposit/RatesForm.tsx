@@ -28,11 +28,15 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
         totalSecado,
         percepcionIVA,
         otrasPercepciones,
-        totalOtros
+        totalOtros,
+        kgVolatil,
+        kgBruto,
+        kgZarandeo,
+        kgSecado
     } = formValues;
 
 
-    const total = useMemo(() => {
+    const totalServicios = useMemo(() => {
         return (
             Number(totalGastosGenerales.value) + Number(importeIVA.value) + Number(totalZarandeo.value) +
             Number(totalConceptoNoGravado.value) + Number(totalSecado.value) + Number(percepcionIVA.value) +
@@ -48,13 +52,25 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
         totalOtros
     ]);
 
+    const totalPesoNeto = useMemo(() => {
+        const pesoBruto = Number(kgBruto.value);
+        const pesoVolatil = Number(kgVolatil.value);
+        const pesoZarandeo = Number(kgZarandeo.value);
+        const pesoSecado = Number(kgSecado.value);
+
+        const pesoNeto = (pesoBruto - pesoVolatil - pesoZarandeo - pesoSecado);
+        if (handleFormValueChange)
+            handleFormValueChange("kgNeto", pesoNeto.toString());
+
+        return pesoNeto;
+    }, [kgBruto, kgVolatil, kgZarandeo, kgSecado]);
+
 
     useEffect(() => {
         const initWeight = () => {
             const pesoBruto = listTransportDocument.reduce((prev, current) => {
                 return Number(prev) + Number(current.kgNeto);
             }, 0);
-            const pesoVolatil = Number(formValues.kgVolatil.value);
             const pesoZarandeo = listTransportDocument.reduce((prev, current) => {
                 return Number(prev) + Number(current.kgMermaZarandeo);
             }, 0);
@@ -68,18 +84,16 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                 return Number(prev) + Number(current.importeSecado);
             }, 0);
 
-            const pesoNeto = (pesoBruto - pesoVolatil - pesoZarandeo - pesoSecado);
             if (handleFormValueChange) {
                 handleFormValueChange("kgBruto", pesoBruto.toString());
                 handleFormValueChange("kgZarandeo", pesoZarandeo.toString());
                 handleFormValueChange("kgSecado", pesoSecado.toString());
-                handleFormValueChange("kgNeto", pesoNeto.toString());
                 handleFormValueChange("totalZarandeo", totalZarandeo.toString());
                 handleFormValueChange("totalSecado", totalSecado.toString());
             }
         }
         initWeight();
-    }, [])
+    }, [listTransportDocument])
 
 
     return (
@@ -189,7 +203,7 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                                     primary={<Typography variant='subtitle2'>Peso Neto Kg</Typography>}
                                     secondary={
                                         <Typography align='right' letterSpacing={1} variant='subtitle1'>
-                                            {formValues.kgNeto.value}
+                                            {totalPesoNeto}
                                         </Typography>}
                                 />
                             </FormControl>
@@ -350,7 +364,7 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                                         primary={<Typography align='right' variant='subtitle2'>Total</Typography>}
                                         secondary={
                                             <Typography align='right' letterSpacing={1} variant='subtitle1'>
-                                                $ {total}
+                                                $ {totalServicios}
                                             </Typography>}
                                     />
                                 </FormControl>

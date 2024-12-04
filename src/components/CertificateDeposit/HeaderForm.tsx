@@ -170,6 +170,7 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                     type="text"
                     label="Tipo Certificado"
                     name="tipoCertificado"
+                    error={formValues.tipoCertificado.isError}
                     value={formValues.tipoCertificado.value}
                     helperText={formValues.tipoCertificado.message}
                     onChange={handleInputChange}

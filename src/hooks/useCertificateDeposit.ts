@@ -61,7 +61,6 @@ export const useCertificateDeposit = () => {
 
             if (!user) throw new Error("User not logged.");
 
-            //TODO: crear query en couchdb
             const responseTransport = await dbContext.transportDocument.find({
                 selector: {
                     accountId: user.accountId,

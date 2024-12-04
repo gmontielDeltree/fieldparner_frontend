@@ -8,6 +8,8 @@ import { Campaign, Crops, EnumStatusContract, Numerator, NumeratorType, OriginDe
 import { Company } from '../interfaces/company';
 import { Business } from '../interfaces/socialEntity';
 import { useNumerator } from './useNumerator';
+import { TransportDocument } from '../interfaces/transportDocument';
+import { TransportDocumentByCertificateDeposit } from '../interfaces/certificate-deposit';
 
 
 export const useContractSaleCereals = () => {
@@ -18,6 +20,25 @@ export const useContractSaleCereals = () => {
     const [contractsSaleCerealsFull, setContractsSaleCerealsFull] = useState<ContractSaleCerealItem[]>([]);
     const [contractsSaleCereals, setContractsSaleCereals] = useState<ContractSaleCereal[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Busca por cada nro carta de porte q tenga un certificado de deposito, el kg neto confirmado
+    const getTotalKgConfirmado = async (numerosCartaPorte: string[]) => {
+        let totalKgConfirmado = 0;
+        if (numerosCartaPorte.length === 0) return totalKgConfirmado;
+        // obtenemos los certificados de deposito por nro de carta de porte
+        const responseCPorteXCertDeposito = await dbContext.transportDocumentCertificateDeposit.find({
+            selector: {
+                numeroCartaPorte: { "$in": numerosCartaPorte }
+            }
+        });
+        if (responseCPorteXCertDeposito) {
+            const certificateDeposit = responseCPorteXCertDeposito.docs.map(doc => doc as TransportDocumentByCertificateDeposit);
+            certificateDeposit.forEach((certDep) => {
+                totalKgConfirmado += certDep.kgNeto;
+            });
+        }
+        return totalKgConfirmado;
+    };
 
     const getContractsSaleCereals = async (withRelations = true) => {
         setIsLoading(true);
@@ -48,6 +69,7 @@ export const useContractSaleCereals = () => {
                 dbContext.companies.find(selectorWithLicence),
                 dbContext.socialEntities.find(selectorWithoutLicence),
                 dbContext.originsDestinations.allDocs({ include_docs: true }),
+                dbContext.transportDocument.find(selectorWithLicence),
             ]);
 
             if (responseAll) {
@@ -57,31 +79,44 @@ export const useContractSaleCereals = () => {
                 const companies = responseAll[3].docs.map(doc => doc as Company);
                 const socialEntities = responseAll[4].docs.map(doc => doc as Business);
                 const originsDestinations = responseAll[5].rows.map(row => row.doc as OriginDestinations);
+                const listCartaPorte = responseAll[6].docs.map(doc => doc as TransportDocument);
 
-                const contractsSaleCerealItem = contracts.map((contract) => {
-                    const campaign = campaigns.find((campaign: Campaign) => campaign._id === contract.campaignId);
-                    const crop = crops.find((crop: any) => crop._id === contract.cropId);
-                    const company = companies.find((company: any) => company._id === contract.companyId);
-                    const producer = socialEntities.find((socialEntity: any) => socialEntity._id === contract.producerId);
-                    const buyer = socialEntities.find((socialEntity: any) => socialEntity._id === contract.buyerId);
-                    const destination = originsDestinations.find((originDestination: any) => originDestination._id === contract.destinationId);
-                    const deliver = socialEntities.find((socialEntity: any) => socialEntity._id === contract.delivererId);
-                    const broker = socialEntities.find((socialEntity: any) => socialEntity._id === contract.brokerId);
-                    const comssionAgent = socialEntities.find((socialEntity: any) => socialEntity._id === contract.comissionAgentId);
+                const contractsSaleCerealItem = await Promise.all(
+                    contracts.map(async (contract) => {
+                        // Obtener los nros de carta de porte por contrato
+                        let cartaPorteXContratoVtaCereal: string[] = [];
+                        listCartaPorte.forEach((cartaPorte) => {
+                            if (cartaPorte.contractSaleNumber === contract.contractSaleNumber) {
+                                cartaPorteXContratoVtaCereal.push(cartaPorte.nroCartaPorte);
+                            }
+                        });
+                        const totalKgDelivered = await getTotalKgConfirmado(cartaPorteXContratoVtaCereal);
 
-                    return {
-                        ...contract,
-                        campaign,
-                        crop,
-                        company,
-                        producer,
-                        buyer,
-                        destination,
-                        deliver,
-                        broker,
-                        comssionAgent,
-                    } as ContractSaleCerealItem;
-                });
+                        const campaign = campaigns.find((campaign: Campaign) => campaign._id === contract.campaignId);
+                        const crop = crops.find((crop: any) => crop._id === contract.cropId);
+                        const company = companies.find((company: any) => company._id === contract.companyId);
+                        const producer = socialEntities.find((socialEntity: any) => socialEntity._id === contract.producerId);
+                        const buyer = socialEntities.find((socialEntity: any) => socialEntity._id === contract.buyerId);
+                        const destination = originsDestinations.find((originDestination: any) => originDestination._id === contract.destinationId);
+                        const deliver = socialEntities.find((socialEntity: any) => socialEntity._id === contract.delivererId);
+                        const broker = socialEntities.find((socialEntity: any) => socialEntity._id === contract.brokerId);
+                        const comssionAgent = socialEntities.find((socialEntity: any) => socialEntity._id === contract.comissionAgentId);
+
+                        return {
+                            ...contract,
+                            campaign,
+                            crop,
+                            company,
+                            producer,
+                            buyer,
+                            destination,
+                            deliver,
+                            broker,
+                            comssionAgent,
+                            kgDelivered: totalKgDelivered.toString()
+                        } as ContractSaleCerealItem;
+                    })
+                )
                 setContractsSaleCerealsFull(contractsSaleCerealItem);
             }
             else
