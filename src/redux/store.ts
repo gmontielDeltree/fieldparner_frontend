@@ -19,6 +19,7 @@ import { syncStatusSlice } from "./syncStatus";
 import {corporateCompaniesSlice} from "./corporateCompanies";
 import { corporateContractSlice } from "./corporateContract";
 import { productiveUnitsSlice } from "./productiveUntis";
+import { costsExpensesSlice } from "./costsExpenses";
 
 
 const store = configureStore({
@@ -42,7 +43,7 @@ const store = configureStore({
     corporateCompanies:corporateCompaniesSlice.reducer,
     corporateContract:corporateContractSlice.reducer,
     productiveUnits:productiveUnitsSlice.reducer,
-
+    costsExpenes:costsExpensesSlice.reducer,
   }
 });
 

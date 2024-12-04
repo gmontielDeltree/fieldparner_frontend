@@ -36,6 +36,7 @@ import { Company } from '../interfaces/company';
 import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../interfaces/certificate-deposit';
 import { ProductiveUnits } from '../interfaces/productiveUnits';
 import { ContractDeliveyDate, ContractSaleCereal } from '../interfaces/contract-sale-cereals';
+import { CostsExpenses } from '../interfaces/costsExpenses';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -92,6 +93,7 @@ const dbNames = Object.freeze({
   productiveUnits: "productive-units",
   contractSaleCereals: "contract-sale-cereals",
   contractDeliveryDates: "contract-delivery-dates",
+  costsExpenses: "costs-expenses"
 });
 
 export const dbContext = Object.freeze({
@@ -136,6 +138,7 @@ export const dbContext = Object.freeze({
   productiveUnits: new PouchDB<ProductiveUnits>(dbNames.productiveUnits),
   contractSaleCereals: new PouchDB<ContractSaleCereal>(dbNames.contractSaleCereals),
   contractDeliveryDates: new PouchDB<ContractDeliveyDate>(dbNames.contractDeliveryDates),
+  costsExpenses: new PouchDB<CostsExpenses>(dbNames.costsExpenses),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -183,6 +186,7 @@ dbContext.transportDocumentCertificateDeposit.sync(`${remoteCouchDBUrl}${dbNames
 dbContext.productiveUnits.sync(`${remoteCouchDBUrl}${dbNames.productiveUnits}`, opts);
 dbContext.contractSaleCereals.sync(`${remoteCouchDBUrl}${dbNames.contractSaleCereals}`, opts);
 dbContext.contractDeliveryDates.sync(`${remoteCouchDBUrl}${dbNames.contractDeliveryDates}`, opts);
+dbContext.costsExpenses.sync(`${remoteCouchDBUrl}${dbNames.costsExpenses}`, opts)
 
 
 //#endregion

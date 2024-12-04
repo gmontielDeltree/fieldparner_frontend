@@ -337,7 +337,11 @@
  "_silobag": "Silobolsa",
  "_units": "Unidades",
  "productive_units": "Unidades Productivas",
- "added_fields": "Campos Agregados"
-
+ "added_fields": "Campos Agregados",
+ "costs_expenses": "Costos Gastos",
+"cost_code_field_error": "El campo \"Codigo Costo\" no puede estar vacío.",
+"cost_update_code_error": "No se puede actualizar sin un ID válido.",
+ "cost_code": "Codigo Costo",
+"cost_center": "Centro de Costos"
   
 }

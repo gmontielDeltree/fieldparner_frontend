@@ -39,7 +39,8 @@ import {
   Description as DescriptionIcon,
   ForwardToInbox as ForwardToInboxIcon,
   LocationOn as LocationOnIcon,
-  Handshake as HandshakeIcon
+  Handshake as HandshakeIcon,
+  MonetizationOn as MonetizationOnIcon,
 } from "@mui/icons-material";
 import { Icon } from "semantic-ui-react";
 import { SideBarProps } from "../../types";
@@ -439,19 +440,25 @@ export const SideBar: React.FC<SideBarProps> = ({
                   <MapIcon sx={{ marginRight: "-5px", }} />
                   <LocationOnIcon sx={{ marginRight: "28px", fontSize: "inherit", verticalAlign: "middle" }} />
                 </ListItemIcon>
-                <ListItemText primary="Unidades Productivas" />
+                <ListItemText primary={t("productive_units")} />
+              </ListItemButton>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/costs-expenses"
+                selected={pathname.includes("init/overview/costs-expenses")}
+              >
+                <ListItemIcon>
+                   <MonetizationOnIcon />
+                  {/* <LocationOnIcon sx={{ marginRight: "28px", fontSize: "inherit", verticalAlign: "middle" }} /> */}
+                </ListItemIcon>
+                <ListItemText primary={t("costs_expenses")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>
                   {/* <CabinIcon /> */}
                 </ListItemIcon>
                 <ListItemText primary={t("_harvest")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("_costs")} />
               </ListItemButton>
               <ListItemButton sx={{ pl: 4 }}>
                 <ListItemIcon>

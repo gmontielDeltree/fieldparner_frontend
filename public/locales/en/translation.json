@@ -328,9 +328,14 @@
     "locations_within_the_depot": "Locations within the Depot",
     "_hopper": "Hopper",
     "_silobag": "Silobag",
-      "_units": "Units",
-      "productive_units": "Productive Units",
-      "added_fields": "Added Fields"
+    "_units": "Units",
+    "productive_units": "Productive Units",
+    "added_fields": "Added Fields",
+    "costs_expenses": "Costs Expenses",
+    "cost_code_field_error": "The \"Cost Code\" field cannot be empty.",
+    "cost_update_code_error": "Cannot update without a valid ID.",
+    "cost_code": "Cost Code",
+   "cost_center": "Cost center"
     
 }
   
