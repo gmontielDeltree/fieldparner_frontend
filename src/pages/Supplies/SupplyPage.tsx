@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { DoseForm, LaborsForm, Loading, StockForm } from "../components";
+import { DoseForm, LaborsForm, Loading, StockForm } from "../../components";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector, useCrops, useForm, useSupply } from "../hooks";
+import { useAppDispatch, useAppSelector, useCrops, useForm, useSupply } from "../../hooks";
 import {
   Button,
   Container,
@@ -12,11 +12,11 @@ import {
   Stepper,
   Typography,
 } from "@mui/material";
-import { Supply } from "../types";
-import { removeSupplyActive } from "../redux/supply";
+import { Supply } from "../../types";
+import { removeSupplyActive } from "../../redux/supply";
 import { useTranslation } from "react-i18next";
-import { uploadFile } from "../helpers/fileUpload";
-import { IsSeed } from "../utils/helper";
+import { uploadFile } from "../../helpers/fileUpload";
+import { IsSeed } from "../../utils/helper";
 
 
 const initialForm: Supply = {

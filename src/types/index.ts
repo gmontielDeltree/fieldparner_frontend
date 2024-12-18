@@ -337,7 +337,7 @@ export const TypeSupplies = () => {
   return [
     t("_various"),
     t("seeds_min"),
-    t("_cultivation"),
+    // t("_cultivation"),
     t("_fertilizers"),
     t("_phytosanitary"),
     t("spare_parts"),
@@ -457,10 +457,18 @@ export interface DepositDestination {
 
 export interface StockByLot extends Document {
   accountId: string;
-  // userId: string;
   depositId: string;
   location: string;
   supplyId: string;
+  nroLot: string;
+  currentStock: number;
+}
+
+export interface StockCrop extends Document {
+  accountId: string;
+  cropId: string;
+  depositId: string;
+  location: string;
   nroLot: string;
   currentStock: number;
 }
@@ -488,7 +496,7 @@ export interface ExitField extends Document {
   transportId: string;
   truckerId: string;
   // has: string;
-  cultive: string;
+  // cultive: string;
   transportDocument: string;
   ticket: string;
   vehicleId: string;
@@ -512,7 +520,7 @@ export interface ExitField extends Document {
 
 export interface ExitFieldItem extends ExitField {
   deposit?: Deposit;
-  supply?: Supply;
+  crop?: Crops;
   transport?: Business;
   field?: Field;
   // trucker?: Business;

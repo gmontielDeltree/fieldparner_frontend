@@ -85,6 +85,29 @@ export const useStockMovement = () => {
         }
     }
 
+    const getStockCrop = async (cropId: string, depositId: string, location: string, nroLot: string) => {
+        setIsLoading(true);
+        try {
+            const foundStockCrop = await dbContext.stockCrops.find({
+                selector: {
+                    "$and": [
+                        { "cropId": cropId },
+                        { "depositId": depositId },
+                        { "location": location },
+                        { "nroLot": nroLot }
+                    ],
+                }
+            });
+
+            setIsLoading(false);
+            return foundStockCrop.docs[0];
+        } catch (error) {
+            setIsLoading(false);
+            console.log(error);
+            return null;
+        }
+    }
+
     // Si nroLot es "" , quiere decir q no aplica por stock
     const addNewStockMovement = async (newMovement: StockMovement, supplyDto: Supply, depositDestination?: DepositDestination) => {
         setIsLoading(true);
@@ -367,6 +390,7 @@ export const useStockMovement = () => {
         getNroLotsBySupplyAndDeposit,
         transformStock,
         getStock,
-        getMovementsType
+        getMovementsType,
+        getStockCrop
     }
 }

@@ -1,8 +1,8 @@
 import React from "react";
 import { Inventory as InventoryIcon } from "@mui/icons-material";
-import { useSupply } from "../hooks";
-import { setSupplyActive } from "../redux/supply";
-import { GenericListPage } from "./GenericListPage";
+import { useSupply } from "../../hooks";
+import { setSupplyActive } from "../../redux/supply";
+import { GenericListPage } from "../GenericListPage";
 import { GridRenderCellParams } from "@mui/x-data-grid";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -65,6 +65,7 @@ export const ListSuppliesPage: React.FC = () => {
   return (
     <GenericListPage
       title={t("_supplies")}
+      isLoading={false}
       icon={<InventoryIcon sx={{ fontSize: 40, color: "#424242" }} />}
       data={supplies}
       columns={columns}
