@@ -399,7 +399,9 @@ export interface Category extends Document {
 export interface StockMovement extends Document {
   accountId: string;
   movement: string;
-  supplyId: string;
+  supplyId?: string;
+  cropId?: string;
+  isCrop: boolean;
   userId: string;
   depositId: string;
   location: string;
