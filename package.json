@@ -148,6 +148,7 @@
     "lightgallery": "^2.7.1",
     "lit-element": "^3.3.3",
     "lit-translate": "^2.0.1",
+    "lucide-react": "^0.468.0",
     "lumagl": "^0.0.0",
     "mapbox-gl": "^2.15.0",
     "material-icons": "^1.10.11",
