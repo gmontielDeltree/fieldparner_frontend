@@ -1,88 +1,88 @@
-import React, { useState, useEffect } from "react";
-import { Map } from "mapbox-gl";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
-import { Button, Input, Row, Col, Container } from "reactstrap";
-import { useSelector } from "react-redux";
-import { selectMap } from "../../redux/map/mapSlice";
-import { selectDraw } from "../../redux/draw/drawSlice";
+import React, { useState, useEffect } from 'react'
+import { Map } from 'mapbox-gl'
+import MapboxDraw from '@mapbox/mapbox-gl-draw'
+import { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson'
+import { Button, Input, Row, Col, Container } from 'reactstrap'
+import { useSelector } from 'react-redux'
+import { selectMap } from '../../redux/map/mapSlice'
+import { selectDraw } from '../../redux/draw/drawSlice'
 
 interface DrawGeometryProps {
-  handleSaveGeometry?: (formattedData: FormattedData) => void;
-  type: "field" | "lot";
+  handleSaveGeometry?: (formattedData: FormattedData) => void
+  type: 'field' | 'lot'
 }
 
 interface FormattedData {
-  field_name: string;
-  geometry: FeatureCollection<Geometry, GeoJsonProperties>[];
+  field_name: string
+  geometry: FeatureCollection<Geometry, GeoJsonProperties>[]
 }
 
 function DrawGeometry({ handleSaveGeometry, type }: DrawGeometryProps) {
-  const [geometryName, setGeometryName] = useState("");
+  const [geometryName, setGeometryName] = useState('')
   const [geometryData, setGeometryData] = useState<FeatureCollection<
     Geometry,
     GeoJsonProperties
-  > | null>(null);
+  > | null>(null)
 
-  const map = useSelector(selectMap);
-  const draw = useSelector(selectDraw);
-  const isSaveDisabled = !geometryName || !geometryData;
+  const map = useSelector(selectMap)
+  const draw = useSelector(selectDraw)
+  const isSaveDisabled = !geometryName || !geometryData
 
-  const typeName = type === "field" ? "campo" : "lote";
+  const typeName = type === 'field' ? 'campo' : 'lote'
   useEffect(() => {
     const handleDrawComplete = (event: any) => {
       if (event.features && event.features.length > 0) {
-        setGeometryData(draw.getAll());
+        setGeometryData(draw.getAll())
       }
-    };
+    }
 
-    map.on("draw.create", handleDrawComplete);
+    map.on('draw.create', handleDrawComplete)
 
-    draw.changeMode("draw_polygon");
+    draw.changeMode('draw_polygon')
     return () => {
-      map.off("draw.create", handleDrawComplete);
-    };
-  }, [map, draw]);
+      map.off('draw.create', handleDrawComplete)
+    }
+  }, [map, draw])
 
   const saveGeometryAndName = () => {
     if (geometryData) {
       const formattedData: FormattedData = {
         field_name: geometryName,
-        geometry: [geometryData]
-      };
-
-      draw.deleteAll();
-      if (draw && draw.changeMode) {
-        draw.changeMode("draw_polygon");
-      } else {
-        console.error("draw object or changeMode method not available");
+        geometry: [geometryData],
       }
 
-      draw.changeMode("simple_select");
+      draw.deleteAll()
+      if (draw && draw.changeMode) {
+        draw.changeMode('draw_polygon')
+      } else {
+        console.error('draw object or changeMode method not available')
+      }
 
-      handleSaveGeometry?.(formattedData);
+      draw.changeMode('simple_select')
+
+      handleSaveGeometry?.(formattedData)
     }
-  };
+  }
 
   const containerStyles: React.CSSProperties = {
-    position: "fixed",
+    position: 'fixed',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#f7f7f7",
-    padding: "10px"
-  };
+    backgroundColor: '#f7f7f7',
+    padding: '10px',
+  }
 
   return (
     <div style={containerStyles}>
-      <Container fluid style={{ paddingBottom: "20px" }}>
+      <Container fluid style={{ paddingBottom: '20px' }}>
         <Row>
           <Col md="10">
             <Input
               type="text"
               value={geometryName}
               onChange={(e) => setGeometryName(e.target.value)}
-              placeholder={"Nombre del " + typeName}
+              placeholder={'Nombre del ' + typeName}
             />
           </Col>
           <Col md="2">
@@ -92,13 +92,13 @@ function DrawGeometry({ handleSaveGeometry, type }: DrawGeometryProps) {
               disabled={isSaveDisabled}
               style={{ opacity: isSaveDisabled ? 0.5 : 1 }}
             >
-              Guardar
+              Guardars
             </Button>
           </Col>
         </Row>
       </Container>
     </div>
-  );
+  )
 }
 
-export default DrawGeometry;
+export default DrawGeometry
