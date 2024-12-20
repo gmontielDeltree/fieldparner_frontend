@@ -27,7 +27,16 @@ import {
   Row,
   Col,
 } from 'reactstrap'
-import { Check, ChevronRight, ChevronLeft, X, AlertCircle } from 'lucide-react'
+import {
+  Check,
+  ChevronRight,
+  ChevronLeft,
+  X,
+  AlertCircle,
+  MapIcon,
+  MapPin,
+  Sprout,
+} from 'lucide-react'
 
 const activityTypeTranslations = {
   preparation: 'Preparado',
@@ -358,14 +367,70 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           <Row className="align-items-center">
             <Col>
               <h1
-                className="text-white mb-2"
+                className="text-white mb-4"
                 style={{ fontSize: '2rem', fontWeight: 'bold' }}
               >
                 {activityTypeTranslations[activityType]}
               </h1>
-              <p className="text-white-50">
-                Campo {fieldName} • Lote {lot.properties.nombre}
-              </p>
+
+              <div className="d-flex gap-4">
+                <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
+                  <MapIcon className="text-white" size={20} />
+                  <div>
+                    <div
+                      className="text-white-50 mb-0"
+                      style={{
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      Campo
+                    </div>
+                    <div className="text-white fw-semibold">{fieldName}</div>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
+                  <MapPin className="text-white" size={20} />
+                  <div>
+                    <div
+                      className="text-white-50 mb-0"
+                      style={{
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      Lote
+                    </div>
+                    <div className="text-white fw-semibold">
+                      {lot.properties.nombre}
+                    </div>
+                  </div>
+                </div>
+
+                {formData.detalles?.cultivo?.descriptionES && (
+                  <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
+                    <Sprout className="text-white" size={20} />
+                    <div>
+                      <div
+                        className="text-white-50 mb-0"
+                        style={{
+                          fontSize: '0.75rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                        }}
+                      >
+                        Cultivo
+                      </div>
+                      <div className="text-white fw-semibold">
+                        {formData.detalles.cultivo.descriptionES}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </Col>
             <Col xs="auto">
               <div
@@ -377,7 +442,6 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             </Col>
           </Row>
         </CardHeader>
-
         {/* Stepper modificado */}
         <div className="px-4 py-4">
           <div className="d-flex justify-content-between align-items-center mb-3">

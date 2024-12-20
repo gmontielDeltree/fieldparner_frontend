@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react'
 import {
   FormControl,
   Grid,
@@ -13,33 +13,32 @@ import {
   Typography,
   Box,
   Paper,
-  Link
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SaveIcon from "@mui/icons-material/Save";
-import CloseIcon from "@mui/icons-material/Close";
-import { styled, keyframes } from "@mui/material/styles";
-import uuid4 from "uuid4";
-import { useAppDispatch, useForm, useSupply } from "../../../../hooks";
-import { useAppSelector } from '../../../../hooks/useRedux';
-import Chip from "@mui/material/Chip";
-import { useDeposit } from "../../../../hooks";
-import { useTranslation } from "react-i18next";
-import { NumberFieldWithUnits } from "../../components/NumberField";
-import { AutocompleteSupplies } from "../../components/AutocompleteSupplies";
-import { Deposit, Supply } from "@types";
-import { AutocompleteDeposito } from "../../components/AutocompleteDeposito";
-import { TTipoActividadPlanificada } from "../../../../interfaces/planification";
-import { useBusiness } from "../../../../hooks";
-import { AutocompleteContratista } from "../../components/AutocompleteContratista";
-import NumbersIcon from "@mui/icons-material/Numbers";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import SummarizeIcon from "@mui/icons-material/Summarize";
-import set from "date-fns/esm/set/index";
-import { useLaborsServices } from "../../../../hooks/useLaborsServices";
-
+  Link,
+} from '@mui/material'
+import AddIcon from '@mui/icons-material/Add'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import SaveIcon from '@mui/icons-material/Save'
+import CloseIcon from '@mui/icons-material/Close'
+import { styled, keyframes } from '@mui/material/styles'
+import uuid4 from 'uuid4'
+import { useAppDispatch, useForm, useSupply } from '../../../../hooks'
+import { useAppSelector } from '../../../../hooks/useRedux'
+import Chip from '@mui/material/Chip'
+import { useDeposit } from '../../../../hooks'
+import { useTranslation } from 'react-i18next'
+import { NumberFieldWithUnits } from '../../components/NumberField'
+import { AutocompleteSupplies } from '../../components/AutocompleteSupplies'
+import { Deposit, Supply } from '@types'
+import { AutocompleteDeposito } from '../../components/AutocompleteDeposito'
+import { TTipoActividadPlanificada } from '../../../../interfaces/planification'
+import { useBusiness } from '../../../../hooks'
+import { AutocompleteContratista } from '../../components/AutocompleteContratista'
+import NumbersIcon from '@mui/icons-material/Numbers'
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
+import SummarizeIcon from '@mui/icons-material/Summarize'
+import set from 'date-fns/esm/set/index'
+import { useLaborsServices } from '../../../../hooks/useLaborsServices'
 
 const flashFadeAnimation = keyframes`
   0% {
@@ -52,70 +51,67 @@ const flashFadeAnimation = keyframes`
   100% {
     opacity: 0;
   }
-`;
+`
 
 const CustomListItem = styled(Card)(({ deleting }) => ({
-  margin: "10px 0",
-  backgroundColor: "#f9f9f9",
-  borderRadius: "8px",
-  animation: deleting ? `${flashFadeAnimation} 1s forwards` : "none"
-}));
+  margin: '10px 0',
+  backgroundColor: '#f9f9f9',
+  borderRadius: '8px',
+  animation: deleting ? `${flashFadeAnimation} 1s forwards` : 'none',
+}))
 
 const Title = styled(Typography)({
-  fontSize: "1.5em",
-  fontWeight: "bold",
-  color: "#333",
-  marginBottom: "20px"
-});
+  fontSize: '1.5em',
+  fontWeight: 'bold',
+  color: '#333',
+  marginBottom: '20px',
+})
 
 const CustomPaper = styled(Paper)({
-  padding: "20px",
-  margin: "20px 0",
-  backgroundColor: "#f7f7f7"
-});
+  padding: '20px',
+  margin: '20px 0',
+  backgroundColor: '#f7f7f7',
+})
 
 function ServicesForm({ formData, setFormData }) {
-  const { t } = useTranslation();
-  const {
-    laborsServices,
-    getLaborsServices,
-  } = useLaborsServices();
+  const { t } = useTranslation()
+  const { laborsServices, getLaborsServices } = useLaborsServices()
 
-  const [selectedService, setSelectedService] = useState("");
-  const [contractor, setContractor] = useState("");
-  const [comment, setComment] = useState("");
-  const [units, setUnits] = useState(0);
-  const [totalCost, setTotalCost] = useState(0);
-  const [unitPrice, setUnitPrice] = useState(0);
-  const [rows, setRows] = useState([]);
-  const [editIndex, setEditIndex] = useState(-1);
-  const { isLoading, supplies, getSupplies } = useSupply();
-  const [art, setArt] = useState("");
-  const { businesses, getBusinesses } = useBusiness();
-  const { user } = useAppSelector(state => state.auth);
-  const isBrazil = user?.countryId === "BR";
-  const isFitosanitaria = formData.detalles.fitosanitaria;
+  const [selectedService, setSelectedService] = useState('')
+  const [contractor, setContractor] = useState('')
+  const [comment, setComment] = useState('')
+  const [units, setUnits] = useState(0)
+  const [totalCost, setTotalCost] = useState(0)
+  const [unitPrice, setUnitPrice] = useState(0)
+  const [rows, setRows] = useState([])
+  const [editIndex, setEditIndex] = useState(-1)
+  const { isLoading, supplies, getSupplies } = useSupply()
+  const [art, setArt] = useState('')
+  const { businesses, getBusinesses } = useBusiness()
+  const { user } = useAppSelector((state) => state.auth)
+  const isBrazil = user?.countryId === 'BR'
+  const isFitosanitaria = formData.detalles.fitosanitaria
 
-  const services = laborsServices;
+  const services = laborsServices
 
-  const { getDeposits } = useDeposit();
+  const { getDeposits } = useDeposit()
   const [editData, setEditData] = useState({
-    servicio: "",
-    contratista: "",
-    comentario: "",
+    servicio: '',
+    contratista: '',
+    comentario: '',
     unidades: 0,
     precio: 0,
-    costo_total: 0
-  });
+    costo_total: 0,
+  })
 
   useEffect(() => {
-    getLaborsServices();
-    getBusinesses();
-  }, []);
+    getLaborsServices()
+    getBusinesses()
+  }, [])
 
   const handleArtChange = (event) => {
-    setArt(event.target.value);
-  };
+    setArt(event.target.value)
+  }
   const handleAddRow = () => {
     const newRow = {
       servicio: selectedService,
@@ -124,141 +120,143 @@ function ServicesForm({ formData, setFormData }) {
       unidades: units,
       precio_unidad: unitPrice,
       art: isBrazil && isFitosanitaria ? art : undefined,
-      costo_total: totalCost
-    };
-    console.log("NEW ROW", newRow);
-    const newDetalles = [...formData.detalles.servicios, newRow];
+      costo_total: totalCost,
+    }
+    console.log('NEW ROW', newRow)
+    const newDetalles = [...formData.detalles.servicios, newRow]
     setFormData({
       ...formData,
-      detalles: { ...formData.detalles, servicios: newDetalles }
-    });
-    setSelectedService("");
-    
-    setContractor("");
-    setComment("");
-    setUnits(0);
-    setUnitPrice(0);
-    setTotalCost(0);
-  };
+      detalles: { ...formData.detalles, servicios: newDetalles },
+    })
+    setSelectedService('')
+
+    setContractor('')
+    setComment('')
+    setUnits(0)
+    setUnitPrice(0)
+    setTotalCost(0)
+  }
 
   const handleSaveEdit = () => {
     if (!editData.servicio) {
-      alert("Select a service before saving");
-      return;
+      alert('Select a service before saving')
+      return
     }
-    const updatedRow = editData;
+    const updatedRow = editData
 
-    const updatedDetalles = [...formData.detalles.servicios];
-    updatedDetalles[editIndex] = updatedRow;
+    const updatedDetalles = [...formData.detalles.servicios]
+    updatedDetalles[editIndex] = updatedRow
     setFormData({
       ...formData,
-      detalles: { ...formData.detalles, servicios: updatedDetalles }
-    });
-    setEditIndex(-1);
-  };
+      detalles: { ...formData.detalles, servicios: updatedDetalles },
+    })
+    setEditIndex(-1)
+  }
 
   const handleSelectChange = (event) => {
-    const serviceName = event.target.value;
+    const serviceName = event.target.value
     const selectedService = services.find(
-      (service) => service.service === serviceName
-    );
-    setSelectedService(selectedService);
-  };
+      (service) => service.service === serviceName,
+    )
+    setSelectedService(selectedService)
+  }
 
   const handleTotalChange = (event) => {
-    setTotalCost((event.target.value * unitPrice).toFixed(2));
-  };
+    setTotalCost((event.target.value * unitPrice).toFixed(2))
+  }
 
   const handleEditRow = (index) => {
-    setEditIndex(index);
-    console.log("EDITING ROW ", index, ": ", rows[index]);
-    setEditData({ ...rows[index] });
-  };
+    setEditIndex(index)
+    console.log('EDITING ROW ', index, ': ', rows[index])
+    setEditData({ ...rows[index] })
+  }
 
   const handleCancelEdit = () => {
-    setEditIndex(-1);
-  };
+    setEditIndex(-1)
+  }
 
   const handleDeleteRow = (index) => {
     setRows(
-      rows.map((row, idx) => (idx === index ? { ...row, deleting: true } : row))
-    );
+      rows.map((row, idx) =>
+        idx === index ? { ...row, deleting: true } : row,
+      ),
+    )
 
     setTimeout(() => {
       const updatedDetalles = formData.detalles.servicios.filter(
-        (_, idx) => idx !== index
-      );
+        (_, idx) => idx !== index,
+      )
       setFormData({
         ...formData,
-        detalles: { ...formData.detalles, servicios: updatedDetalles }
-      });
-    }, 1000);
-  };
+        detalles: { ...formData.detalles, servicios: updatedDetalles },
+      })
+    }, 1000)
+  }
 
   const handleCommentChange = (event) => {
-    setComment(event.target.value);
-  };
+    setComment(event.target.value)
+  }
 
   const handleEditServiceChange = (service) => {
-    setEditData({ ...editData, selectedService: service });
-  };
+    setEditData({ ...editData, selectedService: service })
+  }
 
   const handleEditDepositoChange = (deposito) => {
-    setEditData({ ...editData, deposito: deposito });
-  };
+    setEditData({ ...editData, deposito: deposito })
+  }
 
   const handleEditCommentChange = (event) => {
-    setEditData({ ...editData, comentario: event.target.value });
-  };
+    setEditData({ ...editData, comentario: event.target.value })
+  }
 
   const handleEditUnitPriceChange = (event) => {
     setEditData({
       ...editData,
       precio_unidad: event.target.value,
-      total_cost: (+editData.costo_total / +event.target.value).toFixed(2)
-    });
-  };
+      total_cost: (+editData.costo_total / +event.target.value).toFixed(2),
+    })
+  }
 
   const handleEditUnitsChange = (event) => {
     setEditData({
       ...editData,
       unidades: event.target.value,
-      costo_total: (+editData.precio_unidad * +event.target.value).toFixed(2)
-    });
-  };
+      costo_total: (+editData.precio_unidad * +event.target.value).toFixed(2),
+    })
+  }
 
   const onFieldChange = (field, value) => {
-    if (field === "contractor") {
-      setContractor(value);
-      return;
+    if (field === 'contractor') {
+      setContractor(value)
+      return
     }
-    setFormData({ ...formData, [field]: value });
-  };
+    setFormData({ ...formData, [field]: value })
+  }
 
   useEffect(() => {
-    getSupplies();
-    getDeposits();
-  }, []);
+    getSupplies()
+    getDeposits()
+  }, [])
   useEffect(() => {
     if (units && unitPrice) {
-      const computedTotalCost = (units * unitPrice).toFixed(2);
-      setTotalCost(computedTotalCost);
+      const computedTotalCost = (units * unitPrice).toFixed(2)
+      setTotalCost(computedTotalCost)
     }
-  }, [units, unitPrice]);
+  }, [units, unitPrice])
 
   useEffect(() => {
     if (formData && formData.detalles && formData.detalles.servicios) {
-      console.log("ADDING ROWS", formData.detalles.servicios);
+      console.log('ADDING ROWS', formData.detalles.servicios)
       setRows(
         formData.detalles.servicios.map(
           (servicio: {
-            servicio: any;
-            contratista: any;
-            comentario: string;
-            unidades: any;
-            precio_unidad: any;
-            costo_total: any;
-            uuid: any;
+            servicio: any
+            contratista: any
+            comentario: string
+            unidades: any
+            precio_unidad: any
+            costo_total: any
+            uuid: any
           }) => ({
             servicio: servicio.servicio,
             contratista: servicio.contratista,
@@ -266,19 +264,19 @@ function ServicesForm({ formData, setFormData }) {
             precio_unidad: servicio.precio_unidad,
             unidades: servicio.unidades,
             costo_total: servicio.costo_total,
-            uuid: servicio.uuid
-          })
-        )
-      );
+            uuid: servicio.uuid,
+          }),
+        ),
+      )
     }
-  }, [formData]);
+  }, [formData])
 
   // print the rows
   useEffect(() => {
-    console.log("ROWS", rows);
-  }, [rows]);
+    console.log('ROWS', rows)
+  }, [rows])
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>
 
   return (
     <CustomPaper elevation={3}>
@@ -292,13 +290,13 @@ function ServicesForm({ formData, setFormData }) {
                 fullWidth
                 label="ART (Anotação de Responsabilidade Tecnica)"
                 variant="outlined"
-                value={formData.detalles.art || ""}
+                value={formData.detalles.art || ''}
                 onChange={handleArtChange}
                 helperText="Nro de Autorizacion del ministerio de Salud para la aplicación Fitosanitaria"
               />
             </Grid>
           )}
- 
+
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={4}>
               <FormControl fullWidth>
@@ -306,7 +304,7 @@ function ServicesForm({ formData, setFormData }) {
                 <Select
                   labelId="service-dropdown-label"
                   id="service-dropdown"
-                  value={selectedService ? selectedService.service : ""}
+                  value={selectedService ? selectedService.service : ''}
                   label="Servicio"
                   onChange={handleSelectChange}
                 >
@@ -321,8 +319,8 @@ function ServicesForm({ formData, setFormData }) {
 
             <Grid item xs={3}>
               <AutocompleteContratista
-                value={contractor || ""}
-                onChange={(value: any) => onFieldChange("contractor", value)}
+                value={contractor || ''}
+                onChange={(value: any) => onFieldChange('contractor', value)}
                 width={190}
               />
             </Grid>
@@ -360,7 +358,7 @@ function ServicesForm({ formData, setFormData }) {
                     <IconButton>
                       <NumbersIcon />
                     </IconButton>
-                  )
+                  ),
                 }}
               />
             </Grid>
@@ -377,7 +375,7 @@ function ServicesForm({ formData, setFormData }) {
                     <IconButton>
                       <AttachMoneyIcon />
                     </IconButton>
-                  )
+                  ),
                 }}
               />
             </Grid>
@@ -394,7 +392,7 @@ function ServicesForm({ formData, setFormData }) {
                     <IconButton>
                       <SummarizeIcon />
                     </IconButton>
-                  )
+                  ),
                 }}
               />
             </Grid>
@@ -404,7 +402,7 @@ function ServicesForm({ formData, setFormData }) {
 
       {/* Displaying Rows */}
       <Box mt={3}>
-        <Typography variant="h6">Insumos agregados</Typography>
+        <Typography variant="h6">insumos agregados</Typography>
         <List>
           {rows.map((row, index) => (
             <CustomListItem key={index} deleting={row.deleting}>
@@ -421,10 +419,13 @@ function ServicesForm({ formData, setFormData }) {
                             value={editData.servicio.service}
                             label="Servicio"
                             onChange={handleEditServiceChange}
-                            width={"100%"}
+                            width={'100%'}
                           >
                             {services.map((service) => (
-                              <MenuItem key={service.service} value={service.service}>
+                              <MenuItem
+                                key={service.service}
+                                value={service.service}
+                              >
                                 {service.service}
                               </MenuItem>
                             ))}
@@ -434,7 +435,7 @@ function ServicesForm({ formData, setFormData }) {
                           <AutocompleteContratista
                             value={editData.contratista}
                             onChange={handleEditDepositoChange}
-                            width={"100%"}
+                            width={'100%'}
                           />
                         </Grid>
                         <Grid item xs={3}>
@@ -446,7 +447,6 @@ function ServicesForm({ formData, setFormData }) {
                             onChange={handleEditCommentChange}
                           />
                         </Grid>
-
                       </Grid>
                       <Grid container item xs={12} spacing={1}>
                         <Grid item xs={4}>
@@ -456,7 +456,7 @@ function ServicesForm({ formData, setFormData }) {
                             value={editData.unidades}
                             onChange={handleEditUnitsChange}
                             type="number"
-                            unit={"unit"}
+                            unit={'unit'}
                           />
                         </Grid>
 
@@ -468,7 +468,7 @@ function ServicesForm({ formData, setFormData }) {
                             value={editData.precio_unidad}
                             onChange={handleEditUnitPriceChange}
                             type="number"
-                            unit={"USD/unit"}
+                            unit={'USD/unit'}
                           />
                         </Grid>
                       </Grid>
@@ -476,14 +476,13 @@ function ServicesForm({ formData, setFormData }) {
                   ) : (
                     <>
                       <Grid container item xs={12}>
-                      {isBrazil && isFitosanitaria && (
-  <Grid item xs={12}>
-    <Typography variant="subtitle2">
-      <strong>ART:</strong> {row.art}
-    </Typography>
-  </Grid>
-)}
-                        {" "}
+                        {isBrazil && isFitosanitaria && (
+                          <Grid item xs={12}>
+                            <Typography variant="subtitle2">
+                              <strong>ART:</strong> {row.art}
+                            </Typography>
+                          </Grid>
+                        )}{' '}
                         <Grid item xs={12}>
                           <Typography variant="subtitle1">
                             {row.servicio.service}
@@ -493,41 +492,41 @@ function ServicesForm({ formData, setFormData }) {
                       <Grid container item xs={12}>
                         <Grid item xs={4}>
                           <Typography variant="subtitle2">
-                            <strong>{t("contratista")}:</strong>{" "}
-                            {row.contratista.razonSocial}{" "}
+                            <strong>{t('contratista')}:</strong>{' '}
+                            {row.contratista.razonSocial}{' '}
                           </Typography>
                         </Grid>
 
                         <Grid item xs={4}>
                           <Typography variant="subtitle2">
-                            <strong>{t("comentario")}:</strong> {row.comentario}
+                            <strong>{t('comentario')}:</strong> {row.comentario}
                           </Typography>
                         </Grid>
                       </Grid>
                       <Grid container item xs={10}>
                         <Grid item xs={2}>
-                          <Typography variant="caption" title={"?"}>
-                            <strong>{t("_total_quantity")}:</strong>{" "}
-                            {row.unidades}{" "}
+                          <Typography variant="caption" title={'?'}>
+                            <strong>{t('_total_quantity')}:</strong>{' '}
+                            {row.unidades}{' '}
                             {/* {abrUnit(row.selectedOption?.unitMeasurement)} */}
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          <Typography variant="caption" title={"USD/"}>
-                            <strong>{t("_unit_price")}:</strong>{" "}
-                            {row.precio_unidad} {abrUnit("USD")}
+                          <Typography variant="caption" title={'USD/'}>
+                            <strong>{t('_unit_price')}:</strong>{' '}
+                            {row.precio_unidad} {abrUnit('USD')}
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <Typography variant="caption">
-                            <strong>{t("_total_cost")}:</strong>{" "}
+                            <strong>{t('_total_cost')}:</strong>{' '}
                             {row.precio_unidad * row.unidades} USD
                           </Typography>
                         </Grid>
                       </Grid>
                     </>
                   )}
-                  <Grid item xs={1} style={{ textAlign: "right" }}>
+                  <Grid item xs={1} style={{ textAlign: 'right' }}>
                     {editIndex === index ? (
                       <>
                         <IconButton
@@ -571,19 +570,19 @@ function ServicesForm({ formData, setFormData }) {
         </List>
       </Box>
     </CustomPaper>
-  );
+  )
 }
 
 function abrUnit(unit: string) {
-  if (!unit) return "unit";
+  if (!unit) return 'unit'
 
-  let splited = unit.split("/");
+  let splited = unit.split('/')
   if (splited.length > 0) {
-    let ns = splited.map((u) => (u.length > 7 ? u.slice(0, 7) + ".." : u));
-    return ns.join("/");
+    let ns = splited.map((u) => (u.length > 7 ? u.slice(0, 7) + '..' : u))
+    return ns.join('/')
   } else {
-    let ns = unit.length > 6 ? unit.slice(6) + ".." : unit;
-    return ns;
+    let ns = unit.length > 6 ? unit.slice(6) + '..' : unit
+    return ns
   }
 }
-export default ServicesForm;
+export default ServicesForm
