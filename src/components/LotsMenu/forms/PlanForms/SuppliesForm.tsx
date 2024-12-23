@@ -69,20 +69,19 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
         return
       }
     }
-
     const newRow = {
-      dosis: dosificacion,
-      insumo: selectedSupply,
+      selectedOption: selectedSupply,
+      dosificacion,
+      total,
+      deposito,
       nro_lote: nroLote,
-      ubicacion: ubicacion,
-      motivos: [],
+      ubicacion,
+      precio, // ojo: en vez de precio_estimado
       uuid: uuid4(),
-      total: total,
-      deposito: deposito,
-      precio_estimado: precio,
     }
 
     const newDetalles = [...formData.detalles.dosis, newRow]
+
     setFormData({
       ...formData,
       detalles: { ...formData.detalles, dosis: newDetalles },
@@ -151,18 +150,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
 
   useEffect(() => {
     if (formData?.detalles?.dosis) {
-      setRows(
-        formData.detalles.dosis.map((dosis) => ({
-          selectedOption: dosis.insumo,
-          dosificacion: dosis.dosis,
-          total: dosis.total,
-          deposito: dosis.deposito,
-          nro_lote: dosis.nro_lote,
-          ubicacion: dosis.ubicacion,
-          precio: dosis.precio_estimado,
-          uuid: dosis.uuid,
-        })),
-      )
+      setRows(formData.detalles.dosis)
     }
   }, [formData])
 
