@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   IconButton,
   List,
@@ -109,18 +109,182 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
   const { t } = useTranslation()
   const [editIndex, setEditIndex] = useState(-1)
   const [editData, setEditData] = useState({
-    selectedOption: '',
+    selectedOption: null,
     dosificacion: '',
-    nro_lote: 0,
+    nro_lote: '',
     ubicacion: '',
     total: '',
-    deposito: {},
+    deposito: null,
     precio: '',
+    uuid: '',
   })
+  const [deletingIndex, setDeletingIndex] = useState(null)
 
-  // ... (mantener los handlers existentes)
+  const handleEditRow = (index) => {
+    const rowToEdit = rows[index]
+    if (!rowToEdit) return
 
-  function abrUnit(unit) {
+    console.log('Starting edit for row:', rowToEdit)
+
+    // Hacer una copia profunda de los datos
+    const editDataCopy = {
+      selectedOption: rowToEdit.selectedOption
+        ? { ...rowToEdit.selectedOption }
+        : null,
+      dosificacion: rowToEdit.dosificacion ?? '',
+      nro_lote: rowToEdit.nro_lote ?? '',
+      ubicacion: rowToEdit.ubicacion ?? '',
+      total: rowToEdit.total ?? '',
+      deposito: rowToEdit.deposito ? { ...rowToEdit.deposito } : null,
+      precio: rowToEdit.precio ?? '',
+      uuid: rowToEdit.uuid,
+    }
+
+    console.log('Edit data initialized as:', editDataCopy)
+    setEditData(editDataCopy)
+    setEditIndex(index)
+  }
+
+  const handleDeleteRow = async (index) => {
+    setDeletingIndex(index)
+    const updatedRows = [...rows]
+    updatedRows[index] = { ...updatedRows[index], deleting: true }
+    onUpdateRows(updatedRows)
+
+    setTimeout(() => {
+      const filteredRows = rows.filter((_, idx) => idx !== index)
+      onUpdateRows(filteredRows)
+      setDeletingIndex(null)
+    }, 500)
+  }
+
+  const handleSaveEdit = () => {
+    const originalRow = rows[editIndex]
+    console.log('Original row:', originalRow)
+    console.log('Edit data:', editData)
+
+    // Creamos el objeto actualizado con los valores editados o los originales si no se modificaron
+    const updatedRow = {
+      ...originalRow, // Mantenemos todas las propiedades originales como base
+      selectedOption:
+        editData.selectedOption !== null
+          ? editData.selectedOption
+          : originalRow.selectedOption,
+      dosificacion:
+        editData.dosificacion !== ''
+          ? editData.dosificacion
+          : originalRow.dosificacion,
+      nro_lote:
+        editData.nro_lote !== '' ? editData.nro_lote : originalRow.nro_lote,
+      ubicacion:
+        editData.ubicacion !== '' ? editData.ubicacion : originalRow.ubicacion,
+      total: editData.total !== '' ? editData.total : originalRow.total,
+      deposito:
+        editData.deposito !== null ? editData.deposito : originalRow.deposito,
+      precio: editData.precio !== '' ? editData.precio : originalRow.precio,
+      uuid: originalRow.uuid,
+    }
+
+    console.log('Updated row before save:', updatedRow)
+
+    // Validación adicional
+    if (!updatedRow.selectedOption) {
+      console.error('selectedOption is required')
+      return
+    }
+
+    console.log('Updated row:', updatedRow) // Debug log
+
+    // Validar que tenemos los datos requeridos
+    if (!updatedRow.selectedOption) {
+      console.error('Missing selectedOption')
+      return
+    }
+
+    const updatedRows = [...rows]
+    updatedRows[editIndex] = updatedRow
+    onUpdateRows(updatedRows)
+
+    // Reset edit state
+    setEditIndex(-1)
+    setEditData({
+      selectedOption: null,
+      dosificacion: '',
+      nro_lote: '',
+      ubicacion: '',
+      total: '',
+      deposito: null,
+      precio: '',
+      uuid: '',
+    })
+  }
+
+  const handleCancelEdit = () => {
+    setEditIndex(-1)
+    setEditData({
+      selectedOption: null,
+      dosificacion: '',
+      nro_lote: '',
+      ubicacion: '',
+      total: '',
+      deposito: null,
+      precio: '',
+      uuid: '',
+    })
+  }
+
+  const handleEditSupplyChange = (value) => {
+    console.log('Supply changed to:', value) // Debug log
+    setEditData((prev) => ({
+      ...prev,
+      selectedOption: value,
+    }))
+  }
+
+  const handleEditDepositoChange = (value) => {
+    setEditData((prev) => ({
+      ...prev,
+      deposito: value,
+    }))
+  }
+
+  const handleEditCantidadPorHaChange = (event) => {
+    const value = event.target.value
+    setEditData((prev) => ({
+      ...prev,
+      dosificacion: value,
+      total: formData?.detalles?.hectareas
+        ? (value * formData.detalles.hectareas).toFixed(2)
+        : value,
+    }))
+  }
+
+  const handleEditCantidadTotalChange = (event) => {
+    const value = event.target.value
+    setEditData((prev) => ({
+      ...prev,
+      total: value,
+      dosificacion: formData?.detalles?.hectareas
+        ? (value / formData.detalles.hectareas).toFixed(2)
+        : value,
+    }))
+  }
+
+  const handleEditNroLoteChange = (event) => {
+    setEditData((prev) => ({
+      ...prev,
+      nro_lote: event.target.value,
+    }))
+  }
+
+  const handleEditUbicacionChange = (event) => {
+    setEditData((prev) => ({
+      ...prev,
+      ubicacion: event.target.value,
+    }))
+  }
+
+  const abrUnit = (unit) => {
     if (!unit) return 'unit'
     let splited = unit.split('/')
     if (splited.length > 0) {
@@ -131,6 +295,15 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
       return ns
     }
   }
+
+  // Agregar logs para depuración
+  useEffect(() => {
+    console.log('Current rows:', rows)
+  }, [rows])
+
+  useEffect(() => {
+    console.log('Current editData:', editData)
+  }, [editData])
 
   return (
     <Box mt={4}>
@@ -148,181 +321,201 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
         Insumos Agregados
       </Typography>
       <List sx={{ position: 'relative' }}>
-        {rows.map((row, index) => (
-          <CustomListItem key={index} deleting={row.deleting}>
-            <CardContent sx={{ p: 0 }}>
-              {editIndex === index ? (
-                <ContentSection>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <AutocompleteSupplies
-                        value={editData.selectedOption}
-                        onChange={handleEditSupplyChange}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <AutocompleteDeposito
-                        value={editData.deposito}
-                        onChange={handleEditDepositoChange}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <NumberFieldWithUnits
-                        size="small"
-                        fullWidth
-                        label={t('_quantity_per_hectare')}
-                        value={+editData.dosificacion}
-                        onChange={handleEditCantidadPorHaChange}
-                        unit="unit/ha"
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <NumberFieldWithUnits
-                        fullWidth
-                        label={t('_total_quantity')}
-                        value={+editData.total}
-                        onChange={handleEditCantidadTotalChange}
-                        unit="ha"
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Nro de Lote"
-                        value={editData.nro_lote}
-                        onChange={handleEditNroLoteChange}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Ubicacion"
-                        value={editData.ubicacion}
-                        onChange={handleEditUbicacionChange}
-                      />
-                    </Grid>
-                  </Grid>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      mt: 2,
-                      gap: 1,
-                    }}
-                  >
-                    <ActionButton
-                      color="primary"
-                      onClick={handleSaveEdit}
-                      size="small"
-                    >
-                      <SaveIcon />
-                    </ActionButton>
-                    <ActionButton
-                      color="error"
-                      onClick={handleCancelEdit}
-                      size="small"
-                    >
-                      <CloseIcon />
-                    </ActionButton>
-                  </Box>
-                </ContentSection>
-              ) : (
-                <>
+        {rows.map((row, index) => {
+          // Agregar log para depuración
+          if (!row.selectedOption) {
+            console.warn('Row missing selectedOption:', row)
+            return null
+          }
+
+          return (
+            <CustomListItem
+              key={row.uuid || index}
+              deleting={deletingIndex === index}
+            >
+              <CardContent sx={{ p: 0 }}>
+                {editIndex === index ? (
                   <ContentSection>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={6}>
+                        <AutocompleteSupplies
+                          value={editData.selectedOption}
+                          onChange={handleEditSupplyChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <AutocompleteDeposito
+                          value={editData.deposito}
+                          onChange={handleEditDepositoChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <NumberFieldWithUnits
+                          size="small"
+                          fullWidth
+                          label={t('_quantity_per_hectare')}
+                          value={editData.dosificacion}
+                          onChange={handleEditCantidadPorHaChange}
+                          unit={
+                            editData.selectedOption?.unitMeasurement
+                              ? `${editData.selectedOption.unitMeasurement}/ha`
+                              : 'unit/ha'
+                          }
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <NumberFieldWithUnits
+                          fullWidth
+                          label={t('_total_quantity')}
+                          value={editData.total}
+                          onChange={handleEditCantidadTotalChange}
+                          unit={
+                            editData.selectedOption?.unitMeasurement || 'unit'
+                          }
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <TextField
+                          fullWidth
+                          label="Nro de Lote"
+                          value={editData.nro_lote}
+                          onChange={handleEditNroLoteChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <TextField
+                          fullWidth
+                          label="Ubicacion"
+                          value={editData.ubicacion}
+                          onChange={handleEditUbicacionChange}
+                        />
+                      </Grid>
+                    </Grid>
                     <Box
                       sx={{
                         display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        mb: 2,
+                        justifyContent: 'flex-end',
+                        mt: 2,
+                        gap: 1,
                       }}
                     >
-                      <Box>
-                        <Typography
-                          variant="h6"
-                          sx={{ fontWeight: 600, mb: 0.5 }}
-                        >
-                          {row.selectedOption.name}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ mb: 1 }}
-                        >
-                          {row.selectedOption.description}
-                        </Typography>
-                      </Box>
-                      <StyledChip label={row.selectedOption.type} />
+                      <ActionButton
+                        color="primary"
+                        onClick={handleSaveEdit}
+                        size="small"
+                      >
+                        <SaveIcon />
+                      </ActionButton>
+                      <ActionButton
+                        color="error"
+                        onClick={handleCancelEdit}
+                        size="small"
+                      >
+                        <CloseIcon />
+                      </ActionButton>
                     </Box>
-
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <MetaInfo variant="body2">
-                          <QrCodeIcon />
-                          <strong>{t('_quantity_per_hectare')}:</strong>{' '}
-                          {row.dosificacion}{' '}
-                          {abrUnit(row.selectedOption?.unitMeasurement)}/ha
-                        </MetaInfo>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <MetaInfo variant="body2">
-                          <InventoryIcon />
-                          <strong>{t('_total_quantity')}:</strong> {row.total}{' '}
-                          {abrUnit(row.selectedOption?.unitMeasurement)}
-                        </MetaInfo>
-                      </Grid>
-                    </Grid>
                   </ContentSection>
+                ) : (
+                  <>
+                    <ContentSection>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          mb: 2,
+                        }}
+                      >
+                        <Box>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 600, mb: 0.5 }}
+                          >
+                            {row.selectedOption.name}
+                          </Typography>
+                          {row.selectedOption.description && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ mb: 1 }}
+                            >
+                              {row.selectedOption.description}
+                            </Typography>
+                          )}
+                        </Box>
+                        {row.selectedOption.type && (
+                          <StyledChip label={row.selectedOption.type} />
+                        )}
+                      </Box>
 
-                  <ContentSection>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <MetaInfo variant="body2">
-                          <LocationOnIcon />
-                          <strong>{t('Ubicacion')}:</strong> {row.ubicacion}
-                        </MetaInfo>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <MetaInfo variant="body2">
+                            <QrCodeIcon />
+                            <strong>{t('_quantity_per_hectare')}:</strong>{' '}
+                            {row.dosificacion}{' '}
+                            {abrUnit(row.selectedOption?.unitMeasurement)}/ha
+                          </MetaInfo>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <MetaInfo variant="body2">
+                            <InventoryIcon />
+                            <strong>{t('_total_quantity')}:</strong> {row.total}{' '}
+                            {abrUnit(row.selectedOption?.unitMeasurement)}
+                          </MetaInfo>
+                        </Grid>
                       </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <MetaInfo variant="body2">
-                          <QrCodeIcon />
-                          <strong>{t('Nro lote')}:</strong> {row.nro_lote}
-                        </MetaInfo>
-                      </Grid>
-                    </Grid>
-                  </ContentSection>
+                    </ContentSection>
 
-                  <ContentSection
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 1,
-                      backgroundColor: (theme) =>
-                        alpha(theme.palette.background.default, 0.5),
-                    }}
-                  >
-                    <ActionButton
-                      color="primary"
-                      onClick={() => handleEditRow(index)}
-                      size="small"
+                    <ContentSection>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <MetaInfo variant="body2">
+                            <LocationOnIcon />
+                            <strong>{t('Ubicacion')}:</strong> {row.ubicacion}
+                          </MetaInfo>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <MetaInfo variant="body2">
+                            <QrCodeIcon />
+                            <strong>{t('Nro lote')}:</strong> {row.nro_lote}
+                          </MetaInfo>
+                        </Grid>
+                      </Grid>
+                    </ContentSection>
+
+                    <ContentSection
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: 1,
+                        backgroundColor: (theme) =>
+                          alpha(theme.palette.background.default, 0.5),
+                      }}
                     >
-                      <EditIcon />
-                    </ActionButton>
-                    <ActionButton
-                      color="error"
-                      onClick={() => handleDeleteRow(index)}
-                      size="small"
-                    >
-                      <DeleteIcon />
-                    </ActionButton>
-                  </ContentSection>
-                </>
-              )}
-            </CardContent>
-          </CustomListItem>
-        ))}
+                      <ActionButton
+                        color="primary"
+                        onClick={() => handleEditRow(index)}
+                        size="small"
+                      >
+                        <EditIcon />
+                      </ActionButton>
+                      <ActionButton
+                        color="error"
+                        onClick={() => handleDeleteRow(index)}
+                        size="small"
+                      >
+                        <DeleteIcon />
+                      </ActionButton>
+                    </ContentSection>
+                  </>
+                )}
+              </CardContent>
+            </CustomListItem>
+          )
+        })}
       </List>
     </Box>
   )
 }
-
 export default SuppliesList

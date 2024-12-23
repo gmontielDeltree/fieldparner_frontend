@@ -3,14 +3,14 @@ import { Avatar, ButtonBase, Tooltip } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
 // Importamos las imágenes directamente
-import planAnualIcon from '../../../images/icons/iconoplanificacionanual.webp'
-import preparadoIcon from '../../../images/icons/IconodePlanificaciondesuelo.png'
-import categoryIcon1 from '../../../images/icons/sembradora_act.webp'
-import categoryIcon2 from '../../../images/icons/pulverizadora_act.webp'
-import categoryIcon3 from '../../../images/icons/cosechadora_act.webp'
-import categoryIcon4 from '../../../images/icons/iconodenotas_act.webp'
-import categoryIcon5 from '../../../images/icons/iconosatelite.webp'
-import categoryIcon6 from '../../../images/icons/suelo_act.webp'
+import planAnualIcon from '../../../images/icons/cicle.png'
+import preparadoIcon from '../../../images/icons/calendar.png'
+import categoryIcon1 from '../../../images/icons/sowing.png'
+import categoryIcon2 from '../../../images/icons/application.png'
+import categoryIcon3 from '../../../images/icons/harvest.png'
+import categoryIcon4 from '../../../images/icons/note.png'
+import categoryIcon5 from '../../../images/icons/satellite-view.png'
+import categoryIcon6 from '../../../images/icons/ground-sample.png'
 
 interface ActivitiesBarProps {
   selectedCategory: string | null
@@ -49,15 +49,18 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
   ]
 
   const avatarStyle = (categoryId: string) => ({
-    width: 50,
-    height: 50,
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    transform: selectedCategory === categoryId ? 'scale(1.2)' : 'scale(1)',
+    width: 65, // Reducido de 100px a 65px
+    height: 65, // Reducido de 100px a 65px
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transform: selectedCategory === categoryId ? 'scale(1.1)' : 'scale(1)',
     boxShadow:
-      selectedCategory === categoryId ? '0 4px 20px rgba(0,0,0,0.2)' : 'none',
+      selectedCategory === categoryId
+        ? '0 8px 24px rgba(0,0,0,0.12)'
+        : '0 4px 12px rgba(0,0,0,0.08)',
     borderRadius: '50%',
-    margin: '0 15px',
+    margin: '0 12px', // Reducido el margen lateral también
     cursor: 'pointer',
+    backgroundColor: '#f5f5f5',
     opacity:
       selectedCampaign ||
       ['Vista de Satelite', 'Recorrido'].includes(categoryId)
@@ -69,13 +72,29 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
         ? 'none'
         : 'grayscale(100%)',
     '&:hover': {
-      transform: 'scale(1.2)',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+      transform: 'scale(1.1)',
+      boxShadow: '0 12px 32px rgba(0,0,0,0.15)',
+      backgroundColor: '#f8f8f8',
     },
   })
 
   return (
-    <div id="activities-bar">
+    <div
+      id="activities-bar"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '20px 16px', // Reducido el padding del contenedor
+        overflowX: 'auto',
+        backgroundColor: '#fafafa',
+        borderRadius: '16px',
+        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)',
+        margin: '10px 0',
+        '::-webkit-scrollbar': { display: 'none' },
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none',
+      }}
+    >
       {categories.map(({ id, icon, link }) => (
         <Tooltip
           key={id}
@@ -86,8 +105,10 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
             tooltip: {
               backgroundColor: '#333',
               color: 'white',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
-              fontSize: '1em',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+              fontSize: '0.9em', // Reducido ligeramente el tamaño del tooltip
+              padding: '6px 12px',
+              borderRadius: '8px',
             },
             arrow: {
               color: '#333',
@@ -96,8 +117,28 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
         >
           <ButtonBase
             onClick={() => (link ? navigate(link) : selectCategory(id))}
+            sx={{
+              padding: '6px', // Reducido el padding
+              borderRadius: '50%',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                backgroundColor: 'transparent',
+              },
+            }}
           >
-            <Avatar alt={id} src={icon} sx={avatarStyle(id)} />
+            <Avatar
+              alt={id}
+              src={icon}
+              sx={avatarStyle(id)}
+              imgProps={{
+                style: {
+                  objectFit: 'contain',
+                  padding: '-8px', // Padding negativo para que la imagen se extienda más allá del círculo
+                  transform: 'scale(1.05)', // Aumentamos aún más el tamaño de la imagen
+                  transition: 'all 0.3s ease',
+                },
+              }}
+            />
           </ButtonBase>
         </Tooltip>
       ))}
