@@ -15,7 +15,9 @@ import {
   ButtonBase,
   Menu,
   MenuItem,
+  Box,
 } from '@mui/material'
+import { styled, keyframes } from '@mui/system'
 import { useTranslation } from 'react-i18next'
 import { RootState } from '../../redux/store'
 import iconoCampo from '../../images/icons/iconodecampo2D.webp'
@@ -35,6 +37,46 @@ import { NavBarProps } from '../../types'
 import CompanyNavBar from '../CompanyNavBar'
 import CampaignMenu from './components/CampaignMenu'
 
+// Animación para el fondo "parpadeante" o con un sutil cambio de color
+const backgroundPulse = keyframes({
+  '0%': {
+    backgroundPosition: '0% 50%',
+  },
+  '50%': {
+    backgroundPosition: '100% 50%',
+  },
+  '100%': {
+    backgroundPosition: '0% 50%',
+  },
+})
+
+const GlassAppBar = styled(AppBar)(({ theme }) => ({
+  // Efecto "glass" sutil + gradient con animación
+  background:
+    'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.3) 100%)',
+  backdropFilter: 'blur(6px)',
+  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+  color: theme.palette.text.primary,
+  animation: `${backgroundPulse} 10s ease infinite`,
+  transition: 'all 0.3s ease-in-out',
+}))
+
+// Animación de latido ("pulse") para notificaciones
+const pulseAnimation = {
+  animation: 'pulse 2s infinite',
+  '@keyframes pulse': {
+    '0%': {
+      boxShadow: '0 0 0 0 rgba(25, 118, 210, 0.5)',
+    },
+    '70%': {
+      boxShadow: '0 0 0 10px rgba(25, 118, 210, 0)',
+    },
+    '100%': {
+      boxShadow: '0 0 0 0 rgba(25, 118, 210, 0)',
+    },
+  },
+}
+
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
   open,
@@ -50,7 +92,6 @@ export const NavBar: React.FC<NavBarProps> = ({
   const { startLogout } = useAuthStore()
   const dispatch = useDispatch()
   const { t, i18n } = useTranslation()
-
   const [languageAnchorEl, setLanguageAnchorEl] = useState<null | HTMLElement>(
     null,
   )
@@ -58,7 +99,7 @@ export const NavBar: React.FC<NavBarProps> = ({
 
   useEffect(() => {
     i18n.changeLanguage(localStorage.getItem('language') || 'es')
-  }, [])
+  }, [i18n])
 
   const handleLanguageMenu = (event: React.MouseEvent<HTMLElement>) => {
     setLanguageAnchorEl(event.currentTarget)
@@ -80,21 +121,6 @@ export const NavBar: React.FC<NavBarProps> = ({
     setNotificationCount(hasNotifications ? 0 : 3)
   }
 
-  const pulseAnimation = {
-    animation: 'pulse 2s infinite',
-    '@keyframes pulse': {
-      '0%': {
-        boxShadow: '0 0 0 0 rgba(0, 123, 255, 0.7)',
-      },
-      '70%': {
-        boxShadow: '0 0 0 10px rgba(0, 123, 255, 0)',
-      },
-      '100%': {
-        boxShadow: '0 0 0 0 rgba(0, 123, 255, 0)',
-      },
-    },
-  }
-
   const handleLogout = () => {
     startLogout()
   }
@@ -108,9 +134,10 @@ export const NavBar: React.FC<NavBarProps> = ({
     }
   }
 
+  // Avatar con microtransiciones
   const avatarStyle = () => ({
-    width: 30,
-    height: 30,
+    width: 34,
+    height: 34,
     transition:
       'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
     transform: isVisible ? 'scale(1.2)' : 'scale(1)',
@@ -119,14 +146,16 @@ export const NavBar: React.FC<NavBarProps> = ({
     borderColor: isVisible ? '#1976d2' : 'transparent',
     borderRadius: '50%',
     backgroundColor: isVisible ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
+    '&:hover': {
+      transform: 'scale(1.25)',
+      boxShadow: '0 3px 10px 0 rgba(0,0,0,0.2)',
+    },
   })
 
   return (
-    <AppBar
+    <GlassAppBar
       position="fixed"
       sx={{
-        backgroundColor: 'white',
-        color: 'black',
         ...(open && {
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
@@ -138,7 +167,14 @@ export const NavBar: React.FC<NavBarProps> = ({
           color="default"
           edge="start"
           onClick={handleSideBarOpen}
-          sx={{ mr: 2, ...(open && { display: 'none' }) }}
+          sx={{
+            mr: 2,
+            transition: 'transform 0.3s ease',
+            ...(open && { display: 'none' }),
+            '&:hover': {
+              transform: 'scale(1.1)',
+            },
+          }}
         >
           <MenuOutlined />
         </IconButton>
@@ -151,11 +187,11 @@ export const NavBar: React.FC<NavBarProps> = ({
           wrap="nowrap"
         >
           <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            {/* Logo and FieldPartner Text */}
+            {/* Logo y FieldPartner */}
             <Avatar
               alt="Logo"
               src={logoImage}
-              sx={{ width: 30, height: 30, marginRight: 2 }}
+              sx={{ width: 40, height: 40, mr: 1 }}
             />
             <Typography
               onClick={() => navigate('/init/overview/fields')}
@@ -168,11 +204,16 @@ export const NavBar: React.FC<NavBarProps> = ({
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                marginRight: '40px',
+                marginRight: '32px',
+                '&:hover': {
+                  color: '#1976d2',
+                  transition: 'color 0.3s',
+                },
               }}
             >
               FieldPartner
             </Typography>
+
             <ButtonBase
               onClick={selectAvatar}
               sx={{ borderRadius: '50%', marginRight: '18px' }}
@@ -202,6 +243,10 @@ export const NavBar: React.FC<NavBarProps> = ({
                 onClick={handleNotificationClick}
                 sx={{
                   ml: 2,
+                  transition: 'transform 0.3s ease',
+                  '&:hover': {
+                    transform: 'scale(1.1)',
+                  },
                   ...(hasNotifications ? pulseAnimation : {}),
                 }}
               >
@@ -215,14 +260,16 @@ export const NavBar: React.FC<NavBarProps> = ({
               </IconButton>
             </Tooltip>
 
-            {/* Include CampaignMenu component here */}
+            {/* CampaignMenu */}
             <CampaignMenu />
           </Grid>
+
           <Grid item sm={4}>
             <CompanyNavBar key="combobox-companies" />
           </Grid>
+
           <Grid item className="d-flex align-items-center">
-            <Typography variant="h6" display="inline-block">
+            <Typography variant="h6" display="inline-block" sx={{ mr: 1 }}>
               {user?.username}
             </Typography>
 
@@ -230,6 +277,12 @@ export const NavBar: React.FC<NavBarProps> = ({
               color="inherit"
               aria-label="change-language"
               onClick={handleLanguageMenu}
+              sx={{
+                transition: 'transform 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.1)',
+                },
+              }}
             >
               <img
                 src={
@@ -286,12 +339,19 @@ export const NavBar: React.FC<NavBarProps> = ({
               color="inherit"
               aria-label="logout"
               onClick={handleLogout}
+              sx={{
+                ml: 1,
+                transition: 'transform 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.1)',
+                },
+              }}
             >
               <ExitToApp />
             </IconButton>
           </Grid>
         </Grid>
       </Toolbar>
-    </AppBar>
+    </GlassAppBar>
   )
 }
