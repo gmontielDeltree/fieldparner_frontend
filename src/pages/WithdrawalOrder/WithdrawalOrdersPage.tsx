@@ -5,17 +5,18 @@ import {
     useAppSelector,
     useBusiness,
     useCampaign,
+    useCrops,
     useDeposit,
     useForm,
     useOrder,
     useStockMovement,
     useSupply
-} from '../hooks';
-import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TemplateLayout } from '../components';
-import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, TableContainer, TextField, Typography } from '@mui/material';
-import { Assignment as AssignmentIcon } from '@mui/icons-material';
-import { ColumnProps, OrderStatus, StockByLot, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder, Supply } from '../types';
-import { getShortDate } from '../helpers/dates';
+} from '../../hooks';
+import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TemplateLayout } from '../../components';
+import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, TableCell, TableContainer, TextField, Typography } from '@mui/material';
+import { Assignment as AssignmentIcon, NoteAdd as NoteAddIcon } from '@mui/icons-material';
+import { ColumnProps, OrderStatus, StockByLot, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder, Supply } from '../../types';
+import { getShortDate } from '../../helpers/dates';
 
 
 
@@ -38,6 +39,8 @@ const initialForm = {
     type: WithdrawalOrderType.Individual,
 };
 
+//TODO: Agregar switch para seleccionar insumos o cultivos
+
 export const WithdrawalOrdersPage: React.FC = () => {
 
     const navigate = useNavigate();
@@ -46,6 +49,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const { isLoading, createWithdrawalOrder } = useOrder();
     const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
     const { isLoading: supplyLoading, supplies, getSupplies } = useSupply();
+    const { dataCrops, getCrops } = useCrops();
     const { isLoading: depositLoading, deposits, getDeposits, getDepositsBySupply } = useDeposit();
     const { campaigns, getCampaigns } = useCampaign();
     const { isLoading: loadingEntities, businesses: socialEntities, getBusinesses } = useBusiness();
@@ -154,6 +158,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
         getDeposits();
         getCampaigns();
         getBusinesses();
+        getCrops();
     }, [])
 
     return (
@@ -246,6 +251,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                 <Box sx={{ mt: 3, mb: 2, p: 1 }}>
                     <NewSupplyRow
                         key="new-supply-order"
+                        crops={dataCrops}
                         supplies={supplies}
                         deposits={deposits}
                         showDueDate={false}
@@ -267,17 +273,24 @@ export const WithdrawalOrdersPage: React.FC = () => {
                         columns={columns}
                         isLoading={isLoading}
                     >
-                        {suppliesToAdd.map((row) => (
-                            <ItemRow key={row.id}>
-                                <TableCellStyled align="left">
-                                    {row.deposit.description}
-                                </TableCellStyled>
-                                <TableCellStyled align="left">{row.supply.name} </TableCellStyled>
-                                <TableCellStyled align="center">{row.supply.unitMeasurement}</TableCellStyled>
-                                <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
-                                <TableCellStyled align='center'>{row.amount}</TableCellStyled>
-                            </ItemRow>
-                        ))}
+                        {
+                            suppliesToAdd.length === 0 ? (
+                                <ItemRow key="header" sx={{ backgroundColor: "#f4f4f4" }}>
+                                    <TableCell align="center" colSpan={11} >
+                                        <NoteAddIcon fontSize='medium' />
+                                    </TableCell>
+                                </ItemRow>
+                            ) : suppliesToAdd.map((row) => (
+                                <ItemRow key={row.id}>
+                                    <TableCellStyled align="left">
+                                        {row.deposit.description}
+                                    </TableCellStyled>
+                                    <TableCellStyled align="left">{row.supply?.name} </TableCellStyled>
+                                    <TableCellStyled align="center">{row.supply?.unitMeasurement}</TableCellStyled>
+                                    <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
+                                    <TableCellStyled align='center'>{row.amount}</TableCellStyled>
+                                </ItemRow>
+                            ))}
                     </DataTable>
                 </TableContainer>
                 <Grid
@@ -293,6 +306,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
+                            disabled={suppliesToAdd.length === 0}
                             color="primary"
                             onClick={() => handleAddWithdrawalOrder()}
                         >

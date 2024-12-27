@@ -477,7 +477,8 @@ export interface StockCrop extends Document {
 
 export interface TransformSupply {
   id: string;
-  supply: Supply;
+  supply?: Supply;
+  crop?: Crop;
   deposit: Deposit;
   location: string;
   nroLot: string;
@@ -522,7 +523,7 @@ export interface ExitField extends Document {
 
 export interface ExitFieldItem extends ExitField {
   deposit?: Deposit;
-  crop?: Crops;
+  crop?: Crop;
   transport?: Business;
   field?: Field;
   // trucker?: Business;
@@ -605,7 +606,7 @@ export interface WithdrawalOrder extends Document {
   contractor?: Business;
   labor?: string;
   laborNro?: string;
-  crop?: string;
+  cropId?: string;
   state: OrderStatus;
 }
 
@@ -629,7 +630,7 @@ export interface MovementType extends Document {
   concepto: string;
 }
 
-export interface Crops extends Document {
+export interface Crop extends Document {
   crop: string
   descriptionES: string;
   descriptionPT: string;

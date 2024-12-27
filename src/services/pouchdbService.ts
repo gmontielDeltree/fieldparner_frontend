@@ -19,7 +19,7 @@ import {
   DepositSupplyOrder,
   WithdrawalsByDepositSupply,
   MovementType,
-  Crops,
+  Crop,
   Zones,
   LaborsServices,
   PurchaseOrder,
@@ -42,7 +42,7 @@ import { CostsExpenses } from '../interfaces/costsExpenses';
 
 PouchDB.plugin(PouchDBFind);
 
-export const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
+export const remoteCouchDBUrl = "" // Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
 const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
 
 export const opts: PouchDB.Replication.SyncOptions = {
@@ -121,7 +121,7 @@ export const dbContext = Object.freeze({
   movementsType: new PouchDB<MovementType>(dbNames.movementsType),
   platform: new PouchDB<any>(dbNames.platform),
   platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
-  crops: new PouchDB<Crops>(dbNames.crops),
+  crops: new PouchDB<Crop>(dbNames.crops),
   zones: new PouchDB<Zones>(dbNames.zones),
   fieldpartner: new PouchDB(dbNames.fieldpartner),
   laborsServices: new PouchDB<LaborsServices>(dbNames.laborsServices),

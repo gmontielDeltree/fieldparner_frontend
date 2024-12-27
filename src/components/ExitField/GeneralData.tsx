@@ -3,7 +3,7 @@ import {
     FolderOpen as FolderOpenIcon,
 } from '@mui/icons-material';
 import React, { ChangeEvent, useState } from 'react';
-import { Campaign, Crops, ExitField, Field, Lot } from '../../types';
+import { Campaign, Crop, ExitField, Field, Lot } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 //TODO: validar q descripcion mostrar del cultivo
 interface GeneralDataProps {
     formValues: ExitField;
-    crops: Crops[];
+    crops: Crop[];
     campaigns: Campaign[];
     listFields: Field[];
     setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;

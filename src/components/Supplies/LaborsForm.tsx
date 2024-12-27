@@ -16,7 +16,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Crops, Supply,  TypeSupplies } from "../../types";
+import { Crop, Supply,  TypeSupplies } from "../../types";
 import React, { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -30,7 +30,7 @@ import { IsSeed } from "../../utils/helper";
 export interface LaborsFormProps {
   formValues: Supply;
   formErrors: Record<string, boolean>;
-  crops: Crops[];
+  crops: Crop[];
   setFormValues: React.Dispatch<React.SetStateAction<Supply>>;
   setFileUpload: React.Dispatch<React.SetStateAction<File | null>>;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
@@ -96,7 +96,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
 
   const isSeedType = React.useMemo(() => IsSeed(type), [type]);
 
-  const getDescription = (crop: Crops): string => {
+  const getDescription = (crop: Crop): string => {
     switch (currentLanguage) {
       case 'en':
         return crop.descriptionEN;

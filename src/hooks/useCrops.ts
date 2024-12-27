@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { dbContext } from "../services";
 import Swal from "sweetalert2";
-import { Crops } from "../types";
+import { Crop } from "../types";
 import { useTranslation } from "react-i18next";
 
 String.prototype.toColor = function() {
@@ -17,13 +17,13 @@ String.prototype.toColor = function() {
     return colors[hash];
 }
 
-export interface CultivoItem extends Crops {
+export interface CultivoItem extends Crop {
 color?:string;
 }
 
 export const useCrops = () => {
   const [crops, setCrops] = useState<CultivoItem []>([]);
-  const [dataCrops, setDataCrops] = useState<Crops[]>([]);
+  const [dataCrops, setDataCrops] = useState<Crop[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<any>(null);
 
@@ -69,7 +69,7 @@ export const useCrops = () => {
       setIsLoading(false);
 
       if (response.rows.length) {
-        const documents: Crops[] = response.rows.map(row => row.doc as Crops);
+        const documents: Crop[] = response.rows.map(row => row.doc as Crop);
         setDataCrops(documents);
         setCrops(documents);
       }

@@ -4,7 +4,7 @@ import { onLogout } from '../redux/auth';
 import { dbContext } from '../services';
 import { useAppDispatch, useAppSelector } from './useRedux';
 import { useState } from 'react';
-import { Campaign, Crops, EnumStatusContract, Numerator, NumeratorType, OriginDestinations } from '../types';
+import { Campaign, Crop, EnumStatusContract, Numerator, NumeratorType, OriginDestinations } from '../types';
 import { Company } from '../interfaces/company';
 import { Business } from '../interfaces/socialEntity';
 import { useNumerator } from './useNumerator';
@@ -75,7 +75,7 @@ export const useContractSaleCereals = () => {
             if (responseAll) {
                 const contracts = responseAll[0].docs.map(doc => doc as ContractSaleCereal);
                 const campaigns = responseAll[1].docs.map(doc => doc as Campaign);
-                const crops = responseAll[2].rows.map(row => row.doc as Crops);
+                const crops = responseAll[2].rows.map(row => row.doc as Crop);
                 const companies = responseAll[3].docs.map(doc => doc as Company);
                 const socialEntities = responseAll[4].docs.map(doc => doc as Business);
                 const originsDestinations = responseAll[5].rows.map(row => row.doc as OriginDestinations);

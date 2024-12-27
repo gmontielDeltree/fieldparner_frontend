@@ -5,17 +5,17 @@ import {
     useAppSelector,
     useForm,
     useOrder,
-} from '../hooks';
-import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../components';
+} from '../../hooks';
+import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../../components';
 import { Box, Button, Grid, IconButton, InputAdornment, Paper, TableContainer, TextField, Tooltip, Typography } from '@mui/material';
 import {
     Assignment as AssignmentIcon,
     Add as AddIcon
 } from '@mui/icons-material';
 import { Icon } from 'semantic-ui-react';
-import { ColumnProps, DepositSupplyOrder } from '../types';
-import { getShortDate } from '../helpers/dates';
-import { DepositSupplyOrderItem } from '../types/index';
+import { ColumnProps, DepositSupplyOrder } from '../../types';
+import { getShortDate } from '../../helpers/dates';
+import { DepositSupplyOrderItem } from '../../types/index';
 
 
 const columnsDepositSupply: ColumnProps[] = [

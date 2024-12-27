@@ -28,7 +28,7 @@ import { useDeposit } from "../../../../hooks";
 import { useTranslation } from "react-i18next";
 import { NumberFieldWithUnits } from "../../components/NumberField";
 import { AutocompleteSupplies } from "../../components/AutocompleteSupplies";
-import { Deposit, Supply, Crops } from "@types";
+import { Deposit, Supply, Crop } from "@types";
 import { AutocompleteDeposito } from "../../components/AutocompleteDeposito";
 import { TTipoActividadPlanificada } from "../../../../interfaces/planification";
 import { log } from "xstate";
@@ -77,7 +77,7 @@ const CustomPaper = styled(Paper)({
 function SuppliesForm({ lot, db, formData, setFormData }) {
   const { t } = useTranslation();
   const [selectedSupply, setSelectedSupply] = useState<Supply>();
-  const [selectedCrops, setSelectedCrops] = useState<Crops>();
+  const [selectedCrops, setSelectedCrops] = useState<Crop>();
   const [dosificacion, setDosificacion] = useState("");
   const [total, setTotal] = useState("");
   const [precio, setPrecio] = useState("");

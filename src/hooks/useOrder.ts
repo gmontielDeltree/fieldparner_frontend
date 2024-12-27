@@ -64,7 +64,6 @@ export const useOrder = () => {
     }
 
     const createWithdrawalOrder = async (newWithdrawalOrder: WithdrawalOrder, newDepositSupplies: DepositSupplyOrder[]) => {
-        console.log('Starting createWithdrawalOrder function');
         setIsLoading(true);
         try {
             if (!user) { dispatch(onLogout("Session expired")); return; }
@@ -74,12 +73,7 @@ export const useOrder = () => {
                 numeratorType: NumeratorType.Client,
                 lastNumerator: 1
             };
-
-            console.log('Initial lastNumerator:', lastNumerator);
-
             const lastNumeratorFound = await getLastNumerator(user.accountId, NumeratorType.Client);
-
-            console.log('Last numerator found:', lastNumeratorFound);
 
             if (!lastNumeratorFound) {
                 await putLastNumerator(lastNumerator, true);
@@ -108,15 +102,12 @@ export const useOrder = () => {
                 },
             });
             const suppliesToUpdate = responseSupplies.docs;
-
-            newDepositSupplies.forEach(newSupplyOrder => {
-                const supply = suppliesToUpdate.find(s => s._id === newSupplyOrder.supply._id);
-                if (supply) {
-                    supply.reservedStock += newSupplyOrder.amount;
-                }
-            });
-
-            console.log('Supplies after reservedStock update:', suppliesToUpdate);
+            // newDepositSupplies.forEach(newSupplyOrder => {
+            //     const supply = suppliesToUpdate.find(s => s._id === newSupplyOrder.supply._id);
+            //     if (supply) {
+            //         supply.reservedStock += newSupplyOrder.amount;
+            //     }
+            // });
 
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
@@ -124,8 +115,6 @@ export const useOrder = () => {
                 putLastNumerator(lastNumerator),
                 dbContext.supplies.bulkDocs(suppliesToUpdate)
             ]);
-
-            console.log('Response from database operations:', response);
 
             setIsLoading(false);
 

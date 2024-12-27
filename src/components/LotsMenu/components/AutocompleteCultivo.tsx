@@ -11,11 +11,11 @@ import { useTranslation } from "react-i18next";
 import { capitalizeText } from "../../../helpers/helper";
 import { CultivoItem, useCrops } from "../../../hooks/useCrops";
 import { Cultivo } from "../../../interfaces/insumos";
-import { Crop, CropsRepository } from "../../../classes/Crops";
-import { Crops } from "@types";
+import {  CropsRepository } from "../../../classes/Crops";
+import { Crop } from "../../../types";
 import i18next from "i18next";
 
-let labelInLang = (c : Crops, lang : string)=>{
+let labelInLang = (c : Crop, lang : string)=>{
   if(lang === "es"){
     return c.descriptionES
   } else if(lang === "en"){
@@ -26,7 +26,7 @@ let labelInLang = (c : Crops, lang : string)=>{
     return c.descriptionES
   }
 }
-const filter = createFilterOptions<Crops>({stringify:(option)=>{
+const filter = createFilterOptions<Crop>({stringify:(option)=>{
   let lang = i18next.language;
         let label = labelInLang(option,lang);
         return label
@@ -40,7 +40,7 @@ const filter = createFilterOptions<Crops>({stringify:(option)=>{
 
 export const AutocompleteCultivo = ({ value, onChange }) => {
   const { t, i18n } = useTranslation();
-  const [crops, setCrops] = useState<Crops[]>([]);
+  const [crops, setCrops] = useState<Crop[]>([]);
 
   const [cropsRepo, _] = useState(new CropsRepository());
 
@@ -56,7 +56,7 @@ export const AutocompleteCultivo = ({ value, onChange }) => {
     // });
   }, []);
 
-  const [_value, setValue] = React.useState<Crops | null>(
+  const [_value, setValue] = React.useState<Crop | null>(
     value || null
   );
 
