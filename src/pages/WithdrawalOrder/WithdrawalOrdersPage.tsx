@@ -53,7 +53,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const { isLoading: depositLoading, deposits, getDeposits, getDepositsBySupply } = useDeposit();
     const { campaigns, getCampaigns } = useCampaign();
     const { isLoading: loadingEntities, businesses: socialEntities, getBusinesses } = useBusiness();
-    const { getStock } = useStockMovement();
+    const { getStockBySupply } = useStockMovement();
     const {
         creationDate,
         reason,
@@ -105,9 +105,9 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const validateStock = async (newSupply: TransformSupply) => {
         try {
             const { supply, deposit } = newSupply;
-            if (!supply._id || !deposit._id) return false;
+            if (!supply?._id || !deposit?._id) return false;
 
-            const result = await getStock(supply._id, deposit._id, newSupply.location, newSupply.nroLot);
+            const result = await getStockBySupply(supply._id, deposit._id, newSupply.location, newSupply.nroLot);
 
             //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
             if (result && result.currentStock > 0) {
@@ -148,7 +148,8 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const handleAddDepositSupply = (item: TransformSupply) => {
         addDepositSupplyToAdd(item);
     }
-
+    
+    //TODO: replicar para cultivos
     const onChangeSupply = (item: Supply) => {
         getDepositsBySupply(item);
     }
@@ -255,7 +256,10 @@ export const WithdrawalOrdersPage: React.FC = () => {
                         supplies={supplies}
                         deposits={deposits}
                         showDueDate={false}
-                        addNewSupply={handleAddDepositSupply}
+                        addNewSupply={(item) => { 
+                            //TODO: agregar para cultivos
+                            addDepositSupplyToAdd(item);
+                        }}
                         onChangeSupply={onChangeSupply} />
                 </Box>
                 <TableContainer

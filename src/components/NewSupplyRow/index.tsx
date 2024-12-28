@@ -15,19 +15,19 @@ interface NewSupplyRowProps {
   showDueDate: boolean,
   addNewSupply: (item: TransformSupply) => void;
   onChangeSupply: (item: Supply) => void;
+  onChangeCrop: (item: Crop) => void;
 }
 
 const today = getShortDate();
 const initialStateNewSupply = {
   supplyId: "",
+  cropId: "",
   depositId: "",
   location: "",
   nroLot: "",
   dueDate: today,
   amount: 0
 };
-//TODO: continuar con la relacion de cultivo
-interface IOption { label: string, value: string };
 
 export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
   supplies,
@@ -35,11 +35,11 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
   deposits,
   addNewSupply,
   showDueDate = true,
-  onChangeSupply
+  onChangeSupply,
+  onChangeCrop
 }) => {
 
   const {
-    supplyId,
     depositId,
     location,
     nroLot,
@@ -54,7 +54,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
   const [cropSelected, setCropSelected] = useState<Crop | null>(null);
-  const { isLoading, getStock } = useStockMovement();
+  const { isLoading, getStockBySupply, getStockByCrop } = useStockMovement();
 
   const showDeposit = !!supplySelected || !!cropSelected;
   const showLocation = showDeposit && depositSelected;
@@ -77,18 +77,21 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
     setFormulario((prevState) => ({ ...prevState, location: value }));
   };
 
-  const handleAddNewSupply = () => {
-    if (!depositSelected || !supplySelected) return;
+  const onClickAdd = () => {
+
+    if (isCrop && !cropSelected && !depositSelected) return;
+    if (!isCrop && !supplySelected && !depositSelected) return;
+
     addNewSupply({
       id: uuid4(),
       deposit: depositSelected,
       supply: supplySelected,
+      crop: cropSelected,
       location,
       nroLot,
       dueDate,
       amount: Number(amount),
       currentStock: 0,
-      crop: cropSelected
     });
     reset();
   }
@@ -100,18 +103,27 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
   }
 
   useEffect(() => {
-    const getAmount = async (supplyId: string, depositId: string, location: string, nroLot: string) => {
-      const supplyStock = await getStock(supplyId, depositId, location, nroLot);
+    const getAmount = async (id: string, depositId: string, location: string, nroLot: string) => {
+      let amount = 0;
 
-      if (supplyStock)
-        setFormulario(prevState => ({ ...prevState, amount: supplyStock.currentStock }));
+      if (isCrop) {
+        const cropStock = await getStockByCrop(id, depositId, location, nroLot);
+        if (cropStock) amount = cropStock.currentStock;
+      }
+      else {
+        const supplyStock = await getStockBySupply(id, depositId, location, nroLot);
+        if (supplyStock) amount = supplyStock.currentStock;
+      }
+
+      setFormulario(prevState => ({ ...prevState, amount }));
+    }
+    const id = isCrop ? cropSelected?._id : supplySelected?._id;
+
+    if (id && depositSelected?._id && location) {
+      getAmount(id, depositSelected._id, location, nroLot);
     }
 
-    if (supplySelected?._id && depositSelected?._id && location) {
-      getAmount(supplySelected._id, depositSelected._id, location, nroLot);
-    }
-
-  }, [depositSelected, supplySelected, location, nroLot])
+  }, [depositSelected, supplySelected, cropSelected, location, nroLot, isCrop])
 
 
   return (
@@ -162,9 +174,10 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
                   const value = newValue?.value || "null";
                   const cropSelected = crops.find((crop) => crop._id === value);
                   if (cropSelected && cropSelected._id) {
+                    onChangeCrop(cropSelected); //Evento donde vamos a ir a buscar los depositos de ese cultivo
                     setFormulario((prevState) => ({
                       ...prevState,
-                      supplyId: value, //MODIFICAR ESTO para q pueda ser un cultivo
+                      cropId: value,
                     }));
                     setCropSelected(cropSelected);
                   }
@@ -314,7 +327,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
           aria-label="add"
           disabled={amount <= 0}
           size="small"
-          onClick={() => handleAddNewSupply()}
+          onClick={() => onClickAdd()}
         >
           <AddIcon />
         </IconButton>

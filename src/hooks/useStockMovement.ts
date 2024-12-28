@@ -61,8 +61,7 @@ export const useStockMovement = () => {
         }
     }
 
-    const getStock = async (supplyId: string, depositId: string, location: string, nroLot: string) => {
-        console.log(`Fetching stock with Supply ID: ${supplyId}, Deposit ID: ${depositId}, Location: ${location}, Lot Number: ${nroLot}`);
+    const getStockBySupply = async (supplyId: string, depositId: string, location: string, nroLot: string) => {
         setIsLoading(true);
         try {
             const existingNroLot = await dbContext.stockByLots.find({
@@ -75,17 +74,15 @@ export const useStockMovement = () => {
                     ],
                 }
             });
-            console.log('Database response:', existingNroLot.docs);
             setIsLoading(false);
             return existingNroLot.docs[0];
         } catch (error) {
-            console.log('Error fetching stock:', error);
             setIsLoading(false);
             console.log(error);
         }
     }
 
-    const getStockCrop = async (cropId: string, depositId: string, location: string, nroLot: string) => {
+    const getStockByCrop = async (cropId: string, depositId: string, location: string, nroLot: string) => {
         setIsLoading(true);
         try {
             const foundStockCrop = await dbContext.stockCrops.find({
@@ -128,7 +125,7 @@ export const useStockMovement = () => {
 
             console.log("Datos procesados de newMovement:", { typeMovement, isIncome, amount, amountValue, depositId, nroLot, location });
             console.log("Preparing to fetch existing stock with parameters:", supplyDto._id, depositId, location, nroLot);
-            let existingStock = await getStock(supplyDto._id, depositId, location, nroLot);
+            let existingStock = await getStockBySupply(supplyDto._id, depositId, location, nroLot);
             console.log("Stock existente:", existingStock);
 
             if (!(typeMovement === TypeMovement.TransferenciaDeposito.toString())) {
@@ -171,7 +168,7 @@ export const useStockMovement = () => {
                     throw new Error("Información de destino no provista o stock inicial no encontrado");
                 }
 
-                let existingLotInDepositDestination = await getStock(supplyDto._id, depositDestination.depositId, depositDestination.location, existingStock.nroLot);
+                let existingLotInDepositDestination = await getStockBySupply(supplyDto._id, depositDestination.depositId, depositDestination.location, existingStock.nroLot);
                 console.log("Stock en destino:", existingLotInDepositDestination);
 
                 let promiseAll = [
@@ -389,8 +386,8 @@ export const useStockMovement = () => {
         updateMovement,
         getNroLotsBySupplyAndDeposit,
         transformStock,
-        getStock,
+        getStockBySupply,
         getMovementsType,
-        getStockCrop
+        getStockByCrop
     }
 }

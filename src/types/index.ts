@@ -477,9 +477,9 @@ export interface StockCrop extends Document {
 
 export interface TransformSupply {
   id: string;
-  supply?: Supply;
-  crop?: Crop;
-  deposit: Deposit;
+  supply: Supply | null;
+  crop: Crop | null;
+  deposit: Deposit | null;
   location: string;
   nroLot: string;
   dueDate: string;
