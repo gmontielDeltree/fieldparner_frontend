@@ -2,7 +2,7 @@ import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from ".";
 import { dbContext } from "../services";
-import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, NumeratorType, OrderStatus, StockByLot, StockMovement, Supply, TypeMovement, WithdrawalOrder, WithdrawalOrderType, WithdrawalsByDepositSupply } from "../types";
+import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, NumeratorType, OrderStatus, StockByLot, StockCrop, StockMovement, TypeMovement, WithdrawalOrder, WithdrawalOrderType, WithdrawalsByDepositSupply } from "../types";
 import { useState } from "react";
 import { setWithdrawalOrderActive } from "../redux/withdrawalOrder";
 import { onLogout } from '../redux/auth';
@@ -93,15 +93,15 @@ export const useOrder = () => {
             let depositSuppliesOrder = newDepositSupplies.map(s => ({ ...s, order: lastNumerator.lastNumerator }));
 
             // Fetch supplies to update reservedStock
-            const responseSupplies = await dbContext.supplies.find({
-                selector: {
-                    $or: [
-                        { accountId: user.accountId },
-                        { isDefault: true }
-                    ]
-                },
-            });
-            const suppliesToUpdate = responseSupplies.docs;
+            // const responseSupplies = await dbContext.supplies.find({
+            //     selector: {
+            //         $or: [
+            //             { accountId: user.accountId },
+            //             { isDefault: true }
+            //         ]
+            //     },
+            // });
+            // const suppliesToUpdate = responseSupplies.docs;
             // newDepositSupplies.forEach(newSupplyOrder => {
             //     const supply = suppliesToUpdate.find(s => s._id === newSupplyOrder.supply._id);
             //     if (supply) {
@@ -113,7 +113,7 @@ export const useOrder = () => {
                 dbContext.withdrawalOrders.post(newOrder),
                 dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
                 putLastNumerator(lastNumerator),
-                dbContext.supplies.bulkDocs(suppliesToUpdate)
+                // dbContext.supplies.bulkDocs(suppliesToUpdate)
             ]);
 
             setIsLoading(false);
@@ -178,6 +178,7 @@ export const useOrder = () => {
                 order: w.order,
                 withdrawalDate,
             } as WithdrawalsByDepositSupply));
+
             const updateDepositSupplies: DepositSupplyOrder[] = listWithdrawals.map(w => {
                 const { amount, ...newObject } = w;
                 let withdrawalAmount = Number(w.withdrawalAmount + amount);
@@ -195,43 +196,63 @@ export const useOrder = () => {
 
             const response = await Promise.all([
                 dbContext.stockByLots.find({ selector: { "accountId": user.accountId } }),
-                dbContext.supplies.find({ selector: { "accountId": user.accountId } }),
+                dbContext.stockCrops.find({ selector: { "accountId": user.accountId } }),
+                // dbContext.supplies.find({ selector: { "accountId": user.accountId } }),
             ]);
 
             if (!response) throw new Error("Supplies not found.");
 
-            const responseStockFromSupplies = response[0].docs;
-            const responseSupplies = response[1].docs;
+            const responseStockSupplies = response[0].docs;
+            const responseStockCrops = response[1].docs;
             let updateStockSupplies: StockByLot[] = []; // Insumos actualizados con nuevo stock
-            let updateSupplies: Supply[] = [];
+            let updateStockCrops: StockCrop[] = []; // Cultivos actualizados con nuevo stock
+            // const responseSupplies = response[1].docs;
+            // let updateSupplies: Supply[] = [];
 
-            responseStockFromSupplies.forEach(s => {
-                listWithdrawals.forEach(w => {
-                    if (w.deposit._id === s.depositId && w.supply._id === s.supplyId &&
-                        w.location === s.location && w.nroLot === s.nroLot) {
-                        updateStockSupplies.push({
-                            ...s, currentStock: Number(s.currentStock - Number(w.amount))
-                        });
-                    }
-                });
+            // responseStockSupplies.forEach(s => {
+            //     listWithdrawals.forEach(w => {
+            //         if (w.deposit._id === s.depositId && w.supply._id === s.supplyId &&
+            //             w.location === s.location && w.nroLot === s.nroLot) {
+            //             updateStockSupplies.push({
+            //                 ...s, currentStock: Number(s.currentStock - Number(w.amount))
+            //             });
+            //         }
+            //     });
+            // });
+
+            listWithdrawals.forEach(w => {
+                //Si existe el insumo, se actualiza el stock dependiendo de la tabla stockByLots
+                if (w.supply) {
+                    responseStockSupplies.forEach(s => {
+                        if (w.deposit?._id === s.depositId && w.supply?._id === s.supplyId &&
+                            w.location === s.location && w.nroLot === s.nroLot) {
+                            updateStockSupplies.push({
+                                ...s, currentStock: Number(s.currentStock - Number(w.amount))
+                            });
+                        }
+                    });
+                } else {
+                    responseStockCrops.forEach(c => {
+                        if (w.deposit?._id === c.depositId && w.crop?._id === c.cropId &&
+                            w.location === c.location && w.nroLot === c.nroLot) {
+                            updateStockCrops.push({
+                                ...c, currentStock: Number(c.currentStock - Number(w.amount))
+                            });
+                        }
+                    });
+                }
             });
-            responseSupplies.forEach(s => {
-                listWithdrawals.forEach(w => {
-                    if (s._id === w.supply._id) {
-                        s.currentStock = Number(s.currentStock - Number(w.amount));
-                        s.reservedStock = Number(s.reservedStock - Number(w.amount));
-                        updateSupplies.push(s);
-                    }
-                });
-            });
+
 
             let newMovements = listWithdrawals.map(w => ({
                 accountId: user.accountId,
                 amount: w.amount,
                 campaignId: withdrawalOrderActive.campaign._id,
                 creationDate: withdrawalDate,
-                depositId: w.deposit._id,
-                supplyId: w.supply._id,
+                depositId: w.deposit?._id,
+                supplyId: w.supply?._id,
+                isCrop: !!w.crop,
+                cropId: w.crop?._id,
                 location: w.location,
                 nroLot: w.nroLot,
                 detail: withdrawalOrderActive.reason,
@@ -246,7 +267,7 @@ export const useOrder = () => {
                 dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
                 dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
                 dbContext.stockByLots.bulkDocs(updateStockSupplies),
-                dbContext.supplies.bulkDocs(updateSupplies),
+                dbContext.stockCrops.bulkDocs(updateStockCrops),
                 dbContext.stockMovements.bulkDocs(newMovements),
             ]);
 

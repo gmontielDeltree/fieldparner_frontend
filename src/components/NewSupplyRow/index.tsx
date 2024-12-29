@@ -13,7 +13,7 @@ interface NewSupplyRowProps {
   deposits: Deposit[],
   crops: Crop[],
   showDueDate: boolean,
-  addNewSupply: (item: TransformSupply) => void;
+  addNewSupplyOrCultive: (item: TransformSupply, isCultive: boolean) => void;
   onChangeSupply: (item: Supply) => void;
   onChangeCrop: (item: Crop) => void;
 }
@@ -33,8 +33,8 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
   supplies,
   crops,
   deposits,
-  addNewSupply,
   showDueDate = true,
+  addNewSupplyOrCultive,
   onChangeSupply,
   onChangeCrop
 }) => {
@@ -82,7 +82,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
     if (isCrop && !cropSelected && !depositSelected) return;
     if (!isCrop && !supplySelected && !depositSelected) return;
 
-    addNewSupply({
+    addNewSupplyOrCultive({
       id: uuid4(),
       deposit: depositSelected,
       supply: supplySelected,
@@ -92,7 +92,7 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       dueDate,
       amount: Number(amount),
       currentStock: 0,
-    });
+    }, isCrop);
     reset();
   }
 

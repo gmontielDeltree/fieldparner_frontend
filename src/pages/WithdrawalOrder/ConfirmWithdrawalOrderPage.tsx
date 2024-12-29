@@ -65,11 +65,11 @@ export const NewWithdrawalRow = ({ row, addNewWithdrawal }: NewWithdrawalRowProp
     return (
         <ItemRow key={row._id}>
             <TableCellStyled align="left">
-                {row.deposit.description}
+                {row.deposit?.description}
             </TableCellStyled>
-            <TableCellStyled align="left">{row.supply.name || "-"} </TableCellStyled>
+            <TableCellStyled align="left">{row.supply?.name || "-"} </TableCellStyled>
             <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
-            <TableCellStyled align="center">{row.supply.unitMeasurement}</TableCellStyled>
+            <TableCellStyled align="center">{row.supply?.unitMeasurement}</TableCellStyled>
             <TableCellStyled align='center'>{row.originalAmount}</TableCellStyled>
             <TableCellStyled align='center'>{(row.originalAmount - row.withdrawalAmount)}</TableCellStyled>
             <TableCellStyled align='center'>{row.location}</TableCellStyled>

@@ -343,7 +343,7 @@ export const TransformPage: React.FC = () => {
                             supplies={supplies}
                             deposits={deposits}
                             showDueDate
-                            addNewSupply={handleAddSupplyOrigin}
+                            addNewSupplyOrCultive={handleAddSupplyOrigin}
                             onChangeSupply={onChangeSupply} />
                     </Box>
                     <TableContainer
@@ -393,7 +393,7 @@ export const TransformPage: React.FC = () => {
                             supplies={supplies}
                             deposits={deposits}
                             showDueDate
-                            addNewSupply={handleAddSupplyDestination}
+                            addNewSupplyOrCultive={handleAddSupplyDestination}
                             onChangeSupply={onChangeSupplyDestination}
                         />
                     </Box>

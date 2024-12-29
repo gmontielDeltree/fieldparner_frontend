@@ -568,7 +568,7 @@ export interface Field extends Document {
   // _rev: string;
 }
 
-//Retiros del Deposito e Insumo
+//Retiros del Deposito e Insumo/Cultivo
 export interface WithdrawalsByDepositSupply extends Document {
   accountId: string;
   order: number;
@@ -577,13 +577,14 @@ export interface WithdrawalsByDepositSupply extends Document {
   amount: number;
 }
 
-//Deposito e Insumo de una Orden
+//Deposito e Insumo/Cultivo de una Orden
 export interface DepositSupplyOrder extends Document {
   order: number;
   accountId: string;
-  deposit: Deposit;
+  deposit: Deposit | null;
   location: string;
-  supply: Supply;
+  crop: Crop | null;
+  supply: Supply | null;
   nroLot: string;
   withdrawalAmount: number;
   originalAmount: number;

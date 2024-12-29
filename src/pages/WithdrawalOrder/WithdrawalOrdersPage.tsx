@@ -15,7 +15,7 @@ import {
 import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TemplateLayout } from '../../components';
 import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, TableCell, TableContainer, TextField, Typography } from '@mui/material';
 import { Assignment as AssignmentIcon, NoteAdd as NoteAddIcon } from '@mui/icons-material';
-import { ColumnProps, OrderStatus, StockByLot, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder, Supply } from '../../types';
+import { ColumnProps, OrderStatus, StockByLot, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder, StockCrop } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 
 
@@ -39,8 +39,6 @@ const initialForm = {
     type: WithdrawalOrderType.Individual,
 };
 
-//TODO: Agregar switch para seleccionar insumos o cultivos
-
 export const WithdrawalOrdersPage: React.FC = () => {
 
     const navigate = useNavigate();
@@ -50,10 +48,15 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
     const { isLoading: supplyLoading, supplies, getSupplies } = useSupply();
     const { dataCrops, getCrops } = useCrops();
-    const { isLoading: depositLoading, deposits, getDeposits, getDepositsBySupply } = useDeposit();
+    const {
+        isLoading: depositLoading,
+        deposits,
+        getDeposits,
+        getDepositsBySupplyId,
+        getDepositsByCropId } = useDeposit();
     const { campaigns, getCampaigns } = useCampaign();
     const { isLoading: loadingEntities, businesses: socialEntities, getBusinesses } = useBusiness();
-    const { getStockBySupply } = useStockMovement();
+    const { getStockBySupply, getStockByCrop } = useStockMovement();
     const {
         creationDate,
         reason,
@@ -71,7 +74,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
             navigate("/init/overview/list-orders");
     }
 
-    const handleAddWithdrawalOrder = () => {
+    const onClickGenerate = () => {
         const campaign = campaigns.find(c => c._id === campaignId);
         const withdraw = socialEntities.find(s => s._id === withdrawId);
 
@@ -81,6 +84,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
             accountId: user.accountId,
             deposit: s.deposit,
             supply: s.supply,
+            crop: s.crop,
             location: s.location,
             nroLot: s.nroLot,
             order: 0, // El numero lo genera en createWithdrawalOrder()
@@ -102,27 +106,50 @@ export const WithdrawalOrdersPage: React.FC = () => {
         }, newDepositSupplyOrders);
     }
 
-    const validateStock = async (newSupply: TransformSupply) => {
+    //Validamos stock del insumo o cultivo, de acuerdo a la cantidad a retirar
+    const validateStock = async (newSupply: TransformSupply, isCultive: boolean) => {
         try {
-            const { supply, deposit } = newSupply;
-            if (!supply?._id || !deposit?._id) return false;
+            const { supply, deposit, crop } = newSupply;
+            const cropId = crop?._id;
+            const supplyId = supply?._id;
+            const depositId = deposit?._id;
 
-            const result = await getStockBySupply(supply._id, deposit._id, newSupply.location, newSupply.nroLot);
+            if (!depositId) return false;
+            if (isCultive && !cropId) return false;
+            if (!isCultive && !supplyId) return false;
 
-            //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
-            if (result && result.currentStock > 0) {
-
-                let supplyStock: StockByLot = result;
-                const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
-                if (newCurrentStock <= 0) {
-                    Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
+            if (isCultive && cropId) {
+                let result = await getStockByCrop(cropId, depositId, newSupply.location, newSupply.nroLot);
+                if (result && result.currentStock > 0) {
+                    let stockCrop: StockCrop = result;
+                    const newCurrentStock = (Number(stockCrop.currentStock) - Number(newSupply.amount));
+                  
+                    if (newCurrentStock <= 0) {
+                        Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
+                        return false;
+                    }
+                    return true;
+                }
+                else {
+                    Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
                     return false;
                 }
-                return true;
             }
-            else {
-                Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
-                return false;
+            else if (supplyId) {
+                let result = await getStockBySupply(supplyId, depositId, newSupply.location, newSupply.nroLot);
+                if (result && result.currentStock > 0) {
+                    let supplyStock: StockByLot = result;
+                    const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
+                    if (newCurrentStock <= 0) {
+                        Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
+                        return false;
+                    }
+                    return true;
+                }
+                else {
+                    Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
+                    return false;
+                }
             }
         } catch (error) {
             console.log('error', error);
@@ -130,28 +157,29 @@ export const WithdrawalOrdersPage: React.FC = () => {
         }
     }
 
-    const addDepositSupplyToAdd = async (item: TransformSupply) => {
-        const depositId = item.deposit._id;
-        const supplyId = item.supply._id;
+    const addDepositSupplyToAdd = async (item: TransformSupply, isCultive: boolean) => {
+        const depositId = item.deposit?._id;
+        const supplyId = item.supply?._id;
+        const cropId = item.crop?._id;
 
-        if (!user || !depositId || !supplyId) return;
-        const existSupply = suppliesToAdd.find(s => s.deposit._id === depositId && s.supply._id === supplyId);
+        if (!depositId) return;
+        if (isCultive && !cropId) return;
+        if (!isCultive && !supplyId) return;
 
-        if (existSupply) {
-            Swal.fire('Deposito/Insumo.', 'Deposito / Insumo existente.', 'error');
+        const foundSupplyOrCrop = suppliesToAdd.find(s => {
+            if (isCultive)
+                return s.deposit?._id === depositId && s.crop?._id === cropId;
+            else
+                return s.deposit?._id === depositId && s.supply?._id === supplyId;
+        });
+
+        if (foundSupplyOrCrop) {
+            if (isCultive) Swal.fire('Cultivo.', 'Deposito / Cultivo existente.', 'error');
+            else Swal.fire('Insumo.', 'Deposito / Insumo existente.', 'error');
             return;
         }
 
-        if (await validateStock(item)) setSuppliesToAdd([item, ...suppliesToAdd]);
-    }
-
-    const handleAddDepositSupply = (item: TransformSupply) => {
-        addDepositSupplyToAdd(item);
-    }
-    
-    //TODO: replicar para cultivos
-    const onChangeSupply = (item: Supply) => {
-        getDepositsBySupply(item);
+        if (await validateStock(item, isCultive)) setSuppliesToAdd([item, ...suppliesToAdd]);
     }
 
     useEffect(() => {
@@ -256,11 +284,18 @@ export const WithdrawalOrdersPage: React.FC = () => {
                         supplies={supplies}
                         deposits={deposits}
                         showDueDate={false}
-                        addNewSupply={(item) => { 
-                            //TODO: agregar para cultivos
-                            addDepositSupplyToAdd(item);
+                        addNewSupplyOrCultive={(item, isCultive) => {
+                            addDepositSupplyToAdd(item, isCultive);
                         }}
-                        onChangeSupply={onChangeSupply} />
+                        onChangeSupply={(item) => {
+                            if (!item._id) return;
+                            getDepositsBySupplyId(item._id);
+                        }}
+                        onChangeCrop={(item) => {
+                            if (!item._id) return;
+                            getDepositsByCropId(item._id);
+                        }}
+                    />
                 </Box>
                 <TableContainer
                     key="table-supply-origin"
@@ -287,7 +322,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                             ) : suppliesToAdd.map((row) => (
                                 <ItemRow key={row.id}>
                                     <TableCellStyled align="left">
-                                        {row.deposit.description}
+                                        {row.deposit?.description}
                                     </TableCellStyled>
                                     <TableCellStyled align="left">{row.supply?.name} </TableCellStyled>
                                     <TableCellStyled align="center">{row.supply?.unitMeasurement}</TableCellStyled>
@@ -312,7 +347,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                             variant="contained"
                             disabled={suppliesToAdd.length === 0}
                             color="primary"
-                            onClick={() => handleAddWithdrawalOrder()}
+                            onClick={() => onClickGenerate()}
                         >
                             Generar
                         </Button>
