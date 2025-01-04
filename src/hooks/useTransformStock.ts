@@ -1,4 +1,4 @@
-import { Movement, StockByLot, StockMovement, StockMovementItem, TransformSupply, TypeMovement } from "../types";
+import { Movement, StockByLot, StockCrop, StockMovement, StockMovementItem, TransformSupply, TypeMovement } from "../types";
 import { useAppDispatch, useAppSelector } from ".";
 import { useState } from "react";
 import { getShortDate } from "../helpers/dates";
@@ -25,9 +25,10 @@ export const useTransformStock = () => {
 
     //Nueva Transformacion/Valor agregado
     const transformStock = async (
-        suppliesToBeDiscounted: TransformSupply[],
-        suppliesToAdd: TransformSupply[],
+        supplyOrCultiveOrigin: TransformSupply[],
+        supplyOrCultiveDestination: TransformSupply[],
         stockBySupplies: StockByLot[],
+        stockByCrops: StockCrop[],
         detail: string,
         operationDate: string) => {
         setIsLoading(true);
@@ -36,9 +37,12 @@ export const useTransformStock = () => {
 
             if (!user) { dispatch(onLogout("Session expired")); return; }
             const { accountId, id: userId } = user;
-            //Recorremos cada insumo/deposito/ubicacion/lote para crear su movimiento.
-            suppliesToBeDiscounted.forEach(ts => {
-                if (!ts.deposit._id || !ts.supply._id) return;
+            //Recorremos cada insumo/cultivo deposito , ubicacion, lote para crear su movimiento.
+            supplyOrCultiveOrigin.forEach(ts => {
+                if (!ts.crop?._id && !ts.supply?._id) return;
+                if (!ts.deposit?._id) return;
+                const isCrop = !!ts.crop?._id;
+
                 let newMovement: StockMovement = {
                     accountId,
                     userId,
@@ -50,7 +54,9 @@ export const useTransformStock = () => {
                     totalValue: 0,
                     hours: "", //TODO: ?
                     depositId: ts.deposit._id,
-                    supplyId: ts.supply._id,
+                    supplyId: ts.supply?._id,
+                    isCrop,
+                    cropId: ts.crop?._id,
                     detail,
                     operationDate,
                     dueDate: ts.dueDate,
@@ -62,9 +68,11 @@ export const useTransformStock = () => {
                 }
                 newMovements.push(newMovement);
             });
-            // Creamos los movimientos de insumo/deposito/ubicacion/lote 
-            suppliesToAdd.forEach(sa => {
-                if (!sa.deposit._id || !sa.supply._id) return;
+            // Creamos los movimientos de insumo/cultivo, deposito ubicacion lote 
+            supplyOrCultiveDestination.forEach(sa => {
+                if (!sa.crop?._id && !sa.supply?._id) return;
+                if (!sa.deposit?._id) return;
+                const isCrop = !!sa.crop?._id;
                 newMovements.push({
                     accountId,
                     userId,
@@ -75,8 +83,9 @@ export const useTransformStock = () => {
                     voucher: "",
                     totalValue: 0,
                     hours: "", //TODO: ?
-                    depositId: sa.deposit._id,
-                    supplyId: sa.supply._id,
+                    depositId: sa.deposit?._id,
+                    supplyId: sa.supply?._id,
+                    isCrop,
                     detail,
                     operationDate,
                     dueDate: sa.dueDate,
@@ -92,6 +101,7 @@ export const useTransformStock = () => {
             let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
                 dbContext.stockMovements.bulkDocs(newMovements),
                 dbContext.stockByLots.bulkDocs(stockBySupplies),
+                dbContext.stockCrops.bulkDocs(stockByCrops),
             ];
             const responseAll = await Promise.all(promisesAll);
 
