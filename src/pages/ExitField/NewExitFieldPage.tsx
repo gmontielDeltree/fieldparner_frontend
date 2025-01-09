@@ -7,7 +7,7 @@ import {
     ArrowRightAlt as ArrowRightAltIcon
 } from '@mui/icons-material';
 import { useBusiness, useCampaign, useCrops, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../../hooks';
-import { ExitField, SupplyType } from '../../types';
+import { ExitField } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { useField } from '../../hooks/useField';
@@ -17,7 +17,7 @@ import { useField } from '../../hooks/useField';
 const initialState: ExitField = {
     creationDate: getShortDate(false, "-"),
     campaignId: "",
-    cultive: "",
+    // cultive: "",
     fieldId: "",
     lotId: "",
     transportDocument: "",
@@ -82,7 +82,7 @@ export const NewExitFieldPage: React.FC = () => {
                         <GeneralData
                             key="general-data-exit-field"
                             formValues={formValues}
-                            crops={supplies.filter(supply => supply.type.toLowerCase() === SupplyType.Cultivo.toLowerCase())}
+                            crops={dataCrops}
                             campaigns={campaigns}
                             listFields={fields}
                             handleInputChange={handleInputChange}
@@ -140,7 +140,7 @@ export const NewExitFieldPage: React.FC = () => {
         const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
         const netWeight = Number(grossWeight - tareWeight);
         const kgNet = (netWeight - ((netWeight * totalMerma) / 100));
-        console.log('formValues', { ...formValues, totalMerma, netWeight, kgNet });
+        // console.log('formValues', { ...formValues, totalMerma, netWeight, kgNet });
         await createExitField({ ...formValues, totalMerma, netWeight, kgNet });
         reset();
         navigate("/init/overview/exit-field");

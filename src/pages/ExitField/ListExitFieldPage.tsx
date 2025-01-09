@@ -91,7 +91,7 @@ const {t} = useTranslation();
                 <TableCellStyled align="center">{row.field?.nombre} </TableCellStyled>
                 <TableCellStyled align="center">{row.field?.lotes.find(l => l._id === row.lotId)?.properties.nombre}</TableCellStyled>
                 <TableCellStyled>{row.campaignId}</TableCellStyled>
-                <TableCellStyled align="center">{row.supply?.name}</TableCellStyled>
+                <TableCellStyled align="center">{row.crop?.name}</TableCellStyled>
                 <TableCellStyled>{row.transport?.nombreCompleto}</TableCellStyled>
                 <TableCellStyled>{row.kgNet}</TableCellStyled>
                 <TableCellStyled align="center">

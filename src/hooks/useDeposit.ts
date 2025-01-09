@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import { Deposit, Supply } from "../types";
+import { Deposit } from "../types";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { dbContext } from "../services";
@@ -119,20 +119,15 @@ export const useDeposit = () => {
     }
   };
 
-  const getDepositsBySupply = async (supply: Supply) => {
+  const getDepositsBySupplyId = async (supplyId: string) => {
     setIsLoading(true);
     try {
-      /*
-        -Filtrar del listado de depositos lo q tengamos en la tabla de stock de ese insumo
-      */
       if (!user) return;
       const accountId = user.accountId;
-
-      //Consultar en la tabla de stock, todo los q tengan el id de insumo e id de cuenta
       const promisesResult = await Promise.all([
         dbContext.stockByLots.find({
           selector: {
-            "$and": [{ "supplyId": supply._id }, { "accountId": accountId }]
+            "$and": [{ "supplyId": supplyId }, { "accountId": accountId }]
           }
         }),
         dbContext.deposits.find({
@@ -150,11 +145,45 @@ export const useDeposit = () => {
           const depositFound = deposits.find(d => d._id === depositId);
           if (depositFound) depositsOfSupply.push(depositFound);
         });
-        
+
         setDeposits(depositsOfSupply);
       }
       setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Error al cargar documentos:", error);
+    }
+  }
+  const getDepositsByCropId = async (cropId: string) => {
+    setIsLoading(true);
+    try {
+      if (!user) return;
+      const accountId = user.accountId;
+      const promisesResult = await Promise.all([
+        dbContext.stockCrops.find({
+          selector: {
+            "$and": [{ "cropId": cropId }, { "accountId": accountId }]
+          }
+        }),
+        dbContext.deposits.find({
+          selector: { accountId: accountId }
+        })
+      ]);
 
+      if (promisesResult) {
+        const stockCrop = promisesResult[0].docs;
+        const deposits = promisesResult[1].docs;
+        let depositsOfSupply: Deposit[] = [];
+
+        stockCrop.forEach((element) => {
+          const depositId = element.depositId;
+          const depositFound = deposits.find(d => d._id === depositId);
+          if (depositFound) depositsOfSupply.push(depositFound);
+        });
+
+        setDeposits(depositsOfSupply);
+      }
+      setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
       console.error("Error al cargar documentos:", error);
@@ -170,6 +199,7 @@ export const useDeposit = () => {
     updateDeposit,
     deleteDeposit,
     findDepositsByAccountId,
-    getDepositsBySupply
+    getDepositsBySupplyId,
+    getDepositsByCropId
   };
 };

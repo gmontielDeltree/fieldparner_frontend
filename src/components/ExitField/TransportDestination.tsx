@@ -121,7 +121,8 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     </Select>
                 </FormControl>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            {/* TODO: visualizar cultivo */}
+            {/* <Grid item xs={12} sm={4}>
                 <TextField
                     variant="outlined"
                     type="text"
@@ -133,7 +134,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     }}
                     fullWidth
                 />
-            </Grid>
+            </Grid> */}
             <Grid item xs={12} sm={6}>
                 <FormControl key="vehicle-select" fullWidth>
                     <InputLabel id="vehicle">{t("_vehicle")}</InputLabel>

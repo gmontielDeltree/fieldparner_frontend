@@ -8,7 +8,7 @@ import { useAppSelector, useStockMovement } from '.';
 export const useExitField = () => {
     // const navigate = useNavigate();
     const { user } = useAppSelector(state => state.auth);
-    const { getStock } = useStockMovement();
+    const { getStockCrop } = useStockMovement();
     const [exitFields, setExitFields] = useState<ExitFieldItem[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,7 @@ export const useExitField = () => {
                 const documents: ExitFieldItem[] = exitFields.map((row) => {
                     return {
                         ...row,
-                        supply: supplies.find(s => s._id === row.cropId),
+                        crop: supplies.find(s => s._id === row.cropId),
                         transport: socialEntities.find(s => s._id === row.transportId),
                         field: fields.find(s => s._id === row.fieldId),
                     } as ExitFieldItem
@@ -58,7 +58,7 @@ export const useExitField = () => {
             if (error) setError(error);
         }
     }
-
+    //Modificar el stock del cultivo en la tabla STOCK DE CULTIVOS
     const createExitField = async (newExitField: ExitFieldItem) => {
         setIsLoading(true);
         try {
@@ -67,27 +67,26 @@ export const useExitField = () => {
             const { accountId, id: userId } = user;
             newExitField.accountId = accountId;
             
-            if (!newExitField.deposit || !newExitField.supply) throw new Error();
+            if (!newExitField.deposit || !newExitField.crop) throw new Error();
             
-            let stockOfSupply = await getStock(
+            let stockOfCrop = await getStockCrop(
                 newExitField.cropId,
                 newExitField.depositId,
                 newExitField.deposit.locations[0],
                 ""
             );
 
-            if (!stockOfSupply) throw new Error("Insufficient stock.");
+            if (!stockOfCrop) throw new Error("Insufficient stock.");
 
-            stockOfSupply.currentStock -= Number(newExitField.netWeight);
-            let updateSupply = { ...newExitField.supply };
-            updateSupply.currentStock -= Number(newExitField.netWeight);
-
+            stockOfCrop.currentStock -= Number(newExitField.netWeight);
+            //Modificar movimiento de stock para q tenga cropId , y un booleano para saber si es insumo o cultivo
             let newStockMovement: StockMovement = {
                 accountId,
                 userId,
                 amount: newExitField.netWeight,
                 depositId: newExitField.depositId,
-                supplyId: newExitField.cropId,
+                cropId: newExitField.cropId,
+                isCrop: true,
                 location: newExitField.deposit.locations[0],
                 creationDate: newExitField.creationDate,
                 campaignId: newExitField.campaignId,
@@ -104,15 +103,15 @@ export const useExitField = () => {
                 totalValue: 0,
             };
 
-            delete newExitField.supply;
+            delete newExitField.crop;
             delete newExitField.deposit;
             delete newExitField.transport;
             
             const promisesAll = [
                 dbContext.exitFields.post(newExitField),
                 dbContext.stockMovements.post(newStockMovement),
-                dbContext.stockByLots.put(stockOfSupply),
-                dbContext.supplies.put(updateSupply)
+                dbContext.stockCrops.put(stockOfCrop),
+                // dbContext.supplies.put(updateSupply)
             ]
 
             const responseAll = await Promise.all(promisesAll);

@@ -19,13 +19,14 @@ import {
   DepositSupplyOrder,
   WithdrawalsByDepositSupply,
   MovementType,
-  Crops,
+  Crop,
   Zones,
   LaborsServices,
   PurchaseOrder,
   DetailPurchaseOrder,
   CorporateCompanies,
   CorporateContract,
+  StockCrop,
 } from '../types';
 import { Country } from '../interfaces/country';
 import { Business } from '../interfaces/socialEntity';
@@ -41,12 +42,12 @@ import { CostsExpenses } from '../interfaces/costsExpenses';
 
 PouchDB.plugin(PouchDBFind);
 
-export const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
+export const remoteCouchDBUrl = "" // Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
 const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
 
 export const opts: PouchDB.Replication.SyncOptions = {
-  live: true,
-  retry: true,
+  live: false,
+  retry: false,
   //  filter: 'app/by_account',
   //  query_params: { "agent": agent }
 };
@@ -61,7 +62,7 @@ const dbNames = Object.freeze({
   socialEntities: "social-entities",
   categories: "categories",
   stockMovements: "stock-movements",
-  stockByLots: "lots-stock",
+  stockByLots: "lots-stock", //Modificar a stock-lots
   exitFields: "exit-fields",
   campaigns: "campaigns",
   fields: "fields",
@@ -93,7 +94,8 @@ const dbNames = Object.freeze({
   productiveUnits: "productive-units",
   contractSaleCereals: "contract-sale-cereals",
   contractDeliveryDates: "contract-delivery-dates",
-  costsExpenses: "costs-expenses"
+  costsExpenses: "costs-expenses",
+  stockCrops: "stock-crops",
 });
 
 export const dbContext = Object.freeze({
@@ -119,7 +121,7 @@ export const dbContext = Object.freeze({
   movementsType: new PouchDB<MovementType>(dbNames.movementsType),
   platform: new PouchDB<any>(dbNames.platform),
   platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
-  crops: new PouchDB<Crops>(dbNames.crops),
+  crops: new PouchDB<Crop>(dbNames.crops),
   zones: new PouchDB<Zones>(dbNames.zones),
   fieldpartner: new PouchDB(dbNames.fieldpartner),
   laborsServices: new PouchDB<LaborsServices>(dbNames.laborsServices),
@@ -139,6 +141,7 @@ export const dbContext = Object.freeze({
   contractSaleCereals: new PouchDB<ContractSaleCereal>(dbNames.contractSaleCereals),
   contractDeliveryDates: new PouchDB<ContractDeliveyDate>(dbNames.contractDeliveryDates),
   costsExpenses: new PouchDB<CostsExpenses>(dbNames.costsExpenses),
+  stockCrops: new PouchDB<StockCrop>(dbNames.stockCrops),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -186,7 +189,8 @@ dbContext.transportDocumentCertificateDeposit.sync(`${remoteCouchDBUrl}${dbNames
 dbContext.productiveUnits.sync(`${remoteCouchDBUrl}${dbNames.productiveUnits}`, opts);
 dbContext.contractSaleCereals.sync(`${remoteCouchDBUrl}${dbNames.contractSaleCereals}`, opts);
 dbContext.contractDeliveryDates.sync(`${remoteCouchDBUrl}${dbNames.contractDeliveryDates}`, opts);
-dbContext.costsExpenses.sync(`${remoteCouchDBUrl}${dbNames.costsExpenses}`, opts)
+dbContext.costsExpenses.sync(`${remoteCouchDBUrl}${dbNames.costsExpenses}`, opts);
+// dbContext.stockCrops.sync(`${remoteCouchDBUrl}${dbNames.stockCrops}`, opts);
 
 
 //#endregion

@@ -1,7 +1,7 @@
-import { FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { Autocomplete, Checkbox, FormControl, FormControlLabel, FormGroup, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import React, { useEffect, useState } from 'react';
-import { Deposit, Supply, TransformSupply } from '../../types';
+import { Crop, Deposit, Supply, TransformSupply } from '../../types';
 import { useForm, useStockMovement } from '../../hooks';
 import uuid4 from 'uuid4';
 import { getShortDate } from '../../helpers/dates';
@@ -11,14 +11,17 @@ import { Loading } from '..';
 interface NewSupplyRowProps {
   supplies: Supply[],
   deposits: Deposit[],
+  crops: Crop[],
   showDueDate: boolean,
-  addNewSupply: (item: TransformSupply) => void;
+  addNewSupplyOrCultive: (item: TransformSupply, isCultive: boolean) => void;
   onChangeSupply: (item: Supply) => void;
+  onChangeCrop: (item: Crop) => void;
 }
 
 const today = getShortDate();
 const initialStateNewSupply = {
   supplyId: "",
+  cropId: "",
   depositId: "",
   location: "",
   nroLot: "",
@@ -28,14 +31,15 @@ const initialStateNewSupply = {
 
 export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
   supplies,
+  crops,
   deposits,
-  addNewSupply,
   showDueDate = true,
-  onChangeSupply
+  addNewSupplyOrCultive,
+  onChangeSupply,
+  onChangeCrop
 }) => {
 
   const {
-    supplyId,
     depositId,
     location,
     nroLot,
@@ -45,22 +49,18 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
     reset,
     setFormulario,
   } = useForm(initialStateNewSupply);
+
+  const [isCrop, setIsCrop] = useState(false);
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
-  const { isLoading, getStock } = useStockMovement();
+  const [cropSelected, setCropSelected] = useState<Crop | null>(null);
+  const { isLoading, getStockBySupply, getStockByCrop } = useStockMovement();
 
-  const handleOnChangeSupply = ({ target }: SelectChangeEvent) => {
-    const { value } = target;
-    const supplySelected = supplies.find((supply) => supply._id === value);
-    if (supplySelected && supplySelected._id) {
-      onChangeSupply(supplySelected); //Evento donde vamos a ir a buscar los depositos de ese insumo
-      setFormulario((prevState) => ({
-        ...prevState,
-        supplyId: value,
-      }));
-      setSupplySelected(supplySelected);
-    }
-  };
+  const showDeposit = !!supplySelected || !!cropSelected;
+  const showLocation = showDeposit && depositSelected;
+  const showNroLot = !!supplySelected?.stockByLot && !!showLocation;
+  const showDate = !!showDueDate && !!showNroLot;
+  const showAmount = showLocation && location !== "";
 
   const onChangeDeposit = ({ target }: SelectChangeEvent) => {
     const { value } = target;
@@ -77,34 +77,53 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
     setFormulario((prevState) => ({ ...prevState, location: value }));
   };
 
-  const handleAddNewSupply = () => {
-    if (!depositSelected || !supplySelected) return;
-    addNewSupply({
+  const onClickAdd = () => {
+
+    if (isCrop && !cropSelected && !depositSelected) return;
+    if (!isCrop && !supplySelected && !depositSelected) return;
+
+    addNewSupplyOrCultive({
       id: uuid4(),
       deposit: depositSelected,
       supply: supplySelected,
+      crop: cropSelected,
       location,
       nroLot,
       dueDate,
       amount: Number(amount),
-      currentStock: 0
-    });
+      currentStock: 0,
+    }, isCrop);
     reset();
   }
 
+  const onChangeCheckIsCrop = (isCultive: boolean) => {
+    setIsCrop(isCultive);
+    if (!isCultive) setSupplySelected(null);
+    else setCropSelected(null);
+  }
+
   useEffect(() => {
-    const getAmount = async (supplyId: string, depositId: string, location: string, nroLot: string) => {
-      const supplyStock = await getStock(supplyId, depositId, location, nroLot);
-      
-      if (supplyStock)
-        setFormulario(prevState => ({ ...prevState, amount: supplyStock.currentStock }));
+    const getAmount = async (id: string, depositId: string, location: string, nroLot: string) => {
+      let amount = 0;
+
+      if (isCrop) {
+        const cropStock = await getStockByCrop(id, depositId, location, nroLot);
+        if (cropStock) amount = cropStock.currentStock;
+      }
+      else {
+        const supplyStock = await getStockBySupply(id, depositId, location, nroLot);
+        if (supplyStock) amount = supplyStock.currentStock;
+      }
+
+      setFormulario(prevState => ({ ...prevState, amount }));
+    }
+    const id = isCrop ? cropSelected?._id : supplySelected?._id;
+
+    if (id && depositSelected?._id && location) {
+      getAmount(id, depositSelected._id, location, nroLot);
     }
 
-    if (supplySelected?._id && depositSelected?._id && location) {
-      getAmount(supplySelected._id, depositSelected._id, location, nroLot);
-    }
-
-  }, [depositSelected, supplySelected, location, nroLot])
+  }, [depositSelected, supplySelected, cropSelected, location, nroLot, isCrop])
 
 
   return (
@@ -115,32 +134,102 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
       spacing={1}
       borderRadius={2}
       pb={1}
-      wrap="nowrap"
       sx={{ boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.2)" }}
-    // bgcolor="#f3f3f3"
     >
       {isLoading && <Loading loading={true} />}
       <Grid item xs={12} sm={3}>
+        <FormGroup row sx={{ alignItems: "center" }}>
+          <FormControlLabel
+            key="yes"
+            control={
+              <Checkbox
+                name="crop"
+                checked={isCrop}
+                onChange={() => onChangeCheckIsCrop(true)}
+              />
+            }
+            label={"Cultivo"}
+            labelPlacement="start"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                name="supply"
+                checked={!isCrop}
+                onChange={() => onChangeCheckIsCrop(false)}
+              />
+            }
+            label={"Insumo"}
+            labelPlacement="start"
+          />
+        </FormGroup>
+      </Grid>
+      <Grid item xs={12} sm={4}>
         <FormControl fullWidth>
-          <InputLabel id="supply">Insumo</InputLabel>
-          <Select
-            key="select-supply-movement"
-            labelId="supply"
-            value={supplyId}
-            label="Insumo"
-            onChange={handleOnChangeSupply}
-          >
-            {supplies.map((supply) => (
-              <MenuItem key={supply._id} value={supply._id}>
-                {supply.name}
-              </MenuItem>
-            ))}
-          </Select>
+          {
+            isCrop ? (
+              <Autocomplete
+                value={{ label: cropSelected?.descriptionEN || "", value: cropSelected?._id || "" }}
+                onChange={(_event, newValue) => {
+                  const value = newValue?.value || "null";
+                  const cropSelected = crops.find((crop) => crop._id === value);
+                  if (cropSelected && cropSelected._id) {
+                    onChangeCrop(cropSelected); //Evento donde vamos a ir a buscar los depositos de ese cultivo
+                    setFormulario((prevState) => ({
+                      ...prevState,
+                      cropId: value,
+                    }));
+                    setCropSelected(cropSelected);
+                  }
+                }}
+                options={crops.map((option) => ({ label: option.descriptionEN, value: option._id || "" }))}
+                getOptionLabel={(option) => option.label}
+                renderInput={(params) => (
+                  <TextField {...params} label={"Cultivo"} variant="outlined" />
+                )}
+                fullWidth
+                ListboxProps={{
+                  style: {
+                    maxHeight: 248,
+                    overflow: "auto",
+                  },
+                }}
+              />
+            ) : (
+              <Autocomplete
+                value={{ label: supplySelected?.name || "", value: supplySelected?._id || "" }}
+                onChange={(_event, newValue) => {
+                  const value = newValue?.value || "null";
+                  const supplySelected = supplies.find((supply) => supply._id === value);
+                  if (supplySelected && supplySelected._id) {
+                    onChangeSupply(supplySelected); //Evento donde vamos a ir a buscar los depositos de ese insumo
+                    setFormulario((prevState) => ({
+                      ...prevState,
+                      supplyId: value,
+                    }));
+                    setSupplySelected(supplySelected);
+                  }
+                }}
+                options={supplies.map((option) => ({ label: option.name, value: option._id || "" }))}
+                getOptionLabel={(option) => option.label}
+                renderInput={(params) => (
+                  <TextField {...params} label={"Insumo"} variant="outlined" />
+                )}
+                fullWidth
+                ListboxProps={{
+                  style: {
+                    maxHeight: 248,
+                    overflow: "auto",
+                  },
+                }}
+              />
+            )
+          }
         </FormControl>
       </Grid>
-      <Grid item xs={12} sm={3}>
-        {
-          supplySelected && (
+      {
+        showDeposit && (
+          <Grid item xs={12} sm={4}>
             <FormControl fullWidth>
               <InputLabel id="deposit">Deposito</InputLabel>
               <Select
@@ -157,12 +246,12 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
                 ))}
               </Select>
             </FormControl>
-          )
-        }
-      </Grid>
-      <Grid item xs={12} sm={2}>
-        {
-          supplySelected && (
+          </Grid>
+        )
+      }
+      {
+        showLocation && (
+          <Grid item xs={12} sm={3}>
             <FormControl fullWidth>
               <InputLabel id="location">Ubicacion</InputLabel>
               <Select
@@ -179,73 +268,66 @@ export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
                 ))}
               </Select>
             </FormControl>
-          )
-        }
-      </Grid>
-      {
-        (supplySelected && supplySelected.stockByLot && depositSelected)
-        && (
-          <Grid item xs={12} sm={2}>
-            <TextField
-              key="nroLot-input"
-              variant="outlined"
-              type="text"
-              label="Nro Lote"
-              name="nroLot"
-              value={nroLot}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
           </Grid>
         )
       }
-      {
-        (supplySelected && supplySelected.stockByLot && depositSelected && showDueDate)
-        && (
-          <Grid item xs={12} sm={2}>
-            <TextField
-              variant="outlined"
-              type="date"
-              label="Fecha vencimiento"
-              name="dueDate"
-              value={dueDate}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
-          </Grid>
-        )
-      }
-      <Grid item xs={12} sm={3}>
-        {
-          (supplySelected && depositSelected && location) && (
-            <TextField
-              variant="outlined"
-              type="number"
-              label="Cantidad"
-              name="amount"
-              value={amount}
-              onChange={handleInputChange}
-              inputProps={{ maxLength: 15, min: 1 }}
-              InputProps={{
-                endAdornment: <InputAdornment position="end" >{supplySelected.unitMeasurement}</InputAdornment>,
-              }}
-              fullWidth
-            />
-          )
-        }
-      </Grid>
+      {showNroLot && (
+        <Grid item xs={12} sm={2}>
+          <TextField
+            key="nroLot-input"
+            variant="outlined"
+            type="text"
+            label="Nro Lote"
+            name="nroLot"
+            value={nroLot}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+      )}
+      {showDate && (
+        <Grid item xs={12} sm={2}>
+          <TextField
+            variant="outlined"
+            type="date"
+            label="Fecha vencimiento"
+            name="dueDate"
+            value={dueDate}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start" />,
+            }}
+            fullWidth
+          />
+        </Grid>
+      )}
+      {showAmount && (
+        <Grid item xs={12} sm={3}>
+          <TextField
+            variant="outlined"
+            type="number"
+            label="Cantidad"
+            name="amount"
+            value={amount}
+            onChange={handleInputChange}
+            inputProps={{ maxLength: 15, min: 1 }}
+            InputProps={{
+              endAdornment: <InputAdornment position="end" >{supplySelected?.unitMeasurement}</InputAdornment>,
+            }}
+            fullWidth
+          />
+        </Grid>
+      )}
       <Grid item xs={12} sm={1} display="flex" justifyContent="center">
         <IconButton
           color="success"
           aria-label="add"
+          disabled={amount <= 0}
           size="small"
-          onClick={() => handleAddNewSupply()}
+          onClick={() => onClickAdd()}
         >
           <AddIcon />
         </IconButton>

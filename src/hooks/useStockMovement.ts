@@ -1,17 +1,15 @@
 import Swal from 'sweetalert2';
-// import PouchDB from 'pouchdb';
-import { DepositDestination, StockMovement, StockMovementItem, StockByLot, Supply, TypeMovement, TransformSupply, Movement, MovementType } from "../types";
+import { DepositDestination, StockMovement, StockMovementItem, StockByLot, Supply, TypeMovement, MovementType, Crop } from "../types";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
-import { useAppSelector } from './useRedux';
-import { getShortDate } from '../helpers/dates';
+import { useAppDispatch, useAppSelector } from './useRedux';
+import { onLogout } from '../redux/auth';
 
-
-const today = getShortDate();
 
 export const useStockMovement = () => {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
     const [stockMovements, setStockMovements] = useState<StockMovementItem[]>([]);
     const [stockByLots, setStockByLots] = useState<StockByLot[]>([]);
@@ -34,10 +32,12 @@ export const useStockMovement = () => {
                             { "generico": true }
                         ]
                     },
-                })
+                }),
+                dbContext.crops.allDocs({ include_docs: true })
             ]);
             const deposits = promisesResult[0].docs;
             const supplies = promisesResult[1].docs;
+            const crops = promisesResult[2].rows.map(row => row.doc as Crop);
 
             setIsLoading(false);
 
@@ -46,7 +46,8 @@ export const useStockMovement = () => {
                     return {
                         ...sm,
                         deposit: deposits.find(d => d._id === sm.depositId),
-                        supply: supplies.find(s => s._id === sm.supplyId)
+                        supply: supplies.find(s => s._id === sm.supplyId),
+                        crop: crops.find(c => c._id === sm.cropId)
                     } as StockMovementItem;
                 });
                 setStockMovements(documents);
@@ -61,8 +62,7 @@ export const useStockMovement = () => {
         }
     }
 
-    const getStock = async (supplyId: string, depositId: string, location: string, nroLot: string) => {
-        console.log(`Fetching stock with Supply ID: ${supplyId}, Deposit ID: ${depositId}, Location: ${location}, Lot Number: ${nroLot}`);
+    const getStockBySupply = async (supplyId: string, depositId: string, location: string, nroLot: string) => {
         setIsLoading(true);
         try {
             const existingNroLot = await dbContext.stockByLots.find({
@@ -75,52 +75,139 @@ export const useStockMovement = () => {
                     ],
                 }
             });
-            console.log('Database response:', existingNroLot.docs);
             setIsLoading(false);
             return existingNroLot.docs[0];
         } catch (error) {
-            console.log('Error fetching stock:', error);
             setIsLoading(false);
             console.log(error);
         }
     }
 
-    // Si nroLot es "" , quiere decir q no aplica por stock
-    const addNewStockMovement = async (newMovement: StockMovement, supplyDto: Supply, depositDestination?: DepositDestination) => {
+    const getStockByCrop = async (cropId: string, depositId: string, location: string, nroLot: string) => {
         setIsLoading(true);
-        let responseAll = null;
-        let promiseStockByLot: Promise<PouchDB.Core.Response> | undefined = undefined;
-
         try {
-            console.log("Inicio de addNewStockMovement", newMovement, supplyDto, depositDestination);
+            const foundStockCrop = await dbContext.stockCrops.find({
+                selector: {
+                    "$and": [
+                        { "cropId": cropId },
+                        { "depositId": depositId },
+                        { "location": location },
+                        { "nroLot": nroLot }
+                    ],
+                }
+            });
 
-            if (!user || !supplyDto._id) {
-                console.log("Error: Usuario no logueado o ID de suministro no provisto");
-                throw new Error("Usuario no logueado o ID de suministro no provisto");
-            }
+            setIsLoading(false);
+            return foundStockCrop.docs[0];
+        } catch (error) {
+            setIsLoading(false);
+            console.log(error);
+            return null;
+        }
+    }
 
+    const addStockMovementCrop = async (newMovement: StockMovement, cropData: Crop, depositDestination?: DepositDestination) => {
+        try {
+            if (!cropData._id) return false;
+
+            let responseAll = null;
+            let promisesStockCrop: Promise<PouchDB.Core.Response> | undefined = undefined;
+            const accountId = newMovement.accountId;
             const { typeMovement, isIncome, amount, depositId, nroLot, location } = newMovement;
-            const accountId = user.accountId;
             const amountValue = Number(amount);
-
-            console.log("Datos procesados de newMovement:", { typeMovement, isIncome, amount, amountValue, depositId, nroLot, location });
-            console.log("Preparing to fetch existing stock with parameters:", supplyDto._id, depositId, location, nroLot);
-            let existingStock = await getStock(supplyDto._id, depositId, location, nroLot);
-            console.log("Stock existente:", existingStock);
+            let existingStockCrop = await getStockByCrop(cropData._id, depositId, location, nroLot);
 
             if (!(typeMovement === TypeMovement.TransferenciaDeposito.toString())) {
                 if (isIncome) {
-                    supplyDto.currentStock += amountValue;
-                    console.log("Actualización de stock de entrada:", supplyDto.currentStock);
+                    if (existingStockCrop) {
+                        existingStockCrop.currentStock += amountValue;
+                        promisesStockCrop = dbContext.stockCrops.put(existingStockCrop);
+                    } else {
+                        promisesStockCrop = dbContext.stockCrops.post({
+                            accountId: accountId,
+                            cropId: cropData._id,
+                            nroLot,
+                            depositId,
+                            location,
+                            currentStock: amountValue
+                        });
+                    }
+                } else {
+                    if (!existingStockCrop) {
+                        throw new Error("Stock de cultivo no encontrado.");
+                    }
+                    existingStockCrop.currentStock -= amountValue;
+                    promisesStockCrop = dbContext.stockCrops.put(existingStockCrop);
+                }
+                responseAll = await Promise.all([
+                    promisesStockCrop,
+                    dbContext.stockMovements.post(newMovement)
+                ]);
+            } else {
+                if (!depositDestination || !existingStockCrop) {
+                    throw new Error("Información de destino no provista o stock inicial no encontrado");
+                }
+                let existingLotInDepositDestination = await getStockByCrop(
+                    cropData._id,
+                    depositDestination.depositId,
+                    depositDestination.location,
+                    existingStockCrop.nroLot);
+                let promiseAll = [
+                    dbContext.stockCrops.put({ ...existingStockCrop, currentStock: existingStockCrop.currentStock - amountValue }),
+                    dbContext.stockMovements.post({ ...newMovement, isIncome: false }),
+                    dbContext.stockMovements.post({
+                        ...newMovement,
+                        depositId: depositDestination.depositId,
+                        location: depositDestination.location,
+                        isIncome: true,
+                    })
+                ];
 
+                if (existingLotInDepositDestination) {
+                    promiseAll.push(dbContext.stockCrops.put({
+                        ...existingLotInDepositDestination,
+                        depositId: depositDestination.depositId,
+                        location: depositDestination.location,
+                        currentStock: existingLotInDepositDestination.currentStock + amountValue
+                    }));
+                } else {
+                    promiseAll.push(dbContext.stockCrops.post({
+                        accountId: accountId,
+                        nroLot: existingStockCrop.nroLot,
+                        cropId: existingStockCrop.cropId,
+                        depositId: depositDestination.depositId,
+                        location: depositDestination.location,
+                        currentStock: amountValue
+                    }));
+                }
+                responseAll = await Promise.all(promiseAll);
+            }
+            return !!responseAll
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    const addStockMovementSupply = async (newMovement: StockMovement, supplyData: Supply, depositDestination?: DepositDestination) => {
+        try {
+            if (!supplyData._id) return false;
+            let responseAll = null;
+            let promiseStockByLot: Promise<PouchDB.Core.Response> | undefined = undefined;
+            const { typeMovement, isIncome, amount, depositId, nroLot, location } = newMovement;
+            const accountId = newMovement.accountId;
+            const amountValue = Number(amount);
+
+            let existingStock = await getStockBySupply(supplyData._id, depositId, location, nroLot);
+
+            if (!(typeMovement === TypeMovement.TransferenciaDeposito.toString())) {
+                if (isIncome) {
                     if (existingStock) {
                         existingStock.currentStock += amountValue;
                         promiseStockByLot = dbContext.stockByLots.put(existingStock);
                     } else {
-                        console.log("Creación de nuevo stock por no existir previamente.");
                         promiseStockByLot = dbContext.stockByLots.post({
-                            accountId: user.accountId,
-                            supplyId: supplyDto._id,
+                            accountId: accountId,
+                            supplyId: supplyData._id,
                             nroLot,
                             depositId,
                             location,
@@ -129,38 +216,29 @@ export const useStockMovement = () => {
                     }
                 } else {
                     if (!existingStock) {
-                        console.log("Error: Stock de insumo no encontrado para salida.");
-                        throw new Error("Stock por insumo no encontrado.");
+                        throw new Error("Stock de insumo no encontrado.");
                     }
-                    supplyDto.currentStock -= amountValue;
                     existingStock.currentStock -= amountValue;
                     promiseStockByLot = dbContext.stockByLots.put(existingStock);
                 }
                 responseAll = await Promise.all([
                     promiseStockByLot,
-                    dbContext.supplies.put(supplyDto),
-                    dbContext.stockMovements.post({ ...newMovement, accountId, userId: user.id })
+                    dbContext.stockMovements.post(newMovement)
                 ]);
-                console.log("Respuesta de operaciones asincrónicas:", responseAll);
             } else {
                 if (!depositDestination || !existingStock) {
-                    console.log("Error: Información de destino no provista o stock inicial no encontrado.");
                     throw new Error("Información de destino no provista o stock inicial no encontrado");
                 }
-
-                let existingLotInDepositDestination = await getStock(supplyDto._id, depositDestination.depositId, depositDestination.location, existingStock.nroLot);
-                console.log("Stock en destino:", existingLotInDepositDestination);
+                let existingLotInDepositDestination = await getStockBySupply(supplyData._id, depositDestination.depositId, depositDestination.location, existingStock.nroLot);
 
                 let promiseAll = [
                     dbContext.stockByLots.put({ ...existingStock, currentStock: existingStock.currentStock - amountValue }),
-                    dbContext.stockMovements.post({ ...newMovement, isIncome: false, accountId, userId: user.id }),
+                    dbContext.stockMovements.post({ ...newMovement, isIncome: false }),
                     dbContext.stockMovements.post({
                         ...newMovement,
                         depositId: depositDestination.depositId,
                         location: depositDestination.location,
-                        isIncome: true,
-                        accountId,
-                        userId: user.id
+                        isIncome: true
                     })
                 ];
 
@@ -173,7 +251,7 @@ export const useStockMovement = () => {
                     }));
                 } else {
                     promiseAll.push(dbContext.stockByLots.post({
-                        accountId: user.accountId,
+                        accountId: newMovement.accountId,
                         nroLot: existingStock.nroLot,
                         supplyId: existingStock.supplyId,
                         depositId: depositDestination.depositId,
@@ -183,7 +261,35 @@ export const useStockMovement = () => {
                 }
 
                 responseAll = await Promise.all(promiseAll);
-                console.log("Respuestas de transferencias y movimientos:", responseAll);
+            }
+
+            return !!responseAll;
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    const addNewStockMovement = async (
+        newMovement: StockMovement,
+        supplyData: Supply | null,
+        cropData: Crop | null,
+        depositDestination?: DepositDestination) => {
+        try {
+            setIsLoading(true);
+            if (!user) {
+                dispatch(onLogout("Session expired."));
+                setIsLoading(false);
+                return;
+            };
+            newMovement.currency = user.currency;
+            newMovement.accountId = user.accountId;
+            let responseAll = null;
+
+            if (supplyData)
+                responseAll = await addStockMovementSupply(newMovement, supplyData, depositDestination);
+            else if (cropData) {
+                responseAll = await addStockMovementCrop(newMovement, cropData, depositDestination);
             }
 
             setIsLoading(false);
@@ -198,12 +304,11 @@ export const useStockMovement = () => {
 
         } catch (error) {
             console.error("Error en addNewStockMovement:", error);
-            Swal.fire('Ups', String(error), 'error');
+            Swal.fire('Ups', "Ocurrio un error inesperado.", 'error');
             setIsLoading(false);
             if (error) setError(error);
         }
     }
-
 
     const updateMovement = async (updateMovement: StockMovement) => {
         setIsLoading(true);
@@ -250,89 +355,89 @@ export const useStockMovement = () => {
         }
     }
 
-    const transformStock = async (
-        suppliesToBeDiscounted: TransformSupply[],
-        suppliesToAdd: TransformSupply[],
-        stockBySupplies: StockByLot[],
-        detail: string,
-        operationDate: string) => {
-        setIsLoading(true);
-        try {
-            let newMovements: StockMovement[] = [];
+    // const transformStock = async (
+    //     suppliesToBeDiscounted: TransformSupply[],
+    //     suppliesToAdd: TransformSupply[],
+    //     stockBySupplies: StockByLot[],
+    //     detail: string,
+    //     operationDate: string) => {
+    //     setIsLoading(true);
+    //     try {
+    //         let newMovements: StockMovement[] = [];
 
-            if (!user) throw new Error();
-            const { accountId, id: userId } = user;
-            //Recorremos cada insumo/deposito/ubicacion/lote para crear su movimiento.
-            suppliesToBeDiscounted.forEach(ts => {
-                if (!ts.deposit._id || !ts.supply._id) return;
-                let newMovement: StockMovement = {
-                    accountId,
-                    userId,
-                    amount: ts.amount,
-                    creationDate: today,
-                    campaignId: "",
-                    currency: "",
-                    voucher: "",
-                    totalValue: 0,
-                    hours: "", //TODO: ?
-                    depositId: ts.deposit._id,
-                    supplyId: ts.supply._id,
-                    detail,
-                    operationDate,
-                    dueDate: ts.dueDate,
-                    isIncome: false,
-                    location: ts.location,
-                    movement: Movement.Manual,
-                    nroLot: ts.nroLot,
-                    typeMovement: TypeMovement.Transformacion,
-                }
-                newMovements.push(newMovement);
-            });
-            // Creamos los movimientos de insumo/deposito/ubicacion/lote 
-            suppliesToAdd.forEach(sa => {
-                if (!sa.deposit._id || !sa.supply._id) return;
-                newMovements.push({
-                    accountId,
-                    userId,
-                    amount: sa.amount,
-                    creationDate: today,
-                    campaignId: "",
-                    currency: "",
-                    voucher: "",
-                    totalValue: 0,
-                    hours: "", //TODO: ?
-                    depositId: sa.deposit._id,
-                    supplyId: sa.supply._id,
-                    detail,
-                    operationDate,
-                    dueDate: sa.dueDate,
-                    isIncome: true,
-                    location: sa.location,
-                    movement: Movement.Manual,
-                    nroLot: sa.nroLot,
-                    typeMovement: TypeMovement.Transformacion,
-                });
-            });
-            //Previamente validado
-            // Actualizar en la tabla auxiliar para ese insumo/deposito/ubicacion/lote.
-            let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
-                dbContext.stockMovements.bulkDocs(newMovements),
-                dbContext.stockByLots.bulkDocs(stockBySupplies),
-            ];
-            const responseAll = await Promise.all(promisesAll);
+    //         if (!user) throw new Error();
+    //         const { accountId, id: userId } = user;
+    //         //Recorremos cada insumo/deposito/ubicacion/lote para crear su movimiento.
+    //         suppliesToBeDiscounted.forEach(ts => {
+    //             if (!ts.deposit._id || !ts.supply._id) return;
+    //             let newMovement: StockMovement = {
+    //                 accountId,
+    //                 userId,
+    //                 amount: ts.amount,
+    //                 creationDate: today,
+    //                 campaignId: "",
+    //                 currency: "",
+    //                 voucher: "",
+    //                 totalValue: 0,
+    //                 hours: "", //TODO: ?
+    //                 depositId: ts.deposit._id,
+    //                 supplyId: ts.supply._id,
+    //                 detail,
+    //                 operationDate,
+    //                 dueDate: ts.dueDate,
+    //                 isIncome: false,
+    //                 location: ts.location,
+    //                 movement: Movement.Manual,
+    //                 nroLot: ts.nroLot,
+    //                 typeMovement: TypeMovement.Transformacion,
+    //             }
+    //             newMovements.push(newMovement);
+    //         });
+    //         // Creamos los movimientos de insumo/deposito/ubicacion/lote 
+    //         suppliesToAdd.forEach(sa => {
+    //             if (!sa.deposit._id || !sa.supply._id) return;
+    //             newMovements.push({
+    //                 accountId,
+    //                 userId,
+    //                 amount: sa.amount,
+    //                 creationDate: today,
+    //                 campaignId: "",
+    //                 currency: "",
+    //                 voucher: "",
+    //                 totalValue: 0,
+    //                 hours: "", //TODO: ?
+    //                 depositId: sa.deposit._id,
+    //                 supplyId: sa.supply._id,
+    //                 detail,
+    //                 operationDate,
+    //                 dueDate: sa.dueDate,
+    //                 isIncome: true,
+    //                 location: sa.location,
+    //                 movement: Movement.Manual,
+    //                 nroLot: sa.nroLot,
+    //                 typeMovement: TypeMovement.Transformacion,
+    //             });
+    //         });
+    //         //Previamente validado
+    //         // Actualizar en la tabla auxiliar para ese insumo/deposito/ubicacion/lote.
+    //         let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
+    //             dbContext.stockMovements.bulkDocs(newMovements),
+    //             dbContext.stockByLots.bulkDocs(stockBySupplies),
+    //         ];
+    //         const responseAll = await Promise.all(promisesAll);
 
-            if (responseAll)
-                Swal.fire('Transformación de Stock', 'Realizado con exito.', 'success');
-            else
-                Swal.fire('Transformación de Stock', 'Verifica los datos ingresados.', 'error');
+    //         if (responseAll)
+    //             Swal.fire('Transformación de Stock', 'Realizado con exito.', 'success');
+    //         else
+    //             Swal.fire('Transformación de Stock', 'Verifica los datos ingresados.', 'error');
 
-            setIsLoading(false);
-        } catch (error) {
-            console.log(error)
-            setIsLoading(false);
-            if (error) setError(error);
-        }
-    }
+    //         setIsLoading(false);
+    //     } catch (error) {
+    //         console.log(error)
+    //         setIsLoading(false);
+    //         if (error) setError(error);
+    //     }
+    // }
 
     const getMovementsType = async () => {
         try {
@@ -365,8 +470,9 @@ export const useStockMovement = () => {
         addNewStockMovement,
         updateMovement,
         getNroLotsBySupplyAndDeposit,
-        transformStock,
-        getStock,
-        getMovementsType
+        // transformStock,
+        getStockBySupply,
+        getMovementsType,
+        getStockByCrop
     }
 }

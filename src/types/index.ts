@@ -337,7 +337,7 @@ export const TypeSupplies = () => {
   return [
     t("_various"),
     t("seeds_min"),
-    t("_cultivation"),
+    // t("_cultivation"),
     t("_fertilizers"),
     t("_phytosanitary"),
     t("spare_parts"),
@@ -399,7 +399,9 @@ export interface Category extends Document {
 export interface StockMovement extends Document {
   accountId: string;
   movement: string;
-  supplyId: string;
+  supplyId?: string;
+  cropId?: string;
+  isCrop: boolean;
   userId: string;
   depositId: string;
   location: string;
@@ -422,6 +424,7 @@ export interface StockMovement extends Document {
 export interface StockMovementItem extends StockMovement {
   supply?: Supply;
   deposit?: Deposit;
+  crop?: Crop;
 }
 
 export interface StockByNroLot {
@@ -457,7 +460,6 @@ export interface DepositDestination {
 
 export interface StockByLot extends Document {
   accountId: string;
-  // userId: string;
   depositId: string;
   location: string;
   supplyId: string;
@@ -465,10 +467,20 @@ export interface StockByLot extends Document {
   currentStock: number;
 }
 
+export interface StockCrop extends Document {
+  accountId: string;
+  cropId: string;
+  depositId: string;
+  location: string;
+  nroLot: string;
+  currentStock: number;
+}
+
 export interface TransformSupply {
   id: string;
-  supply: Supply;
-  deposit: Deposit;
+  supply: Supply | null;
+  crop: Crop | null;
+  deposit: Deposit | null;
   location: string;
   nroLot: string;
   dueDate: string;
@@ -488,7 +500,7 @@ export interface ExitField extends Document {
   transportId: string;
   truckerId: string;
   // has: string;
-  cultive: string;
+  // cultive: string;
   transportDocument: string;
   ticket: string;
   vehicleId: string;
@@ -512,7 +524,7 @@ export interface ExitField extends Document {
 
 export interface ExitFieldItem extends ExitField {
   deposit?: Deposit;
-  supply?: Supply;
+  crop?: Crop;
   transport?: Business;
   field?: Field;
   // trucker?: Business;
@@ -557,7 +569,7 @@ export interface Field extends Document {
   // _rev: string;
 }
 
-//Retiros del Deposito e Insumo
+//Retiros del Deposito e Insumo/Cultivo
 export interface WithdrawalsByDepositSupply extends Document {
   accountId: string;
   order: number;
@@ -566,13 +578,14 @@ export interface WithdrawalsByDepositSupply extends Document {
   amount: number;
 }
 
-//Deposito e Insumo de una Orden
+//Deposito e Insumo/Cultivo de una Orden
 export interface DepositSupplyOrder extends Document {
   order: number;
   accountId: string;
-  deposit: Deposit;
+  deposit: Deposit | null;
   location: string;
-  supply: Supply;
+  crop: Crop | null;
+  supply: Supply | null;
   nroLot: string;
   withdrawalAmount: number;
   originalAmount: number;
@@ -595,7 +608,7 @@ export interface WithdrawalOrder extends Document {
   contractor?: Business;
   labor?: string;
   laborNro?: string;
-  crop?: string;
+  cropId?: string;
   state: OrderStatus;
 }
 
@@ -619,7 +632,7 @@ export interface MovementType extends Document {
   concepto: string;
 }
 
-export interface Crops extends Document {
+export interface Crop extends Document {
   crop: string
   descriptionES: string;
   descriptionPT: string;

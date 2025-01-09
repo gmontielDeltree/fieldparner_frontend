@@ -21,32 +21,34 @@ import {
     Delete as DeleteIcon
 } from '@mui/icons-material'
 import React, { useEffect, useState } from 'react';
-import { useAppSelector, useDeposit, useForm, useStockMovement, useSupply, useTransformStock } from '../hooks';
-import { getShortDate } from '../helpers/dates';
-import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack } from '../components';
-import { ColumnProps, StockByLot, Supply, TransformSupply } from '../types';
+import { useAppSelector, useCrops, useDeposit, useForm, useStockMovement, useSupply, useTransformStock } from '../../hooks';
+import { getShortDate } from '../../helpers/dates';
+import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack } from '../../components';
+import { ColumnProps, StockByLot, StockCrop, TransformSupply } from '../../types';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-
 
 const today = getShortDate();
 
 type SupplyRowProps = {
     row: TransformSupply;
+    // stockOfSupply: StockByLot;
+    // stockOfCrop: StockCrop;
     type: "origin" | "destination";
     deleteRow: (id: string) => void;
 }
 
 const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow }) => {
-    const { supply, deposit } = row;
+    const { supply, crop, deposit } = row;
+    const isCrop = !!crop;
 
     return (
         <ItemRow>
             <TableCell>
-                {supply.name}
+                {isCrop ? crop.descriptionEN : supply?.name}
             </TableCell>
             <TableCell>
-                {deposit.description}
+                {deposit?.description}
             </TableCell>
             <TableCell>
                 {row.location || "-"}
@@ -58,7 +60,7 @@ const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow }) => {
                 {row.dueDate || "-"}
             </TableCell>
             <TableCell align='center'>
-                {supply.unitMeasurement}
+                {isCrop ? "-" : supply?.unitMeasurement}
             </TableCell>
             {
                 type === "origin" && (
@@ -67,10 +69,12 @@ const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow }) => {
                             {row.currentStock}
                         </TableCell>
                         <TableCell align='center'>
-                            {supply.reservedStock}
+                            {/* {supply?.reservedStock} */}
+                            -
                         </TableCell>
                         <TableCell align='center'>
-                            {(row.currentStock - supply.reservedStock)}
+                            {/* {(row.currentStock - supply.reservedStock)} */}
+                            -
                         </TableCell>
                     </>
                 )
@@ -110,11 +114,17 @@ const initialStateTransform = {
 export const TransformPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAppSelector(state => state.auth);
-    const [originSupplies, setOriginSupplies] = useState<TransformSupply[]>([]);
-    const [destinationSupplies, setDestinationSupplies] = useState<TransformSupply[]>([]);
+    const [originTransformValues, setOriginTransformValues] = useState<TransformSupply[]>([]);
+    const [destinationTransformValue, setDestinationTransformValue] = useState<TransformSupply[]>([]);
     const [stockBySupplies, setStockBySupplies] = useState<StockByLot[]>([]);
+    const [stockByCrops, setStockByCrops] = useState<StockCrop[]>([]);
     const { isLoading, supplies, getSupplies } = useSupply();
-    const { isLoading: depositLoading, deposits, getDeposits, getDepositsBySupply } = useDeposit();
+    const { dataCrops, getCrops } = useCrops();
+    const { isLoading: depositLoading,
+        deposits,
+        getDeposits,
+        getDepositsBySupplyId,
+        getDepositsByCropId } = useDeposit();
     const { t } = useTranslation();
     const {
         operationDate,
@@ -122,7 +132,7 @@ export const TransformPage: React.FC = () => {
         handleInputChange,
         reset,
     } = useForm(initialStateTransform);
-    const { isLoading: loadingTransform, getStock } = useStockMovement();
+    const { isLoading: loadingTransform, getStockBySupply, getStockByCrop } = useStockMovement();
     const { transformStock } = useTransformStock();
 
     const originColumns: ColumnProps[] = [
@@ -151,13 +161,19 @@ export const TransformPage: React.FC = () => {
     const validateSupplyStock = async (newSupply: TransformSupply, type: "origin" | "destination" = "origin") => {
         try {
             const { supply, deposit } = newSupply;
-            if (!supply._id || !deposit._id) return false;
+            const supplyId = supply?._id || "";
+            const depositId = deposit?._id || "";
 
-            const result = await getStock(supply._id, deposit._id, newSupply.location, newSupply.nroLot);
+            if (!supplyId && !depositId) return false;
+
+            let currentStock = 0;
+            const result = await getStockBySupply(supplyId, depositId, newSupply.location, newSupply.nroLot);
+            currentStock = result?.currentStock || 0;
 
             if (type === "origin") {
                 //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
-                if (result && result.currentStock > 0) {
+                if (result && currentStock > 0) {
+
                     let supplyStock: StockByLot = result;
                     const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
                     if (newCurrentStock <= 0) {
@@ -165,7 +181,7 @@ export const TransformPage: React.FC = () => {
                         return false;
                     }
                     setStockBySupplies([{ ...supplyStock, currentStock: newCurrentStock }, ...stockBySupplies]);
-                    setOriginSupplies([...originSupplies,
+                    setOriginTransformValues([...originTransformValues,
                     {
                         ...newSupply,
                         amount: newSupply.amount,
@@ -179,28 +195,94 @@ export const TransformPage: React.FC = () => {
                 }
             }
             else {
-                if (originSupplies.length === 0) {
+                if (originTransformValues.length === 0) {
                     Swal.fire('Insumos Origen', 'Debe haber al menos un Insumo.', 'error');
                     return false;
-                } //Poner un aler
-
+                }
                 if (result) {
                     let supplyStock: StockByLot = result;
                     const newCurrentStock = (Number(supplyStock.currentStock) + Number(newSupply.amount));
                     setStockBySupplies([{ ...supplyStock, currentStock: newCurrentStock }, ...stockBySupplies]);
-                    setDestinationSupplies([...destinationSupplies, { ...newSupply, amount: newSupply.amount }]);
+                    setDestinationTransformValue([...destinationTransformValue, { ...newSupply, amount: newSupply.amount }]);
                 } else {
                     if (!user) throw new Error("User not found");
                     const newSupplyStock: StockByLot = {
                         accountId: user.accountId,
-                        depositId: deposit._id,
-                        supplyId: supply._id,
+                        depositId: depositId,
+                        supplyId: supplyId,
                         location: newSupply.location,
                         nroLot: newSupply.nroLot,
                         currentStock: Number(newSupply.amount),
                     };
                     setStockBySupplies([...stockBySupplies, newSupplyStock]);
-                    setDestinationSupplies([...destinationSupplies, newSupply]);
+                    setDestinationTransformValue([...destinationTransformValue, newSupply]);
+                }
+
+            }
+        } catch (error) {
+            console.log('error', error);
+            return false;
+        }
+    }
+
+    const validateCropStock = async (newTransformValue: TransformSupply, type: "origin" | "destination" = "origin") => {
+        try {
+            const { deposit, crop } = newTransformValue;
+            const cropId = crop?._id || "";
+            const depositId = deposit?._id || "";
+
+            if (!cropId && !depositId) return false;
+
+            let currentStock = 0;
+            const result = await getStockByCrop(cropId, depositId, newTransformValue.location, newTransformValue.nroLot);
+            currentStock = result?.currentStock || 0;
+
+            if (type === "origin") {
+                //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
+                if (result && currentStock > 0) {
+
+                    let cropStock: StockCrop = result;
+                    const newCurrentStock = (Number(cropStock.currentStock) - Number(newTransformValue.amount));
+                    if (newCurrentStock <= 0) {
+                        Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
+                        return false;
+                    }
+                    setStockByCrops([{ ...cropStock, currentStock: newCurrentStock }, ...stockByCrops]);
+                    setOriginTransformValues([...originTransformValues,
+                    {
+                        ...newTransformValue,
+                        amount: newTransformValue.amount,
+                        currentStock: result.currentStock
+                    }]);
+                    return true;
+                }
+                else {
+                    Swal.fire('Stock insuficiente.', 'No tiene stock del cultivo.', 'error');
+                    return false;
+                }
+            }
+            else {
+                if (originTransformValues.length === 0) {
+                    Swal.fire('Insumos Origen', 'Debe haber al menos un cultivo.', 'error');
+                    return false;
+                }
+                if (result) {
+                    let cropStock: StockCrop = result;
+                    const newCurrentStock = (Number(cropStock.currentStock) + Number(newTransformValue.amount));
+                    setStockByCrops([{ ...cropStock, currentStock: newCurrentStock }, ...stockByCrops]);
+                    setDestinationTransformValue([...destinationTransformValue, { ...newTransformValue, amount: newTransformValue.amount }]);
+                } else {
+                    if (!user) throw new Error("User not found");
+                    const newCropStock: StockCrop = {
+                        accountId: user.accountId,
+                        depositId: depositId,
+                        cropId,
+                        location: newTransformValue.location,
+                        nroLot: newTransformValue.nroLot,
+                        currentStock: Number(newTransformValue.amount),
+                    };
+                    setStockByCrops([...stockByCrops, newCropStock]);
+                    setDestinationTransformValue([...destinationTransformValue, newTransformValue]);
                 }
 
             }
@@ -211,52 +293,71 @@ export const TransformPage: React.FC = () => {
     }
 
     //ORIGIN
-    const handleAddSupplyOrigin = (newSupply: TransformSupply) => {
-        validateSupplyStock(newSupply, "origin");
+    const addSupplyOrCropOrigin = (newSupply: TransformSupply, isCrop: boolean) => {
+        if (isCrop) validateCropStock(newSupply, "origin");
+        else validateSupplyStock(newSupply, "origin");
     }
 
     const deleteRowOrigin = (id: string) => {
-        const supplyToRemove = originSupplies.find(s => s.id === id);
+        const supplyToRemove = originTransformValues.find(s => s.id === id);
         if (!supplyToRemove) return;
-        const { supply, deposit, location, nroLot } = supplyToRemove;
-        setOriginSupplies(originSupplies.filter(o => o.id !== id));
-        setStockBySupplies(stockBySupplies.filter(s =>
-            s.supplyId !== supply._id &&
-            s.depositId !== deposit._id &&
-            s.location !== location &&
-            s.nroLot !== nroLot));
+        const { supply, crop, deposit, location, nroLot } = supplyToRemove;
+        setOriginTransformValues(originTransformValues.filter(o => o.id !== id));
+        if (crop) {
+            setStockByCrops(stockByCrops.filter(s =>
+                s.cropId !== crop?._id &&
+                s.depositId !== deposit?._id &&
+                s.location !== location &&
+                s.nroLot !== nroLot));
+        } else {
+            setStockBySupplies(stockBySupplies.filter(s =>
+                s.supplyId !== supply?._id &&
+                s.depositId !== deposit?._id &&
+                s.location !== location &&
+                s.nroLot !== nroLot));
+        }
     }
-    //* */
-    //DESTINATION
-    const handleAddSupplyDestination = (newSupply: TransformSupply) => {
-        validateSupplyStock(newSupply, "destination");
+
+    const addSupplyOrCropDestination = (newSupply: TransformSupply, isCrop: boolean) => {
+        if (isCrop) validateCropStock(newSupply, "destination");
+        else validateSupplyStock(newSupply, "destination");
     }
 
     const deleteRowDestination = (id: string) => {
-        const supplyToRemove = destinationSupplies.find(s => s.id === id);
+        const supplyToRemove = destinationTransformValue.find(s => s.id === id);
         if (!supplyToRemove) return;
-        const { supply, deposit, location, nroLot } = supplyToRemove;
-        setOriginSupplies(destinationSupplies.filter(o => o.id !== id));
-        setStockBySupplies(stockBySupplies.filter(s =>
-            s.supplyId !== supply._id &&
-            s.depositId !== deposit._id &&
-            s.location !== location &&
-            s.nroLot !== nroLot));
+        const { supply, crop, deposit, location, nroLot } = supplyToRemove;
+        setOriginTransformValues(destinationTransformValue.filter(o => o.id !== id));
+        if (crop) {
+            setStockByCrops(stockByCrops.filter(s =>
+                s.cropId !== crop?._id &&
+                s.depositId !== deposit?._id &&
+                s.location !== location &&
+                s.nroLot !== nroLot));
+        } else {
+            setStockBySupplies(stockBySupplies.filter(s =>
+                s.supplyId !== supply?._id &&
+                s.depositId !== deposit?._id &&
+                s.location !== location &&
+                s.nroLot !== nroLot));
+        }
     }
 
     const onClickCancel = () => {
-        setOriginSupplies([]);
-        setDestinationSupplies([]);
+        setOriginTransformValues([]);
+        setDestinationTransformValue([]);
         setStockBySupplies([]);
+        setStockByCrops([]);
         reset();
         navigate("/init/overview/value-transform");
     }
 
     const createTransform = async () => {
         await transformStock(
-            originSupplies, //Movimientos de salida
-            destinationSupplies, //Movimientos de entrada
+            originTransformValues, //Movimientos de salida
+            destinationTransformValue, //Movimientos de entrada
             stockBySupplies, //Tabla auxiliar de stock
+            stockByCrops, //Tabla auxiliar de stock de cultivos
             detail,
             operationDate
         );
@@ -266,26 +367,21 @@ export const TransformPage: React.FC = () => {
 
     const saveTransformStock = () => createTransform();
 
-    const onChangeSupply = (item: Supply) => {
-        getDepositsBySupply(item);
-    };
-
-    const onChangeSupplyDestination = (_item: Supply) => {
-        getDeposits();
-    }
 
     useEffect(() => {
-        getSupplies(); getDeposits();
+        getSupplies();
+        getDeposits();
+        getCrops();
     }, [])
 
     return (
         <Box ml={2}>
             {(isLoading || loadingTransform || depositLoading) && <Loading loading={true} />}
             <Box
-            component="div"
-            display="flex"
-            alignItems="center"
-            sx={{ ml: { sm: 2 }, pt: 3 }}
+                component="div"
+                display="flex"
+                alignItems="center"
+                sx={{ ml: { sm: 2 }, pt: 3 }}
             >
                 <TransformIcon />
                 <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
@@ -299,7 +395,7 @@ export const TransformPage: React.FC = () => {
                     p: { xs: 2, md: 3 },
                     maxHeight: "calc(100vh - 150px)",
                     overflow: "scroll"
-                }}> 
+                }}>
                 <Typography variant="h5" sx={{ mb: 3 }}>
                     {t("source_supplies")}
                 </Typography>
@@ -340,11 +436,20 @@ export const TransformPage: React.FC = () => {
                     <Box sx={{ mb: 3, mt: 1 }}>
                         <NewSupplyRow
                             key="new-supply-to-origin"
+                            crops={dataCrops}
                             supplies={supplies}
                             deposits={deposits}
                             showDueDate
-                            addNewSupply={handleAddSupplyOrigin}
-                            onChangeSupply={onChangeSupply} />
+                            addNewSupplyOrCultive={addSupplyOrCropOrigin}
+                            onChangeSupply={(item) => {
+                                if (!item._id) return;
+                                getDepositsBySupplyId(item._id);
+                            }}
+                            onChangeCrop={(item) => {
+                                if (!item._id) return;
+                                getDepositsByCropId(item._id);
+                            }}
+                        />
                     </Box>
                     <TableContainer
                         key="table-supply-origin"
@@ -370,7 +475,7 @@ export const TransformPage: React.FC = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {originSupplies.map((originSupply) => (
+                                {originTransformValues.map((originSupply) => (
                                     <SupplyRow
                                         key={originSupply.id}
                                         type='origin'
@@ -392,9 +497,16 @@ export const TransformPage: React.FC = () => {
                             key="new-supply-to-destination"
                             supplies={supplies}
                             deposits={deposits}
+                            crops={dataCrops}
                             showDueDate
-                            addNewSupply={handleAddSupplyDestination}
-                            onChangeSupply={onChangeSupplyDestination}
+                            addNewSupplyOrCultive={addSupplyOrCropDestination}
+                            onChangeSupply={(_item) => {
+                                getDeposits();
+                                //Cada vez q cambie el insumo/cultivo en destino, volvemos a buscar los depositos para q pueda "ubicarlos" en sus depositos.
+                            }}
+                            onChangeCrop={(_item) => {
+                                getDeposits();
+                            }}
                         />
                     </Box>
                     <TableContainer
@@ -421,7 +533,7 @@ export const TransformPage: React.FC = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {destinationSupplies.map((originSupply) => (
+                                {destinationTransformValue.map((originSupply) => (
                                     <SupplyRow
                                         key={originSupply.id}
                                         type="destination"
@@ -446,6 +558,7 @@ export const TransformPage: React.FC = () => {
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
+                            disabled={destinationTransformValue.length === 0}
                             color="success"
                             onClick={() => saveTransformStock()}
                             fullWidth>

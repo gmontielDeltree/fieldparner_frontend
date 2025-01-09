@@ -17,14 +17,14 @@ import React, { ChangeEvent, useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
-import { Campaign, Crops } from '../../types';
+import { Campaign, Crop } from '../../types';
 import { FormValueState, useAppSelector } from '../../hooks';
 import { Company } from '../../interfaces/company';
 
 
 interface Props {
   formValues: FormValueState<ContractSaleCereal>;
-  crops: Crops[];
+  crops: Crop[];
   campaigns: Campaign[];
   companies: Company[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;

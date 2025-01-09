@@ -1,4 +1,4 @@
-import { Campaign, Crops, Document, OriginDestinations } from '../types';
+import { Campaign, Crop, Document, OriginDestinations } from '../types';
 import { Company } from './company';
 import { Business } from './socialEntity';
 
@@ -46,7 +46,7 @@ export interface ContractDeliveyDate extends Document {
 export interface ContractSaleCerealItem extends ContractSaleCereal {
     campaign: Campaign;
     company: Company;
-    crop: Crops;
+    crop: Crop;
     producer: Business;
     buyer: Business;
     destination: OriginDestinations;

@@ -13,27 +13,24 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
-  // Switch,
   TextField,
   Typography,
 } from "@mui/material";
-import { Crops, Supply, TipoInsumo, TypeSupplies } from "../../types";
+import { Crop, Supply,  TypeSupplies } from "../../types";
 import React, { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
   CloudUpload as CloudUploadIcon,
   Cancel as CancelIcon,
-  // AttachFile as AttachFileIcon,
   UploadFile as UploadFileIcon
 } from '@mui/icons-material';
 import uuid4 from "uuid4";
 import { IsSeed } from "../../utils/helper";
-// import { uploadFile } from "../../helpers/fileUpload";
 
 export interface LaborsFormProps {
   formValues: Supply;
   formErrors: Record<string, boolean>;
-  crops: Crops[];
+  crops: Crop[];
   setFormValues: React.Dispatch<React.SetStateAction<Supply>>;
   setFileUpload: React.Dispatch<React.SetStateAction<File | null>>;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
@@ -57,26 +54,26 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language;
 
-  const { type, name, description, barCode, stockByLot, labors, brand, senasaId, documentFile } = formValues;
+  const { type, name, description, barCode, stockByLot, brand, senasaId, documentFile } = formValues;
 
 
-  const handleChangeLabors = (
-    { target }: ChangeEvent<HTMLInputElement>,
-    checked: boolean
-  ) => {
-    const { name: newLabor } = target;
-    if (checked)
-      setFormValues((prevState) => ({
-        ...prevState,
-        labors: [...prevState.labors, newLabor],
-      }));
-    else {
-      let laborsFiltered = formValues.labors.filter(
-        (labor) => labor !== newLabor
-      );
-      setFormValues((prevState) => ({ ...prevState, labors: laborsFiltered }));
-    }
-  };
+  // const handleChangeLabors = (
+  //   { target }: ChangeEvent<HTMLInputElement>,
+  //   checked: boolean
+  // ) => {
+  //   const { name: newLabor } = target;
+  //   if (checked)
+  //     setFormValues((prevState) => ({
+  //       ...prevState,
+  //       labors: [...prevState.labors, newLabor],
+  //     }));
+  //   else {
+  //     let laborsFiltered = formValues.labors.filter(
+  //       (labor) => labor !== newLabor
+  //     );
+  //     setFormValues((prevState) => ({ ...prevState, labors: laborsFiltered }));
+  //   }
+  // };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
@@ -99,7 +96,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
 
   const isSeedType = React.useMemo(() => IsSeed(type), [type]);
 
-  const getDescription = (crop: Crops): string => {
+  const getDescription = (crop: Crop): string => {
     switch (currentLanguage) {
       case 'en':
         return crop.descriptionEN;
@@ -288,7 +285,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
             onChange={handleFileUpload} />
         </Button>
       </Grid>
-      <Grid item xs={12} sm={12} sx={{ my: 3 }}>
+      {/* <Grid item xs={12} sm={12} sx={{ my: 3 }}>
         {type.toLowerCase() === TipoInsumo.CULTIVO.toLowerCase() && (
           <>
             <Typography variant="h5" sx={{ pl: 2, mb: 2 }}>
@@ -348,7 +345,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
             </FormGroup>
           </>
         )}
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 };

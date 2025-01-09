@@ -5,22 +5,22 @@ import {
     useAppSelector,
     useForm,
     useOrder,
-} from '../hooks';
-import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../components';
+} from '../../hooks';
+import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../../components';
 import { Box, Button, Grid, IconButton, InputAdornment, Paper, TableContainer, TextField, Tooltip, Typography } from '@mui/material';
 import {
     Assignment as AssignmentIcon,
     Add as AddIcon
 } from '@mui/icons-material';
 import { Icon } from 'semantic-ui-react';
-import { ColumnProps, DepositSupplyOrder } from '../types';
-import { getShortDate } from '../helpers/dates';
-import { DepositSupplyOrderItem } from '../types/index';
+import { ColumnProps, DepositSupplyOrder } from '../../types';
+import { getShortDate } from '../../helpers/dates';
+import { DepositSupplyOrderItem } from '../../types/index';
 
 
 const columnsDepositSupply: ColumnProps[] = [
     { text: "Deposito", align: "left" },
-    { text: "Insumo", align: "left" },
+    { text: "Insumo/Cultivo", align: "left" },
     { text: "Lote", align: "center" },
     { text: "UM", align: "center" },
     { text: "Cantidad Original", align: "center" },
@@ -31,7 +31,7 @@ const columnsDepositSupply: ColumnProps[] = [
 ];
 const columnsWithdrawals: ColumnProps[] = [
     { text: "Deposito", align: "left" },
-    { text: "Insumo", align: "left" },
+    { text: "Insumo/Cultivo", align: "left" },
     { text: "Lote", align: "center" },
     // { text: "UM", align: "center" },
     // { text: "Saldo", align: "center" },
@@ -65,11 +65,11 @@ export const NewWithdrawalRow = ({ row, addNewWithdrawal }: NewWithdrawalRowProp
     return (
         <ItemRow key={row._id}>
             <TableCellStyled align="left">
-                {row.deposit.description}
+                {row.deposit?.description}
             </TableCellStyled>
-            <TableCellStyled align="left">{row.supply.name || "-"} </TableCellStyled>
+            <TableCellStyled align="left">{row.supply ? row.supply.name : row.crop?.descriptionEN} </TableCellStyled>
             <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
-            <TableCellStyled align="center">{row.supply.unitMeasurement}</TableCellStyled>
+            <TableCellStyled align="center">{row.supply?.unitMeasurement}</TableCellStyled>
             <TableCellStyled align='center'>{row.originalAmount}</TableCellStyled>
             <TableCellStyled align='center'>{(row.originalAmount - row.withdrawalAmount)}</TableCellStyled>
             <TableCellStyled align='center'>{row.location}</TableCellStyled>
@@ -122,14 +122,14 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
 
     const onClickCancel = () => navigate("/init/overview/list-orders");
 
-    const handleConfirmOrder = () => {
+    const onClickConfirmOrder = () => {
         confirmWithdrawalOrder(listWithdrawals, formValues.withdrawalDate);
     }
 
     const addNewWithdrawal = (newWithdrawal: DepositSupplyOrderItem) => {
         let existWithdrawal = listWithdrawals.find(w => w._id === newWithdrawal._id);
         if (existWithdrawal) {
-            Swal.fire('Deposito/Insumo', 'No se puede duplicar deposito/insumo a retirar.', 'error');
+            Swal.fire('Deposito/Insumo', 'No se puede duplicar deposito insumo/cultivo a retirar.', 'error');
             return;
         }
 
@@ -248,7 +248,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         align="left"
                         sx={{ mt: 1, mb: 1 }}
                     >
-                        Deposito e Insumos de la Orden:
+                        Deposito e Insumos/Cultivo de la Orden:
                     </Typography>
                     <DataTable
                         key="datatable-orders"
@@ -279,7 +279,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         align="left"
                         sx={{ mt: 1, mb: 1 }}
                     >
-                        Insumos a Retirar:
+                        Insumos/Cultivo a Retirar:
                     </Typography>
                     <DataTable
                         key="datatable-withdrawals"
@@ -291,7 +291,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                                 <TableCellStyled align="left">
                                     {row.deposit?.description}
                                 </TableCellStyled>
-                                <TableCellStyled align="left">{row.supply?.name || "-"} </TableCellStyled>
+                                <TableCellStyled align="left">{row.supply ? row.supply.name : row.crop?.descriptionEN} </TableCellStyled>
                                 <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
                                 <TableCellStyled align='center'>{row.location}</TableCellStyled>
                                 <TableCellStyled align='center'>{row.amount}</TableCellStyled>
@@ -323,7 +323,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         <Button
                             variant="contained"
                             color="primary"
-                            onClick={() => handleConfirmOrder()}
+                            onClick={() => onClickConfirmOrder()}
                         >
                             Confirmar
                         </Button>

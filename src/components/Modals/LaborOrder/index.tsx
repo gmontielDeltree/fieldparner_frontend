@@ -512,7 +512,7 @@ export const LaborOrderModal = ({ activity }) => {
                             deposits={deposits}
                             showDueDate={false}
                             onChangeSupply={onChangeSupply}
-                            addNewSupply={handleAddDepositSupply} />
+                            addNewSupplyOrCultive={handleAddDepositSupply} />
                     </Box>
                     <Typography
                         variant="h5"

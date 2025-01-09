@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Box, Collapse, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import { Transform as TransformIcon, KeyboardArrowDown as KeyboardArrowDownIcon, KeyboardArrowUp as KeyboardArrowUpIcon } from "@mui/icons-material";
-import { useTransformStock } from "../hooks";
+import { useTransformStock } from "../../hooks";
 import { useTranslation } from "react-i18next";
-import { GenericListPage } from "./GenericListPage";
+import { GenericListPage } from "../GenericListPage";
 import { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
-import { StockMovementItem } from "../types";
+import { StockMovementItem } from "../../types";
 
 interface ExpandableRowProps {
   row: {
@@ -140,7 +140,7 @@ export const ListTransformPage: React.FC = () => {
       setActiveItem={() => { }}
       newItemPath="/init/overview/value-transform/new"
       editItemPath={() => ""}
-    // isLoading={isLoading}
+      isLoading={false}
     />
   );
 };
