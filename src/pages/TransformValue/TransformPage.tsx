@@ -558,6 +558,7 @@ export const TransformPage: React.FC = () => {
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
+                            disabled={destinationTransformValue.length === 0}
                             color="success"
                             onClick={() => saveTransformStock()}
                             fullWidth>

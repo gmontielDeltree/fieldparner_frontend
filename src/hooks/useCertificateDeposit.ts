@@ -58,7 +58,6 @@ export const useCertificateDeposit = () => {
         newTransportsByCert: TransportDocumentByCertificateDeposit[]) => {
         setIsLoading(true);
         try {
-
             if (!user) throw new Error("User not logged.");
 
             const responseTransport = await dbContext.transportDocument.find({
@@ -68,7 +67,6 @@ export const useCertificateDeposit = () => {
                     nroCartaPorte: { "$in": newTransportsByCert.map(t => t.numeroCartaPorte) }
                 }
             });
-
             const transportsDoc = responseTransport.docs as TransportDocument[];
             const updateStatusTransport = transportsDoc.map(doc => {
                 return {

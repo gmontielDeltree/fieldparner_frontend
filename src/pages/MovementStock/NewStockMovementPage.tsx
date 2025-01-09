@@ -1,15 +1,20 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Loading } from "../components";
+import { Loading } from "../../components";
 import {
+  Autocomplete,
   Box,
   Button,
+  Checkbox,
   Container,
   FormControl,
+  FormControlLabel,
+  FormGroup,
   Grid,
   IconButton,
   Input,
   InputAdornment,
   InputLabel,
+  ListItemText,
   MenuItem,
   Paper,
   Select,
@@ -20,21 +25,20 @@ import {
 } from "@mui/material";
 import { SyncAlt as SyncAltIcon, Cancel as CancelIcon, CloudUpload as CloudUploadIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useCampaign, useDeposit, useForm, useStockMovement, useSupply } from "../hooks";
+import { useAppSelector, useCampaign, useCrops, useDeposit, useForm, useStockMovement, useSupply } from "../../hooks";
 import {
-  CurrencyCode,
+  Crop,
   Deposit,
   Movement,
   MovementType,
   StockMovement,
   Supply,
   TypeMovement,
-  // TypeMovements,
-} from "../types";
-import { getShortDate } from "../helpers/dates";
+} from "../../types";
+import { getShortDate } from "../../helpers/dates";
 import { useTranslation } from "react-i18next";
 import uuid4 from "uuid4";
-import { uploadFile } from "../helpers/fileUpload";
+import { uploadFile } from "../../helpers/fileUpload";
 
 const initialForm: StockMovement = {
   typeMovement: TypeMovement.Ajustes,
@@ -48,9 +52,11 @@ const initialForm: StockMovement = {
   detail: "",
   dueDate: getShortDate(),
   hours: "",
+  isCrop: false,
   movement: Movement.Manual,
   operationDate: getShortDate(false, "-"),
   supplyId: "",
+  cropId: "",
   totalValue: 0,
   voucher: "",
   isIncome: false,
@@ -62,6 +68,7 @@ const initialForm: StockMovement = {
 
 export const NewStockMovementPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAppSelector(state => state.auth);
   const {
     isLoading,
     stockByLots,
@@ -71,7 +78,8 @@ export const NewStockMovementPage: React.FC = () => {
     getMovementsType } = useStockMovement();
   const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
   const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
-  const { isLoading: loadCampaigns, campaigns, getCampaigns } = useCampaign();
+  const { isLoading: isLoadCampaigns, campaigns, getCampaigns } = useCampaign();
+  const { getCrops, dataCrops, isLoading: isLoadCrops } = useCrops();
   const { t } = useTranslation();
 
   const {
@@ -83,13 +91,14 @@ export const NewStockMovementPage: React.FC = () => {
     reset,
   } = useForm(initialForm);
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
+  const [cropSelected, setCropSelected] = useState<Crop | null>(null);
   const [showSwitch, setShowSwitch] = useState(true);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
   const [depositDestinationSelected, setDepositDestinationSelected] = useState<Deposit | null>(null);
   const [locationDestinationSelected, setLocationDestinationSelected] = useState("");
   const [movementTypeSelected, setMovementTypeSelected] = useState<MovementType | null>(null);
   const [fileUpload, setFileUpload] = React.useState<File | null>(null);
-  const { depositId: depositOrigin, supplyId, location } = formulario;
+  const { depositId: depositOrigin, supplyId, location, isCrop } = formulario;
 
   const depositsToBeAllocated = useMemo(() => {
     return deposits.filter(
@@ -100,18 +109,22 @@ export const NewStockMovementPage: React.FC = () => {
   const onClickCancel = () => navigate("/init/overview/stock-movements");
 
   const onClickSave = () => {
-    // console.log("formulario", formulario);
+    
     let destination = depositDestinationSelected?._id ? {
       depositId: depositDestinationSelected._id,
       location: locationDestinationSelected
     } : undefined;
 
-    if (supplySelected && depositSelected && movementTypeSelected) {
+    if ((supplySelected || cropSelected) && depositSelected && movementTypeSelected) {
       uploadDocumentFile();
-      addNewStockMovement({
-        ...formulario,
-        typeMovement: movementTypeSelected.name
-      }, supplySelected, destination);
+      addNewStockMovement(
+        {
+          ...formulario,
+          typeMovement: movementTypeSelected.name,
+        },
+        supplySelected,
+        cropSelected,
+        destination);
       reset();
     }
   };
@@ -126,7 +139,7 @@ export const NewStockMovementPage: React.FC = () => {
 
   const onChangeSupply = ({ target }: SelectChangeEvent) => {
     const { value } = target;
-    
+
     const supplySelected = supplies.find((supply) => supply._id === value);
     if (supplySelected && supplySelected._id) {
       setFormulario((prevState) => ({
@@ -197,11 +210,21 @@ export const NewStockMovementPage: React.FC = () => {
     setFormulario(prevState => ({ ...prevState, documentFile: "" }));
   }
 
+  const onChangeCheckIsCrop = (isCrop: boolean) => {
+    let clear = { depositId: "", location: "", nroLot: "", };
+    if (isCrop) setSupplySelected(null);
+    else setCropSelected(null);
+
+    setFormulario({ ...formulario, ...clear, isCrop: isCrop });
+  }
+
+
   useEffect(() => {
     getSupplies();
     getDeposits();
     getMovementsType();
     getCampaigns();
+    getCrops();
   }, []);
 
   useEffect(() => {
@@ -219,7 +242,10 @@ export const NewStockMovementPage: React.FC = () => {
   }, [movementTypeSelected]);
 
   useEffect(() => {
-    if (supplyId !== "" && depositOrigin !== "" && location !== "") {
+    if (supplyId &&
+      supplyId !== "" &&
+      depositOrigin !== "" &&
+      location !== "") {
       getNroLotsBySupplyAndDeposit(supplyId, depositOrigin, location);
     }
   }, [supplyId, depositOrigin, location]);
@@ -229,7 +255,7 @@ export const NewStockMovementPage: React.FC = () => {
     <Container maxWidth="lg">
       <Loading
         key="loading-new-stockmovement"
-        loading={isLoading || isLoadingSupplies || isLoadingDeposits || loadCampaigns}
+        loading={isLoading || isLoadingSupplies || isLoadingDeposits || isLoadCampaigns}
       />
       <Paper
         variant="outlined"
@@ -482,34 +508,112 @@ export const NewStockMovementPage: React.FC = () => {
                   </Box>
                 )}
               </Grid>
-              <Grid key="supply-movement" item xs={6} sm={3}>
-                <FormControl fullWidth>
-                  <InputLabel id="supply">{t("_supply")}</InputLabel>
-                  <Select
-                    key="select-supply-movement"
-                    labelId="supply"
-                    MenuProps={{
-                      PaperProps: {
-                        style: { maxHeight: 248 }
-                      }
-                    }}
-                    value={formulario.supplyId}
-                    label={t("_supply")}
-                    onChange={onChangeSupply}
-                  >
-                    {supplies.map((supply) => (
-                      <MenuItem key={supply._id} value={supply._id}>
-                        {`${supply.name} - ${supply.type}`}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+              <Grid item xs={12} sm={3} display="flex" justifyContent={"center"}>
+                <FormGroup row sx={{ alignItems: "center" }}>
+                  <FormControlLabel
+                    key="yes"
+                    control={
+                      <Checkbox
+                        name="crop"
+                        checked={isCrop}
+                        onChange={() => onChangeCheckIsCrop(true)}
+                      />
+                    }
+                    label={"Cultivo"}
+                    labelPlacement="start"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="supply"
+                        checked={!isCrop}
+                        onChange={() => onChangeCheckIsCrop(false)}
+                      />
+                    }
+                    label={"Insumo"}
+                    labelPlacement="start"
+                  />
+                </FormGroup>
               </Grid>
-              <Grid item xs={12} sm={3}>
-                <Typography variant="body1" align="left">
-                  Tipo de insumo: <b>{supplySelected?.type}</b>
-                </Typography>
-              </Grid>
+              {
+                (!isCrop) ? (
+                  <>
+                    <Grid key="supply-movement" item xs={12} sm={3}>
+                      <Autocomplete
+                        loading={isLoadingSupplies}
+                        value={{ label: supplySelected?.name || "", value: supplySelected?._id || "" }}
+                        onChange={(_event, newValue) => {
+                          const value = newValue?.value || "null";
+                          const supplySelected = supplies.find((supply) => supply._id === value);
+                          if (supplySelected && supplySelected._id) {
+                            setFormulario((prevState) => ({
+                              ...prevState,
+                              supplyId: value,
+                            }));
+                            setSupplySelected(supplySelected);
+                          }
+                        }}
+                        options={supplies.map((option) => ({ label: option.name, value: option._id || "" }))}
+                        getOptionLabel={(option) => option.label}
+                        disableClearable
+                        renderInput={(params) => (
+                          <TextField {...params} label={"Insumo"} variant="outlined" />
+                        )}
+                        fullWidth
+                        ListboxProps={{
+                          style: {
+                            maxHeight: 248,
+                            overflow: "auto",
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                      <FormControl fullWidth>
+                        <ListItemText
+                          sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+                          primary={<Typography variant='subtitle2'>Tipo de insumo:</Typography>}
+                          secondary={
+                            <Typography letterSpacing={1} variant='subtitle1'>
+                              {supplySelected ? supplySelected.type : "-"}
+                            </Typography>}
+                        />
+                      </FormControl>
+                    </Grid>
+                  </>
+                ) : (
+                  <Grid key="supply-movement" item xs={6} sm={3}>
+                    <Autocomplete
+                      value={{ label: cropSelected?.descriptionEN || "", value: cropSelected?._id || "" }}
+                      loading={isLoadCrops}
+                      onChange={(_event, newValue) => {
+                        const value = newValue?.value || "null";
+                        const cropSelected = dataCrops.find((crop) => crop._id === value);
+                        if (cropSelected && cropSelected._id) {
+                          setFormulario((prevState) => ({
+                            ...prevState,
+                            cropId: value,
+                          }));
+                          setCropSelected(cropSelected);
+                        }
+                      }}
+                      disableClearable
+                      options={dataCrops.map((option) => ({ label: option.descriptionEN, value: option._id || "" }))}
+                      getOptionLabel={(option) => option.label}
+                      renderInput={(params) => (
+                        <TextField {...params} label={"Cultivo"} variant="outlined" />
+                      )}
+                      fullWidth
+                      ListboxProps={{
+                        style: {
+                          maxHeight: 248,
+                          overflow: "auto",
+                        },
+                      }}
+                    />
+                  </Grid>
+                )
+              }
               <Grid item xs={6} sm={3}>
                 <FormControl fullWidth>
                   <InputLabel id="deposit">{t("_warehouse")}</InputLabel>
@@ -528,7 +632,7 @@ export const NewStockMovementPage: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6} sm={4}>
+              <Grid item xs={6} sm={3}>
                 <FormControl fullWidth>
                   <InputLabel id="location">{t("id_location")}</InputLabel>
                   <Select
@@ -548,7 +652,7 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               {supplySelected?.stockByLot && (
                 <>
-                  <Grid item xs={6} sm={4}>
+                  <Grid item xs={6} sm={3}>
                     {formulario.isIncome ? (
                       <TextField
                         key="nroLot-input"
@@ -614,9 +718,16 @@ export const NewStockMovementPage: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={2}>
-                <Typography variant="body1" align="left">
-                  UM: <b>{supplySelected?.unitMeasurement}</b>
-                </Typography>
+                <FormControl fullWidth>
+                  <ListItemText
+                    sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+                    primary={<Typography variant='subtitle2'>UM:</Typography>}
+                    secondary={
+                      <Typography letterSpacing={1} variant='subtitle1'>
+                        {supplySelected ? supplySelected?.unitMeasurement : "-"}
+                      </Typography>}
+                  />
+                </FormControl>
               </Grid>
               <Grid item xs={6} sm={4}>
                 <TextField
@@ -633,7 +744,7 @@ export const NewStockMovementPage: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={2}>
-                <FormControl fullWidth>
+                {/* <FormControl fullWidth>
                   <InputLabel id="currency">{t("_currency")}</InputLabel>
                   <Select
                     labelId="currency"
@@ -658,6 +769,16 @@ export const NewStockMovementPage: React.FC = () => {
                       {CurrencyCode.EURO.toString()}
                     </MenuItem>
                   </Select>
+                </FormControl> */}
+                <FormControl fullWidth>
+                  <ListItemText
+                    sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+                    primary={<Typography variant='subtitle2'>Moneda</Typography>}
+                    secondary={
+                      <Typography letterSpacing={1} variant='subtitle1'>
+                        {user?.currency}
+                      </Typography>}
+                  />
                 </FormControl>
               </Grid>
               <Grid item xs={6} sm={2}>
@@ -708,7 +829,7 @@ export const NewStockMovementPage: React.FC = () => {
                     onChange={handleFileUpload} />
                 </Button>
                 {formulario.documentFile ? (
-                  <>
+                  <Grid>
                     <label
                       title={formulario.documentFile}
                       style={{
@@ -724,7 +845,7 @@ export const NewStockMovementPage: React.FC = () => {
                     <IconButton onClick={() => cancelFile()} color="error">
                       <CancelIcon fontSize="medium" />
                     </IconButton>
-                  </>
+                  </Grid>
                 ) :
                   <Typography variant="body1" sx={{
                     pl: 1,
@@ -748,7 +869,16 @@ export const NewStockMovementPage: React.FC = () => {
             <Button onClick={onClickCancel}>{t("id_cancel")}</Button>
           </Grid>
           <Grid item xs={12} sm={3}>
-            <Button variant="contained" color="primary" onClick={onClickSave}>
+            <Button
+              variant="contained"
+              disabled={
+                ((!supplySelected && !cropSelected) ||
+                  !depositSelected ||
+                  !movementTypeSelected ||
+                  !formulario.amount)
+              }
+              color="primary"
+              onClick={onClickSave}>
               {t("_add")}
             </Button>
           </Grid>

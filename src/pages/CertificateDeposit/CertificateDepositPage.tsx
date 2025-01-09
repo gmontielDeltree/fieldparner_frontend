@@ -66,8 +66,6 @@ const initialForm: FormValueState<CertificateDeposit> = {
   observaciones: { value: "", isError: false, message: "", required: false },
 }
 
-
-
 export const CertificateDepositPage: React.FC = () => {
 
   const navigate = useNavigate();

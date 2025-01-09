@@ -424,6 +424,7 @@ export interface StockMovement extends Document {
 export interface StockMovementItem extends StockMovement {
   supply?: Supply;
   deposit?: Deposit;
+  crop?: Crop;
 }
 
 export interface StockByNroLot {

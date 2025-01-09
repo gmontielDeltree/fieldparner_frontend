@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import {
@@ -6,9 +5,9 @@ import {
     useForm,
     useSupply,
     userPurchaseOrder,
-} from '../hooks';
-import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../components';
-import { Box, Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, TableContainer, TextField, Typography } from '@mui/material';
+} from '../../hooks';
+import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../../components';
+import { Autocomplete, Box, Button, FormControl, Grid, IconButton, InputAdornment, InputLabel, ListItemText, MenuItem, Paper, Select, SelectChangeEvent, TableContainer, TextField, Typography } from '@mui/material';
 import {
     Add as AddIcon,
     Close as CloseIcon,
@@ -16,19 +15,17 @@ import {
     Save as SaveIcon,
 } from '@mui/icons-material';
 import { Icon } from 'semantic-ui-react';
-import { ColumnProps, DetailPurchaseOrderItem, PurchaseOrder, Supply } from '../types';
+import { ColumnProps, DetailPurchaseOrderItem, PurchaseOrder, Supply } from '../../types';
 
-import { getShortDate } from '../helpers/dates';
+import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import uuid4 from 'uuid4';
-import { Helper } from '../helpers/helper';
+import { Helper } from '../../helpers/helper';
 import { styled } from '@mui/material/styles';
 
 const GridStyled = styled(Grid)`
-    border-bottom: 1px solid;
+    border-bottom: 1px solid black;
 `;
-
-
 
 interface NewOrderItemRowProps {
     supplies: Supply[];
@@ -65,18 +62,18 @@ export const NewOrderRow = ({ supplies, addNewItem }: NewOrderItemRowProps) => {
         reset();
     }
 
-    const handleOnChangeSupply = ({ target }: SelectChangeEvent) => {
-        const supplyId = target.value;
-        const supplyDto = supplies.find(x => x._id === supplyId);
+    // const handleOnChangeSupply = ({ target }: SelectChangeEvent) => {
+    //     const supplyId = target.value;
+    //     const supplyDto = supplies.find(x => x._id === supplyId);
 
-        if (supplyDto)
-            setFormValues({
-                ...formValues,
-                supplyId,
-                supply: supplyDto,
-                unitMeasurement: supplyDto.unitMeasurement
-            });
-    }
+    //     if (supplyDto)
+    //         setFormValues({
+    //             ...formValues,
+    //             supplyId,
+    //             supply: supplyDto,
+    //             unitMeasurement: supplyDto.unitMeasurement
+    //         });
+    // }
 
     return (
         <Grid
@@ -90,29 +87,47 @@ export const NewOrderRow = ({ supplies, addNewItem }: NewOrderItemRowProps) => {
             sx={{ boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.2)" }}
         // bgcolor="#f3f3f3"
         >
-            <Grid item xs={12} sm={3}>
-                <FormControl fullWidth>
-                    <InputLabel id="supply">Insumo</InputLabel>
-                    <Select
-                        key="select-supply-movement"
-                        labelId="supply"
-                        value={formValues.supplyId}
-                        name='supplyId'
-                        label="Insumo"
-                        onChange={handleOnChangeSupply}
-                    >
-                        {supplies.map((supply) => (
-                            <MenuItem key={supply._id} value={supply._id}>
-                                {supply.name}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+            <Grid item xs={12} sm={4}>
+                <Autocomplete
+                    // loading={isLoadingSupplies}
+                    value={{ label: formValues.supply?.name || "", value: formValues.supply?._id || "" }}
+                    onChange={(_event, newValue) => {
+                        const value = newValue?.value || "";
+                        const supplySelected = supplies.find((supply) => supply._id === value);
+                        if (supplySelected && supplySelected._id) {
+                            setFormValues((prevState) => ({
+                                ...prevState,
+                                supplyId: value,
+                                supply: supplySelected,
+                            }));
+                        }
+                    }}
+                    options={supplies.map((option) => ({ label: option.name, value: option._id || "" }))}
+                    getOptionLabel={(option) => option.label}
+                    disableClearable
+                    renderInput={(params) => (
+                        <TextField {...params} label={"Insumo"} variant="outlined" />
+                    )}
+                    fullWidth
+                    ListboxProps={{
+                        style: {
+                            maxHeight: 248,
+                            overflow: "auto",
+                        },
+                    }}
+                />
             </Grid>
             <Grid item xs={12} sm={3}>
-                <Typography variant='body2'>
-                    {formValues.unitMeasurement}
-                </Typography>
+                <FormControl fullWidth>
+                    <ListItemText
+                        sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+                        primary={<Typography variant='subtitle2'>UM:</Typography>}
+                        secondary={
+                            <Typography letterSpacing={1} variant='subtitle1'>
+                                {formValues.supply ? formValues.supply.unitMeasurement : "-"}
+                            </Typography>}
+                    />
+                </FormControl>
             </Grid>
             <Grid item xs={12} sm={2}>
                 <TextField
@@ -297,7 +312,6 @@ export const PurchaseOrderPage: React.FC = () => {
     const { order } = useParams();
     const { t } = useTranslation();
     const navigate = useNavigate();
-    // const { withdrawalOrderActive } = useAppSelector(state => state.order);
     const [listItemToPurchase, setListItemToPurchase] = useState<DetailPurchaseOrderItem[]>([]);
     const { businesses: socialEntities, getBusinesses } = useBusiness();
     const { supplies, getSupplies } = useSupply();
@@ -357,7 +371,7 @@ export const PurchaseOrderPage: React.FC = () => {
                 anotherValue: otherValue,
                 totalValue
             }
-            
+
             if (formValues.nroOrder === "")
                 await createPurchaseOrder(order, details);
             else
@@ -414,8 +428,6 @@ export const PurchaseOrderPage: React.FC = () => {
             setFormValues(initialForm);
 
     }, [order])
-
-
 
     return (
         <TemplateLayout key="new-purchase-order" viewMap={true}>
@@ -599,15 +611,19 @@ export const PurchaseOrderPage: React.FC = () => {
                         <GridStyled item xs={8}>
                             <Typography variant='body1' textAlign="end"> {Helper.parseDecimalPointToComaWithCurrency(subtotal, "$", 2)}</Typography>
                         </GridStyled>
-                        <GridStyled item xs={4}>
-                            <Typography variant='body1' display="inline-block" textAlign="start">Impuesto </Typography>
-                        </GridStyled>
-                        <GridStyled item xs={3}>
+                        <GridStyled item xs={12} display="flex" justifyContent="space-between">
+                            <Typography
+                                variant='body1'
+                                sx={{ width: "120px" }}
+                                display="inline-block"
+                                textAlign="start">
+                                Impuesto </Typography>
                             <TextField
                                 variant="standard"
                                 type="number"
+                                size='small'
                                 name="taxPercentage"
-                                fullWidth
+                                sx={{ maxWidth: "20%" }}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start">%</InputAdornment>,
                                 }}
@@ -615,27 +631,25 @@ export const PurchaseOrderPage: React.FC = () => {
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 15, min: 1 }}
                             />
-                        </GridStyled>
-                        <GridStyled item xs={5}>
                             <Typography variant='body1' textAlign="end" >{Helper.parseDecimalPointToComaWithCurrency(taxValue, "$", 2)}</Typography>
                         </GridStyled>
-                        <GridStyled item xs={4}>
-                            <Typography variant='body1' textAlign="start">Otros </Typography>
-                        </GridStyled>
-                        <GridStyled item xs={3}>
+                        <GridStyled item xs={12} display="flex" justifyContent="space-between">
+                            <Typography
+                                variant='body1'
+                                display="inline-block"
+                                sx={{ width: "120px" }}
+                                textAlign="start">Otros</Typography>
                             <TextField
                                 variant="standard"
                                 type="number"
                                 name="anotherPercentage"
-                                fullWidth
+                                sx={{ maxWidth: "20%" }}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start">%</InputAdornment>,
                                 }}
                                 value={formValues.anotherPercentage}
                                 onChange={handleInputChange}
                             />
-                        </GridStyled>
-                        <GridStyled item xs={5}>
                             <Typography variant='body1' textAlign="end" >{Helper.parseDecimalPointToComaWithCurrency(otherValue, "$", 2)}</Typography>
                         </GridStyled>
                         <GridStyled item xs={4}>
@@ -659,6 +673,7 @@ export const PurchaseOrderPage: React.FC = () => {
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
+                            disabled={listItemToPurchase.length === 0}
                             color="primary"
                             onClick={() => onClickSave()}
                         >

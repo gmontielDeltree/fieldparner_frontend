@@ -4,13 +4,13 @@ import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Image } from '
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { Icon } from "semantic-ui-react";
 import { Edit as EditIcon, Print as PrintIcon } from "@mui/icons-material";
-import { userPurchaseOrder } from "../hooks";
+import { userPurchaseOrder } from "../../hooks";
 import { useTranslation } from "react-i18next";
-import { Helper } from '../helpers/helper';
-import { GenericListPage } from "./GenericListPage";
+import { Helper } from '../../helpers/helper';
+import { GenericListPage } from "../GenericListPage";
 import { GridColDef } from "@mui/x-data-grid";
-import { PurchaseOrder, DetailPurchaseOrderItem } from "../types";
-import { urlImg } from "../config";
+import { PurchaseOrder, DetailPurchaseOrderItem } from "../../types";
+import { urlImg } from "../../config";
 
 // Estilos para el PDF
 const styles = StyleSheet.create({
