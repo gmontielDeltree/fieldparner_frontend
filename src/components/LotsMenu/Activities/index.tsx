@@ -1,12 +1,13 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Activity from './Activity'
-import SowingIcon from '../../../images/icons/sembradora_act.webp'
-import HarvestIcon from '../../../images/icons/cosechadora_act.webp'
-import NoteIcon from '../../../images/icons/iconodenotas_act.webp'
-import SoilAnalysisIcon from '../../../images/icons/suelo_act.webp'
-import ApplicationIcon from '../../../images/icons/pulverizadora_act.webp'
-import PreparadoIcon from '../../../images/icons/IconodePlanificaciondesuelo.png'
+import SowingIcon from '../../../images/icons/sowing.png'
+import HarvestIcon from '../../../images/icons/harvest.png'
+import NoteIcon from '../../../images/icons/note.png'
+import SoilAnalysisIcon from '../../../images/icons/ground-sample.png'
+import ApplicationIcon from '../../../images/icons/application.png'
+import PreparadoIcon from '../../../images/icons/preparation.png'
 import Snackbar from '@mui/material/Snackbar'
+import { Paper } from '@mui/material'
 import MuiAlert from '@mui/material/Alert'
 import './Activities.css'
 import { styled } from '@mui/material/styles'
@@ -14,6 +15,7 @@ import { mapboxStaticImg } from '../../../utils/mapboxStaticImg'
 import { googleMapsLinkGoTo } from '../../../utils/googleMapsLink'
 import ordenDefinition from '../../../utils/ordenDefinition'
 import { dbContext } from '../../../services'
+import ModernHeader from './ModernHeader'
 
 const Alert = styled(MuiAlert)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -50,6 +52,7 @@ export const Activities = ({
     setOpenSnackbar(false)
   }
 
+  console.log('FIELD DOC:', activitiesData)
   const handleDeleteActivity = (activityId) => {
     db.get(activityId)
       .then((doc) => {
@@ -136,6 +139,21 @@ export const Activities = ({
         }
       })
   }
+  const FieldInfo = styled('div')(({ theme }) => ({
+    fontWeight: 'bold',
+    fontSize: '1.2rem',
+    color: theme.palette.primary.contrastText,
+  }))
+
+  const Header = styled(Paper)(({ theme }) => ({
+    padding: theme.spacing(2),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+    background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`,
+    boxShadow: '0px 4px 10px rgba(0,0,0,0.2)',
+    borderRadius: '8px',
+    margin: theme.spacing(2, 0),
+  }))
 
   const handleDownloadPDF = (activity) => {
     // TODO: Cambiar esto a un POST a server de informes
@@ -222,6 +240,11 @@ export const Activities = ({
         position: 'relative',
       }}
     >
+      <ModernHeader
+        fieldDoc={fieldDoc}
+        lotDoc={lotDoc}
+        activitiesData={activitiesData}
+      />
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}

@@ -29,12 +29,6 @@ const Header = styled(Paper)(({ theme }) => ({
   margin: theme.spacing(2, 0),
 }))
 
-const FieldInfo = styled('div')(({ theme }) => ({
-  fontWeight: 'bold',
-  fontSize: '1.2rem',
-  color: theme.palette.primary.contrastText,
-}))
-
 interface LotsMenuProps {
   lot: any
   field: any
@@ -315,10 +309,10 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
       </div>
       <hr style={hrStyle} />
 
-      <Header>
+      {/* <Header>
         <FieldInfo>Lote: {lot.properties.nombre}</FieldInfo>
         <FieldInfo>Campo: {field.nombre}</FieldInfo>
-      </Header>
+      </Header> */}
       <div>
         <LotMenuContent
           selectedCategory={selectedCategory}

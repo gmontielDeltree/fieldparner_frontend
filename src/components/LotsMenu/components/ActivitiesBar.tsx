@@ -1,16 +1,14 @@
 import React from 'react'
 import { Avatar, ButtonBase, Tooltip } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-
-// Importamos las imágenes directamente
-import planAnualIcon from '../../../images/icons/iconoplanificacionanual.webp'
-import preparadoIcon from '../../../images/icons/IconodePlanificaciondesuelo.png'
-import categoryIcon1 from '../../../images/icons/sembradora_act.webp'
-import categoryIcon2 from '../../../images/icons/pulverizadora_act.webp'
-import categoryIcon3 from '../../../images/icons/cosechadora_act.webp'
-import categoryIcon4 from '../../../images/icons/iconodenotas_act.webp'
-import categoryIcon5 from '../../../images/icons/iconosatelite.webp'
-import categoryIcon6 from '../../../images/icons/suelo_act.webp'
+import planAnualIcon from '../../../images/icons/cicle.png'
+import preparadoIcon from '../../../images/icons/calendar.png'
+import categoryIcon1 from '../../../images/icons/sowing.png'
+import categoryIcon2 from '../../../images/icons/application.png'
+import categoryIcon3 from '../../../images/icons/harvest.png'
+import categoryIcon4 from '../../../images/icons/note.png'
+import categoryIcon5 from '../../../images/icons/satellite-view.png'
+import categoryIcon6 from '../../../images/icons/ground-sample.png'
 
 interface ActivitiesBarProps {
   selectedCategory: string | null
@@ -48,57 +46,85 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
     { id: 'Muestra de suelo', icon: categoryIcon6 },
   ]
 
-  const avatarStyle = (categoryId: string) => ({
-    width: 50,
-    height: 50,
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    transform: selectedCategory === categoryId ? 'scale(1.2)' : 'scale(1)',
-    boxShadow:
-      selectedCategory === categoryId ? '0 4px 20px rgba(0,0,0,0.2)' : 'none',
-    borderRadius: '50%',
-    margin: '0 15px',
-    cursor: 'pointer',
-    opacity:
-      selectedCampaign ||
-      ['Vista de Satelite', 'Recorrido'].includes(categoryId)
-        ? 1
-        : 0.5,
-    filter:
-      selectedCampaign ||
-      ['Vista de Satelite', 'Recorrido'].includes(categoryId)
-        ? 'none'
-        : 'grayscale(100%)',
-    '&:hover': {
-      transform: 'scale(1.2)',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-    },
-  })
-
   return (
-    <div id="activities-bar">
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '20px 16px',
+        overflowX: 'auto',
+        backgroundColor: '#fafafa',
+        borderRadius: '16px',
+        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)',
+        margin: '10px 0',
+      }}
+    >
       {categories.map(({ id, icon, link }) => (
-        <Tooltip
-          key={id}
-          title={id}
-          arrow
-          placement="top"
-          sx={{
-            tooltip: {
-              backgroundColor: '#333',
-              color: 'white',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
-              fontSize: '1em',
-            },
-            arrow: {
-              color: '#333',
-            },
-          }}
-        >
-          <ButtonBase
-            onClick={() => (link ? navigate(link) : selectCategory(id))}
-          >
-            <Avatar alt={id} src={icon} sx={avatarStyle(id)} />
-          </ButtonBase>
+        <Tooltip key={id} title={id} arrow placement="top">
+          <div style={{ position: 'relative', margin: '0 12px' }}>
+            <ButtonBase
+              onClick={() => (link ? navigate(link) : selectCategory(id))}
+              sx={{
+                padding: '4px',
+                borderRadius: '50%',
+                backgroundColor:
+                  selectedCategory === id ? 'rgba(0,0,0,0.04)' : 'transparent',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Avatar
+                alt={id}
+                src={icon}
+                sx={{
+                  width: 65,
+                  height: 65,
+                  backgroundColor: '#f5f5f5',
+                  transition: 'all 0.2s ease',
+                  borderRadius: '50%',
+                  opacity:
+                    selectedCampaign ||
+                    ['Vista de Satelite', 'Recorrido'].includes(id)
+                      ? 1
+                      : 0.5,
+                  filter:
+                    selectedCampaign ||
+                    ['Vista de Satelite', 'Recorrido'].includes(id)
+                      ? 'none'
+                      : 'grayscale(100%)',
+                  boxShadow:
+                    selectedCategory === id
+                      ? '0 4px 12px rgba(0,0,0,0.1)'
+                      : 'none',
+                  '&:hover': {
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  },
+                }}
+                imgProps={{
+                  style: {
+                    objectFit: 'contain',
+                    padding: '0px',
+                  },
+                }}
+              />
+            </ButtonBase>
+
+            {/* Indicador sutil */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: -4,
+                left: '50%',
+                transform: `translateX(-50%) scaleX(${
+                  selectedCategory === id ? 1 : 0
+                })`,
+                width: '20px',
+                height: '2px',
+                backgroundColor: '#2563eb',
+                borderRadius: '1px',
+                transition: 'transform 0.2s ease',
+              }}
+            />
+          </div>
         </Tooltip>
       ))}
     </div>

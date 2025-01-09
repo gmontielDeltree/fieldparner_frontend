@@ -7,7 +7,7 @@ import {
   Stepper,
   Typography,
 } from '@mui/material'
-import SuppliesExecutionForm from './forms/PlanForms/SuppliesExecutionForm'
+import SuppliesForm from './forms/PlanForms/SuppliesForm'
 import OtherDetailsForm from './forms/PlanForms/OtherDetailsForm'
 import ServicesForm from './forms/PlanForms/ServicesForm'
 import ConditionsForm from './forms/PlanForms/ConditionsForm'
@@ -155,7 +155,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           missingFields++
         }
         break
-      case 1: // SuppliesExecutionForm (Insumos)
+      case 1: // SuppliesForm (Insumos)
         if (
           !formData.detalles ||
           !formData.detalles.dosis ||
@@ -242,7 +242,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         )
       case 1:
         return (
-          <SuppliesExecutionForm
+          <SuppliesForm
             lot={lot}
             db={db}
             formData={formData}

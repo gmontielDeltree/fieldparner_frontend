@@ -54,7 +54,7 @@ function PersonalFormUnified({
   const [siembras, setSiembras] = useState([])
   const [selectedSiembra, setSelectedSiembra] = useState(null)
   const { businesses, getBusinesses } = useBusiness()
-
+  console.log('ACTIVITY:', formData)
   useEffect(() => {
     getBusinesses()
     fetchSiembras()
@@ -62,8 +62,6 @@ function PersonalFormUnified({
 
   const fetchSiembras = async () => {
     try {
-      // Aquí deberás implementar la lógica para obtener las siembras
-      // según los parámetros necesarios (accountId, licenseId, campoId, loteId, campaña)
       const response = await fetch('/api/siembras', {
         method: 'POST',
         headers: {
