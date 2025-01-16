@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import { DepositDestination, StockMovement, StockMovementItem, StockByLot, Supply, TypeMovement, MovementType, Crop } from "../types";
+import { DepositDestination, StockMovement, StockMovementItem, Stock, Supply, TypeMovement, MovementType, Crop } from "../types";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
@@ -12,7 +12,7 @@ export const useStockMovement = () => {
     const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
     const [stockMovements, setStockMovements] = useState<StockMovementItem[]>([]);
-    const [stockByLots, setStockByLots] = useState<StockByLot[]>([]);
+    const [stockByLots, setStockByLots] = useState<Stock[]>([]);
     const [movementsType, setMovementsType] = useState<MovementType[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -65,7 +65,7 @@ export const useStockMovement = () => {
     const getStockBySupply = async (supplyId: string, depositId: string, location: string, nroLot: string) => {
         setIsLoading(true);
         try {
-            const existingNroLot = await dbContext.stockByLots.find({
+            const existingNroLot = await dbContext.stock.find({
                 selector: {
                     "$and": [
                         { "supplyId": supplyId },
@@ -86,7 +86,7 @@ export const useStockMovement = () => {
     const getStockByCrop = async (cropId: string, depositId: string, location: string, nroLot: string) => {
         setIsLoading(true);
         try {
-            const foundStockCrop = await dbContext.stockCrops.find({
+            const foundStockCrop = await dbContext.cropStockControl.find({
                 selector: {
                     "$and": [
                         { "cropId": cropId },
@@ -121,9 +121,9 @@ export const useStockMovement = () => {
                 if (isIncome) {
                     if (existingStockCrop) {
                         existingStockCrop.currentStock += amountValue;
-                        promisesStockCrop = dbContext.stockCrops.put(existingStockCrop);
+                        promisesStockCrop = dbContext.cropStockControl.put(existingStockCrop);
                     } else {
-                        promisesStockCrop = dbContext.stockCrops.post({
+                        promisesStockCrop = dbContext.cropStockControl.post({
                             accountId: accountId,
                             cropId: cropData._id,
                             nroLot,
@@ -137,7 +137,7 @@ export const useStockMovement = () => {
                         throw new Error("Stock de cultivo no encontrado.");
                     }
                     existingStockCrop.currentStock -= amountValue;
-                    promisesStockCrop = dbContext.stockCrops.put(existingStockCrop);
+                    promisesStockCrop = dbContext.cropStockControl.put(existingStockCrop);
                 }
                 responseAll = await Promise.all([
                     promisesStockCrop,
@@ -153,7 +153,7 @@ export const useStockMovement = () => {
                     depositDestination.location,
                     existingStockCrop.nroLot);
                 let promiseAll = [
-                    dbContext.stockCrops.put({ ...existingStockCrop, currentStock: existingStockCrop.currentStock - amountValue }),
+                    dbContext.cropStockControl.put({ ...existingStockCrop, currentStock: existingStockCrop.currentStock - amountValue }),
                     dbContext.stockMovements.post({ ...newMovement, isIncome: false }),
                     dbContext.stockMovements.post({
                         ...newMovement,
@@ -164,14 +164,14 @@ export const useStockMovement = () => {
                 ];
 
                 if (existingLotInDepositDestination) {
-                    promiseAll.push(dbContext.stockCrops.put({
+                    promiseAll.push(dbContext.cropStockControl.put({
                         ...existingLotInDepositDestination,
                         depositId: depositDestination.depositId,
                         location: depositDestination.location,
                         currentStock: existingLotInDepositDestination.currentStock + amountValue
                     }));
                 } else {
-                    promiseAll.push(dbContext.stockCrops.post({
+                    promiseAll.push(dbContext.cropStockControl.post({
                         accountId: accountId,
                         nroLot: existingStockCrop.nroLot,
                         cropId: existingStockCrop.cropId,
@@ -203,9 +203,9 @@ export const useStockMovement = () => {
                 if (isIncome) {
                     if (existingStock) {
                         existingStock.currentStock += amountValue;
-                        promiseStockByLot = dbContext.stockByLots.put(existingStock);
+                        promiseStockByLot = dbContext.stock.put(existingStock);
                     } else {
-                        promiseStockByLot = dbContext.stockByLots.post({
+                        promiseStockByLot = dbContext.stock.post({
                             accountId: accountId,
                             supplyId: supplyData._id,
                             nroLot,
@@ -219,7 +219,7 @@ export const useStockMovement = () => {
                         throw new Error("Stock de insumo no encontrado.");
                     }
                     existingStock.currentStock -= amountValue;
-                    promiseStockByLot = dbContext.stockByLots.put(existingStock);
+                    promiseStockByLot = dbContext.stock.put(existingStock);
                 }
                 responseAll = await Promise.all([
                     promiseStockByLot,
@@ -232,7 +232,7 @@ export const useStockMovement = () => {
                 let existingLotInDepositDestination = await getStockBySupply(supplyData._id, depositDestination.depositId, depositDestination.location, existingStock.nroLot);
 
                 let promiseAll = [
-                    dbContext.stockByLots.put({ ...existingStock, currentStock: existingStock.currentStock - amountValue }),
+                    dbContext.stock.put({ ...existingStock, currentStock: existingStock.currentStock - amountValue }),
                     dbContext.stockMovements.post({ ...newMovement, isIncome: false }),
                     dbContext.stockMovements.post({
                         ...newMovement,
@@ -243,14 +243,14 @@ export const useStockMovement = () => {
                 ];
 
                 if (existingLotInDepositDestination) {
-                    promiseAll.push(dbContext.stockByLots.put({
+                    promiseAll.push(dbContext.stock.put({
                         ...existingLotInDepositDestination,
                         depositId: depositDestination.depositId,
                         location: depositDestination.location,
                         currentStock: existingLotInDepositDestination.currentStock + amountValue
                     }));
                 } else {
-                    promiseAll.push(dbContext.stockByLots.post({
+                    promiseAll.push(dbContext.stock.post({
                         accountId: newMovement.accountId,
                         nroLot: existingStock.nroLot,
                         supplyId: existingStock.supplyId,
@@ -332,7 +332,7 @@ export const useStockMovement = () => {
         setIsLoading(true);
 
         try {
-            const result = await dbContext.stockByLots.find({
+            const result = await dbContext.stock.find({
                 selector: {
                     "$and": [
                         { "supplyId": supplyId },
@@ -342,7 +342,7 @@ export const useStockMovement = () => {
                 }
             });
             if (result.docs.length) {
-                const documents: StockByLot[] = result.docs;
+                const documents: Stock[] = result.docs;
                 setStockByLots(documents);
             }
             else setStockByLots([]);

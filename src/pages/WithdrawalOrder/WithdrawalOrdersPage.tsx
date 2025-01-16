@@ -12,10 +12,10 @@ import {
     useStockMovement,
     useSupply
 } from '../../hooks';
-import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled, TemplateLayout } from '../../components';
+import { DataTable, ItemRow, Loading, NewSupplyCropRow, TableCellStyled, TemplateLayout } from '../../components';
 import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, TableCell, TableContainer, TextField, Typography } from '@mui/material';
 import { Assignment as AssignmentIcon, NoteAdd as NoteAddIcon } from '@mui/icons-material';
-import { ColumnProps, OrderStatus, StockByLot, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder, StockCrop } from '../../types';
+import { ColumnProps, OrderStatus, Stock, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder, CropStockControl } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 
 
@@ -121,9 +121,9 @@ export const WithdrawalOrdersPage: React.FC = () => {
             if (isCultive && cropId) {
                 let result = await getStockByCrop(cropId, depositId, newSupply.location, newSupply.nroLot);
                 if (result && result.currentStock > 0) {
-                    let stockCrop: StockCrop = result;
+                    let stockCrop: CropStockControl = result;
                     const newCurrentStock = (Number(stockCrop.currentStock) - Number(newSupply.amount));
-                  
+
                     if (newCurrentStock <= 0) {
                         Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
                         return false;
@@ -138,7 +138,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
             else if (supplyId) {
                 let result = await getStockBySupply(supplyId, depositId, newSupply.location, newSupply.nroLot);
                 if (result && result.currentStock > 0) {
-                    let supplyStock: StockByLot = result;
+                    let supplyStock: Stock = result;
                     const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
                     if (newCurrentStock <= 0) {
                         Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
@@ -252,7 +252,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                             >
                                 {campaigns?.map((c) => (
                                     <MenuItem key={c.campaignId} value={c._id}>
-                                        {c.campaignId}
+                                        {c.name || c.description}
                                     </MenuItem>
                                 ))}
                             </Select>
@@ -278,7 +278,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                     </Grid>
                 </Grid>
                 <Box sx={{ mt: 3, mb: 2, p: 1 }}>
-                    <NewSupplyRow
+                    <NewSupplyCropRow
                         key="new-supply-order"
                         crops={dataCrops}
                         supplies={supplies}

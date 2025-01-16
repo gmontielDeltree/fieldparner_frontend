@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "../../../hooks";
-import { TransportDocument, TransportDocumentItem } from "../../../interfaces/transportDocument";
+import { TransportDocumentItem } from "../../../interfaces/transportDocument";
 import { FormControl, Grid, IconButton, InputAdornment, InputLabel, ListItemText, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import { TransportDocumentByCertificateDeposit } from "../../../interfaces/certificate-deposit";

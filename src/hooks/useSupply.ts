@@ -51,7 +51,7 @@ export const useSupply = () => {
         try {
             if (!supplyActive) throw new Error("Insumo no encontrado.");
             const promisesResult = await Promise.all([
-                dbContext.stockByLots.find({
+                dbContext.stock.find({
                     selector: {
                         "$and": [
                             { "supplyId": supplyActive._id },
@@ -114,7 +114,7 @@ export const useSupply = () => {
             if (!user) throw new Error("User not found.");
             const promisesResult = await Promise.all([
                 // dbContext.stockMovements.find({ selector: { "accountId": user.accountId } }),
-                dbContext.stockByLots.find({ selector: { "accountId": user.accountId } }),
+                dbContext.stock.find({ selector: { "accountId": user.accountId } }),
                 dbContext.supplies.find({
                     selector: {
                         $or: [
@@ -149,7 +149,7 @@ export const useSupply = () => {
         try {
             let supplyByDeposits: SupplyByDeposits[] = [];
             const promisesResult = await Promise.all([
-                dbContext.stockByLots.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.stock.find({ selector: { "accountId": user?.accountId } }),
                 dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
                 dbContext.supplies.find({
                     selector: {

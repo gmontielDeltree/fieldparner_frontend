@@ -110,7 +110,7 @@ export const useExitField = () => {
             const promisesAll = [
                 dbContext.exitFields.post(newExitField),
                 dbContext.stockMovements.post(newStockMovement),
-                dbContext.stockCrops.put(stockOfCrop),
+                dbContext.cropStockControl.put(stockOfCrop),
                 // dbContext.supplies.put(updateSupply)
             ]
 

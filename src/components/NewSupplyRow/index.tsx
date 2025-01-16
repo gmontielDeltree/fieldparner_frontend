@@ -8,7 +8,7 @@ import { getShortDate } from '../../helpers/dates';
 import { Loading } from '..';
 
 
-interface NewSupplyRowProps {
+interface SupplyAndCropProps {
   supplies: Supply[],
   deposits: Deposit[],
   crops: Crop[],
@@ -29,7 +29,7 @@ const initialStateNewSupply = {
   amount: 0
 };
 
-export const NewSupplyRow: React.FC<NewSupplyRowProps> = ({
+export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
   supplies,
   crops,
   deposits,

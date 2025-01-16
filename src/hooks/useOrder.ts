@@ -2,7 +2,7 @@ import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from ".";
 import { dbContext } from "../services";
-import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, NumeratorType, OrderStatus, StockByLot, StockCrop, StockMovement, TypeMovement, WithdrawalOrder, WithdrawalOrderType, WithdrawalsByDepositSupply } from "../types";
+import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, NumeratorType, OrderStatus, Stock, CropStockControl, StockMovement, TypeMovement, WithdrawalOrder, WithdrawalOrderType, WithdrawalsByDepositSupply } from "../types";
 import { useState } from "react";
 import { setWithdrawalOrderActive } from "../redux/withdrawalOrder";
 import { onLogout } from '../redux/auth';
@@ -195,8 +195,8 @@ export const useOrder = () => {
             });
 
             const response = await Promise.all([
-                dbContext.stockByLots.find({ selector: { "accountId": user.accountId } }),
-                dbContext.stockCrops.find({ selector: { "accountId": user.accountId } }),
+                dbContext.stock.find({ selector: { "accountId": user.accountId } }),
+                dbContext.cropStockControl.find({ selector: { "accountId": user.accountId } }),
                 // dbContext.supplies.find({ selector: { "accountId": user.accountId } }),
             ]);
 
@@ -204,8 +204,8 @@ export const useOrder = () => {
 
             const responseStockSupplies = response[0].docs;
             const responseStockCrops = response[1].docs;
-            let updateStockSupplies: StockByLot[] = []; // Insumos actualizados con nuevo stock
-            let updateStockCrops: StockCrop[] = []; // Cultivos actualizados con nuevo stock
+            let updateStockSupplies: Stock[] = []; // Insumos actualizados con nuevo stock
+            let updateStockCrops: CropStockControl[] = []; // Cultivos actualizados con nuevo stock
             // const responseSupplies = response[1].docs;
             // let updateSupplies: Supply[] = [];
 
@@ -266,8 +266,8 @@ export const useOrder = () => {
             let responseAll = await Promise.all([
                 dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
                 dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
-                dbContext.stockByLots.bulkDocs(updateStockSupplies),
-                dbContext.stockCrops.bulkDocs(updateStockCrops),
+                dbContext.stock.bulkDocs(updateStockSupplies),
+                dbContext.cropStockControl.bulkDocs(updateStockCrops),
                 dbContext.stockMovements.bulkDocs(newMovements),
             ]);
 

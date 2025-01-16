@@ -220,7 +220,8 @@ export const CertificateDepositPage: React.FC = () => {
     event.preventDefault();
     event.stopPropagation();
     const form = event.currentTarget;
-    if (validateForm(form)) handleNext();
+    handleNext();
+    // if (validateForm(form)) handleNext();
   };
 
 

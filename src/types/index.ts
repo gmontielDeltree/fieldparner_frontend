@@ -458,24 +458,6 @@ export interface DepositDestination {
   location: string;
 }
 
-export interface StockByLot extends Document {
-  accountId: string;
-  depositId: string;
-  location: string;
-  supplyId: string;
-  nroLot: string;
-  currentStock: number;
-}
-
-export interface StockCrop extends Document {
-  accountId: string;
-  cropId: string;
-  depositId: string;
-  location: string;
-  nroLot: string;
-  currentStock: number;
-}
-
 export interface TransformSupply {
   id: string;
   supply: Supply | null;

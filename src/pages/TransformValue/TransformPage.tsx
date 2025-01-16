@@ -23,8 +23,8 @@ import {
 import React, { useEffect, useState } from 'react';
 import { useAppSelector, useCrops, useDeposit, useForm, useStockMovement, useSupply, useTransformStock } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
-import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack } from '../../components';
-import { ColumnProps, StockByLot, StockCrop, TransformSupply } from '../../types';
+import { BorderContainer, NewSupplyCropRow, ItemRow, Loading, TableCellStyledBlack } from '../../components';
+import { ColumnProps, Stock, CropStockControl, TransformSupply } from '../../types';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -116,8 +116,8 @@ export const TransformPage: React.FC = () => {
     const { user } = useAppSelector(state => state.auth);
     const [originTransformValues, setOriginTransformValues] = useState<TransformSupply[]>([]);
     const [destinationTransformValue, setDestinationTransformValue] = useState<TransformSupply[]>([]);
-    const [stockBySupplies, setStockBySupplies] = useState<StockByLot[]>([]);
-    const [stockByCrops, setStockByCrops] = useState<StockCrop[]>([]);
+    const [stockBySupplies, setStockBySupplies] = useState<Stock[]>([]);
+    const [stockByCrops, setStockByCrops] = useState<CropStockControl[]>([]);
     const { isLoading, supplies, getSupplies } = useSupply();
     const { dataCrops, getCrops } = useCrops();
     const { isLoading: depositLoading,
@@ -174,7 +174,7 @@ export const TransformPage: React.FC = () => {
                 //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
                 if (result && currentStock > 0) {
 
-                    let supplyStock: StockByLot = result;
+                    let supplyStock: Stock = result;
                     const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
                     if (newCurrentStock <= 0) {
                         Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
@@ -200,13 +200,13 @@ export const TransformPage: React.FC = () => {
                     return false;
                 }
                 if (result) {
-                    let supplyStock: StockByLot = result;
+                    let supplyStock: Stock = result;
                     const newCurrentStock = (Number(supplyStock.currentStock) + Number(newSupply.amount));
                     setStockBySupplies([{ ...supplyStock, currentStock: newCurrentStock }, ...stockBySupplies]);
                     setDestinationTransformValue([...destinationTransformValue, { ...newSupply, amount: newSupply.amount }]);
                 } else {
                     if (!user) throw new Error("User not found");
-                    const newSupplyStock: StockByLot = {
+                    const newSupplyStock: Stock = {
                         accountId: user.accountId,
                         depositId: depositId,
                         supplyId: supplyId,
@@ -241,7 +241,7 @@ export const TransformPage: React.FC = () => {
                 //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
                 if (result && currentStock > 0) {
 
-                    let cropStock: StockCrop = result;
+                    let cropStock: CropStockControl = result;
                     const newCurrentStock = (Number(cropStock.currentStock) - Number(newTransformValue.amount));
                     if (newCurrentStock <= 0) {
                         Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
@@ -267,13 +267,13 @@ export const TransformPage: React.FC = () => {
                     return false;
                 }
                 if (result) {
-                    let cropStock: StockCrop = result;
+                    let cropStock: CropStockControl = result;
                     const newCurrentStock = (Number(cropStock.currentStock) + Number(newTransformValue.amount));
                     setStockByCrops([{ ...cropStock, currentStock: newCurrentStock }, ...stockByCrops]);
                     setDestinationTransformValue([...destinationTransformValue, { ...newTransformValue, amount: newTransformValue.amount }]);
                 } else {
                     if (!user) throw new Error("User not found");
-                    const newCropStock: StockCrop = {
+                    const newCropStock: CropStockControl = {
                         accountId: user.accountId,
                         depositId: depositId,
                         cropId,
@@ -434,7 +434,7 @@ export const TransformPage: React.FC = () => {
                 </Grid>
                 <BorderContainer key="supplies-origin">
                     <Box sx={{ mb: 3, mt: 1 }}>
-                        <NewSupplyRow
+                        <NewSupplyCropRow
                             key="new-supply-to-origin"
                             crops={dataCrops}
                             supplies={supplies}
@@ -493,7 +493,7 @@ export const TransformPage: React.FC = () => {
                 </Typography>
                 <BorderContainer key="supplies-destination">
                     <Box sx={{ mb: 3, mt: 1 }}>
-                        <NewSupplyRow
+                        <NewSupplyCropRow
                             key="new-supply-to-destination"
                             supplies={supplies}
                             deposits={deposits}

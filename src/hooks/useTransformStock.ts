@@ -1,4 +1,4 @@
-import { Movement, StockByLot, StockCrop, StockMovement, StockMovementItem, TransformSupply, TypeMovement } from "../types";
+import { Movement, Stock, CropStockControl, StockMovement, StockMovementItem, TransformSupply, TypeMovement } from "../types";
 import { useAppDispatch, useAppSelector } from ".";
 import { useState } from "react";
 import { getShortDate } from "../helpers/dates";
@@ -27,8 +27,8 @@ export const useTransformStock = () => {
     const transformStock = async (
         supplyOrCultiveOrigin: TransformSupply[],
         supplyOrCultiveDestination: TransformSupply[],
-        stockBySupplies: StockByLot[],
-        stockByCrops: StockCrop[],
+        stockBySupplies: Stock[],
+        stockByCrops: CropStockControl[],
         detail: string,
         operationDate: string) => {
         setIsLoading(true);
@@ -100,8 +100,8 @@ export const useTransformStock = () => {
             // Actualizar en la tabla auxiliar para ese insumo/deposito/ubicacion/lote.
             let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
                 dbContext.stockMovements.bulkDocs(newMovements),
-                dbContext.stockByLots.bulkDocs(stockBySupplies),
-                dbContext.stockCrops.bulkDocs(stockByCrops),
+                dbContext.stock.bulkDocs(stockBySupplies),
+                dbContext.cropStockControl.bulkDocs(stockByCrops),
             ];
             const responseAll = await Promise.all(promisesAll);
 
