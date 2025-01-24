@@ -15,8 +15,9 @@ import {
 import { DataTable, ItemRow, Loading, NewSupplyCropRow, TableCellStyled, TemplateLayout } from '../../components';
 import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, TableCell, TableContainer, TextField, Typography } from '@mui/material';
 import { Assignment as AssignmentIcon, NoteAdd as NoteAddIcon } from '@mui/icons-material';
-import { ColumnProps, OrderStatus, Stock, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder, CropStockControl } from '../../types';
+import { ColumnProps, OrderStatus, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder } from '../../types';
 import { getShortDate } from '../../helpers/dates';
+import { Stock, CropStockControl } from '../../interfaces/stock';
 
 
 

@@ -41,12 +41,12 @@ import { CropStockControl, Stock } from '../interfaces/stock';
 
 PouchDB.plugin(PouchDBFind);
 
-export const remoteCouchDBUrl = "" // Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
+export const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
 const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
 
 export const opts: PouchDB.Replication.SyncOptions = {
-  live: false,
-  retry: false,
+  live: true,
+  retry: true,
   //  filter: 'app/by_account',
   //  query_params: { "agent": agent }
 };
@@ -61,7 +61,7 @@ const dbNames = Object.freeze({
   socialEntities: "social-entities",
   categories: "categories",
   stockMovements: "stock-movements",
-  stock: "stock", 
+  stock: "stock",
   exitFields: "exit-fields",
   campaigns: "campaigns",
   fields: "fields",
@@ -189,7 +189,7 @@ dbContext.productiveUnits.sync(`${remoteCouchDBUrl}${dbNames.productiveUnits}`, 
 dbContext.contractSaleCereals.sync(`${remoteCouchDBUrl}${dbNames.contractSaleCereals}`, opts);
 dbContext.contractDeliveryDates.sync(`${remoteCouchDBUrl}${dbNames.contractDeliveryDates}`, opts);
 dbContext.costsExpenses.sync(`${remoteCouchDBUrl}${dbNames.costsExpenses}`, opts);
-// dbContext.stockCrops.sync(`${remoteCouchDBUrl}${dbNames.stockCrops}`, opts);
+dbContext.cropStockControl.sync(`${remoteCouchDBUrl}${dbNames.cropStockControl}`, opts);
 
 
 //#endregion

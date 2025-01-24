@@ -9,18 +9,18 @@ import {
     SelectChangeEvent,
     TextField,
     Typography,
-    Divider,
-    Box
+    // Divider,
+    Box,
+    ListItemText
 } from '@mui/material';
-import { Deposit, ExitField, TipoEntidad, Vehicle, VehicleType } from '../../types';
+import { ExitField, ExitFieldItem, TipoEntidad, Vehicle, VehicleType } from '../../types';
 import { LocalShipping as LocalShippingIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { BusinessItem } from '../../interfaces/socialEntity';
 
 
 interface TransportDestinationProps {
-    formValues: ExitField;
-    deposits: Deposit[];
+    formValues: ExitFieldItem;
     socialEntities: BusinessItem[];
     vehicles: Vehicle[];
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
@@ -28,11 +28,9 @@ interface TransportDestinationProps {
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
 
-//TODO: Camionero y Cosechador tienen q ser de tipo entidad fisica?
 
 export const TransportDestination: React.FC<TransportDestinationProps> = ({
     formValues,
-    deposits,
     socialEntities,
     vehicles,
     handleInputChange,
@@ -43,20 +41,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
     const netWeight = Number(grossWeight - tareWeight);
     const kgNet = (netWeight - ((netWeight * totalMerma) / 100));
-    const { t } = useTranslation();
-
-    const onChangeDeposit = ({ target }: SelectChangeEvent) => {
-        const { value } = target;
-        const depositSelected = deposits.find((deposit) => deposit._id === value);
-
-        if (depositSelected) {
-            setFormValues(prevState => ({
-                ...prevState,
-                depositId: value,
-                deposit: depositSelected
-            }));
-        }
-    };
+    const { t, i18n } = useTranslation();
 
     const onChangeVehicle = useCallback(({ target }: SelectChangeEvent) => {
         const { value, name } = target;
@@ -77,7 +62,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     return (
         <Grid
             container
-            spacing={1}
+            spacing={2}
             direction="row"
             alignItems="center"
             justifyContent="space-between">
@@ -85,7 +70,46 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                 <LocalShippingIcon sx={{ mx: 1 }} />
                 <Typography variant="h5">{t("carrier_kgs_destination")} </Typography>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={6} sm={4}>
+                <FormControl fullWidth>
+                    <ListItemText
+                        primary={<Typography variant='subtitle2'>Campaña</Typography>}
+                        sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+                        secondary={
+                            <Typography letterSpacing={1} variant='subtitle1'>
+                                {formValues.campaign?.name || "-"}
+                            </Typography>}
+                    />
+                </FormControl>
+            </Grid>
+            <Grid item xs={6} sm={4}>
+                <FormControl fullWidth>
+                    <ListItemText
+                        primary={<Typography variant='subtitle2'>Campo</Typography>}
+                        sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+                        secondary={
+                            <Typography letterSpacing={1} variant='subtitle1'>
+                                {formValues.field?.nombre || "-"}
+                            </Typography>}
+                    />
+                </FormControl>
+            </Grid>
+            <Grid item xs={6} sm={4}>
+                <FormControl fullWidth>
+                    <ListItemText
+                        primary={<Typography variant='subtitle2'>Cultivo</Typography>}
+                        sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+                        secondary={
+                            <Typography letterSpacing={1} variant='subtitle1'>
+                                {formValues.crop ?
+                                    i18n.language === "es" ?
+                                        formValues.crop.descriptionES : i18n.language === "en" ?
+                                            formValues.crop.descriptionEN : formValues.crop.descriptionPT : "-"}
+                            </Typography>}
+                    />
+                </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
                 <FormControl key="transport-select" fullWidth>
                     <InputLabel id="transporte">{t("_transportation")}</InputLabel>
                     <Select
@@ -103,7 +127,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     </Select>
                 </FormControl>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
                 <FormControl key="trucker-select" fullWidth>
                     <InputLabel id="trucker">{t("truck_driver")} </InputLabel>
                     <Select
@@ -121,20 +145,6 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     </Select>
                 </FormControl>
             </Grid>
-            {/* TODO: visualizar cultivo */}
-            {/* <Grid item xs={12} sm={4}>
-                <TextField
-                    variant="outlined"
-                    type="text"
-                    label={t("_crop")}
-                    disabled
-                    value={formValues.cultive}
-                    InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                    }}
-                    fullWidth
-                />
-            </Grid> */}
             <Grid item xs={12} sm={6}>
                 <FormControl key="vehicle-select" fullWidth>
                     <InputLabel id="vehicle">{t("_vehicle")}</InputLabel>
@@ -171,10 +181,10 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     </Select>
                 </FormControl>
             </Grid>
-            <Grid xs={12} sm={12} my={2}>
+            {/* <Grid xs={12} sm={12} my={2}>
                 <Divider variant='middle' sx={{ border: "1px solid black" }} />
-            </Grid>
-            <Grid item xs={6} sm={3}>
+            </Grid> */}
+            <Grid item xs={6} sm={4}>
                 <TextField
                     variant="outlined"
                     type="number"
@@ -188,7 +198,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     fullWidth
                 />
             </Grid>
-            <Grid item xs={6} sm={3}>
+            <Grid item xs={6} sm={4}>
                 <TextField
                     variant="outlined"
                     type="number"
@@ -202,7 +212,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     fullWidth
                 />
             </Grid>
-            <Grid item xs={6} sm={3}>
+            <Grid item xs={6} sm={4}>
                 <TextField
                     variant="outlined"
                     type="number"
@@ -216,24 +226,6 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     }}
                     fullWidth
                 />
-            </Grid>
-            <Grid item xs={6} sm={3}>
-                <FormControl fullWidth>
-                    <InputLabel id="deposit">{t("_warehouse")}</InputLabel>
-                    <Select
-                        labelId="deposit"
-                        name="depositId"
-                        value={formValues.depositId}
-                        label={t("_warehouse")}
-                        onChange={onChangeDeposit}
-                    >
-                        {deposits.map((deposit) => (
-                            <MenuItem key={deposit._id} value={deposit._id}>
-                                {deposit.description}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
             </Grid>
             <Grid
                 item
@@ -334,22 +326,10 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     />
                 </Grid>
             </Grid>
-            <Grid xs={12} sm={12} my={1}>
+            {/* <Grid xs={12} sm={12} my={1}>
                 <Divider variant='middle' sx={{ border: "1px solid black" }} />
-            </Grid>
+            </Grid> */}
             <Grid item xs={6} sm={3}>
-                {/* <TextField
-                    variant="outlined"
-                    type="text"
-                    label='Cosechador'
-                    name="harvester"
-                    value={formValues.harvester}
-                    onChange={handleInputChange}
-                    InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                    }}
-                    fullWidth
-                /> */}
                 <FormControl key="harvester-select" fullWidth>
                     <InputLabel id="harvester">{t("_harvester")}</InputLabel>
                     <Select

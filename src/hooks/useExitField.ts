@@ -8,7 +8,7 @@ import { useAppSelector, useStockMovement } from '.';
 export const useExitField = () => {
     // const navigate = useNavigate();
     const { user } = useAppSelector(state => state.auth);
-    const { getStockCrop } = useStockMovement();
+    const { getControlStockCrop } = useStockMovement();
     const [exitFields, setExitFields] = useState<ExitFieldItem[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -66,19 +66,18 @@ export const useExitField = () => {
             if (!user) throw new Error("User not found");
             const { accountId, id: userId } = user;
             newExitField.accountId = accountId;
-            
+
             if (!newExitField.deposit || !newExitField.crop) throw new Error();
-            
-            let stockOfCrop = await getStockCrop(
-                newExitField.cropId,
-                newExitField.depositId,
-                newExitField.deposit.locations[0],
-                ""
-            );
+            //Buscamos el stock del cultivo y solo sumamos al stock comprometido, no mueve nada del stock actual
+            let stockOfCrop = await getControlStockCrop({
+                accountId,
+                campaignId: newExitField.campaignId,
+                cropId: newExitField.cropId
+            });
 
             if (!stockOfCrop) throw new Error("Insufficient stock.");
 
-            stockOfCrop.currentStock -= Number(newExitField.netWeight);
+            stockOfCrop.committedStock += Number(newExitField.netWeight);
             //Modificar movimiento de stock para q tenga cropId , y un booleano para saber si es insumo o cultivo
             let newStockMovement: StockMovement = {
                 accountId,
@@ -106,7 +105,8 @@ export const useExitField = () => {
             delete newExitField.crop;
             delete newExitField.deposit;
             delete newExitField.transport;
-            
+            delete newExitField.campaign;
+
             const promisesAll = [
                 dbContext.exitFields.post(newExitField),
                 dbContext.stockMovements.post(newStockMovement),

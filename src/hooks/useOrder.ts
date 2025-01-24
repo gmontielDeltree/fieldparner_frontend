@@ -2,10 +2,11 @@ import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from ".";
 import { dbContext } from "../services";
-import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, NumeratorType, OrderStatus, Stock, CropStockControl, StockMovement, TypeMovement, WithdrawalOrder, WithdrawalOrderType, WithdrawalsByDepositSupply } from "../types";
+import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, NumeratorType, OrderStatus, StockMovement, TypeMovement, WithdrawalOrder, WithdrawalOrderType, WithdrawalsByDepositSupply } from "../types";
 import { useState } from "react";
 import { setWithdrawalOrderActive } from "../redux/withdrawalOrder";
 import { onLogout } from '../redux/auth';
+import { Stock, CropStockControl } from '../interfaces/stock';
 
 export const useOrder = () => {
     const navigate = useNavigate();

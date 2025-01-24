@@ -6,18 +6,17 @@ import {
     Agriculture as AgricultureIcon,
     ArrowRightAlt as ArrowRightAltIcon
 } from '@mui/icons-material';
-import { useBusiness, useCampaign, useCrops, useDeposit, useExitField, useForm, useSupply, useVehicle } from '../../hooks';
-import { ExitField } from '../../types';
+import { useBusiness, useExitField, useForm, useStockMovement, useVehicle } from '../../hooks';
+import { Crop, Deposit, ExitFieldItem } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { useField } from '../../hooks/useField';
+import { StockItem, TipoStock } from '../../interfaces/stock';
 
 
-
-const initialState: ExitField = {
+const initialState: ExitFieldItem = {
     creationDate: getShortDate(false, "-"),
     campaignId: "",
-    // cultive: "",
     fieldId: "",
     lotId: "",
     transportDocument: "",
@@ -46,7 +45,6 @@ const initialState: ExitField = {
 }
 
 export const NewExitFieldPage: React.FC = () => {
-    // const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
     const { t } = useTranslation();
@@ -58,35 +56,35 @@ export const NewExitFieldPage: React.FC = () => {
         setFormulario: setFormValues,
         reset
     } = useForm(initialState);
-
-    const { supplies, getSupplies } = useSupply();
+    const [loading, setLoading] = useState(false);
+    const [stockFromCrops, setStockFromCrops] = useState<StockItem[]>([]);
+    const [depositsFromCrop, setDepositsFromCrop] = useState<Deposit[]>([]);
+    const { getStock } = useStockMovement();
     const { businesses: socialEntities, getBusinesses } = useBusiness();
-    const { campaigns, getCampaigns } = useCampaign();
     const { vehicles, getVehicles } = useVehicle();
-    const { deposits, getDeposits } = useDeposit();
     const { isLoading, createExitField } = useExitField();
-    const { dataCrops, getCrops } = useCrops();
     const { fields, getFields } = useField();
 
+    const { campaignId, fieldId, lotId, cropId } = formValues;
 
     const steps = [
-        t("transport_destiny"),
         t("general_data"),
+        t("transport_destiny"),
     ];
 
     const getStepContent = useMemo(
         () => (step: number) => {
+
             switch (step) {
                 case 0:
                     return (
                         <GeneralData
                             key="general-data-exit-field"
                             formValues={formValues}
-                            crops={dataCrops}
-                            campaigns={campaigns}
+                            crops={stockFromCrops.filter(s => s.dataCrop).map((stock) => stock.dataCrop) as Crop[]}
+                            deposits={depositsFromCrop}
                             listFields={fields}
                             handleInputChange={handleInputChange}
-                            handleSelectChange={handleSelectChange}
                             setFormValues={setFormValues}
                         />
                     );
@@ -97,7 +95,6 @@ export const NewExitFieldPage: React.FC = () => {
                             formValues={formValues}
                             vehicles={vehicles}
                             socialEntities={socialEntities}
-                            deposits={deposits}
                             handleInputChange={handleInputChange}
                             handleSelectChange={handleSelectChange}
                             setFormValues={setFormValues}
@@ -113,20 +110,18 @@ export const NewExitFieldPage: React.FC = () => {
             handleInputChange,
             handleSelectChange,
             handleFormValueChange,
-            supplies,
-            deposits,
+            depositsFromCrop,
             vehicles,
             socialEntities,
-            campaigns,
-            dataCrops,
             fields,
+            stockFromCrops
         ]
     );
 
     const onClickCancelar = () => {
         navigate("/init/overview/exit-field");
     };
-
+    //TODO: AGREGAR VALIDACIONES DE CAMPOS REQUERIDOS
     const handleNext = () => {
         setActiveStep(activeStep + 1);
     };
@@ -147,19 +142,45 @@ export const NewExitFieldPage: React.FC = () => {
     }
 
     useEffect(() => {
-        getSupplies();
         getBusinesses();
         getVehicles();
-        getDeposits();
-        getCampaigns();
-        getCrops();
         getFields();
     }, [])
 
+    useEffect(() => {
+        const getCropsWithStock = async () => {
+            setLoading(true);
+            const responseStockTypeCrop = await getStock({
+                tipo: TipoStock.CULTIVO,
+                campaignId: campaignId,
+                fieldId: fieldId,
+                fieldLot: lotId
+            }, true);
+            if (responseStockTypeCrop?.length) setStockFromCrops(responseStockTypeCrop);
+            setLoading(false);
+        }
+
+        if (campaignId && fieldId && lotId) {
+            getCropsWithStock();
+        }
+    }, [campaignId, fieldId, lotId])
+
+    //Cada vez q cambie el cultivo, filtrar los depositos
+    useEffect(() => {
+        const filterDepositsByCrop = () => {
+            const deposits = stockFromCrops
+                .filter(s => s.dataCrop?._id === cropId)
+                .map(s => s.dataDeposit) as Deposit[];
+            setDepositsFromCrop(deposits);
+        }
+
+        if (stockFromCrops.length && cropId) filterDepositsByCrop();
+    }, [stockFromCrops, cropId])
+
 
     return (
-        <TemplateLayout key="new-exit-field-page" viewMap={true}>
-            {isLoading && <Loading loading={true} />}
+        <TemplateLayout key="new-exit-field-page" viewMap={false}>
+            {isLoading || loading && <Loading loading={true} />}
             <Container
                 maxWidth="lg"
                 sx={{
@@ -216,6 +237,7 @@ export const NewExitFieldPage: React.FC = () => {
                                         type="button"
                                         variant="contained"
                                         color="primary"
+                                        // disabled={formValues.cropId === ""}
                                         onClick={handleNext}
                                         fullWidth
                                     >
@@ -223,17 +245,20 @@ export const NewExitFieldPage: React.FC = () => {
                                     </Button>
                                 )}
                             </Grid>
-                            <Grid item xs={12} sm={3}>
-                                <Button
-                                    type="submit"
-                                    variant="contained"
-                                    color="success"
-                                    onClick={() => onClickSaveExitField()}
-                                    fullWidth
-                                >
-                                    {t("_add")}
-                                </Button>
-                            </Grid>
+                            {(activeStep === steps.length - 1) && (
+                                <Grid item xs={12} sm={3}>
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        color="success"
+                                        disabled={formValues.netWeight === 0}
+                                        onClick={() => onClickSaveExitField()}
+                                        fullWidth
+                                    >
+                                        {t("_add")}
+                                    </Button>
+                                </Grid>
+                            )}
                         </Grid>
                     </>
                 </Paper>
