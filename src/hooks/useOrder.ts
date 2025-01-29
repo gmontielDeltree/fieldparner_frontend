@@ -6,7 +6,7 @@ import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, NumeratorType, O
 import { useState } from "react";
 import { setWithdrawalOrderActive } from "../redux/withdrawalOrder";
 import { onLogout } from '../redux/auth';
-import { Stock, CropStockControl } from '../interfaces/stock';
+import { Stock } from '../interfaces/stock';
 
 export const useOrder = () => {
     const navigate = useNavigate();
@@ -197,53 +197,26 @@ export const useOrder = () => {
 
             const response = await Promise.all([
                 dbContext.stock.find({ selector: { "accountId": user.accountId } }),
-                dbContext.cropStockControl.find({ selector: { "accountId": user.accountId } }),
-                // dbContext.supplies.find({ selector: { "accountId": user.accountId } }),
             ]);
 
             if (!response) throw new Error("Supplies not found.");
 
             const responseStockSupplies = response[0].docs;
-            const responseStockCrops = response[1].docs;
             let updateStockSupplies: Stock[] = []; // Insumos actualizados con nuevo stock
-            let updateStockCrops: CropStockControl[] = []; // Cultivos actualizados con nuevo stock
-            // const responseSupplies = response[1].docs;
-            // let updateSupplies: Supply[] = [];
-
-            // responseStockSupplies.forEach(s => {
-            //     listWithdrawals.forEach(w => {
-            //         if (w.deposit._id === s.depositId && w.supply._id === s.supplyId &&
-            //             w.location === s.location && w.nroLot === s.nroLot) {
-            //             updateStockSupplies.push({
-            //                 ...s, currentStock: Number(s.currentStock - Number(w.amount))
-            //             });
-            //         }
-            //     });
-            // });
 
             listWithdrawals.forEach(w => {
                 //Si existe el insumo, se actualiza el stock dependiendo de la tabla stockByLots
                 if (w.supply) {
                     responseStockSupplies.forEach(s => {
-                        if (w.deposit?._id === s.depositId && w.supply?._id === s.supplyId &&
+                        if (w.deposit?._id === s.depositId && w.supply?._id === s.id &&
                             w.location === s.location && w.nroLot === s.nroLot) {
                             updateStockSupplies.push({
                                 ...s, currentStock: Number(s.currentStock - Number(w.amount))
                             });
                         }
                     });
-                } else {
-                    responseStockCrops.forEach(c => {
-                        if (w.deposit?._id === c.depositId && w.crop?._id === c.cropId &&
-                            w.location === c.location && w.nroLot === c.nroLot) {
-                            updateStockCrops.push({
-                                ...c, currentStock: Number(c.currentStock - Number(w.amount))
-                            });
-                        }
-                    });
                 }
             });
-
 
             let newMovements = listWithdrawals.map(w => ({
                 accountId: user.accountId,
@@ -252,8 +225,8 @@ export const useOrder = () => {
                 creationDate: withdrawalDate,
                 depositId: w.deposit?._id,
                 supplyId: w.supply?._id,
-                isCrop: !!w.crop,
-                cropId: w.crop?._id,
+                isCrop: false,
+                cropId: "",
                 location: w.location,
                 nroLot: w.nroLot,
                 detail: withdrawalOrderActive.reason,
@@ -268,7 +241,6 @@ export const useOrder = () => {
                 dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
                 dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
                 dbContext.stock.bulkDocs(updateStockSupplies),
-                dbContext.cropStockControl.bulkDocs(updateStockCrops),
                 dbContext.stockMovements.bulkDocs(newMovements),
             ]);
 

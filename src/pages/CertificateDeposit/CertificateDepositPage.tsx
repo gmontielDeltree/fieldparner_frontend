@@ -1,13 +1,13 @@
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Loading } from '../../components'
-import { FormValueState, useAppDispatch, useBusiness, useCampaign, useCertificateDeposit, useCompany, useFormValues, useSupply } from '../../hooks';
+import { FormValueState, useAppDispatch, useBusiness, useCampaign, useCertificateDeposit, useCompany, useCrops, useFormValues, useSupply } from '../../hooks';
 import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../../interfaces/certificate-deposit';
 import { GrainsForm, HeaderForm, RatesForm } from '../../components/CertificateDeposit';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { uploadFile } from '../../helpers/fileUpload';
-import { SupplyType, TipoEntidad } from '../../types';
+import { TipoEntidad } from '../../types';
 import { Business } from '../../interfaces/socialEntity';
 import { Company } from '../../interfaces/company';
 
@@ -74,7 +74,7 @@ export const CertificateDepositPage: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const {
-     formValues,
+    formValues,
     handleInputChange,
     handleSelectChange,
     reset,
@@ -82,9 +82,9 @@ export const CertificateDepositPage: React.FC = () => {
     setFormValues,
   } = useFormValues<CertificateDeposit>(initialForm);
   const { campaigns, getCampaigns } = useCampaign();
-  const { supplies, getSupplies } = useSupply();
   const { businesses: socialEntities, getBusinesses } = useBusiness();
   const { companies, getCompanies } = useCompany();
+  const { crops, getCrops } = useCrops();
   const [selectedDepositary, setSelectedDepositary] = useState<Business | null>(null);
   const [selectedDepositors, setSelectedDepositors] = useState<Company | null>(null);
   const [listTransportByCertificate, setListTransportByCertificate] = useState<TransportDocumentByCertificateDeposit[]>([]);
@@ -97,7 +97,7 @@ export const CertificateDepositPage: React.FC = () => {
           <HeaderForm
             formValues={formValues}
             campaigns={campaigns}
-            cultives={supplies.filter(supply => supply.type.toLowerCase() === SupplyType.Cultivo.toLowerCase())}
+            crops={crops} //TODO: no va a ser necesario
             providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
             companies={companies}
             changeDepositary={(item) => setSelectedDepositary(item)}
@@ -139,7 +139,7 @@ export const CertificateDepositPage: React.FC = () => {
   }, [
     formValues,
     campaigns,
-    supplies,
+    crops,
     socialEntities,
     companies,
     selectedDepositary,
@@ -221,7 +221,7 @@ export const CertificateDepositPage: React.FC = () => {
     event.stopPropagation();
     const form = event.currentTarget;
     handleNext();
-    // if (validateForm(form)) handleNext();
+    if (validateForm(form)) handleNext();
   };
 
 
@@ -229,7 +229,7 @@ export const CertificateDepositPage: React.FC = () => {
     getCampaigns();
     getBusinesses();
     getCompanies();
-    getSupplies();
+    getCrops(); //TODO: remover y tomar el cultivo de la carta de porte
 
   }, [])
 

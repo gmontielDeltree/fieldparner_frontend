@@ -462,6 +462,7 @@ export interface DepositDestination {
 export interface TransformSupply {
   id: string;
   supply: Supply | null;
+  campaignId: string;
   crop: Crop | null;
   deposit: Deposit | null;
   location: string;

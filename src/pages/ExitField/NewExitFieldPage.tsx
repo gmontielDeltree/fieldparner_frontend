@@ -179,7 +179,7 @@ export const NewExitFieldPage: React.FC = () => {
 
 
     return (
-        <TemplateLayout key="new-exit-field-page" viewMap={false}>
+        <TemplateLayout key="new-exit-field-page" viewMap={true}>
             {isLoading || loading && <Loading loading={true} />}
             <Container
                 maxWidth="lg"

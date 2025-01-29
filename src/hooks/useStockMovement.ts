@@ -434,13 +434,16 @@ export const useStockMovement = () => {
     //     }
     // }
 
-    const getMovementsType = async () => {
+    const getMovementsType = async (onlyManual = false) => {
         try {
             setIsLoading(true);
             const response = await dbContext.movementsType.allDocs({ include_docs: true });
-
-            if (response)
-                setMovementsType(response.rows.map(row => row.doc as MovementType));
+            let movement = response.rows.map(row => row.doc as MovementType);
+            if (movement.length) {
+                setMovementsType(
+                    onlyManual ? movement.filter(m => m.manual) : movement
+                );
+            }
             else
                 setMovementsType([]);
 

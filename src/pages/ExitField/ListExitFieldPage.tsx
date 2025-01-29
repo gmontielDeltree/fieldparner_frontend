@@ -12,7 +12,7 @@ import { useExitField } from '../../hooks';
 import { useNavigate } from 'react-router';
 import { ColumnProps } from '@types';
 import { useTranslation } from 'react-i18next';
-
+import i18n from '../../i18n';
 
 
 
@@ -20,7 +20,7 @@ export const ListExitFieldPage: React.FC = () => {
 
   const navigate = useNavigate();
   const { isLoading, exitFields, getExitFields } = useExitField();
-const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const onClickAdd = () => navigate("/init/overview/exit-field/new");
 
@@ -29,7 +29,7 @@ const {t} = useTranslation();
     { text: t("_field"), align: "center" },
     { text: t("_batch"), align: "center" },
     { text: t("_campaign"), align: "left" },
-    { text: t("_supply"), align: "center" },
+    { text: t("_crop"), align: "center" },
     { text: t("_transport"), align: "center" },
     { text: t("net_kg"), align: "center" },
     { text: "", align: "center" }
@@ -91,7 +91,9 @@ const {t} = useTranslation();
                 <TableCellStyled align="center">{row.field?.nombre} </TableCellStyled>
                 <TableCellStyled align="center">{row.field?.lotes.find(l => l._id === row.lotId)?.properties.nombre}</TableCellStyled>
                 <TableCellStyled>{row.campaignId}</TableCellStyled>
-                <TableCellStyled align="center">{row.crop?.name}</TableCellStyled>
+                <TableCellStyled align="center">{
+                  row.crop ? i18n.language === "es" ? row.crop.descriptionES : i18n.language === "en" ? row.crop.descriptionEN : row.crop.descriptionPT : ""
+                }</TableCellStyled>
                 <TableCellStyled>{row.transport?.nombreCompleto}</TableCellStyled>
                 <TableCellStyled>{row.kgNet}</TableCellStyled>
                 <TableCellStyled align="center">

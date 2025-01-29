@@ -17,7 +17,7 @@ import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, P
 import { Assignment as AssignmentIcon, NoteAdd as NoteAddIcon } from '@mui/icons-material';
 import { ColumnProps, OrderStatus, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder } from '../../types';
 import { getShortDate } from '../../helpers/dates';
-import { Stock, CropStockControl } from '../../interfaces/stock';
+import { Stock, TipoStock } from '../../interfaces/stock';
 
 
 
@@ -53,11 +53,10 @@ export const WithdrawalOrdersPage: React.FC = () => {
         isLoading: depositLoading,
         deposits,
         getDeposits,
-        getDepositsBySupplyId,
-        getDepositsByCropId } = useDeposit();
+        getDepositsBySupplyId } = useDeposit();
     const { campaigns, getCampaigns } = useCampaign();
     const { isLoading: loadingEntities, businesses: socialEntities, getBusinesses } = useBusiness();
-    const { getStockBySupply, getStockByCrop } = useStockMovement();
+    const { getStock } = useStockMovement();
     const {
         creationDate,
         reason,
@@ -108,49 +107,35 @@ export const WithdrawalOrdersPage: React.FC = () => {
     }
 
     //Validamos stock del insumo o cultivo, de acuerdo a la cantidad a retirar
-    const validateStock = async (newSupply: TransformSupply, isCultive: boolean) => {
+    const validateStock = async (newSupply: TransformSupply) => {
         try {
-            const { supply, deposit, crop } = newSupply;
-            const cropId = crop?._id;
-            const supplyId = supply?._id;
+            const { supply, deposit } = newSupply;
+            const id = supply?._id;
             const depositId = deposit?._id;
+            if (!id && !depositId) return false;
 
-            if (!depositId) return false;
-            if (isCultive && !cropId) return false;
-            if (!isCultive && !supplyId) return false;
-
-            if (isCultive && cropId) {
-                let result = await getStockByCrop(cropId, depositId, newSupply.location, newSupply.nroLot);
-                if (result && result.currentStock > 0) {
-                    let stockCrop: CropStockControl = result;
-                    const newCurrentStock = (Number(stockCrop.currentStock) - Number(newSupply.amount));
-
-                    if (newCurrentStock <= 0) {
-                        Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
-                        return false;
-                    }
-                    return true;
+            let result = await getStock(
+                {
+                    tipo: TipoStock.INSUMO,
+                    campaignId: campaignId,
+                    id,
+                    depositId,
+                    location: newSupply.location,
+                    nroLot: newSupply.nroLot
                 }
-                else {
-                    Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
+            );
+            if (result && result[0].currentStock > 0) {
+                let supplyStock: Stock = result[0];
+                const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
+                if (newCurrentStock <= 0) {
+                    Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
                     return false;
                 }
+                return true;
             }
-            else if (supplyId) {
-                let result = await getStockBySupply(supplyId, depositId, newSupply.location, newSupply.nroLot);
-                if (result && result.currentStock > 0) {
-                    let supplyStock: Stock = result;
-                    const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
-                    if (newCurrentStock <= 0) {
-                        Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
-                        return false;
-                    }
-                    return true;
-                }
-                else {
-                    Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
-                    return false;
-                }
+            else {
+                Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
+                return false;
             }
         } catch (error) {
             console.log('error', error);
@@ -158,29 +143,22 @@ export const WithdrawalOrdersPage: React.FC = () => {
         }
     }
 
-    const addDepositSupplyToAdd = async (item: TransformSupply, isCultive: boolean) => {
+    const addDepositSupplyToAdd = async (item: TransformSupply) => {
         const depositId = item.deposit?._id;
         const supplyId = item.supply?._id;
-        const cropId = item.crop?._id;
 
-        if (!depositId) return;
-        if (isCultive && !cropId) return;
-        if (!isCultive && !supplyId) return;
+        if (!supplyId && !depositId) return;
 
-        const foundSupplyOrCrop = suppliesToAdd.find(s => {
-            if (isCultive)
-                return s.deposit?._id === depositId && s.crop?._id === cropId;
-            else
-                return s.deposit?._id === depositId && s.supply?._id === supplyId;
-        });
+        const foundSupplyOrCrop = suppliesToAdd.find(s =>
+            s.deposit?._id === depositId && s.supply?._id === supplyId
+        );
 
         if (foundSupplyOrCrop) {
-            if (isCultive) Swal.fire('Cultivo.', 'Deposito / Cultivo existente.', 'error');
-            else Swal.fire('Insumo.', 'Deposito / Insumo existente.', 'error');
+            Swal.fire('Insumo.', 'Deposito / Insumo existente.', 'error');
             return;
         }
 
-        if (await validateStock(item, isCultive)) setSuppliesToAdd([item, ...suppliesToAdd]);
+        if (await validateStock(item)) setSuppliesToAdd([item, ...suppliesToAdd]);
     }
 
     useEffect(() => {
@@ -282,19 +260,20 @@ export const WithdrawalOrdersPage: React.FC = () => {
                     <NewSupplyCropRow
                         key="new-supply-order"
                         crops={dataCrops}
+                        disabledCrops
                         supplies={supplies}
                         deposits={deposits}
                         showDueDate={false}
-                        addNewSupplyOrCultive={(item, isCultive) => {
-                            addDepositSupplyToAdd(item, isCultive);
+                        addNewSupplyOrCultive={(item, _isCultive) => {
+                            addDepositSupplyToAdd(item);
                         }}
                         onChangeSupply={(item) => {
                             if (!item._id) return;
                             getDepositsBySupplyId(item._id);
                         }}
-                        onChangeCrop={(item) => {
-                            if (!item._id) return;
-                            getDepositsByCropId(item._id);
+                        onChangeCrop={() => {
+                            // if (!item._id) return;
+                            // getDepositsByCropId(item._id);
                         }}
                     />
                 </Box>

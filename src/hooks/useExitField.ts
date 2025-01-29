@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import { ExitFieldItem, Movement, StockMovement, TypeMovement } from "../types";
+import { Crop, ExitFieldItem, Movement, StockMovement, TypeMovement } from "../types";
 import { useState } from "react";
 import { dbContext } from '../services';
 import { useAppSelector, useStockMovement } from '.';
@@ -22,19 +22,12 @@ export const useExitField = () => {
                 dbContext.exitFields.find({
                     selector: { "accountId": user?.accountId }
                 }),
-                dbContext.supplies.find({
-                    selector: {
-                        $or: [
-                            { "accountId": user?.accountId },
-                            { "generico": true }
-                        ]
-                    },
-                }),
+                dbContext.crops.allDocs({ include_docs: true }),
                 dbContext.socialEntities.find({ selector: { "accountId": user?.accountId } }),
                 dbContext.fields.find({ selector: { "accountId": user?.accountId } })
             ]);
             const exitFields = promisesResult[0].docs;
-            const supplies = promisesResult[1].docs;
+            const crops = promisesResult[1].rows.map(row => row.doc as Crop);
             const socialEntities = promisesResult[2].docs;
             const fields = promisesResult[3].docs;
 
@@ -43,7 +36,7 @@ export const useExitField = () => {
                 const documents: ExitFieldItem[] = exitFields.map((row) => {
                     return {
                         ...row,
-                        crop: supplies.find(s => s._id === row.cropId),
+                        crop: crops.find(s => s._id === row.cropId),
                         transport: socialEntities.find(s => s._id === row.transportId),
                         field: fields.find(s => s._id === row.fieldId),
                     } as ExitFieldItem

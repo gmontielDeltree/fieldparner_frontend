@@ -1,11 +1,13 @@
-import { Autocomplete, Checkbox, FormControl, FormControlLabel, FormGroup, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormGroup, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import React, { useEffect, useState } from 'react';
-import { Crop, Deposit, Supply, TransformSupply } from '../../types';
+import { Campaign, Crop, Deposit, Supply, TransformSupply } from '../../types';
 import { useForm, useStockMovement } from '../../hooks';
 import uuid4 from 'uuid4';
 import { getShortDate } from '../../helpers/dates';
 import { Loading } from '..';
+import { TipoStock } from '../../interfaces/stock';
+import { AutocompleteCampaign, AutocompleteCrop, AutocompleteSupply } from '../Autocomplete';
 
 
 interface SupplyAndCropProps {
@@ -13,6 +15,7 @@ interface SupplyAndCropProps {
   deposits: Deposit[],
   crops: Crop[],
   showDueDate: boolean,
+  disabledCrops: boolean,
   addNewSupplyOrCultive: (item: TransformSupply, isCultive: boolean) => void;
   onChangeSupply: (item: Supply) => void;
   onChangeCrop: (item: Crop) => void;
@@ -20,6 +23,7 @@ interface SupplyAndCropProps {
 
 const today = getShortDate();
 const initialStateNewSupply = {
+  campaignId: "",
   supplyId: "",
   cropId: "",
   depositId: "",
@@ -34,6 +38,7 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
   crops,
   deposits,
   showDueDate = true,
+  disabledCrops = false,
   addNewSupplyOrCultive,
   onChangeSupply,
   onChangeCrop
@@ -54,7 +59,8 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
   const [cropSelected, setCropSelected] = useState<Crop | null>(null);
-  const { isLoading, getStockBySupply, getStockByCrop } = useStockMovement();
+  const [campaignSelected, setCampaignSelected] = useState<Campaign | null>(null);
+  const { isLoading, getStock } = useStockMovement();
 
   const showDeposit = !!supplySelected || !!cropSelected;
   const showLocation = showDeposit && depositSelected;
@@ -84,6 +90,7 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
 
     addNewSupplyOrCultive({
       id: uuid4(),
+      campaignId: campaignSelected?._id || "",
       deposit: depositSelected,
       supply: supplySelected,
       crop: cropSelected,
@@ -107,23 +114,47 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
       let amount = 0;
 
       if (isCrop) {
-        const cropStock = await getStockByCrop(id, depositId, location, nroLot);
-        if (cropStock) amount = cropStock.currentStock;
+        const cropStock = await getStock(
+          {
+            tipo: TipoStock.CULTIVO,
+            id,
+            depositId,
+            location,
+            nroLot,
+            campaignId: campaignSelected?._id || "",
+          }
+        );
+        if (cropStock) amount = cropStock[0].currentStock;
       }
       else {
-        const supplyStock = await getStockBySupply(id, depositId, location, nroLot);
-        if (supplyStock) amount = supplyStock.currentStock;
+        const supplyStock = await getStock(
+          {
+            id,
+            tipo: TipoStock.INSUMO,
+            campaignId: campaignSelected?._id || "",
+            depositId,
+            location,
+            nroLot
+          }
+          // id, depositId, location, nroLot
+        );
+        if (supplyStock) amount = supplyStock[0].currentStock;
       }
 
       setFormulario(prevState => ({ ...prevState, amount }));
     }
     const id = isCrop ? cropSelected?._id : supplySelected?._id;
 
-    if (id && depositSelected?._id && location) {
+    if (
+      id &&
+      location &&
+      campaignSelected &&
+      depositSelected?._id
+    ) {
       getAmount(id, depositSelected._id, location, nroLot);
     }
 
-  }, [depositSelected, supplySelected, cropSelected, location, nroLot, isCrop])
+  }, [campaignSelected, depositSelected, supplySelected, cropSelected, location, nroLot, isCrop])
 
 
   return (
@@ -138,19 +169,37 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
     >
       {isLoading && <Loading loading={true} />}
       <Grid item xs={12} sm={3}>
-        <FormGroup row sx={{ alignItems: "center" }}>
-          <FormControlLabel
-            key="yes"
-            control={
-              <Checkbox
-                name="crop"
-                checked={isCrop}
-                onChange={() => onChangeCheckIsCrop(true)}
-              />
+        <AutocompleteCampaign
+          value={campaignSelected}
+          onChange={(newValue) => {
+            if (newValue) {
+              setCampaignSelected(newValue);
+              setFormulario((prevState) => ({
+                ...prevState,
+                campaignId: newValue._id || ""
+              }));
             }
-            label={"Cultivo"}
-            labelPlacement="start"
-          />
+          }}
+        />
+      </Grid>
+      <Grid item xs={12} sm={2}>
+        <FormGroup row sx={{ justifyContent: "center", alignItems: "center" }}>
+          {
+            !disabledCrops && (
+              <FormControlLabel
+                key="yes"
+                control={
+                  <Checkbox
+                    name="crop"
+                    checked={isCrop}
+                    onChange={() => onChangeCheckIsCrop(true)}
+                  />
+                }
+                label={"Cultivo"}
+                labelPlacement="start"
+              />
+            )
+          }
           <FormControlLabel
             control={
               <Checkbox
@@ -164,63 +213,35 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
           />
         </FormGroup>
       </Grid>
-      <Grid item xs={12} sm={4}>
+      <Grid item xs={12} sm={3}>
         <FormControl fullWidth>
           {
             isCrop ? (
-              <Autocomplete
-                value={{ label: cropSelected?.descriptionEN || "", value: cropSelected?._id || "" }}
-                onChange={(_event, newValue) => {
-                  const value = newValue?.value || "null";
-                  const cropSelected = crops.find((crop) => crop._id === value);
-                  if (cropSelected && cropSelected._id) {
-                    onChangeCrop(cropSelected); //Evento donde vamos a ir a buscar los depositos de ese cultivo
+              <AutocompleteCrop
+                value={cropSelected}
+                options={crops}
+                onChange={(newValue) => {
+                  if (newValue) {
+                    onChangeCrop(newValue);
                     setFormulario((prevState) => ({
                       ...prevState,
-                      cropId: value,
+                      cropId: newValue._id || ""
                     }));
-                    setCropSelected(cropSelected);
                   }
-                }}
-                options={crops.map((option) => ({ label: option.descriptionEN, value: option._id || "" }))}
-                getOptionLabel={(option) => option.label}
-                renderInput={(params) => (
-                  <TextField {...params} label={"Cultivo"} variant="outlined" />
-                )}
-                fullWidth
-                ListboxProps={{
-                  style: {
-                    maxHeight: 248,
-                    overflow: "auto",
-                  },
-                }}
-              />
+
+                }} />
             ) : (
-              <Autocomplete
-                value={{ label: supplySelected?.name || "", value: supplySelected?._id || "" }}
-                onChange={(_event, newValue) => {
-                  const value = newValue?.value || "null";
-                  const supplySelected = supplies.find((supply) => supply._id === value);
-                  if (supplySelected && supplySelected._id) {
-                    onChangeSupply(supplySelected); //Evento donde vamos a ir a buscar los depositos de ese insumo
+              <AutocompleteSupply
+                value={supplySelected}
+                options={supplies}
+                onChange={(newValue) => {
+                  if (newValue) {
+                    onChangeSupply(newValue);
                     setFormulario((prevState) => ({
                       ...prevState,
-                      supplyId: value,
+                      supplyId: newValue._id || ""
                     }));
-                    setSupplySelected(supplySelected);
                   }
-                }}
-                options={supplies.map((option) => ({ label: option.name, value: option._id || "" }))}
-                getOptionLabel={(option) => option.label}
-                renderInput={(params) => (
-                  <TextField {...params} label={"Insumo"} variant="outlined" />
-                )}
-                fullWidth
-                ListboxProps={{
-                  style: {
-                    maxHeight: 248,
-                    overflow: "auto",
-                  },
                 }}
               />
             )
