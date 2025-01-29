@@ -4,11 +4,8 @@ import {
   Autocomplete,
   Box,
   Button,
-  Checkbox,
   Container,
   FormControl,
-  FormControlLabel,
-  FormGroup,
   Grid,
   IconButton,
   Input,
@@ -25,9 +22,8 @@ import {
 } from "@mui/material";
 import { SyncAlt as SyncAltIcon, Cancel as CancelIcon, CloudUpload as CloudUploadIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useAppSelector, useCampaign, useCrops, useDeposit, useForm, useStockMovement, useSupply } from "../../hooks";
+import { useAppSelector, useCampaign, useDeposit, useForm, useStockMovement, useSupply } from "../../hooks";
 import {
-  Crop,
   Deposit,
   Movement,
   MovementType,
@@ -79,9 +75,8 @@ export const NewStockMovementPage: React.FC = () => {
   const { isLoading: isLoadingSupplies, supplies, getSupplies } = useSupply();
   const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
   const { isLoading: isLoadCampaigns, campaigns, getCampaigns } = useCampaign();
-  const { getCrops, dataCrops, isLoading: isLoadCrops } = useCrops();
   const { t } = useTranslation();
-
+  
   const {
     formulario,
     setFormulario,
@@ -91,14 +86,13 @@ export const NewStockMovementPage: React.FC = () => {
     reset,
   } = useForm(initialForm);
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
-  const [cropSelected, setCropSelected] = useState<Crop | null>(null);
   const [showSwitch, setShowSwitch] = useState(true);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
   const [depositDestinationSelected, setDepositDestinationSelected] = useState<Deposit | null>(null);
   const [locationDestinationSelected, setLocationDestinationSelected] = useState("");
   const [movementTypeSelected, setMovementTypeSelected] = useState<MovementType | null>(null);
   const [fileUpload, setFileUpload] = React.useState<File | null>(null);
-  const { depositId: depositOrigin, supplyId, location, isCrop } = formulario;
+  const { depositId: depositOrigin, supplyId, location } = formulario;
 
   const depositsToBeAllocated = useMemo(() => {
     return deposits.filter(
@@ -109,13 +103,13 @@ export const NewStockMovementPage: React.FC = () => {
   const onClickCancel = () => navigate("/init/overview/stock-movements");
 
   const onClickSave = () => {
-    
+
     let destination = depositDestinationSelected?._id ? {
       depositId: depositDestinationSelected._id,
       location: locationDestinationSelected
     } : undefined;
 
-    if ((supplySelected || cropSelected) && depositSelected && movementTypeSelected) {
+    if (supplySelected && depositSelected && movementTypeSelected) {
       uploadDocumentFile();
       addNewStockMovement(
         {
@@ -123,7 +117,6 @@ export const NewStockMovementPage: React.FC = () => {
           typeMovement: movementTypeSelected.name,
         },
         supplySelected,
-        cropSelected,
         destination);
       reset();
     }
@@ -210,21 +203,11 @@ export const NewStockMovementPage: React.FC = () => {
     setFormulario(prevState => ({ ...prevState, documentFile: "" }));
   }
 
-  const onChangeCheckIsCrop = (isCrop: boolean) => {
-    let clear = { depositId: "", location: "", nroLot: "", };
-    if (isCrop) setSupplySelected(null);
-    else setCropSelected(null);
-
-    setFormulario({ ...formulario, ...clear, isCrop: isCrop });
-  }
-
-
   useEffect(() => {
     getSupplies();
     getDeposits();
-    getMovementsType();
+    getMovementsType(true);
     getCampaigns();
-    getCrops();
   }, []);
 
   useEffect(() => {
@@ -289,7 +272,7 @@ export const NewStockMovementPage: React.FC = () => {
                 onChange={onChangeMovementType}
               >
                 {movementsType.map((movement) => (
-                  <MenuItem key={movement.name} value={movement._id}>
+                  <MenuItem key={movement._id} value={movement._id}>
                     {movement.name}
                   </MenuItem>
                 ))}
@@ -508,112 +491,48 @@ export const NewStockMovementPage: React.FC = () => {
                   </Box>
                 )}
               </Grid>
-              <Grid item xs={12} sm={3} display="flex" justifyContent={"center"}>
-                <FormGroup row sx={{ alignItems: "center" }}>
-                  <FormControlLabel
-                    key="yes"
-                    control={
-                      <Checkbox
-                        name="crop"
-                        checked={isCrop}
-                        onChange={() => onChangeCheckIsCrop(true)}
-                      />
+              <Grid key="supply-movement" item xs={12} sm={3}>
+                <Autocomplete
+                  loading={isLoadingSupplies}
+                  value={{ label: supplySelected?.name || "", value: supplySelected?._id || "" }}
+                  onChange={(_event, newValue) => {
+                    const value = newValue?.value || "null";
+                    const supplySelected = supplies.find((supply) => supply._id === value);
+                    if (supplySelected && supplySelected._id) {
+                      setFormulario((prevState) => ({
+                        ...prevState,
+                        supplyId: value,
+                      }));
+                      setSupplySelected(supplySelected);
                     }
-                    label={"Cultivo"}
-                    labelPlacement="start"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="supply"
-                        checked={!isCrop}
-                        onChange={() => onChangeCheckIsCrop(false)}
-                      />
-                    }
-                    label={"Insumo"}
-                    labelPlacement="start"
-                  />
-                </FormGroup>
+                  }}
+                  options={supplies.map((option) => ({ label: option.name, value: option._id || "" }))}
+                  getOptionLabel={(option) => option.label}
+                  disableClearable
+                  renderInput={(params) => (
+                    <TextField {...params} label={"Insumo"} variant="outlined" />
+                  )}
+                  fullWidth
+                  ListboxProps={{
+                    style: {
+                      maxHeight: 248,
+                      overflow: "auto",
+                    },
+                  }}
+                />
               </Grid>
-              {
-                (!isCrop) ? (
-                  <>
-                    <Grid key="supply-movement" item xs={12} sm={3}>
-                      <Autocomplete
-                        loading={isLoadingSupplies}
-                        value={{ label: supplySelected?.name || "", value: supplySelected?._id || "" }}
-                        onChange={(_event, newValue) => {
-                          const value = newValue?.value || "null";
-                          const supplySelected = supplies.find((supply) => supply._id === value);
-                          if (supplySelected && supplySelected._id) {
-                            setFormulario((prevState) => ({
-                              ...prevState,
-                              supplyId: value,
-                            }));
-                            setSupplySelected(supplySelected);
-                          }
-                        }}
-                        options={supplies.map((option) => ({ label: option.name, value: option._id || "" }))}
-                        getOptionLabel={(option) => option.label}
-                        disableClearable
-                        renderInput={(params) => (
-                          <TextField {...params} label={"Insumo"} variant="outlined" />
-                        )}
-                        fullWidth
-                        ListboxProps={{
-                          style: {
-                            maxHeight: 248,
-                            overflow: "auto",
-                          },
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                      <FormControl fullWidth>
-                        <ListItemText
-                          sx={{ backgroundColor: "#f4f4f4", px: 1 }}
-                          primary={<Typography variant='subtitle2'>Tipo de insumo:</Typography>}
-                          secondary={
-                            <Typography letterSpacing={1} variant='subtitle1'>
-                              {supplySelected ? supplySelected.type : "-"}
-                            </Typography>}
-                        />
-                      </FormControl>
-                    </Grid>
-                  </>
-                ) : (
-                  <Grid key="supply-movement" item xs={6} sm={3}>
-                    <Autocomplete
-                      value={{ label: cropSelected?.descriptionEN || "", value: cropSelected?._id || "" }}
-                      loading={isLoadCrops}
-                      onChange={(_event, newValue) => {
-                        const value = newValue?.value || "null";
-                        const cropSelected = dataCrops.find((crop) => crop._id === value);
-                        if (cropSelected && cropSelected._id) {
-                          setFormulario((prevState) => ({
-                            ...prevState,
-                            cropId: value,
-                          }));
-                          setCropSelected(cropSelected);
-                        }
-                      }}
-                      disableClearable
-                      options={dataCrops.map((option) => ({ label: option.descriptionEN, value: option._id || "" }))}
-                      getOptionLabel={(option) => option.label}
-                      renderInput={(params) => (
-                        <TextField {...params} label={"Cultivo"} variant="outlined" />
-                      )}
-                      fullWidth
-                      ListboxProps={{
-                        style: {
-                          maxHeight: 248,
-                          overflow: "auto",
-                        },
-                      }}
-                    />
-                  </Grid>
-                )
-              }
+              <Grid item xs={12} sm={3}>
+                <FormControl fullWidth>
+                  <ListItemText
+                    sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+                    primary={<Typography variant='subtitle2'>Tipo de insumo:</Typography>}
+                    secondary={
+                      <Typography letterSpacing={1} variant='subtitle1'>
+                        {supplySelected ? supplySelected.type : "-"}
+                      </Typography>}
+                  />
+                </FormControl>
+              </Grid>
               <Grid item xs={6} sm={3}>
                 <FormControl fullWidth>
                   <InputLabel id="deposit">{t("_warehouse")}</InputLabel>
@@ -744,32 +663,6 @@ export const NewStockMovementPage: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={2}>
-                {/* <FormControl fullWidth>
-                  <InputLabel id="currency">{t("_currency")}</InputLabel>
-                  <Select
-                    labelId="currency"
-                    name="currency"
-                    value={formulario.currency}
-                    label={t("_currency")}
-                    onChange={handleSelectChange}
-                  >
-                    <MenuItem key={CurrencyCode.ARG} value={CurrencyCode.ARG}>
-                      {CurrencyCode.ARG.toString()}
-                    </MenuItem>
-                    <MenuItem key={CurrencyCode.BRA} value={CurrencyCode.BRA}>
-                      {CurrencyCode.BRA.toString()}
-                    </MenuItem>
-                    <MenuItem key={CurrencyCode.CHL} value={CurrencyCode.CHL}>
-                      {CurrencyCode.CHL.toString()}
-                    </MenuItem>
-                    <MenuItem key={CurrencyCode.USA} value={CurrencyCode.USA}>
-                      {CurrencyCode.USA.toString()}
-                    </MenuItem>
-                    <MenuItem key={CurrencyCode.EURO} value={CurrencyCode.EURO}>
-                      {CurrencyCode.EURO.toString()}
-                    </MenuItem>
-                  </Select>
-                </FormControl> */}
                 <FormControl fullWidth>
                   <ListItemText
                     sx={{ backgroundColor: "#f4f4f4", px: 1 }}
@@ -872,7 +765,7 @@ export const NewStockMovementPage: React.FC = () => {
             <Button
               variant="contained"
               disabled={
-                ((!supplySelected && !cropSelected) ||
+                (!supplySelected ||
                   !depositSelected ||
                   !movementTypeSelected ||
                   !formulario.amount)

@@ -13,7 +13,7 @@ import {
 } from '@mui/icons-material';
 import { Icon } from "semantic-ui-react";
 import { getShortDate } from '../../../helpers/dates';
-import { DataTable, ItemRow, Loading, NewSupplyRow, TableCellStyled } from '../..';
+import { DataTable, ItemRow, Loading, NewSupplyCropRow, TableCellStyled } from '../..';
 
 import {
     usePDF,
@@ -506,7 +506,7 @@ export const LaborOrderModal = ({ activity }) => {
                     </Grid>
                     <Divider />
                     <Box sx={{ my: 3 }}>
-                        <NewSupplyRow
+                        <NewSupplyCropRow
                             key="new-supply-order"
                             supplies={supplies}
                             deposits={deposits}

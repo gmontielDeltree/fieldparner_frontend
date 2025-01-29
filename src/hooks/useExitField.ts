@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import { ExitFieldItem, Movement, StockMovement, TypeMovement } from "../types";
+import { Crop, ExitFieldItem, Movement, StockMovement, TypeMovement } from "../types";
 import { useState } from "react";
 import { dbContext } from '../services';
 import { useAppSelector, useStockMovement } from '.';
@@ -8,7 +8,7 @@ import { useAppSelector, useStockMovement } from '.';
 export const useExitField = () => {
     // const navigate = useNavigate();
     const { user } = useAppSelector(state => state.auth);
-    const { getStockCrop } = useStockMovement();
+    const { getControlStockCrop } = useStockMovement();
     const [exitFields, setExitFields] = useState<ExitFieldItem[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -22,19 +22,12 @@ export const useExitField = () => {
                 dbContext.exitFields.find({
                     selector: { "accountId": user?.accountId }
                 }),
-                dbContext.supplies.find({
-                    selector: {
-                        $or: [
-                            { "accountId": user?.accountId },
-                            { "generico": true }
-                        ]
-                    },
-                }),
+                dbContext.crops.allDocs({ include_docs: true }),
                 dbContext.socialEntities.find({ selector: { "accountId": user?.accountId } }),
                 dbContext.fields.find({ selector: { "accountId": user?.accountId } })
             ]);
             const exitFields = promisesResult[0].docs;
-            const supplies = promisesResult[1].docs;
+            const crops = promisesResult[1].rows.map(row => row.doc as Crop);
             const socialEntities = promisesResult[2].docs;
             const fields = promisesResult[3].docs;
 
@@ -43,7 +36,7 @@ export const useExitField = () => {
                 const documents: ExitFieldItem[] = exitFields.map((row) => {
                     return {
                         ...row,
-                        crop: supplies.find(s => s._id === row.cropId),
+                        crop: crops.find(s => s._id === row.cropId),
                         transport: socialEntities.find(s => s._id === row.transportId),
                         field: fields.find(s => s._id === row.fieldId),
                     } as ExitFieldItem
@@ -66,19 +59,18 @@ export const useExitField = () => {
             if (!user) throw new Error("User not found");
             const { accountId, id: userId } = user;
             newExitField.accountId = accountId;
-            
+
             if (!newExitField.deposit || !newExitField.crop) throw new Error();
-            
-            let stockOfCrop = await getStockCrop(
-                newExitField.cropId,
-                newExitField.depositId,
-                newExitField.deposit.locations[0],
-                ""
-            );
+            //Buscamos el stock del cultivo y solo sumamos al stock comprometido, no mueve nada del stock actual
+            let stockOfCrop = await getControlStockCrop({
+                accountId,
+                campaignId: newExitField.campaignId,
+                cropId: newExitField.cropId
+            });
 
             if (!stockOfCrop) throw new Error("Insufficient stock.");
 
-            stockOfCrop.currentStock -= Number(newExitField.netWeight);
+            stockOfCrop.committedStock += Number(newExitField.netWeight);
             //Modificar movimiento de stock para q tenga cropId , y un booleano para saber si es insumo o cultivo
             let newStockMovement: StockMovement = {
                 accountId,
@@ -106,11 +98,12 @@ export const useExitField = () => {
             delete newExitField.crop;
             delete newExitField.deposit;
             delete newExitField.transport;
-            
+            delete newExitField.campaign;
+
             const promisesAll = [
                 dbContext.exitFields.post(newExitField),
                 dbContext.stockMovements.post(newStockMovement),
-                dbContext.stockCrops.put(stockOfCrop),
+                dbContext.cropStockControl.put(stockOfCrop),
                 // dbContext.supplies.put(updateSupply)
             ]
 

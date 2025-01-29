@@ -23,10 +23,11 @@ import {
 import React, { useEffect, useState } from 'react';
 import { useAppSelector, useCrops, useDeposit, useForm, useStockMovement, useSupply, useTransformStock } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
-import { BorderContainer, NewSupplyRow, ItemRow, Loading, TableCellStyledBlack } from '../../components';
-import { ColumnProps, StockByLot, StockCrop, TransformSupply } from '../../types';
+import { BorderContainer, NewSupplyCropRow, ItemRow, Loading, TableCellStyledBlack } from '../../components';
+import { ColumnProps, TransformSupply } from '../../types';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { Stock, StockItem, TipoStock } from '../../interfaces/stock';
 
 const today = getShortDate();
 
@@ -116,8 +117,8 @@ export const TransformPage: React.FC = () => {
     const { user } = useAppSelector(state => state.auth);
     const [originTransformValues, setOriginTransformValues] = useState<TransformSupply[]>([]);
     const [destinationTransformValue, setDestinationTransformValue] = useState<TransformSupply[]>([]);
-    const [stockBySupplies, setStockBySupplies] = useState<StockByLot[]>([]);
-    const [stockByCrops, setStockByCrops] = useState<StockCrop[]>([]);
+    const [stockBySupplies, setStockBySupplies] = useState<StockItem[]>([]);
+    const [stockByCrops, setStockByCrops] = useState<StockItem[]>([]);
     const { isLoading, supplies, getSupplies } = useSupply();
     const { dataCrops, getCrops } = useCrops();
     const { isLoading: depositLoading,
@@ -132,7 +133,7 @@ export const TransformPage: React.FC = () => {
         handleInputChange,
         reset,
     } = useForm(initialStateTransform);
-    const { isLoading: loadingTransform, getStockBySupply, getStockByCrop } = useStockMovement();
+    const { isLoading: loadingTransform, getStock } = useStockMovement();
     const { transformStock } = useTransformStock();
 
     const originColumns: ColumnProps[] = [
@@ -148,7 +149,7 @@ export const TransformPage: React.FC = () => {
         { text: t("quantity_to_use"), align: "center" },
     ];
     const destinationColumns: ColumnProps[] = [
-        { text: t("supply_crop"), align: "left" },
+        { text: t("_supplies"), align: "left" },
         { text: t("_warehouse"), align: "left" },
         { text: t("id_location"), align: "left" },
         { text: t("lot_number"), align: "left" },
@@ -167,25 +168,32 @@ export const TransformPage: React.FC = () => {
             if (!supplyId && !depositId) return false;
 
             let currentStock = 0;
-            const result = await getStockBySupply(supplyId, depositId, newSupply.location, newSupply.nroLot);
-            currentStock = result?.currentStock || 0;
+            const result = await getStock({
+                id: supplyId,
+                tipo: TipoStock.INSUMO,
+                campaignId: newSupply.campaignId,
+                depositId,
+                location: newSupply.location,
+                nroLot: newSupply.nroLot
+            });
+            currentStock = result ? result[0].currentStock : 0;
 
             if (type === "origin") {
                 //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
                 if (result && currentStock > 0) {
-
-                    let supplyStock: StockByLot = result;
-                    const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
-                    if (newCurrentStock <= 0) {
+                    let supplyStock: StockItem = result[0];
+                    supplyStock.currentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
+                    supplyStock.lastUpdate = new Date().toLocaleDateString();
+                    if (supplyStock.currentStock <= 0) {
                         Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
                         return false;
                     }
-                    setStockBySupplies([{ ...supplyStock, currentStock: newCurrentStock }, ...stockBySupplies]);
+                    setStockBySupplies([{ ...supplyStock }, ...stockBySupplies]);
                     setOriginTransformValues([...originTransformValues,
                     {
                         ...newSupply,
                         amount: newSupply.amount,
-                        currentStock: result.currentStock
+                        currentStock: result[0].currentStock
                     }]);
                     return true;
                 }
@@ -200,19 +208,27 @@ export const TransformPage: React.FC = () => {
                     return false;
                 }
                 if (result) {
-                    let supplyStock: StockByLot = result;
-                    const newCurrentStock = (Number(supplyStock.currentStock) + Number(newSupply.amount));
-                    setStockBySupplies([{ ...supplyStock, currentStock: newCurrentStock }, ...stockBySupplies]);
+                    let supplyStock: Stock = result[0];
+                    supplyStock.currentStock = (Number(supplyStock.currentStock) + Number(newSupply.amount));
+                    supplyStock.lastUpdate = new Date().toLocaleDateString();
+                    setStockBySupplies([{ ...supplyStock }, ...stockBySupplies]);
                     setDestinationTransformValue([...destinationTransformValue, { ...newSupply, amount: newSupply.amount }]);
                 } else {
                     if (!user) throw new Error("User not found");
-                    const newSupplyStock: StockByLot = {
+                    const newSupplyStock: Stock = {
+                        id: supplyId,
+                        tipo: TipoStock.INSUMO,
+                        campaingId: newSupply.campaignId,
                         accountId: user.accountId,
                         depositId: depositId,
-                        supplyId: supplyId,
                         location: newSupply.location,
                         nroLot: newSupply.nroLot,
                         currentStock: Number(newSupply.amount),
+                        fieldId: "",
+                        fieldLot: "",
+                        reservedStock: 0,
+                        lastUpdate: new Date().toLocaleDateString(),
+
                     };
                     setStockBySupplies([...stockBySupplies, newSupplyStock]);
                     setDestinationTransformValue([...destinationTransformValue, newSupply]);
@@ -234,25 +250,34 @@ export const TransformPage: React.FC = () => {
             if (!cropId && !depositId) return false;
 
             let currentStock = 0;
-            const result = await getStockByCrop(cropId, depositId, newTransformValue.location, newTransformValue.nroLot);
-            currentStock = result?.currentStock || 0;
+            const result = await getStock({
+                id: cropId,
+                tipo: TipoStock.CULTIVO,
+                campaignId: newTransformValue.campaignId,
+                depositId,
+                location: newTransformValue.location,
+                nroLot: newTransformValue.nroLot
+            }
+                // cropId, depositId, newTransformValue.location, newTransformValue.nroLot
+            );
+            currentStock = result ? result[0].currentStock : 0;
 
             if (type === "origin") {
                 //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
                 if (result && currentStock > 0) {
-
-                    let cropStock: StockCrop = result;
-                    const newCurrentStock = (Number(cropStock.currentStock) - Number(newTransformValue.amount));
-                    if (newCurrentStock <= 0) {
+                    let cropStock: Stock = result[0];
+                    cropStock.currentStock = (Number(cropStock.currentStock) - Number(newTransformValue.amount));
+                    cropStock.lastUpdate = new Date().toLocaleDateString();
+                    if (cropStock.currentStock <= 0) {
                         Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
                         return false;
                     }
-                    setStockByCrops([{ ...cropStock, currentStock: newCurrentStock }, ...stockByCrops]);
+                    setStockByCrops([{ ...cropStock }, ...stockByCrops]);
                     setOriginTransformValues([...originTransformValues,
                     {
                         ...newTransformValue,
                         amount: newTransformValue.amount,
-                        currentStock: result.currentStock
+                        currentStock: result[0].currentStock
                     }]);
                     return true;
                 }
@@ -267,16 +292,23 @@ export const TransformPage: React.FC = () => {
                     return false;
                 }
                 if (result) {
-                    let cropStock: StockCrop = result;
-                    const newCurrentStock = (Number(cropStock.currentStock) + Number(newTransformValue.amount));
-                    setStockByCrops([{ ...cropStock, currentStock: newCurrentStock }, ...stockByCrops]);
+                    let cropStock: Stock = result[0];
+                    cropStock.currentStock = (Number(cropStock.currentStock) + Number(newTransformValue.amount));
+                    cropStock.lastUpdate = new Date().toLocaleDateString();
+                    setStockByCrops([{ ...cropStock }, ...stockByCrops]);
                     setDestinationTransformValue([...destinationTransformValue, { ...newTransformValue, amount: newTransformValue.amount }]);
                 } else {
                     if (!user) throw new Error("User not found");
-                    const newCropStock: StockCrop = {
+                    const newCropStock: Stock = {
                         accountId: user.accountId,
                         depositId: depositId,
-                        cropId,
+                        campaingId: newTransformValue.campaignId,
+                        id: cropId,
+                        tipo: TipoStock.CULTIVO,
+                        fieldId: "",
+                        fieldLot: "",
+                        reservedStock: 0,
+                        lastUpdate: new Date().toLocaleDateString(),
                         location: newTransformValue.location,
                         nroLot: newTransformValue.nroLot,
                         currentStock: Number(newTransformValue.amount),
@@ -305,13 +337,13 @@ export const TransformPage: React.FC = () => {
         setOriginTransformValues(originTransformValues.filter(o => o.id !== id));
         if (crop) {
             setStockByCrops(stockByCrops.filter(s =>
-                s.cropId !== crop?._id &&
+                s.id !== crop?._id &&
                 s.depositId !== deposit?._id &&
                 s.location !== location &&
                 s.nroLot !== nroLot));
         } else {
             setStockBySupplies(stockBySupplies.filter(s =>
-                s.supplyId !== supply?._id &&
+                s.id !== supply?._id &&
                 s.depositId !== deposit?._id &&
                 s.location !== location &&
                 s.nroLot !== nroLot));
@@ -330,13 +362,13 @@ export const TransformPage: React.FC = () => {
         setOriginTransformValues(destinationTransformValue.filter(o => o.id !== id));
         if (crop) {
             setStockByCrops(stockByCrops.filter(s =>
-                s.cropId !== crop?._id &&
+                s.id !== crop?._id &&
                 s.depositId !== deposit?._id &&
                 s.location !== location &&
                 s.nroLot !== nroLot));
         } else {
             setStockBySupplies(stockBySupplies.filter(s =>
-                s.supplyId !== supply?._id &&
+                s.id !== supply?._id &&
                 s.depositId !== deposit?._id &&
                 s.location !== location &&
                 s.nroLot !== nroLot));
@@ -356,7 +388,7 @@ export const TransformPage: React.FC = () => {
         await transformStock(
             originTransformValues, //Movimientos de salida
             destinationTransformValue, //Movimientos de entrada
-            stockBySupplies, //Tabla auxiliar de stock
+            stockBySupplies, //Tabla auxiliar de stock de insumos
             stockByCrops, //Tabla auxiliar de stock de cultivos
             detail,
             operationDate
@@ -366,7 +398,6 @@ export const TransformPage: React.FC = () => {
     }
 
     const saveTransformStock = () => createTransform();
-
 
     useEffect(() => {
         getSupplies();
@@ -434,11 +465,12 @@ export const TransformPage: React.FC = () => {
                 </Grid>
                 <BorderContainer key="supplies-origin">
                     <Box sx={{ mb: 3, mt: 1 }}>
-                        <NewSupplyRow
+                        <NewSupplyCropRow
                             key="new-supply-to-origin"
                             crops={dataCrops}
                             supplies={supplies}
                             deposits={deposits}
+                            disabledCrops={false}
                             showDueDate
                             addNewSupplyOrCultive={addSupplyOrCropOrigin}
                             onChangeSupply={(item) => {
@@ -493,11 +525,12 @@ export const TransformPage: React.FC = () => {
                 </Typography>
                 <BorderContainer key="supplies-destination">
                     <Box sx={{ mb: 3, mt: 1 }}>
-                        <NewSupplyRow
+                        <NewSupplyCropRow
                             key="new-supply-to-destination"
                             supplies={supplies}
                             deposits={deposits}
                             crops={dataCrops}
+                            disabledCrops
                             showDueDate
                             addNewSupplyOrCultive={addSupplyOrCropDestination}
                             onChangeSupply={(_item) => {

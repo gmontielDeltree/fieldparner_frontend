@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Business } from "../interfaces/socialEntity";
 import { ContractSaleCereal } from '../interfaces/contract-sale-cereals';
+import { TipoStock } from "../interfaces/stock";
 
 export interface NavBarProps {
   drawerWidth: number;
@@ -458,27 +459,10 @@ export interface DepositDestination {
   location: string;
 }
 
-export interface StockByLot extends Document {
-  accountId: string;
-  depositId: string;
-  location: string;
-  supplyId: string;
-  nroLot: string;
-  currentStock: number;
-}
-
-export interface StockCrop extends Document {
-  accountId: string;
-  cropId: string;
-  depositId: string;
-  location: string;
-  nroLot: string;
-  currentStock: number;
-}
-
 export interface TransformSupply {
   id: string;
   supply: Supply | null;
+  campaignId: string;
   crop: Crop | null;
   deposit: Deposit | null;
   location: string;
@@ -527,6 +511,7 @@ export interface ExitFieldItem extends ExitField {
   crop?: Crop;
   transport?: Business;
   field?: Field;
+  campaign?: Campaign;
   // trucker?: Business;
   // harvester?: Business;
 }
@@ -844,3 +829,21 @@ export enum EnumStatusContract {
   Inactivo = "Inactivo",
 }
 //#endregion
+
+export type GetStockRequest = {
+  id?: string; // insumoId o cultivoId
+  tipo: TipoStock;
+  accountId?: string;
+  campaignId: string;
+  depositId?: string;
+  location?: string;
+  nroLot?: string;
+  fieldId?: string;
+  fieldLot?: string;
+}
+
+export type GetControlStockCropRequest = {
+  accountId: string;
+  campaignId?: string;
+  cropId?: string;
+}

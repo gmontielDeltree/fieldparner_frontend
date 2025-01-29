@@ -1,19 +1,19 @@
 import { Button, FormControl, FormHelperText, Grid, IconButton, Input, InputAdornment, InputLabel, ListItemText, MenuItem, Paper, Select, TextField, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-// import { getShortDate } from '../../helpers/dates';
 import { Company } from '../../interfaces/company';
 import { CertificateDepositFormProps } from './type';
-import { Campaign, Supply } from '../../types';
+import { Campaign, Crop } from '../../types';
 import { Business } from '../../interfaces/socialEntity';
 import {
     CloudUpload as CloudUploadIcon,
     Cancel as CancelIcon
 } from '@mui/icons-material';
+import i18n from '../../i18n';
 
 
 interface HeaderFormProps {
     campaigns: Campaign[];
-    cultives: Supply[];
+    crops: Crop[];
     providers: Business[];
     companies: Company[];
     deleteFile: () => void;
@@ -25,7 +25,7 @@ interface HeaderFormProps {
 export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps> = ({
     formValues,
     campaigns,
-    cultives,
+    crops,
     providers,
     companies,
     handleInputChange,
@@ -155,9 +155,9 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
                         label="Cultivo"
                         onChange={handleSelectChange}
                     >
-                        {cultives?.map((c) => (
+                        {crops?.map((c) => (
                             <MenuItem key={c._id} value={c._id}>
-                                {c.name}
+                                {i18n.language === "es" ? c.descriptionES : i18n.language === "en" ? c.descriptionEN : c.descriptionPT}
                             </MenuItem>
                         ))}
                     </Select>

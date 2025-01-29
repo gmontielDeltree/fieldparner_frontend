@@ -1,10 +1,11 @@
-import { Movement, StockByLot, StockCrop, StockMovement, StockMovementItem, TransformSupply, TypeMovement } from "../types";
+import { Movement, StockMovement, StockMovementItem, TransformSupply, TypeMovement } from "../types";
 import { useAppDispatch, useAppSelector } from ".";
 import { useState } from "react";
 import { getShortDate } from "../helpers/dates";
 import { dbContext } from "../services";
 import Swal from "sweetalert2";
 import { onLogout } from "../redux/auth";
+import { Stock } from "../interfaces/stock";
 
 const today = getShortDate(true);
 
@@ -27,8 +28,8 @@ export const useTransformStock = () => {
     const transformStock = async (
         supplyOrCultiveOrigin: TransformSupply[],
         supplyOrCultiveDestination: TransformSupply[],
-        stockBySupplies: StockByLot[],
-        stockByCrops: StockCrop[],
+        stockBySupplies: Stock[],
+        stockByCrops: Stock[],
         detail: string,
         operationDate: string) => {
         setIsLoading(true);
@@ -48,7 +49,7 @@ export const useTransformStock = () => {
                     userId,
                     amount: ts.amount,
                     creationDate: today,
-                    campaignId: "",
+                    campaignId: ts.campaignId,
                     currency: "",
                     voucher: "",
                     totalValue: 0,
@@ -78,7 +79,7 @@ export const useTransformStock = () => {
                     userId,
                     amount: sa.amount,
                     creationDate: today,
-                    campaignId: "",
+                    campaignId: sa.campaignId,
                     currency: "",
                     voucher: "",
                     totalValue: 0,
@@ -100,8 +101,7 @@ export const useTransformStock = () => {
             // Actualizar en la tabla auxiliar para ese insumo/deposito/ubicacion/lote.
             let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
                 dbContext.stockMovements.bulkDocs(newMovements),
-                dbContext.stockByLots.bulkDocs(stockBySupplies),
-                dbContext.stockCrops.bulkDocs(stockByCrops),
+                dbContext.stock.bulkDocs([...stockBySupplies, ...stockByCrops]),
             ];
             const responseAll = await Promise.all(promisesAll);
 

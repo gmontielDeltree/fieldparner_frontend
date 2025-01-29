@@ -1,38 +1,36 @@
-import { FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { FormControl, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import {
     FolderOpen as FolderOpenIcon,
 } from '@mui/icons-material';
 import React, { ChangeEvent, useState } from 'react';
-import { Campaign, Crop, ExitField, Field, Lot } from '../../types';
+import { Campaign, Crop, Deposit, ExitField, ExitFieldItem, Field, Lot } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 
 import { useTranslation } from 'react-i18next';
+import { AutocompleteCampaign, AutocompleteCrop, AutocompleteDeposit } from '../Autocomplete';
 
-//TODO: validar q descripcion mostrar del cultivo
 interface GeneralDataProps {
-    formValues: ExitField;
+    formValues: ExitFieldItem;
     crops: Crop[];
-    campaigns: Campaign[];
+    deposits: Deposit[];
     listFields: Field[];
     setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
-    handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
 
 
 export const GeneralData: React.FC<GeneralDataProps> = ({
     formValues,
-    crops,
-    campaigns,
     listFields,
+    crops,
+    deposits,
     handleInputChange,
-    handleSelectChange,
     setFormValues
 }) => {
-
+    const [campaignSelected, setCampaignSelected] = useState<Campaign | null>(null);
     const [fieldSelected, setFieldSelected] = useState<Field | null>(null);
     const [lotSelected, setLotSelected] = useState<Lot | null>(null);
-
+    
     const onChangeField = ({ target }: SelectChangeEvent) => {
         const fieldId = target.value;
         const fieldSelected = listFields.find(f => f._id === fieldId);
@@ -54,19 +52,6 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
         setFormValues((prevState) => ({ ...prevState, lotId }));
     }
 
-    const onChangeCrop = ({ target }: SelectChangeEvent) => {
-        const { value } = target;
-        const cropSelected = crops.find((crop) => crop._id === value);
-
-        if (cropSelected?._id) {
-            setFormValues((prevState) => ({
-                ...prevState,
-                cropId: value, //Insumo id
-                // cultive: cropSelected.name || "",
-                crop: cropSelected
-            }));
-        }
-    };
     const { t } = useTranslation();
 
     return (
@@ -97,26 +82,19 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                     fullWidth
                 />
             </Grid>
-            {/* TODO: ?? tabla campaña */}
             <Grid item xs={12} sm={6}>
-                <FormControl key="campaign-select" fullWidth>
-                    <InputLabel id="campaign">Campaña</InputLabel>
-                    <Select
-                        labelId="campaign"
-                        name="campaignId"
-                        value={formValues.campaignId}
-                        label="Campaña"
-                        onChange={handleSelectChange}
-                    >
-                        {campaigns?.map((c) => (
-                            <MenuItem key={c.name} value={c.name}>
-                                {c.name}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+                <AutocompleteCampaign
+                    value={campaignSelected}
+                    onChange={(campaign) => {
+                        setCampaignSelected(campaign);
+                        setFormValues((prevState) => ({
+                            ...prevState,
+                            campaignId: campaign?._id || "",
+                        }));
+                    }}
+                />
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid item xs={12} sm={4}>
                 <FormControl key="field-select" fullWidth>
                     <InputLabel id="field">Campo</InputLabel>
                     <Select
@@ -134,55 +112,63 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                     </Select>
                 </FormControl>
             </Grid>
-            <Grid item xs={12} sm={3}>
-                {
-                    (fieldSelected) && (
-                        <FormControl key="lot-select" fullWidth>
-                            <InputLabel id="lot">{t("_lot")}</InputLabel>
-                            <Select
-                                labelId="lot"
-                                name="lotId"
-                                value={formValues.lotId}
-                                label={t("_lot")}
-                                onChange={onChangeLot}
-                            >
-                                {fieldSelected?.lotes.map((lot) => (
-                                    <MenuItem key={lot.properties.nombre} value={lot.properties.nombre}>
-                                        {lot.properties.nombre}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    )
-                }
-            </Grid>
-            <Grid item xs={6} sm={2}>
-                {
-                    lotSelected && (
-                        <Typography variant="body1">
-                            <b>Hectareas: </b> {lotSelected?.properties.hectareas}
-                        </Typography>
-                    )
-                }
-            </Grid>
             <Grid item xs={12} sm={4}>
-                <FormControl key="crop-select" fullWidth>
-                    <InputLabel id="crop">{t("_crop")}</InputLabel>
+                <FormControl key="lot-select" fullWidth disabled={!formValues.fieldId}>
+                    <InputLabel id="lot">{t("_lot")}</InputLabel>
                     <Select
-                        labelId="crop"
-                        name="cropId"
-                        value={formValues.cropId}
-                        label={t("_crop")}
-                        onChange={onChangeCrop}
+                        labelId="lot"
+                        name="lotId"
+                        value={formValues.lotId}
+                        label={t("_lot")}
+                        onChange={onChangeLot}
                     >
-                        {crops?.map((crop) => (
-                            <MenuItem key={crop._id} value={crop._id}>
-                                {crop.descriptionES}
+                        {fieldSelected?.lotes.map((lot) => (
+                            <MenuItem key={lot.properties.nombre} value={lot.properties.nombre}>
+                                {lot.properties.nombre}
                             </MenuItem>
                         ))}
                     </Select>
                 </FormControl>
             </Grid>
+            <Grid item xs={6} sm={4}>
+                <FormControl fullWidth>
+                    <ListItemText
+                        primary={<Typography variant='subtitle2'>Hectareas</Typography>}
+                        sx={{ backgroundColor: "#f4f4f4", px: 1 }}
+                        secondary={
+                            <Typography letterSpacing={1} variant='subtitle1'>
+                                {lotSelected?.properties.hectareas || "-"}
+                            </Typography>}
+                    />
+                </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+            <AutocompleteCrop
+                    options={crops}
+                    value={formValues?.crop || null}
+                    onChange={(crop) => {
+                        setFormValues((prevState) => ({
+                            ...prevState,
+                            crop: crop,
+                            cropId: crop?._id || "",
+                        }));
+                    }}
+                />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+                <AutocompleteDeposit
+                    value={formValues?.deposit || null}
+                    options={deposits}
+                    onChange={(deposit) => {
+                        setFormValues((prevState) => ({
+                            ...prevState,
+                            deposit,
+                            depositId: deposit?._id || "",
+                        }));
+                    }}
+                />
+            </Grid>
+
             <Grid item xs={6} sm={6}>
                 <TextField
                     variant="outlined"

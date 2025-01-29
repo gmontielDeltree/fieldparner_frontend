@@ -125,7 +125,7 @@ export const useDeposit = () => {
       if (!user) return;
       const accountId = user.accountId;
       const promisesResult = await Promise.all([
-        dbContext.stockByLots.find({
+        dbContext.stock.find({
           selector: {
             "$and": [{ "supplyId": supplyId }, { "accountId": accountId }]
           }
@@ -160,7 +160,7 @@ export const useDeposit = () => {
       if (!user) return;
       const accountId = user.accountId;
       const promisesResult = await Promise.all([
-        dbContext.stockCrops.find({
+        dbContext.cropStockControl.find({
           selector: {
             "$and": [{ "cropId": cropId }, { "accountId": accountId }]
           }
