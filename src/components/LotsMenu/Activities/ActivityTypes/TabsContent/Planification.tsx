@@ -176,10 +176,11 @@ const PlanificationContent = React.memo(function PlanificationContent({
   showEstimatedApplicationDate: boolean;
 }) {
   const hasDosis =
-    activity.detalles &&
-    activity.detalles.dosis &&
+    activity?.detalles?.dosis &&
+    Array.isArray(activity.detalles.dosis) &&
     activity.detalles.dosis.length > 0;
-  const formattedDate = activity.detalles.fecha_ejecucion_tentativa
+    
+  const formattedDate = activity?.detalles?.fecha_ejecucion_tentativa
     ? format(parseISO(activity.detalles.fecha_ejecucion_tentativa), "PPPP", {
         locale: es
       })
@@ -238,46 +239,57 @@ const PlanificationContent = React.memo(function PlanificationContent({
               gap: "20px"
             }}
           >
-            {activity.detalles.dosis.map((lineaInsumo, index) => (
-              <Paper
-                elevation={3}
-                sx={{
-                  padding: "10px",
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between"
-                }}
-                key={index}
-              >
-                <Box
-                  sx={{ display: "flex", alignItems: "center", gap: "10px" }}
+            {activity.detalles.dosis.map((lineaInsumo, index) => {
+              // Safe check for insumo properties
+              const insumoName = lineaInsumo?.insumo?.name ?? 'No especificado';
+              const insumoBrand = lineaInsumo?.insumo?.brand ?? '';
+              const insumoUnit = lineaInsumo?.insumo?.unitMeasurement ?? 'unidad';
+              const dosis = lineaInsumo?.dosis ?? 0;
+              const total = lineaInsumo?.total ?? 0;
+              const maxTotal = lineaInsumo?.maxTotal ?? 1; // Prevent division by zero
+              const precioEstimado = lineaInsumo?.precio_estimado ?? 0;
+
+              return (
+                <Paper
+                  elevation={3}
+                  sx={{
+                    padding: "10px",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between"
+                  }}
+                  key={index}
                 >
-                  <Typography variant="body1">
-                    <strong>{lineaInsumo.insumo.name}</strong> -{" "}
-                    {lineaInsumo.insumo.brand}
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: "10px" }}
+                  >
+                    <Typography variant="body1">
+                      <strong>{insumoName}</strong>
+                      {insumoBrand && ` - ${insumoBrand}`}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: "20px" }}
+                  >
+                    <Typography variant="body2">
+                      {dosis} {insumoUnit}/ha
+                    </Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={Math.min((total / maxTotal) * 100, 100)}
+                      sx={{ width: "100px" }}
+                    />
+                    <Typography variant="body2">
+                      {total} {insumoUnit}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ fontStyle: "italic" }}>
+                    ${(precioEstimado * total).toFixed(2)} USD
                   </Typography>
-                </Box>
-                <Box
-                  sx={{ display: "flex", alignItems: "center", gap: "20px" }}
-                >
-                  <Typography variant="body2">
-                    {lineaInsumo.dosis} {lineaInsumo.insumo.unitMeasurement}/ha
-                  </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={(lineaInsumo.total / lineaInsumo.maxTotal) * 100}
-                    sx={{ width: "100px" }}
-                  />
-                  <Typography variant="body2">
-                    {lineaInsumo.total} {lineaInsumo.insumo.unitMeasurement}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" sx={{ fontStyle: "italic" }}>
-                  ${lineaInsumo.precio_estimado * lineaInsumo.total} USD
-                </Typography>
-              </Paper>
-            ))}
+                </Paper>
+              );
+            })}
           </CustomAccordionDetails>
         </CustomAccordion>
       )}
@@ -289,23 +301,15 @@ const PlanificationContent = React.memo(function PlanificationContent({
         <CustomAccordionDetails>
           <Typography>
             Nombre Completo:{" "}
-            {activity.contratista?.nombreCompleto
-              ? activity.contratista.nombreCompleto.length > 0
-                ? activity.contratista.nombreCompleto
-                : "No especificado"
-              : "No especificado"}
+            {activity?.contratista?.nombreCompleto || "No especificado"}
           </Typography>
           <Typography>
             Razón Social:{" "}
-            {activity.contratista
-              ? activity.contratista.razonSocial
-              : "No especificado"}
+            {activity?.contratista?.razonSocial || "No especificado"}
           </Typography>
           <Typography>
             CUIT:{" "}
-            {activity.contratista
-              ? activity.contratista.cuit
-              : "No especificado"}
+            {activity?.contratista?.cuit || "No especificado"}
           </Typography>
         </CustomAccordionDetails>
       </CustomAccordion>
@@ -316,16 +320,16 @@ const PlanificationContent = React.memo(function PlanificationContent({
         </CustomAccordionSummary>
         <CustomAccordionDetails>
           <TemperatureIndicator
-            min={activity.condiciones?.temperatura_min}
-            max={activity.condiciones?.temperatura_max}
+            min={activity?.condiciones?.temperatura_min ?? 0}
+            max={activity?.condiciones?.temperatura_max ?? 0}
           />
           <HumidityIndicator
-            min={activity.condiciones?.humedad_min}
-            max={activity.condiciones?.humedad_max}
+            min={activity?.condiciones?.humedad_min ?? 0}
+            max={activity?.condiciones?.humedad_max ?? 0}
           />
           <WindIndicator
-            min={activity.condiciones?.velocidad_min}
-            max={activity.condiciones?.velocidad_max}
+            min={activity?.condiciones?.velocidad_min ?? 0}
+            max={activity?.condiciones?.velocidad_max ?? 0}
           />
         </CustomAccordionDetails>
       </CustomAccordion>
@@ -336,7 +340,7 @@ const PlanificationContent = React.memo(function PlanificationContent({
         </CustomAccordionSummary>
         <CustomAccordionDetails>
           <Typography>
-            {activity.comentario || "No hay observaciones"}
+            {activity?.comentario || "No hay observaciones"}
           </Typography>
         </CustomAccordionDetails>
       </CustomAccordion>
