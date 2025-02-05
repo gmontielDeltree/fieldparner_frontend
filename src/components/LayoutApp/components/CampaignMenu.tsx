@@ -30,7 +30,6 @@ import { toast } from 'react-toastify'
 import CloseIcon from '@mui/icons-material/Close'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 
-// Forward ref for Slide to ensure it works with Dialog
 const Transition = React.forwardRef(function Transition(
   props: any,
   ref: React.Ref<unknown>,
@@ -126,6 +125,13 @@ const CampaignMenu: React.FC = () => {
           draggable: false,
           theme: 'colored',
           transition: Slide,
+          onClose: () => {
+            // Force cleanup of toast container
+            const toastContainer = document.querySelector('.Toastify');
+            if (toastContainer) {
+              toastContainer.remove();
+            }
+          }
         },
       )
     }
