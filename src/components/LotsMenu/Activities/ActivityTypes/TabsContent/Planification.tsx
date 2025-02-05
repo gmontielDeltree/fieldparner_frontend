@@ -240,13 +240,12 @@ const PlanificationContent = React.memo(function PlanificationContent({
             }}
           >
             {activity.detalles.dosis.map((lineaInsumo, index) => {
-              // Safe check for insumo properties
               const insumoName = lineaInsumo?.insumo?.name ?? 'No especificado';
               const insumoBrand = lineaInsumo?.insumo?.brand ?? '';
               const insumoUnit = lineaInsumo?.insumo?.unitMeasurement ?? 'unidad';
               const dosis = lineaInsumo?.dosis ?? 0;
               const total = lineaInsumo?.total ?? 0;
-              const maxTotal = lineaInsumo?.maxTotal ?? 1; // Prevent division by zero
+              const maxTotal = lineaInsumo?.maxTotal ?? 1; 
               const precioEstimado = lineaInsumo?.precio_estimado ?? 0;
 
               return (
