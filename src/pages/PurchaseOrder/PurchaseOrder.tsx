@@ -668,13 +668,18 @@ export const PurchaseOrderPage: React.FC = () => {
                     sx={{ mt: 3 }}
                 >
                     <Grid item xs={12} sm={3}>
-                        <Button onClick={onClickCancel}>Cancelar</Button>
+                        <Button
+                            variant="contained"
+                            color="inherit"
+                            onClick={onClickCancel}>
+                            Cancelar
+                        </Button>
                     </Grid>
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
                             disabled={listItemToPurchase.length === 0}
-                            color="primary"
+                            color="success"
                             onClick={() => onClickSave()}
                         >
                             Guardar

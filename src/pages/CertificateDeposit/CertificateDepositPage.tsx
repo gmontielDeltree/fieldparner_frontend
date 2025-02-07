@@ -270,7 +270,10 @@ export const CertificateDepositPage: React.FC = () => {
               sx={{ mt: 5 }}
             >
               <Grid item xs={12} sm={6} key="grid-back" display="flex" justifyContent="center">
-                <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
+                <Button
+                  variant='contained'
+                  color="inherit"
+                  onClick={activeStep !== 0 ? handleBack : onClickCancel}>
                   {activeStep !== 0 ? t("id_back") : t("id_cancel")}
                 </Button>
               </Grid>
@@ -297,9 +300,6 @@ export const CertificateDepositPage: React.FC = () => {
 
                 }
               </Grid>
-              {/* <Grid item xs={12} sm={3}>
-
-            </Grid> */}
             </Grid>
           </form>
         </>

@@ -41,7 +41,7 @@ import {
   useDeposit,
   useForm,
 } from "../../hooks";
-import {  Deposit, EnumStatusContract, TipoEntidad } from "../../types";
+import { Deposit, EnumStatusContract, TipoEntidad } from "../../types";
 import { removeDepositActive } from "../../redux/deposit";
 import { getLocalityAndStateByZipCode } from "../../utils/getDataZipCode";
 import { MapPickerReact } from '../../../owncomponents/map-picker/react-port/MapPicker';
@@ -71,10 +71,10 @@ export const DepositPage: React.FC = () => {
   const [countryError, setCountryError] = useState(false);
   const [cpError, setCpError] = useState(false);
   const { t } = useTranslation();
-  const {dataCountry, getCountries} = useCountry();
-  
+  const { dataCountry, getCountries } = useCountry();
 
-  
+
+
   const statusOptions = Object.values(EnumStatusContract).map(x => x as string);
 
   const locationDefault = t("_general");
@@ -143,26 +143,26 @@ export const DepositPage: React.FC = () => {
   } = formulario;
 
   //const countries: Country[] = [];
- // const countryOptions = countries ? countries.map(c => ({ code: c.code, label: c.descriptionEN })) : [];
- const [countryOptions, setCountryOptions] = useState<{ code: string; label: string }[]>([]);
-  
- const onChangeStatus = (_event: SyntheticEvent, value: string | null) => {
-  if (value !== null) {
-    
-    const statusEnum = value as EnumStatusContract;
+  // const countryOptions = countries ? countries.map(c => ({ code: c.code, label: c.descriptionEN })) : [];
+  const [countryOptions, setCountryOptions] = useState<{ code: string; label: string }[]>([]);
 
-    
-    setFormulario(prevState => ({
-      ...prevState,
-      status: statusEnum
-    }));
+  const onChangeStatus = (_event: SyntheticEvent, value: string | null) => {
+    if (value !== null) {
 
-    setFormulario(prevState => ({
-      ...prevState,
-      status: statusEnum
-    }));
-  }
-};
+      const statusEnum = value as EnumStatusContract;
+
+
+      setFormulario(prevState => ({
+        ...prevState,
+        status: statusEnum
+      }));
+
+      setFormulario(prevState => ({
+        ...prevState,
+        status: statusEnum
+      }));
+    }
+  };
 
   const optionsPropietario = useMemo(() => {
     return businesses
@@ -257,24 +257,24 @@ export const DepositPage: React.FC = () => {
       setLoadingZipCode(true);
       try {
         console.log("Ejecutando1", pais);
-  
+
         if (pais === "ARG" || pais === "AR") {
           console.log("Ejecutando2", pais);
-          const localityAndStates = await getLocalityAndStateByZipCode("ARG",zipCode);
-  
+          const localityAndStates = await getLocalityAndStateByZipCode("ARG", zipCode);
+
           if (localityAndStates?.length) {
             const firstLocality = localityAndStates[0].locality;
             const firstProvince = localityAndStates[0].state;
-  
+
             setLocalities(localityAndStates.map((x) => x.locality));
-  
+
             handleInputChange({
               target: {
                 name: "locality",
                 value: firstLocality,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "province",
@@ -286,7 +286,7 @@ export const DepositPage: React.FC = () => {
           }
         } else if (pais === "BR" || pais === "BRA") {
           const brazilData = await fetchBrazilZipCode(zipCode);
-  
+
           if (brazilData) {
             handleInputChange({
               target: {
@@ -294,14 +294,14 @@ export const DepositPage: React.FC = () => {
                 value: brazilData.localidade || brazilData.logradouro,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "province",
                 value: brazilData.uf,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "address",
@@ -314,20 +314,20 @@ export const DepositPage: React.FC = () => {
         } else if (pais === "PY" || pais === "PRY") {
           console.log("Ejecutando3", pais);
           const localityAndStates = await getLocalityAndStateByZipCode("PRY", zipCode);
-  
+
           if (localityAndStates?.length) {
             const firstLocality = localityAndStates[0].locality;
             const firstProvince = localityAndStates[0].state;
-  
+
             setLocalities(localityAndStates.map((x) => x.locality));
-  
+
             handleInputChange({
               target: {
                 name: "locality",
                 value: firstLocality,
               },
             } as React.ChangeEvent<HTMLInputElement>);
-  
+
             handleInputChange({
               target: {
                 name: "province",
@@ -340,17 +340,17 @@ export const DepositPage: React.FC = () => {
         } else {
           throw new Error("El país seleccionado no es válido o no está soportado.");
         }
-  
+
         setLoadingZipCode(false);
       } catch (error) {
         console.error(error);
-  
+
         Swal.fire({
           title: "Error",
           text: "Revisa que el Código Postal sea correspondiente al país.",
           icon: "error",
         });
-  
+
         setLoadingZipCode(false);
       }
     }
@@ -400,13 +400,13 @@ export const DepositPage: React.FC = () => {
     getCountries();
   }, []);
 
- 
+
 
   useEffect(() => {
     if (dataCountry) {
       const options = dataCountry.map(country => ({
         code: country.code,
-        label: country.descriptionEN || country.descriptionES || country.code, 
+        label: country.descriptionEN || country.descriptionES || country.code,
       }));
       setCountryOptions(options);
     }
@@ -436,18 +436,18 @@ export const DepositPage: React.FC = () => {
         >
           {depositActive ? `${t("icon_edit")} ${t("new_masculine")} ${t("_warehouse")}` : `${t("_add")} ${t("new_masculine")} ${t("_warehouse")}`}
         </Typography>
-        <Grid 
-              container 
-              spacing={1} 
-              alignItems="flex-start" 
-              justifyContent="flex-start" 
-              sx={{ 
-                //border: '1px solid red', 
-                padding: '16px', 
-               // backgroundColor: 'rgba(255, 0, 0, 0.1)' 
-              }}
-            >
-        <Grid item xs={12} sm={6} sx={{padding: '16px', }}>
+        <Grid
+          container
+          spacing={1}
+          alignItems="flex-start"
+          justifyContent="flex-start"
+          sx={{
+            //border: '1px solid red', 
+            padding: '16px',
+            // backgroundColor: 'rgba(255, 0, 0, 0.1)' 
+          }}
+        >
+          <Grid item xs={12} sm={6} sx={{ padding: '16px', }}>
             <TextField
               variant="outlined"
               type="text"
@@ -463,7 +463,7 @@ export const DepositPage: React.FC = () => {
               helperText={descriptionError ? t("this_field_is_mandatory") : ""}
             />
           </Grid>
-          <Grid item xs={12} sm={6}sx={{  padding: '16px',  }}>
+          <Grid item xs={12} sm={6} sx={{ padding: '16px', }}>
             <Autocomplete
               id="owner"
               freeSolo
@@ -483,69 +483,69 @@ export const DepositPage: React.FC = () => {
               )}
             />
           </Grid>
-          <Grid 
-              item 
-              xs={12} 
-              sm={6} // Cambiar de 6 a 8 para hacerlo más ancho
-              md={4} // Cambiar de 4 a 6 para hacerlo más ancho
-              sx={{ 
-               // border: '1px solid blue', 
-                padding: '16px', 
-               // backgroundColor: 'rgba(0, 0, 255, 0.1)', 
-                marginRight: '0px' 
-                // marginLeft: 'auto'
-              }} 
-            >
+          <Grid
+            item
+            xs={12}
+            sm={6} // Cambiar de 6 a 8 para hacerlo más ancho
+            md={4} // Cambiar de 4 a 6 para hacerlo más ancho
+            sx={{
+              // border: '1px solid blue', 
+              padding: '16px',
+              // backgroundColor: 'rgba(0, 0, 255, 0.1)', 
+              marginRight: '0px'
+              // marginLeft: 'auto'
+            }}
+          >
 
             <Box >
-            <FormGroup row>
-              <FormControlLabel
-                key="checkbox-true"
-                control={
-                  <Checkbox
-                    name="physical"
-                    checked={!isVirtual}
-                    onChange={() =>
-                      setFormulario((prevState) => ({
-                        ...prevState,
-                        isVirtual: false,
-                      }))
-                    }
-                  />
-                }
-                label={t("physical_masculine")}
-                labelPlacement="start"
-              />
-              <FormControlLabel
-                key="checkbox-false"
-                control={
-                  <Checkbox
-                    name="virtual"
-                    checked={isVirtual}
-                    onChange={() =>
-                      setFormulario((prevState) => ({
-                        ...prevState,
-                        isVirtual: true,
-                      }))
-                    }
-                  />
-                }
-                label={t("_virtual")}
-                labelPlacement="start"
-              />
-            </FormGroup>
-            <FormControl fullWidth>
-          <Autocomplete
-            value={formulario.status}
-            onChange={(event, newValue) => onChangeStatus(event, newValue)}
-            options={statusOptions}
-            getOptionLabel={(option) => option}
-            renderInput={(params) => (
-              <TextField {...params} label="Status" variant="outlined" />
-            )}
-            fullWidth
-          />
-          </FormControl>
+              <FormGroup row>
+                <FormControlLabel
+                  key="checkbox-true"
+                  control={
+                    <Checkbox
+                      name="physical"
+                      checked={!isVirtual}
+                      onChange={() =>
+                        setFormulario((prevState) => ({
+                          ...prevState,
+                          isVirtual: false,
+                        }))
+                      }
+                    />
+                  }
+                  label={t("physical_masculine")}
+                  labelPlacement="start"
+                />
+                <FormControlLabel
+                  key="checkbox-false"
+                  control={
+                    <Checkbox
+                      name="virtual"
+                      checked={isVirtual}
+                      onChange={() =>
+                        setFormulario((prevState) => ({
+                          ...prevState,
+                          isVirtual: true,
+                        }))
+                      }
+                    />
+                  }
+                  label={t("_virtual")}
+                  labelPlacement="start"
+                />
+              </FormGroup>
+              <FormControl fullWidth>
+                <Autocomplete
+                  value={formulario.status}
+                  onChange={(event, newValue) => onChangeStatus(event, newValue)}
+                  options={statusOptions}
+                  getOptionLabel={(option) => option}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Status" variant="outlined" />
+                  )}
+                  fullWidth
+                />
+              </FormControl>
             </Box>
             <FormGroup row sx={{ marginTop: '15px' }}>
               <FormControlLabel
@@ -558,7 +558,7 @@ export const DepositPage: React.FC = () => {
                       setFormulario((prevState) => ({
                         ...prevState,
                         deposit: true,
-                        siloBag: false, 
+                        siloBag: false,
                         silo: false,
                         hopper: false,
                       }))
@@ -577,7 +577,7 @@ export const DepositPage: React.FC = () => {
                     onChange={() =>
                       setFormulario((prevState) => ({
                         ...prevState,
-                        deposit: false, 
+                        deposit: false,
                         siloBag: true,
                         silo: false,
                         hopper: false
@@ -589,32 +589,32 @@ export const DepositPage: React.FC = () => {
                 labelPlacement="start"
               />
               {siloBag && (
-                  <TextField
-                    sx={{ width: "72%" }}
-                    variant="outlined"
-                    type="text"
-                    size="small"
-                    label="ID Silobolsa"
-                    name="siloBagId"
-                    value={siloBagId}
-                    onChange={(e) => setFormulario((prevState) => ({
-                      ...prevState,
-                      siloBagId: e.target.value
-                    }))}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start" />,
-                    }}
-                  />
-                )}
+                <TextField
+                  sx={{ width: "72%" }}
+                  variant="outlined"
+                  type="text"
+                  size="small"
+                  label="ID Silobolsa"
+                  name="siloBagId"
+                  value={siloBagId}
+                  onChange={(e) => setFormulario((prevState) => ({
+                    ...prevState,
+                    siloBagId: e.target.value
+                  }))}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" />,
+                  }}
+                />
+              )}
             </FormGroup>
           </Grid>
-          <Grid item xs={1} sm={1} md={2.7}  sx={{ 
-                //border: '1px solid blue', 
-                padding: '0px', 
-                //backgroundColor: 'rgba(0, 0, 255, 0.1)', 
-                marginRight: '0px', 
-               marginLeft: '0px'
-              }}  >
+          <Grid item xs={1} sm={1} md={2.7} sx={{
+            //border: '1px solid blue', 
+            padding: '0px',
+            //backgroundColor: 'rgba(0, 0, 255, 0.1)', 
+            marginRight: '0px',
+            marginLeft: '0px'
+          }}  >
             <FormGroup row sx={{ alignItems: "left" }}>
               <label htmlFor="">{t("admits_negative_stock")}</label>
               <FormControlLabel
@@ -642,7 +642,7 @@ export const DepositPage: React.FC = () => {
                 labelPlacement="start"
               />
             </FormGroup>
-            
+
             <FormGroup row sx={{ marginTop: '45px' }}>
               <FormControlLabel
                 key="checkbox-true"
@@ -653,7 +653,7 @@ export const DepositPage: React.FC = () => {
                     onChange={() =>
                       setFormulario((prevState) => ({
                         ...prevState,
-                        deposit: false, 
+                        deposit: false,
                         silo: true,
                         hopper: false
                       }))
@@ -672,7 +672,7 @@ export const DepositPage: React.FC = () => {
                     onChange={() =>
                       setFormulario((prevState) => ({
                         ...prevState,
-                        deposit: false, 
+                        deposit: false,
                         siloBag: false,
                         silo: false,
                         hopper: true
@@ -685,14 +685,14 @@ export const DepositPage: React.FC = () => {
               />
             </FormGroup>
           </Grid>
-          <Grid item xs={12} sm={6} md={4} sx={{ 
-                //border: '1px solid blue', 
-                padding: '0px', 
-               // backgroundColor: 'rgba(0, 0, 255, 0.1)', 
-                marginRight: '0px', 
-                marginLeft: '0px',
-                textAlign: 'center'
-              }}  >
+          <Grid item xs={12} sm={6} md={4} sx={{
+            //border: '1px solid blue', 
+            padding: '0px',
+            // backgroundColor: 'rgba(0, 0, 255, 0.1)', 
+            marginRight: '0px',
+            marginLeft: '0px',
+            textAlign: 'center'
+          }}  >
             <FormGroup sx={{ position: 'right', flexDirection: "row", gap: "5px" }}>
               <TextField
                 sx={{ width: "35%" }}
@@ -706,7 +706,7 @@ export const DepositPage: React.FC = () => {
                 InputProps={{
                   startAdornment: <InputAdornment position="start" />,
                 }}
-               // helperText={descriptionError ? t("this_field_is_mandatory") : ""}
+              // helperText={descriptionError ? t("this_field_is_mandatory") : ""}
 
               />
               <TextField
@@ -721,41 +721,41 @@ export const DepositPage: React.FC = () => {
                 InputProps={{
                   startAdornment: <InputAdornment position="start" />,
                 }}
-                //helperText={descriptionError ? t("this_field_is_mandatory") : ""}
+              //helperText={descriptionError ? t("this_field_is_mandatory") : ""}
 
               />
               <MapPickerReact posicion={geolocation} onPicked={({ detail }: any) => { handleGeolocationChange(detail) }} />
             </FormGroup>
           </Grid>
           <Grid item xs={6} sm={4}>
-          <FormControl fullWidth variant="outlined" error={countryError}>
-                <Autocomplete
-                  value={countryOptions.find(opts => opts.code === pais) || null}
-                  onChange={onChangeCountry}
-                  options={countryOptions}
-                  getOptionLabel={(option) => option.label}
-                  renderInput={(params) => (
-                    <TextField {...params} label={t("id_country")} variant="outlined" />
-                  )}
-                  fullWidth
-                />
-            {countryError && <FormHelperText>Mensaje de error!</FormHelperText>}
-          </FormControl>
+            <FormControl fullWidth variant="outlined" error={countryError}>
+              <Autocomplete
+                value={countryOptions.find(opts => opts.code === pais) || null}
+                onChange={onChangeCountry}
+                options={countryOptions}
+                getOptionLabel={(option) => option.label}
+                renderInput={(params) => (
+                  <TextField {...params} label={t("id_country")} variant="outlined" />
+                )}
+                fullWidth
+              />
+              {countryError && <FormHelperText>Mensaje de error!</FormHelperText>}
+            </FormControl>
           </Grid>
           <Grid item xs={6} sm={4}>
-          <TextField
-            variant="outlined"
-            type="text"
-            label={t("postal_code")}
-            name="zipCode"
-            value={zipCode}
-            onBlur={onBlurZipCode}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
-            InputProps={{
-              startAdornment: <InputAdornment position="start" />
-            }}
-            fullWidth
-          />
+            <TextField
+              variant="outlined"
+              type="text"
+              label={t("postal_code")}
+              name="zipCode"
+              value={zipCode}
+              onBlur={onBlurZipCode}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start" />
+              }}
+              fullWidth
+            />
           </Grid>
           <Grid item xs={6} sm={4}>
             <Autocomplete
@@ -888,12 +888,16 @@ export const DepositPage: React.FC = () => {
           sx={{ mt: 3 }}
         >
           <Grid item xs={12} sm={3}>
-            <Button onClick={onClickCancel}>{t("id_cancel")}</Button>
+            <Button
+              variant="contained"
+              color="inherit"
+              onClick={onClickCancel}>
+              {t("id_cancel")}</Button>
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button
               variant="contained"
-              color="primary"
+              color="success"
               onClick={depositActive ? handleUpdateDeposit : handleAddDeposit}
             >
               {!depositActive ? t("_add") : t("id_update")}
@@ -904,7 +908,7 @@ export const DepositPage: React.FC = () => {
     </TemplateLayout>
   );
 
- 
-  
-  
+
+
+
 };

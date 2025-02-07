@@ -557,8 +557,8 @@ export const NewCoporateCompaniesPage = () => {
           </Grid>
           <Box sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', mt: 2 }}>
             <Button
-              variant="outlined"
-              color="secondary"
+              variant="contained"
+              color="inherit"
               onClick={onClickCancel}>
               {t("id_cancel")}
             </Button>

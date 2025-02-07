@@ -1,9 +1,9 @@
-import React, {  SyntheticEvent, useEffect, useState } from 'react';
-import { TextField, IconButton, Container,  Typography, Paper, Tooltip, Grid, Button, Box, FormControl,  Autocomplete } from '@mui/material';
+import React, { SyntheticEvent, useEffect, useState } from 'react';
+import { TextField, IconButton, Container, Typography, Paper, Tooltip, Grid, Button, Box, FormControl, Autocomplete } from '@mui/material';
 import { DataTable, ItemRow, TableCellStyled, Loading } from '../../components';
-import {ColumnProps } from '@types';
+import { ColumnProps } from '@types';
 import { useTranslation } from 'react-i18next';
-import { useAppDispatch, useAppSelector, useForm , useCorporateContract, useBusiness, useCampaign} from '../../hooks';
+import { useAppDispatch, useAppSelector, useForm, useCorporateContract, useBusiness, useCampaign } from '../../hooks';
 import { useNavigate } from 'react-router-dom';
 import { removeCorporateContractActive } from '../../redux/corporateContract';
 import Swal from 'sweetalert2';
@@ -16,10 +16,11 @@ import {
   loadCampaignFromLS
 } from "../../helpers/persistence";
 import {
-Add as AddIcon,
-Delete as DeleteIcon,
-Handshake as HandshakeIcon,
-Description as DescriptionIcon } from '@mui/icons-material/';
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Handshake as HandshakeIcon,
+  Description as DescriptionIcon
+} from '@mui/icons-material/';
 
 const initialForm: CorporateContract = {
   idContract: '',
@@ -32,7 +33,7 @@ const initialForm: CorporateContract = {
 
 export const NewCorporateContractPage: React.FC = () => {
   const [newContract, setNewContract] = useState<ListCorporateContract>({
-    id:"",
+    id: "",
     companie: '',
     percentageOfParticipation: '',
     activity: '',
@@ -41,12 +42,12 @@ export const NewCorporateContractPage: React.FC = () => {
   //const { selectedCampaign } = useAppSelector((state) => state.campaign);
   const { corporateContractActive } = useAppSelector((state) => state.corporateContract);
   const { isLoading, listCorporateContract,
-          createCorporateContract,
-          updateCorporateContract,
-          getCorporateContract, 
-          corporateContract,
-        } = useCorporateContract();
-  const {businesses, getBusinesses} = useBusiness();
+    createCorporateContract,
+    updateCorporateContract,
+    getCorporateContract,
+    corporateContract,
+  } = useCorporateContract();
+  const { businesses, getBusinesses } = useBusiness();
   const {
     campaigns,
     getCampaigns,
@@ -96,9 +97,9 @@ export const NewCorporateContractPage: React.FC = () => {
   }, [corporateContractActive, setFormulario]);
 
   useEffect(() => {
-    getCorporateContract ();
+    getCorporateContract();
   }, []);
- 
+
   const handleVerifyId = () => {
     const IdContrtactExists = corporateContract.find(corporate => corporate.idContract === idContract);
 
@@ -113,11 +114,11 @@ export const NewCorporateContractPage: React.FC = () => {
           idContract: '',
         }));
       });
-      return true; 
+      return true;
     }
-  
+
   };
- 
+
 
   const onChangeCompanie = (_event: React.SyntheticEvent, value: { cuit: string; label: string } | null) => {
     setNewContract(prevState => ({
@@ -129,82 +130,82 @@ export const NewCorporateContractPage: React.FC = () => {
 
 
   const onClickCancel = () => {
-    dispatch(removeCorporateContractActive ());
+    dispatch(removeCorporateContractActive());
     reset();
     navigate("/init/overview/corporate-contract");
-    
+
   };
 
 
 
   const handleAddContract = async () => {
-   await createCorporateContract(formulario);
-     reset();
+    await createCorporateContract(formulario);
+    reset();
   };
 
- const handleUpdate = () => {
-    
-  if (!formulario.idContract?.trim()) {
-    Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
-    return;
-  }
-  updateCorporateContract(formulario);
-  reset();
-};
+  const handleUpdate = () => {
 
-
-
-const handleAddListContract = () => {
-  const newListContract: ListCorporateContract = {
-    id: Date.now().toString(), 
-    companie: newContract.companie,
-    percentageOfParticipation: newContract.percentageOfParticipation,
-    activity: newContract.activity,
+    if (!formulario.idContract?.trim()) {
+      Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
+      return;
+    }
+    updateCorporateContract(formulario);
+    reset();
   };
 
-  
-  setFormulario((prevState) => ({
-    ...prevState,
-    contractsList: [...prevState.contractsList, newListContract],
-    totalCompany: prevState.contractsList.length + 1, 
-  }));
-
-  
-  setNewContract({
-    id:'',
-    companie: '',
-    percentageOfParticipation: '',
-    activity: '',
-  });
-
-  console.log("Nuevo contrato agregado a contractsList:", newListContract);
-};
 
 
-// const handleCampaignChange = (event: SelectChangeEvent<unknown>) => {
-//   const selectedCampaignId = event.target.value as string; // Convierte el valor a string
-
-//   // Actualiza el estado del formulario con la campaña seleccionada
-//   setFormulario({
-//     ...formulario,
-//     campaignSelect: selectedCampaignId // Actualiza campaignSelect
-//   });
-// };
+  const handleAddListContract = () => {
+    const newListContract: ListCorporateContract = {
+      id: Date.now().toString(),
+      companie: newContract.companie,
+      percentageOfParticipation: newContract.percentageOfParticipation,
+      activity: newContract.activity,
+    };
 
 
-const handleDeleteListContract = (contractToDelete: ListCorporateContract) => {
-  const updatedContractsList = formulario.contractsList.filter(
-    (contract) => contract.id !== contractToDelete.id
-  );
+    setFormulario((prevState) => ({
+      ...prevState,
+      contractsList: [...prevState.contractsList, newListContract],
+      totalCompany: prevState.contractsList.length + 1,
+    }));
 
-  setFormulario((prevState) => ({
-    ...prevState,
-    contractsList: updatedContractsList,
-    totalCompany: updatedContractsList.length,
-  }));
 
-  Swal.fire('Eliminado', 'El contrato ha sido eliminado exitosamente.', 'success');
-};
+    setNewContract({
+      id: '',
+      companie: '',
+      percentageOfParticipation: '',
+      activity: '',
+    });
+
+    console.log("Nuevo contrato agregado a contractsList:", newListContract);
+  };
+
+
+  // const handleCampaignChange = (event: SelectChangeEvent<unknown>) => {
+  //   const selectedCampaignId = event.target.value as string; // Convierte el valor a string
+
+  //   // Actualiza el estado del formulario con la campaña seleccionada
+  //   setFormulario({
+  //     ...formulario,
+  //     campaignSelect: selectedCampaignId // Actualiza campaignSelect
+  //   });
+  // };
+
+
+  const handleDeleteListContract = (contractToDelete: ListCorporateContract) => {
+    const updatedContractsList = formulario.contractsList.filter(
+      (contract) => contract.id !== contractToDelete.id
+    );
+
+    setFormulario((prevState) => ({
+      ...prevState,
+      contractsList: updatedContractsList,
+      totalCompany: updatedContractsList.length,
+    }));
+
+    Swal.fire('Eliminado', 'El contrato ha sido eliminado exitosamente.', 'success');
+  };
 
 
 
@@ -226,15 +227,15 @@ const handleDeleteListContract = (contractToDelete: ListCorporateContract) => {
 
   const onChangeStatus = (_event: SyntheticEvent, value: string | null) => {
     if (value !== null) {
-      
+
       const statusEnum = value as EnumStatusContract;
-  
-      
+
+
       setFormulario(prevState => ({
         ...prevState,
         status: statusEnum
       }));
-  
+
       setNewContract(prevState => ({
         ...prevState,
         status: statusEnum
@@ -243,90 +244,90 @@ const handleDeleteListContract = (contractToDelete: ListCorporateContract) => {
   };
 
   const columns: ColumnProps[] = [
-    { text: t("_company"),  align: "center" },
-    { text: t("percentage_of_participation"),  align: "center" },
-    { text: t("_activity"),  align: "center" },
+    { text: t("_company"), align: "center" },
+    { text: t("percentage_of_participation"), align: "center" },
+    { text: t("_activity"), align: "center" },
     { text: "", align: "center" },
   ];
 
   return (
     <>
-    <Loading key="loading-users" loading={isLoading} />
-    <Container
-      maxWidth="md"
-      sx={{
-        mt: 4,
-        p: { sm: 1, md: 1 },
-        mb: 1,
-        ml: 5
-      }}
-    >
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        <DescriptionIcon   sx={{ marginRight: "-5px", fontSize: "inherit", verticalAlign: "middle" }}/>
-      <HandshakeIcon sx={{ marginRight: "28px"}}/>
-        {t("corporate_contracts")}
-      </Typography>
-      <Paper
-        variant="outlined"
-        sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
-      >
-        <Grid container spacing={2}>
-        
-          <Grid item xs={12} md={3}>
-            <TextField
-              label={t("contract_id")}
-              name="idContract"
-              value={idContract}
-              onBlur={handleVerifyId}
-              onChange={handleInputChange}
-              fullWidth />
-          </Grid>
-          <Grid item xs={12} md={8}>
-            <TextField
-              label={t("_description")}
-              name="description"
-              value={description}
-              onChange={handleInputChange}
-              fullWidth />
-          </Grid>
-          <Grid item xs={12} md={2.5}>
-          <FormControl fullWidth>
-          <Autocomplete
-            value={formulario.status}
-            onChange={(event, newValue) => onChangeStatus(event, newValue)}
-            options={statusOptions}
-            getOptionLabel={(option) => option}
-            renderInput={(params) => (
-              <TextField {...params} label="Status" variant="outlined" />
-            )}
-            fullWidth
-          />
-          </FormControl>
-          </Grid>
-          <Grid item xs={12} md={1}>
-          <FormControl style={{ marginLeft: "50px", minWidth: 200 }}>
-          <Autocomplete
-        value={campaigns.find(campaign => campaign.campaignId === formulario.campaignSelect) || null}
-        onChange={(_event, newValue) => {
-          setFormulario({
-            ...formulario,
-            campaignSelect: newValue ? newValue.campaignId : '', 
-          });
+      <Loading key="loading-users" loading={isLoading} />
+      <Container
+        maxWidth="md"
+        sx={{
+          mt: 4,
+          p: { sm: 1, md: 1 },
+          mb: 1,
+          ml: 5
         }}
-        options={campaigns} 
-        getOptionLabel={(option) => option.name || ''} 
-        renderInput={(params) => (
-          <TextField {...params} label="Campaña" variant="outlined" />
-        )}
-        style={{ marginLeft: "-10px", minWidth: 200 }} 
-      />
-        </FormControl>
-        </Grid>
-        </Grid>
-        <Grid container spacing={2} sx={{ mt: 3 }}>
-          <Grid item xs={12} md={3}>
-          <FormControl fullWidth>
-              <Autocomplete
+      >
+        <Typography variant="h4" sx={{ mb: 3 }}>
+          <DescriptionIcon sx={{ marginRight: "-5px", fontSize: "inherit", verticalAlign: "middle" }} />
+          <HandshakeIcon sx={{ marginRight: "28px" }} />
+          {t("corporate_contracts")}
+        </Typography>
+        <Paper
+          variant="outlined"
+          sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
+        >
+          <Grid container spacing={2}>
+
+            <Grid item xs={12} md={3}>
+              <TextField
+                label={t("contract_id")}
+                name="idContract"
+                value={idContract}
+                onBlur={handleVerifyId}
+                onChange={handleInputChange}
+                fullWidth />
+            </Grid>
+            <Grid item xs={12} md={8}>
+              <TextField
+                label={t("_description")}
+                name="description"
+                value={description}
+                onChange={handleInputChange}
+                fullWidth />
+            </Grid>
+            <Grid item xs={12} md={2.5}>
+              <FormControl fullWidth>
+                <Autocomplete
+                  value={formulario.status}
+                  onChange={(event, newValue) => onChangeStatus(event, newValue)}
+                  options={statusOptions}
+                  getOptionLabel={(option) => option}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Status" variant="outlined" />
+                  )}
+                  fullWidth
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={1}>
+              <FormControl style={{ marginLeft: "50px", minWidth: 200 }}>
+                <Autocomplete
+                  value={campaigns.find(campaign => campaign.campaignId === formulario.campaignSelect) || null}
+                  onChange={(_event, newValue) => {
+                    setFormulario({
+                      ...formulario,
+                      campaignSelect: newValue ? newValue.campaignId : '',
+                    });
+                  }}
+                  options={campaigns}
+                  getOptionLabel={(option) => option.name || ''}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Campaña" variant="outlined" />
+                  )}
+                  style={{ marginLeft: "-10px", minWidth: 200 }}
+                />
+              </FormControl>
+            </Grid>
+          </Grid>
+          <Grid container spacing={2} sx={{ mt: 3 }}>
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth>
+                <Autocomplete
                   value={companieOptions.find(option => option.label === newContract.companie) || null}
                   onChange={onChangeCompanie}
                   options={companieOptions}
@@ -336,37 +337,37 @@ const handleDeleteListContract = (contractToDelete: ListCorporateContract) => {
                   )}
                   fullWidth
                 />
-            </FormControl>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label={t("percentage_of_participation")}
+                name="percentageOfParticipation"
+                value={newContract.percentageOfParticipation}
+                onChange={handlePercentageChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label={t("_activity")}
+                name="activity"
+                value={newContract.activity}
+                onChange={handleActivityChange}
+                fullWidth />
+            </Grid>
+            <Grid item xs={12} sx={{ textAlign: 'right' }}>
+              <Tooltip title={t("_add")}>
+                <IconButton onClick={handleAddListContract}>
+                  <AddIcon color='primary' />
+                </IconButton>
+              </Tooltip>
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <TextField
-              label={t("percentage_of_participation")}
-              name="percentageOfParticipation"
-              value={newContract.percentageOfParticipation}
-              onChange={handlePercentageChange}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <TextField
-              label={t("_activity")}
-              name="activity"
-              value={newContract.activity}
-              onChange={handleActivityChange}
-              fullWidth />
-          </Grid>
-          <Grid item xs={12} sx={{ textAlign: 'right' }}>
-            <Tooltip title={t("_add")}>
-            <IconButton onClick={handleAddListContract}>
-              <AddIcon color='primary' />
-            </IconButton>
-            </Tooltip>
-          </Grid>
-        </Grid>
-        <Typography variant="h6" sx={{ mt: 4 }}>
-          {t("added_contracts")}
-        </Typography>
-        <DataTable key="datatable-contracts" columns={columns} isLoading={false}>
+          <Typography variant="h6" sx={{ mt: 4 }}>
+            {t("added_contracts")}
+          </Typography>
+          <DataTable key="datatable-contracts" columns={columns} isLoading={false}>
             {formulario.contractsList.map((row) => (
               <ItemRow key={row.id}>
                 <TableCellStyled align="center">{row.companie}</TableCellStyled>
@@ -387,28 +388,28 @@ const handleDeleteListContract = (contractToDelete: ListCorporateContract) => {
                 </TableCellStyled>
               </ItemRow>
             ))}
-          </DataTable>  
+          </DataTable>
           <Grid container spacing={2} sx={{ mt: 4, justifyContent: 'center' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 25 }}>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={onClickCancel}
-                >
-                  {t("id_cancel")}
-                </Button>
-                <Button
-                  type='submit'
-                  variant="contained"
-                  color="success"
-                  onClick={corporateContractActive ? handleUpdate : handleAddContract}
-                >
-                  {!corporateContractActive ? t("_add") : t("id_update")} {' '}
-                </Button>
-              </Box>
-            </Grid>
-      </Paper>
-    </Container>
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 25 }}>
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={onClickCancel}
+              >
+                {t("id_cancel")}
+              </Button>
+              <Button
+                type='submit'
+                variant="contained"
+                color="success"
+                onClick={corporateContractActive ? handleUpdate : handleAddContract}
+              >
+                {!corporateContractActive ? t("_add") : t("id_update")} {' '}
+              </Button>
+            </Box>
+          </Grid>
+        </Paper>
+      </Container>
     </>
   );
 };

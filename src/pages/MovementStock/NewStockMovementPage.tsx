@@ -76,7 +76,7 @@ export const NewStockMovementPage: React.FC = () => {
   const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
   const { isLoading: isLoadCampaigns, campaigns, getCampaigns } = useCampaign();
   const { t } = useTranslation();
-  
+
   const {
     formulario,
     setFormulario,
@@ -759,7 +759,12 @@ export const NewStockMovementPage: React.FC = () => {
           sx={{ mt: 3 }}
         >
           <Grid item xs={12} sm={3}>
-            <Button onClick={onClickCancel}>{t("id_cancel")}</Button>
+            <Button
+              variant="contained"
+              color="inherit"
+              onClick={onClickCancel}>
+              {t("id_cancel")}
+            </Button>
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button

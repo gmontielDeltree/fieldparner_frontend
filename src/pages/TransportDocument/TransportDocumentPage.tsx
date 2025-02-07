@@ -367,7 +367,10 @@ export const TransportDocumentPage: React.FC = () => {
               sx={{ mt: 5 }}
             >
               <Grid item xs={12} sm={3} key="grid-back">
-                <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
+                <Button
+                  variant="contained"
+                  color="inherit"
+                  onClick={activeStep !== 0 ? handleBack : onClickCancel}>
                   {activeStep !== 0 ? t("id_back") : t("id_cancel")}
                 </Button>
               </Grid>

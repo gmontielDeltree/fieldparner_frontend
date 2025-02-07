@@ -199,8 +199,8 @@ export const NewCostsExpenses: React.FC = () => {
           <Grid container spacing={2} sx={{ mt: 4, justifyContent: 'center' }}>
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 25 }}>
                 <Button
-                  variant="outlined"
-                  color="secondary"
+                  variant="contained"
+                  color="inherit"
                   onClick={onClickCancel}
                 >
                   {t("id_cancel")}

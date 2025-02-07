@@ -463,15 +463,15 @@ export const NewUserPage = () => {
             </Grid>
             <Box sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', mt: 2 }}>
               <Button
-                variant="outlined"
-                color="secondary"
+                variant="contained"
+                color="inherit"
                 onClick={onClickCancel}>
                 Cancelar
               </Button>
               <Button
                 type='submit'
                 variant="contained"
-                color="primary"
+                color="success"
               // onClick={userActive ? handleUpdateUsers : handleAddUser}
               >
                 {!userActive ? "Guardar" : "Actualizar"}{' '}
