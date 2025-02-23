@@ -49,7 +49,9 @@ import {
   ContractSaleCerealsPage,
   ListCostsExpenses,
   NewCostsExpenses,
+  CampaignsResultsPage,
 } from "../pages";
+
 import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
@@ -147,6 +149,8 @@ export const OverviewRoutes: React.FC = () => {
 
         <Route path="/overview/exit-field" element={<ListExitFieldPage />} />
         <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />
+
+        <Route path="/overview/campaign-results" element={<CampaignsResultsPage />} />
 
         <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
         <Route

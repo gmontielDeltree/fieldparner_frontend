@@ -172,6 +172,18 @@ export const SideBar: React.FC<SideBarProps> = ({
               <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}
+                to="/init/overview/campaign-results" 
+                selected={pathname.includes("/init/overview/campaign-results")}
+              >
+                <ListItemIcon>
+                  <QueryStatsIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("campaign_results")} />
+              </ListItemButton>
+         
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
                 to="/init/overview/origins-destinations"
                 selected={pathname.includes("/init/overview/origins-destinations")}
               >

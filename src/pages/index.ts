@@ -47,6 +47,8 @@ export * from './SalesCereals/ContractSaleCerealsPage';
 export * from './SalesCereals/ListSalesCerealsPage';
 export * from './CostsExpenses/ListCostsExpenses';
 export * from './CostsExpenses/NewCostsExpenses';
+export * from './Campaigns/CampaignsResultsPage';
+
 
 
 
