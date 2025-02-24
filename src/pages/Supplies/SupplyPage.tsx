@@ -13,11 +13,11 @@ import {
   Typography,
 } from "@mui/material";
 import { Supply } from "../../types";
-import { removeSupplyActive } from "../../redux/supply";
+import { removeSupplyActive, setSupplyActive } from "../../redux/supply";
 import { useTranslation } from "react-i18next";
 import { uploadFile } from "../../helpers/fileUpload";
 import { IsSeed } from "../../utils/helper";
-
+import { useParams } from "react-router-dom";
 
 const initialForm: Supply = {
   accountId: "",
@@ -67,10 +67,10 @@ export const SupplyPage: React.FC = () => {
     type: false,
     cropId: false,
   })
-  const { isLoading, createSupply, updateSupply, getSupplies } = useSupply();
+  const { supplies, isLoading, createSupply, updateSupply, getSupplies } = useSupply();
   const { isLoading: loadingCrops, dataCrops, getCrops } = useCrops();
   const [fileUpload, setFileUpload] = React.useState<File | null>(null);
-
+  const { id } = useParams();
   const onClickCancel = () => navigate("/init/overview/supply");
 
   const handleUpdateSupply = () => {
@@ -80,6 +80,13 @@ export const SupplyPage: React.FC = () => {
       navigate("/init/overview/supply");
     }
   };
+  useEffect(() => {
+    if (supplyActive) {
+      setFormulario(supplyActive);
+    } else {
+      setFormulario(initialForm);
+    }
+  }, [supplyActive]);
 
   const uploadDocumentFile = async () => {
     try {
@@ -182,9 +189,16 @@ export const SupplyPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (supplyActive) setFormulario(supplyActive);
-    else setFormulario(initialForm);
-  }, [supplyActive]);
+    // 2) Cuando supplies ya esté cargado, busca el supply por ID.
+    if (id && supplies.length > 0) {
+      const found = supplies.find(s => s._id === id);
+      if (found) {
+        dispatch(setSupplyActive(found));
+        // O si prefieres no meterlo a Redux sino directo a tu formulario:
+        // setFormulario(found);
+      }
+    }
+  }, [id, supplies]);
 
   useEffect(() => {
     return () => {

@@ -186,7 +186,7 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField
-            label="Unidad de Medida"
+            label="Unidad de Medidab"
             variant="outlined"
             type="text"
             name="unitMeasurement"
