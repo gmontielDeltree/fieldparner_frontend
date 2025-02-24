@@ -351,7 +351,17 @@
     "required_fields_message": "Please complete 'Vehicle type', 'Brand' and 'Model' to continue.",
     "understood": "Understood",
     "upload_error_title": "Upload error",
-    "upload_error_message": "Error uploading files"
+    "upload_error_message": "Error uploading files",
+  "tax_situation": "Tax situation",
+  "legal_name": "Legal name",
+  "email": "Email",
+  "field_required": "This field is required",
+  "document_format_error": "Document must be between 8 and 12 digits",
+  "email_format_error": "Please enter a valid email",
+  "phone_format_error": "Phone number must have at least 10 digits",
+  "document_exists_error": "Document already exists",
+  "tax_id_exists_error": "Tax ID already exists",
+  "error_message": "An error has occurred!"
   
 }
   

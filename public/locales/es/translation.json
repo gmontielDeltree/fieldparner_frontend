@@ -357,5 +357,15 @@
   "required_fields_message": "Por favor, completa 'Tipo de vehículo', 'Marca' y 'Modelo' para continuar.",
   "understood": "Entendido",
   "upload_error_title": "Error de subida",
-  "upload_error_message": "Error al subir archivos"
+  "upload_error_message": "Error al subir archivos",
+  "tax_situation": "Situación fiscal",
+  "legal_name": "Razón social",
+  "email": "Correo electrónico",
+  "field_required": "Este campo es obligatorio",
+  "document_format_error": "El documento debe tener entre 8 y 12 dígitos",
+  "email_format_error": "Por favor ingrese un email válido",
+  "phone_format_error": "El teléfono debe tener al menos 10 dígitos",
+  "document_exists_error": "El Documento ya existe",
+  "tax_id_exists_error": "La Clave Tributaria ya existe",
+  "error_message": "¡Se ha producido un error!"
 }

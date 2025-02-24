@@ -351,5 +351,15 @@
   "required_fields_message": "Por favor, complete 'Tipo de veículo', 'Marca' e 'Modelo' para continuar.",
   "understood": "Entendido",
   "upload_error_title": "Erro de upload",
-  "upload_error_message": "Erro ao fazer upload de arquivos"
+  "upload_error_message": "Erro ao fazer upload de arquivos",
+  "tax_situation": "Situação fiscal",
+  "legal_name": "Razão social",
+  "email": "E-mail",
+  "field_required": "Este campo é obrigatório",
+  "document_format_error": "O documento deve ter entre 8 e 12 dígitos",
+  "email_format_error": "Por favor, insira um e-mail válido",
+  "phone_format_error": "O telefone deve ter pelo menos 10 dígitos",
+  "document_exists_error": "O Documento já existe",
+  "tax_id_exists_error": "A Identificação fiscal já existe",
+  "error_message": "Ocorreu um erro!"
 }
