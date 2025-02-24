@@ -13,7 +13,7 @@ import {
   TextField,
 } from "@mui/material";
 import { TipoEntidad } from "../../types";
-import React, { ChangeEvent, SyntheticEvent, useEffect } from "react";
+import React, { ChangeEvent, SyntheticEvent, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 // import { Phone as PhoneIcon } from "@mui/icons-material";
 import { Country } from "../../interfaces/country";
@@ -77,7 +77,9 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
   } = values;
 
   const {businesses, getBusinesses} = useBusiness();
- 
+  const prevDocumentoRef = useRef(documento);
+  const prevCuitRef = useRef(cuit);
+  
   const { t } = useTranslation();
   const countryOptions = countries ? countries.map(c => ({ code: c.code, label: c.descriptionEN })) : [];
 
@@ -86,124 +88,61 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
     getBusinesses();
   }, []);
 
-  // useEffect(() => {
-  //   countries
-  //   console.log("Datos:",)
-  // }, []);
+
  
-  // const handleVerifyTaxId = () => {
-
-  //   const cuitValue = cuit ?? "";
-  //   const documentoValue = documento ?? "";
-
-  //   if (cuitValue.trim() === "") {
-  //     return false;
-  //   }
-
-  //   if (documentoValue.trim() === "") {
-  //     return false;
-  //   }
-  //   const TaxIdExists = businesses.find((business) => business.cuit === cuit);
-  //   const documentoExists = businesses.find((business) => business.documento === documento);
-  //   const documentoAndTaxIdExists = businesses.find((business) => business.documento === documento);
-
-  //   if (TaxIdExists) {
-  //     Swal.fire({
-  //       icon: 'error',
-  //       title: 'Error',
-  //       text: 'La Clave Tributaria ya existe',
-  //     }).then(() => {
-  //       handleSelectChange({
-  //         target: {
-  //           name: "cuit",
-  //           value: "",
-  //         },
-  //       } as ChangeEvent<HTMLInputElement>);
-  //     });
-  //     return true; 
-  //   }
+  const handleVerifyTaxId = async (event: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
     
-  //   if (documentoExists) {
-  //     Swal.fire({
-  //       icon: 'error',
-  //       title: 'Error',
-  //       text: 'El Documento ya existe',
-  //     }).then(() => {
-  //       handleSelectChange({
-  //         target: {
-  //           name: "documento",
-  //           value: "",
-  //         },
-  //       } as ChangeEvent<HTMLInputElement>);
-  //     });
-  //     return true; 
-  //   } if (documentoAndTaxIdExists) {
-  //     Swal.fire({
-  //       icon: 'error',
-  //       title: 'Error',
-  //       text: 'El Documento ya existe',
-  //     }).then(() => {
-  //       handleSelectChange({
-  //         target: {
-  //           name: "documento",
-  //           value: "",
-  //         },
-  //       } as ChangeEvent<HTMLInputElement>);
-  //     });
-  //     return true; 
-  //   }
-    
-  //   return false;
-  // };
- 
-  const handleVerifyTaxId = () => {
-    const cuitValue = cuit ?? "";
-    const documentoValue = documento ?? "";
-  
-   
-    if (cuitValue.trim() === "" && documentoValue.trim() === "") {
+    if (!value.trim()) {
+      return;
+    }
+
+    if (name === 'documento' && value === prevDocumentoRef.current) {
+      return;
+    }
+    if (name === 'cuit' && value === prevCuitRef.current) {
+      return;
+    }
+
+    if (name === 'documento') {
+      prevDocumentoRef.current = value;
+    }
+    if (name === 'cuit') {
+      prevCuitRef.current = value;
+    }
+
+    const existingBusiness = businesses.find((business) => {
+      if (name === 'documento') {
+        return business.documento === value && business._id !== values._id;
+      }
+      if (name === 'cuit') {
+        return business.cuit === value && business._id !== values._id;
+      }
       return false;
-    }
-  
-    
-    const TaxIdExists = businesses.find((business) => business.cuit === cuitValue);
-    const documentoExists = businesses.find((business) => business.documento === documentoValue);
-  
-    if (TaxIdExists) {
-      Swal.fire({
+    });
+
+    if (existingBusiness) {
+      const errorMessage = name === 'documento' 
+        ? 'El Documento ya existe'
+        : 'La Clave Tributaria ya existe';
+
+      await Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'La Clave Tributaria ya existe',
-      }).then(() => {
-        handleInputChange({
-          target: {
-            name: "cuit",
-            value: "",
-          },
-        } as ChangeEvent<HTMLInputElement>);
-      });
-      return true;
+        text: errorMessage,
+      })
+      
+      const changeEvent = {
+        target: {
+          name,
+          value: '',
+        },
+      } as ChangeEvent<HTMLInputElement>;
+      
+      handleInputChange(changeEvent);
     }
-  
-    if (documentoExists) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'El Documento ya existe',
-      }).then(() => {
-        handleInputChange({
-          target: {
-            name: "documento",
-            value: "",
-          },
-        } as ChangeEvent<HTMLInputElement>);
-      });
-      return true;
-    }
-  
-    return false;
   };
-  
+
   const onChangeCountry = (_event: SyntheticEvent, value: { code: string; label: string } | null) => {
     if (value)
       handleFormValueChange("pais", value.code);
@@ -231,7 +170,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
       </Grid>
       {tipoEntidad.toLowerCase() === TipoEntidad.FISICA.toLowerCase() ? (
         <>
-          <Grid item xs={12} sm={4}>
+        <Grid item xs={12} sm={4}>
             <TextField
               variant="outlined"
               type="text"
@@ -315,12 +254,10 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
         </>
       ) : (
         <>
-        
-          <Grid item xs={12} sm={4}>
+           <Grid item xs={12} sm={4}>
             <TextField
               label={t("tax_key")}
               variant="outlined"
-              // disabled={disabledFields}
               type="text"
               name="cuit"
               value={cuit}
