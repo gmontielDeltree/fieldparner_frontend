@@ -5,10 +5,10 @@ import { dbContext } from '../services';
 import { useAppDispatch, useAppSelector } from '.';
 import { useNavigate } from 'react-router-dom';
 import { onLogout } from '../redux/auth';
-
+import { useTranslation } from 'react-i18next';
 
 export const useSupply = () => {
-
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
@@ -19,11 +19,10 @@ export const useSupply = () => {
     const [supplyError, setSupplyError] = useState(false);
     const [stockBySupplies, setStockBySupplies] = useState<StockBySupply[]>([])
 
-
     const getSupplies = async () => {
         setIsLoading(true);
         try {
-            if (!user) { dispatch(onLogout("Session expired")); return; }
+            if (!user) { dispatch(onLogout(t("session_expired"))); return; }
 
             const result = await dbContext.supplies.find({
                 selector: {
@@ -41,7 +40,7 @@ export const useSupply = () => {
             }
         } catch (error) {
             setIsLoading(false);
-            console.error('Error al cargar documentos:', error);
+            console.error(t("error_loading_documents"), error);
         }
     }
 
@@ -49,7 +48,7 @@ export const useSupply = () => {
         setIsLoading(true);
         let supplyByDeposits: SupplyByDeposits[] = [];
         try {
-            if (!supplyActive) throw new Error("Insumo no encontrado.");
+            if (!supplyActive) throw new Error(t("supply_not_found"));
             const promisesResult = await Promise.all([
                 dbContext.stock.find({
                     selector: {
@@ -71,16 +70,12 @@ export const useSupply = () => {
             ]);
             const [stockBySupplies, deposits, movements] = promisesResult;
             let depositIds = stockBySupplies.docs.map(m => m.depositId);
-            //Agrupar los id de depositos 
             const groupDepositsId = Array.from(new Set(depositIds));
             groupDepositsId.forEach(depositId => {
-                // Obtener deposito
                 const depositDto = deposits.docs.find(d => d._id === depositId);
-                if (!depositDto) throw new Error("Deposito no encontrado.");
-                //Movimientos del deposito 
+                if (!depositDto) throw new Error(t("deposit_not_found"));
                 const depositMovements = movements.docs.filter(m => m.depositId === depositId);
 
-                //Calcular el stock por deposito, ubicacion y nroLote
                 depositDto.locations.forEach(location => {
                     const stockByLots = stockBySupplies.docs.filter(stockBySupply =>
                         (stockBySupply.depositId === depositId && stockBySupply.location === location)
@@ -92,7 +87,7 @@ export const useSupply = () => {
                             location,
                             nroLot,
                             currentStock,
-                            dueDate: depositMovements[0].dueDate, // TODO ?
+                            dueDate: depositMovements[0].dueDate,
                             reservedStock: 0,
                             movements: depositMovements.filter(mov => mov.nroLot.toLowerCase() === nroLot.toLowerCase())
                         });
@@ -103,7 +98,7 @@ export const useSupply = () => {
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
-            console.error('Error al cargar los documentos:', error);
+            console.error(t("error_loading_documents"), error);
         }
     }
 
@@ -111,9 +106,8 @@ export const useSupply = () => {
         setIsLoading(true);
         let stockBySupplies: StockBySupply[] = [];
         try {
-            if (!user) throw new Error("User not found.");
+            if (!user) throw new Error(t("user_not_found"));
             const promisesResult = await Promise.all([
-                // dbContext.stockMovements.find({ selector: { "accountId": user.accountId } }),
                 dbContext.stock.find({ selector: { "accountId": user.accountId } }),
                 dbContext.supplies.find({
                     selector: {
@@ -127,7 +121,6 @@ export const useSupply = () => {
             const [stockBySuppplies, supplies] = promisesResult;
             supplies.docs.forEach(supplyDto => {
                 const stockBySupply = stockBySuppplies.docs.filter(m => (m.supplyId === supplyDto._id));
-                //Calcular el stock por insumo
                 let currentStockOfSupply = 0;
                 stockBySupply.forEach(stock => { currentStockOfSupply += stock.currentStock; });
                 stockBySupplies.push({
@@ -140,7 +133,7 @@ export const useSupply = () => {
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
-            console.error('Error al cargar los documentos:', error);
+            console.error(t("error_loading_documents"), error);
         }
     }
 
@@ -161,26 +154,20 @@ export const useSupply = () => {
                 })
             ]);
             const [stockBySupplies, deposits, supplies] = promisesResult;
-            //Agrupar los id de insumo 
             let supplyIds = stockBySupplies.docs.map(m => m.supplyId);
             const groupSupplyIds = Array.from(new Set(supplyIds));
 
             deposits.docs.forEach(depositDto => {
-                //Movimientos del deposito 
-                // const depositMovements = movements.docs.filter(m => m.depositId === depositDto._id);
                 groupSupplyIds.forEach(supplyId => {
-                    //Obtenemos el insumo
                     const supplyDto = supplies.docs.find(s => s._id === supplyId);
-                    if (!supplyDto) throw new Error("Insumo no encontrado.");
+                    if (!supplyDto) throw new Error(t("supply_not_found"));
 
-                    //Calcular el stock total del deposito por insumo
                     let currentStockOfDeposit = 0;
                     stockBySupplies.docs.forEach(stockBySupply => {
                         if (stockBySupply.supplyId === supplyId && stockBySupply.depositId === depositDto._id) {
                             currentStockOfDeposit += stockBySupply.currentStock;
                         }
                     });
-                    //Calcular el stock por deposito, ubicacion y nroLote
                     let nroLotsStock: StockByNroLot[] = [];
                     depositDto.locations.forEach(l => {
                         const stockByLots = stockBySupplies.docs.filter(({ supplyId: id, depositId, location }) =>
@@ -211,13 +198,14 @@ export const useSupply = () => {
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
-            console.error('Error al cargar los documentos:', error);
+            console.error(t("error_loading_documents"), error);
         }
     }
+
     const createSupply = async (newSupply: Supply) => {
         setIsLoading(true);
         try {
-            if (!user) { dispatch(onLogout("Session expired")); return; }
+            if (!user) { dispatch(onLogout(t("session_expired"))); return; }
 
             const resultFound = await dbContext.supplies.find({
                 selector: {
@@ -229,7 +217,7 @@ export const useSupply = () => {
                 }
             });
             if (resultFound.docs.length) {
-                Swal.fire("Insumo", `Ya existe el insumo ${newSupply.name} de tipo ${newSupply.type}`, "warning");
+                Swal.fire(t("supply"), t("supply_already_exists", { name: newSupply.name, type: newSupply.type }), "warning");
                 setIsLoading(false);
                 return;
             }
@@ -242,59 +230,54 @@ export const useSupply = () => {
             setIsLoading(false);
 
             if (response.ok) {
-                Swal.fire("Insumo", "Agregado con éxito.", "success");
+                Swal.fire(t("supply"), t("added_successfully"), "success");
             }
         } catch (error) {
-            console.log("Error al crear el documento: ", error);
-            Swal.fire("Ups", "Ocurrió un error inesperado", "error");
+            console.log(t("error_creating_document"), error);
+            Swal.fire(t("ups"), t("unexpected_error"), "error");
             setIsLoading(false);
         }
     };
 
     const updateSupply = async (updateSupply: Supply) => {
         setIsLoading(true);
-
         try {
             const response = await dbContext.supplies.put(updateSupply);
             setIsLoading(false);
 
             if (response.ok) {
-                Swal.fire('Insumo', 'Actualizado con exito.', 'success');
+                Swal.fire(t("supply"), t("updated_successfully"), "success");
             }
-
         } catch (error) {
-            console.log('Error al actualizar el documento: ', error);
-            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            console.log(t("error_updating_document"), error);
+            Swal.fire(t("ups"), t("unexpected_error"), "error");
             setIsLoading(false);
         }
     }
 
     const deleteSupply = async (supplyId: string, removeSupply: string) => {
-
         try {
             const response = await dbContext.supplies.remove(supplyId, removeSupply);
             setIsLoading(false);
 
             if (response.ok)
-                Swal.fire('Insumo', 'Eliminado.', 'success');
+                Swal.fire(t("supply"), t("deleted"), "success");
 
             navigate('/init/overview/supply');
         } catch (error) {
-            console.log('Error al actualizar el documento: ', error);
-            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            console.log(t("error_updating_document"), error);
+            Swal.fire(t("ups"), t("unexpected_error"), "error");
             setIsLoading(false);
         }
     }
 
     const addReservedStock = async (supplyId: string, quantity: number) => {
-        console.log("SUPPLY ID PROVIDED: ", supplyId);
-        console.log("SUPPLIES AVAILABLE: ", supplies);
         setIsLoading(true);
         try {
             const supply = supplies.find(supply => supply._id === supplyId);
             if (!supply) {
-                console.error("Supply not found with ID:", supplyId);
-                throw new Error("Insumo no encontrado.");
+                console.error(t("supply_not_found_with_id", { id: supplyId }));
+                throw new Error(t("supply_not_found"));
             }
 
             const updatedSupply: Supply = {
@@ -305,23 +288,22 @@ export const useSupply = () => {
             const response = await dbContext.supplies.put(updatedSupply);
             if (response.ok) {
                 setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
-                Swal.fire('Insumo', 'Stock reservado agregado con éxito.', 'success');
+                Swal.fire(t("supply"), t("reserved_stock_added"), "success");
             }
             setIsLoading(false);
         } catch (error) {
-            console.log('Error al agregar stock reservado: ', error);
-            Swal.fire('Ups', 'Ocurrió un error inesperado', 'error');
+            console.log(t("error_adding_reserved_stock"), error);
+            Swal.fire(t("ups"), t("unexpected_error"), "error");
             setIsLoading(false);
         }
     };
-
 
     const removeReservedStock = async (supplyId: string, quantity: number) => {
         setIsLoading(true);
         try {
             const supply = supplies.find(supply => supply._id === supplyId);
-            if (!supply) throw new Error("Insumo no encontrado.");
-            if (supply.reservedStock < quantity) throw new Error("Stock reservado insuficiente.");
+            if (!supply) throw new Error(t("supply_not_found"));
+            if (supply.reservedStock < quantity) throw new Error(t("insufficient_reserved_stock"));
 
             const updatedSupply: Supply = {
                 ...supply,
@@ -332,55 +314,15 @@ export const useSupply = () => {
             const response = await dbContext.supplies.put(updatedSupply);
             if (response.ok) {
                 setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
-                Swal.fire('Insumo', 'Stock reservado removido con éxito.', 'success');
+                Swal.fire(t("supply"), t("reserved_stock_removed"), "success");
             }
             setIsLoading(false);
         } catch (error) {
-            console.log('Error al remover stock reservado: ', error);
-            Swal.fire('Ups', 'Ocurrió un error inesperado', 'error');
+            console.log(t("error_removing_reserved_stock"), error);
+            Swal.fire(t("ups"), t("unexpected_error"), "error");
             setIsLoading(false);
         }
     };
-
-    // useEffect(() => {
-    // Inicia la sincronización con la base de datos remota
-    // const syncHandler = dbContext.supplies.sync(remoteCouchDBUrl, {
-    //     live: true,
-    //     retry: true
-    // }).on('change', (info) => {
-    //     console.log('Sync change:', info);
-    // }).on('paused', (err) => {
-    //     console.log('Sync paused:', err);
-    // }).on('active', () => {
-    //     console.log('Sync resumed');
-    // }).on('denied', (err) => {
-    //     console.error('Sync denied:', err);
-    // }).on('complete', (info) => {
-    //     console.log('Sync complete:', info);
-    // }).on('error', (err) => {
-    //     console.error('Sync error:', err);
-    // });
-
-    // return () => {
-    //     // Detiene la sincronización y cierra la conexión a la base de datos cuando el componente se desmonte
-    //     syncHandler.cancel();
-    //     dbContext.supplies.close()
-    //         .then(() => {
-    //             console.log("successful close supplies db");
-    //         })
-    //         .catch(error => {
-    //             console.error("Error al cerrar la conexión a la base de datos:", error);
-    //         });
-    // };
-    // }, []);
-
-    // useEffect(() => {
-    //     console.log("se monto useSupply")
-    //     return () => {
-    //         console.log("desmonte del hook useSupply")
-    //     }
-    // }, [])
-
 
     return {
         supplies,
@@ -388,9 +330,6 @@ export const useSupply = () => {
         supplyByDeposits,
         supplyError,
         stockBySupplies,
-        // supplies = documents.filter(supply => supply.currentStock === 0);
-
-
         setSupplies,
         getSupplies,
         createSupply,
@@ -403,5 +342,4 @@ export const useSupply = () => {
         getStockBySupplies,
         getStockByDepositAndLocation,
     }
-
 }

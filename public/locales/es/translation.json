@@ -367,5 +367,25 @@
   "phone_format_error": "El teléfono debe tener al menos 10 dígitos",
   "document_exists_error": "El Documento ya existe",
   "tax_id_exists_error": "La Clave Tributaria ya existe",
-  "error_message": "¡Se ha producido un error!"
+  "error_message": "¡Se ha producido un error!",
+  
+    "supply": "Insumo",
+    "ups": "Ups",
+    "supply_not_found": "Insumo no encontrado",
+    "deposit_not_found": "Depósito no encontrado",
+    "error_loading_documents": "Error al cargar documentos",
+    "session_expired": "Sesión expirada",
+    "supply_already_exists": "Ya existe el insumo {{name}} de tipo {{type}}",
+    "added_successfully": "Agregado con éxito",
+    "error_creating_document": "Error al crear el documento",
+    "updated_successfully": "Actualizado con éxito",
+    "error_updating_document": "Error al actualizar el documento",
+    "deleted": "Eliminado",
+    "supply_not_found_with_id": "Insumo no encontrado con ID: {{id}}",
+    "reserved_stock_added": "Stock reservado agregado con éxito",
+    "error_adding_reserved_stock": "Error al agregar stock reservado",
+    "insufficient_reserved_stock": "Stock reservado insuficiente",
+    "reserved_stock_removed": "Stock reservado removido con éxito",
+    "error_removing_reserved_stock": "Error al remover stock reservado"
+  
 }
