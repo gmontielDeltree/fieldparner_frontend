@@ -185,9 +185,9 @@ export const VehiclePage: React.FC = () => {
     if (!vehicleType || !make || !model) {
       Swal.fire({
         icon: 'warning',
-        title: 'Campos obligatorios',
-        text: 'Por favor, completa "Tipo de vehículo", "Marca" y "Modelo" para continuar.',
-        confirmButtonText: 'Entendido'
+        title: t('required_fields_title'),
+        text: t('required_fields_message'),
+        confirmButtonText: t('understood')
       });
       return false;
     }
@@ -198,7 +198,13 @@ export const VehiclePage: React.FC = () => {
     try {
       await Promise.all(vehicleFiles.map(uploadFile));
     } catch (error) {
-      console.error('Error uploading files:', error);
+      console.error(t('upload_error'), error);
+      Swal.fire({
+        icon: 'error',
+        title: t('upload_error_title'),
+        text: t('upload_error_message'),
+        confirmButtonText: 'OK'
+      });
     }
   };
 
