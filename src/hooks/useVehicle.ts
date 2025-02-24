@@ -161,6 +161,28 @@ export const useVehicle = () => {
     }
   }
 
+  const getVehicleById = async (id: string) => {
+    setIsLoading(true);
+    try {
+      if (!user) {
+        dispatch(onLogout("Ocurrio un error inesperado."));
+        return;
+      }
+      const result = await dbContext.vehicles.find({
+        selector: { _id: id, accountId: user.accountId, licenceId: user.licenceId }
+      });
+      setIsLoading(false);
+      if (result) return result.docs[0] as Vehicle;
+
+    } catch (error) {
+      console.log(error);
+      Swal.fire("Error", "No hay registro de Vehiculos.", "error");
+      setIsLoading(false);
+      if (error) setError(error);
+    }
+  }
+
+
 
   return {
     //* Props
@@ -176,6 +198,7 @@ export const useVehicle = () => {
     createVehicleType,
     updateVehicle,
     deleteVehicle,
-    getVehicleByPatent
+    getVehicleByPatent,
+    getVehicleById
   };
 };
