@@ -10,6 +10,9 @@ import {
   CardContent,
   CardHeader,
   Container,
+  Snackbar,
+  Alert,
+  AlertColor,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -51,6 +54,11 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
   const { t } = useTranslation();
   const [filterText, setFilterText] = useState("");
   const [filteredData, setFilteredData] = useState<(T & { id: string })[]>([]);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as AlertColor,
+  });
 
   // Función para asignar IDs únicos a las filas
   const assignUniqueIds = (items: T[]): (T & { id: string })[] => {
@@ -85,10 +93,33 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
   };
 
   const handleExport = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, title);
-    XLSX.writeFile(workbook, `${title}.xlsx`);
+    try {
+      const sanitizedTitle = title
+        .replace(/[\\\/\?\*\[\]\:\s]/g, '_')
+        .substring(0, 31);
+
+      const worksheet = XLSX.utils.json_to_sheet(filteredData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, sanitizedTitle);
+      XLSX.writeFile(workbook, `${title}.xlsx`);
+
+      setSnackbar({
+        open: true,
+        message: t('export_success', 'Archivo exportado exitosamente'),
+        severity: 'success',
+      });
+    } catch (error) {
+      console.error('Error al exportar:', error);
+      setSnackbar({
+        open: true,
+        message: t('export_error', 'Error al exportar el archivo'),
+        severity: 'error',
+      });
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   return (
@@ -108,25 +139,25 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
           <CardContent>
             <Grid container spacing={3} alignItems="center">
               <Grid item xs={12} md={3}>
-              {showAddButton && newItemPath && (
-                <Button
-                  variant="contained"
-                  color="success"
-                  startIcon={<AddIcon />}
-                  onClick={() => navigate(newItemPath)}
-                  sx={{
-                    borderRadius: "30px",
-                    fontWeight: 'bold',
-                    background: 'linear-gradient(45deg, #388e3c 30%, #66bb6a 90%)',
-                    transition: 'background 0.3s ease-in-out',
-                    "&:hover": {
-                      background: 'linear-gradient(45deg, #66bb6a 30%, #388e3c 90%)',
-                    },
-                  }}
-                >
-                  {t("add_new")}
-                </Button>
-              )}
+                {showAddButton && newItemPath && (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<AddIcon />}
+                    onClick={() => navigate(newItemPath)}
+                    sx={{
+                      borderRadius: "30px",
+                      fontWeight: 'bold',
+                      background: 'linear-gradient(45deg, #388e3c 30%, #66bb6a 90%)',
+                      transition: 'background 0.3s ease-in-out',
+                      "&:hover": {
+                        background: 'linear-gradient(45deg, #66bb6a 30%, #388e3c 90%)',
+                      },
+                    }}
+                  >
+                    {t("add_new")}
+                  </Button>
+                )}
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
@@ -212,6 +243,67 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
           </CardContent>
         </Card>
       </Container>
+
+      <Snackbar
+  open={snackbar.open}
+  autoHideDuration={4000}
+  onClose={handleCloseSnackbar}
+  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+  sx={{
+    '& .MuiAlert-root': {
+      backdropFilter: 'blur(8px)',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)', // Aumentado la opacidad
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
+      borderRadius: '12px',
+      '& .MuiAlert-icon': {
+        fontSize: '24px',
+      },
+      '& .MuiAlert-message': {
+        fontSize: '14px',
+        fontWeight: 500,
+        color: '#000', // Asegurando que el texto sea negro
+      },
+    },
+  }}
+>
+  <Alert
+    onClose={handleCloseSnackbar}
+    severity={snackbar.severity}
+    variant="standard" // Cambiado de "filled" a "standard"
+    elevation={6}
+    sx={{
+      width: '100%',
+      animation: 'slideIn 0.5s ease-out',
+      '@keyframes slideIn': {
+        from: {
+          transform: 'translateX(100%)',
+          opacity: 0,
+        },
+        to: {
+          transform: 'translateX(0)',
+          opacity: 1,
+        },
+      },
+      '&.MuiAlert-standardSuccess': {
+        backgroundColor: '#e8f5e9', // Fondo verde claro para éxito
+        color: '#2e7d32', // Texto verde oscuro
+        '& .MuiAlert-icon': {
+          color: '#2e7d32',
+        },
+      },
+      '&.MuiAlert-standardError': {
+        backgroundColor: '#ffebee', // Fondo rojo claro para error
+        color: '#d32f2f', // Texto rojo oscuro
+        '& .MuiAlert-icon': {
+          color: '#d32f2f',
+        },
+      },
+    }}
+  >
+    {snackbar.message}
+  </Alert>
+</Snackbar>
     </TemplateLayout>
   );
 };

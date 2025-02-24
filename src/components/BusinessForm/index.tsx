@@ -13,7 +13,7 @@ import {
   TextField,
 } from "@mui/material";
 import { TipoEntidad } from "../../types";
-import React, { ChangeEvent, SyntheticEvent, useEffect } from "react";
+import React, { ChangeEvent, SyntheticEvent, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Country } from "../../interfaces/country";
 import { Business } from "../../interfaces/socialEntity";
@@ -72,14 +72,14 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
 
   const { businesses, getBusinesses } = useBusiness();
   const { t } = useTranslation();
-  const countryOptions = countries ? countries.map(c => ({ code: c.code, label: c.descriptionEN })) : [];
+  
+  const prevDocumentoRef = useRef(documento);
+  const prevCuitRef = useRef(cuit);
 
-  // Regular expressions for validation
-  const documentRegex = /^\d{8,12}$/; // 8-12 digits
-  const phoneRegex = /^\d{10,}$/; // At least 10 digits
+  const documentRegex = /^\d{8,12}$/;
+  const phoneRegex = /^\d{10,}$/;
   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
-  // Custom validation functions
   const validateDocument = (value: string): boolean => {
     return documentRegex.test(value);
   };
@@ -92,9 +92,8 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
     return emailRegex.test(value);
   };
 
-  // Custom input handlers with validation
   const handleDocumentInput = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+    const value = e.target.value.replace(/\D/g, '');
     handleInputChange({
       ...e,
       target: {
@@ -106,7 +105,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
   };
 
   const handlePhoneInput = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+    const value = e.target.value.replace(/\D/g, '');
     handleInputChange({
       ...e,
       target: {
@@ -121,56 +120,64 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
     getBusinesses();
   }, []);
 
-  const handleVerifyTaxId = () => {
-    const cuitValue = cuit ?? "";
-    const documentoValue = documento ?? "";
-  
-    if (cuitValue.trim() === "" && documentoValue.trim() === "") {
+  const handleVerifyTaxId = async (event: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    
+    if (!value.trim()) {
+      return;
+    }
+
+    if (name === 'documento' && value === prevDocumentoRef.current) {
+      return;
+    }
+    if (name === 'cuit' && value === prevCuitRef.current) {
+      return;
+    }
+
+    if (name === 'documento') {
+      prevDocumentoRef.current = value;
+    }
+    if (name === 'cuit') {
+      prevCuitRef.current = value;
+    }
+
+    const existingBusiness = businesses.find((business) => {
+      if (name === 'documento') {
+        return business.documento === value && business._id !== values._id;
+      }
+      if (name === 'cuit') {
+        return business.cuit === value && business._id !== values._id;
+      }
       return false;
-    }
-  
-    const TaxIdExists = businesses.find((business) => business.cuit === cuitValue);
-    const documentoExists = businesses.find((business) => business.documento === documentoValue);
-  
-    if (TaxIdExists) {
-      Swal.fire({
+    });
+
+    if (existingBusiness) {
+      const errorMessage = name === 'documento' 
+        ? t('document_exists_error')
+        : t('tax_id_exists_error');
+
+      await Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'La Clave Tributaria ya existe',
-      }).then(() => {
-        handleInputChange({
-          target: {
-            name: "cuit",
-            value: "",
-          },
-        } as ChangeEvent<HTMLInputElement>);
+        title: t('error'),
+        text: errorMessage,
       });
-      return true;
+
+      handleInputChange({
+        target: {
+          name,
+          value: '',
+        },
+      } as ChangeEvent<HTMLInputElement>);
     }
-  
-    if (documentoExists) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'El Documento ya existe',
-      }).then(() => {
-        handleInputChange({
-          target: {
-            name: "documento",
-            value: "",
-          },
-        } as ChangeEvent<HTMLInputElement>);
-      });
-      return true;
-    }
-  
-    return false;
   };
-  
+
+  const countryOptions = countries ? countries.map(c => ({ code: c.code, label: c.descriptionEN })) : [];
+
   const onChangeCountry = (_event: SyntheticEvent, value: { code: string; label: string } | null) => {
-    if (value)
+    if (value) {
       handleFormValueChange("pais", value.code);
-  }
+    }
+  };
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
@@ -181,7 +188,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
             labelId="label-tipo-entidad"
             name="tipoEntidad"
             value={tipoEntidad}
-            label="Tipo entidad"
+            label={t("entity_type")}
             onChange={handleSelectChange}
           >
             <MenuItem value={TipoEntidad.FISICA.toString()}>{t("_physical")}</MenuItem>
@@ -205,9 +212,9 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               onChange={handleDocumentInput}
               helperText={
                 documentError 
-                  ? "Este campo es obligatorio" 
+                  ? t("field_required")
                   : documento && !validateDocument(documento)
-                  ? "El documento debe tener entre 8 y 12 dígitos"
+                  ? t("document_format_error")
                   : ""
               }
               InputProps={{
@@ -216,7 +223,6 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               fullWidth
             />
           </Grid>
-          {/* Rest of the physical person fields */}
           <Grid item xs={12} sm={5}>
             <TextField
               variant="outlined"
@@ -226,7 +232,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               value={nombreCompleto}
               error={nameError}
               onChange={handleInputChange}
-              helperText={nameError ? "Este campo es obligatorio" : ""}
+              helperText={nameError ? t("field_required") : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -259,7 +265,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               value={legajo}
               error={legajoError}
               onChange={handleInputChange}
-              helperText={legajoError ? "Este campo es obligatorio" : ""}
+              helperText={legajoError ? t("field_required") : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -293,7 +299,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               error={cuitError}
               onChange={handleInputChange}
               onBlur={handleVerifyTaxId}
-              helperText={cuitError ? "Este campo es obligatorio" : ""}
+              helperText={cuitError ? t("field_required") : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -302,15 +308,14 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           </Grid>
           <Grid item xs={12} sm={4}>
             <TextField
-              label="Situacion fiscal"
+              label={t("tax_situation")}
               variant="outlined"
               type="text"
               name="taxSituation"
               value={taxSituation}
               error={cuitError}
               onChange={handleInputChange}
-              onBlur={handleVerifyTaxId}
-              helperText={cuitError ? "Este campo es obligatorio" : ""}
+              helperText={cuitError ? t("field_required") : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -319,14 +324,14 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           </Grid>
           <Grid item xs={12} sm={5}>
             <TextField
-              label={t("name_negal_name")}
+              label={t("legal_name")}
               variant="outlined"
               type="text"
               name="razonSocial"
               value={razonSocial}
               error={razonSocialError}
               onChange={handleInputChange}
-              helperText={razonSocialError ? "Este campo es obligatorio" : ""}
+              helperText={razonSocialError ? t("field_required") : ""}
               InputProps={{
                 startAdornment: <InputAdornment position="start" />,
               }}
@@ -337,7 +342,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
       )}
       <Grid item xs={12} sm={6}>
         <TextField
-          label="Email"
+          label={t("email")}
           variant="outlined"
           type="email"
           name="email"
@@ -346,9 +351,9 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           error={emailError || (email && !validateEmail(email))}
           helperText={
             emailError 
-              ? "Este campo es obligatorio" 
+              ? t("field_required")
               : email && !validateEmail(email)
-              ? "Por favor ingrese un email válido"
+              ? t("email_format_error")
               : ""
           }
           InputProps={{
@@ -369,7 +374,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
             )}
             fullWidth
           />
-          {countryError && <FormHelperText>Mensaje de error!</FormHelperText>}
+          {countryError && <FormHelperText>{t("error_message")}</FormHelperText>}
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>
@@ -383,7 +388,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           error={contactoPrincipal && !validatePhone(contactoPrincipal)}
           helperText={
             contactoPrincipal && !validatePhone(contactoPrincipal)
-              ? "El teléfono debe tener al menos 10 dígitos"
+              ? t("phone_format_error")
               : ""
           }
           InputProps={{
@@ -403,7 +408,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           error={contactoSecundario && !validatePhone(contactoSecundario)}
           helperText={
             contactoSecundario && !validatePhone(contactoSecundario)
-              ? "El teléfono debe tener al menos 10 dígitos"
+              ? t("phone_format_error")
               : ""
           }
           InputProps={{

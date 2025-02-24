@@ -24,20 +24,27 @@ import { GenericListPage } from "../GenericListPage";
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isLoading, businesses, getBusinesses, deleteBusiness, setBusinesses } = useBusiness();
-  const { filterText, handleInputChange } = useForm({ filterText: "" });
-  const { t } = useTranslation();
+  const { isLoading, businesses, getBusinesses, deleteBusiness } = useBusiness();
 
+  const { t } = useTranslation();
   useEffect(() => {
     getBusinesses();
   }, []);
-
+  
+  useEffect(() => {
+    console.log('Businesses data updated:', businesses);
+  }, [businesses]);
   const columns = [
     { field: "tipoEntidad", headerName: t("entity_type"), flex: 1 },
     { field: "razonSocial", headerName: t("name_negal_name"), flex: 1 },
     { field: "cuit", headerName: t("tax_id_identification_number"), flex: 1 },
     { field: "email", headerName: t("Email"), flex: 1 },
-    { field: "country.descriptionES", headerName: t("id_country"), flex: 1 },
+    { 
+      field: "country", 
+      headerName: t("id_country"), 
+      flex: 1,
+      valueGetter: (params) => params.row.country?.descriptionES || '-'
+    },
     {
       field: "actions",
       headerName: "",
@@ -74,22 +81,6 @@ export const ListBusinessesPage: React.FC = () => {
     },
   ];
 
-  const onClickSearch = (): void => {
-    if (filterText === "") {
-      getBusinesses();
-      return;
-    }
-    const filteredBusinesses = businesses.filter(
-      ({ razonSocial, nombreCompleto }) =>
-        (razonSocial &&
-          razonSocial.toLowerCase().includes(filterText.toLowerCase())) ||
-        (nombreCompleto &&
-          nombreCompleto.toLowerCase().includes(filterText.toLowerCase()))
-    );
-    setBusinesses(filteredBusinesses);
-  };
-
-  const onClickAddBusiness = () => navigate("/init/overview/business/new");
 
   const onClickUpdateBusiness = (item: BusinessItem) => {
     const { country, ...rest } = item;
@@ -114,7 +105,6 @@ export const ListBusinessesPage: React.FC = () => {
       deleteData={deleteBusiness}
       setActiveItem={setBusinessActive}
       newItemPath="/init/overview/business/new"
-      editItemPath={(id) => `/init/overview/business/${id}`}
-    />
+      editItemPath={(id) => `/init/overview/business/${id}`} isLoading={isLoading}    />
   );
 };

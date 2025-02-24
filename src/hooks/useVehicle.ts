@@ -4,6 +4,7 @@ import { TypeVehicle, Vehicle } from "@types";
 import { dbContext } from "../services";
 import { useAppDispatch, useAppSelector } from "./useRedux";
 import { onLogout } from "../redux/auth";
+import { useTranslation } from "react-i18next";
 
 export const useVehicle = () => {
   const dispatch = useAppDispatch();
@@ -12,13 +13,13 @@ export const useVehicle = () => {
   const [vehicleTypes, setVehicleTypes] = useState<TypeVehicle[]>([]);
   const [error, setError] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const getVehicles = async () => {
     setIsLoading(true);
     try {
-
       if (!user) {
-        dispatch(onLogout("Ocurrio un error inesperado."));
+        dispatch(onLogout(t('unexpected_error')));
         return;
       }
 
@@ -27,16 +28,10 @@ export const useVehicle = () => {
       });
       const documents = result.docs as Vehicle[];
       setVehicles(documents);
-
-      // if (result.rows.length) {
-      //   const documents: Vehicle[] = result.rows.map(
-      //     (row) => row.doc as Vehicle
-      //   );
-      // }
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire("Error", "No hay registro de Vehiculos.", "error");
+      Swal.fire(t('error'), t('no_vehicles_found'), "error");
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -48,7 +43,7 @@ export const useVehicle = () => {
       const result = await dbContext.typeVehicles.allDocs({
         include_docs: true
       });
-      // const vehiculos = response.map((v: any) => v.content);
+      
       if (result.rows.length) {
         const documents: TypeVehicle[] = result.rows.map(
           (row) => row.doc as TypeVehicle
@@ -58,7 +53,7 @@ export const useVehicle = () => {
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire("Error", "No hay registro de Vehiculos: " + error, "error");
+      Swal.fire(t('error'), `${t('vehicle_fetch_error')}: ${error}`, "error");
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -70,12 +65,14 @@ export const useVehicle = () => {
       const response = await dbContext.typeVehicles.post(newVehicleType);
       setIsLoading(false);
 
-      if (response.ok)
-        Swal.fire("Vehiculo", "Tipo de Vehiculo agregado.", "success");
-      else Swal.fire("Tipo de Vehiculo", "Verificar campos.", "error");
+      if (response.ok) {
+        Swal.fire(t('vehicle'), t('vehicle_type_added'), "success");
+      } else {
+        Swal.fire(t('vehicle_type'), t('verify_fields'), "error");
+      }
     } catch (error) {
       console.log(error);
-      Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+      Swal.fire(t('error'), t('unexpected_error'), "error");
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -84,19 +81,21 @@ export const useVehicle = () => {
   const createVehicle = async (newVehicle: Vehicle) => {
     setIsLoading(true);
     try {
-
-      if (!user) throw new Error("Usuario no encontrado.");
+      if (!user) throw new Error(t('user_not_found'));
       newVehicle.accountId = user.accountId;
       newVehicle.licenceId = user.licenceId;
 
       const response = await dbContext.vehicles.post(newVehicle);
       setIsLoading(false);
 
-      if (response.ok) Swal.fire("Vehiculo", "Vehiculo agregado.", "success");
-      else Swal.fire("Vehiculo", "Verificar campos.", "error");
+      if (response.ok) {
+        Swal.fire(t('vehicle'), t('vehicle_created'), "success");
+      } else {
+        Swal.fire(t('vehicle'), t('verify_fields'), "error");
+      }
     } catch (error) {
       console.log(error);
-      Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+      Swal.fire(t('error'), t('unexpected_error'), "error");
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -108,13 +107,12 @@ export const useVehicle = () => {
       const response = await dbContext.vehicles.put(updateVehicle);
 
       if (response.ok) {
-        Swal.fire("Vehiculo", "Actualizado.", "success");
+        Swal.fire(t('vehicle'), t('vehicle_updated'), "success");
       }
-
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire("Error", "Ocurrio un error inesperado.", "error");
+      Swal.fire(t('error'), t('unexpected_error'), "error");
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -125,15 +123,15 @@ export const useVehicle = () => {
     try {
       const response = await dbContext.vehicles.remove(id, rev);
       if (response.ok) {
-        Swal.fire("Vehiculo", "Vehiculo eliminado.", "success");
-        getVehicles(); // Actualizar la lista de vehículos
+        Swal.fire(t('vehicle'), t('vehicle_deleted'), "success");
+        getVehicles();
       } else {
-        Swal.fire("Error", "No se pudo eliminar el vehiculo.", "error");
+        Swal.fire(t('error'), t('delete_vehicle_error'), "error");
       }
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire("Error", "Ocurrio un error inesperado.", "error");
+      Swal.fire(t('error'), t('unexpected_error'), "error");
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -143,7 +141,7 @@ export const useVehicle = () => {
     setIsLoading(true);
     try {
       if (!user) {
-        dispatch(onLogout("Ocurrio un error inesperado."));
+        dispatch(onLogout(t('unexpected_error')));
         return;
       }
       if (patent === "") return;
@@ -151,31 +149,49 @@ export const useVehicle = () => {
         selector: { patent: patent, accountId: user.accountId, licenceId: user.licenceId }
       });
       setIsLoading(false);
-      if (result) return result.docs[0] as Vehicle;
+      return result.docs[0] as Vehicle;
 
     } catch (error) {
       console.log(error);
-      Swal.fire("Error", "No hay registro de Vehiculos.", "error");
+      Swal.fire(t('error'), t('no_vehicles_found'), "error");
       setIsLoading(false);
       if (error) setError(error);
     }
   }
 
+  const getVehicleById = async (id: string) => {
+    setIsLoading(true);
+    try {
+      if (!user) {
+        dispatch(onLogout(t('unexpected_error')));
+        return;
+      }
+      const result = await dbContext.vehicles.find({
+        selector: { _id: id, accountId: user.accountId, licenceId: user.licenceId }
+      });
+      setIsLoading(false);
+      return result.docs[0] as Vehicle;
+
+    } catch (error) {
+      console.log(error);
+      Swal.fire(t('error'), t('no_vehicles_found'), "error");
+      setIsLoading(false);
+      if (error) setError(error);
+    }
+  }
 
   return {
-    //* Props
     vehicles,
     vehicleTypes,
     error,
     isLoading,
-
-    //* Methods
     getVehicles,
     getTypeVehicles,
     createVehicle,
     createVehicleType,
     updateVehicle,
     deleteVehicle,
-    getVehicleByPatent
+    getVehicleByPatent,
+    getVehicleById
   };
 };

@@ -335,7 +335,33 @@
     "cost_code_field_error": "The \"Cost Code\" field cannot be empty.",
     "cost_update_code_error": "Cannot update without a valid ID.",
     "cost_code": "Cost Code",
-   "cost_center": "Cost center"
-    
+   "cost_center": "Cost center",
+    "error": "Error",
+    "no_vehicles_found": "No vehicles found",
+    "vehicle": "Vehicle",
+    "vehicle_type_added": "Vehicle type added successfully",
+    "verify_fields": "Please verify required fields",
+    "vehicle_created": "Vehicle created successfully",
+    "vehicle_updated": "Vehicle updated successfully",
+    "vehicle_deleted": "Vehicle deleted successfully",
+    "delete_vehicle_error": "Could not delete vehicle",
+    "vehicle_fetch_error": "Error fetching vehicle data",
+    "user_not_found": "User not found",
+    "required_fields_title": "Required fields",
+    "required_fields_message": "Please complete 'Vehicle type', 'Brand' and 'Model' to continue.",
+    "understood": "Understood",
+    "upload_error_title": "Upload error",
+    "upload_error_message": "Error uploading files",
+  "tax_situation": "Tax situation",
+  "legal_name": "Legal name",
+  "email": "Email",
+  "field_required": "This field is required",
+  "document_format_error": "Document must be between 8 and 12 digits",
+  "email_format_error": "Please enter a valid email",
+  "phone_format_error": "Phone number must have at least 10 digits",
+  "document_exists_error": "Document already exists",
+  "tax_id_exists_error": "Tax ID already exists",
+  "error_message": "An error has occurred!"
+  
 }
   
