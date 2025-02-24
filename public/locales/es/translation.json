@@ -341,6 +341,21 @@
 "cost_code_field_error": "El campo \"Codigo Costo\" no puede estar vacío.",
 "cost_update_code_error": "No se puede actualizar sin un ID válido.",
  "cost_code": "Codigo Costo",
-"cost_center": "Centro de Costos"
-  
+"cost_center": "Centro de Costos",
+  "error": "Error",
+  "no_vehicles_found": "No se encontraron vehículos",
+  "vehicle": "Vehículo",
+  "vehicle_type_added": "Tipo de vehículo agregado correctamente",
+  "verify_fields": "Por favor verifique los campos requeridos",
+  "vehicle_created": "Vehículo creado exitosamente",
+  "vehicle_updated": "Vehículo actualizado exitosamente",
+  "vehicle_deleted": "Vehículo eliminado exitosamente",
+  "delete_vehicle_error": "No se pudo eliminar el vehículo",
+  "vehicle_fetch_error": "Error al obtener datos del vehículo",
+  "user_not_found": "Usuario no encontrado",
+  "required_fields_title": "Campos obligatorios",
+  "required_fields_message": "Por favor, completa 'Tipo de vehículo', 'Marca' y 'Modelo' para continuar.",
+  "understood": "Entendido",
+  "upload_error_title": "Error de subida",
+  "upload_error_message": "Error al subir archivos"
 }

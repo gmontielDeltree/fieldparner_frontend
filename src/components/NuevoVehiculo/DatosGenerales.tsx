@@ -1,3 +1,4 @@
+// DatosGenerales.tsx
 import React, { ChangeEvent, SetStateAction, useEffect, useMemo } from "react";
 import {
   Autocomplete,
@@ -26,11 +27,10 @@ import { useTranslation } from "react-i18next";
 import uuid4 from "uuid4";
 import Swal from "sweetalert2";
 
-
 export interface DatosGeneralesProps {
   vehiculo: Vehicle;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
-  handleYearChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
+  handleYearChange: ({ target }: SelectChangeEvent) => void;
   handleFormValueChange: (key: string, value: string) => void;
   setFilesUpload: React.Dispatch<SetStateAction<File[]>>;
   cancelFile: (indexToRemove: number) => void;
@@ -46,12 +46,12 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   cancelFile,
   handleSelectChange
 }) => {
-
   const { vehicleTypes, getTypeVehicles, createVehicleType, getVehicleByPatent } = useVehicle();
   const typeVehicles = vehicleTypes.map(t => t.name);
   const { vehiculoActivo } = useAppSelector((state) => state.vehiculo);
   const disabledFields = !!vehiculoActivo;
   const { t } = useTranslation();
+  
   const {
     vehicleType,
     patent,
@@ -68,6 +68,16 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
     chassisNumber,
     insurencePolicyFile
   } = vehiculo;
+
+  const years = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const yearsArray = [];
+    for (let year = currentYear; year >= 1960; year--) {
+      yearsArray.push(year.toString());
+    }
+    return yearsArray;
+  }, []);
+
   const {
     getBusinesses,
     businesses,
@@ -98,12 +108,12 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
         handleFormValueChange("patent", "");
       }
     }
-  }
+  };
 
   const removeFile = (index: number) => {
     handleFormValueChange("documentFile", "");
     cancelFile(index);
-  }
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
@@ -189,22 +199,27 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={2}>
-          <TextField
-            type="text"
-            label={t("_year")}
-            name="modelYear"
-            value={modelYear}
-            onChange={handleYearChange}
-            inputProps={{
-              maxLength: 4,
-              pattern: "[0-9]*",
-            }}
-            InputProps={{
-              startAdornment: <InputAdornment position="start" />,
-            }}
-          />
+
+       <Grid item xs={12} sm={2}>
+          <FormControl fullWidth>
+            <InputLabel id="year-select-label">{t("_year")}</InputLabel>
+            <Select
+              labelId="year-select-label"
+              id="year-select"
+              name="modelYear"
+              value={modelYear}
+              label={t("_year")}
+              onChange={handleYearChange}
+            >
+              {years.map((year) => (
+                <MenuItem key={year} value={year}>
+                  {year}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Grid>
+
         <Grid item xs={12} sm={4}>
           <TextField
             label={t("_patent")}
@@ -274,20 +289,6 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
           <Typography variant="h5">{t("_insurance")}</Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
-          {/* 
-          TODO: continuar aca
-          <TextField
-            label={t("insurance_company")}
-            variant="outlined"
-            type="text"
-            name="insurence"
-            value={insurence}
-            fullWidth
-            onChange={handleInputChange}
-            InputProps={{
-              startAdornment: <InputAdornment position="start" />,
-            }}
-          /> */}
           <FormControl key="insurence-select" fullWidth>
             <InputLabel id="insurence" >{t("insurance_company")}</InputLabel>
             <Select
