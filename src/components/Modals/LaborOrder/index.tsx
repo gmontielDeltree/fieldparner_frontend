@@ -9,7 +9,7 @@ import {
     Assignment as AssignmentIcon,
     Edit as EditIcon,
     Save as SaveIcon,
-
+    Delete as DeleteIcon
 } from '@mui/icons-material';
 import { Icon } from "semantic-ui-react";
 import { getShortDate } from '../../../helpers/dates';
@@ -173,7 +173,8 @@ const RowSupply: React.FC<RowSupplyProps> = ({ row, handleDelete, handleEdit }) 
                                 onClick={() => handleDelete(row)}
                                 style={{ fontSize: '1rem' }}
                             >
-                                <Icon name="trash alternate" />
+                                <DeleteIcon />
+                        
                             </IconButton>
                         </>
                 }

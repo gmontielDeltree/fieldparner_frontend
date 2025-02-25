@@ -14,6 +14,7 @@ import {
   Add as AddIcon,
   Business as BusinessIcon,
   Edit as EditIcon,
+  Delete as DeleteIcon
 } from "@mui/icons-material";
 import { useForm, useAppDispatch, useBusiness } from "../../hooks";
 import { setBusinessActive } from "../../redux/business";
@@ -73,7 +74,7 @@ export const ListBusinessesPage: React.FC = () => {
                 "&:hover": { transform: "scale(1.2)" },
               }}
             >
-              <Icon name="trash alternate" />
+              <DeleteIcon />
             </IconButton>
           </Tooltip>
         </Box>

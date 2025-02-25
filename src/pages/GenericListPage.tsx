@@ -270,7 +270,7 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
   <Alert
     onClose={handleCloseSnackbar}
     severity={snackbar.severity}
-    variant="standard" // Cambiado de "filled" a "standard"
+    variant="standard"
     elevation={6}
     sx={{
       width: '100%',
@@ -286,15 +286,15 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
         },
       },
       '&.MuiAlert-standardSuccess': {
-        backgroundColor: '#e8f5e9', // Fondo verde claro para éxito
-        color: '#2e7d32', // Texto verde oscuro
+        backgroundColor: '#e8f5e9', 
+        color: '#2e7d32', 
         '& .MuiAlert-icon': {
           color: '#2e7d32',
         },
       },
       '&.MuiAlert-standardError': {
-        backgroundColor: '#ffebee', // Fondo rojo claro para error
-        color: '#d32f2f', // Texto rojo oscuro
+        backgroundColor: '#ffebee', 
+        color: '#d32f2f', 
         '& .MuiAlert-icon': {
           color: '#d32f2f',
         },
