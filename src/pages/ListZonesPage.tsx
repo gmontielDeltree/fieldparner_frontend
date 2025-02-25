@@ -16,6 +16,7 @@ import {
   Search as SearchIcon,
   Edit as EditIcon,
   Map as MapIcon,
+  Delete as DeleteIcon
 } from "@mui/icons-material";
 import { useForm, useAppDispatch, useAppSelector, useZones } from "../hooks";
 import { useTranslation } from "react-i18next";
@@ -65,7 +66,7 @@ export const ListZonesPage: React.FC = () => {
                 "&:hover": { transform: "scale(1.2)" },
               }}
             >
-              <Icon name="trash alternate" />
+              <DeleteIcon />
             </IconButton>
           </Tooltip>
         </Box>

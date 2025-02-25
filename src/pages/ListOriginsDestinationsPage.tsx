@@ -9,6 +9,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  
 } from "@mui/material";
 import { Icon } from "semantic-ui-react";
 import {
@@ -17,6 +18,7 @@ import {
   Edit as EditIcon,
   AddLocationAlt as AddLocationAltIcon,
   ArrowRightAlt as ArrowRightAltIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { useForm, useAppDispatch, useAppSelector, useOriginDestinations } from "../hooks";
 import { setOriginsDestinationsActive } from "../redux/originsdestinatons/originDestiantionsSlice";
@@ -36,13 +38,19 @@ export const ListOriginsDestinationsPage: React.FC = () => {
     getOriginDestinations();
   }, []);
 
+  useEffect(() => {
+    console.log("originsDestinations", originsDestinations);
+  }
+  , [originsDestinations]);
+
+
   const columns = [
     { field: "type", headerName: t("_type"), flex: 1, renderCell: (params: { row: { destino: any; procedencia: any; }; }) => (
         params.row.destino ? t("destination") : params.row.procedencia ? t("origin") : ''
       ) 
-    },
+    }, 
     { field: "name", headerName: t("_description"), flex: 1 },
-    { field: "description", headerName: t("_geolocation"), flex: 1 },
+    { field: "geolocation", headerName: t("_geolocation"), flex: 1 },
     {
       field: "actions",
       headerName: "",
@@ -71,7 +79,7 @@ export const ListOriginsDestinationsPage: React.FC = () => {
                 "&:hover": { transform: "scale(1.2)" },
               }}
             >
-              <Icon name="trash alternate" />
+              <DeleteIcon />
             </IconButton>
           </Tooltip>
         </Box>
@@ -79,7 +87,11 @@ export const ListOriginsDestinationsPage: React.FC = () => {
     },
   ];
 
-  const onClickAddOriginsDestinations = () => navigate("/init/overview/origins-destinations/new");
+  const onClickAddOriginsDestinations = () => {
+    // Limpiar el estado activo antes de navegar a la página de creación
+    dispatch(setOriginsDestinationsActive(null));
+    navigate("/init/overview/origins-destinations/new");
+  };
 
   const onClickUpdateOriginsDestinations = (item: OriginDestinations): void => {
     dispatch(setOriginsDestinationsActive(item));
@@ -118,6 +130,11 @@ export const ListOriginsDestinationsPage: React.FC = () => {
       setActiveItem={setOriginsDestinationsActive}
       newItemPath="/init/overview/origins-destinations/new"
       editItemPath={(id) => `/init/overview/origins-destinations/${id}`}
+      onNewItem={() => {
+        // Asegurarnos de limpiar el estado activo antes de crear un nuevo ítem
+        dispatch(setOriginsDestinationsActive(null));
+        navigate("/init/overview/origins-destinations/new");
+      }}
     />
   );
 };

@@ -17,6 +17,7 @@ import {
   Edit as EditIcon,
   Build as BuildIcon,
   Person as PersonIcon,
+  Delete as DeleteIcon
 } from "@mui/icons-material";
 import { useForm, useAppDispatch, useAppSelector, useLaborsServices } from "../hooks";
 import { useTranslation } from "react-i18next";
@@ -65,7 +66,7 @@ export const ListLaborsServicesPage: React.FC = () => {
                 "&:hover": { transform: "scale(1.2)" },
               }}
             >
-              <Icon name="trash alternate" />
+              <DeleteIcon />
             </IconButton>
           </Tooltip>
         </Box>
