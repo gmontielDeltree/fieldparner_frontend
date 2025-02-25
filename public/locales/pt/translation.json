@@ -379,5 +379,14 @@
   "error_adding_reserved_stock": "Erro ao adicionar estoque reservado",
   "insufficient_reserved_stock": "Estoque reservado insuficiente",
   "reserved_stock_removed": "Estoque reservado removido com sucesso",
-  "error_removing_reserved_stock": "Erro ao remover estoque reservado"
+  "error_removing_reserved_stock": "Erro ao remover estoque reservado",
+  "origin": "Procedência",
+  "destination": "Destino",
+  "Error": "Erro",
+    "no_vehicles_records": "Nenhum registro de veículos encontrado.",
+    "Zone": "Zona",
+    "zone_added": "Zona adicionada.",
+    "check_fields": "Verifique os campos.",
+    "Oops": "Ops",
+    "updated": "Atualizada."
 }
