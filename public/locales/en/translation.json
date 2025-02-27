@@ -380,7 +380,7 @@
     "insufficient_reserved_stock": "Insufficient reserved stock",
     "reserved_stock_removed": "Reserved stock removed successfully",
     "error_removing_reserved_stock": "Error removing reserved stock",
-    "basic_information": "Basic Information",
+  "basic_information": "Basic Information",
     "type_and_status": "Type and Status",
     "address_information": "Address Information",
     "geolocation": "Geolocation",
@@ -394,8 +394,16 @@
     "location_fetch_error": "Error fetching location data",
     "location_created": "Location created successfully",
     "status": "Status",
-    "actions": "Actions"
-    
+    "actions": "Actions",
+    "origin": "Origin",
+    "destination": "Destination",
+    "Error": "Error",
+    "no_vehicles_records": "No vehicle records found.",
+    "Zone": "Zone",
+    "zone_added": "Zone added.",
+    "check_fields": "Please check fields.",
+    "Oops": "Oops",
+    "updated": "Updated."
   }
   
 
