@@ -387,6 +387,21 @@
     "insufficient_reserved_stock": "Stock reservado insuficiente",
     "reserved_stock_removed": "Stock reservado removido con éxito",
     "error_removing_reserved_stock": "Error al remover stock reservado",
+"basic_information": "Información básica",
+    "type_and_status": "Tipo y estado",
+    "address_information": "Información de dirección",
+    "geolocation": "Geolocalización",
+    "location_cannot_be_empty": "La ubicación no puede estar vacía",
+    "location": "Ubicación",
+    "location_added": "Ubicación agregada con éxito",
+    "location_updated": "Ubicación actualizada con éxito",
+    "location_deleted": "Ubicación eliminada con éxito",
+    "error_deleting_location": "Error al eliminar la ubicación",
+    "location_not_found": "Ubicación no encontrada",
+    "location_fetch_error": "Error al obtener datos de ubicación",
+    "location_created": "Ubicación creada con éxito",
+    "status": "Estado",
+    "actions": "Acciones",
     "origin": "Origen",
     "destination": "Destino",
     "Error": "Error",
@@ -396,5 +411,4 @@
     "check_fields": "Verificar campos.",
     "Oops": "Ups",
     "updated": "Actualizada."
-  
 }
