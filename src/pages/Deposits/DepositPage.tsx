@@ -44,9 +44,10 @@ import {
 import { Deposit, EnumStatusContract, TipoEntidad } from "../../types";
 import { removeDepositActive } from "../../redux/deposit";
 import { getLocalityAndStateByZipCode } from "../../utils/getDataZipCode";
-import { MapPickerReact } from '../../../owncomponents/map-picker/react-port/MapPicker';
+import { MapPickerReact } from "../../../owncomponents/map-picker/react-port/MapPicker";
 import { useTranslation } from "react-i18next";
 import Swal from "sweetalert2";
+import { t } from "i18next";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -59,70 +60,75 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   },
 }));
 
-
-
+const FormSection: React.FC<{ title?: string; children: React.ReactNode }> = ({ title, children }) => (
+  <Box sx={{ mb: 4 }}>
+    {title && (
+      <Box sx={{ display: 'flex', alignItems: 'center', my: 2 }}>
+        <Box sx={{ flexGrow: 1, height: '1px', backgroundColor: 'divider' }} />
+        <Typography
+          variant="h6"
+          sx={{ mx: 2, fontWeight: 500, color: 'text.secondary' }}
+        >
+          {title}
+        </Typography>
+        <Box sx={{ flexGrow: 1, height: '1px', backgroundColor: 'divider' }} />
+      </Box>
+    )}
+    <Box sx={{ pl: 2 }}>{children}</Box>
+  </Box>
+);
+// Initial form values
+const initialForm: Deposit = {
+  description: "",
+  zipCode: "",
+  address: "",
+  geolocation: { lng: -35, lat: -34 },
+  locality: "",
+  pais: "",
+  owner: "",
+  province: "",
+  accountId: "",
+  locations: [t("_general")],
+  isNegative: false,
+  isVirtual: false,
+  siloBag: false,
+  hopper: false,
+  silo: false,
+  deposit: false,
+  siloBagId: "",
+  status: EnumStatusContract.Inactivo,
+};
 
 export const DepositPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
+
+  // Local state
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [localities, setLocalities] = useState<string[]>([]);
   const [descriptionError, setDescriptionError] = useState(false);
   const [countryError, setCountryError] = useState(false);
   const [cpError, setCpError] = useState(false);
-  const { t } = useTranslation();
+  const [countryOptions, setCountryOptions] = useState<{ code: string; label: string }[]>([]);
+
+  // Hooks for countries, business and deposit
   const { dataCountry, getCountries } = useCountry();
-
-
-
-  const statusOptions = Object.values(EnumStatusContract).map(x => x as string);
-
-  const locationDefault = t("_general");
-
-  const initialForm: Deposit = {
-    description: "",
-    zipCode: "",
-    address: "",
-    geolocation: { lng: -35, lat: -34 },
-    locality: "",
-    pais: "",
-    owner: "",
-    province: "",
-    accountId: "",
-    locations: [locationDefault],
-    isNegative: false,
-    isVirtual: false,
-    siloBag: false,
-    hopper: false,
-    silo: false,
-    deposit: false,
-    siloBagId: "",
-    status: EnumStatusContract.Inactivo,
-  };
-
-
   const { depositActive } = useAppSelector((state) => state.deposit);
+  const { isLoading, createDeposit, updateDeposit } = useDeposit();
+  const { getBusinesses, businesses, isLoading: loadingBusiness } = useBusiness();
+
+  // main form state
   const {
     formulario,
     setFormulario,
     handleInputChange,
     handleFormValueChange,
-    //handleSelectChange,
     handleGeolocationChange,
   } = useForm(initialForm);
 
-  const { isLoading, createDeposit, updateDeposit } = useDeposit();
-  const {
-    getBusinesses,
-    businesses,
-    isLoading: loadingBusiness,
-  } = useBusiness();
-  const {
-    location,
-    handleInputChange: inputChange,
-    reset: resetFormLot,
-  } = useForm({ location: "" });
-
+  // A separate mini-form to add a location within the depot
+  const { location, handleInputChange: inputChange, reset: resetFormLot } = useForm({ location: "" });
   const {
     description,
     owner,
@@ -142,31 +148,35 @@ export const DepositPage: React.FC = () => {
     siloBagId,
   } = formulario;
 
-  //const countries: Country[] = [];
-  // const countryOptions = countries ? countries.map(c => ({ code: c.code, label: c.descriptionEN })) : [];
-  const [countryOptions, setCountryOptions] = useState<{ code: string; label: string }[]>([]);
+  const statusOptions = Object.values(EnumStatusContract).map((x) => {
+    switch (x) {
+      case EnumStatusContract.Activo:
+        return t("status_active");
+      case EnumStatusContract.Inactivo:
+        return t("status_inactive");
+      default:
+        return x as string;
+    }
+  });
+
+  const getStatusEnumFromTranslation = (translatedStatus: string): EnumStatusContract => {
+    if (translatedStatus === t("status_active")) return EnumStatusContract.Activo;
+    if (translatedStatus === t("status_inactive")) return EnumStatusContract.Inactivo;
+    return EnumStatusContract.Inactivo;
+  };
+
+  const locationDefault = t("_general");
 
   const onChangeStatus = (_event: SyntheticEvent, value: string | null) => {
     if (value !== null) {
-
-      const statusEnum = value as EnumStatusContract;
-
-
-      setFormulario(prevState => ({
-        ...prevState,
-        status: statusEnum
-      }));
-
-      setFormulario(prevState => ({
-        ...prevState,
-        status: statusEnum
-      }));
+      const statusEnum = getStatusEnumFromTranslation(value);
+      setFormulario((prev) => ({ ...prev, status: statusEnum }));
     }
   };
 
   const optionsPropietario = useMemo(() => {
     return businesses
-      .filter((business) => business.tipoEntidad == TipoEntidad.JURIDICA)
+      .filter((business) => business.tipoEntidad === TipoEntidad.JURIDICA)
       .map((business) => business.razonSocial || "");
   }, [businesses]);
 
@@ -183,6 +193,7 @@ export const DepositPage: React.FC = () => {
       setFormulario(initialForm);
     }
   };
+
   const handleAddDeposit = () => {
     if (validateForm()) {
       createDeposit(formulario);
@@ -192,198 +203,179 @@ export const DepositPage: React.FC = () => {
 
   const validateForm = () => {
     let isValid = true;
-
     if (description.trim() === "") {
       setDescriptionError(true);
       isValid = false;
     } else {
       setDescriptionError(false);
     }
-
     if (zipCode.trim() === "") {
       setCpError(true);
       isValid = false;
     } else {
       setCpError(false);
     }
-
     if (pais.trim() === "") {
       setCountryError(true);
       isValid = false;
     } else {
       setCountryError(false);
     }
-
     return isValid;
   };
 
-  const fetchBrazilZipCode = async (zipCode: string) => {
+  // ZIP code lookup functions
+  const fetchBrazilZipCode = async (zip: string) => {
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${zipCode}/json/`);
+      const response = await fetch(`https://viacep.com.br/ws/${zip}/json/`);
       if (!response.ok) throw new Error("Network response was not ok");
-      const data = await response.json();
-      return data;
+      return await response.json();
     } catch (error) {
       console.error("Failed to fetch Brazil zip code data:", error);
       return null;
     }
   };
 
-  // const getLocalityAndState = async () => {
-  //   setLoadingZipCode(true);
-  //   try {
-  //     const localityAndStates = await getLocalityAndStateByZipCode(
-  //       CountryCode.ARGENTINA,
-  //       zipCode
-  //     );
-
-  //     if (localityAndStates?.length) {
-  //       setLocalities(localityAndStates.map((x) => x.locality));
-  //       setFormulario((prevState) => ({
-  //         ...prevState,
-  //         province: localityAndStates[0].state,
-  //       }));
-  //     }
-
-  //     setLoadingZipCode(false);
-  //   } catch (error) {
-  //     setLoadingZipCode(false);
-  //     console.log(error);
-  //   }
-  // };
-
   const onBlurZipCode = async () => {
     if (zipCode !== "") {
       setLoadingZipCode(true);
       try {
-        console.log("Ejecutando1", pais);
-
         if (pais === "ARG" || pais === "AR") {
-          console.log("Ejecutando2", pais);
           const localityAndStates = await getLocalityAndStateByZipCode("ARG", zipCode);
-
           if (localityAndStates?.length) {
-            const firstLocality = localityAndStates[0].locality;
+            const uniqueLocalities = [...new Set(localityAndStates.map((x) => x.locality))];
+            setLocalities(uniqueLocalities);
             const firstProvince = localityAndStates[0].state;
-
-            setLocalities(localityAndStates.map((x) => x.locality));
-
             handleInputChange({
-              target: {
-                name: "locality",
-                value: firstLocality,
-              },
+              target: { name: "province", value: firstProvince },
             } as React.ChangeEvent<HTMLInputElement>);
-
-            handleInputChange({
-              target: {
-                name: "province",
-                value: firstProvince,
-              },
-            } as React.ChangeEvent<HTMLInputElement>);
+            if (uniqueLocalities.length === 1) {
+              handleInputChange({
+                target: { name: "locality", value: uniqueLocalities[0] },
+              } as React.ChangeEvent<HTMLInputElement>);
+            } else {
+              handleInputChange({
+                target: { name: "locality", value: "" },
+              } as React.ChangeEvent<HTMLInputElement>);
+              Swal.fire({
+                title: t("select_locality"),
+                text: t("multiple_localities_found"),
+                icon: "info",
+              });
+            }
           } else {
-            throw new Error("El código postal no coincide con ningún registro en Argentina.");
+            throw new Error("No matching record found for Argentina.");
           }
         } else if (pais === "BR" || pais === "BRA") {
           const brazilData = await fetchBrazilZipCode(zipCode);
-
           if (brazilData) {
             handleInputChange({
-              target: {
-                name: "locality",
-                value: brazilData.localidade || brazilData.logradouro,
-              },
+              target: { name: "locality", value: brazilData.localidade || brazilData.logradouro },
             } as React.ChangeEvent<HTMLInputElement>);
-
             handleInputChange({
-              target: {
-                name: "province",
-                value: brazilData.uf,
-              },
+              target: { name: "province", value: brazilData.uf },
             } as React.ChangeEvent<HTMLInputElement>);
-
             handleInputChange({
-              target: {
-                name: "address",
-                value: `${brazilData.logradouro}, ${brazilData.bairro}`,
-              },
+              target: { name: "address", value: `${brazilData.logradouro}, ${brazilData.bairro}` },
             } as React.ChangeEvent<HTMLInputElement>);
           } else {
-            throw new Error("El código postal no coincide con ningún registro en Brasil.");
+            throw new Error("No matching record found for Brazil.");
           }
         } else if (pais === "PY" || pais === "PRY") {
-          console.log("Ejecutando3", pais);
           const localityAndStates = await getLocalityAndStateByZipCode("PRY", zipCode);
-
           if (localityAndStates?.length) {
-            const firstLocality = localityAndStates[0].locality;
+            const uniqueLocalities = [...new Set(localityAndStates.map((x) => x.locality))];
+            setLocalities(uniqueLocalities);
             const firstProvince = localityAndStates[0].state;
-
-            setLocalities(localityAndStates.map((x) => x.locality));
-
             handleInputChange({
-              target: {
-                name: "locality",
-                value: firstLocality,
-              },
+              target: { name: "province", value: firstProvince },
             } as React.ChangeEvent<HTMLInputElement>);
-
-            handleInputChange({
-              target: {
-                name: "province",
-                value: firstProvince,
-              },
-            } as React.ChangeEvent<HTMLInputElement>);
+            if (uniqueLocalities.length === 1) {
+              handleInputChange({
+                target: { name: "locality", value: uniqueLocalities[0] },
+              } as React.ChangeEvent<HTMLInputElement>);
+            } else {
+              handleInputChange({
+                target: { name: "locality", value: "" },
+              } as React.ChangeEvent<HTMLInputElement>);
+              Swal.fire({
+                title: t("select_locality"),
+                text: t("multiple_localities_found"),
+                icon: "info",
+              });
+            }
           } else {
-            throw new Error("El código postal no coincide con ningún registro en Paraguay.");
+            throw new Error("No matching record found for Paraguay.");
           }
         } else {
-          throw new Error("El país seleccionado no es válido o no está soportado.");
+          throw new Error("Unsupported country selected.");
         }
-
-        setLoadingZipCode(false);
       } catch (error) {
         console.error(error);
-
         Swal.fire({
           title: "Error",
-          text: "Revisa que el Código Postal sea correspondiente al país.",
+          text: "Check that the postal code matches the selected country.",
           icon: "error",
         });
-
+      } finally {
         setLoadingZipCode(false);
       }
     }
   };
 
+  // Handlers for locations within the depot
   const handleAddLocation = () => {
-    setFormulario((prevState) => ({
-      ...prevState,
-      locations: [location, ...prevState.locations],
+    if (!location.trim()) {
+      Swal.fire({
+        title: t("validation_error"),
+        text: t("location_cannot_be_empty"),
+        icon: "error",
+      });
+      return;
+    }
+    const isDuplicate = locations.some(
+      (existingLocation) => existingLocation.toLowerCase() === location.toLowerCase()
+    );
+    if (isDuplicate) {
+      Swal.fire({
+        title: t("validation_error"),
+        text: t("location_already_exists"),
+        icon: "error",
+      });
+      return;
+    }
+    setFormulario((prev) => ({
+      ...prev,
+      locations: [location, ...prev.locations],
     }));
     resetFormLot();
   };
 
   const handleDeleteLocation = (item: string) => {
-    setFormulario((prevState) => ({
-      ...prevState,
-      locations: prevState.locations.filter(
+    setFormulario((prev) => ({
+      ...prev,
+      locations: prev.locations.filter(
         (l) => l.trim().toLowerCase() !== item.trim().toLowerCase()
       ),
     }));
   };
 
-  const handleChangeIsNegative = (
-    e: ChangeEvent<HTMLInputElement>,
-    _checked: boolean
-  ) => {
+  const handleChangeIsNegative = (e: ChangeEvent<HTMLInputElement>) => {
     const { name } = e.target;
-    setFormulario((prevState) => ({
-      ...prevState,
+    setFormulario((prev) => ({
+      ...prev,
       isNegative: name.toLowerCase() === "yes",
     }));
   };
 
+  const onChangeCountry = (
+    _event: SyntheticEvent,
+    value: { code: string; label: string } | null
+  ) => {
+    if (value) handleFormValueChange("pais", value.code);
+  };
+
+  // Effects
   useEffect(() => {
     if (depositActive) setFormulario(depositActive);
     else setFormulario(initialForm);
@@ -400,11 +392,9 @@ export const DepositPage: React.FC = () => {
     getCountries();
   }, []);
 
-
-
   useEffect(() => {
     if (dataCountry) {
-      const options = dataCountry.map(country => ({
+      const options = dataCountry.map((country) => ({
         code: country.code,
         label: country.descriptionEN || country.descriptionES || country.code,
       }));
@@ -412,503 +402,437 @@ export const DepositPage: React.FC = () => {
     }
   }, [dataCountry]);
 
-
-  const onChangeCountry = (_event: SyntheticEvent, value: { code: string; label: string } | null) => {
-    if (value)
-      handleFormValueChange("pais", value.code);
-  }
-
   return (
     <TemplateLayout key="overview-deposit" viewMap={true}>
       <Loading key="loading-deposit" loading={isLoading || loadingZipCode} />
-      <Paper
-        variant="outlined"
-        sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}
-      >
-        <Box className="text-center">
-          <WarehouseIcon />
+      <Paper variant="outlined" sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}>
+        <Box textAlign="center" mb={3}>
+          <WarehouseIcon fontSize="large" />
         </Box>
-        <Typography
-          component="h1"
-          variant="h4"
-          align="center"
-          sx={{ mt: 1, mb: 7 }}
-        >
-          {depositActive ? `${t("icon_edit")} ${t("new_masculine")} ${t("_warehouse")}` : `${t("_add")} ${t("new_masculine")} ${t("_warehouse")}`}
+        <Typography component="h1" variant="h4" align="center" gutterBottom>
+          {depositActive
+            ? `${t("icon_edit")} ${t("new_masculine")} ${t("_warehouse")}`
+            : `${t("_add")} ${t("new_masculine")} ${t("_warehouse")}`}
         </Typography>
-        <Grid
-          container
-          spacing={1}
-          alignItems="flex-start"
-          justifyContent="flex-start"
-          sx={{
-            //border: '1px solid red', 
-            padding: '16px',
-            // backgroundColor: 'rgba(255, 0, 0, 0.1)' 
-          }}
-        >
-          <Grid item xs={12} sm={6} sx={{ padding: '16px', }}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label={t("_description")}
-              name="description"
-              value={description}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-              error={descriptionError}
-              helperText={descriptionError ? t("this_field_is_mandatory") : ""}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} sx={{ padding: '16px', }}>
-            <Autocomplete
-              id="owner"
-              freeSolo
-              loading={loadingBusiness}
-              value={owner}
-              onChange={(_event: any, newValue: string | null) => {
-                newValue && handleFormValueChange("owner", newValue);
-              }}
-              inputValue={owner}
-              onInputChange={(_event, newInputValue) => {
-                handleFormValueChange("owner", newInputValue);
-              }}
-              options={[...optionsPropietario]}
-              fullWidth
-              renderInput={(params) => (
-                <TextField {...params} name="owner" label={t("_owner")} />
-              )}
-            />
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            sm={6} // Cambiar de 6 a 8 para hacerlo más ancho
-            md={4} // Cambiar de 4 a 6 para hacerlo más ancho
-            sx={{
-              // border: '1px solid blue', 
-              padding: '16px',
-              // backgroundColor: 'rgba(0, 0, 255, 0.1)', 
-              marginRight: '0px'
-              // marginLeft: 'auto'
-            }}
-          >
 
-            <Box >
-              <FormGroup row>
-                <FormControlLabel
-                  key="checkbox-true"
-                  control={
-                    <Checkbox
-                      name="physical"
-                      checked={!isVirtual}
-                      onChange={() =>
-                        setFormulario((prevState) => ({
-                          ...prevState,
-                          isVirtual: false,
-                        }))
-                      }
-                    />
-                  }
-                  label={t("physical_masculine")}
-                  labelPlacement="start"
-                />
-                <FormControlLabel
-                  key="checkbox-false"
-                  control={
-                    <Checkbox
-                      name="virtual"
-                      checked={isVirtual}
-                      onChange={() =>
-                        setFormulario((prevState) => ({
-                          ...prevState,
-                          isVirtual: true,
-                        }))
-                      }
-                    />
-                  }
-                  label={t("_virtual")}
-                  labelPlacement="start"
-                />
-              </FormGroup>
-              <FormControl fullWidth>
-                <Autocomplete
-                  value={formulario.status}
-                  onChange={(event, newValue) => onChangeStatus(event, newValue)}
-                  options={statusOptions}
-                  getOptionLabel={(option) => option}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Status" variant="outlined" />
-                  )}
-                  fullWidth
-                />
-              </FormControl>
-            </Box>
-            <FormGroup row sx={{ marginTop: '15px' }}>
-              <FormControlLabel
-                key="checkbox-true"
-                control={
-                  <Checkbox
-                    name="physical"
-                    checked={deposit}
-                    onChange={() =>
-                      setFormulario((prevState) => ({
-                        ...prevState,
-                        deposit: true,
-                        siloBag: false,
-                        silo: false,
-                        hopper: false,
-                      }))
-                    }
-                  />
-                }
-                label={t("_warehouse")}
-                labelPlacement="start"
-              />
-              <FormControlLabel
-                key="checkbox-false"
-                control={
-                  <Checkbox
-                    name="siloBag"
-                    checked={siloBag}
-                    onChange={() =>
-                      setFormulario((prevState) => ({
-                        ...prevState,
-                        deposit: false,
-                        siloBag: true,
-                        silo: false,
-                        hopper: false
-                      }))
-                    }
-                  />
-                }
-                label={t("_silobag")}
-                labelPlacement="start"
-              />
-              {siloBag && (
-                <TextField
-                  sx={{ width: "72%" }}
-                  variant="outlined"
-                  type="text"
-                  size="small"
-                  label="ID Silobolsa"
-                  name="siloBagId"
-                  value={siloBagId}
-                  onChange={(e) => setFormulario((prevState) => ({
-                    ...prevState,
-                    siloBagId: e.target.value
-                  }))}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start" />,
-                  }}
-                />
-              )}
-            </FormGroup>
-          </Grid>
-          <Grid item xs={1} sm={1} md={2.7} sx={{
-            //border: '1px solid blue', 
-            padding: '0px',
-            //backgroundColor: 'rgba(0, 0, 255, 0.1)', 
-            marginRight: '0px',
-            marginLeft: '0px'
-          }}  >
-            <FormGroup row sx={{ alignItems: "left" }}>
-              <label htmlFor="">{t("admits_negative_stock")}</label>
-              <FormControlLabel
-                key="checkbox-true"
-                control={
-                  <Checkbox
-                    name="yes"
-                    checked={isNegative}
-                    onChange={handleChangeIsNegative}
-                  />
-                }
-                label={t("_yes")}
-                labelPlacement="start"
-              />
-              <FormControlLabel
-                key="checkbox-false"
-                control={
-                  <Checkbox
-                    name="not"
-                    checked={!isNegative}
-                    onChange={handleChangeIsNegative}
-                  />
-                }
-                label={t("_no")}
-                labelPlacement="start"
-              />
-            </FormGroup>
-
-            <FormGroup row sx={{ marginTop: '45px' }}>
-              <FormControlLabel
-                key="checkbox-true"
-                control={
-                  <Checkbox
-                    name="silo"
-                    checked={silo}
-                    onChange={() =>
-                      setFormulario((prevState) => ({
-                        ...prevState,
-                        deposit: false,
-                        silo: true,
-                        hopper: false
-                      }))
-                    }
-                  />
-                }
-                label="Silo"
-                labelPlacement="start"
-              />
-              <FormControlLabel
-                key="checkbox-false"
-                control={
-                  <Checkbox
-                    name="hopper"
-                    checked={hopper}
-                    onChange={() =>
-                      setFormulario((prevState) => ({
-                        ...prevState,
-                        deposit: false,
-                        siloBag: false,
-                        silo: false,
-                        hopper: true
-                      }))
-                    }
-                  />
-                }
-                label={t("_hopper")}
-                labelPlacement="start"
-              />
-            </FormGroup>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4} sx={{
-            //border: '1px solid blue', 
-            padding: '0px',
-            // backgroundColor: 'rgba(0, 0, 255, 0.1)', 
-            marginRight: '0px',
-            marginLeft: '0px',
-            textAlign: 'center'
-          }}  >
-            <FormGroup sx={{ position: 'right', flexDirection: "row", gap: "5px" }}>
+        {/* Basic Information Section */}
+        <FormSection title={t("basic_information")}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
               <TextField
-                sx={{ width: "35%" }}
-                variant="outlined"
-                type="text"
-                size="small"
-                label="Latitud"
-                name="geolocation"
-                value={geolocation.lat?.toFixed(5) || ""}
-                onChange={(e) => handleGeolocationChange({ ...geolocation, lat: +e.target.value })}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start" />,
-                }}
-              // helperText={descriptionError ? t("this_field_is_mandatory") : ""}
-
+                label={t("_description")}
+                name="description"
+                value={description}
+                onChange={handleInputChange}
+                fullWidth
+                error={descriptionError}
+                helperText={descriptionError ? t("this_field_is_mandatory") : ""}
               />
-              <TextField
-                variant="outlined"
-                sx={{ width: "35%" }}
-                type="text"
-                size="small"
-                label="Longitud"
-                name="geolocation"
-                value={geolocation.lng?.toFixed(5) || ""}
-                onChange={(e) => handleGeolocationChange({ ...geolocation, lng: +e.target.value })}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start" />,
-                }}
-              //helperText={descriptionError ? t("this_field_is_mandatory") : ""}
-
-              />
-              <MapPickerReact posicion={geolocation} onPicked={({ detail }: any) => { handleGeolocationChange(detail) }} />
-            </FormGroup>
-          </Grid>
-          <Grid item xs={6} sm={4}>
-            <FormControl fullWidth variant="outlined" error={countryError}>
+            </Grid>
+            <Grid item xs={12} sm={6}>
               <Autocomplete
-                value={countryOptions.find(opts => opts.code === pais) || null}
-                onChange={onChangeCountry}
-                options={countryOptions}
-                getOptionLabel={(option) => option.label}
-                renderInput={(params) => (
-                  <TextField {...params} label={t("id_country")} variant="outlined" />
-                )}
+                id="owner"
+                freeSolo
+                loading={loadingBusiness}
+                value={owner}
+                onChange={(_event, newValue: string | null) =>
+                  newValue && handleFormValueChange("owner", newValue)
+                }
+                inputValue={owner}
+                onInputChange={(_event, newInputValue) =>
+                  handleFormValueChange("owner", newInputValue)
+                }
+                options={optionsPropietario}
+                fullWidth
+                renderInput={(params) => <TextField {...params} label={t("_owner")} name="owner" />}
+              />
+            </Grid>
+          </Grid>
+        </FormSection>
+
+      {/* Type and Status Section */}
+<FormSection title={t("type_and_status")}>
+  <Grid container spacing={2} alignItems="center">
+    <Grid item xs={12} sm={6}>
+      <Box
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+          p: 1,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+        }}
+      >
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={!isVirtual}
+              onChange={() =>
+                setFormulario((prev) => ({ ...prev, isVirtual: false }))
+              }
+            />
+          }
+          label={t("physical_masculine")}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={isVirtual}
+              onChange={() =>
+                setFormulario((prev) => ({ ...prev, isVirtual: true }))
+              }
+            />
+          }
+          label={t("_virtual")}
+        />
+      </Box>
+    </Grid>
+    <Grid item xs={12} sm={6}>
+      <FormControl fullWidth>
+        <Autocomplete
+          value={formulario.status}
+          onChange={(e, newValue) =>
+            newValue && onChangeStatus(e, newValue)
+          }
+          options={statusOptions}
+          renderInput={(params) => <TextField {...params} label= {t("status")} />}
+        />
+      </FormControl>
+    </Grid>
+    <Grid item xs={4}>
+      <Box
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+          p: 1,
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={deposit}
+              onChange={() =>
+                setFormulario((prev) => ({
+                  ...prev,
+                  deposit: true,
+                  siloBag: false,
+                  silo: false,
+                  hopper: false,
+                }))
+              }
+            />
+          }
+          label={t("_warehouse")}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={siloBag}
+              onChange={() =>
+                setFormulario((prev) => ({
+                  ...prev,
+                  deposit: false,
+                  siloBag: true,
+                  silo: false,
+                  hopper: false,
+                }))
+              }
+            />
+          }
+          label={t("_silobag")}
+        />
+        {siloBag && (
+          <TextField
+            sx={{ width: "72%" }}
+            variant="outlined"
+            size="small"
+            label="ID Silobolsa"
+            name="siloBagId"
+            value={siloBagId}
+            onChange={(e) =>
+              setFormulario((prev) => ({ ...prev, siloBagId: e.target.value }))
+            }
+          />
+        )}
+      </Box>
+    </Grid>
+    <Grid item xs={4}>
+      <Box
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+          p: 1,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+        }}
+      >
+        <Typography sx={{ mr: 2 }}>{t("admits_negative_stock")}</Typography>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={isNegative}
+              onChange={handleChangeIsNegative}
+              name="yes"
+            />
+          }
+          label={t("_yes")}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={!isNegative}
+              onChange={handleChangeIsNegative}
+              name="not"
+            />
+          }
+          label={t("_no")}
+        />
+      </Box>
+    </Grid>
+    <Grid item xs={4}>
+      <Box
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+          p: 1,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+        }}
+      >
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={silo}
+              onChange={() =>
+                setFormulario((prev) => ({
+                  ...prev,
+                  deposit: false,
+                  silo: true,
+                  hopper: false,
+                }))
+              }
+            />
+          }
+          label="Silo"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={hopper}
+              onChange={() =>
+                setFormulario((prev) => ({
+                  ...prev,
+                  deposit: false,
+                  siloBag: false,
+                  silo: false,
+                  hopper: true,
+                }))
+              }
+            />
+          }
+          label={t("_hopper")}
+        />
+      </Box>
+    </Grid>
+  </Grid>
+</FormSection>
+
+
+        {/* Address Information Section */}
+        <FormSection title={t("address_information")}>
+          <Grid container spacing={2}>
+            <Grid item xs={6} sm={4}>
+              <FormControl fullWidth variant="outlined" error={countryError}>
+                <Autocomplete
+                  value={countryOptions.find((opts) => opts.code === pais) || null}
+                  onChange={onChangeCountry}
+                  options={countryOptions}
+                  getOptionLabel={(option) => option.label}
+                  renderInput={(params) => <TextField {...params} label={t("id_country")} />}
+                />
+                {countryError && <FormHelperText>{t("error_country")}</FormHelperText>}
+              </FormControl>
+            </Grid>
+            <Grid item xs={6} sm={4}>
+              <TextField
+                label={t("postal_code")}
+                name="zipCode"
+                value={zipCode}
+                onBlur={onBlurZipCode}
+                onChange={handleInputChange}
                 fullWidth
               />
-              {countryError && <FormHelperText>Mensaje de error!</FormHelperText>}
-            </FormControl>
+            </Grid>
+            <Grid item xs={6} sm={4}>
+              <Autocomplete
+                id="province"
+                freeSolo
+                loading={loadingZipCode}
+                value={province}
+                onChange={(_event, newValue: string | null) =>
+                  newValue && handleFormValueChange("province", newValue)
+                }
+                inputValue={province}
+                onInputChange={(_event, newInputValue) =>
+                  handleFormValueChange("province", newInputValue)
+                }
+                options={[]} // Adjust if you have province options
+                fullWidth
+                renderInput={(params) => <TextField {...params} label={t("_state")} name="province" />}
+              />
+            </Grid>
+            <Grid item xs={6} sm={4}>
+              <Autocomplete
+                id="localidad"
+                freeSolo
+                loading={loadingZipCode}
+                value={locality}
+                onChange={(_event, newValue: string | null) =>
+                  newValue && handleFormValueChange("locality", newValue)
+                }
+                inputValue={locality}
+                onInputChange={(_event, newInputValue) =>
+                  handleFormValueChange("locality", newInputValue)
+                }
+                options={localities}
+                fullWidth
+                renderInput={(params) => <TextField {...params} label={t("_locality")} name="locality" />}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label={t("_address")}
+                name="address"
+                value={address}
+                onChange={handleInputChange}
+                fullWidth
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={6} sm={4}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label={t("postal_code")}
-              name="zipCode"
-              value={zipCode}
-              onBlur={onBlurZipCode}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />
-              }}
-              fullWidth
-            />
+        </FormSection>
+
+        {/* Geolocation Section */}
+        <FormSection title={t("geolocation")}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={4}>
+              <TextField
+                label="Latitud"
+                type="number"
+                size="small"
+                value={geolocation.lat?.toFixed(5) || ""}
+                onChange={(e) =>
+                  handleGeolocationChange({ ...geolocation, lat: +e.target.value })
+                }
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                label="Longitud"
+                type="number"
+                size="small"
+                value={geolocation.lng?.toFixed(5) || ""}
+                onChange={(e) =>
+                  handleGeolocationChange({ ...geolocation, lng: +e.target.value })
+                }
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <MapPickerReact
+                posicion={geolocation}
+                onPicked={({ detail }: any) => handleGeolocationChange(detail)}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={6} sm={4}>
-            <Autocomplete
-              id="province"
-              freeSolo
-              loading={loadingZipCode}
-              value={province}
-              onChange={(_event: any, newValue: string | null) => {
-                newValue && handleFormValueChange("province", newValue);
-              }}
-              inputValue={province}
-              onInputChange={(_event, newInputValue) => {
-                handleFormValueChange("province", newInputValue);
-              }}
-              options={localities}
-              fullWidth
-              renderInput={(params) => (
-                <TextField {...params} name="province" label={t("_state")} />
-              )}
-            />
-          </Grid>
-          <Grid item xs={6} sm={4}>
-            <Autocomplete
-              id="localidad"
-              freeSolo
-              loading={loadingZipCode}
-              value={locality}
-              onChange={(_event: any, newValue: string | null) => {
-                newValue && handleFormValueChange("locality", newValue);
-              }}
-              inputValue={locality}
-              onInputChange={(_event, newInputValue) => {
-                handleFormValueChange("locality", newInputValue);
-              }}
-              options={localities}
-              fullWidth
-              renderInput={(params) => (
-                <TextField {...params} name="locality" label={t("_locality")} />
-              )}
-            />
-          </Grid>
-          <Grid item xs={12} sm={8}>
-            <TextField
-              variant="outlined"
-              type="text"
-              label={t("_address")}
-              name="address"
-              value={address}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start" />,
-              }}
-              fullWidth
-            />
-          </Grid>
-        </Grid>
-        <Container maxWidth="md">
-          <TableContainer
-            key="table-locations"
-            sx={{ mt: 2 }}
-            component={Paper}
-          >
-            <Table sx={{ minWidth: 350 }} aria-label="customized table">
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>{t("locations_within_the_depot")}</StyledTableCell>
-                  <StyledTableCell />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow key="new-especificacion">
-                  <StyledTableCell sx={{ minWidth: 300, maxWidth: 400 }}>
-                    <TextField
-                      variant="outlined"
-                      size="small"
-                      type="text"
-                      name="location"
-                      value={location}
-                      onChange={inputChange}
-                      fullWidth
-                    />
-                  </StyledTableCell>
-                  <StyledTableCell key="head-actions" align="center">
-                    <Fab
-                      color="success"
-                      aria-label="add"
-                      size="small"
-                      onClick={() => handleAddLocation()}
-                    >
-                      <AddIcon />
-                    </Fab>
-                  </StyledTableCell>
-                </TableRow>
-                {locations.map((loc) => (
-                  <TableRow key={loc}>
-                    <TableCell
-                      sx={{
-                        p: "5px",
-                        height: "50px",
-                        minWidth: 350,
-                        maxWidth: 450,
-                      }}
-                    >
-                      {loc}
-                    </TableCell>
-                    <TableCell align="center" sx={{ p: "5px" }}>
-                      <Tooltip title={t("icon_delete")}>
-                        <IconButton
-                          hidden={
-                            loc.toLowerCase() === locationDefault.toLowerCase()
-                          }
-                          onClick={() => handleDeleteLocation(loc)}
-                          color="default"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
+        </FormSection>
+
+        {/* Locations Section */}
+        <FormSection title={t("locations_within_the_depot")}>
+          <Container maxWidth="md">
+            <TableContainer component={Paper}>
+              <Table aria-label="locations table">
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>{t("locations_within_the_depot")}</StyledTableCell>
+                    <StyledTableCell align="center">{t("actions")}</StyledTableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Container>
-        <Grid
-          container
-          spacing={1}
-          alignItems="center"
-          justifyContent="space-around"
-          sx={{ mt: 3 }}
-        >
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <StyledTableCell>
+                      <TextField
+                        name="location"
+                        value={location}
+                        onChange={inputChange}
+                        fullWidth
+                      />
+                    </StyledTableCell>
+                    <StyledTableCell align="center">
+                      <Fab color="success" size="small" onClick={handleAddLocation}>
+                        <AddIcon />
+                      </Fab>
+                    </StyledTableCell>
+                  </TableRow>
+                  {locations.map((loc) => (
+                    <TableRow key={loc}>
+                      <TableCell
+                        sx={{
+                          p: "5px",
+                          height: "50px",
+                          minWidth: 350,
+                          maxWidth: 450,
+                        }}
+                      >
+                        {loc}
+                      </TableCell>
+                      <TableCell align="center" sx={{ p: "5px" }}>
+                        <Tooltip title={t("icon_delete")}>
+                          <IconButton
+                            disabled={loc.toLowerCase() === locationDefault.toLowerCase()}
+                            onClick={() => handleDeleteLocation(loc)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Container>
+        </FormSection>
+
+        {/* Action Buttons */}
+        <Grid container spacing={2} justifyContent="center" sx={{ mt: 3 }}>
           <Grid item xs={12} sm={3}>
-            <Button
-              variant="contained"
-              color="inherit"
-              onClick={onClickCancel}>
-              {t("id_cancel")}</Button>
+            <Button variant="contained" color="inherit" fullWidth onClick={onClickCancel}>
+              {t("id_cancel")}
+            </Button>
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button
               variant="contained"
               color="success"
+              fullWidth
               onClick={depositActive ? handleUpdateDeposit : handleAddDeposit}
             >
-              {!depositActive ? t("_add") : t("id_update")}
+              {depositActive ? t("id_update") : t("_add")}
             </Button>
           </Grid>
         </Grid>
       </Paper>
     </TemplateLayout>
   );
-
-
-
-
 };

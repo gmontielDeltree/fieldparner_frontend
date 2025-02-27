@@ -379,7 +379,23 @@
     "error_adding_reserved_stock": "Error adding reserved stock",
     "insufficient_reserved_stock": "Insufficient reserved stock",
     "reserved_stock_removed": "Reserved stock removed successfully",
-    "error_removing_reserved_stock": "Error removing reserved stock"
+    "error_removing_reserved_stock": "Error removing reserved stock",
+    "basic_information": "Basic Information",
+    "type_and_status": "Type and Status",
+    "address_information": "Address Information",
+    "geolocation": "Geolocation",
+    "location_cannot_be_empty": "Location cannot be empty",
+    "location": "Location",
+    "location_added": "Location added successfully",
+    "location_updated": "Location updated successfully",
+    "location_deleted": "Location deleted successfully",
+    "error_deleting_location": "Error deleting location",
+    "location_not_found": "Location not found",
+    "location_fetch_error": "Error fetching location data",
+    "location_created": "Location created successfully",
+    "status": "Status",
+    "actions": "Actions"
+    
   }
   
 
