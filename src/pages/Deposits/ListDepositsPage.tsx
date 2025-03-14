@@ -15,6 +15,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Warehouse as WarehouseIcon,
+  Delete as DeleteIcon
 } from "@mui/icons-material";
 import { useForm, useAppDispatch, useDeposit } from "../../hooks";
 import { setDepositActive } from "../../redux/deposit";
@@ -74,7 +75,7 @@ export const ListDepositsPage: React.FC = () => {
                 "&:hover": { transform: "scale(1.2)" },
               }}
             >
-              <Icon name="trash alternate" />
+              <DeleteIcon />
             </IconButton>
           </Tooltip>
         </Box>

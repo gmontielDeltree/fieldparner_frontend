@@ -423,7 +423,7 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={4}>
                 <Typography variant="body1" align="left">
-                  Unidad de Medida: <b>{supplySelected?.unitMeasurement}</b>
+                  Unidad de Medidas: <b>{supplySelected?.unitMeasurement}</b>
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={12}>

@@ -17,14 +17,14 @@ import {
   ArrowRightAlt as ArrowRightAltIcon,
   AddLocationAlt as AddLocationAltIcon,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   useAppDispatch,
   useAppSelector,
   useForm,
 } from "../hooks";
 import { OriginDestinations } from "../types";
-import { removeOriginsDestinations } from "../redux/originsdestinatons/originDestiantionsSlice";
+import { removeOriginsDestinationsActive, setOriginsDestinationsActive } from "../redux/originsdestinatons/originDestiantionsSlice";
 import { useOriginDestinations } from "../hooks/useOriginDestinations";
 import { useTranslation } from "react-i18next";
 
@@ -37,6 +37,7 @@ const initialForm: OriginDestinations = {
 
 export const NewOriginsDestinationsPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { originsDestinationsActive } = useAppSelector((state) => state.ordesti);
@@ -62,18 +63,30 @@ export const NewOriginsDestinationsPage: React.FC = () => {
   };
 
   const onClickCancel = () => {
-    dispatch(removeOriginsDestinations());
+    // Usa la acción correcta para limpiar el ítem activo
+    dispatch(removeOriginsDestinationsActive());
     navigate("/init/overview/origins-destinations/");
   };
 
+  // Check if we're on the "new" route and reset the form if needed
   useEffect(() => {
-    if (originsDestinationsActive) setFormulario(originsDestinationsActive);
-    else setFormulario(initialForm);
-  }, [originsDestinationsActive, setFormulario]);
+    const isNewRoute = location.pathname.endsWith('/new');
+    
+    if (isNewRoute) {
+      // Clear active item from Redux store using the correct action
+      dispatch(removeOriginsDestinationsActive());
+      // Reset form to initial state
+      setFormulario(initialForm);
+    } else if (originsDestinationsActive) {
+      setFormulario(originsDestinationsActive);
+    }
+  }, [location.pathname, dispatch, setFormulario, originsDestinationsActive]);
 
+  // Cleanup when component unmounts
   useEffect(() => {
     return () => {
-      dispatch((removeOriginsDestinations));
+      // Usa la acción correcta en el cleanup
+      dispatch(removeOriginsDestinationsActive());
     };
   }, [dispatch]);
 
@@ -87,8 +100,7 @@ export const NewOriginsDestinationsPage: React.FC = () => {
           alignItems="center"
           sx={{ ml: { sm: 2 }, pt: 2 }}
         >
-
-          < AddLocationAltIcon /><ArrowRightAltIcon fontSize='large' />
+          <AddLocationAltIcon /><ArrowRightAltIcon fontSize='large' />
           <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
             {t("origins_destinations")}
           </Typography>

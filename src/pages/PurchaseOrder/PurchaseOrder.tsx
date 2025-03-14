@@ -13,6 +13,7 @@ import {
     Close as CloseIcon,
     Edit as EditIcon,
     Save as SaveIcon,
+    Delete as DeleteIcon
 } from '@mui/icons-material';
 import { Icon } from 'semantic-ui-react';
 import { ColumnProps, DetailPurchaseOrderItem, PurchaseOrder, Supply } from '../../types';
@@ -275,7 +276,7 @@ export const EditOrderRow = ({
                                 onClick={() => deleteRowItem(order)}
                                 style={{ fontSize: '1rem' }}
                             >
-                                <Icon name="trash alternate" />
+                                <DeleteIcon />
                             </IconButton>
                         </>
                 }
