@@ -5,6 +5,11 @@ import { dbContext } from '../services';
 import { useAppSelector } from './useRedux';
 import { Country } from '../interfaces/country';
 import { Business, BusinessItem } from '../interfaces/socialEntity';
+import PouchDB from 'pouchdb';
+import PouchDBFind from 'pouchdb-find';
+PouchDB.plugin(PouchDBFind);
+//TODO: REMOVER FUNCION DE REPLICA
+const urlDBSTG = "https://apikey-v2-1yb2cmamb0xx9crcw3bnhkext446sfm6qsi2irs1fl4k:d6ed49b33addbe40ae2c8aadf0d4dec3@53a5f67b-e352-46df-bd58-4d4a37b99dd2-bluemix.cloudantnosqldb.appdomain.cloud";
 
 export const useBusiness = () => {
     const navigate = useNavigate();
@@ -13,6 +18,32 @@ export const useBusiness = () => {
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
+    //TODO:
+    
+    const replicate = async () => {
+        try {
+            const result = await new PouchDB("licences").allDocs({ include_docs: true });
+            const data = result.rows.slice(0,5).map(row => {
+                const doc = {...row.doc};
+                delete doc._rev;
+                delete doc._id;
+                return doc;
+            })
+
+            const enviroment = "stg";
+            const dbName = "licences";
+            const db = new PouchDB(`${dbName}_${enviroment}`);
+            await db.bulkDocs(data);
+            db.sync(`${urlDBSTG}/${dbName}_${enviroment}`)
+                .then(function (result) {
+                    console.log('replicated', result);
+                });
+
+        } catch (error) {
+            console.error("Error replicating", error);
+
+        }
+    }
 
     const getBusinesses = async () => {
         setIsLoading(true);
@@ -155,5 +186,6 @@ export const useBusiness = () => {
         getBusinesses,
         createBusiness,
         updateBusiness,
+        replicate
     }
 };

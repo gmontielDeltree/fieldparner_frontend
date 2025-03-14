@@ -24,7 +24,7 @@ import { GenericListPage } from "../GenericListPage";
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isLoading, businesses, getBusinesses, deleteBusiness, setBusinesses } = useBusiness();
+  const { isLoading, businesses, getBusinesses, deleteBusiness, setBusinesses, replicate } = useBusiness();
   const { filterText, handleInputChange } = useForm({ filterText: "" });
   const { t } = useTranslation();
 
@@ -105,16 +105,19 @@ export const ListBusinessesPage: React.FC = () => {
   };
 
   return (
-    <GenericListPage
-      title={t("social_entities")}
-      icon={<BusinessIcon sx={{ fontSize: 40, color: "#424242" }} />}
-      data={businesses}
-      columns={columns}
-      getData={getBusinesses}
-      deleteData={deleteBusiness}
-      setActiveItem={setBusinessActive}
-      newItemPath="/init/overview/business/new"
-      editItemPath={(id) => `/init/overview/business/${id}`}
-    />
+    <>
+      {/* <button type="button" className="my-12" onClick={() => replicate()} >replicate</button> */}
+      <GenericListPage
+        title={t("social_entities")}
+        icon={<BusinessIcon sx={{ fontSize: 40, color: "#424242" }} />}
+        data={businesses}
+        columns={columns}
+        getData={getBusinesses}
+        deleteData={deleteBusiness}
+        setActiveItem={setBusinessActive}
+        newItemPath="/init/overview/business/new"
+        editItemPath={(id) => `/init/overview/business/${id}`}
+      />
+    </>
   );
 };
