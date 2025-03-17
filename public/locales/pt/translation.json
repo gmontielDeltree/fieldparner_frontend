@@ -403,5 +403,19 @@
     "zone_added": "Zona adicionada.",
     "check_fields": "Verifique os campos.",
     "Oops": "Ops",
-    "updated": "Atualizada."
+    "updated": "Atualizada.",
+    "error_country": "O país é obrigatório",
+    "success": "Sucesso",
+    "deposit_updated_successfully": "Depósito atualizado com sucesso",
+    "deposit_created_successfully": "Depósito criado com sucesso",
+    "operation_failed": "Operação falhou",
+    "validation_error": "Erro de Validação",
+    "location_already_exists": "A localização já existe",
+    "select_locality": "Selecione uma Localidade",
+    "multiple_localities_found": "Múltiplas localizações encontradas. Por favor, escolha uma.",
+    "latitude_out_of_bounds": "Latitude fora dos limites",
+    "longitude_out_of_bounds": "Longitude fora dos limites",
+    "status_active": "Ativo",
+    "status_inactive": "Inativo",
+    "deposit_creation_failed": "Falha na criação do depósito"
 }

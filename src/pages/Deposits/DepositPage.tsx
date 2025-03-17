@@ -84,7 +84,7 @@ const initialForm: Deposit = {
   address: "",
   geolocation: { lng: -35, lat: -34 },
   locality: "",
-  pais: "",
+  country: "",
   owner: "",
   province: "",
   accountId: "",
@@ -137,7 +137,7 @@ export const DepositPage: React.FC = () => {
     geolocation,
     locality,
     province,
-    pais,
+    country,
     isNegative,
     isVirtual,
     locations,
@@ -181,26 +181,65 @@ export const DepositPage: React.FC = () => {
   }, [businesses]);
 
   const onClickCancel = () => navigate("/init/overview/deposit");
-
-  const handleUpdateDeposit = () => {
+  const handleUpdateDeposit = async () => {
     if (validateForm()) {
-      if (formulario._id) {
-        updateDeposit(formulario);
-      } else {
-        createDeposit(formulario);
+      try {
+        if (formulario._id) {
+          await updateDeposit(formulario);
+        } else {
+          await createDeposit(formulario);
+        }
+
+        dispatch(removeDepositActive());
+
+        setFormulario(initialForm);
+
+        navigate("/init/overview/deposit");
+
+        Swal.fire({
+          title: t("success"),
+          text: formulario._id ? t("deposit_updated_successfully") : t("deposit_created_successfully"),
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error("Error al actualizar/crear el depósito:", error);
+        Swal.fire({
+          title: t("error"),
+          text: t("operation_failed"),
+          icon: "error"
+        });
       }
-      dispatch(removeDepositActive());
-      setFormulario(initialForm);
     }
   };
 
-  const handleAddDeposit = () => {
+  const handleAddDeposit = async () => {
     if (validateForm()) {
-      createDeposit(formulario);
-      setFormulario(initialForm);
+      try {
+        await createDeposit(formulario);
+
+        setFormulario(initialForm);
+
+        navigate("/init/overview/deposit");
+
+        Swal.fire({
+          title: t("success"),
+          text: t("deposit_created_successfully"),
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error("Error al crear el depósito:", error);
+        Swal.fire({
+          title: t("error"),
+          text: t("deposit_creation_failed"),
+          icon: "error"
+        });
+      }
     }
   };
-
   const validateForm = () => {
     let isValid = true;
     if (description.trim() === "") {
@@ -215,15 +254,35 @@ export const DepositPage: React.FC = () => {
     } else {
       setCpError(false);
     }
-    if (pais.trim() === "") {
+    if (country.trim() === "") {
       setCountryError(true);
       isValid = false;
     } else {
       setCountryError(false);
     }
+  
+    // Validación de geolocalización
+    const boundaries = getBoundaries(country);
+    if (geolocation.lat < boundaries.minLat || geolocation.lat > boundaries.maxLat) {
+      Swal.fire({
+        title: t("validation_error"),
+        text: t("latitude_out_of_bounds"), // Define este mensaje en tus traducciones
+        icon: "error",
+      });
+      isValid = false;
+    }
+    if (geolocation.lng < boundaries.minLng || geolocation.lng > boundaries.maxLng) {
+      Swal.fire({
+        title: t("validation_error"),
+        text: t("longitude_out_of_bounds"), // Define este mensaje en tus traducciones
+        icon: "error",
+      });
+      isValid = false;
+    }
+  
     return isValid;
   };
-
+  
   // ZIP code lookup functions
   const fetchBrazilZipCode = async (zip: string) => {
     try {
@@ -240,7 +299,7 @@ export const DepositPage: React.FC = () => {
     if (zipCode !== "") {
       setLoadingZipCode(true);
       try {
-        if (pais === "ARG" || pais === "AR") {
+        if (country === "ARG" || country === "AR") {
           const localityAndStates = await getLocalityAndStateByZipCode("ARG", zipCode);
           if (localityAndStates?.length) {
             const uniqueLocalities = [...new Set(localityAndStates.map((x) => x.locality))];
@@ -266,7 +325,7 @@ export const DepositPage: React.FC = () => {
           } else {
             throw new Error("No matching record found for Argentina.");
           }
-        } else if (pais === "BR" || pais === "BRA") {
+        } else if (country === "BR" || country === "BRA") {
           const brazilData = await fetchBrazilZipCode(zipCode);
           if (brazilData) {
             handleInputChange({
@@ -281,7 +340,7 @@ export const DepositPage: React.FC = () => {
           } else {
             throw new Error("No matching record found for Brazil.");
           }
-        } else if (pais === "PY" || pais === "PRY") {
+        } else if (country === "PY" || country === "PRY") {
           const localityAndStates = await getLocalityAndStateByZipCode("PRY", zipCode);
           if (localityAndStates?.length) {
             const uniqueLocalities = [...new Set(localityAndStates.map((x) => x.locality))];
@@ -323,7 +382,32 @@ export const DepositPage: React.FC = () => {
     }
   };
 
-  // Handlers for locations within the depot
+
+  const getBoundaries = (countryCode: string) => {
+    switch (countryCode) {
+      case "ARG":
+      case "AR":
+        return { minLat: -55, maxLat: -21, minLng: -73, maxLng: -53 };
+      case "BR":
+      case "BRA":
+        return { minLat: -33, maxLat: 5, minLng: -74, maxLng: -34 };
+      case "PY":
+      case "PRY":
+        return { minLat: -28, maxLat: -19, minLng: -62, maxLng: -54 };
+      default:
+        return { minLat: -90, maxLat: 90, minLng: -180, maxLng: 180 };
+    }
+  };
+
+  const boundaries = getBoundaries(country);
+
+
+  const isDuplicateLocation = (newLocation: string) => {
+    return formulario.locations.some(
+      (loc) => loc.trim().toLowerCase() === newLocation.trim().toLowerCase()
+    );
+  };
+
   const handleAddLocation = () => {
     if (!location.trim()) {
       Swal.fire({
@@ -333,10 +417,7 @@ export const DepositPage: React.FC = () => {
       });
       return;
     }
-    const isDuplicate = locations.some(
-      (existingLocation) => existingLocation.toLowerCase() === location.toLowerCase()
-    );
-    if (isDuplicate) {
+    if (isDuplicateLocation(location)) {
       Swal.fire({
         title: t("validation_error"),
         text: t("location_already_exists"),
@@ -372,7 +453,7 @@ export const DepositPage: React.FC = () => {
     _event: SyntheticEvent,
     value: { code: string; label: string } | null
   ) => {
-    if (value) handleFormValueChange("pais", value.code);
+    if (value) handleFormValueChange("country", value.code);
   };
 
   // Effects
@@ -450,202 +531,202 @@ export const DepositPage: React.FC = () => {
           </Grid>
         </FormSection>
 
-      {/* Type and Status Section */}
-<FormSection title={t("type_and_status")}>
-  <Grid container spacing={2} alignItems="center">
-    <Grid item xs={12} sm={6}>
-      <Box
-        sx={{
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 1,
-          p: 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-        }}
-      >
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={!isVirtual}
-              onChange={() =>
-                setFormulario((prev) => ({ ...prev, isVirtual: false }))
-              }
-            />
-          }
-          label={t("physical_masculine")}
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={isVirtual}
-              onChange={() =>
-                setFormulario((prev) => ({ ...prev, isVirtual: true }))
-              }
-            />
-          }
-          label={t("_virtual")}
-        />
-      </Box>
-    </Grid>
-    <Grid item xs={12} sm={6}>
-      <FormControl fullWidth>
-        <Autocomplete
-          value={formulario.status}
-          onChange={(e, newValue) =>
-            newValue && onChangeStatus(e, newValue)
-          }
-          options={statusOptions}
-          renderInput={(params) => <TextField {...params} label= {t("status")} />}
-        />
-      </FormControl>
-    </Grid>
-    <Grid item xs={4}>
-      <Box
-        sx={{
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 1,
-          p: 1,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 2,
-        }}
-      >
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={deposit}
-              onChange={() =>
-                setFormulario((prev) => ({
-                  ...prev,
-                  deposit: true,
-                  siloBag: false,
-                  silo: false,
-                  hopper: false,
-                }))
-              }
-            />
-          }
-          label={t("_warehouse")}
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={siloBag}
-              onChange={() =>
-                setFormulario((prev) => ({
-                  ...prev,
-                  deposit: false,
-                  siloBag: true,
-                  silo: false,
-                  hopper: false,
-                }))
-              }
-            />
-          }
-          label={t("_silobag")}
-        />
-        {siloBag && (
-          <TextField
-            sx={{ width: "72%" }}
-            variant="outlined"
-            size="small"
-            label="ID Silobolsa"
-            name="siloBagId"
-            value={siloBagId}
-            onChange={(e) =>
-              setFormulario((prev) => ({ ...prev, siloBagId: e.target.value }))
-            }
-          />
-        )}
-      </Box>
-    </Grid>
-    <Grid item xs={4}>
-      <Box
-        sx={{
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 1,
-          p: 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-        }}
-      >
-        <Typography sx={{ mr: 2 }}>{t("admits_negative_stock")}</Typography>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={isNegative}
-              onChange={handleChangeIsNegative}
-              name="yes"
-            />
-          }
-          label={t("_yes")}
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={!isNegative}
-              onChange={handleChangeIsNegative}
-              name="not"
-            />
-          }
-          label={t("_no")}
-        />
-      </Box>
-    </Grid>
-    <Grid item xs={4}>
-      <Box
-        sx={{
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 1,
-          p: 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-        }}
-      >
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={silo}
-              onChange={() =>
-                setFormulario((prev) => ({
-                  ...prev,
-                  deposit: false,
-                  silo: true,
-                  hopper: false,
-                }))
-              }
-            />
-          }
-          label="Silo"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={hopper}
-              onChange={() =>
-                setFormulario((prev) => ({
-                  ...prev,
-                  deposit: false,
-                  siloBag: false,
-                  silo: false,
-                  hopper: true,
-                }))
-              }
-            />
-          }
-          label={t("_hopper")}
-        />
-      </Box>
-    </Grid>
-  </Grid>
-</FormSection>
+        {/* Type and Status Section */}
+        <FormSection title={t("type_and_status")}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={6}>
+              <Box
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={!isVirtual}
+                      onChange={() =>
+                        setFormulario((prev) => ({ ...prev, isVirtual: false }))
+                      }
+                    />
+                  }
+                  label={t("physical_masculine")}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isVirtual}
+                      onChange={() =>
+                        setFormulario((prev) => ({ ...prev, isVirtual: true }))
+                      }
+                    />
+                  }
+                  label={t("_virtual")}
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <Autocomplete
+                  value={formulario.status}
+                  onChange={(e, newValue) =>
+                    newValue && onChangeStatus(e, newValue)
+                  }
+                  options={statusOptions}
+                  renderInput={(params) => <TextField {...params} label={t("status")} />}
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={4}>
+              <Box
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 1,
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                }}
+              >
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={deposit}
+                      onChange={() =>
+                        setFormulario((prev) => ({
+                          ...prev,
+                          deposit: true,
+                          siloBag: false,
+                          silo: false,
+                          hopper: false,
+                        }))
+                      }
+                    />
+                  }
+                  label={t("_warehouse")}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={siloBag}
+                      onChange={() =>
+                        setFormulario((prev) => ({
+                          ...prev,
+                          deposit: false,
+                          siloBag: true,
+                          silo: false,
+                          hopper: false,
+                        }))
+                      }
+                    />
+                  }
+                  label={t("_silobag")}
+                />
+                {siloBag && (
+                  <TextField
+                    sx={{ width: "72%" }}
+                    variant="outlined"
+                    size="small"
+                    label="ID Silobolsa"
+                    name="siloBagId"
+                    value={siloBagId}
+                    onChange={(e) =>
+                      setFormulario((prev) => ({ ...prev, siloBagId: e.target.value }))
+                    }
+                  />
+                )}
+              </Box>
+            </Grid>
+            <Grid item xs={4}>
+              <Box
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                <Typography sx={{ mr: 2 }}>{t("admits_negative_stock")}</Typography>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isNegative}
+                      onChange={handleChangeIsNegative}
+                      name="yes"
+                    />
+                  }
+                  label={t("_yes")}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={!isNegative}
+                      onChange={handleChangeIsNegative}
+                      name="not"
+                    />
+                  }
+                  label={t("_no")}
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={4}>
+              <Box
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={silo}
+                      onChange={() =>
+                        setFormulario((prev) => ({
+                          ...prev,
+                          deposit: false,
+                          silo: true,
+                          hopper: false,
+                        }))
+                      }
+                    />
+                  }
+                  label="Silo"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={hopper}
+                      onChange={() =>
+                        setFormulario((prev) => ({
+                          ...prev,
+                          deposit: false,
+                          siloBag: false,
+                          silo: false,
+                          hopper: true,
+                        }))
+                      }
+                    />
+                  }
+                  label={t("_hopper")}
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        </FormSection>
 
 
         {/* Address Information Section */}
@@ -654,7 +735,7 @@ export const DepositPage: React.FC = () => {
             <Grid item xs={6} sm={4}>
               <FormControl fullWidth variant="outlined" error={countryError}>
                 <Autocomplete
-                  value={countryOptions.find((opts) => opts.code === pais) || null}
+                  value={countryOptions.find((opts) => opts.code === country) || null}
                   onChange={onChangeCountry}
                   options={countryOptions}
                   getOptionLabel={(option) => option.label}
@@ -734,6 +815,7 @@ export const DepositPage: React.FC = () => {
                   handleGeolocationChange({ ...geolocation, lat: +e.target.value })
                 }
                 fullWidth
+                inputProps={{ min: boundaries.minLat, max: boundaries.maxLat, step: "0.00001" }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -746,6 +828,7 @@ export const DepositPage: React.FC = () => {
                   handleGeolocationChange({ ...geolocation, lng: +e.target.value })
                 }
                 fullWidth
+                inputProps={{ min: boundaries.minLng, max: boundaries.maxLng, step: "0.00001" }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
