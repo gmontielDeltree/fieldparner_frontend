@@ -433,5 +433,11 @@
     "id_required_field": "Campo obrigatório",
     "id_modification": "Modificação",
     "id_new": "Nova",
-    "id_transport_document": "Carta de Porte"
+    "id_transport_document": "Carta de Porte",
+    "id_contract_exists": "O ID do contrato já existe",
+    "fill_required_fields": "Por favor, preencha todos os campos obrigatórios",
+    "add_at_least_one_contract": "Você deve adicionar pelo menos um contrato",
+    "fill_all_contract_fields": "Por favor, preencha todos os campos do contrato",
+    "numeric_values_only": "Apenas valores numéricos são permitidos",
+    "contract_deleted_successfully": "O contrato foi excluído com sucesso"
   }
