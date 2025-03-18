@@ -440,5 +440,11 @@
     "id_required_field": "Campo requerido",
     "id_modification": "Modificación",
     "id_new": "Nueva",
-    "id_transport_document": "Carta de Porte"
+    "id_transport_document": "Carta de Porte",
+    "field": "Campo",
+    "hectares": "Hectáreas",
+    "no_data": "Sin datos",
+    "field_deleted": "Campo eliminado",
+    "complete_all_fields": "Por favor, complete todos los campos necesarios",
+    "cannot_update_without_valid_id": "No se puede actualizar sin un ID válido"
 }

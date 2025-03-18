@@ -433,7 +433,13 @@
     "id_required_field": "Required field",
     "id_modification": "Modification",
     "id_new": "New",
-    "id_transport_document": "Transport Document"
+    "id_transport_document": "Transport Document",
+    "field": "Field",
+    "hectares": "Hectares",
+    "no_data": "No data",
+    "field_deleted": "Field deleted",
+    "complete_all_fields": "Please complete all required fields",
+    "cannot_update_without_valid_id": "Cannot update without a valid ID"
    }
   
 
