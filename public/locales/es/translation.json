@@ -441,10 +441,16 @@
     "id_modification": "Modificación",
     "id_new": "Nueva",
     "id_transport_document": "Carta de Porte",
-    "id_contract_exists": "El ID contrato ya existe",
-    "fill_required_fields": "Por favor, complete todos los campos obligatorios",
-    "add_at_least_one_contract": "Debe agregar al menos un contrato",
-    "fill_all_contract_fields": "Por favor, complete todos los campos del contrato",
-    "numeric_values_only": "Solo se permiten valores numéricos",
-    "contract_deleted_successfully": "El contrato ha sido eliminado exitosamente"
+  "field": "Campo",
+  "hectares": "Hectáreas",
+  "no_data": "Sin datos",
+  "field_deleted": "Campo eliminado",
+  "complete_all_fields": "Por favor, complete todos los campos necesarios",
+  "cannot_update_without_valid_id": "No se puede actualizar sin un ID válido",
+  "id_contract_exists": "El ID contrato ya existe",
+  "fill_required_fields": "Por favor, complete todos los campos obligatorios",
+  "add_at_least_one_contract": "Debe agregar al menos un contrato",
+  "fill_all_contract_fields": "Por favor, complete todos los campos del contrato",
+  "numeric_values_only": "Solo se permiten valores numéricos",
+  "contract_deleted_successfully": "El contrato ha sido eliminado exitosamente"
 }

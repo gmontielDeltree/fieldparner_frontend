@@ -434,12 +434,18 @@
     "id_modification": "Modification",
     "id_new": "New",
     "id_transport_document": "Transport Document",
-    "id_contract_exists": "The Contract ID already exists",
-    "fill_required_fields": "Please fill in all required fields",
-    "add_at_least_one_contract": "You must add at least one contract",
-    "fill_all_contract_fields": "Please fill in all contract fields",
-    "numeric_values_only": "Only numeric values are allowed",
-    "contract_deleted_successfully": "The contract has been successfully deleted"
+  "field": "Field",
+  "hectares": "Hectares",
+  "no_data": "No data",
+  "field_deleted": "Field deleted",
+  "complete_all_fields": "Please complete all required fields",
+  "cannot_update_without_valid_id": "Cannot update without a valid ID",
+  "id_contract_exists": "The Contract ID already exists",
+  "fill_required_fields": "Please fill in all required fields",
+  "add_at_least_one_contract": "You must add at least one contract",
+  "fill_all_contract_fields": "Please fill in all contract fields",
+  "numeric_values_only": "Only numeric values are allowed",
+  "contract_deleted_successfully": "The contract has been successfully deleted"
    }
   
 
