@@ -403,8 +403,26 @@
     "zone_added": "Zone added.",
     "check_fields": "Please check fields.",
     "Oops": "Oops",
-    "updated": "Updated."
-  }
+    "updated": "Updated.",
+    "error_country": "Country is required",
+    "success": "Success",
+    "deposit_updated_successfully": "Deposit updated successfully",
+    "deposit_created_successfully": "Deposit created successfully",
+    "operation_failed": "Operation failed",
+    "validation_error": "Validation Error",
+    "location_already_exists": "Location already exists",
+    "select_locality": "Select a Locality",
+    "multiple_localities_found": "Multiple localities found. Please choose one.",
+    "latitude_out_of_bounds": "Latitude is out of bounds",
+    "longitude_out_of_bounds": "Longitude is out of bounds",
+    "status_active": "Active",
+    "status_inactive": "Inactive",
+    "deposit_creation_failed": "Deposit creation failed",
+    "certificate_deposit_not_valid_for_your_country": "The certificate of deposit is not valid for your country.",
+    "certificateDeposit_header": "Header",
+    "certificateDeposit_grains": "Grains",
+    "certificateDeposit_rates": "Rates",
+    "certificateDeposit_title": "Certificate of Deposit"
+   }
   
 
-  
