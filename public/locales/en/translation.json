@@ -417,7 +417,12 @@
     "longitude_out_of_bounds": "Longitude is out of bounds",
     "status_active": "Active",
     "status_inactive": "Inactive",
-    "deposit_creation_failed": "Deposit creation failed"
-  }
+    "deposit_creation_failed": "Deposit creation failed",
+    "certificate_deposit_not_valid_for_your_country": "The certificate of deposit is not valid for your country.",
+    "certificateDeposit_header": "Header",
+    "certificateDeposit_grains": "Grains",
+    "certificateDeposit_rates": "Rates",
+    "certificateDeposit_title": "Certificate of Deposit"
+   }
   
 
