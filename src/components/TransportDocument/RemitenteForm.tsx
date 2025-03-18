@@ -38,39 +38,35 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
     }, [salidaCampoId, exitFields])
 
 
-    // const onChangeCompany = (e: SelectChangeEvent) => {
-    //     const tributaryCode = e.target.value;
-    //     const foundCompany = companies?.find(x => x.trybutaryCode === tributaryCode);
-    //     if (foundCompany) setSelectedCompany(foundCompany);
-    //     handleSelectChange(e);
-    // }
-
-    // const onChangeField = (e: SelectChangeEvent) => {
-    //     const salidaCampoId = e.target.value;
-    //     const foundExitField = exitFields?.find(x => x._id === salidaCampoId);
-    //     if (foundExitField) changeExitField(foundExitField);
-    //     handleSelectChange(e);
-    // }
 
     return (
         <Grid className="remitente-form" container spacing={1}>
-            <Grid item xs={12} sm={3}>
-                <TextField
-                    variant="outlined"
-                    type="text"
-                    label="Carta Porte Nro"
-                    error={formValues.nroCartaPorte.isError}
-                    helperText={formValues.nroCartaPorte.message}
-                    name="nroCartaPorte"
-                    value={formValues.nroCartaPorte.value}
-                    onChange={handleInputChange}
-                    disabled={!!formValues._id} //readonly si existe
-                    InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                    }}
-                    fullWidth
-                />
-            </Grid>
+           <Grid item xs={12} sm={3}>
+    <TextField
+        variant="outlined"
+        type="text"
+        label="Carta Porte Nro"
+        error={formValues.nroCartaPorte.isError}
+        helperText={formValues.nroCartaPorte.isError ? formValues.nroCartaPorte.message : "Solo valores numéricos"}
+        name="nroCartaPorte"
+        value={formValues.nroCartaPorte.value}
+        onChange={(e) => {
+            // Validar que solo se ingresen números
+            const numericRegex = /^[0-9]*$/;
+            if (numericRegex.test(e.target.value) || e.target.value === '') {
+                handleInputChange(e);
+            }
+        }}
+        disabled={!!formValues._id} //readonly si existe
+        InputProps={{
+            startAdornment: <InputAdornment position="start" />,
+            inputProps: { 
+                pattern: '[0-9]*', // HTML5 validation
+            }
+        }}
+        fullWidth
+    />
+</Grid>
             <Grid item xs={12} sm={2}>
                 <TextField
                     variant="outlined"

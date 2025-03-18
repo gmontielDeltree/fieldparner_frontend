@@ -422,5 +422,16 @@
     "certificateDeposit_header": "Cabeçalho",
     "certificateDeposit_grains": "Grãos",
     "certificateDeposit_rates": "Tarifas",
-    "certificateDeposit_title": "Certificado de Depósito"
+    "certificateDeposit_title": "Certificado de Depósito",
+    "id_remitente": "Remetente",
+    "id_granos_transportados": "Grãos Transportados",
+    "id_comercio_granos": "Comércio de Grãos",
+    "id_destinatario": "Destinatário",
+    "id_transportista": "Transportador",
+    "id_add": "Adicionar",
+    "id_unknown_step": "Etapa desconhecida",
+    "id_required_field": "Campo obrigatório",
+    "id_modification": "Modificação",
+    "id_new": "Nova",
+    "id_transport_document": "Carta de Porte"
   }
