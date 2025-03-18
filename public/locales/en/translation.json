@@ -433,7 +433,13 @@
     "id_required_field": "Required field",
     "id_modification": "Modification",
     "id_new": "New",
-    "id_transport_document": "Transport Document"
+    "id_transport_document": "Transport Document",
+    "id_contract_exists": "The Contract ID already exists",
+    "fill_required_fields": "Please fill in all required fields",
+    "add_at_least_one_contract": "You must add at least one contract",
+    "fill_all_contract_fields": "Please fill in all contract fields",
+    "numeric_values_only": "Only numeric values are allowed",
+    "contract_deleted_successfully": "The contract has been successfully deleted"
    }
   
 
