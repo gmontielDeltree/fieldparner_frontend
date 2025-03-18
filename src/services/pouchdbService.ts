@@ -45,9 +45,9 @@ export const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL
 // const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
 const environment = getEnvVariables().VITE_ENVIRONMENT;
 
+//TODO: ajustar para varios ambientes
 const isEnvSTG = () => {
-  // return environment === "stg" ? "_stg" : "";
-  return "";
+  return environment === "stg" ? "_stg" : "";
 };
 
 export const opts: PouchDB.Replication.SyncOptions = {
@@ -125,7 +125,7 @@ export const dbContext = Object.freeze({
   numerators: new PouchDB<Numerator>(dbNames.numerators),
   movementsType: new PouchDB<MovementType>(dbNames.movementsType),
   platform: new PouchDB<any>(dbNames.platform),
-  // platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),//TODO: Verificar si se necesita
+  platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`), //TODO: Verificar si se necesita
   crops: new PouchDB<Crop>(dbNames.crops),
   zones: new PouchDB<Zones>(dbNames.zones),
   // fieldpartner: new PouchDB(dbNames.fieldpartner),
