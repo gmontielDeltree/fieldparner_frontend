@@ -34,6 +34,15 @@ import { Country } from '../interfaces/country';
 import { getLocalityAndStateByZipCode } from '../utils/getDataZipCode';
 
 
+interface FormErrors {
+  taxKey?: string;
+  businessName?: string;
+  fantasyName?: string;
+  address?: string;
+  location?: string;
+  state?: string;
+  phoneNumber?: string;
+}
 
 export interface AddressFormProps {
   countries: Country[];
@@ -74,6 +83,7 @@ export const NewCoporateCompaniesPage = () => {
   const { businesses, getBusinesses } = useBusiness();
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [_localities, setLocalities] = useState<string[]>([]);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const countryUser = countries.find(country => country.code === user?.countryId);
 
   const {
@@ -95,7 +105,48 @@ export const NewCoporateCompaniesPage = () => {
     handleInputChange,
     reset,
   } = useForm<CorporateCompanies>(initialForm);
+  const validateForm = (): boolean => {
+    const errors: FormErrors = {};
+    let isValid = true;
 
+    if (!taxKey?.trim()) {
+      errors.taxKey = t('required_field');
+      isValid = false;
+    }
+
+    if (!businessName?.trim()) {
+      errors.businessName = t('required_field');
+      isValid = false;
+    }
+
+    if (!fantasyName?.trim()) {
+      errors.fantasyName = t('required_field');
+      isValid = false;
+    }
+
+    if (!address?.trim()) {
+      errors.address = t('required_field');
+      isValid = false;
+    }
+
+    if (!location?.trim()) {
+      errors.location = t('required_field');
+      isValid = false;
+    }
+
+    if (!state?.trim()) {
+      errors.state = t('required_field');
+      isValid = false;
+    }
+
+    if (!phoneNumber?.trim()) {
+      errors.phoneNumber = t('required_field');
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
 
   useEffect(() => {
     if (corporateCompaniesActive) setFormulario(corporateCompaniesActive);
@@ -130,20 +181,33 @@ export const NewCoporateCompaniesPage = () => {
   };
 
   const handleUpdate = () => {
-
     if (!formulario._id?.trim()) {
-      Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
+      Swal.fire('Error', t('cannot_update_without_valid_id'), 'error');
       return;
     }
 
-    updateCorporateCompanies(formulario);
-    reset();
+    if (validateForm()) {
+      updateCorporateCompanies(formulario);
+      reset();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: t('validation_error'),
+        text: t('check_required_fields'),
+      });
+    }
   };
-
-
   const handleAdd = async () => {
-    await createCorporateCompanies(formulario);
-    reset();
+    if (validateForm()) {
+      await createCorporateCompanies(formulario);
+      reset();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: t('validation_error'),
+        text: t('check_required_fields'),
+      });
+    }
   };
 
 
@@ -154,6 +218,11 @@ export const NewCoporateCompaniesPage = () => {
   };
 
   const handleVerifyId = () => {
+    // Solo verificamos si el taxKey (CUIT) tiene algún valor
+    if (!taxKey || taxKey.trim() === '') {
+      return false;
+    }
+
     const existingBusiness = businesses.find(business => business.cuit === taxKey);
     const taxIdExists = corporateCompanies.find(corporate => corporate.taxKey === taxKey);
 
@@ -169,7 +238,7 @@ export const NewCoporateCompaniesPage = () => {
           id: 0
         }));
       });
-      return true; // O puedes devolver idExists si deseas mantener consistencia con el retorno
+      return true;
     }
 
     if (existingBusiness) {
@@ -207,7 +276,6 @@ export const NewCoporateCompaniesPage = () => {
 
     return !!existingBusiness;
   };
-
 
   const fetchBrazilZipCode = async (zipCode: string) => {
     try {
@@ -346,8 +414,11 @@ export const NewCoporateCompaniesPage = () => {
                 onChange={handleInputChange}
                 required
                 fullWidth
+                error={!!formErrors.taxKey}
+                helperText={formErrors.taxKey}
               />
             </Grid>
+
             <Grid item xs={12} md={4.5}>
               <TextField
                 label={t("name_negal_name")}
@@ -358,9 +429,12 @@ export const NewCoporateCompaniesPage = () => {
                 onChange={handleInputChange}
                 required
                 fullWidth
+                error={!!formErrors.businessName}
+                helperText={formErrors.businessName}
               />
             </Grid>
             <Grid item xs={12} md={4.5}>
+
               <TextField
                 label={t("fantasy_name")}
                 type="text"
@@ -370,6 +444,8 @@ export const NewCoporateCompaniesPage = () => {
                 onChange={handleInputChange}
                 required
                 fullWidth
+                error={!!formErrors.fantasyName}
+                helperText={formErrors.fantasyName}
               />
 
             </Grid>
@@ -400,6 +476,9 @@ export const NewCoporateCompaniesPage = () => {
                   startAdornment: <InputAdornment position="start" />
                 }}
                 fullWidth
+                required
+                error={!!formErrors.location}
+                helperText={formErrors.location}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -412,6 +491,8 @@ export const NewCoporateCompaniesPage = () => {
                 onChange={handleInputChange}
                 required
                 fullWidth
+                error={!!formErrors.address}
+                helperText={formErrors.address}
               />
             </Grid>
             <Grid item xs={12} md={4}>
@@ -435,6 +516,8 @@ export const NewCoporateCompaniesPage = () => {
                 onChange={handleInputChange}
                 required
                 fullWidth
+                error={!!formErrors.state}
+                helperText={formErrors.state}
               />
             </Grid>
             <Grid item xs={12} md={4}>
@@ -447,6 +530,8 @@ export const NewCoporateCompaniesPage = () => {
                 onChange={handleInputChange}
                 required
                 fullWidth
+                error={!!formErrors.phoneNumber}
+                helperText={formErrors.phoneNumber}
               />
             </Grid>
             <Grid item xs={12} md={4}>
