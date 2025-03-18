@@ -29,6 +29,14 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
     deleteFile();
   }
 
+  const generateUniqueId = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
+
   const onChangeFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
     if (file) {
@@ -36,12 +44,16 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
       let extensionPos = fileNameOriginal.lastIndexOf(".");
       let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
 
-      const newFileName = `carta-porte_${formValues.nroCartaPorte.value}${fileType}`;
+      const uniqueId = generateUniqueId();
+      const newFileName = `carta-porte_${uniqueId}${fileType}`;
+
       const renamedFile = new File([file], newFileName, { type: file.type });
       fileUpload(renamedFile);
-      handleFormValueChange("fileName", newFileName);
+      handleFormValueChange && handleFormValueChange("fileName", newFileName);
     }
   };
+
+
 
   return (
     <Grid container spacing={1}>

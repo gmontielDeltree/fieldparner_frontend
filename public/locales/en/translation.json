@@ -422,7 +422,18 @@
     "certificateDeposit_header": "Header",
     "certificateDeposit_grains": "Grains",
     "certificateDeposit_rates": "Rates",
-    "certificateDeposit_title": "Certificate of Deposit"
+    "certificateDeposit_title": "Certificate of Deposit",
+    "id_remitente": "Sender",
+    "id_granos_transportados": "Transported Grains",
+    "id_comercio_granos": "Grain Trade",
+    "id_destinatario": "Recipient",
+    "id_transportista": "Carrier",
+    "id_add": "Add",
+    "id_unknown_step": "Unknown step",
+    "id_required_field": "Required field",
+    "id_modification": "Modification",
+    "id_new": "New",
+    "id_transport_document": "Transport Document"
    }
   
 

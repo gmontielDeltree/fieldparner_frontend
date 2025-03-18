@@ -15,9 +15,6 @@ import { urlImg } from "../../config";
 import { useTranslation } from "react-i18next";
 
 const renderPdfIcon = (params: GridRenderCellParams) => {
-  const url = `${urlImg}${params.row.archivoCertificado || ''}`;
-
-
   return (
     <Tooltip title={params.row.archivoCertificado ? "Ver PDF" : "PDF no disponible"}>
       <IconButton
