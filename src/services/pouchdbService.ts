@@ -44,6 +44,7 @@ PouchDB.plugin(PouchDBFind);
 export const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
 // const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
 const environment = getEnvVariables().VITE_ENVIRONMENT;
+console.log('environment', environment)
 
 //TODO: ajustar para varios ambientes
 const isEnvSTG = () => {
