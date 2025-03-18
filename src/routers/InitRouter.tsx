@@ -28,7 +28,7 @@ export const InitRouter = () => {
   if (status === "checking") {
     return <Loading key="loading-auth" loading />;
   }
-  return <OverviewRoutes />
+  {/* <OverviewRoutes /> */ }
   return (
     <>
       {status === "not-authenticated" ? <PublicRoutes /> : <OverviewRoutes />}
