@@ -14,11 +14,9 @@ import { Company } from '../../interfaces/company';
 import { uiFinishLoading, uiStartLoading } from '../../redux/ui';
 import { getShortDate } from '../../helpers/dates';
 
-
-const steps = ["Encabezado", "Granos", "Tarifas"];
 const initialForm: FormValueState<CertificateDeposit> = {
-  accountId: { value: "", isError: false, message: "", required: false }, //get from user
-  licenceId: { value: "", isError: false, message: "", required: false },//get from user
+  accountId: { value: "", isError: false, message: "", required: false }, // get from user
+  licenceId: { value: "", isError: false, message: "", required: false }, // get from user
   numeroCertificado: { value: "", isError: false, message: "", required: true },
   fechaEmision: { value: "", isError: false, message: "", required: true },
   campaniaId: { value: "", isError: false, message: "", required: true },
@@ -90,6 +88,26 @@ export const CertificateDepositPage: React.FC = () => {
   const [listTransportByCertificate, setListTransportByCertificate] = useState<TransportDocumentByCertificateDeposit[]>([]);
   const { addCertificateDeposit } = useCertificateDeposit();
 
+  // Configuración: si el certificado es válido únicamente en Argentina
+  const isDocumentValidOnlyInArgentina = true;
+
+  if (isDocumentValidOnlyInArgentina && formValues.accountId.value && formValues.accountId.value !== "AR") {
+    return (
+      <Container maxWidth="lg">
+        <Typography variant="h6" align="center" sx={{ mt: 4 }}>
+          {t("certificate_deposit_not_valid_for_your_country")}
+        </Typography>
+      </Container>
+    );
+  }
+
+  // Usando keys individuales en lugar de objetos anidados
+  const steps = useMemo(() => [
+    t("certificateDeposit_header"),
+    t("certificateDeposit_grains"),
+    t("certificateDeposit_rates")
+  ], [t]);
+
   const getStepContent = useMemo(() => (step: number) => {
     switch (step) {
       case 0:
@@ -97,7 +115,7 @@ export const CertificateDepositPage: React.FC = () => {
           <HeaderForm
             formValues={formValues}
             campaigns={campaigns}
-            crops={crops} //TODO: no va a ser necesario
+            crops={crops} // TODO: no va a ser necesario
             providers={socialEntities.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA)}
             companies={companies}
             changeDepositary={(item) => setSelectedDepositary(item)}
@@ -156,11 +174,11 @@ export const CertificateDepositPage: React.FC = () => {
   }
 
   const handleNext = () => {
-    setActiveStep(activeStep + 1);
+    setActiveStep(prev => prev + 1);
   };
 
   const handleBack = () => {
-    setActiveStep(activeStep - 1);
+    setActiveStep(prev => prev - 1);
   };
 
   const onClickCancel = () => {
@@ -172,11 +190,10 @@ export const CertificateDepositPage: React.FC = () => {
     return Object.keys(formValues).reduce((acc, key) => {
       acc[key] = formValues[key].value;
       return acc;
-    }, {});
+    }, {} as any);
   }
 
   const onClickAddCertifcateDeposit = async () => {
-
     try {
       dispatch(uiStartLoading());
       const mappedObject = mappedCertificateDeposit();
@@ -189,9 +206,8 @@ export const CertificateDepositPage: React.FC = () => {
       console.log('error', error);
       dispatch(uiFinishLoading());
     }
-
   }
-  //TODO: revisar para agregar al hook
+
   const validateForm = (form: EventTarget & HTMLFormElement): boolean => {
     let isValid = true;
     let updatedFormValue = { ...formValues };
@@ -220,19 +236,17 @@ export const CertificateDepositPage: React.FC = () => {
     event.preventDefault();
     event.stopPropagation();
     const form = event.currentTarget;
-    handleNext();
-    if (validateForm(form)) handleNext();
+    if (validateForm(form)) {
+      handleNext();
+    }
   };
-
 
   useEffect(() => {
     getCampaigns();
     getBusinesses();
     getCompanies();
-    getCrops(); //TODO: remover y tomar el cultivo de la carta de porte
-
-  }, [])
-
+    getCrops(); // TODO: remover y tomar el cultivo de la carta de porte
+  }, []);
 
   return (
     <Container maxWidth="lg" sx={{ ml: 0, borderRadius: "10px" }}>
@@ -246,7 +260,7 @@ export const CertificateDepositPage: React.FC = () => {
         }}
       >
         <Typography component="h2" variant="h4" align="left" sx={{ mb: 1, letterSpacing: "2px" }}>
-          Certificado de Depósito
+          {t("certificateDeposit_title")}
         </Typography>
         <Typography variant="h5" align='left' sx={{ mb: 3 }}>
           {steps[activeStep]}
@@ -260,49 +274,44 @@ export const CertificateDepositPage: React.FC = () => {
             ))
           }
         </Stepper>
-        <>
-          <form onSubmit={onSubmit}>
-            {getStepContent(activeStep)}
-            <Grid
-              container
-              alignItems="center"
-              justifyContent="space-around"
-              sx={{ mt: 5 }}
-            >
-              <Grid item xs={12} sm={6} key="grid-back" display="flex" justifyContent="center">
-                <Button
-                  variant='contained'
-                  color="inherit"
-                  onClick={activeStep !== 0 ? handleBack : onClickCancel}>
-                  {activeStep !== 0 ? t("id_back") : t("id_cancel")}
-                </Button>
-              </Grid>
-              <Grid item xs={12} sm={6} key="grid-next" display="flex" justifyContent="center">
-                {!(activeStep === steps.length - 1) ? (
-                  <Button
-                    type='submit'
-                    variant="contained"
-                    color="primary"
-                  // onClick={() => handleNext()}
-                  >
-                    {t("id_next")}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="contained"
-                    hidden={activeStep !== steps.length - 1}
-                    color="success"
-                    onClick={() => onClickAddCertifcateDeposit()}
-                  >
-                    {t("_add")}
-                  </Button>
-                )
-
-                }
-              </Grid>
+        <form onSubmit={onSubmit}>
+          {getStepContent(activeStep)}
+          <Grid
+            container
+            alignItems="center"
+            justifyContent="space-around"
+            sx={{ mt: 5 }}
+          >
+            <Grid item xs={12} sm={6} key="grid-back" display="flex" justifyContent="center">
+              <Button
+                variant='contained'
+                color="inherit"
+                onClick={activeStep !== 0 ? handleBack : onClickCancel}>
+                {activeStep !== 0 ? t("id_back") : t("id_cancel")}
+              </Button>
             </Grid>
-          </form>
-        </>
+            <Grid item xs={12} sm={6} key="grid-next" display="flex" justifyContent="center">
+              {activeStep !== steps.length - 1 ? (
+                <Button
+                  type='submit'
+                  variant="contained"
+                  color="primary"
+                >
+                  {t("id_next")}
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  hidden={activeStep !== steps.length - 1}
+                  color="success"
+                  onClick={onClickAddCertifcateDeposit}
+                >
+                  {t("_add")}
+                </Button>
+              )}
+            </Grid>
+          </Grid>
+        </form>
       </Paper>
     </Container>
   )

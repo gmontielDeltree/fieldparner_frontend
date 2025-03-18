@@ -51,14 +51,23 @@ export const HeaderForm: React.FC<CertificateDepositFormProps & HeaderFormProps>
             let fileNameOriginal = file.name;
             let extensionPos = fileNameOriginal.lastIndexOf(".");
             let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
-
-            const newFileName = `certificado-deposito_${formValues.archivoCertificado.value}${fileType}`;
+    
+            const uniqueId = generateUniqueId();
+            const newFileName = `certificado-deposito_${uniqueId}${fileType}`;
+            
             const renamedFile = new File([file], newFileName, { type: file.type });
             fileUpload(renamedFile);
             handleFormValueChange && handleFormValueChange("archivoCertificado", newFileName);
         }
     };
 
+    const generateUniqueId = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    };
 
     useEffect(() => {
         if (cuitDepositario.value !== "" && providers) {

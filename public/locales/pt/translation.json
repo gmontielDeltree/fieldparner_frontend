@@ -417,5 +417,10 @@
     "longitude_out_of_bounds": "Longitude fora dos limites",
     "status_active": "Ativo",
     "status_inactive": "Inativo",
-    "deposit_creation_failed": "Falha na criação do depósito"
-}
+    "deposit_creation_failed": "Falha na criação do depósito",
+    "certificate_deposit_not_valid_for_your_country": "O certificado de depósito não é válido para o seu país.",
+    "certificateDeposit_header": "Cabeçalho",
+    "certificateDeposit_grains": "Grãos",
+    "certificateDeposit_rates": "Tarifas",
+    "certificateDeposit_title": "Certificado de Depósito"
+  }
