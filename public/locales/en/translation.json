@@ -445,7 +445,8 @@
   "add_at_least_one_contract": "You must add at least one contract",
   "fill_all_contract_fields": "Please fill in all contract fields",
   "numeric_values_only": "Only numeric values are allowed",
-  "contract_deleted_successfully": "The contract has been successfully deleted"
+  "contract_deleted_successfully": "The contract has been successfully deleted",
+  "form_validation_error": "Form validation error"
    }
   
 

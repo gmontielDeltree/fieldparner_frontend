@@ -445,6 +445,7 @@
   "add_at_least_one_contract": "Você deve adicionar pelo menos um contrato",
   "fill_all_contract_fields": "Por favor, preencha todos os campos do contrato",
   "numeric_values_only": "Apenas valores numéricos são permitidos",
-  "contract_deleted_successfully": "O contrato foi excluído com sucesso"
+  "contract_deleted_successfully": "O contrato foi excluído com sucesso",
+  "form_validation_error": "Erro de validação do formulário"
 
   }

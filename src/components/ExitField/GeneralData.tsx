@@ -1,4 +1,4 @@
-import { FormControl, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { FormControl, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, SelectChangeEvent, TextField, Typography, FormHelperText } from '@mui/material';
 import {
     FolderOpen as FolderOpenIcon,
 } from '@mui/icons-material';
@@ -16,8 +16,9 @@ interface GeneralDataProps {
     listFields: Field[];
     setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
+    errors?: Record<string, string>;
+    showErrors?: boolean;
 }
-
 
 export const GeneralData: React.FC<GeneralDataProps> = ({
     formValues,
@@ -25,12 +26,14 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
     crops,
     deposits,
     handleInputChange,
-    setFormValues
+    setFormValues,
+    errors = {},
+    showErrors = false
 }) => {
     const [campaignSelected, setCampaignSelected] = useState<Campaign | null>(null);
     const [fieldSelected, setFieldSelected] = useState<Field | null>(null);
     const [lotSelected, setLotSelected] = useState<Lot | null>(null);
-    
+
     const onChangeField = ({ target }: SelectChangeEvent) => {
         const fieldId = target.value;
         const fieldSelected = listFields.find(f => f._id === fieldId);
@@ -53,6 +56,9 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
     }
 
     const { t } = useTranslation();
+
+    // Helper function to determine if a field has an error
+    const hasError = (field: string) => showErrors && errors[field];
 
     return (
         <Grid
@@ -77,9 +83,12 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                         startAdornment: <InputAdornment position="start" />,
                     }}
                     inputProps={{
-                        max: getShortDate(), // Establece la fecha mínima permitida como la fecha actual
+                        max: getShortDate(),
                     }}
                     fullWidth
+                    error={hasError('creationDate')}
+                    helperText={hasError('creationDate') ? errors['creationDate'] : ''}
+                    required
                 />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -92,10 +101,18 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                             campaignId: campaign?._id || "",
                         }));
                     }}
+                    error={hasError('campaignId')}
+                    helperText={hasError('campaignId') ? errors['campaignId'] : ''}
+                    required
                 />
             </Grid>
             <Grid item xs={12} sm={4}>
-                <FormControl key="field-select" fullWidth>
+                <FormControl
+                    key="field-select"
+                    fullWidth
+                    error={hasError('fieldId')}
+                    required
+                >
                     <InputLabel id="field">Campo</InputLabel>
                     <Select
                         labelId="field"
@@ -110,10 +127,17 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                             </MenuItem>
                         ))}
                     </Select>
+                    {hasError('fieldId') && <FormHelperText>{errors['fieldId']}</FormHelperText>}
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={4}>
-                <FormControl key="lot-select" fullWidth disabled={!formValues.fieldId}>
+                <FormControl
+                    key="lot-select"
+                    fullWidth
+                    disabled={!formValues.fieldId}
+                    error={hasError('lotId')}
+                    required
+                >
                     <InputLabel id="lot">{t("_lot")}</InputLabel>
                     <Select
                         labelId="lot"
@@ -128,6 +152,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                             </MenuItem>
                         ))}
                     </Select>
+                    {hasError('lotId') && <FormHelperText>{errors['lotId']}</FormHelperText>}
                 </FormControl>
             </Grid>
             <Grid item xs={6} sm={4}>
@@ -143,7 +168,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-            <AutocompleteCrop
+                <AutocompleteCrop
                     options={crops}
                     value={formValues?.crop || null}
                     onChange={(crop) => {
@@ -153,6 +178,9 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                             cropId: crop?._id || "",
                         }));
                     }}
+                    error={hasError('cropId')}
+                    helperText={hasError('cropId') ? errors['cropId'] : ''}
+                // required
                 />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -166,6 +194,9 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                             depositId: deposit?._id || "",
                         }));
                     }}
+                    error={hasError('depositId')}
+                    helperText={hasError('depositId') ? errors['depositId'] : ''}
+                // required
                 />
             </Grid>
 
