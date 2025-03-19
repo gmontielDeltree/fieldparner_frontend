@@ -55,12 +55,20 @@ export const useExitField = () => {
     const createExitField = async (newExitField: ExitFieldItem) => {
         setIsLoading(true);
         try {
-
             if (!user) throw new Error("User not found");
             const { accountId, id: userId } = user;
             newExitField.accountId = accountId;
 
-            if (!newExitField.deposit || !newExitField.crop) throw new Error();
+            if (!newExitField.deposit || !newExitField.crop) {
+                throw new Error("Depósito o cultivo no seleccionado");
+            }
+
+            // Asegurarse de que netWeight sea un número válido y positivo
+            const safeNetWeight = Math.max(0, Number(newExitField.netWeight) || 0);
+
+            // Actualizar el valor en el objeto para asegurar consistencia
+            newExitField.netWeight = safeNetWeight;
+
             //Buscamos el stock del cultivo y solo sumamos al stock comprometido, no mueve nada del stock actual
             let stockOfCrop = await getControlStockCrop({
                 accountId,
@@ -68,21 +76,27 @@ export const useExitField = () => {
                 cropId: newExitField.cropId
             });
 
-            if (!stockOfCrop) throw new Error("Insufficient stock.");
+            if (!stockOfCrop) {
+                throw new Error("Stock insuficiente o no encontrado");
+            }
 
-            stockOfCrop.committedStock += Number(newExitField.netWeight);
+            // Asegurar que committedStock sea un número antes de sumarle
+            stockOfCrop.committedStock = Number(stockOfCrop.committedStock || 0) + safeNetWeight;
+
             //Modificar movimiento de stock para q tenga cropId , y un booleano para saber si es insumo o cultivo
             let newStockMovement: StockMovement = {
                 accountId,
                 userId,
-                amount: newExitField.netWeight,
+                amount: safeNetWeight,
                 depositId: newExitField.depositId,
                 cropId: newExitField.cropId,
                 isCrop: true,
-                location: newExitField.deposit.locations[0],
+                location: newExitField.deposit.locations && newExitField.deposit.locations.length > 0
+                    ? newExitField.deposit.locations[0]
+                    : "",
                 creationDate: newExitField.creationDate,
                 campaignId: newExitField.campaignId,
-                voucher: newExitField.additionalInformation,
+                voucher: newExitField.additionalInformation || "",
                 isIncome: false,
                 currency: "",
                 detail: `Salida de Campo: ${newExitField.creationDate}`,
@@ -95,28 +109,46 @@ export const useExitField = () => {
                 totalValue: 0,
             };
 
-            delete newExitField.crop;
-            delete newExitField.deposit;
-            delete newExitField.transport;
-            delete newExitField.campaign;
+            // Crear una copia limpia del objeto sin referencias complejas
+            const cleanExitField = { ...newExitField };
+
+            // Eliminar objetos complejos para evitar errores de serialización
+            delete cleanExitField.crop;
+            delete cleanExitField.deposit;
+            delete cleanExitField.transport;
+            delete cleanExitField.campaign;
+            delete cleanExitField.field;
+            delete cleanExitField.lot;
+            delete cleanExitField.harvester;
+            delete cleanExitField.trucker;
+
+            // Asegurarse de que todos los valores numéricos sean números válidos
+            cleanExitField.grossWeight = Math.max(0, Number(cleanExitField.grossWeight) || 0);
+            cleanExitField.tareWeight = Math.max(0, Number(cleanExitField.tareWeight) || 0);
+            cleanExitField.humidityPercentage = Math.max(0, Number(cleanExitField.humidityPercentage) || 0);
+            cleanExitField.mermaPercentage = Math.max(0, Number(cleanExitField.mermaPercentage) || 0);
+            cleanExitField.volatilePercentage = Math.max(0, Number(cleanExitField.volatilePercentage) || 0);
+            cleanExitField.otherPercentage = Math.max(0, Number(cleanExitField.otherPercentage) || 0);
+            cleanExitField.totalMerma = Math.max(0, Number(cleanExitField.totalMerma) || 0);
+            cleanExitField.kgNet = Math.max(0, Number(cleanExitField.kgNet) || 0);
 
             const promisesAll = [
-                dbContext.exitFields.post(newExitField),
+                dbContext.exitFields.post(cleanExitField),
                 dbContext.stockMovements.post(newStockMovement),
                 dbContext.cropStockControl.put(stockOfCrop),
-                // dbContext.supplies.put(updateSupply)
             ]
 
             const responseAll = await Promise.all(promisesAll);
 
-            if (responseAll)
+            if (responseAll) {
                 Swal.fire('Salida de Campo', 'Creado exitosamente.', 'success');
-            else
+            } else {
                 Swal.fire('Salida de Campo', 'Verificar campos.', 'error');
+            }
 
             setIsLoading(false);
         } catch (error) {
-            console.log(error)
+            console.log("Error en createExitField:", error);
             Swal.fire('Ups', 'Ocurrio un error inesperado: ' + error, 'error');
             setIsLoading(false);
             if (error) setError(error);
