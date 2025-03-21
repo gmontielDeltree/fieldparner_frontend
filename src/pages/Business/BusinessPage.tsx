@@ -88,7 +88,7 @@ export const BusinessPage: React.FC = () => {
     deleteBusiness,
     getBusinesses,
   } = useBusiness();
-  const {dataCountry, getCountries} = useCountry();
+  const { dataCountry, getCountries } = useCountry();
 
   const { zipCode } = formulario;
 
@@ -148,8 +148,8 @@ export const BusinessPage: React.FC = () => {
               handleSelectChange={handleSelectChange}
               handleCheckboxChange={handleCheckboxChange}
               countries={dataCountry}
-              countryError={countryError}  
-              handleFormValueChange={handleFormValueChange}  />
+              countryError={countryError}
+              handleFormValueChange={handleFormValueChange} />
           );
         case 1:
           return (
@@ -171,8 +171,8 @@ export const BusinessPage: React.FC = () => {
               onChangeZipCode={getLocalityAndState}
               loading={isLoading || loadingZipCode}
               handleFormValueChange={handleFormValueChange}
-              setFile={setLogoFile} 
-              />
+              setFile={setLogoFile}
+            />
           );
         default:
           throw new Error("Unknown step");
@@ -180,6 +180,7 @@ export const BusinessPage: React.FC = () => {
     },
     [
       formulario,
+      dataCountry,
       handleInputChange,
       handleSelectChange,
       handleCheckboxChange,
@@ -191,7 +192,7 @@ export const BusinessPage: React.FC = () => {
   const validateForm = () => {
     if (formulario.tipoEntidad === TipoEntidad.JURIDICA.toString()) {
       let hasError = false;
-  
+
       if (formulario.cuit?.trim() === "") {
         setCuitError(true);
         hasError = true;
@@ -199,7 +200,7 @@ export const BusinessPage: React.FC = () => {
       } else {
         setCuitError(false);
       }
-  
+
       if (formulario.razonSocial?.trim() === "") {
         setRazonSocialError(true);
         hasError = true;
@@ -207,7 +208,7 @@ export const BusinessPage: React.FC = () => {
       } else {
         setRazonSocialError(false);
       }
-  
+
       if (formulario.email?.trim() === "") {
         setEmailError(true);
         hasError = true;
@@ -215,11 +216,11 @@ export const BusinessPage: React.FC = () => {
       } else {
         setEmailError(false);
       }
-  
+
       return !hasError;
     } else {
       let hasError = false;
-  
+
       if (formulario.nombreCompleto?.trim() === "") {
         setNameError(true);
         hasError = true;
@@ -227,7 +228,7 @@ export const BusinessPage: React.FC = () => {
       } else {
         setNameError(false);
       }
-  
+
       if (formulario.documento?.trim() === "") {
         setDocumentError(true);
         hasError = true;
@@ -235,7 +236,7 @@ export const BusinessPage: React.FC = () => {
       } else {
         setDocumentError(false);
       }
-  
+
       if (formulario.esEmpleado && formulario.legajo?.trim() === "") {
         setLegajoError(true);
         hasError = true;
@@ -243,7 +244,7 @@ export const BusinessPage: React.FC = () => {
       } else {
         setLegajoError(false);
       }
-  
+
       return !hasError;
     }
   };
@@ -268,64 +269,20 @@ export const BusinessPage: React.FC = () => {
   };
 
   const addNewBusiness = async () => {
-    console.log("Agregando nuevo negocio con los siguientes datos del formulario:", formulario);
-    try {
-      if (formulario.zipCode?.trim() !== "") {
-        console.log("Obteniendo localidad y estado...");
-        await getLocalityAndState();
-        console.log("Localidad y estado obtenidos.");
-      }
-  
-      if (!validateForm()) {
-        console.log("La validación del formulario falló.");
-        return;
-      }
-  
-      console.log("La validación del formulario pasó.");
-  
-      // if (formulario.pais?.trim() === "") {
-      //   setCountryError(true);
-      //   console.log("La validación del país falló.");
-      //   return;
-      // } else {
-      //   setCountryError(false);
-      // }
-  
-      if (logoFile) {
-        console.log("Subiendo archivo de logo:", logoFile);
-        await uploadFile(logoFile);
-        console.log("Archivo de logo subido.");
-      }
-  
-      console.log("Creando negocio...");
-      const response = await createBusiness(formulario);
-      console.log("Respuesta de creación de negocio:", response);
-  
-      // Mostrar un mensaje de éxito usando Swal
-      Swal.fire({
-        title: 'Entidad Social',
-        text: 'Agregaste una entidad con éxito',
-        icon: 'success',
-        confirmButtonText: 'OK'
-      });
-  
-      reset();
-  
-    } catch (error) {
-      console.error("Error al agregar el negocio:", error);
-  
-      // Mostrar un mensaje de error usando Swal
-      Swal.fire({
-        title: 'Error',
-        text: 'Error al agregar una entidad',
-        icon: 'error',
-        confirmButtonText: 'OK'
-      });
+    if (formulario.zipCode?.trim() !== "") {
+      await getLocalityAndState();
     }
+    if (!validateForm()) return;
+
+    if (logoFile) {
+      await uploadFile(logoFile);
+    }
+    await createBusiness(formulario);
+    reset();
   };
-  
-  
-  
+
+
+
   const handleUpdateBusiness = async () => {
     if (!validateForm()) {
       return;
@@ -389,10 +346,10 @@ export const BusinessPage: React.FC = () => {
               sx={{ mt: { sm: 5 } }}
             >
               <Grid item xs={12} sm={3} key="grid-back">
-                <Button 
+                <Button
                   variant="contained"
                   color="inherit"
-                   onClick={activeStep !== 0 ? handleBack : onClickCancel}>
+                  onClick={activeStep !== 0 ? handleBack : onClickCancel}>
                   {activeStep !== 0 ? t("id_back") : t("id_cancel")}
                 </Button>
               </Grid>
