@@ -19,8 +19,6 @@ import { ColumnProps, OrderStatus, DepositSupplyOrder, TransformSupply, Withdraw
 import { getShortDate } from '../../helpers/dates';
 import { Stock, TipoStock } from '../../interfaces/stock';
 
-
-
 const columns: ColumnProps[] = [
     { text: "Deposito", align: "left" },
     { text: "Insumo", align: "left" },
@@ -43,7 +41,6 @@ const initialForm = {
 export const WithdrawalOrdersPage: React.FC = () => {
 
     const navigate = useNavigate();
-    // const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
     const { isLoading, createWithdrawalOrder } = useOrder();
     const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
@@ -58,10 +55,6 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const { isLoading: loadingEntities, businesses: socialEntities, getBusinesses } = useBusiness();
     const { getStock } = useStockMovement();
     const {
-        creationDate,
-        reason,
-        campaignId,
-        withdrawId,
         formulario: formValues,
         handleInputChange,
         handleSelectChange,
@@ -75,10 +68,13 @@ export const WithdrawalOrdersPage: React.FC = () => {
     }
 
     const onClickGenerate = () => {
-        const campaign = campaigns.find(c => c._id === campaignId);
-        const withdraw = socialEntities.find(s => s._id === withdrawId);
+        const campaign = campaigns.find(c => c._id === formValues.campaignId);
+        const withdraw = socialEntities.find(s => s._id === formValues.withdrawId);
 
-        if (!user || !campaign || !withdraw) throw new Error("Error: debe seleccionar campaña y quien retira.");
+        if (!user || !campaign || !withdraw) {
+            Swal.fire('Error', 'Debe seleccionar campaña y quien retira.', 'error');
+            return;
+        }
 
         let newDepositSupplyOrders: DepositSupplyOrder[] = suppliesToAdd.map(s => ({
             accountId: user.accountId,
@@ -90,13 +86,12 @@ export const WithdrawalOrdersPage: React.FC = () => {
             order: 0, // El numero lo genera en createWithdrawalOrder()
             withdrawalAmount: 0,
             originalAmount: Number(s.amount),
-
         }));
 
         addNewWithdrawalOrder({
             type: WithdrawalOrderType.Individual,
             campaign,
-            creationDate,
+            creationDate: formValues.creationDate,
             withdraw,
             order: formValues.order,
             reason: formValues.reason,
@@ -117,7 +112,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
             let result = await getStock(
                 {
                     tipo: TipoStock.INSUMO,
-                    campaignId: campaignId,
+                    campaignId: formValues.campaignId,
                     id,
                     depositId,
                     location: newSupply.location,
@@ -194,7 +189,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                             type="date"
                             label="Fecha"
                             name="creationDate"
-                            value={creationDate}
+                            value={formValues.creationDate}
                             onChange={handleInputChange}
                             InputProps={{
                                 startAdornment: <InputAdornment position="start" />,
@@ -211,7 +206,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                             type="text"
                             label="Motivo"
                             name="reason"
-                            value={reason}
+                            value={formValues.reason}
                             onChange={handleInputChange}
                             InputProps={{
                                 startAdornment: <InputAdornment position="start" />,
@@ -225,7 +220,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                             <Select
                                 labelId="campaign"
                                 name="campaignId"
-                                value={campaignId}
+                                value={formValues.campaignId}
                                 label="Campaña"
                                 onChange={handleSelectChange}
                             >
@@ -243,7 +238,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                             <Select
                                 labelId="trucker"
                                 name="withdrawId"
-                                value={withdrawId}
+                                value={formValues.withdrawId}
                                 label="Retira"
                                 onChange={handleSelectChange}
                             >
@@ -330,7 +325,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
-                            disabled={suppliesToAdd.length === 0}
+                            disabled={suppliesToAdd.length === 0 || !formValues.campaignId || !formValues.withdrawId}
                             color="success"
                             onClick={() => onClickGenerate()}
                         >

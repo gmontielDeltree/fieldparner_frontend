@@ -1,17 +1,17 @@
-import React, {   useEffect, useState } from 'react';
-import { TextField,  Container,  Typography, Paper,  Grid, Button, Box} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { TextField, Container, Typography, Paper, Grid, Button, Box } from '@mui/material';
 import { Loading } from '../../components';
 
 import { useTranslation } from 'react-i18next';
-import { useAppDispatch, useForm , useCostsExpensess, useAppSelector,  } from '../../hooks';
+import { useAppDispatch, useForm, useCostsExpensess, useAppSelector, } from '../../hooks';
 import { useNavigate } from 'react-router-dom';
-import { removeCostsExpensesActive} from '../../redux/costsExpenses';
+import { removeCostsExpensesActive } from '../../redux/costsExpenses';
 import Swal from 'sweetalert2';
 import { CostsExpenses } from '../../interfaces/costsExpenses';
 
 import {
   MonetizationOn as MonetizationOnIcon,
- } from '@mui/icons-material/';
+} from '@mui/icons-material/';
 
 const initialForm: CostsExpenses = {
   costCode: '',
@@ -20,16 +20,16 @@ const initialForm: CostsExpenses = {
 };
 
 export const NewCostsExpenses: React.FC = () => {
-  
 
-  const { costsExpensesActive} = useAppSelector((state) => state.costsExpenes);
+
+  const { costsExpensesActive } = useAppSelector((state) => state.costsExpenes);
   const [error, setError] = useState<string>('');
   const { isLoading,
-          createCostsExpenses,
-          updateCostsExpenses,
-          getCostsExpenses,
-          costsExpenses,
-        } = useCostsExpensess();
+    createCostsExpenses,
+    updateCostsExpenses,
+    getCostsExpenses,
+    costsExpenses,
+  } = useCostsExpensess();
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -47,8 +47,13 @@ export const NewCostsExpenses: React.FC = () => {
     reset,
   } = useForm<CostsExpenses>(initialForm);
 
-
-
+  useEffect(() => {
+    if (costsExpensesActive) {
+      setFormulario({
+        ...costsExpensesActive
+      });
+    }
+  }, [costsExpensesActive]);
 
   useEffect(() => {
     return () => {
@@ -58,12 +63,12 @@ export const NewCostsExpenses: React.FC = () => {
 
 
   useEffect(() => {
-    getCostsExpenses ();
+    getCostsExpenses();
   }, []);
- 
+
   // useEffect(() => {
   //   getFields ();
-    
+
   // }, []);
 
   const handleVerifyCostCode = () => {
@@ -80,19 +85,19 @@ export const NewCostsExpenses: React.FC = () => {
           costCode: '',
         }));
       });
-      return true; 
+      return true;
     }
-  
+
   };
- 
+
 
 
 
   const onClickCancel = () => {
-    dispatch(removeCostsExpensesActive ());
+    dispatch(removeCostsExpensesActive());
     reset();
     navigate("/init/overview/costs-expenses");
-    
+
   };
 
 
@@ -132,27 +137,27 @@ export const NewCostsExpenses: React.FC = () => {
 
   return (
     <>
-    <Loading key="loading-costs-expenses" loading={isLoading} />
-    <Container
-      maxWidth="md"
-      sx={{
-        mt: 4,
-        p: { sm: 1, md: 1 },
-        mb: 1,
-        ml: 5
-      }}
-    >
-      <Typography variant="h4" sx={{ mb: 3 }}>
-      <MonetizationOnIcon  sx={{ marginRight: "25px", }}/>
-     {t("costs_expenses")}
-      </Typography>
-      <Paper
-        variant="outlined"
-        sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
+      <Loading key="loading-costs-expenses" loading={isLoading} />
+      <Container
+        maxWidth="md"
+        sx={{
+          mt: 4,
+          p: { sm: 1, md: 1 },
+          mb: 1,
+          ml: 5
+        }}
       >
-        <Grid container spacing={2}>
-        
-        <Grid item xs={12} md={3}>
+        <Typography variant="h4" sx={{ mb: 3 }}>
+          <MonetizationOnIcon sx={{ marginRight: "25px", }} />
+          {t("costs_expenses")}
+        </Typography>
+        <Paper
+          variant="outlined"
+          sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
+        >
+          <Grid container spacing={2}>
+
+            <Grid item xs={12} md={3}>
               <TextField
                 label={t("cost_code")}
                 name="costCode"
@@ -171,52 +176,52 @@ export const NewCostsExpenses: React.FC = () => {
                 </Typography>
               )}
             </Grid>
-          <Grid item xs={12} md={3}>
-            <TextField
-              label={t("cost_center")}
-              name="costCenter"
-              value={costCenter}
-              //onBlur={handleVerifyId}
-              onChange={handleInputChange}
-              fullWidth />
-          </Grid>
-          <Grid item xs={12} md={8}>
-            <TextField
-              label={t("_description")}
-              name="description"
-              value={description}
-              onChange={handleInputChange}
-              fullWidth />
-          </Grid>
-        </Grid>
-        <Grid container spacing={2} sx={{ mt: 3 }}>
-          <Grid item xs={12} md={3}>
-          </Grid>
-         < Grid item xs={1} sx={{ textAlign: 'right' }}>
-
-          </Grid>
-        </Grid> 
-          <Grid container spacing={2} sx={{ mt: 4, justifyContent: 'center' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 25 }}>
-                <Button
-                  variant="contained"
-                  color="inherit"
-                  onClick={onClickCancel}
-                >
-                  {t("id_cancel")}
-                </Button>
-                <Button
-                  type='submit'
-                  variant="contained"
-                  color="success"
-                  onClick={costsExpensesActive ? handleUpdate : handleAddCostsExpenses}
-                >
-                  {!costsExpensesActive ? t("_add") : t("id_update")} {' '}
-                </Button>
-              </Box>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label={t("cost_center")}
+                name="costCenter"
+                value={costCenter}
+                //onBlur={handleVerifyId}
+                onChange={handleInputChange}
+                fullWidth />
             </Grid>
-      </Paper>
-    </Container>
+            <Grid item xs={12} md={8}>
+              <TextField
+                label={t("_description")}
+                name="description"
+                value={description}
+                onChange={handleInputChange}
+                fullWidth />
+            </Grid>
+          </Grid>
+          <Grid container spacing={2} sx={{ mt: 3 }}>
+            <Grid item xs={12} md={3}>
+            </Grid>
+            < Grid item xs={1} sx={{ textAlign: 'right' }}>
+
+            </Grid>
+          </Grid>
+          <Grid container spacing={2} sx={{ mt: 4, justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 25 }}>
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={onClickCancel}
+              >
+                {t("id_cancel")}
+              </Button>
+              <Button
+                type='submit'
+                variant="contained"
+                color="success"
+                onClick={costsExpensesActive ? handleUpdate : handleAddCostsExpenses}
+              >
+                {!costsExpensesActive ? t("_add") : t("id_update")} {' '}
+              </Button>
+            </Box>
+          </Grid>
+        </Paper>
+      </Container>
     </>
   );
 };

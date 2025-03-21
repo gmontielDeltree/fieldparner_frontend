@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { TransportDocumentFormProps } from './type';
-import { FormControl, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Alert, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { BusinessItem } from '../../interfaces/socialEntity';
-// import { getShortDate } from '../../helpers/dates';
-
-
+import { validateEntityRoles } from '../../helpers/roles-validation';
 
 export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
   formValues,
@@ -14,24 +12,49 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
 }) => {
   const { cuitComprador } = formValues;
   const [selectedBuyer, setSelectedBuyer] = useState<BusinessItem | null>(null);
-
-  // const onChangeComprador = (e: SelectChangeEvent) => {
-  //   const cuit = e.target.value;
-  //   const foundBuyer = providers?.find(x => x.cuit === cuit);
-  //   if (foundBuyer) setSelectedBuyer(foundBuyer);
-  //   handleSelectChange(e);
-  // }
+  const [roleWarning, setRoleWarning] = useState("");
 
   useEffect(() => {
     if (cuitComprador.value !== "" && providers) {
       const foundBuyer = providers?.find(x => x.cuit === cuitComprador.value);
       if (foundBuyer) setSelectedBuyer(foundBuyer);
-    }
-  }, [cuitComprador, providers]);
 
+      // Validar si este CUIT está siendo usado en otros roles incompatibles
+      const validation = validateEntityRoles(formValues, "cuitComprador", cuitComprador.value);
+      setRoleWarning(validation.warningMessage);
+    } else {
+      setRoleWarning("");
+    }
+  }, [cuitComprador, providers, formValues]);
+
+  // Manejador personalizado para el cambio de comprador
+  const handleBuyerChange = (e) => {
+    // Primero aplicamos el cambio normal
+    handleSelectChange(e);
+
+    // Luego validamos roles (se ejecutará después de que formValues se actualice en useEffect)
+    const newCuitValue = e.target.value;
+    if (newCuitValue) {
+      const validation = validateEntityRoles(
+        { ...formValues, [e.target.name]: { value: newCuitValue } },
+        e.target.name,
+        newCuitValue
+      );
+      setRoleWarning(validation.warningMessage);
+    } else {
+      setRoleWarning("");
+    }
+  };
 
   return (
     <Grid container spacing={1}>
+      {roleWarning && (
+        <Grid item xs={12}>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {roleWarning}
+          </Alert>
+        </Grid>
+      )}
       <Grid item xs={12} sm={4}>
         <FormControl
           key="comprador-select"
@@ -44,7 +67,7 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
             name="cuitComprador"
             value={formValues.cuitComprador.value}
             label="Comprador"
-            onChange={handleSelectChange}
+            onChange={handleBuyerChange}
           >
             {providers?.map((c) => (
               <MenuItem key={c._id} value={c.cuit}>
@@ -134,7 +157,6 @@ export const ComercioGranoForm: React.FC<TransportDocumentFormProps> = ({
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
-          // inputProps={{ min: getShortDate(false, "-") }} 
           fullWidth
         />
       </Grid>

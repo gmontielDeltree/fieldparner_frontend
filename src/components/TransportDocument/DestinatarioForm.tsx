@@ -26,22 +26,6 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [dataZipCode, setDataZipCode] = useState<ItemZipCode | null>(null);
 
-  // const onChangeDestinatario = (e: SelectChangeEvent) => {
-  //   const cuit = e.target.value;
-  //   const foundDest = providers?.find(x => x.cuit === cuit);
-  //   if (foundDest) setSelectedDestinatario(foundDest);
-  //   handleSelectChange(e);
-  // }
-
-  // const onChangeDestino = (e: SelectChangeEvent) => {
-  //   const value = e.target.value;
-  //   const foundDest = providers?.find(x => x.cuit === value);
-  //   if (foundDest) {
-  //     handleFormValueChange("domicilioDestino", foundDest.domicilio);
-  //   }
-  //   handleSelectChange(e);
-  // }
-
   const getLocalityAndState = async (zipCode: string) => {
     setLoadingZipCode(true);
     try {
@@ -232,13 +216,21 @@ export const DestinatarioForm: React.FC<TransportDocumentFormProps & Destinatari
           label="Codigo Postal"
           name="cpDestino"
           value={formValues.cpDestino.value}
-          onChange={handleInputChange}
-          // onBlur={(e) => {
-          //   const zipCode = e.target.value;
-          //   zipCode && getLocalityAndState(zipCode)
-          // }}
+          error={formValues.cpDestino.isError}
+          helperText={formValues.cpDestino.isError ? formValues.cpDestino.message : "Solo valores numéricos"}
+          onChange={(e) => {
+            // Validar que solo se ingresen números
+            const numericRegex = /^[0-9]*$/;
+            if (numericRegex.test(e.target.value) || e.target.value === '') {
+              handleInputChange(e);
+            }
+          }}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
+            inputProps: {
+              pattern: '[0-9]*', // HTML5 validation
+              maxLength: 4 // Los códigos postales en Argentina suelen tener 4 dígitos
+            }
           }}
           fullWidth
         />
