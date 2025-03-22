@@ -1,5 +1,4 @@
 import {
-  Autocomplete,
   FormControl,
   FormControlLabel,
   FormHelperText,
@@ -8,36 +7,18 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  SelectChangeEvent,
   Switch,
   TextField,
 } from "@mui/material";
 import { TipoEntidad } from "../../types";
-import React, { ChangeEvent, SyntheticEvent, useEffect, useRef } from "react";
+import React, {  useEffect} from "react";
 import { useTranslation } from "react-i18next";
-import { Country } from "../../interfaces/country";
-import { Business } from "../../interfaces/socialEntity";
 import { useBusiness } from "../../hooks";
-import Swal from "sweetalert2";
+import {MultiLanguageSelect} from ".."
+import { useBusinessForm, BusinessFormProps } from "./useBusinessForm";
 
-export interface BusinessFormProps {
-  values: Business;
-  nameError: boolean;
-  documentError: boolean;
-  legajoError: boolean;
-  cuitError: boolean;
-  razonSocialError: boolean;
-  emailError: boolean;
-  countries: Country[];
-  countryError: boolean;
-  handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
-  handleSelectChange: ({ target }: SelectChangeEvent) => void;
-  handleFormValueChange: (key: string, value: string) => void;
-  handleCheckboxChange: (
-    { target }: ChangeEvent<HTMLInputElement>,
-    checked: boolean
-  ) => void;
-}
+
+
 
 export const BusinessForm: React.FC<BusinessFormProps> = ({
   values,
@@ -70,114 +51,32 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
     pais,
   } = values;
 
-  const { businesses, getBusinesses } = useBusiness();
+  const { getBusinesses } = useBusiness();
   const { t } = useTranslation();
+  const {
+    validateDocument,
+    validatePhone,
+    validateEmail,
+    handleVerifyTaxId,
+    handleDocumentInput,
+    handlePhoneInput,
+  } = useBusinessForm(values, handleInputChange);
   
-  const prevDocumentoRef = useRef(documento);
-  const prevCuitRef = useRef(cuit);
 
-  const documentRegex = /^\d{8,12}$/;
-  const phoneRegex = /^\d{10,}$/;
-  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-
-  const validateDocument = (value: string): boolean => {
-    return documentRegex.test(value);
-  };
-
-  const validatePhone = (value: string): boolean => {
-    return value === '' || phoneRegex.test(value);
-  };
-
-  const validateEmail = (value: string): boolean => {
-    return emailRegex.test(value);
-  };
-
-  const handleDocumentInput = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    handleInputChange({
-      ...e,
-      target: {
-        ...e.target,
-        value,
-        name: 'documento'
-      }
-    });
-  };
-
-  const handlePhoneInput = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    handleInputChange({
-      ...e,
-      target: {
-        ...e.target,
-        value,
-        name: e.target.name
-      }
-    });
-  };
 
   useEffect(() => {
     getBusinesses();
   }, []);
 
-  const handleVerifyTaxId = async (event: React.FocusEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    
-    if (!value.trim()) {
-      return;
-    }
 
-    if (name === 'documento' && value === prevDocumentoRef.current) {
-      return;
-    }
-    if (name === 'cuit' && value === prevCuitRef.current) {
-      return;
-    }
 
-    if (name === 'documento') {
-      prevDocumentoRef.current = value;
-    }
-    if (name === 'cuit') {
-      prevCuitRef.current = value;
-    }
+  const countryOptions = countries.map(c => ({
+    code: c.code,
+    descriptionES: c.descriptionES,
+    descriptionEN: c.descriptionEN,
+    descriptionPT: c.descriptionPT,
+  }));
 
-    const existingBusiness = businesses.find((business) => {
-      if (name === 'documento') {
-        return business.documento === value && business._id !== values._id;
-      }
-      if (name === 'cuit') {
-        return business.cuit === value && business._id !== values._id;
-      }
-      return false;
-    });
-
-    if (existingBusiness) {
-      const errorMessage = name === 'documento' 
-        ? t('document_exists_error')
-        : t('tax_id_exists_error');
-
-      await Swal.fire({
-        icon: 'error',
-        title: t('error'),
-        text: errorMessage,
-      });
-
-      handleInputChange({
-        target: {
-          name,
-          value: '',
-        },
-      } as ChangeEvent<HTMLInputElement>);
-    }
-  };
-
-  const countryOptions = countries ? countries.map(c => ({ code: c.code, label: c.descriptionEN })) : [];
-
-  const onChangeCountry = (_event: SyntheticEvent, value: { code: string; label: string } | null) => {
-    if (value) {
-      handleFormValueChange("pais", value.code);
-    }
-  };
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
@@ -364,16 +263,25 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
       </Grid>
       <Grid item xs={12} sm={5}>
         <FormControl fullWidth variant="outlined" error={countryError}>
-          <Autocomplete
-            value={countryOptions.find(opts => opts.code === pais) || null}
-            onChange={onChangeCountry}
-            options={countryOptions}
-            getOptionLabel={(option) => option.label}
-            renderInput={(params) => (
-              <TextField {...params} label={t("id_country")} variant="outlined" />
-            )}
-            fullWidth
-          />
+        <MultiLanguageSelect
+          options={countryOptions}
+          value={pais}
+          onChange={(event) => handleFormValueChange("pais", event.target.value)}
+          label="id_country"
+          name="pais"
+          error={countryError}
+          getOptionLabel={(option, language) => {
+            switch (language) {
+              case "es":
+                return option.descriptionES;
+              case "pt":
+                return option.descriptionPT;
+              case "en":
+              default:
+                return option.descriptionEN;
+            }
+          }}
+        />
           {countryError && <FormHelperText>{t("error_message")}</FormHelperText>}
         </FormControl>
       </Grid>
