@@ -289,8 +289,8 @@ export const NavBar: React.FC<NavBarProps> = ({
                   language === 'es'
                     ? spanishFlagIcon
                     : language === 'en'
-                    ? englishFlagIcon
-                    : brazilFlagIcon
+                      ? englishFlagIcon
+                      : brazilFlagIcon
                 }
                 alt={language}
                 style={{ width: '24px', height: '24px' }}
