@@ -72,7 +72,7 @@ function LaboratoryForm({ lot, formData, setFormData }) {
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
                 label="Fecha"
-                value={formData.fecha || new Date()}
+                value={formData.fecha || null}
                 onChange={(newValue) => onFieldChange("fecha", newValue)}
                 renderInput={(params) => <TextField {...params} fullWidth />}
               />

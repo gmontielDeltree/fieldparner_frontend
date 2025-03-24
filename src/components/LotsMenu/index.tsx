@@ -19,16 +19,6 @@ import { isBefore, parseISO } from 'date-fns'
 import LotMenuContent from './components/LotMenuContent'
 import ActivitiesBar from './components/ActivitiesBar'
 
-const Header = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  textAlign: 'center',
-  color: theme.palette.text.secondary,
-  background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`,
-  boxShadow: '0px 4px 10px rgba(0,0,0,0.2)',
-  borderRadius: '8px',
-  margin: theme.spacing(2, 0),
-}))
-
 interface LotsMenuProps {
   lot: any
   field: any
@@ -66,13 +56,6 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
     }
   }
 
-  const activityTypeTranslations = {
-    preparado: 'preparation',
-    siembra: 'sowing',
-    cosecha: 'harvesting',
-    aplicacion: 'application',
-  }
-
   const getActivities = async (uuid_del_lote: string) => {
     let acts: Actividad[] = await gbl_docs_starting(
       'actividad',
@@ -102,17 +85,17 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(':')[1])
           : parseISO(
-              a.actividad.tipo === 'nota'
-                ? a.actividad.fecha
-                : a.actividad.detalles.fecha_ejecucion_tentativa,
-            )
+            a.actividad.tipo === 'nota'
+              ? a.actividad.fecha
+              : a.actividad.detalles.fecha_ejecucion_tentativa,
+          )
         let fecha_2 = b.ejecucion_id
           ? parseISO(b.ejecucion_id.split(':')[1])
           : parseISO(
-              b.actividad.tipo === 'nota'
-                ? b.actividad.fecha
-                : b.actividad.detalles.fecha_ejecucion_tentativa,
-            )
+            b.actividad.tipo === 'nota'
+              ? b.actividad.fecha
+              : b.actividad.detalles.fecha_ejecucion_tentativa,
+          )
         return isBefore(fecha_1, fecha_2) ? 1 : -1
       })
     }

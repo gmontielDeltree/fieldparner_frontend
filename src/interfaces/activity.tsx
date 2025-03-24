@@ -92,6 +92,12 @@ const get_empty_entrada = () => {
 };
 
 type LineaDosis = {
+  selectedOption: Insumo;
+  deposito: any;
+  nro_lote: any;
+  ubicacion: any;
+  dosificacion: number;
+  orden_de_retiro: any;
   uuid: string;
   insumo: Insumo;
   motivos: string[];
@@ -102,7 +108,7 @@ type LineaDosis = {
 
 type LineaServicio = {
   uuid: string;
-  servicio : string;
+  servicio: string;
 
   contratista: Contratista;
   unidades: number;
@@ -206,6 +212,7 @@ interface CondicionesEjecucion {
 }
 
 interface Detalles {
+  fecha_ejecucion: string;
   fecha_ejecucion_tentativa: string;
   hectareas: number;
   dosis: LineaDosis[];
