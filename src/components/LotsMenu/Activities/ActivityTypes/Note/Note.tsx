@@ -31,6 +31,11 @@ function Note({
     setAnchorEl(null);
   };
 
+  const handleViewAllPoints = () => {
+    // Change to the Points tab when the button is clicked
+    setSelectedTab(1);
+  };
+
   const formattedPlanificadaDate = activity.actividad.fecha
     ? format(parseISO(activity.actividad.fecha), "PPPP", { locale: es })
     : "Fecha no definida";
@@ -122,7 +127,12 @@ function Note({
         <Tab label="Puntos" />
       </Tabs>
 
-      {selectedTab === 0 && <NoteContent activity={activity.actividad} />}
+      {selectedTab === 0 && (
+        <NoteContent
+          activity={activity.actividad}
+          onViewAllPoints={handleViewAllPoints}
+        />
+      )}
       {selectedTab === 1 && <NotePoints activity={activity.actividad} />}
       {selectedTab === 2 && <AttachedContent />}
     </div>

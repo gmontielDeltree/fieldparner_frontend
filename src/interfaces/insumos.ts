@@ -28,6 +28,7 @@ interface CultivoAplicacion {
 }
 
 interface Insumo {
+  name(name: any): unknown;
   _id: string;
   _rev?: string;
   uuid: string;

@@ -10,7 +10,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from "@mui/icons-material";
-import {  useAppDispatch, useBusiness } from "../../hooks";
+import { useAppDispatch, useBusiness } from "../../hooks";
 import { setBusinessActive } from "../../redux/business";
 import { useTranslation } from "react-i18next";
 import { Business, BusinessItem } from "../../interfaces/socialEntity";
@@ -85,6 +85,9 @@ export const ListBusinessesPage: React.FC = () => {
       getBusinesses();
     }
   };
+
+  // Add console log to see the data being sent to the table
+  console.log('Businesses data for table:', businesses);
 
   return (
     <GenericListPage

@@ -12,12 +12,12 @@ import {
   Card,
   ImageList
 } from "@mui/material";
-import PouchDB from "pouchdb";
 import { styled } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AudioPlayer } from "./../../../forms/NotesForms/PointFormStyles";
 import PlaceMarker from "../../../../NewGeometry/PlaceMarker";
+import { dbContext } from "../../../../../services";
 
 const containerVariants = {
   hidden: { opacity: 0, x: "-100vw" },
@@ -59,10 +59,11 @@ const FeatureAccordion = styled(Accordion)({
 });
 
 function NotePoints({ activity }) {
-  const db = new PouchDB("campos_randyv7");
+  // Use the same database instance as PointForm
+  const db = dbContext.fields;
   const [imageUrls, setImageUrls] = useState({});
   const [audioUrls, setAudioUrls] = useState({});
-  const removeMarkerFunctionsRef = useRef<(() => void)[]>([]);
+  const removeMarkerFunctionsRef = useRef([]);
   const formData = activity;
 
   useEffect(() => {
@@ -72,16 +73,25 @@ function NotePoints({ activity }) {
       for (const feature of formData.features || []) {
         for (const foto of feature.properties.fotos) {
           if (!newImageUrls[foto]) {
-            newImageUrls[foto] = await fetchImageUrl(foto);
+            try {
+              newImageUrls[foto] = await fetchImageUrl(foto);
+              console.log(`Successfully loaded image: ${foto}`);
+            } catch (error) {
+              console.error(`Failed to load image: ${foto}`, error);
+            }
           }
         }
         if (
           feature.properties.audio &&
           !newAudioUrls[feature.properties.audio]
         ) {
-          newAudioUrls[feature.properties.audio] = await fetchAudioUrl(
-            feature.properties.audio
-          );
+          try {
+            newAudioUrls[feature.properties.audio] = await fetchAudioUrl(
+              feature.properties.audio
+            );
+          } catch (error) {
+            console.error(`Failed to load audio: ${feature.properties.audio}`, error);
+          }
         }
       }
       setImageUrls(newImageUrls);
@@ -100,17 +110,28 @@ function NotePoints({ activity }) {
   const fetchImageUrl = async (imageId) => {
     try {
       const blob = await db.getAttachment(imageId, "image");
+      if (!blob) {
+        console.error(`No blob found for image ID: ${imageId}`);
+        return null;
+      }
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Error fetching image:", error);
+      return null;
     }
   };
+
   const fetchAudioUrl = async (audioId) => {
     try {
       const blob = await db.getAttachment(audioId, "audio");
+      if (!blob) {
+        console.error(`No blob found for audio ID: ${audioId}`);
+        return null;
+      }
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Error fetching audio:", error);
+      return null;
     }
   };
 
@@ -163,12 +184,32 @@ function NotePoints({ activity }) {
       <ImageGrid cols={3} gap={8}>
         {feature.properties.fotos.map((foto, index) => (
           <ImageListItem key={index}>
-            <img
-              src={imageUrls[foto]}
-              alt={`feature ${index}`}
-              loading="lazy"
-              style={{ borderRadius: "4px" }}
-            />
+            {imageUrls[foto] ? (
+              <img
+                src={imageUrls[foto]}
+                alt={`feature ${index}`}
+                loading="lazy"
+                style={{ borderRadius: "4px" }}
+                onError={(e) => {
+                  console.error(`Image failed to load: ${foto}`);
+                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23ccc' d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E";
+                  e.target.style.backgroundColor = "#f0f0f0";
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  height: "140px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: "4px"
+                }}
+              >
+                Loading image...
+              </div>
+            )}
           </ImageListItem>
         ))}
       </ImageGrid>

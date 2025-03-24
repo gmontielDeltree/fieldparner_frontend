@@ -9,29 +9,28 @@ import { useAppSelector } from "../hooks";
 export class BaseDocRepository<T> {
 
   private _userId: string
-  private _db : PouchDB.Database
+  private _db: PouchDB.Database
 
 
   observers: ((crops: T[]) => void)[] = [];
 
 
-  constructor(dataBase : PouchDB.Database){
+  constructor(dataBase: PouchDB.Database) {
     const { user } = useAppSelector(state => state.auth);
 
     this._userId = user?.accountId || "testid"
-    console.log("The userId is", this._userId)
 
     this._db = dataBase
   }
 
-  async saveDoc(doc : PouchDB.Core.Document<any>){
-    
+  async saveDoc(doc: PouchDB.Core.Document<any>) {
+
     await this._db.put(doc)
     return doc
 
   }
 
-  async getAllDocs(key :string){
+  async getAllDocs(key: string) {
     let s = await this._db.allDocs({
       startkey: key,
       endkey: key + "\ufff0",
@@ -63,5 +62,5 @@ export class BaseDocRepository<T> {
   }
 
 
- 
+
 }
