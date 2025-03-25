@@ -204,7 +204,7 @@ export const CampaignsResultsPage: React.FC = () => {
         ]);
       } catch (error) {
         console.error("Error loading data:", error);
-        setError("Error al cargar los datos. Por favor, inténtelo de nuevo.");
+        setError(t("error_loading_data"));
       } finally {
         setIsLoading(false);
       }
@@ -251,7 +251,7 @@ export const CampaignsResultsPage: React.FC = () => {
               lote: "",
               cultivo: contract.crop?.name || "",
               fecha: contract.dateCreated ? format(new Date(contract.dateCreated), 'dd/MM/yyyy') : "",
-              tipo: "Contrato",
+              tipo: t("_contract_type"),
               labor: "",
               detalle: contract.condition || "",
               referencia: contract.contractSaleNumber || "",
@@ -279,7 +279,7 @@ export const CampaignsResultsPage: React.FC = () => {
                 lote: expense.lot || "",
                 cultivo: "",
                 fecha: item.date ? format(new Date(item.date), 'dd/MM/yyyy') : "",
-                tipo: "Gasto",
+                tipo: t("_expense_type"),
                 labor: item.labor || "",
                 detalle: item.detail || "",
                 referencia: item.reference || "",
@@ -292,7 +292,7 @@ export const CampaignsResultsPage: React.FC = () => {
         setReportData([...contractsData, ...expensesData]);
       } catch (error) {
         console.error("Error fetching report data:", error);
-        setError("Error al cargar los datos del informe");
+        setError(t("error_report_data"));
       } finally {
         setIsLoading(false);
       }

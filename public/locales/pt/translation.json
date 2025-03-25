@@ -455,6 +455,17 @@
   "fill_all_contract_fields": "Por favor, preencha todos os campos do contrato",
   "numeric_values_only": "Apenas valores numéricos são permitidos",
   "contract_deleted_successfully": "O contrato foi excluído com sucesso",
-  "form_validation_error": "Erro de validação do formulário"
-
+  "form_validation_error": "Erro de validação do formulário",
+  "_society": "Sociedade",
+  "_contract": "Contrato",
+  "_labor": "Trabalho",
+  "_reference": "Referência",
+  "_amount": "Valor",
+  "alternative_amount": "Valor Alternativo",
+  "campaign_summary": "Resumo da Campanha",
+  "contracts": "Contratos",
+  "expenses": "Despesas",
+  "campaign_result": "Resultado da Campanha",
+  "campaign_results": "Resultados da Campanha",
+  "divide": "Dividir"
   }

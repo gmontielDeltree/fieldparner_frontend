@@ -455,7 +455,18 @@
   "fill_all_contract_fields": "Please fill in all contract fields",
   "numeric_values_only": "Only numeric values are allowed",
   "contract_deleted_successfully": "The contract has been successfully deleted",
-  "form_validation_error": "Form validation error"
+  "form_validation_error": "Form validation error",
+  "_society": "Society",
+  "_contract": "Contract",
+  "_reference": "Reference",
+  "_amount": "Amount",
+  "alternative_amount": "Alternative Amount",
+  "campaign_summary": "Campaign Summary",
+  "contracts": "Contracts",
+  "expenses": "Expenses",
+  "campaign_result": "Campaign Result",
+  "divide": "Divide",
+  "_labor": "Labor"
    }
   
 
