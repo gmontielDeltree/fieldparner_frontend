@@ -2,68 +2,24 @@ import React, { useState, useEffect } from "react";
 import { QueryStats as QueryStatsIcon } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import { GenericListPage } from "../GenericListPage";
-import { useCampaign } from "../../hooks";
-import { dbContext } from "../../services";
+import { useAppSelector, useCampaign } from "../../hooks";
 import { format } from "date-fns";
-import { 
-  Box, 
-  FormControl, 
-  Select, 
-  MenuItem, 
-  TextField, 
+import {
+  Box,
+  FormControl,
+  Select,
+  MenuItem,
+  TextField,
   Switch,
   FormControlLabel,
   Typography,
   InputAdornment,
-  Grid
+  Grid,
+  Alert
 } from "@mui/material";
-
-interface Activity {
-  uuid: string;
-  lote_uuid: string;
-  type: string;
-  tipo: string;
-  fecha: string;
-  nombre: string;
-  proxima_visita: string;
-  last_updated: {
-    last_updated: string;
-    last_updated_by: string;
-  };
-  created: {
-    created: string;
-    created_by: string;
-  };
-  features: Array<{
-    properties: {
-      nombre: string;
-      notas: string;
-      detalles: any[];
-      fotos: string[];
-      audios: string[];
-      posicion: [number, number];
-      program: string;
-      severity: string;
-      imageAnalysis: any[];
-    };
-  }>;
-  hora: string;
-  campaña: {
-    campaignId: string;
-    name: string;
-    description: string;
-    zoneId: string;
-    startDate: string;
-    endDate: string;
-    state: string;
-    accountId: string;
-    creationDate: string;
-    _id: string;
-    _rev: string;
-  };
-  _id: string;
-  _rev: string;
-}
+import { useContractSaleCereals } from "../../hooks/useContractSaleCereals";
+import { useCampaingExpenses } from "../../hooks/useCampaignExpenses";
+import { ListCampingExpeses } from "../../interfaces/campaignExpenses";
 
 interface TableRow {
   id: string;
@@ -95,12 +51,12 @@ interface CampaignTotals {
 const calculateTotals = (data: TableRow[], isMultiply: boolean, rate: number): CampaignTotals => {
   const contracts = data.filter(item => item.tipo === 'Contrato')
     .reduce((sum, item) => sum + item.importe, 0);
-  
-  const expenses = data.filter(item => item.tipo !== 'Contrato')
-    .reduce((sum, item) => sum + item.importe, 0);
 
-  const factor = isMultiply ? rate : 1/rate;
-  
+  const expenses = data.filter(item => item.tipo !== 'Contrato')
+    .reduce((sum, item) => sum + Math.abs(item.importe), 0);
+
+  const factor = isMultiply ? rate : 1 / rate;
+
   return {
     contracts,
     expenses,
@@ -114,8 +70,8 @@ const calculateTotals = (data: TableRow[], isMultiply: boolean, rate: number): C
 const TotalsSummary: React.FC<{ totals: CampaignTotals }> = ({ totals }) => {
   const { t } = useTranslation();
   return (
-    <Box 
-      sx={{ 
+    <Box
+      sx={{
         mt: 3,
         p: 3,
         backgroundColor: '#f5f5f5',
@@ -129,7 +85,7 @@ const TotalsSummary: React.FC<{ totals: CampaignTotals }> = ({ totals }) => {
       <Typography variant="h6" sx={{ mb: 2, color: '#424242' }}>
         {t("campaign_summary")}
       </Typography>
-      
+
       <Grid container spacing={2}>
         {[
           { label: t("contracts"), values: [totals.contracts, totals.alternativeContracts] },
@@ -137,22 +93,22 @@ const TotalsSummary: React.FC<{ totals: CampaignTotals }> = ({ totals }) => {
           { label: t("campaign_result"), values: [totals.result, totals.alternativeResult] }
         ].map((row, index) => (
           <Grid item xs={12} key={index}>
-            <Box 
-              sx={{ 
-                display: 'flex', 
+            <Box
+              sx={{
+                display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 p: 2,
                 backgroundColor: index === 2 ? '#ffffff' : 'transparent',
                 borderRadius: '4px',
-                ...(index === 2 && { 
+                ...(index === 2 && {
                   borderTop: '1px solid rgba(0,0,0,0.12)',
-                  mt: 1 
+                  mt: 1
                 })
               }}
             >
-              <Typography 
-                sx={{ 
+              <Typography
+                sx={{
                   flex: '1 1 33%',
                   fontWeight: index === 2 ? 'bold' : 'normal',
                   color: '#424242'
@@ -161,17 +117,17 @@ const TotalsSummary: React.FC<{ totals: CampaignTotals }> = ({ totals }) => {
                 {row.label}
               </Typography>
               {row.values.map((value, i) => (
-                <Typography 
+                <Typography
                   key={i}
-                  sx={{ 
+                  sx={{
                     flex: '1 1 33%',
                     textAlign: 'right',
                     fontWeight: index === 2 ? 'bold' : 'normal',
                     color: row.isNegative ? '#d32f2f' : '#424242'
                   }}
                 >
-                  {value.toLocaleString('es-AR', { 
-                    style: 'currency', 
+                  {value.toLocaleString('es-AR', {
+                    style: 'currency',
                     currency: i === 0 ? 'USD' : 'ARS',
                     minimumFractionDigits: 2
                   })}
@@ -187,157 +143,269 @@ const TotalsSummary: React.FC<{ totals: CampaignTotals }> = ({ totals }) => {
 
 export const CampaignsResultsPage: React.FC = () => {
   const { t } = useTranslation();
-  const { campaigns, getCampaigns, isLoading } = useCampaign();
-  const [campaign, setCampaign] = useState("");
-  const [altCurrency, setAltCurrency] = useState("35");
-  const [isMultiply, setIsMultiply] = useState(true);
-  const [activities, setActivities] = useState<TableRow[]>([]);
-  const db = dbContext.fields;
+  const { campaigns = [], getCampaigns } = useCampaign();
+  const { contractsSaleCerealsFull = [], getContractsSaleCereals } = useContractSaleCereals();
+  const { campaingExpenses = [], getCampaingExpenses } = useCampaingExpenses();
+
+  const [campaign, setCampaign] = useState<string>("");
+  const [altCurrency, setAltCurrency] = useState<string>("35");
+  const [isMultiply, setIsMultiply] = useState<boolean>(true);
+  const [reportData, setReportData] = useState<TableRow[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState({
+    sociedad: "",
+    contrato: "",
+    campo: "",
+    lote: "",
+    cultivo: ""
+  });
 
   const columns = [
-    { field: "campaña", headerName: t("_campaign"), flex: 0.8 },
-    { field: "sociedad", headerName: t("_society"), flex: 1 },
-    { field: "contrato", headerName: t("_contract"), flex: 0.8 },
-    { field: "campo", headerName: t("_field"), flex: 1 },
-    { field: "lote", headerName: t("_lot"), flex: 0.7 },
-    { field: "cultivo", headerName: t("_crop"), flex: 0.8 },
-    { field: "fecha", headerName: t("_date"), flex: 0.8 },
-    { field: "tipo", headerName: t("_type"), flex: 0.8 },
-    { field: "labor", headerName: t("_labor"), flex: 1 },
-    { field: "detalle", headerName: t("_detail"), flex: 1.2 },
-    { field: "referencia", headerName: t("_reference"), flex: 0.8 },
-    { field: "moneda", headerName: t("_currency"), flex: 0.7 },
-    { 
+    { field: "campaña", headerName: t("_campaign"), flex: 0.8, filterable: false },
+    { field: "sociedad", headerName: t("_society"), flex: 1, filterable: true },
+    { field: "contrato", headerName: t("_contract"), flex: 0.8, filterable: true },
+    { field: "campo", headerName: t("_field"), flex: 1, filterable: true },
+    { field: "lote", headerName: t("_lot"), flex: 0.7, filterable: true },
+    { field: "cultivo", headerName: t("_crop"), flex: 0.8, filterable: true },
+    { field: "fecha", headerName: t("_date"), flex: 0.8, filterable: false },
+    { field: "tipo", headerName: t("_type"), flex: 0.8, filterable: false },
+    { field: "labor", headerName: t("_labor"), flex: 1, filterable: false },
+    { field: "detalle", headerName: t("_detail"), flex: 1.2, filterable: false },
+    { field: "referencia", headerName: t("_reference"), flex: 0.8, filterable: false },
+    { field: "moneda", headerName: t("_currency"), flex: 0.7, filterable: false },
+    {
       field: "importe",
       headerName: t("_amount"),
       flex: 0.8,
       type: 'number',
+      filterable: false,
       renderCell: (params) => `${params.value.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
     },
-    { 
+    {
       field: "importeAlternativo",
       headerName: t("alternative_amount"),
       flex: 0.8,
       type: 'number',
+      filterable: false,
       renderCell: (params) => `${params.value.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
     },
   ];
 
   useEffect(() => {
-    getCampaigns();
-  }, []);
-
-  useEffect(() => {
-    if (campaigns.length > 0 && !campaign) {
-      setCampaign(campaigns[0]._id);
-    }
-  }, [campaigns]);
-
-  useEffect(() => {
-    const fetchActivities = async () => {
-      if (!campaign) return;
-      
+    const loadData = async () => {
       try {
-        console.log('Fetching activities for campaign:', campaign);
-        const result = await db.allDocs({
-          include_docs: true,
-          startkey: 'actividad:',
-          endkey: 'actividad:\ufff0'
-        });
+        setIsLoading(true);
 
-        console.log('All activities:', result.rows);
-
-        const filteredActivities = result.rows
-          .map(row => row.doc)
-          .filter(doc => doc?.campaña?._id === campaign);
-
-        console.log('Filtered activities for campaign:', filteredActivities);
-
-        const processedData = filteredActivities.map(activity => ({
-          id: activity.uuid,
-          campaña: activity.campaña?.name || '',
-          sociedad: '', // Add if available in your data
-          contrato: '', // Add if available in your data
-          campo: '', // Add if available in your data
-          lote: activity.lote_uuid,
-          cultivo: '', // Add if available in your data
-          fecha: activity.fecha ? format(new Date(activity.fecha), 'dd/MM/yyyy') : '',
-          tipo: activity.tipo,
-          labor: activity.features?.[0]?.properties?.program || '',
-          detalle: activity.features?.[0]?.properties?.notas || '',
-          referencia: activity.nombre,
-          moneda: 'USD', // Add proper currency if available
-          importe: 0, // Add proper amount if available
-          importeAlternativo: 0 // Calculate based on exchange rate
-        }));
-
-        console.log('Processed activities:', processedData);
-        setActivities(processedData);
+        await Promise.all([
+          getCampaigns(),
+          getContractsSaleCereals(),
+          getCampaingExpenses()
+        ]);
       } catch (error) {
-        console.error('Error fetching activities:', error);
+        console.error("Error loading data:", error);
+        setError("Error al cargar los datos. Por favor, inténtelo de nuevo.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchActivities();
-  }, [campaign]);
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    if (campaigns && campaigns.length > 0 && !campaign) {
+      setCampaign(campaigns[0]._id);
+    }
+  }, [campaigns, campaign]);
+
+  useEffect(() => {
+    if (!campaign) return;
+
+    const fetchReportData = async () => {
+      try {
+        setIsLoading(true);
+        const selectedCampaign = campaigns.find(c => c._id === campaign);
+        if (!selectedCampaign) {
+          setReportData([]);
+          return;
+        }
+
+        const rate = parseFloat(altCurrency) || 1;
+        const factor = isMultiply ? rate : 1 / rate;
+
+        // Procesar contratos
+        let contractsData = [];
+        if (contractsSaleCerealsFull && contractsSaleCerealsFull.length > 0) {
+          contractsData = contractsSaleCerealsFull
+            .filter(contract =>
+              contract && (contract.campaignId === campaign ||
+                (contract.campaign && contract.campaign._id === campaign))
+            )
+            .map(contract => ({
+              id: contract._id,
+              campaña: selectedCampaign.name || "",
+              sociedad: contract.company?.name || "",
+              contrato: contract.contractSaleNumber || "",
+              campo: contract.destination?.name || "",
+              lote: "",
+              cultivo: contract.crop?.name || "",
+              fecha: contract.dateCreated ? format(new Date(contract.dateCreated), 'dd/MM/yyyy') : "",
+              tipo: "Contrato",
+              labor: "",
+              detalle: contract.condition || "",
+              referencia: contract.contractSaleNumber || "",
+              moneda: contract.currency || "USD",
+              importe: parseFloat(contract.amountValue || "0"),
+              importeAlternativo: parseFloat(contract.amountValue || "0") * factor
+            }));
+        }
+
+        let expensesData = [];
+        if (campaingExpenses && campaingExpenses.length > 0) {
+          expensesData = campaingExpenses
+            .filter(expense => expense && expense.campaign === campaign)
+            .flatMap(expense => {
+              if (!expense.listCamapingExpeses || expense.listCamapingExpeses.length === 0) {
+                return [];
+              }
+
+              return expense.listCamapingExpeses.map((item: ListCampingExpeses) => ({
+                id: expense._id + "-" + item.id,
+                campaña: selectedCampaign.name || "",
+                sociedad: "",
+                contrato: "",
+                campo: expense.field || "",
+                lote: expense.lot || "",
+                cultivo: "",
+                fecha: item.date ? format(new Date(item.date), 'dd/MM/yyyy') : "",
+                tipo: "Gasto",
+                labor: item.labor || "",
+                detalle: item.detail || "",
+                referencia: item.reference || "",
+                moneda: "USD",
+                importe: -parseFloat(item.amount || "0"),
+                importeAlternativo: -parseFloat(item.amount || "0") * factor
+              }));
+            });
+        }
+        setReportData([...contractsData, ...expensesData]);
+      } catch (error) {
+        console.error("Error fetching report data:", error);
+        setError("Error al cargar los datos del informe");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReportData();
+  }, [campaign, campaigns, contractsSaleCerealsFull, campaingExpenses]);
+
+  useEffect(() => {
+    if (reportData.length === 0) return;
+
+    const rate = parseFloat(altCurrency) || 1;
+    const factor = isMultiply ? rate : 1 / rate;
+
+    const updatedData = reportData.map(row => ({
+      ...row,
+      importeAlternativo: row.importe * factor
+    }));
+
+    setReportData(updatedData);
+  }, [altCurrency, isMultiply]);
+
+  const handleFilterChange = (filterName: string, value: string) => {
+    setFilters({
+      ...filters,
+      [filterName]: value
+    });
+  };
+
+  const filteredData = reportData.filter(row => {
+    return (
+      (filters.sociedad === "" || (row.sociedad && row.sociedad.toLowerCase().includes(filters.sociedad.toLowerCase()))) &&
+      (filters.contrato === "" || (row.contrato && row.contrato.toLowerCase().includes(filters.contrato.toLowerCase()))) &&
+      (filters.campo === "" || (row.campo && row.campo.toLowerCase().includes(filters.campo.toLowerCase()))) &&
+      (filters.lote === "" || (row.lote && row.lote.toLowerCase().includes(filters.lote.toLowerCase()))) &&
+      (filters.cultivo === "" || (row.cultivo && row.cultivo.toLowerCase().includes(filters.cultivo.toLowerCase())))
+    );
+  });
 
   const headerControls = (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        gap: 3, 
-        p: 2, 
-        backgroundColor: '#f5f5f5', 
-        borderRadius: 1,
-        width: '100%'
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        width: '100%',
       }}
     >
-      <FormControl sx={{ minWidth: 200 }}>
-        <Typography variant="subtitle2" mb={1}>
-          {t("_campaign")}
-        </Typography>
-        <Select
-          value={campaign}
-          onChange={(e) => setCampaign(e.target.value)}
-          size="small"
-        >
-          {campaigns.map(camp => (
-            <MenuItem key={camp._id} value={camp._id}>
-              {camp.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      {error && (
+        <Alert severity="error" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
-      <FormControl>
-        <Typography variant="subtitle2" mb={1}>
-          {t("alternative_currency_quote")}
-        </Typography>
-        <TextField
-          size="small"
-          value={altCurrency}
-          onChange={(e) => setAltCurrency(e.target.value)}
-          InputProps={{
-            endAdornment: <InputAdornment position="end">ARS</InputAdornment>,
-          }}
-          sx={{ minWidth: 150 }}
-        />
-      </FormControl>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 3,
+          p: 2,
+          backgroundColor: '#f5f5f5',
+          borderRadius: 1,
+          width: '100%',
+          flexWrap: 'wrap'
+        }}
+      >
+        <FormControl sx={{ minWidth: 200 }}>
+          <Typography variant="subtitle2" mb={1}>
+            {t("_campaign")}
+          </Typography>
+          <Select
+            value={campaign}
+            onChange={(e) => setCampaign(e.target.value)}
+            size="small"
+            disabled={isLoading || !campaigns || campaigns.length === 0}
+          >
+            {campaigns && campaigns.map(camp => (
+              <MenuItem key={camp._id} value={camp._id}>
+                {camp.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-      <FormControl>
-        <Typography variant="subtitle2" mb={1}>
-          {t("operation")}
-        </Typography>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isMultiply}
-              onChange={() => setIsMultiply(!isMultiply)}
-            />
-          }
-          label={isMultiply ? t("multiply") : t("divide")}
-        />
-      </FormControl>
+        <FormControl>
+          <Typography variant="subtitle2" mb={1}>
+            {t("alternative_currency_quote")}
+          </Typography>
+          <TextField
+            size="small"
+            value={altCurrency}
+            onChange={(e) => setAltCurrency(e.target.value)}
+            InputProps={{
+              endAdornment: <InputAdornment position="end">ARS</InputAdornment>,
+            }}
+            sx={{ minWidth: 150 }}
+          />
+        </FormControl>
+
+        <FormControl>
+          <Typography variant="subtitle2" mb={1}>
+            {t("operation")}
+          </Typography>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isMultiply}
+                onChange={() => setIsMultiply(!isMultiply)}
+              />
+            }
+            label={isMultiply ? t("multiply") : t("divide")}
+          />
+        </FormControl>
+      </Box>
     </Box>
   );
 
@@ -346,16 +414,21 @@ export const CampaignsResultsPage: React.FC = () => {
       isLoading={isLoading}
       title={t("campaign_results")}
       icon={<QueryStatsIcon sx={{ fontSize: 40, color: "#424242" }} />}
-      data={activities}
+      data={filteredData}
       columns={columns}
-      getData={() => {}} // Not needed as we're handling data fetching in useEffect
-      deleteData={() => {}} // Add if needed
-      setActiveItem={() => {}} // Add if needed
+      getData={() => { }}
+      deleteData={() => { }}
+      setActiveItem={() => { }}
       newItemPath=""
       editItemPath={(id) => ``}
       showAddButton={false}
       headerContent={headerControls}
-      footerContent={<TotalsSummary totals={calculateTotals(activities, isMultiply, parseFloat(altCurrency))} />}
+      footerContent={
+        reportData.length > 0 ?
+          <TotalsSummary totals={calculateTotals(filteredData, isMultiply, parseFloat(altCurrency) || 1)} /> :
+          null
+      }
+      onFilter={handleFilterChange}
     />
   );
 };
