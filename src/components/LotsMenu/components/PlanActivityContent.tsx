@@ -12,6 +12,7 @@ interface PlanActivityContentProps {
   lot: any
   db: any
   formData: any
+  lotActivities: any
   setFormData: React.Dispatch<React.SetStateAction<any>>
 }
 
@@ -21,6 +22,7 @@ const PlanActivityContent: React.FC<PlanActivityContentProps> = ({
   lot,
   db,
   formData,
+  lotActivities,
   setFormData,
 }) => {
   let adjustedStep = step
@@ -34,6 +36,7 @@ const PlanActivityContent: React.FC<PlanActivityContentProps> = ({
         <PersonalForm
           lot={lot}
           formData={formData}
+          activities={lotActivities}
           setFormData={setFormData}
           showActivityType={activityType === 'application'}
         />

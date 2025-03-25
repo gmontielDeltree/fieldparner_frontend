@@ -26,6 +26,9 @@ const ActivityContent = ({
   handleConfirmExecution,
   handleReplicateActivity,
 }) => {
+  // Ensure we have a consistent activity structure regardless of what was passed
+  const activityData = activity?.actividad || activity;
+
   const db = dbContext.fields
   const [selectedTab, setSelectedTab] = useState(0)
   const [anchorEl, setAnchorEl] = useState(null)

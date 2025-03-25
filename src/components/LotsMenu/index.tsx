@@ -156,13 +156,13 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   ) => {
     switch (type) {
       case 'activity':
-        setSelectedCategory(isExecuting ? 'Execute Activity' : 'Edit Activity')
+        setSelectedCategory(isExecuting ? t('Execute Activity') : t('Edit Activity'))
         break
       case 'note':
-        setSelectedCategory('Edit Note')
+        setSelectedCategory(t('Edit Note'))
         break
       default:
-        console.error('Invalid edit type')
+        console.error(t('Invalid edit type'))
         return
     }
     setEditingActivityInfo({ activity, isExecuting })
@@ -245,7 +245,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         <div>
           {selectedCategory && (
             <IconButton
-              aria-label="back to activities"
+              aria-label={t('back to activities')}
               onClick={backToActivites}
             >
               <ArrowBackIcon />
@@ -297,7 +297,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
               </Tooltip>
             </>
           )}
-          <IconButton aria-label="close" onClick={toggle}>
+          <IconButton aria-label={t('close')} onClick={toggle}>
             <CloseIcon />
           </IconButton>
         </div>

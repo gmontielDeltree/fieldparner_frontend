@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   TextField,
   FormControl,
@@ -19,12 +20,12 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { styled } from '@mui/material/styles'
 import { es } from 'date-fns/locale'
+import { format } from 'date-fns'
 import { NumberFieldWithUnits } from '../../components/NumberField'
 import { AutocompleteCultivo } from '../../components/AutocompleteCultivo'
 import { AutocompleteContratista } from '../../components/AutocompleteContratista'
 import { AutocompleteDeposito } from '../../components/AutocompleteDeposito'
 import { useBusiness } from '../../../../hooks'
-import { format } from 'date-fns'
 
 const CustomPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -39,76 +40,102 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(1),
 }))
 
-// Suponemos que esta prop activities está disponible desde el componente superior
 function PersonalFormUnified({
   lot,
   formData,
   setFormData,
   showActivityType = false,
   mode = 'plan',
-  activities = [], // Actividades disponibles
+  activities = [],
 }) {
-  const [fertilizacionChecked, setFertilizacionChecked] = useState(
+  const { t } = useTranslation();
+  const [fertilizationChecked, setFertilizationChecked] = useState(
     formData.detalles.fertilizacion || false,
   )
-  const [fitosanitariaChecked, setFitosanitariaChecked] = useState(
+  const [phytosanitaryChecked, setPhytosanitaryChecked] = useState(
     formData.detalles.fitosanitaria || false,
   )
-  const [siembras, setSiembras] = useState([])
-  const [selectedSiembra, setSelectedSiembra] = useState(null)
+  const [plantings, setPlantings] = useState([])
+  const [selectedPlanting, setSelectedPlanting] = useState(null)
   const { businesses, getBusinesses } = useBusiness()
 
+  const processedAtLeastOnce = useRef(false);
 
   useEffect(() => {
     getBusinesses()
   }, [])
 
   useEffect(() => {
-    procesarActividadesDeSiembra()
-  }, [activities])
+    if (activities && activities.length > 0) {
+      processPlantingActivities();
+      processedAtLeastOnce.current = true;
+    }
+  }, []);
 
-  const procesarActividadesDeSiembra = () => {
-    // Filtrar solo las actividades de tipo siembra
-    const actividadesSiembra = activities
+  useEffect(() => {
+    if (activities && activities.length > 0) {
+      processPlantingActivities();
+      processedAtLeastOnce.current = true;
+    }
+  }, [activities]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      processedAtLeastOnce.current = true;
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const processPlantingActivities = () => {
+    if (!activities || activities.length === 0) {
+      setPlantings([]);
+      return;
+    }
+
+    const plantingActivities = activities
       .filter(activity => {
-        // Si la actividad es un objeto anidado como en el ejemplo de Activities.jsx
-        if (activity.actividad && activity.actividad.tipo === 'siembra') {
-          return true
-        }
-        // Si la actividad es directamente el objeto como en el ejemplo de paste-2.txt
-        if (activity.tipo === 'siembra') {
-          return true
-        }
-        return false
+        if (!activity) return false;
+        const type = activity.actividad?.tipo || activity.tipo;
+        return type && type.toLowerCase() === 'siembra';
       })
       .map(activity => {
-        // Normalizar para manejar tanto el formato anidado como el directo
-        const actividadNormalizada = activity.actividad || activity;
+        const normalizedActivity = activity.actividad || activity;
+        const details = normalizedActivity.detalles || {};
 
-        // Formato de fecha si existe
-        const fechaEjecucion = actividadNormalizada.detalles?.fecha_ejecucion_tentativa
-          ? format(new Date(actividadNormalizada.detalles.fecha_ejecucion_tentativa), 'dd/MM/yyyy')
-          : 'Sin fecha';
+        let executionDate = t('No date');
+        if (details.fecha_ejecucion_tentativa) {
+          try {
+            const date = new Date(details.fecha_ejecucion_tentativa);
+            executionDate = isNaN(date.getTime()) ? 'No date' : format(date, 'dd/MM/yyyy');
+          } catch (error) { }
+        }
 
-        // Obtener información del cultivo
-        const cultivoNombre = actividadNormalizada.detalles?.cultivo?.descriptionES ||
-          actividadNormalizada.detalles?.cultivo?.descriptionEN ||
-          'Sin cultivo';
+        const cropName =
+          details.cultivo?.descriptionES ||
+          details.cultivo?.descriptionEN ||
+          details.cultivo?.name ||
+          t('No crop');
 
-        // Crear descripción amigable para el dropdown
+        const id = normalizedActivity._id || normalizedActivity.uuid;
+
         return {
-          ...actividadNormalizada,
-          descripcionRica: `${cultivoNombre} - ${fechaEjecucion} - ${actividadNormalizada.detalles?.hectareas || 0}ha`
+          ...normalizedActivity,
+          _id: id,
+          richDescription: `${cropName} - ${executionDate} - ${details.hectareas || 0}ha`
         };
       });
-    console.log('Actividades de siembra:', actividadesSiembra);
-    setSiembras(actividadesSiembra);
 
-    // Si hay una siembra inicial seleccionada, establecerla
+    setPlantings(plantingActivities);
+
     if (formData.detalles.siembra_inicial) {
-      const siembraInicial = actividadesSiembra.find(s => s._id === formData.detalles.siembra_inicial);
-      if (siembraInicial) {
-        setSelectedSiembra(siembraInicial);
+      const initialPlanting = plantingActivities.find(s => {
+        const sId = s._id;
+        return sId === formData.detalles.siembra_inicial;
+      });
+
+      if (initialPlanting) {
+        setSelectedPlanting(initialPlanting);
       }
     }
   }
@@ -123,53 +150,57 @@ function PersonalFormUnified({
     }))
   }
 
-  const handleSiembraChange = (event) => {
-    const siembraId = event.target.value
-    const selectedSiembra = siembras.find((s) => s._id === siembraId)
-    setSelectedSiembra(selectedSiembra)
+  const handlePlantingChange = (event) => {
+    const plantingId = event.target.value;
 
-    setFormData((prevData) => ({
-      ...prevData,
-      detalles: {
-        ...prevData.detalles,
-        siembra_inicial: siembraId,
-        cultivo: selectedSiembra?.detalles?.cultivo || null,
-      },
-    }))
+    const selectedPlanting = plantings.find((s) => s._id === plantingId);
+
+    if (selectedPlanting) {
+      setSelectedPlanting(selectedPlanting);
+
+      setFormData((prevData) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          siembra_inicial: plantingId,
+          cultivo: selectedPlanting.detalles?.cultivo || null,
+        },
+      }));
+    }
   }
 
   const handleCheckboxChange = (field) => (event) => {
     const isChecked = event.target.checked
     if (field === 'fertilizacion') {
-      setFertilizacionChecked(isChecked)
+      setFertilizationChecked(isChecked)
     } else {
-      setFitosanitariaChecked(isChecked)
+      setPhytosanitaryChecked(isChecked)
     }
     onFieldChange(field, isChecked)
   }
 
-  const shouldShowSiembraSelection =
+  const shouldShowPlantingSelection =
     mode === 'plan' &&
     (formData.tipo === 'aplicacion' || formData.tipo === 'cosecha')
 
-  const getSiembraLabel = (siembra) => {
-    if (!siembra) return '';
+  const getPlantingLabel = (planting) => {
+    if (!planting) return '';
 
-    // Usar la descripción enriquecida si existe
-    if (siembra.descripcionRica) {
-      return siembra.descripcionRica;
+    if (planting.richDescription) {
+      return planting.richDescription;
     }
 
-    // Fallback: usar comentario o id como referencia
-    return siembra.comentario || `Siembra ${siembra._id.slice(0, 8)}`;
+    return planting.comentario ||
+      planting.detalles?.comentario ||
+      t('Planting {{id}}', { id: (planting._id || '').slice(0, 8) });
   }
 
-  // Función auxiliar para obtener el nombre del cultivo seleccionado
-  const getCultivoNombre = () => {
-    if (selectedSiembra?.detalles?.cultivo) {
-      return selectedSiembra.detalles.cultivo.descriptionES ||
-        selectedSiembra.detalles.cultivo.descriptionEN ||
-        'Sin nombre';
+  const getCropName = () => {
+    if (selectedPlanting?.detalles?.cultivo) {
+      return selectedPlanting.detalles.cultivo.descriptionES ||
+        selectedPlanting.detalles.cultivo.descriptionEN ||
+        selectedPlanting.detalles.cultivo.name ||
+        t('No name');
     }
     return '';
   }
@@ -178,54 +209,60 @@ function PersonalFormUnified({
     <CustomPaper elevation={3}>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <SectionTitle>Información General</SectionTitle>
+          <SectionTitle>{t('General Information')}</SectionTitle>
         </Grid>
 
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
-            <InputLabel id="business-label">Ing. Agronomo</InputLabel>
+            <InputLabel id="business-label">{t('Agronomic Engineer')}</InputLabel>
             <Select
               labelId="business-label"
               id="business"
               value={formData.detalles.business || ''}
-              label="Ing. Agronomo"
+              label={t('Agronomic Engineer')}
               onChange={(e) => onFieldChange('business', e.target.value)}
             >
               {businesses.map((business) => (
                 <MenuItem key={business._id} value={business._id}>
-                  {business.razonSocial || business.nombreCompleto || `Entidad ${business._id.slice(0, 8)}`}
+                  {business.razonSocial || business.nombreCompleto || t('Entity {{id}}', { id: business._id.slice(0, 8) })}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
         </Grid>
 
-        {shouldShowSiembraSelection ? (
+        {shouldShowPlantingSelection ? (
           <>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel id="siembra-inicial-label">
-                  Siembra Inicial
+                  {t('Initial Planting')}
                 </InputLabel>
                 <Select
                   labelId="siembra-inicial-label"
                   id="siembra-inicial"
                   value={formData.detalles.siembra_inicial || ''}
-                  label="Siembra Inicial"
-                  onChange={handleSiembraChange}
+                  label={t('Initial Planting')}
+                  onChange={handlePlantingChange}
                   renderValue={(selected) => {
-                    const siembra = siembras.find(s => s._id === selected);
-                    return getSiembraLabel(siembra);
+                    const planting = plantings.find(s => s._id === selected);
+                    return getPlantingLabel(planting);
                   }}
                 >
-                  {siembras.map((siembra) => (
-                    <MenuItem key={siembra._id} value={siembra._id}>
-                      <ListItemText
-                        primary={getSiembraLabel(siembra)}
-                        secondary={`ID: ${siembra._id.slice(-12)}`}
-                      />
+                  {plantings.length > 0 ? (
+                    plantings.map((planting) => (
+                      <MenuItem key={planting._id} value={planting._id}>
+                        <ListItemText
+                          primary={getPlantingLabel(planting)}
+                          secondary={`ID: ${(planting._id || '').slice(-12)}`}
+                        />
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled value="">
+                      <em>{t('No plantings available')}</em>
                     </MenuItem>
-                  ))}
+                  )}
                 </Select>
               </FormControl>
             </Grid>
@@ -233,8 +270,8 @@ function PersonalFormUnified({
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Cultivo"
-                value={getCultivoNombre()}
+                label={t('Crop')}
+                value={getCropName()}
                 disabled
               />
             </Grid>
@@ -251,33 +288,33 @@ function PersonalFormUnified({
         {showActivityType && (
           <>
             <Grid item xs={12}>
-              <SectionTitle>Detalles de la Actividad</SectionTitle>
+              <SectionTitle>{t('Activity Details')}</SectionTitle>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="subtitle2" gutterBottom>
-                    Tipo de Actividad:
+                    {t('Activity Type')}:
                   </Typography>
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={fertilizacionChecked}
+                        checked={fertilizationChecked}
                         onChange={handleCheckboxChange('fertilizacion')}
                         color="primary"
                       />
                     }
-                    label="Fertilización"
+                    label={t('Fertilization')}
                   />
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={fitosanitariaChecked}
+                        checked={phytosanitaryChecked}
                         onChange={handleCheckboxChange('fitosanitaria')}
                         color="primary"
                       />
                     }
-                    label="Fitosanitaria"
+                    label={t('Phytosanitary')}
                   />
                 </CardContent>
               </Card>
@@ -295,15 +332,15 @@ function PersonalFormUnified({
         <Grid item xs={12}>
           <SectionTitle>
             {mode === 'execute'
-              ? 'Ejecución y Depósito'
-              : 'Programación y Área'}
+              ? t('Execution and Deposit')
+              : t('Scheduling and Area')}
           </SectionTitle>
         </Grid>
 
         <Grid item xs={12} sm={6}>
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
             <DatePicker
-              label="Fecha de Ejecución"
+              label={t('Execution Date')}
               value={
                 mode === 'execute'
                   ? formData.detalles.fecha_ejecucion || new Date()
@@ -334,7 +371,7 @@ function PersonalFormUnified({
             </Grid>
 
             <Grid item xs={12}>
-              <SectionTitle>Horarios y Área</SectionTitle>
+              <SectionTitle>{t('Schedule and Area')}</SectionTitle>
             </Grid>
 
             <Grid item xs={12} sm={4}>
@@ -343,7 +380,7 @@ function PersonalFormUnified({
                 adapterLocale={es}
               >
                 <TimePicker
-                  label="Hora de Inicio"
+                  label={t('Start Time')}
                   value={formData.detalles.fecha_hora_inicio || new Date()}
                   onChange={(newValue) =>
                     onFieldChange('fecha_hora_inicio', newValue)
@@ -359,7 +396,7 @@ function PersonalFormUnified({
                 adapterLocale={es}
               >
                 <TimePicker
-                  label="Hora de Finalización"
+                  label={t('End Time')}
                   value={formData.detalles.fecha_hora_fin || new Date()}
                   onChange={(newValue) =>
                     onFieldChange('fecha_hora_fin', newValue)
@@ -371,7 +408,7 @@ function PersonalFormUnified({
 
             <Grid item xs={12} sm={4}>
               <NumberFieldWithUnits
-                label="Hectáreas"
+                label={t('Hectares')}
                 unit="ha"
                 value={formData.detalles.hectareas || 0}
                 onChange={(e) => onFieldChange('hectareas', e.target.value)}
@@ -381,7 +418,7 @@ function PersonalFormUnified({
         ) : (
           <Grid item xs={12} sm={6}>
             <NumberFieldWithUnits
-              label="Hectáreas a tratar"
+              label={t('Hectares to treat')}
               unit="ha"
               value={formData.detalles.hectareas || 0}
               onChange={(e) => onFieldChange('hectareas', e.target.value)}
@@ -394,7 +431,7 @@ function PersonalFormUnified({
             <NumberFieldWithUnits
               size="small"
               fullWidth
-              label="Rinde Obtenido (ton/ha)"
+              label={t('Yield Obtained (ton/ha)')}
               value={+formData.detalles.rinde_obtenido || 0}
               onChange={(e) => onFieldChange('rinde_obtenido', e.target.value)}
               unit="ton/ha"
