@@ -30,7 +30,6 @@ const PlanActivityContent: React.FC<PlanActivityContentProps> = ({
     adjustedStep = step + 1
   }
 
-  console.log("LA CONCHA TUYA", lotActivities)
   switch (adjustedStep) {
     case 0:
       return (

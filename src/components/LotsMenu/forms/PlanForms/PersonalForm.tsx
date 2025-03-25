@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   TextField,
   FormControl,
@@ -45,172 +46,96 @@ function PersonalFormUnified({
   setFormData,
   showActivityType = false,
   mode = 'plan',
-  activities = [], // Actividades disponibles
+  activities = [],
 }) {
-  console.log("🔍 PersonalFormUnified - Renderizando con activities:", activities?.length);
-
-  const [fertilizacionChecked, setFertilizacionChecked] = useState(
+  const { t } = useTranslation();
+  const [fertilizationChecked, setFertilizationChecked] = useState(
     formData.detalles.fertilizacion || false,
   )
-  const [fitosanitariaChecked, setFitosanitariaChecked] = useState(
+  const [phytosanitaryChecked, setPhytosanitaryChecked] = useState(
     formData.detalles.fitosanitaria || false,
   )
-  const [siembras, setSiembras] = useState([])
-  const [selectedSiembra, setSelectedSiembra] = useState(null)
+  const [plantings, setPlantings] = useState([])
+  const [selectedPlanting, setSelectedPlanting] = useState(null)
   const { businesses, getBusinesses } = useBusiness()
 
-  // Flag para registrar si ya procesamos alguna vez
-  const procesadoAlgunaVez = useRef(false);
-
-  // Mostrar el tipo de actividad y el modo actual
-  console.log("🔍 PersonalFormUnified - Tipo:", formData.tipo, "Modo:", mode);
-  console.log("🔍 PersonalFormUnified - shouldShowSiembraSelection:",
-    mode === 'plan' && (formData.tipo === 'aplicacion' || formData.tipo === 'cosecha'));
+  const processedAtLeastOnce = useRef(false);
 
   useEffect(() => {
     getBusinesses()
   }, [])
 
-  // Primer efecto: log de datos iniciales al montar
   useEffect(() => {
-    console.log("🔍 PersonalFormUnified - Montado inicial");
-    console.log("🔍 Activities al inicio:", activities);
-    console.log("🔍 formData.tipo:", formData.tipo);
-    console.log("🔍 shouldShowSiembraSelection:",
-      mode === 'plan' && (formData.tipo === 'aplicacion' || formData.tipo === 'cosecha'));
-
-    // Forzar el procesamiento inicial si hay actividades
     if (activities && activities.length > 0) {
-      console.log("🔍 Procesando actividades iniciales:", activities.length);
-      procesarActividadesDeSiembra();
-      procesadoAlgunaVez.current = true;
+      processPlantingActivities();
+      processedAtLeastOnce.current = true;
     }
   }, []);
 
-  // Segundo efecto: procesar cuando cambian las actividades
   useEffect(() => {
-    console.log("🔍 Activities actualizadas:", activities?.length);
-
-    // Siempre intentar procesar si hay actividades disponibles
     if (activities && activities.length > 0) {
-      console.log("🔍 Ejecutando procesarActividadesDeSiembra con", activities.length, "actividades");
-      procesarActividadesDeSiembra();
-      procesadoAlgunaVez.current = true;
-    } else {
-      console.log("🔍 No hay actividades para procesar");
+      processPlantingActivities();
+      processedAtLeastOnce.current = true;
     }
   }, [activities]);
 
-  // Tercer efecto: mostrar mensaje si nunca se procesaron actividades
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!procesadoAlgunaVez.current) {
-        console.log("⚠️ ALERTA: Nunca se procesaron actividades. Verifique que se estén pasando correctamente.");
-      }
+      processedAtLeastOnce.current = true;
     }, 3000);
 
     return () => clearTimeout(timer);
   }, []);
 
-  const procesarActividadesDeSiembra = () => {
-    console.log('⚡ Procesando actividades de siembra, total actividades:', activities?.length);
-
-    // Verificar si hay actividades antes de procesar
+  const processPlantingActivities = () => {
     if (!activities || activities.length === 0) {
-      console.log('⚡ No hay actividades disponibles para procesar');
-      setSiembras([]);
+      setPlantings([]);
       return;
     }
 
-    // Imprimir los primeros elementos para depuración
-    const muestra = activities.slice(0, 3);
-    console.log('⚡ Muestra de actividades:', muestra.map(a => ({
-      tipo: a.actividad?.tipo || a.tipo,
-      id: a.actividad?._id || a.actividad?.uuid || a._id || a.uuid
-    })));
-
-    // Filtrar solo las actividades de tipo siembra
-    const actividadesSiembra = activities
+    const plantingActivities = activities
       .filter(activity => {
-        // Verificar si la actividad o su propiedad anidada existen
         if (!activity) return false;
-
-        // Obtener el tipo, ya sea de la actividad directa o anidada
-        const tipo = activity.actividad?.tipo || activity.tipo;
-
-        // Depuración para cada actividad
-        console.log('⚡ Evaluando:', tipo);
-
-        // Verificar si el tipo es siembra (insensible a mayúsculas/minúsculas)
-        return tipo && tipo.toLowerCase() === 'siembra';
+        const type = activity.actividad?.tipo || activity.tipo;
+        return type && type.toLowerCase() === 'siembra';
       })
       .map(activity => {
-        // Normalizar para manejar tanto el formato anidado como el directo
-        const actividadNormalizada = activity.actividad || activity;
+        const normalizedActivity = activity.actividad || activity;
+        const details = normalizedActivity.detalles || {};
 
-        console.log('⚡ Siembra encontrada:',
-          actividadNormalizada._id || actividadNormalizada.uuid,
-          'con cultivo:', actividadNormalizada.detalles?.cultivo?.descriptionES || 'sin cultivo');
-
-        // Asegurarse de que detalles exista
-        const detalles = actividadNormalizada.detalles || {};
-
-        // Formato de fecha si existe
-        let fechaEjecucion = 'Sin fecha';
-        if (detalles.fecha_ejecucion_tentativa) {
+        let executionDate = t('No date');
+        if (details.fecha_ejecucion_tentativa) {
           try {
-            const fecha = new Date(detalles.fecha_ejecucion_tentativa);
-            fechaEjecucion = isNaN(fecha.getTime()) ? 'Sin fecha' : format(fecha, 'dd/MM/yyyy');
-          } catch (error) {
-            console.error('Error al formatear fecha:', error);
-          }
+            const date = new Date(details.fecha_ejecucion_tentativa);
+            executionDate = isNaN(date.getTime()) ? 'No date' : format(date, 'dd/MM/yyyy');
+          } catch (error) { }
         }
 
-        // Obtener información del cultivo de forma segura
-        const cultivoNombre =
-          detalles.cultivo?.descriptionES ||
-          detalles.cultivo?.descriptionEN ||
-          detalles.cultivo?.name ||
-          'Sin cultivo';
+        const cropName =
+          details.cultivo?.descriptionES ||
+          details.cultivo?.descriptionEN ||
+          details.cultivo?.name ||
+          t('No crop');
 
-        // Asegurar que el ID sea único y esté presente
-        const id = actividadNormalizada._id || actividadNormalizada.uuid;
+        const id = normalizedActivity._id || normalizedActivity.uuid;
 
-        if (!id) {
-          console.warn('⚠️ Actividad sin ID encontrada:', actividadNormalizada);
-        }
-
-        // Crear descripción amigable para el dropdown
         return {
-          ...actividadNormalizada,
+          ...normalizedActivity,
           _id: id,
-          descripcionRica: `${cultivoNombre} - ${fechaEjecucion} - ${detalles.hectareas || 0}ha`
+          richDescription: `${cropName} - ${executionDate} - ${details.hectareas || 0}ha`
         };
       });
 
-    console.log('⚡ Actividades de siembra filtradas:', actividadesSiembra.length);
+    setPlantings(plantingActivities);
 
-    if (actividadesSiembra.length > 0) {
-      console.log('⚡ Primera siembra:', actividadesSiembra[0]);
-      console.log('⚡ IDs de siembras:', actividadesSiembra.map(s => s._id));
-    }
-
-    // Actualizar las siembras disponibles
-    setSiembras(actividadesSiembra);
-
-    // Si hay una siembra inicial seleccionada, establecerla
     if (formData.detalles.siembra_inicial) {
-      console.log('⚡ Buscando siembra inicial:', formData.detalles.siembra_inicial);
-      const siembraInicial = actividadesSiembra.find(s => {
+      const initialPlanting = plantingActivities.find(s => {
         const sId = s._id;
         return sId === formData.detalles.siembra_inicial;
       });
 
-      if (siembraInicial) {
-        console.log('⚡ Siembra inicial encontrada:', siembraInicial._id);
-        setSelectedSiembra(siembraInicial);
-      } else {
-        console.log('⚡ No se encontró la siembra inicial');
+      if (initialPlanting) {
+        setSelectedPlanting(initialPlanting);
       }
     }
   }
@@ -225,129 +150,117 @@ function PersonalFormUnified({
     }))
   }
 
-  const handleSiembraChange = (event) => {
-    const siembraId = event.target.value;
-    console.log('Siembra seleccionada ID:', siembraId);
+  const handlePlantingChange = (event) => {
+    const plantingId = event.target.value;
 
-    const selectedSiembra = siembras.find((s) => s._id === siembraId);
+    const selectedPlanting = plantings.find((s) => s._id === plantingId);
 
-    if (selectedSiembra) {
-      console.log('Siembra encontrada:', selectedSiembra);
-      setSelectedSiembra(selectedSiembra);
+    if (selectedPlanting) {
+      setSelectedPlanting(selectedPlanting);
 
-      // Actualizar el formulario con la información de la siembra seleccionada
       setFormData((prevData) => ({
         ...prevData,
         detalles: {
           ...prevData.detalles,
-          siembra_inicial: siembraId,
-          cultivo: selectedSiembra.detalles?.cultivo || null,
+          siembra_inicial: plantingId,
+          cultivo: selectedPlanting.detalles?.cultivo || null,
         },
       }));
-    } else {
-      console.error('No se encontró la siembra con ID:', siembraId);
     }
   }
 
   const handleCheckboxChange = (field) => (event) => {
     const isChecked = event.target.checked
     if (field === 'fertilizacion') {
-      setFertilizacionChecked(isChecked)
+      setFertilizationChecked(isChecked)
     } else {
-      setFitosanitariaChecked(isChecked)
+      setPhytosanitaryChecked(isChecked)
     }
     onFieldChange(field, isChecked)
   }
 
-  const shouldShowSiembraSelection =
+  const shouldShowPlantingSelection =
     mode === 'plan' &&
     (formData.tipo === 'aplicacion' || formData.tipo === 'cosecha')
 
-  const getSiembraLabel = (siembra) => {
-    if (!siembra) return '';
+  const getPlantingLabel = (planting) => {
+    if (!planting) return '';
 
-    // Usar la descripción enriquecida si existe
-    if (siembra.descripcionRica) {
-      return siembra.descripcionRica;
+    if (planting.richDescription) {
+      return planting.richDescription;
     }
 
-    // Fallback: usar comentario o id como referencia
-    return siembra.comentario ||
-      siembra.detalles?.comentario ||
-      `Siembra ${(siembra._id || '').slice(0, 8)}`;
+    return planting.comentario ||
+      planting.detalles?.comentario ||
+      t('Planting {{id}}', { id: (planting._id || '').slice(0, 8) });
   }
 
-  // Función auxiliar para obtener el nombre del cultivo seleccionado
-  const getCultivoNombre = () => {
-    if (selectedSiembra?.detalles?.cultivo) {
-      return selectedSiembra.detalles.cultivo.descriptionES ||
-        selectedSiembra.detalles.cultivo.descriptionEN ||
-        selectedSiembra.detalles.cultivo.name ||
-        'Sin nombre';
+  const getCropName = () => {
+    if (selectedPlanting?.detalles?.cultivo) {
+      return selectedPlanting.detalles.cultivo.descriptionES ||
+        selectedPlanting.detalles.cultivo.descriptionEN ||
+        selectedPlanting.detalles.cultivo.name ||
+        t('No name');
     }
     return '';
   }
-
-  // Al final del componente, mostrar logs de estado importante
-  console.log("🔍 Estado actual - siembras:", siembras.length);
-  console.log("🔍 Estado actual - shouldShowSiembraSelection:", shouldShowSiembraSelection);
 
   return (
     <CustomPaper elevation={3}>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <SectionTitle>Información General</SectionTitle>
+          <SectionTitle>{t('General Information')}</SectionTitle>
         </Grid>
 
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
-            <InputLabel id="business-label">Ing. Agronomo</InputLabel>
+            <InputLabel id="business-label">{t('Agronomic Engineer')}</InputLabel>
             <Select
               labelId="business-label"
               id="business"
               value={formData.detalles.business || ''}
-              label="Ing. Agronomo"
+              label={t('Agronomic Engineer')}
               onChange={(e) => onFieldChange('business', e.target.value)}
             >
               {businesses.map((business) => (
                 <MenuItem key={business._id} value={business._id}>
-                  {business.razonSocial || business.nombreCompleto || `Entidad ${business._id.slice(0, 8)}`}
+                  {business.razonSocial || business.nombreCompleto || t('Entity {{id}}', { id: business._id.slice(0, 8) })}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
         </Grid>
 
-        {shouldShowSiembraSelection ? (
+        {shouldShowPlantingSelection ? (
           <>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel id="siembra-inicial-label">
-                  Siembra Inicial
+                  {t('Initial Planting')}
                 </InputLabel>
                 <Select
                   labelId="siembra-inicial-label"
                   id="siembra-inicial"
                   value={formData.detalles.siembra_inicial || ''}
-                  label="Siembra Inicial"
-                  onChange={handleSiembraChange}
+                  label={t('Initial Planting')}
+                  onChange={handlePlantingChange}
                   renderValue={(selected) => {
-                    const siembra = siembras.find(s => s._id === selected);
-                    return getSiembraLabel(siembra);
+                    const planting = plantings.find(s => s._id === selected);
+                    return getPlantingLabel(planting);
                   }}
                 >
-                  {siembras.length > 0 ? (
-                    siembras.map((siembra) => (
-                      <MenuItem key={siembra._id} value={siembra._id}>
+                  {plantings.length > 0 ? (
+                    plantings.map((planting) => (
+                      <MenuItem key={planting._id} value={planting._id}>
                         <ListItemText
-                          primary={getSiembraLabel(siembra)}
-                          secondary={`ID: ${(siembra._id || '').slice(-12)}`}
+                          primary={getPlantingLabel(planting)}
+                          secondary={`ID: ${(planting._id || '').slice(-12)}`}
                         />
                       </MenuItem>
                     ))
                   ) : (
                     <MenuItem disabled value="">
-                      <em>No hay siembras disponibles</em>
+                      <em>{t('No plantings available')}</em>
                     </MenuItem>
                   )}
                 </Select>
@@ -357,8 +270,8 @@ function PersonalFormUnified({
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Cultivo"
-                value={getCultivoNombre()}
+                label={t('Crop')}
+                value={getCropName()}
                 disabled
               />
             </Grid>
@@ -375,33 +288,33 @@ function PersonalFormUnified({
         {showActivityType && (
           <>
             <Grid item xs={12}>
-              <SectionTitle>Detalles de la Actividad</SectionTitle>
+              <SectionTitle>{t('Activity Details')}</SectionTitle>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="subtitle2" gutterBottom>
-                    Tipo de Actividad:
+                    {t('Activity Type')}:
                   </Typography>
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={fertilizacionChecked}
+                        checked={fertilizationChecked}
                         onChange={handleCheckboxChange('fertilizacion')}
                         color="primary"
                       />
                     }
-                    label="Fertilización"
+                    label={t('Fertilization')}
                   />
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={fitosanitariaChecked}
+                        checked={phytosanitaryChecked}
                         onChange={handleCheckboxChange('fitosanitaria')}
                         color="primary"
                       />
                     }
-                    label="Fitosanitaria"
+                    label={t('Phytosanitary')}
                   />
                 </CardContent>
               </Card>
@@ -419,15 +332,15 @@ function PersonalFormUnified({
         <Grid item xs={12}>
           <SectionTitle>
             {mode === 'execute'
-              ? 'Ejecución y Depósito'
-              : 'Programación y Área'}
+              ? t('Execution and Deposit')
+              : t('Scheduling and Area')}
           </SectionTitle>
         </Grid>
 
         <Grid item xs={12} sm={6}>
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
             <DatePicker
-              label="Fecha de Ejecución"
+              label={t('Execution Date')}
               value={
                 mode === 'execute'
                   ? formData.detalles.fecha_ejecucion || new Date()
@@ -458,7 +371,7 @@ function PersonalFormUnified({
             </Grid>
 
             <Grid item xs={12}>
-              <SectionTitle>Horarios y Área</SectionTitle>
+              <SectionTitle>{t('Schedule and Area')}</SectionTitle>
             </Grid>
 
             <Grid item xs={12} sm={4}>
@@ -467,7 +380,7 @@ function PersonalFormUnified({
                 adapterLocale={es}
               >
                 <TimePicker
-                  label="Hora de Inicio"
+                  label={t('Start Time')}
                   value={formData.detalles.fecha_hora_inicio || new Date()}
                   onChange={(newValue) =>
                     onFieldChange('fecha_hora_inicio', newValue)
@@ -483,7 +396,7 @@ function PersonalFormUnified({
                 adapterLocale={es}
               >
                 <TimePicker
-                  label="Hora de Finalización"
+                  label={t('End Time')}
                   value={formData.detalles.fecha_hora_fin || new Date()}
                   onChange={(newValue) =>
                     onFieldChange('fecha_hora_fin', newValue)
@@ -495,7 +408,7 @@ function PersonalFormUnified({
 
             <Grid item xs={12} sm={4}>
               <NumberFieldWithUnits
-                label="Hectáreas"
+                label={t('Hectares')}
                 unit="ha"
                 value={formData.detalles.hectareas || 0}
                 onChange={(e) => onFieldChange('hectareas', e.target.value)}
@@ -505,7 +418,7 @@ function PersonalFormUnified({
         ) : (
           <Grid item xs={12} sm={6}>
             <NumberFieldWithUnits
-              label="Hectáreas a tratar"
+              label={t('Hectares to treat')}
               unit="ha"
               value={formData.detalles.hectareas || 0}
               onChange={(e) => onFieldChange('hectareas', e.target.value)}
@@ -518,7 +431,7 @@ function PersonalFormUnified({
             <NumberFieldWithUnits
               size="small"
               fullWidth
-              label="Rinde Obtenido (ton/ha)"
+              label={t('Yield Obtained (ton/ha)')}
               value={+formData.detalles.rinde_obtenido || 0}
               onChange={(e) => onFieldChange('rinde_obtenido', e.target.value)}
               unit="ton/ha"

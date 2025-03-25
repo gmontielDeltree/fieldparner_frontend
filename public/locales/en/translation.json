@@ -472,7 +472,30 @@
   "expenses": "Expenses",
   "campaign_result": "Campaign Result",
   "divide": "Divide",
-  "_labor": "Labor"
+  "_labor": "Labor",
+  "No date": "No date",
+  "No crop": "No crop",
+  "Planting {{id}}": "Planting {{id}}",
+  "No name": "No name",
+  "General Information": "General Information",
+  "Agronomic Engineer": "Agronomic Engineer",
+  "Entity {{id}}": "Entity {{id}}",
+  "Initial Planting": "Initial Planting",
+  "No plantings available": "No plantings available",
+  "Crop": "Crop",
+  "Activity Details": "Activity Details",
+  "Activity Type": "Activity Type",
+  "Fertilization": "Fertilization",
+  "Phytosanitary": "Phytosanitary",
+  "Execution and Deposit": "Execution and Deposit",
+  "Scheduling and Area": "Scheduling and Area",
+  "Execution Date": "Execution Date",
+  "Schedule and Area": "Schedule and Area",
+  "Start Time": "Start Time",
+  "End Time": "End Time",
+  "Hectares": "Hectares",
+  "Hectares to treat": "Hectares to treat",
+  "Yield Obtained (ton/ha)": "Yield Obtained (ton/ha)"
    }
   
 

@@ -117,7 +117,6 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     createWithdrawalOrder,
     selectedCampaign,
   )
-  console.log("LA CONCHA DE TU MADRE", lotActivities)
   const getMissingFieldsMessages = (step) => {
     const fields = []
     const formDetails = formData.detalles || {}
