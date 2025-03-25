@@ -121,6 +121,14 @@
   "brand":"Brand",
   "supply_description": "Supply / Description",
   "export":"Export",
+  "search": "Search",
+  "amount": "Amount",
+  "labor": "Labor",
+  "society": "Society",
+  "operation": "Operation",
+  "multiply": "Multiply",
+  "alternative_currency_quote": "Alternative Currency Quote",
+  "contract": "Contract",
   "_dose": "Dose",
   "_stock": "Stock",
   "_barcode": "Barcode",
@@ -255,6 +263,7 @@
   "social_entities_census": "Suppliers / Employees",
   "supply_lots": "Supplies/Lots",
   "currencies_quotes": "Currencies-Quotes",
+  "campaign_results": "Campaign Results",
   "concepts_categories": "Concepts-Categories",
   "zones_groups": "Zones/Groups",
   "market_prices": "Market Prices",
@@ -446,7 +455,18 @@
   "fill_all_contract_fields": "Please fill in all contract fields",
   "numeric_values_only": "Only numeric values are allowed",
   "contract_deleted_successfully": "The contract has been successfully deleted",
-  "form_validation_error": "Form validation error"
+  "form_validation_error": "Form validation error",
+  "_society": "Society",
+  "_contract": "Contract",
+  "_reference": "Reference",
+  "_amount": "Amount",
+  "alternative_amount": "Alternative Amount",
+  "campaign_summary": "Campaign Summary",
+  "contracts": "Contracts",
+  "expenses": "Expenses",
+  "campaign_result": "Campaign Result",
+  "divide": "Divide",
+  "_labor": "Labor"
    }
   
 
