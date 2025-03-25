@@ -446,6 +446,12 @@
   "fill_all_contract_fields": "Por favor, preencha todos os campos do contrato",
   "numeric_values_only": "Apenas valores numéricos são permitidos",
   "contract_deleted_successfully": "O contrato foi excluído com sucesso",
-  "form_validation_error": "Erro de validação do formulário"
+  "form_validation_error": "Erro de validação do formulário",
+  "Execute Activity": "Executar Atividade",
+  "Edit Activity": "Editar Atividade",
+  "Edit Note": "Editar Nota",
+  "Invalid edit type": "Tipo de edição inválido",
+  "back to activities": "voltar para atividades",
+  "close": "fechar"
 
   }

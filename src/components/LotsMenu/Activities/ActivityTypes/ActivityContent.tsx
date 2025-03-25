@@ -25,6 +25,9 @@ const ActivityContent = ({
   handleConfirmExecution,
   handleReplicateActivity,
 }) => {
+  // Ensure we have a consistent activity structure regardless of what was passed
+  const activityData = activity?.actividad || activity;
+
   const db = dbContext.fields
   const [selectedTab, setSelectedTab] = useState(0)
   const [anchorEl, setAnchorEl] = useState(null)
@@ -43,7 +46,7 @@ const ActivityContent = ({
     const fetchExecution = async () => {
       try {
         const response = await db.find({
-          selector: { actividad_uuid: activity.actividad.uuid },
+          selector: { actividad_uuid: activityData?.uuid },
         })
         if (response.docs.length > 0) {
           setExecution(response.docs[0])
@@ -56,20 +59,20 @@ const ActivityContent = ({
       }
     }
 
-    if (activity.actividad.uuid) {
+    if (activityData?.uuid) {
       fetchExecution()
     }
-  }, [activity.uuid, db])
+  }, [activityData?.uuid, db])
 
   const formattedDate = (date) =>
     date ? format(parseISO(date), 'PPPP', { locale: es }) : 'Fecha no definida'
 
   const formattedPlanificadaDate = formattedDate(
-    activity.actividad.detalles?.fecha_ejecucion_tentativa,
+    activityData?.detalles?.fecha_ejecucion_tentativa,
   )
 
   const getCropInfo = () => {
-    const crop = activity.actividad.detalles?.cultivo
+    const crop = activityData?.detalles?.cultivo
     if (!crop) return null
 
     return {
@@ -79,8 +82,8 @@ const ActivityContent = ({
   }
 
   const cropInfo = getCropInfo()
-  const activityType = activity.actividad.tipo.toUpperCase()
-  const hectares = activity.actividad.detalles?.hectareas
+  const activityType = activityData?.tipo?.toUpperCase() || 'ACTIVIDAD'
+  const hectares = activityData?.detalles?.hectareas
 
   const handleComparisonReport = () => {
     if (!execution) {
@@ -88,7 +91,7 @@ const ActivityContent = ({
       return
     }
     ComparisonReportPdf(
-      activity.actividad,
+      activityData,
       execution,
       fieldName || lotDoc?.properties?.nombre,
       lotName || lotDoc?.properties?.nombre,
@@ -165,12 +168,12 @@ const ActivityContent = ({
 
           <ActivityActionsBar
             sx={{ marginLeft: '8px' }}
-            onEditActivity={() => handleEditActivity(activity.actividad)}
+            onEditActivity={() => handleEditActivity(activityData)}
             onDeleteActivity={() =>
-              handleDeleteActivity(activity.actividad._id)
+              handleDeleteActivity(activityData?._id)
             }
             onMeteo={() => alert('Proximamente - En Construcción')}
-            onDownloadOT={() => handleDownloadPDF(activity.actividad)}
+            onDownloadOT={() => handleDownloadPDF(activityData)}
             onRepeatOT={() => handleReplicateActivity()}
             onShareOT={() => alert('Proximamente - En Construcción')}
             onDownloadCompare={handleComparisonReport}
@@ -180,13 +183,13 @@ const ActivityContent = ({
       </Box>
 
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-        <MenuItem onClick={() => handleEditActivity(activity.actividad)}>
+        <MenuItem onClick={() => handleEditActivity(activityData)}>
           Editar {activityType}
         </MenuItem>
         <MenuItem onClick={() => handleReplicateActivity()}>
           Repetir Planificacion
         </MenuItem>
-        <MenuItem onClick={() => handleDownloadPDF(activity.actividad)}>
+        <MenuItem onClick={() => handleDownloadPDF(activityData)}>
           Orden de Trabajo PDF
         </MenuItem>
         {execution && (
@@ -194,7 +197,7 @@ const ActivityContent = ({
             Ejecución vs Planificación PDF
           </MenuItem>
         )}
-        <MenuItem onClick={() => handleDeleteActivity(activity.actividad._id)}>
+        <MenuItem onClick={() => handleDeleteActivity(activityData?._id)}>
           Eliminar
         </MenuItem>
       </Menu>
@@ -214,14 +217,14 @@ const ActivityContent = ({
 
       {selectedTab === 0 && (
         <PlanificationContent
-          activity={activity.actividad}
+          activity={activityData}
           backgroundColor={complementaryColor}
           showEstimatedApplicationDate={activityType !== 'APPLICATION'}
         />
       )}
       {selectedTab === 1 && (
         <LaborOrderContent
-          activity={activity.actividad}
+          activity={activityData}
           lotDoc={lotDoc}
           handleDownloadPDF={handleDownloadPDF}
           handleConfirmExecution={handleConfirmExecution}
@@ -229,7 +232,7 @@ const ActivityContent = ({
       )}
       {selectedTab === 2 && (
         <ExecutionContent
-          activity={activity.actividad}
+          activity={activityData}
           handleEditActivity={handleEditActivity}
         />
       )}
