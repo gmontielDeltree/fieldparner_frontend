@@ -202,10 +202,39 @@ export const useStockMovement = () => {
                     }
                 } else {
                     if (!existingStock) {
-                        throw new Error("Stock de insumo no encontrado.");
+                        // Verificar si el depósito permite stock negativo
+                        try {
+                            const depositDoc = await dbContext.deposits.get(depositId);
+                            if (depositDoc && depositDoc.isNegative) {
+                                // Crear un nuevo registro de stock si el depósito permite negativo
+                                promiseStockByLot = dbContext.stock.post({
+                                    accountId: accountId,
+                                    id: supplyData._id,
+                                    nroLot,
+                                    depositId,
+                                    location,
+                                    currentStock: -amountValue, // Comenzar con stock negativo
+                                    campaingId: newMovement.campaignId,
+                                    fieldId: "",
+                                    fieldLot: "",
+                                    tipo: TipoStock.INSUMO,
+                                    lastUpdate: new Date().toISOString(),
+                                    reservedStock: 0
+                                });
+                            } else {
+                                throw new Error("Stock de insumo no encontrado.");
+                            }
+                        } catch (error) {
+                            if (error.name === 'not_found') {
+                                throw new Error("Stock de insumo no encontrado y depósito inválido.");
+                            } else {
+                                throw new Error("Stock de insumo no encontrado.");
+                            }
+                        }
+                    } else {
+                        existingStock.currentStock -= amountValue;
+                        promiseStockByLot = dbContext.stock.put(existingStock);
                     }
-                    existingStock.currentStock -= amountValue;
-                    promiseStockByLot = dbContext.stock.put(existingStock);
                 }
                 responseAll = await Promise.all([
                     promiseStockByLot,
@@ -270,8 +299,7 @@ export const useStockMovement = () => {
         } catch (error) {
             throw error;
         }
-    }
-
+    };
     const addNewStockMovement = async (
         newMovement: StockMovement,
         supplyData: Supply,

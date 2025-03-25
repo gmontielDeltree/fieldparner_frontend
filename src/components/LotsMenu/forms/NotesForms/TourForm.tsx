@@ -28,7 +28,7 @@ import { styled } from '@mui/material/styles'
 import { motion, AnimatePresence } from 'framer-motion'
 import PointForm from './PointForm'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { AudioPlayer } from './PointFormStyles'
+import { AudioPlayer, ImageGrid } from './PointFormStyles'
 import { dbContext } from '../../../../services'
 
 const CustomPaper = styled(Paper)({
@@ -36,6 +36,31 @@ const CustomPaper = styled(Paper)({
   margin: '20px 0',
   backgroundColor: '#f7f7f7',
 })
+
+
+const DetailCard = styled(Card)({
+  position: "relative",
+  marginBottom: "10px",
+  boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+  borderRadius: "8px",
+  overflow: "hidden",
+  background: "rgba(255, 255, 255, 0.8)",
+  backdropFilter: "blur(10px)",
+  border: "1px solid rgba(255, 255, 255, 0.3)",
+  padding: "10px",
+  "&:before": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundImage:
+      "linear-gradient(to top right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2))",
+    borderRadius: "8px"
+  }
+});
+
 
 const Title = styled(Typography)({
   fontSize: '1.5em',
@@ -110,7 +135,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     }
   }
 
-  const fetchAudioUrl = async (audioId) => {
+  const fetchAudioUrl = async (audioId: string) => {
     try {
       const blob = await db.getAttachment(audioId, 'audio')
       return URL.createObjectURL(blob)
@@ -214,12 +239,11 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     onChange={(e) => onFieldChange('nombre', e.target.value)}
                   />
                 </Grid>
-
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Fecha"
-                      value={formData.fecha || new Date()}
+                      value={formData.fecha || null} // Use null instead of new Date()
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, fecha: newValue }
                         setFormData(updatedFormData)
@@ -232,7 +256,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <TimePicker
                       label="Hora"
-                      value={formData.hora || new Date()}
+                      value={formData.hora || null}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, hora: newValue }
                         setFormData(updatedFormData)
@@ -245,7 +269,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label="Próxima Visita"
-                      value={formData.proxima_visita || new Date()}
+                      value={formData.proxima_visita || null}
                       onChange={(newValue) => {
                         const updatedFormData = {
                           ...formData,

@@ -1,16 +1,97 @@
-import { Menu } from "@mui/icons-material";
-import { IconButton, Toolbar, Tooltip, Typography } from "@mui/material";
-import React from "react";
+import React, { useState, useEffect } from 'react';
+import { styled } from '@mui/material/styles';
+import {
+  Tooltip,
+  IconButton,
+  Menu,
+  MenuItem,
+  Fade,
+  Divider,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
+import {
+  Edit2,
+  Repeat,
+  FileText,
+  Share2,
+  BarChart2,
+  Cloud,
+  Trash2,
+  MoreHorizontal
+} from 'lucide-react';
 
-import edicion_icon from "../../../images/icons/edicion.webp";
-import repetir_icon from "../../../images/icons/repetir.webp";
-import ot_icon from "../../../images/icons/ot.webp";
-import compartir_ot_icon from "../../../images/icons/compartir_ot.webp";
-import comparativa_icon from "../../../images/icons/comparativa.webp";
-import metereologia_icon from "../../../images/icons/metereologia.webp";
-import basura_icon from "../../../images/icons/basura.webp";
-import { Actividad, Ejecucion } from "../../../interfaces/activity";
+// Styled components for the action bar
+const ActionsContainer = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  position: 'relative',
+  zIndex: 2,
+  flexWrap: 'nowrap',
+  '@media (max-width: 600px)': {
+    gap: '4px',
+  }
+});
 
+const ActionButton = styled(IconButton)({
+  background: 'linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%)',
+  border: '1px solid rgba(226, 232, 240, 0.8)',
+  borderRadius: '12px',
+  padding: '8px',
+  transition: 'all 0.2s ease-in-out',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #f0f7ff 0%, #e6f0f9 100%)',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    transform: 'translateY(-2px)',
+  },
+  '&.Mui-disabled': {
+    background: 'linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%)',
+    opacity: 0.6,
+    boxShadow: 'none',
+  },
+  '@media (max-width: 600px)': {
+    padding: '6px',
+  }
+});
+
+const MoreButton = styled(ActionButton)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #f0f7ff 0%, #e6f0f9 100%)',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #e1efff 0%, #d7e7f7 100%)',
+  }
+}));
+
+const TooltipWrapper = styled(Tooltip)({
+  position: 'relative',
+});
+
+const StyledMenu = styled(Menu)(({ theme }) => ({
+  '& .MuiPaper-root': {
+    borderRadius: '16px',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+    border: '1px solid rgba(226, 232, 240, 0.8)',
+    padding: '4px 0',
+    minWidth: '200px',
+  },
+}));
+
+const StyledMenuItem = styled(MenuItem)(({ theme, disabled }) => ({
+  padding: '10px 16px',
+  gap: '12px',
+  fontSize: '0.875rem',
+  fontWeight: 500,
+  color: disabled ? '#a0aec0' : '#0f172a',
+  '&:hover': {
+    backgroundColor: '#f7fafc',
+  },
+  '& svg': {
+    color: disabled ? '#a0aec0' : '#0284c7',
+  }
+}));
+
+// Main component
 const ActivityActionsBar = ({
   onEditActivity,
   onDownloadOT,
@@ -19,73 +100,164 @@ const ActivityActionsBar = ({
   onDownloadCompare,
   onMeteo,
   onDeleteActivity,
-  disabledActions
+  disabledActions = {},
+  sx = {}
 }) => {
-  const actions = [
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const menuOpen = Boolean(menuAnchorEl);
+
+  // Update window width on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const handleOpenMenu = (event) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setMenuAnchorEl(null);
+  };
+
+  // Define all actions
+  const allActions = [
     {
-      icon: edicion_icon,
+      icon: <Edit2 size={18} strokeWidth={2} />,
       text: "Editar Actividad",
       action: onEditActivity,
-      disabled: disabledActions.edit ? disabledActions.edit : false
+      disabled: disabledActions.edit || false
     },
     {
-      icon: repetir_icon,
-      text: "Repetir Actividad en otro Lote",
-      action: onRepeatOT,
-      disabled: disabledActions.repeat ? disabledActions.repeat : false
-    },
-    {
-      icon: ot_icon,
+      icon: <FileText size={18} strokeWidth={2} />,
       text: "Crear Orden de Trabajo",
       action: onDownloadOT,
-      disabled: disabledActions.ot ? disabledActions.ot : false
+      disabled: disabledActions.ot || false
     },
     {
-      icon: compartir_ot_icon,
+      icon: <Repeat size={18} strokeWidth={2} />,
+      text: "Repetir Actividad",
+      action: onRepeatOT,
+      disabled: disabledActions.repeat || false
+    },
+    {
+      icon: <BarChart2 size={18} strokeWidth={2} />,
+      text: "Comparativa Programa/Ejecución",
+      action: onDownloadCompare,
+      disabled: disabledActions.compare || false
+    },
+    {
+      icon: <Share2 size={18} strokeWidth={2} />,
       text: "Compartir Orden de Trabajo",
       action: onShareOT,
-      disabled: disabledActions.share ? disabledActions.share : false
+      disabled: disabledActions.share || false
     },
     {
-      icon: comparativa_icon,
-      text: "Comparativa entre Programa y Ejecucion",
-      action: onDownloadCompare,
-      disabled: disabledActions.compare ? disabledActions.compare : false
-    },
-    {
-      icon: metereologia_icon,
-      text: "Meteorologia",
+      icon: <Cloud size={18} strokeWidth={2} />,
+      text: "Meteorología",
       action: onMeteo,
-      disabled: disabledActions.meteo ? disabledActions.meteo : false
+      disabled: disabledActions.meteo || false
     },
     {
-      icon: basura_icon,
+      icon: <Trash2 size={18} strokeWidth={2} color="#e11d48" />,
       text: "Eliminar Actividad",
       action: onDeleteActivity,
-      disabled: disabledActions.delete ? disabledActions.delete : false
+      textColor: "#e11d48",
+      disabled: disabledActions.delete || false
     }
   ];
 
+  // Determine how many actions to show based on screen width
+  let visibleCount = 7; // Show all by default
+
+  if (windowWidth < 768) {
+    visibleCount = 2; // Show 2 on small mobile
+  } else if (windowWidth < 1024) {
+    visibleCount = 3; // Show 3 on mobile/small tablet
+  } else if (windowWidth < 1280) {
+    visibleCount = 5; // Show 5 on tablet/small desktop
+  }
+
+  const visibleActions = allActions.slice(0, visibleCount);
+  const menuActions = allActions.slice(visibleCount);
+
   return (
-    <Toolbar variant="dense">
-      {actions.map((a) => (
-        <Tooltip key={a.text} title={a.text} arrow placement="top">
+    <ActionsContainer sx={sx}>
+      {visibleActions.map((action) => (
+        <TooltipWrapper
+          key={action.text}
+          title={action.text}
+          arrow
+          placement="top"
+        >
           <span>
-            {" "}
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              sx={{ mr: 2 }}
-              onClick={a.action}
-              disabled={a.disabled}
+            <ActionButton
+              onClick={action.action}
+              disabled={action.disabled}
+              size="small"
+              sx={{ color: action.textColor }}
             >
-              <img src={a.icon} width="32" height="32" alt={a.text} />
-            </IconButton>
+              {action.icon}
+            </ActionButton>
           </span>
-        </Tooltip>
+        </TooltipWrapper>
       ))}
-    </Toolbar>
+
+      {menuActions.length > 0 && (
+        <>
+          <TooltipWrapper title="Más acciones" arrow placement="top">
+            <MoreButton
+              onClick={handleOpenMenu}
+              size="small"
+            >
+              <MoreHorizontal size={18} strokeWidth={2} />
+            </MoreButton>
+          </TooltipWrapper>
+
+          <StyledMenu
+            anchorEl={menuAnchorEl}
+            open={menuOpen}
+            onClose={handleCloseMenu}
+            TransitionComponent={Fade}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+          >
+            {menuActions.map((action, index) => (
+              <StyledMenuItem
+                key={action.text}
+                onClick={() => {
+                  handleCloseMenu();
+                  action.action();
+                }}
+                disabled={action.disabled}
+                sx={{ color: action.textColor }}
+              >
+                {action.icon}
+                {action.text}
+              </StyledMenuItem>
+            ))}
+
+            {menuActions.some(action => action.textColor === "#e11d48") ? null : (
+              <Divider sx={{ my: 1 }} />
+            )}
+          </StyledMenu>
+        </>
+      )}
+    </ActionsContainer>
   );
 };
+
 export default ActivityActionsBar;

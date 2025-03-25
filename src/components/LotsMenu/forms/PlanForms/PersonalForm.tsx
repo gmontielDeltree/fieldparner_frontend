@@ -12,6 +12,7 @@ import {
   FormControlLabel,
   Card,
   CardContent,
+  ListItemText,
 } from '@mui/material'
 import { DatePicker, TimePicker } from '@mui/x-date-pickers'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
@@ -23,7 +24,7 @@ import { AutocompleteCultivo } from '../../components/AutocompleteCultivo'
 import { AutocompleteContratista } from '../../components/AutocompleteContratista'
 import { AutocompleteDeposito } from '../../components/AutocompleteDeposito'
 import { useBusiness } from '../../../../hooks'
-import { gridColumnsTotalWidthSelector } from '@mui/x-data-grid'
+import { format } from 'date-fns'
 
 const CustomPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -38,12 +39,14 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(1),
 }))
 
+// Suponemos que esta prop activities está disponible desde el componente superior
 function PersonalFormUnified({
   lot,
   formData,
   setFormData,
   showActivityType = false,
   mode = 'plan',
+  activities = [], // Actividades disponibles
 }) {
   const [fertilizacionChecked, setFertilizacionChecked] = useState(
     formData.detalles.fertilizacion || false,
@@ -54,31 +57,59 @@ function PersonalFormUnified({
   const [siembras, setSiembras] = useState([])
   const [selectedSiembra, setSelectedSiembra] = useState(null)
   const { businesses, getBusinesses } = useBusiness()
-  console.log('ACTIVITY:', formData)
+
+
   useEffect(() => {
     getBusinesses()
-    fetchSiembras()
   }, [])
 
-  const fetchSiembras = async () => {
-    try {
-      const response = await fetch('/api/siembras', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          accountId: lot.accountId,
-          licenseId: lot.licenseId,
-          campoId: lot.campoId,
-          loteId: lot._id,
-          campana: formData.detalles.campana,
-        }),
+  useEffect(() => {
+    procesarActividadesDeSiembra()
+  }, [activities])
+
+  const procesarActividadesDeSiembra = () => {
+    // Filtrar solo las actividades de tipo siembra
+    const actividadesSiembra = activities
+      .filter(activity => {
+        // Si la actividad es un objeto anidado como en el ejemplo de Activities.jsx
+        if (activity.actividad && activity.actividad.tipo === 'siembra') {
+          return true
+        }
+        // Si la actividad es directamente el objeto como en el ejemplo de paste-2.txt
+        if (activity.tipo === 'siembra') {
+          return true
+        }
+        return false
       })
-      const data = await response.json()
-      setSiembras(data)
-    } catch (error) {
-      console.error('Error fetching siembras:', error)
+      .map(activity => {
+        // Normalizar para manejar tanto el formato anidado como el directo
+        const actividadNormalizada = activity.actividad || activity;
+
+        // Formato de fecha si existe
+        const fechaEjecucion = actividadNormalizada.detalles?.fecha_ejecucion_tentativa
+          ? format(new Date(actividadNormalizada.detalles.fecha_ejecucion_tentativa), 'dd/MM/yyyy')
+          : 'Sin fecha';
+
+        // Obtener información del cultivo
+        const cultivoNombre = actividadNormalizada.detalles?.cultivo?.descriptionES ||
+          actividadNormalizada.detalles?.cultivo?.descriptionEN ||
+          'Sin cultivo';
+
+        // Crear descripción amigable para el dropdown
+        return {
+          ...actividadNormalizada,
+          descripcionRica: `${cultivoNombre} - ${fechaEjecucion} - ${actividadNormalizada.detalles?.hectareas || 0}ha`
+        };
+      });
+    console.log('Actividades de siembra:', actividadesSiembra);
+    setSiembras(actividadesSiembra);
+
+    // Si hay una siembra inicial seleccionada, establecerla
+    if (formData.detalles.siembra_inicial) {
+      const siembraInicial = actividadesSiembra.find(s => s._id === formData.detalles.siembra_inicial);
+      if (siembraInicial) {
+        setSelectedSiembra(siembraInicial);
+      }
     }
   }
 
@@ -102,7 +133,7 @@ function PersonalFormUnified({
       detalles: {
         ...prevData.detalles,
         siembra_inicial: siembraId,
-        cultivo: selectedSiembra?.cultivo || null,
+        cultivo: selectedSiembra?.detalles?.cultivo || null,
       },
     }))
   }
@@ -120,6 +151,28 @@ function PersonalFormUnified({
   const shouldShowSiembraSelection =
     mode === 'plan' &&
     (formData.tipo === 'aplicacion' || formData.tipo === 'cosecha')
+
+  const getSiembraLabel = (siembra) => {
+    if (!siembra) return '';
+
+    // Usar la descripción enriquecida si existe
+    if (siembra.descripcionRica) {
+      return siembra.descripcionRica;
+    }
+
+    // Fallback: usar comentario o id como referencia
+    return siembra.comentario || `Siembra ${siembra._id.slice(0, 8)}`;
+  }
+
+  // Función auxiliar para obtener el nombre del cultivo seleccionado
+  const getCultivoNombre = () => {
+    if (selectedSiembra?.detalles?.cultivo) {
+      return selectedSiembra.detalles.cultivo.descriptionES ||
+        selectedSiembra.detalles.cultivo.descriptionEN ||
+        'Sin nombre';
+    }
+    return '';
+  }
 
   return (
     <CustomPaper elevation={3}>
@@ -140,7 +193,7 @@ function PersonalFormUnified({
             >
               {businesses.map((business) => (
                 <MenuItem key={business._id} value={business._id}>
-                  {business.razonSocial}
+                  {business.razonSocial || business.nombreCompleto || `Entidad ${business._id.slice(0, 8)}`}
                 </MenuItem>
               ))}
             </Select>
@@ -160,10 +213,17 @@ function PersonalFormUnified({
                   value={formData.detalles.siembra_inicial || ''}
                   label="Siembra Inicial"
                   onChange={handleSiembraChange}
+                  renderValue={(selected) => {
+                    const siembra = siembras.find(s => s._id === selected);
+                    return getSiembraLabel(siembra);
+                  }}
                 >
                   {siembras.map((siembra) => (
                     <MenuItem key={siembra._id} value={siembra._id}>
-                      {siembra.descripcion || `Siembra ${siembra._id}`}
+                      <ListItemText
+                        primary={getSiembraLabel(siembra)}
+                        secondary={`ID: ${siembra._id.slice(-12)}`}
+                      />
                     </MenuItem>
                   ))}
                 </Select>
@@ -174,7 +234,7 @@ function PersonalFormUnified({
               <TextField
                 fullWidth
                 label="Cultivo"
-                value={selectedSiembra?.cultivo?.nombre || ''}
+                value={getCultivoNombre()}
                 disabled
               />
             </Grid>
@@ -248,8 +308,8 @@ function PersonalFormUnified({
                 mode === 'execute'
                   ? formData.detalles.fecha_ejecucion || new Date()
                   : formData.detalles.fecha_ejecucion_tentativa
-                  ? new Date(formData.detalles.fecha_ejecucion_tentativa)
-                  : null
+                    ? new Date(formData.detalles.fecha_ejecucion_tentativa)
+                    : null
               }
               onChange={(newValue) =>
                 onFieldChange(

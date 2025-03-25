@@ -143,8 +143,8 @@ const Header = ({ fieldDoc, lotDoc, activitiesData = [] }) => {
 
   const diasHastaProximaActividad = proximaActividad
     ? getDiasRestantes(
-        proximaActividad.actividad.detalles.fecha_ejecucion_tentativa,
-      )
+      proximaActividad.actividad.detalles.fecha_ejecucion_tentativa,
+    )
     : null
 
   const actividadesPendientes = activitiesData.filter(
@@ -197,11 +197,11 @@ const Header = ({ fieldDoc, lotDoc, activitiesData = [] }) => {
               </StatIcon>
               <StatInfo>
                 <StatValue>
-                  {diasHastaProximaActividad === 0
+                  {diasHastaProximaActividad <= 0
                     ? 'Hoy'
                     : diasHastaProximaActividad === 1
-                    ? 'Mañana'
-                    : `${diasHastaProximaActividad} días`}
+                      ? 'Mañana'
+                      : `${diasHastaProximaActividad} días`}
                 </StatValue>
                 <StatLabel>Próx. Actividad</StatLabel>
               </StatInfo>

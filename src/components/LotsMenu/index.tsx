@@ -15,7 +15,7 @@ import { setLotActive } from '../../redux/map'
 import Swal from 'sweetalert2'
 import { Actividad } from '../../interfaces/activity'
 import { isBefore, parseISO } from 'date-fns'
-
+import AssignCampaignsToActivities from './AssignCampaignsToActivities';
 import LotMenuContent from './components/LotMenuContent'
 import ActivitiesBar from './components/ActivitiesBar'
 
@@ -57,21 +57,27 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   }
 
   const getActivities = async (uuid_del_lote: string) => {
+    console.log('Starting getActivities for lot:', uuid_del_lote);
+    
     let acts: Actividad[] = await gbl_docs_starting(
       'actividad',
       true,
       true,
       true,
     ).then(only_docs)
+    console.log('All activities fetched:', acts);
 
     let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote)
+    console.log('Filtered activities for this lot:', s);
 
     let _actividades_docs = s.reverse()
+    console.log('Reversed activities:', _actividades_docs);
 
     let result = await db.allDocs({
       startkey: 'ejecucion:',
       endkey: 'ejecucion:\ufff0',
     })
+    console.log('Execution documents:', result.rows);
 
     let respuesta: { actividad: Actividad; ejecucion_id: string }[] = []
 
@@ -80,6 +86,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid))
         respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id })
       })
+
+      console.log('Activities with execution IDs:', respuesta);
 
       respuesta.sort((a, b) => {
         let fecha_1 = a.ejecucion_id
@@ -98,10 +106,12 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
           )
         return isBefore(fecha_1, fecha_2) ? 1 : -1
       })
+      
+      console.log('Final sorted activities:', respuesta);
     }
 
     return respuesta ? respuesta : null
-  }
+}
 
   const gbl_docs_starting = async (
     key: string,
@@ -198,6 +208,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   }
 
   return (
+    <>
+    {/* <AssignCampaignsToActivities /> */}
     <Paper
       elevation={5}
       style={{
@@ -311,6 +323,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         />
       </div>
     </Paper>
+    </>
   )
 }
 

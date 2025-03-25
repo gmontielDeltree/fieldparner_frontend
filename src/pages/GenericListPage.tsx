@@ -35,6 +35,8 @@ interface GenericListPageProps<T> {
   newItemPath: string;
   editItemPath: (id: string) => string;
   isLoading: boolean;
+  headerContent?: React.ReactNode;  // New prop for header content
+  footerContent?: React.ReactNode;  // New prop for footer content
 }
 
 export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
@@ -49,6 +51,8 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
   newItemPath,
   editItemPath,
   isLoading,
+  headerContent,  // New prop
+  footerContent,  // New prop
 }: GenericListPageProps<T>) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -60,7 +64,7 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
     severity: 'success' as AlertColor,
   });
 
-  // Función para asignar IDs únicos a las filas
+  // Function to assign unique IDs to rows
   const assignUniqueIds = (items: T[]): (T & { id: string })[] => {
     return items.map((item, index) => ({
       ...item,
@@ -137,6 +141,11 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
             action={<CloseButtonPage />}
           />
           <CardContent>
+            {headerContent && (  // Render header content if provided
+              <Box mb={3}>
+                {headerContent}
+              </Box>
+            )}
             <Grid container spacing={3} alignItems="center">
               <Grid item xs={12} md={3}>
                 {showAddButton && newItemPath && (
@@ -240,6 +249,11 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
                 </Box>
               </Grid>
             </Grid>
+            {footerContent && (  // Render footer content if provided
+              <Box mt={3}>
+                {footerContent}
+              </Box>
+            )}
           </CardContent>
         </Card>
       </Container>

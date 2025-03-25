@@ -160,6 +160,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("supply_lots")} />
               </ListItemButton>
+
               <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}
@@ -418,6 +419,17 @@ export const SideBar: React.FC<SideBarProps> = ({
                   {/* <LocationOnIcon sx={{ marginRight: "28px", fontSize: "inherit", verticalAlign: "middle" }} /> */}
                 </ListItemIcon>
                 <ListItemText primary={t("costs_expenses")} />
+              </ListItemButton>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/campaign-results"
+                selected={pathname.includes("/init/overview/campaign-results")}
+              >
+                <ListItemIcon>
+                  <QueryStatsIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("campaign_results")} />
               </ListItemButton>
 
             </List>

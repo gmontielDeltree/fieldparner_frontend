@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import Typography from '@mui/material/Typography'
-import { Box, Tabs, Tab, Menu, MenuItem, Chip } from '@mui/material'
+import { Box, Tabs, Tab, Menu, MenuItem, Chip, Grid } from '@mui/material'
 import EventNoteIcon from '@mui/icons-material/EventNote'
 import AgricultureIcon from '@mui/icons-material/Agriculture'
+import ScienceIcon from '@mui/icons-material/Science'
 import PlanificationContent from './TabsContent/Planification'
 import LaborOrderContent from './TabsContent/LaborOrder'
 import ExecutionContent from './TabsContent/Execution'
@@ -34,6 +35,25 @@ const ActivityContent = ({
   const [execution, setExecution] = useState(null)
   const open = Boolean(anchorEl)
 
+  // Determinar si es un análisis de suelo u otro tipo de actividad
+  const isGroundSample = activity?.tipo === 'analisis_suelo'
+
+  // Normalizar la estructura de datos para unificar acceso a propiedades
+  const normalizedActivity = isGroundSample
+    ? {
+      uuid: activity?.uuid || activity?.id,
+      tipo: activity?.tipo || 'analisis_suelo',
+      detalles: {
+        fecha_ejecucion_tentativa: activity?.fecha,
+        hectareas: activity?.detalles?.hectareas || lotDoc?.properties?.hectareas || 0,
+        // Otros campos específicos de muestras de suelo
+        laboratorio: activity?.laboratorio,
+        soilVariables: activity?.soilVariables,
+        characteristics: activity?.characteristics
+      }
+    }
+    : activity?.actividad || activity // Estructura normal de actividad
+
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue)
   }
@@ -45,9 +65,21 @@ const ActivityContent = ({
   useEffect(() => {
     const fetchExecution = async () => {
       try {
+        const uuid = isGroundSample ? activity?.uuid || activity?.id : normalizedActivity.uuid
+
+        if (!uuid) {
+          setExecution(null)
+          return
+        }
+
         const response = await db.find({
+<<<<<<< HEAD
           selector: { actividad_uuid: activityData?.uuid },
+=======
+          selector: { actividad_uuid: uuid },
+>>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
         })
+
         if (response.docs.length > 0) {
           setExecution(response.docs[0])
         } else {
@@ -59,20 +91,46 @@ const ActivityContent = ({
       }
     }
 
+<<<<<<< HEAD
     if (activityData?.uuid) {
       fetchExecution()
     }
   }, [activityData?.uuid, db])
+=======
+    fetchExecution()
+  }, [activity?.uuid, activity?.id, normalizedActivity?.uuid, db, isGroundSample])
+>>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
 
-  const formattedDate = (date) =>
-    date ? format(parseISO(date), 'PPPP', { locale: es }) : 'Fecha no definida'
+  const formattedDate = (date) => {
+    if (!date) return 'Fecha no definida'
+
+    try {
+      // Intentar formatear como ISO string
+      if (typeof date === 'string' && date.includes('T')) {
+        return format(parseISO(date), 'PPPP', { locale: es })
+      }
+      // Si es un objeto Date o timestamp
+      return format(new Date(date), 'PPPP', { locale: es })
+    } catch (error) {
+      console.error('Error formatting date:', error)
+      return 'Fecha inválida'
+    }
+  }
 
   const formattedPlanificadaDate = formattedDate(
+<<<<<<< HEAD
     activityData?.detalles?.fecha_ejecucion_tentativa,
   )
 
   const getCropInfo = () => {
     const crop = activityData?.detalles?.cultivo
+=======
+    normalizedActivity?.detalles?.fecha_ejecucion_tentativa || activity?.fecha
+  )
+
+  const getCropInfo = () => {
+    const crop = normalizedActivity?.detalles?.cultivo
+>>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
     if (!crop) return null
 
     return {
@@ -82,8 +140,16 @@ const ActivityContent = ({
   }
 
   const cropInfo = getCropInfo()
+<<<<<<< HEAD
   const activityType = activityData?.tipo?.toUpperCase() || 'ACTIVIDAD'
   const hectares = activityData?.detalles?.hectareas
+=======
+  const activityType = isGroundSample
+    ? 'ANÁLISIS DE SUELO'
+    : (normalizedActivity?.tipo || 'ACTIVIDAD').toUpperCase()
+
+  const hectares = normalizedActivity?.detalles?.hectareas || 0
+>>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
 
   const handleComparisonReport = () => {
     if (!execution) {
@@ -91,7 +157,11 @@ const ActivityContent = ({
       return
     }
     ComparisonReportPdf(
+<<<<<<< HEAD
       activityData,
+=======
+      normalizedActivity,
+>>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
       execution,
       fieldName || lotDoc?.properties?.nombre,
       lotName || lotDoc?.properties?.nombre,
@@ -119,9 +189,15 @@ const ActivityContent = ({
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-            <EventNoteIcon
-              sx={{ marginRight: '8px', color: complementaryColor }}
-            />
+            {isGroundSample ? (
+              <ScienceIcon
+                sx={{ marginRight: '8px', color: complementaryColor }}
+              />
+            ) : (
+              <EventNoteIcon
+                sx={{ marginRight: '8px', color: complementaryColor }}
+              />
+            )}
             <Box sx={{ flexGrow: 1 }}>
               <Typography
                 sx={{
@@ -153,14 +229,22 @@ const ActivityContent = ({
                   sx={{ fontSize: 16, fontWeight: 'bold' }}
                   color="green"
                 >
-                  Ejecutada: {formattedDate(execution.detalles.fecha_ejecucion)}
+                  Ejecutada: {formattedDate(execution.detalles?.fecha_ejecucion)}
                 </Typography>
               ) : (
                 <Typography
                   sx={{ fontSize: 16, fontWeight: 'bold' }}
                   color="text.primary"
                 >
-                  Programada para: {formattedPlanificadaDate}
+                  {isGroundSample
+                    ? `Fecha de muestra: ${formattedPlanificadaDate}`
+                    : `Programada para: ${formattedPlanificadaDate}`}
+                </Typography>
+              )}
+
+              {isGroundSample && activity?.laboratorio && (
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                  Laboratorio: {activity.laboratorio}
                 </Typography>
               )}
             </Box>
@@ -168,53 +252,86 @@ const ActivityContent = ({
 
           <ActivityActionsBar
             sx={{ marginLeft: '8px' }}
+<<<<<<< HEAD
             onEditActivity={() => handleEditActivity(activityData)}
             onDeleteActivity={() =>
               handleDeleteActivity(activityData?._id)
             }
             onMeteo={() => alert('Proximamente - En Construcción')}
             onDownloadOT={() => handleDownloadPDF(activityData)}
+=======
+            onEditActivity={() => handleEditActivity(activity)}
+            onDeleteActivity={() =>
+              handleDeleteActivity(activity._id)
+            }
+            onMeteo={() => alert('Proximamente - En Construcción')}
+            onDownloadOT={() => handleDownloadPDF(activity)}
+>>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
             onRepeatOT={() => handleReplicateActivity()}
             onShareOT={() => alert('Proximamente - En Construcción')}
             onDownloadCompare={handleComparisonReport}
-            disabledActions={{ edit: !!execution }}
+            disabledActions={{
+              edit: !!execution,
+              downloadCompare: isGroundSample // Deshabilitar comparación para muestras de suelo
+            }}
           />
         </Box>
       </Box>
 
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+<<<<<<< HEAD
         <MenuItem onClick={() => handleEditActivity(activityData)}>
+=======
+        <MenuItem onClick={() => handleEditActivity(activity)}>
+>>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
           Editar {activityType}
         </MenuItem>
-        <MenuItem onClick={() => handleReplicateActivity()}>
-          Repetir Planificacion
+        {!isGroundSample && (
+          <MenuItem onClick={() => handleReplicateActivity()}>
+            Repetir Planificacion
+          </MenuItem>
+        )}
+        <MenuItem onClick={() => handleDownloadPDF(activity)}>
+          {isGroundSample ? 'Informe PDF' : 'Orden de Trabajo PDF'}
         </MenuItem>
+<<<<<<< HEAD
         <MenuItem onClick={() => handleDownloadPDF(activityData)}>
           Orden de Trabajo PDF
         </MenuItem>
         {execution && (
+=======
+        {execution && !isGroundSample && (
+>>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
           <MenuItem onClick={handleComparisonReport}>
             Ejecución vs Planificación PDF
           </MenuItem>
         )}
+<<<<<<< HEAD
         <MenuItem onClick={() => handleDeleteActivity(activityData?._id)}>
+=======
+        <MenuItem onClick={() => handleDeleteActivity(activity._id)}>
+>>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
           Eliminar
         </MenuItem>
       </Menu>
 
-      <Tabs
-        value={selectedTab}
-        onChange={handleTabChange}
-        variant="scrollable"
-        scrollButtons="auto"
-        sx={{ marginBottom: '16px' }}
-      >
-        <Tab label="Programa" />
-        <Tab label="Orden de trabajo" />
-        <Tab label="Ejecucion" />
-        <Tab label="Adjuntos" />
-      </Tabs>
+      {isGroundSample ? (
+        // Tabs para muestras de suelo
+        <>
+          <Tabs
+            value={selectedTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{ marginBottom: '16px' }}
+          >
+            <Tab label="Laboratorio" />
+            <Tab label="Características" />
+            <Tab label="Variables" />
+            <Tab label="Adjuntos" />
+          </Tabs>
 
+<<<<<<< HEAD
       {selectedTab === 0 && (
         <PlanificationContent
           activity={activityData}
@@ -237,6 +354,138 @@ const ActivityContent = ({
         />
       )}
       {selectedTab === 3 && <AttachedContent />}
+=======
+          {selectedTab === 0 && (
+            <Box p={2} bgcolor="#f5f5f5" borderRadius={1}>
+              <Typography variant="h6" gutterBottom>
+                Información de Laboratorio
+              </Typography>
+              <Typography>
+                <strong>Fecha de muestra:</strong> {formattedPlanificadaDate}
+              </Typography>
+              <Typography>
+                <strong>Laboratorio:</strong> {activity.laboratorio || 'No especificado'}
+              </Typography>
+              <Typography>
+                <strong>Referencia:</strong> {activity.refDocLab || 'No especificada'}
+              </Typography>
+              {activity.responsableTecnico && (
+                <Typography>
+                  <strong>Responsable técnico:</strong> {activity.responsableTecnico}
+                  {activity.matricula && ` (Matrícula: ${activity.matricula})`}
+                </Typography>
+              )}
+            </Box>
+          )}
+
+          {selectedTab === 1 && (
+            <Box p={2} bgcolor="#f5f5f5" borderRadius={1}>
+              <Typography variant="h6" gutterBottom>
+                Características del Suelo
+              </Typography>
+              {activity.characteristics ? (
+                <>
+                  {activity.characteristics.profundidad && (
+                    <Typography>
+                      <strong>Profundidad:</strong> {activity.characteristics.profundidad} cm
+                    </Typography>
+                  )}
+                  {activity.characteristics.caracterizacion1 && (
+                    <Typography>
+                      <strong>Caracterización 1:</strong> {activity.characteristics.caracterizacion1}
+                    </Typography>
+                  )}
+                  {activity.characteristics.caracterizacion2 && (
+                    <Typography>
+                      <strong>Caracterización 2:</strong> {activity.characteristics.caracterizacion2}
+                    </Typography>
+                  )}
+                </>
+              ) : (
+                <Typography>No hay características registradas</Typography>
+              )}
+            </Box>
+          )}
+
+          {selectedTab === 2 && (
+            <Box p={2} bgcolor="#f5f5f5" borderRadius={1}>
+              <Typography variant="h6" gutterBottom>
+                Variables del Suelo
+              </Typography>
+              {activity.soilVariables && Object.keys(activity.soilVariables).length > 0 ? (
+                <Grid container spacing={2}>
+                  {Object.entries(activity.soilVariables)
+                    .filter(([key, value]) => value > 0)
+                    .map(([key, value]) => (
+                      <Grid item xs={6} sm={4} md={3} key={key}>
+                        <Typography>
+                          <strong>{key.replace('_', ' ').toUpperCase()}:</strong> {value}
+                        </Typography>
+                      </Grid>
+                    ))}
+                </Grid>
+              ) : (
+                <Typography>No hay variables registradas</Typography>
+              )}
+            </Box>
+          )}
+
+          {selectedTab === 3 && (
+            <Box p={2} bgcolor="#f5f5f5" borderRadius={1}>
+              <Typography variant="h6" gutterBottom>
+                Archivos Adjuntos
+              </Typography>
+              {activity.attachedFileId ? (
+                <Typography>
+                  Archivo adjunto ID: {activity.attachedFileId}
+                </Typography>
+              ) : (
+                <Typography>No hay archivos adjuntos</Typography>
+              )}
+            </Box>
+          )}
+        </>
+      ) : (
+        // Tabs para actividades normales
+        <>
+          <Tabs
+            value={selectedTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{ marginBottom: '16px' }}
+          >
+            <Tab label="Programa" />
+            <Tab label="Orden de trabajo" />
+            <Tab label="Ejecucion" />
+            <Tab label="Adjuntos" />
+          </Tabs>
+
+          {selectedTab === 0 && (
+            <PlanificationContent
+              activity={normalizedActivity}
+              backgroundColor={complementaryColor}
+              showEstimatedApplicationDate={activityType !== 'APPLICATION'}
+            />
+          )}
+          {selectedTab === 1 && (
+            <LaborOrderContent
+              activity={normalizedActivity}
+              lotDoc={lotDoc}
+              handleDownloadPDF={handleDownloadPDF}
+              handleConfirmExecution={handleConfirmExecution}
+            />
+          )}
+          {selectedTab === 2 && (
+            <ExecutionContent
+              activity={normalizedActivity}
+              handleEditActivity={handleEditActivity}
+            />
+          )}
+          {selectedTab === 3 && <AttachedContent />}
+        </>
+      )}
+>>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
     </div>
   )
 }

@@ -6,7 +6,7 @@ import AgricultureIcon from '@mui/icons-material/Agriculture'
 import MuiAlert, { AlertProps } from '@mui/material/Alert'
 import { useAppSelector, useOrder } from '../../hooks'
 import { useTranslation } from 'react-i18next'
-
+import LandscapeIcon from '@mui/icons-material/Landscape';
 import ConfirmDialog from './components/ConfirmDialog'
 import PlanActivityStepper from './components/PlanActivityStepper'
 import ActionButtons from './components/ActionButtons'
@@ -45,10 +45,12 @@ const activityTypeTranslations = {
   application: 'Aplicacion',
 }
 
+// Replace the current activityIcons object with this enhanced version
 const activityIcons = {
-  sowing: <LocalFloristIcon sx={{ fontSize: 50, color: 'green' }} />,
-  application: <GrassIcon sx={{ fontSize: 50, color: 'green' }} />,
-  harvesting: <AgricultureIcon sx={{ fontSize: 50, color: 'green' }} />,
+  sowing: <LocalFloristIcon sx={{ fontSize: 50, color: "white" }} />,
+  application: <GrassIcon sx={{ fontSize: 50, color: "white" }} />,
+  harvesting: <AgricultureIcon sx={{ fontSize: 50, color: "white" }} />,
+  preparation: <LandscapeIcon sx={{ fontSize: 50, color: "white" }} />
 }
 
 interface PlanActivityProps {
@@ -118,34 +120,64 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     const fields = []
     const formDetails = formData.detalles || {}
 
-    switch (step) {
-      case 0:
-        if (!formDetails.fecha_ejecucion_tentativa)
-          fields.push('Fecha de ejecución')
+    // Get the current step name instead of relying on index
+    const currentStepName = steps[step]
+
+    // Validate based on step name rather than index
+    switch (currentStepName) {
+      case 'General':
+        if (!formDetails.fecha_ejecucion_tentativa) fields.push('Fecha de ejecución')
         if (!formDetails.cultivo) fields.push('Cultivo')
         if (!formData.contratista) fields.push('Contratista')
         if (!formDetails.hectareas) fields.push('Hectáreas')
         break
-      case 1:
+
+      case 'Insumos':
         if (!formDetails.dosis || formDetails.dosis.length === 0) {
           fields.push('Al menos un insumo con su dosis')
         }
         break
-      case 2:
-        if (!formDetails.densidad_objetivo) fields.push('Densidad objetivo')
-        if (!formDetails.peso_1000) fields.push('Peso de 1000 semillas')
-        if (!formDetails.profundidad) fields.push('Profundidad de siembra')
-        if (!formDetails.tipo_siembra) fields.push('Tipo de siembra')
-        if (!formDetails.distancia) fields.push('Distancia entre surcos')
+
+      case 'Otros Datos':
+        // Only relevant for sowing activities
+        if (activityType === 'sowing') {
+          if (!formDetails.densidad_objetivo) fields.push('Densidad objetivo')
+          if (!formDetails.peso_1000) fields.push('Peso de 1000 semillas')
+          if (!formDetails.profundidad) fields.push('Profundidad de siembra')
+          if (!formDetails.tipo_siembra) fields.push('Tipo de siembra')
+          if (!formDetails.distancia) fields.push('Distancia entre surcos')
+        }
+        break
+
+      case 'Servicios':
+        // Add any Service-specific validations here
+        // For example:
+        if (!formDetails.servicios || formDetails.servicios.length === 0) {
+          fields.push('Al menos un servicio agregado')
+        }
+        break
+
+      case 'Condiciones':
+        const condiciones = formData.condiciones || {}
+        if (condiciones.humedad_max === undefined) fields.push('Humedad máxima')
+        if (condiciones.humedad_min === undefined) fields.push('Humedad mínima')
+        if (condiciones.temperatura_max === undefined) fields.push('Temperatura máxima')
+        if (condiciones.temperatura_min === undefined) fields.push('Temperatura mínima')
+        if (condiciones.velocidad_max === undefined) fields.push('Velocidad máxima')
+        if (condiciones.velocidad_min === undefined) fields.push('Velocidad mínima')
         break
     }
+
     return fields
   }
+
+  // Also replace the countMissingFields function with this:
   const countMissingFields = (formData, step) => {
     let missingFields = 0
+    const currentStepName = steps[step]
 
-    switch (step) {
-      case 0: // PersonalForm
+    switch (currentStepName) {
+      case 'General': // PersonalForm
         if (!formData.detalles.fecha_ejecucion_tentativa) {
           missingFields++
         }
@@ -159,7 +191,8 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           missingFields++
         }
         break
-      case 1: // SuppliesForm (Insumos)
+
+      case 'Insumos': // SuppliesForm
         if (
           !formData.detalles ||
           !formData.detalles.dosis ||
@@ -168,30 +201,35 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           missingFields++
         }
         break
-      case 2: // OtherDetailsForm
-        const details = formData.detalles || {}
-        if (!details.densidad_objetivo) {
-          missingFields++
+
+      case 'Otros Datos': // OtherDetailsForm (only for sowing)
+        if (activityType === 'sowing') {
+          const details = formData.detalles || {}
+          if (!details.densidad_objetivo) {
+            missingFields++
+          }
+          if (!details.peso_1000) {
+            missingFields++
+          }
+          if (!details.profundidad) {
+            missingFields++
+          }
+          if (!details.tipo_siembra) {
+            missingFields++
+          }
+          if (!details.distancia) {
+            missingFields++
+          }
         }
-        if (!details.peso_1000) {
-          missingFields++
-        }
-        if (!details.profundidad) {
-          missingFields++
-        }
-        if (!details.tipo_siembra) {
-          missingFields++
-        }
-        if (!details.distancia) {
+        break
+
+      case 'Servicios': // ServicesForm
+        if (!formData.detalles || !formData.detalles.servicios || formData.detalles.servicios.length === 0) {
           missingFields++
         }
         break
-      case 3: // ServicesForm (Labores)
-        if (!formData.detalles || !formData.detalles.servicios) {
-          missingFields++
-        }
-        break
-      case 4: // ConditionsForm
+
+      case 'Condiciones': // ConditionsForm
         const condiciones = formData.condiciones || {}
         if (condiciones.humedad_max === undefined) {
           missingFields++
@@ -212,13 +250,17 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           missingFields++
         }
         break
+
+      case 'Observaciones':
+        // No required fields in Observaciones typically
+        break
+
       default:
         break
     }
 
     return missingFields
   }
-
   const handleSave = async () => {
     for (let step = 0; step < steps.length; step++) {
       const missingFields = countMissingFields(formData, step)
@@ -250,13 +292,13 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   const steps =
     activityType === 'sowing'
       ? [
-          'General',
-          'Insumos',
-          'Otros Datos',
-          'Servicios',
-          'Condiciones',
-          'Observaciones',
-        ]
+        'General',
+        'Insumos',
+        'Otros Datos',
+        'Servicios',
+        'Condiciones',
+        'Observaciones',
+      ]
       : ['General', 'Insumos', 'Servicios', 'Condiciones', 'Observaciones']
 
   const getStepValidationStatus = (stepIndex) => {
@@ -435,7 +477,10 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             <Col xs="auto">
               <div
                 className="rounded-circle p-3"
-                style={{ background: 'rgba(255, 255, 255, 0.1)' }}
+                style={{
+                  background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%)",
+                  backdropFilter: "blur(2px)"
+                }}
               >
                 {activityIcons[activityType]}
               </div>

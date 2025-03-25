@@ -32,6 +32,8 @@ import {
 } from '../../hooks'
 import ActivityHeader from './components/ActivityHeader'
 import PersonalForm from './forms/PlanForms/PersonalForm'
+import { TipoStock } from '../../interfaces/stock'
+import Swal from 'sweetalert2'
 
 const activityTypeTranslations = {
   preparation: 'Preparado',
@@ -90,13 +92,13 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const steps =
     activityType === 'sowing'
       ? [
-          'General',
-          'Insumos',
-          'Otros Datos',
-          'Servicios',
-          'Condiciones',
-          'Observaciones',
-        ]
+        'General',
+        'Insumos',
+        'Otros Datos',
+        'Servicios',
+        'Condiciones',
+        'Observaciones',
+      ]
       : ['General', 'Insumos', 'Servicios', 'Condiciones', 'Observaciones']
 
   useEffect(() => {
@@ -322,12 +324,22 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         console.error('Error updating activity state to completed:', error)
       })
   }
+
   const processHarvestStockMovements = async (executionDetails) => {
     for (const dosis of executionDetails.detalles.dosis) {
+      // Fix: Check if dosis.insumo exists, if not, use dosis.selectedOption instead
+      const supplyInfo = dosis.insumo || dosis.selectedOption
+
+      // Add additional validation to prevent errors
+      if (!supplyInfo) {
+        console.error('Supply information is missing for this dose', dosis)
+        continue // Skip this dose and continue with the next one
+      }
+
       const newMovement = {
         movement: 'Ingreso por cosecha',
         accountId: user?.accountId,
-        supplyId: dosis.insumo._id,
+        supplyId: supplyInfo._id, // Use the updated reference
         userId: user?.id,
         depositId: dosis.deposito._id,
         location: '',
@@ -347,10 +359,10 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       }
 
       try {
-        await addNewStockMovement(newMovement, dosis.insumo, dosis.deposito)
+        await addNewStockMovement(newMovement, supplyInfo, dosis.deposito)
       } catch (error) {
         console.error(
-          `Error al realizar movimiento de stock para el insumo ${dosis.insumo.name}:`,
+          `Error al realizar movimiento de stock para el insumo ${supplyInfo.name}:`,
           error,
         )
         throw error
@@ -376,7 +388,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         location: dosis.ubicacion,
         nroLot: dosis.nro_lote,
         order: withdrawalOrder.order,
-        supply: dosis.insumo,
+        supply: dosis.insumo || dosis.selectedOption, // Fixed here as well
         withdrawalAmount: Number(dosis.total),
         _id: withdrawalOrder._id,
       },
@@ -385,31 +397,122 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     try {
       const withdrawalDate = new Date().toISOString()
       await confirmWithdrawalOrder(listWithdrawals, withdrawalDate)
-      console.log(`Reserved stock removed for supply ${dosis.insumo.name}`)
+      console.log(`Reserved stock removed for supply ${(dosis.insumo || dosis.selectedOption)?.name}`)
     } catch (error) {
       console.error(
-        `Error removing reserved stock for supply ${dosis.insumo.name}:`,
+        `Error removing reserved stock for supply ${(dosis.insumo || dosis.selectedOption)?.name}:`,
         error,
       )
     }
   }
 
   const handleSave = async () => {
-    let executionDetails = { ...formData }
-    executionDetails.detalles.fecha_ejecucion = new Date().toISOString()
-    executionDetails.estado = 'completada'
+    let executionDetails = { ...formData };
+    executionDetails.detalles.fecha_ejecucion = new Date().toISOString();
+    executionDetails.estado = 'completada';
 
-    console.log('EXECUTION DETAILS: ', executionDetails)
+    console.log('EXECUTION DETAILS: ', executionDetails);
+
+    // Lista para almacenar insumos sin stock
+    const suppliesWithoutStock = [];
+
+    // Validar stocks antes de proceder
+    if (executionDetails.detalles.dosis) {
+      for (const dosis of executionDetails.detalles.dosis) {
+        const supplyInfo = dosis.insumo || dosis.selectedOption;
+
+        if (!supplyInfo) {
+          console.error('Supply information is missing for this dose', dosis);
+          continue;
+        }
+
+        try {
+          // Verificar si existe stock
+          const responseStockSupply = await getStock({
+            id: supplyInfo._id,
+            campaignId: executionDetails.campaña.campaignId,
+            tipo: TipoStock.INSUMO,
+            depositId: dosis.deposito._id,
+            nroLot: dosis.nro_lote,
+            location: dosis.ubicacion
+          });
+
+          if (!responseStockSupply || responseStockSupply.length === 0) {
+            suppliesWithoutStock.push(supplyInfo.name);
+          }
+        } catch (error) {
+          console.error(`Error al verificar stock para ${supplyInfo.name}:`, error);
+          suppliesWithoutStock.push(supplyInfo.name);
+        }
+      }
+    }
+
+    // Si hay insumos sin stock, mostrar confirmación al usuario
+    if (suppliesWithoutStock.length > 0) {
+      const confirmContinue = await Swal.fire({
+        title: '<span style="font-weight: 600">Stock insuficiente</span>',
+        html: `
+          <div class="swal-content">
+            <p style="margin-bottom: 15px; color: #4a4a4a">No se encontró stock para los siguientes insumos:</p>
+            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 15px; text-align: left; max-height: 150px; overflow-y: auto">
+              ${suppliesWithoutStock.map(name => `
+                <div style="padding: 8px; margin-bottom: 5px; border-left: 3px solid #ff9800; background-color: #fff">
+                  <span style="color: #333; font-weight: 500">${name}</span>
+                </div>
+              `).join('')}
+            </div>
+            <p style="color: #4a4a4a">¿Deseas continuar con la ejecución de todas formas?</p>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-check"></i> Continuar',
+        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+        confirmButtonColor: '#4CAF50',
+        cancelButtonColor: '#f44336',
+        buttonsStyling: true,
+        showClass: {
+          popup: 'animate__animated animate__fadeIn animate__faster'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOut animate__faster'
+        },
+        customClass: {
+          popup: 'swal-modern',
+          title: 'swal-title',
+          content: 'swal-content',
+          confirmButton: 'swal-confirm-button',
+          cancelButton: 'swal-cancel-button'
+        },
+        background: '#fff',
+        borderRadius: 10,
+        backdrop: `rgba(0,0,0,0.4)`,
+        allowOutsideClick: false
+      });
+
+      if (!confirmContinue.isConfirmed) {
+        return; // El usuario canceló la operación
+      }
+    }
 
     // Generate new stock movement (out) for each of the supplies used in the execution
     if (executionDetails.detalles.dosis) {
       for (const dosis of executionDetails.detalles.dosis) {
-        console.log('DOSIS: ', dosis)
+        console.log('DOSIS: ', dosis);
+
+        // Fix: Check if dosis.insumo exists, if not, use dosis.selectedOption instead
+        const supplyInfo = dosis.insumo || dosis.selectedOption;
+
+        // Add additional validation to prevent errors
+        if (!supplyInfo) {
+          console.error('Supply information is missing for this dose', dosis);
+          continue; // Skip this dose and continue with the next one
+        }
 
         const newMovement = {
           movement: 'Salida por ejecución',
           accountId: user?.accountId,
-          supplyId: dosis.insumo._id,
+          supplyId: supplyInfo._id, // Use the updated reference
           userId: user?.id,
           depositId: dosis.deposito._id,
           location: '',
@@ -420,37 +523,57 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           isIncome: false,
           detail: 'Salida por ejecución',
           operationDate: new Date().toISOString(),
-          amount: Number(dosis.dosis),
+          amount: Number(dosis.dosificacion || dosis.dosis), // Handle both property names
           voucher: '',
           currency: 'ARS',
           totalValue: 0,
           hours: '0',
           campaignId: executionDetails.campaña.campaignId,
-        }
+        };
 
         try {
-          console.log('New stock movement (out) for supply:', newMovement)
-          await addNewStockMovement(newMovement, dosis.insumo, dosis.deposito)
-          await removeReservedStock(dosis)
+          console.log('New stock movement (out) for supply:', newMovement);
+          await addNewStockMovement(newMovement, supplyInfo, dosis.deposito);
+
+          // Solo intentar remover stock reservado si existe una orden de retiro
+          if (dosis.orden_de_retiro) {
+            await removeReservedStock(dosis);
+          } else {
+            console.warn(`No hay orden de retiro para el insumo ${supplyInfo.name}`);
+          }
         } catch (error) {
           console.error(
-            `Error al realizar movimiento de stock para el insumo ${dosis.insumo.name}:`,
-            error,
-          )
-          return
+            `Error al realizar movimiento de stock para el insumo ${supplyInfo.name}:`,
+            error
+          );
+
+          // Mostrar mensaje pero continuar con el siguiente insumo
+          Swal.fire({
+            title: 'Error en movimiento de stock',
+            text: `Hubo un problema al registrar el movimiento para ${supplyInfo.name}. La actividad se guardará igualmente.`,
+            icon: 'warning',
+            confirmButtonText: 'Continuar'
+          });
         }
       }
     }
 
     if (executionDetails.tipo === HarvestType) {
       try {
-        await processHarvestStockMovements(executionDetails)
+        await processHarvestStockMovements(executionDetails);
       } catch (error) {
         console.error(
           'Error procesando movimientos de stock para cosecha:',
           error,
-        )
-        return
+        );
+
+        // Mostrar mensaje pero continuar
+        Swal.fire({
+          title: 'Error en cosecha',
+          text: 'Hubo un problema al procesar los movimientos de stock para la cosecha. La actividad se guardará igualmente.',
+          icon: 'warning',
+          confirmButtonText: 'Continuar'
+        });
       }
     }
 
@@ -458,40 +581,69 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       const formattedDate = format(
         new Date(executionDetails.detalles.fecha_ejecucion_tentativa),
         'yyyy-MM-dd',
-      )
+      );
       executionDetails._id =
-        'ejecucion:' + formattedDate + ':' + executionDetails.uuid
+        'ejecucion:' + formattedDate + ':' + executionDetails.uuid;
     } catch (error) {
-      console.error('Error generating new ID for execution:', error)
-      return
+      console.error('Error generating new ID for execution:', error);
+      return;
     }
 
     db.get(executionDetails._id)
       .then(() => {
-        return updateActivityStateToCompleted(executionDetails.actividad_uuid)
+        return updateActivityStateToCompleted(executionDetails.actividad_uuid);
       })
       .then((doc) => {
-        executionDetails._rev = doc._rev
-        return db.put(executionDetails)
+        executionDetails._rev = doc._rev;
+        return db.put(executionDetails);
       })
       .catch((error) => {
         if (error.name === 'conflict') {
-          console.error('Conflict detected, saving execution details:', error)
+          console.error('Conflict detected, saving execution details:', error);
+
+          Swal.fire({
+            title: 'Conflicto detectado',
+            text: 'Ya existe una ejecución con el mismo ID. La actividad no se guardará.',
+            icon: 'error',
+            confirmButtonText: 'Entendido'
+          });
         } else if (error.name === 'not_found') {
-          delete executionDetails._rev
+          delete executionDetails._rev;
           db.put(executionDetails)
             .then(() => {
-              console.log('New document created', 'success')
-              backToActivites()
+              console.log('New document created', 'success');
+
+              Swal.fire({
+                title: 'Actividad ejecutada',
+                text: 'La ejecución se ha guardado correctamente.',
+                icon: 'success',
+                confirmButtonText: 'Aceptar'
+              }).then(() => {
+                backToActivites();
+              });
             })
             .catch((err) => {
-              console.error('Error creating new document:', err)
-            })
+              console.error('Error creating new document:', err);
+
+              Swal.fire({
+                title: 'Error',
+                text: 'No se pudo guardar la ejecución de la actividad.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+              });
+            });
         } else {
-          console.error('Error saving execution details:', error)
+          console.error('Error saving execution details:', error);
+
+          Swal.fire({
+            title: 'Error',
+            text: 'Ocurrió un error al guardar la ejecución.',
+            icon: 'error',
+            confirmButtonText: 'Entendido'
+          });
         }
-      })
-  }
+      });
+  };
 
   const ActivityIcon = activityIcons['sowing']
 
@@ -578,3 +730,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 }
 
 export default ExecuteActivity
+
+function getStock(arg0: { id: string; campaignId: string; tipo: any; depositId: any; nroLot: any; location: any }) {
+  throw new Error('Function not implemented.')
+}
