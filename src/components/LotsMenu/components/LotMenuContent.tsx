@@ -56,6 +56,12 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
     'Recorrido',
   ].includes(selectedCategory || '')
 
+  // Move filteredActivities definition outside the conditional block
+  const filteredActivities = activities ? activities.filter((activity: any) => {
+    const campaña = activity.actividad?.campaña
+    return !campaña || campaña.campaignId === selectedCampaign?.campaignId
+  }) : []
+
   if (!selectedCampaign && !isAccessibleWithoutCampaign) {
     return (
       <Fade in={true} timeout={1000}>
@@ -80,11 +86,6 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
         </div>
       )
     }
-
-    const filteredActivities = activities.filter((activity: any) => {
-      const campaña = activity.actividad?.campaña
-      return !campaña || campaña.campaignId === selectedCampaign.campaignId
-    })
 
     if (filteredActivities.length === 0) {
       return (
@@ -112,6 +113,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
         <PlanActivity
           activityType={'preparation'}
           lot={lot}
+
           fieldName={field.nombre}
           db={db}
           backToActivites={backToActivites}
@@ -133,6 +135,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
           activityType={'harvesting'}
           lot={lot}
           fieldName={field.nombre}
+          lotActivities={filteredActivities}
           db={db}
           backToActivites={backToActivites}
         />
@@ -143,6 +146,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
           activityType={'application'}
           lot={lot}
           fieldName={field.nombre}
+          lotActivities={filteredActivities}
           db={db}
           backToActivites={backToActivites}
         />
@@ -170,7 +174,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
         <PlanActivity
           activityType={
             activityTypeTranslations[
-              editingActivityInfo.activity?.tipo.toLowerCase() || ''
+            editingActivityInfo.activity?.tipo.toLowerCase() || ''
             ]
           }
           lot={lot}
@@ -195,7 +199,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
         <ExecuteActivity
           activityType={
             activityTypeTranslations[
-              editingActivityInfo.activity?.tipo.toLowerCase() || ''
+            editingActivityInfo.activity?.tipo.toLowerCase() || ''
             ]
           }
           lot={lot}

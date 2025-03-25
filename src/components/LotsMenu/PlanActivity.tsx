@@ -59,6 +59,7 @@ interface PlanActivityProps {
   lot: any
   db: any
   field: any
+  lotActivities?: any
   backToActivites: () => void
   existingActivity: any
 }
@@ -68,6 +69,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   lot,
   db,
   backToActivites,
+  lotActivities,
   fieldName,
   existingActivity,
 }) => {
@@ -115,7 +117,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     createWithdrawalOrder,
     selectedCampaign,
   )
-
+  console.log("LA CONCHA DE TU MADRE", lotActivities)
   const getMissingFieldsMessages = (step) => {
     const fields = []
     const formDetails = formData.detalles || {}
@@ -565,6 +567,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           <PlanActivityContent
             step={activeStep}
             activityType={activityType}
+            lotActivities={lotActivities}
             lot={lot}
             db={db}
             formData={formData}

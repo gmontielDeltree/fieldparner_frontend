@@ -127,7 +127,7 @@ function Activity({
       case 'analisis_suelo':
         return (
           <ActivityContent
-            activity={activity} // Change from activity.actividad to activity
+            activity={activity.actividad}
             fieldName={fieldDoc.nombre}
             lotName={lotDoc.properties.nombre}
             complementaryColor={complementaryColor}

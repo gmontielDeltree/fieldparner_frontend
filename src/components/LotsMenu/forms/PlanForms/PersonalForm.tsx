@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   TextField,
   FormControl,
@@ -19,12 +19,12 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { styled } from '@mui/material/styles'
 import { es } from 'date-fns/locale'
+import { format } from 'date-fns'
 import { NumberFieldWithUnits } from '../../components/NumberField'
 import { AutocompleteCultivo } from '../../components/AutocompleteCultivo'
 import { AutocompleteContratista } from '../../components/AutocompleteContratista'
 import { AutocompleteDeposito } from '../../components/AutocompleteDeposito'
 import { useBusiness } from '../../../../hooks'
-import { format } from 'date-fns'
 
 const CustomPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -39,7 +39,6 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(1),
 }))
 
-// Suponemos que esta prop activities está disponible desde el componente superior
 function PersonalFormUnified({
   lot,
   formData,
@@ -48,6 +47,8 @@ function PersonalFormUnified({
   mode = 'plan',
   activities = [], // Actividades disponibles
 }) {
+  console.log("🔍 PersonalFormUnified - Renderizando con activities:", activities?.length);
+
   const [fertilizacionChecked, setFertilizacionChecked] = useState(
     formData.detalles.fertilizacion || false,
   )
@@ -58,57 +59,158 @@ function PersonalFormUnified({
   const [selectedSiembra, setSelectedSiembra] = useState(null)
   const { businesses, getBusinesses } = useBusiness()
 
+  // Flag para registrar si ya procesamos alguna vez
+  const procesadoAlgunaVez = useRef(false);
+
+  // Mostrar el tipo de actividad y el modo actual
+  console.log("🔍 PersonalFormUnified - Tipo:", formData.tipo, "Modo:", mode);
+  console.log("🔍 PersonalFormUnified - shouldShowSiembraSelection:",
+    mode === 'plan' && (formData.tipo === 'aplicacion' || formData.tipo === 'cosecha'));
 
   useEffect(() => {
     getBusinesses()
   }, [])
 
+  // Primer efecto: log de datos iniciales al montar
   useEffect(() => {
-    procesarActividadesDeSiembra()
-  }, [activities])
+    console.log("🔍 PersonalFormUnified - Montado inicial");
+    console.log("🔍 Activities al inicio:", activities);
+    console.log("🔍 formData.tipo:", formData.tipo);
+    console.log("🔍 shouldShowSiembraSelection:",
+      mode === 'plan' && (formData.tipo === 'aplicacion' || formData.tipo === 'cosecha'));
+
+    // Forzar el procesamiento inicial si hay actividades
+    if (activities && activities.length > 0) {
+      console.log("🔍 Procesando actividades iniciales:", activities.length);
+      procesarActividadesDeSiembra();
+      procesadoAlgunaVez.current = true;
+    }
+  }, []);
+
+  // Segundo efecto: procesar cuando cambian las actividades
+  useEffect(() => {
+    console.log("🔍 Activities actualizadas:", activities?.length);
+
+    // Siempre intentar procesar si hay actividades disponibles
+    if (activities && activities.length > 0) {
+      console.log("🔍 Ejecutando procesarActividadesDeSiembra con", activities.length, "actividades");
+      procesarActividadesDeSiembra();
+      procesadoAlgunaVez.current = true;
+    } else {
+      console.log("🔍 No hay actividades para procesar");
+    }
+  }, [activities]);
+
+  // Tercer efecto: mostrar mensaje si nunca se procesaron actividades
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!procesadoAlgunaVez.current) {
+        console.log("⚠️ ALERTA: Nunca se procesaron actividades. Verifique que se estén pasando correctamente.");
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const procesarActividadesDeSiembra = () => {
+    console.log('⚡ Procesando actividades de siembra, total actividades:', activities?.length);
+
+    // Verificar si hay actividades antes de procesar
+    if (!activities || activities.length === 0) {
+      console.log('⚡ No hay actividades disponibles para procesar');
+      setSiembras([]);
+      return;
+    }
+
+    // Imprimir los primeros elementos para depuración
+    const muestra = activities.slice(0, 3);
+    console.log('⚡ Muestra de actividades:', muestra.map(a => ({
+      tipo: a.actividad?.tipo || a.tipo,
+      id: a.actividad?._id || a.actividad?.uuid || a._id || a.uuid
+    })));
+
     // Filtrar solo las actividades de tipo siembra
     const actividadesSiembra = activities
       .filter(activity => {
-        // Si la actividad es un objeto anidado como en el ejemplo de Activities.jsx
-        if (activity.actividad && activity.actividad.tipo === 'siembra') {
-          return true
-        }
-        // Si la actividad es directamente el objeto como en el ejemplo de paste-2.txt
-        if (activity.tipo === 'siembra') {
-          return true
-        }
-        return false
+        // Verificar si la actividad o su propiedad anidada existen
+        if (!activity) return false;
+
+        // Obtener el tipo, ya sea de la actividad directa o anidada
+        const tipo = activity.actividad?.tipo || activity.tipo;
+
+        // Depuración para cada actividad
+        console.log('⚡ Evaluando:', tipo);
+
+        // Verificar si el tipo es siembra (insensible a mayúsculas/minúsculas)
+        return tipo && tipo.toLowerCase() === 'siembra';
       })
       .map(activity => {
         // Normalizar para manejar tanto el formato anidado como el directo
         const actividadNormalizada = activity.actividad || activity;
 
-        // Formato de fecha si existe
-        const fechaEjecucion = actividadNormalizada.detalles?.fecha_ejecucion_tentativa
-          ? format(new Date(actividadNormalizada.detalles.fecha_ejecucion_tentativa), 'dd/MM/yyyy')
-          : 'Sin fecha';
+        console.log('⚡ Siembra encontrada:',
+          actividadNormalizada._id || actividadNormalizada.uuid,
+          'con cultivo:', actividadNormalizada.detalles?.cultivo?.descriptionES || 'sin cultivo');
 
-        // Obtener información del cultivo
-        const cultivoNombre = actividadNormalizada.detalles?.cultivo?.descriptionES ||
-          actividadNormalizada.detalles?.cultivo?.descriptionEN ||
+        // Asegurarse de que detalles exista
+        const detalles = actividadNormalizada.detalles || {};
+
+        // Formato de fecha si existe
+        let fechaEjecucion = 'Sin fecha';
+        if (detalles.fecha_ejecucion_tentativa) {
+          try {
+            const fecha = new Date(detalles.fecha_ejecucion_tentativa);
+            fechaEjecucion = isNaN(fecha.getTime()) ? 'Sin fecha' : format(fecha, 'dd/MM/yyyy');
+          } catch (error) {
+            console.error('Error al formatear fecha:', error);
+          }
+        }
+
+        // Obtener información del cultivo de forma segura
+        const cultivoNombre =
+          detalles.cultivo?.descriptionES ||
+          detalles.cultivo?.descriptionEN ||
+          detalles.cultivo?.name ||
           'Sin cultivo';
+
+        // Asegurar que el ID sea único y esté presente
+        const id = actividadNormalizada._id || actividadNormalizada.uuid;
+
+        if (!id) {
+          console.warn('⚠️ Actividad sin ID encontrada:', actividadNormalizada);
+        }
 
         // Crear descripción amigable para el dropdown
         return {
           ...actividadNormalizada,
-          descripcionRica: `${cultivoNombre} - ${fechaEjecucion} - ${actividadNormalizada.detalles?.hectareas || 0}ha`
+          _id: id,
+          descripcionRica: `${cultivoNombre} - ${fechaEjecucion} - ${detalles.hectareas || 0}ha`
         };
       });
-    console.log('Actividades de siembra:', actividadesSiembra);
+
+    console.log('⚡ Actividades de siembra filtradas:', actividadesSiembra.length);
+
+    if (actividadesSiembra.length > 0) {
+      console.log('⚡ Primera siembra:', actividadesSiembra[0]);
+      console.log('⚡ IDs de siembras:', actividadesSiembra.map(s => s._id));
+    }
+
+    // Actualizar las siembras disponibles
     setSiembras(actividadesSiembra);
 
     // Si hay una siembra inicial seleccionada, establecerla
     if (formData.detalles.siembra_inicial) {
-      const siembraInicial = actividadesSiembra.find(s => s._id === formData.detalles.siembra_inicial);
+      console.log('⚡ Buscando siembra inicial:', formData.detalles.siembra_inicial);
+      const siembraInicial = actividadesSiembra.find(s => {
+        const sId = s._id;
+        return sId === formData.detalles.siembra_inicial;
+      });
+
       if (siembraInicial) {
+        console.log('⚡ Siembra inicial encontrada:', siembraInicial._id);
         setSelectedSiembra(siembraInicial);
+      } else {
+        console.log('⚡ No se encontró la siembra inicial');
       }
     }
   }
@@ -124,18 +226,27 @@ function PersonalFormUnified({
   }
 
   const handleSiembraChange = (event) => {
-    const siembraId = event.target.value
-    const selectedSiembra = siembras.find((s) => s._id === siembraId)
-    setSelectedSiembra(selectedSiembra)
+    const siembraId = event.target.value;
+    console.log('Siembra seleccionada ID:', siembraId);
 
-    setFormData((prevData) => ({
-      ...prevData,
-      detalles: {
-        ...prevData.detalles,
-        siembra_inicial: siembraId,
-        cultivo: selectedSiembra?.detalles?.cultivo || null,
-      },
-    }))
+    const selectedSiembra = siembras.find((s) => s._id === siembraId);
+
+    if (selectedSiembra) {
+      console.log('Siembra encontrada:', selectedSiembra);
+      setSelectedSiembra(selectedSiembra);
+
+      // Actualizar el formulario con la información de la siembra seleccionada
+      setFormData((prevData) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          siembra_inicial: siembraId,
+          cultivo: selectedSiembra.detalles?.cultivo || null,
+        },
+      }));
+    } else {
+      console.error('No se encontró la siembra con ID:', siembraId);
+    }
   }
 
   const handleCheckboxChange = (field) => (event) => {
@@ -161,7 +272,9 @@ function PersonalFormUnified({
     }
 
     // Fallback: usar comentario o id como referencia
-    return siembra.comentario || `Siembra ${siembra._id.slice(0, 8)}`;
+    return siembra.comentario ||
+      siembra.detalles?.comentario ||
+      `Siembra ${(siembra._id || '').slice(0, 8)}`;
   }
 
   // Función auxiliar para obtener el nombre del cultivo seleccionado
@@ -169,10 +282,15 @@ function PersonalFormUnified({
     if (selectedSiembra?.detalles?.cultivo) {
       return selectedSiembra.detalles.cultivo.descriptionES ||
         selectedSiembra.detalles.cultivo.descriptionEN ||
+        selectedSiembra.detalles.cultivo.name ||
         'Sin nombre';
     }
     return '';
   }
+
+  // Al final del componente, mostrar logs de estado importante
+  console.log("🔍 Estado actual - siembras:", siembras.length);
+  console.log("🔍 Estado actual - shouldShowSiembraSelection:", shouldShowSiembraSelection);
 
   return (
     <CustomPaper elevation={3}>
@@ -218,14 +336,20 @@ function PersonalFormUnified({
                     return getSiembraLabel(siembra);
                   }}
                 >
-                  {siembras.map((siembra) => (
-                    <MenuItem key={siembra._id} value={siembra._id}>
-                      <ListItemText
-                        primary={getSiembraLabel(siembra)}
-                        secondary={`ID: ${siembra._id.slice(-12)}`}
-                      />
+                  {siembras.length > 0 ? (
+                    siembras.map((siembra) => (
+                      <MenuItem key={siembra._id} value={siembra._id}>
+                        <ListItemText
+                          primary={getSiembraLabel(siembra)}
+                          secondary={`ID: ${(siembra._id || '').slice(-12)}`}
+                        />
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled value="">
+                      <em>No hay siembras disponibles</em>
                     </MenuItem>
-                  ))}
+                  )}
                 </Select>
               </FormControl>
             </Grid>
