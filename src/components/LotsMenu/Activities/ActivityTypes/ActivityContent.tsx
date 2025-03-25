@@ -73,11 +73,7 @@ const ActivityContent = ({
         }
 
         const response = await db.find({
-<<<<<<< HEAD
-          selector: { actividad_uuid: activityData?.uuid },
-=======
           selector: { actividad_uuid: uuid },
->>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
         })
 
         if (response.docs.length > 0) {
@@ -91,15 +87,8 @@ const ActivityContent = ({
       }
     }
 
-<<<<<<< HEAD
-    if (activityData?.uuid) {
-      fetchExecution()
-    }
-  }, [activityData?.uuid, db])
-=======
     fetchExecution()
   }, [activity?.uuid, activity?.id, normalizedActivity?.uuid, db, isGroundSample])
->>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
 
   const formattedDate = (date) => {
     if (!date) return 'Fecha no definida'
@@ -118,19 +107,11 @@ const ActivityContent = ({
   }
 
   const formattedPlanificadaDate = formattedDate(
-<<<<<<< HEAD
-    activityData?.detalles?.fecha_ejecucion_tentativa,
-  )
-
-  const getCropInfo = () => {
-    const crop = activityData?.detalles?.cultivo
-=======
     normalizedActivity?.detalles?.fecha_ejecucion_tentativa || activity?.fecha
   )
 
   const getCropInfo = () => {
     const crop = normalizedActivity?.detalles?.cultivo
->>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
     if (!crop) return null
 
     return {
@@ -140,16 +121,11 @@ const ActivityContent = ({
   }
 
   const cropInfo = getCropInfo()
-<<<<<<< HEAD
-  const activityType = activityData?.tipo?.toUpperCase() || 'ACTIVIDAD'
-  const hectares = activityData?.detalles?.hectareas
-=======
   const activityType = isGroundSample
     ? 'ANÁLISIS DE SUELO'
     : (normalizedActivity?.tipo || 'ACTIVIDAD').toUpperCase()
 
   const hectares = normalizedActivity?.detalles?.hectareas || 0
->>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
 
   const handleComparisonReport = () => {
     if (!execution) {
@@ -157,11 +133,7 @@ const ActivityContent = ({
       return
     }
     ComparisonReportPdf(
-<<<<<<< HEAD
-      activityData,
-=======
       normalizedActivity,
->>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
       execution,
       fieldName || lotDoc?.properties?.nombre,
       lotName || lotDoc?.properties?.nombre,
@@ -252,21 +224,12 @@ const ActivityContent = ({
 
           <ActivityActionsBar
             sx={{ marginLeft: '8px' }}
-<<<<<<< HEAD
-            onEditActivity={() => handleEditActivity(activityData)}
-            onDeleteActivity={() =>
-              handleDeleteActivity(activityData?._id)
-            }
-            onMeteo={() => alert('Proximamente - En Construcción')}
-            onDownloadOT={() => handleDownloadPDF(activityData)}
-=======
             onEditActivity={() => handleEditActivity(activity)}
             onDeleteActivity={() =>
               handleDeleteActivity(activity._id)
             }
             onMeteo={() => alert('Proximamente - En Construcción')}
             onDownloadOT={() => handleDownloadPDF(activity)}
->>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
             onRepeatOT={() => handleReplicateActivity()}
             onShareOT={() => alert('Proximamente - En Construcción')}
             onDownloadCompare={handleComparisonReport}
@@ -279,11 +242,7 @@ const ActivityContent = ({
       </Box>
 
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-<<<<<<< HEAD
-        <MenuItem onClick={() => handleEditActivity(activityData)}>
-=======
         <MenuItem onClick={() => handleEditActivity(activity)}>
->>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
           Editar {activityType}
         </MenuItem>
         {!isGroundSample && (
@@ -294,23 +253,12 @@ const ActivityContent = ({
         <MenuItem onClick={() => handleDownloadPDF(activity)}>
           {isGroundSample ? 'Informe PDF' : 'Orden de Trabajo PDF'}
         </MenuItem>
-<<<<<<< HEAD
-        <MenuItem onClick={() => handleDownloadPDF(activityData)}>
-          Orden de Trabajo PDF
-        </MenuItem>
-        {execution && (
-=======
         {execution && !isGroundSample && (
->>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
           <MenuItem onClick={handleComparisonReport}>
             Ejecución vs Planificación PDF
           </MenuItem>
         )}
-<<<<<<< HEAD
-        <MenuItem onClick={() => handleDeleteActivity(activityData?._id)}>
-=======
         <MenuItem onClick={() => handleDeleteActivity(activity._id)}>
->>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
           Eliminar
         </MenuItem>
       </Menu>
@@ -331,30 +279,6 @@ const ActivityContent = ({
             <Tab label="Adjuntos" />
           </Tabs>
 
-<<<<<<< HEAD
-      {selectedTab === 0 && (
-        <PlanificationContent
-          activity={activityData}
-          backgroundColor={complementaryColor}
-          showEstimatedApplicationDate={activityType !== 'APPLICATION'}
-        />
-      )}
-      {selectedTab === 1 && (
-        <LaborOrderContent
-          activity={activityData}
-          lotDoc={lotDoc}
-          handleDownloadPDF={handleDownloadPDF}
-          handleConfirmExecution={handleConfirmExecution}
-        />
-      )}
-      {selectedTab === 2 && (
-        <ExecutionContent
-          activity={activityData}
-          handleEditActivity={handleEditActivity}
-        />
-      )}
-      {selectedTab === 3 && <AttachedContent />}
-=======
           {selectedTab === 0 && (
             <Box p={2} bgcolor="#f5f5f5" borderRadius={1}>
               <Typography variant="h6" gutterBottom>
@@ -485,7 +409,6 @@ const ActivityContent = ({
           {selectedTab === 3 && <AttachedContent />}
         </>
       )}
->>>>>>> 58847abbfc35211b9bbd1557430274f83d00fbb5
     </div>
   )
 }
