@@ -42,7 +42,13 @@ import { CropStockControl, Stock } from '../interfaces/stock';
 PouchDB.plugin(PouchDBFind);
 
 export const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
-const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
+// const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
+const environment = getEnvVariables().VITE_ENVIRONMENT;
+
+//TODO: ajustar para varios ambientes
+const isEnvSTG = () => {
+  return environment === "stg" ? "_stg" : "";
+};
 
 export const opts: PouchDB.Replication.SyncOptions = {
   live: true,
@@ -52,49 +58,49 @@ export const opts: PouchDB.Replication.SyncOptions = {
 };
 
 const dbNames = Object.freeze({
-  vehicles: "vehicles",
-  deposits: "deposits",
-  typeVehicles: "type-vehicles",
-  zipCodeARG: "zip-code-arg",
-  zipCodePRY: "zip-code-pry",
-  supplies: "supplies",
-  socialEntities: "social-entities",
-  categories: "categories",
-  stockMovements: "stock-movements",
-  stock: "stock",
-  exitFields: "exit-fields",
-  campaigns: "campaigns",
-  fields: "fields",
-  originsDestinations: "origins-destinations",
-  users: "users",
-  numerators: "numerators",
-  withdrawalOrders: "withdrawal-orders",
-  depositSupplyOrder: "deposit-supply-order",
-  withdrawalsByDepositSupply: "withdrawals-deposit-supply",
-  movementsType: "movements-type",
-  platform: "platform",
-  platformSupplies: "test-supplies",
-  crops: "crops",
-  zones: "zones",
-  fieldpartner: "fieldpartner",
-  laborsServices: "labors-services",
-  purchaseOrder: "purchase-order",
-  detailPurchaseOrder: "detail-purchase-order",
-  countries: "countries",
-  menuModules: "menu-modules",
-  modulesUsers: "modules-users",
-  licencesUse: "licences-use",
-  transportDocument: "transport-documents",
-  companies: "companies",
-  corporateCompanies: "corporate-companies",
-  corporateContract: "corporate-contract",
-  certificateDeposit: "certificate-deposit",
-  transportDocumentCertificateDeposit: "transport-document-certificate-deposit",
-  productiveUnits: "productive-units",
-  contractSaleCereals: "contract-sale-cereals",
-  contractDeliveryDates: "contract-delivery-dates",
-  costsExpenses: "costs-expenses",
-  cropStockControl: "crop-stock-control",
+  vehicles: `vehicles${isEnvSTG()}`,
+  deposits: `deposits${isEnvSTG()}`,
+  typeVehicles: `type-vehicles${isEnvSTG()}`,
+  zipCodeARG: `zip-code-arg${isEnvSTG()}`,
+  zipCodePRY: `zip-code-pry${isEnvSTG()}`,
+  supplies: `supplies${isEnvSTG()}`,
+  socialEntities: `social-entities${isEnvSTG()}`,
+  categories: `categories${isEnvSTG()}`,
+  stockMovements: `stock-movements${isEnvSTG()}`,
+  stock: `stock${isEnvSTG()}`,
+  exitFields: `exit-fields${isEnvSTG()}`,
+  campaigns: `campaigns${isEnvSTG()}`,
+  fields: `fields${isEnvSTG()}`,
+  originsDestinations: `origins-destinations${isEnvSTG()}`,
+  users: `users${isEnvSTG()}`,
+  numerators: `numerators${isEnvSTG()}`,
+  withdrawalOrders: `withdrawal-orders${isEnvSTG()}`,
+  depositSupplyOrder: `deposit-supply-order${isEnvSTG()}`,
+  withdrawalsByDepositSupply: `withdrawals-deposit-supply${isEnvSTG()}`,
+  movementsType: `movements-type${isEnvSTG()}`,
+  platform: `platform${isEnvSTG()}`,
+  platformSupplies: `test-supplies${isEnvSTG()}`,
+  crops: `crops${isEnvSTG()}`,
+  zones: `zones${isEnvSTG()}`,
+  laborsServices: `labors-services${isEnvSTG()}`,
+  // fieldpartner: "fieldpartner",
+  purchaseOrder: `purchase-order${isEnvSTG()}`,
+  detailPurchaseOrder: `detail-purchase-order${isEnvSTG()}`,
+  countries: `countries${isEnvSTG()}`,
+  menuModules: `menu-modules${isEnvSTG()}`,
+  modulesUsers: `modules-users${isEnvSTG()}`,
+  licencesUse: `licences-use${isEnvSTG()}`,
+  transportDocument: `transport-documents${isEnvSTG()}`,
+  companies: `companies${isEnvSTG()}`,
+  corporateCompanies: `corporate-companies${isEnvSTG()}`,
+  corporateContract: `corporate-contract${isEnvSTG()}`,
+  certificateDeposit: `certificate-deposit${isEnvSTG()}`,
+  transportDocumentCertificateDeposit: `transport-document-certificate-deposit${isEnvSTG()}`,
+  productiveUnits: `productive-units${isEnvSTG()}`,
+  contractSaleCereals: `contract-sale-cereals${isEnvSTG()}`,
+  contractDeliveryDates: `contract-delivery-dates${isEnvSTG()}`,
+  costsExpenses: `costs-expenses${isEnvSTG()}`,
+  cropStockControl: `crop-stock-control${isEnvSTG()}`,
 });
 
 export const dbContext = Object.freeze({
@@ -119,10 +125,10 @@ export const dbContext = Object.freeze({
   numerators: new PouchDB<Numerator>(dbNames.numerators),
   movementsType: new PouchDB<MovementType>(dbNames.movementsType),
   platform: new PouchDB<any>(dbNames.platform),
-  platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`),
+  platformSupplies: new PouchDB<Supply>(`${dbNames.platformSupplies}`), //TODO: Verificar si se necesita
   crops: new PouchDB<Crop>(dbNames.crops),
   zones: new PouchDB<Zones>(dbNames.zones),
-  fieldpartner: new PouchDB(dbNames.fieldpartner),
+  // fieldpartner: new PouchDB(dbNames.fieldpartner),
   laborsServices: new PouchDB<LaborsServices>(dbNames.laborsServices),
   purchaseOrder: new PouchDB<PurchaseOrder>(dbNames.purchaseOrder),
   detailPurchaseOrder: new PouchDB<DetailPurchaseOrder>(dbNames.detailPurchaseOrder),
@@ -169,7 +175,7 @@ dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrd
 dbContext.withdrawalsByDepositSupply.sync(`${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`, opts);
 dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`, opts);
 dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
-dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts);
+// dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts); //TODO: Verificar si se necesita
 dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
 dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
 dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, opts);

@@ -9,16 +9,32 @@ interface NewsItem {
 const NewsBar: React.FC = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [isHidden, setIsHidden] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   const fetch_news_feed = async () => {
     try {
       const response = await fetch(
         `https://agrotools.qts-ar.com.ar/satimages/newsfeed`
       );
-      const data: NewsItem[] = await response.json();
-      setNews(data);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setNews(data);
+      } else {
+        // If not an array, consider it an error
+        throw new Error("Invalid data format received");
+      }
+
+      setHasError(false);
     } catch (error) {
       console.error("Error fetching news feed:", error);
+      setHasError(true);
     }
   };
 
@@ -41,7 +57,8 @@ const NewsBar: React.FC = () => {
     }
   });
 
-  if (isHidden) return null;
+  // Hide component if there's an error, it's explicitly hidden, or no news items
+  if (hasError || isHidden || news.length === 0) return null;
 
   return (
     <div className="total_wrapper">

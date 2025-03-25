@@ -374,7 +374,7 @@ export interface Deposit extends Document {
   zipCode: string;
   locality: string;
   province: string;
-  pais: string;
+  country: string;
   locations: string[];
   siloBag: boolean;
   hopper: boolean;

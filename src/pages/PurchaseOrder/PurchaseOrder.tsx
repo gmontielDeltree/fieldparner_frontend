@@ -13,6 +13,7 @@ import {
     Close as CloseIcon,
     Edit as EditIcon,
     Save as SaveIcon,
+    Delete as DeleteIcon
 } from '@mui/icons-material';
 import { Icon } from 'semantic-ui-react';
 import { ColumnProps, DetailPurchaseOrderItem, PurchaseOrder, Supply } from '../../types';
@@ -275,7 +276,7 @@ export const EditOrderRow = ({
                                 onClick={() => deleteRowItem(order)}
                                 style={{ fontSize: '1rem' }}
                             >
-                                <Icon name="trash alternate" />
+                                <DeleteIcon />
                             </IconButton>
                         </>
                 }
@@ -668,13 +669,18 @@ export const PurchaseOrderPage: React.FC = () => {
                     sx={{ mt: 3 }}
                 >
                     <Grid item xs={12} sm={3}>
-                        <Button onClick={onClickCancel}>Cancelar</Button>
+                        <Button
+                            variant="contained"
+                            color="inherit"
+                            onClick={onClickCancel}>
+                            Cancelar
+                        </Button>
                     </Grid>
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
                             disabled={listItemToPurchase.length === 0}
-                            color="primary"
+                            color="success"
                             onClick={() => onClickSave()}
                         >
                             Guardar

@@ -1,29 +1,38 @@
-// Tour.tsx
 import React, { useEffect, useRef, useState } from 'react'
-import { Box, Button, Typography } from '@mui/material'
-import TourForm from './forms/NotesForms/TourForm'
-import { getEmptyNote } from '../../interfaces/activity'
-import AgricultureIcon from '@mui/icons-material/Assignment'
+import { useTheme } from '@mui/material/styles'
 import uuid4 from 'uuid4'
-import { keyframes, useTheme } from '@mui/material/styles'
 import EditIcon from '@mui/icons-material/Edit'
 import PlaceMarker from '../NewGeometry/PlaceMarker'
 import { useAppSelector } from '../../hooks'
-
-const floating = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-`
+import { getEmptyNote } from '../../interfaces/activity'
+import TourForm from './forms/NotesForms/TourForm'
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Button,
+  Container,
+  Row,
+  Col,
+} from 'reactstrap'
+import {
+  MapIcon,
+  MapPin,
+  Clipboard,
+  ChevronLeft,
+} from 'lucide-react'
+import AgricultureIcon from '@mui/icons-material/Assignment'
 
 interface TourProps {
   lot: any
   fieldName: string
   db: any
   backToActivites: () => void
+  existingNote?: any
 }
 
-const Tour: React.FC<TourProps & { existingNote?: any }> = ({
+const Tour: React.FC<TourProps> = ({
   lot,
   db,
   fieldName,
@@ -31,11 +40,10 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
   existingNote,
 }) => {
   if (!lot) return null
+
   const theme = useTheme()
   const [formData, setFormData] = useState(existingNote || getEmptyNote())
-  const titleBg = existingNote
-    ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
-    : `linear-gradient(45deg, #a0a0a0, #626262)`
+  const isEditing = existingNote && Object.keys(existingNote).length > 0
   const { selectedCampaign } = useAppSelector((state) => state.campaign)
   const removeMarkerFunctionsRef = useRef<(() => void)[]>([])
 
@@ -122,81 +130,153 @@ const Tour: React.FC<TourProps & { existingNote?: any }> = ({
     }
   }
 
+  const getTourColor = () => {
+    return '#22c55e' // verde para recorrido
+  }
+
   return (
-    <div>
-      <Box sx={{ textAlign: 'center', mt: 2, mb: 4 }}>
-        <AgricultureIcon sx={{ fontSize: 50, color: 'green' }} />
-        <Typography
-          variant="h5"
-          component="h1"
-          gutterBottom
-          align="center"
-          sx={{
-            fontWeight: 'bold',
-            mt: 2,
-            background: titleBg,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '1px 1px 4px rgba(0,0,0,0.15)',
-            animation: existingNote
-              ? `${floating} 3s ease-in-out infinite`
-              : 'none',
+    <Container className="py-6">
+      <Card className="shadow-lg">
+        {/* Header */}
+        <CardHeader
+          style={{
+            background: getTourColor(),
+            borderTopLeftRadius: '0.5rem',
+            borderTopRightRadius: '0.5rem',
+            padding: '2rem',
           }}
         >
-          {existingNote ? (
-            <>
-              <EditIcon
-                sx={{
-                  verticalAlign: 'middle',
-                  mr: 1,
-                  animation: `${floating} 3s ease-in-out infinite`,
+          <Row className="align-items-center">
+            <Col>
+              <h1
+                className="text-white mb-4"
+                style={{ fontSize: '2rem', fontWeight: 'bold' }}
+              >
+                {isEditing ? 'Editar Recorrido' : 'Recorrido'}
+              </h1>
+
+              <div className="d-flex gap-4">
+                <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
+                  <MapIcon className="text-white" size={20} />
+                  <div>
+                    <div
+                      className="text-white-50 mb-0"
+                      style={{
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      Campo
+                    </div>
+                    <div className="text-white fw-semibold">{fieldName}</div>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
+                  <MapPin className="text-white" size={20} />
+                  <div>
+                    <div
+                      className="text-white-50 mb-0"
+                      style={{
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      Lote
+                    </div>
+                    <div className="text-white fw-semibold">
+                      {lot.properties.nombre}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col xs="auto">
+              <div
+                className="rounded-circle p-3"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%)",
+                  backdropFilter: "blur(2px)"
+                }}
+              >
+                <AgricultureIcon sx={{ fontSize: 50, color: 'white' }} />
+              </div>
+            </Col>
+          </Row>
+        </CardHeader>
+
+        {/* Content */}
+        <CardBody className="p-4">
+          <TourForm
+            lot={lot}
+            formData={formData}
+            setFormData={setFormData}
+            tourSave={handleRemoveMarkers}
+          />
+
+          {existingNote &&
+            formData.features.map((feature, index) => (
+              <PlaceMarker
+                key={index}
+                selectedLot={{
+                  geometry: {
+                    type: 'Point',
+                    coordinates: feature.properties.posicion,
+                  },
+                }}
+                setCoordinates={(newPosition) =>
+                  handleSetCoordinates(index, newPosition)
+                }
+                isDraggable={true}
+                onRemoveMarkers={(removeFunc) => {
+                  removeMarkerFunctionsRef.current.push(removeFunc)
                 }}
               />
-              Editar Recorrido
-            </>
-          ) : (
-            'Recorrido'
-          )}
-        </Typography>
-      </Box>
+            ))}
+        </CardBody>
 
-      <TourForm
-        lot={lot}
-        formData={formData}
-        setFormData={setFormData}
-        tourSave={handleRemoveMarkers}
-      />
+        {/* Actions */}
+        <CardFooter className="bg-light d-flex justify-content-between align-items-center p-4">
+          <Button
+            color="light"
+            onClick={backToActivites}
+            className="d-flex align-items-center gap-2"
+          >
+            <ChevronLeft size={16} />
+            Volver
+          </Button>
 
-      {existingNote &&
-        formData.features.map((feature, index) => (
-          <PlaceMarker
-            key={index}
-            selectedLot={{
-              geometry: {
-                type: 'Point',
-                coordinates: feature.properties.posicion,
-              },
-            }}
-            setCoordinates={(newPosition) =>
-              handleSetCoordinates(index, newPosition)
+          <Button
+            color="success"
+            onClick={handleSave}
+            className="d-flex align-items-center gap-2"
+          >
+            <Clipboard size={16} />
+            {isEditing ? 'Actualizar' : 'Guardar'} Recorrido
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <style>
+        {`
+          @keyframes slideUp {
+            from {
+              transform: translateY(100%);
+              opacity: 0;
             }
-            isDraggable={true}
-            onRemoveMarkers={(removeFunc) => {
-              removeMarkerFunctionsRef.current.push(removeFunc)
-            }}
-          />
-        ))}
-
-      <Button
-        color="success"
-        onClick={handleSave}
-        style={{
-          marginTop: '1rem',
-        }}
-      >
-        Guardar
-      </Button>
-    </div>
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+          .animate-slide-up {
+            animation: slideUp 0.3s ease-out forwards;
+          }
+        `}
+      </style>
+    </Container>
   )
 }
 

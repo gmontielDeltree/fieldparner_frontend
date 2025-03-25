@@ -76,7 +76,7 @@ export const NewStockMovementPage: React.FC = () => {
   const { isLoading: isLoadingDeposits, deposits, getDeposits } = useDeposit();
   const { isLoading: isLoadCampaigns, campaigns, getCampaigns } = useCampaign();
   const { t } = useTranslation();
-  
+
   const {
     formulario,
     setFormulario,
@@ -423,7 +423,7 @@ export const NewStockMovementPage: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={4}>
                 <Typography variant="body1" align="left">
-                  Unidad de Medida: <b>{supplySelected?.unitMeasurement}</b>
+                  Unidad de Medidas: <b>{supplySelected?.unitMeasurement}</b>
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={12}>
@@ -759,7 +759,12 @@ export const NewStockMovementPage: React.FC = () => {
           sx={{ mt: 3 }}
         >
           <Grid item xs={12} sm={3}>
-            <Button onClick={onClickCancel}>{t("id_cancel")}</Button>
+            <Button
+              variant="contained"
+              color="inherit"
+              onClick={onClickCancel}>
+              {t("id_cancel")}
+            </Button>
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button

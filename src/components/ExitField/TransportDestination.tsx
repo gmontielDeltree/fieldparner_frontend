@@ -9,9 +9,9 @@ import {
     SelectChangeEvent,
     TextField,
     Typography,
-    // Divider,
     Box,
-    ListItemText
+    ListItemText,
+    FormHelperText
 } from '@mui/material';
 import { ExitField, ExitFieldItem, TipoEntidad, Vehicle, VehicleType } from '../../types';
 import { LocalShipping as LocalShippingIcon } from '@mui/icons-material';
@@ -26,6 +26,8 @@ interface TransportDestinationProps {
     handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
     setFormValues: React.Dispatch<React.SetStateAction<ExitField>>;
     handleSelectChange: ({ target }: SelectChangeEvent) => void;
+    errors?: Record<string, string>;
+    showErrors?: boolean;
 }
 
 
@@ -35,13 +37,121 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     vehicles,
     handleInputChange,
     handleSelectChange,
-    setFormValues
+    setFormValues,
+    errors = {},
+    showErrors = false
 }) => {
     const { humidityPercentage, mermaPercentage, volatilePercentage, otherPercentage, grossWeight, tareWeight } = formValues;
     const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
-    const netWeight = Number(grossWeight - tareWeight);
-    const kgNet = (netWeight - ((netWeight * totalMerma) / 100));
+
+    // Ensure positive values for gross and tare weights
+    const safeGrossWeight = Math.max(0, Number(grossWeight) || 0);
+    const safeTareWeight = Math.max(0, Number(tareWeight) || 0);
+
+    // Ensure tare weight is not greater than gross weight
+    const adjustedTareWeight = Math.min(safeTareWeight, safeGrossWeight);
+
+    // Calculate net weight (ensuring it's never negative)
+    const netWeight = Math.max(0, safeGrossWeight - adjustedTareWeight);
+
+    // Calculate kg net (ensuring it's never negative)
+    const kgNet = Math.max(0, netWeight - ((netWeight * Math.min(100, totalMerma)) / 100));
     const { t, i18n } = useTranslation();
+
+    // Helper function to determine if a field has an error
+    const hasError = (field: string) => showErrors && errors[field];
+
+    // Helper function to format vehicle display text
+    const formatVehicleDisplay = (vehicle: Vehicle) => {
+        // Check if the vehicle has the necessary properties before trying to use them
+        const brand = vehicle.brand || '';
+        const model = vehicle.model || '';
+        const patent = vehicle.patent || '';
+        const chassisNumber = vehicle.chassisNumber || '';
+
+        // Return a formatted string combining multiple properties for better identification
+        if (patent && chassisNumber) {
+            return `${brand} ${model} - ${patent} (${chassisNumber})`;
+        } else if (patent) {
+            return `${brand} ${model} - ${patent}`;
+        } else if (chassisNumber) {
+            return `${brand} ${model} - ${chassisNumber}`;
+        } else {
+            return `${brand} ${model}`;
+        }
+    };
+
+    // Add validation for numerical inputs to ensure they are positive
+    const validatePositiveNumber = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = event.target;
+
+        // Convert to number and check if it's negative
+        const numValue = parseFloat(value);
+
+        // If it's a negative number, set it to 0
+        if (numValue < 0) {
+            event.target.value = "0";
+
+            // Create a new event with the corrected value
+            const newEvent = {
+                target: {
+                    name,
+                    value: "0"
+                }
+            } as React.ChangeEvent<HTMLInputElement>;
+
+            // Pass the corrected event to the original handler
+            handleInputChange(newEvent);
+            return false;
+        }
+
+        // For percentage fields, ensure they don't exceed 100%
+        if (
+            (name === "humidityPercentage" ||
+                name === "mermaPercentage" ||
+                name === "volatilePercentage" ||
+                name === "otherPercentage") &&
+            numValue > 100
+        ) {
+            event.target.value = "100";
+
+            const newEvent = {
+                target: {
+                    name,
+                    value: "100"
+                }
+            } as React.ChangeEvent<HTMLInputElement>;
+
+            handleInputChange(newEvent);
+            return false;
+        }
+
+        // For tareWeight, ensure it doesn't exceed grossWeight
+        if (name === "tareWeight" && formValues.grossWeight && numValue > formValues.grossWeight) {
+            // Limit tareWeight to grossWeight
+            event.target.value = formValues.grossWeight.toString();
+
+            const newEvent = {
+                target: {
+                    name,
+                    value: formValues.grossWeight.toString()
+                }
+            } as React.ChangeEvent<HTMLInputElement>;
+
+            handleInputChange(newEvent);
+            return false;
+        }
+
+        return true;
+    };
+
+    // Enhanced input change handler that first validates the input
+    const handleValidatedInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        // If validation passes, proceed with the original handler
+        if (validatePositiveNumber(event)) {
+            handleInputChange(event);
+        }
+    };
 
     const onChangeVehicle = useCallback(({ target }: SelectChangeEvent) => {
         const { value, name } = target;
@@ -57,7 +167,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
         else
             setFormValues(prevState => ({ ...prevState, truckTrailerId: value }));
 
-    }, []);
+    }, [vehicles, setFormValues]);
 
     return (
         <Grid
@@ -110,7 +220,12 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-                <FormControl key="transport-select" fullWidth>
+                <FormControl
+                    key="transport-select"
+                    fullWidth
+                    error={hasError('transportId')}
+                    required
+                >
                     <InputLabel id="transporte">{t("_transportation")}</InputLabel>
                     <Select
                         labelId="transporte"
@@ -125,10 +240,16 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                             </MenuItem>
                         ))}
                     </Select>
+                    {hasError('transportId') && <FormHelperText>{errors['transportId']}</FormHelperText>}
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-                <FormControl key="trucker-select" fullWidth>
+                <FormControl
+                    key="trucker-select"
+                    fullWidth
+                    error={hasError('truckerId')}
+                    required
+                >
                     <InputLabel id="trucker">{t("truck_driver")} </InputLabel>
                     <Select
                         labelId="trucker"
@@ -143,10 +264,16 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                             </MenuItem>
                         ))}
                     </Select>
+                    {hasError('truckerId') && <FormHelperText>{errors['truckerId']}</FormHelperText>}
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-                <FormControl key="vehicle-select" fullWidth>
+                <FormControl
+                    key="vehicle-select"
+                    fullWidth
+                    error={hasError('vehicleId')}
+                    required
+                >
                     <InputLabel id="vehicle">{t("_vehicle")}</InputLabel>
                     <Select
                         labelId="vehicle"
@@ -157,10 +284,11 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     >
                         {vehicles?.map((vehicle) => (
                             <MenuItem key={vehicle._id} value={vehicle._id}>
-                                {vehicle.chassisNumber}
+                                {formatVehicleDisplay(vehicle)}
                             </MenuItem>
                         ))}
                     </Select>
+                    {hasError('vehicleId') && <FormHelperText>{errors['vehicleId']}</FormHelperText>}
                 </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -175,15 +303,12 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     >
                         {vehicles.filter(v => v.vehicleType === VehicleType.Acoplado)?.map((vehicle) => (
                             <MenuItem key={vehicle._id} value={vehicle._id}>
-                                {vehicle.chassisNumber}
+                                {formatVehicleDisplay(vehicle)}
                             </MenuItem>
                         ))}
                     </Select>
                 </FormControl>
             </Grid>
-            {/* <Grid xs={12} sm={12} my={2}>
-                <Divider variant='middle' sx={{ border: "1px solid black" }} />
-            </Grid> */}
             <Grid item xs={6} sm={4}>
                 <TextField
                     variant="outlined"
@@ -191,11 +316,18 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     label={t("gross_weight")}
                     name="grossWeight"
                     value={formValues.grossWeight}
-                    onChange={handleInputChange}
+                    onChange={handleValidatedInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
                     }}
+                    inputProps={{
+                        min: 0,
+                        step: "0.01"
+                    }}
                     fullWidth
+                    error={hasError('grossWeight')}
+                    helperText={hasError('grossWeight') ? errors['grossWeight'] : ''}
+                    required
                 />
             </Grid>
             <Grid item xs={6} sm={4}>
@@ -209,7 +341,14 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
                     }}
+                    inputProps={{
+                        min: 0,
+                        step: "0.01"
+                    }}
                     fullWidth
+                    error={hasError('tareWeight')}
+                    helperText={hasError('tareWeight') ? errors['tareWeight'] : ''}
+                    required
                 />
             </Grid>
             <Grid item xs={6} sm={4}>
@@ -219,8 +358,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     label={t("net_weight")}
                     disabled
                     name="netWeight"
-                    value={netWeight}
-                    // onChange={handleInputChange}
+                    value={Math.max(0, netWeight)}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
                     }}
@@ -247,6 +385,11 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
+                        inputProps={{
+                            min: 0,
+                            max: 100,
+                            step: "0.1"
+                        }}
                         fullWidth
                     />
                     <Box sx={{ mx: 1 }} ><b>+</b></Box>
@@ -261,6 +404,11 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         onChange={handleInputChange}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
+                        }}
+                        inputProps={{
+                            min: 0,
+                            max: 100,
+                            step: "0.1"
                         }}
                         fullWidth
                     />
@@ -277,6 +425,11 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
+                        inputProps={{
+                            min: 0,
+                            max: 100,
+                            step: "0.1"
+                        }}
                         fullWidth
                     />
                     <Box sx={{ mx: 1 }} ><b>+</b></Box>
@@ -292,6 +445,11 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
+                        inputProps={{
+                            min: 0,
+                            max: 100,
+                            step: "0.1"
+                        }}
                         fullWidth
                     />
                     <Box sx={{ mx: 1 }} ><b>=</b></Box>
@@ -302,9 +460,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         type="number"
                         label={`% ${t("total_shrinkage")}`}
                         disabled
-                        // name="totalMerma"
                         value={totalMerma}
-                        // onChange={handleInputChange}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
@@ -317,8 +473,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         type="number"
                         label={t("net_kg")}
                         name="kgNet"
-                        value={kgNet}
-                        // onChange={handleInputChange}
+                        value={Math.max(0, kgNet)}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
@@ -326,9 +481,6 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     />
                 </Grid>
             </Grid>
-            {/* <Grid xs={12} sm={12} my={1}>
-                <Divider variant='middle' sx={{ border: "1px solid black" }} />
-            </Grid> */}
             <Grid item xs={6} sm={3}>
                 <FormControl key="harvester-select" fullWidth>
                     <InputLabel id="harvester">{t("_harvester")}</InputLabel>
@@ -359,6 +511,9 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         startAdornment: <InputAdornment position="start" />,
                     }}
                     fullWidth
+                    error={hasError('destination')}
+                    helperText={hasError('destination') ? errors['destination'] : ''}
+                    required
                 />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -375,7 +530,6 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     fullWidth
                 />
             </Grid>
-            {/* <Grid item sm={4} /> */}
         </Grid>
     )
 }

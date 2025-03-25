@@ -8,8 +8,8 @@ export * from './SearchButton';
 export * from './DataTable/EspecificationTable';
 export * from './DataTable/MaintenanceTable';
 export * from './DataTable/CategoryTable';
-export * from './BusinessForm';
-export * from './AddressForm';
+export * from './BusinessForm/BusinessForm';
+export * from './AddressForm/AddressForm';
 export * from './TemplateLayout';
 export * from './DataTable';
 export * from './Supplies/LaborsForm';
@@ -26,6 +26,7 @@ export * from './NewSupplyRow';
 export * from './ExitField/GeneralData';
 export * from './ExitField/TransportDestination';
 export * from './PaisTableCell/PaisTableCell';
+export * from './MultiLanguageSelect/MultiLanguageSelect';
 // export * from './CompatibilityValidator/CompatibilityValidator';
 export { default as UserPermissionsModal } from './Modals/UserPermissionsModal';
 

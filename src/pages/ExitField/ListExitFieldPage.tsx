@@ -1,120 +1,143 @@
-
 import React, { useEffect } from 'react';
-import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout, CloseButtonPage } from '../../components';
-import { Box, Button, Grid, IconButton, Tooltip, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { GenericListPage } from '../GenericListPage';
 import {
-  Add as AddIcon,
   Agriculture as AgricultureIcon,
   ArrowRightAlt as ArrowRightAltIcon,
   Edit as EditIcon
 } from "@mui/icons-material";
+import { Box, IconButton, Tooltip } from '@mui/material';
 import { useExitField } from '../../hooks';
-import { useNavigate } from 'react-router';
-import { ColumnProps } from '@types';
+import { GridColDef } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
+import { ExitFieldItem } from '../../types';
 import i18n from '../../i18n';
 
 
 
 export const ListExitFieldPage: React.FC = () => {
-
   const navigate = useNavigate();
   const { isLoading, exitFields, getExitFields } = useExitField();
   const { t } = useTranslation();
 
-  const onClickAdd = () => navigate("/init/overview/exit-field/new");
-
-  const columns: ColumnProps[] = [
-    { text: t("_date"), align: "center" },
-    { text: t("_field"), align: "center" },
-    { text: t("_batch"), align: "center" },
-    { text: t("_campaign"), align: "left" },
-    { text: t("_crop"), align: "center" },
-    { text: t("_transport"), align: "center" },
-    { text: t("net_kg"), align: "center" },
-    { text: "", align: "center" }
+  // Define columns for DataGrid
+  const columns: GridColDef[] = [
+    {
+      field: 'creationDate',
+      headerName: t("_date"),
+      width: 120,
+      align: 'center',
+      headerAlign: 'center'
+    },
+    {
+      field: 'fieldName',
+      headerName: t("_field"),
+      width: 150,
+      align: 'center',
+      headerAlign: 'center',
+      valueGetter: (params) => params.row.field?.nombre || ''
+    },
+    {
+      field: 'loteName',
+      headerName: t("_batch"),
+      width: 150,
+      align: 'center',
+      headerAlign: 'center',
+      valueGetter: (params) => {
+        const lote = params.row.field?.lotes.find(l => l._id === params.row.lotId);
+        return lote?.properties?.nombre || '';
+      }
+    },
+    {
+      field: 'campaignId',
+      headerName: t("_campaign"),
+      width: 180,
+      align: 'left',
+      headerAlign: 'left'
+    },
+    {
+      field: 'cropName',
+      headerName: t("_crop"),
+      width: 150,
+      align: 'center',
+      headerAlign: 'center',
+      valueGetter: (params) => {
+        if (!params.row.crop) return '';
+        return i18n.language === "es"
+          ? params.row.crop.descriptionES
+          : i18n.language === "en"
+            ? params.row.crop.descriptionEN
+            : params.row.crop.descriptionPT;
+      }
+    },
+    {
+      field: 'transportName',
+      headerName: t("_transport"),
+      width: 180,
+      align: 'center',
+      headerAlign: 'center',
+      valueGetter: (params) => params.row.transport?.nombreCompleto || ''
+    },
+    {
+      field: 'kgNet',
+      headerName: t("net_kg"),
+      width: 120,
+      type: 'number',
+      align: 'center',
+      headerAlign: 'center'
+    },
+    {
+      field: 'actions',
+      headerName: t("actions"),
+      width: 100,
+      align: 'center',
+      headerAlign: 'center',
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <Tooltip title={t("icon_edit")}>
+          <IconButton
+            aria-label={t("icon_edit")}
+            onClick={() => handleEdit(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+      )
+    }
   ];
 
-  useEffect(() => {
-    getExitFields();
-  }, [])
+  // Handle edit button click
+  const handleEdit = (item: ExitFieldItem) => {
+    navigate(`/init/overview/exit-field/edit/${item._id}`);
+  };
+
+  // Mock delete function (you'll need to implement this)
+  const handleDelete = (id: string, rev: string) => {
+    console.log(`Deleting item with id: ${id} and rev: ${rev}`);
+    // Implement your delete logic here
+  };
+
+  // Create the icon with the combined Agriculture and ArrowRightAlt icons
+  const combinedIcon = (
+    <Box display="flex" alignItems="center">
+      <AgricultureIcon fontSize="large" />
+      <ArrowRightAltIcon fontSize="large" />
+    </Box>
+  );
 
   return (
-    <TemplateLayout key="list-exit-field" viewMap={true}>
-      {isLoading && <Loading loading={true} />}
-      <Box
-        component="div"
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
-      >
-        <Box display="flex" alignItems="center">
-          <AgricultureIcon fontSize='large' /> <ArrowRightAltIcon fontSize='large' />
-          <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-            {t("field_output")}
-          </Typography>
-        </Box>
-        <CloseButtonPage />
-      </Box>
-      <Box component="div" sx={{ mt: 7 }}>
-        <Grid
-          container
-          spacing={0}
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ p: 2, mt: { sm: 2 } }}
-        >
-          <Grid item xs={6} sm={2}>
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<AddIcon />}
-              onClick={onClickAdd}
-            >
-              {t("new_masculine")}
-            </Button>
-          </Grid>
-        </Grid>
-        <Box component="div" sx={{ p: 1 }}>
-          <DataTable
-            key="datatable-exit-fields"
-            columns={columns}
-            isLoading={isLoading}
-          >
-            {exitFields.map((row) => (
-              <ItemRow key={row._id}>
-                <TableCellStyled align="center">
-                  {row.creationDate}
-                </TableCellStyled>
-                <TableCellStyled align="center">{row.field?.nombre} </TableCellStyled>
-                <TableCellStyled align="center">{row.field?.lotes.find(l => l._id === row.lotId)?.properties.nombre}</TableCellStyled>
-                <TableCellStyled>{row.campaignId}</TableCellStyled>
-                <TableCellStyled align="center">{
-                  row.crop ? i18n.language === "es" ? row.crop.descriptionES : i18n.language === "en" ? row.crop.descriptionEN : row.crop.descriptionPT : ""
-                }</TableCellStyled>
-                <TableCellStyled>{row.transport?.nombreCompleto}</TableCellStyled>
-                <TableCellStyled>{row.kgNet}</TableCellStyled>
-                <TableCellStyled align="center">
-                  <Tooltip title={t("icon_edit")}>
-                    <IconButton
-                      aria-label={t("icon_edit")}
-                      onClick={() => console.log(row)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                </TableCellStyled>
-              </ItemRow>
-            ))}
-          </DataTable>
-        </Box>
-      </Box>
-    </TemplateLayout>
-  )
-}
-
-/*
-
-*/
+    <GenericListPage
+      title={t("field_output")}
+      icon={combinedIcon}
+      data={exitFields}
+      columns={columns}
+      getData={getExitFields}
+      deleteData={handleDelete}
+      setActiveItem={(item) => console.log('Item selected:', item)}
+      newItemPath="/init/overview/exit-field/new"
+      editItemPath={(id) => `/init/overview/exit-field/edit/${id}`}
+      isLoading={isLoading}
+    />
+  );
+};

@@ -147,7 +147,8 @@ export const useAuthStore = () => {
         localStorage.removeItem("username_temp");
         dispatch(onLogout(""));
         navigate("/init/auth/login");
-        return dispatch(finishLoading());
+        dispatch(finishLoading());
+        return;
       }
     } catch (error) {
       dispatch(onLogout("Por favor volve a intentar en unos minutos."));

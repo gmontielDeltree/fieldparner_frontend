@@ -2,20 +2,15 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
-  Button,
-  Container,
-  Grid,
   IconButton,
   Tooltip,
-  Typography,
 } from "@mui/material";
-import { Icon } from "semantic-ui-react";
 import {
-  Add as AddIcon,
   Business as BusinessIcon,
   Edit as EditIcon,
+  Delete as DeleteIcon
 } from "@mui/icons-material";
-import { useForm, useAppDispatch, useBusiness } from "../../hooks";
+import { useAppDispatch, useBusiness } from "../../hooks";
 import { setBusinessActive } from "../../redux/business";
 import { useTranslation } from "react-i18next";
 import { Business, BusinessItem } from "../../interfaces/socialEntity";
@@ -24,10 +19,8 @@ import { GenericListPage } from "../GenericListPage";
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isLoading, businesses, getBusinesses, deleteBusiness, setBusinesses } = useBusiness();
-  const { filterText, handleInputChange } = useForm({ filterText: "" });
+  const { isLoading, businesses, getBusinesses, deleteBusiness, setBusinesses, replicate } = useBusiness();
   const { t } = useTranslation();
-
   useEffect(() => {
     getBusinesses();
   }, []);
@@ -37,7 +30,12 @@ export const ListBusinessesPage: React.FC = () => {
     { field: "razonSocial", headerName: t("name_negal_name"), flex: 1 },
     { field: "cuit", headerName: t("tax_id_identification_number"), flex: 1 },
     { field: "email", headerName: t("Email"), flex: 1 },
-    { field: "country.descriptionES", headerName: t("id_country"), flex: 1 },
+    {
+      field: "country",
+      headerName: t("id_country"),
+      flex: 1,
+      valueGetter: (params) => params.row.country?.descriptionES || '-'
+    },
     {
       field: "actions",
       headerName: "",
@@ -66,7 +64,7 @@ export const ListBusinessesPage: React.FC = () => {
                 "&:hover": { transform: "scale(1.2)" },
               }}
             >
-              <Icon name="trash alternate" />
+              <DeleteIcon />
             </IconButton>
           </Tooltip>
         </Box>
@@ -74,22 +72,6 @@ export const ListBusinessesPage: React.FC = () => {
     },
   ];
 
-  const onClickSearch = (): void => {
-    if (filterText === "") {
-      getBusinesses();
-      return;
-    }
-    const filteredBusinesses = businesses.filter(
-      ({ razonSocial, nombreCompleto }) =>
-        (razonSocial &&
-          razonSocial.toLowerCase().includes(filterText.toLowerCase())) ||
-        (nombreCompleto &&
-          nombreCompleto.toLowerCase().includes(filterText.toLowerCase()))
-    );
-    setBusinesses(filteredBusinesses);
-  };
-
-  const onClickAddBusiness = () => navigate("/init/overview/business/new");
 
   const onClickUpdateBusiness = (item: BusinessItem) => {
     const { country, ...rest } = item;
@@ -104,6 +86,9 @@ export const ListBusinessesPage: React.FC = () => {
     }
   };
 
+  // Add console log to see the data being sent to the table
+  console.log('Businesses data for table:', businesses);
+
   return (
     <GenericListPage
       title={t("social_entities")}
@@ -115,6 +100,6 @@ export const ListBusinessesPage: React.FC = () => {
       setActiveItem={setBusinessActive}
       newItemPath="/init/overview/business/new"
       editItemPath={(id) => `/init/overview/business/${id}`}
-    />
+      isLoading={isLoading} />
   );
 };

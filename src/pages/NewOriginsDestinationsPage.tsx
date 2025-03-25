@@ -13,17 +13,18 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { 
-    ArrowRightAlt as ArrowRightAltIcon,
-    AddLocationAlt as AddLocationAltIcon,} from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import {
+  ArrowRightAlt as ArrowRightAltIcon,
+  AddLocationAlt as AddLocationAltIcon,
+} from "@mui/icons-material";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   useAppDispatch,
   useAppSelector,
   useForm,
 } from "../hooks";
 import { OriginDestinations } from "../types";
-import { removeOriginsDestinations } from "../redux/originsdestinatons/originDestiantionsSlice";
+import { removeOriginsDestinationsActive, setOriginsDestinationsActive } from "../redux/originsdestinatons/originDestiantionsSlice";
 import { useOriginDestinations } from "../hooks/useOriginDestinations";
 import { useTranslation } from "react-i18next";
 
@@ -36,8 +37,9 @@ const initialForm: OriginDestinations = {
 
 export const NewOriginsDestinationsPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
-const {t} = useTranslation();
+  const { t } = useTranslation();
   const { originsDestinationsActive } = useAppSelector((state) => state.ordesti);
 
   const {
@@ -48,7 +50,7 @@ const {t} = useTranslation();
     handleInputChange,
   } = useForm<OriginDestinations>(initialForm);
 
-  const { isLoading, createOriginDestinations, updateOriginDestinations, conceptoError } =  useOriginDestinations();
+  const { isLoading, createOriginDestinations, updateOriginDestinations, conceptoError } = useOriginDestinations();
 
   const handleAddOriginDestinations = async () => {
     console.log("Valores del formulario:", formulario);
@@ -61,18 +63,30 @@ const {t} = useTranslation();
   };
 
   const onClickCancel = () => {
-    dispatch(removeOriginsDestinations());
+    // Usa la acción correcta para limpiar el ítem activo
+    dispatch(removeOriginsDestinationsActive());
     navigate("/init/overview/origins-destinations/");
   };
 
+  // Check if we're on the "new" route and reset the form if needed
   useEffect(() => {
-    if (originsDestinationsActive) setFormulario(originsDestinationsActive);
-    else setFormulario(initialForm);
-  }, [originsDestinationsActive, setFormulario]);
+    const isNewRoute = location.pathname.endsWith('/new');
+    
+    if (isNewRoute) {
+      // Clear active item from Redux store using the correct action
+      dispatch(removeOriginsDestinationsActive());
+      // Reset form to initial state
+      setFormulario(initialForm);
+    } else if (originsDestinationsActive) {
+      setFormulario(originsDestinationsActive);
+    }
+  }, [location.pathname, dispatch, setFormulario, originsDestinationsActive]);
 
+  // Cleanup when component unmounts
   useEffect(() => {
     return () => {
-      dispatch((removeOriginsDestinations));
+      // Usa la acción correcta en el cleanup
+      dispatch(removeOriginsDestinationsActive());
     };
   }, [dispatch]);
 
@@ -86,8 +100,7 @@ const {t} = useTranslation();
           alignItems="center"
           sx={{ ml: { sm: 2 }, pt: 2 }}
         >
-          
-          < AddLocationAltIcon /><ArrowRightAltIcon fontSize='large' /> 
+          <AddLocationAltIcon /><ArrowRightAltIcon fontSize='large' />
           <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
             {t("origins_destinations")}
           </Typography>
@@ -103,8 +116,8 @@ const {t} = useTranslation();
             align="center"
             sx={{ my: 3, mb: 5 }}
           >
-            {originsDestinationsActive ?  t("icon_edit") : t("new_famale")} {' '}
-          {t("origin_destination")}
+            {originsDestinationsActive ? t("icon_edit") : t("new_famale")} {' '}
+            {t("origin_destination")}
           </Typography>
           <Grid
             container
@@ -141,30 +154,30 @@ const {t} = useTranslation();
               />
             </Grid>
             <Grid item xs={6}>
-            <RadioGroup
+              <RadioGroup
                 row
                 name="destinoProcedencia"
                 value={formulario.destino ? "destino" : formulario.procedencia ? "procedencia" : ""}
                 onChange={(e) => {
-                const value = e.target.value;
-                setFormulario((prevForm) => ({
+                  const value = e.target.value;
+                  setFormulario((prevForm) => ({
                     ...prevForm,
                     destino: value === "destino",
                     procedencia: value === "procedencia",
-                }));
+                  }));
                 }}
-            >
+              >
                 <FormControlLabel
-                value="destino"
-                control={<Radio />}
-                label={t("_destination")}
+                  value="destino"
+                  control={<Radio />}
+                  label={t("_destination")}
                 />
                 <FormControlLabel
-                value="procedencia"
-                control={<Radio />}
-                label={t("_origin")}
+                  value="procedencia"
+                  control={<Radio />}
+                  label={t("_origin")}
                 />
-            </RadioGroup>
+              </RadioGroup>
             </Grid>
             <Grid item xs={6}>
             </Grid>
@@ -177,14 +190,19 @@ const {t} = useTranslation();
             sx={{ mt: { sm: 5 } }}
           >
             <Grid item xs={12} sm={3} key="grid-back">
-              <Button onClick={() => onClickCancel()}>{t("id_cancel")}</Button>
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={() => onClickCancel()}>
+                {t("id_cancel")}
+              </Button>
             </Grid>
             <Grid item xs={12} sm={3}>
               <Button
                 variant="contained"
-                color="primary"
+                color="success"
                 onClick={
-                  originsDestinationsActive ? handleUpdateOriginDestinations: handleAddOriginDestinations
+                  originsDestinationsActive ? handleUpdateOriginDestinations : handleAddOriginDestinations
                 }
               >
                 {!originsDestinationsActive ? t("_add") : t("id_update")} {' '}

@@ -217,18 +217,20 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         />
       </Grid>
       <Grid item xs={12} sm={6}>
-        <TextField
-          variant="outlined"
-          type="text"
-          label={t("_barcode")}
-          name="barCode"
-          value={barCode}
-          onChange={handleInputChange}
-          InputProps={{
-            startAdornment: <InputAdornment position="start" />,
-          }}
-          fullWidth
-        />
+      <TextField
+  variant="outlined"
+  type="number"
+  label={t("_barcode")}
+  name="barCode"
+  value={barCode}
+  onChange={handleInputChange}
+  fullWidth
+  inputProps={{
+    inputMode: "numeric",
+    pattern: "[0-9]*"
+  }}
+/>
+
       </Grid>
       <Grid item xs={12} sm={6}>
         <FormGroup row sx={{ alignItems: "center" }}>

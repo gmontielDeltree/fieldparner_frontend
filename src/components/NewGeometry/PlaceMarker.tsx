@@ -26,8 +26,37 @@ function PlaceMarker({
 
   useEffect(() => {
     if (map && selectedLot) {
-      const centerOfLot = centroid(selectedLot.geometry).geometry.coordinates
-      const position = lastKnownPosition || centerOfLot
+      // Check if selectedLot.geometry exists before calling centroid
+      let position;
+
+      if (selectedLot.geometry) {
+        try {
+          const centerOfLot = centroid(selectedLot.geometry).geometry.coordinates
+          position = lastKnownPosition || centerOfLot
+        } catch (error) {
+          console.error("Error calculating centroid:", error)
+          // Use default position or first feature's position if available
+          if (selectedLot.features && selectedLot.features.length > 0) {
+            const firstValidPosition = selectedLot.features.find(
+              feature => feature.properties?.posicion && Array.isArray(feature.properties.posicion)
+            )?.properties?.posicion
+
+            position = lastKnownPosition || firstValidPosition || [0, 0]
+          } else {
+            position = lastKnownPosition || [0, 0]
+          }
+        }
+      } else if (selectedLot.features && selectedLot.features.length > 0) {
+        // Try to use the position from the first feature with a valid position
+        const firstValidPosition = selectedLot.features.find(
+          feature => feature.properties?.posicion && Array.isArray(feature.properties.posicion)
+        )?.properties?.posicion
+
+        position = lastKnownPosition || firstValidPosition || [0, 0]
+      } else {
+        // Fallback to last known position or default coordinates
+        position = lastKnownPosition || [0, 0]
+      }
 
       if (
         !markerRef.current ||
@@ -50,6 +79,11 @@ function PlaceMarker({
         })
 
         markerRef.current = newMarker
+
+        // If we have coordinates, set them
+        if (position && position.length === 2) {
+          setCoordinates(position)
+        }
       }
     }
 

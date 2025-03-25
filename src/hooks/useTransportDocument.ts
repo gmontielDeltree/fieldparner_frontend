@@ -55,10 +55,48 @@ export const useTransportDocument = () => {
         }
     }
 
+    // Función para verificar si existe un documento con el mismo número de carta de porte
+    const checkDuplicateCartaPorte = async (nroCartaPorte: string, documentId?: string): Promise<boolean> => {
+        if (!user) throw new Error("User not logged.");
+        if (!nroCartaPorte) return false;
+
+        try {
+            // Buscar documentos con el mismo número de carta de porte
+            const response = await dbContext.transportDocument.find({
+                selector: {
+                    accountId: user?.accountId,
+                    nroCartaPorte: nroCartaPorte
+                }
+            });
+
+            const existingDocs = response.docs as TransportDocument[];
+
+            // Si es una actualización, excluimos el documento actual de la verificación
+            if (documentId) {
+                return existingDocs.some(doc => doc._id !== documentId);
+            }
+
+            // Si es una creación nueva, cualquier resultado significa duplicado
+            return existingDocs.length > 0;
+        } catch (error) {
+            console.error("Error al verificar duplicados:", error);
+            return false;
+        }
+    }
+
     const addTransportDocument = async (newDocument: TransportDocument) => {
         setIsLoading(true);
         try {
             if (!user) throw new Error("User not logged.");
+
+            // Verificar si el número de carta de porte ya existe
+            const isDuplicate = await checkDuplicateCartaPorte(newDocument.nroCartaPorte);
+
+            if (isDuplicate) {
+                setIsLoading(false);
+                Swal.fire("Error", "Ya existe un documento con el mismo número de Carta de Porte.", "error");
+                return false;
+            }
 
             const response = await dbContext.transportDocument.post({
                 ...newDocument,
@@ -67,12 +105,16 @@ export const useTransportDocument = () => {
             });
             setIsLoading(false);
 
-            if (response.ok)
-                Swal.fire("Carta de Porte", "Agregado con exito.", "success");
+            if (response.ok) {
+                Swal.fire("Carta de Porte", "Agregado con éxito.", "success");
+                return true;
+            }
+            return false;
         } catch (error) {
-            Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+            Swal.fire("Ups", "Ocurrió un error inesperado ", "error");
             setIsLoading(false);
             console.error("Error al cargar documentos:", error);
+            return false;
         }
     }
 
@@ -90,6 +132,15 @@ export const useTransportDocument = () => {
         try {
             if (!user) throw new Error("User not logged.");
 
+            // Verificar si el número de carta de porte ya existe en otro documento
+            const isDuplicate = await checkDuplicateCartaPorte(updateDoc.nroCartaPorte, updateDoc._id);
+
+            if (isDuplicate) {
+                setIsLoading(false);
+                Swal.fire("Error", "Ya existe otro documento con el mismo número de Carta de Porte.", "error");
+                return false;
+            }
+
             const response = await dbContext.transportDocument.put({
                 ...updateDoc,
                 accountId: user.accountId,
@@ -97,12 +148,16 @@ export const useTransportDocument = () => {
             });
             setIsLoading(false);
 
-            if (response.ok)
-                Swal.fire("Carta de Porte", "Actualizado con exito.", "success");
+            if (response.ok) {
+                Swal.fire("Carta de Porte", "Actualizado con éxito.", "success");
+                return true;
+            }
+            return false;
         } catch (error) {
-            Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+            Swal.fire("Ups", "Ocurrió un error inesperado ", "error");
             setIsLoading(false);
             console.error("Error al cargar documentos:", error);
+            return false;
         }
     }
 
@@ -113,6 +168,7 @@ export const useTransportDocument = () => {
         getTransportDocuments,
         addTransportDocument,
         getTransporDocumentById,
-        updateTransportDocument
+        updateTransportDocument,
+        checkDuplicateCartaPorte
     }
 }

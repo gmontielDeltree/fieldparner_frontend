@@ -1,5 +1,3 @@
-
-
 import { Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Loading } from '../../components';
@@ -105,11 +103,11 @@ export const TransportDocumentPage: React.FC = () => {
 
   const [activeStep, setActiveStep] = useState(0);
   const [steps] = useState<LabelProps[]>([
-    { error: false, text: "Remitente" },
-    { error: false, text: "Granos Transportados" },
-    { error: false, text: "Comercio Granos" },
-    { error: false, text: "Destinatario" },
-    { error: false, text: "Transportista" }
+    { error: false, text: t("id_remitente") },
+    { error: false, text: t("id_granos_transportados") },
+    { error: false, text: t("id_comercio_granos") },
+    { error: false, text: t("id_destinatario") },
+    { error: false, text: t("id_transportista") }
   ]);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const {
@@ -154,29 +152,38 @@ export const TransportDocumentPage: React.FC = () => {
       dispatch(uiStartLoading());
       let mappedObject = mappedTransportDocument() as TransportDocument;
       mappedObject.kgNeto = (mappedObject.kgBruto - mappedObject.kgTara);
-      await addTransportDocument(mappedObject as TransportDocument);
-      await handleUploadDocumentFile();
+
+      const success = await addTransportDocument(mappedObject as TransportDocument);
+
+      if (success) {
+        await handleUploadDocumentFile();
+        reset();
+        navigate("/init/overview/transport-documents");
+      }
+
       dispatch(uiFinishLoading());
-      reset();
-      navigate("/init/overview/transport-documents");
     } catch (error) {
       console.log('error', error);
       dispatch(uiFinishLoading());
     }
   }
 
+
   const onClickUpdateTransportDocument = async () => {
     try {
       dispatch(uiStartLoading());
-      //Mapeo del objeto a 1er nivel para enviarlo
       let mappedObject = mappedTransportDocument();
       mappedObject = { ...mappedObject, _id: documentToEdit._id, _rev: documentToEdit._rev };
 
-      await updateTransportDocument(mappedObject as TransportDocument);
-      await handleUploadDocumentFile();
+      const success = await updateTransportDocument(mappedObject as TransportDocument);
+
+      if (success) {
+        await handleUploadDocumentFile();
+        reset();
+        navigate("/init/overview/transport-documents");
+      }
+
       dispatch(uiFinishLoading());
-      reset();
-      navigate("/init/overview/transport-documents");
     } catch (error) {
       console.log('error', error);
       dispatch(uiFinishLoading());
@@ -252,7 +259,7 @@ export const TransportDocumentPage: React.FC = () => {
             />
           );
         default:
-          throw new Error("Unknown step");
+          throw new Error(t("id_unknown_step"));
       }
     },
     [
@@ -268,7 +275,8 @@ export const TransportDocumentPage: React.FC = () => {
       fields,
       exitFields,
       selectedFieldOutput,
-      contractsSaleCereals
+      contractsSaleCereals,
+      t
     ]
   );
 
@@ -285,7 +293,7 @@ export const TransportDocumentPage: React.FC = () => {
         updatedFormValue[fieldName] = {
           ...field,
           isError: true,
-          message: "Campo requerido",
+          message: t("id_required_field"),
         };
         isValid = false;
       }
@@ -342,7 +350,7 @@ export const TransportDocumentPage: React.FC = () => {
         sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
       >
         <Typography component="h2" variant="h4" align="left" sx={{ mb: 1 }}>
-          {`${documentToEdit ? "Modificacion" : "Nueva"}`} Carta de Porte
+          {documentToEdit._id ? t("id_modification") : t("id_new")} {t("id_transport_document")}
         </Typography>
         <Typography variant="h5" align='left' sx={{ mb: 3 }}>
           {steps[activeStep].text}
@@ -367,7 +375,10 @@ export const TransportDocumentPage: React.FC = () => {
               sx={{ mt: 5 }}
             >
               <Grid item xs={12} sm={3} key="grid-back">
-                <Button onClick={activeStep !== 0 ? handleBack : onClickCancel}>
+                <Button
+                  variant="contained"
+                  color="inherit"
+                  onClick={activeStep !== 0 ? handleBack : onClickCancel}>
                   {activeStep !== 0 ? t("id_back") : t("id_cancel")}
                 </Button>
               </Grid>
@@ -391,7 +402,7 @@ export const TransportDocumentPage: React.FC = () => {
                     documentToEdit._id ? () => onClickUpdateTransportDocument() : () => onClickNewTransportDocument()
                   }
                 >
-                  {documentToEdit._id ? t("id_update") : t("_add")}
+                  {documentToEdit._id ? t("id_update") : t("id_add")}
                 </Button>
               </Grid>
             </Grid>
@@ -401,4 +412,3 @@ export const TransportDocumentPage: React.FC = () => {
     </Container>
   )
 }
-

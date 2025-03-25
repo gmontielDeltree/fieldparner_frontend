@@ -8,6 +8,7 @@ import {
     PendingActions as PendingActionsIcon,
     CheckCircle as CheckCircleIcon,
     MoreHoriz as MoreHorizIcon,
+    Delete as DeleteIcon
 } from '@mui/icons-material';
 import { GridColDef } from '@mui/x-data-grid';
 import { OrderStatus, WithdrawalOrder } from '../../types';
@@ -64,7 +65,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
                 <>
                     <Tooltip title={t('Delete')}>
                         <IconButton sx={{ fontSize: '1.5rem' }}>
-                            <Icon name="trash alternate" />
+                            <DeleteIcon />
                         </IconButton>
                     </Tooltip>
                     <Tooltip title={t('Edit')}>

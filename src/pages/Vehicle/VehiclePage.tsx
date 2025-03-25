@@ -1,4 +1,6 @@
+// VehiclePage.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Button,
   Container,
@@ -9,13 +11,10 @@ import {
   Stepper,
   Typography,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import { TemplateLayout } from "../../components";
 import { Vehicle } from "@types";
 import { useAppDispatch, useAppSelector, useForm, useVehicle } from "../../hooks";
-import {
-  removerVehiculoActivo,
-} from "../../redux/vehicle";
+import { removerVehiculoActivo, setVehiculoActivo } from "../../redux/vehicle";
 import {
   DatosGenerales,
   Especificaciones,
@@ -23,6 +22,7 @@ import {
 } from "../../components/NuevoVehiculo";
 import { useTranslation } from "react-i18next";
 import { uploadFile } from "../../helpers/fileUpload";
+import Swal from "sweetalert2";
 
 const initialState: Vehicle = {
   accountId: "",
@@ -55,9 +55,8 @@ const initialState: Vehicle = {
   insurencePolicyFile: "",
 };
 
-
-
 export const VehiclePage: React.FC = () => {
+  const { id } = useParams<{ id?: string }>();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { vehiculoActivo } = useAppSelector((state) => state.vehiculo);
@@ -71,7 +70,7 @@ export const VehiclePage: React.FC = () => {
     handleYearChange,
     handleFormValueChange,
   } = useForm(initialState);
-  const { createVehicle, updateVehicle } = useVehicle();
+  const { createVehicle, updateVehicle, getVehicleById } = useVehicle();
   const [vehicleFiles, setVehicleFiles] = useState<File[]>([]);
 
   const steps = [
@@ -83,7 +82,7 @@ export const VehiclePage: React.FC = () => {
   const cancelFile = (indexToRemove: number) => {
     const updateFiles = vehicleFiles.filter((_item, index) => index !== indexToRemove);
     setVehicleFiles(updateFiles);
-  }
+  };
 
   const getStepContent = useMemo(
     () => (step: number) => {
@@ -119,64 +118,98 @@ export const VehiclePage: React.FC = () => {
               setVehiculo={setFormulario}
               handleFormValueChange={handleFormValueChange}
               setFilesUpload={setVehicleFiles}
-              cancelFile={cancelFile} />
+              cancelFile={cancelFile}
+            />
           );
         default:
           throw new Error("Step no encontrado.");
       }
     },
-    [
-      formulario,
-      setFormulario,
-      handleInputChange,
-      handleSelectChange,
-      handleYearChange,
-      handleFormValueChange,
-      setVehicleFiles
-    ]
+    [formulario, setFormulario, handleInputChange, handleSelectChange, handleYearChange, handleFormValueChange]
   );
 
-  const onClickCancelar = useCallback(() => {
-    dispatch(removerVehiculoActivo());
-    navigate("/init/overview/vehicle");
-  }, []);
+  useEffect(() => {
+    const loadVehicle = async () => {
+      if (id && !vehiculoActivo?._id) {
+        const vehicle = await getVehicleById(id);
+        if (vehicle) {
+          dispatch(setVehiculoActivo(vehicle));
+          setFormulario(vehicle);
+        }
+      }
+    };
+    loadVehicle();
+  }, [id]);
 
-  const onClickAddVehiculo = (e: any) => {
+  useEffect(() => {
+    if (vehiculoActivo) {
+      setFormulario(vehiculoActivo);
+    }
+  }, [vehiculoActivo, setFormulario]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(removerVehiculoActivo());
+    };
+  }, [dispatch]);
+
+  const onClickCancelar = useCallback(() => {
+    navigate("/init/overview/vehicle");
+  }, [navigate]);
+
+  const onClickAddVehiculo = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('formulario', formulario);
-    const { vehicleType: tipoVehiculo, make: marca, model: modelo } = formulario;
-    if (!tipoVehiculo || !marca || !modelo) return;
+    if (!validateRequiredFields()) return;
 
     createVehicle(formulario);
     handleUpdateFiles();
-
     navigate("/init/overview/vehicle");
-  }
+  };
 
   const onClickUpdateVehicle = useCallback(
-    (e: any) => {
+    (e: React.FormEvent) => {
       e.preventDefault();
+      if (!validateRequiredFields()) return;
 
       if (formulario._id) {
         updateVehicle(formulario);
-        handleUpdateFiles()
+        handleUpdateFiles();
       }
-
       navigate("/init/overview/vehicle");
     },
-    [formulario, dispatch]
+    [formulario, updateVehicle, navigate]
   );
+
+  const validateRequiredFields = () => {
+    const { vehicleType, make, model } = formulario;
+    if (!vehicleType || !make || !model) {
+      Swal.fire({
+        icon: 'warning',
+        title: t('required_fields_title'),
+        text: t('required_fields_message'),
+        confirmButtonText: t('understood')
+      });
+      return false;
+    }
+    return true;
+  };
 
   const handleUpdateFiles = async () => {
     try {
-      vehicleFiles.forEach(x => { uploadFile(x) });
+      await Promise.all(vehicleFiles.map(uploadFile));
+    } catch (error) {
+      console.error(t('upload_error'), error);
+      Swal.fire({
+        icon: 'error',
+        title: t('upload_error_title'),
+        text: t('upload_error_message'),
+        confirmButtonText: 'OK'
+      });
     }
-    catch (error) {
-      console.log('upload file error:', error);
-    }
-  }
+  };
 
   const handleNext = () => {
+    if (!validateRequiredFields()) return;
     setActiveStep(activeStep + 1);
   };
 
@@ -184,33 +217,12 @@ export const VehiclePage: React.FC = () => {
     setActiveStep(activeStep - 1);
   };
 
-  useEffect(() => {
-    if (vehiculoActivo) { setFormulario(vehiculoActivo); console.log('vehiculoActivo', vehiculoActivo) }
-    else setFormulario(initialState);
-  }, [vehiculoActivo, setFormulario]);
-
   return (
     <TemplateLayout key="vehicle-page" viewMap={true}>
-      <Container
-        maxWidth="lg"
-        sx={{
-          margin: 0,
-          // p: { sm: 0, md: 0 },
-          mb: 1,
-        }}
-      >
-        <Paper
-          variant="elevation"
-          // sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 1 } }}
-          sx={{ p: 4 }}
-        >
-          <Typography
-            component="h2"
-            align="center"
-            variant="h4"
-            sx={{ ml: { sm: 2 } }}
-          >
-            {!vehiculoActivo ? t("new_vehicle") : t("update_vehicle")}
+      <Container maxWidth="lg" sx={{ margin: 0, mb: 1 }}>
+        <Paper variant="elevation" sx={{ p: 4 }}>
+          <Typography component="h2" align="center" variant="h4" sx={{ ml: { sm: 2 } }}>
+            {!id ? t("new_vehicle") : t("update_vehicle")}
           </Typography>
           <Stepper activeStep={activeStep} sx={{ pt: 5, pb: 5 }}>
             {steps.map((label) => (
@@ -219,7 +231,7 @@ export const VehiclePage: React.FC = () => {
               </Step>
             ))}
           </Stepper>
-          <>
+          <form>
             {getStepContent(activeStep)}
             <Grid
               container
@@ -240,7 +252,7 @@ export const VehiclePage: React.FC = () => {
                 </Button>
               </Grid>
               <Grid item xs={12} sm={3}>
-                {!(activeStep === steps.length - 1) && (
+                {activeStep !== steps.length - 1 && (
                   <Button
                     type="button"
                     variant="contained"
@@ -257,16 +269,14 @@ export const VehiclePage: React.FC = () => {
                   type="submit"
                   variant="contained"
                   color="success"
-                  onClick={
-                    vehiculoActivo ? onClickUpdateVehicle : onClickAddVehiculo
-                  }
+                  onClick={id ? onClickUpdateVehicle : onClickAddVehiculo}
                   fullWidth
                 >
-                  {!vehiculoActivo ? t("_save") : t("id_update")}
+                  {!id ? t("_save") : t("id_update")}
                 </Button>
               </Grid>
             </Grid>
-          </>
+          </form>
         </Paper>
       </Container>
     </TemplateLayout>

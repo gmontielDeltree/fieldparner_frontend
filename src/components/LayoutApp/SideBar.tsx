@@ -41,6 +41,7 @@ import {
   LocationOn as LocationOnIcon,
   Handshake as HandshakeIcon,
   MonetizationOn as MonetizationOnIcon,
+  CallMissedOutgoing as CallMissedOutgoingIcon,
 } from "@mui/icons-material";
 import { Icon } from "semantic-ui-react";
 import { SideBarProps } from "../../types";
@@ -98,12 +99,8 @@ export const SideBar: React.FC<SideBarProps> = ({
         </Box>
         <Divider />
         <List>
-
-
           <ListItem key="General" disablePadding>
             <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
               onClick={() => onClickMenu(keysCollapse[2])}
             // selected={pathname.includes("/init/overview/fields")}
             >
@@ -163,12 +160,6 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("supply_lots")} />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("currencies_quotes")} />
-              </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}
@@ -192,12 +183,6 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("origins_destinations")} />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("concepts_categories")} />
-              </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
                 component={RouterLink}
@@ -220,16 +205,15 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("service_labors")} />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}
+              {/* <ListItemButton sx={{ pl: 4 }}
                 component={RouterLink}
                 to="/init/overview/prices"
                 selected={pathname.includes("/init/overview/prices")}
               >
                 <ListItemIcon>
-                  {/* <CabinIcon /> */}
                 </ListItemIcon>
                 <ListItemText primary={t("market_prices")} />
-              </ListItemButton>
+              </ListItemButton> */}
 
             </List>
           </Collapse>
@@ -252,30 +236,16 @@ export const SideBar: React.FC<SideBarProps> = ({
             timeout="auto"
             unmountOnExit>
             <List component="div" disablePadding>
-              <ListItemButton >
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("campaign_definition")} />
-              </ListItemButton>
               <ListItemButton
+                sx={{ pl: 4 }}
                 component={RouterLink}
                 to="/init/overview/fields/planification"
                 selected={pathname.includes("/init/overview/fields/planification")}
               >
                 <ListItemIcon>
+                  <CallMissedOutgoingIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("annual_campaign_projection")} />
-              </ListItemButton>
-
-              <ListItemButton >
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("_freight")} />
-              </ListItemButton>
-              <ListItemButton >
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("spoilage_table")} />
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
@@ -309,11 +279,6 @@ export const SideBar: React.FC<SideBarProps> = ({
                   <FireTruckIcon />
                 </ListItemIcon>
                 <ListItemText primary="Carta de Porte" />
-              </ListItemButton>
-              <ListItemButton >
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("_romaneos")} />
               </ListItemButton>
               <ListItemButton
                 sx={{ pl: 4 }}
@@ -461,77 +426,12 @@ export const SideBar: React.FC<SideBarProps> = ({
                 selected={pathname.includes("init/overview/costs-expenses")}
               >
                 <ListItemIcon>
-                   <MonetizationOnIcon />
+                  <MonetizationOnIcon />
                   {/* <LocationOnIcon sx={{ marginRight: "28px", fontSize: "inherit", verticalAlign: "middle" }} /> */}
                 </ListItemIcon>
                 <ListItemText primary={t("costs_expenses")} />
               </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("_harvest")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("payment_orders")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("_settlements")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("hourly_settlement")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("deposit_certificates")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("_advances")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("grain_sales")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("_projections")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("final_results")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("web_simulator")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  {/* <CabinIcon /> */}
-                </ListItemIcon>
-                <ListItemText primary={t("_insurance")} />
-              </ListItemButton>
+
             </List>
           </Collapse>
           <ListItem key="Seguridad" disablePadding>
@@ -568,7 +468,7 @@ export const SideBar: React.FC<SideBarProps> = ({
               )}
             </List>
           </Collapse>
-          <ListItem key="Configuracion" disablePadding>
+          {/* <ListItem key="Configuracion" disablePadding>
             <ListItemButton
               // component={RouterLink}
               // to="/init/overview/fields"
@@ -608,7 +508,7 @@ export const SideBar: React.FC<SideBarProps> = ({
                 <ListItemText primary={t("_numerators")} />
               </ListItemButton>
             </List>
-          </Collapse>
+          </Collapse> */}
         </List>
         <Box
           sx={{

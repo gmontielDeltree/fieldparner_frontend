@@ -25,7 +25,7 @@ export interface CountryItem extends Country {
 }
 
 export const useCountry = () => {
-  const [country, setCountry] = useState<CountryItem[]>([]);
+  // const [country, setCountry] = useState<CountryItem[]>([]);
   const [dataCountry, setDataCountry] = useState<Country[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<any>(null);
@@ -75,7 +75,7 @@ export const useCountry = () => {
         setDataCountry(documents);
       }
       else
-        setCountry([]);
+      setDataCountry([]);
 
     } catch (error) {
       console.log(error)
@@ -87,7 +87,7 @@ export const useCountry = () => {
 
 
   return {
-    country,
+    // country,
     dataCountry,
     isLoading,
     error,

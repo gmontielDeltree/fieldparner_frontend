@@ -10,7 +10,8 @@ import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '..
 import { Box, Button, Grid, IconButton, InputAdornment, Paper, TableContainer, TextField, Tooltip, Typography } from '@mui/material';
 import {
     Assignment as AssignmentIcon,
-    Add as AddIcon
+    Add as AddIcon,
+    Delete as DeleteIcon
 } from '@mui/icons-material';
 import { Icon } from 'semantic-ui-react';
 import { ColumnProps, DepositSupplyOrder } from '../../types';
@@ -301,7 +302,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                                             onClick={() => handleDeleteWithdrawals(row)}
                                             sx={{ fontSize: '1.5rem' }}
                                         >
-                                            <Icon name="trash alternate" />
+                                            <DeleteIcon />
                                         </IconButton>
                                     </Tooltip>
                                 </TableCellStyled>

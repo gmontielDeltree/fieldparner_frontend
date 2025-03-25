@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
+import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography, Alert } from '@mui/material';
 import { GeneralData, Loading, TemplateLayout, TransportDestination } from '../../components';
 import {
     Agriculture as AgricultureIcon,
@@ -12,7 +12,7 @@ import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { useField } from '../../hooks/useField';
 import { StockItem, TipoStock } from '../../interfaces/stock';
-
+import { validateStep, hasErrors } from '../../helpers/validation';
 
 const initialState: ExitFieldItem = {
     creationDate: getShortDate(false, "-"),
@@ -56,6 +56,11 @@ export const NewExitFieldPage: React.FC = () => {
         setFormulario: setFormValues,
         reset
     } = useForm(initialState);
+
+    // Form validation state
+    const [errors, setErrors] = useState({});
+    const [showErrors, setShowErrors] = useState(false);
+
     const [loading, setLoading] = useState(false);
     const [stockFromCrops, setStockFromCrops] = useState<StockItem[]>([]);
     const [depositsFromCrop, setDepositsFromCrop] = useState<Deposit[]>([]);
@@ -72,9 +77,13 @@ export const NewExitFieldPage: React.FC = () => {
         t("transport_destiny"),
     ];
 
+    // Validate form on change
+    useEffect(() => {
+        setErrors(validateStep(formValues, activeStep));
+    }, [formValues, activeStep]);
+
     const getStepContent = useMemo(
         () => (step: number) => {
-
             switch (step) {
                 case 0:
                     return (
@@ -86,6 +95,8 @@ export const NewExitFieldPage: React.FC = () => {
                             listFields={fields}
                             handleInputChange={handleInputChange}
                             setFormValues={setFormValues}
+                            errors={errors}
+                            showErrors={showErrors}
                         />
                     );
                 case 1:
@@ -98,6 +109,8 @@ export const NewExitFieldPage: React.FC = () => {
                             handleInputChange={handleInputChange}
                             handleSelectChange={handleSelectChange}
                             setFormValues={setFormValues}
+                            errors={errors}
+                            showErrors={showErrors}
                         />
                     );
                 default:
@@ -114,31 +127,87 @@ export const NewExitFieldPage: React.FC = () => {
             vehicles,
             socialEntities,
             fields,
-            stockFromCrops
+            stockFromCrops,
+            errors,
+            showErrors
         ]
     );
 
     const onClickCancelar = () => {
         navigate("/init/overview/exit-field");
     };
-    //TODO: AGREGAR VALIDACIONES DE CAMPOS REQUERIDOS
+
     const handleNext = () => {
+        // Validate the current step before proceeding
+        const stepErrors = validateStep(formValues, activeStep);
+
+        if (hasErrors(stepErrors)) {
+            setShowErrors(true);
+            return;
+        }
+
         setActiveStep(activeStep + 1);
+        setShowErrors(false);
     };
 
     const handleBack = () => {
         setActiveStep(activeStep - 1);
+        setShowErrors(false);
     };
 
     const onClickSaveExitField = async () => {
-        const { humidityPercentage, mermaPercentage, volatilePercentage, otherPercentage, grossWeight, tareWeight } = formValues;
-        const totalMerma = Number(humidityPercentage) + Number(mermaPercentage) + Number(volatilePercentage) + Number(otherPercentage);
-        const netWeight = Number(grossWeight - tareWeight);
-        const kgNet = (netWeight - ((netWeight * totalMerma) / 100));
-        // console.log('formValues', { ...formValues, totalMerma, netWeight, kgNet });
-        await createExitField({ ...formValues, totalMerma, netWeight, kgNet });
-        reset();
-        navigate("/init/overview/exit-field");
+        // Validate the final step before saving
+        const stepErrors = validateStep(formValues, activeStep);
+
+        if (hasErrors(stepErrors)) {
+            setShowErrors(true);
+            return;
+        }
+
+        try {
+            const { humidityPercentage, mermaPercentage, volatilePercentage, otherPercentage, grossWeight, tareWeight } = formValues;
+
+            // Ensure all percentage values are valid numbers and not negative
+            const safeHumidity = Math.max(0, Number(humidityPercentage) || 0);
+            const safeMerma = Math.max(0, Number(mermaPercentage) || 0);
+            const safeVolatile = Math.max(0, Number(volatilePercentage) || 0);
+            const safeOther = Math.max(0, Number(otherPercentage) || 0);
+
+            // Calculate total merma, ensuring it doesn't exceed 100%
+            const totalMerma = Math.min(100, safeHumidity + safeMerma + safeVolatile + safeOther);
+
+            // Ensure weights are valid numbers and not negative
+            const safeGrossWeight = Math.max(0, Number(grossWeight) || 0);
+            const safeTareWeight = Math.max(0, Number(tareWeight) || 0);
+
+            // Ensure tare weight doesn't exceed gross weight
+            const adjustedTareWeight = Math.min(safeTareWeight, safeGrossWeight);
+
+            // Calculate net weight (ensuring it's never negative)
+            const netWeight = Math.max(0, safeGrossWeight - adjustedTareWeight);
+
+            // Calculate kg net (ensuring it's never negative)
+            const kgNet = Math.max(0, netWeight - ((netWeight * totalMerma) / 100));
+
+            await createExitField({
+                ...formValues,
+                // Ensure we send safe values
+                humidityPercentage: safeHumidity,
+                mermaPercentage: safeMerma,
+                volatilePercentage: safeVolatile,
+                otherPercentage: safeOther,
+                grossWeight: safeGrossWeight,
+                tareWeight: adjustedTareWeight,
+                totalMerma,
+                netWeight,
+                kgNet
+            });
+            reset();
+            navigate("/init/overview/exit-field");
+        } catch (error) {
+            console.error("Error al crear salida de campo:", error);
+            Swal.fire('Error', 'No se pudo crear la salida de campo. Por favor, verifique los datos e intente nuevamente.', 'error');
+        }
     }
 
     useEffect(() => {
@@ -165,7 +234,6 @@ export const NewExitFieldPage: React.FC = () => {
         }
     }, [campaignId, fieldId, lotId])
 
-    //Cada vez q cambie el cultivo, filtrar los depositos
     useEffect(() => {
         const filterDepositsByCrop = () => {
             const deposits = stockFromCrops
@@ -212,6 +280,11 @@ export const NewExitFieldPage: React.FC = () => {
                         ))}
                     </Stepper>
                     <>
+                        {showErrors && hasErrors(errors) && (
+                            <Alert severity="error" sx={{ mb: 3 }}>
+                                {t("form_validation_error")}
+                            </Alert>
+                        )}
                         {getStepContent(activeStep)}
                         <Grid
                             container
@@ -237,7 +310,6 @@ export const NewExitFieldPage: React.FC = () => {
                                         type="button"
                                         variant="contained"
                                         color="primary"
-                                        // disabled={formValues.cropId === ""}
                                         onClick={handleNext}
                                         fullWidth
                                     >
@@ -251,7 +323,6 @@ export const NewExitFieldPage: React.FC = () => {
                                         type="submit"
                                         variant="contained"
                                         color="success"
-                                        disabled={formValues.netWeight === 0}
                                         onClick={() => onClickSaveExitField()}
                                         fullWidth
                                     >

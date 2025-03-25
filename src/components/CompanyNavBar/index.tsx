@@ -17,9 +17,12 @@ import { urlImg } from '../../config'
 import { setAuthUser } from '../../redux/auth'
 
 // === Animaciones === //
+// Fixed empty animation
 const glow = keyframes`
-    
-  `
+  0% { box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(0, 123, 255, 0.8); }
+  100% { box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); }
+`
 
 // Podríamos hacer un styled Select para personalizarlo
 const FancySelect = styled(Select)(({ theme }) => ({
@@ -69,35 +72,94 @@ const CompanyNavBar: React.FC = () => {
   const [companySelected, setCompanySelected] = useState(
     localStorage.getItem('last_company') || '',
   )
+  const [loading, setLoading] = useState(true)
+
+  console.log('CompanyNavBar rendering, companies:', companies, 'typeof companies:', typeof companies, 'isArray:', Array.isArray(companies))
+
   const lincenIdSelected = companies?.find(
     (company) => company.companyId === companySelected,
   )?.licenceId
 
   const onChangeCompany = ({ target }: SelectChangeEvent) => {
+    console.log('Company changed to:', target.value)
     setCompanySelected(target.value as string)
     localStorage.setItem('last_company', target.value as string)
   }
 
   useEffect(() => {
-    getCompaniesByEmail()
+    console.log('Initial useEffect - fetching companies')
+    const fetchCompanies = async () => {
+      try {
+        const result = await getCompaniesByEmail()
+        console.log('Companies fetched successfully, result:', result)
+        // Check if useCompany hook updates state correctly
+        console.log('Companies state after fetch:', companies)
+
+        // If getCompaniesByEmail returns data but doesn't update state, we need to fix the hook
+        if (result && Array.isArray(result) && result.length > 0 && companies.length === 0) {
+          console.error('Hook not updating state properly with data:', result)
+        }
+      } catch (error) {
+        console.error('Error fetching companies:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCompanies()
   }, [])
 
   useEffect(() => {
-    if (companySelected === '' && companies.length > 0) {
+    console.log('Second useEffect - companies:', companies, 'companySelected:', companySelected)
+    if (companySelected === '' && companies && companies.length > 0) {
+      console.log('Setting default company:', companies[0].companyId)
       setCompanySelected(companies[0].companyId)
     }
   }, [companySelected, companies])
 
   useEffect(() => {
+    console.log('Third useEffect - user:', user, 'licenceId:', lincenIdSelected)
     if (user && lincenIdSelected && user.licenceId !== lincenIdSelected) {
+      console.log('Updating user licenceId to:', lincenIdSelected)
       dispatch(setAuthUser({ ...user, licenceId: lincenIdSelected }))
     }
   }, [dispatch, user, lincenIdSelected])
 
+  // Check if companies is valid
+  if (!companies) {
+    console.log('Companies is undefined')
+    return <CircularProgress />
+  }
+
+  // Add debugging for the hook
+  console.log('useCompany hook returned:', {
+    companies: companies,
+    getCompaniesByEmail: typeof getCompaniesByEmail
+  })
+
+  // Added timeout to stop loading after a reasonable time
+  useEffect(() => {
+    // Force loading to complete after 3 seconds regardless of API response
+    const timer = setTimeout(() => {
+      if (loading) {
+        console.log('Forcing loading to complete after timeout')
+        setLoading(false)
+      }
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [loading])
+
+  // Return null if no companies
+  if (!companies || companies.length === 0) {
+    console.log('No companies available, returning null');
+    return null;
+  }
+
   return (
     <>
-      {companies.length === 0 ? (
-        <CircularProgress />
+      {loading ? (
+        <CircularProgress size={24} />
       ) : (
         <FormControl key="select-company">
           <FancySelect
@@ -112,7 +174,7 @@ const CompanyNavBar: React.FC = () => {
                   borderRadius: 2,
                   mt: 1,
                   py: 0,
-                  // Efecto sutil de “glass”
+                  // Efecto sutil de "glass"
                   backgroundColor: alpha('#ffffff', 0.7),
                   backdropFilter: 'blur(6px)',
                   boxShadow: `0 4px 20px ${alpha('#000', 0.15)}`,

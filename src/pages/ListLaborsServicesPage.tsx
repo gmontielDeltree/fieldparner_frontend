@@ -1,24 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
-  Button,
-  Grid,
   IconButton,
-  InputAdornment,
-  TextField,
   Tooltip,
-  Typography,
 } from "@mui/material";
-import { Icon } from "semantic-ui-react";
 import {
-  Add as AddIcon,
-  Search as SearchIcon,
   Edit as EditIcon,
   Build as BuildIcon,
   Person as PersonIcon,
+  Delete as DeleteIcon
 } from "@mui/icons-material";
-import { useForm, useAppDispatch, useAppSelector, useLaborsServices } from "../hooks";
+import { useAppDispatch, useLaborsServices } from "../hooks";
 import { useTranslation } from "react-i18next";
 import { setLaborsServicesActive } from "../redux/laborsService";
 import { LaborsServices } from "../types";
@@ -29,10 +22,12 @@ export const ListLaborsServicesPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { laborsServices, getLaborsServices, removeLaborsServices } = useLaborsServices();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
+    // Cargar datos al montar el componente o cuando cambie refreshKey
     getLaborsServices();
-  }, []);
+  }, [refreshKey]);
 
   const columns = [
     { field: "service", headerName: t("_service"), flex: 1 },
@@ -65,7 +60,7 @@ export const ListLaborsServicesPage: React.FC = () => {
                 "&:hover": { transform: "scale(1.2)" },
               }}
             >
-              <Icon name="trash alternate" />
+              <DeleteIcon />
             </IconButton>
           </Tooltip>
         </Box>
@@ -73,22 +68,21 @@ export const ListLaborsServicesPage: React.FC = () => {
     },
   ];
 
-  const onClickAddLaborsService = () => navigate("/init/overview/Labors-services/new");
-
-  const handleDeleteLaborsService = (item: LaborsServices) => {
+  const handleDeleteLaborsService = async (item: LaborsServices) => {
     if (item._id && item._rev) {
-      removeLaborsServices(item._id, item._rev);
-      getLaborsServices();
+      try {
+        await removeLaborsServices(item._id, item._rev);
+        // Forzar una actualización de la lista después de eliminar
+        setRefreshKey(prevKey => prevKey + 1);
+      } catch (error) {
+        console.error("Error al eliminar servicio:", error);
+      }
     }
   };
-
+  
   const onClickUpdateLaborsService = (item: LaborsServices): void => {
     dispatch(setLaborsServicesActive(item));
     navigate(`/init/overview/Labors-services/${item._id}`);
-  };
-
-  const onClickBuscar = () => {
-    // todo
   };
 
   return (

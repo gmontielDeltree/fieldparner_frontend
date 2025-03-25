@@ -16,25 +16,30 @@ import {
 import { urlImg } from "../../config";
 
 
-const renderPdfIcon = (params: GridRenderCellParams) => (
-    <Tooltip title="View PDF">
-        <IconButton
-            aria-label="View PDF"
-            onClick={() => {
-                console.log('PDF file:', params.row.fileName);
-                const url = `${urlImg}${params.row.fileName}`;
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('target', "_blank");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }}
-        >
-            <PictureAsPdfIcon />
-        </IconButton>
+const renderPdfIcon = (params: GridRenderCellParams) => {
+  return (
+    <Tooltip title={params.row.archivoCertificado ? "Ver PDF" : "PDF no disponible"}>
+      <IconButton
+        aria-label="View PDF"
+        disabled={!params.row.archivoCertificado}
+        onClick={() => {
+          if (params.row.archivoCertificado) {
+            const url = `${urlImg}${params.row.archivoCertificado}`;
+            console.log('Abriendo URL del PDF:', url);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('target', "_blank");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        }}
+      >
+        <PictureAsPdfIcon color={params.row.archivoCertificado ? "primary" : "disabled"} />
+      </IconButton>
     </Tooltip>
-);
+  );
+};
 
 export const ListTransportDocumentPage: React.FC = () => {
     const navigate = useNavigate();
