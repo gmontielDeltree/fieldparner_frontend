@@ -708,10 +708,10 @@ export enum TipoEntidad {
 
 export enum CountryCode {
 
-  ARGENTINA = 'ARG',
-  BRASIL = "BRA",
-  CHILE = "CHL",
-  PARAGUAY = "PRY",
+  ARGENTINA = 'AR',
+  BRASIL = "BR",
+  CHILE = "CH",
+  PARAGUAY = "PY",
 }
 
 export enum CurrencyCode {
