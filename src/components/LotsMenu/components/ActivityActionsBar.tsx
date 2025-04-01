@@ -20,6 +20,7 @@ import {
   Trash2,
   MoreHorizontal
 } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 // Styled components for the action bar
 const ActionsContainer = styled('div')({
@@ -103,6 +104,7 @@ const ActivityActionsBar = ({
   disabledActions = {},
   sx = {}
 }) => {
+  const { t } = useTranslation();
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const menuOpen = Boolean(menuAnchorEl);
@@ -131,43 +133,43 @@ const ActivityActionsBar = ({
   const allActions = [
     {
       icon: <Edit2 size={18} strokeWidth={2} />,
-      text: "Editar Actividad",
+      text: t('editActivity'),
       action: onEditActivity,
       disabled: disabledActions.edit || false
     },
     {
       icon: <FileText size={18} strokeWidth={2} />,
-      text: "Crear Orden de Trabajo",
+      text: t('createWorkOrder'),
       action: onDownloadOT,
       disabled: disabledActions.ot || false
     },
     {
       icon: <Repeat size={18} strokeWidth={2} />,
-      text: "Repetir Actividad",
+      text: t('repeatActivity'),
       action: onRepeatOT,
       disabled: disabledActions.repeat || false
     },
     {
       icon: <BarChart2 size={18} strokeWidth={2} />,
-      text: "Comparativa Programa/Ejecución",
+      text: t('programExecutionComparison'),
       action: onDownloadCompare,
       disabled: disabledActions.compare || false
     },
     {
       icon: <Share2 size={18} strokeWidth={2} />,
-      text: "Compartir Orden de Trabajo",
+      text: t('shareWorkOrder'),
       action: onShareOT,
       disabled: disabledActions.share || false
     },
     {
       icon: <Cloud size={18} strokeWidth={2} />,
-      text: "Meteorología",
+      text: t('meteorology'),
       action: onMeteo,
       disabled: disabledActions.meteo || false
     },
     {
       icon: <Trash2 size={18} strokeWidth={2} color="#e11d48" />,
-      text: "Eliminar Actividad",
+      text: t('deleteActivity'),
       action: onDeleteActivity,
       textColor: "#e11d48",
       disabled: disabledActions.delete || false
@@ -212,7 +214,7 @@ const ActivityActionsBar = ({
 
       {menuActions.length > 0 && (
         <>
-          <TooltipWrapper title="Más acciones" arrow placement="top">
+          <TooltipWrapper title={t('moreActions')} arrow placement="top">
             <MoreButton
               onClick={handleOpenMenu}
               size="small"

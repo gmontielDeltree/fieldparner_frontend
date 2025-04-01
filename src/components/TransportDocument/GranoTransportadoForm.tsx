@@ -4,6 +4,7 @@ import { Box, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, Lis
 import { Loading } from '../Loading';
 import { getLocalityAndStateByZipCode } from '../../utils/getDataZipCode';
 import { CountryCode, ItemZipCode } from '../../types';
+import { useTranslation } from "react-i18next";
 
 
 const TextFieldGray = styled(TextField)(() => ({
@@ -18,6 +19,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
   handleInputChange,
   handleSelectChange
 }) => {
+  const { t } = useTranslation();
 
   const { cpSalidaCampo } = formValues;
   const [loadingZipCode, setLoadingZipCode] = useState(false);
@@ -60,7 +62,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
         <Grid item xs={12} sm={3}>
           <TextFieldGray
             variant='outlined'
-            label="Campaña"
+            label={t('campaign')}
             value={selectedFieldOutput?.campaignId || "-"}
             fullWidth
           />
@@ -68,7 +70,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
         <Grid item xs={12} sm={2}>
           <TextFieldGray
             variant='outlined'
-            label="Cultivo"
+            label={t('crop')}
             value={selectedFieldOutput?.cultive || "-"}
             fullWidth
           />
@@ -79,12 +81,12 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             fullWidth
             error={formValues.contractSaleNumber.isError}
           >
-            <InputLabel id="contract">Contrato Venta Cereal</InputLabel>
+            <InputLabel id="contract">{t('cerealSaleContract')}</InputLabel>
             <Select
               labelId="contract"
               name="contractSaleNumber"
               value={formValues.contractSaleNumber.value}
-              label="Contrato Venta Cereal"
+              label={t('cerealSaleContract')}
               onChange={handleSelectChange}
             >
               {contractSales?.map((x) => (
@@ -99,7 +101,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
         <Grid item xs={12} sm={3}>
           <TextFieldGray
             variant='outlined'
-            label="Salida de Campo"
+            label={t('fieldExit')}
             value={selectedFieldOutput?.field?.nombre || "-"}
             fullWidth
           />
@@ -107,7 +109,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
         <Grid item xs={12} sm={2}>
           <FormControl fullWidth>
             <ListItemText
-              primary={<Typography variant='subtitle2'>Kgs</Typography>}
+              primary={<Typography variant='subtitle2'>{t('kilograms')}</Typography>}
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
@@ -120,16 +122,12 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
           <TextField
             variant="outlined"
             type="text"
-            label="Codigo Postal"
+            label={t('postalCode')}
             name="cpSalidaCampo"
             error={formValues.cpSalidaCampo.isError}
             helperText={formValues.cpSalidaCampo.message}
             value={formValues.cpSalidaCampo.value}
             onChange={handleInputChange}
-            // onBlur={(e) => {
-            //   const zipCode = e.target.value;
-            //   zipCode && getLocalityAndState(zipCode)
-            // }}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
             }}
@@ -139,7 +137,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
         <Grid item xs={12} sm={3}>
           <FormControl fullWidth>
             <ListItemText
-              primary={<Typography variant='subtitle2'>Localidad</Typography>}
+              primary={<Typography variant='subtitle2'>{t('locality')}</Typography>}
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
@@ -151,7 +149,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
         <Grid item xs={12} sm={3}>
           <FormControl fullWidth>
             <ListItemText
-              primary={<Typography variant='subtitle2'>Partido/Departamento</Typography>}
+              primary={<Typography variant='subtitle2'>{t('district')}</Typography>}
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
@@ -163,7 +161,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
         <Grid item xs={12} sm={2}>
           <FormControl fullWidth>
             <ListItemText
-              primary={<Typography variant='subtitle2'>Provincia</Typography>}
+              primary={<Typography variant='subtitle2'>{t('province')}</Typography>}
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
@@ -173,20 +171,18 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
           </FormControl>
         </Grid>
       </Grid>
-      <Typography variant='h6' sx={{ my: 3 }}>La carga sera pesada en Destino*</Typography>
+      <Typography variant='h6' sx={{ my: 3 }}>{t('loadWeightedAtDestination')}</Typography>
       <Grid container spacing={1}>
         <Grid item xs={12} sm={3}>
           <TextField
             variant="outlined"
             type="number"
-            label="Kgs Estimados"
+            label={t('estimatedKilograms')}
             name="kgEstimado"
             error={formValues.kgEstimado.isError}
             helperText={formValues.kgEstimado.message}
             inputProps={{
-              min: 0, // Valor mínimo permitido
-              // step: 1, // Permitir solo números enteros
-              // inputMode: 'numeric', // Mostrar teclado numérico en dispositivos móviles
+              min: 0,
             }}
             value={formValues.kgEstimado.value}
             onChange={handleInputChange}
@@ -200,7 +196,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
           <TextField
             variant="outlined"
             type="number"
-            label="Kgs Bruto"
+            label={t('grossKilograms')}
             name="kgBruto"
             error={formValues.kgBruto.isError}
             helperText={formValues.kgBruto.message}
@@ -217,7 +213,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
           <TextField
             variant="outlined"
             type="number"
-            label="Kgs Tara"
+            label={t('tareKilograms')}
             name="kgTara"
             error={formValues.kgTara.isError}
             helperText={formValues.kgTara.message}
@@ -233,7 +229,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
         <Grid item xs={12} sm={3}>
           <FormControl fullWidth>
             <ListItemText
-              primary={<Typography variant='subtitle2'>Neto</Typography>}
+              primary={<Typography variant='subtitle2'>{t('net')}</Typography>}
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
@@ -246,7 +242,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
           <TextField
             variant="outlined"
             type="text"
-            label="Observaciones"
+            label={t('observations')}
             name="observaciones"
             multiline
             value={formValues.observaciones.value}

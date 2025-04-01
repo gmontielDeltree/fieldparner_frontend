@@ -7,7 +7,8 @@ import NoteContent from "../TabsContent/Note";
 import AttachedContent from "../TabsContent/Attached";
 import NotePoints from "../TabsContent/Points";
 import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS, pt } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 function Note({
   activity,
@@ -15,9 +16,21 @@ function Note({
   handleDeleteActivity,
   handleEditActivity
 }) {
+  const { t, i18n } = useTranslation();
   const [selectedTab, setSelectedTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
+  // Get the appropriate locale based on the current language
+  const getDateLocale = () => {
+    if (i18n.language.startsWith('es')) {
+      return es;
+    } else if (i18n.language.startsWith('pt')) {
+      return pt;
+    } else {
+      return enUS; // Default to English
+    }
+  };
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
@@ -37,8 +50,8 @@ function Note({
   };
 
   const formattedPlanificadaDate = activity.actividad.fecha
-    ? format(parseISO(activity.actividad.fecha), "PPPP", { locale: es })
-    : "Fecha no definida";
+    ? format(parseISO(activity.actividad.fecha), "PPPP", { locale: getDateLocale() })
+    : t('dateNotDefined');
 
   return (
     <div>
@@ -81,7 +94,7 @@ function Note({
             sx={{ fontSize: 16, fontWeight: "bold" }}
             style={{ marginLeft: "10px", color: activity.actividad.color }}
           >
-            {activity.actividad.color == "red" ? "URGENTE" : "NORMAL"}
+            {activity.actividad.color == "red" ? t('urgent') : t('normal')}
           </Typography>
         </Box>
         <Typography
@@ -100,19 +113,19 @@ function Note({
         <MenuItem
           onClick={() => handleEditActivity(activity.actividad, false, "note")}
         >
-          Editar
+          {t('edit')}
         </MenuItem>
 
-        {/* <MenuItem onClick={handleMenuClose}>Repetir Planificacion</MenuItem> */}
+        {/* <MenuItem onClick={handleMenuClose}>{t('repeatPlan')}</MenuItem> */}
         {/* <MenuItem onClick={handleMenuClose}>
-          Compartir Orden de Trabajo
+          {t('shareWorkOrder')}
         </MenuItem>
         <MenuItem onClick={handleMenuClose}>
-          Ejecución vs Planificación PDF
+          {t('executionVsPlanningPdf')}
         </MenuItem>
-        <MenuItem onClick={handleMenuClose}>Datos Meteorológicos</MenuItem> */}
+        <MenuItem onClick={handleMenuClose}>{t('meteorologicalData')}</MenuItem> */}
         <MenuItem onClick={() => handleDeleteActivity(activity.actividad._id)}>
-          Eliminar
+          {t('delete')}
         </MenuItem>
       </Menu>
 
@@ -123,8 +136,8 @@ function Note({
         scrollButtons="auto"
         sx={{ marginBottom: "16px" }}
       >
-        <Tab label="Nota" />
-        <Tab label="Puntos" />
+        <Tab label={t('note')} />
+        <Tab label={t('points')} />
       </Tabs>
 
       {selectedTab === 0 && (

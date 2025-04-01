@@ -17,6 +17,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import SaveIcon from '@mui/icons-material/Save'
 import CloseIcon from '@mui/icons-material/Close'
 import { AutocompleteContratista } from '../../components/AutocompleteContratista'
+import { useTranslation } from 'react-i18next'
 
 /**
  * ServicesList recibe:
@@ -26,6 +27,7 @@ import { AutocompleteContratista } from '../../components/AutocompleteContratist
  */
 
 const ServicesList = ({ rows, onUpdateRows, isBrazil, isFitosanitaria }) => {
+    const { t } = useTranslation()
     const [editIndex, setEditIndex] = useState(-1)
     const [editData, setEditData] = useState({})
 
@@ -45,7 +47,7 @@ const ServicesList = ({ rows, onUpdateRows, isBrazil, isFitosanitaria }) => {
     const handleSaveEdit = () => {
         // Validar
         if (!editData.servicio || !editData.servicio.service) {
-            alert('Seleccione un servicio válido')
+            alert(t('selectValidService'))
             return
         }
         // Aplica cambios
@@ -95,14 +97,14 @@ const ServicesList = ({ rows, onUpdateRows, isBrazil, isFitosanitaria }) => {
                     <TableHead>
                         <TableRow>
                             {/* Si es Brasil + fitosanitaria => columna ART */}
-                            {isBrazil && isFitosanitaria && <TableCell>ART</TableCell>}
-                            <TableCell>Servicio</TableCell>
-                            <TableCell>Contratista</TableCell>
-                            <TableCell>Comentario</TableCell>
-                            <TableCell>Unidades</TableCell>
-                            <TableCell>Valor Unidad</TableCell>
-                            <TableCell>Valor Total</TableCell>
-                            <TableCell align="center">Acciones</TableCell>
+                            {isBrazil && isFitosanitaria && <TableCell>{t('art')}</TableCell>}
+                            <TableCell>{t('service')}</TableCell>
+                            <TableCell>{t('contractor')}</TableCell>
+                            <TableCell>{t('comment')}</TableCell>
+                            <TableCell>{t('units')}</TableCell>
+                            <TableCell>{t('unitValue')}</TableCell>
+                            <TableCell>{t('totalValue')}</TableCell>
+                            <TableCell align="center">{t('actions')}</TableCell>
                         </TableRow>
                     </TableHead>
 

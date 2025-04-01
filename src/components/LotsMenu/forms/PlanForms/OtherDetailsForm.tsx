@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { NumberFieldWithUnits } from '../../components/NumberField'
+import { useTranslation } from 'react-i18next'
 
 const CustomPaper = styled(Paper)({
   padding: '20px',
@@ -34,6 +35,8 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
   formData,
   setFormData,
 }) => {
+  const { t } = useTranslation()
+
   const handleInputChange = (field) => (event) => {
     const { value } = event.target
 
@@ -48,7 +51,7 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
 
   return (
     <CustomPaper elevation={3}>
-      <Title>Otros Datos</Title>
+      <Title>{t('otherData')}</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
@@ -56,17 +59,19 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
               style={{ width: '100%' }}
               select
               id="tipo_siembra"
-              label="Tipo de Siembra"
+              label={t('seedingType')}
               value={formData.detalles.tipo_siembra || ''}
               onChange={handleInputChange('tipo_siembra')}
             >
-              <MenuItem value="Siembra Directa">Siembra Directa</MenuItem>
+              {/* Mantenemos los valores originales para no afectar la lógica de la aplicación */}
+              {/* Solo traducimos las etiquetas visibles para el usuario */}
+              <MenuItem value="Siembra Directa">{t('directSeeding')}</MenuItem>
               <MenuItem value="Siembra Tradicional">
-                Siembra Tradicional
+                {t('traditionalSeeding')}
               </MenuItem>
-              <MenuItem value="Al voleo">Al voleo</MenuItem>
+              <MenuItem value="Al voleo">{t('broadcast')}</MenuItem>
               <MenuItem value="Siembra por fila/surcos">
-                Siembra por fila/surcos
+                {t('rowSeeding')}
               </MenuItem>
             </TextField>
           </Grid>
@@ -75,14 +80,14 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
               value={formData.detalles.densidad_objetivo}
               onChange={handleInputChange('densidad_objetivo')}
               unit="plantas/ha"
-              label="Densidad Objetivo"
+              label={t('targetDensity')}
             />
           </Grid>
 
           <Grid item xs={12} sm={6}>
             <NumberFieldWithUnits
               id="profundidad"
-              label="Profundidad"
+              label={t('depth')}
               type="number"
               value={formData.detalles.profundidad || ''}
               onChange={handleInputChange('profundidad')}
@@ -93,7 +98,7 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
           <Grid item xs={12} sm={6}>
             <NumberFieldWithUnits
               id="distancia"
-              label="Distancia entre surcos"
+              label={t('rowSpacing')}
               type="number"
               value={formData.detalles.distancia}
               onChange={handleInputChange('distancia')}
@@ -104,7 +109,7 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
           <Grid item xs={12} sm={6}>
             <NumberFieldWithUnits
               id="peso_1000"
-              label="Peso 1000 semillas"
+              label={t('thousandSeedWeight')}
               type="number"
               value={formData.detalles.peso_1000}
               onChange={handleInputChange('peso_1000')}

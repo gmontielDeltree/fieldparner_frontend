@@ -15,6 +15,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import LayersIcon from '@mui/icons-material/Layers'
 import CloseIcon from '@mui/icons-material/Close'
+import { useTranslation } from 'react-i18next'
 
 interface EditFieldProps {
   isOpen: boolean
@@ -37,6 +38,7 @@ const EditField: React.FC<EditFieldProps> = ({
   handleCreateUniqueLot,
   handleEditField,
 }) => {
+  const { t } = useTranslation();
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false)
 
   const cardStyle: React.CSSProperties = {
@@ -148,26 +150,60 @@ const EditField: React.FC<EditFieldProps> = ({
         <CardBody style={{ padding: '20px' }}>
           <div>
             <span style={badgeStyle}>
-              {field?.campo_geojson?.properties?.hectareas} has.
+              {field?.campo_geojson?.properties?.hectareas} {t('hectares')}
             </span>
             {field?.lotes?.length > 0 && (
               <span style={badgeStyle}>
-                {field.lotes.length} lote{field.lotes.length !== 1 ? 's' : ''}
+                {field.lotes.length} {field.lotes.length === 1 ? t('lotSingular') : t('lotPlural')}
               </span>
             )}
           </div>
 
-          <p
-            style={{
-              color: '#6B7280',
-              fontSize: '0.875rem',
-              margin: '16px 0',
-            }}
-          >
-            {field?.lotes?.length > 0
-              ? 'Toque en un lote del mapa para ver detalles'
-              : 'Sin Lotes - Agregue uno!!!'}
-          </p>
+          {field?.lotes?.length > 0 ? (
+            <p
+              style={{
+                color: '#6B7280',
+                fontSize: '0.875rem',
+                margin: '16px 0',
+              }}
+            >
+              {t('tapLotOnMapForDetails')}
+            </p>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '12px 16px',
+                margin: '16px 0',
+                backgroundColor: '#FFFBEB',
+                border: '1px solid #FEF3C7',
+                borderLeft: '4px solid #F59E0B',
+                borderRadius: '8px',
+                color: '#92400E',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ marginRight: '12px', flexShrink: 0 }}
+              >
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              {t('noLotsAddOne')}
+            </div>
+          )}
 
           <div style={buttonsContainerStyle}>
             {field?.lotes?.length === 0 && (
@@ -176,18 +212,18 @@ const EditField: React.FC<EditFieldProps> = ({
                 onClick={() => handleCreateUniqueLot(field)}
               >
                 <LayersIcon style={{ fontSize: '1rem' }} />
-                Crear Lote Unico
+                {t('createSingleLot')}
               </Button>
             )}
 
             <Button style={actionButtonStyle} onClick={handleCreateLot}>
               <AddIcon style={{ fontSize: '1rem' }} />
-              Añadir Lote
+              {t('addLot')}
             </Button>
 
             <Button style={actionButtonStyle} onClick={handleEditField}>
               <EditIcon style={{ fontSize: '1rem' }} />
-              Editar Campo
+              {t('editField')}
             </Button>
 
             <Button
@@ -195,7 +231,7 @@ const EditField: React.FC<EditFieldProps> = ({
               onClick={() => setDeleteModalOpen(true)}
             >
               <DeleteIcon style={{ fontSize: '1rem' }} />
-              Eliminar Campo
+              {t('deleteField')}
             </Button>
           </div>
         </CardBody>
@@ -203,15 +239,14 @@ const EditField: React.FC<EditFieldProps> = ({
 
       <Modal isOpen={deleteModalOpen} toggle={() => setDeleteModalOpen(false)}>
         <ModalHeader toggle={() => setDeleteModalOpen(false)}>
-          ¿Está seguro?
+          {t('confirmDeletion')}
         </ModalHeader>
         <ModalBody>
-          Esta acción no se puede deshacer. Esto eliminará permanentemente este
-          campo.
+          {t('fieldDeletionWarning')}
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={() => setDeleteModalOpen(false)}>
-            Cancelar
+            {t('cancel')}
           </Button>
           <Button
             color="danger"
@@ -220,7 +255,7 @@ const EditField: React.FC<EditFieldProps> = ({
               setDeleteModalOpen(false)
             }}
           >
-            Eliminar
+            {t('delete')}
           </Button>
         </ModalFooter>
       </Modal>

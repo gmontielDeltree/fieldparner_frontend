@@ -110,24 +110,6 @@ function PlanPersonalForm({ formData, setFormData, tipo }) {
               value={formData.contratista || ""}
               onChange={(e) => onFieldChange("contratista", e)}
             ></AutocompleteContratista>
-{/* 
-            <FormControl fullWidth>
-              <InputLabel id="contratista-label">Contratista</InputLabel>
-              <Select
-                labelId="contratista-label"
-                id="contratista"
-                value={formData.contratistaId || ""}
-                label="Contratista"
-                fullWidth
-                onChange={(e) => onFieldChange("contratista", e.target.value)}
-              >
-                {businesses.map((business) => (
-                  <MenuItem key={business._id} value={business._id}>
-                    {business.razonSocial || business.nombreCompleto}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl> */}
           </Grid>
 
           <Grid item xs={4}>

@@ -9,6 +9,7 @@ import {
   ClipboardList,
   Ruler,
 } from 'lucide-react'
+import { useTranslation } from "react-i18next";
 
 const ModernHeader = styled(Paper)(({ theme }) => ({
   padding: '16px 20px',
@@ -123,6 +124,8 @@ const StatLabel = styled('div')({
 })
 
 const Header = ({ fieldDoc, lotDoc, activitiesData = [] }) => {
+  const { t } = useTranslation();
+
   const hectareas = lotDoc.properties?.hectareas || '0'
 
   const proximaActividad = activitiesData
@@ -158,14 +161,14 @@ const Header = ({ fieldDoc, lotDoc, activitiesData = [] }) => {
         <MainInfo>
           <LocationWrapper>
             <Home size={14} strokeWidth={2.5} />
-            <span>Campo</span>
+            <span>{t('field')}</span>
             <ChevronRight size={12} />
             <MapPin size={14} strokeWidth={2.5} />
-            <span>Lote</span>
+            <span>{t('lot')}</span>
           </LocationWrapper>
           <TitleWrapper>
             <Title>{fieldDoc.nombre}</Title>
-            <Subtitle>Lote {lotDoc.properties.nombre}</Subtitle>
+            <Subtitle>{t('lot')} {lotDoc.properties.nombre}</Subtitle>
           </TitleWrapper>
         </MainInfo>
 
@@ -175,8 +178,8 @@ const Header = ({ fieldDoc, lotDoc, activitiesData = [] }) => {
               <Ruler size={20} strokeWidth={2} color="#0284c7" />
             </StatIcon>
             <StatInfo>
-              <StatValue>{hectareas} has</StatValue>
-              <StatLabel>Superficie</StatLabel>
+              <StatValue>{hectareas} {t('hectares')}</StatValue>
+              <StatLabel>{t('area')}</StatLabel>
             </StatInfo>
           </StatBox>
 
@@ -186,7 +189,7 @@ const Header = ({ fieldDoc, lotDoc, activitiesData = [] }) => {
             </StatIcon>
             <StatInfo>
               <StatValue>{actividadesPendientes}</StatValue>
-              <StatLabel>Act. Pendientes</StatLabel>
+              <StatLabel>{t('pendingActivities')}</StatLabel>
             </StatInfo>
           </StatBox>
 
@@ -198,12 +201,12 @@ const Header = ({ fieldDoc, lotDoc, activitiesData = [] }) => {
               <StatInfo>
                 <StatValue>
                   {diasHastaProximaActividad <= 0
-                    ? 'Hoy'
+                    ? t('today')
                     : diasHastaProximaActividad === 1
-                      ? 'Mañana'
-                      : `${diasHastaProximaActividad} días`}
+                      ? t('tomorrow')
+                      : t('daysCount', { count: diasHastaProximaActividad })}
                 </StatValue>
-                <StatLabel>Próx. Actividad</StatLabel>
+                <StatLabel>{t('nextActivity')}</StatLabel>
               </StatInfo>
             </StatBox>
           )}

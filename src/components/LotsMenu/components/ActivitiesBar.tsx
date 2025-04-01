@@ -1,6 +1,7 @@
 import React from 'react'
 import { Avatar, ButtonBase, Tooltip } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from "react-i18next";
 import planAnualIcon from '../../../images/icons/cicle.png'
 import preparadoIcon from '../../../images/icons/calendar.png'
 import categoryIcon1 from '../../../images/icons/sowing.png'
@@ -26,25 +27,49 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
   backUrl,
 }) => {
   const navigate = useNavigate()
+  const { t } = useTranslation();
 
+  // Using translation keys directly as IDs to ensure consistency
   const categories = [
     {
-      id: 'Planificación del lote',
+      id: 'lotPlanning',
       icon: planAnualIcon,
       link: `planification-by-lot/${lot.properties.campo_parent_id}/${lot.id}?backUrl=${backUrl}`,
     },
-    { id: 'Programar Preparado', icon: preparadoIcon },
-    { id: 'Programar Siembra', icon: categoryIcon1 },
-    { id: 'Programar Aplicacion', icon: categoryIcon2 },
-    { id: 'Programar Cosecha', icon: categoryIcon3 },
-    { id: 'Recorrido', icon: categoryIcon4 },
     {
-      id: 'Vista de Satelite',
+      id: 'scheduleTillage',
+      icon: preparadoIcon
+    },
+    {
+      id: 'scheduleSowing',
+      icon: categoryIcon1
+    },
+    {
+      id: 'scheduleApplication',
+      icon: categoryIcon2
+    },
+    {
+      id: 'scheduleHarvest',
+      icon: categoryIcon3
+    },
+    {
+      id: 'fieldVisit',
+      icon: categoryIcon4
+    },
+    {
+      id: 'satelliteView',
       icon: categoryIcon5,
       link: `/init/overview/satellite/${lot.id}?backUrl=${backUrl}`,
     },
-    { id: 'Muestra de suelo', icon: categoryIcon6 },
+    {
+      id: 'soilSample',
+      icon: categoryIcon6
+    },
   ]
+
+  // Helper function to check if a category is accessible without campaign
+  const isAccessibleWithoutCampaign = (id: string) =>
+    ['satelliteView', 'fieldVisit'].includes(id);
 
   return (
     <div
@@ -60,7 +85,7 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
       }}
     >
       {categories.map(({ id, icon, link }) => (
-        <Tooltip key={id} title={id} arrow placement="top">
+        <Tooltip key={id} title={t(id)} arrow placement="top">
           <div style={{ position: 'relative', margin: '0 12px' }}>
             <ButtonBase
               onClick={() => (link ? navigate(link) : selectCategory(id))}
@@ -73,7 +98,7 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
               }}
             >
               <Avatar
-                alt={id}
+                alt={t(id)}
                 src={icon}
                 sx={{
                   width: 65,
@@ -82,13 +107,11 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
                   transition: 'all 0.2s ease',
                   borderRadius: '50%',
                   opacity:
-                    selectedCampaign ||
-                    ['Vista de Satelite', 'Recorrido'].includes(id)
+                    selectedCampaign || isAccessibleWithoutCampaign(id)
                       ? 1
                       : 0.5,
                   filter:
-                    selectedCampaign ||
-                    ['Vista de Satelite', 'Recorrido'].includes(id)
+                    selectedCampaign || isAccessibleWithoutCampaign(id)
                       ? 'none'
                       : 'grayscale(100%)',
                   boxShadow:
@@ -114,9 +137,8 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
                 position: 'absolute',
                 bottom: -4,
                 left: '50%',
-                transform: `translateX(-50%) scaleX(${
-                  selectedCategory === id ? 1 : 0
-                })`,
+                transform: `translateX(-50%) scaleX(${selectedCategory === id ? 1 : 0
+                  })`,
                 width: '20px',
                 height: '2px',
                 backgroundColor: '#2563eb',

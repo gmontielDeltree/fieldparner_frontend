@@ -138,17 +138,17 @@ export const FieldsPage: React.FC = () => {
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(':')[1])
           : parseISO(
-              a.actividad.tipo === 'nota'
-                ? a.actividad.fecha
-                : a.actividad.detalles.fecha_ejecucion_tentativa,
-            )
+            a.actividad.tipo === 'nota'
+              ? a.actividad.fecha
+              : a.actividad.detalles.fecha_ejecucion_tentativa,
+          )
         let fecha_2 = b.ejecucion_id
           ? parseISO(b.ejecucion_id.split(':')[1])
           : parseISO(
-              b.actividad.tipo === 'nota'
-                ? b.actividad.fecha
-                : b.actividad.detalles.fecha_ejecucion_tentativa,
-            )
+            b.actividad.tipo === 'nota'
+              ? b.actividad.fecha
+              : b.actividad.detalles.fecha_ejecucion_tentativa,
+          )
         return isBefore(fecha_1, fecha_2) ? 1 : -1
       })
     }
@@ -212,7 +212,7 @@ export const FieldsPage: React.FC = () => {
           border-bottom: 1px solid #e2e8f0
         ">
           <div style="font-weight: 600; font-size: 16px; color: #334155;">
-            ${properties.nombre || 'Sin nombre'}
+            ${properties.nombre || t('unnamed')}
           </div>
           <div style="
             background: #edf2f7;
@@ -222,7 +222,7 @@ export const FieldsPage: React.FC = () => {
             font-weight: 500;
             color: #475569;
           ">
-            ${properties.hectareas?.toFixed(2) || 0} ha
+            ${properties.hectareas?.toFixed(2) || 0} ${t('hectares')}
           </div>
         </div>
         <div style="
@@ -236,7 +236,7 @@ export const FieldsPage: React.FC = () => {
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
-          Cargando actividades...
+          ${t('loadingActivities')}
         </div>
       </div>
     `
@@ -285,7 +285,7 @@ export const FieldsPage: React.FC = () => {
               border-bottom: 1px solid #e2e8f0
             ">
               <div style="font-weight: 600; font-size: 16px; color: #334155;">
-                ${properties.nombre || 'Sin nombre'}
+                ${properties.nombre || t('unnamed')}
               </div>
               <div style="
                 background: #edf2f7;
@@ -295,7 +295,7 @@ export const FieldsPage: React.FC = () => {
                 font-weight: 500;
                 color: #475569;
               ">
-                ${properties.hectareas?.toFixed(2) || 0} ha
+                ${properties.hectareas?.toFixed(2) || 0} ${t('hectares')}
               </div>
             </div>
         `
@@ -315,19 +315,19 @@ export const FieldsPage: React.FC = () => {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                Próximas actividades
+                ${t('upcomingActivities')}
               </div>
               ${upcomingActivities
-                .map(({ actividad }) => {
-                  const fecha = format(
-                    parseISO(
-                      actividad.detalles?.fecha_ejecucion_tentativa ||
-                        actividad.fecha,
-                    ),
-                    'dd/MM/yyyy',
-                  )
+              .map(({ actividad }) => {
+                const fecha = format(
+                  parseISO(
+                    actividad.detalles?.fecha_ejecucion_tentativa ||
+                    actividad.fecha,
+                  ),
+                  'dd/MM/yyyy',
+                )
 
-                  return `
+                return `
                   <div style="
                     background: #eff6ff;
                     margin: 6px 0;
@@ -342,10 +342,8 @@ export const FieldsPage: React.FC = () => {
                       margin-bottom: 6px;
                     ">
                       <div style="font-weight: 600; color: #1e40af;">
-                        ${
-                          actividad.tipo.charAt(0).toUpperCase() +
-                          actividad.tipo.slice(1)
-                        }
+                        ${t('activityType_' + actividad.tipo.toLowerCase(),
+                  actividad.tipo.charAt(0).toUpperCase() + actividad.tipo.slice(1))}
                       </div>
                       <div style="
                         background: rgba(37, 99, 235, 0.1);
@@ -358,9 +356,8 @@ export const FieldsPage: React.FC = () => {
                         ${fecha}
                       </div>
                     </div>
-                    ${
-                      actividad.tipo === 'aplicacion'
-                        ? `
+                    ${actividad.tipo === 'aplicacion'
+                    ? `
                       <div style="
                         font-size: 12px;
                         color: #334155;
@@ -370,14 +367,12 @@ export const FieldsPage: React.FC = () => {
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 7V4h16v3M9 20h6M12 4v16"></path>
                           </svg>
-                          ${
-                            actividad.detalles?.cultivo?.descriptionES ||
-                            'No especificado'
-                          }
+                          ${actividad.detalles?.cultivo?.descriptionES ||
+                    t('notSpecified')
+                    }
                         </div>
-                        ${
-                          actividad.detalles?.dosis?.length
-                            ? `
+                        ${actividad.detalles?.dosis?.length
+                      ? `
                           <div style="
                             display: flex;
                             align-items: center;
@@ -389,25 +384,24 @@ export const FieldsPage: React.FC = () => {
                               <path d="M19 5H5l7 7-7 7h14l-7-7 7-7z"></path>
                             </svg>
                             ${actividad.detalles.dosis
-                              .map(
-                                (d) =>
-                                  `${d.insumo?.name || ''}: ${d.dosis || ''} ${
-                                    d.insumo?.unitMeasurement || ''
-                                  }`,
-                              )
-                              .join(', ')}
+                        .map(
+                          (d) =>
+                            `${d.insumo?.name || ''}: ${d.dosis || ''} ${d.insumo?.unitMeasurement || ''
+                            }`,
+                        )
+                        .join(', ')}
                           </div>
                         `
-                            : ''
-                        }
+                      : ''
+                    }
                       </div>
                     `
-                        : ''
-                    }
+                    : ''
+                  }
                   </div>
                 `
-                })
-                .join('')}
+              })
+              .join('')}
             </div>
           `
         }
@@ -427,19 +421,19 @@ export const FieldsPage: React.FC = () => {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                Actividades recientes
+                ${t('recentActivities')}
               </div>
               ${recentActivities
-                .map(({ actividad }) => {
-                  const fecha = format(
-                    parseISO(
-                      actividad.detalles?.fecha_ejecucion_tentativa ||
-                        actividad.fecha,
-                    ),
-                    'dd/MM/yyyy',
-                  )
+              .map(({ actividad }) => {
+                const fecha = format(
+                  parseISO(
+                    actividad.detalles?.fecha_ejecucion_tentativa ||
+                    actividad.fecha,
+                  ),
+                  'dd/MM/yyyy',
+                )
 
-                  return `
+                return `
                   <div style="
                     background: #f5f3ff;
                     margin: 6px 0;
@@ -454,10 +448,8 @@ export const FieldsPage: React.FC = () => {
                       margin-bottom: 4px;
                     ">
                       <div style="font-weight: 600; color: #4338ca;">
-                        ${
-                          actividad.tipo.charAt(0).toUpperCase() +
-                          actividad.tipo.slice(1)
-                        }
+                        ${t('activityType_' + actividad.tipo.toLowerCase(),
+                  actividad.tipo.charAt(0).toUpperCase() + actividad.tipo.slice(1))}
                       </div>
                       <div style="
                         background: rgba(99, 102, 241, 0.1);
@@ -470,9 +462,8 @@ export const FieldsPage: React.FC = () => {
                         ${fecha}
                       </div>
                     </div>
-                    ${
-                      actividad.tipo === 'aplicacion'
-                        ? `
+                    ${actividad.tipo === 'aplicacion'
+                    ? `
                       <div style="
                         display: flex;
                         align-items: center;
@@ -485,15 +476,15 @@ export const FieldsPage: React.FC = () => {
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        ${actividad.estado}
+                        ${t('status_' + actividad.estado.toLowerCase(), actividad.estado)}
                       </div>
                     `
-                        : ''
-                    }
+                    : ''
+                  }
                   </div>
                 `
-                })
-                .join('')}
+              })
+              .join('')}
             </div>
           `
         }
@@ -512,7 +503,7 @@ export const FieldsPage: React.FC = () => {
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
               </svg>
-              <div>No hay actividades registradas</div>
+              <div>${t('noActivitiesRegistered')}</div>
             </div>
           `
         }
@@ -575,7 +566,7 @@ export const FieldsPage: React.FC = () => {
         }
       }
     }
-  }, [map, draw, fields, deposits, location.pathname])
+  }, [map, draw, fields, deposits, location.pathname, t])
 
   const handleMapClick = useCallback(
     async (event: any) => {
@@ -663,7 +654,7 @@ export const FieldsPage: React.FC = () => {
           }}
           onClick={() => navigate('new-field')}
         >
-          {t('add_field')}
+          {t('addField')}
         </Button>
       )}
 

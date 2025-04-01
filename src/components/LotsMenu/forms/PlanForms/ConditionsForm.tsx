@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   TextField,
   FormControl,
@@ -36,6 +37,8 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
   formData,
   setFormData
 }) => {
+  const { t } = useTranslation();
+
   const handleInputChange = (event) => {
     const { id, value } = event.target;
     const numericValue = value === "" ? "" : Number(value);
@@ -50,14 +53,14 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
 
   return (
     <CustomPaper elevation={3}>
-      <Title>Condiciones</Title>
+      <Title>{t("conditionsTitle")}</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
           {/* Temperature Min */}
           <Grid item xs={12} sm={4}>
             <TextField
               id="temperatura_min"
-              label="Temperatura Min"
+              label={t("minTemperature")}
               fullWidth
               value={formData.condiciones.temperatura_min}
               onChange={handleInputChange}
@@ -75,7 +78,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
           <Grid item xs={12} sm={4}>
             <TextField
               id="humedad_min"
-              label="Humedad Min"
+              label={t("minHumidity")}
               fullWidth
               value={formData.condiciones.humedad_min || ""}
               onChange={handleInputChange}
@@ -93,7 +96,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
           <Grid item xs={12} sm={4}>
             <TextField
               id="velocidad_min"
-              label="Viento Min"
+              label={t("minWind")}
               fullWidth
               value={formData.condiciones.velocidad_min || ""}
               onChange={handleInputChange}
@@ -111,7 +114,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
           <Grid item xs={12} sm={4}>
             <TextField
               id="temperatura_max"
-              label="Temperatura Max"
+              label={t("maxTemperature")}
               fullWidth
               value={formData.condiciones.temperatura_max || ""}
               onChange={handleInputChange}
@@ -129,7 +132,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
           <Grid item xs={12} sm={4}>
             <TextField
               id="humedad_max"
-              label="Humedad Max"
+              label={t("maxHumidity")}
               fullWidth
               value={formData.condiciones.humedad_max || ""}
               onChange={handleInputChange}
@@ -147,7 +150,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
           <Grid item xs={12} sm={4}>
             <TextField
               id="velocidad_max"
-              label="Viento Max"
+              label={t("maxWind")}
               fullWidth
               value={formData.condiciones.velocidad_max || ""}
               onChange={handleInputChange}
