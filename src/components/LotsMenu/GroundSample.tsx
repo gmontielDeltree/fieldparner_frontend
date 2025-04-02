@@ -28,6 +28,7 @@ import AttachmentsForm from "./forms/GroundSampleForms/AttachmentsForm";
 import ValidationAlert from "./ValidationAlert";
 import { format } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
+import { useTranslation } from "react-i18next";
 
 interface GroundSampleProps {
   lot: any;
@@ -43,6 +44,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
   backToActivites
 }) => {
   if (!lot) return null;
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({});
   const [activeStep, setActiveStep] = useState(0);
@@ -53,10 +55,10 @@ const GroundSample: React.FC<GroundSampleProps> = ({
   const [missingFieldsList, setMissingFieldsList] = useState([]);
 
   const steps = [
-    "Laboratorio",
-    "Características del Suelo",
-    "Variables",
-    "Adjuntos"
+    t("laboratory"),
+    t("soilCharacteristics"),
+    t("variables"),
+    t("attachments")
   ];
 
   useEffect(() => {
@@ -107,7 +109,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
           />
         );
       default:
-        return <div>Unknown Step</div>;
+        return <div>{t("unknownStep")}</div>;
     }
   };
 
@@ -154,26 +156,26 @@ const GroundSample: React.FC<GroundSampleProps> = ({
     const currentStepName = steps[step];
 
     switch (currentStepName) {
-      case "Laboratorio":
-        if (!formData.fecha) fields.push("Fecha de muestra");
-        if (!formData.laboratorio) fields.push("Laboratorio");
+      case t("laboratory"):
+        if (!formData.fecha) fields.push(t("sampleDate"));
+        if (!formData.laboratorio) fields.push(t("laboratory"));
         break;
 
-      case "Características del Suelo":
+      case t("soilCharacteristics"):
         const characteristics = formData.characteristics || {};
-        if (!characteristics.profundidad) fields.push("Profundidad");
+        if (!characteristics.profundidad) fields.push(t("depth"));
         break;
 
-      case "Variables":
+      case t("variables"):
         const soilVariables = formData.soilVariables || {};
         const hasSomeValue = Object.values(soilVariables).some(val => val > 0);
 
         if (!hasSomeValue) {
-          fields.push("Al menos una variable medida");
+          fields.push(t("atLeastOneVariable"));
         }
         break;
 
-      case "Adjuntos":
+      case t("attachments"):
         // No validations needed for attachments as they are optional
         break;
     }
@@ -186,17 +188,17 @@ const GroundSample: React.FC<GroundSampleProps> = ({
     const currentStepName = steps[step];
 
     switch (currentStepName) {
-      case "Laboratorio":
+      case t("laboratory"):
         if (!formData.fecha) missingFields++;
         if (!formData.laboratorio) missingFields++;
         break;
 
-      case "Características del Suelo":
+      case t("soilCharacteristics"):
         const characteristics = formData.characteristics || {};
         if (!characteristics.profundidad) missingFields++;
         break;
 
-      case "Variables":
+      case t("variables"):
         const soilVariables = formData.soilVariables || {};
         const hasSomeValue = Object.values(soilVariables).some(val => val > 0);
 
@@ -205,7 +207,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
         }
         break;
 
-      case "Adjuntos":
+      case t("attachments"):
         // No required fields in Attachments typically
         break;
 
@@ -282,7 +284,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
       const missingFields = countMissingFields(formData, step);
       if (missingFields > 0) {
         setSnackbarMessage(
-          `Por favor completa todos los campos requeridos en el paso: ${steps[step]}`
+          t("completeRequiredFieldsInStep", { step: steps[step] })
         );
         setOpenSnackbar(true);
         setActiveStep(step);
@@ -364,7 +366,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
                 className="text-white mb-4"
                 style={{ fontSize: "2rem", fontWeight: "bold" }}
               >
-                Muestra de suelo
+                {t("soilSample")}
               </h1>
 
               <div className="d-flex gap-4">
@@ -379,7 +381,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
                         letterSpacing: "0.05em",
                       }}
                     >
-                      Campo
+                      {t("field")}
                     </div>
                     <div className="text-white fw-semibold">{fieldName}</div>
                   </div>
@@ -396,7 +398,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
                         letterSpacing: "0.05em",
                       }}
                     >
-                      Lote
+                      {t("lot")}
                     </div>
                     <div className="text-white fw-semibold">
                       {lot.properties.nombre}
@@ -427,7 +429,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
               const { isValid, missingCount } = getStepValidationStatus(index);
               const tooltipText =
                 !isValid && index < activeStep
-                  ? `Faltan ${missingCount} campos requeridos en ${step}`
+                  ? t("missingRequiredFields", { count: missingCount, step })
                   : "";
 
               return (
@@ -505,7 +507,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
             className="d-flex align-items-center gap-2"
           >
             <ChevronLeft size={16} />
-            Volver
+            {t("goBack")}
           </Button>
 
           <div className="d-flex gap-2">
@@ -516,13 +518,13 @@ const GroundSample: React.FC<GroundSampleProps> = ({
                 className="d-flex align-items-center gap-2"
               >
                 <ChevronLeft size={16} />
-                Anterior
+                {t("previous")}
               </Button>
             )}
 
             {activeStep === steps.length - 1 ? (
               <Button color={getProgressColor()} onClick={handleSave}>
-                Guardar
+                {t("save")}
               </Button>
             ) : (
               <Button
@@ -541,7 +543,7 @@ const GroundSample: React.FC<GroundSampleProps> = ({
                 }}
                 className="d-flex align-items-center gap-2"
               >
-                Siguiente
+                {t("next")}
                 <ChevronRight size={16} />
               </Button>
             )}

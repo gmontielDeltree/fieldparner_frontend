@@ -1,131 +1,154 @@
-import React from 'react'
-import { Box, Typography, Chip } from '@mui/material'
-import EditIcon from '@mui/icons-material/Edit'
-import SeedlingIcon from '@mui/icons-material/Park'
-import { keyframes } from '@emotion/react'
+import React from 'react';
+import { Row, Col } from 'reactstrap';
+import {
+  MapIcon,
+  MapPin,
+  Sprout
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-interface ActivityHeaderProps {
-  isEditing: boolean
-  translatedActivityType: string
-  ActivityIcon: React.ReactNode
-  titleBg: string
-  formData?: any
-  activityType?: string
-  mode?: 'execute' | 'plan' // Nuevo prop para distinguir entre ejecución y planificación
-}
-
-const ActivityHeader: React.FC<ActivityHeaderProps> = ({
-  isEditing,
-  translatedActivityType,
-  ActivityIcon,
-  titleBg,
-  formData,
+const ActivityHeader = ({
   activityType,
-  mode = 'plan',
+  fieldName,
+  lot,
+  formData,
+  activityIcons,
+  mode = 'plan', // 'plan' or 'execute'
+  isEditing = false,
+  getActivityColor
 }) => {
-  const floating = keyframes`
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
-  `
+  const { t } = useTranslation();
 
-  const getCropInfo = () => {
-    const crop = formData?.detalles?.cultivo
-    if (!crop) return null
-
-    return {
-      name: crop.descriptionES || crop.descriptionEN || crop.descriptionPT,
-      type: crop.cropType,
-    }
-  }
-
-  const cropInfo = getCropInfo()
-  const showCropInfo = cropInfo != null
-
-  const getHeaderText = () => {
+  // Get the display activity name
+  const getDisplayText = () => {
     if (mode === 'execute') {
-      return `Ejecutar ${translatedActivityType}`
+      return t('execute') + ' ' + t(activityType);
     }
-    return isEditing
-      ? `Editar ${translatedActivityType}`
-      : `Programar ${translatedActivityType}`
-  }
+    return isEditing ? t('edit') + ' ' + t(activityType) : t(activityType);
+  };
+
+  // Determine background color based on activity type
+  const getBackgroundColor = () => {
+    if (typeof getActivityColor === 'function') {
+      return getActivityColor(activityType);
+    }
+
+    // Default colors if getActivityColor isn't provided
+    switch (activityType) {
+      case 'sowing':
+        return '#10b981';
+      case 'application':
+        return '#3b82f6';
+      case 'harvesting':
+        return '#f59e0b';
+      case 'preparation':
+        return '#6b7280';
+      default:
+        return '#6b7280';
+    }
+  };
+
+  // Select the appropriate icon based on activity type
+  const ActivityIcon = activityIcons[activityType];
 
   return (
-    <Box sx={{ textAlign: 'center', mt: 2, mb: 4 }}>
-      {ActivityIcon}
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 1,
-        }}
-      >
-        <Typography
-          variant="h5"
-          component="h1"
-          gutterBottom
-          align="center"
-          sx={{
-            fontWeight: 'bold',
-            mt: 2,
-            mb: showCropInfo ? 0 : 3,
-            background: titleBg,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '1px 1px 4px rgba(0,0,0,0.15)',
-            animation: isEditing
-              ? `${floating} 3s ease-in-out infinite`
-              : 'none',
-          }}
-        >
-          {isEditing && mode === 'plan' && (
-            <EditIcon
-              sx={{
-                verticalAlign: 'middle',
-                mr: 1,
-                animation: `${floating} 3s ease-in-out infinite`,
-              }}
-            />
-          )}
-          {getHeaderText()}
-        </Typography>
-        {showCropInfo && (
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 1,
-              justifyContent: 'center',
-              marginTop: 1,
+    <div
+      style={{
+        background: getBackgroundColor(),
+        borderTopLeftRadius: '0.5rem',
+        borderTopRightRadius: '0.5rem',
+        padding: '2rem',
+      }}
+    >
+      <Row className="align-items-center">
+        <Col>
+          <h1
+            className="text-white mb-4"
+            style={{ fontSize: '2rem', fontWeight: 'bold' }}
+          >
+            {getDisplayText()}
+          </h1>
+
+          <div className="d-flex gap-4">
+            {/* Field info */}
+            <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
+              <MapIcon className="text-white" size={20} />
+              <div>
+                <div
+                  className="text-white-50 mb-0"
+                  style={{
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {t('field')}
+                </div>
+                <div className="text-white fw-semibold">{fieldName}</div>
+              </div>
+            </div>
+
+            {/* Lot info */}
+            {lot && (
+              <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
+                <MapPin className="text-white" size={20} />
+                <div>
+                  <div
+                    className="text-white-50 mb-0"
+                    style={{
+                      fontSize: '0.75rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {t('lot')}
+                  </div>
+                  <div className="text-white fw-semibold">
+                    {lot.properties.nombre}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Crop info (if available) */}
+            {formData?.detalles?.cultivo?.descriptionES && (
+              <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
+                <Sprout className="text-white" size={20} />
+                <div>
+                  <div
+                    className="text-white-50 mb-0"
+                    style={{
+                      fontSize: '0.75rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {t('crop')}
+                  </div>
+                  <div className="text-white fw-semibold">
+                    {formData.detalles.cultivo.descriptionES}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </Col>
+
+        {/* Activity icon */}
+        <Col xs="auto">
+          <div
+            className="rounded-circle p-3"
+            style={{
+              background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%)",
+              backdropFilter: "blur(2px)"
             }}
           >
-            <Chip
-              icon={<SeedlingIcon />}
-              label={cropInfo.name}
-              sx={{
-                background: titleBg,
-                color: 'white',
-                '& .MuiSvgIcon-root': {
-                  color: 'white',
-                },
-                boxShadow: '1px 1px 4px rgba(0,0,0,0.15)',
-              }}
-            />
-            <Chip
-              label={cropInfo.type}
-              sx={{
-                background: titleBg,
-                color: 'white',
-                opacity: 0.9,
-                boxShadow: '1px 1px 4px rgba(0,0,0,0.15)',
-              }}
-            />
-          </Box>
-        )}
-      </Box>
-    </Box>
-  )
-}
+            {ActivityIcon}
+          </div>
+        </Col>
+      </Row>
+    </div>
+  );
+};
 
-export default ActivityHeader
+export default ActivityHeader;

@@ -437,95 +437,23 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       <Card className="shadow-lg">
         {/* Header */}
         <CardHeader
+          className="p-0" // Remove padding, the ActivityHeader has its own
           style={{
-            background: getActivityColor(),
             borderTopLeftRadius: '0.5rem',
             borderTopRightRadius: '0.5rem',
-            padding: '2rem',
           }}
         >
-          <Row className="align-items-center">
-            <Col>
-              <h1
-                className="text-white mb-4"
-                style={{ fontSize: '2rem', fontWeight: 'bold' }}
-              >
-                {translatedActivityType}
-              </h1>
-
-              <div className="d-flex gap-4">
-                <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
-                  <MapIcon className="text-white" size={20} />
-                  <div>
-                    <div
-                      className="text-white-50 mb-0"
-                      style={{
-                        fontSize: '0.75rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                      }}
-                    >
-                      {t('field')}
-                    </div>
-                    <div className="text-white fw-semibold">{fieldName}</div>
-                  </div>
-                </div>
-
-                <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
-                  <MapPin className="text-white" size={20} />
-                  <div>
-                    <div
-                      className="text-white-50 mb-0"
-                      style={{
-                        fontSize: '0.75rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                      }}
-                    >
-                      {t('lot')}
-                    </div>
-                    <div className="text-white fw-semibold">
-                      {lot.properties.nombre}
-                    </div>
-                  </div>
-                </div>
-
-                {formData.detalles?.cultivo?.descriptionES && (
-                  <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
-                    <Sprout className="text-white" size={20} />
-                    <div>
-                      <div
-                        className="text-white-50 mb-0"
-                        style={{
-                          fontSize: '0.75rem',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                        }}
-                      >
-                        {t('crop')}
-                      </div>
-                      <div className="text-white fw-semibold">
-                        {formData.detalles.cultivo.descriptionES}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Col>
-            <Col xs="auto">
-              <div
-                className="rounded-circle p-3"
-                style={{
-                  background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%)",
-                  backdropFilter: "blur(2px)"
-                }}
-              >
-                {activityIcons[activityType]}
-              </div>
-            </Col>
-          </Row>
+          <ActivityHeader
+            activityType={activityType}
+            fieldName={fieldName}
+            lot={lot}
+            formData={formData}
+            activityIcons={activityIcons}
+            mode="plan"
+            isEditing={isEditing}
+            getActivityColor={getActivityColor}
+          />
         </CardHeader>
-
         {/* Stepper */}
         <div className="px-4 py-4">
           <div className="d-flex justify-content-between align-items-center mb-3">

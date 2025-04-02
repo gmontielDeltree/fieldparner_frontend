@@ -813,7 +813,31 @@
   "minWind": "Minimum Wind",
   "maxWind": "Maximum Wind",
   "observationsTitle": "Observations",
-  "observationsDescription": "Enter comments, notes or clarifications as needed:"
+  "observationsDescription": "Enter comments, notes or clarifications as needed:",
+  "executedOn": "Executed on",
+  "activityNotExecuted": "Activity not yet executed",
+  "notAvailable": "N/A",
+  "engineer": "Engineer",
+  "activityExecutedNotCompleted": "Activity executed but not completed",
+  "completeActivity": "Complete Activity",
+  "executionAlreadyInState": "Execution is already in state",
+  "downloadWorkOrder": "Download Work Order",
+  "confirmExecution": "Confirm Execution",
+  "activityDeletedSuccessfully": "Activity successfully deleted.",
+  "errorDeletingActivity": "Error deleting the activity.",
+  "errorUpdatingActivityState": "Error updating activity state.",
+  "activityConfirmedSuccessfully": "Activity successfully confirmed.",
+  "errorConfirmingActivity": "Error confirming the activity.",
+  "filterByFieldName": "Filter by field name",
+  "fieldName": "Field Name",
+  "cancelOperation": "Cancel Operation",
+  "confirmPlanning": "Confirm Planning",
+  "activityReplicatedSuccess": "Activity successfully replicated for {{count}} lots.",
+  "activityReplicationFailed": "Could not replicate the activity for the selected lots.",
+  "atLeastOneVariable": "At least one measured variable",
+  "completeRequiredFieldsInStep": "Please complete all required fields in step: {{step}}",
+  "goBack": "Go back",
+  "laboratoryDocReference": "Laboratory Doc Reference"
 }
   
 

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import {
   Box,
   Button,
+  Card,
+  CardHeader,
   Step,
   StepLabel,
   Stepper,
@@ -17,6 +19,7 @@ import { format, parse } from 'date-fns'
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist'
 import GrassIcon from '@mui/icons-material/Grass'
 import AgricultureIcon from '@mui/icons-material/Agriculture'
+import LandscapeIcon from '@mui/icons-material/Landscape'
 import EditIcon from '@mui/icons-material/Edit'
 import { keyframes } from '@emotion/react'
 import { useTheme } from '@mui/material/styles'
@@ -95,10 +98,12 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     "aplicacion": t('application'),
   }
 
+  // Define activity icons with consistent styling to match PlanActivity
   const activityIcons = {
-    sowing: <LocalFloristIcon sx={{ fontSize: 50, color: 'green' }} />,
-    application: <GrassIcon sx={{ fontSize: 50, color: 'green' }} />,
-    harvesting: <AgricultureIcon sx={{ fontSize: 50, color: 'green' }} />,
+    sowing: <LocalFloristIcon sx={{ fontSize: 50, color: "white" }} />,
+    application: <GrassIcon sx={{ fontSize: 50, color: "white" }} />,
+    harvesting: <AgricultureIcon sx={{ fontSize: 50, color: "white" }} />,
+    preparation: <LandscapeIcon sx={{ fontSize: 50, color: "white" }} />
   }
 
   // Get the displayed translated type for UI only
@@ -681,86 +686,105 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       });
   };
 
-  // For UI, look up using the original English property for consistency
-  const ActivityIcon = activityIcons[activityType]
+  // Use our helper function to get color based on activity type
+  const getActivityColor = () => {
+    switch (activityType) {
+      case 'sowing':
+        return '#10b981';
+      case 'application':
+        return '#3b82f6';
+      case 'harvesting':
+        return '#f59e0b';
+      case 'preparation':
+        return '#6b7280';
+      default:
+        return '#6b7280';
+    }
+  };
 
   return (
-    <div>
-      <ActivityHeader
-        isEditing={isEditing}
-        translatedActivityType={translatedActivityType}
-        ActivityIcon={ActivityIcon}
-        titleBg={titleBg}
-        formData={formData}
-        activityType={activityType}
-        mode="execute"
-      />
-      <Stepper
-        activeStep={activeStep}
-        sx={{ pt: 3, pb: 5, backgroundColor: '#f5f5f5', borderRadius: '4px' }}
-      >
-        {steps.map((label, index) => (
-          <Step key={label} onClick={handleStep(index)}>
-            <StepLabel
-              sx={{
-                color: 'primary.main',
-                '& .MuiStepLabel-label': {
-                  fontSize: '1rem',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  position: 'relative',
-                },
+    <div className="container py-4">
+      {/* Render the ActivityHeader directly without Card/CardHeader wrapping */}
+      <div className="shadow-lg mb-4 rounded">
+        <ActivityHeader
+          activityType={activityType}
+          fieldName={fieldName}
+          lot={lot}
+          formData={formData}
+          activityIcons={activityIcons}
+          mode="execute"
+          isEditing={isEditing}
+          getActivityColor={getActivityColor}
+        />
+
+        <Stepper
+          activeStep={activeStep}
+          sx={{ pt: 3, pb: 5, backgroundColor: '#f5f5f5', borderRadius: '4px' }}
+        >
+          {steps.map((label, index) => (
+            <Step key={label} onClick={handleStep(index)}>
+              <StepLabel
+                sx={{
+                  color: 'primary.main',
+                  '& .MuiStepLabel-label': {
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    position: 'relative',
+                  },
+                }}
+              >
+                {label}
+                {index <= maxStepReached && (
+                  <Badge
+                    badgeContent={countMissingFields(formData, index)}
+                    color="error"
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      right: -9,
+                      transform: 'scale(1) translate(50%, -50%)',
+                    }}
+                  />
+                )}
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+        <div style={{ marginTop: '10px', padding: '0 16px 16px' }}>{getStepContent(activeStep)}</div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: '1rem',
+            padding: '0 16px 16px',
+          }}
+        >
+          <Button color="secondary" onClick={handleBack}>
+            {activeStep === 0 ? t('cancel') : t('back')}
+          </Button>
+          {activeStep < steps.length - 1 && (
+            <Button color="primary" onClick={handleNext}>
+              {t('next')}
+            </Button>
+          )}
+          {activeStep === steps.length - 1 && (
+            <Button
+              color="success"
+              onClick={() => {
+                handleSave()
               }}
             >
-              {label}
-              {index <= maxStepReached && (
-                <Badge
-                  badgeContent={countMissingFields(formData, index)}
-                  color="error"
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    right: -9,
-                    transform: 'scale(1) translate(50%, -50%)',
-                  }}
-                />
-              )}
-            </StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-      <div style={{ marginTop: '10px' }}>{getStepContent(activeStep)}</div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginTop: '1rem',
-        }}
-      >
-        <Button color="secondary" onClick={handleBack}>
-          {activeStep === 0 ? t('cancel') : t('back')}
-        </Button>
-        {activeStep < steps.length - 1 && (
-          <Button color="primary" onClick={handleNext}>
-            {t('next')}
-          </Button>
-        )}
-        {activeStep === steps.length - 1 && (
-          <Button
-            color="success"
-            onClick={() => {
-              handleSave()
-            }}
-          >
-            {t('executeActivity')}
-          </Button>
-        )}
+              {t('executeActivity')}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )

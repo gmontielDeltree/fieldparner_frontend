@@ -20,6 +20,7 @@ import { Field, Lot } from '../../../interfaces/field'
 import { dbContext } from '../../../services'
 import uuid4 from 'uuid4'
 import { format } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
 const fadeInAnimation = keyframes`
   from {
@@ -111,6 +112,7 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
   const [snackbarOpen, setSnackbarOpen] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState('')
   const [filter, setFilter] = useState('')
+  const { t } = useTranslation()
 
   const [lotsWithFieldNames, setLotsWithFieldNames] = useState<
     { lot: Lot; fieldName: string }[]
@@ -196,14 +198,12 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
 
     if (successfulReplications.length > 0) {
       setSnackbarMessage(
-        `Actividad replicada con éxito para ${successfulReplications.length} lotes.`,
+        t('activityReplicatedSuccess', { count: successfulReplications.length })
       )
       handleReplicateActivity()
       setSnackbarOpen(true)
     } else {
-      setSnackbarMessage(
-        'No se pudo replicar la actividad para los lotes seleccionados.',
-      )
+      setSnackbarMessage(t('activityReplicationFailed'))
       setSnackbarOpen(true)
     }
   }
@@ -256,13 +256,13 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
         <GlossyEffect />
         <ContentOverlay>
           <Typography variant="h5" component="div">
-            Repetir Planificación
+            {t("repeatPlan")}
           </Typography>
           <ModernDivider />
           <Box mb={2}>
             <TextField
               fullWidth
-              label="Filtrar por nombre del campo"
+              label={t("filterByFieldName")}
               variant="outlined"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
@@ -286,7 +286,7 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
                 >
                   <ListItemText
                     primary={item.lot.properties.nombre}
-                    secondary={`Nombre del Campo: ${item.fieldName}`}
+                    secondary={`${t("fieldName")}: ${item.fieldName}`}
                   />
                 </ListItem>
               )
@@ -304,7 +304,7 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
             handleReplicateActivity()
           }}
         >
-          Cancelar Operación
+          {t("cancelOperation")}
         </GlossyButton>
 
         <GlossyButton
@@ -312,7 +312,7 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
           variant="contained"
           onClick={replicateActivity}
         >
-          Confirmar planificación
+          {t("confirmPlanning")}
         </GlossyButton>
       </Box>
       <Snackbar

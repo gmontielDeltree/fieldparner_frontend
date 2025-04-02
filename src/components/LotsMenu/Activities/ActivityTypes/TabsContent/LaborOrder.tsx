@@ -8,6 +8,7 @@ import { useAppDispatch } from "../../../../../hooks";
 import { uiOpenModal } from "../../../../../redux/ui";
 import { DisplayModals } from "../../../../../types";
 import { LaborOrderModal } from "../../../../";
+import { useTranslation } from "react-i18next";
 
 const GlossyButton = styled(Button)(({ theme }) => ({
   borderRadius: "20px",
@@ -36,6 +37,7 @@ function LaborOrderContent(props) {
   const [executionConfirmed, setExecutionConfirmed] = useState(
     activity.estado === "completada" || activity.estado === "ejecutada"
   );
+  const { t } = useTranslation();
 
   const dispatch = useAppDispatch();
 
@@ -46,7 +48,7 @@ function LaborOrderContent(props) {
   };
 
   const tooltipTitle = executionConfirmed
-    ? `La ejecución ya esta en estado ${activity.estado}`
+    ? `${t('executionAlreadyInState')} ${activity.estado}`
     : "";
 
   return (
@@ -59,7 +61,7 @@ function LaborOrderContent(props) {
         startIcon={<ExitToAppIcon />}
         onClick={() => dispatch(uiOpenModal(DisplayModals.LaborOrder))}
       >
-        Orden de Retiro
+        {t('withdrawalOrder')}
       </GlossyButton>
 
       <GlossyButton
@@ -68,7 +70,7 @@ function LaborOrderContent(props) {
         onClick={() => handleDownloadPDF(activity)}
         sx={{ mr: 2 }}
       >
-        Descargar Orden De Trabajo
+        {t('downloadWorkOrder')}
       </GlossyButton>
 
       <Tooltip
@@ -83,7 +85,7 @@ function LaborOrderContent(props) {
             onClick={() => handleExecutionClick(activity)}
             disabled={executionConfirmed}
           >
-            Confirmar Ejecucion
+            {t('confirmExecution')}
           </GlossyButton>
         </span>
       </Tooltip>

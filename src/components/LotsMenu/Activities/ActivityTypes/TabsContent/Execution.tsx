@@ -20,6 +20,7 @@ import PlanificationContent from "./Planification";
 import { dbContext } from "../../../../../services";
 import { Ejecucion } from "../../../../../interfaces/activity";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 const FrostedGlassButton = styled(Button)(({ theme }) => ({
   borderRadius: "20px",
@@ -58,6 +59,7 @@ function ExecutionContent(props) {
   const { activity, handleEditActivity } = props;
   const [execution, setExecution] = useState<Ejecucion>(null);
   const db = dbContext.fields;
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchExecution = async () => {
@@ -118,11 +120,11 @@ function ExecutionContent(props) {
                 <CheckCircleOutlineIcon color="success" />
                 <Typography variant="body1">
                   {execution.estado === "completada" ||
-                  execution.estado === "ejecutada"
-                    ? `Ejecutada: ${format(new Date(
-                        execution.detalles.fecha_ejecucion
-                      ),"dd/MM/yyyy")}`
-                    : "Actividad aún no ejecutada"}
+                    execution.estado === "ejecutada"
+                    ? `${t('executedOn')}: ${format(new Date(
+                      execution.detalles.fecha_ejecucion
+                    ), "dd/MM/yyyy")}`
+                    : t('activityNotExecuted')}
                 </Typography>
                 <Box>
                   {execution.estado !== "pendiente" && (
@@ -134,17 +136,16 @@ function ExecutionContent(props) {
                       /> */}
                       <Chip
                         icon={<BusinessIcon />}
-                        label={`Contratista: ${
-                          execution.contratista
-                            ? execution.contratista.nombreCompleto + "-" + execution.contratista.razonSocial
-                            : "N/A"
-                        }`}
+                        label={`${t('contractor')}: ${execution.contratista
+                          ? execution.contratista.nombreCompleto + "-" + execution.contratista.razonSocial
+                          : t('notAvailable')
+                          }`}
                         style={{ margin: "5px" }}
                       />
                       {execution.ingeniero && (
                         <Chip
                           icon={<EcoIcon />}
-                          label={`Ingeniero: ${execution.ingeniero.nombre}`}
+                          label={`${t('engineer')}: ${execution.ingeniero.nombre}`}
                           style={{ margin: "5px" }}
                         />
                       )}
@@ -158,7 +159,7 @@ function ExecutionContent(props) {
               </Box>
               {execution.estado === "ejecutada" && (
                 <Typography variant="body1" sx={{ mt: 2 }}>
-                  Actividad ejecutada pero no completada
+                  {t('activityExecutedNotCompleted')}
                 </Typography>
               )}
             </>
@@ -166,7 +167,7 @@ function ExecutionContent(props) {
             <Box sx={pendingStyle}>
               <HourglassEmptyIcon color="warning" />
               <Typography variant="body1" sx={{ ml: 1 }}>
-                Actividad aún no ejecutada
+                {t('activityNotExecuted')}
               </Typography>
             </Box>
           )}
@@ -182,8 +183,8 @@ function ExecutionContent(props) {
               sx={{ margin: "auto", marginTop: "10px", marginBottom: "20px" }}
             >
               {execution?.estado === "ejecutada"
-                ? "Completar Actividad"
-                : "Ejecutar Actividad"}
+                ? t('completeActivity')
+                : t('executeActivity')}
             </FrostedGlassButton>
           </CardActions>
         )}
