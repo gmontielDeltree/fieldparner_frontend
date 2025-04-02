@@ -30,6 +30,7 @@ import PointForm from './PointForm'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { AudioPlayer, ImageGrid } from './PointFormStyles'
 import { dbContext } from '../../../../services'
+import { useTranslation } from 'react-i18next'
 
 const CustomPaper = styled(Paper)({
   padding: '20px',
@@ -97,6 +98,7 @@ const FeatureAccordion = styled(Accordion)({
 })
 
 function TourForm({ lot, formData, setFormData, tourSave }) {
+  const { t } = useTranslation()
   const db = dbContext.fields
   const [isPointMode, setIsPointMode] = useState(false)
   const [imageUrls, setImageUrls] = useState({})
@@ -130,7 +132,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       const blob = await db.getAttachment(imageId, 'image')
       return URL.createObjectURL(blob)
     } catch (error) {
-      console.error('Error fetching image:', error)
+      console.error(t('errorFetchingTourImage'), error)
       return null
     }
   }
@@ -140,7 +142,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
       const blob = await db.getAttachment(audioId, 'audio')
       return URL.createObjectURL(blob)
     } catch (error) {
-      console.error('Error fetching audio:', error)
+      console.error(t('errorFetchingTourAudio'), error)
       return null
     }
   }
@@ -175,7 +177,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
           <ImageListItem key={index}>
             <img
               src={imageUrls[foto]}
-              alt={`feature ${index}`}
+              alt={t('featureImage', { index: index })}
               loading="lazy"
               style={{ borderRadius: '4px' }}
             />
@@ -228,12 +230,12 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
             animate="visible"
             exit="exit"
           >
-            <Title>Nota</Title>
+            <Title>{t('noteTitle')}</Title>
             <FormControl fullWidth>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={12}>
                   <TextField
-                    label="Nombre"
+                    label={t('nameLabel')}
                     fullWidth
                     value={formData.nombre || ''}
                     onChange={(e) => onFieldChange('nombre', e.target.value)}
@@ -242,7 +244,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
-                      label="Fecha"
+                      label={t('dateLabel')}
                       value={formData.fecha || null} // Use null instead of new Date()
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, fecha: newValue }
@@ -255,7 +257,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <TimePicker
-                      label="Hora"
+                      label={t('timeLabel')}
                       value={formData.hora || null}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, hora: newValue }
@@ -268,7 +270,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
-                      label="Próxima Visita"
+                      label={t('nextVisitLabel')}
                       value={formData.proxima_visita || null}
                       onChange={(newValue) => {
                         const updatedFormData = {
@@ -288,13 +290,13 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 onClick={handleAddPoint}
                 style={{ marginTop: '15px' }}
               >
-                Nuevo Punto
+                {t('newPointButton')}
               </Button>
             </Grid>
 
             {formData.features.length > 0 ? (
               <Grid item xs={12} style={{ marginTop: '50px' }}>
-                <Title>Puntos Existentes</Title>
+                <Title>{t('existingPointsTitle')}</Title>
                 {renderFeatureList()}
               </Grid>
             ) : null}

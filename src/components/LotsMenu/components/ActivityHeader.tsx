@@ -43,6 +43,8 @@ const ActivityHeader = ({
         return '#f59e0b';
       case 'preparation':
         return '#6b7280';
+      case 'tour':
+        return '#9333ea';
       default:
         return '#6b7280';
     }

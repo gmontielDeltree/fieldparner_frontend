@@ -17,12 +17,12 @@ import Grid from "@mui/material/Grid";
 import { provideMachine } from "./machine-provides";
 import { uuidv7 } from "uuidv7";
 import Modal from "@mui/material/Modal";
-//const test_base_image 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import styles from "./index.module.css"
 import Icon from '@mui/material/Icon';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoibGF6bG9wYW5hZmxleCIsImEiOiJja3ZzZHJ0ZzYzN2FvMm9tdDZoZmJqbHNuIn0.oQI_TrJ3SvJ6e5S9_CnzFw";
@@ -61,7 +61,8 @@ const modal_style = {
   p: 4,
 };
 
-export const ZoningMapComponent : React.FC = ({ baseImageNameParam }) => {
+export const ZoningMapComponent: React.FC = ({ baseImageNameParam }) => {
+  const { t } = useTranslation();
   const mapContainer = useRef(null);
   const map = useRef(null);
 
@@ -91,7 +92,7 @@ export const ZoningMapComponent : React.FC = ({ baseImageNameParam }) => {
       map: map,
       ambientes: [
         {
-          nombre: "Ambiente 1",
+          nombre: t('environment1'),
           color: "#FF0000",
           orden: 0,
           id: uuidv7(),
@@ -99,7 +100,7 @@ export const ZoningMapComponent : React.FC = ({ baseImageNameParam }) => {
           dosis: [],
         },
         {
-          nombre: "Ambiente 2",
+          nombre: t('environment2'),
           color: "#FF0000",
           orden: 1,
           id: uuidv7(),
@@ -121,7 +122,7 @@ export const ZoningMapComponent : React.FC = ({ baseImageNameParam }) => {
       // simple logging
       console.log(snapshot);
     });
-  
+
     return subscription.unsubscribe;
   }, [actorRef]); // note: actor ref should never change
 
@@ -151,253 +152,252 @@ export const ZoningMapComponent : React.FC = ({ baseImageNameParam }) => {
     // setNumber(event.target.value);
   };
 
-  const handleDosisUnidadChange = (event) => {};
+  const handleDosisUnidadChange = (event) => { };
 
   return (
-      <Grid container spacing={0} sx={{position:"relative", width:"100%"}}>
-        <Grid item xs={3} sx={{textAlign: "center"}}>
-          <div style={{display:"flex", width:"100%", justifyContent:"space-between", padding:"1rem", alignItems: "center"}}>
-            <h3 className="main-title" style={{margin:"0px"}}>Zone Generator</h3>
-            <Button onClick={()=>navigate(-1)} startIcon={<Icon component={CancelIcon} />} color="secondary"></Button>
-          </div>
-          {/* <h4 className="agrotools-title">by Agrotools</h4> */}
+    <Grid container spacing={0} sx={{ position: "relative", width: "100%" }}>
+      <Grid item xs={3} sx={{ textAlign: "center" }}>
+        <div style={{ display: "flex", width: "100%", justifyContent: "space-between", padding: "1rem", alignItems: "center" }}>
+          <h3 className="main-title" style={{ margin: "0px" }}>{t('zoneGenerator')}</h3>
+          <Button onClick={() => navigate(-1)} startIcon={<Icon component={CancelIcon} />} color="secondary"></Button>
+        </div>
+        {/* <h4 className="agrotools-title">by Agrotools</h4> */}
 
-          {state.matches("settingParameters") && (
-            <>
-              <FormControl fullWidth variant="standard">
-                <InputLabel id="demo-simple-select-label">
-                  Cantidad de Ambientes
-                </InputLabel>
+        {state.matches("settingParameters") && (
+          <>
+            <FormControl fullWidth variant="standard">
+              <InputLabel id="demo-simple-select-label">
+                {t('environmentCount')}
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                value={state.context.rangos.length + 1}
+                onChange={handleNumberChange}
+              >
+                {[...Array(7).keys()].map((num) => (
+                  <MenuItem key={num + 1} value={num + 2}>
+                    {num + 2}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <ChartSelector
+              datos={histogram(state.context.base_image.data[0], 0.05)}
+              rangos={state.context.rangos}
+            ></ChartSelector>
+
+            <Slider
+              size="small"
+              value={state.context.rangos}
+              onChange={handleSliderChange}
+              valueLabelDisplay="auto"
+              min={mymin(state.context.base_image.data[0])}
+              step={0.01}
+              max={mymax(state.context.base_image.data[0])}
+            />
+
+            <table className={"center"}>
+              <tr>
+                <th>{t('color')}</th>
+                <th>{t('name')}</th>
+              </tr>
+              {state.context.ambientes.map((a: Ambiente, index: number) => {
+                return (
+                  <tr key={index}>
+                    <td>
+                      {" "}
+                      <input
+                        type="color"
+                        className="color-picker"
+                        name="head"
+                        value={a.color}
+                        onChange={(e) => {
+                          send({
+                            type: "SET_COLOR",
+                            value: e.target.value,
+                            ambiente_id: a.id,
+                          });
+                        }}
+                      />{" "}
+                    </td>
+                    <td>
+                      <TextField
+                        size="small"
+                        variant="standard"
+                        value={a.nombre}
+                        onChange={(e) => {
+                          send({
+                            type: "SET_NOMBRE",
+                            value: e.target.value,
+                            ambiente_id: a.id,
+                          });
+                        }}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </table>
+
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => send({ type: "POLYGONIZE" })}
+            >
+              {t('generateEnvironments')}
+            </Button>
+          </>
+        )}
+
+        {state.matches("settingDosis") && (
+          <>
+            <Modal
+              open={openModal}
+              onClose={() => setOpenModal(false)}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+            >
+              <Box sx={modal_style}>
+                <TextField
+                  size="small"
+                  value={state.context.dosis_en_edit.insumo}
+                  label={t('input')}
+                  onChange={(e) => send({ type: "DOSIS_NOMBRE_UNIDAD" })}
+                ></TextField>
                 <Select
+                  size="small"
+                  value={state.context.dosis_en_edit.unidad}
+                  label={t('unit')}
+                  value={"Kg/ha"}
                   labelId="demo-simple-select-label"
-                  value={state.context.rangos.length + 1}
-                  onChange={handleNumberChange}
+                  onChange={(e) => {
+                    state.context.dosis_en_edit.unidad = e.target.value;
+                  }}
                 >
-                  {[...Array(7).keys()].map((num) => (
-                    <MenuItem key={num + 1} value={num + 2}>
-                      {num + 2}
-                    </MenuItem>
-                  ))}
+                  {["Kg/ha", "Tn/ha", "l/ha", t('seedsPerHa')].map(
+                    (num, index) => (
+                      <MenuItem key={index + 1} value={num}>
+                        {num}
+                      </MenuItem>
+                    )
+                  )}
                 </Select>
-              </FormControl>
+                <Button
+                  variant="contained"
+                  size="small"
+                  color="success"
+                  onClick={() => {
+                    send({ type: "ADD_INSUMO" });
+                  }}
+                >
+                  {t('add')}
+                </Button>
+              </Box>
+            </Modal>
 
-              <ChartSelector
-                datos={histogram(state.context.base_image.data[0], 0.05)}
-                rangos={state.context.rangos}
-              ></ChartSelector>
+            <table>
+              <tr>
+                <th>{t('environment')}</th>
 
-              <Slider
-                size="small"
-                value={state.context.rangos}
-                onChange={handleSliderChange}
-                valueLabelDisplay="auto"
-                min={mymin(state.context.base_image.data[0])}
-                step={0.01}
-                max={mymax(state.context.base_image.data[0])}
-              />
-
-              <table className={"center"}>
-                <tr>
-                  <th>Color</th>
-                  <th>Nombre</th>
-                </tr>
-                {state.context.ambientes.map((a: Ambiente, index: number) => {
+                {Array.from(state.context.insumos).map(([key, value]) => {
                   return (
-                    <tr key={index}>
-                      <td>
-                        {" "}
-                        <input
-                          type="color"
-                          className="color-picker"
-                          name="head"
-                          value={a.color}
-                          onChange={(e) => {
-                            send({
-                              type: "SET_COLOR",
-                              value: e.target.value,
-                              ambiente_id: a.id,
-                            });
-                          }}
-                        />{" "}
-                      </td>
-                      <td>
-                        <TextField
-                          size="small"
-                          variant="standard"
-                          value={a.nombre}
-                          onChange={(e) => {
-                            send({
-                              type: "SET_NOMBRE",
-                              value: e.target.value,
-                              ambiente_id: a.id,
-                            });
-                          }}
-                        />
-                      </td>
-                    </tr>
+                    <th>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        color="success"
+                        onClick={() =>
+                          send({ type: "DELETE_INSUMO", id: key })
+                        }
+                      >
+                        {value.nombre}
+                      </Button>
+                    </th>
                   );
                 })}
-              </table>
 
-              <Button
-                variant="contained"
-                color="success"
-                onClick={() => send({ type: "POLYGONIZE" })}
-              >
-                Generar Ambientes
-              </Button>
-            </>
-          )}
-
-          {state.matches("settingDosis") && (
-            <>
-              <Modal
-                open={openModal}
-                onClose={() => setOpenModal(false)}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-              >
-                <Box sx={modal_style}>
-                  <TextField
-                    size="small"
-                    value={state.context.dosis_en_edit.insumo}
-                    label={"Insumo"}
-                    onChange={(e) => send({ type: "DOSIS_NOMBRE_UNIDAD" })}
-                  ></TextField>
-                  <Select
-                    size="small"
-                    value={state.context.dosis_en_edit.unidad}
-                    label={"Unidad"}
-                    value={"Kg/ha"}
-                    labelId="demo-simple-select-label"
-                    onChange={(e) => {
-                      state.context.dosis_en_edit.unidad = e.target.value;
-                    }}
-                  >
-                    {["Kg/ha", "Tn/ha", "l/ha", "Semillas/ha"].map(
-                      (num, index) => (
-                        <MenuItem key={index + 1} value={num}>
-                          {num}
-                        </MenuItem>
-                      )
-                    )}
-                  </Select>
+                <th>
+                  {" "}
                   <Button
                     variant="contained"
                     size="small"
                     color="success"
-                    onClick={() => {
-                      send({ type: "ADD_INSUMO" });
-                    }}
+                    onClick={() => send({ type: "ADD_INSUMO" })}
                   >
-                    dsdsd
+                    + {t('dose')}
                   </Button>
-                </Box>
-              </Modal>
+                </th>
+              </tr>
 
-              <table>
-                <tr>
-                  <th>Ambiente</th>
+              {state.context.ambientes.map((a: Ambiente, index: number) => {
+                return (
+                  <tr>
+                    <td>
+                      <input
+                        type="color"
+                        className="color-picker"
+                        name="head"
+                        value={a.color}
+                        onChange={(e) => {
+                          send({
+                            type: "SET_COLOR",
+                            value: e.target.value,
+                            ambiente_id: a.id,
+                          });
+                        }}
+                      />
+                      <TextField
+                        size="small"
+                        variant="standard"
+                        value={a.nombre}
+                        onChange={(e) => {
+                          send({
+                            type: "SET_NOMBRE",
+                            value: e.target.value,
+                            ambiente_id: a.id,
+                          });
+                        }}
+                      />
+                    </td>
 
-                  {Array.from(state.context.insumos).map(([key, value]) => {
-                    return (
-                      <th>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          color="success"
-                          onClick={() =>
-                            send({ type: "DELETE_INSUMO", id: key })
-                          }
-                        >
-                          {value.nombre}
-                        </Button>
-                      </th>
-                    );
-                  })}
+                    {Array.from(state.context.insumos).map(([key, value]) => {
+                      return (
+                        <td>
+                          <TextField
+                            value={
+                              state.context.dosis.get(a.id + "_" + key) ?? 0
+                            }
+                            onChange={(e) =>
+                              send({
+                                type: "SET_DOSIS",
+                                ambiente_id: a.id,
+                                insumo_id: key,
+                                value: e.target.value,
+                              })
+                            }
+                          ></TextField>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </table>
 
-                  <th>
-                    {" "}
-                    <Button
-                      variant="contained"
-                      size="small"
-                      color="success"
-                      onClick={() => send({ type: "ADD_INSUMO" })}
-                    >
-                      + Dosis
-                    </Button>
-                  </th>
-                </tr>
+            <Button variant="text" onClick={() => send({ type: "VOLVER" })}>
+              {t('back')}
+            </Button>
 
-                {state.context.ambientes.map((a: Ambiente, index: number) => {
-                  return (
-                    <tr>
-                      <td>
-                        <input
-                          type="color"
-                          className="color-picker"
-                          name="head"
-                          value={a.color}
-                          onChange={(e) => {
-                            send({
-                              type: "SET_COLOR",
-                              value: e.target.value,
-                              ambiente_id: a.id,
-                            });
-                          }}
-                        />
-                        <TextField
-                          size="small"
-                          variant="standard"
-                          value={a.nombre}
-                          onChange={(e) => {
-                            send({
-                              type: "SET_NOMBRE",
-                              value: e.target.value,
-                              ambiente_id: a.id,
-                            });
-                          }}
-                        />
-                      </td>
-
-                      {Array.from(state.context.insumos).map(([key, value]) => {
-                        return (
-                          <td>
-                            <TextField
-                              value={
-                                state.context.dosis.get(a.id + "_" + key) ?? 0
-                              }
-                              onChange={(e) =>
-                                send({
-                                  type: "SET_DOSIS",
-                                  ambiente_id: a.id,
-                                  insumo_id: key,
-                                  value: e.target.value,
-                                })
-                              }
-                            ></TextField>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
-              </table>
-
-              <Button variant="text" onClick={() => send({ type: "VOLVER" })}>
-                Volver
-              </Button>
-
-              <Button variant="contained"
-                onClick={() => send({ type: "DOWNLOAD_SHP" })}
-              >Download SHP</Button>
-            </>
-          )}
-        </Grid>
-        <Grid item xs={9}>
-          <div className={styles.mapa} ref={mapContainer} />
-        </Grid>
+            <Button variant="contained"
+              onClick={() => send({ type: "DOWNLOAD_SHP" })}
+            >{t('downloadSHP')}</Button>
+          </>
+        )}
       </Grid>
+      <Grid item xs={9}>
+        <div className={styles.mapa} ref={mapContainer} />
+      </Grid>
+    </Grid>
   );
 };
-

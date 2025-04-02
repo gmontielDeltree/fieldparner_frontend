@@ -29,8 +29,8 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
   const navigate = useNavigate()
   const { t } = useTranslation();
 
-  // Using translation keys directly as IDs to ensure consistency
-  const categories = [
+  // Categorías principales (sin recorrido y vista satelite)
+  const mainCategories = [
     {
       id: 'lotPlanning',
       icon: planAnualIcon,
@@ -53,17 +53,22 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
       icon: categoryIcon3
     },
     {
+      id: 'soilSample',
+      icon: categoryIcon6
+    },
+    {
       id: 'fieldVisit',
       icon: categoryIcon4
     },
+  ]
+
+  // Categorías separadas (recorrido y vista satelite)
+  const separatedCategories = [
+
     {
       id: 'satelliteView',
       icon: categoryIcon5,
       link: `/init/overview/satellite/${lot.id}?backUrl=${backUrl}`,
-    },
-    {
-      id: 'soilSample',
-      icon: categoryIcon6
     },
   ]
 
@@ -71,84 +76,113 @@ const ActivitiesBar: React.FC<ActivitiesBarProps> = ({
   const isAccessibleWithoutCampaign = (id: string) =>
     ['satelliteView', 'fieldVisit'].includes(id);
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '20px 16px',
-        overflowX: 'auto',
-        backgroundColor: '#fafafa',
-        borderRadius: '16px',
-        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)',
-        margin: '10px 0',
-      }}
-    >
-      {categories.map(({ id, icon, link }) => (
-        <Tooltip key={id} title={t(id)} arrow placement="top">
-          <div style={{ position: 'relative', margin: '0 12px' }}>
-            <ButtonBase
-              onClick={() => (link ? navigate(link) : selectCategory(id))}
-              sx={{
-                padding: '4px',
-                borderRadius: '50%',
-                backgroundColor:
-                  selectedCategory === id ? 'rgba(0,0,0,0.04)' : 'transparent',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <Avatar
-                alt={t(id)}
-                src={icon}
-                sx={{
-                  width: 65,
-                  height: 65,
-                  backgroundColor: '#f5f5f5',
-                  transition: 'all 0.2s ease',
-                  borderRadius: '50%',
-                  opacity:
-                    selectedCampaign || isAccessibleWithoutCampaign(id)
-                      ? 1
-                      : 0.5,
-                  filter:
-                    selectedCampaign || isAccessibleWithoutCampaign(id)
-                      ? 'none'
-                      : 'grayscale(100%)',
-                  boxShadow:
-                    selectedCategory === id
-                      ? '0 4px 12px rgba(0,0,0,0.1)'
-                      : 'none',
-                  '&:hover': {
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  },
-                }}
-                imgProps={{
-                  style: {
-                    objectFit: 'contain',
-                    padding: '0px',
-                  },
-                }}
-              />
-            </ButtonBase>
+  // Estilo común para los contenedores
+  const containerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '20px 16px',
+    overflowX: 'auto',
+    backgroundColor: '#fafafa',
+    borderRadius: '16px',
+    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)',
+  };
 
-            {/* Indicador sutil */}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: -4,
-                left: '50%',
-                transform: `translateX(-50%) scaleX(${selectedCategory === id ? 1 : 0
-                  })`,
-                width: '20px',
-                height: '2px',
-                backgroundColor: '#2563eb',
-                borderRadius: '1px',
-                transition: 'transform 0.2s ease',
+  // Función para renderizar categorías
+  const renderCategory = (category: any) => {
+    const { id, icon, link } = category;
+
+    return (
+      <Tooltip key={id} title={t(id)} arrow placement="top">
+        <div style={{ position: 'relative', margin: '0 12px' }}>
+          <ButtonBase
+            onClick={() => (link ? navigate(link) : selectCategory(id))}
+            sx={{
+              padding: '4px',
+              borderRadius: '50%',
+              backgroundColor:
+                selectedCategory === id ? 'rgba(0,0,0,0.04)' : 'transparent',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <Avatar
+              alt={t(id)}
+              src={icon}
+              sx={{
+                width: 65,
+                height: 65,
+                backgroundColor: '#f5f5f5',
+                transition: 'all 0.2s ease',
+                borderRadius: '50%',
+                opacity:
+                  selectedCampaign || isAccessibleWithoutCampaign(id)
+                    ? 1
+                    : 0.5,
+                filter:
+                  selectedCampaign || isAccessibleWithoutCampaign(id)
+                    ? 'none'
+                    : 'grayscale(100%)',
+                boxShadow:
+                  selectedCategory === id
+                    ? '0 4px 12px rgba(0,0,0,0.1)'
+                    : 'none',
+                '&:hover': {
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                },
+              }}
+              imgProps={{
+                style: {
+                  objectFit: 'contain',
+                  padding: '0px',
+                },
               }}
             />
-          </div>
-        </Tooltip>
-      ))}
+          </ButtonBase>
+
+          {/* Indicador sutil */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: -4,
+              left: '50%',
+              transform: `translateX(-50%) scaleX(${selectedCategory === id ? 1 : 0
+                })`,
+              width: '20px',
+              height: '2px',
+              backgroundColor: '#2563eb',
+              borderRadius: '1px',
+              transition: 'transform 0.2s ease',
+            }}
+          />
+        </div>
+      </Tooltip>
+    );
+  };
+
+  return (
+    <div style={{
+      display: 'flex',
+      width: '100%',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: '10px'
+    }}>
+      {/* Barra principal con categorías principales */}
+      <div style={{
+        ...containerStyle,
+        flex: 1
+      }}>
+        {mainCategories.map(renderCategory)}
+      </div>
+
+      {/* Barra secundaria a la derecha */}
+      <div style={{
+        ...containerStyle,
+        width: 'auto',
+        minWidth: '180px',
+        justifyContent: 'center'
+      }}>
+        {separatedCategories.map(renderCategory)}
+      </div>
     </div>
   )
 }
