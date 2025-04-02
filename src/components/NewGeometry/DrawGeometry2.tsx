@@ -9,6 +9,7 @@ import { CloseButtonBack } from '../Basic/CloseButtonBack'
 import MapIcon from '@mui/icons-material/Map'
 import SaveIcon from '@mui/icons-material/Save'
 import DeleteIcon from '@mui/icons-material/Delete'
+import { useTranslation } from 'react-i18next'
 
 MapboxDraw.modes.direct_select.onTrash = function (state) {
   if (state.selectedCoordPaths.length === 0) {
@@ -49,6 +50,7 @@ const DrawGeometry2: React.FC<DrawGeometryProps> = ({
   initialName,
   edit,
 }) => {
+  const { t } = useTranslation();
   const [geometryName, setGeometryName] = useState(initialName || '')
   const [geometryData, setGeometryData] = useState<FeatureCollection<
     Geometry,
@@ -103,10 +105,10 @@ const DrawGeometry2: React.FC<DrawGeometryProps> = ({
 
       return area / 10000
     } catch (error) {
-      console.error('Error calculating area:', error)
+      console.error(t('errorCalculatingArea'), error)
       return 0
     }
-  }, [])
+  }, [t])
 
   const updateAreaCalculation = useCallback(() => {
     const features = draw.getAll().features
@@ -118,7 +120,7 @@ const DrawGeometry2: React.FC<DrawGeometryProps> = ({
     }
   }, [draw, calculateAreaInHectares])
 
-  const typeName = type === 'field' ? 'campo' : 'lote'
+  const typeName = type === 'field' ? t('field').toLowerCase() : t('lot').toLowerCase()
   const isSaveDisabled = !geometryName || !geometryData
 
   const containerStyle: React.CSSProperties = {
@@ -187,9 +189,9 @@ const DrawGeometry2: React.FC<DrawGeometryProps> = ({
 
       draw.changeMode('draw_polygon')
     } catch (error) {
-      console.error('Error al borrar la geometría:', error)
+      console.error(t('errorDeletingGeometry'), error)
     }
-  }, [draw])
+  }, [draw, t])
 
   const handleDrawComplete = useCallback(
     (event: any) => {
@@ -317,7 +319,7 @@ const DrawGeometry2: React.FC<DrawGeometryProps> = ({
           <Col xs="auto">
             <div style={statusBadgeStyle}>
               <MapIcon style={{ fontSize: '0.875rem' }} />
-              {isDrawing ? 'Dibujando...' : 'Completado'}
+              {isDrawing ? t('drawing') : t('completed')}
             </div>
           </Col>
 
@@ -331,7 +333,7 @@ const DrawGeometry2: React.FC<DrawGeometryProps> = ({
                 }}
               >
                 <MapIcon style={{ fontSize: '0.875rem' }} />
-                {areaInHectares.toFixed(2)} has
+                {areaInHectares.toFixed(2)} {t('hectares')}
               </div>
             </Col>
           )}
@@ -341,7 +343,7 @@ const DrawGeometry2: React.FC<DrawGeometryProps> = ({
               type="text"
               value={geometryName}
               onChange={(e) => setGeometryName(e.target.value)}
-              placeholder={`Nombre del ${typeName}`}
+              placeholder={t('nameOf', { type: typeName })}
               style={inputStyle}
             />
           </Col>
@@ -351,7 +353,7 @@ const DrawGeometry2: React.FC<DrawGeometryProps> = ({
               <Button
                 style={deleteButtonStyle}
                 onClick={onDelete}
-                title="Borrar geometría"
+                title={t('deleteGeometry')}
               >
                 <DeleteIcon style={{ fontSize: '1.25rem' }} />
               </Button>
@@ -363,13 +365,13 @@ const DrawGeometry2: React.FC<DrawGeometryProps> = ({
               disabled={isSaveDisabled}
             >
               <SaveIcon style={{ fontSize: '1rem' }} />
-              Guardar
+              {t('save')}
             </Button>
 
             <button
               onClick={() => window.history.back()}
               style={closeButtonStyle}
-              title="Cerrar"
+              title={t('close')}
             >
               <svg
                 width="16"

@@ -7,7 +7,7 @@ import {
     CloudUpload as CloudUploadIcon,
 } from "@mui/icons-material";
 import uuid4 from 'uuid4';
-
+import { useTranslation } from "react-i18next";
 
 const columns = ['Fecha', 'Kilometros', 'Descripcion', 'Observaciones', 'Proximo mantenimiento'];
 
@@ -27,6 +27,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
     setFilesUpload,
     cancelFile
 }) => {
+    const { t } = useTranslation();
 
     const {
         vehicleType,
@@ -53,21 +54,21 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
     const removeFile = (index: number) => {
         handleFormValueChange("documentVehicleFile", "");
         cancelFile(index);
-      }
-    
-      const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    }
+
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
         if (file) {
-          let fileNameOriginal = file.name;
-          let extensionPos = fileNameOriginal.lastIndexOf(".");
-          let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
-    
-          const newFileName = `document-vehicle_${uuid4()}${fileType}`;
-          const renamedFile = new File([file], newFileName, { type: file.type });
-          setFilesUpload(prevState => [...prevState, renamedFile])
-          handleFormValueChange("documentVehicleFile", newFileName);
+            let fileNameOriginal = file.name;
+            let extensionPos = fileNameOriginal.lastIndexOf(".");
+            let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
+
+            const newFileName = `document-vehicle_${uuid4()}${fileType}`;
+            const renamedFile = new File([file], newFileName, { type: file.type });
+            setFilesUpload(prevState => [...prevState, renamedFile])
+            handleFormValueChange("documentVehicleFile", newFileName);
         }
-      };
+    };
 
     return (
         <>
@@ -81,7 +82,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
             >
                 <Grid item xs={12} sm={4} >
                     <TextField
-                        label="Tipo Vehiculo"
+                        label={t('vehicleType')}
                         variant="outlined"
                         type='text'
                         disabled
@@ -93,7 +94,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                 </Grid>
                 <Grid item xs={12} sm={4} >
                     <TextField
-                        label="Marca"
+                        label={t('brand')}
                         variant="outlined"
                         type='text'
                         disabled
@@ -105,7 +106,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                 </Grid>
                 <Grid item xs={12} sm={4} >
                     <TextField
-                        label="Modelo"
+                        label={t('model')}
                         variant="outlined"
                         type='text'
                         disabled
@@ -121,7 +122,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                         variant="contained"
                         startIcon={<CloudUploadIcon />}
                     >
-                        Documento
+                        {t('document')}
                         <Input
                             type="file"
                             hidden
@@ -147,7 +148,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                         </>
                     ) :
                         <Typography variant="body1" sx={{ ml: 1, display: "inline-block" }}>
-                            Ningún archivo seleccionado
+                            {t('noFileSelected')}
                         </Typography>
                     }
                 </Grid>
@@ -155,7 +156,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
             <Box component="div" sx={{ mt: 3 }}>
                 <MaintenanceTable
                     key="table-mantenimiento"
-                    columns={columns}
+                    columns={[t('date'), t('kilometers'), t('description'), t('observations'), t('nextMaintenance')]}
                     rows={vehiculo.maintenances}
                     handleAddRow={handleAddMaintenance}
                     deleteRow={handleDeleteMaintenance}

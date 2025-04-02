@@ -14,6 +14,7 @@ import {
 import { Icon } from "semantic-ui-react";
 import { getShortDate } from '../../../helpers/dates';
 import { DataTable, ItemRow, Loading, NewSupplyCropRow, TableCellStyled } from '../..';
+import { useTranslation } from "react-i18next";
 
 import {
     usePDF,
@@ -95,21 +96,13 @@ const styles = StyleSheet.create({
     },
 });
 
-const columns: ColumnProps[] = [
-    { text: "Deposito", align: "left" },
-    { text: "Insumo", align: "left" },
-    { text: "UM", align: "center" },
-    { text: "Ubicacion", align: "center" },
-    { text: "Cantidad a Retirar", align: "center" },
-    { text: "", align: "right" },
-];
-
 interface RowSupplyProps {
     row: DepositSupplyOrderItem;
     handleEdit: (item: DepositSupplyOrderItem) => void;
     handleDelete: (item: DepositSupplyOrderItem) => void;
 }
 const RowSupply: React.FC<RowSupplyProps> = ({ row, handleDelete, handleEdit }) => {
+    const { t } = useTranslation();
 
     const { amountValue, handleInputChange } = useForm({ amountValue: row.amount });
     const [isEdit, setIsEdit] = useState(false);
@@ -149,14 +142,14 @@ const RowSupply: React.FC<RowSupplyProps> = ({ row, handleDelete, handleEdit }) 
                         <>
                             <IconButton
                                 color="primary"
-                                aria-label="save"
+                                aria-label={t('save')}
                                 onClick={handleSaveEdit}
                             >
                                 <SaveIcon />
                             </IconButton>
                             <IconButton
                                 color="secondary"
-                                aria-label="cancel"
+                                aria-label={t('cancel')}
                                 onClick={handleCancelEdit}
                             >
                                 <CloseIcon />
@@ -174,7 +167,7 @@ const RowSupply: React.FC<RowSupplyProps> = ({ row, handleDelete, handleEdit }) 
                                 style={{ fontSize: '1rem' }}
                             >
                                 <DeleteIcon />
-                        
+
                             </IconButton>
                         </>
                 }
@@ -222,6 +215,16 @@ const LaborOrderDoc: React.FC<LaborOrderDocProps> = ({
 }
 
 export const LaborOrderModal = ({ activity }) => {
+    const { t } = useTranslation();
+
+    const columns: ColumnProps[] = [
+        { text: t('warehouse'), align: "left" },
+        { text: t('supply'), align: "left" },
+        { text: t('measurementUnit'), align: "center" },
+        { text: t('location'), align: "center" },
+        { text: t('amountToWithdraw'), align: "center" },
+        { text: "", align: "right" },
+    ];
 
     const dispatch = useAppDispatch();
     const [initializeLoading, setinitializeLoading] = useState(false);
@@ -300,27 +303,17 @@ export const LaborOrderModal = ({ activity }) => {
         const numberOrder = await createLaborOrder(newLaborOrder, newDepositSupplyOrders);
 
         if (numberOrder > 0)
-            Swal.fire('Orden de Retiro', ` N° de orden ${numberOrder} creado exitosamente. `, 'success');
+            Swal.fire(t('withdrawalOrder'), t('orderCreatedSuccess', { number: numberOrder }), 'success');
         else
-            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            Swal.fire(t('oops'), t('unexpectedError'), 'error');
 
         onCloseModal();
     }
+
     const initConfirmLaborOrder = async () => {
         confirmLaborOrder(listWithdrawals, creationDate);
         onCloseModal();
-        // if (confirm) Swal.fire('Orden de Retiro', 'Confirmacion exitosa.', 'success');
-        // else
-        //     Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
     }
-
-    // const generatePDF = () => {
-    //     if (orderActive) {
-    //         updateInstance(<LaborOrderDoc
-    //             withdrawalOrder={orderActive}
-    //             depositAndSupplies={listWithdrawals} />);
-    //     }
-    // };
 
     const deleteRowSupply = (item: DepositSupplyOrderItem) => {
         setListWithdrawals(listWithdrawals.filter(x => x._id !== item._id));
@@ -404,11 +397,11 @@ export const LaborOrderModal = ({ activity }) => {
                     align="center"
                     sx={{ mt: 1, mb: 7 }}
                 >
-                    Orden de Retiro Deposito
+                    {t('warehouseWithdrawalOrder')}
                 </Typography>
             </DialogTitle>
             <IconButton
-                aria-label="close"
+                aria-label={t('close')}
                 onClick={onCloseModal}
                 sx={{
                     position: 'absolute',
@@ -428,34 +421,34 @@ export const LaborOrderModal = ({ activity }) => {
                     <Grid container spacing={2} mb={2}>
                         <Grid item xs={12} sm={5}>
                             <Typography variant="subtitle1">
-                                <strong> Campaña:</strong> {selectedCampaign?.campaignId.toString().toUpperCase()}
+                                <strong> {t('campaign')}:</strong> {selectedCampaign?.campaignId.toString().toUpperCase()}
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={5}>
                             <Typography variant="subtitle1">
-                                <strong> Cultivo:</strong> {activity?.tipo.toString().toUpperCase()}
+                                <strong> {t('crop')}:</strong> {activity?.tipo.toString().toUpperCase()}
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}>
                             <Typography variant="subtitle1">
-                                <strong> Campo:</strong> {lotActive?.properties?.campo_parent_id}
+                                <strong> {t('field')}:</strong> {lotActive?.properties?.campo_parent_id}
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}>
                             <Typography variant="subtitle1">
-                                <strong> Lote:</strong> {lotActive?.properties?.nombre}
+                                <strong> {t('lot')}:</strong> {lotActive?.properties?.nombre}
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}>
                             <Typography variant="subtitle1">
-                                <strong> Hectareas:</strong> {lotActive?.properties?.hectareas}
+                                <strong> {t('hectares')}:</strong> {lotActive?.properties?.hectareas}
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4} sx={{ mt: 3 }}>
                             <TextField
                                 variant="outlined"
                                 type="date"
-                                label="Fecha"
+                                label={t('date')}
                                 name="creationDate"
                                 value={creationDate}
                                 onChange={handleInputChange}
@@ -472,37 +465,15 @@ export const LaborOrderModal = ({ activity }) => {
                             orderActive && (
                                 <Grid item xs={12} sm={4} sx={{ mt: 3, display: "flex", alignItems: "center" }}>
                                     <Typography variant="subtitle1">
-                                        <strong> Orden Retiro:</strong> {orderActive.order.toString().toUpperCase()}
+                                        <strong> {t('withdrawalOrder')}:</strong> {orderActive.order.toString().toUpperCase()}
                                     </Typography>
-                                    {/* <TextField
-                                        variant="outlined"
-                                        type="text"
-                                        label="Orden Retiro"
-                                        value={orderActive.order.toString().toUpperCase()}
-                                        fullWidth
-                                    /> */}
                                 </Grid>
                             )
                         }
                         <Grid item xs={12} sm={4} sx={{ mt: 3, display: "flex", alignItems: "center" }}>
                             <Typography variant="subtitle1">
-                                <strong> Contratista:</strong> {contractorActivity.nombre}
+                                <strong> {t('contractor')}:</strong> {contractorActivity.nombre}
                             </Typography>
-                            {/* <FormControl key="contractor-select" fullWidth>
-                                <InputLabel id="contractor-label">Contratista</InputLabel>
-                                <Select
-                                    labelId="contractor-label"
-                                    disabled
-                                    value={contractorActivity._id}
-                                    label="Contratista"
-                                >
-                                    {businesses.map((f) => (
-                                        <MenuItem key={f._id} value={f._id}>
-                                            {f.nombreCompleto || f.razonSocial}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl> */}
                         </Grid>
                     </Grid>
                     <Divider />
@@ -520,7 +491,7 @@ export const LaborOrderModal = ({ activity }) => {
                         align="left"
                         sx={{ mt: 1, mb: 3 }}
                     >
-                        Insumos a retirar:
+                        {t('suppliesToWithdraw')}:
                     </Typography>
                     <TableContainer
                         key="table-labor-order"
@@ -547,14 +518,6 @@ export const LaborOrderModal = ({ activity }) => {
                         </DataTable>
                     </TableContainer>
                 </Paper>
-                {/* <a href={instance.blob} target='_blank' download={`order-${orderActive?.order}.pdf`}>
-                    Download
-                </a> */}
-                {/* {
-                    <PDFViewer style={{ width: '100%', height: '800px' }}>
-                        {content}
-                    </PDFViewer>
-                } */}
             </DialogContent>
             <DialogActions>
                 <Grid
@@ -565,7 +528,7 @@ export const LaborOrderModal = ({ activity }) => {
                     sx={{ mt: 3 }}
                 >
                     <Grid item xs={12} sm={3}>
-                        <Button onClick={onCloseModal}>Cancelar</Button>
+                        <Button onClick={onCloseModal}>{t('cancel')}</Button>
                     </Grid>
                     <Grid item xs={12} sm={3}>
                         <Button
@@ -573,7 +536,7 @@ export const LaborOrderModal = ({ activity }) => {
                             color="success"
                             onClick={() => onClickCreateOrder()}
                         >
-                            {orderActive ? "Confirmar" : "Generar"}
+                            {orderActive ? t('confirm') : t('generate')}
                         </Button>
                     </Grid>
                     <Grid item xs={12} sm={3}>
@@ -585,20 +548,8 @@ export const LaborOrderModal = ({ activity }) => {
                             color="primary"
                             disabled={!orderActive}
                         >
-                            Inprimir
+                            {t('print')}
                         </Button>
-                        {/* {
-                            orderActive && (
-                                <PDFDownloadLink document={
-                                    <LaborOrderDoc
-                                        withdrawalOrder={orderActive}
-                                        depositAndSupplies={listWithdrawals} />} fileName={`order-${orderActive.order}.pdf`}>
-                                    {({ blob, url, loading, error }) =>
-                                        (orderActive && !loading) ? 'Imprimir' : ''
-                                    }
-                                </PDFDownloadLink>
-                            )
-                        } */}
                     </Grid>
                 </Grid>
             </DialogActions>

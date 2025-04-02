@@ -6,6 +6,8 @@ import PlaceMarker from '../NewGeometry/PlaceMarker'
 import { useAppSelector } from '../../hooks'
 import { getEmptyNote } from '../../interfaces/activity'
 import TourForm from './forms/NotesForms/TourForm'
+import ActivityHeader from './components/ActivityHeader'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   CardHeader,
@@ -41,6 +43,7 @@ const Tour: React.FC<TourProps> = ({
 }) => {
   if (!lot) return null
 
+  const { t } = useTranslation()
   const theme = useTheme()
   const [formData, setFormData] = useState(existingNote || getEmptyNote())
   const isEditing = existingNote && Object.keys(existingNote).length > 0
@@ -75,7 +78,7 @@ const Tour: React.FC<TourProps> = ({
       try {
         removeFunc()
       } catch (error) {
-        console.error('Error removing marker:', error)
+        console.error(t('errorRemovingMarker'), error)
       }
     })
     removeMarkerFunctionsRef.current = []
@@ -104,29 +107,29 @@ const Tour: React.FC<TourProps> = ({
           return db.put(actividad)
         })
         .then(() => {
-          console.log('Actividad updated', 'success')
+          console.log(t('activityUpdated'), 'success')
           handleRemoveMarkers()
           backToActivites()
         })
         .catch((error) => {
           if (error.name === 'not_found') {
-            console.log('Actividad not found. Creating a new one.')
+            console.log(t('activityNotFound'))
             delete actividad._rev
             db.put(actividad)
               .then(() => {
-                console.log('New actividad created', 'success')
+                console.log(t('newActivityCreated'), 'success')
                 handleRemoveMarkers()
                 backToActivites()
               })
               .catch((err) =>
-                console.error('Error creating new actividad:', err),
+                console.error(t('errorCreatingActivity'), err),
               )
           } else {
-            console.error('Error saving actividad:', error)
+            console.error(t('errorSavingActivity'), error)
           }
         })
     } catch (error) {
-      console.error('Error in handleSave:', error)
+      console.error(t('errorInHandleSave'), error)
     }
   }
 
@@ -134,77 +137,36 @@ const Tour: React.FC<TourProps> = ({
     return '#22c55e' // verde para recorrido
   }
 
+  // Define the activity icons for ActivityHeader
+  const activityIcons = {
+    tour: <AgricultureIcon sx={{ fontSize: 50, color: 'white' }} />
+  }
+
+  // Function to get activity color for ActivityHeader
+  const getActivityColor = () => {
+    return getTourColor()
+  }
+
   return (
     <Container className="py-6">
       <Card className="shadow-lg">
-        {/* Header */}
+        {/* Replace the old CardHeader with ActivityHeader */}
         <CardHeader
+          className="p-0" // Remove padding as ActivityHeader has its own padding
           style={{
-            background: getTourColor(),
             borderTopLeftRadius: '0.5rem',
             borderTopRightRadius: '0.5rem',
-            padding: '2rem',
           }}
         >
-          <Row className="align-items-center">
-            <Col>
-              <h1
-                className="text-white mb-4"
-                style={{ fontSize: '2rem', fontWeight: 'bold' }}
-              >
-                {isEditing ? 'Editar Recorrido' : 'Recorrido'}
-              </h1>
-
-              <div className="d-flex gap-4">
-                <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
-                  <MapIcon className="text-white" size={20} />
-                  <div>
-                    <div
-                      className="text-white-50 mb-0"
-                      style={{
-                        fontSize: '0.75rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                      }}
-                    >
-                      Campo
-                    </div>
-                    <div className="text-white fw-semibold">{fieldName}</div>
-                  </div>
-                </div>
-
-                <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
-                  <MapPin className="text-white" size={20} />
-                  <div>
-                    <div
-                      className="text-white-50 mb-0"
-                      style={{
-                        fontSize: '0.75rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                      }}
-                    >
-                      Lote
-                    </div>
-                    <div className="text-white fw-semibold">
-                      {lot.properties.nombre}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col xs="auto">
-              <div
-                className="rounded-circle p-3"
-                style={{
-                  background: "linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%)",
-                  backdropFilter: "blur(2px)"
-                }}
-              >
-                <AgricultureIcon sx={{ fontSize: 50, color: 'white' }} />
-              </div>
-            </Col>
-          </Row>
+          <ActivityHeader
+            activityType="tour"
+            fieldName={fieldName}
+            lot={lot}
+            formData={formData}
+            activityIcons={activityIcons}
+            isEditing={isEditing}
+            getActivityColor={getActivityColor}
+          />
         </CardHeader>
 
         {/* Content */}
@@ -245,7 +207,7 @@ const Tour: React.FC<TourProps> = ({
             className="d-flex align-items-center gap-2"
           >
             <ChevronLeft size={16} />
-            Volver
+            {t('backButton')}
           </Button>
 
           <Button
@@ -254,7 +216,7 @@ const Tour: React.FC<TourProps> = ({
             className="d-flex align-items-center gap-2"
           >
             <Clipboard size={16} />
-            {isEditing ? 'Actualizar' : 'Guardar'} Recorrido
+            {isEditing ? t('updateButton') : t('saveButton')} {t('tourLabel')}
           </Button>
         </CardFooter>
       </Card>

@@ -173,7 +173,7 @@ export const ActividadCardBase: React.FC = ({
             defaultCollapseIcon={<ExpandMoreIcon />}
             defaultExpandIcon={<ChevronRightIcon />}
           >
-            <TreeItem nodeId="10" label="Contratista">
+            <TreeItem nodeId="10" label="Contratistasssssssssssss">
               {!contratista && <p>No contractor</p>}
               {contratista?.razonSocial?.length
                 ? contratista?.razonSocial

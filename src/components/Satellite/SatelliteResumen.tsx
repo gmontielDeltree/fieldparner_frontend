@@ -11,6 +11,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import axios from 'axios'
 import { format } from 'date-fns'
 import { r2 } from '../../../owncomponents/helpers'
+import { useTranslation } from 'react-i18next'
 
 import { Bar } from 'react-chartjs-2'
 import {
@@ -49,6 +50,7 @@ const ranges_to_bin_names = (ranges) => {
 }
 
 export const SatelliteResumen = ({ date, lote, indice }) => {
+  const { t } = useTranslation()
   const [meteo, setMeteo] = useState({
     temperature: NaN,
     temperature_min: NaN,
@@ -117,7 +119,7 @@ export const SatelliteResumen = ({ date, lote, indice }) => {
       labels,
       datasets: [
         {
-          label: 'Área (has)',
+          label: t('areaHectares'),
           data: dataValues,
           backgroundColor: backgroundColors,
         },
@@ -167,7 +169,7 @@ export const SatelliteResumen = ({ date, lote, indice }) => {
           expandIcon={<ExpandMoreIcon />}
           sx={{ minHeight: '1rem' }}
         >
-          Resumen
+          {t('summary')}
         </AccordionSummary>
         <AccordionDetails sx={{ marginTop: '5px' }}>
           <div
@@ -178,7 +180,7 @@ export const SatelliteResumen = ({ date, lote, indice }) => {
             }}
           >
             <Typography variant="h6" sx={{ flexGrow: 1 }}>
-              Escala de Color
+              {t('colorScale')}
             </Typography>
             <Button
               variant="contained"
@@ -186,7 +188,7 @@ export const SatelliteResumen = ({ date, lote, indice }) => {
               style={{ marginLeft: '20px' }}
               onClick={() => setShowChart(!showChart)}
             >
-              {showChart ? 'Ocultar Gráfico' : 'Ver Gráfico'}
+              {showChart ? t('hideChart') : t('viewChart')}
             </Button>
           </div>
           {showChart && chartData && (
@@ -235,7 +237,7 @@ export const SatelliteResumen = ({ date, lote, indice }) => {
                         fontSize: '0.8rem',
                       }}
                     >
-                      {r2(area_has)} has.
+                      {r2(area_has)} {t('hectares')}
                     </div>
                   </div>
                 )
@@ -248,31 +250,31 @@ export const SatelliteResumen = ({ date, lote, indice }) => {
         sx={{ backgroundColor: '#1976d299', color: 'white' }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          Clima del Día
+          {t('dailyWeather')}
         </AccordionSummary>
         <AccordionDetails>
           {meteo.temperature ? (
             <>
               <Typography variant="body2">
-                Temp min: {meteo.temperature_min}°C
+                {t('minTemp')}: {meteo.temperature_min}°C
               </Typography>
               <Typography variant="body2">
-                Temp max: {meteo.temperature}°C
+                {t('maxTemp')}: {meteo.temperature}°C
               </Typography>
               <Typography variant="body2">
-                Precipitación: {meteo.precipitation_sum}mm
+                {t('precipitation')}: {meteo.precipitation_sum}mm
               </Typography>
             </>
           ) : (
-            <p>Sin datos disponibles para esta fecha</p>
+            <p>{t('noDataAvailable')}</p>
           )}
 
-          <Typography variant="caption">Powered by OpenMeteo</Typography>
+          <Typography variant="caption">{t('poweredBy')}</Typography>
         </AccordionDetails>
       </Accordion>
       <Accordion sx={{ backgroundColor: '#1976d299', color: 'white' }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          Descripción del índice
+          {t('indexDescription')}
         </AccordionSummary>
         <AccordionDetails>
           <div style={{ maxHeight: '4rem', overflowY: 'auto' }}>

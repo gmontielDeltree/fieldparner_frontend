@@ -10,15 +10,13 @@ import { DataTable, ItemRow } from '../../DataTable';
 import { TransportDocumentByCertificateDeposit } from '../../../interfaces/certificate-deposit';
 import { TransportDocumentRow } from './TransportDocumentRow';
 import { NoteAdd as NoteAddIcon } from '@mui/icons-material';
-
-
+import { useTranslation } from "react-i18next";
 
 interface GrainsFormProps {
     depositary: Business | null;
     depositors: Company | null;
     updateListTransport: (listByCert: TransportDocumentByCertificateDeposit[]) => void;
 }
-
 
 export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps> = ({
     formValues,
@@ -27,7 +25,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
     handleInputChange,
     updateListTransport
 }) => {
-
+    const { t } = useTranslation();
     const { campaniaId: campaignId, cultivoId: cultiveId } = formValues;
     const { isLoading, transportDocumentsItem, getTransportDocuments } = useTransportDocument();
     const [transportsByCertificateDeposit, setTransportsByCertificateDeposit] = useState<TransportDocumentByCertificateDeposit[]>([]);
@@ -55,7 +53,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                         <ListItemText
                             key="cuit-depositario"
                             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
-                            primary={<Typography variant='subtitle2'>Certificado Deposito N°</Typography>}
+                            primary={<Typography variant='subtitle2'>{t("certificateDepositNumber")}</Typography>}
                             secondary={
                                 <Typography letterSpacing={1} variant='subtitle1'>
                                     {formValues.numeroCertificado.value ? formValues.numeroCertificado.value : "-"}
@@ -68,7 +66,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                         <ListItemText
                             key="cuit-depositario"
                             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
-                            primary={<Typography variant='subtitle2'>Depositario</Typography>}
+                            primary={<Typography variant='subtitle2'>{t("depositary")}</Typography>}
                             secondary={
                                 <Typography letterSpacing={1} variant='subtitle1'>
                                     {depositary ? depositary.razonSocial : "-"}
@@ -81,7 +79,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                         <ListItemText
                             key="cuit-depositario"
                             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
-                            primary={<Typography variant='subtitle2'>Depositante</Typography>}
+                            primary={<Typography variant='subtitle2'>{t("depositor")}</Typography>}
                             secondary={
                                 <Typography letterSpacing={1} variant='subtitle1'>
                                     {depositors ? depositors.socialReason : "-"}
@@ -96,14 +94,14 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                         mb={1}
                         sx={{ letterSpacing: "1px" }}
                         align='center'>
-                        TARIFAS CADA 100 KG
+                        {t("ratesPer100Kg")}
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sm={3}>
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="Almacenaje"
+                        label={t("storage")}
                         error={formValues.precioAlmacenaje.isError}
                         helperText={formValues.precioAlmacenaje.message}
                         name="precioAlmacenaje"
@@ -119,7 +117,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="Acarreo"
+                        label={t("hauling")}
                         error={formValues.precioAcarreo.isError}
                         helperText={formValues.precioAcarreo.message}
                         name="precioAcarreo"
@@ -135,7 +133,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="Gastos Generales"
+                        label={t("generalExpenses")}
                         error={formValues.precioGastosGenerales.isError}
                         helperText={formValues.precioGastosGenerales.message}
                         name="precioGastosGenerales"
@@ -151,7 +149,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="Zarandeo"
+                        label={t("screening")}
                         error={formValues.precioZarandeo.isError}
                         helperText={formValues.precioZarandeo.message}
                         name="precioZarandeo"
@@ -167,7 +165,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="Otros"
+                        label={t("other")}
                         error={formValues.precioOtros.isError}
                         helperText={formValues.precioOtros.message}
                         name="precioOtros"
@@ -183,7 +181,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="Por c/pto Exceso"
+                        label={t("perExcessPoint")}
                         error={formValues.precioExcedente.isError}
                         helperText={formValues.precioExcedente.message}
                         name="precioExcedente"
@@ -196,13 +194,13 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     />
                 </Grid>
                 <Grid item xs={12} sm={1} display="flex" alignItems="center" justifyContent="end">
-                    <Typography variant="h6" >Secado</Typography>
+                    <Typography variant="h6" >{t("drying")}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={1}>
                     <TextField
                         variant="outlined"
                         type="number"
-                        placeholder='De'
+                        placeholder={t("from")}
                         error={formValues.precioSecadoDe.isError}
                         helperText={formValues.precioSecadoDe.message}
                         name="precioSecadoDe"
@@ -218,7 +216,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="number"
-                        placeholder='A'
+                        placeholder={t("to")}
                         error={formValues.precioSecadoA.isError}
                         helperText={formValues.precioSecadoA.message}
                         name="precioSecadoA"
@@ -234,7 +232,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="number"
-                        label="Monto Secado"
+                        label={t("dryingAmount")}
                         error={formValues.precioSecado.isError}
                         helperText={formValues.precioSecado.message}
                         name="precioSecado"
@@ -268,22 +266,22 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                             columnGroups={
                                 [
                                     { text: "", align: "center", colSpan: 3 },
-                                    { text: "Zarandeo", align: "center", colSpan: 3 },
-                                    { text: "Secado", align: "center", colSpan: 5 }
+                                    { text: t("screening"), align: "center", colSpan: 3 },
+                                    { text: t("drying"), align: "center", colSpan: 5 }
                                 ]
                             }
                             columns={
                                 [
-                                    { text: "Carta Porte N°", align: "left" },
-                                    { text: "Fecha", align: "center" },
-                                    { text: "Kg Neto", align: "center" },
-                                    { text: "Merma Kg", align: "center" },
-                                    { text: "Tarifa", align: "center" },
-                                    { text: "Importe", align: "center" },
-                                    { text: "% Humedad", align: "center" },
-                                    { text: "Mergma Kg", align: "center" },
-                                    { text: "Tarifa", align: "center" },
-                                    { text: "Importe", align: "center" },
+                                    { text: t("transportDocNumber"), align: "left" },
+                                    { text: t("date"), align: "center" },
+                                    { text: t("netKg"), align: "center" },
+                                    { text: t("wasteKg"), align: "center" },
+                                    { text: t("rate"), align: "center" },
+                                    { text: t("amount"), align: "center" },
+                                    { text: t("humidityPercentage"), align: "center" },
+                                    { text: t("wasteKg"), align: "center" },
+                                    { text: t("rate"), align: "center" },
+                                    { text: t("amount"), align: "center" },
                                     { text: "", align: "center" },
                                 ]}
                             isLoading={isLoading}
@@ -317,7 +315,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="text"
-                        label="Grado"
+                        label={t("grade")}
                         name="grado"
                         value={formValues.grado.value}
                         onChange={handleInputChange}
@@ -328,7 +326,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="text"
-                        label="Cont Proteico"
+                        label={t("proteinContent")}
                         name="contProteico"
                         value={formValues.contProteico.value}
                         onChange={handleInputChange}
@@ -339,7 +337,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="text"
-                        label="Factor"
+                        label={t("factor")}
                         name="factor"
                         value={formValues.factor.value}
                         onChange={handleInputChange}
@@ -350,7 +348,7 @@ export const GrainsForm: React.FC<CertificateDepositFormProps & GrainsFormProps>
                     <TextField
                         variant="outlined"
                         type="text"
-                        label="Observaciones"
+                        label={t("observations")}
                         name="observaciones"
                         multiline
                         value={formValues.observaciones.value}

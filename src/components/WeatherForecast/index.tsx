@@ -73,11 +73,28 @@ const WeatherForecast = ({
   position = [-59.0979, -35.1854],
   date = new Date()
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const theme = useTheme();
+
+  // Format date based on current language
+  const formatDate = (dateStr, options) => {
+    const date = new Date(dateStr);
+
+    // Get the appropriate locale based on the current language
+    let locale;
+    if (i18n.language.startsWith('es')) {
+      locale = 'es-ES';
+    } else if (i18n.language.startsWith('pt')) {
+      locale = 'pt-BR';
+    } else {
+      locale = 'en-US';
+    }
+
+    return date.toLocaleDateString(locale, options);
+  };
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -100,7 +117,7 @@ const WeatherForecast = ({
   }, [weatherData]);
 
   if (loading) return <CircularProgress />;
-  if (error) return <Typography>Error: {error}</Typography>;
+  if (error) return <Typography>{t('error')}: {error}</Typography>;
   if (!weatherData) return null;
 
   return (
@@ -116,7 +133,7 @@ const WeatherForecast = ({
         <StyledEventNoteIcon />
         <DateBadge>
           <Typography style={{ fontWeight: "bold" }}>
-            {t("Pronostico del Tiempo")}
+            {t("weatherForecast")}
           </Typography>
         </DateBadge>
       </Box>
@@ -125,19 +142,17 @@ const WeatherForecast = ({
           const tooltipTitle = (
             <React.Fragment>
               <Typography color="inherit">
-                {new Date(date).toLocaleDateString()}
+                {formatDate(date, { dateStyle: 'full' })}
               </Typography>
-              <b>Max Temp:</b> {weatherData.daily.temperature_2m_max[index]}°C
+              <b>{t('maxTemp')}:</b> {weatherData.daily.temperature_2m_max[index]}°C
               <br />
-              <b>Min Temp:</b> {weatherData.daily.temperature_2m_min[index]}°C
+              <b>{t('minTemp')}:</b> {weatherData.daily.temperature_2m_min[index]}°C
               <br />
-              <b>Precipitation:</b> {weatherData.daily.precipitation_sum[index]}
-              mm
+              <b>{t('precipitation')}:</b> {weatherData.daily.precipitation_sum[index]} mm
               <br />
-              <b>Precipitation Hours:</b>{" "}
-              {weatherData.daily.precipitation_hours[index]}h<br />
-              <b>Precipitation Probability:</b>{" "}
-              {weatherData.daily.precipitation_probability_max[index]}%
+              <b>{t('precipitationHours')}:</b> {weatherData.daily.precipitation_hours[index]}h
+              <br />
+              <b>{t('precipitationProbability')}:</b> {weatherData.daily.precipitation_probability_max[index]}%
             </React.Fragment>
           );
 
@@ -179,7 +194,7 @@ const WeatherForecast = ({
                     marginBottom: "8px"
                   }}
                 >
-                  {new Date(date).toLocaleDateString(undefined, {
+                  {formatDate(date, {
                     weekday: "short",
                     day: "numeric",
                     month: "short"
@@ -197,7 +212,7 @@ const WeatherForecast = ({
                   {weatherData.daily.temperature_2m_max[index]}°C
                 </Typography>
                 <Typography variant="body2">
-                  {weatherData.daily.precipitation_sum[index]}mm
+                  {weatherData.daily.precipitation_sum[index]} {t('mm')}
                 </Typography>
               </motion.div>
             </Tooltip>

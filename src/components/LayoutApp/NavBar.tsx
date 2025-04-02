@@ -20,7 +20,7 @@ import {
 import { styled, keyframes } from '@mui/system'
 import { useTranslation } from 'react-i18next'
 import { RootState } from '../../redux/store'
-import iconoCampo from '../../images/icons/iconodecampo2D.webp'
+import iconoCampo from '../../images/icons/iconodecampo2D.png'
 import integrationsIcon from '../../images/icons/integrations.png'
 import logoImage from '/assets/images/logos/agrootolss_logo_sol.png'
 import spanishFlagIcon from '../../images/icons/spain_flag.png'

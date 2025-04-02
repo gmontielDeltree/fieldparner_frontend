@@ -9,10 +9,11 @@ import LaborOrderContent from './TabsContent/LaborOrder'
 import ExecutionContent from './TabsContent/Execution'
 import AttachedContent from './TabsContent/Attached'
 import { format, parseISO } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { es, enUS, pt } from 'date-fns/locale'
 import { ComparisonReportPdf } from './helper'
 import { dbContext } from '../../../../services'
 import ActivityActionsBar from '../../components/ActivityActionsBar'
+import { useTranslation } from 'react-i18next'
 
 const ActivityContent = ({
   activity,
@@ -26,6 +27,16 @@ const ActivityContent = ({
   handleConfirmExecution,
   handleReplicateActivity,
 }) => {
+  const { t, i18n } = useTranslation();
+
+  // Determine date-fns locale based on current language
+  const getDateLocale = () => {
+    const lang = i18n.language;
+    if (lang.startsWith('es')) return es;
+    if (lang.startsWith('pt')) return pt;
+    return enUS; // Default to English
+  };
+
   // Ensure we have a consistent activity structure regardless of what was passed
   const activityData = activity?.actividad || activity;
 
@@ -91,18 +102,21 @@ const ActivityContent = ({
   }, [activity?.uuid, activity?.id, normalizedActivity?.uuid, db, isGroundSample])
 
   const formattedDate = (date) => {
-    if (!date) return 'Fecha no definida'
+    if (!date) return t('dateNotDefined')
 
     try {
+      // Get the current locale for date-fns
+      const dateLocale = getDateLocale();
+
       // Intentar formatear como ISO string
       if (typeof date === 'string' && date.includes('T')) {
-        return format(parseISO(date), 'PPPP', { locale: es })
+        return format(parseISO(date), 'PPPP', { locale: dateLocale })
       }
       // Si es un objeto Date o timestamp
-      return format(new Date(date), 'PPPP', { locale: es })
+      return format(new Date(date), 'PPPP', { locale: dateLocale })
     } catch (error) {
       console.error('Error formatting date:', error)
-      return 'Fecha inválida'
+      return t('invalidDate')
     }
   }
 
@@ -112,32 +126,56 @@ const ActivityContent = ({
 
   const getCropInfo = () => {
     const crop = normalizedActivity?.detalles?.cultivo
-    if (!crop) return null
+    if (!crop) return null;
+
+    // Get the description based on current language
+    let description;
+    if (i18n.language.startsWith('es')) {
+      description = crop.descriptionES;
+    } else if (i18n.language.startsWith('pt')) {
+      description = crop.descriptionPT;
+    } else {
+      description = crop.descriptionEN;
+    }
 
     return {
-      name: crop.descriptionES || crop.descriptionEN || crop.descriptionPT,
+      name: description || crop.descriptionES || crop.descriptionEN || crop.descriptionPT,
       type: crop.cropType,
     }
   }
 
   const cropInfo = getCropInfo()
-  const activityType = isGroundSample
-    ? 'ANÁLISIS DE SUELO'
-    : (normalizedActivity?.tipo || 'ACTIVIDAD').toUpperCase()
 
-  const hectares = normalizedActivity?.detalles?.hectareas || 0
+  const getActivityTypeTranslation = (tipo) => {
+    if (isGroundSample) return t('soilAnalysis').toUpperCase();
+
+    // Map activity types to translation keys
+    const typeToKey = {
+      'preparado': 'tillage',
+      'siembra': 'sowing',
+      'aplicacion': 'application',
+      'cosecha': 'harvesting',
+      'nota': 'note'
+    };
+
+    const key = typeToKey[tipo.toLowerCase()] || 'activity';
+    return t(key).toUpperCase();
+  };
+
+  const activityType = getActivityTypeTranslation(normalizedActivity?.tipo || 'activity');
+  const hectares = normalizedActivity?.detalles?.hectareas || 0;
 
   const handleComparisonReport = () => {
     if (!execution) {
-      alert('Debe ejecutar primero para generar el informe!!!')
-      return
+      alert(t('executeFirstForReport'));
+      return;
     }
     ComparisonReportPdf(
       normalizedActivity,
       execution,
       fieldName || lotDoc?.properties?.nombre,
       lotName || lotDoc?.properties?.nombre,
-    )
+    );
   }
 
   return (
@@ -180,7 +218,7 @@ const ActivityContent = ({
                 }}
                 color="text.secondary"
               >
-                {activityType} en {hectares} has.
+                {activityType} {t('on')} {hectares} {t('hectares')}
                 {cropInfo && (
                   <Chip
                     icon={<AgricultureIcon />}
@@ -201,7 +239,7 @@ const ActivityContent = ({
                   sx={{ fontSize: 16, fontWeight: 'bold' }}
                   color="green"
                 >
-                  Ejecutada: {formattedDate(execution.detalles?.fecha_ejecucion)}
+                  {t('executed')}: {formattedDate(execution.detalles?.fecha_ejecucion)}
                 </Typography>
               ) : (
                 <Typography
@@ -209,14 +247,14 @@ const ActivityContent = ({
                   color="text.primary"
                 >
                   {isGroundSample
-                    ? `Fecha de muestra: ${formattedPlanificadaDate}`
-                    : `Programada para: ${formattedPlanificadaDate}`}
+                    ? `${t('sampleDate')}: ${formattedPlanificadaDate}`
+                    : `${t('scheduledFor')}: ${formattedPlanificadaDate}`}
                 </Typography>
               )}
 
               {isGroundSample && activity?.laboratorio && (
                 <Typography sx={{ fontSize: 14 }} color="text.secondary">
-                  Laboratorio: {activity.laboratorio}
+                  {t('laboratory')}: {activity.laboratorio}
                 </Typography>
               )}
             </Box>
@@ -224,14 +262,14 @@ const ActivityContent = ({
 
           <ActivityActionsBar
             sx={{ marginLeft: '8px' }}
-            onEditActivity={() => handleEditActivity(activity)}
+            onEditActivity={() => handleEditActivity(normalizedActivity)}
             onDeleteActivity={() =>
               handleDeleteActivity(activity._id)
             }
-            onMeteo={() => alert('Proximamente - En Construcción')}
+            onMeteo={() => alert(t('comingSoon'))}
             onDownloadOT={() => handleDownloadPDF(activity)}
             onRepeatOT={() => handleReplicateActivity()}
-            onShareOT={() => alert('Proximamente - En Construcción')}
+            onShareOT={() => alert(t('comingSoon'))}
             onDownloadCompare={handleComparisonReport}
             disabledActions={{
               edit: !!execution,
@@ -243,23 +281,23 @@ const ActivityContent = ({
 
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={() => handleEditActivity(activity)}>
-          Editar {activityType}
+          {t('edit')} {activityType}
         </MenuItem>
         {!isGroundSample && (
           <MenuItem onClick={() => handleReplicateActivity()}>
-            Repetir Planificacion
+            {t('repeatPlan')}
           </MenuItem>
         )}
         <MenuItem onClick={() => handleDownloadPDF(activity)}>
-          {isGroundSample ? 'Informe PDF' : 'Orden de Trabajo PDF'}
+          {isGroundSample ? t('pdfReport') : t('workOrderPdf')}
         </MenuItem>
         {execution && !isGroundSample && (
           <MenuItem onClick={handleComparisonReport}>
-            Ejecución vs Planificación PDF
+            {t('executionVsPlanningPdf')}
           </MenuItem>
         )}
         <MenuItem onClick={() => handleDeleteActivity(activity._id)}>
-          Eliminar
+          {t('delete')}
         </MenuItem>
       </Menu>
 
@@ -273,30 +311,30 @@ const ActivityContent = ({
             scrollButtons="auto"
             sx={{ marginBottom: '16px' }}
           >
-            <Tab label="Laboratorio" />
-            <Tab label="Características" />
-            <Tab label="Variables" />
-            <Tab label="Adjuntos" />
+            <Tab label={t('laboratory')} />
+            <Tab label={t('characteristics')} />
+            <Tab label={t('variables')} />
+            <Tab label={t('attachments')} />
           </Tabs>
 
           {selectedTab === 0 && (
             <Box p={2} bgcolor="#f5f5f5" borderRadius={1}>
               <Typography variant="h6" gutterBottom>
-                Información de Laboratorio
+                {t('laboratoryInformation')}
               </Typography>
               <Typography>
-                <strong>Fecha de muestra:</strong> {formattedPlanificadaDate}
+                <strong>{t('sampleDate')}:</strong> {formattedPlanificadaDate}
               </Typography>
               <Typography>
-                <strong>Laboratorio:</strong> {activity.laboratorio || 'No especificado'}
+                <strong>{t('laboratory')}:</strong> {activity.laboratorio || t('notSpecified')}
               </Typography>
               <Typography>
-                <strong>Referencia:</strong> {activity.refDocLab || 'No especificada'}
+                <strong>{t('reference')}:</strong> {activity.refDocLab || t('notSpecified')}
               </Typography>
               {activity.responsableTecnico && (
                 <Typography>
-                  <strong>Responsable técnico:</strong> {activity.responsableTecnico}
-                  {activity.matricula && ` (Matrícula: ${activity.matricula})`}
+                  <strong>{t('technicalResponsible')}:</strong> {activity.responsableTecnico}
+                  {activity.matricula && ` (${t('registration')}: ${activity.matricula})`}
                 </Typography>
               )}
             </Box>
@@ -305,28 +343,28 @@ const ActivityContent = ({
           {selectedTab === 1 && (
             <Box p={2} bgcolor="#f5f5f5" borderRadius={1}>
               <Typography variant="h6" gutterBottom>
-                Características del Suelo
+                {t('soilCharacteristics')}
               </Typography>
               {activity.characteristics ? (
                 <>
                   {activity.characteristics.profundidad && (
                     <Typography>
-                      <strong>Profundidad:</strong> {activity.characteristics.profundidad} cm
+                      <strong>{t('depth')}:</strong> {activity.characteristics.profundidad} cm
                     </Typography>
                   )}
                   {activity.characteristics.caracterizacion1 && (
                     <Typography>
-                      <strong>Caracterización 1:</strong> {activity.characteristics.caracterizacion1}
+                      <strong>{t('characterization')} 1:</strong> {activity.characteristics.caracterizacion1}
                     </Typography>
                   )}
                   {activity.characteristics.caracterizacion2 && (
                     <Typography>
-                      <strong>Caracterización 2:</strong> {activity.characteristics.caracterizacion2}
+                      <strong>{t('characterization')} 2:</strong> {activity.characteristics.caracterizacion2}
                     </Typography>
                   )}
                 </>
               ) : (
-                <Typography>No hay características registradas</Typography>
+                <Typography>{t('noCharacteristicsRegistered')}</Typography>
               )}
             </Box>
           )}
@@ -334,7 +372,7 @@ const ActivityContent = ({
           {selectedTab === 2 && (
             <Box p={2} bgcolor="#f5f5f5" borderRadius={1}>
               <Typography variant="h6" gutterBottom>
-                Variables del Suelo
+                {t('soilVariables')}
               </Typography>
               {activity.soilVariables && Object.keys(activity.soilVariables).length > 0 ? (
                 <Grid container spacing={2}>
@@ -349,7 +387,7 @@ const ActivityContent = ({
                     ))}
                 </Grid>
               ) : (
-                <Typography>No hay variables registradas</Typography>
+                <Typography>{t('noVariablesRegistered')}</Typography>
               )}
             </Box>
           )}
@@ -357,14 +395,14 @@ const ActivityContent = ({
           {selectedTab === 3 && (
             <Box p={2} bgcolor="#f5f5f5" borderRadius={1}>
               <Typography variant="h6" gutterBottom>
-                Archivos Adjuntos
+                {t('attachedFiles')}
               </Typography>
               {activity.attachedFileId ? (
                 <Typography>
-                  Archivo adjunto ID: {activity.attachedFileId}
+                  {t('attachedFileId')}: {activity.attachedFileId}
                 </Typography>
               ) : (
-                <Typography>No hay archivos adjuntos</Typography>
+                <Typography>{t('noAttachedFiles')}</Typography>
               )}
             </Box>
           )}
@@ -379,17 +417,17 @@ const ActivityContent = ({
             scrollButtons="auto"
             sx={{ marginBottom: '16px' }}
           >
-            <Tab label="Programa" />
-            <Tab label="Orden de trabajo" />
-            <Tab label="Ejecucion" />
-            <Tab label="Adjuntos" />
+            <Tab label={t('program')} />
+            <Tab label={t('workOrder')} />
+            <Tab label={t('execution')} />
+            <Tab label={t('attachments')} />
           </Tabs>
 
           {selectedTab === 0 && (
             <PlanificationContent
               activity={normalizedActivity}
               backgroundColor={complementaryColor}
-              showEstimatedApplicationDate={activityType !== 'APPLICATION'}
+              showEstimatedApplicationDate={activityType !== 'APLICACIÓN'}
             />
           )}
           {selectedTab === 1 && (

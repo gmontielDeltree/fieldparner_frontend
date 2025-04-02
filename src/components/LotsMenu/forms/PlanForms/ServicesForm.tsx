@@ -17,6 +17,7 @@ import { useAppSelector } from '../../../../hooks/useRedux'
 import { useDeposit, useLaborsServices, useBusiness, useSupply } from '../../../../hooks'
 import { AutocompleteContratista } from '../../components/AutocompleteContratista'
 import ServicesList from './ServicesList'
+import { useTranslation } from 'react-i18next'
 
 /* --- Estilos de ejemplo --- */
 const Title = styled(Typography)({
@@ -33,6 +34,7 @@ const CustomPaper = styled(Paper)({
 })
 
 function ServicesForm({ formData, setFormData }) {
+  const { t } = useTranslation()
   const { laborsServices, getLaborsServices } = useLaborsServices()
   const { businesses, getBusinesses } = useBusiness()
   const { isLoading, supplies, getSupplies } = useSupply()
@@ -78,7 +80,7 @@ function ServicesForm({ formData, setFormData }) {
   // Agregar una fila de servicio al arreglo
   const handleAddRow = () => {
     if (!selectedService) {
-      alert('Seleccione un servicio antes de agregar')
+      alert(t('selectServiceBeforeAdding'))
       return
     }
 
@@ -131,12 +133,12 @@ function ServicesForm({ formData, setFormData }) {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div>{t('loading')}</div>
   }
 
   return (
     <CustomPaper elevation={3}>
-      <Title>Servicios</Title>
+      <Title>{t('services')}</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
           {/* Si es Brasil + fitosanitaria => mostrar campo ART */}
@@ -144,11 +146,11 @@ function ServicesForm({ formData, setFormData }) {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="ART (Brasil)"
+                label={t('artBrazil')}
                 variant="outlined"
                 value={art}
                 onChange={(e) => setArt(e.target.value)}
-                helperText="Nro de Autorización para aplicación fitosanitaria"
+                helperText={t('phytosanitaryApplicationAuthNumber')}
               />
             </Grid>
           )}
@@ -157,12 +159,12 @@ function ServicesForm({ formData, setFormData }) {
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={4}>
               <FormControl fullWidth>
-                <InputLabel id="service-dropdown-label">Servicio</InputLabel>
+                <InputLabel id="service-dropdown-label">{t('service')}</InputLabel>
                 <Select
                   labelId="service-dropdown-label"
                   id="service-dropdown"
                   value={selectedService || ''} // si es null => ''
-                  label="Servicio"
+                  label={t('service')}
                   onChange={(e) => {
                     // e.target.value es el OBJETO "service" seleccionado
                     setSelectedService(e.target.value)
@@ -191,7 +193,7 @@ function ServicesForm({ formData, setFormData }) {
             <Grid item xs={3}>
               <TextField
                 fullWidth
-                label="Comentario"
+                label={t('comment')}
                 variant="outlined"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
@@ -202,7 +204,7 @@ function ServicesForm({ formData, setFormData }) {
               <IconButton
                 onClick={handleAddRow}
                 color="primary"
-                aria-label="add"
+                aria-label={t('add')}
               >
                 <AddIcon />
               </IconButton>
@@ -214,7 +216,7 @@ function ServicesForm({ formData, setFormData }) {
             <Grid item xs={4}>
               <TextField
                 fullWidth
-                label="Unidades"
+                label={t('units')}
                 value={units}
                 onChange={(e) => setUnits(e.target.value)}
               />
@@ -223,7 +225,7 @@ function ServicesForm({ formData, setFormData }) {
             <Grid item xs={4}>
               <TextField
                 fullWidth
-                label="Valor Unidad"
+                label={t('unitValue')}
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}
               />
@@ -232,7 +234,7 @@ function ServicesForm({ formData, setFormData }) {
             <Grid item xs={3}>
               <TextField
                 fullWidth
-                label="Valor Total Servicio"
+                label={t('totalServiceValue')}
                 value={totalCost}
                 InputProps={{
                   readOnly: true,

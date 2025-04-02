@@ -3,6 +3,7 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import DrawIcon from '@mui/icons-material/Draw'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import CloseIcon from '@mui/icons-material/Close'
+import { useTranslation } from 'react-i18next'
 
 interface GeometryPromptModalProps {
   isOpen: boolean
@@ -11,20 +12,13 @@ interface GeometryPromptModalProps {
   onUpload: (file: File) => void
 }
 
-const text = {
-  header: '¿Cómo quieres agregar la nueva geometría?',
-  drawButton: 'Dibujar en el mapa',
-  uploadButton: 'Subir archivo KML/KMZ',
-  closeButton: 'Cerrar',
-  dropzoneText: 'Arrastra y suelta tu archivo aquí',
-}
-
 const GeometryPromptModal: React.FC<GeometryPromptModalProps> = ({
   isOpen,
   toggle,
   onDraw,
   onUpload,
 }) => {
+  const { t } = useTranslation();
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = React.useState(false)
 
@@ -126,13 +120,13 @@ const GeometryPromptModal: React.FC<GeometryPromptModalProps> = ({
   return (
     <Modal isOpen={isOpen} toggle={toggle} style={modalStyle}>
       <ModalHeader toggle={toggle} style={headerStyle}>
-        {text.header}
+        {t('geometryPromptHeader')}
       </ModalHeader>
       <ModalBody style={bodyStyle}>
         <div style={buttonContainerStyle}>
           <Button style={primaryButtonStyle} onClick={onDraw}>
             <DrawIcon style={{ fontSize: '1.25rem' }} />
-            {text.drawButton}
+            {t('drawOnMap')}
           </Button>
 
           <div
@@ -149,9 +143,9 @@ const GeometryPromptModal: React.FC<GeometryPromptModalProps> = ({
                 marginBottom: '8px',
               }}
             />
-            <div>{text.dropzoneText}</div>
+            <div>{t('dropzoneText')}</div>
             <div style={{ fontSize: '0.75rem', marginTop: '4px' }}>
-              o haz clic para seleccionar
+              {t('orClickToSelect')}
             </div>
           </div>
 
@@ -167,7 +161,7 @@ const GeometryPromptModal: React.FC<GeometryPromptModalProps> = ({
       <ModalFooter style={footerStyle}>
         <Button style={secondaryButtonStyle} onClick={toggle}>
           <CloseIcon style={{ fontSize: '1rem' }} />
-          {text.closeButton}
+          {t('close')}
         </Button>
       </ModalFooter>
     </Modal>
