@@ -10,7 +10,7 @@ const AssignCampaignsToActivities: React.FC = () => {
 
   const assignCampaigns = async () => {
     if (isProcessing || campaigns.length === 0) return;
-    
+
     setIsProcessing(true);
     try {
       // Get all activities
@@ -38,12 +38,16 @@ const AssignCampaignsToActivities: React.FC = () => {
       // Bulk update activities
       if (updates.length > 0) {
         await db.bulkDocs(updates);
+        // Dismiss existing toasts first
+        toast.dismiss();
         toast.success(`Successfully assigned campaigns to ${updates.length} activities`);
       } else {
+        toast.dismiss();
         toast.info('All activities already have campaigns assigned');
       }
     } catch (error) {
       console.error('Error assigning campaigns:', error);
+      toast.dismiss();
       toast.error('Error assigning campaigns to activities');
     } finally {
       setIsProcessing(false);
@@ -51,14 +55,24 @@ const AssignCampaignsToActivities: React.FC = () => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const initialize = async () => {
-      await getCampaigns();
-      assignCampaigns();
+      if (isMounted) {
+        await getCampaigns();
+        assignCampaigns();
+      }
     };
+
     initialize();
+
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  return null; // This component doesn't render anything
+  return null;
 };
 
 export default AssignCampaignsToActivities;

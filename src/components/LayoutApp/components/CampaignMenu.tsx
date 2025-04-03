@@ -114,6 +114,8 @@ const CampaignMenu: React.FC = () => {
   useEffect(() => {
     if (selectedCampaign) {
       saveCampaignToLS(selectedCampaign)
+      // Dismiss any existing toasts before showing a new one
+      toast.dismiss()
       toast.success(
         `${t('La campaña')} ${selectedCampaign.name} ${t('está seleccionada')}`,
         {
@@ -125,13 +127,6 @@ const CampaignMenu: React.FC = () => {
           draggable: false,
           theme: 'colored',
           transition: Slide,
-          onClose: () => {
-            // Force cleanup of toast container
-            const toastContainer = document.querySelector('.Toastify');
-            if (toastContainer) {
-              toastContainer.remove();
-            }
-          }
         },
       )
     }
@@ -160,6 +155,8 @@ const CampaignMenu: React.FC = () => {
     if (campaignToClose) {
       const updatedCampaign = { ...campaignToClose, state: 'closed' }
       await updateCampaign(updatedCampaign)
+      // Dismiss any existing toasts before showing a new one
+      toast.dismiss()
       toast.success(
         `${t('Campaign')} "${updatedCampaign.name}" ${t('has been closed')}`,
         {
@@ -195,9 +192,8 @@ const CampaignMenu: React.FC = () => {
   return (
     <>
       <Tooltip
-        title={`${t('Campaña seleccionada')}: ${t('Desde')} ${
-          selectedCampaign?.startDate
-        } ${t('al')} ${selectedCampaign?.endDate} - ${selectedCampaign?.state}`}
+        title={`${t('Campaña seleccionada')}: ${t('Desde')} ${selectedCampaign?.startDate
+          } ${t('al')} ${selectedCampaign?.endDate} - ${selectedCampaign?.state}`}
       >
         <Button
           aria-label="campaign"
@@ -273,17 +269,13 @@ const CampaignMenu: React.FC = () => {
                 >
                   <Typography variant="subtitle1">{campaign.name}</Typography>
                   <Typography variant="subtitle2" color="textSecondary">
-                    {`${
-                      campaign?.description.length
-                        ? campaign?.description
-                        : 'No description'
-                    } - ${campaign?.startDate} ${t('to')} ${
-                      campaign?.endDate
-                    } ${
-                      campaign?.state.length ? ` - ${campaign?.state}` : ''
-                    } ${
-                      campaign?.zoneId.length ? ` - ${campaign?.zoneId}` : ''
-                    }`}
+                    {`${campaign?.description.length
+                      ? campaign?.description
+                      : 'No description'
+                      } - ${campaign?.startDate} ${t('to')} ${campaign?.endDate
+                      } ${campaign?.state.length ? ` - ${campaign?.state}` : ''
+                      } ${campaign?.zoneId.length ? ` - ${campaign?.zoneId}` : ''
+                      }`}
                   </Typography>
                 </Grid>
                 <Grid item xs={4} style={{ textAlign: 'right' }}>
