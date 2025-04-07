@@ -16,6 +16,7 @@ import { AutocompleteSupplies } from '../../components/AutocompleteSupplies'
 import { AutocompleteDeposito } from '../../components/AutocompleteDeposito'
 import Swal from 'sweetalert2'
 import SuppliesList from './SuppliesList'
+import { useTranslation } from 'react-i18next'
 
 const Title = styled(Typography)({
   fontSize: '1.5em',
@@ -31,6 +32,7 @@ const CustomPaper = styled(Paper)({
 })
 
 function SuppliesForm({ lot, db, formData, setFormData }) {
+  const { t } = useTranslation()
   const [selectedSupply, setSelectedSupply] = useState()
   const [dosificacion, setDosificacion] = useState('')
   const [total, setTotal] = useState('')
@@ -50,8 +52,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     if (!supply) {
       Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'Por favor seleccione un insumo',
+        title: t('error'),
+        text: t('selectSupplyPlease'),
       })
       return
     }
@@ -63,8 +65,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       if (cropId && cropId !== _id) {
         Swal.fire({
           icon: 'error',
-          title: 'Insumo incompatible',
-          text: 'El insumo seleccionado no es compatible con el cultivo',
+          title: t('incompatibleSupply'),
+          text: t('supplyNotCompatibleWithCrop'),
         })
         return
       }
@@ -154,11 +156,11 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     }
   }, [formData])
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <div>{t('loading')}</div>
 
   return (
     <CustomPaper elevation={3}>
-      <Title>Insumos</Title>
+      <Title>{t('supplies')}</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
           {/* Línea 1: Insumo, Descripción */}
@@ -191,7 +193,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
             <Grid item xs={4}>
               <TextField
                 fullWidth
-                label="Nro de Lote"
+                label={t('batchNumber')}
                 value={nroLote}
                 onChange={handleLotNumberChange}
               />
@@ -199,7 +201,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
             <Grid item xs={4}>
               <TextField
                 fullWidth
-                label="Ubicacion"
+                label={t('location')}
                 value={ubicacion}
                 onChange={handleUbicacionChange}
               />
@@ -211,7 +213,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
             <Grid item xs={6}>
               <NumberFieldWithUnits
                 fullWidth
-                label="Cantidad"
+                label={t('quantity')}
                 value={dosificacion}
                 onChange={handleDosificacionChange}
                 unit={selectedSupply?.unitMeasurement || 'unit'}
@@ -220,7 +222,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
             <Grid item xs={5}>
               <NumberFieldWithUnits
                 fullWidth
-                label="Cant Total"
+                label={t('totalQuantity')}
                 value={total}
                 onChange={handleTotalChange}
                 unit={selectedSupply?.unitMeasurement || 'unit'}
@@ -230,7 +232,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               <IconButton
                 onClick={handleAddRow}
                 color="primary"
-                aria-label="add"
+                aria-label={t('add')}
               >
                 <AddIcon />
               </IconButton>

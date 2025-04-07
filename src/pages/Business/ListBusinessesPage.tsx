@@ -15,6 +15,7 @@ import { setBusinessActive } from "../../redux/business";
 import { useTranslation } from "react-i18next";
 import { Business, BusinessItem } from "../../interfaces/socialEntity";
 import { GenericListPage } from "../GenericListPage";
+import { GridRenderCellParams } from "@mui/x-data-grid";
 
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,21 +28,42 @@ export const ListBusinessesPage: React.FC = () => {
 
   const columns = [
     { field: "tipoEntidad", headerName: t("entity_type"), flex: 1 },
-    { field: "razonSocial", headerName: t("name_negal_name"), flex: 1 },
-    { field: "cuit", headerName: t("tax_id_identification_number"), flex: 1 },
+    {
+      field: "nombreOrazon",
+      headerName: t("name_negal_name"),
+      flex: 1,
+      valueGetter: (params: GridRenderCellParams) => {
+        const { tipoEntidad, nombreCompleto, razonSocial } = params.row;
+        if (tipoEntidad === "fisica") {
+          return `${nombreCompleto || ""}`;
+        }
+        return razonSocial || "-";
+      },
+    },
+    {
+      field: "cuit",
+      headerName: t("tax_id_identification_number"),
+      flex: 1,
+      valueGetter: (params: GridRenderCellParams) => {
+        const { tipoEntidad, documento, cuit } = params.row;
+        return tipoEntidad?.toLowerCase() === "fisica"
+          ? documento || "—"
+          : cuit || "—";
+      },
+    },
     { field: "email", headerName: t("Email"), flex: 1 },
     {
       field: "country",
       headerName: t("id_country"),
       flex: 1,
-      valueGetter: (params) => params.row.country?.descriptionES || '-'
+      valueGetter: (params: GridRenderCellParams) => params.row.country?.descriptionES || '-'
     },
     {
       field: "actions",
       headerName: "",
       flex: 1,
       sortable: false,
-      renderCell: (params) => (
+      renderCell: (params: GridRenderCellParams) => (
         <Box display="flex" justifyContent="center">
           <Tooltip title={t("icon_edit")}>
             <IconButton

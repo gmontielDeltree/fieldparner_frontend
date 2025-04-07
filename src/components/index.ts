@@ -27,6 +27,8 @@ export * from './ExitField/GeneralData';
 export * from './ExitField/TransportDestination';
 export * from './PaisTableCell/PaisTableCell';
 export * from './MultiLanguageSelect/MultiLanguageSelect';
+export * from './FormSection/FormSection';
+export * from './LocalidadSelect/LocalidadSelect';
 // export * from './CompatibilityValidator/CompatibilityValidator';
 export { default as UserPermissionsModal } from './Modals/UserPermissionsModal';
 

@@ -49,11 +49,13 @@ function PersonalFormUnified({
   activities = [],
 }) {
   const { t } = useTranslation();
+
+  // Se utiliza el operador opcional para evitar error si formData.detalles es undefined
   const [fertilizationChecked, setFertilizationChecked] = useState(
-    formData.detalles.fertilizacion || false,
+    formData.detalles?.fertilizacion || false,
   )
   const [phytosanitaryChecked, setPhytosanitaryChecked] = useState(
-    formData.detalles.fitosanitaria || false,
+    formData.detalles?.fitosanitaria || false,
   )
   const [plantings, setPlantings] = useState([])
   const [selectedPlanting, setSelectedPlanting] = useState(null)
@@ -128,7 +130,7 @@ function PersonalFormUnified({
 
     setPlantings(plantingActivities);
 
-    if (formData.detalles.siembra_inicial) {
+    if (formData.detalles?.siembra_inicial) {
       const initialPlanting = plantingActivities.find(s => {
         const sId = s._id;
         return sId === formData.detalles.siembra_inicial;
@@ -218,7 +220,7 @@ function PersonalFormUnified({
             <Select
               labelId="business-label"
               id="business"
-              value={formData.detalles.business || ''}
+              value={formData.detalles?.business || ''}
               label={t('Agronomic Engineer')}
               onChange={(e) => onFieldChange('business', e.target.value)}
             >
@@ -241,7 +243,7 @@ function PersonalFormUnified({
                 <Select
                   labelId="siembra-inicial-label"
                   id="siembra-inicial"
-                  value={formData.detalles.siembra_inicial || ''}
+                  value={formData.detalles?.siembra_inicial || ''}
                   label={t('Initial Planting')}
                   onChange={handlePlantingChange}
                   renderValue={(selected) => {
@@ -279,7 +281,7 @@ function PersonalFormUnified({
         ) : (
           <Grid item xs={12} sm={6}>
             <AutocompleteCultivo
-              value={formData.detalles.cultivo || ''}
+              value={formData.detalles?.cultivo || ''}
               onChange={(value) => onFieldChange('cultivo', value)}
             />
           </Grid>
@@ -324,7 +326,7 @@ function PersonalFormUnified({
 
         <Grid item xs={12} sm={6}>
           <AutocompleteContratista
-            value={formData.detalles.contratista || ''}
+            value={formData.detalles?.contratista || ''}
             onChange={(value) => onFieldChange('contratista', value)}
           />
         </Grid>
@@ -343,8 +345,8 @@ function PersonalFormUnified({
               label={t('Execution Date')}
               value={
                 mode === 'execute'
-                  ? formData.detalles.fecha_ejecucion || new Date()
-                  : formData.detalles.fecha_ejecucion_tentativa
+                  ? formData.detalles?.fecha_ejecucion || new Date()
+                  : formData.detalles?.fecha_ejecucion_tentativa
                     ? new Date(formData.detalles.fecha_ejecucion_tentativa)
                     : null
               }
@@ -365,7 +367,7 @@ function PersonalFormUnified({
           <>
             <Grid item xs={12} sm={6}>
               <AutocompleteDeposito
-                value={formData.detalles.deposito}
+                value={formData.detalles?.deposito}
                 onChange={(value) => onFieldChange('deposito', value)}
               />
             </Grid>
@@ -375,13 +377,10 @@ function PersonalFormUnified({
             </Grid>
 
             <Grid item xs={12} sm={4}>
-              <LocalizationProvider
-                dateAdapter={AdapterDateFns}
-                adapterLocale={es}
-              >
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
                 <TimePicker
                   label={t('Start Time')}
-                  value={formData.detalles.fecha_hora_inicio || new Date()}
+                  value={formData.detalles?.fecha_hora_inicio || new Date()}
                   onChange={(newValue) =>
                     onFieldChange('fecha_hora_inicio', newValue)
                   }
@@ -391,13 +390,10 @@ function PersonalFormUnified({
             </Grid>
 
             <Grid item xs={12} sm={4}>
-              <LocalizationProvider
-                dateAdapter={AdapterDateFns}
-                adapterLocale={es}
-              >
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
                 <TimePicker
                   label={t('End Time')}
-                  value={formData.detalles.fecha_hora_fin || new Date()}
+                  value={formData.detalles?.fecha_hora_fin || new Date()}
                   onChange={(newValue) =>
                     onFieldChange('fecha_hora_fin', newValue)
                   }
@@ -410,7 +406,7 @@ function PersonalFormUnified({
               <NumberFieldWithUnits
                 label={t('Hectares')}
                 unit="ha"
-                value={formData.detalles.hectareas || 0}
+                value={formData.detalles?.hectareas || 0}
                 onChange={(e) => onFieldChange('hectareas', e.target.value)}
               />
             </Grid>
@@ -420,7 +416,7 @@ function PersonalFormUnified({
             <NumberFieldWithUnits
               label={t('Hectares to treat')}
               unit="ha"
-              value={formData.detalles.hectareas || 0}
+              value={formData.detalles?.hectareas || 0}
               onChange={(e) => onFieldChange('hectareas', e.target.value)}
             />
           </Grid>
@@ -432,7 +428,7 @@ function PersonalFormUnified({
               size="small"
               fullWidth
               label={t('Yield Obtained (ton/ha)')}
-              value={+formData.detalles.rinde_obtenido || 0}
+              value={+formData.detalles?.rinde_obtenido || 0}
               onChange={(e) => onFieldChange('rinde_obtenido', e.target.value)}
               unit="ton/ha"
             />

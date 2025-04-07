@@ -3,6 +3,7 @@ import { Modal, Button } from 'reactstrap'
 import WarningIcon from '@mui/icons-material/Warning'
 import CloseIcon from '@mui/icons-material/Close'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
+import { useTranslation } from 'react-i18next'
 
 interface ValidationAlertProps {
   isOpen: boolean
@@ -17,6 +18,8 @@ const ValidationAlert: React.FC<ValidationAlertProps> = ({
   currentStep,
   requiredFields,
 }) => {
+  const { t } = useTranslation()
+
   const modalStyle: React.CSSProperties = {
     position: 'fixed',
     top: '50%',
@@ -151,7 +154,7 @@ const ValidationAlert: React.FC<ValidationAlertProps> = ({
         <div style={headerStyle}>
           <h5 style={titleStyle}>
             <WarningIcon style={{ fontSize: '1.5rem' }} />
-            Campos Incompletos
+            {t('incompleteFields')}
           </h5>
           <Button
             color="link"
@@ -165,14 +168,14 @@ const ValidationAlert: React.FC<ValidationAlertProps> = ({
 
         <div style={bodyStyle}>
           <p style={descriptionStyle}>
-            Para continuar con "<span style={highlightText}>{currentStep}</span>
-            ", necesitamos que completes los siguientes campos:
+            {t('continueWithStep')} "<span style={highlightText}>{currentStep}</span>
+            ", {t('needToComplete')}
           </p>
           <h6 style={listTitleStyle}>
             <ErrorOutlineIcon
               style={{ color: '#FF4949', fontSize: '1.25rem' }}
             />
-            Campos requeridos:
+            {t('requiredFields')}
           </h6>
           <ul style={listStyle}>
             {requiredFields.map((field, index) => (
@@ -186,7 +189,7 @@ const ValidationAlert: React.FC<ValidationAlertProps> = ({
 
         <div style={footerStyle}>
           <Button style={buttonStyle} onClick={onClose}>
-            Entendido
+            {t('understood')}
           </Button>
         </div>
       </div>

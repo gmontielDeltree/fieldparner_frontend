@@ -1,4 +1,3 @@
-// usePlanActivity.ts
 import { useState, useEffect } from 'react'
 import { getEmptyActivity } from '../../../interfaces/activity'
 import { useSupply } from '../../../hooks'
@@ -30,7 +29,8 @@ export const usePlanActivity = (
       ...prevFormData,
       lote_uuid: lot.id,
       ts_generacion: 0,
-      tipo: translatedActivityType.toLowerCase(),
+      // Se usa el operador opcional para evitar el error
+      tipo: translatedActivityType?.toLowerCase() || '',
       detalles: {
         ...prevFormData.detalles,
         hectareas: lot.properties.hectareas,
@@ -56,7 +56,8 @@ export const usePlanActivity = (
         ...prevFormData,
         lote_uuid: lot.id,
         ts_generacion: 0,
-        tipo: translatedActivityType.toLowerCase(),
+        // Se usa el operador opcional para evitar el error
+        tipo: translatedActivityType?.toLowerCase() || '',
         detalles: {
           ...prevFormData.detalles,
           hectareas: lot.properties.hectareas,

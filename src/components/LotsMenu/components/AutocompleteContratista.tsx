@@ -101,8 +101,8 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
           if (params.inputValue !== "") {
             filtered.push({
               inputValue: params.inputValue,
-              nombreCompleto: `${t("_add")} "${params.inputValue}"`,
-              razonSocial: `${t("_add")} "${params.inputValue}"`
+              nombreCompleto: `${t("add")} "${params.inputValue}"`,
+              razonSocial: `${t("add")} "${params.inputValue}"`
             });
           }
 
@@ -137,33 +137,33 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
         sx={{ width: width }}
         freeSolo
         renderInput={(params) => (
-          <TextField {...params} label={t("_contractor")} />
+          <TextField {...params} label={t("contractor")} />
         )}
       />
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
           <DialogTitle>
-            {t("_quick_add")} {t("_contractor")}
+            {t("quickAdd")} {t("contractor")}
           </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t(
-                "you_can_edit_more_details_later_in_the_contractors_menu_on_the_sidebar"
+                "editDetailsLaterInContractorsMenu"
               )}
             </DialogContentText>
-            <CuitTextInput  value={dialogValue.cuit}
-              onValidCheck={(valid:boolean)=>{
+            <CuitTextInput value={dialogValue.cuit}
+              onValidCheck={(valid: boolean) => {
                 setEnabledAdd(valid)
               }}
-              onOnlineValidation={(e : string)=>{
-                console.log("Setting Validation",e)
+              onOnlineValidation={(e: string) => {
+                console.log("Setting Validation", e)
                 setDialogValue({
                   ...dialogValue,
-                  razonSocial:e
+                  razonSocial: e
                 })
               }}
-              onChange={(event) =>{
-                console.log("CUIT",event.target.value)
+              onChange={(event) => {
+                console.log("CUIT", event.target.value)
                 setDialogValue({
                   ...dialogValue,
                   cuit: event.target.value
@@ -172,7 +172,7 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
               } />
 
             <TextField
-            sx={{minWidth:"75%"}}
+              sx={{ minWidth: "75%" }}
               autoFocus
               margin="dense"
               id="name"
@@ -183,31 +183,15 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
                   razonSocial: event.target.value
                 })
               }
-              label="Razón Social"
+              label={t("businessName")}
               type="text"
               variant="standard"
             />
-            
 
-            {/* <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              value={dialogValue.cuit}
-              onChange={(event) =>
-                setDialogValue({
-                  ...dialogValue,
-                  cuit: event.target.value
-                })
-              }
-              label={t("_cuit")}
-              type="text"
-              variant="standard"
-            /> */}
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>{t("_Cancel")}</Button>
-            <Button type="submit" disabled={!enabledAdd}>{t("_Add")}</Button>
+            <Button onClick={handleClose}>{t("cancel")}</Button>
+            <Button type="submit" disabled={!enabledAdd}>{t("add")}</Button>
           </DialogActions>
         </form>
       </Dialog>

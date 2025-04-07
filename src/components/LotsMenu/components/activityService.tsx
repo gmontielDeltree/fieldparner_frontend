@@ -1,4 +1,3 @@
-// activityService.ts
 import { format } from 'date-fns'
 import {
   SowingType,
@@ -7,6 +6,14 @@ import {
   ApplicationType,
   WithdrawalOrderType,
 } from '../../../types'
+
+// Define the standard Spanish activity types
+const ACTIVITY_TYPES = {
+  preparation: "preparado",
+  sowing: "siembra",
+  harvesting: "cosecha",
+  application: "aplicacion",
+}
 
 export const reserveSupplyStock = async (
   dosis,
@@ -56,12 +63,41 @@ export const saveActivity = async (
   createWithdrawalOrder,
   backToActivites,
 ) => {
-  if (
-    [SowingType, PreparedType, HarvestType, ApplicationType].includes(
-      actividad.tipo,
-    )
-  ) {
-    actividad.campaña = selectedCampaign
+  // Map any raw English or translated Portuguese activity types to the standard Spanish values
+  const normalizeActivityType = (tipo) => {
+    // Convert English types to Spanish
+    if (tipo === 'preparation' || tipo === 'preparação') {
+      return ACTIVITY_TYPES.preparation; // "preparado"
+    } else if (tipo === 'sowing' || tipo === 'semeadura') {
+      return ACTIVITY_TYPES.sowing; // "siembra"
+    } else if (tipo === 'harvesting' || tipo === 'colheita') {
+      return ACTIVITY_TYPES.harvesting; // "cosecha"
+    } else if (tipo === 'application' || tipo === 'aplicação') {
+      return ACTIVITY_TYPES.application; // "aplicacion"
+    }
+
+    // If it's already one of our Spanish values, return it
+    if (Object.values(ACTIVITY_TYPES).includes(tipo)) {
+      return tipo;
+    }
+
+    // Default fallback
+    return tipo;
+  };
+
+  // Normalize the activity type to ensure Spanish values
+  actividad.tipo = normalizeActivityType(actividad.tipo);
+
+  // Check if we need to add campaign info
+  const validActivityTypes = [
+    ACTIVITY_TYPES.sowing,      // "siembra"
+    ACTIVITY_TYPES.preparation, // "preparado"
+    ACTIVITY_TYPES.harvesting,  // "cosecha"
+    ACTIVITY_TYPES.application  // "aplicacion"
+  ];
+
+  if (validActivityTypes.includes(actividad.tipo)) {
+    actividad.campaña = selectedCampaign;
   }
 
   if (!isEditing) {

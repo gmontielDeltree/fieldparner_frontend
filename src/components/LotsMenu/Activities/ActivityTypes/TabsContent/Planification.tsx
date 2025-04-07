@@ -13,11 +13,12 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import { styled } from "@mui/material/styles";
 import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS, pt } from "date-fns/locale";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
 import WaterDropIcon from "@mui/icons-material/Opacity";
 import WindPowerIcon from "@mui/icons-material/Air";
 import { Actividad } from "../../../../../interfaces/activity";
+import { useTranslation } from 'react-i18next';
 
 const CustomAccordion = styled(Accordion)(({ theme }) => ({
   marginBottom: theme.spacing(2),
@@ -67,7 +68,10 @@ const WindGauge = styled(LinearProgress)(({ theme, value }) => ({
     backgroundColor: theme.palette.secondary.main
   }
 }));
+
 function TemperatureIndicator({ min, max }) {
+  const { t } = useTranslation();
+
   return (
     <Box
       sx={{
@@ -78,7 +82,7 @@ function TemperatureIndicator({ min, max }) {
       }}
     >
       <ThermostatIcon color="primary" />
-      <Tooltip title={`Temperatura desde ${min} hasta ${max} grados`}>
+      <Tooltip title={t('temperatureRangeTooltip', { min, max })}>
         <Box sx={{ width: "160%" }}>
           {" "}
           <TemperatureGauge variant="determinate" value={(min + max) / 2} />
@@ -93,6 +97,8 @@ function TemperatureIndicator({ min, max }) {
 }
 
 function HumidityIndicator({ min, max }) {
+  const { t } = useTranslation();
+
   return (
     <Box
       sx={{
@@ -103,7 +109,7 @@ function HumidityIndicator({ min, max }) {
       }}
     >
       <WaterDropIcon color="primary" />
-      <Tooltip title={`Humedad desde ${min}% hasta ${max}%`}>
+      <Tooltip title={t('humidityRangeTooltip', { min, max })}>
         <Box sx={{ width: "160%" }}>
           {" "}
           <HumidityGauge variant="determinate" value={(min + max) / 2} />
@@ -118,10 +124,12 @@ function HumidityIndicator({ min, max }) {
 }
 
 function WindIndicator({ min, max }) {
+  const { t } = useTranslation();
+
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
       <WindPowerIcon color="primary" />
-      <Tooltip title={`Velocidad del viento desde ${min} hasta ${max} km/h`}>
+      <Tooltip title={t('windSpeedRangeTooltip', { min, max })}>
         <Box sx={{ width: "160%" }}>
           {" "}
           <WindGauge variant="determinate" value={(min + max) / 2} />
@@ -130,7 +138,7 @@ function WindIndicator({ min, max }) {
       <Typography
         variant="body2"
         sx={{ width: "30%" }}
-      >{`${min} - ${max} km/h`}</Typography>{" "}
+      >{`${min} - ${max} ${t('kmh')}`}</Typography>{" "}
     </Box>
   );
 }
@@ -175,16 +183,26 @@ const PlanificationContent = React.memo(function PlanificationContent({
   activity: Actividad;
   showEstimatedApplicationDate: boolean;
 }) {
+  const { t, i18n } = useTranslation();
+
+  // Determine date-fns locale based on current language
+  const getDateLocale = () => {
+    const lang = i18n.language;
+    if (lang.startsWith('es')) return es;
+    if (lang.startsWith('pt')) return pt;
+    return enUS; // Default to English
+  };
+
   const hasDosis =
     activity?.detalles?.dosis &&
     Array.isArray(activity.detalles.dosis) &&
     activity.detalles.dosis.length > 0;
-    
+
   const formattedDate = activity?.detalles?.fecha_ejecucion_tentativa
     ? format(parseISO(activity.detalles.fecha_ejecucion_tentativa), "PPPP", {
-        locale: es
-      })
-    : "No especificada";
+      locale: getDateLocale()
+    })
+    : t('notSpecified');
 
   return (
     <>
@@ -202,7 +220,7 @@ const PlanificationContent = React.memo(function PlanificationContent({
               console.log(" CTX MENU on BTN");
               let something = window.open(
                 "data:text/json," +
-                  encodeURIComponent(JSON.stringify(activity, undefined, 4)),
+                encodeURIComponent(JSON.stringify(activity, undefined, 4)),
                 "_blank"
               );
               something.document.open();
@@ -219,7 +237,7 @@ const PlanificationContent = React.memo(function PlanificationContent({
           />
           <DateBadge>
             <Typography sx={{ fontWeight: "bold" }}>
-              Fecha Estimada de Aplicación:
+              {t('estimatedApplicationDate')}:
             </Typography>
             <Typography sx={{ ml: 1 }}>{formattedDate}</Typography>
           </DateBadge>
@@ -229,7 +247,7 @@ const PlanificationContent = React.memo(function PlanificationContent({
       {hasDosis && (
         <CustomAccordion>
           <CustomAccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Insumos</Typography>
+            <Typography>{t('inputs')}</Typography>
           </CustomAccordionSummary>
           <CustomAccordionDetails
             sx={{
@@ -240,12 +258,12 @@ const PlanificationContent = React.memo(function PlanificationContent({
             }}
           >
             {activity.detalles.dosis.map((lineaInsumo, index) => {
-              const insumoName = lineaInsumo?.insumo?.name ?? 'No especificado';
+              const insumoName = lineaInsumo?.insumo?.name ?? t('notSpecified');
               const insumoBrand = lineaInsumo?.insumo?.brand ?? '';
-              const insumoUnit = lineaInsumo?.insumo?.unitMeasurement ?? 'unidad';
+              const insumoUnit = lineaInsumo?.insumo?.unitMeasurement ?? t('unit');
               const dosis = lineaInsumo?.dosis ?? 0;
               const total = lineaInsumo?.total ?? 0;
-              const maxTotal = lineaInsumo?.maxTotal ?? 1; 
+              const maxTotal = lineaInsumo?.maxTotal ?? 1;
               const precioEstimado = lineaInsumo?.precio_estimado ?? 0;
 
               return (
@@ -272,7 +290,7 @@ const PlanificationContent = React.memo(function PlanificationContent({
                     sx={{ display: "flex", alignItems: "center", gap: "20px" }}
                   >
                     <Typography variant="body2">
-                      {dosis} {insumoUnit}/ha
+                      {dosis} {insumoUnit}/{t('hectare')}
                     </Typography>
                     <LinearProgress
                       variant="determinate"
@@ -295,27 +313,27 @@ const PlanificationContent = React.memo(function PlanificationContent({
 
       <CustomAccordion>
         <CustomAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Contratista</Typography>
+          <Typography>{t('contractor')}</Typography>
         </CustomAccordionSummary>
         <CustomAccordionDetails>
           <Typography>
-            Nombre Completo:{" "}
-            {activity?.contratista?.nombreCompleto || "No especificado"}
+            {t('fullName')}:{" "}
+            {activity?.contratista?.nombreCompleto || t('notSpecified')}
           </Typography>
           <Typography>
-            Razón Social:{" "}
-            {activity?.contratista?.razonSocial || "No especificado"}
+            {t('businessName')}:{" "}
+            {activity?.contratista?.razonSocial || t('notSpecified')}
           </Typography>
           <Typography>
-            CUIT:{" "}
-            {activity?.contratista?.cuit || "No especificado"}
+            {t('taxId')}:{" "}
+            {activity?.contratista?.cuit || t('notSpecified')}
           </Typography>
         </CustomAccordionDetails>
       </CustomAccordion>
 
       <CustomAccordion>
         <CustomAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Condiciones esperadas de trabajo</Typography>
+          <Typography>{t('expectedWorkingConditions')}</Typography>
         </CustomAccordionSummary>
         <CustomAccordionDetails>
           <TemperatureIndicator
@@ -335,11 +353,11 @@ const PlanificationContent = React.memo(function PlanificationContent({
 
       <CustomAccordion>
         <CustomAccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Observaciones</Typography>
+          <Typography>{t('observations')}</Typography>
         </CustomAccordionSummary>
         <CustomAccordionDetails>
           <Typography>
-            {activity?.comentario || "No hay observaciones"}
+            {activity?.comentario || t('noObservations')}
           </Typography>
         </CustomAccordionDetails>
       </CustomAccordion>

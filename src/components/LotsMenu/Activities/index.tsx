@@ -16,6 +16,7 @@ import { googleMapsLinkGoTo } from '../../../utils/googleMapsLink'
 import ordenDefinition from '../../../utils/ordenDefinition'
 import { dbContext } from '../../../services'
 import ModernHeader from './ModernHeader'
+import { useTranslation } from "react-i18next";
 
 const Alert = styled(MuiAlert)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -44,6 +45,7 @@ export const Activities = ({
   const db = dbContext.fields
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarSeverity, setSnackbarSeverity] = useState('success')
+  const { t } = useTranslation();
 
   const handleSnackbarClose = (event: any, reason: string) => {
     if (reason === 'clickaway') {
@@ -64,13 +66,13 @@ export const Activities = ({
             (activity) => activity.actividad._id !== activityId,
           ),
         )
-        setUserMessage('Actividad eliminada exitosamente.')
+        setUserMessage(t('activityDeletedSuccessfully'))
         setOpenSnackbar(true)
         setSnackbarSeverity('success')
       })
       .catch((error) => {
         console.error('Error deleting actividad:', error)
-        setUserMessage('Error al eliminar la actividad.')
+        setUserMessage(t('errorDeletingActivity'))
         setSnackbarSeverity('error')
       })
   }
@@ -88,7 +90,7 @@ export const Activities = ({
       })
       .catch((error) => {
         console.error('Error updating activity state:', error)
-        setUserMessage('Error al actualizar el estado de la actividad.')
+        setUserMessage(t('errorUpdatingActivityState'))
         setSnackbarSeverity('error')
         setOpenSnackbar(true)
       })
@@ -119,7 +121,7 @@ export const Activities = ({
           delete executionDetails._rev
           db.put(executionDetails)
             .then(() => {
-              setUserMessage('Actividad confirmada exitosamente.')
+              setUserMessage(t('activityConfirmedSuccessfully'))
               setOpenSnackbar(true)
               setSnackbarSeverity('success')
             })
@@ -129,12 +131,12 @@ export const Activities = ({
             })
             .catch((err) => {
               console.error('Error creating new document:', err)
-              setUserMessage('Error al confirmar la actividad.')
+              setUserMessage(t('errorConfirmingActivity'))
               setSnackbarSeverity('error')
             })
         } else {
           console.error('Error saving execution details:', error)
-          setUserMessage('Error al confirmar la actividad.')
+          setUserMessage(t('errorConfirmingActivity'))
           setSnackbarSeverity('error')
         }
       })

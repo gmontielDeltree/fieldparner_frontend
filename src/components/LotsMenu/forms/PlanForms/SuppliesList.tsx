@@ -318,7 +318,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
         }}
       >
         <InventoryIcon sx={{ fontSize: '1.5rem' }} />
-        Insumos Agregados
+        {t('addedSupplies')}
       </Typography>
       <List sx={{ position: 'relative' }}>
         {rows.map((row, index) => {
@@ -353,7 +353,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                         <NumberFieldWithUnits
                           size="small"
                           fullWidth
-                          label={t('_quantity_per_hectare')}
+                          label={t('quantityPerHectare')}
                           value={editData.dosificacion}
                           onChange={handleEditCantidadPorHaChange}
                           unit={
@@ -366,7 +366,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                       <Grid item xs={12} md={6}>
                         <NumberFieldWithUnits
                           fullWidth
-                          label={t('_total_quantity')}
+                          label={t('totalQuantity')}
                           value={editData.total}
                           onChange={handleEditCantidadTotalChange}
                           unit={
@@ -377,7 +377,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                       <Grid item xs={12} md={6}>
                         <TextField
                           fullWidth
-                          label="Nro de Lote"
+                          label={t('batchNumber')}
                           value={editData.nro_lote}
                           onChange={handleEditNroLoteChange}
                         />
@@ -385,7 +385,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                       <Grid item xs={12} md={6}>
                         <TextField
                           fullWidth
-                          label="Ubicacion"
+                          label={t('location')}
                           value={editData.ubicacion}
                           onChange={handleEditUbicacionChange}
                         />
@@ -452,7 +452,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                         <Grid item xs={12} sm={6}>
                           <MetaInfo variant="body2">
                             <QrCodeIcon />
-                            <strong>{t('_quantity_per_hectare')}:</strong>{' '}
+                            <strong>{t('quantityPerHectare')}:</strong>{' '}
                             {row.dosificacion}{' '}
                             {abrUnit(row.selectedOption?.unitMeasurement)}/ha
                           </MetaInfo>
@@ -460,7 +460,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                         <Grid item xs={12} sm={6}>
                           <MetaInfo variant="body2">
                             <InventoryIcon />
-                            <strong>{t('_total_quantity')}:</strong> {row.total}{' '}
+                            <strong>{t('totalQuantity')}:</strong> {row.total}{' '}
                             {abrUnit(row.selectedOption?.unitMeasurement)}
                           </MetaInfo>
                         </Grid>
@@ -472,13 +472,13 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                         <Grid item xs={12} sm={6}>
                           <MetaInfo variant="body2">
                             <LocationOnIcon />
-                            <strong>{t('Ubicacion')}:</strong> {row.ubicacion}
+                            <strong>{t('location')}:</strong> {row.ubicacion}
                           </MetaInfo>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                           <MetaInfo variant="body2">
                             <QrCodeIcon />
-                            <strong>{t('Nro lote')}:</strong> {row.nro_lote}
+                            <strong>{t('batchNumber')}:</strong> {row.nro_lote}
                           </MetaInfo>
                         </Grid>
                       </Grid>

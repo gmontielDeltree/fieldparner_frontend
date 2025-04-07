@@ -123,7 +123,12 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
     [number, number] | null
   >(null)
 
-  const fieldOptions = ['Muestra #', 'Plaga', 'Enfermedad', 'Anomalia']
+  const fieldOptions = [
+    t('sampleNumberOption'),
+    t('pestOption'),
+    t('diseaseOption'),
+    t('anomalyOption')
+  ]
 
   const onFieldChange = (fieldName, value) => {
     setFormData({
@@ -204,7 +209,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
       const blob = await db.getAttachment(imageId, 'image')
       return URL.createObjectURL(blob)
     } catch (error) {
-      console.error('Error fetching image:', error)
+      console.error(t('errorFetchingImage'), error)
       return null
     }
   }
@@ -226,9 +231,9 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
       )
       setImageUrls(updatedImageUrls)
     } catch (error) {
-      console.error('Error removing image:', error)
-      console.log('ID del punto:', point._id)
-      console.log('ID de la imagen a eliminar:', removedImageId)
+      console.error(t('errorRemovingImage'), error)
+      console.log(t('pointId'), point._id)
+      console.log(t('imageIdToRemove'), removedImageId)
     }
   }
 
@@ -250,7 +255,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
       )
       setAudioUrls(updatedAudioUrls)
     } catch (error) {
-      console.error('Error removing audio:', error)
+      console.error(t('errorRemovingAudio'), error)
     }
   }
 
@@ -319,17 +324,17 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
 
   return (
     <>
-      <Title>Nuevo Punto</Title>
+      <Title>{t('newPoint')}</Title>
       {!markerSaved && (
         <div style={markerMessageStyle}>
           <div style={markerControlsStyle}>
-            <h4 style={markerMessageTitleStyle}>Coloca el marcador</h4>
+            <h4 style={markerMessageTitleStyle}>{t('placeMarker')}</h4>
             <Button
               variant="contained"
               sx={saveMarkerButtonStyle}
               onClick={handleSaveMarker}
             >
-              Guardar marcador
+              {t('saveMarker')}
             </Button>
             <Button
               variant="contained"
@@ -349,7 +354,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                 />
               }
             >
-              {t('Usar mi ubicación')}
+              {t('useMyLocation')}
             </Button>
           </div>
         </div>
@@ -368,7 +373,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
           <StyledGrid container spacing={2}>
             <Grid item xs={12}>
               <StyledTextField
-                label="Nombre del Punto"
+                label={t('pointName')}
                 fullWidth
                 value={point.properties.nombre}
                 onChange={(e) => handlePointChange('nombre', e.target.value)}
@@ -376,7 +381,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Nota"
+                label={t('note')}
                 fullWidth
                 value={point.properties.notas}
                 onChange={(e) => handlePointChange('notas', e.target.value)}
@@ -415,7 +420,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                 onClick={handleAddField}
                 disabled={!selectedField}
               >
-                Agregar Campo
+                {t('addField')}
               </Button>
             </Grid>
 
@@ -435,7 +440,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                   component="span"
                   startIcon={<PhotoCamera />}
                 >
-                  Subir Imagen
+                  {t('uploadImage')}
                 </ImageUploadButton>
               </label>
             </Grid>
@@ -448,7 +453,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
                     component="img"
                     height="140"
                     image={url}
-                    alt="Uploaded Image"
+                    alt={t('uploadedImage')}
                   />
                   <IconButton
                     size="small"
@@ -471,7 +476,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
               <AudioRecordCard>
                 <RecordingIndicator recording={isRecording} />
                 <RecordingStatusLabel>
-                  {isRecording ? 'Grabando...' : 'Listo para grabar'}
+                  {isRecording ? t('recording') : t('readyToRecord')}
                 </RecordingStatusLabel>
                 <RecordingButton
                   recording={isRecording}
@@ -485,7 +490,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
             {/* Display Recorded Audio */}
             {audioUrls.map((audioUrl, index) => (
               <AudioPlaybackCard key={index}>
-                <PlaybackTitle>Audio Grabado {index + 1}</PlaybackTitle>
+                <PlaybackTitle>{t('recordedAudio')} {index + 1}</PlaybackTitle>
                 <AudioPlayer controls src={audioUrl} />
                 <IconButton
                   onClick={() => handleAudioRemove(audioUrl)}
@@ -499,7 +504,7 @@ function PointForm({ lot, formData, setFormData, setIsPointMode, onTourSave }) {
             {/* Save Button */}
             <StyledGrid item xs={12}>
               <CustomButton variant="contained" onClick={handleSavePoint}>
-                Guardar Punto
+                {t('savePoint')}
               </CustomButton>
             </StyledGrid>
           </StyledGrid>

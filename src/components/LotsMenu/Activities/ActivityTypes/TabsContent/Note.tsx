@@ -19,6 +19,7 @@ import ImageIcon from "@mui/icons-material/Image";
 import MicIcon from "@mui/icons-material/Mic";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { styled } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 // Custom Accordion styling
 const CustomAccordion = styled(Accordion)(({ theme }) => ({
@@ -49,7 +50,6 @@ const CustomAccordion = styled(Accordion)(({ theme }) => ({
     boxShadow: `0 6px 12px 0 rgba(0,0,0,0.15)`
   }
 }));
-
 // Custom summary styling
 const CustomAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
   "&.Mui-expanded": {
@@ -59,13 +59,11 @@ const CustomAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
     margin: "12px 0"
   }
 }));
-
 // Custom details styling
 const CustomAccordionDetails = styled(AccordionDetails)({
   flexDirection: "column",
   padding: "16px"
 });
-
 // Date badge styling
 const DateBadge = styled(Paper)(({ theme }) => ({
   display: "flex",
@@ -79,7 +77,6 @@ const DateBadge = styled(Paper)(({ theme }) => ({
   backdropFilter: "blur(10px)",
   margin: "10px 0"
 }));
-
 // Feature chip styling
 const FeatureChip = styled(Chip)(({ theme }) => ({
   margin: "0 8px 8px 0",
@@ -91,7 +88,6 @@ const FeatureChip = styled(Chip)(({ theme }) => ({
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"
   }
 }));
-
 // Location button styling
 const LocationButton = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.warning.main,
@@ -106,7 +102,6 @@ const LocationButton = styled(Button)(({ theme }) => ({
     transform: "translateY(-2px)"
   }
 }));
-
 // Overview box styling
 const OverviewBox = styled(Box)(({ theme }) => ({
   background: "rgba(255, 255, 255, 0.4)",
@@ -119,41 +114,47 @@ const OverviewBox = styled(Box)(({ theme }) => ({
 }));
 
 function NoteContent({ activity, onViewAllPoints }) {
+  const { t, i18n } = useTranslation();
   const featureCount = activity.features.length;
 
   // Format date in readable format
   const formatDate = (dateString) => {
-    if (!dateString) return "Fecha no disponible";
-
+    if (!dateString) return t('dateNotAvailable');
     try {
       // Handle both string date formats and Date objects
       const date = typeof dateString === 'object' ? dateString : new Date(dateString);
-
       // Check if date is valid
-      if (isNaN(date.getTime())) return "Fecha incorrecta";
+      if (isNaN(date.getTime())) return t('incorrectDate');
 
-      return date.toLocaleDateString(undefined, {
+      // Get the appropriate locale based on the current language
+      let locale;
+      if (i18n.language.startsWith('es')) {
+        locale = 'es-ES';
+      } else if (i18n.language.startsWith('pt')) {
+        locale = 'pt-BR';
+      } else {
+        locale = 'en-US';
+      }
+
+      return date.toLocaleDateString(locale, {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
       });
     } catch (error) {
       console.error("Error formatting date:", error);
-      return "Error en fecha";
+      return t('dateError');
     }
   };
 
   // Get days remaining until next visit
   const getDaysRemaining = () => {
     if (!activity.proxima_visita) return null;
-
     try {
       const today = new Date();
       const nextVisit = new Date(activity.proxima_visita);
-
       // Check if date is valid
       if (isNaN(nextVisit.getTime())) return null;
-
       const diffTime = nextVisit.getTime() - today.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays;
@@ -179,35 +180,31 @@ function NoteContent({ activity, onViewAllPoints }) {
       {/* Activity Overview Section */}
       <OverviewBox>
         <Typography variant="h6" fontWeight="medium" gutterBottom>
-          {activity.nombre || "Actividad sin nombre"}
+          {activity.nombre || t('unnamedActivity')}
         </Typography>
-
         <Typography variant="body1" paragraph color="text.secondary">
-          {activity.texto || "No hay observaciones para esta actividad."}
+          {activity.texto || t('noObservationsForActivity')}
         </Typography>
-
         <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
           <FeatureChip
             icon={<NotesIcon />}
-            label={`${featureCount} puntos`}
+            label={t('pointsCount', { count: featureCount })}
             variant="outlined"
             color="primary"
             onClick={onViewAllPoints}
           />
-
           {featureCount > 0 && activity.features.some(f => f.properties.fotos?.length > 0) && (
             <FeatureChip
               icon={<ImageIcon />}
-              label="Imágenes"
+              label={t('images')}
               variant="outlined"
               color="secondary"
             />
           )}
-
           {featureCount > 0 && activity.features.some(f => f.properties.audio) && (
             <FeatureChip
               icon={<MicIcon />}
-              label="Grabaciones"
+              label={t('recordings')}
               variant="outlined"
               color="secondary"
             />
@@ -220,31 +217,29 @@ function NoteContent({ activity, onViewAllPoints }) {
         <CustomAccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Box display="flex" alignItems="center">
             <CalendarTodayIcon sx={{ mr: 1, color: "warning.main" }} />
-            <Typography variant="subtitle1">Fechas Importantes</Typography>
+            <Typography variant="subtitle1">{t('importantDates')}</Typography>
           </Box>
         </CustomAccordionSummary>
         <CustomAccordionDetails>
           <DateBadge>
             <Typography sx={{ fontWeight: "bold", mr: 1 }}>
-              Fecha de Registro:
+              {t('registrationDate')}:
             </Typography>
-            <Typography>{activity.fecha ? formatDate(activity.fecha) : "No definida"}</Typography>
+            <Typography>{activity.fecha ? formatDate(activity.fecha) : t('notDefined')}</Typography>
           </DateBadge>
-
           <DateBadge sx={{
             background: urgentVisit
               ? 'linear-gradient(135deg, rgba(255, 243, 224, 0.9), rgba(255, 236, 179, 0.7))'
               : undefined
           }}>
             <Typography sx={{ fontWeight: "bold", mr: 1 }}>
-              Próxima Visita:
+              {t('nextVisit')}:
             </Typography>
-            <Typography>{activity.proxima_visita ? formatDate(activity.proxima_visita) : "No definida"}</Typography>
-
+            <Typography>{activity.proxima_visita ? formatDate(activity.proxima_visita) : t('notDefined')}</Typography>
             {urgentVisit && (
               <Chip
                 size="small"
-                label={`En ${daysRemaining} días`}
+                label={t('inDays', { count: daysRemaining })}
                 color="warning"
                 sx={{ ml: 1 }}
               />
@@ -259,19 +254,18 @@ function NoteContent({ activity, onViewAllPoints }) {
           <CustomAccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Box display="flex" alignItems="center">
               <LocationOnIcon sx={{ mr: 1, color: "info.main" }} />
-              <Typography variant="subtitle1">Resumen de Puntos</Typography>
+              <Typography variant="subtitle1">{t('pointsSummary')}</Typography>
             </Box>
           </CustomAccordionSummary>
           <CustomAccordionDetails>
             <Typography paragraph>
-              Esta actividad contiene {featureCount} puntos con la siguiente información:
+              {t('activityContainsPoints', { count: featureCount })}
             </Typography>
-
             <Box sx={{ mb: 2 }}>
               {activity.features.map((feature, index) => (
                 <Tooltip
                   key={index}
-                  title={feature.properties.nombre || `Punto ${index + 1}`}
+                  title={feature.properties.nombre || t('pointNumber', { number: index + 1 })}
                 >
                   <Paper
                     elevation={2}
@@ -286,9 +280,8 @@ function NoteContent({ activity, onViewAllPoints }) {
                     }}
                   >
                     <Typography variant="body2" fontWeight="medium">
-                      {feature.properties.nombre || `Punto ${index + 1}`}
+                      {feature.properties.nombre || t('pointNumber', { number: index + 1 })}
                     </Typography>
-
                     <Box display="flex" gap={1}>
                       {feature.properties.fotos?.length > 0 && (
                         <Chip
@@ -298,12 +291,11 @@ function NoteContent({ activity, onViewAllPoints }) {
                           variant="outlined"
                         />
                       )}
-
                       {feature.properties.audio && (
                         <Chip
                           size="small"
                           icon={<MicIcon fontSize="small" />}
-                          label="Audio"
+                          label={t('audio')}
                           variant="outlined"
                         />
                       )}
@@ -312,7 +304,6 @@ function NoteContent({ activity, onViewAllPoints }) {
                 </Tooltip>
               ))}
             </Box>
-
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="outlined"
@@ -320,7 +311,7 @@ function NoteContent({ activity, onViewAllPoints }) {
                 onClick={onViewAllPoints}
                 startIcon={<LocationOnIcon />}
               >
-                Ver todos los puntos
+                {t('viewAllPoints')}
               </Button>
             </Box>
           </CustomAccordionDetails>
@@ -332,25 +323,25 @@ function NoteContent({ activity, onViewAllPoints }) {
         <CustomAccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Box display="flex" alignItems="center">
             <NotesIcon sx={{ mr: 1, color: "success.main" }} />
-            <Typography variant="subtitle1">Observaciones</Typography>
+            <Typography variant="subtitle1">{t('observations')}</Typography>
           </Box>
         </CustomAccordionSummary>
         <CustomAccordionDetails>
           <Typography variant="body1">
-            {activity.texto || "No hay observaciones para esta actividad."}
+            {activity.texto || t('noObservationsForActivity')}
           </Typography>
         </CustomAccordionDetails>
       </CustomAccordion>
 
       {/* Action Button */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+      {/* <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
         <LocationButton
           variant="contained"
           startIcon={<MapIcon />}
         >
-          Localizar en Mapa
+          {t('locateOnMap')}
         </LocationButton>
-      </Box>
+      </Box> */}
     </>
   );
 }

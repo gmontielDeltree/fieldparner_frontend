@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import {
   Box,
   Button,
+  Card,
+  CardHeader,
   Step,
   StepLabel,
   Stepper,
@@ -17,6 +19,7 @@ import { format, parse } from 'date-fns'
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist'
 import GrassIcon from '@mui/icons-material/Grass'
 import AgricultureIcon from '@mui/icons-material/Agriculture'
+import LandscapeIcon from '@mui/icons-material/Landscape'
 import EditIcon from '@mui/icons-material/Edit'
 import { keyframes } from '@emotion/react'
 import { useTheme } from '@mui/material/styles'
@@ -34,19 +37,26 @@ import ActivityHeader from './components/ActivityHeader'
 import PersonalForm from './forms/PlanForms/PersonalForm'
 import { TipoStock } from '../../interfaces/stock'
 import Swal from 'sweetalert2'
+import { useTranslation } from "react-i18next";
 
-const activityTypeTranslations = {
-  preparation: 'Preparado',
-  sowing: 'Siembra',
-  harvesting: 'Cosecha',
-  application: 'Aplicacion',
+// Keep the raw activity types with the standard Spanish values
+const ACTIVITY_TYPES = {
+  preparation: "preparado",
+  sowing: "siembra",
+  harvesting: "cosecha",
+  application: "aplicacion",
 }
 
-const activityIcons = {
-  sowing: <LocalFloristIcon sx={{ fontSize: 50, color: 'green' }} />,
-  application: <GrassIcon sx={{ fontSize: 50, color: 'green' }} />,
-  harvesting: <AgricultureIcon sx={{ fontSize: 50, color: 'green' }} />,
-}
+// Map from English input props to Spanish constants
+const mapToSpanishType = (englishType) => {
+  switch (englishType) {
+    case 'preparation': return ACTIVITY_TYPES.preparation;
+    case 'sowing': return ACTIVITY_TYPES.sowing;
+    case 'harvesting': return ACTIVITY_TYPES.harvesting;
+    case 'application': return ACTIVITY_TYPES.application;
+    default: return englishType;
+  }
+};
 
 interface ExecuteActivityProps {
   activityType: string
@@ -65,6 +75,8 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   backToActivites,
   existingActivity,
 }) => {
+  const { t } = useTranslation();
+
   console.log('ACTIVITY TYPE: ', activityType)
   if (!lot) return null
   const [formData, setFormData] = useState(
@@ -74,7 +86,32 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const { confirmWithdrawalOrder } = useOrder()
   const { getSupplies } = useSupply()
   const [activeStep, setActiveStep] = useState(0)
-  const translatedActivityType = activityTypeTranslations[activityType]
+
+  // First, ensure we map from English props to Spanish constants
+  const spanishActivityType = mapToSpanishType(activityType);
+
+  // Only translate for display purposes
+  const activityTypeTranslations = {
+    "preparado": t('preparation'),
+    "siembra": t('sowing'),
+    "cosecha": t('harvesting'),
+    "aplicacion": t('application'),
+  }
+
+  // Define activity icons with consistent styling to match PlanActivity
+  const activityIcons = {
+    sowing: <LocalFloristIcon sx={{ fontSize: 50, color: "white" }} />,
+    application: <GrassIcon sx={{ fontSize: 50, color: "white" }} />,
+    harvesting: <AgricultureIcon sx={{ fontSize: 50, color: "white" }} />,
+    preparation: <LandscapeIcon sx={{ fontSize: 50, color: "white" }} />
+  }
+
+  // Get the displayed translated type for UI only
+  const translatedActivityType = activityTypeTranslations[spanishActivityType];
+
+  // Store the Spanish type for database
+  const rawActivityType = spanishActivityType;
+
   const [maxStepReached, setMaxStepReached] = useState(0)
   const theme = useTheme()
   const { user } = useAppSelector((state) => state.auth)
@@ -89,24 +126,31 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const titleBg = isEditing
     ? `linear-gradient(60deg, ${theme.palette.primary.light}, ${theme.palette.secondary.main})`
     : `linear-gradient(45deg, #a0a0a0, #626262)`
+
   const steps =
-    activityType === 'sowing'
+    activityType === 'sowing' || spanishActivityType === 'siembra'
       ? [
-        'General',
-        'Insumos',
-        'Otros Datos',
-        'Servicios',
-        'Condiciones',
-        'Observaciones',
+        t('general'),
+        t('supplies'),
+        t('otherData'),
+        t('services'),
+        t('conditions'),
+        t('observations'),
       ]
-      : ['General', 'Insumos', 'Servicios', 'Condiciones', 'Observaciones']
+      : [
+        t('general'),
+        t('supplies'),
+        t('services'),
+        t('conditions'),
+        t('observations'),
+      ]
 
   useEffect(() => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       actividad_uuid: existingActivity.uuid,
       ts_generacion: 0,
-      tipo: translatedActivityType.toLowerCase(),
+      tipo: rawActivityType, // Use Spanish activity type for database
       detalles: {
         ...prevFormData.detalles,
         hectareas: lot.properties.hectareas,
@@ -132,17 +176,17 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       uuid: uuid4(),
       actividad_uuid: existingActivity.uuid,
       ts_generacion: 0,
-      tipo: translatedActivityType.toLowerCase(),
+      tipo: rawActivityType, // Use Spanish activity type for database
       detalles: {
         ...prevFormData.detalles,
         hectareas: lot.properties.hectareas,
       },
     }))
-  }, [lot, translatedActivityType, existingActivity])
+  }, [lot, rawActivityType, existingActivity])
 
   const countMissingFields = (formData, step) => {
     let missingFields = 0
-    if (activityType !== 'sowing' && step > 1) {
+    if (activityType !== 'sowing' && spanishActivityType !== 'siembra' && step > 1) {
       step = step + 1
     }
     switch (step) {
@@ -171,12 +215,6 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         if (!details.densidad_objetivo) {
           missingFields++
         }
-        // if (!details.formacion_inoculado) {
-        //   missingFields++;
-        // }
-        // if (!details.marca_inoculado) {
-        //   missingFields++;
-        // }
         if (!details.peso_1000) {
           missingFields++
         }
@@ -228,7 +266,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   }
 
   const getStepContent = (step: number) => {
-    if (activityType !== 'sowing' && step > 1) {
+    if (activityType !== 'sowing' && spanishActivityType !== 'siembra' && step > 1) {
       step = step + 1
     }
     switch (step) {
@@ -238,7 +276,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
             lot={lot}
             formData={formData}
             setFormData={setFormData}
-            showActivityType={activityType === 'application'}
+            showActivityType={activityType === 'application' || spanishActivityType === 'aplicacion'}
             mode="execute"
           />
         )
@@ -285,7 +323,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           />
         )
       default:
-        return <div>Unknown Step</div>
+        return <div>{t('unknownStep')}</div>
     }
   }
 
@@ -337,7 +375,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       }
 
       const newMovement = {
-        movement: 'Ingreso por cosecha',
+        movement: t('harvestEntry'),
         accountId: user?.accountId,
         supplyId: supplyInfo._id, // Use the updated reference
         userId: user?.id,
@@ -348,7 +386,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         dueDate: '',
         typeMovement: TypeMovement.Labores,
         isIncome: true,
-        detail: 'Ingreso por cosecha',
+        detail: t('harvestEntry'),
         operationDate: new Date().toISOString(),
         amount: Number(dosis.rinde_obtenido),
         voucher: '',
@@ -362,7 +400,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         await addNewStockMovement(newMovement, supplyInfo, dosis.deposito)
       } catch (error) {
         console.error(
-          `Error al realizar movimiento de stock para el insumo ${supplyInfo.name}:`,
+          t('movementError', { supplyName: supplyInfo.name }),
           error,
         )
         throw error
@@ -371,10 +409,10 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   }
 
   const removeReservedStock = async (dosis) => {
-    console.log('Removing reserved stock')
+    console.log(t('removingStock'))
 
     if (!dosis.orden_de_retiro) {
-      console.error('Withdrawal order not found on dosis object')
+      console.error(t('noWithdrawalOrder'))
       return
     }
 
@@ -397,10 +435,10 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     try {
       const withdrawalDate = new Date().toISOString()
       await confirmWithdrawalOrder(listWithdrawals, withdrawalDate)
-      console.log(`Reserved stock removed for supply ${(dosis.insumo || dosis.selectedOption)?.name}`)
+      console.log(t('stockRemoved', { supplyName: (dosis.insumo || dosis.selectedOption)?.name }))
     } catch (error) {
       console.error(
-        `Error removing reserved stock for supply ${(dosis.insumo || dosis.selectedOption)?.name}:`,
+        t('stockRemoveError', { supplyName: (dosis.insumo || dosis.selectedOption)?.name }),
         error,
       )
     }
@@ -411,7 +449,10 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     executionDetails.detalles.fecha_ejecucion = new Date().toISOString();
     executionDetails.estado = 'completada';
 
-    console.log('EXECUTION DETAILS: ', executionDetails);
+    // Ensure we're using the Spanish activity type, not the translated one
+    executionDetails.tipo = rawActivityType;
+
+    console.log(t('executionDetails'), executionDetails);
 
     // Lista para almacenar insumos sin stock
     const suppliesWithoutStock = [];
@@ -422,7 +463,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         const supplyInfo = dosis.insumo || dosis.selectedOption;
 
         if (!supplyInfo) {
-          console.error('Supply information is missing for this dose', dosis);
+          console.error(t('missingSupply'), dosis);
           continue;
         }
 
@@ -441,7 +482,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
             suppliesWithoutStock.push(supplyInfo.name);
           }
         } catch (error) {
-          console.error(`Error al verificar stock para ${supplyInfo.name}:`, error);
+          console.error(t('stockCheckError', { supplyName: supplyInfo.name }), error);
           suppliesWithoutStock.push(supplyInfo.name);
         }
       }
@@ -450,10 +491,10 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     // Si hay insumos sin stock, mostrar confirmación al usuario
     if (suppliesWithoutStock.length > 0) {
       const confirmContinue = await Swal.fire({
-        title: '<span style="font-weight: 600">Stock insuficiente</span>',
+        title: `<span style="font-weight: 600">${t('insufficientStock')}</span>`,
         html: `
           <div class="swal-content">
-            <p style="margin-bottom: 15px; color: #4a4a4a">No se encontró stock para los siguientes insumos:</p>
+            <p style="margin-bottom: 15px; color: #4a4a4a">${t('noStockFound')}</p>
             <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 15px; text-align: left; max-height: 150px; overflow-y: auto">
               ${suppliesWithoutStock.map(name => `
                 <div style="padding: 8px; margin-bottom: 5px; border-left: 3px solid #ff9800; background-color: #fff">
@@ -461,13 +502,13 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
                 </div>
               `).join('')}
             </div>
-            <p style="color: #4a4a4a">¿Deseas continuar con la ejecución de todas formas?</p>
+            <p style="color: #4a4a4a">${t('continueQuestion')}</p>
           </div>
         `,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: '<i class="fas fa-check"></i> Continuar',
-        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+        confirmButtonText: `<i class="fas fa-check"></i> ${t('continue')}`,
+        cancelButtonText: `<i class="fas fa-times"></i> ${t('cancel')}`,
         confirmButtonColor: '#4CAF50',
         cancelButtonColor: '#f44336',
         buttonsStyling: true,
@@ -498,19 +539,19 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     // Generate new stock movement (out) for each of the supplies used in the execution
     if (executionDetails.detalles.dosis) {
       for (const dosis of executionDetails.detalles.dosis) {
-        console.log('DOSIS: ', dosis);
+        console.log(t('dose'), dosis);
 
         // Fix: Check if dosis.insumo exists, if not, use dosis.selectedOption instead
         const supplyInfo = dosis.insumo || dosis.selectedOption;
 
         // Add additional validation to prevent errors
         if (!supplyInfo) {
-          console.error('Supply information is missing for this dose', dosis);
+          console.error(t('missingSupply'), dosis);
           continue; // Skip this dose and continue with the next one
         }
 
         const newMovement = {
-          movement: 'Salida por ejecución',
+          movement: t('executionExit'),
           accountId: user?.accountId,
           supplyId: supplyInfo._id, // Use the updated reference
           userId: user?.id,
@@ -521,7 +562,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           dueDate: '',
           typeMovement: TypeMovement.Labores,
           isIncome: false,
-          detail: 'Salida por ejecución',
+          detail: t('executionExit'),
           operationDate: new Date().toISOString(),
           amount: Number(dosis.dosificacion || dosis.dosis), // Handle both property names
           voucher: '',
@@ -532,27 +573,27 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         };
 
         try {
-          console.log('New stock movement (out) for supply:', newMovement);
+          console.log(t('newMovement'), newMovement);
           await addNewStockMovement(newMovement, supplyInfo, dosis.deposito);
 
           // Solo intentar remover stock reservado si existe una orden de retiro
           if (dosis.orden_de_retiro) {
             await removeReservedStock(dosis);
           } else {
-            console.warn(`No hay orden de retiro para el insumo ${supplyInfo.name}`);
+            console.warn(t('noOrder', { supplyName: supplyInfo.name }));
           }
         } catch (error) {
           console.error(
-            `Error al realizar movimiento de stock para el insumo ${supplyInfo.name}:`,
+            t('movementError', { supplyName: supplyInfo.name }),
             error
           );
 
           // Mostrar mensaje pero continuar con el siguiente insumo
           Swal.fire({
-            title: 'Error en movimiento de stock',
-            text: `Hubo un problema al registrar el movimiento para ${supplyInfo.name}. La actividad se guardará igualmente.`,
+            title: t('movementErrorTitle'),
+            text: t('movementProblem', { supplyName: supplyInfo.name }),
             icon: 'warning',
-            confirmButtonText: 'Continuar'
+            confirmButtonText: t('continue')
           });
         }
       }
@@ -563,16 +604,16 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         await processHarvestStockMovements(executionDetails);
       } catch (error) {
         console.error(
-          'Error procesando movimientos de stock para cosecha:',
+          t('harvestError'),
           error,
         );
 
         // Mostrar mensaje pero continuar
         Swal.fire({
-          title: 'Error en cosecha',
-          text: 'Hubo un problema al procesar los movimientos de stock para la cosecha. La actividad se guardará igualmente.',
+          title: t('harvestErrorTitle'),
+          text: t('harvestProblem'),
           icon: 'warning',
-          confirmButtonText: 'Continuar'
+          confirmButtonText: t('continue')
         });
       }
     }
@@ -585,7 +626,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       executionDetails._id =
         'ejecucion:' + formattedDate + ':' + executionDetails.uuid;
     } catch (error) {
-      console.error('Error generating new ID for execution:', error);
+      console.error(t('idError'), error);
       return;
     }
 
@@ -599,131 +640,151 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       })
       .catch((error) => {
         if (error.name === 'conflict') {
-          console.error('Conflict detected, saving execution details:', error);
+          console.error(t('conflictError'), error);
 
           Swal.fire({
-            title: 'Conflicto detectado',
-            text: 'Ya existe una ejecución con el mismo ID. La actividad no se guardará.',
+            title: t('conflictDetected'),
+            text: t('executionExists'),
             icon: 'error',
-            confirmButtonText: 'Entendido'
+            confirmButtonText: t('understood')
           });
         } else if (error.name === 'not_found') {
           delete executionDetails._rev;
           db.put(executionDetails)
             .then(() => {
-              console.log('New document created', 'success');
+              console.log(t('documentCreated'), 'success');
 
               Swal.fire({
-                title: 'Actividad ejecutada',
-                text: 'La ejecución se ha guardado correctamente.',
+                title: t('activityExecuted'),
+                text: t('executionSaved'),
                 icon: 'success',
-                confirmButtonText: 'Aceptar'
+                confirmButtonText: t('accept')
               }).then(() => {
                 backToActivites();
               });
             })
             .catch((err) => {
-              console.error('Error creating new document:', err);
+              console.error(t('docCreateError'), err);
 
               Swal.fire({
-                title: 'Error',
-                text: 'No se pudo guardar la ejecución de la actividad.',
+                title: t('error'),
+                text: t('saveFailed'),
                 icon: 'error',
-                confirmButtonText: 'Entendido'
+                confirmButtonText: t('understood')
               });
             });
         } else {
-          console.error('Error saving execution details:', error);
+          console.error(t('saveError'), error);
 
           Swal.fire({
-            title: 'Error',
-            text: 'Ocurrió un error al guardar la ejecución.',
+            title: t('error'),
+            text: t('executionSaveError'),
             icon: 'error',
-            confirmButtonText: 'Entendido'
+            confirmButtonText: t('understood')
           });
         }
       });
   };
 
-  const ActivityIcon = activityIcons['sowing']
+  // Use our helper function to get color based on activity type
+  const getActivityColor = () => {
+    switch (activityType) {
+      case 'sowing':
+        return '#10b981';
+      case 'application':
+        return '#3b82f6';
+      case 'harvesting':
+        return '#f59e0b';
+      case 'preparation':
+        return '#6b7280';
+      default:
+        return '#6b7280';
+    }
+  };
 
   return (
-    <div>
-      <ActivityHeader
-        isEditing={isEditing}
-        translatedActivityType={translatedActivityType}
-        ActivityIcon={ActivityIcon}
-        titleBg={titleBg}
-        formData={formData}
-        activityType={activityType}
-        mode="execute"
-      />
-      <Stepper
-        activeStep={activeStep}
-        sx={{ pt: 3, pb: 5, backgroundColor: '#f5f5f5', borderRadius: '4px' }}
-      >
-        {steps.map((label, index) => (
-          <Step key={label} onClick={handleStep(index)}>
-            <StepLabel
-              sx={{
-                color: 'primary.main',
-                '& .MuiStepLabel-label': {
-                  fontSize: '1rem',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  position: 'relative',
-                },
+    <div className="container py-4">
+      {/* Render the ActivityHeader directly without Card/CardHeader wrapping */}
+      <div className="shadow-lg mb-4 rounded">
+        <ActivityHeader
+          activityType={activityType}
+          fieldName={fieldName}
+          lot={lot}
+          formData={formData}
+          activityIcons={activityIcons}
+          mode="execute"
+          isEditing={isEditing}
+          getActivityColor={getActivityColor}
+        />
+
+        <Stepper
+          activeStep={activeStep}
+          sx={{ pt: 3, pb: 5, backgroundColor: '#f5f5f5', borderRadius: '4px' }}
+        >
+          {steps.map((label, index) => (
+            <Step key={label} onClick={handleStep(index)}>
+              <StepLabel
+                sx={{
+                  color: 'primary.main',
+                  '& .MuiStepLabel-label': {
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    position: 'relative',
+                  },
+                }}
+              >
+                {label}
+                {index <= maxStepReached && (
+                  <Badge
+                    badgeContent={countMissingFields(formData, index)}
+                    color="error"
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      right: -9,
+                      transform: 'scale(1) translate(50%, -50%)',
+                    }}
+                  />
+                )}
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+        <div style={{ marginTop: '10px', padding: '0 16px 16px' }}>{getStepContent(activeStep)}</div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: '1rem',
+            padding: '0 16px 16px',
+          }}
+        >
+          <Button color="secondary" onClick={handleBack}>
+            {activeStep === 0 ? t('cancel') : t('back')}
+          </Button>
+          {activeStep < steps.length - 1 && (
+            <Button color="primary" onClick={handleNext}>
+              {t('next')}
+            </Button>
+          )}
+          {activeStep === steps.length - 1 && (
+            <Button
+              color="success"
+              onClick={() => {
+                handleSave()
               }}
             >
-              {label}
-              {index <= maxStepReached && (
-                <Badge
-                  badgeContent={countMissingFields(formData, index)}
-                  color="error"
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    right: -9,
-                    transform: 'scale(1) translate(50%, -50%)',
-                  }}
-                />
-              )}
-            </StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-      <div style={{ marginTop: '10px' }}>{getStepContent(activeStep)}</div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginTop: '1rem',
-        }}
-      >
-        <Button color="secondary" onClick={handleBack}>
-          {activeStep === 0 ? 'Cancelar' : 'Volver'}
-        </Button>
-        {activeStep < steps.length - 1 && (
-          <Button color="primary" onClick={handleNext}>
-            Siguiente
-          </Button>
-        )}
-        {activeStep === steps.length - 1 && (
-          <Button
-            color="success"
-            onClick={() => {
-              handleSave()
-            }}
-          >
-            Ejecutar actividad
-          </Button>
-        )}
+              {t('executeActivity')}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )

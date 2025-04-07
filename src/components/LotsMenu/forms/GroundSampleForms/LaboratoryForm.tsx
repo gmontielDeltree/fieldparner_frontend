@@ -15,6 +15,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { styled } from "@mui/material/styles";
 import { v4 as uuidv4 } from "uuid";
+import { useTranslation } from "react-i18next";
 
 const CustomPaper = styled(Paper)({
   padding: "20px",
@@ -31,6 +32,7 @@ const Title = styled(Typography)({
 
 function LaboratoryForm({ lot, formData, setFormData }) {
   const { businesses, getBusinesses } = useBusiness();
+  const { t } = useTranslation();
 
   useEffect(() => {
     getBusinesses();
@@ -51,7 +53,7 @@ function LaboratoryForm({ lot, formData, setFormData }) {
 
   return (
     <CustomPaper elevation={3}>
-      <Title>Laboratorio</Title>
+      <Title>{t("laboratory")}</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
           {/* ID Input - unmodifiable */}
@@ -71,7 +73,7 @@ function LaboratoryForm({ lot, formData, setFormData }) {
           <Grid item xs={12} sm={6}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                label="Fecha"
+                label={t("date")}
                 value={formData.fecha || null}
                 onChange={(newValue) => onFieldChange("fecha", newValue)}
                 renderInput={(params) => <TextField {...params} fullWidth />}
@@ -83,7 +85,7 @@ function LaboratoryForm({ lot, formData, setFormData }) {
           <Grid item xs={12} sm={6}>
             <TextField
               id="laboratorio"
-              label="Laboratorio"
+              label={t("laboratory")}
               fullWidth
               value={formData.laboratorio || ""}
               onChange={(e) => onFieldChange("laboratorio", e.target.value)}
@@ -94,7 +96,7 @@ function LaboratoryForm({ lot, formData, setFormData }) {
           <Grid item xs={12} sm={6}>
             <TextField
               id="refDocLab"
-              label="Referencia Doc Laboratorio"
+              label={t("laboratoryDocReference")}
               fullWidth
               value={formData.refDocLab || ""}
               onChange={(e) => onFieldChange("refDocLab", e.target.value)}
@@ -105,7 +107,7 @@ function LaboratoryForm({ lot, formData, setFormData }) {
           <Grid item xs={12} sm={6}>
             <TextField
               id="responsableTecnico"
-              label="Responsable Técnico"
+              label={t("technicalResponsible")}
               fullWidth
               value={formData.responsableTecnico || ""}
               onChange={(e) =>
@@ -118,7 +120,7 @@ function LaboratoryForm({ lot, formData, setFormData }) {
           <Grid item xs={12} sm={6}>
             <TextField
               id="matricula"
-              label="Matrícula"
+              label={t("registration")}
               fullWidth
               value={formData.matricula || ""}
               onChange={(e) => onFieldChange("matricula", e.target.value)}

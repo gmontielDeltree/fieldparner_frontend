@@ -6,12 +6,10 @@ import {
   Grid,
   IconButton,
   InputLabel,
-  MenuItem,
-  Select,
   Tooltip,
   Typography,
 } from "@mui/material";
-import { DataTable, ItemRow, Loading, TableCellStyled } from "../";
+import { DataTable, ItemRow, Loading, MultiLanguageSelect, TableCellStyled } from "../";
 import {
   Delete as DeleteIcon,
   Add as AddIcon,
@@ -21,7 +19,7 @@ import { ColumnProps } from "../../types";
 import { useCategory, useForm } from "../../hooks";
 import { useTranslation } from "react-i18next";
 
-const columns: ColumnProps[] = [{ text: "Categoría", align: "center" }, { text: "", align: "left" }];
+
 
 // const optionsCategory = ["Cliente", "Proveedor", "Ingeniero"];
 
@@ -53,7 +51,22 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
     getCategories();
   }, []);
 
-  const { t } =useTranslation ();
+  const { t, i18n } =useTranslation ();
+  const columns: ColumnProps[] = [{ text: t("_categories"), align: "center" }, { text: "", align: "left" }];
+
+  const getCategoryLabel = (id: string) => {
+    const cat = optionsCategories.find((c) => c._id === id);
+    if (!cat) return id;
+    switch (i18n.language) {
+      case "es":
+        return cat.description;
+      case "pt":
+        return cat.descriptionPt;
+      case "en":
+      default:
+        return cat.descriptionEn;
+    }
+  };
 
   return (
     <Box component="div" sx={{ p: 1 }}>
@@ -68,17 +81,24 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
         <Grid item xs={4}>
           <FormControl fullWidth>
             <InputLabel id="category">{t("_categories")}</InputLabel>
-            <Select
-              labelId="category"
-              name="category"
-              value={category}
-              label={t("_categories")}
-              onChange={handleSelectChange}
-            >
-              {optionsCategories.map((option) => (
-                <MenuItem value={option.description}>{option.description}</MenuItem>
-              ))}
-            </Select>
+            <MultiLanguageSelect
+                options={optionsCategories}
+                value={category}
+                onChange={handleSelectChange}
+                label="_categories"
+                name="category"
+                getOptionLabel={(option, language) => {
+                  switch (language) {
+                    case "es":
+                      return option.description;
+                    case "pt":
+                      return option.descriptionPt;
+                    case "en":
+                    default:
+                      return option.descriptionEn;
+                  }
+                }}
+              />
           </FormControl>
         </Grid>
         <Grid item xs={3}>
@@ -110,7 +130,7 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
         )}
         {categories.map((category) => (
           <ItemRow key={category} hover>
-            <TableCellStyled align="center">{category}</TableCellStyled>
+            <TableCellStyled align="center">{getCategoryLabel(category)}</TableCellStyled>
             <TableCellStyled align="center">
               <Tooltip title={t("icon_delete")}>
                 <IconButton

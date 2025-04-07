@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { TextField, FormControl, Grid, Paper, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 interface ObservationsFormProps {
   lot: any;
@@ -12,6 +13,8 @@ const ObservationsForm: React.FC<ObservationsFormProps> = ({
   formData,
   setFormData
 }) => {
+  const { t } = useTranslation();
+
   const handleInputChange = (event) => {
     setFormData({
       ...formData,
@@ -32,7 +35,7 @@ const ObservationsForm: React.FC<ObservationsFormProps> = ({
           marginBottom: "20px"
         }}
       >
-        Observaciones
+        {t("observationsTitle")}
       </Typography>
       <FormControl fullWidth>
         <Grid container spacing={2}>
@@ -40,8 +43,7 @@ const ObservationsForm: React.FC<ObservationsFormProps> = ({
             <Typography
               style={{ fontSize: "1em", color: "#555", marginBottom: "10px" }}
             >
-              Ingrese comentarios, notas o aclaraciones que considere
-              necesarias:
+              {t("observationsDescription")}
             </Typography>
             <TextField
               id="comment"

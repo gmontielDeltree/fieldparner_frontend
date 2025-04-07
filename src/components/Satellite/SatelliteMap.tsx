@@ -19,7 +19,7 @@ import Draggable from 'react-draggable'
 import { MenuItem, Select, Button, Grid, Chip, Paper } from '@mui/material'
 import { format, parse } from 'date-fns'
 import { Splash } from './Splash'
-import { list_of_indexes } from '../../../owncomponents/ndvi-offcanvas/indices-types'
+import { list_of_indexes, getTranslatedIndices } from '../../../owncomponents/ndvi-offcanvas/indices-types'
 import { SatelliteCharts } from './SatelliteCharts'
 import { SatelliteResumen } from './SatelliteResumen'
 import { SatelliteDatePicker } from './SatelliteDatePicker'
@@ -31,6 +31,7 @@ import { useNavigate } from 'react-router-dom'
 import { GroupWork } from '@mui/icons-material'
 import Close from '@mui/icons-material/Close'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
+import { useTranslation } from 'react-i18next'
 
 // LRU Cache implementation
 class LRUCache {
@@ -91,11 +92,16 @@ export const SatelliteMap = ({
   lote,
   dualMode,
 }) => {
+  const { t } = useTranslation();
   const mapRef = useRef(null)
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [hoverInfo, setHoverInfo] = useState(null)
-  const [indice, setIndice] = useState(list_of_indexes[0])
+
+  // Usar los índices traducidos en lugar de los estáticos
+  const translatedIndices = useMemo(() => getTranslatedIndices(t), [t]);
+  const [indice, setIndice] = useState(translatedIndices[0]);
+
   const [selectedDate, setSelectedDate] = useState(null)
   const [indiceRequestResponse, setIndiceRequestResponse] = useState(null)
   const [showCharts, setShowCharts] = useState(true)
@@ -236,16 +242,27 @@ export const SatelliteMap = ({
     }
   }, [])
 
+  // Actualizar el índice seleccionado cuando cambia el idioma
+  useEffect(() => {
+    // Actualizar el índice seleccionado con su versión traducida
+    if (indice) {
+      const updatedIndice = translatedIndices.find(i => i.name === indice.name);
+      if (updatedIndice) {
+        setIndice(updatedIndice);
+      }
+    }
+  }, [translatedIndices, indice?.name]);
+
   const onLoad = useCallback(() => {
     setLoading(false)
   }, [])
 
   const handleIndiceChange = useCallback((e) => {
-    const indiceSelected = list_of_indexes.find(
+    const indiceSelected = translatedIndices.find(
       (i) => i.name === e.target.value,
     )
     setIndice(indiceSelected)
-  }, [])
+  }, [translatedIndices])
 
   return (
     <>
@@ -295,7 +312,7 @@ export const SatelliteMap = ({
               },
             }}
           >
-            {list_of_indexes.map((i) => (
+            {translatedIndices.map((i) => (
               <MenuItem key={i.name} value={i.name}>
                 {i.name}
               </MenuItem>
@@ -327,7 +344,7 @@ export const SatelliteMap = ({
             sx={{ marginBottom: '3rem' }}
             color="error"
             onClick={() => navigate(-1)}
-            title="Cerrar"
+            title={t('close')}
           >
             <Close />
           </Button>
@@ -338,24 +355,24 @@ export const SatelliteMap = ({
               if (indiceRequestResponse?.tiff_url) {
                 geotiff_to_excel(
                   import.meta.env.VITE_COGS_SERVER_URL +
-                    indiceRequestResponse.tiff_url,
+                  indiceRequestResponse.tiff_url,
                   indice.name,
                 )
               }
             }}
-            title="Descargar EXCEL"
+            title={t('downloadExcel')}
           >
             <CloudDownloadIcon />
           </Button>
 
           <Button
             variant="contained"
-            title="Descargar PNG"
+            title={t('downloadPNG')}
             target="_blank"
             href={
               indiceRequestResponse?.png_url
                 ? import.meta.env.VITE_COGS_SERVER_URL +
-                  indiceRequestResponse.png_url
+                indiceRequestResponse.png_url
                 : '#'
             }
           >
@@ -368,18 +385,18 @@ export const SatelliteMap = ({
               if (indiceRequestResponse?.png_url) {
                 navigate(
                   '/init/overview/zoning/' +
-                    indiceRequestResponse.png_url
-                      .split('/')[3]
-                      .replace('.png', ''),
+                  indiceRequestResponse.png_url
+                    .split('/')[3]
+                    .replace('.png', ''),
                 )
               }
             }}
-            title="Ambientador"
+            title={t('zoneGenerator')}
           >
             <GroupWork />
           </Button>
 
-          <Button variant="contained" onClick={onDualToggle} title="Mapa Dual">
+          <Button variant="contained" onClick={onDualToggle} title={t('dualMap')}>
             <ContrastIcon />
           </Button>
 
@@ -387,7 +404,7 @@ export const SatelliteMap = ({
             <Button
               variant="contained"
               onClick={() => setShowCharts(true)}
-              title="Mostrar Gráficos"
+              title={t('showCharts')}
             >
               <ShowChartIcon />
             </Button>
@@ -422,7 +439,7 @@ export const SatelliteMap = ({
                     <Close />
                   </Button>
 
-                  <Suspense fallback={<div>Cargando gráficos...</div>}>
+                  <Suspense fallback={<div>{t('loadingCharts')}</div>}>
                     <SatelliteCharts
                       data={indiceRequestResponse}
                       indice={indice}

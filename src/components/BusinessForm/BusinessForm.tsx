@@ -11,13 +11,12 @@ import {
   TextField,
 } from "@mui/material";
 import { TipoEntidad } from "../../types";
-import React, {  useEffect} from "react";
+import React, { useEffect} from "react";
 import { useTranslation } from "react-i18next";
 import { useBusiness } from "../../hooks";
 import {MultiLanguageSelect} from ".."
 import { useBusinessForm, BusinessFormProps } from "./useBusinessForm";
-
-
+import { getCountryOptions } from "../../utils/country";
 
 
 export const BusinessForm: React.FC<BusinessFormProps> = ({
@@ -70,12 +69,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
 
 
 
-  const countryOptions = countries.map(c => ({
-    code: c.code,
-    descriptionES: c.descriptionES,
-    descriptionEN: c.descriptionEN,
-    descriptionPT: c.descriptionPT,
-  }));
+  const countryOptions = getCountryOptions(countries);
 
 
   return (
