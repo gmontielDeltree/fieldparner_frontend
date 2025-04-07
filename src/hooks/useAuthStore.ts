@@ -206,9 +206,11 @@ export const useAuthStore = () => {
 
   //     dispatch(onLogin({
   //       isAdmin: true, accountId: "test", username: "Rodrigo",
-  //       countryId: "ARG",
+  //       countryId: "AR",
   //       id: "12354",
-  //       licenceId: "1234"
+  //       licenceId: "1234",
+  //       currency: "",
+  //       email: "rgarro@deltree.com.ar"
   //     }));
   //     navigate(lastPath, { replace: true });
 

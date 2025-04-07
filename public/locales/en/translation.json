@@ -495,7 +495,8 @@
   "End Time": "End Time",
   "Hectares": "Hectares",
   "Hectares to treat": "Hectares to treat",
-  "Yield Obtained (ton/ha)": "Yield Obtained (ton/ha)"
+  "Yield Obtained (ton/ha)": "Yield Obtained (ton/ha)",
+ "error_zip_code": "Please check that the Postal Code matches the country."
    }
   
 

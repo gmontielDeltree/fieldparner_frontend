@@ -1,25 +1,11 @@
-import React, { ChangeEvent, SetStateAction, useState } from "react";
+import React from "react";
 import { Grid, TextField, InputAdornment, Button, Card, CardMedia, Box, Paper, IconButton } from "@mui/material";
-import { onBlurZipCode } from "../../utils";
 import { Phone as PhoneIcon } from "@mui/icons-material";
 import { Loading } from "..";
-import { useTranslation } from "react-i18next";
 import { CloudUpload as CloudUploadIcon, DoDisturb as DoDisturbIcon, Cancel as CancelIcon } from "@mui/icons-material";
-import uuid4 from "uuid4";
-import { urlImg } from "../../config";
-import { Business } from "../../interfaces/socialEntity";
-
-
-export interface AddressFormProps {
-  values: Business;
-  //countries: Country[];
-  //countryError: boolean;
-  loading: boolean;
-  onChangeZipCode: () => Promise<void>;
-  handleInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  handleFormValueChange: (key: string, value: string) => void;
-  setFile: React.Dispatch<SetStateAction<File | null>>;
-}
+import { AddressFormProps, useAddressForm } from "./useAddressForm";
+import { useTranslation} from "react-i18next";
+import { LocalidadSelect } from "../LocalidadSelect/LocalidadSelect";
 
 export const AddressForm: React.FC<AddressFormProps> = ({
   values,
@@ -27,41 +13,18 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   setFile,
   handleFormValueChange,
 }) => {
-  const { domicilio, localidad, cp, provincia, pais, logoBusiness, telefono } = values;
-  const [loadingZipCode, setLoadingZipCode] = useState(false);
-  const [localities, setLocalities] = useState<string[]>([]);
-  const [urlFile, setUrlFile] = useState('');
-  const { t } = useTranslation();
+  const { domicilio, localidad, cp, provincia, pais: _, logoBusiness, telefono } = values;
+  const {t} = useTranslation();
+  const {
+    loadingZipCode,
+    urlFile,
+    handleBlur,
+    handleFileUpload,
+    handleCancelFile,
+    localities,
+  } = useAddressForm(values, handleInputChange, handleFormValueChange, setFile);
 
 
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files ? event.target.files[0] : null;
-    if (file) {
-      let fileNameOriginal = file.name;
-      let extensionPos = fileNameOriginal.lastIndexOf(".");
-      let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
-
-      const newFileName = `business-logo-${uuid4()}${fileType}`;
-      const renamedFile = new File([file], newFileName, { type: file.type });
-      const fileURL = URL.createObjectURL(renamedFile);
-
-      setUrlFile(fileURL);
-      setFile(renamedFile);
-      handleFormValueChange("logoBusiness", newFileName);
-    }
-  };
-
-  const handleCancelFile = () => {
-    setUrlFile("");
-    setFile(null);
-    handleFormValueChange("logoBusiness", "");
-  }
-
-
-  const handleBlur = (_event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    onBlurZipCode(cp, pais, setLoadingZipCode, setLocalities, handleInputChange);
-  };
 
   return (
     <>
@@ -125,17 +88,10 @@ export const AddressForm: React.FC<AddressFormProps> = ({
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <TextField
-            label={t("_locality")}
-            variant="outlined"
-            type="text"
-            name="localidad"
-            value={localidad}
-            onChange={handleInputChange}
-            InputProps={{
-              startAdornment: <InputAdornment position="start" />
-            }}
-            fullWidth
+        <LocalidadSelect
+            localidad={localidad}
+            handleInputChange={handleInputChange}
+            localidades={localities}
           />
         </Grid>
         <Grid item xs={12} sm={12}>
@@ -186,7 +142,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
                   <CardMedia
                     component="img"
                     sx={{ objectFit: "contain" }}
-                    image={urlFile || `${urlImg}/${logoBusiness}`}
+                    image={urlFile}
                     alt="Logo"
                   />
                 </Card>

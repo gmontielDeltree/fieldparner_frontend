@@ -1,11 +1,19 @@
 import Swal from "sweetalert2";
-import { getLocalityAndStateByZipCode } from "./getDataZipCode"; 
+import { getLocalityAndStateByZipCode } from "./getDataZipCode";
+import { CountryCode } from "../types"; 
+
+
 
 export const fetchBrazilZipCode = async (zipCode: string) => {
+
+
+
   try {
     const response = await fetch(`https://viacep.com.br/ws/${zipCode}/json/`);
     if (!response.ok) throw new Error("Network response was not ok");
+    
     const data = await response.json();
+    console.log('Datos de Brasil recibidos:', JSON.stringify(data, null, 2));
     return data;
   } catch (error) {
     console.error("Failed to fetch Brazil zip code data:", error);
@@ -18,25 +26,22 @@ export const onBlurZipCode = async (
   pais: string,
   setLoadingZipCode: (loading: boolean) => void,
   setLocalities: (localities: string[]) => void,
-  handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
+  t: (key: string) => string
 ) => {
+
+
   if (cp !== "") {
     setLoadingZipCode(true);
     try {
-      console.log("Ejecutando1", pais);
-
-      if (pais === "ARG" || pais === "AR") {
-        console.log("Ejecutando2", pais);
-        console.log("Código postal recibido:", cp);
-        const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
-        console.log("Datos devueltos para Argentina:", localityAndStates);
+      if (pais === CountryCode.ARGENTINA) {
+        const localityAndStates = await getLocalityAndStateByZipCode("AR", cp);
 
         if (localityAndStates?.length) {
             const firstLocality = localityAndStates[0].locality || "Desconocido";
             const firstProvince = localityAndStates[0].state || "Desconocido";
           
-            console.log("Actualizando localidad:", firstLocality);
-            console.log("Actualizando provincia:", firstProvince);
+
           
             setLocalities(localityAndStates.map((x: { locality: any; }) => x.locality || "Desconocido"));
           
@@ -56,35 +61,46 @@ export const onBlurZipCode = async (
           } else {
           throw new Error("El código postal no coincide con ningún registro en Argentina.");
         }
-      } else if (pais === "BR") {
+      } else if (pais === CountryCode.BRASIL) {
         const brazilData = await fetchBrazilZipCode(cp);
 
         if (brazilData) {
+          // 1. Actualiza las localidades disponibles
+          setLocalities([brazilData.localidade]);
+          
+          // 2. Setea la localidad (Curitiba)
           handleInputChange({
             target: {
               name: "localidad",
-              value: brazilData.localidade || brazilData.logradouro,
+              value: brazilData.localidade,
             },
           } as React.ChangeEvent<HTMLInputElement>);
 
+          // 3. Setea la provincia (PR - Paraná)
           handleInputChange({
             target: {
               name: "provincia",
-              value: brazilData.uf,
+              value: `${brazilData.uf}${brazilData.estado ? ` - ${brazilData.estado}` : ''}`,
             },
           } as React.ChangeEvent<HTMLInputElement>);
 
+          // 4. Construye la dirección completa
+          const addressParts = [
+            brazilData.logradouro,
+            brazilData.complemento,
+            brazilData.bairro
+          ].filter(Boolean).join(', ');
+          
           handleInputChange({
             target: {
               name: "domicilio",
-              value: `${brazilData.logradouro}, ${brazilData.bairro}`,
+              value: addressParts,
             },
           } as React.ChangeEvent<HTMLInputElement>);
         } else {
           throw new Error("El código postal no coincide con ningún registro en Brasil.");
         }
-      } else if (pais === "PY" || pais === "PRY") {
-        console.log("Ejecutando3", pais);
+      }else if (pais === CountryCode.PARAGUAY) {
         const localityAndStates = await getLocalityAndStateByZipCode("PRY", cp);
 
         if (localityAndStates?.length) {
@@ -119,7 +135,7 @@ export const onBlurZipCode = async (
 
       Swal.fire({
         title: "Error",
-        text: "Revisa que el Código Postal sea correspondiente al país.",
+        text: t("error_zip_code"),
         icon: "error",
       });
 
