@@ -3,7 +3,7 @@ import { NavBar, SideBar } from "..";
 import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import { uiOpenSideBard } from "../../redux/ui";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const drawerWidth = 280; //Ancho del sidebar en px;
@@ -59,8 +59,21 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       >
         {children}
       </Box>
-      <ToastContainer />
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={true}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable={false}
+        pauseOnHover
+        theme="colored"
+        limit={3}
+      />
     </Box>
-
   );
 };
+
+export default AppLayout;
