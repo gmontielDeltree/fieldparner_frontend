@@ -17,49 +17,33 @@ import { urlImg } from '../../config'
 import { setAuthUser } from '../../redux/auth'
 
 // === Animaciones === //
-// Fixed empty animation
 const glow = keyframes`
   0% { box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); }
   50% { box-shadow: 0 0 20px rgba(0, 123, 255, 0.8); }
   100% { box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); }
 `
 
-// Podríamos hacer un styled Select para personalizarlo
+// Simplificado el styled Select para reducir posibles conflictos
 const FancySelect = styled(Select)(({ theme }) => ({
   borderRadius: '8px',
   backgroundColor: alpha(theme.palette.primary.light, 0.05),
-  backdropFilter: 'blur(4px)',
   boxShadow: `0 4px 12px ${alpha('#000', 0.1)}`,
   transition: 'all 0.3s ease',
+  cursor: 'pointer', // Asegurar que el cursor sea pointer
   '& .MuiSelect-select': {
     display: 'flex',
     alignItems: 'center',
     padding: '8px 16px',
-    fontWeight: 600,
-    letterSpacing: '0.5px',
-  },
-  '& fieldset': {
-    border: 'none',
   },
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.light, 0.15),
-    boxShadow: `0 6px 16px ${alpha('#000', 0.15)}`,
-  },
-  // Estilo para el ícono de flecha
-  '& .MuiSvgIcon-root': {
-    transition: 'transform 0.3s ease',
-  },
-  // Animación del ícono al abrir
-  '&.Mui-focused .MuiSvgIcon-root': {
-    transform: 'rotate(180deg)',
   },
 }))
 
-// También podemos estilizar MenuItem para darle un toque distinto
 const FancyMenuItem = styled(MenuItem)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  transition: 'background-color 0.2s ease-in-out',
+  cursor: 'pointer', // Asegurar que el cursor sea pointer
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.1),
   },
@@ -70,35 +54,39 @@ const CompanyNavBar: React.FC = () => {
   const dispatch = useAppDispatch()
   const { companies, getCompaniesByEmail } = useCompany()
   const [companySelected, setCompanySelected] = useState(
-    localStorage.getItem('last_company') || '',
+    localStorage.getItem('last_company') || ''
   )
   const [loading, setLoading] = useState(true)
+  const [localCompanies, setLocalCompanies] = useState([])
 
-  console.log('CompanyNavBar rendering, companies:', companies, 'typeof companies:', typeof companies, 'isArray:', Array.isArray(companies))
+  // Actualizar estado local cuando companies cambia
+  useEffect(() => {
+    if (companies && Array.isArray(companies) && companies.length > 0) {
+      setLocalCompanies(companies)
 
-  const lincenIdSelected = companies?.find(
-    (company) => company.companyId === companySelected,
+      // Si no hay compañía seleccionada, seleccionar la primera
+      if (!companySelected && companies.length > 0) {
+        setCompanySelected(companies[0].companyId)
+        localStorage.setItem('last_company', companies[0].companyId)
+      }
+    }
+  }, [companies, companySelected])
+
+  const licenceIdSelected = localCompanies.find(
+    (company) => company.companyId === companySelected
   )?.licenceId
 
-  const onChangeCompany = ({ target }: SelectChangeEvent) => {
-    console.log('Company changed to:', target.value)
-    setCompanySelected(target.value as string)
-    localStorage.setItem('last_company', target.value as string)
+  const onChangeCompany = (event) => {
+    const value = event.target.value
+    console.log('Company changed to:', value)
+    setCompanySelected(value)
+    localStorage.setItem('last_company', value)
   }
 
   useEffect(() => {
-    console.log('Initial useEffect - fetching companies')
     const fetchCompanies = async () => {
       try {
-        const result = await getCompaniesByEmail()
-        console.log('Companies fetched successfully, result:', result)
-        // Check if useCompany hook updates state correctly
-        console.log('Companies state after fetch:', companies)
-
-        // If getCompaniesByEmail returns data but doesn't update state, we need to fix the hook
-        if (result && Array.isArray(result) && result.length > 0 && companies.length === 0) {
-          console.error('Hook not updating state properly with data:', result)
-        }
+        await getCompaniesByEmail()
       } catch (error) {
         console.error('Error fetching companies:', error)
       } finally {
@@ -107,112 +95,80 @@ const CompanyNavBar: React.FC = () => {
     }
 
     fetchCompanies()
-  }, [])
 
-  useEffect(() => {
-    console.log('Second useEffect - companies:', companies, 'companySelected:', companySelected)
-    if (companySelected === '' && companies && companies.length > 0) {
-      console.log('Setting default company:', companies[0].companyId)
-      setCompanySelected(companies[0].companyId)
-    }
-  }, [companySelected, companies])
-
-  useEffect(() => {
-    console.log('Third useEffect - user:', user, 'licenceId:', lincenIdSelected)
-    if (user && lincenIdSelected && user.licenceId !== lincenIdSelected) {
-      console.log('Updating user licenceId to:', lincenIdSelected)
-      dispatch(setAuthUser({ ...user, licenceId: lincenIdSelected }))
-    }
-  }, [dispatch, user, lincenIdSelected])
-
-  // Check if companies is valid
-  if (!companies) {
-    console.log('Companies is undefined')
-    return <CircularProgress />
-  }
-
-  // Add debugging for the hook
-  console.log('useCompany hook returned:', {
-    companies: companies,
-    getCompaniesByEmail: typeof getCompaniesByEmail
-  })
-
-  // Added timeout to stop loading after a reasonable time
-  useEffect(() => {
-    // Force loading to complete after 3 seconds regardless of API response
+    // Establecer un timeout de seguridad
     const timer = setTimeout(() => {
-      if (loading) {
-        console.log('Forcing loading to complete after timeout')
-        setLoading(false)
-      }
+      setLoading(false)
     }, 3000)
 
     return () => clearTimeout(timer)
-  }, [loading])
+  }, [])
 
-  // Return null if no companies
-  if (!companies || companies.length === 0) {
-    console.log('No companies available, returning null');
-    return null;
+  // Actualizar licenceId del usuario cuando cambia la compañía seleccionada
+  useEffect(() => {
+    if (user && licenceIdSelected && user.licenceId !== licenceIdSelected) {
+      dispatch(setAuthUser({ ...user, licenceId: licenceIdSelected }))
+    }
+  }, [dispatch, user, licenceIdSelected])
+
+  // Simplificar la lógica de renderizado
+  if (loading) {
+    return <CircularProgress size={24} />
+  }
+
+  // No renderizar nada si no hay compañías
+  if (!localCompanies || localCompanies.length === 0) {
+    return null
   }
 
   return (
-    <>
-      {loading ? (
-        <CircularProgress size={24} />
-      ) : (
-        <FormControl key="select-company">
-          <FancySelect
-            value={companySelected}
-            variant="outlined"
-            disabled={companies.length === 1}
-            onChange={onChangeCompany}
-            // centrado del menú emergente
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  borderRadius: 2,
-                  mt: 1,
-                  py: 0,
-                  // Efecto sutil de "glass"
-                  backgroundColor: alpha('#ffffff', 0.7),
-                  backdropFilter: 'blur(6px)',
-                  boxShadow: `0 4px 20px ${alpha('#000', 0.15)}`,
-                },
-              },
-            }}
-          >
-            {companies?.map((company) => (
-              <FancyMenuItem key={company._id} value={company.companyId}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography
-                    variant="body1"
-                    fontWeight="bold"
-                    sx={{ px: 1, letterSpacing: '0.8px' }}
-                  >
-                    {company.fantasyName?.toUpperCase()}
-                  </Typography>
-                  <Avatar
-                    alt={company.fantasyName}
-                    src={`${urlImg}/${company.companyLogo}`}
-                    sx={{
-                      borderRadius: '50%',
-                      width: 30,
-                      height: 30,
-                      animation:
-                        company.companyId === companySelected
-                          ? `${glow} 2s infinite`
-                          : 'none',
-                      ml: 1,
-                    }}
-                  />
-                </Box>
-              </FancyMenuItem>
-            ))}
-          </FancySelect>
-        </FormControl>
-      )}
-    </>
+    <FormControl key="select-company">
+      <FancySelect
+        value={companySelected}
+        variant="outlined"
+        disabled={localCompanies.length === 1}
+        onChange={onChangeCompany}
+        MenuProps={{
+          PaperProps: {
+            sx: {
+              borderRadius: 2,
+              mt: 1,
+              py: 0,
+              backgroundColor: 'white', // Simplificar para evitar problemas
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+            },
+          },
+        }}
+      >
+        {localCompanies.map((company) => (
+          <FancyMenuItem key={company._id} value={company.companyId}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant="body1"
+                fontWeight="bold"
+                sx={{ px: 1, letterSpacing: '0.8px' }}
+              >
+                {company.fantasyName?.toUpperCase()}
+              </Typography>
+              <Avatar
+                alt={company.fantasyName}
+                src={`${urlImg}/${company.companyLogo}`}
+                sx={{
+                  borderRadius: '50%',
+                  width: 30,
+                  height: 30,
+                  animation:
+                    company.companyId === companySelected
+                      ? `${glow} 2s infinite`
+                      : 'none',
+                  ml: 1,
+                }}
+              />
+            </Box>
+          </FancyMenuItem>
+        ))}
+      </FancySelect>
+    </FormControl>
   )
 }
 
