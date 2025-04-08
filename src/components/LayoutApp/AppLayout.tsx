@@ -71,7 +71,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         pauseOnHover
         theme="colored"
         limit={3}
-        transition={Slide}
       />
     </Box>
   );

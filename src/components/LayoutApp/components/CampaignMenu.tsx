@@ -73,12 +73,14 @@ const CampaignMenu: React.FC = () => {
 
   const handleCreateAndEditCampaign = async (campaign: Campaign) => {
     if (campaign._rev) {
+      // Edición
       await updateCampaign(campaign)
       dispatch(campaignSlice.actions.setSelectedCampaign(campaign))
       setIsEditModalOpen(false)
       getCampaigns()
       return
     }
+    // Creación
     const uuid = uuidv7()
     campaign._id = `campaign:${uuid}`
     campaign.campaignId = `campaign:${uuid}`
@@ -114,8 +116,6 @@ const CampaignMenu: React.FC = () => {
   useEffect(() => {
     if (selectedCampaign) {
       saveCampaignToLS(selectedCampaign)
-      // Dismiss any existing toasts before showing a new one
-      toast.dismiss()
       toast.success(
         `${t('La campaña')} ${selectedCampaign.name} ${t('está seleccionada')}`,
         {
@@ -126,7 +126,6 @@ const CampaignMenu: React.FC = () => {
           pauseOnHover: true,
           draggable: false,
           theme: 'colored',
-          transition: Slide,
         },
       )
     }
@@ -155,8 +154,6 @@ const CampaignMenu: React.FC = () => {
     if (campaignToClose) {
       const updatedCampaign = { ...campaignToClose, state: 'closed' }
       await updateCampaign(updatedCampaign)
-      // Dismiss any existing toasts before showing a new one
-      toast.dismiss()
       toast.success(
         `${t('Campaign')} "${updatedCampaign.name}" ${t('has been closed')}`,
         {
@@ -227,6 +224,7 @@ const CampaignMenu: React.FC = () => {
         onDelete={campaigns.length > 1 ? onDeleteCampaignHandler : undefined}
         editMode
       />
+
       <Menu
         id="menu-campaigns"
         anchorEl={anchorEl}
