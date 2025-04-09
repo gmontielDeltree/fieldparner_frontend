@@ -108,20 +108,20 @@ export const ListBusinessesPage: React.FC = () => {
     }
   };
 
-  // Add console log to see the data being sent to the table
-  console.log('Businesses data for table:', businesses);
-
   return (
-    <GenericListPage
-      title={t("social_entities")}
-      icon={<BusinessIcon sx={{ fontSize: 40, color: "#424242" }} />}
-      data={businesses}
-      columns={columns}
-      getData={getBusinesses}
-      deleteData={deleteBusiness}
-      setActiveItem={setBusinessActive}
-      newItemPath="/init/overview/business/new"
-      editItemPath={(id) => `/init/overview/business/${id}`}
-      isLoading={isLoading} />
+    <>
+      {/* <button type="button" onClick={() => replicate()} >Replicate</button> */}
+      <GenericListPage
+        title={t("social_entities")}
+        icon={<BusinessIcon sx={{ fontSize: 40, color: "#424242" }} />}
+        data={businesses}
+        columns={columns}
+        getData={getBusinesses}
+        deleteData={deleteBusiness}
+        setActiveItem={setBusinessActive}
+        newItemPath="/init/overview/business/new"
+        editItemPath={(id) => `/init/overview/business/${id}`}
+        isLoading={isLoading} />
+    </>
   );
 };
