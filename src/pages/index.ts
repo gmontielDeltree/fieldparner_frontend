@@ -10,7 +10,7 @@ export * from "./Supplies/SupplyPage";
 export * from "./Supplies/ListSuppliesPage";
 export * from './MovementStock/StockMovementPage';
 export * from './MovementStock/NewStockMovementPage';
-export * from './ListStockPage';
+export * from './QueryStock/ListStockPage';
 export * from './TransformValue/TransformPage';
 export * from './ExitField/ListExitFieldPage';
 export * from './ExitField/NewExitFieldPage';

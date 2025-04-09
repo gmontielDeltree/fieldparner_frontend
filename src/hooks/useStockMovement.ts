@@ -69,21 +69,12 @@ export const useStockMovement = () => {
             setIsLoading(true);
             if (!user) { dispatch(onLogout("Session expired")); return; }
             const selectorRequest: GetStockRequest = {
-                tipo: request.tipo,
                 accountId: user.accountId,
-                campaignId: request.campaignId,
-                ...(request.id && { id: request.id }),
-                ...(request.fieldId && { fieldId: request.fieldId }),
-                ...(request.depositId && { depositId: request.depositId }),
-                ...(request.fieldLot && { fieldLot: request.fieldLot }),
-                ...(request.location && { location: request.location }),
-                ...(request.nroLot && { nroLot: request.nroLot }),
+                ...request
             };
-
             const responseStock = await dbContext.stock.find({
-                selector: selectorRequest,
+                selector: selectorRequest
             });
-
             let dataStock = responseStock.docs as StockItem[];
             if (fullItem) {
                 const responseAll = await Promise.all([
@@ -91,8 +82,8 @@ export const useStockMovement = () => {
                     dbContext.supplies.find({
                         selector: {
                             $or: [
-                                { "accountId": user?.accountId },
-                                { "generico": true }
+                                { accountId: user?.accountId },
+                                { isDefault: true }
                             ]
                         },
                     }),
@@ -118,8 +109,8 @@ export const useStockMovement = () => {
                         const deposit = deposits.find(d => d._id === stock.depositId);
                         stock.dataDeposit = deposit;
                     }
-                    if (stock.campaingId) {
-                        const campaign = campaigns.find(c => c._id === stock.campaingId);
+                    if (stock.campaignId) {
+                        const campaign = campaigns.find(c => c._id === stock.campaignId);
                         stock.dataCampaign = campaign;
                     }
                     if (stock.fieldId) {
@@ -168,7 +159,6 @@ export const useStockMovement = () => {
             const accountId = newMovement.accountId;
             const amountValue = Number(amount);
 
-            // supplyData._id, depositId, location, nroLot
             let responseStockSupply = await getStock({
                 id: supplyData._id,
                 campaignId: newMovement.campaignId,
@@ -192,7 +182,7 @@ export const useStockMovement = () => {
                             depositId,
                             location,
                             currentStock: amountValue,
-                            campaingId: newMovement.campaignId,
+                            campaignId: newMovement.campaignId,
                             fieldId: "",
                             fieldLot: "",
                             tipo: TipoStock.INSUMO,
@@ -214,7 +204,7 @@ export const useStockMovement = () => {
                                     depositId,
                                     location,
                                     currentStock: -amountValue, // Comenzar con stock negativo
-                                    campaingId: newMovement.campaignId,
+                                    campaignId: newMovement.campaignId,
                                     fieldId: "",
                                     fieldLot: "",
                                     tipo: TipoStock.INSUMO,
@@ -225,7 +215,7 @@ export const useStockMovement = () => {
                                 throw new Error("Stock de insumo no encontrado.");
                             }
                         } catch (error) {
-                            if (error.name === 'not_found') {
+                            if (error instanceof Error && error.name === 'not_found') {
                                 throw new Error("Stock de insumo no encontrado y depósito inválido.");
                             } else {
                                 throw new Error("Stock de insumo no encontrado.");
@@ -283,7 +273,7 @@ export const useStockMovement = () => {
                         location: depositDestination.location,
                         currentStock: amountValue,
                         tipo: TipoStock.INSUMO,
-                        campaingId: newMovement.campaignId,
+                        campaignId: newMovement.campaignId,
                         fieldId: "",
                         fieldLot: "",
                         lastUpdate: new Date().toISOString(),
@@ -300,6 +290,7 @@ export const useStockMovement = () => {
             throw error;
         }
     };
+
     const addNewStockMovement = async (
         newMovement: StockMovement,
         supplyData: Supply,

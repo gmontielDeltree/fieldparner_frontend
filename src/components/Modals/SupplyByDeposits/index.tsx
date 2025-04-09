@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector, useSupply } from "../../../hooks";
-import { ColumnProps, DisplayModals, SupplyByDeposits } from "../../../types";
+import { ColumnProps, DisplayModals } from "../../../types";
 import { uiCloseModal } from "../../../redux/ui";
 import { DataTable, ItemRow, TableCellStyled } from "../..";
 import { removeSupplyActive } from "../../../redux/supply";
@@ -24,13 +24,14 @@ import {
   KeyboardArrowUp as KeyboardArrowUpIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
 } from "@mui/icons-material";
+import { StockItem } from "../../../interfaces/stock";
 
 const columns: ColumnProps[] = [
   { text: "", align: "center" },
   { text: "Deposito", align: "center" },
   { text: "Ubicacion", align: "center" },
   { text: "Nro Lote", align: "center" },
-  { text: "Vencimiento", align: "center" },
+  // { text: "Vencimiento", align: "center" },
   { text: "UM", align: "center" },
   { text: "Stock Actual", align: "center" },
   { text: "Stock Reservado", align: "center" },
@@ -38,7 +39,7 @@ const columns: ColumnProps[] = [
 ];
 
 interface RowProps {
-  row: SupplyByDeposits;
+  row: StockItem;
 }
 
 const Row: React.FC<RowProps> = ({ row }) => {
@@ -57,12 +58,12 @@ const Row: React.FC<RowProps> = ({ row }) => {
           </IconButton>
         </TableCellStyled>
         <TableCellStyled align="left">
-          {row.deposit?.description}
+          {row.dataDeposit?.description}
         </TableCellStyled>
         <TableCellStyled align="center">{row.location}</TableCellStyled>
         <TableCellStyled align="center">{row.nroLot}</TableCellStyled>
-        <TableCellStyled align="center">{row.dueDate}</TableCellStyled>
-        <TableCellStyled align="center">{row.supply?.unitMeasurement}</TableCellStyled>
+        {/* <TableCellStyled align="center">{row.}</TableCellStyled> */}
+        <TableCellStyled align="center">{row.dataSupply?.unitMeasurement}</TableCellStyled>
         <TableCellStyled align="center">{row.currentStock}</TableCellStyled>
         <TableCellStyled align="center">{row.reservedStock}</TableCellStyled>
         <TableCellStyled align="center">
@@ -95,7 +96,7 @@ const Row: React.FC<RowProps> = ({ row }) => {
                   </ItemRow>
                 </TableHead>
                 <TableBody>
-                  {row.movements?.map((movement) => (
+                  {row?.dataMovements?.map((movement) => (
                     <TableRow key={movement._id}>
                       <TableCell>
                         {movement.isIncome ? "Ingreso" : "Egreso"}
@@ -123,7 +124,7 @@ export const SupplyByDepositsModal: React.FC = () => {
   const dispatch = useAppDispatch();
   const { showModal } = useAppSelector((state) => state.ui);
   const { supplyActive } = useAppSelector((state) => state.supply);
-  const { isLoading, supplyByDeposits, getStockBySupplyAndDeposits } = useSupply();
+  const { isLoading, stockByDeposits, getStockBySupplyActive } = useSupply();
 
   const onCloseModal = () => {
     dispatch(removeSupplyActive());
@@ -131,7 +132,7 @@ export const SupplyByDepositsModal: React.FC = () => {
   };
 
   useEffect(() => {
-    if (supplyActive) getStockBySupplyAndDeposits();
+    if (supplyActive) getStockBySupplyActive();
   }, [supplyActive]);
 
   return (
@@ -151,14 +152,12 @@ export const SupplyByDepositsModal: React.FC = () => {
           columns={columns}
           isLoading={isLoading}
         >
-          {supplyByDeposits
-            .filter((s) => s.movements?.length)
-            .map((supplyByDeposit) => (
-              <Row
-                key={`${supplyActive?._id}-${supplyByDeposit.deposit._id}`}
-                row={supplyByDeposit}
-              />
-            ))}
+          {stockByDeposits.map((stock) => (
+            <Row
+              key={`${supplyActive?._id}-${stock?.dataDeposit?._id}`}
+              row={stock}
+            />
+          ))}
         </DataTable>
       </DialogContent>
       <DialogActions>

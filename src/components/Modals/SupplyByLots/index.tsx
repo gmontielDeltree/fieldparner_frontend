@@ -5,35 +5,46 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import React from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { ColumnProps, DisplayModals, SupplyByDeposits } from "../../../types";
+import React, { useEffect } from "react";
+import { useAppDispatch, useAppSelector, useSupply } from "../../../hooks";
+import { ColumnProps, DisplayModals } from "../../../types";
 import { uiCloseModal } from "../../../redux/ui";
 import { DataTable, ItemRow, TableCellStyled } from "../..";
+import { StockItem } from "../../../interfaces/stock";
 
 const columns: ColumnProps[] = [
   { text: "Ubicacion", align: "center" },
   { text: "Nro Lote", align: "center" },
-  { text: "Vencimiento", align: "center" },
+  // { text: "Vencimiento", align: "center" },
   { text: "UM", align: "center" },
   { text: "Stock Actual", align: "center" },
   { text: "Stock Reservado", align: "center" },
   { text: "Stock Disponible", align: "center" },
 ];
 
-interface SupplyByLotsModalProps {
-  supplyByDeposit: SupplyByDeposits;
+interface StockSupplyModalProps {
+  selectedRow: StockItem;
 }
 
-export const SupplyByLotsModal: React.FC<SupplyByLotsModalProps> = ({
-  supplyByDeposit,
+export const StockSupplyModal: React.FC<StockSupplyModalProps> = ({
+  selectedRow,
 }) => {
   const dispatch = useAppDispatch();
   const { showModal } = useAppSelector((state) => state.ui);
+  const { isLoading, stockSupplyAndDeposit, getStockBySupplyAndDeposit } = useSupply();
 
   const onCloseModal = () => {
     dispatch(uiCloseModal());
   };
+
+  useEffect(() => {
+    if (selectedRow) {
+      const supplyId = selectedRow.id;
+      const depositId = selectedRow.depositId;
+      getStockBySupplyAndDeposit(supplyId, depositId);
+    }
+  }, [selectedRow])
+
 
   return (
     <Dialog
@@ -47,9 +58,9 @@ export const SupplyByLotsModal: React.FC<SupplyByLotsModalProps> = ({
         <DataTable
           key="detail-deposits-datable"
           columns={columns}
-          isLoading={false}
+          isLoading={isLoading}
         >
-          {supplyByDeposit.nroLotsStock?.map((lotStock) => (
+          {stockSupplyAndDeposit.map((lotStock) => (
             <ItemRow key={lotStock.nroLot} hover>
               <TableCellStyled align="left">
                 {lotStock.location}
@@ -57,11 +68,11 @@ export const SupplyByLotsModal: React.FC<SupplyByLotsModalProps> = ({
               <TableCellStyled align="center">
                 {lotStock.nroLot}
               </TableCellStyled>
-              <TableCellStyled align="center">
+              {/* <TableCellStyled align="center">
                 {supplyByDeposit.dueDate || "-"}
-              </TableCellStyled>
+              </TableCellStyled> */}
               <TableCellStyled align="center">
-                {supplyByDeposit.supply?.unitMeasurement || "-"}
+                {selectedRow?.dataSupply?.unitMeasurement || "-"}
               </TableCellStyled>
               <TableCellStyled align="center">
                 {lotStock.currentStock}

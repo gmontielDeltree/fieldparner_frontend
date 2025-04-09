@@ -1,11 +1,12 @@
 import Swal from 'sweetalert2';
-import { Supply, SupplyByDeposits, StockByNroLot, StockBySupply } from "../types";
+import { Supply } from "../types";
 import { useState } from "react";
 import { dbContext } from '../services';
 import { useAppDispatch, useAppSelector } from '.';
 import { useNavigate } from 'react-router-dom';
 import { onLogout } from '../redux/auth';
 import { useTranslation } from 'react-i18next';
+import { StockItem, TipoStock } from '../interfaces/stock';
 
 export const useSupply = () => {
     const { t } = useTranslation();
@@ -15,9 +16,10 @@ export const useSupply = () => {
     const { supplyActive } = useAppSelector((state) => state.supply);
     const [supplies, setSupplies] = useState<Supply[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [supplyByDeposits, setSupplyByDeposits] = useState<SupplyByDeposits[]>([]);
     const [supplyError, setSupplyError] = useState(false);
-    const [stockBySupplies, setStockBySupplies] = useState<StockBySupply[]>([])
+    const [stockByDeposits, setStockByDeposits] = useState<StockItem[]>([]);
+    const [stockBySupplies, setStockBySupplies] = useState<StockItem[]>([]);
+    const [stockSupplyAndDeposit, setStockSupplyAndDeposit] = useState<StockItem[]>([])
 
     const getSupplies = async () => {
         setIsLoading(true);
@@ -44,16 +46,16 @@ export const useSupply = () => {
         }
     }
 
-    const getStockBySupplyAndDeposits = async () => {
+    const getStockBySupplyActive = async () => {
         setIsLoading(true);
-        let supplyByDeposits: SupplyByDeposits[] = [];
+        let supplyByDeposits: StockItem[] = [];
         try {
             if (!supplyActive) throw new Error(t("supply_not_found"));
-            const promisesResult = await Promise.all([
+            const responseAll = await Promise.all([
                 dbContext.stock.find({
                     selector: {
                         "$and": [
-                            { "supplyId": supplyActive._id },
+                            { "id": supplyActive._id },
                             { "accountId": user?.accountId }
                         ],
                     }
@@ -68,33 +70,50 @@ export const useSupply = () => {
                     }
                 })
             ]);
-            const [stockBySupplies, deposits, movements] = promisesResult;
-            let depositIds = stockBySupplies.docs.map(m => m.depositId);
-            const groupDepositsId = Array.from(new Set(depositIds));
-            groupDepositsId.forEach(depositId => {
-                const depositDto = deposits.docs.find(d => d._id === depositId);
-                if (!depositDto) throw new Error(t("deposit_not_found"));
-                const depositMovements = movements.docs.filter(m => m.depositId === depositId);
 
-                depositDto.locations.forEach(location => {
-                    const stockByLots = stockBySupplies.docs.filter(stockBySupply =>
-                        (stockBySupply.depositId === depositId && stockBySupply.location === location)
-                    );
-                    stockByLots.forEach(({ currentStock, nroLot }) => {
-                        supplyByDeposits.push({
-                            deposit: depositDto,
-                            supply: supplyActive,
-                            location,
-                            nroLot,
-                            currentStock,
-                            dueDate: depositMovements[0].dueDate,
-                            reservedStock: 0,
-                            movements: depositMovements.filter(mov => mov.nroLot.toLowerCase() === nroLot.toLowerCase())
-                        });
-                    })
+            const [supplyStockData, deposits, movements] = responseAll;
+
+            supplyStockData.docs.forEach(stock => {
+                const foundDeposit = deposits.docs.find(m => (m._id === stock.depositId));
+                if (!foundDeposit) return;
+
+                supplyByDeposits.push({
+                    dataDeposit: foundDeposit,
+                    dataSupply: supplyActive,
+                    dataMovements: movements.docs
+                        .filter(m => m.depositId === stock.depositId && m.nroLot.toLowerCase() === stock.nroLot.toLowerCase()),
+                    ...stock
                 });
             });
-            setSupplyByDeposits(supplyByDeposits);
+            setStockByDeposits(supplyByDeposits);
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+            console.error(t("error_loading_documents"), error);
+        }
+    }
+
+    const getStockBySupplyAndDeposit = async (supplyId: string, depositId: string) => {
+        setIsLoading(true);
+        let supplyByDeposits: StockItem[] = [];
+        try {
+            if (!supplyId && !depositId) return [];
+
+            const responseStock = await dbContext.stock.find({
+                selector: {
+                    "$and": [
+                        { "id": supplyId },
+                        { "accountId": user?.accountId },
+                        { "depositId": depositId },
+                    ],
+                }
+            });
+            const stockSupplyAndDeposits = responseStock.docs;
+
+            stockSupplyAndDeposits.forEach((stock) => {
+                supplyByDeposits.push(stock);
+            });
+            setStockSupplyAndDeposit(supplyByDeposits);
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
@@ -104,29 +123,41 @@ export const useSupply = () => {
 
     const getStockBySupplies = async () => {
         setIsLoading(true);
-        let stockBySupplies: StockBySupply[] = [];
+        let stockBySupplies: StockItem[] = [];
         try {
             if (!user) throw new Error(t("user_not_found"));
             const promisesResult = await Promise.all([
-                dbContext.stock.find({ selector: { "accountId": user.accountId } }),
+                dbContext.stock.find({
+                    selector: {
+                        "$and": [
+                            { "accountId": user?.accountId },
+                            { "tipo": TipoStock.INSUMO },
+                        ],
+                    }
+                }),
                 dbContext.supplies.find({
                     selector: {
                         $or: [
-                            { "accountId": user?.accountId },
-                            { "generico": true }
+                            { accountId: user?.accountId },
+                            { isDefault: true }
                         ]
                     }
                 })
             ]);
-            const [stockBySuppplies, supplies] = promisesResult;
-            supplies.docs.forEach(supplyDto => {
-                const stockBySupply = stockBySuppplies.docs.filter(m => (m.supplyId === supplyDto._id));
-                let currentStockOfSupply = 0;
-                stockBySupply.forEach(stock => { currentStockOfSupply += stock.currentStock; });
+            const [suppliesStock, supplies] = promisesResult;
+            const supplyIds = suppliesStock.docs.map(s => s.id);//Obtenemos los id de insumos
+            const groupSupplyIds = Array.from(new Set(supplyIds));//Agrupamos por id de insumo
+            groupSupplyIds.forEach(id => {
+                const foundSupplyStock = suppliesStock.docs.filter(m => (m.id === id)); //Obtenemos todo los stock de ese insumo
+                const foundSupply = supplies.docs.find(m => (m._id === id));
+                if (!foundSupply) return;
+                const totalCurrentStock = foundSupplyStock.reduce((acc, stock) => acc + stock.currentStock, 0);
+                const totalReservedStock = foundSupplyStock.reduce((acc, stock) => acc + stock.reservedStock, 0);
                 stockBySupplies.push({
-                    supply: supplyDto,
-                    currentStock: currentStockOfSupply,
-                    reservedStock: supplyDto.reservedStock
+                    ...foundSupplyStock[0],
+                    dataSupply: foundSupply,
+                    currentStock: totalCurrentStock,
+                    reservedStock: totalReservedStock,
                 });
             });
             setStockBySupplies(stockBySupplies);
@@ -137,64 +168,52 @@ export const useSupply = () => {
         }
     }
 
-    const getStockByDepositAndLocation = async () => {
+    const getSupplyStockByDeposits = async () => {
         setIsLoading(true);
         try {
-            let supplyByDeposits: SupplyByDeposits[] = [];
-            const promisesResult = await Promise.all([
-                dbContext.stock.find({ selector: { "accountId": user?.accountId } }),
+            let supplyByDeposits: StockItem[] = [];
+            const responseAll = await Promise.all([
+                dbContext.stock.find({
+                    selector: {
+                        "$and": [
+                            { "accountId": user?.accountId },
+                            { "tipo": TipoStock.INSUMO },
+                        ],
+                    }
+                }),
                 dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
                 dbContext.supplies.find({
                     selector: {
                         $or: [
-                            { "accountId": user?.accountId },
-                            { "generico": true }
+                            { accountId: user?.accountId },
+                            { isDefault: true }
                         ]
                     }
                 })
             ]);
-            const [stockBySupplies, deposits, supplies] = promisesResult;
-            let supplyIds = stockBySupplies.docs.map(m => m.supplyId);
-            const groupSupplyIds = Array.from(new Set(supplyIds));
+            const [stockBySupplies, deposits, supplies] = responseAll;
+            //Obtenemos los idDepositos y agrupamos
+            const depositsId = stockBySupplies.docs.map(s => s.depositId);
+            const groupDepositsId = Array.from(new Set(depositsId));
+            
+            groupDepositsId.forEach(depositId => {
+                const foundDepositStock = stockBySupplies.docs.filter(m => (m.depositId === depositId)); //Obtenemos todo los stock de ese deposito
+                const foundSupply = supplies.docs.find(m => (m._id === foundDepositStock[0].id)); //Obtenemos el insumo
+                if (!foundSupply) return;
+                const foundDeposit = deposits.docs.find(m => (m._id === depositId));
+                if (!foundDeposit) return;
+                const totalCurrentStock = foundDepositStock.reduce((acc, stock) => acc + stock.currentStock, 0);
+                const totalReservedStock = foundDepositStock.reduce((acc, stock) => acc + stock.reservedStock, 0);
 
-            deposits.docs.forEach(depositDto => {
-                groupSupplyIds.forEach(supplyId => {
-                    const supplyDto = supplies.docs.find(s => s._id === supplyId);
-                    if (!supplyDto) throw new Error(t("supply_not_found"));
-
-                    let currentStockOfDeposit = 0;
-                    stockBySupplies.docs.forEach(stockBySupply => {
-                        if (stockBySupply.supplyId === supplyId && stockBySupply.depositId === depositDto._id) {
-                            currentStockOfDeposit += stockBySupply.currentStock;
-                        }
-                    });
-                    let nroLotsStock: StockByNroLot[] = [];
-                    depositDto.locations.forEach(l => {
-                        const stockByLots = stockBySupplies.docs.filter(({ supplyId: id, depositId, location }) =>
-                            (supplyId === id && depositId === depositDto._id && location === l)
-                        );
-                        stockByLots.forEach(({ nroLot, currentStock, }) => {
-                            nroLotsStock.push({
-                                nroLot,
-                                location: l,
-                                currentStock,
-                                reservedStock: supplyDto.reservedStock
-                            })
-                        });
-                    });
-                    supplyByDeposits.push({
-                        deposit: depositDto,
-                        supply: supplyDto,
-                        location: "",
-                        nroLot: "",
-                        currentStock: currentStockOfDeposit,
-                        dueDate: "-",
-                        reservedStock: supplyDto.reservedStock,
-                        nroLotsStock,
-                    });
-                })
-            });
-            setSupplyByDeposits(supplyByDeposits);
+                supplyByDeposits.push({
+                    ...foundDepositStock[0],
+                    dataDeposit: foundDeposit,
+                    dataSupply: foundSupply,
+                    currentStock: totalCurrentStock,
+                    reservedStock: totalReservedStock,
+                });
+            })
+            setStockByDeposits(supplyByDeposits);
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
@@ -327,9 +346,10 @@ export const useSupply = () => {
     return {
         supplies,
         isLoading,
-        supplyByDeposits,
+        stockByDeposits,
         supplyError,
         stockBySupplies,
+        stockSupplyAndDeposit,
         setSupplies,
         getSupplies,
         createSupply,
@@ -338,8 +358,9 @@ export const useSupply = () => {
         setSupplyError,
         addReservedStock,
         removeReservedStock,
-        getStockBySupplyAndDeposits,
+        getStockBySupplyActive,
         getStockBySupplies,
-        getStockByDepositAndLocation,
+        getSupplyStockByDeposits,
+        getStockBySupplyAndDeposit
     }
 }

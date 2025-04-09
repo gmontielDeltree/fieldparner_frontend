@@ -64,6 +64,8 @@
   "_formulationDenomination": "Denominacion Formulado",
   "_toxicityClass": "Clase de Toxicidad",
   "_geolocation": "Geolocalización",
+  "_type_suppy": "Tipo de Insumo",
+  "_location": "Ubicación",
   "_destination": "Destino",
   "_origin": "Procedencia",
   "verify_mandatory_fields": "Verificar campos obligatorios",

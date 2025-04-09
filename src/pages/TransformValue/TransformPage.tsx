@@ -218,7 +218,7 @@ export const TransformPage: React.FC = () => {
                     const newSupplyStock: Stock = {
                         id: supplyId,
                         tipo: TipoStock.INSUMO,
-                        campaingId: newSupply.campaignId,
+                        campaignId: newSupply.campaignId,
                         accountId: user.accountId,
                         depositId: depositId,
                         location: newSupply.location,
@@ -302,7 +302,7 @@ export const TransformPage: React.FC = () => {
                     const newCropStock: Stock = {
                         accountId: user.accountId,
                         depositId: depositId,
-                        campaingId: newTransformValue.campaignId,
+                        campaignId: newTransformValue.campaignId,
                         id: cropId,
                         tipo: TipoStock.CULTIVO,
                         fieldId: "",

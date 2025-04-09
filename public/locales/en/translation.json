@@ -19,6 +19,8 @@
   "id_cancel": "Cancel",
   "id_next": "Next",
   "id_update": "Update",
+  "_type_suppy": "Type of supply",
+  "_location": "Location",
   "id_back": "Back",
   "title_sale_cereal": "Sale Cereal Contact",
   "_add": "Add",

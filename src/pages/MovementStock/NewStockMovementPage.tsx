@@ -700,7 +700,7 @@ export const NewStockMovementPage: React.FC = () => {
                   >
                     {campaigns?.map((c) => (
                       <MenuItem key={c.campaignId} value={c.campaignId}>
-                        {c.campaignId}
+                        {c.name}
                       </MenuItem>
                     ))}
                   </Select>

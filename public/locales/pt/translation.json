@@ -22,6 +22,8 @@
     "id_back": "Voltar",
     "_add": "Adicionar",
     "_physical": "Físico",
+    "_type_suppy": "Tipo de suprimento",
+    "_location": "localização",
     "_legal": "Jurídica",
     "commercial_terms": "Termos Comerciais",
     "main_contact": "Contato Principal",

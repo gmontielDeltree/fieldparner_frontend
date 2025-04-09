@@ -1,4 +1,4 @@
-import { Campaign, Crop, Deposit, Document, Field, Supply } from "../types";
+import { Campaign, Crop, Deposit, Document, Field, StockMovement, Supply } from "../types";
 
 export enum TipoStock {
     INSUMO = "insumo",
@@ -12,7 +12,7 @@ export interface Stock extends Document {
     depositId: string;
     location: string;
     nroLot: string;
-    campaingId: string;
+    campaignId: string;
     fieldId: string;
     fieldLot: string;
     currentStock: number;
@@ -36,4 +36,5 @@ export interface StockItem extends Stock {
     dataField?: Field;
     dataCrop?: Crop;
     dataSupply?: Supply;
+    dataMovements?: StockMovement[];
 }

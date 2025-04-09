@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useField } from '../../hooks/useField';
 import { StockItem, TipoStock } from '../../interfaces/stock';
 import { validateStep, hasErrors } from '../../helpers/validation';
+import Swal from 'sweetalert2';
 
 const initialState: ExitFieldItem = {
     creationDate: getShortDate(false, "-"),

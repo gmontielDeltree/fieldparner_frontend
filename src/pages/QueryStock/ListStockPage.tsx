@@ -4,10 +4,11 @@ import {
   DataTable,
   ItemRow,
   TableCellStyled,
-  SupplyByLotsModal,
   CloseButtonPage,
-} from "../components";
-import { ColumnProps, DisplayModals, Supply, SupplyByDeposits } from "../types";
+  StockSupplyModal,
+  SupplyByDepositsModal
+} from "../../components";
+import { ColumnProps, DisplayModals, Supply } from "../../types";
 import {
   Box,
   Chip,
@@ -24,11 +25,11 @@ import {
   Inventory as InventoryIcon,
   Warehouse as WarehouseIcon,
 } from "@mui/icons-material";
-import { useAppDispatch, useSupply } from "../hooks";
-import { uiOpenModal } from "../redux/ui";
-import { SupplyByDepositsModal } from "../components/Modals/SupplyByDeposits/index";
-import { setSupplyActive } from "../redux/supply";
+import { useAppDispatch, useSupply } from "../../hooks";
+import { uiOpenModal } from "../../redux/ui";
+import { setSupplyActive } from "../../redux/supply";
 import { useTranslation } from "react-i18next";
+import { StockItem } from "../../interfaces/stock";
 
 
 
@@ -71,39 +72,36 @@ export const ListStockPage: React.FC = () => {
   const {
     isLoading,
     stockBySupplies,
-    supplyByDeposits,
-    getStockByDepositAndLocation,
+    stockByDeposits,
+    getSupplyStockByDeposits,
     getStockBySupplies,
   } = useSupply();
   const [tabValue, setTabValue] = React.useState(0);
   const [showStockValueZero, setShowStockValueZero] = React.useState(false);
-const {t} = useTranslation();
+  const { t } = useTranslation();
 
-  const columnsBySupply: ColumnProps[]  = [
-  
-  
-    //   { text: "", align: "left" },
+  const columnsBySupply: ColumnProps[] = [
     { text: t("_type"), align: "left" },
-    { text: t("supply_description"), align: "center" },
+    { text: t("_supply"), align: "center" },
     { text: "UM", align: "center" },
     { text: t("current_stock"), align: "center" },
     { text: t("reserved_stock"), align: "center" },
     { text: t("available_stock"), align: "center" },
   ];
 
-
-const columnsByDeposit: ColumnProps[] = [
-  { text: t("_warehouse"), align: "left" },
-  { text: t("_type"), align: "left" },
-  { text: t("supply_description"), align: "center" },
-  { text: "UM", align: "center" },
-  { text: t("current_stock"), align: "center" },
-  { text: t("reserved_stock"), align: "center" },
-  { text: t("available_stock"), align: "center" },
-];
+  const columnsByDeposit: ColumnProps[] = [
+    { text: t("_warehouse"), align: "left" },
+    { text: t("_location"), align: "left" },
+    { text: t("_type_suppy"), align: "left" },
+    { text: t("_supply"), align: "center" },
+    { text: "UM", align: "center" },
+    { text: t("current_stock"), align: "center" },
+    { text: t("reserved_stock"), align: "center" },
+    { text: t("available_stock"), align: "center" },
+  ];
 
   const [selectedSupplyDeposit, setSelectedSupplyDeposit] =
-    useState<SupplyByDeposits | null>(null);
+    useState<StockItem | null>(null);
 
   const onChangeTab = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -114,14 +112,14 @@ const columnsByDeposit: ColumnProps[] = [
     dispatch(uiOpenModal(DisplayModals.SupplyByDeposits));
   };
 
-  const onClickDeposit = (item: SupplyByDeposits) => {
+  const onClickDeposit = (item: StockItem) => {
     setSelectedSupplyDeposit(item);
     dispatch(uiOpenModal(DisplayModals.SupplyByLots));
   };
 
   useEffect(() => {
     if (tabValue === 0) getStockBySupplies();
-    else getStockByDepositAndLocation();
+    else getSupplyStockByDeposits();
   }, [tabValue]);
 
   return (
@@ -174,7 +172,7 @@ const columnsByDeposit: ColumnProps[] = [
                 {...a11yProps(1)}
               />
             </Tabs>
-            <FormControlLabel
+            {/* <FormControlLabel
               control={
                 <Switch
                   name="stockWithZero"
@@ -186,7 +184,7 @@ const columnsByDeposit: ColumnProps[] = [
               }
               label={t("show_zero_stock")}
               labelPlacement="start"
-            />
+            /> */}
           </Box>
           <CustomTabPanel value={tabValue} index={0}>
             <Box component="div">
@@ -197,27 +195,27 @@ const columnsByDeposit: ColumnProps[] = [
               >
                 {stockBySupplies
                   .filter((s) => (showStockValueZero ? s : s.currentStock > 0))
-                  .map(({ supply, currentStock }) => (
-                    <ItemRow key={supply._id} hover>
-                      <TableCellStyled align="left">{supply.type}</TableCellStyled>
-                      <TableCellStyled align="center">{`${supply.name}/${supply.description}`}</TableCellStyled>
+                  .map((stock) => (
+                    <ItemRow key={stock._id} hover>
+                      <TableCellStyled align="left">{stock?.dataSupply?.type}</TableCellStyled>
+                      <TableCellStyled align="center">{stock?.dataSupply?.name}</TableCellStyled>
                       <TableCellStyled align="center">
-                        {supply.unitMeasurement}
+                        {stock?.dataSupply?.unitMeasurement}
                       </TableCellStyled>
                       <TableCellStyled align="center">
                         <Chip
-                          label={currentStock}
+                          label={stock?.currentStock}
                           variant="filled"
                           color="primary"
-                          onClick={() => onClickSupply(supply)}
+                          onClick={() => stock.dataSupply && onClickSupply(stock.dataSupply)}
                         />
                       </TableCellStyled>
                       <TableCellStyled align="center">
-                        <Chip label={supply.reservedStock} variant="outlined" />
+                        <Chip label={stock?.dataSupply?.reservedStock} variant="outlined" />
                       </TableCellStyled>
                       <TableCellStyled align="center">
                         <Chip
-                          label={currentStock - supply.reservedStock}
+                          label={stock?.currentStock - stock?.reservedStock}
                           color="success"
                         />
                       </TableCellStyled>
@@ -230,9 +228,9 @@ const columnsByDeposit: ColumnProps[] = [
           <CustomTabPanel value={tabValue} index={1}>
             <Box component="div">
               {selectedSupplyDeposit && (
-                <SupplyByLotsModal
+                <StockSupplyModal
                   key="supply-lot-modal"
-                  supplyByDeposit={selectedSupplyDeposit}
+                  selectedRow={selectedSupplyDeposit}
                 />
               )}
               <DataTable
@@ -240,30 +238,30 @@ const columnsByDeposit: ColumnProps[] = [
                 columns={columnsByDeposit}
                 isLoading={isLoading}
               >
-                {supplyByDeposits
-                  .filter((s) => {
-                    if (showStockValueZero) return s;
-                    else return s.currentStock > 0;
-                  })
+                {stockByDeposits
+                  .filter((s) => (showStockValueZero ? s : s.currentStock > 0))
                   .map((row) => (
                     <ItemRow
-                      key={`${row.deposit._id}-${row.supply?._id}`}
+                      key={`${row?.dataDeposit?._id}-${row?.dataSupply?._id}`}
                       hover
                     >
                       <TableCellStyled align="left">
-                        {row.deposit.description.trim()}
+                        {row?.dataDeposit?.description.trim()}
                       </TableCellStyled>
-                      <TableCellStyled>{row.supply?.type}</TableCellStyled>
-                      <TableCellStyled align="center">{`${row.supply?.name}/${row.supply?.description}`}</TableCellStyled>
+                      <TableCellStyled align="left">
+                        {row?.location.trim()}
+                      </TableCellStyled>
+                      <TableCellStyled>{row?.dataSupply?.type}</TableCellStyled>
+                      <TableCellStyled align="center">{row?.dataSupply?.name}</TableCellStyled>
                       <TableCellStyled align="center">
-                        {row.supply?.unitMeasurement}
+                        {row?.dataSupply?.unitMeasurement}
                       </TableCellStyled>
                       <TableCellStyled align="center">
                         <Chip
                           label={row.currentStock}
                           variant="filled"
                           color="primary"
-                          onClick={() => onClickDeposit(row)}
+                          onClick={() => row && onClickDeposit(row)}
                         />
                       </TableCellStyled>
                       <TableCellStyled align="center">
