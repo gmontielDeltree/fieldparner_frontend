@@ -6,8 +6,8 @@ import {
     Cancel as CancelIcon,
     CloudUpload as CloudUploadIcon,
 } from "@mui/icons-material";
-import uuid4 from 'uuid4';
 import { useTranslation } from "react-i18next";
+import { useFileUploadHook } from './useDatosGenerales';
 
 const columns = ['Fecha', 'Kilometros', 'Descripcion', 'Observaciones', 'Proximo mantenimiento'];
 
@@ -29,6 +29,16 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
 }) => {
     const { t } = useTranslation();
 
+    const { fileDisplayName, handleFileUpload, handleRemoveFile } = useFileUploadHook({
+        setFilesUpload,
+        onFileChange: (fileName) => handleFormValueChange("documentVehicleFile", fileName),
+        cancelFile,
+        onFileRemove: () => handleFormValueChange("documentVehicleFile", ""),
+        fileTypePrefix: "maintenance-doc",
+        acceptedFileTypes: "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        returnBasicFile: false,
+        initialFileName: vehiculo.documentVehicleFile
+      });
     const {
         vehicleType,
         make,
@@ -51,24 +61,9 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
             )
         }));
     }
-    const removeFile = (index: number) => {
-        handleFormValueChange("documentVehicleFile", "");
-        cancelFile(index);
-    }
 
-    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files ? event.target.files[0] : null;
-        if (file) {
-            let fileNameOriginal = file.name;
-            let extensionPos = fileNameOriginal.lastIndexOf(".");
-            let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
 
-            const newFileName = `document-vehicle_${uuid4()}${fileType}`;
-            const renamedFile = new File([file], newFileName, { type: file.type });
-            setFilesUpload(prevState => [...prevState, renamedFile])
-            handleFormValueChange("documentVehicleFile", newFileName);
-        }
-    };
+
 
     return (
         <>
@@ -131,7 +126,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                     {documentVehicleFile ? (
                         <>
                             <label
-                                title={documentVehicleFile}
+                                title={fileDisplayName}
                                 style={{
                                     margin: "10px",
                                     width: "240px",
@@ -140,9 +135,9 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                                     textOverflow: "ellipsis",
                                     whiteSpace: "nowrap"
                                 }}>
-                                {documentVehicleFile}
+                                {fileDisplayName}
                             </label>
-                            <IconButton onClick={() => removeFile(0)} color="error">
+                            <IconButton onClick={() =>handleRemoveFile(0)} color="error">
                                 <CancelIcon fontSize="medium" />
                             </IconButton>
                         </>

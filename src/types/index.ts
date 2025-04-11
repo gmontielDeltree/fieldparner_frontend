@@ -692,7 +692,9 @@ export interface Country extends Document {
 
 export enum TipoCombustible {
   Diesel = "Diesel",
-  Nafta = "Nafta"
+  Nafta = "Nafta",
+  Alcohol = "Alcohol",
+  Electrico = "Electrico"
 }
 
 export enum Estado {

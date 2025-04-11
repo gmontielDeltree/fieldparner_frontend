@@ -33,8 +33,9 @@ import {
 } from "../../types";
 import { getShortDate } from "../../helpers/dates";
 import { useTranslation } from "react-i18next";
-import uuid4 from "uuid4";
+
 import { uploadFile } from "../../helpers/fileUpload";
+import { useFileUploadHook,  BasicFileInfo } from "../../components/NuevoVehiculo/useDatosGenerales";
 
 const initialForm: StockMovement = {
   typeMovement: TypeMovement.Ajustes,
@@ -93,6 +94,22 @@ export const NewStockMovementPage: React.FC = () => {
   const [movementTypeSelected, setMovementTypeSelected] = useState<MovementType | null>(null);
   const [fileUpload, setFileUpload] = React.useState<File | null>(null);
   const { depositId: depositOrigin, supplyId, location } = formulario;
+
+  const { 
+    fileDisplayName, 
+    handleFileUpload, 
+    handleRemoveFile 
+  } = useFileUploadHook({
+    setFilesUpload: (file: File | BasicFileInfo) => setFileUpload(file as File),
+    onFileChange: (fileName) => setFormulario(prev => ({ ...prev, documentFile: fileName })),
+    cancelFile: () => setFileUpload(null),
+    onFileRemove: () => setFormulario(prev => ({ ...prev, documentFile: "" })),
+    fileTypePrefix: "stock-movement",
+    acceptedFileTypes: "application/pdf,image/*",
+    returnBasicFile: false,
+    initialFileName: formulario.documentFile,
+    singleFile: true
+  });
 
   const depositsToBeAllocated = useMemo(() => {
     return deposits.filter(
@@ -184,24 +201,9 @@ export const NewStockMovementPage: React.FC = () => {
     }
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files ? event.target.files[0] : null;
-    if (file) {
-      let fileNameOriginal = file.name;
-      let extensionPos = fileNameOriginal.lastIndexOf(".");
-      let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
 
-      const newFileName = `stock-movement_${uuid4()}${fileType}`;
-      const renamedFile = new File([file], newFileName, { type: file.type });
-      setFileUpload(renamedFile);
-      setFormulario(prevState => ({ ...prevState, documentFile: newFileName }));
-    }
-  };
 
-  const cancelFile = () => {
-    setFileUpload(null);
-    setFormulario(prevState => ({ ...prevState, documentFile: "" }));
-  }
+
 
   useEffect(() => {
     getSupplies();
@@ -724,7 +726,7 @@ export const NewStockMovementPage: React.FC = () => {
                 {formulario.documentFile ? (
                   <Grid>
                     <label
-                      title={formulario.documentFile}
+                      title={fileDisplayName}
                       style={{
                         margin: "10px",
                         width: "200px",
@@ -733,9 +735,9 @@ export const NewStockMovementPage: React.FC = () => {
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap"
                       }}>
-                      {formulario.documentFile}
+                 {fileDisplayName}
                     </label>
-                    <IconButton onClick={() => cancelFile()} color="error">
+                    <IconButton onClick={() => handleRemoveFile()} color="error">
                       <CancelIcon fontSize="medium" />
                     </IconButton>
                   </Grid>

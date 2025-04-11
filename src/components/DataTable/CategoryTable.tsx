@@ -5,11 +5,10 @@ import {
   FormControl,
   Grid,
   IconButton,
-  InputLabel,
   Tooltip,
   Typography,
 } from "@mui/material";
-import { DataTable, ItemRow, Loading, MultiLanguageSelect, TableCellStyled } from "../";
+import { DataTable, ItemRow, Loading, MultiLanguageAutocomplete, TableCellStyled } from "../";
 import {
   Delete as DeleteIcon,
   Add as AddIcon,
@@ -34,7 +33,7 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
   handleDeleteCategory,
   handleAddCategory,
 }) => {
-  const { category, handleSelectChange, reset } = useForm({ category: "" });
+  const { category, handleCategoryChange, reset } = useForm({ category: "" });
   const {
     isLoading,
     categories: optionsCategories,
@@ -80,11 +79,11 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
       >
         <Grid item xs={4}>
           <FormControl fullWidth>
-            <InputLabel id="category">{t("_categories")}</InputLabel>
-            <MultiLanguageSelect
+            {/* <InputLabel id="category">{t("_categories")}</InputLabel> */}
+            <MultiLanguageAutocomplete
                 options={optionsCategories}
                 value={category}
-                onChange={handleSelectChange}
+                onChange={handleCategoryChange}
                 label="_categories"
                 name="category"
                 getOptionLabel={(option, language) => {

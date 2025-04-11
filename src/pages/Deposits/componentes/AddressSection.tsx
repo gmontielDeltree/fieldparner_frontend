@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Grid, TextField, Autocomplete, FormControl, FormHelperText } from "@mui/material";
-import { FormSection, LocalidadSelect, MultiLanguageSelect,Loading } from "../../../components";
+import { FormSection, LocalidadSelect, MultiLanguageAutocomplete,Loading } from "../../../components";
 import { useTranslation } from "react-i18next";
 import { useCountry } from "../../../hooks";
 import { getCountryOptions } from "../../../utils/country";
@@ -56,7 +56,7 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
       <Grid container spacing={2}>
         <Grid item xs={6} sm={4}>
           <FormControl fullWidth variant="outlined" error={countryError}>
-            <MultiLanguageSelect
+            <MultiLanguageAutocomplete
               options={countryOptions}
               value={formulario.country}
               onChange={(event) => setFormulario(prev => ({ ...prev, country: event.target.value }))}

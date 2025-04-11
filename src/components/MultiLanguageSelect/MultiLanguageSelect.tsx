@@ -1,27 +1,25 @@
 import { useTranslation } from "react-i18next";
 import {
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   FormHelperText,
-  SelectChangeEvent,
+  Autocomplete,
+  TextField,
 } from "@mui/material";
 
-interface MultiLanguageSelectProps<T> {
+interface MultiLanguageAutocompleteProps<T> {
   options: T[];
-  value?: string | undefined;
+  value?: string;
   paisValue?: { code: string; label: string } | null;
   error?: boolean;
-  onChange?: (event: SelectChangeEvent<string>) => void; 
-  onChangePais?: (value: { code: string; label: string } | null) => void; 
+  onChange?: (value: string) => void;
+  onChangePais?: (value: { code: string; label: string } | null) => void;
   disabled?: boolean;
   getOptionLabel: (option: T, language: string) => string;
   label: string;
   name: string;
 }
 
-export const MultiLanguageSelect = <T,>({
+export const MultiLanguageAutocomplete = <T extends {}>({
   options,
   value,
   paisValue,
@@ -32,42 +30,61 @@ export const MultiLanguageSelect = <T,>({
   getOptionLabel,
   label,
   name,
-}: MultiLanguageSelectProps<T>) => {
+}: MultiLanguageAutocompleteProps<T>) => {
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language;
+  const sortedOptions = [...options].sort((a, b) => {
+    const labelA = getOptionLabel(a, currentLanguage).toLowerCase();
+    const labelB = getOptionLabel(b, currentLanguage).toLowerCase();
+    return labelA.localeCompare(labelB);
+  });
 
-  const handleChange = (event: SelectChangeEvent<string>) => {
+  const handleChange = (
+    _event: React.SyntheticEvent,
+    newValue: T | null
+  ) => {
     if (onChangePais) {
-      const selectedCode = event.target.value;
-      const selectedOption = options.find((option) => (option as any).code === selectedCode) || null;
-      onChangePais(selectedOption as { code: string; label: string } | null);
+      onChangePais(newValue as { code: string; label: string } | null);
+    } else if (onChange && newValue) {
+    
+      const selectedValue = (newValue as any).code || (newValue as any)._id || newValue;
+      onChange(String(selectedValue));
     } else if (onChange) {
-      onChange(event);
+      onChange("");
     }
   };
 
-  
-  const selectValue = paisValue ? paisValue.code : value || "";
+  const findSelectedOption = () => {
+    if (paisValue) {
+      return options.find(option => (option as any).code === paisValue.code) || null;
+    }
+    return options.find(option => {
+      const optionValue = (option as any).code || (option as any)._id || option;
+      return String(optionValue) === String(value);
+    }) || null;
+  };
 
   return (
     <FormControl fullWidth error={error} disabled={disabled}>
-      <InputLabel id={`${name}-select-label`}>{t(label)}</InputLabel>
-      <Select
-        labelId={`${name}-select-label`}
-        name={name}
-        value={selectValue}
+      <Autocomplete
+        options={sortedOptions}
+        value={findSelectedOption()}
         onChange={handleChange}
-      >
-        {options.map((option, index) => {
+        getOptionLabel={(option) => getOptionLabel(option, currentLanguage)}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={t(label)}
+            error={error}
+            name={name}
+          />
+        )}
+        isOptionEqualToValue={(option, value) => {
           const optionValue = (option as any).code || (option as any)._id || option;
-
-          return (
-            <MenuItem key={index} value={optionValue}>
-              {getOptionLabel(option, currentLanguage)}
-            </MenuItem>
-          );
-        })}
-      </Select>
+          const valueValue = (value as any).code || (value as any)._id || value;
+          return String(optionValue) === String(valueValue);
+        }}
+      />
       {error && <FormHelperText>{t("this_field_is_mandatory")}</FormHelperText>}
     </FormControl>
   );

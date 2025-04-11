@@ -1,5 +1,5 @@
 // DatosGenerales.tsx
-import React, { ChangeEvent, SetStateAction, useEffect, useMemo } from "react";
+import React, { ChangeEvent, SetStateAction } from "react";
 import {
   Autocomplete,
   Button,
@@ -15,8 +15,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { TipoEntidad, TypeVehicle, Vehicle } from "../../types";
-import { useAppSelector, useBusiness, useVehicle } from "../../hooks";
+import { TipoEntidad, Vehicle } from "../../types";
+import { useAppSelector } from "../../hooks";
+import { useBusinessHook, useFileUploadHook, usePatentHook, useVehicleTypeHook, useYearOptionsHook } from "./useDatosGenerales";
 import {
   FolderOpen as FolderOpenIcon,
   Security as SecurityIcon,
@@ -24,15 +25,17 @@ import {
   CloudUpload as CloudUploadIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import uuid4 from "uuid4";
-import Swal from "sweetalert2";
+import { BasicFileInfo } from "./useDatosGenerales";
+
+
+
 
 export interface DatosGeneralesProps {
   vehiculo: Vehicle;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleYearChange: ({ target }: SelectChangeEvent) => void;
   handleFormValueChange: (key: string, value: string) => void;
-  setFilesUpload: React.Dispatch<SetStateAction<File[]>>;
+  setFilesUpload: React.Dispatch<SetStateAction<Array<{file: File; originalName: string; uniqueName: string;}>>>;
   cancelFile: (indexToRemove: number) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
@@ -46,12 +49,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   cancelFile,
   handleSelectChange
 }) => {
-  const { vehicleTypes, getTypeVehicles, createVehicleType, getVehicleByPatent } = useVehicle();
-  const typeVehicles = vehicleTypes.map(t => t.name);
-  const { vehiculoActivo } = useAppSelector((state) => state.vehiculo);
-  const disabledFields = !!vehiculoActivo;
-  const { t } = useTranslation();
-  
+
   const {
     vehicleType,
     patent,
@@ -69,70 +67,38 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
     insurencePolicyFile
   } = vehiculo;
 
-  const years = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    const yearsArray = [];
-    for (let year = currentYear; year >= 1960; year--) {
-      yearsArray.push(year.toString());
-    }
-    return yearsArray;
-  }, []);
 
-  const {
-    getBusinesses,
-    businesses,
-    isLoading: loadingBusiness,
-  } = useBusiness();
+  const { fileDisplayName, handleFileUpload, handleRemoveFile } = useFileUploadHook({
+    setFilesUpload: setFilesUpload as React.Dispatch<SetStateAction<BasicFileInfo[]>>,
+    onFileChange: (fileName) => handleFormValueChange("insurencePolicyFile", fileName),
+    cancelFile: (index = 0) => cancelFile(index), // Proporciona valor por defecto
+    onFileRemove: () => handleFormValueChange("insurencePolicyFile", ""),
+    fileTypePrefix: "insurance-policy",
+    acceptedFileTypes: "application/pdf",
+    returnBasicFile: true,
+    initialFileName: vehiculo.insurencePolicyFile
+  });
+  const { loadingBusiness, optionsPropietario, insuranceCompanies } = useBusinessHook();
+  const { checkPatentAvailability } = usePatentHook();
 
-  const optionsPropietario = useMemo(() => {
-    return businesses
-      .filter((business) => business.tipoEntidad == TipoEntidad.JURIDICA)
-      .map((business) => business.razonSocial || "");
-  }, [businesses]);
+  const { years } = useYearOptionsHook();
+  const { vehiculoActivo } = useAppSelector((state) => state.vehiculo);
 
-  const handleOnBlurTipoVehiculo = async () => {
-    const checkTipoVehiculo = (tV: string) =>
-      tV.toLowerCase().trim() === vehicleType.toString().toLowerCase().trim();
+  const disabledFields = !!vehiculoActivo;
+  const { t } = useTranslation();
 
-    if (vehicleType !== "" && !typeVehicles.some(checkTipoVehiculo)) {
-      const newVehicleType: TypeVehicle = { name: vehicleType };
-      createVehicleType(newVehicleType);
-    }
-  };
+
+  const { 
+    typeVehicles, 
+    handleOnBlurTipoVehiculo,
+  } = useVehicleTypeHook(vehicleType);
+
 
   const handleOnBlurPatent = async () => {
-    if (patent !== "") {
-      const vehicleFound = await getVehicleByPatent(vehiculo.patent);
-      if (vehicleFound) {
-        Swal.fire("Error", "Matricula no disponible.", "error");
-        handleFormValueChange("patent", "");
-      }
+    if (patent !== "" && !await checkPatentAvailability(patent)) {
+      handleFormValueChange("patent", "");
     }
   };
-
-  const removeFile = (index: number) => {
-    handleFormValueChange("documentFile", "");
-    cancelFile(index);
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files ? event.target.files[0] : null;
-    if (file) {
-      let fileNameOriginal = file.name;
-      let extensionPos = fileNameOriginal.lastIndexOf(".");
-      let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
-
-      const newFileName = `insurence-policy_${uuid4()}${fileType}`;
-      const renamedFile = new File([file], newFileName, { type: file.type });
-      setFilesUpload(prevState => [...prevState, renamedFile])
-      handleFormValueChange("insurencePolicyFile", newFileName);
-    }
-  };
-
-  useEffect(() => {
-    getTypeVehicles();
-    getBusinesses();
-  }, []);
 
   return (
     <>
@@ -298,7 +264,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
               label={t("insurance_company")}
               onChange={handleSelectChange}
             >
-              {businesses?.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA).map((c) => (
+              {insuranceCompanies?.filter(x => x.tipoEntidad === TipoEntidad.JURIDICA).map((c) => (
                 <MenuItem key={c._id} value={c._id}>
                   {c.razonSocial}
                 </MenuItem>
@@ -377,7 +343,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
           {insurencePolicyFile ? (
             <>
               <label
-                title={insurencePolicyFile}
+               title={fileDisplayName}
                 style={{
                   margin: "10px",
                   width: "240px",
@@ -386,9 +352,9 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap"
                 }}>
-                {insurencePolicyFile}
+             {fileDisplayName}
               </label>
-              <IconButton onClick={() => removeFile(0)} color="error">
+              <IconButton onClick={() => handleRemoveFile(0)} color="error">
                 <CancelIcon fontSize="medium" />
               </IconButton>
             </>
