@@ -923,7 +923,11 @@
   "downloadPNG": "Download PNG",
   "dualMap": "Dual Map",
   "showCharts": "Show Charts",
-  "loadingCharts": "Loading charts..."
+  "loadingCharts": "Loading charts...",
+  "saving": "Saving...",
+  "generalSaveError": "General error",
+  "databaseError": "Database error",
+  "tryAgainLater": "Try again later"
 }
   
 

@@ -57,7 +57,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       })
       return
     }
-
+  
     // Validación de compatibilidad de semillas
     if (supply && supply.type === 'Semillas') {
       const { _id } = formData.detalles.cultivo
@@ -71,24 +71,26 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
         return
       }
     }
+    
+    // Use insumo instead of selectedOption to maintain consistency
     const newRow = {
-      selectedOption: selectedSupply,
+      insumo: selectedSupply, // Changed from selectedOption to insumo
       dosificacion,
       total,
       deposito,
       nro_lote: nroLote,
       ubicacion,
-      precio, // ojo: en vez de precio_estimado
+      precio,
       uuid: uuid4(),
     }
-
+  
     const newDetalles = [...formData.detalles.dosis, newRow]
-
+  
     setFormData({
       ...formData,
       detalles: { ...formData.detalles, dosis: newDetalles },
     })
-
+  
     // Limpiar campos después de agregar
     setSelectedSupply('')
     setDosificacion('')
@@ -98,7 +100,6 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     setUbicacion('')
     setPrecio('')
   }
-
   const handleSelectChange = (event) => {
     setSelectedSupply(event)
   }

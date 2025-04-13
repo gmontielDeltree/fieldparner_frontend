@@ -109,7 +109,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
   const { t } = useTranslation()
   const [editIndex, setEditIndex] = useState(-1)
   const [editData, setEditData] = useState({
-    selectedOption: null,
+    insumo: null, 
     dosificacion: '',
     nro_lote: '',
     ubicacion: '',
@@ -118,19 +118,22 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
     precio: '',
     uuid: '',
   })
+  
   const [deletingIndex, setDeletingIndex] = useState(null)
 
   const handleEditRow = (index) => {
     const rowToEdit = rows[index]
     if (!rowToEdit) return
-
+  
     console.log('Starting edit for row:', rowToEdit)
-
-    // Hacer una copia profunda de los datos
+  
+    // Hacer una copia profunda de los datos, cambiando selectedOption a insumo
     const editDataCopy = {
-      selectedOption: rowToEdit.selectedOption
-        ? { ...rowToEdit.selectedOption }
-        : null,
+      insumo: rowToEdit.insumo
+        ? { ...rowToEdit.insumo }
+        : rowToEdit.selectedOption // Fallback to selectedOption if insumo doesn't exist (for backward compatibility)
+          ? { ...rowToEdit.selectedOption }
+          : null,
       dosificacion: rowToEdit.dosificacion ?? '',
       nro_lote: rowToEdit.nro_lote ?? '',
       ubicacion: rowToEdit.ubicacion ?? '',
@@ -139,12 +142,12 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
       precio: rowToEdit.precio ?? '',
       uuid: rowToEdit.uuid,
     }
-
+  
     console.log('Edit data initialized as:', editDataCopy)
     setEditData(editDataCopy)
     setEditIndex(index)
   }
-
+  
   const handleDeleteRow = async (index) => {
     setDeletingIndex(index)
     const updatedRows = [...rows]
@@ -162,14 +165,16 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
     const originalRow = rows[editIndex]
     console.log('Original row:', originalRow)
     console.log('Edit data:', editData)
-
+  
     // Creamos el objeto actualizado con los valores editados o los originales si no se modificaron
     const updatedRow = {
       ...originalRow, // Mantenemos todas las propiedades originales como base
-      selectedOption:
-        editData.selectedOption !== null
-          ? editData.selectedOption
-          : originalRow.selectedOption,
+      insumo:
+        editData.insumo !== null
+          ? editData.insumo
+          : originalRow.insumo || originalRow.selectedOption, // Fallback to selectedOption
+      // Remove selectedOption completely if we have insumo
+      selectedOption: undefined,
       dosificacion:
         editData.dosificacion !== ''
           ? editData.dosificacion
@@ -184,31 +189,25 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
       precio: editData.precio !== '' ? editData.precio : originalRow.precio,
       uuid: originalRow.uuid,
     }
-
+  
     console.log('Updated row before save:', updatedRow)
-
+  
     // Validación adicional
-    if (!updatedRow.selectedOption) {
-      console.error('selectedOption is required')
+    if (!updatedRow.insumo) {
+      console.error('insumo is required')
       return
     }
-
+  
     console.log('Updated row:', updatedRow) // Debug log
-
-    // Validar que tenemos los datos requeridos
-    if (!updatedRow.selectedOption) {
-      console.error('Missing selectedOption')
-      return
-    }
-
+  
     const updatedRows = [...rows]
     updatedRows[editIndex] = updatedRow
     onUpdateRows(updatedRows)
-
+  
     // Reset edit state
     setEditIndex(-1)
     setEditData({
-      selectedOption: null,
+      insumo: null, // Changed from selectedOption to insumo
       dosificacion: '',
       nro_lote: '',
       ubicacion: '',
@@ -218,6 +217,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
       uuid: '',
     })
   }
+  
 
   const handleCancelEdit = () => {
     setEditIndex(-1)
@@ -237,7 +237,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
     console.log('Supply changed to:', value) // Debug log
     setEditData((prev) => ({
       ...prev,
-      selectedOption: value,
+      insumo: value, // Changed from selectedOption to insumo
     }))
   }
 
@@ -258,7 +258,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
         : value,
     }))
   }
-
+  
   const handleEditCantidadTotalChange = (event) => {
     const value = event.target.value
     setEditData((prev) => ({
@@ -322,12 +322,15 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
       </Typography>
       <List sx={{ position: 'relative' }}>
         {rows.map((row, index) => {
-          // Agregar log para depuración
-          if (!row.selectedOption) {
-            console.warn('Row missing selectedOption:', row)
-            return null
+          // Get the supply object from either insumo or selectedOption for backward compatibility
+          const supply = row.insumo || row.selectedOption;
+          
+          // If no supply information is available, skip rendering this row
+          if (!supply) {
+            console.warn('Row missing supply information:', row);
+            return null;
           }
-
+  
           return (
             <CustomListItem
               key={row.uuid || index}
@@ -339,7 +342,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                     <Grid container spacing={2}>
                       <Grid item xs={12} md={6}>
                         <AutocompleteSupplies
-                          value={editData.selectedOption}
+                          value={editData.insumo}
                           onChange={handleEditSupplyChange}
                         />
                       </Grid>
@@ -357,8 +360,8 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                           value={editData.dosificacion}
                           onChange={handleEditCantidadPorHaChange}
                           unit={
-                            editData.selectedOption?.unitMeasurement
-                              ? `${editData.selectedOption.unitMeasurement}/ha`
+                            editData.insumo?.unitMeasurement
+                              ? `${editData.insumo.unitMeasurement}/ha`
                               : 'unit/ha'
                           }
                         />
@@ -370,7 +373,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                           value={editData.total}
                           onChange={handleEditCantidadTotalChange}
                           unit={
-                            editData.selectedOption?.unitMeasurement || 'unit'
+                            editData.insumo?.unitMeasurement || 'unit'
                           }
                         />
                       </Grid>
@@ -431,42 +434,42 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                             variant="h6"
                             sx={{ fontWeight: 600, mb: 0.5 }}
                           >
-                            {row.selectedOption.name}
+                            {supply.name}
                           </Typography>
-                          {row.selectedOption.description && (
+                          {supply.description && (
                             <Typography
                               variant="body2"
                               color="text.secondary"
                               sx={{ mb: 1 }}
                             >
-                              {row.selectedOption.description}
+                              {supply.description}
                             </Typography>
                           )}
                         </Box>
-                        {row.selectedOption.type && (
-                          <StyledChip label={row.selectedOption.type} />
+                        {supply.type && (
+                          <StyledChip label={supply.type} />
                         )}
                       </Box>
-
+  
                       <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                           <MetaInfo variant="body2">
                             <QrCodeIcon />
                             <strong>{t('quantityPerHectare')}:</strong>{' '}
                             {row.dosificacion}{' '}
-                            {abrUnit(row.selectedOption?.unitMeasurement)}/ha
+                            {abrUnit(supply?.unitMeasurement)}/ha
                           </MetaInfo>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                           <MetaInfo variant="body2">
                             <InventoryIcon />
                             <strong>{t('totalQuantity')}:</strong> {row.total}{' '}
-                            {abrUnit(row.selectedOption?.unitMeasurement)}
+                            {abrUnit(supply?.unitMeasurement)}
                           </MetaInfo>
                         </Grid>
                       </Grid>
                     </ContentSection>
-
+  
                     <ContentSection>
                       <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
@@ -483,7 +486,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                         </Grid>
                       </Grid>
                     </ContentSection>
-
+  
                     <ContentSection
                       sx={{
                         display: 'flex',
@@ -512,10 +515,10 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                 )}
               </CardContent>
             </CustomListItem>
-          )
+          );
         })}
       </List>
     </Box>
-  )
+  );
 }
 export default SuppliesList

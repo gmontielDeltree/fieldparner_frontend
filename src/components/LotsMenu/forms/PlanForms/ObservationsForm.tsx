@@ -20,6 +20,9 @@ const ObservationsForm: React.FC<ObservationsFormProps> = ({
       ...formData,
       comentario: event.target.value
     });
+
+    console.log("Form data:", 
+      formData)
   };
 
   return (
