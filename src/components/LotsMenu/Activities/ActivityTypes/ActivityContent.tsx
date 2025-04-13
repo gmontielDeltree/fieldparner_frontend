@@ -263,9 +263,7 @@ const ActivityContent = ({
           <ActivityActionsBar
             sx={{ marginLeft: '8px' }}
             onEditActivity={() => handleEditActivity(normalizedActivity)}
-            onDeleteActivity={() =>
-              handleDeleteActivity(activity._id)
-            }
+            onDeleteActivity={() => handleDeleteActivity(activity?.actividad?._id || activity?._id)}
             onMeteo={() => alert(t('comingSoon'))}
             onDownloadOT={() => handleDownloadPDF(activity)}
             onRepeatOT={() => handleReplicateActivity()}
