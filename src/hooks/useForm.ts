@@ -23,6 +23,13 @@ export const useForm = <T extends Object>(initialState: T) => {
         });
     };
 
+    const handleCategoryChange = (value: string) => {
+        setFormulario({
+            ...formulario,
+            category: value
+        });
+    };
+
     const handleYearChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = target;
 
@@ -78,6 +85,7 @@ export const useForm = <T extends Object>(initialState: T) => {
         handleFormValueChange,
         handleCheckboxChange,
         handleGeolocationChange,
+        handleCategoryChange,
         handleGenercoChange, // Agregar handleGenercoChange al objeto devuelto
         ...formulario
     }

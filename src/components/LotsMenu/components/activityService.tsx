@@ -15,12 +15,50 @@ const ACTIVITY_TYPES = {
   application: "aplicacion",
 }
 
+// Map any raw English or translated Portuguese activity types to the standard Spanish values
+const normalizeActivityType = (tipo) => {
+  // Convert English types to Spanish
+  if (tipo === 'preparation' || tipo === 'preparação') {
+    return ACTIVITY_TYPES.preparation; // "preparado"
+  } else if (tipo === 'sowing' || tipo === 'semeadura') {
+    return ACTIVITY_TYPES.sowing; // "siembra"
+  } else if (tipo === 'harvesting' || tipo === 'colheita') {
+    return ACTIVITY_TYPES.harvesting; // "cosecha"
+  } else if (tipo === 'application' || tipo === 'aplicação') {
+    return ACTIVITY_TYPES.application; // "aplicacion"
+  }
+
+  // If it's already one of our Spanish values, return it
+  if (Object.values(ACTIVITY_TYPES).includes(tipo)) {
+    return tipo;
+  }
+
+  // Default fallback
+  return tipo;
+};
+
 export const reserveSupplyStock = async (
   dosis,
   user,
   selectedCampaign,
   createWithdrawalOrder,
 ) => {
+  // Check for required data
+  if (!dosis.insumo) {
+    console.error('Supply object is missing in dosis:', dosis);
+    throw new Error('Supply information is missing');
+  }
+
+  // Log for debugging
+  console.log('Creating withdrawal order with:', {
+    supply: dosis.insumo.name,
+    deposit: dosis.deposito,
+    location: dosis.ubicacion
+  });
+
+  // Get the field information
+  const field = dosis.insumo.campo;
+
   const newWithdrawalOrder = {
     accountId: user.accountId,
     type: WithdrawalOrderType.Labor,
@@ -28,7 +66,7 @@ export const reserveSupplyStock = async (
     order: 0,
     reason: 'Reserva de stock',
     campaign: selectedCampaign,
-    field: dosis.insumo.campo,
+    field: field, // Use field from insumo
     state: 'pending',
   }
 
@@ -43,16 +81,31 @@ export const reserveSupplyStock = async (
     originalAmount: dosis.total,
   }
 
-  const success = await createWithdrawalOrder(newWithdrawalOrder, [
-    newDepositSupplyOrder,
-  ])
-  if (success) {
-    dosis.orden_de_retiro = newWithdrawalOrder
-    return newWithdrawalOrder
-  } else {
-    throw new Error(`Error reserving stock for supply ${dosis.insumo.name}`)
+  try {
+    const success = await createWithdrawalOrder(newWithdrawalOrder, [
+      newDepositSupplyOrder,
+    ])
+    if (success) {
+      dosis.orden_de_retiro = newWithdrawalOrder
+      return newWithdrawalOrder
+    } else {
+      throw new Error(`Error reserving stock for supply ${dosis.insumo.name || 'unknown'}`)
+    }
+  } catch (error) {
+    console.error('Error in createWithdrawalOrder:', error);
+    throw error;
   }
 }
+
+// Helper function to standardize supply data
+const standardizeSupplyData = (dosis) => {
+  // If we have selectedOption but not insumo, transfer the data
+  if (dosis.selectedOption && !dosis.insumo) {
+    dosis.insumo = dosis.selectedOption;
+    delete dosis.selectedOption; // Remove the old property
+  }
+  return dosis;
+};
 
 export const saveActivity = async (
   actividad,
@@ -63,30 +116,11 @@ export const saveActivity = async (
   createWithdrawalOrder,
   backToActivites,
 ) => {
-  // Map any raw English or translated Portuguese activity types to the standard Spanish values
-  const normalizeActivityType = (tipo) => {
-    // Convert English types to Spanish
-    if (tipo === 'preparation' || tipo === 'preparação') {
-      return ACTIVITY_TYPES.preparation; // "preparado"
-    } else if (tipo === 'sowing' || tipo === 'semeadura') {
-      return ACTIVITY_TYPES.sowing; // "siembra"
-    } else if (tipo === 'harvesting' || tipo === 'colheita') {
-      return ACTIVITY_TYPES.harvesting; // "cosecha"
-    } else if (tipo === 'application' || tipo === 'aplicação') {
-      return ACTIVITY_TYPES.application; // "aplicacion"
-    }
-
-    // If it's already one of our Spanish values, return it
-    if (Object.values(ACTIVITY_TYPES).includes(tipo)) {
-      return tipo;
-    }
-
-    // Default fallback
-    return tipo;
-  };
-
-  // Normalize the activity type to ensure Spanish values
+  console.log("saveActivity: Starting to save activity");
+  
+  // Normalize activity type
   actividad.tipo = normalizeActivityType(actividad.tipo);
+  console.log("saveActivity: Activity type normalized:", actividad.tipo);
 
   // Check if we need to add campaign info
   const validActivityTypes = [
@@ -100,12 +134,20 @@ export const saveActivity = async (
     actividad.campaña = selectedCampaign;
   }
 
+  // Standardize all supplies in the activity
+  if (actividad.detalles && actividad.detalles.dosis && actividad.detalles.dosis.length > 0) {
+    console.log("saveActivity: Standardizing supply data structure");
+    actividad.detalles.dosis = actividad.detalles.dosis.map(standardizeSupplyData);
+  }
+
   if (!isEditing) {
     try {
+      console.log("saveActivity: Generating new ID for activity");
       const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa
       const parsedDate = new Date(fechaEjecucion)
       const formattedDate = format(parsedDate, 'yyyy-MM-dd')
       actividad._id = 'actividad:' + formattedDate + ':' + actividad.uuid
+      console.log("saveActivity: New ID generated:", actividad._id);
     } catch (error) {
       console.error('Error generating new ID for activity:', error)
       return
@@ -113,34 +155,57 @@ export const saveActivity = async (
   }
 
   try {
+    console.log("saveActivity: Checking if activity exists:", actividad._id);
     const doc = await db.get(actividad._id)
+    console.log("saveActivity: Activity exists, updating");
     actividad._rev = doc._rev
+    console.log("saveActivity: Updating activity in database");
     await db.put(actividad)
     console.log('Actividad guardada', 'success')
     backToActivites()
   } catch (error) {
     if (error.name === 'not_found') {
-      console.log('Actividad not found. Creating a new one.')
+      console.log('saveActivity: Activity not found. Creating a new one.')
       delete actividad._rev
       try {
+        console.log("saveActivity: Creating new activity in database");
         await db.put(actividad)
         console.log('New actividad created', 'success')
 
-        if (actividad.detalles.dosis) {
+        // Check if there are supplies to process
+        if (actividad.detalles && actividad.detalles.dosis && actividad.detalles.dosis.length > 0) {
+          console.log("saveActivity: Processing supplies for new activity");
+          
+          // Process each supply in sequence
           for (const dosis of actividad.detalles.dosis) {
             try {
+              // Log the dosis object for debugging
+              console.log("saveActivity: Processing supply:", dosis);
+              
+              // Check if we have the necessary data
+              if (!dosis.insumo) {
+                console.warn("saveActivity: Supply missing insumo property:", dosis);
+                continue; // Skip this supply
+              }
+              
+              const supplyName = dosis.insumo?.name || 'unnamed supply';
+              console.log("saveActivity: Reserving stock for supply:", supplyName);
+              
+              // Attempt to reserve stock
               await reserveSupplyStock(
                 dosis,
                 user,
                 selectedCampaign,
                 createWithdrawalOrder,
               )
+              console.log("saveActivity: Stock reserved successfully for:", supplyName);
             } catch (error) {
+              // Log error but continue with other supplies
               console.error(
-                `Error reserving stock for supply ${dosis.insumo.name}:`,
+                `Error reserving stock for supply:`,
                 error,
               )
-              return
+              // Don't return here, continue with other supplies
             }
           }
         }
@@ -148,11 +213,14 @@ export const saveActivity = async (
         backToActivites()
       } catch (err) {
         console.error('Error creating new actividad:', err)
+        throw err; // Rethrow to be caught by the caller
       }
     } else if (error.name === 'conflict') {
       console.error('Conflict detected. Trying to save again.')
+      throw new Error('Document conflict detected. Please try again.');
     } else {
       console.error('Error saving actividad:', error)
+      throw error; // Rethrow to be caught by the caller
     }
   }
 }

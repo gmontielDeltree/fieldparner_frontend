@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Snackbar } from '@mui/material'
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist'
 import GrassIcon from '@mui/icons-material/Grass'
@@ -26,6 +26,7 @@ import {
   Container,
   Row,
   Col,
+  Spinner,
 } from 'reactstrap'
 import {
   Check,
@@ -76,6 +77,26 @@ interface PlanActivityProps {
   existingActivity: any
 }
 
+// Maximum timeout for DB operations (10 seconds)
+const DB_OPERATION_TIMEOUT = 10000;
+
+// Utility function to add timeout to promises
+const withTimeout = (promise, timeoutMs) => {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error('Operation timed out'));
+    }, timeoutMs);
+  });
+
+  return Promise.race([
+    promise,
+    timeoutPromise,
+  ]).finally(() => {
+    clearTimeout(timeoutId);
+  });
+};
+
 const PlanActivity: React.FC<PlanActivityProps> = ({
   activityType,
   lot,
@@ -115,6 +136,8 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
 
   const [showValidationNotification, setShowValidationNotification] = useState(false)
   const [missingFieldsList, setMissingFieldsList] = useState([])
+  const [isSaving, setIsSaving] = useState(false) // Track save operation state
+  const [dbError, setDbError] = useState(null) // Track database errors
 
   const {
     formData,
@@ -307,7 +330,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     return missingFields
   }
 
-  const handleSave = async () => {
+  const validateAllSteps = () => {
     for (let step = 0; step < steps.length; step++) {
       const missingFields = countMissingFields(formData, step)
       if (missingFields > 0) {
@@ -316,23 +339,114 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         )
         setOpenSnackbar(true)
         setActiveStep(step)
-        return
+        return false
       }
     }
+    return true
+  }
 
-    let actividad = { ...formData }
-    // Usar el tipo en español para el almacenamiento en la base de datos
-    actividad.tipo = rawActivityType;
+  // Check if database is available
+  const checkDbConnection = async () => {
+    try {
+      // Try a simple database operation to check connection
+      await withTimeout(db.info(), DB_OPERATION_TIMEOUT);
+      return true;
+    } catch (error) {
+      console.error("Database connection check failed:", error);
+      return false;
+    }
+  };
 
-    await saveActivity(
-      actividad,
-      isEditing,
-      db,
-      user,
-      selectedCampaign,
-      createWithdrawalOrder,
-      backToActivites,
-    )
+  // Fixed handleSave function with proper state tracking
+  const handleSave = async () => {
+    // Prevent multiple clicks
+    if (isSaving) {
+      console.log("Save already in progress, ignoring additional click");
+      return;
+    }
+    
+    // Set saving state immediately
+    setIsSaving(true);
+    setDbError(null);
+    console.log("Starting save process...");
+    
+    try {
+      // Check database connection first
+      console.log("Checking database connection...");
+      const isDbConnected = await checkDbConnection();
+      if (!isDbConnected) {
+        throw new Error(t('databaseConnectionError'));
+      }
+      console.log("Database connection check passed");
+      
+      // First validate all fields
+      if (!validateAllSteps()) {
+        setIsSaving(false);
+        return;
+      }
+
+      // Prepare activity data
+      let actividad = { ...formData };
+      actividad.tipo = rawActivityType;
+      
+      console.log("Starting saveActivity operation...");
+      
+      // Implement our own timeout for the save operation
+      await withTimeout(
+        saveActivity(
+          actividad,
+          isEditing,
+          db,
+          user,
+          selectedCampaign,
+          createWithdrawalOrder,
+          () => {
+            // Success callback
+            console.log("Save operation completed successfully");
+            // Force manual navigation after a brief delay to ensure state is settled
+            setTimeout(() => {
+              backToActivites();
+            }, 100);
+          }
+        ),
+        DB_OPERATION_TIMEOUT
+      );
+    } catch (error) {
+      console.error("Error saving activity:", error);
+      
+      // Handle specific error types
+      if (error.status === 429) {
+        setDbError(t('tooManyRequestsError'));
+      } else if (error.message?.includes('CORS') || error.name === 'TypeError') {
+        setDbError(t('networkError'));
+      } else if (error.message?.includes('timed out')) {
+        setDbError(t('operationTimeoutError'));
+      } else {
+        setDbError(t('generalSaveError') + ': ' + (error.message || ''));
+      }
+      
+      setSnackbarMessage(t('errorSavingActivity'));
+      setOpenSnackbar(true);
+      setIsSaving(false);
+    }
+  };
+
+  // Fixed handleStepClick function
+  const handleStepClick = (index) => {
+    if (index <= maxStepReached) {
+      const currentStepValidation = getStepValidationStatus(activeStep)
+
+      if (!currentStepValidation.isValid) {
+        const missingFields = getMissingFieldsMessages(activeStep)
+        setMissingFieldsList(missingFields)
+        setShowValidationNotification(true)
+        return
+      }
+
+      // Direct state updates instead of using the function from hook
+      setActiveStep(index);
+      setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, index));
+    }
   }
 
   // Para la UI, se utiliza el icono basado en el activityType original
@@ -382,21 +496,6 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     }
   }
 
-  const handleStepClick = (index) => {
-    if (index <= maxStepReached) {
-      const currentStepValidation = getStepValidationStatus(activeStep)
-
-      if (!currentStepValidation.isValid) {
-        const missingFields = getMissingFieldsMessages(activeStep)
-        setMissingFieldsList(missingFields)
-        setShowValidationNotification(true)
-        return
-      }
-
-      handleStep(index)
-    }
-  }
-
   const getStepStyle = (status) => {
     switch (status) {
       case 'complete':
@@ -432,12 +531,29 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     }
   }
 
+  // Reset isSaving after 15 seconds as a safety mechanism
+  useEffect(() => {
+    let timeoutId;
+    if (isSaving) {
+      timeoutId = setTimeout(() => {
+        console.warn("Save operation timeout safety triggered");
+        setIsSaving(false);
+        setDbError(t('operationTimeoutError'));
+        setSnackbarMessage(t('errorSavingActivity'));
+        setOpenSnackbar(true);
+      }, 15000); // 15 seconds safety timeout
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isSaving]);
+
   return (
     <Container className="py-6">
       <Card className="shadow-lg">
         {/* Header */}
         <CardHeader
-          className="p-0" // Remove padding, the ActivityHeader has its own
+          className="p-0" 
           style={{
             borderTopLeftRadius: '0.5rem',
             borderTopRightRadius: '0.5rem',
@@ -454,6 +570,24 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             getActivityColor={getActivityColor}
           />
         </CardHeader>
+        
+        {/* Database error alert */}
+        {dbError && (
+          <Alert 
+            color="danger" 
+            className="m-3"
+          >
+            <div className="d-flex align-items-center">
+              <AlertCircle size={20} className="me-2" />
+              <div>
+                <strong>{t('databaseError')}</strong>
+                <div>{dbError}</div>
+                <small>{t('tryAgainLater')}</small>
+              </div>
+            </div>
+          </Alert>
+        )}
+        
         {/* Stepper */}
         <div className="px-4 py-4">
           <div className="d-flex justify-content-between align-items-center mb-3">
@@ -542,6 +676,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             color="light"
             onClick={backToActivites}
             className="d-flex align-items-center gap-2"
+            disabled={isSaving}
           >
             <ChevronLeft size={16} />
             {t('back')}
@@ -553,6 +688,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
                 color="light"
                 onClick={handleBack}
                 className="d-flex align-items-center gap-2"
+                disabled={isSaving}
               >
                 <ChevronLeft size={16} />
                 {t('previous')}
@@ -560,8 +696,20 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             )}
 
             {activeStep === steps.length - 1 ? (
-              <Button color={getProgressColor()} onClick={handleSave}>
-                {isEditing ? t('update') : t('save')} {t('activity')}
+              <Button 
+                color={getProgressColor()} 
+                onClick={handleSave}
+                disabled={isSaving}
+                id="save-activity-button"
+              >
+                {isSaving ? (
+                  <span className="d-flex align-items-center">
+                    <Spinner size="sm" className="me-2" />
+                    {t('saving')}
+                  </span>
+                ) : (
+                  <span>{isEditing ? t('update') : t('save')} {t('activity')}</span>
+                )}
               </Button>
             ) : (
               <Button
@@ -577,6 +725,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
                   handleNext(steps)
                 }}
                 className="d-flex align-items-center gap-2"
+                disabled={isSaving}
               >
                 {t('next')}
                 <ChevronRight size={16} />
@@ -592,6 +741,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           color="warning"
           className="position-fixed bottom-0 end-0 m-4 d-flex align-items-center justify-content-between"
           style={{
+ 
             maxWidth: '400px',
             boxShadow:
               '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',

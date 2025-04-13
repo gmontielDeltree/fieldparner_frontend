@@ -14,7 +14,7 @@ import { TipoEntidad } from "../../types";
 import React, { useEffect} from "react";
 import { useTranslation } from "react-i18next";
 import { useBusiness } from "../../hooks";
-import {MultiLanguageSelect} from ".."
+import {MultiLanguageAutocomplete} from ".."
 import { useBusinessForm, BusinessFormProps } from "./useBusinessForm";
 import { getCountryOptions } from "../../utils/country";
 
@@ -43,6 +43,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
     razonSocial,
     email,
     contactoPrincipal,
+    nameMainContact,
     contactoSecundario,
     esEmpleado,
     matricula,
@@ -257,27 +258,47 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
       </Grid>
       <Grid item xs={12} sm={5}>
         <FormControl fullWidth variant="outlined" error={countryError}>
-        <MultiLanguageSelect
-          options={countryOptions}
-          value={pais}
-          onChange={(event) => handleFormValueChange("pais", event.target.value)}
-          label="id_country"
-          name="pais"
-          error={countryError}
-          getOptionLabel={(option, language) => {
-            switch (language) {
-              case "es":
-                return option.descriptionES;
-              case "pt":
-                return option.descriptionPT;
-              case "en":
-              default:
-                return option.descriptionEN;
-            }
-          }}
-        />
+        <MultiLanguageAutocomplete
+                options={countryOptions}
+                value={pais}
+                onChange={(value) => handleFormValueChange("pais", value)}
+                label="id_country"
+                name="pais"
+                error={countryError}
+                getOptionLabel={(option, language) => {
+                  switch (language) {
+                    case "es":
+                      return option.descriptionES;
+                    case "pt":
+                      return option.descriptionPT;
+                    case "en":
+                    default:
+                      return option.descriptionEN;
+                  }
+                }}
+              />
           {countryError && <FormHelperText>{t("error_message")}</FormHelperText>}
         </FormControl>
+      </Grid>
+      <Grid item xs={8} sm={5}>
+        <TextField
+          label={`${t("name")}  ${t("main_contact")}`}
+          variant="outlined"
+          type="tel"
+          name="nameMainContact"
+          value={nameMainContact}
+          onChange={handlePhoneInput}
+          error={nameMainContact && !validatePhone(nameMainContact)}
+          helperText={
+            nameMainContact && !validatePhone(nameMainContact)
+              ? t("phone_format_error")
+              : ""
+          }
+          InputProps={{
+            startAdornment: <InputAdornment position="start" />,
+          }}
+          fullWidth
+        />
       </Grid>
       <Grid item xs={12} sm={6}>
         <TextField

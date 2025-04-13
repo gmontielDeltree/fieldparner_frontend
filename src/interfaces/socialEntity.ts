@@ -13,6 +13,7 @@ export interface Business extends Document {
     cuit?: string;
     contactoPrincipal?: string;
     contactoSecundario?: string;
+    nameMainContact?: string;
     sitioWeb?: string;
     domicilio: string;
     localidad: string;
