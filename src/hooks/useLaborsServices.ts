@@ -1,9 +1,9 @@
-import Swal from "sweetalert2";
 import { LaborsServices } from "../types";
 import { useState } from "react";
 import { dbContext } from "../services";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 export const useLaborsServices = () => {
   const navigate = useNavigate();
@@ -11,7 +11,10 @@ export const useLaborsServices = () => {
   const [error, setError] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [conceptoError] = useState(false);
-  const {t} = useTranslation();
+  const { t } = useTranslation();
+
+  // Prefijo personalizado para los servicios
+  const serviceLabel = t('service_label', 'Servicio:');
 
   const getLaborsServices = async () => {
     setIsLoading(true);
@@ -29,12 +32,11 @@ export const useLaborsServices = () => {
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire("Error", "No hay registro de Servicios.", "error");
+      NotificationService.showError(t("noServicesRecords"));
       setIsLoading(false);
       if (error) setError(error);
     }
   };
-
 
   const createLaborsServices = async (newLaborsServices: LaborsServices) => {
     setIsLoading(true);
@@ -42,12 +44,16 @@ export const useLaborsServices = () => {
       const response = await dbContext.laborsServices.post(newLaborsServices);
       setIsLoading(false);
 
-      if (response.ok) Swal.fire("Servicio", "Servicio agregado.", "success");
-      else Swal.fire("Servicio", "Verificar campos.", "error");
+      if (response.ok) {
+        // Usar el prefijo personalizado
+        NotificationService.showAdded(newLaborsServices.service, serviceLabel);
+      } else {
+        NotificationService.showError(t("verifyFields"));
+      }
       navigate('/init/overview/Labors-services/');
     } catch (error) {
       console.log(error);
-      Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+      NotificationService.showError(t("unexpectedError"));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -59,14 +65,15 @@ export const useLaborsServices = () => {
       const response = await dbContext.laborsServices.put(updatelaborsServices);
 
       if (response.ok) {
-        Swal.fire("Servicio", "Actualizado.", "success");
+        // Usar el prefijo personalizado
+        NotificationService.showUpdated(updatelaborsServices.service, serviceLabel);
       }
       navigate('/init/overview/Labors-services/');
 
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire("Error", "Ocurrio un error inesperado.", "error");
+      NotificationService.showError(t("unexpectedError"));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -75,37 +82,47 @@ export const useLaborsServices = () => {
   const removeLaborsServices = async (laborsServicesId: string, removelaborsServices: string) => {
     setIsLoading(true);
     try {
+      // Intentar obtener el valor del servicio antes de eliminar
+      let serviceValue = null;
+      try {
+        const doc = await dbContext.laborsServices.get(laborsServicesId);
+        if (doc && doc.service) {
+          serviceValue = doc.service;
+        }
+      } catch (err) {
+        console.log("Could not fetch service details", err);
+      }
+
       const response = await dbContext.laborsServices.remove(laborsServicesId, removelaborsServices);
-      
+
       if (response.ok) {
         // Actualizar la lista inmediatamente después de eliminar
         await getLaborsServices();
-        Swal.fire(t("origin_destination"), t("_deleted"), 'success');
+
+        // Usar el prefijo personalizado
+        NotificationService.showDeleted(serviceValue || laborsServicesId, serviceLabel);
       }
-      
+
       setIsLoading(false);
-      // No navegar, para evitar que se recargue la página
-      // Opcional: si necesitas navegar, hazlo después de actualizar la lista
-      // navigate('/init/overview/Labors-services/');
     } catch (error) {
       console.log(error)
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      NotificationService.showError(t("no_destinations_procedences_found"));
       setIsLoading(false);
       if (error) setError(error);
     }
-  } 
+  }
 
   return {
-    //* Props
+    // Props
     laborsServices,
     error,
     isLoading,
     conceptoError,
 
-    //*Methods
-     getLaborsServices,
-     createLaborsServices,
-     updateLaborsServices,
-     removeLaborsServices,
+    // Methods
+    getLaborsServices,
+    createLaborsServices,
+    updateLaborsServices,
+    removeLaborsServices,
   };
 };

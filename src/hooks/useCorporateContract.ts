@@ -1,10 +1,10 @@
-import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
-import { CorporateContract, ListCorporateContract} from "../interfaces/corporateContract";
-import { dbContext} from "../services/pouchdbService";
+import { CorporateContract, ListCorporateContract } from "../interfaces/corporateContract";
+import { dbContext } from "../services/pouchdbService";
 import { useAppSelector } from '.';
 import { useTranslation } from 'react-i18next';
+import { NotificationService } from "../services/notificationService";
 
 export const useCorporateContract = () => {
   const navigate = useNavigate();
@@ -14,27 +14,26 @@ export const useCorporateContract = () => {
   const [corporateContract, setCorporateContract] = useState<CorporateContract[]>([]);
   const [listCorporateContract, setListCorporateContract] = useState<ListCorporateContract[]>([]);
   const [conceptoError, setConceptoError] = useState(false);
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const handleDatabaseError = (error: any) => {
-    console.error('Database error:', error);
-    Swal.fire('Error', `Database error: ${error.message || 'Unexpected error'}`, 'error');
+    console.error(t("databaseErrorLog"), error);
+    NotificationService.showError(t("databaseError", { error: error.message || t("unexpectedError") }), error, t("error_label"));
     setIsLoading(false);
     setError(error);
   };
 
   const createCorporateContract = async (newCorporateContract: CorporateContract) => {
     setIsLoading(true);
-  
+
     try {
       const response = await dbContext.corporateContract.post(newCorporateContract);
       if (response.ok) {
-        Swal.fire('Contrato Societario', 'Agregada', 'success');
- 
+        NotificationService.showAdded(newCorporateContract, t("corporateContract_label"));
       } else {
-        Swal.fire('Contrato Societario', "Error", 'error');
+        NotificationService.showError(t("genericError"), null, t("corporateContract_label"));
       }
-      
+
       navigate('/init/overview/corporate-contract/');
     } catch (error) {
       handleDatabaseError(error);
@@ -45,13 +44,13 @@ export const useCorporateContract = () => {
 
   // const addListCorporateContract = async (newContractList: ListCorporateContract) => {
   //   setIsLoading(true);
-  
+
   //   try {
   //     const response = await dbContext.listCorporateContract.post(newContractList);
   //     if (response.ok) {
-  //       Swal.fire('Contrato Societario', 'Agregado', 'success');
+  //       NotificationService.showAdded(newContractList, t("corporateContract_label"));
   //     } else {
-  //       Swal.fire('Contrato Societario', "Error", 'error');
+  //       NotificationService.showError(t("genericError"), null, t("corporateContract_label"));
   //     }
   //   } catch (error) {
   //     handleDatabaseError(error);
@@ -60,24 +59,23 @@ export const useCorporateContract = () => {
   //   }
   // };
 
-// const getListCorporateContract = async () => {
-//   setIsLoading(true);
-//   try {
-//     const response = await dbContext.listCorporateContract.allDocs({ include_docs: true });
-//     if (response.rows.length) {
-//       const documents: ListCorporateContract[] = response.rows.map(row => row.doc as ListCorporateContract);
-//       setListCorporateContract(documents);
-//     } else {
-//       setListCorporateContract([]);
-//     }
-//   } catch (error) {
-//     console.error('Error during getCorporateContract:', error);
-//     Swal.fire('Error', "Error2", 'error');
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
-
+  // const getListCorporateContract = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await dbContext.listCorporateContract.allDocs({ include_docs: true });
+  //     if (response.rows.length) {
+  //       const documents: ListCorporateContract[] = response.rows.map(row => row.doc as ListCorporateContract);
+  //       setListCorporateContract(documents);
+  //     } else {
+  //       setListCorporateContract([]);
+  //     }
+  //   } catch (error) {
+  //     console.error(t("errorDuringGetCorporateContract"), error);
+  //     NotificationService.showError(t("genericError"), error, t("error_label"));
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const getCorporateContract = async () => {
     setIsLoading(true);
@@ -90,8 +88,8 @@ export const useCorporateContract = () => {
         setCorporateContract([]);
       }
     } catch (error) {
-      console.error('Error during getCorporateContract:', error);
-      Swal.fire('Error', "Error2", 'error');
+      console.error(t("errorDuringGetCorporateContract"), error);
+      NotificationService.showError(t("genericError"), error, t("error_label"));
     } finally {
       setIsLoading(false);
     }
@@ -99,81 +97,64 @@ export const useCorporateContract = () => {
 
   const updateCorporateContract = async (updateCorporateContract: CorporateContract) => {
     setIsLoading(true);
-   
 
     if (!updateCorporateContract.description?.trim()) {
-      console.error('El objeto updateCorporateContract no tiene un _id. No se puede actualizar.');
-      Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
+      console.error(t("noDescriptionErrorLog"));
+      NotificationService.showError(t("noIdError"), null, t("error_label"));
       setConceptoError(true);
       setIsLoading(false);
       return;
     }
 
-  
     try {
-     
       const response = await dbContext.corporateContract.put(updateCorporateContract);
-     
-  
       setIsLoading(false);
-  
+
       if (response.ok) {
-      
-        Swal.fire('Contrato Societario', t("_updated"), 'success');
+        NotificationService.showUpdated(updateCorporateContract, t("corporateContract_label"));
         navigate('/init/overview/corporate-contract/');
       } else {
-       
-        Swal.fire('Contrato Societario', "Error en la actualización", 'error');
+        NotificationService.showError(t("updateError"), null, t("corporateContract_label"));
       }
     } catch (error) {
-     
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      NotificationService.showError(t("no_destinations_procedences_found"), error, t("error_label"));
       setIsLoading(false);
       if (error) setError(error);
     } finally {
       setIsLoading(false);
-     
     }
   };
-  
 
   const removeCorporateContract = async (CorporateContractId: string, removeCorporateContract: string) => {
-
     try {
       const response = await dbContext.corporateContract.remove(CorporateContractId, removeCorporateContract);
       setIsLoading(false);
 
       if (response.ok)
-        Swal.fire('Contrato Societario', t("_deleted"), 'success');
+        NotificationService.showDeleted({ id: CorporateContractId }, t("corporateContract_label"));
 
       navigate('/init/overview/corporate-contract/');
     } catch (error) {
-      console.log(error)
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      console.log(error);
+      NotificationService.showError(t("no_destinations_procedences_found"), error, t("error_label"));
       setIsLoading(false);
       if (error) setError(error);
     }
-  } 
+  }
 
+  return {
+    //* Propiedades
+    error,
+    isLoading,
+    corporateContract,
+    listCorporateContract,
+    conceptoError,
 
-
-  
-  
-  
-    return {
-        //* Propiedades
-        error,
-        isLoading,
-        corporateContract,
-        listCorporateContract,
-        conceptoError, 
-
-        //* Métodos
-        createCorporateContract, 
-        getCorporateContract, 
-        setCorporateContract,
-        updateCorporateContract, 
-        removeCorporateContract,
-    }
+    //* Métodos
+    createCorporateContract,
+    getCorporateContract,
+    setCorporateContract,
+    updateCorporateContract,
+    removeCorporateContract,
+  }
 }
-

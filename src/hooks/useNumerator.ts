@@ -1,8 +1,10 @@
 import { Numerator, NumeratorType } from "../types";
 import { dbContext } from "../services";
-
+import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 export const useNumerator = () => {
+    const { t } = useTranslation();
 
     const getLastNumerator = async (accountId: string, type: NumeratorType) => {
         try {
@@ -16,14 +18,14 @@ export const useNumerator = () => {
 
         } catch (error) {
             console.log('error', error);
-            throw new Error("Numerator not found.");
+            throw new Error(t("numeratorNotFound"));
         }
     }
 
     const putLastNumerator = async (doc: Numerator, create = false) => {
         try {
             if (create)
-               return await dbContext.numerators.post(doc);
+                return await dbContext.numerators.post(doc);
             else
                 return await dbContext.numerators.put(doc);
         } catch (error) {

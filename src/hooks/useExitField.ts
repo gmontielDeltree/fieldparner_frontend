@@ -1,12 +1,13 @@
-import Swal from 'sweetalert2';
 import { Crop, ExitFieldItem, Movement, StockMovement, TypeMovement } from "../types";
 import { useState } from "react";
 import { dbContext } from '../services';
 import { useAppSelector, useStockMovement } from '.';
-
+import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 export const useExitField = () => {
     // const navigate = useNavigate();
+    const { t } = useTranslation();
     const { user } = useAppSelector(state => state.auth);
     const { getControlStockCrop } = useStockMovement();
     const [exitFields, setExitFields] = useState<ExitFieldItem[]>([]);
@@ -16,8 +17,7 @@ export const useExitField = () => {
     const getExitFields = async () => {
         setIsLoading(true);
         try {
-
-            if (!user) throw new Error("User not found");
+            if (!user) throw new Error(t("userNotFound"));
             const promisesResult = await Promise.all([
                 dbContext.exitFields.find({
                     selector: { "accountId": user?.accountId }
@@ -46,7 +46,7 @@ export const useExitField = () => {
             setIsLoading(false);
         } catch (error) {
             console.log(error)
-            Swal.fire('Error', 'Ocurrio un error inesperado: ' + error, 'error');
+            NotificationService.showError(t("unexpectedError", { error }), error, t("error_label"));
             setIsLoading(false);
             if (error) setError(error);
         }
@@ -55,12 +55,12 @@ export const useExitField = () => {
     const createExitField = async (newExitField: ExitFieldItem) => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not found");
+            if (!user) throw new Error(t("userNotFound"));
             const { accountId, id: userId } = user;
             newExitField.accountId = accountId;
 
             if (!newExitField.deposit || !newExitField.crop) {
-                throw new Error("Depósito o cultivo no seleccionado");
+                throw new Error(t("depositOrCropNotSelected"));
             }
 
             // Asegurarse de que netWeight sea un número válido y positivo
@@ -77,7 +77,7 @@ export const useExitField = () => {
             });
 
             if (!stockOfCrop) {
-                throw new Error("Stock insuficiente o no encontrado");
+                throw new Error(t("insufficientOrNotFoundStock"));
             }
 
             // Asegurar que committedStock sea un número antes de sumarle
@@ -99,7 +99,7 @@ export const useExitField = () => {
                 voucher: newExitField.additionalInformation || "",
                 isIncome: false,
                 currency: "",
-                detail: `Salida de Campo: ${newExitField.creationDate}`,
+                detail: t("fieldExitDetail", { date: newExitField.creationDate }),
                 dueDate: "",
                 nroLot: "",
                 typeMovement: TypeMovement.SalidaDeCampo,
@@ -141,15 +141,15 @@ export const useExitField = () => {
             const responseAll = await Promise.all(promisesAll);
 
             if (responseAll) {
-                Swal.fire('Salida de Campo', 'Creado exitosamente.', 'success');
+                NotificationService.showSuccess(t("createdSuccessfully"), newExitField, t("fieldExit_label"));
             } else {
-                Swal.fire('Salida de Campo', 'Verificar campos.', 'error');
+                NotificationService.showError(t("verifyFields"), newExitField, t("fieldExit_label"));
             }
 
             setIsLoading(false);
         } catch (error) {
             console.log("Error en createExitField:", error);
-            Swal.fire('Ups', 'Ocurrio un error inesperado: ' + error, 'error');
+            NotificationService.showError(t("unexpectedError", { error }), error, t("error_label"));
             setIsLoading(false);
             if (error) setError(error);
         }

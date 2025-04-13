@@ -1,10 +1,10 @@
-import Swal from "sweetalert2";
 import { useState } from "react";
 import { TypeVehicle, Vehicle } from "@types";
 import { dbContext } from "../services";
 import { useAppDispatch, useAppSelector } from "./useRedux";
 import { onLogout } from "../redux/auth";
 import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 export const useVehicle = () => {
   const dispatch = useAppDispatch();
@@ -31,7 +31,7 @@ export const useVehicle = () => {
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire(t('error'), t('no_vehicles_found'), "error");
+      NotificationService.showError(t('no_vehicles_found'), {}, t('error_label'));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -43,7 +43,7 @@ export const useVehicle = () => {
       const result = await dbContext.typeVehicles.allDocs({
         include_docs: true
       });
-      
+
       if (result.rows.length) {
         const documents: TypeVehicle[] = result.rows.map(
           (row) => row.doc as TypeVehicle
@@ -53,7 +53,7 @@ export const useVehicle = () => {
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire(t('error'), `${t('vehicle_fetch_error')}: ${error}`, "error");
+      NotificationService.showError(`${t('vehicle_fetch_error')}: ${error}`, {}, t('error_label'));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -66,13 +66,13 @@ export const useVehicle = () => {
       setIsLoading(false);
 
       if (response.ok) {
-        Swal.fire(t('vehicle'), t('vehicle_type_added'), "success");
+        NotificationService.showAdded({ type: newVehicleType.name }, t('vehicle_type_label'));
       } else {
-        Swal.fire(t('vehicle_type'), t('verify_fields'), "error");
+        NotificationService.showError(t('verify_fields'), {}, t('vehicle_type_label'));
       }
     } catch (error) {
       console.log(error);
-      Swal.fire(t('error'), t('unexpected_error'), "error");
+      NotificationService.showError(t('unexpected_error'), {}, t('error_label'));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -89,13 +89,13 @@ export const useVehicle = () => {
       setIsLoading(false);
 
       if (response.ok) {
-        Swal.fire(t('vehicle'), t('vehicle_created'), "success");
+        NotificationService.showAdded({ vehicle: newVehicle.patent }, t('vehicle_label'));
       } else {
-        Swal.fire(t('vehicle'), t('verify_fields'), "error");
+        NotificationService.showError(t('verify_fields'), {}, t('vehicle_label'));
       }
     } catch (error) {
       console.log(error);
-      Swal.fire(t('error'), t('unexpected_error'), "error");
+      NotificationService.showError(t('unexpected_error'), {}, t('error_label'));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -107,12 +107,12 @@ export const useVehicle = () => {
       const response = await dbContext.vehicles.put(updateVehicle);
 
       if (response.ok) {
-        Swal.fire(t('vehicle'), t('vehicle_updated'), "success");
+        NotificationService.showUpdated({ vehicle: updateVehicle.patent }, t('vehicle_label'));
       }
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire(t('error'), t('unexpected_error'), "error");
+      NotificationService.showError(t('unexpected_error'), {}, t('error_label'));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -123,15 +123,15 @@ export const useVehicle = () => {
     try {
       const response = await dbContext.vehicles.remove(id, rev);
       if (response.ok) {
-        Swal.fire(t('vehicle'), t('vehicle_deleted'), "success");
+        NotificationService.showDeleted({ id }, t('vehicle_label'));
         getVehicles();
       } else {
-        Swal.fire(t('error'), t('delete_vehicle_error'), "error");
+        NotificationService.showError(t('delete_vehicle_error'), {}, t('error_label'));
       }
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire(t('error'), t('unexpected_error'), "error");
+      NotificationService.showError(t('unexpected_error'), {}, t('error_label'));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -153,7 +153,7 @@ export const useVehicle = () => {
 
     } catch (error) {
       console.log(error);
-      Swal.fire(t('error'), t('no_vehicles_found'), "error");
+      NotificationService.showError(t('no_vehicles_found'), {}, t('error_label'));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -174,7 +174,7 @@ export const useVehicle = () => {
 
     } catch (error) {
       console.log(error);
-      Swal.fire(t('error'), t('no_vehicles_found'), "error");
+      NotificationService.showError(t('no_vehicles_found'), {}, t('error_label'));
       setIsLoading(false);
       if (error) setError(error);
     }

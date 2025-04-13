@@ -1,4 +1,3 @@
-import Swal from 'sweetalert2';
 import { Stock, StockItem, TipoStock } from '../interfaces/stock';
 import { DepositDestination, StockMovement, StockMovementItem, Supply, TypeMovement, MovementType, Crop, GetStockRequest, GetControlStockCropRequest } from "../types";
 import { useState } from "react";
@@ -6,8 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
 import { useAppDispatch, useAppSelector } from './useRedux';
 import { onLogout } from '../redux/auth';
-
-
+import { useTranslation } from 'react-i18next';
+import { NotificationService } from "../services/notificationService";
 
 export const useStockMovement = () => {
     const navigate = useNavigate();
@@ -18,6 +17,7 @@ export const useStockMovement = () => {
     const [movementsType, setMovementsType] = useState<MovementType[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const { t } = useTranslation();
 
     const getStockMovements = async () => {
         setIsLoading(true);
@@ -67,7 +67,7 @@ export const useStockMovement = () => {
     const getStock = async (request: GetStockRequest, fullItem = false) => {
         try {
             setIsLoading(true);
-            if (!user) { dispatch(onLogout("Session expired")); return; }
+            if (!user) { dispatch(onLogout(t("session_expired"))); return; }
             const selectorRequest: GetStockRequest = {
                 accountId: user.accountId,
                 ...request
@@ -131,7 +131,7 @@ export const useStockMovement = () => {
 
     const getControlStockCrop = async (request: GetControlStockCropRequest) => {
         setIsLoading(true);
-        if (!user) { dispatch(onLogout("Session expired")); return; }
+        if (!user) { dispatch(onLogout(t("session_expired"))); return; }
         const query: GetControlStockCropRequest = {
             accountId: user.accountId,
             ...(request.campaignId && { campaignId: request.campaignId }),
@@ -212,13 +212,13 @@ export const useStockMovement = () => {
                                     reservedStock: 0
                                 });
                             } else {
-                                throw new Error("Stock de insumo no encontrado.");
+                                throw new Error(t("supply_stock_not_found"));
                             }
                         } catch (error) {
                             if (error instanceof Error && error.name === 'not_found') {
-                                throw new Error("Stock de insumo no encontrado y depósito inválido.");
+                                throw new Error(t("supply_stock_not_found_invalid_deposit"));
                             } else {
-                                throw new Error("Stock de insumo no encontrado.");
+                                throw new Error(t("supply_stock_not_found"));
                             }
                         }
                     } else {
@@ -232,7 +232,7 @@ export const useStockMovement = () => {
                 ]);
             } else {
                 if (!depositDestination || !existingStock) {
-                    throw new Error("Información de destino no provista o stock inicial no encontrado");
+                    throw new Error(t("destination_info_missing_or_stock_not_found"));
                 }
                 // supplyData._id, depositDestination.depositId, depositDestination.location, existingStock.nroLot
                 let responseStockInDepositDest = await getStock(
@@ -298,7 +298,7 @@ export const useStockMovement = () => {
         try {
             setIsLoading(true);
             if (!user) {
-                dispatch(onLogout("Session expired."));
+                dispatch(onLogout(t("session_expired")));
                 setIsLoading(false);
                 return;
             };
@@ -308,17 +308,17 @@ export const useStockMovement = () => {
 
             setIsLoading(false);
             if (responseAll)
-                Swal.fire('Nuevo Movimiento de Stock', 'Agregado.', 'success');
+                NotificationService.showAdded({ movement: newMovement.typeMovement }, t("new_stock_movement_label"));
             else
-                Swal.fire('Nuevo Movimiento de Stock', 'Verifica los datos ingresados.', 'error');
+                NotificationService.showError(t("verify_entered_data"), {}, t("new_stock_movement_label"));
 
             if (newMovement.typeMovement !== TypeMovement.Labores) {
                 navigate('/init/overview/stock-movements');
             }
 
         } catch (error) {
-            console.error("Error en addNewStockMovement:", error);
-            Swal.fire('Ups', "Ocurrio un error inesperado.", 'error');
+            console.error(t("error_in_add_new_stock_movement"), error);
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
             if (error) setError(error);
         }
@@ -331,12 +331,12 @@ export const useStockMovement = () => {
             setIsLoading(false);
 
             if (response.ok)
-                Swal.fire('Movimiento de Stock', 'Actualizado.', 'success');
+                NotificationService.showUpdated({ movement: updateMovement.typeMovement }, t("stock_movement_label"));
 
             navigate("/init/overview/stock-movements");
         } catch (error) {
             console.log(error)
-            Swal.fire('Error', 'No hay registro de la Entidad Social.', 'error');
+            NotificationService.showError(t("no_social_entity_record"), {}, t("error_label"));
             setIsLoading(false);
             if (error) setError(error);
         }
@@ -441,9 +441,9 @@ export const useStockMovement = () => {
     //         const responseAll = await Promise.all(promisesAll);
 
     //         if (responseAll)
-    //             Swal.fire('Transformación de Stock', 'Realizado con exito.', 'success');
+    //             NotificationService.showSuccess(t("transform_success"), {}, t("stock_transformation_label"));
     //         else
-    //             Swal.fire('Transformación de Stock', 'Verifica los datos ingresados.', 'error');
+    //             NotificationService.showError(t("verify_entered_data"), {}, t("stock_transformation_label"));
 
     //         setIsLoading(false);
     //     } catch (error) {

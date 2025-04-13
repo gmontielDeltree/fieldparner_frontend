@@ -1,9 +1,10 @@
 import { DetailPurchaseOrder, DetailPurchaseOrderItem, Numerator, NumeratorType, PurchaseOrder, Supply } from "../types";
 import { useState } from "react"
-import Swal from "sweetalert2";
 import { useAppSelector } from "./useRedux";
 import { dbContext } from "../services";
 import { useNumerator } from "./useNumerator";
+import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 interface OrderWithDetail {
     order: PurchaseOrder,
@@ -17,11 +18,12 @@ export const userPurchaseOrder = () => {
     // const [purchaseOrderActive, setPurchaseOrderActive] = useState<PurchaseOrder | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const { getLastNumerator, putLastNumerator } = useNumerator();
+    const { t } = useTranslation();
 
     const getPurchaseOrders = async () => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not found.");
+            if (!user) throw new Error(t("user_not_found"));
 
             const response = await Promise.all([
                 dbContext.purchaseOrder.find({
@@ -57,7 +59,7 @@ export const userPurchaseOrder = () => {
         } catch (error) {
             setIsLoading(false);
             console.log(error);
-            Swal.fire("Error", "Error al cargar las ordenes de compra.", "error");
+            NotificationService.showError(t("purchase_orders_load_error"), {}, t("error_label"));
             setIsLoading(false);
         }
     }
@@ -66,7 +68,7 @@ export const userPurchaseOrder = () => {
         setIsLoading(true);
         try {
 
-            if (!user) throw new Error("User not found.");
+            if (!user) throw new Error(t("user_not_found"));
 
             const responseAll = await Promise.all([
                 dbContext.purchaseOrder.find({
@@ -105,7 +107,7 @@ export const userPurchaseOrder = () => {
     const createPurchaseOrder = async (order: PurchaseOrder, details: DetailPurchaseOrder[]) => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not found.");
+            if (!user) throw new Error(t("user_not_found"));
             //Instanciar numerador
             let lastNumerator: Numerator = {
                 accountId: user.accountId,
@@ -140,13 +142,17 @@ export const userPurchaseOrder = () => {
                 putLastNumerator(lastNumerator)
             ]);
             if (response) {
-                Swal.fire("Orden de Compra", `Orden de Compra generada con el Nro ${newNroOrder}`, "success");
+                NotificationService.showSuccess(
+                    t("purchase_order_generated_with_number", { number: newNroOrder }),
+                    { nroOrder: newNroOrder.toString() },
+                    t("purchase_order_label")
+                );
             }
 
             setIsLoading(false);
         } catch (error) {
-            console.log("Error al crear el documento: ", error, order);
-            Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+            console.log(t("document_creation_error"), error, order);
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
         }
     }
@@ -161,13 +167,16 @@ export const userPurchaseOrder = () => {
                 dbContext.detailPurchaseOrder.bulkDocs(detailsWithNro),
             ]);
             if (response) {
-                Swal.fire("Orden de Compra", `Orden de Compran  ${updatePurchadeOrder.nroOrder} actualizada`, "success");
+                NotificationService.showUpdated(
+                    { nroOrder: updatePurchadeOrder.nroOrder },
+                    t("purchase_order_label")
+                );
             }
 
             setIsLoading(false);
         } catch (error) {
-            console.log("Error al crear el documento: ", error);
-            Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+            console.log(t("document_creation_error"), error);
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
         }
     }

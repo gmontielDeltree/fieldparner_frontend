@@ -1,10 +1,10 @@
-import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
 import { ProductiveUnits, ListProductiveUnits } from '../interfaces/productiveUnits';
-import { dbContext} from "../services/pouchdbService";
+import { dbContext } from "../services/pouchdbService";
 import { useAppSelector } from '.';
 import { useTranslation } from 'react-i18next';
+import { NotificationService } from "../services/notificationService";
 
 export const useProductiveUnits = () => {
   const navigate = useNavigate();
@@ -14,26 +14,26 @@ export const useProductiveUnits = () => {
   const [productiveUnits, setProductiveUnits] = useState<ProductiveUnits[]>([]);
   const [listProductiveUnits, setListProductiveUnits] = useState<ListProductiveUnits[]>([]);
   const [conceptoError, setConceptoError] = useState(false);
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const handleDatabaseError = (error: any) => {
-    console.error('Database error:', error);
-    Swal.fire('Error', `Database error: ${error.message || 'Unexpected error'}`, 'error');
+    console.error(t('database_error_log'), error);
+    NotificationService.showError(`${t('database_error')}: ${error.message || t('unexpected_error')}`, {}, t('error_label'));
     setIsLoading(false);
     setError(error);
   };
 
   const createProductiveUnits = async (newProductiveUnits: ProductiveUnits) => {
     setIsLoading(true);
-  
+
     try {
       const response = await dbContext.productiveUnits.post(newProductiveUnits);
       if (response.ok) {
-        Swal.fire('Unidades Productivas', 'Agregada', 'success');
+        NotificationService.showAdded({ name: newProductiveUnits.name }, t('productive_units_label'));
       } else {
-        Swal.fire('Unidades Productivas', "Error", 'error');
+        NotificationService.showError(t('generic_error'), {}, t('productive_units_label'));
       }
-      
+
       navigate('/init/overview/productive-units/');
     } catch (error) {
       handleDatabaseError(error);
@@ -53,8 +53,8 @@ export const useProductiveUnits = () => {
         setProductiveUnits([]);
       }
     } catch (error) {
-      console.error('Error during getProductiveUnits:', error);
-      Swal.fire('Error', "Error2", 'error');
+      console.error(t('error_get_productive_units'), error);
+      NotificationService.showError(t('generic_error'), {}, t('error_label'));
     } finally {
       setIsLoading(false);
     }
@@ -62,11 +62,11 @@ export const useProductiveUnits = () => {
 
   const updateProductiveUnits = async (updateProductiveUnits: ProductiveUnits) => {
     setIsLoading(true);
-    console.log("EJECUTANDO!")
+    console.log(t('executing_log'));
 
     if (!updateProductiveUnits._id?.trim()) {
-      console.error('El objeto updateProductiveUnits no tiene un _id. No se puede actualizar.');
-      Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
+      console.error(t('missing_id_error_log'));
+      NotificationService.showError(t('cannot_update_without_id'), {}, t('error_label'));
       setConceptoError(true);
       setIsLoading(false);
       return;
@@ -75,39 +75,39 @@ export const useProductiveUnits = () => {
     try {
       const response = await dbContext.productiveUnits.put(updateProductiveUnits);
       setIsLoading(false);
-  
+
       if (response.ok) {
-        Swal.fire('Unidades Productivas', t("_updated"), 'success');
+        NotificationService.showUpdated({ name: updateProductiveUnits.name }, t('productive_units_label'));
         navigate('/init/overview/productive-units/');
       } else {
-        Swal.fire('Unidades Productivas', "Error en la actualización", 'error');
+        NotificationService.showError(t('update_error'), {}, t('productive_units_label'));
       }
     } catch (error) {
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      NotificationService.showError(t('no_destinations_procedences_found'), {}, t('error_label'));
       setIsLoading(false);
       if (error) setError(error);
     } finally {
       setIsLoading(false);
     }
-    console.log("EJECUTANDO+")
+    console.log(t('executing_log_end'));
   };
-  
+
   const removeProductiveUnits = async (ProductiveUnitsId: string, removeProductiveUnits: string) => {
     try {
       const response = await dbContext.productiveUnits.remove(ProductiveUnitsId, removeProductiveUnits);
       setIsLoading(false);
 
       if (response.ok)
-        Swal.fire('Unidades Productivas', t("_deleted"), 'success');
+        NotificationService.showDeleted({ id: ProductiveUnitsId }, t('productive_units_label'));
 
       navigate('/init/overview/productive-units/');
     } catch (error) {
       console.log(error);
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      NotificationService.showError(t('no_destinations_procedences_found'), {}, t('error_label'));
       setIsLoading(false);
       if (error) setError(error);
     }
-  } 
+  }
 
   return {
     //* Propiedades
@@ -115,13 +115,13 @@ export const useProductiveUnits = () => {
     isLoading,
     productiveUnits,
     listProductiveUnits,
-    conceptoError, 
+    conceptoError,
 
     //* Métodos
-    createProductiveUnits, 
-    getProductiveUnits, 
+    createProductiveUnits,
+    getProductiveUnits,
     setListProductiveUnits,
-    updateProductiveUnits, 
+    updateProductiveUnits,
     removeProductiveUnits,
   }
 }

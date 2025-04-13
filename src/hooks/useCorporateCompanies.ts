@@ -1,4 +1,3 @@
-import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
 import { CorporateCompanies } from "../types";
@@ -6,6 +5,7 @@ import { dbContext } from "../services/pouchdbService";
 import { useAppDispatch, useAppSelector } from '.';
 import { useTranslation } from 'react-i18next';
 import { onLogout } from '../redux/auth';
+import { NotificationService } from "../services/notificationService";
 
 export const useCorporateCompanies = () => {
   const navigate = useNavigate();
@@ -18,8 +18,8 @@ export const useCorporateCompanies = () => {
   const { t } = useTranslation();
 
   const handleDatabaseError = (error: any) => {
-    console.error('Database error:', error);
-    Swal.fire('Error', `Database error: ${error.message || 'Unexpected error'}`, 'error');
+    console.error(t("databaseErrorLog"), error);
+    NotificationService.showError(t("databaseError", { error: error.message || t("unexpectedError") }), error, t("error_label"));
     setIsLoading(false);
     setError(error);
   };
@@ -28,7 +28,7 @@ export const useCorporateCompanies = () => {
     setIsLoading(true);
 
     try {
-      if (!user) { dispatch(onLogout("Session expired.")); return; }
+      if (!user) { dispatch(onLogout(t("sessionExpired"))); return; }
 
       newCorporateCompanies.accountId = user.accountId;
       newCorporateCompanies.licenceId = user.licenceId;
@@ -36,9 +36,9 @@ export const useCorporateCompanies = () => {
 
       const response = await dbContext.corporateCompanies.post(newCorporateCompanies);
       if (response.ok) {
-        Swal.fire('Compañia Societaria', 'Agregada', 'success');
+        NotificationService.showAdded(newCorporateCompanies, t("corporateCompany_label"));
       } else {
-        Swal.fire('Compañia Societaria', "Error", 'error');
+        NotificationService.showError(t("genericError"), null, t("corporateCompany_label"));
       }
       navigate('/init/overview/corporate-companies/');
     } catch (error) {
@@ -51,7 +51,7 @@ export const useCorporateCompanies = () => {
   const getCorporateCompanies = async () => {
     setIsLoading(true);
     try {
-      if (!user) { dispatch(onLogout("Session expired.")); return; }
+      if (!user) { dispatch(onLogout(t("sessionExpired"))); return; }
       const response = await dbContext.corporateCompanies.find({
         selector: { accountId: user.accountId, licenceId: user.licenceId }
       });
@@ -63,8 +63,8 @@ export const useCorporateCompanies = () => {
         setCorporateCompanies([]);
       }
     } catch (error) {
-      console.error('Error during getCorporateCompanies:', error);
-      Swal.fire('Error', "Error2", 'error');
+      console.error(t("errorDuringGetCorporateCompanies"), error);
+      NotificationService.showError(t("genericError"), error, t("error_label"));
     } finally {
       setIsLoading(false);
     }
@@ -74,8 +74,8 @@ export const useCorporateCompanies = () => {
     setIsLoading(true);
 
     if (!updateCorporateCompanies._id?.trim()) {
-      console.error('El objeto updateCorporateCompanies no tiene un _id. No se puede actualizar.');
-      Swal.fire('Error', 'No se puede actualizar sin un ID válido.', 'error');
+      console.error(t("noIdErrorLog"));
+      NotificationService.showError(t("noIdError"), null, t("error_label"));
       setConceptoError(true);
       setIsLoading(false);
       return;
@@ -86,44 +86,36 @@ export const useCorporateCompanies = () => {
       setIsLoading(false);
 
       if (response.ok) {
-        Swal.fire('Compañia Societaria', t("_updated"), 'success');
+        NotificationService.showUpdated(updateCorporateCompanies, t("corporateCompany_label"));
         navigate('/init/overview/corporate-companies/');
       } else {
-
-        Swal.fire('Compañia Societaria', "Error en la actualización", 'error');
+        NotificationService.showError(t("updateError"), null, t("corporateCompany_label"));
       }
     } catch (error) {
-
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      NotificationService.showError(t("no_destinations_procedences_found"), error, t("error_label"));
       setIsLoading(false);
       if (error) setError(error);
     } finally {
       setIsLoading(false);
-
     }
   };
 
-
   const removeCorporateCompanies = async (CorporateCompaniesId: string, removeCorporateCompanies: string) => {
-
     try {
       const response = await dbContext.corporateCompanies.remove(CorporateCompaniesId, removeCorporateCompanies);
       setIsLoading(false);
 
       if (response.ok)
-        Swal.fire('Compañia Societaria', t("_deleted"), 'success');
+        NotificationService.showDeleted({ id: CorporateCompaniesId }, t("corporateCompany_label"));
 
       navigate('/init/overview/corporate-companies/');
     } catch (error) {
-      console.log(error)
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      console.log(error);
+      NotificationService.showError(t("no_destinations_procedences_found"), error, t("error_label"));
       setIsLoading(false);
       if (error) setError(error);
     }
   }
-
-
-
 
   return {
     //* Propiedades
@@ -140,4 +132,3 @@ export const useCorporateCompanies = () => {
     removeCorporateCompanies,
   }
 }
-

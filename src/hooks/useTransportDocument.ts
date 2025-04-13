@@ -2,10 +2,10 @@ import { useAppSelector } from "./useRedux";
 import { useState } from "react";
 import { TransportDocument, TransportDocumentItem } from "../interfaces/transportDocument";
 import { dbContext } from "../services";
-import Swal from "sweetalert2";
 import { ExitField } from "../types";
 import { Company } from "../interfaces/company";
-
+import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 export const useTransportDocument = () => {
 
@@ -13,13 +13,12 @@ export const useTransportDocument = () => {
     const { user } = useAppSelector((state) => state.auth);
     const [transportDocumentsItem, setTransportDocumentsItem] = useState<TransportDocumentItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-
-
+    const { t } = useTranslation();
 
     const getTransportDocuments = async () => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not logged.");
+            if (!user) throw new Error(t("user_not_logged"));
 
             const response = await Promise.all([
                 dbContext.transportDocument.find({
@@ -51,13 +50,13 @@ export const useTransportDocument = () => {
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
-            console.error("Error al cargar documentos:", error);
+            console.error(t("documents_loading_error"), error);
         }
     }
 
     // Función para verificar si existe un documento con el mismo número de carta de porte
     const checkDuplicateCartaPorte = async (nroCartaPorte: string, documentId?: string): Promise<boolean> => {
-        if (!user) throw new Error("User not logged.");
+        if (!user) throw new Error(t("user_not_logged"));
         if (!nroCartaPorte) return false;
 
         try {
@@ -79,7 +78,7 @@ export const useTransportDocument = () => {
             // Si es una creación nueva, cualquier resultado significa duplicado
             return existingDocs.length > 0;
         } catch (error) {
-            console.error("Error al verificar duplicados:", error);
+            console.error(t("duplicate_check_error"), error);
             return false;
         }
     }
@@ -87,14 +86,14 @@ export const useTransportDocument = () => {
     const addTransportDocument = async (newDocument: TransportDocument) => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not logged.");
+            if (!user) throw new Error(t("user_not_logged"));
 
             // Verificar si el número de carta de porte ya existe
             const isDuplicate = await checkDuplicateCartaPorte(newDocument.nroCartaPorte);
 
             if (isDuplicate) {
                 setIsLoading(false);
-                Swal.fire("Error", "Ya existe un documento con el mismo número de Carta de Porte.", "error");
+                NotificationService.showError(t("duplicate_waybill_number"), {}, t("error_label"));
                 return false;
             }
 
@@ -106,14 +105,14 @@ export const useTransportDocument = () => {
             setIsLoading(false);
 
             if (response.ok) {
-                Swal.fire("Carta de Porte", "Agregado con éxito.", "success");
+                NotificationService.showAdded({ document: newDocument.nroCartaPorte }, t("waybill_label"));
                 return true;
             }
             return false;
         } catch (error) {
-            Swal.fire("Ups", "Ocurrió un error inesperado ", "error");
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
-            console.error("Error al cargar documentos:", error);
+            console.error(t("documents_loading_error"), error);
             return false;
         }
     }
@@ -130,14 +129,14 @@ export const useTransportDocument = () => {
     const updateTransportDocument = async (updateDoc: TransportDocument) => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not logged.");
+            if (!user) throw new Error(t("user_not_logged"));
 
             // Verificar si el número de carta de porte ya existe en otro documento
             const isDuplicate = await checkDuplicateCartaPorte(updateDoc.nroCartaPorte, updateDoc._id);
 
             if (isDuplicate) {
                 setIsLoading(false);
-                Swal.fire("Error", "Ya existe otro documento con el mismo número de Carta de Porte.", "error");
+                NotificationService.showError(t("duplicate_waybill_other_document"), {}, t("error_label"));
                 return false;
             }
 
@@ -149,14 +148,14 @@ export const useTransportDocument = () => {
             setIsLoading(false);
 
             if (response.ok) {
-                Swal.fire("Carta de Porte", "Actualizado con éxito.", "success");
+                NotificationService.showUpdated({ document: updateDoc.nroCartaPorte }, t("waybill_label"));
                 return true;
             }
             return false;
         } catch (error) {
-            Swal.fire("Ups", "Ocurrió un error inesperado ", "error");
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
-            console.error("Error al cargar documentos:", error);
+            console.error(t("documents_loading_error"), error);
             return false;
         }
     }

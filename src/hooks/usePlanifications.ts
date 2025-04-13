@@ -1,5 +1,5 @@
-import Swal from "sweetalert2";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { dbContext } from "../services";
 import { useAppSelector } from ".";
 import {
@@ -28,7 +28,7 @@ import { Crop } from "../interfaces/input";
 import { Insumo } from "../interfaces/insumos";
 import { listar_ejecuciones_por_depo } from "../../owncomponents/depositos/depositos-funciones";
 import { useLabores } from "./useLabores";
-import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 export const usePlanActividad = () => {
   let db =
@@ -53,12 +53,12 @@ export const usePlanActividad = () => {
     if (lineasInsumos) {
       await db
         .bulkDocs(lineasInsumos)
-        .then(() => console.log("Lineas Insumos Guardadas", lineasInsumos));
+        .then(() => console.log(t("inputLinesStoredLog"), lineasInsumos));
     }
     if (lineasLabores) {
       await db
         .bulkDocs(lineasLabores)
-        .then(() => console.log("Lineas Labores Guardadas", lineasLabores));
+        .then(() => console.log(t("workLinesStoredLog"), lineasLabores));
     }
   };
 
@@ -73,7 +73,7 @@ export const usePlanActividad = () => {
     let docs = d.rows.map((r) => r.doc);
     return docs as ILaboresPlanificacion[];
   };
-  const getActividadesByCiclo = (cicloId) => {};
+  const getActividadesByCiclo = (cicloId) => { };
 
   const removeActividad = async (actividadId) => {
     let act: IActividadPlanificacion = await db.get(actividadId);
@@ -111,7 +111,7 @@ export const usePlanActividad = () => {
   const programarActividadPlanificada = async (
     actividad: IActividadPlanificacion,
   ) => {
-    console.log("TODO Programar ESTO", actividad);
+    console.log(t("scheduleTodoLog"), actividad);
     let uuid = uuidv7();
 
     let ciclo: ICiclosPlanificacion = await dbContext.fields.get(
@@ -143,13 +143,13 @@ export const usePlanActividad = () => {
       actividad.laboresLineasIds.map(async (id) => {
         let linea: ILaboresPlanificacion = await dbContext.fields.get(id);
         let labor = getLaborFromId(linea.laborId);
-        console.log("Linea LABOR",linea);
+        console.log(t("workLineLog"), linea);
 
 
-     
+
         let nuevaLinea: LineaServicio = {
           servicio: labor?.name || "",
-          contratista:actividad.contratista,
+          contratista: actividad.contratista,
           costo_total: linea.totalCosto,
           comentario: linea.comentario || "",
           uuid: uuidv7(),
@@ -178,7 +178,7 @@ export const usePlanActividad = () => {
       uuid: uuid,
       tipo: actividad.tipo,
       detalles: detalles,
-      comentario: t("Desde planificacion"),
+      comentario: t("fromPlanning"),
       estado: "pendiente",
       condiciones: {
         humedad_max: 80,
@@ -190,7 +190,7 @@ export const usePlanActividad = () => {
       },
       accountId: user?.accountId || undefined,
     };
-    console.log("Nueva Actividad", nuevaActividad);
+    console.log(t("newActivityLog"), nuevaActividad);
 
     dbContext.fields.put(nuevaActividad).then(() => {
       Promise.resolve("fdfdf");
@@ -199,15 +199,15 @@ export const usePlanActividad = () => {
 
 
 
-  const  getCicloSortedActivities = async (ciclo : ICiclosPlanificacion)=>{
+  const getCicloSortedActivities = async (ciclo: ICiclosPlanificacion) => {
     let ids = ciclo.actividadesIds
-    let docs = await db.allDocs<IActividadPlanificacion>({keys:ids,include_docs:true})
+    let docs = await db.allDocs<IActividadPlanificacion>({ keys: ids, include_docs: true })
 
-    let sorted = docs.rows.sort((a,b)=>(a.doc?.fecha.localeCompare(b.doc?.fecha) ? 1 : -1))
+    let sorted = docs.rows.sort((a, b) => (a.doc?.fecha.localeCompare(b.doc?.fecha) ? 1 : -1))
 
     let soloIds = sorted.map((a) => a.doc?._id)
 
-    console.log("SORTED", docs,sorted,soloIds)
+    console.log(t("sortedLog"), docs, sorted, soloIds)
     return soloIds
   }
 
@@ -247,6 +247,7 @@ export const usePlanificationActividad = (actividadId: string) => {
   const [actividad, setAct] = useState<IActividadPlanificacion>();
   const [lineasInsumos, setLineasInsumos] = useState([]);
   const [lineasLabores, setLineasLabores] = useState([]);
+  const { t } = useTranslation();
 
   const [loading, setLoading] = useState(true);
 
@@ -276,7 +277,7 @@ export const usePlanificationActividad = (actividadId: string) => {
           keys: actividad.laboresLineasIds,
         }),
       );
-      console.log("LINEAS LABORES ", a, actividad.laboresLineasIds);
+      console.log(t("workLinesLog"), a, actividad.laboresLineasIds);
       setLineasLabores(a);
     } else if (actividad?.laboresLineasIds.length === 0) {
       setLineasLabores([]);
@@ -327,6 +328,7 @@ export const useCiclo = ({
   cicloId: string;
 }) => {
   const { user } = useAppSelector((state) => state.auth);
+  const { t } = useTranslation();
 
   const [ciclo, setCiclo] = useState<ICiclosPlanificacion>({
     _id: `ciclo:${campaingId}:${loteId}:${uuidv7()}`,
@@ -346,7 +348,7 @@ export const useCiclo = ({
     dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
 
   const saveCiclo = (campanaId, lotePId, cultivoId, startDate, endDate) => {
-    console.log("Saving Cycle", campanaId, cultivoId);
+    console.log(t("savingCycleLog"), campanaId, cultivoId);
     let c = { ...ciclo };
 
     if (!cicloId) {
@@ -359,10 +361,10 @@ export const useCiclo = ({
     c.fechaFin = endDate;
     c.fechaInicio = startDate;
     c.cultivoId = cultivoId;
-    db.put(c).then(() => console.log("saveCiclo", c, ciclo));
+    db.put(c).then(() => console.log(t("saveCycleLog"), c, ciclo));
     setCiclo(c);
   };
-  
+
 
 
   return [ciclo, saveCiclo];
@@ -370,6 +372,7 @@ export const useCiclo = ({
 
 export const useListaDeCiclos = () => {
   const [ciclos, setCiclos] = useState<ICiclosPlanificacion[]>([]);
+  const { t } = useTranslation();
 
   let db =
     dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
@@ -438,13 +441,13 @@ export const useListaDeCiclos = () => {
     c.fechaFin = endDate;
     c.fechaInicio = startDate;
     c.cultivoId = cultivoId;
-    db.put(c).then(() => console.log("saveCiclo", c, ciclo));
+    db.put(c).then(() => console.log(t("saveCycleLog"), c, ciclo));
     setCiclo(c);
   };
 
   useEffect(() => {
     getCiclos();
-    console.count("usePlanHook");
+    console.count(t("usePlanHookLog"));
   }, []);
 
   return { ciclos, refreshCiclos, removeCiclo, getCiclosFromCampanaAndLote, getCiclosFromCampanaAndCampo };
@@ -452,6 +455,7 @@ export const useListaDeCiclos = () => {
 
 export const useCiclos = (campaingId: string, loteId: string) => {
   const [ciclos, setCiclos] = useState([]);
+  const { t } = useTranslation();
 
   let db =
     dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
@@ -480,9 +484,9 @@ export const useCiclos = (campaingId: string, loteId: string) => {
         endkey: key + "\ufff0",
       }),
     );
-    console.log("CICLOS", docsResp, campaingId, loteId);
+    console.log(t("cyclesLog"), docsResp, campaingId, loteId);
     setCiclos(docsResp);
-  }, [campaingId, loteId]);
+  }, [campaingId, loteId, t]);
 
   const removeCiclo = (cicloId) => {
     db.get(cicloId).then((d) => db.remove(d));
@@ -496,6 +500,7 @@ export const useCiclos = (campaingId: string, loteId: string) => {
 };
 export const usePlanification = (campaingId: string, campoId: string) => {
   const { user } = useAppSelector((state) => state.auth);
+  const { t } = useTranslation();
   const [planifications, setPlanifications] = useState<IPlanificacion[]>([]);
   const [planificationsByField, setPlanificationsByField] = useState<
     IPlanificacion[]
@@ -520,7 +525,7 @@ export const usePlanification = (campaingId: string, campoId: string) => {
       }
     } catch (error) {
       setIsLoading(false);
-      console.error("Error al cargar documentos:", error);
+      console.error(t("errorLoadingDocumentsLog"), error);
     }
   };
 
@@ -531,11 +536,11 @@ export const usePlanification = (campaingId: string, campoId: string) => {
       setIsLoading(false);
 
       if (response.ok) {
-        Swal.fire("Deposito", "Actualizado con exito.", "success");
+        NotificationService.showSuccess(t("updatedSuccessfully"), null, t("deposit_label"));
       }
     } catch (error) {
-      console.log("Error al actualizar el documento: ", error);
-      Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+      console.log(t("errorUpdatingDocumentLog"), error);
+      NotificationService.showError(t("unexpectedError"), null, null);
       setIsLoading(false);
     }
   };
@@ -548,10 +553,11 @@ export const usePlanification = (campaingId: string, campoId: string) => {
       const response = await db.remove(doc);
       setIsLoading(false);
 
-      if (response.ok) Swal.fire("Plan", "Eliminado.", "success");
+      if (response.ok)
+        NotificationService.showDeleted({ id: deletePlanificationId }, t("plan_label"));
     } catch (error) {
-      console.log("Error al actualizar el documento: ", error);
-      Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+      console.log(t("errorUpdatingDocumentLog"), error);
+      NotificationService.showError(t("unexpectedError"), null, null);
       setIsLoading(false);
     }
   };

@@ -3,9 +3,9 @@ import { useAppDispatch, useAppSelector } from './useRedux';
 import { onLogout } from '../redux/auth';
 import { dbContext } from '../services';
 import { CampaingExpenses } from '../interfaces/campaignExpenses';
-import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { NotificationService } from '../services/notificationService';
 
 export const useCampaingExpenses = () => {
     const dispatch = useAppDispatch();
@@ -40,6 +40,7 @@ export const useCampaingExpenses = () => {
                 setIsLoading(false);
                 return false;
             }
+
             const selector = {
                 selector: {
                     accountId: user.accountId,
@@ -68,7 +69,11 @@ export const useCampaingExpenses = () => {
 
     const handleDatabaseError = (err: any) => {
         console.error('Database error:', err);
-        Swal.fire('Error', `Database error: ${err.message || 'Unexpected error'}`, 'error');
+        NotificationService.showError(
+            t("database_error", { error: err.message || t("unexpected_error") }),
+            {},
+            t("error_label")
+        );
         setIsLoading(false);
         setError(err);
     };
@@ -84,11 +89,11 @@ export const useCampaingExpenses = () => {
 
             const response = await dbContext.campaingExpenses.post(newCampaingExpenses);
             if (response.ok) {
-                Swal.fire('Gasto de Campaña', 'Agregado', 'success');
+                NotificationService.showAdded({}, t("campaign_expense_label"));
                 navigate('/init/overview/campaign-expenses/');
                 return true;
             } else {
-                Swal.fire('Gasto de Campaña', "Error", 'error');
+                NotificationService.showError(t("operation_failed"), {}, t("campaign_expense_label"));
                 return false;
             }
         } catch (err) {
@@ -111,16 +116,16 @@ export const useCampaingExpenses = () => {
             const response = await dbContext.campaingExpenses.remove(CampingExpesesId, removeCampingExpeses);
 
             if (response.ok) {
-                Swal.fire('Gasto de Campaña', t("_deleted"), 'success');
+                NotificationService.showDeleted({}, t("campaign_expense_label"));
                 navigate('/init/overview/campaign-expenses/');
                 return true;
             } else {
-                Swal.fire('Error', t("delete_failed"), 'error');
+                NotificationService.showError(t("delete_failed"), {}, t("campaign_expense_label"));
                 return false;
             }
         } catch (err) {
             console.error("Error removing campaign expense:", err);
-            Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+            NotificationService.showError(t("expense_not_found"), {}, t("campaign_expense_label"));
             setError(err);
             return false;
         } finally {
@@ -135,7 +140,6 @@ export const useCampaingExpenses = () => {
         campaingExpenses,
         listCampingExpeses,
         conceptoError,
-
         // Methods
         setListCampingExpeses,
         createCampingExpeses,

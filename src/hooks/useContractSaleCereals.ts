@@ -10,10 +10,11 @@ import { Business } from '../interfaces/socialEntity';
 import { useNumerator } from './useNumerator';
 import { TransportDocument } from '../interfaces/transportDocument';
 import { TransportDocumentByCertificateDeposit } from '../interfaces/certificate-deposit';
-
+import { useTranslation } from 'react-i18next';
+import { NotificationService } from '../services/notificationService';
 
 export const useContractSaleCereals = () => {
-
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.auth);
     const { getLastNumerator, putLastNumerator } = useNumerator();
@@ -44,7 +45,7 @@ export const useContractSaleCereals = () => {
         setIsLoading(true);
         try {
             if (!user) {
-                dispatch(onLogout("Session expired."));
+                dispatch(onLogout(t("sessionExpired")));
                 setIsLoading(false);
                 return;
             };
@@ -123,7 +124,8 @@ export const useContractSaleCereals = () => {
                 setContractsSaleCerealsFull([]);
         } catch (error) {
             setIsLoading(false);
-            console.error("Error al cargar documentos:", error);
+            console.error(t("errorLoadingDocuments"), error);
+            NotificationService.showError(t("errorGettingContracts"), error, t("error_label"));
             return false;
         }
     };
@@ -131,7 +133,7 @@ export const useContractSaleCereals = () => {
     const getContractSaleCerealByContractNumber = async (contractNumber: string) => {
         try {
             if (!user) {
-                dispatch(onLogout("Session expired."));
+                dispatch(onLogout(t("sessionExpired")));
                 setIsLoading(false);
                 return null;
             };
@@ -144,7 +146,8 @@ export const useContractSaleCereals = () => {
             });
             return docs[0] as ContractSaleCereal;
         } catch (error) {
-            console.log("Error al obtener el contrato:", error);
+            console.log(t("errorGettingContract"), error);
+            NotificationService.showError(t("errorGettingContractByNumber"), error, t("error_label"));
             return null;
         }
     };
@@ -152,16 +155,17 @@ export const useContractSaleCereals = () => {
     const getContractNumber = async () => {
         try {
             if (!user) {
-                dispatch(onLogout("Session expired."));
+                dispatch(onLogout(t("sessionExpired")));
                 setIsLoading(false);
                 return null;
             };
             const responseContractNumber = await getLastNumerator(user.accountId, NumeratorType.ContractSaleCereal);
             if (responseContractNumber) return responseContractNumber.lastNumerator + 1;
-            console.log("No se encontró el último número de contrato.");
+            console.log(t("contractNumberNotFound"));
             return 1;
         } catch (error) {
-            console.log("Error al obtener el último número de contrato:", error);
+            console.log(t("errorGettingContractNumber"), error);
+            NotificationService.showError(t("errorGettingContractNumber"), error, t("error_label"));
             return 0;
         }
     }
@@ -169,7 +173,7 @@ export const useContractSaleCereals = () => {
     const putContracSaleNumber = async () => {
         try {
             if (!user) {
-                dispatch(onLogout("Session expired."));
+                dispatch(onLogout(t("sessionExpired")));
                 setIsLoading(false);
                 return null;
             };
@@ -190,7 +194,8 @@ export const useContractSaleCereals = () => {
             }
             return true;
         } catch (error) {
-            console.log("Error al crear/actualizar el contrato venta cereal:", error);
+            console.log(t("errorUpdateContractCereal"), error);
+            NotificationService.showError(t("errorUpdateContractCereal"), error, t("error_label"));
             return false;
         }
     }
@@ -199,7 +204,7 @@ export const useContractSaleCereals = () => {
         setIsLoading(true);
         try {
             if (!user) {
-                dispatch(onLogout("Session expired."));
+                dispatch(onLogout(t("sessionExpired")));
                 setIsLoading(false);
                 return;
             };
@@ -226,17 +231,23 @@ export const useContractSaleCereals = () => {
 
             setIsLoading(false);
 
+            if (response[0].ok) {
+                NotificationService.showAdded(newContract, t("contractSaleCereal_label"));
+            }
+
             return response[0].ok;
 
         } catch (error) {
             setIsLoading(false);
-            console.error("Error al cargar documentos:", error);
+            console.error(t("errorLoadingDocuments"), error);
+            NotificationService.showError(t("errorAddingContractCereal"), error, t("error_label"));
             return false;
         }
     };
 
-    const updateContractSaleCereal = async (updateContract: ContractSaleCereal) => { };
-
+    const updateContractSaleCereal = async (updateContract: ContractSaleCereal) => {
+        // Implementación pendiente
+    };
 
     return {
         contractsSaleCerealsFull,
@@ -248,5 +259,4 @@ export const useContractSaleCereals = () => {
         addContractSaleCereal,
         updateContractSaleCereal,
     }
-
 }

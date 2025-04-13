@@ -1,4 +1,3 @@
-import Swal from 'sweetalert2';
 import { Supply } from "../types";
 import { useState } from "react";
 import { dbContext } from '../services';
@@ -7,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { onLogout } from '../redux/auth';
 import { useTranslation } from 'react-i18next';
 import { StockItem, TipoStock } from '../interfaces/stock';
+import { NotificationService } from "../services/notificationService";
 
 export const useSupply = () => {
     const { t } = useTranslation();
@@ -195,7 +195,7 @@ export const useSupply = () => {
             //Obtenemos los idDepositos y agrupamos
             const depositsId = stockBySupplies.docs.map(s => s.depositId);
             const groupDepositsId = Array.from(new Set(depositsId));
-            
+
             groupDepositsId.forEach(depositId => {
                 const foundDepositStock = stockBySupplies.docs.filter(m => (m.depositId === depositId)); //Obtenemos todo los stock de ese deposito
                 const foundSupply = supplies.docs.find(m => (m._id === foundDepositStock[0].id)); //Obtenemos el insumo
@@ -236,7 +236,11 @@ export const useSupply = () => {
                 }
             });
             if (resultFound.docs.length) {
-                Swal.fire(t("supply"), t("supply_already_exists", { name: newSupply.name, type: newSupply.type }), "warning");
+                NotificationService.showWarning(
+                    t("supply_already_exists", { name: newSupply.name, type: newSupply.type }),
+                    {},
+                    t("supply_label")
+                );
                 setIsLoading(false);
                 return;
             }
@@ -249,11 +253,11 @@ export const useSupply = () => {
             setIsLoading(false);
 
             if (response.ok) {
-                Swal.fire(t("supply"), t("added_successfully"), "success");
+                NotificationService.showAdded({ name: newSupply.name }, t("supply_label"));
             }
         } catch (error) {
             console.log(t("error_creating_document"), error);
-            Swal.fire(t("ups"), t("unexpected_error"), "error");
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
         }
     };
@@ -265,11 +269,11 @@ export const useSupply = () => {
             setIsLoading(false);
 
             if (response.ok) {
-                Swal.fire(t("supply"), t("updated_successfully"), "success");
+                NotificationService.showUpdated({ name: updateSupply.name }, t("supply_label"));
             }
         } catch (error) {
             console.log(t("error_updating_document"), error);
-            Swal.fire(t("ups"), t("unexpected_error"), "error");
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
         }
     }
@@ -280,12 +284,12 @@ export const useSupply = () => {
             setIsLoading(false);
 
             if (response.ok)
-                Swal.fire(t("supply"), t("deleted"), "success");
+                NotificationService.showDeleted({ id: supplyId }, t("supply_label"));
 
             navigate('/init/overview/supply');
         } catch (error) {
             console.log(t("error_updating_document"), error);
-            Swal.fire(t("ups"), t("unexpected_error"), "error");
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
         }
     }
@@ -307,12 +311,12 @@ export const useSupply = () => {
             const response = await dbContext.supplies.put(updatedSupply);
             if (response.ok) {
                 setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
-                Swal.fire(t("supply"), t("reserved_stock_added"), "success");
+                NotificationService.showSuccess(t("reserved_stock_added"), { name: supply.name }, t("supply_label"));
             }
             setIsLoading(false);
         } catch (error) {
             console.log(t("error_adding_reserved_stock"), error);
-            Swal.fire(t("ups"), t("unexpected_error"), "error");
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
         }
     };
@@ -333,12 +337,12 @@ export const useSupply = () => {
             const response = await dbContext.supplies.put(updatedSupply);
             if (response.ok) {
                 setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
-                Swal.fire(t("supply"), t("reserved_stock_removed"), "success");
+                NotificationService.showSuccess(t("reserved_stock_removed"), { name: supply.name }, t("supply_label"));
             }
             setIsLoading(false);
         } catch (error) {
             console.log(t("error_removing_reserved_stock"), error);
-            Swal.fire(t("ups"), t("unexpected_error"), "error");
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
         }
     };

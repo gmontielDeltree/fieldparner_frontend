@@ -1,4 +1,3 @@
-import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
 import { ErrorResponseAuth, UserByAccount } from "../types";
@@ -8,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { fieldpartnerAPI } from '../config';
 import { loadUsers, setUserActive } from '../redux/users';
-
+import { NotificationService } from "../services/notificationService";
 
 const controller = "/user-licence";
 
@@ -28,36 +27,36 @@ export const useUser = () => {
     setIsLoading(true);
     try {
 
-      if (!user) throw new Error("User not found. ");
+      if (!user) throw new Error(t("user_not_found"));
 
       const newUser: UserByAccount = { ...userDto, accountId: user.accountId };
       const response = await fieldpartnerAPI.post(`${controller}`, newUser);
 
       if (response)
-        Swal.fire('Usuario', 'Usuario registrado (pendiente a confirmar emal).', 'success');
+        NotificationService.showSuccess(t("user_registered_pending_email"), {}, t("user_label"));
       else
-        Swal.fire('Error', 'Ocurrio un error inesperado.', 'error');
+        NotificationService.showError(t("unexpected_error"), {}, t("error_label"));
 
       navigate('/init/overview/users');
 
     } catch (error: any) {
-      console.log("Error durante el registro:", error);
+      console.log(t("registration_error"), error);
       if (error.response && error.response.data) {
         const responseError: ErrorResponseAuth = error.response.data;
-        console.log("Error de respuesta:", responseError);
+        console.log(t("response_error"), responseError);
         if (responseError.code === "UsernameExistsException") {
-          console.log("Correo electrónico ya registrado.");
-          Swal.fire('Error', 'Correo electrónico ya registrado.', 'error');
+          console.log(t("email_already_registered"));
+          NotificationService.showError(t("email_already_registered"), {}, t("error_label"));
         } else if (responseError.message) {
-          console.log("Error durante el registro:", responseError.message);
-          Swal.fire('Error', responseError.message, 'error');
+          console.log(t("registration_error"), responseError.message);
+          NotificationService.showError(responseError.message, {}, t("error_label"));
         } else {
-          console.log("Error desconocido durante el registro.");
-          Swal.fire('Error', 'Ha ocurrido un error durante el registro.', 'error');
+          console.log(t("unknown_registration_error"));
+          NotificationService.showError(t("registration_error_occurred"), {}, t("error_label"));
         }
       } else {
-        console.log("Error desconocido durante el registro.");
-        Swal.fire('Error', 'Ha ocurrido un error durante el registro.', 'error');
+        console.log(t("unknown_registration_error"));
+        NotificationService.showError(t("registration_error_occurred"), {}, t("error_label"));
       }
       setIsLoading(false);
       if (error) setError(error);
@@ -81,7 +80,7 @@ export const useUser = () => {
       setIsLoading(false);
     } catch (error) {
       console.log(error)
-      Swal.fire('Error', t("users_not_found"), 'error');
+      NotificationService.showError(t("users_not_found"), {}, t("error_label"));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -107,11 +106,11 @@ export const useUser = () => {
       setIsLoading(false);
 
       if (response)
-        Swal.fire("Usuario", "Usuario actualizado.", 'success');
+        NotificationService.showUpdated({ user: upUser.email }, t("user_label"));
 
     } catch (error) {
       console.log(error);
-      Swal.fire('Error', "No se pudo actualizar el usuario.", 'error');
+      NotificationService.showError(t("user_update_error"), {}, t("error_label"));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -120,7 +119,7 @@ export const useUser = () => {
   const updatePasswordUsers = async (updateUsers: UserByAccount, oldPassword: string) => {
     setIsLoading(true);
 
-    console.log("La función updatepasswordUsers se está ejecutando");
+    console.log(t("update_password_executing"));
 
     if (!updateUsers.password?.trim()) {
       setConceptoError(true);
@@ -133,14 +132,14 @@ export const useUser = () => {
       const currentUser = await dbContext.users.get(updateUsers.password);
       if (!currentUser) {
         setIsLoading(false);
-        Swal.fire('Error', 'Usuario no encontrado', 'error');
+        NotificationService.showError(t("user_not_found"), {}, t("error_label"));
         return;
       }
 
       // Comprobar si la contraseña anterior coincide
       if (currentUser.password !== oldPassword) {
         setIsLoading(false);
-        Swal.fire('Error', 'La contraseña anterior no coincide', 'error');
+        NotificationService.showError(t("previous_password_mismatch"), {}, t("error_label"));
         return;
       }
 
@@ -149,12 +148,12 @@ export const useUser = () => {
       setIsLoading(false);
 
       if (response.ok)
-        Swal.fire('Éxito', 'Contraseña actualizada', 'success');
+        NotificationService.showSuccess(t("password_updated"), {}, t("success_label"));
 
       navigate('/init/overview/users/');
     } catch (error) {
       console.log(error);
-      Swal.fire('Error', 'Ocurrió un error al actualizar la contraseña', 'error');
+      NotificationService.showError(t("password_update_error"), {}, t("error_label"));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -167,12 +166,12 @@ export const useUser = () => {
       setIsLoading(false);
 
       if (response.ok)
-        Swal.fire(t("origin_destination"), t("_deleted"), 'success');
+        NotificationService.showDeleted({ id: UsersId }, t("origin_destination_label"));
 
       navigate('/init/overview/users/');
     } catch (error) {
       console.log(error)
-      Swal.fire('Error', t("no_destinations_procedences_found"), 'error');
+      NotificationService.showError(t("no_destinations_procedences_found"), {}, t("error_label"));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -198,7 +197,7 @@ export const useUser = () => {
       }
     } catch (error) {
       console.error(error);
-      Swal.fire('Error', t("error_during_search"), 'error');
+      NotificationService.showError(t("error_during_search"), {}, t("error_label"));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -250,4 +249,3 @@ export const useUser = () => {
     getUserById
   }
 }
-
