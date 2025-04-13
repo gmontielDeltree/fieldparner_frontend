@@ -931,5 +931,9 @@
   "downloadPNG": "Descargar PNG",
   "dualMap": "Mapa Dual",
   "showCharts": "Mostrar Gráficos",
-  "loadingCharts": "Cargando gráficos..."
+  "loadingCharts": "Cargando gráficos...",
+  "saving": "Guardando...",
+  "generalSaveError": "Error general al guardar",
+  "databaseError": "Error de base de datos",
+  "tryAgainLater": "Por favor, inténtelo más tarde"
 }
