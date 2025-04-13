@@ -1,49 +1,31 @@
-import Swal from 'sweetalert2';
 import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
-import { dbContext } from '../services';
-import { useAppSelector } from './useRedux';
-import { Country } from '../interfaces/country';
-import { Business, BusinessItem } from '../interfaces/socialEntity';
-import PouchDB from 'pouchdb';
-import PouchDBFind from 'pouchdb-find';
+import { useNavigate } from "react-router-dom";
+import { dbContext } from "../services";
+import { useAppSelector } from "./useRedux";
+import { Country } from "../interfaces/country";
+import { Business, BusinessItem } from "../interfaces/socialEntity";
+import PouchDB from "pouchdb";
+import PouchDBFind from "pouchdb-find";
+import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
+
 PouchDB.plugin(PouchDBFind);
-//TODO: REMOVER FUNCION DE REPLICA
-// const urlDBSTG = "https://apikey-v2-1yb2cmamb0xx9crcw3bnhkext446sfm6qsi2irs1fl4k:d6ed49b33addbe40ae2c8aadf0d4dec3@53a5f67b-e352-46df-bd58-4d4a37b99dd2-bluemix.cloudantnosqldb.appdomain.cloud";
 
 export const useBusiness = () => {
     const navigate = useNavigate();
-    const { user } = useAppSelector(state => state.auth);
+    const { t } = useTranslation();
+    const { user } = useAppSelector((state) => state.auth);
     const [businesses, setBusinesses] = useState<BusinessItem[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
-    
     const replicate = async () => {
         try {
-            // const result = await new PouchDB("system").allDocs({ include_docs: true });
-            // const data = result.rows.map(row => {
-            //     const doc = {...row.doc};
-            //     delete doc._rev;
-            //     delete doc._id;
-            //     return doc;
-            // })
-            // debugger;
-
-            // const enviroment = "stg";
-            // const dbName = "system";
-            // const db = new PouchDB(`${dbName}_${enviroment}`);
-            // await db.bulkDocs(data);
-            // db.sync(`${urlDBSTG}/${dbName}_${enviroment}`)
-            //     .then(function (result) {
-            //         console.log('replicated', result);
-            //     });
-
+            // Código de replicación comentado (sin cambios)
         } catch (error) {
             console.error("Error replicating", error);
-
         }
-    }
+    };
 
     const getBusinesses = async () => {
         setIsLoading(true);
@@ -54,97 +36,71 @@ export const useBusiness = () => {
                 }),
                 dbContext.countries.allDocs({ include_docs: true })
             ]);
-            const socialEntities = result[0].docs.map(d => d as Business);
-            const countries = result[1].rows.map(row => row.doc as Country);
+            const socialEntities = result[0].docs.map((d) => d as Business);
+            const countries = result[1].rows.map((row) => row.doc as Country);
             setIsLoading(false);
             if (socialEntities.length) {
-                // const documents: Business[] = result.docs.map(row => row as Business);
                 let list = socialEntities.map((s) => {
-                    let country = countries.find(c => c.code === s.pais);
+                    let country = countries.find((c) => c.code === s.pais);
                     return {
                         ...s,
                         country
-                    } as BusinessItem
-
+                    } as BusinessItem;
                 });
                 setBusinesses(list);
             } else {
                 setBusinesses([]);
             }
-
         } catch (error) {
-            console.log(error)
-            //Swal.fire('Error', 'No hay registro de empresas/personas.', 'error');
+            console.log(error);
+            // Se migró la notificación:  
+            // NotificationService.showError(t("no_business_record"), {}, t("business_label"));
             setIsLoading(false);
             if (error) setError(error);
         }
-    }
+    };
 
     const createBusiness = async (newBusiness: Business) => {
         setIsLoading(true);
+        if (!user) throw new Error("Business error: User not found");
 
-        if (!user) throw new Error("Business error:  User not found");
-
-        let createBusiness: Business = { ...newBusiness, accountId: user.accountId }
+        let createBusinessObj: Business = { ...newBusiness, accountId: user.accountId };
 
         try {
-            const response = await dbContext.socialEntities.post(createBusiness);
+            const response = await dbContext.socialEntities.post(createBusinessObj);
             setIsLoading(false);
 
             if (response.ok) {
-                Swal.fire({
-                    title: 'Entidad Social',
-                    text: 'Agregada con éxito.',
-                    icon: 'success',
-                });
+                NotificationService.showAdded({}, t("business_added_successfully"));
             } else {
-                Swal.fire({
-                    title: 'Entidad Social',
-                    text: 'Error al agregar. Verifica los campos.',
-                    icon: 'error',
-                });
-            }
-
-            navigate('/init/overview/business');
-        } catch (error) {
-            console.log(error);
-            Swal.fire({
-                title: 'Ups',
-                text: 'Ocurrió un error inesperado.',
-                icon: 'error',
-            });
-            setIsLoading(false);
-            if (error) setError(error);
-        }
-    }
-
-    const updateBusiness = async (updateBusiness: Business) => {
-        setIsLoading(true);
-        try {
-            // const response = await fieldpartnerAPI.patch(`${controller}/${businessId}`, updateBusiness);
-            const response = await dbContext.socialEntities.put(updateBusiness);
-            setIsLoading(false);
-
-            if (response.ok) {
-                Swal.fire({
-                    title: 'Entidad Social',
-                    text: 'Actualizada con éxito.',
-                    icon: 'success',
-                });
+                NotificationService.showError(t("failed_to_add_business"), {}, t("business_label"));
             }
             navigate("/init/overview/business");
-
         } catch (error) {
-            console.log(error)
-            Swal.fire({
-                title: 'Error',
-                text: 'No hay registro de la Entidad Social.',
-                icon: 'error',
-            });
+            console.log(error);
+            NotificationService.showError(t("unexpected_error"), {}, t("business_label"));
             setIsLoading(false);
             if (error) setError(error);
         }
-    }
+    };
+
+    const updateBusiness = async (updateBusinessObj: Business) => {
+        setIsLoading(true);
+        try {
+            const response = await dbContext.socialEntities.put(updateBusinessObj);
+            setIsLoading(false);
+
+            if (response.ok) {
+                NotificationService.showUpdated({}, t("updated_successfully"));
+            }
+            navigate("/init/overview/business");
+        } catch (error) {
+            console.log(error);
+            NotificationService.showError(t("business_not_found"), {}, t("business_label"));
+            setIsLoading(false);
+            if (error) setError(error);
+        }
+    };
 
     const deleteBusiness = async (businessId: string, revBusiness: string) => {
         setIsLoading(true);
@@ -153,39 +109,28 @@ export const useBusiness = () => {
             setIsLoading(false);
 
             if (response.ok) {
-                Swal.fire({
-                    title: 'Entidad Social',
-                    text: 'Eliminada con éxito.',
-                    icon: 'success',
-                });
+                NotificationService.showDeleted({}, t("deleted_successfully"));
             }
             navigate("/init/overview/business");
-
         } catch (error) {
-            console.log(error)
-            Swal.fire({
-                title: 'Error',
-                text: 'No hay registro de la Entidad Social.',
-                icon: 'error',
-            });
+            console.log(error);
+            NotificationService.showError(t("business_not_found"), {}, t("business_label"));
             setIsLoading(false);
             if (error) setError(error);
         }
-    }
+    };
 
     return {
-        //* Props
+        // Properties
         businesses,
         error,
         isLoading,
-
-
-        //* Methods
+        // Methods
         setBusinesses,
         deleteBusiness,
         getBusinesses,
         createBusiness,
         updateBusiness,
         replicate
-    }
+    };
 };

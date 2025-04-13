@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { dbContext } from "../services";
-import Swal from "sweetalert2";
 // import { Country } from "../types";
 import { useTranslation } from "react-i18next";
 import { Country } from "../interfaces/country";
-
-
+import { NotificationService } from "../services/notificationService";
 
 String.prototype.toColor = function () {
   var colors = ["#e51c23", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#5677fc", "#03a9f4", "#00bcd4", "#009688", "#259b24", "#8bc34a", "#afb42b", "#ff9800", "#ff5722", "#795548", "#607d8b"]
@@ -25,16 +23,15 @@ export interface CountryItem extends Country {
 }
 
 export const useCountry = () => {
-  // const [country, setCountry] = useState<CountryItem[]>([]);
+  const { t, i18n } = useTranslation();
+  const [country, setCountry] = useState<CountryItem[]>([]); // Fixed: Added missing state
   const [dataCountry, setDataCountry] = useState<Country[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<any>(null);
 
-  const { i18n } = useTranslation();
-
   const getCountryLabelFromId = (id: string) => {
     let c = country.find((a) => a._id === id);
-    console.log("LENGUAJE", i18n.language)
+    console.log(t("languageDebug"), i18n.language);
 
     if (c) {
       if (i18n.language === "es") {
@@ -47,9 +44,8 @@ export const useCountry = () => {
         return c.descriptionES
       }
     } else {
-
-      console.log("NO ENCUENTRO EL pais", id)
-      return "unknown"
+      console.log(t("countryNotFound"), id);
+      return t("unknown");
     }
   };
 
@@ -62,7 +58,6 @@ export const useCountry = () => {
     }
   };
 
-
   const getCountries = async () => {
     setIsLoading(true);
     try {
@@ -73,21 +68,23 @@ export const useCountry = () => {
       if (response.rows.length) {
         const documents: Country[] = response.rows.map(row => row.doc as Country);
         setDataCountry(documents);
+        setCountry(documents); // Fixed: Update the country state as well
       }
-      else
-      setDataCountry([]);
+      else {
+        setDataCountry([]);
+        setCountry([]); // Fixed: Clear country state when no data
+      }
 
     } catch (error) {
-      console.log(error)
-      Swal.fire('Error', 'Error al obtener los cultivos: ' + error, 'error');
+      console.log(error);
+      NotificationService.showError(t("errorGettingCountries", { error }), error, t("country_label"));
       setIsLoading(false);
       if (error) setError(error);
     }
   }
 
-
   return {
-    // country,
+    country, // Added back to the return object
     dataCountry,
     isLoading,
     error,

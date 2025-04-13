@@ -4,20 +4,19 @@ import { useAppSelector } from "./useRedux";
 import { dbContext } from '../services';
 import { TransportDocument } from '../interfaces/transportDocument';
 import { EnumTransportDocumentStatus, Supply } from '../types';
-import Swal from 'sweetalert2';
-
+import { useTranslation } from 'react-i18next';
+import { NotificationService } from '../services/notificationService';
 
 export const useCertificateDeposit = () => {
-
+    const { t } = useTranslation();
     const { user } = useAppSelector((state) => state.auth);
     const [certificateDepositsItem, setCertificateDepositsItem] = useState<CertificateDepositItemRow[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-
     const getCertificateDeposits = async () => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not logged.");
+            if (!user) throw new Error(t("userNotLogged"));
 
             const responseAll = await Promise.all([
                 dbContext.certificateDeposit.find({
@@ -49,7 +48,8 @@ export const useCertificateDeposit = () => {
 
         } catch (error) {
             setIsLoading(false);
-            console.error("Error al cargar documentos:", error);
+            console.error(t("errorLoadingDocuments"), error);
+            NotificationService.showError(t("errorLoadingCertificates"), error, t("error_label"));
         }
     }
 
@@ -58,7 +58,7 @@ export const useCertificateDeposit = () => {
         newTransportsByCert: TransportDocumentByCertificateDeposit[]) => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not logged.");
+            if (!user) throw new Error(t("userNotLogged"));
 
             const responseTransport = await dbContext.transportDocument.find({
                 selector: {
@@ -88,12 +88,12 @@ export const useCertificateDeposit = () => {
             const response = await Promise.all(promiseAll);
             setIsLoading(false);
             if (response.length)
-                Swal.fire("Certificado de Deposito", "Agregado con exito.", "success");
+                NotificationService.showAdded(newDocument, t("certificateDeposit_label"));
 
         } catch (error) {
             setIsLoading(false);
-            console.error("Error al agregar documento:", error);
-            Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+            console.error(t("errorAddingDocument"), error);
+            NotificationService.showError(t("unexpectedError"), error, t("error_label"));
         }
     }
 
@@ -102,6 +102,5 @@ export const useCertificateDeposit = () => {
         certificateDepositsItem,
         addCertificateDeposit,
         getCertificateDeposits
-
     }
 }

@@ -20,10 +20,12 @@ import {
 import { AxiosError, HttpStatusCode } from "axios";
 import { useNavigate } from "react-router-dom";
 import { convertTimestampToDate } from "../helpers/dates";
+import { useTranslation } from "react-i18next";
 
 const controller = "/auth";
 
 export const useAuthStore = () => {
+  const { t } = useTranslation();
   const { status, user, errorMessage, isLoading } = useAppSelector(
     (state) => state.auth
   );
@@ -33,40 +35,9 @@ export const useAuthStore = () => {
   const startLogin = async ({ email, password }: UserLogin) => {
     dispatch(startLoading());
     try {
-      // Code for testing
-      // const response = {
-      //   data: {
-      //     auth: {
-      //       accessToken: "hardcodedAccessToken",
-      //       refreshToken: "hardcodedRefreshToken",
-      //       expiration: new Date().getTime() + 3600 * 1000,
-      //     },
-      //     user: {
-      //       id: "123",
-      //       firstName: "John",
-      //       lastName: "Doe",
-      //       accountId: "9edd9e74ced2e6643c8cdbbead0219cc",
-      //       isAdmin: true,
-      //       countryId: "US",
-      //     },
-      //   },
-      // };
+      // Código de testing comentado...
 
-      // const { auth, user } = response.data;
-      // const { accessToken, refreshToken, expiration } = auth;
-      // localStorage.setItem("accessToken", accessToken);
-      // localStorage.setItem("refreshToken", refreshToken);
-      // localStorage.setItem(
-      //   "token_expiration",
-      //   convertTimestampToDate(expiration).getTime().toString()
-      // );
-      // localStorage.setItem("user_session", JSON.stringify(user));
-      // dispatch(onLogin(user));
-      // dispatch(finishLoading());
-      // dispatch(clearErrorMessage());
-
-      // Original code
-
+      // Código original
       const response = await fieldpartnerAPI.post<ResponseAuthLogin>(
         `${controller}/login`,
         {
@@ -88,7 +59,6 @@ export const useAuthStore = () => {
       }
       dispatch(finishLoading());
       dispatch(clearErrorMessage());
-
     } catch (error: AxiosError<ErrorResponseAuth> | any) {
       if (error.response && error.response.data) {
         const responseError: ErrorResponseAuth = error.response.data;
@@ -115,7 +85,7 @@ export const useAuthStore = () => {
       });
       if (response.status === HttpStatusCode.Created) {
         localStorage.setItem("username_temp", email);
-        dispatch(onLogout("Confirm account."));
+        dispatch(onLogout(t("confirm_account")));
         navigate("/init/auth/confirm");
         return dispatch(finishLoading());
       }
@@ -151,7 +121,7 @@ export const useAuthStore = () => {
         return;
       }
     } catch (error) {
-      dispatch(onLogout("Por favor volve a intentar en unos minutos."));
+      dispatch(onLogout(t("try_again_later")));
       dispatch(clearErrorMessage());
       localStorage.removeItem("username_temp");
       dispatch(finishLoading());
@@ -195,31 +165,6 @@ export const useAuthStore = () => {
     }
   };
 
-  //   const checkAuthToken = async () => {
-
-  //   dispatch(onChecking())
-  //   try {
-  //     localStorage.setItem('accessToken', "");
-  //     localStorage.setItem('token_expiration', "");
-
-  //     const lastPath = localStorage.getItem("lastPath") || "/";
-
-  //     dispatch(onLogin({
-  //       isAdmin: true, accountId: "test", username: "Rodrigo",
-  //       countryId: "AR",
-  //       id: "12354",
-  //       licenceId: "1234",
-  //       currency: "",
-  //       email: "rgarro@deltree.com.ar"
-  //     }));
-  //     navigate(lastPath, { replace: true });
-
-  //   } catch (error) {
-  //     localStorage.clear();
-  //     dispatch(onLogout(""));
-  //   }
-  // }
-
   const startLogout = () => {
     dispatch(startLoading());
     try {
@@ -229,21 +174,15 @@ export const useAuthStore = () => {
       localStorage.removeItem("user_session");
       localStorage.removeItem("lastPath");
 
-      dispatch(onLogout("User logged out successfully."));
-
+      dispatch(onLogout(t("user_logout_success")));
       navigate("/init/auth/login");
     } catch (error) {
       console.error("Error during logout: ", error);
-      dispatch(onLogout("Error during logout."));
+      dispatch(onLogout(t("user_logout_error")));
     } finally {
       dispatch(finishLoading());
     }
   };
-
-
-
-
-
 
   return {
     errorMessage,

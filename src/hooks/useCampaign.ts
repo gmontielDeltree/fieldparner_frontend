@@ -1,10 +1,12 @@
-import Swal from "sweetalert2";
-import { Campaign } from "@types";
 import { useState } from "react";
+import { Campaign } from "@types";
 import { dbContext } from "../services";
 import { useAppSelector } from ".";
+import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 export const useCampaign = () => {
+  const { t } = useTranslation();
   const { user } = useAppSelector((state) => state.auth);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [error, setError] = useState({});
@@ -33,11 +35,16 @@ export const useCampaign = () => {
       setIsLoading(false);
     } catch (error) {
       console.error(error);
-      Swal.fire("Error", "No hay registro de Campañas.", "error");
+      NotificationService.showError(
+        t("no_campaigns_record"),
+        {},
+        t("campaign_label")
+      );
       setIsLoading(false);
       setError(error);
     }
   };
+
   const addCampaign = async (campaignData) => {
     console.log("campaignData: ", campaignData);
     setIsLoading(true);
@@ -54,12 +61,15 @@ export const useCampaign = () => {
       };
 
       await dbContext.campaigns.put(newCampaign);
-
       await getCampaigns();
-      Swal.fire("Success", "Campaign added successfully.", "success");
+      NotificationService.showAdded({}, t("campaign_added_successfully"));
     } catch (error) {
       console.error(error);
-      Swal.fire("Error", "Failed to add the campaign.", "error");
+      NotificationService.showError(
+        t("failed_to_add_campaign"),
+        {},
+        t("campaign_label")
+      );
     } finally {
       setIsLoading(false);
     }
@@ -71,35 +81,37 @@ export const useCampaign = () => {
       if (import.meta.env.PROD && !user) throw new Error("User not found");
 
       await dbContext.campaigns.put(campaign);
-
       await getCampaigns();
-      Swal.fire("Success", "Campaign added successfully.", "success");
+      NotificationService.showUpdated({}, t("campaign_updated_successfully"));
     } catch (error) {
       console.error(error);
-      Swal.fire("Error", "Failed to add the campaign.", "error");
+      NotificationService.showError(
+        t("failed_to_update_campaign"),
+        {},
+        t("campaign_label")
+      );
     } finally {
       setIsLoading(false);
     }
-
-  }
+  };
 
   const deleteCampaign = async (campaign: Campaign) => {
     setIsLoading(true);
     try {
-
       await dbContext.campaigns.remove(campaign);
-
       await getCampaigns();
-      Swal.fire("Success", "Campaign deleted successfully.", "success");
+      NotificationService.showDeleted({}, t("campaign_deleted_successfully"));
     } catch (error) {
       console.error(error);
-      Swal.fire("Error", "Failed to delete the campaign.", "error");
+      NotificationService.showError(
+        t("failed_to_delete_campaign"),
+        {},
+        t("campaign_label")
+      );
     } finally {
       setIsLoading(false);
     }
-
-  }
-
+  };
 
   return {
     campaigns,

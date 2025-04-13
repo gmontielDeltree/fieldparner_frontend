@@ -1,12 +1,12 @@
-import Swal from 'sweetalert2';
-import { useState } from "react"
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MenuModules, MenuModulesPermission, ModulesUsers } from '../interfaces/menuModules';
 import { dbContext } from "../services/pouchdbService";
 import { useAppSelector } from './useRedux';
-
+import { NotificationService } from "../services/notificationService";
 
 export const useModulesPermission = () => {
-
+    const { t } = useTranslation();
     const { user } = useAppSelector(state => state.auth);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +18,7 @@ export const useModulesPermission = () => {
     const putModulesUserByUserId = async (userId: string, modules: MenuModulesPermission[]) => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not found.");
+            if (!user) throw new Error(t("userNotFound"));
 
             const responseLicenceUse = await dbContext.licencesUse.find({
                 selector: { "accountId": user.accountId }
@@ -48,13 +48,13 @@ export const useModulesPermission = () => {
 
             setIsLoading(false);
             if (putResponse)
-                Swal.fire('Permiso-Modulos', 'Los permisos de los modulos fueron agregados/actualizados.', 'success');
+                NotificationService.showSuccess(t("modulePermissionsAddedUpdated"), null, t("modulePermissionsLabel"));
             else
-                Swal.fire('Permiso-Modulos', 'Ocurrio un error al agregar/actualizar los permisos.', 'error');
+                NotificationService.showError(t("errorAddingUpdatingPermissions"), null, t("modulePermissionsLabel"));
 
         } catch (error) {
             console.log(error)
-            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            NotificationService.showError(t("unexpectedError"), null, null);
             setIsLoading(false);
             if (error) setError(error);
         }
@@ -92,13 +92,11 @@ export const useModulesPermission = () => {
 
         } catch (error) {
             console.log(error)
-            Swal.fire('Error', 'Error al obtener los modulos de menu.', 'error');
+            NotificationService.showError(t("errorGettingMenuModules"), null, t("errorLabel"));
             setIsLoading(false);
             if (error) setError(error);
         }
-
     }
-
 
     return {
         //* Propiedades

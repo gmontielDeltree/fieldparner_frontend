@@ -1,9 +1,10 @@
-import Swal from "sweetalert2";
 import { Deposit } from "../types";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { dbContext } from "../services";
 import { useAppSelector } from ".";
+import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 // const remoteCouchDBUrl = getEnvVariables().VITE_COUCHDB_URL;
 // const myDBs = {
@@ -15,6 +16,7 @@ import { useAppSelector } from ".";
 // const syncDb = async () => await DbDeposits.sync(`${remoteCouchDBUrl}/${myDBs.deposits}`, { live: true, retry: true, });
 
 export const useDeposit = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.auth);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
@@ -34,14 +36,14 @@ export const useDeposit = () => {
       }
     } catch (error) {
       setIsLoading(false);
-      console.error("Error al cargar documentos:", error);
+      console.error(t("errorLoadingDocuments"), error);
     }
   };
 
   const createDeposit = async (newDeposit: Deposit) => {
     setIsLoading(true);
     try {
-      if (!user) throw new Error("There is no user!!!!");
+      if (!user) throw new Error(t("noUserError"));
 
       const response = await dbContext.deposits.post({
         ...newDeposit,
@@ -50,12 +52,12 @@ export const useDeposit = () => {
       setIsLoading(false);
 
       if (response.ok) {
-        Swal.fire("Deposito", "Agregado con exito.", "success");
+        NotificationService.showAdded(newDeposit, t("deposit_label"));
       }
       navigate("/init/overview/deposit");
     } catch (error) {
-      console.log("Error al crear el documento: ", error, newDeposit);
-      Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+      console.log(t("errorCreatingDocument"), error, newDeposit);
+      NotificationService.showError(t("unexpectedError"), error, t("error_label"));
       setIsLoading(false);
     }
   };
@@ -67,13 +69,13 @@ export const useDeposit = () => {
       setIsLoading(false);
 
       if (response.ok) {
-        Swal.fire("Deposito", "Actualizado con exito.", "success");
+        NotificationService.showUpdated(updateDeposit, t("deposit_label"));
       }
 
       navigate("/init/overview/deposit");
     } catch (error) {
-      console.log("Error al actualizar el documento: ", error);
-      Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+      console.log(t("errorUpdatingDocument"), error);
+      NotificationService.showError(t("unexpectedError"), error, t("error_label"));
       setIsLoading(false);
     }
   };
@@ -90,11 +92,11 @@ export const useDeposit = () => {
 
       setIsLoading(false);
 
-      if (response.ok) Swal.fire("Deposito", "Eliminado.", "success");
+      if (response.ok) NotificationService.showDeleted({ id: deleteDepositId }, t("deposit_label"));
       navigate("/init/overview/deposit");
     } catch (error) {
-      console.log("Error al actualizar el documento: ", error);
-      Swal.fire("Ups", "Ocurrio un error inesperado ", "error");
+      console.log(t("errorUpdatingDocument"), error);
+      NotificationService.showError(t("unexpectedError"), error, t("error_label"));
       setIsLoading(false);
     }
   };
@@ -114,7 +116,7 @@ export const useDeposit = () => {
       return [];
     } catch (error) {
       setIsLoading(false);
-      console.error("Error finding deposits by accountId:", error);
+      console.error(t("errorFindingDepositsByAccountId"), error);
       return [];
     }
   };
@@ -151,7 +153,7 @@ export const useDeposit = () => {
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      console.error("Error al cargar documentos:", error);
+      console.error(t("errorLoadingDocuments"), error);
     }
   }
   const getDepositsByCropId = async (cropId: string) => {
@@ -186,7 +188,7 @@ export const useDeposit = () => {
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      console.error("Error al cargar documentos:", error);
+      console.error(t("errorLoadingDocuments"), error);
     }
   }
 

@@ -3,9 +3,10 @@ import { useAppDispatch, useAppSelector } from ".";
 import { useState } from "react";
 import { getShortDate } from "../helpers/dates";
 import { dbContext } from "../services";
-import Swal from "sweetalert2";
 import { onLogout } from "../redux/auth";
 import { Stock } from "../interfaces/stock";
+import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 const today = getShortDate(true);
 
@@ -23,6 +24,7 @@ export const useTransformStock = () => {
     const [transformMovements, setTransformMovements] = useState<TransformMovementGroup>({});
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const { t } = useTranslation();
 
     //Nueva Transformacion/Valor agregado
     const transformStock = async (
@@ -36,7 +38,7 @@ export const useTransformStock = () => {
         try {
             let newMovements: StockMovement[] = [];
 
-            if (!user) { dispatch(onLogout("Session expired")); return; }
+            if (!user) { dispatch(onLogout(t("session_expired"))); return; }
             const { accountId, id: userId } = user;
             //Recorremos cada insumo/cultivo deposito , ubicacion, lote para crear su movimiento.
             supplyOrCultiveOrigin.forEach(ts => {
@@ -106,9 +108,9 @@ export const useTransformStock = () => {
             const responseAll = await Promise.all(promisesAll);
 
             if (responseAll)
-                Swal.fire('Transformación de Stock', 'Realizado con exito.', 'success');
+                NotificationService.showSuccess(t("transform_success"), {}, t("stock_transformation_label"));
             else
-                Swal.fire('Transformación de Stock', 'Verifica los datos ingresados.', 'error');
+                NotificationService.showError(t("verify_entered_data"), {}, t("stock_transformation_label"));
 
             setIsLoading(false);
         } catch (error) {
@@ -123,7 +125,7 @@ export const useTransformStock = () => {
         if (!user) return;
         try {
 
-            if (!user) { dispatch(onLogout("Session expired")); return; }
+            if (!user) { dispatch(onLogout(t("session_expired"))); return; }
             const promisesResult = await Promise.all([
                 dbContext.stockMovements.find({
                     selector: {

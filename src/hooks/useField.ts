@@ -1,11 +1,13 @@
-import Swal from "sweetalert2";
 import { Field } from "@types";
 import { useState } from "react";
 import { dbContext } from "../services";
 import { useAppSelector } from ".";
 import { Lot } from "../interfaces/field";
+import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 export const useField = () => {
+  const { t } = useTranslation();
   const { user } = useAppSelector((state) => state.auth);
   const [fields, setFields] = useState<Field[]>([]);
   const [error, setError] = useState({});
@@ -16,7 +18,7 @@ export const useField = () => {
   const getFields = async () => {
     setIsLoading(true);
     try {
-      if (!user) throw new Error("User not found");
+      if (!user) throw new Error(t("userNotFound"));
 
       // const result = await dbContext.fields.allDocs({ include_docs: true });
       const result = await db.find({
@@ -34,7 +36,7 @@ export const useField = () => {
       setIsLoading(false);
     } catch (error) {
       console.log(error);
-      Swal.fire("Error", "No hay registro de Campos.", "error");
+      NotificationService.showError(t("noFieldsRecords"), error, t("field_label"));
       setIsLoading(false);
       if (error) setError(error);
     }
@@ -68,9 +70,9 @@ export const useField = () => {
   const getLotFromField = async (field: Field, lotId: string) => {
     let lotes = field.lotes;
     let filtrado = lotes.find((l) => l.id === lotId);
-    if(filtrado){
+    if (filtrado) {
       return filtrado
-    }else{
+    } else {
       return undefined
     }
   };

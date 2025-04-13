@@ -1,4 +1,3 @@
-import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from ".";
 import { dbContext } from "../services";
@@ -7,6 +6,8 @@ import { useState } from "react";
 import { setWithdrawalOrderActive } from "../redux/withdrawalOrder";
 import { onLogout } from '../redux/auth';
 import { Stock } from '../interfaces/stock';
+import { useTranslation } from "react-i18next";
+import { NotificationService } from "../services/notificationService";
 
 export const useOrder = () => {
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ export const useOrder = () => {
     const [depositsSuppliesOrder, setDepositsSuppliesOrder] = useState<DepositSupplyOrder[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState({});
+    const { t } = useTranslation();
 
     const getLastNumerator = async (accountId: string, type: NumeratorType) => {
         try {
@@ -29,8 +31,8 @@ export const useOrder = () => {
                 return response.docs[0] as Numerator;
 
         } catch (error) {
-            console.log('error', error);
-            throw new Error("Numerator not found.");
+            console.log(t('error_log'), error);
+            throw new Error(t("numerator_not_found"));
         }
     }
 
@@ -41,14 +43,14 @@ export const useOrder = () => {
             else
                 await dbContext.numerators.put(doc);
         } catch (error) {
-            console.log('error', error);
+            console.log(t('error_log'), error);
         }
     }
 
     const getWithdrawalOrders = async () => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not found.");
+            if (!user) throw new Error(t("user_not_found"));
 
             const response = await dbContext.withdrawalOrders.find({ selector: { "accountId": user?.accountId } });
 
@@ -67,7 +69,7 @@ export const useOrder = () => {
     const createWithdrawalOrder = async (newWithdrawalOrder: WithdrawalOrder, newDepositSupplies: DepositSupplyOrder[]) => {
         setIsLoading(true);
         try {
-            if (!user) { dispatch(onLogout("Session expired")); return; }
+            if (!user) { dispatch(onLogout(t("session_expired"))); return; }
 
             let lastNumerator: Numerator = {
                 accountId: user.accountId,
@@ -120,13 +122,17 @@ export const useOrder = () => {
             setIsLoading(false);
 
             if (response) {
-                Swal.fire('Orden de Retiro', `N° de orden ${lastNumerator.lastNumerator} creado exitosamente.`, 'success');
+                NotificationService.showSuccess(
+                    t("withdrawal_order_created_successfully", { number: lastNumerator.lastNumerator }),
+                    { order: lastNumerator.lastNumerator.toString() },
+                    t("withdrawal_order_label")
+                );
                 return true;
             }
             return false;
         } catch (error) {
-            console.log('Error al crear el documento: ', error);
-            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            console.log(t('document_creation_error'), error);
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
             return false;
         }
@@ -136,7 +142,7 @@ export const useOrder = () => {
         setIsLoading(true);
         try {
 
-            if (!user) throw new Error("User not found.");
+            if (!user) throw new Error(t("user_not_found"));
 
             const responseAll = await Promise.all([
                 dbContext.withdrawalOrders.find({
@@ -168,8 +174,8 @@ export const useOrder = () => {
     const confirmWithdrawalOrder = async (listWithdrawals: DepositSupplyOrderItem[], withdrawalDate: string) => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not found.");
-            if (!withdrawalOrderActive) throw new Error("Withdrawal Order not found");
+            if (!user) throw new Error(t("user_not_found"));
+            if (!withdrawalOrderActive) throw new Error(t("withdrawal_order_not_found"));
             let isComplete = true;
 
             const newWithdrawals: WithdrawalsByDepositSupply[] = listWithdrawals.map(w => ({
@@ -199,7 +205,7 @@ export const useOrder = () => {
                 dbContext.stock.find({ selector: { "accountId": user.accountId } }),
             ]);
 
-            if (!response) throw new Error("Supplies not found.");
+            if (!response) throw new Error(t("supplies_not_found"));
 
             const responseStockSupplies = response[0].docs;
             let updateStockSupplies: Stock[] = []; // Insumos actualizados con nuevo stock
@@ -249,15 +255,19 @@ export const useOrder = () => {
             }
 
             if (responseAll) {
-                Swal.fire('Orden de Retiro', 'Confirmacion exitosa.', 'success');
+                NotificationService.showSuccess(
+                    t("successful_confirmation"),
+                    { order: withdrawalOrderActive.order.toString() },
+                    t("withdrawal_order_label")
+                );
             }
             navigate("/init/overview/list-orders");
             setIsLoading(false);
 
         } catch (error) {
-            console.log('Error in confirmWithdrawalOrder:', error);
+            console.log(t('error_in_confirm_withdrawal_order'), error);
             setIsLoading(false);
-            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
         }
     };
 
@@ -265,7 +275,7 @@ export const useOrder = () => {
         setIsLoading(true);
         try {
 
-            if (!user) throw new Error("User not found.");
+            if (!user) throw new Error(t("user_not_found"));
             let lastNumerator: Numerator = {
                 accountId: user.accountId,
                 numeratorType: NumeratorType.LaborOrder,
@@ -306,8 +316,8 @@ export const useOrder = () => {
             }
             return -1;
         } catch (error) {
-            console.log('Error al crear el documento: ', error);
-            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            console.log(t('document_creation_error'), error);
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
             return -1;
         }
@@ -316,7 +326,7 @@ export const useOrder = () => {
     const confirmLaborOrder = async (listWithdrawals: DepositSupplyOrderItem[], withdrawalDate: string) => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not found.");
+            if (!user) throw new Error(t("user_not_found"));
             // if (!withdrawalOrderActive) throw new Error("Withdrawal Order not found");
 
             //Registro de los retiros 
@@ -346,15 +356,19 @@ export const useOrder = () => {
             setIsLoading(false);
 
             if (responseAll) {
-                Swal.fire('Orden de Retiro', 'Confirmacion exitosa.', 'success');
+                NotificationService.showSuccess(
+                    t("successful_confirmation"),
+                    {},
+                    t("withdrawal_order_label")
+                );
                 return true;
             }
 
             return false;
         } catch (error) {
-            console.log('error', error);
+            console.log(t('error_log'), error);
             setIsLoading(false);
-            Swal.fire('Ups', 'Ocurrio un error inesperado ', 'error');
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             return false;
         }
     }
@@ -362,7 +376,7 @@ export const useOrder = () => {
     const getLaborOrder = async (field: string, campaignId: string, contractorId: string) => {
         setIsLoading(true);
         try {
-            if (!user) throw new Error("User not found.");
+            if (!user) throw new Error(t("user_not_found"));
 
             const response = await dbContext.withdrawalOrders.find({
                 selector: {
