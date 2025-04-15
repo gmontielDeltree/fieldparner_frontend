@@ -16,27 +16,8 @@ import {
 import { ColumnProps, DepositSupplyOrder } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 import { DepositSupplyOrderItem } from '../../types/index';
+import { useTranslation } from 'react-i18next';
 
-
-const columnsDepositSupply: ColumnProps[] = [
-    { text: "Insumo", align: "left" },
-    { text: "Deposito", align: "left" },
-    { text: "Ubicacion", align: "center" },
-    { text: "N° Lote", align: "center" },
-    { text: "UM", align: "center" },
-    { text: "Cantidad Original", align: "center" },
-    { text: "Saldo", align: "center" },
-    { text: "Retira", align: "center" },
-    { text: "", align: "center" },
-];
-const columnsWithdrawals: ColumnProps[] = [
-    { text: "Deposito", align: "left" },
-    { text: "Insumo/Cultivo", align: "left" },
-    { text: "Lote", align: "center" },
-    { text: "Ubicacion", align: "center" },
-    { text: "Cantidad", align: "center" },
-    { text: "", align: "center" },
-];
 
 interface NewWithdrawalRowProps {
     row: DepositSupplyOrder;
@@ -112,11 +93,33 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
         depositsSuppliesOrder,
         getOrderWithDepositsAndSuppliesByOrder,
         confirmWithdrawalOrder } = useOrder();
+    const { t } = useTranslation();
 
     const {
         formulario: formValues,
         handleInputChange,
     } = useForm(initialForm);
+
+    const columnsDepositSupply: ColumnProps[] = [
+        { text: t("_supply"), align: "left" },
+        { text: t("_warehouse"), align: "left" },
+        { text: t("_location"), align: "left" },
+        { text: t("batchNumber"), align: "center" },
+        { text: t("measurementUnit"), align: "center" },
+        { text: t("original_quantity"), align: "center" },
+        { text: t("balance"), align: "center" },
+        { text: t("withdrawal_fem"), align: "center" },
+        { text: "", align: "center" },
+    ];
+    const columnsWithdrawals: ColumnProps[] = [
+        { text: t("_warehouse"), align: "left" },
+        { text: t("_supply"), align: "left" },
+        { text: t("batchNumber"), align: "center" },
+        { text: t("_location"), align: "left" },
+        { text: t("amount"), align: "center" },
+        { text: "", align: "center" },
+    ];
+
 
     const onClickCancel = () => navigate("/init/overview/list-orders");
 
@@ -127,7 +130,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
     const addNewWithdrawal = (newWithdrawal: DepositSupplyOrderItem) => {
         let existWithdrawal = listWithdrawals.find(w => w._id === newWithdrawal._id);
         if (existWithdrawal) {
-            Swal.fire('Deposito/Insumo', 'No se puede duplicar deposito insumo/cultivo a retirar.', 'error');
+            Swal.fire('Deposito/Insumo', 'No se puede duplicar insumo/deposito a retirar.', 'error');
             return;
         }
 
@@ -161,14 +164,14 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                     align="center"
                     sx={{ mt: 1, mb: 7 }}
                 >
-                    Retiros
+                    {t("withdrawals")}
                 </Typography>
                 <Grid container spacing={2} mb={2}>
                     <Grid item xs={12} sm={3}>
                         <TextField
                             variant="outlined"
                             type="text"
-                            label="Nro Orden"
+                            label={t("order_number")}
                             value={withdrawalOrderActive?.order}
                             InputProps={{
                                 startAdornment: <InputAdornment position="start" />,
@@ -180,7 +183,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         <TextField
                             variant="outlined"
                             type="text"
-                            label="Motivo"
+                            label={t("_reason")}
                             value={withdrawalOrderActive?.reason}
                             InputProps={{
                                 startAdornment: <InputAdornment position="start" />,
@@ -192,7 +195,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         <TextField
                             variant="outlined"
                             type="text"
-                            label="Campaña"
+                            label={t("_campaign")}
                             value={withdrawalOrderActive?.campaign?.description}
                             InputProps={{
                                 startAdornment: <InputAdornment position="start" />,
@@ -204,7 +207,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         <TextField
                             variant="outlined"
                             type="text"
-                            label="Retira"
+                            label={t("withdrawal_fem")}
                             value={withdrawalOrderActive?.withdraw?.nombreCompleto}
                             InputProps={{
                                 startAdornment: <InputAdornment position="start" />,
@@ -216,7 +219,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         <TextField
                             variant="outlined"
                             type="date"
-                            label="Fecha Retiro"
+                            label={t("withdrawal_date")}
                             name="withdrawalDate"
                             value={formValues.withdrawalDate}
                             onChange={handleInputChange}
@@ -246,7 +249,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         align="left"
                         sx={{ mt: 1, mb: 1 }}
                     >
-                        Deposito e Insumos de la Orden:
+                        {t("order_details")}
                     </Typography>
                     <DataTable
                         key="datatable-orders"
@@ -277,7 +280,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         align="left"
                         sx={{ mt: 1, mb: 1 }}
                     >
-                        Insumos a Retirar:
+                        {t("suppliesToWithdraw")}
                     </Typography>
                     <DataTable
                         key="datatable-withdrawals"
@@ -315,7 +318,9 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                     sx={{ mt: 3 }}
                 >
                     <Grid item xs={12} sm={3}>
-                        <Button onClick={onClickCancel}>Cancelar</Button>
+                        <Button onClick={onClickCancel}>
+                            {t("id_cancel")}
+                        </Button>
                     </Grid>
                     <Grid item xs={12} sm={3}>
                         <Button
@@ -323,7 +328,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                             color="primary"
                             onClick={() => onClickConfirmOrder()}
                         >
-                            Confirmar
+                            {t("confirm")}
                         </Button>
                     </Grid>
                 </Grid>

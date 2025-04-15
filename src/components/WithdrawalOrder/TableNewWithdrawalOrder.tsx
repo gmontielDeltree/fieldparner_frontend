@@ -10,17 +10,8 @@ import {
 import { AutocompleteDeposit, AutocompleteSupply } from "../Autocomplete";
 import { useDeposit, useForm, useSupply } from "../../hooks";
 import uuid4 from "uuid4";
+import { useTranslation } from "react-i18next";
 
-
-const columns: ColumnProps[] = [
-    { text: "Insumo", align: "left" },
-    { text: "Deposito", align: "left" },
-    { text: "Ubicación", align: "left" },
-    { text: "N° Lote", align: "center" },
-    { text: "UM", align: "center" },
-    { text: "Cantidad a Retirar", align: "center" },
-    { text: "", align: "center" },
-];
 
 interface Props {
     suppliesToAdd: TransformSupply[];
@@ -43,6 +34,7 @@ export const TableNewWithdrawalOrder: React.FC<Props> = ({
     onClickAdd,
     onClickDelete
 }) => {
+    const { t } = useTranslation();
     const {
         location,
         nroLot,
@@ -61,6 +53,16 @@ export const TableNewWithdrawalOrder: React.FC<Props> = ({
 
     const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
     const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
+
+    const columns: ColumnProps[] = [
+        { text: t("_supply"), align: "left" },
+        { text: t("_warehouse"), align: "left" },
+        { text: t("_location"), align: "left" },
+        { text: t("batchNumber"), align: "center" },
+        { text: t("measurementUnit"), align: "center" },
+        { text: t("amountToWithdraw"), align: "center" },
+        { text: "", align: "center" },
+    ];
 
     const onChangeLocation = ({ target }: SelectChangeEvent) => {
         const { value } = target;
@@ -127,13 +129,13 @@ export const TableNewWithdrawalOrder: React.FC<Props> = ({
                     </TableCellStyled>
                     <TableCellStyled align="left" sx={{ minWidth: "140px" }} className="p-0 py-2 px-2">
                         <FormControl size="small" fullWidth>
-                            <InputLabel id="location">Ubicación</InputLabel>
+                            <InputLabel id="location">{t("id_location")}</InputLabel>
                             <Select
                                 labelId="location"
                                 size="small"
                                 name="origin"
                                 value={location}
-                                label="Ubicación"
+                                label={t("id_location")}
                                 onChange={onChangeLocation}
                             >
                                 {depositSelected?.locations.map((loc) => (

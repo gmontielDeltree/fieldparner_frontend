@@ -17,8 +17,9 @@ import { getShortDate } from '../../helpers/dates';
 import { Stock, TipoStock } from '../../interfaces/stock';
 import { TableNewWithdrawalOrder } from '../../components/WithdrawalOrder/TableNewWithdrawalOrder';
 import { AutocompleteCampaign } from '../../components/Autocomplete';
+import { useTranslation } from 'react-i18next';
 
-//TODO: agregar traduccion
+
 const initialForm = {
     accountId: "",
     creationDate: getShortDate(),
@@ -46,6 +47,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
         handleSelectChange,
         setFormulario: setFormValues,
     } = useForm(initialForm);
+    const { t } = useTranslation();
 
     const onClickCancel = () => navigate("/init/overview/list-orders");
 
@@ -170,14 +172,14 @@ export const WithdrawalOrdersPage: React.FC = () => {
                     align="center"
                     sx={{ mt: 1, mb: 7 }}
                 >
-                    Nueva Orden de Retiro
+                    {t("title_withdrawal_order")}
                 </Typography>
                 <Grid container spacing={2} mb={2}>
                     <Grid item xs={12} sm={4}>
                         <TextField
                             variant="outlined"
                             type="date"
-                            label="Fecha"
+                            label={t("_date")}
                             name="creationDate"
                             value={formValues.creationDate}
                             onChange={handleInputChange}
@@ -194,7 +196,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                         <TextField
                             variant="outlined"
                             type="text"
-                            label="Motivo"
+                            label={t("reason")}
                             name="reason"
                             value={formValues.reason}
                             onChange={handleInputChange}
@@ -220,12 +222,12 @@ export const WithdrawalOrdersPage: React.FC = () => {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <FormControl key="trucker-select" fullWidth>
-                            <InputLabel id="withdraw">Retira</InputLabel>
+                            <InputLabel id="withdraw">{t("withdrawal_fem")}</InputLabel>
                             <Select
                                 labelId="trucker"
                                 name="withdrawId"
                                 value={formValues.withdrawId}
-                                label="Retira"
+                                label={t("withdrawal_fem")}
                                 onChange={handleSelectChange}
                             >
                                 {socialEntities?.map((f) => (
@@ -254,7 +256,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                             variant='contained'
                             color="inherit"
                             onClick={onClickCancel}>
-                            Cancelar
+                            {t("id_cancel")}
                         </Button>
                     </Grid>
                     <Grid item xs={12} sm={3}>
@@ -264,7 +266,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                             color="success"
                             onClick={() => onClickGenerate()}
                         >
-                            Generar
+                            {t("generate")}
                         </Button>
                     </Grid>
                 </Grid>
