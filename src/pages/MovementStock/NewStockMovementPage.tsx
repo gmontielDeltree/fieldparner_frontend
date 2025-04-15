@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Loading } from "../../components";
 import {
-  Autocomplete,
   Box,
   Button,
   Container,
@@ -35,7 +34,8 @@ import { getShortDate } from "../../helpers/dates";
 import { useTranslation } from "react-i18next";
 
 import { uploadFile } from "../../helpers/fileUpload";
-import { useFileUploadHook,  BasicFileInfo } from "../../components/NuevoVehiculo/useDatosGenerales";
+import { useFileUploadHook, BasicFileInfo } from "../../components/NuevoVehiculo/useDatosGenerales";
+import { AutocompleteSupply } from "../../components/Autocomplete";
 
 const initialForm: StockMovement = {
   typeMovement: TypeMovement.Ajustes,
@@ -95,10 +95,10 @@ export const NewStockMovementPage: React.FC = () => {
   const [fileUpload, setFileUpload] = React.useState<File | null>(null);
   const { depositId: depositOrigin, supplyId, location } = formulario;
 
-  const { 
-    fileDisplayName, 
-    handleFileUpload, 
-    handleRemoveFile 
+  const {
+    fileDisplayName,
+    handleFileUpload,
+    handleRemoveFile
   } = useFileUploadHook({
     setFilesUpload: (file: File | BasicFileInfo) => setFileUpload(file as File),
     onFileChange: (fileName) => setFormulario(prev => ({ ...prev, documentFile: fileName })),
@@ -494,32 +494,17 @@ export const NewStockMovementPage: React.FC = () => {
                 )}
               </Grid>
               <Grid key="supply-movement" item xs={12} sm={3}>
-                <Autocomplete
-                  loading={isLoadingSupplies}
-                  value={{ label: supplySelected?.name || "", value: supplySelected?._id || "" }}
-                  onChange={(_event, newValue) => {
-                    const value = newValue?.value || "null";
-                    const supplySelected = supplies.find((supply) => supply._id === value);
-                    if (supplySelected && supplySelected._id) {
+                <AutocompleteSupply
+                  value={supplySelected}
+                  options={supplies}
+                  onChange={(supply) => {
+                    if (supply) {
+                      setSupplySelected(supply);
                       setFormulario((prevState) => ({
                         ...prevState,
-                        supplyId: value,
+                        supplyId: supply?._id || "",
                       }));
-                      setSupplySelected(supplySelected);
                     }
-                  }}
-                  options={supplies.map((option) => ({ label: option.name, value: option._id || "" }))}
-                  getOptionLabel={(option) => option.label}
-                  disableClearable
-                  renderInput={(params) => (
-                    <TextField {...params} label={"Insumo"} variant="outlined" />
-                  )}
-                  fullWidth
-                  ListboxProps={{
-                    style: {
-                      maxHeight: 248,
-                      overflow: "auto",
-                    },
                   }}
                 />
               </Grid>
@@ -735,7 +720,7 @@ export const NewStockMovementPage: React.FC = () => {
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap"
                       }}>
-                 {fileDisplayName}
+                      {fileDisplayName}
                     </label>
                     <IconButton onClick={() => handleRemoveFile()} color="error">
                       <CancelIcon fontSize="medium" />
