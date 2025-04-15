@@ -56,7 +56,6 @@ export interface Vehicle extends Document {
   chassisNumber: string;
   fuelType: string;
   fuelCapacity: number;
-  unitMeasurement: string;
   connectivity?: string;
   owner?: string;
   lastMaintenance?: string;
