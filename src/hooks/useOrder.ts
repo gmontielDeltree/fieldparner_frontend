@@ -95,28 +95,10 @@ export const useOrder = () => {
             };
             let depositSuppliesOrder = newDepositSupplies.map(s => ({ ...s, order: lastNumerator.lastNumerator }));
 
-            // Fetch supplies to update reservedStock
-            // const responseSupplies = await dbContext.supplies.find({
-            //     selector: {
-            //         $or: [
-            //             { accountId: user.accountId },
-            //             { isDefault: true }
-            //         ]
-            //     },
-            // });
-            // const suppliesToUpdate = responseSupplies.docs;
-            // newDepositSupplies.forEach(newSupplyOrder => {
-            //     const supply = suppliesToUpdate.find(s => s._id === newSupplyOrder.supply._id);
-            //     if (supply) {
-            //         supply.reservedStock += newSupplyOrder.amount;
-            //     }
-            // });
-
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
                 dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
                 putLastNumerator(lastNumerator),
-                // dbContext.supplies.bulkDocs(suppliesToUpdate)
             ]);
 
             setIsLoading(false);

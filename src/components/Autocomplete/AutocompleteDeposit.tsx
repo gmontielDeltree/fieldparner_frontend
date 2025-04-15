@@ -8,9 +8,13 @@ type Props = {
     options?: Deposit[];
     value: Deposit | null;
     onChange: (deposit: Deposit | null) => void;
+    size?: 'small' | 'medium';
 }
 export const AutocompleteDeposit: React.FC<Props> = ({
-    value, onChange, options
+    value,
+    onChange,
+    options,
+    size = "medium"
 }) => {
     const { t } = useTranslation();
     const { deposits, isLoading, getDeposits } = useDeposit();
@@ -23,6 +27,7 @@ export const AutocompleteDeposit: React.FC<Props> = ({
     return (
         <Autocomplete
             loading={isLoading}
+            size={size}
             value={value}
             onChange={(_event, newValue) => {
                 onChange(newValue);

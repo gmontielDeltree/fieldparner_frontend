@@ -10,14 +10,16 @@ export type Props = {
     value: Supply | null;
     options?: Supply[];
     onChange: (supply: Supply | null) => void;
+    size?: 'small' | 'medium';
 }
 
 export const AutocompleteSupply: React.FC<Props> = ({
     value,
     onChange,
-    options
+    options,
+    size = "medium"
 }) => {
-    const {  t } = useTranslation();
+    const { t } = useTranslation();
 
     const { supplies, getSupplies, isLoading } = useSupply();
 
@@ -27,6 +29,7 @@ export const AutocompleteSupply: React.FC<Props> = ({
 
     return (
         <Autocomplete
+            size={size}
             loading={isLoading}
             value={value}
             onChange={(_event, newValue) => {

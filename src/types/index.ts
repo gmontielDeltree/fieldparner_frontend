@@ -458,7 +458,7 @@ export interface DepositDestination {
   depositId: string;
   location: string;
 }
-
+//TODO: refactorizar para que no tenga objetos anidados
 export interface TransformSupply {
   id: string;
   supply: Supply | null;
@@ -554,7 +554,7 @@ export interface Field extends Document {
   // _rev: string;
 }
 
-//Retiros del Deposito e Insumo/Cultivo
+//Retiros del Deposito e Insumo
 export interface WithdrawalsByDepositSupply extends Document {
   accountId: string;
   order: number;
@@ -563,13 +563,13 @@ export interface WithdrawalsByDepositSupply extends Document {
   amount: number;
 }
 
-//Deposito e Insumo/Cultivo de una Orden
+//Deposito e Insumo de una Orden de retiro
 export interface DepositSupplyOrder extends Document {
   order: number;
   accountId: string;
   deposit: Deposit | null;
   location: string;
-  crop: Crop | null;
+  // crop: Crop | null;
   supply: Supply | null;
   nroLot: string;
   withdrawalAmount: number;

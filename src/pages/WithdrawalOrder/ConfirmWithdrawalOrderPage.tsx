@@ -13,20 +13,19 @@ import {
     Add as AddIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material';
-import { Icon } from 'semantic-ui-react';
 import { ColumnProps, DepositSupplyOrder } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 import { DepositSupplyOrderItem } from '../../types/index';
 
 
 const columnsDepositSupply: ColumnProps[] = [
+    { text: "Insumo", align: "left" },
     { text: "Deposito", align: "left" },
-    { text: "Insumo/Cultivo", align: "left" },
-    { text: "Lote", align: "center" },
+    { text: "Ubicacion", align: "center" },
+    { text: "N° Lote", align: "center" },
     { text: "UM", align: "center" },
     { text: "Cantidad Original", align: "center" },
     { text: "Saldo", align: "center" },
-    { text: "Ubicacion", align: "center" },
     { text: "Retira", align: "center" },
     { text: "", align: "center" },
 ];
@@ -34,8 +33,6 @@ const columnsWithdrawals: ColumnProps[] = [
     { text: "Deposito", align: "left" },
     { text: "Insumo/Cultivo", align: "left" },
     { text: "Lote", align: "center" },
-    // { text: "UM", align: "center" },
-    // { text: "Saldo", align: "center" },
     { text: "Ubicacion", align: "center" },
     { text: "Cantidad", align: "center" },
     { text: "", align: "center" },
@@ -65,15 +62,15 @@ export const NewWithdrawalRow = ({ row, addNewWithdrawal }: NewWithdrawalRowProp
 
     return (
         <ItemRow key={row._id}>
+            <TableCellStyled align="left">{row.supply?.name} </TableCellStyled>
             <TableCellStyled align="left">
                 {row.deposit?.description}
             </TableCellStyled>
-            <TableCellStyled align="left">{row.supply ? row.supply.name : row.crop?.descriptionEN} </TableCellStyled>
+            <TableCellStyled align='center'>{row.location}</TableCellStyled>
             <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
             <TableCellStyled align="center">{row.supply?.unitMeasurement}</TableCellStyled>
             <TableCellStyled align='center'>{row.originalAmount}</TableCellStyled>
             <TableCellStyled align='center'>{(row.originalAmount - row.withdrawalAmount)}</TableCellStyled>
-            <TableCellStyled align='center'>{row.location}</TableCellStyled>
             <TableCellStyled align='center'>{
                 <TextField
                     variant="outlined"
@@ -249,7 +246,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         align="left"
                         sx={{ mt: 1, mb: 1 }}
                     >
-                        Deposito e Insumos/Cultivo de la Orden:
+                        Deposito e Insumos de la Orden:
                     </Typography>
                     <DataTable
                         key="datatable-orders"
@@ -280,7 +277,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                         align="left"
                         sx={{ mt: 1, mb: 1 }}
                     >
-                        Insumos/Cultivo a Retirar:
+                        Insumos a Retirar:
                     </Typography>
                     <DataTable
                         key="datatable-withdrawals"
@@ -289,12 +286,12 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                     >
                         {listWithdrawals.map((row) => (
                             <ItemRow key={`withdrawal-${row._id}`} >
+                                <TableCellStyled align="left">{row.supply?.name} </TableCellStyled>
                                 <TableCellStyled align="left">
                                     {row.deposit?.description}
                                 </TableCellStyled>
-                                <TableCellStyled align="left">{row.supply ? row.supply.name : row.crop?.descriptionEN} </TableCellStyled>
-                                <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
                                 <TableCellStyled align='center'>{row.location}</TableCellStyled>
+                                <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
                                 <TableCellStyled align='center'>{row.amount}</TableCellStyled>
                                 <TableCellStyled align='center'>
                                     <Tooltip title="Eliminar">
