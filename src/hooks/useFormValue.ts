@@ -93,6 +93,13 @@ export const useFormValues = <T extends Object>(initialState: FormValueState<T>)
         return isValid;
     };
 
+    const getMapFormValues = () => {
+        return Object.keys(formValues).reduce((acc, key) => {
+            acc[key] = formValues[key].value;
+            return acc;
+        }, {} as any);
+    }
+
     return {
         formValues,
         handleInputChange,
@@ -102,6 +109,7 @@ export const useFormValues = <T extends Object>(initialState: FormValueState<T>)
         handleFormValueChange,
         handleCheckboxChange,
         validateFormRequired,
+        getMapFormValues,
         ...formValues
     }
 };

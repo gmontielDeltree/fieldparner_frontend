@@ -3,19 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useOrder } from '../../hooks';
 import {
     IconButton,
-    // Tooltip
 } from '@mui/material';
 import {
     Assignment as AssignmentIcon,
-    // Edit as EditIcon,
     PendingActions as PendingActionsIcon,
     CheckCircle as CheckCircleIcon,
     MoreHoriz as MoreHorizIcon,
-    // Delete as DeleteIcon
 } from '@mui/icons-material';
 import { GridColDef } from '@mui/x-data-grid';
-import { OrderStatus, WithdrawalOrder } from '../../types';
-// import { Icon } from 'semantic-ui-react';
+import { OrderStatus, WithdrawalOrderItem } from '../../types';
 import { setWithdrawalOrderActive } from '../../redux/withdrawalOrder';
 import { GenericListPage } from '../GenericListPage';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +26,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
     //     console.log('row', row)
     // }
 
-    const onClickStatus = (row: WithdrawalOrder) => {
+    const onClickStatus = (row: WithdrawalOrderItem) => {
         if (row.state !== OrderStatus.Completed) {
             dispatch(setWithdrawalOrderActive(row));
             navigate(`/init/overview/order/${row.order}`);
@@ -42,8 +38,9 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
         { field: 'creationDate', headerName: t('date'), width: 150 },
         { field: 'order', headerName: t('order'), width: 120 },
         { field: 'reason', headerName: t('_reason'), width: 200 },
-        { field: 'withdraw', headerName: t('withdrawal_fem'), width: 150, valueGetter: (params) => params.row.withdraw?.nombreCompleto },
-        { field: 'campaign', headerName: t('_campaign'), width: 150, valueGetter: (params) => params.row.campaign.campaignId },
+        { field: 'withdraw', headerName: t('withdrawal_fem'), width: 150, 
+            valueGetter: (params) => params.row.withdraw?.nombreCompleto || params.row.withdraw?.razonSocial },
+        { field: 'campaign', headerName: t('_campaign'), width: 150, valueGetter: (params) => params.row.campaign.name },
         {
             field: 'state',
             headerName: t('status'),
@@ -52,7 +49,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
                 <IconButton onClick={() => onClickStatus(params.row)}>
                     {params.row.state === OrderStatus.Completed ? (
                         <CheckCircleIcon color='success' fontSize='medium' />
-                    ) : params.row.state === OrderStatus.Parcial ? (
+                    ) : params.row.state === OrderStatus.Pending ? (
                         <PendingActionsIcon color='warning' fontSize='medium' />
                     ) : (
                         <MoreHorizIcon color="action" fontSize='medium' />
@@ -85,7 +82,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
         //     )
         // }
     ], [t]);
-
+    
     return (
         <GenericListPage
             title={t('withdrawal_orders')}

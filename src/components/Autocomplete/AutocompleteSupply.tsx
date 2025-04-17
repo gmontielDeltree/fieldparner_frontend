@@ -11,13 +11,17 @@ export type Props = {
     options?: Supply[];
     onChange: (supply: Supply | null) => void;
     size?: 'small' | 'medium';
+    error: boolean;
+    helperText?: string;
 }
 
 export const AutocompleteSupply: React.FC<Props> = ({
     value,
     onChange,
     options,
-    size = "medium"
+    size = "medium",
+    error = false,
+    helperText = "",
 }) => {
     const { t } = useTranslation();
 
@@ -38,7 +42,12 @@ export const AutocompleteSupply: React.FC<Props> = ({
             options={(options && options.length) ? options : supplies}
             getOptionLabel={(option) => option.name}
             renderInput={(params) => (
-                <TextField {...params} label={t("_supplies")} variant="outlined" />
+                <TextField
+                    {...params}
+                    error={error}
+                    helperText={helperText}
+                    label={t("_supplies")}
+                    variant="outlined" />
             )}
             fullWidth
             ListboxProps={{

@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { WithdrawalOrder } from '../../types';
+import { WithdrawalOrder, WithdrawalOrderItem } from '../../types';
 
 interface WithdrawalOrderState {
-    withdrawalOrderActive: WithdrawalOrder | null;
+    withdrawalOrderActive: WithdrawalOrderItem | null;
     withdrawalOrders: WithdrawalOrder[];
 }
 
@@ -22,7 +22,7 @@ export const withdrawalOrderSlice = createSlice({
         removeWithdrawalOrders: (state) => {
             state.withdrawalOrders = [];
         },
-        setWithdrawalOrderActive: (state, action: PayloadAction<WithdrawalOrder>) => {
+        setWithdrawalOrderActive: (state, action: PayloadAction<WithdrawalOrderItem>) => {
             state.withdrawalOrderActive = action.payload;
         },
         removeWithdrawalOrderActivve: (state) => {

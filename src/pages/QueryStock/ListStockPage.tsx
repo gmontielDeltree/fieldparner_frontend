@@ -13,9 +13,7 @@ import {
   Box,
   Chip,
   Container,
-  FormControlLabel,
   Paper,
-  Switch,
   Tab,
   Tabs,
   Typography,
@@ -77,7 +75,7 @@ export const ListStockPage: React.FC = () => {
     getStockBySupplies,
   } = useSupply();
   const [tabValue, setTabValue] = React.useState(0);
-  const [showStockValueZero, setShowStockValueZero] = React.useState(false);
+  // const [showStockValueZero, setShowStockValueZero] = React.useState(false);
   const { t } = useTranslation();
 
   const columnsBySupply: ColumnProps[] = [
@@ -113,6 +111,7 @@ export const ListStockPage: React.FC = () => {
   };
 
   const onClickDeposit = (item: StockItem) => {
+    console.log('item', item)
     setSelectedSupplyDeposit(item);
     dispatch(uiOpenModal(DisplayModals.SupplyByLots));
   };
@@ -194,7 +193,7 @@ export const ListStockPage: React.FC = () => {
                 isLoading={isLoading}
               >
                 {stockBySupplies
-                  .filter((s) => (showStockValueZero ? s : s.currentStock > 0))
+                  // .filter((s) => (showStockValueZero ? s : s.currentStock > 0))
                   .map((stock) => (
                     <ItemRow key={stock._id} hover>
                       <TableCellStyled align="left">{stock?.dataSupply?.type}</TableCellStyled>
@@ -239,7 +238,7 @@ export const ListStockPage: React.FC = () => {
                 isLoading={isLoading}
               >
                 {stockByDeposits
-                  .filter((s) => (showStockValueZero ? s : s.currentStock > 0))
+                  // .filter((s) => (showStockValueZero ? s : s.currentStock > 0))
                   .map((row) => (
                     <ItemRow
                       key={`${row?.dataDeposit?._id}-${row?.dataSupply?._id}`}

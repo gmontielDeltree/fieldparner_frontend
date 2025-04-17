@@ -83,14 +83,16 @@ const Row: React.FC<RowProps> = ({ row }) => {
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <ItemRow>
-                    <TableCellStyled>Tipo</TableCellStyled>
-                    <TableCellStyled>Movimiento</TableCellStyled>
-                    <TableCellStyled align="left" sx={{ width: "220px" }}>
+                    <TableCellStyled sx={{ px: 2, py: 1 }}>Tipo</TableCellStyled>
+                    <TableCellStyled sx={{ px: 2, py: 1 }}>Movimiento</TableCellStyled>
+                    <TableCellStyled
+                      sx={{ px: 2, py: 1, width: "220px" }}
+                      align="left">
                       Detalle
                     </TableCellStyled>
-                    <TableCellStyled align="left">Fecha</TableCellStyled>
-                    <TableCellStyled align="right">Cantidad</TableCellStyled>
-                    <TableCellStyled align="center">
+                    <TableCellStyled sx={{ px: 2, py: 1 }} align="left">Fecha</TableCellStyled>
+                    <TableCellStyled sx={{ px: 2, py: 1 }} align="right">Cantidad</TableCellStyled>
+                    <TableCellStyled sx={{ px: 2, py: 1 }} align="center">
                       Comprobante
                     </TableCellStyled>
                   </ItemRow>
@@ -98,16 +100,16 @@ const Row: React.FC<RowProps> = ({ row }) => {
                 <TableBody>
                   {row?.dataMovements?.map((movement) => (
                     <TableRow key={movement._id}>
-                      <TableCell>
+                      <TableCell align="left">
                         {movement.isIncome ? "Ingreso" : "Egreso"}
                       </TableCell>
-                      <TableCell component="th" scope="row">
+                      <TableCell align="left" component="th" scope="row">
                         {movement.typeMovement}
                       </TableCell>
-                      <TableCell>{movement.detail}</TableCell>
-                      <TableCell>{movement.operationDate}</TableCell>
-                      <TableCell>{movement.amount}</TableCell>
-                      <TableCell>{movement.voucher}</TableCell>
+                      <TableCell align="left">{movement.detail}</TableCell>
+                      <TableCell align="left">{movement.operationDate}</TableCell>
+                      <TableCell align="right">{movement.amount}</TableCell>
+                      <TableCell align="right">{movement.voucher}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

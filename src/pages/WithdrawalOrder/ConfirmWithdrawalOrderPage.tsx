@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 
 
 interface NewWithdrawalRowProps {
-    row: DepositSupplyOrder;
+    row: DepositSupplyOrderItem;
     addNewWithdrawal: (newWithdrawal: DepositSupplyOrderItem) => void;
 }
 
@@ -208,7 +208,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                             variant="outlined"
                             type="text"
                             label={t("withdrawal_fem")}
-                            value={withdrawalOrderActive?.withdraw?.nombreCompleto}
+                            value={withdrawalOrderActive?.withdraw?.nombreCompleto || withdrawalOrderActive?.withdraw?.razonSocial}
                             InputProps={{
                                 startAdornment: <InputAdornment position="start" />,
                             }}

@@ -11,14 +11,14 @@ import { AutocompleteCampaign, AutocompleteCrop, AutocompleteSupply } from '../A
 
 
 interface SupplyAndCropProps {
-  supplies: Supply[],
+  supplies?: Supply[],
   deposits: Deposit[],
-  crops: Crop[],
+  crops?: Crop[],
   showDueDate: boolean,
   disabledCrops: boolean,
   addNewSupplyOrCultive: (item: TransformSupply, isCultive: boolean) => void;
-  onChangeSupply: (item: Supply) => void;
-  onChangeCrop: (item: Crop) => void;
+  onChangeSupply?: (item: Supply) => void;
+  onChangeCrop?: (item: Crop) => void;
 }
 
 const today = getShortDate();
@@ -222,7 +222,7 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
                 options={crops}
                 onChange={(newValue) => {
                   if (newValue) {
-                    onChangeCrop(newValue);
+                    onChangeCrop && onChangeCrop(newValue);
                     setFormulario((prevState) => ({
                       ...prevState,
                       cropId: newValue._id || ""
@@ -234,9 +234,10 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
               <AutocompleteSupply
                 value={supplySelected}
                 options={supplies}
+                error={false}
                 onChange={(newValue) => {
                   if (newValue) {
-                    onChangeSupply(newValue);
+                    onChangeSupply && onChangeSupply(newValue);
                     setFormulario((prevState) => ({
                       ...prevState,
                       supplyId: newValue._id || ""

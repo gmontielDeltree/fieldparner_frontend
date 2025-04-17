@@ -44,7 +44,9 @@ export const TableNewWithdrawalOrder: React.FC<Props> = ({
         formulario: formValues,
         setFormulario,
     } = useForm(initialFormValues);
-    const { isLoading: supplyLoading, supplies, getSupplies } = useSupply();
+    const { isLoading: supplyLoading,
+        stockBySupplies, //Data de stock por cada insumo 
+        getStockBySupplies } = useSupply();
     const {
         isLoading: depositLoading,
         deposits,
@@ -70,7 +72,7 @@ export const TableNewWithdrawalOrder: React.FC<Props> = ({
     };
 
     useEffect(() => {
-        getSupplies();
+        getStockBySupplies();
         getDeposits();
     }, [])
 
@@ -95,7 +97,9 @@ export const TableNewWithdrawalOrder: React.FC<Props> = ({
                         <AutocompleteSupply
                             size="small"
                             value={supplySelected}
-                            options={supplies}
+                            options={stockBySupplies.map(x => x.dataSupply).filter((supply): supply is Supply => supply !== undefined)}
+                            error={false}
+                            helperText=""
                             onChange={(newValue) => {
                                 if (newValue?._id) {
                                     setSupplySelected(newValue);

@@ -19,7 +19,7 @@ import { TableNewWithdrawalOrder } from '../../components/WithdrawalOrder/TableN
 import { AutocompleteCampaign } from '../../components/Autocomplete';
 import { useTranslation } from 'react-i18next';
 
-
+//TODO: actualizar los alerts a NotificationService
 const initialForm = {
     accountId: "",
     creationDate: getShortDate(),
@@ -34,8 +34,8 @@ const initialForm = {
 export const WithdrawalOrdersPage: React.FC = () => {
 
     const navigate = useNavigate();
-    const { user } = useAppSelector(state => state.auth);
-    const { isLoading, createWithdrawalOrder } = useOrder();
+    const { user, isLoading } = useAppSelector(state => state.auth);
+    const { createWithdrawalOrder } = useOrder();
     const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
     const [campaignSelected, setCampaignSelected] = useState<Campaign | null>(null);
     const { campaigns, getCampaigns } = useCampaign();
@@ -67,8 +67,8 @@ export const WithdrawalOrdersPage: React.FC = () => {
 
         let newDepositSupplyOrders: DepositSupplyOrder[] = suppliesToAdd.map(s => ({
             accountId: user?.accountId,
-            deposit: s.deposit,
-            supply: s.supply,
+            depositId: s.deposit?._id || "",
+            supplyId: s.supply?._id || "",
             crop: s.crop,
             location: s.location,
             nroLot: s.nroLot,
@@ -79,9 +79,9 @@ export const WithdrawalOrdersPage: React.FC = () => {
 
         addNewWithdrawalOrder({
             type: WithdrawalOrderType.Individual,
-            campaign,
+            campaignId: formValues.campaignId,
             creationDate: formValues.creationDate,
-            withdraw,
+            withdrawId: formValues.withdrawId,
             order: formValues.order,
             reason: formValues.reason,
             state: OrderStatus.Pending,
@@ -96,6 +96,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
             const id = supply?._id;
             const depositId = deposit?._id;
             if (!id && !depositId) return false;
+
             let result = await getStock(
                 {
                     campaignId: formValues.campaignId,
@@ -154,7 +155,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
         getCampaigns();
         getBusinesses();
     }, [])
-
+    console.log(formValues.creationDate);
     return (
         <TemplateLayout key="new-withdrawal-order" viewMap={true}>
             <Loading loading={isLoading} />
@@ -196,7 +197,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                         <TextField
                             variant="outlined"
                             type="text"
-                            label={t("reason")}
+                            label={t("_reason")}
                             name="reason"
                             value={formValues.reason}
                             onChange={handleInputChange}

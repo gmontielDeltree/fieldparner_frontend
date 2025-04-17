@@ -1,9 +1,9 @@
 import Swal from 'sweetalert2';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, Paper, Box, Typography, Grid, TextField, InputAdornment, TableContainer, Divider, Link } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react'
-import { useAppDispatch, useAppSelector, useBusiness, useCampaign, useDeposit, useForm, useOrder, useSupply } from '../../../hooks';
+import { useAppDispatch, useAppSelector, useBusiness, useCampaign, useCrops, useDeposit, useForm, useOrder, useSupply } from '../../../hooks';
 import { uiCloseModal } from '../../../redux/ui';
-import { ColumnProps, DepositSupplyOrder, DepositSupplyOrderItem, DisplayModals, OrderStatus, Supply, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderType } from '../../../types';
+import { ColumnProps, Crop, DepositSupplyOrder, DepositSupplyOrderItem, DisplayModals, OrderStatus, Supply, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderItem, WithdrawalOrderType } from '../../../types';
 import {
     Close as CloseIcon,
     Assignment as AssignmentIcon,
@@ -11,7 +11,7 @@ import {
     Save as SaveIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material';
-import { Icon } from "semantic-ui-react";
+
 import { getShortDate } from '../../../helpers/dates';
 import { DataTable, ItemRow, Loading, NewSupplyCropRow, TableCellStyled } from '../..';
 import { useTranslation } from "react-i18next";
@@ -24,8 +24,8 @@ import {
     Text,
     View,
     StyleSheet,
-    PDFDownloadLink,
 } from '@react-pdf/renderer';
+import { Business } from '../../../interfaces/socialEntity';
 
 
 // Estilos para el PDF
@@ -121,10 +121,10 @@ const RowSupply: React.FC<RowSupplyProps> = ({ row, handleDelete, handleEdit }) 
     return (
         <ItemRow key={row._id}>
             <TableCellStyled align="left">
-                {row.deposit.description}
+                {row.deposit?.description}
             </TableCellStyled>
-            <TableCellStyled align="left">{row.supply.name} </TableCellStyled>
-            <TableCellStyled align="center">{row.supply.unitMeasurement}</TableCellStyled>
+            <TableCellStyled align="left">{row.supply?.name} </TableCellStyled>
+            <TableCellStyled align="center">{row.supply?.unitMeasurement}</TableCellStyled>
             <TableCellStyled align='center'>{row.location || "-"}</TableCellStyled>
             <TableCellStyled align='center'>{
                 isEdit ? (
@@ -177,7 +177,7 @@ const RowSupply: React.FC<RowSupplyProps> = ({ row, handleDelete, handleEdit }) 
 }
 
 interface LaborOrderDocProps {
-    withdrawalOrder: WithdrawalOrder;
+    withdrawalOrder: WithdrawalOrderItem;
     depositAndSupplies: DepositSupplyOrderItem[];
 }
 
@@ -203,7 +203,7 @@ const LaborOrderDoc: React.FC<LaborOrderDocProps> = ({
                     depositAndSupplies.map(x => (
                         <>
                             <View key={x._id} style={styles.section}>
-                                <Text style={styles.textDetail}>Deposito:<Text style={styles.textBody}>{x.deposit.description}</Text> Insumo:<Text style={styles.textBody}>{x.supply.name}</Text> UM:<Text style={styles.textBody}>{x.supply.unitMeasurement} </Text> Cantidad a Retirar:<Text style={styles.textBody}>{x.amount}</Text></Text>
+                                <Text style={styles.textDetail}>Deposito:<Text style={styles.textBody}>{x.deposit?.description}</Text> Insumo:<Text style={styles.textBody}>{x.supply.name}</Text> UM:<Text style={styles.textBody}>{x.supply.unitMeasurement} </Text> Cantidad a Retirar:<Text style={styles.textBody}>{x.amount}</Text></Text>
                             </View>
                             <View style={{ width: "100%", borderBottom: "1px solid black" }} />
                         </>
@@ -213,10 +213,10 @@ const LaborOrderDoc: React.FC<LaborOrderDocProps> = ({
         </Document >
     )
 }
-
+//TODO: Revisar para crear una orden de retiro para cultivos que tengamos en stock
 export const LaborOrderModal = ({ activity }) => {
-    const { t } = useTranslation();
-
+    const { t, i18n } = useTranslation();
+    console.log("activity", activity);
     const columns: ColumnProps[] = [
         { text: t('warehouse'), align: "left" },
         { text: t('supply'), align: "left" },
@@ -233,6 +233,7 @@ export const LaborOrderModal = ({ activity }) => {
     const { showModal } = useAppSelector((state) => state.ui);
     const { selectedCampaign } = useAppSelector(state => state.campaign);
     const { lotActive } = useAppSelector(state => state.map);
+    console.log('lotActive', lotActive);
     const [listWithdrawals, setListWithdrawals] = useState<DepositSupplyOrderItem[]>([]);
     const { isLoading,
         depositsSuppliesOrder,
@@ -241,12 +242,12 @@ export const LaborOrderModal = ({ activity }) => {
         getLaborOrder,
         getOrderWithDepositsAndSuppliesByOrder } = useOrder();
     //Ver de donde obtenemos los insumos y depositos:
-    const { deposits, getDeposits, getDepositsBySupply } = useDeposit();
-    const { supplies, getSupplies } = useSupply();
+    const { deposits, getDeposits, getDepositsByCropId } = useDeposit();
+    const { dataCrops, getCrops } = useCrops();
     const { businesses, getBusinesses } = useBusiness();
     const { campaigns, getCampaigns } = useCampaign();
-    const contractorActivity = useMemo(() => {
-        return activity.contratista
+    const contractorFromActivity = useMemo(() => {
+        return activity.contratista as Business;
     }, []);
     const { creationDate, handleInputChange } = useForm({ creationDate: getShortDate() });
     const [instance, updateInstance] = usePDF({ document: <></> });
@@ -256,13 +257,17 @@ export const LaborOrderModal = ({ activity }) => {
         setListWithdrawals([]);
     };
 
-    const handleAddDepositSupply = (item: TransformSupply) => {
+    const handleAddDepositSupply = (item: TransformSupply, isCultive: boolean) => {
         if (!user) return;
-
+        console.log("item", item);
+        debugger;
+        
         let newDepositSupplyOrders: DepositSupplyOrderItem = {
             accountId: user.accountId,
-            deposit: item.deposit,
-            supply: item.supply,
+            // deposit: item.deposit ?? undefined,
+            // supply: item.supply ?? undefined,
+            depositId: item.deposit?._id || "",
+            cropId: item.crop?._id || "",
             location: item.location,
             nroLot: item.nroLot,
             order: 0, // El numero lo genera en createWithdrawalOrder()
@@ -275,34 +280,38 @@ export const LaborOrderModal = ({ activity }) => {
 
     const generateLaborOrder = async () => {
         const findCampaing = campaigns.find(x => x.campaignId === selectedCampaign?.campaignId);
-        const findContractor = businesses.find(x => x._id === contractorActivity._id);
+        const findContractor = businesses.find(x => x._id === contractorFromActivity._id);
         if (!user || !findCampaing || !findContractor) return;
 
         const newLaborOrder: WithdrawalOrder = {
             type: WithdrawalOrderType.Labor,
-            campaign: findCampaing,
+            // campaign: findCampaing,
+            campaignId: findCampaing.campaignId,
             creationDate,
-            order: 0,
-            contractor: findContractor,
+            order: 0,// El numero lo genera en createWithdrawalOrder()
+            contractorId: findContractor._id,
             reason: "",
             state: OrderStatus.Pending,
             accountId: "",
-            field: lotActive?.properties?.campo_parent_id || "",
+            withdrawId: "",
+            field: lotActive?.properties?.campo_parent_id || "", //TODO: ver con joaco si el campo_parent_id es el id campo
             labor: activity.tipo
         };
         let newDepositSupplyOrders: DepositSupplyOrder[] = listWithdrawals.map(s => ({
             accountId: user.accountId,
-            deposit: s.deposit,
-            supply: s.supply,
+            depositId: s.deposit?._id || "",
+            supplyId: s.supply?._id || "",
             location: s.location,
             nroLot: s.nroLot,
-            order: 0, // El numero lo genera en createWithdrawalOrder()
+            order: 0,
             withdrawalAmount: 0,
             originalAmount: Number(s.amount),
         }));
+        debugger;
+        return;
         const numberOrder = await createLaborOrder(newLaborOrder, newDepositSupplyOrders);
 
-        if (numberOrder > 0)
+        if (numberOrder && numberOrder > 0)
             Swal.fire(t('withdrawalOrder'), t('orderCreatedSuccess', { number: numberOrder }), 'success');
         else
             Swal.fire(t('oops'), t('unexpectedError'), 'error');
@@ -330,9 +339,13 @@ export const LaborOrderModal = ({ activity }) => {
             generateLaborOrder()
     }
 
-    const onChangeSupply = (item: Supply) => {
-        getDepositsBySupply(item);
-    };
+    // const onChangeSupply = (item: Supply) => {
+    //     if (item._id) getDepositsBySupplyId(item._id);
+    // };
+
+    const onChangeCrop = (item: Crop ) => {
+        if (item._id) getDepositsByCropId(item._id);
+    }
 
     useEffect(() => {
         const initializeGetOrder = async () => {
@@ -340,7 +353,8 @@ export const LaborOrderModal = ({ activity }) => {
             setinitializeLoading(true);
             const responseAll = await Promise.all([
                 getBusinesses(),
-                getSupplies(),
+                // getSupplies(),
+                getCrops(),
                 getDeposits(),
                 getCampaigns(),
             ]);
@@ -349,8 +363,8 @@ export const LaborOrderModal = ({ activity }) => {
 
             const field = lotActive?.properties?.campo_parent_id as string;
             const campaignId = selectedCampaign?.campaignId;
-            const contractorId = contractorActivity._id;
-            if (!campaignId) return;
+            const contractorId = contractorFromActivity._id;
+            if (!campaignId || !contractorId) return;
             const order = await getLaborOrder(field, campaignId, contractorId);
             if (order) {
                 setOrderActive(order);
@@ -421,17 +435,22 @@ export const LaborOrderModal = ({ activity }) => {
                     <Grid container spacing={2} mb={2}>
                         <Grid item xs={12} sm={5}>
                             <Typography variant="subtitle1">
-                                <strong> {t('campaign')}:</strong> {selectedCampaign?.campaignId.toString().toUpperCase()}
+                                <strong> {t('campaign')}:</strong> {selectedCampaign?.name.toString().toUpperCase()}
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={5}>
                             <Typography variant="subtitle1">
-                                <strong> {t('crop')}:</strong> {activity?.tipo.toString().toUpperCase()}
+                                <strong> {t('crop')}:</strong> {
+                                    i18n.language === "en" ?
+                                        activity?.detalles?.cultivo.descriptionEN :
+                                        i18n.language === "es" ? activity?.detalles?.cultivo.descriptionES
+                                            : activity?.detalles?.cultivo.descriptionPT
+                                }
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}>
                             <Typography variant="subtitle1">
-                                <strong> {t('field')}:</strong> {lotActive?.properties?.campo_parent_id}
+                                <strong> {t('field')}:</strong> {lotActive?.properties?.nombre}
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}>
@@ -472,7 +491,7 @@ export const LaborOrderModal = ({ activity }) => {
                         }
                         <Grid item xs={12} sm={4} sx={{ mt: 3, display: "flex", alignItems: "center" }}>
                             <Typography variant="subtitle1">
-                                <strong> {t('contractor')}:</strong> {contractorActivity.nombre}
+                                <strong> {t('contractor')}:</strong> {contractorFromActivity.nombreCompleto || contractorFromActivity.razonSocial}
                             </Typography>
                         </Grid>
                     </Grid>
@@ -480,10 +499,13 @@ export const LaborOrderModal = ({ activity }) => {
                     <Box sx={{ my: 3 }}>
                         <NewSupplyCropRow
                             key="new-supply-order"
-                            supplies={supplies}
                             deposits={deposits}
+                            crops={dataCrops}
                             showDueDate={false}
-                            onChangeSupply={onChangeSupply}
+
+                            disabledCrops={false}
+                            // onChangeSupply={onChangeSupply}
+                            onChangeCrop={onChangeCrop}
                             addNewSupplyOrCultive={handleAddDepositSupply} />
                     </Box>
                     <Typography
