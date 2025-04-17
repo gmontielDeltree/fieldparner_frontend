@@ -257,11 +257,9 @@ export const LaborOrderModal = ({ activity }) => {
         setListWithdrawals([]);
     };
 
-    const handleAddDepositSupply = (item: TransformSupply, isCultive: boolean) => {
+    const handleAddDepositSupply = (item: TransformSupply, _isCultive: boolean) => {
         if (!user) return;
-        console.log("item", item);
-        debugger;
-        
+        console.log('item', item)
         let newDepositSupplyOrders: DepositSupplyOrderItem = {
             accountId: user.accountId,
             // deposit: item.deposit ?? undefined,
@@ -307,8 +305,7 @@ export const LaborOrderModal = ({ activity }) => {
             withdrawalAmount: 0,
             originalAmount: Number(s.amount),
         }));
-        debugger;
-        return;
+        console.log('newLaborOrder', { newLaborOrder, newDepositSupplyOrders })
         const numberOrder = await createLaborOrder(newLaborOrder, newDepositSupplyOrders);
 
         if (numberOrder && numberOrder > 0)
@@ -343,7 +340,7 @@ export const LaborOrderModal = ({ activity }) => {
     //     if (item._id) getDepositsBySupplyId(item._id);
     // };
 
-    const onChangeCrop = (item: Crop ) => {
+    const onChangeCrop = (item: Crop) => {
         if (item._id) getDepositsByCropId(item._id);
     }
 

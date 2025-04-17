@@ -285,7 +285,7 @@ export const useOrder = () => {
             let newMovements = listWithdrawals.map(w => ({
                 accountId: user.accountId,
                 amount: w.amount,
-                campaignId: withdrawalOrderActive.campaign._id,
+                campaignId: withdrawalOrderActive?.campaign?._id,
                 creationDate: withdrawalDate,
                 depositId: w.deposit?._id,
                 supplyId: w.supply?._id,
@@ -441,8 +441,8 @@ export const useOrder = () => {
                     "$and": [
                         { "accountId": user.accountId },
                         { "field": field },
-                        { "campaign.campaignId": campaignId },
-                        { "contractor._id": contractorId }
+                        { "campaignId": campaignId },
+                        { "contractorId": contractorId }
                     ],
                 },
             });
